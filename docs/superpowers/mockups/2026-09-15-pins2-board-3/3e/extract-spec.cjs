@@ -224,7 +224,7 @@ const GATES = [
 
   // ── Every gate, resting ──
   if (MODE === '3e') for (const [gid, id, title, note] of GATES) { out.push(`\n## ${gid} · ${title} — resting\n`); await dumpStage(`${gid} stage`, `#g-${id} .g-stage`, `${gid}-`, note); }
-  else for (const [gid, id, title] of CFG.gates) { out.push(`\n## ${gid} · ${title} — resting\n`); await dumpStage(`${gid} stage`, MODE === '4' ? `#${id} .pb-head ~ :not(.pb-new):not(.b4-try)` : `#${id} ${MODE === '1' ? '.pb-stage' : ''}`.trim(), `${gid}-`); }
+  else for (const [gid, id, title] of CFG.gates) { out.push(`\n## ${gid} · ${title} — resting\n`); await dumpStage(`${gid} stage`, MODE === '4' ? `#${id} .pb-head ~ :not(.pb-new):not(.b4-try):not(.b4-forks)` : `#${id} ${MODE === '1' ? '.pb-stage' : ''}`.trim(), `${gid}-`); }
 
   // ── Reachable states, each re-censused so only what is NEW is specced ──
   const click = async (sel) => { const ok = await p.evaluate((s) => { const e = document.querySelector(s); if (!e) return false; e.scrollIntoView({ block: 'center' }); e.click(); return true; }, sel); await new Promise((r) => setTimeout(r, 700)); return ok; };
@@ -251,12 +251,15 @@ const GATES = [
     for (const [gid, kind, i, label] of acts) {
       const ok = await p.evaluate((gid, kind, i) => { const g = document.getElementById(gid); const b = kind === 'state' ? g.querySelectorAll('.pb-ctl button')[i] : g.querySelectorAll('.b4-try button')[i]; if (!b) return false; b.click(); return true; }, gid, kind, i);
       await new Promise((r) => setTimeout(r, 1600));
-      if (ok) await dumpStage(`${gid.slice(2)} · ${label}`, `#${gid} .pb-head ~ :not(.pb-new):not(.b4-try)`, `${gid.slice(2)}${kind[0]}${i}-`);
+      if (ok) await dumpStage(`${gid.slice(2)} · ${label}`, `#${gid} .pb-head ~ :not(.pb-new):not(.b4-try):not(.b4-forks)`, `${gid.slice(2)}${kind[0]}${i}-`);
     }
   }
   if (MODE === '4') {
     // (2026-09-27 02:43 EDT) Every FORK option in a section's `.b4-forks` (Compare's Table and Empty), each with the section's states re-walked, then the
     // fork restored. Before this, only the held option (A) was ever specced: Tables B and C and Empties B and C had no values at all.
+    // (2026-09-27 02:54 EDT) The stage is the section's first sibling after its head that is not the notes, the Try row or the FORK row. Without
+    // `:not(.b4-forks)` the fork row itself was the stage in C3 — every Compare dump since the forks landed specced the fork switches (5
+    // signatures) and the Compare body (`div.b1.b4-cmp`) sat in "Not reached".
     const forks = await p.evaluate(() => [...document.querySelectorAll('.b4g')].flatMap((g) => [...g.querySelectorAll('.b4-fork')].map((f, fi) => {
       const bs = [...f.querySelectorAll('button')]; return [g.id, fi, bs.map((b) => b.textContent.trim()), bs.findIndex((b) => b.getAttribute('aria-pressed') === 'true' || b.getAttribute('aria-checked') === 'true' || b.classList.contains('on'))]; })));
     for (const [gid, fi, opts, cur] of forks) {
@@ -267,7 +270,7 @@ const GATES = [
         const nst = await p.evaluate((gid) => document.getElementById(gid).querySelectorAll('.pb-ctl button').length, gid);
         for (let si = 0; si < Math.max(1, nst); si++) {
           if (nst) { await p.evaluate((gid, si) => document.getElementById(gid).querySelectorAll('.pb-ctl button')[si].click(), gid, si); await new Promise((r) => setTimeout(r, 1400)); }
-          await dumpStage(`${gid.slice(2)} · ${opts[oi]}${nst ? ` · state ${si + 1}` : ''}`, `#${gid} .pb-head ~ :not(.pb-new):not(.b4-try)`, `${gid.slice(2)}f${fi}o${oi}s${si}-`);
+          await dumpStage(`${gid.slice(2)} · ${opts[oi]}${nst ? ` · state ${si + 1}` : ''}`, `#${gid} .pb-head ~ :not(.pb-new):not(.b4-try):not(.b4-forks)`, `${gid.slice(2)}f${fi}o${oi}s${si}-`);
         }
       }
       await p.evaluate((gid, fi, cur) => { const b = document.getElementById(gid).querySelectorAll('.b4-fork')[fi].querySelectorAll('button')[Math.max(0, cur)]; if (b) b.click(); }, gid, fi, cur);

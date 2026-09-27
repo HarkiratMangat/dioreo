@@ -1468,9 +1468,9 @@ inside `.b3-tk-sec` · 2 on screen · **1 look**
 
 ### `i`
 
-inside `.b3-tk-sh` · 20 on screen · **9 looks**
+inside `.b3-tk-sh` · 20 on screen · **8 looks**
 
-#### look 1 of 9
+#### look 1 of 8
 
 `C4-42` · rendered **28×28** · 1 instance look like this · aria-hidden="true"
 
@@ -1502,7 +1502,7 @@ inside `.b3-tk-sh` · 20 on screen · **9 looks**
 | text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
 | color | `var(--warn)` | `rgb(255, 122, 69)` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3651 |
 
-#### look 2 of 9
+#### look 2 of 8
 
 `C4-50` · rendered **8×8** · 2 instances look like this · aria-hidden="true"
 
@@ -1530,7 +1530,7 @@ inside `.b3-tk-sh` · 20 on screen · **9 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 3 of 9
+#### look 3 of 8
 
 `C4-69` · rendered **12×18** · 4 instances look like this
 
@@ -1554,7 +1554,7 @@ inside `.b3-tk-sh` · 20 on screen · **9 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 4 of 9
+#### look 4 of 8
 
 `C4-81` · rendered **8×8** · 1 instance look like this · aria-hidden="true"
 
@@ -1582,7 +1582,7 @@ inside `.b3-tk-sh` · 20 on screen · **9 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 5 of 9
+#### look 5 of 8
 
 `C4-93` · rendered **24×22** · 8 instances look like this · text “1C”
 
@@ -1617,7 +1617,7 @@ inside `.b3-tk-sh` · 20 on screen · **9 looks**
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-ev.pairs i · b3/board.css:3155 |
 
-#### look 6 of 9
+#### look 6 of 8
 
 `C4-106` · rendered **8×8** · 1 instance look like this · aria-hidden="true"
 
@@ -1645,7 +1645,7 @@ inside `.b3-tk-sh` · 20 on screen · **9 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-*3 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*2 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `div.b3-tk-list.rows`

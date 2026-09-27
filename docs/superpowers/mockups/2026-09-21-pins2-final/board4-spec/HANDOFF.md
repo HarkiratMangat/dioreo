@@ -21,24 +21,24 @@ status: live
 
 **His words are not copied here.** They sit, verbatim and dated, in [`docs/claude/pins2/handoffs/2026-09-21-board4-intake.md`](../../../../claude/pins2/handoffs/2026-09-21-board4-intake.md) and in the "His words" lines of [`2026-09-23-board4-v15-plan.md`](../../../../claude/pins2/handoffs/2026-09-23-board4-v15-plan.md). Each ruling below cites the line it comes from (`intake:N`, `plan:N`).
 
-**What "checked on v35" means below:** the behaviour was looked at or measured on the local board at Version 35 in this session. Everything else is "built per the record" — the plan says it was built and measured then, and no one has re-opened it since. Treat those as the first things to open.
+**The "Last checked" column says exactly when each was looked at.** "This session, v35" = opened on the local board at Version 35 on 2026-09-27. "Measured, plan §…" = measured when it was built (Versions 32–34), not re-opened on v35. "Built per the record" = the plan says it was built and checked then; no one has opened it since. Open the last two kinds first.
 
 ---
 
 ## The rulings that are current — every topic he decided, and what each replaced
 
-| Topic | Gate | The ruling now | Source · replaced | v35 |
+| Topic | Gate | The ruling now | Source · replaced | Last checked |
 |---|---|---|---|---|
 | Tier set | C1 C2 C3 C5 bot | Best · Top 3 · Top 5 · Capable. **TOP 4 is removed from the system and the bot** | `intake:534` (2026-09-24 12:13) · replaced TOP 4 | built per the record |
 | Capable | all | a thumbs-up on TOP 4's design and colours; **exists for DMZ too** | `intake:534`, `intake:637` | built per the record |
 | ASS grade | all | a poop icon; **ASS and META/Best/Top 3/Top 5/Capable disable each other**; TOXIC + ASS is allowed; motion **A · Stink lines** | `intake:638`, `intake:703` (2026-09-24 22:30) · replaced B Flies, C | built per the record |
 | Tier words in the bot | bot | the bot says "Best AR", "Top 3 AR", "Top 5 AR", "Capable AR"; the portal may leave the category out | `intake:625` | not on the board (bot) |
 | Badge runs | C1 C2 | no dot bullets between badges; META + BEST + TOXIC wraps to two lines | `intake:519` | built per the record |
-| Rank Mode family | C1 C2 C3 C5 bot | HP · S&D · DOM · TDM · FTL · Control; one whitish plate; **MP only, several allowed**; bot `Recommended Rank Mode: {a \| b}`, portal `Rank Mode: {a \| b}`; his marks, expanded strokes, 20px in the plate, fill v2; motion C with drifting periods; words in capitals (stored `Control`) | `plan:530`, `plan:720`, `plan:593`, `plan:613`, `plan:674`, `plan:753` | capitals checked |
+| Rank Mode family | C1 C2 C3 C5 bot | HP · S&D · DOM · TDM · FTL · Control; one whitish plate; **MP only, several allowed**; bot `Recommended Rank Mode: {a \| b}`, portal `Rank Mode: {a \| b}`; his marks, expanded strokes, 20px in the plate, fill v2; motion C with drifting periods; words in capitals (stored `Control`) | `plan:530`, `plan:720`, `plan:593`, `plan:613`, `plan:674`, `plan:753` | capitals measured, plan §19z (2026-09-26 17:48 EDT) |
 | Badge motion | all | `docs/reference/badge-motion.md` is the law | — | — |
 | Add build form | C2 | **Form A · Instrument** | `intake:602` · replaced forms B, C | built per the record |
-| Inline labels | C2 | **only Grade and Tier** (and Rank Mode) sit beside their label; Weapon and Category keep their labels above the field; **Label went back to its original format, its label above the field** | `intake:657`, `intake:674` · replaced "the whole form inline" and "Label inline" | checked on v35: Label above its field, BUILD n prefix inside it |
-| Drawer width | C2 | **980** (preview 333, form 581); **Grade and Tier stay inline with several builds** ("we clearly have enough space") | `intake:703` (2026-09-24 22:30) · replaced 880 and 940, and "stacked for three" | checked on v35: drawer 980; with three builds Grade, Tier and Rank Mode sit beside their labels |
+| Inline labels | C2 | **only Grade and Tier** (and Rank Mode) sit beside their label; Weapon and Category keep their labels above the field; **Label went back to its original format, its label above the field** | `intake:657`, `intake:674` · replaced "the whole form inline" and "Label inline" | this session, v35: Label above its field, BUILD n prefix inside it |
+| Drawer width | C2 | **980** (preview 333, form 581); **Grade and Tier stay inline with several builds** ("we clearly have enough space") | `intake:703` (2026-09-24 22:30) · replaced 880 and 940, and "stacked for three" | this session, v35: drawer 980; with three builds Grade, Tier and Rank Mode sit beside their labels |
 | Field corners | C2 C7 | every form field and search field takes the tier container's softer corner | `intake:713` | built per the record |
 | Dropdowns | C2 | black ground (weapon, category, slot, stored image); no coloured dots; categories in capitals; no "melee"; slot labels in their accent | `intake:444`–`447` | built per the record |
 | Several builds | C2 | each build's block tinted in its weapon category's accent | `intake:460` | built per the record |
@@ -46,20 +46,20 @@ status: live
 | Code-filled slots | C2 | the wand-with-sparkles mark in yellow `#F3C231`; "Filled N slots" beside Attachments; slot names in their accents; no green border | `intake:567`–`571` | built per the record |
 | Readiness | C2 | inline chips at the labels (Weapon required → checks → Ready) instead of a Ready chip; the Before staging panel in the empty space under the preview, anchored, rows jump to fields | `intake:572`–`578`, `intake:635`, `intake:658` | built per the record |
 | Optional fields | C2 | an "Optional" chip on every optional field | `intake:680` | built per the record |
-| Unchecked chips | C2 | rest at 0.6, 1 on hover; disabled 0.18 | `plan:749` · replaced 42% | checked on v35 (0.6) |
+| Unchecked chips | C2 | rest at 0.6, 1 on hover; disabled 0.18 | `plan:749` · replaced 42% | measured, plan §19z (2026-09-26 17:45 EDT) |
 | Bulk | C2 | the format hint and in-list hints redesigned; the list scrolls; the product's MP/DMZ chips; the board's own chips; the Bulk create format (Export writes the same) | `intake:596`–`601`, `intake:206`–`234` | built per the record |
-| Bulk head | C2 | the selection bar's View toggle: **Ledger / Embed** (was "Discord") | `plan:736` | checked on v35 |
-| Bulk ledger card | C2 | Code row = the selection bar's `CodeCell`, sized to the ledger; a click keeps the code and ticks the mark `--ok` for 1.1s (every `CodeCell`); chip runs two lines, then sideways behind the fade; **a click anywhere on a card** jumps to its block and centres it clear of the fades | `plan:700`, `plan:708`, `plan:744`, `plan:759` | checked on v35 |
+| Bulk head | C2 | the selection bar's View toggle: **Ledger / Embed** (was "Discord") | `plan:736` | measured, plan §19z (2026-09-26 16:35 EDT) |
+| Bulk ledger card | C2 | Code row = the selection bar's `CodeCell`, sized to the ledger; a click keeps the code and ticks the mark `--ok` for 1.1s (every `CodeCell`); chip runs two lines, then sideways behind the fade; **a click anywhere on a card** jumps to its block and centres it clear of the fades | `plan:700`, `plan:708`, `plan:744`, `plan:759` | measured, plan §19y–§19z (2026-09-26 15:41–18:08 EDT) |
 | Edit | C2 | "Editing X" is the selection bar's weapon chip with its ×, which removes that weapon's blocks | `intake:40` | built per the record |
-| Dead space | C2 C5 | a wheel in a drawer's dead space scrolls the column that owns it | `plan:720` | checked on v35 (Export, Add, Bulk, Edit; not the post, History or confirm drawers) |
+| Dead space | C2 C5 | a wheel in a drawer's dead space scrolls the column that owns it | `plan:720` | measured, plan §19z (2026-09-26 16:28 EDT): Export, Add, Bulk, Edit; never the post, History or confirm drawers |
 | Compare size | C3 | at most **6 builds** per comparison | `intake:50` | built per the record |
 | Compare tables | C3 | **OPEN** — Table A/B/C and Empty A/B/C are his to pick | board note | — |
-| Compare badges | C3 | the **tighter** look (tracking reset), runs **at most two lines**, then sideways behind the fade | his popup answer, 2026-09-27, before 02:17 EDT | checked on v35 |
+| Compare badges | C3 | the **tighter** look (tracking reset), runs **at most two lines**, then sideways behind the fade | his popup answer, 2026-09-27, before 02:17 EDT | this session, v35: Tables A/B/C with 1–5 builds |
 | Compare chips | C3 | the colour-accented slot chip (e.g. Ammunition), as everywhere else | `intake:462` | built per the record |
 | Repairs | C4 | the "N builds pass" tile under its own section label and spacing; the "N builds" chip in the Never chip's shape; tickets have **no** hover | `intake:270`, `intake:291`, `plan:744` | built per the record |
 | Export | C5 | the list reads the Bulk create format; attachment chips are the manifest's; MP/DMZ follows the weapon and build; pick-all tinted by its category (the top one by its own); list fades; a clean ×; the filename chip's × and ✓ | `intake:669`–`671`, `intake:465`, `intake:272`, `intake:276`, `intake:490`, `intake:271`, `intake:480` | built per the record |
 | Broadcast rows | C7 | middle-aligned; the Armory's delete button; State chips with board 2's rounder corners, no colour dots; an active sort label brightens; a row click opens the editor, an Ended row opens Post again; the staged chip's dash on top, right and bottom only | `intake:80`–`86` | built per the record |
-| Post form | C7 | the count row: `CharCount` + the budget chip in the counter's own style, squared, one-piece bar; 150px text field; the banner is the build drawer's image well, last; "Posted" as a footer under the image; **past 4,000 Stage is blocked; past the shared 6,000 it only warns** | `plan:761`–`767`, `intake:723`, `intake:733`, his popup answers, 2026-09-26 20:07 EDT (the harden) and 2026-09-27 before 02:17 EDT (warn only) | checked on v35 |
+| Post form | C7 | the count row: `CharCount` + the budget chip in the counter's own style, squared, one-piece bar; 150px text field; the banner is the build drawer's image well, last; "Posted" as a footer under the image; **past 4,000 Stage is blocked; past the shared 6,000 it only warns** | `plan:761`–`767`, `intake:723`, `intake:733`, his popup answers, 2026-09-26 20:07 EDT (the harden) and 2026-09-27 before 02:17 EDT (warn only) | measured, plan §19z–§19z-h (2026-09-26 18:20–20:07 EDT) |
 | Admin traffic | C9 | the chip and the rail toggles share the realm's accent, tint and hover | `intake:100`, `intake:463` | built per the record |
 | Toggles | all | the pressed tint is the realm's accent; "All" takes it too, and hovers like its neighbours; the drawer's Add build / Bulk create switch is a rail toggle | `intake:287`–`290`, `intake:336`–`337` | built per the record |
 | Selection bar | C1 | a soft drop shadow and a subtle border; the list reveal as smooth as Export's; Edit builds / Export hover in `--staged` / `--ok` | `intake:12`–`14`, `plan:288` | built per the record |

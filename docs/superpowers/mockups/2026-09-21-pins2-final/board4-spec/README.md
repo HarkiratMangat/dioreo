@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the resolved values
 
-*Generated 2026-09-27T06:46:56.464Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html at 1282×888, fresh profile. 1179 looks specced across 517 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **27**. Winning declarations the computed value contradicts: **56** (marked ⚠️).*
+*Generated 2026-09-27T06:58:02.414Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html at 1282×888, fresh profile. 1424 looks specced across 576 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **17**. Winning declarations the computed value contradicts: **60** (marked ⚠️).*
 
 ⚠️ **Not reached** (rendered, classed, never walked — each is a coverage hole):
 
@@ -19,19 +19,9 @@ status: live
 - `div.pb-ctl`
 - `div.b4-stage.g-fixed.g-stage.pb-stage`
 - `div.b4-forks`
+- `div.b4-fork`
+- `span.b4-fork-k`
 - `div.b1.b4-cmp`
-- `section.pb-panel`
-- `div.cx`
-- `div.cx-land`
-- `div.cx-ghost`
-- `table.cx-t`
-- `span.cx-hn`
-- `span.cx-v`
-- `div.cx-over`
-- `div.big.cx-pick`
-- `div.cx-try`
-- `div.cx-tryc`
-- `button.cx-sug`
 - `div.g-scroll.g-stage.pb-stage`
 - `div.b4-exp`
 - `div.b4-bare.g-fixed.g-stage.pb-stage`
@@ -62,11 +52,11 @@ node $O/maps.cjs
 | [`motion.md`](motion.md) | @keyframes the board uses | 9 KB |
 | [`C1-armory-manifest.md`](C1-armory-manifest.md) | C1 · The Armory manifest — resting | 309 KB |
 | [`C2-new-build.md`](C2-new-build.md) | C2 · New build — resting | 263 KB |
-| [`C3-compare.md`](C3-compare.md) | C3 · Compare — resting | 6 KB |
+| [`C3-compare.md`](C3-compare.md) | C3 · Compare — resting | 162 KB |
 | [`C4-repairs.md`](C4-repairs.md) | C4 · Repairs — resting | 218 KB |
 | [`C5-export.md`](C5-export.md) | C5 · Export — resting | 80 KB |
 | [`C6-delivery-queue.md`](C6-delivery-queue.md) | C6 · The delivery queue — resting | 101 KB |
 | [`C7-broadcast.md`](C7-broadcast.md) | C7 · The Broadcast manifest, and posting — resting | 104 KB |
 | [`C8-history.md`](C8-history.md) | C8 · History — resting | 235 KB |
 | [`C9-admin-traffic.md`](C9-admin-traffic.md) | C9 · Admin traffic — resting | 11 KB |
-| [`states.md`](states.md) | Reachable states | 1528 KB |
+| [`states.md`](states.md) | Reachable states | 1944 KB |

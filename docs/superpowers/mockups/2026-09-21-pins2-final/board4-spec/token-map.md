@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the custom properties the portal does not have
 
-*Generated 2026-09-27T06:47:50.131Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `ae52c02`. 138 of the 221 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
+*Generated 2026-09-27T06:58:48.708Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `ae52c02`. 139 of the 222 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
 
 | Token | Defined in the kit | The definition |
 |---|---|---|
@@ -34,7 +34,7 @@ status: live
 | `--b3-under` | `b3/board.css:4143` | `.b3-btn2.stage{--b3-fill:var(--staged);--b3-under:var(--sunk);color:var(--ink);` |
 | `--cc-edge` | `b3/board.css:3668` | `.g-fact.b3-cc{--cc-edge:var(--rule2);border:0;padding-left:10px;padding-right:10px;box-shadow:inset 0 0 0 1px var(--cc-edge),inset 0 0 0 2px` |
 | `--clear` | `b4/classes.css:88` | `.b4 .b4-ghostwrap{position:relative;--band:38px;--clear:linear-gradient(180deg,#000 calc(50% - var(--band) - 24px),transparent calc(50% - va` |
-| `--code-js` | — not found | `` |
+| `--code-js` | `gates/armory.js:1222` (set by script) | `const code = (typeof document !== 'undefined' && getComputedStyle(document.documentElement).getPropertyValue('--code-js').trim()) === 'start` |
 | `--dlen` | `b3/board.css:293` | `.b3-x:hover .ic,.b3-x:focus-visible .ic,.dw-h .x:hover .ic,.b3-pc-x:hover .ic{animation:b3draw .3s cubic-bezier(.16,1,.3,1) both;--dlen:34}` |
 | `--f-bg` | `b4/form.css:44` | `.b4 .f-fld{--f-bg:color-mix(in srgb,#04070A 52%,var(--sunk));--f-edge:color-mix(in srgb,var(--ink) 12%,transparent);` |
 | `--f-ch` | `b4/form.js:410` | `<section class=${'f-card' + (multi && i === ci ? ' on' : '')} key=${c.id} data-arm=${c.f.mode} style=${`--f-ch:${hueOfCard(c)}`} onFocusIn=$` |
@@ -44,37 +44,37 @@ status: live
 | `--f-lw` | `b4/classes.css:402` | `.b4 .f-card-b{--f-lw:96px;container:f-card / inline-size}` |
 | `--f-sidew` | `b4.css:131` | `.b4 .drawer.wide:has(.b3-nb) { width:min(980px, 100vw - 40px); --f-sidew:333px }` |
 | `--fb` | `b3/board.css:2362` | `@keyframes b3fadeB{0%,92%{--fb:var(--fdy,15px)}100%{--fb:0px}}` |
-| `--fl` | — not found | `` |
+| `--fl` | `b3/fady.js:22` (set by script) | `// `.b3-sd-atts` scrolls SIDEWAYS — its fade is --fl/--fr. Added 2026-09-17 23:19 EDT with the manifest's tag rail (1d832319).` |
 | `--fld-rad` | `b4/form.css:43` | `.b4{--fld-rad:9px}` |
 | `--fn-edge` | `b3/board.css:4619` | `:is(.b3-xf,.exs-i) .b3-xf-fid .b3-xf-fn:not(.editing){--fn-edge:color-mix(in srgb,var(--ok) 55%,transparent);border:0;padding-left:7px;paddi` |
-| `--fo` | — not found | `` |
-| `--fr` | — not found | `` |
+| `--fo` | `b3/board.css:2834` (set by script) | `last third), and it starts BELOW a sticky head — `b3/fady.js` sets `--fo` to the head's height — so in the one` |
+| `--fr` | `b3/fady.js:22` (set by script) | `// `.b3-sd-atts` scrolls SIDEWAYS — its fade is --fl/--fr. Added 2026-09-17 23:19 EDT with the manifest's tag rail (1d832319).` |
 | `--ft` | `b3/board.css:2361` | `@keyframes b3fadeT{0%{--ft:0px}8%,100%{--ft:var(--fdy,15px)}}` |
 | `--fx-l` | `b3/board.css:4443` | `.b3-xt-chips[data-sx=start]{--fx-l:0px;--fx-r:28px}` |
 | `--fx-r` | `b3/board.css:4443` | `.b3-xt-chips[data-sx=start]{--fx-l:0px;--fx-r:28px}` |
-| `--gh-cat-range` | — not found | `` |
-| `--gh-div-badge` | — not found | `` |
-| `--gh-name-cat` | — not found | `` |
-| `--gh-pl` | — not found | `` |
-| `--gh-pr` | — not found | `` |
-| `--gh-range-div` | — not found | `` |
-| `--h1-cell` | — not found | `` |
-| `--h1-chip` | — not found | `` |
-| `--h1-col` | — not found | `` |
-| `--h1-day` | — not found | `` |
-| `--h1-head` | — not found | `` |
-| `--h1-kind` | — not found | `` |
-| `--h1-l` | — not found | `` |
-| `--h1-lab` | — not found | `` |
-| `--h1-labw` | — not found | `` |
-| `--h1-r` | — not found | `` |
-| `--h1-row` | — not found | `` |
-| `--h1-rowh` | — not found | `` |
-| `--h1-rowp` | — not found | `` |
-| `--h1-srchh` | — not found | `` |
-| `--h1-top` | — not found | `` |
-| `--h1-undo` | — not found | `` |
-| `--h1-who` | — not found | `` |
+| `--gh-cat-range` | — **not defined anywhere in the kit** | `` |
+| `--gh-div-badge` | — **not defined anywhere in the kit** | `` |
+| `--gh-name-cat` | — **not defined anywhere in the kit** | `` |
+| `--gh-pl` | — **not defined anywhere in the kit** | `` |
+| `--gh-pr` | — **not defined anywhere in the kit** | `` |
+| `--gh-range-div` | — **not defined anywhere in the kit** | `` |
+| `--h1-cell` | — **not defined anywhere in the kit** | `` |
+| `--h1-chip` | `gates.css:990` (set by script) | `The flex `gap` already puts --h1-chip between the label and the first chip, so the margin carries` |
+| `--h1-col` | — **not defined anywhere in the kit** | `` |
+| `--h1-day` | — **not defined anywhere in the kit** | `` |
+| `--h1-head` | — **not defined anywhere in the kit** | `` |
+| `--h1-kind` | — **not defined anywhere in the kit** | `` |
+| `--h1-l` | — **not defined anywhere in the kit** | `` |
+| `--h1-lab` | `gates.css:989` (set by script) | `now two different numbers. Both are knobs: --h1-labw is the column, --h1-lab is the distance.` |
+| `--h1-labw` | `gates.css:989` (set by script) | `now two different numbers. Both are knobs: --h1-labw is the column, --h1-lab is the distance.` |
+| `--h1-r` | — **not defined anywhere in the kit** | `` |
+| `--h1-row` | — **not defined anywhere in the kit** | `` |
+| `--h1-rowh` | `b3/state.js:64` (set by script) | `// A numeric knob is ALSO a CSS custom property: h1Rowh -> --h1-rowh. A data attribute cannot` |
+| `--h1-rowp` | — **not defined anywhere in the kit** | `` |
+| `--h1-srchh` | — **not defined anywhere in the kit** | `` |
+| `--h1-top` | — **not defined anywhere in the kit** | `` |
+| `--h1-undo` | — **not defined anywhere in the kit** | `` |
+| `--h1-who` | — **not defined anywhere in the kit** | `` |
 | `--hi-head` | `b3/board.css:5047` | `.panel.b3-hi{display:flex;flex-direction:column;overflow:hidden;--hi-head:32px}` |
 | `--hi-l` | `b3/board.css:4885` | `.b3-hi{--hi-l:22px;--hi-r:16px}` |
 | `--hi-r` | `b3/board.css:4885` | `.b3-hi{--hi-l:22px;--hi-r:16px}` |
@@ -93,17 +93,17 @@ status: live
 | `--lab-tt` | `b3/board.css:488` | `--lab-tt:uppercase;--lab-tr:var(--b3-tr);--lab-gap:1.1ch}` |
 | `--lab-w` | `b3/board.css:486` | `html[data-b3-p2lab=colon],.b3-lab[data-lab=colon]{--lab-sep:":";--lab-w:700}` |
 | `--lc` | `b2.css:199` | `.pb-life{--lc:var(--ok);justify-self:start;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px 0 9px;border-radius:var` |
-| `--lh-ic-n` | — not found | `` |
-| `--lh-n-w` | — not found | `` |
-| `--lh-pl` | — not found | `` |
-| `--lh-pr` | — not found | `` |
-| `--lh-vl-vt` | — not found | `` |
+| `--lh-ic-n` | — **not defined anywhere in the kit** | `` |
+| `--lh-n-w` | — **not defined anywhere in the kit** | `` |
+| `--lh-pl` | — **not defined anywhere in the kit** | `` |
+| `--lh-pr` | — **not defined anywhere in the kit** | `` |
+| `--lh-vl-vt` | — **not defined anywhere in the kit** | `` |
 | `--lit` | `b3/board.css:1890` | `.b3-bdg[data-k=meta]{--lit:.06;--b3-amb:1.6;--b3-glow:1.7;overflow:hidden}` |
-| `--m` | — not found | `` |
+| `--m` | `gates/armory.js:675` | `<section class=${'b3-xf' + (isShut ? ' shut' : '') + (count ? '' : ' b3-xf-none')} key=${f.key} data-fk=${f.key} style=${`--m:${MODE_HEX[f.m` |
 | `--m1` | `b4.css:34` | `html:is([data-b3-xbg=mesh],[data-b3-xbg=ground]) :is(.drawer:has(.b3-nb), .drawer.b1, .drawer .b4-ask){ --m1:#ff3b5c;--m2:#f6a93b;` |
 | `--m2` | `b4.css:34` | `html:is([data-b3-xbg=mesh],[data-b3-xbg=ground]) :is(.drawer:has(.b3-nb), .drawer.b1, .drawer .b4-ask){ --m1:#ff3b5c;--m2:#f6a93b;` |
-| `--m3` | — not found | `` |
-| `--m4` | — not found | `` |
+| `--m3` | `ui/access.js:191` | `style=${tint ? `--m1:${tint[0]};--m2:${tint[1] \|\| tint[0]};--m3:${tint[2] \|\| tint[1] \|\| tint[0]}` : null}>` |
+| `--m4` | — **not defined anywhere in the kit** | `` |
 | `--mc` | `b4.css:166` | `.b4 .mh-mode button[data-arm="MP"] { --mc:#FF3B5C }` |
 | `--mi` | `b3/armory-parts.js:503` | `modesOf(b).forEach((m, i) => groups.push(html`<span class="b3-bdg" data-k="mode" data-m=${m} key=${`md-${m}`} style=${`--mi:${i}`} aria-labe` |
 | `--mk` | `b4/classes.css:596` | `[data-k=capable]{--mk:#5B9BFF}[data-k=ass]:not(.b3-bdg){--mk:#C08A55}` |
@@ -112,38 +112,39 @@ status: live
 | `--pcb` | `b4/classes.css:310` | `.b3-hc.t-warn{--pcbg:color-mix(in srgb,var(--warn) 12%,var(--desk));--pcb:color-mix(in srgb,var(--warn) 45%,var(--desk))}` |
 | `--pcbg` | `b4/classes.css:310` | `.b3-hc.t-warn{--pcbg:color-mix(in srgb,var(--warn) 12%,var(--desk));--pcb:color-mix(in srgb,var(--warn) 45%,var(--desk))}` |
 | `--ph` | `b3/armory-parts.js:507` | `return html`<span class=${'b3-bdgs' + (seen ? ' in' : '')} ref=${wrap} style=${`--ph:${ph}`}>${groups}</span>`;` |
-| `--pk` | — not found | `` |
-| `--r-att-code` | — not found | `` |
-| `--r-code-warn` | — not found | `` |
-| `--r-n-att` | — not found | `` |
-| `--r-pl` | — not found | `` |
-| `--r-pr` | — not found | `` |
-| `--r-tag` | — not found | `` |
-| `--r-warn-img` | — not found | `` |
+| `--pk` | `b3/volt.js:212` | `s.style.cssText = `--pk:${PEAK[i]};--ha:${(ha * 100).toFixed(1)}%;--sx:${sx.toFixed(1)}%;--sy:${sy.toFixed(1)}%`;` |
+| `--r-att-code` | — **not defined anywhere in the kit** | `` |
+| `--r-code-warn` | — **not defined anywhere in the kit** | `` |
+| `--r-n-att` | — **not defined anywhere in the kit** | `` |
+| `--r-pl` | — **not defined anywhere in the kit** | `` |
+| `--r-pr` | — **not defined anywhere in the kit** | `` |
+| `--r-tag` | — **not defined anywhere in the kit** | `` |
+| `--r-warn-img` | — **not defined anywhere in the kit** | `` |
 | `--rc-a` | `b3/board.css:4255` | `--rc-a:var(--rc,var(--r-armory));` |
 | `--reach` | `b3/armory-parts.js:400` | `style=${pinToViewport && fix ? `--tx:${tx}px;--reach:${((box && box.w) \|\| 368) - tx - 24}px;left:${fix.left}px;${fix.above ? 'bottom' : 'top` |
 | `--sl` | `b2.css:325` | `.pb-rail > span{--sl:var(--ink4);height:24px;padding:0 8px;border-radius:5px;background:color-mix(in srgb,var(--sl) 9%,var(--sunk));box-shad` |
-| `--sl-` | — not found | `` |
-| `--sl-ba` | — not found | `` |
-| `--sl-sto` | — not found | `` |
-| `--sl-unkn` | — not found | `` |
-| `--sl-unknow` | — not found | `` |
+| `--sl-` | `gates/armory.js:129` (set by script) | `const put = (k, v) => { document.documentElement.style.setProperty(`--sl-${k}`, v); setMine((m) => ({ ...m, [k]: v })); };` |
+| `--sl-ba` | — **not defined anywhere in the kit** | `` |
+| `--sl-class` | — **not defined anywhere in the kit** | `` |
+| `--sl-sto` | — **not defined anywhere in the kit** | `` |
+| `--sl-unkn` | — **not defined anywhere in the kit** | `` |
+| `--sl-unknow` | — **not defined anywhere in the kit** | `` |
 | `--sl-unknown` | `b3/board.css:3362` | `:root{--sl-unknown:#94A3B3}` |
-| `--stage-h` | — not found | `` |
-| `--sv` | — not found | `` |
+| `--stage-h` | `gates/lib.js:41` | `style=${tall ? `--stage-h:${tall}px` : null}>` |
+| `--sv` | `b3/history.js:42` | `return html`<span class="b3-meter" style=${`--sv:${L[2]}`} aria-hidden="true">${[1, 2, 3, 4].map((i) => html`<i key=${i} class=${i <= L[1] ?` |
 | `--sv-caution` | `b3/board.css:2338` | `:root{--sv-error:#FF5A4F;--sv-warn:#FF8A3D;--sv-caution:#F0B447;--sv-info:#85939F}` |
 | `--sv-error` | `b3/board.css:2338` | `:root{--sv-error:#FF5A4F;--sv-warn:#FF8A3D;--sv-caution:#F0B447;--sv-info:#85939F}` |
 | `--sv-info` | `b3/board.css:2338` | `:root{--sv-error:#FF5A4F;--sv-warn:#FF8A3D;--sv-caution:#F0B447;--sv-info:#85939F}` |
-| `--sx` | — not found | `` |
-| `--sy` | — not found | `` |
+| `--sx` | `b3/volt.js:151` | `+ steps.map(([t, l, sx, sy]) => `${(t * 100).toFixed(3)}%{--lit:${l.toFixed(3)};--sx:${sx.toFixed(1)}%;--sy:${sy.toFixed(1)}%}`).join('')` |
+| `--sy` | `b3/volt.js:151` | `+ steps.map(([t, l, sx, sy]) => `${(t * 100).toFixed(3)}%{--lit:${l.toFixed(3)};--sx:${sx.toFixed(1)}%;--sy:${sy.toFixed(1)}%}`).join('')` |
 | `--tx` | `b3/armory-parts.js:75` | `style=${geo ? `left:${geo.left}px;top:${geo.top}px;--tx:${geo.tx}px` : 'visibility:hidden;left:0;top:0'}>` |
-| `--v-code` | — not found | `` |
-| `--v-group` | — not found | `` |
-| `--v-head-h` | — not found | `` |
-| `--v-head-row` | — not found | `` |
-| `--v-row-h` | — not found | `` |
-| `--v-tag` | — not found | `` |
+| `--v-code` | — **not defined anywhere in the kit** | `` |
+| `--v-group` | — **not defined anywhere in the kit** | `` |
+| `--v-head-h` | — **not defined anywhere in the kit** | `` |
+| `--v-head-row` | — **not defined anywhere in the kit** | `` |
+| `--v-row-h` | — **not defined anywhere in the kit** | `` |
+| `--v-tag` | — **not defined anywhere in the kit** | `` |
 | `--xf-dur` | `b3/board.css:3830` | `.b3-xt-files{--xf-dur:420ms;--xf-ease:cubic-bezier(.32,.72,0,1)}` |
 | `--xf-ease` | `b3/board.css:3830` | `.b3-xt-files{--xf-dur:420ms;--xf-ease:cubic-bezier(.32,.72,0,1)}` |
-| `--xf-fh` | — not found | `` |
-| `--xf-nw` | — not found | `` |
+| `--xf-fh` | — **not defined anywhere in the kit** | `` |
+| `--xf-nw` | — **not defined anywhere in the kit** | `` |
