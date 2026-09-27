@@ -566,6 +566,8 @@ status: live
 
 ### 5c.3b · The control family board 3 could not hold together — deferred here 2026-09-17 23:12 EDT
 
+> 🔴 *(2026-09-27 11:02 EDT)* **Two more, handed to this session by Harkirat at 10:59 EDT from Board 4:** the `--patch` yellow's roles (discuss with him before changing) and one hover for every remove control in a named deletion token. Both are written up, with his questions and the measured inventories, in `docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/HANDOFF.md` § *For Session 4 to decide* (D1, D2).
+
 > 🔴 **Deferred to this session by Harkirat, 2026-09-17 23:12 EDT**, replying to the thinking pass that proposed fixing it on board 3: *"you can defer them to session 4's work but properly and fully document them, the failures, and everything else that lead up to the deferral."* This subsection is that documentation. It is the standardization §5c already owns — *"buttons, toggles, icons, alignment, spacing"* in pin `pmu2wr697` — arriving with five of his board-3 threads that three rounds of instance fixes failed to close.
 
 **What it is.** Four controls on the board are built separately but do one job: the **toggle label** (the uppercase key in front of a control: MANIFEST, CATEGORY, ATTACHMENTS, VIEW, KIND, LEVEL, WHO, WHEN, REALM), the **filter chip** (a mark, a word, a count), the **segmented switch** (List | By slot, By weapon | One table, Delivery queue | Airtime) and the **readout pill** (`∞ 1 never ends`, `1 of 10 slots used`). Harkirat wrote the component himself in thread `30c5b2fc` — every chip is `LABEL ␣ (icon? · Text · count?)`, and *"including/excluding a number, including/excluding the icon is as simple as a flag change on the element. Yet how do we have it? each its own hand-written element."*

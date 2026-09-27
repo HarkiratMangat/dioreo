@@ -782,3 +782,18 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 **Opened and fine:** ASS on in the form (META and every tier disabled with their reasons, TOXIC free); ASS's motion is gated under reduced motion (every animated ASS rule sits inside `prefers-reduced-motion: no-preference`, checked against a known gated rule); the Optional chip clears as Label fills and returns when it empties; DMZ with BEST and its range row at 980; Export's Landing, Picker and Three picked; Bulk's Format card (MP in red); the post drawer's upload, a working link and a failed link. **Could not be checked here:** Tab order inside a drawer — the board opens several drawers at once and each traps focus, so a Tab lands in Export's drawer; disabled controls are native `disabled` buttons, which a browser skips. Flow test PASS 35.
 
+## v35 intake round — opened 2026-09-27 10:55 EDT (in chat, not on the board)
+
+### His three board comments of 2026-09-22, never answered — fetched 2026-09-27 10:55 EDT, verbatim
+
+> * *(12:53 EDT, the manifest row's "Copy share command" button)* give `share` button the --ok accent since it's the same logic as "confirm", "export", etc.
+> * *(12:59 EDT, the "Select every PP19 BIZON build" checkbox)* i'm curious, why does the checkbox and the Selection bar's square 'total build' chip use the #F3C231 accent? Honestly, anywhere really where that color is currently used right now...like where does that color link/reference to in the portal? Why was that specific color chosen? Discuss that with me before changing anything, i want knowledge and then to decide.
+> * *(13:01 EDT, the selection bar's "Deselect PP19 BIZON" ×)* why does the (x) close button hover tint only tint the X in the red color? Why not a tint on the whole button when hovered? And is that accent standardized as something like --del so it's clear that it applies to deletion, removal, etc elements such as the trashbin button or this X remove button, etc?
+
+| # | Item | Status |
+|---|---|---|
+| 1 | the share button takes `--ok` | **the intake's one item** — to build after the compact |
+| ~~2~~ | ~~where #F3C231 comes from and why~~ | → Session 4 (his ruling below); written up as D1 in `docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/HANDOFF.md` |
+| ~~3~~ | ~~the × hover and a deletion accent~~ | → Session 4; written up as D2 in the same file |
+
+**His ruling (2026-09-27 11:02 EDT):** *"--patch yellow color and where it's used is a decision/part of session 4's work, so make so it's properly documented for that session. similarly with the X button and it's standardizing. … so realistically theres only 1 item so far on the intake and that's copy share command's --ok color."*

@@ -156,6 +156,70 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | Kit → portal | `gates4/surfaces.js` (`AdminBar`) → Analytics' view bar |
 | States | Product traffic · Admin included |
 
+
+---
+
+## For Session 4 to decide
+
+*Added 2026-09-27 11:02 EDT, his ruling at 10:59 EDT: "--patch yellow color and where it's used is a decision/part of session 4's work … similarly with the X button and it's standardizing." Both came from his board comments of 2026-09-22 (intake log, "v35 intake round"). Nothing below has been changed on the board; each is his question, the measurement, and the choices.*
+
+### D1 · The yellow — `--patch`, and everywhere it is used
+
+**His question (2026-09-22 12:59 EDT, on the manifest's select-all checkbox):** *"why does the checkbox and the Selection bar's square 'total build' chip use the #F3C231 accent? Honestly, anywhere really where that color is currently used right now...like where does that color link/reference to in the portal? Why was that specific color chosen? Discuss that with me before changing anything, i want knowledge and then to decide."*
+
+| Fact | Where it is written |
+|---|---|
+| The token is `--patch: #F2C230` — his #F3C231 is the same colour one step off per channel, and appears in the kit only inside a comment | `portal/ui/tokens.css:58`; `local/pins2-board-3/redo/b4/classes.css:426` |
+| The portal's own token file calls it **"the portal's global accent"**; it was Broadcast's realm colour until Broadcast moved to pink | `portal/ui/tokens.css:118` |
+| Two more names carry the same hex with a different meaning: `--pn` (patch notes) and `--tier-best` (the Best badge's gold, kept separate "so a later retune of one never moves the other") | `portal/ui/tokens.css:69`, `:239`–`:240` |
+| **Why this yellow was chosen: no record says.** It arrived with the portal as its accent | — |
+
+**How much uses it (counted 2026-09-27 11:02 EDT):** `var(--patch)` on 229 lines of the kit and 139 of the portal; the bare hex `#F2C230` on 32 and 7. By property, across the kit's stylesheets and `portal/ui/app.css`: background 86 · color 48 · box-shadow 40 · outline 29 · border-color 25 · the badges' `--tc` 14 · caret-color 2 · other 11.
+
+**What it means where it is used, by role:**
+
+| Role | Examples | Where |
+|---|---|---|
+| Selection | the checkbox's checked fill; the selection bar's count square | `portal/ui/app.css:692` (`.cb.on`); `local/pins2-board-3/redo/b3/board.css:719`, `:730`, `:765` |
+| Focus and typing | every text field's focus ring and glow, the caret, the text highlight | `local/pins2-board-3/redo/b4/classes.css:143`–`:149`, `:211`–`:212` |
+| "The system did this" | the wand chips (his pick, 2026-09-24 13:33 EDT: "not really a confirmation, it's more like a 'look at this magic'") | `local/pins2-board-3/redo/b4/classes.css:426`–`:430` |
+| Rank | the Best tier's gold (by hex, and `--tier-best`) | `local/pins2-board-3/redo/b3/board.css:167`, `:180`, `:190`; `local/pins2-board-3/redo/b4/classes.css:129`, `:200` |
+| Pressed and fallback | some pressed toggles; the portal's fallback accent when a realm has none | `local/pins2-board-3/redo/b4.css:115`; `portal/ui/tokens.css:475`–`:519` |
+
+**The decision:** whether one colour should carry selection, focus, "magic" and rank at once, or each role gets its own token (and which roles keep `--patch`). **Session 4 discusses it with him before changing anything** — his words.
+
+### D2 · The remove control — one hover, in a deletion accent
+
+**His question (2026-09-22 13:01 EDT, on the selection bar's "Deselect PP19 BIZON" ×):** *"why does the (x) close button hover tint only tint the X in the red color? Why not a tint on the whole button when hovered? And is that accent standardized as something like --del so it's clear that it applies to deletion, removal, etc elements such as the trashbin button or this X remove button, etc?"*
+
+**The deletion tokens exist:** `--del: #FF6B6B`, `--danger-ink: #FF8A85` (destructive text), `--danger-edge: #54322F` (`portal/ui/tokens.css:58`, `:250`–`:251`). **The hover red on the board is `--danger-ink`, not `--del`.**
+
+**Every remove / close / clear control on Board 4** (counted 2026-09-27 11:02 EDT in the resting board, three picked, a problem open, Edit 3 builds, Add · three, Three picked, Posting and Saved):
+
+| Control | Class | Count | Resting |
+|---|---|---|---|
+| Stage deletion of a build (trash, manifest rows) | `.wg-del.wg-ib` | 168 | 44×44, no fill, grey glyph |
+| Remove an announcement (Broadcast rows) | `.rmv.wg-del.wg-ib` | 32 | 44×44 |
+| Deselect a weapon / build (selection bar and list) | `.b3-x` | 28 | 28×28 circle |
+| Close a drawer | `.x` | 17 | 28×28 |
+| Remove a build card / clear a field (build drawer) | `.f-cx.f-suf`, `.f-clr.f-suf` | 12 + 12 | 32×32 |
+| Remove a weapon from Compare | `.cx-wx` | 8 | 26×26 |
+| Delete from the delivery queue | `.pb-del.pb-ib` | 8 | 28×28 |
+| Stage deletion (selection bar) | `.b3-btn2.dang` | 7 | 136×40, red text |
+| Close the problem card | `.b3-pc-x` | 6 | 30×30 |
+| Clear (text buttons) | `.b3-btn2.quiet`, `button` | 7 + 16 | 80×40, 71×30 |
+
+**Hovered with a real pointer — three different recipes:**
+
+| Control | Fill on hover | Glyph on hover |
+|---|---|---|
+| Trash in the manifest, Broadcast's remove, the queue's delete | the round plate behind it (`::before`) warms from `#1F272E` to a faint red | `--danger-ink` |
+| Compare's weapon × | **the whole button**, `--danger-ink` at 13% | `--danger-ink` |
+| The drawer's close × | none | brightens to ink, not red |
+| The selection bar's `.b3-x` | none measured | none measured — **his screenshot shows a red glyph, so the red is drawn where this read did not look (a child or an animation); re-measure** |
+
+**The decision:** one hover for every remove control — his proposal is the whole button tinted — in one named deletion token (`--del` or `--danger-ink`), and whether "close" (dismiss) stays neutral while "remove"/"delete" goes red. Compare's × already does the whole-button version.
+
 ---
 
 ## What the data and the bot need — none of it is visible on the board
