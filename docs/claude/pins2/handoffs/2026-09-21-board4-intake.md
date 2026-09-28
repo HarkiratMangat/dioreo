@@ -1082,3 +1082,35 @@ flush (picker bottom − swatches bottom): +5.3px
 ```
 
 **Where class N stands:** the in-form accent block is designed on the mockup — layout 1 (split: picker + hue under it, swatches + hex/shuffle beside), his values above, 9 swatches a row, the saved-colour hover (float, pop 1px outward, replace card sliding out from under, one-hairline divide, contrast ink, hex chips beside Recent / Saved), all motion on the board's tokens with his 240ms open and close. The mockup is kept at `local/pins2-board-3/board4-review/intake-v38/accent-mock.html` (his copy: `~/Downloads/accent_picker_in_form_tunable.html`). **Open for the build:** at picker height 138 in layout 1 the picker ends 5.3px below the swatches (his value, noted, not changed); the history persistence (local storage on the board; per admin in the portal — Session 5 data note). **Not yet started: the C3 Compare items** — the round's focus; batch 1 (classes J–P) is logged and nothing is built.
+
+### His first C3 Compare batch — 2026-09-28 13:19 EDT, verbatim (four screenshots: `local/pins2-board-3/board4-review/intake-v38/103.png` Empty A, the search and its Try chips · `104.png` Empty B, the twelve weapon tiles · `105.png` the "CLASS Assault rifle" chip in the table's same-on line · `106.png` the "Show the Discord cards" button)
+
+> Empty state:
+>
+> * i want a hybrid of A and B.
+> * So search bar/dropdown from A (but using the updated styling as refined in the Build drawer) + tiles from B (but design tweaked to remove the colored dot, category in accent color, and "x builds" in it's colored chip style)
+> * tiles always shows 12 tiles, with the suggestions dynamic/randomized every time the panel is opened/page loaded, etc
+>
+> Table:
+>
+> * i want all 3 views kept as a "VIEW" toggle in the top right corner of the panel, matching the styling used by other VIEW toggles.
+>
+> * "class" chip should be "Category" and use the same styling system as the attachment chips. I didn't even know this chip existed, so this is a class fix for any of these other chips that appear in the "same on x builds" line in the table.
+> * i also hate the design and integration of the "show cards" button... fully redesign that element and it's integration into the panel.
+> * the discord card's layout is also incorrect, despite it literally being fixed before (search your notes).
+>
+> still more notes remaining...
+
+**His two open picks, settled by this batch:** Empty → a hybrid of A and B (no longer a pick); Table → A, B and C all kept, chosen by a VIEW toggle (no longer a pick).
+
+**Grouped by class (2026-09-28 13:19 EDT).** All are C3, built after the next compact.
+
+| Class | His asks in it | The sweep before building |
+|---|---|---|
+| **Q · Compare's empty state** (hybrid A + B) | A's search and dropdown, restyled as the build drawer's refined dropdown field and menu · B's tiles: no coloured dot, the category in its accent colour, "x builds" as the coloured count chip · always 12 tiles, a fresh random set on every open and reload | the build drawer's weapon field and `.f-menu` as the recipe (and class K's two menu bugs, fixed there first); the count chip against class J's family; the category accent colours wherever a category is named on the board; what the 12 are drawn from (weapons with builds; fewer than 12 in a category); the faded ghost behind the empty state; keyboard reach from the search into the tiles; Empty C's parts dropped |
+| **R · Compare's view** | Table A, B and C kept as views behind a VIEW toggle in the panel's top-right corner, styled as the board's other VIEW toggles | every VIEW toggle on the board (Bulk's Ledger / Discord, any manifest view switch) for one recipe; whether the chosen view is remembered; each view opened with one build, many builds and two weapons; the board's own A/B/C option switch for the table retired |
+| **S · The "same on x builds" line's chips** | "Class" reads **Category**; the chip takes the attachment chips' styling system; a class fix for every chip kind that can appear in that line | every chip kind the same-on line can hold, in all three views; the attachment chip recipe; "Class" vs "Category" wherever the board names a weapon's category |
+| **T · The Discord cards control** | "Show the Discord cards" fully redesigned, and its place in the panel | the ledger decision (2026-09-13: Compare keeps its Discord cards, collapsed behind a toggle) stands — the design and place are open; the panel's other controls (R's VIEW toggle, top right); the board's existing disclosure treatments (Export's fold, class O's minimise) before inventing one |
+| **U · Compare's Discord cards** | their layout is wrong, "despite it literally being fixed before" | **the notes found:** fixplan K7 (each card captioned with its build — "Build 2", or "BAL-27 · 2" across two weapons — above a card that stays Discord's); v15 plan §4 S17 (portal-only styling: the board's badge chips and a colour per slot label, built in v16 for the build drawer's preview); the v3.69.0 changelog (Compare's `.cmpcards` expected `.dcard` children and got bare divs, so twelve rules styled nothing). Before building: open Compare's cards beside the build drawer's preview and name which fix is missing; every Discord-card consumer (build drawer preview, Bulk's Discord view and its empty ghost, Compare, Export's hover card) on one renderer |
+
+*The round is still open: "still more notes remaining…".*
