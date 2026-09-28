@@ -1226,3 +1226,26 @@ And mid-run: *"your sequential-thinking call was so shit! WHERE ARE THE REAL, CH
 **Open, NOT fixed (for after the compact):** the table heads' "Build N" chip (`.cx-bc`, `local/pins2-board-3/redo/b4/compare.css`) is a hand-made chip; the board already has a designed build chip. Find it FIRST (search the kit for the component that renders "Build N" as a chip — candidates: the build drawer's card head `.pb-bno`/`.f-card-h em`, the Export picker's build keys, the selection bar, the manifest's build number) and use it, on every consumer: the table heads, the one-build column, the Embed captions. Then the same question for every other element this round made: the tile, the limit chip, the − / + marks, the landing tile head — **each must be the board's existing component or be justified as new**.
 
 **State at the compact:** kit `4d07336` (local, NOT published; Version 38 is live); repo `999e483e`+ on `feat/portal-pins2-manifests`, nothing pushed. The build of J–P and C3 stands as recorded above, with his corrections of 14:44 EDT fixed; his judgement of the round is that it is not done — the post-compact session re-walks every element against the board's existing components, measured, before anything is called ready.
+
+### After compact 15 — every element this round made, against the board's own (2026-09-28 19:07 EDT)
+
+*His 15:10 EDT correction named one chip; the class is every element the round added (enumerated from the kit's diff `9449ad1..4d07336`). Each resolves to one of three: the board's component as-is · the board's component with a prop · new, with the family it is built from.*
+
+| Element | His words | The board's component | Verdict |
+|---|---|---|---|
+| "Build N" in the heads, the one-build column, the Embed captions (`.cx-bc`) | "its usual colored chip style" | `.b3-sd-gn` (`local/pins2-board-3/redo/b3/board.css:2409`), the selection bar's build chip and the manifest's "N builds" | **swapped**; `.cx-bc` deleted |
+| the weapon name over the one-build column and an Embed caption (`.cx-gn`) | — | the manifest's `.wg-line` pair, already on the heads and tiles | **swapped**; `.cx-gn` deleted |
+| the tile's remove × (`.cx-wx`) | — | `.b3-x` (`local/pins2-board-3/redo/b3/board.css:67`), the selection bar's deselect × | **swapped**; only its place is set |
+| the slot-usage mark under a row name (`.cx-use`) | his "both" | the micro label `.b3-wg-l` (`local/pins2-board-3/redo/b3/board.css:2413`) | **swapped** to its tokens |
+| Before staging's − (`.f-stmin`) | "a small `-` button in the top right" | `.b3-x` | **swapped** |
+| the minimised Before staging chip (`.f-stmini`) | "an info icon in a tinted chip" | the card's own mark `.f-stm` (`local/pins2-board-3/redo/b4/classes.css:496`) at the footer's 40px | **swapped** to its tone |
+| the limit chip (`.cx-cap`) | — | `.g-status` + `.cmeter`, the queue head's slots chip | already the board's |
+| the VIEW toggle | "matching the styling used by other VIEW toggles" | `.b3-sd-vl` + `.b3-sd-vt.bk-view` (Bulk) | already the board's |
+| the search | "as refined in the Build drawer" | `Picker` (`local/pins2-board-3/redo/b4/form.js`) | already the board's |
+| the Category chip in the same-on line | "the same styling system as the attachment chips" | `.wg-at` | already the board's |
+| the name/category pair | "we already went over this in the armory manifest" | `.wg-line` | already the board's |
+| the tile's build chips (`.cx-k`) | "this colored tile with the 1/2/3 build chips" | `.b3-xt-c` (`local/pins2-board-3/redo/b3/board.css:3024`), Export's build key | **his fork**: the chip he pointed at predates this round and differs from Export's |
+| the − / + corner marks (`.cx-kb`) | "nothing implies clicking removes it" | none: the board's toggle chips show state, never the action | new, from `Icon` and `--danger-ink` |
+| wordless badges | "a variant of each badge chip … no text" | `B3Badges bare` | a new member of the badge family, his ask |
+| the showings glyph row under the stepper (`.b4-repg`) | not asked | none | **my addition**, his to keep or drop |
+| the accent block's hex field, copy, New colour, hex chips | his mockup values | the field ground is the form fields' (`local/pins2-board-3/redo/b4/classes.css:57`); copy behaves as the date field's in-field button (`.pb-dbtn`) | his tuned design, kept |
