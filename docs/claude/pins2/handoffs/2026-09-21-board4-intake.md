@@ -820,7 +820,9 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 **Version 36 published** on his popup answer "Publish v36 now" (2026-09-27 20:02 EDT).
 
-## v36 intake round — opened 2026-09-27 20:10 EDT, LOG ONLY until he says it is done
+## The same intake round, continued on Version 36 — from 2026-09-27 20:10 EDT, LOG ONLY until he says it is done
+
+*One round, not two: it opened at 10:55 EDT on his 10:52 EDT order ("i'm going to go review the board, then we'll do an intake round, then you'll prep for compact, and after the compact you'll work on making the requested improvements and changes, then we'll compact again and after that we'll work on finishing the spec, docs, etc for session 4 and 5"), paused for the post drawer work he asked to have built, and resumed here after the compact and Version 36.*
 
 ### His first batch — 2026-09-27 20:34 EDT, verbatim (five screenshots, copied to `local/pins2-board-3/board4-review/intake-v36/71.png`–`75.png`: the post drawer's dates and repeat stepper, the stepper's hover, a queue card, the Set end date picker, the queue head's chips)
 
