@@ -4366,7 +4366,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 `C1-99` · rendered **113×44** · 21 instances look like this
 
 ```html
-<div class="wg-acts"><button type="button" class="wg-ib" aria-label="Copy share command" data-tip="Copy share command">⟨svg.ic⟩</button><i class="wg-vr" aria-hidden="true"></i><button type="button" class="wg-ib wg-del" aria-label="Stage deletion of BAL-27 build 1">⟨svg.ic⟩</button></div>
+<div class="wg-acts"><button type="button" class="wg-ib wg-share" aria-label="Copy share command" data-tip="Copy share command">⟨svg.ic⟩</button><i class="wg-vr" aria-hidden="true"></i><button type="button" class="wg-ib wg-del" aria-label="Stage deletion of BAL-27 build 1">⟨svg.ic⟩</button></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -4388,7 +4388,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
 
 
-### `button.wg-ib`
+### `button.wg-ib.wg-share`
 
 inside `.wg-acts` · 21 on screen · **1 look**
 
@@ -4397,7 +4397,7 @@ inside `.wg-acts` · 21 on screen · **1 look**
 `C1-100` · rendered **44×44** · 21 instances look like this · aria-label="Copy share command" type="button"
 
 ```html
-<button type="button" class="wg-ib" aria-label="Copy share command" data-tip="Copy share command">⟨svg.ic⟩</button>
+<button type="button" class="wg-ib wg-share" aria-label="Copy share command" data-tip="Copy share command">⟨svg.ic⟩</button>
 ```
 
 | property | winning declaration | computed | from |
@@ -4482,26 +4482,26 @@ inside `.wg-acts` · 21 on screen · **1 look**
 
 | property | at rest | hover |
 |---|---|---|
-| color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
 
 | part inside | property | at rest | hover |
 |---|---|---|---|
-| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::before | background-color | `rgb(31, 39, 46)` | `rgba(0, 0, 0, 0)` |
-| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
-| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| svg.ic | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| svg.ic | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| svg.ic | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| svg.ic | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| use | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| use | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| use | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| use | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `color(srgb 0.164863 0.237647 0.205333)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `color(srgb 0.482353 0.858824 0.388235 / 0.42) 0px 0px 0px 1px inset` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| svg.ic | color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| svg.ic | border-color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| svg.ic | outline-color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| svg.ic | stroke | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(123, 219, 99)` |
 
 **:focus-visible** — changes; parts inside it respond (table below)
 

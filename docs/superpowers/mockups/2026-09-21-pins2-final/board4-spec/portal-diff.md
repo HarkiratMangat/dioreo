@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the exact changes to PORTAL code
 
-*Generated 2026-09-27T23:26:08.128Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `5cf50ac`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
+*Generated 2026-09-28T02:12:34.634Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `fc3c23b`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
 
 ## `app.css` → `portal/public/app.css`
 
@@ -75,7 +75,7 @@ index 85107e32..8c47c2ea 100644
 
 ```diff
 diff --git aportal/ui/armory.js bkit/ui/armory.js
-index fe9fc32d..90d92496 100644
+index fe9fc32d..1c7f7805 100644
 --- aportal/ui/armory.js	
 +++ bkit/ui/armory.js	
 @@ -14,8 +14,14 @@ import { renderV2 } from './v2Render.js';
@@ -182,7 +182,7 @@ index fe9fc32d..90d92496 100644
                          return html`
                          <div key=${b.id} class=${'wg-r' + (f.length ? ' bad' : '') + (stateOf(b) === 'staged' ? ' staged' : '') + (sel ? ' sel' : '') + (open ? ' open' : '') + (dmz ? ' dmz' : '')}
                               tabIndex="0" onClick=${() => onRowClick(b)} onKeyDown=${keyAct(() => onRowClick(b))}>
-@@ -158,9 +170,9 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+@@ -158,16 +170,16 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
                                  ${label ? html`<span class="wg-plate"><small>Build name</small><span>${label}</span></span>` : null}
                                  ${attView === 'slot' && slotsHere.length
                                      ? html`<div class="wg-slots" style=${`--n:${slotsHere.length}`}>${slotsHere.map((s) => { const at = (b.attachmentSlots || []).indexOf(s); return at >= 0
@@ -194,6 +194,14 @@ index fe9fc32d..90d92496 100644
                              </div>
                              <span class=${'wg-im' + (b.imageKey ? '' : ' no')} role="img" aria-label=${b.imageKey ? 'Image uploaded' : 'No image uploaded'} title=${b.imageKey ? 'Image uploaded' : 'No image uploaded'}><${Icon} name=${b.imageKey ? 'image' : 'image-off'} /></span>
                              ${dmz ? null : b.shareCode
+                                 ? html`<button type="button" class="wg-code" aria-label=${`Copy gunsmith code ${b.shareCode}`} onClick=${(e) => { e.stopPropagation(); copy(b.id + ':code', copyCodeText(b)); }}><span class="wg-ig"><span class="wg-igf"><span class=${'wg-ct' + (codeBad ? ' bad' : '')} title=${codeBad ? FAULT_TEXT['code-length-mismatch'](b) : null}>${b.shareCode}</span></span><span class="wg-igb"><${Icon} name=${flash === b.id + ':code' ? 'check' : 'copy'} /></span></span></button>`
+                                 : html`<span class="wg-ig none"><span class="wg-cnone"><${Icon} name="triangle-alert" />No code</span></span>`}
+                             <div class="wg-acts" onClick=${(e) => e.stopPropagation()}>
+-                                <button type="button" class="wg-ib" aria-label="Copy share command" data-tip="Copy share command" onClick=${() => copy(b.id + ':share', shareCommandText(b, n))}><${Icon} name=${flash === b.id + ':share' ? 'check' : 'share-2'} /></button>
++                                <button type="button" class=${'wg-ib wg-share' + (flash === b.id + ':share' ? ' is-done' : '')} aria-label="Copy share command" data-tip="Copy share command" onClick=${() => copy(b.id + ':share', shareCommandText(b, n))}><${Icon} name=${flash === b.id + ':share' ? 'check' : 'share-2'} /></button>
+                                 <i class="wg-vr" aria-hidden="true"></i>
+                                 <button type="button" class="wg-ib wg-del" aria-label=${`Stage deletion of ${b.weaponName} build ${n}`} onClick=${() => onRemove(b)}><${Icon} name="trash-2" /></button>
+                             </div>
 @@ -179,7 +191,7 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
  }
  
@@ -770,7 +778,7 @@ index 9fd1fbd9..ad67927e 100644
 
 ```diff
 diff --git aportal/ui/broadcast.js bkit/ui/broadcast.js
-index 68764342..edaecb14 100644
+index 68764342..ee9b2e33 100644
 --- aportal/ui/broadcast.js	
 +++ bkit/ui/broadcast.js	
 @@ -3,7 +3,7 @@
@@ -778,7 +786,7 @@ index 68764342..edaecb14 100644
  import { h } from '../vendor/preact.mjs';
  import { html } from '../vendor/htm-preact.mjs';
 -import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-+import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
++import { useState, useEffect, useRef, useLayoutEffect } from '../vendor/preact-hooks.mjs';
  import { Shell, Masthead, MastheadNew } from './shell.js';
  import { DiscordCard } from './v2Render.js';
  import { Manifest } from './manifest.js';
@@ -787,7 +795,7 @@ index 68764342..edaecb14 100644
  import { useOverlay, Drawer } from './overlay.js';
  import { SmartDate } from './composer.js';
 +import { useB3 } from '../b3/state.js';
-+import { EndPicker, NeverChip, ForeverAhead, stagedEndOf, DateGrid } from '../b3/broadcast.js';
++import { EndPicker, NeverChip, ForeverAhead, stagedEndOf, DateGrid, usePop, FoldBtn, BudgetMeter, Stepper, AccentField, randomAccent, hexOf, accentTooDark } from '../b3/broadcast.js';
 +import { isoLocal } from '../b3/state.js';
 +import { MediaWell, Chip } from '../b4/form.js';
 +import { CharCount } from '../gates/lib.js';
@@ -814,7 +822,8 @@ index 68764342..edaecb14 100644
 +    // 2026-09-21 19:21 EDT — no longer `editable`: a click on the row opens the editor (Board 4), and a cell never turns into a field.
 +    { key: 'text', label: 'Announcement', col: 'c-bc-text',
        dotClass: () => 'bcbar', dotStyle: (r) => `--c:${accentOf(r)}`,
-       render: (r) => { const t = String(r.text || '').replace(/^#{1,3}\s+/, ''); return html`<b title=${t}>${t}</b>`; } },
+-      render: (r) => { const t = String(r.text || '').replace(/^#{1,3}\s+/, ''); return html`<b title=${t}>${t}</b>`; } },
++      render: (r) => { const full = String(r.text || '').replace(/^#{1,3}\s+/gm, ''); const t = (full.split('\n').find((l) => l.trim()) || '').trim(); return html`<b title=${full}>${t}</b>`; } },   // 2026-09-27 22:03 EDT: a post is named by its FIRST line (its # heading); the break between heading and body used to vanish
      { key: 'createdAt', label: 'Posted', col: 'c-bc-date', dataKind: 'nums', render: (r) => html`<span class="bcdt">${fmtDay(r.createdAt)}<small>${agoText(r.createdAt)}</small></span>` },
      { key: 'startsAt', label: 'Starts', col: 'c-bc-date', dataKind: 'nums', render: (r) => (r.startsAt ? html`<span class="bcdt">${fmtDay(r.startsAt)}</span>` : html`<span class="bcdt dim">On posting</span>`) },
 -    { key: 'expiresAt', label: 'Ends', col: 'c-bc-date', dataKind: 'nums', render: (r) => (r.expiresAt ? html`<span class="bcdt">${fmtDay(r.expiresAt)}</span>` : html`<span class="bcdt never"><${Icon} name="infinity" />No end</span>`) },
@@ -876,7 +885,8 @@ index 68764342..edaecb14 100644
              ${events.length ? events.slice(0, 6).map((ev, i) => { const d = new Date(ev.at); return html`
                  <div class="bchg-i" key=${i} style=${`--gc:${ev.c}`}>
                      <time datetime=${d.toISOString()}><small>${d.toLocaleDateString(undefined, { month: 'short' })}</small>${d.getDate()}</time>
-                     <span><b>${String(ev.a.text || '').replace(/^#{1,3}\s+/gm, '')}</b><em>${ev.verb}</em></span>
+-                    <span><b>${String(ev.a.text || '').replace(/^#{1,3}\s+/gm, '')}</b><em>${ev.verb}</em></span>
++                    <span><b>${(String(ev.a.text || '').replace(/^#{1,3}\s+/gm, '').split('\n').find((l) => l.trim()) || '').trim()}</b><em>${ev.verb}</em></span>
                  </div>`; })
 -            : html`<p class="bchg-none">Nothing starts or stops on a date ahead.</p>`}
 +            : b3extra ? null : html`<p class="bchg-none">Nothing starts or stops on a date ahead.</p>`}
@@ -947,6 +957,15 @@ index 68764342..edaecb14 100644
      if (list.length < 2) return '';
      let n = 0;
      while (n < list[0].length && list.every((t) => t[n] === list[0][n])) n++;
+@@ -200,7 +214,7 @@ function commonPrefix(list) {
+     return list[0].slice(0, n);
+ }
+ // A leading "# ..." is a Discord heading, not part of the name -- the queue preview already treats it that way, so the axis has to as well or the same announcement is called two different things on two views of one page.
+-const bareText = (t) => String(t || '').replace(/^#{1,3}\s+/, '');
++const bareText = (t) => (String(t || '').replace(/^#{1,3}\s+/gm, '').split('\n').find((l) => l.trim()) || '').trim();
+ 
+ // ⚠️ htm DELETES THE SPACE BEFORE AN INLINE TAG WHEN A NEWLINE SITS THERE. A whitespace-only chunk that spans a line break is dropped, so wrapping a paragraph's source at a tag boundary renders "otherwise atcreatedAt" on screen while the source reads correctly -- and every text comparison in this repo normalises whitespace before comparing, so nothing but the overlay could see it. Prose containing inline tags stays on one physical line. ⚠️ AIRTIME RENDERS NO PANEL AND NO HEADING OF ITS OWN. It is one of the realm view panel's two views, exactly as the delivery queue is, so its chrome is the Shell's `.ph` -- the realm title, the view tabs, the key and the meta line. It used to open its own `div.panel` with its own `Airtime` heading and date range inside the Shell's panel, which titled the view twice, indented the content by a second gutter (the racknote wrapped to two lines at 585px narrower) and made the page 78px taller than the design's.
+ function Airtime({ all }) {
 @@ -254,7 +268,7 @@ function Airtime({ all }) {
  }
  
@@ -956,13 +975,19 @@ index 68764342..edaecb14 100644
      const forever = all.filter((a) => a.state === 'live' && !a.expiresAt)
          .map((a) => ({ ...a, days: daysBetween(a.createdAt, Date.now()) }))
          .sort((a, b) => b.days - a.days);
-@@ -278,12 +292,16 @@ function HeadsUp({ all, onSetEnd }) {
+@@ -277,13 +291,21 @@ function HeadsUp({ all, onSetEnd }) {
+ }
  
  // The shared 6,000-character embed budget every live post competes for (Discord's real limit on total embed content in one message, measured 2026-09-13; §10.3 row 10). Excludes whatever announcement is currently open in the composer, so editing one doesn't count its own old text against its new length.
- const EMBED_BUDGET = 6000;
+-const EMBED_BUDGET = 6000;
++export const EMBED_BUDGET = 6000;
 +// 2026-09-26 21:19 EDT: the bot's embed description is the text plus "\n\n-# Posted <t:UNIX:R>" (utils/announcement.js buildAnnouncementEmbed), 28 characters
 +// with a 10-digit time, and Discord counts the whole description toward the 6,000 (its docs, Embed Limits). So every post costs 28 more than its text.
-+const POSTED_LINE = 28;
++export const POSTED_LINE = 28;
++export function liveSegs(all, excludeId = null) {
++    return (all || []).filter((a) => a.state === 'live' && String(a.id || a._id) !== String(excludeId || ''))
++        .map((a) => ({ n: (a.text || '').length + POSTED_LINE, c: accentOf(a) }));
++}
  function otherLiveLength(all, excludeId) {
      return (all || [])
          .filter((a) => a.state === 'live' && String(a.id || a._id) !== String(excludeId || ''))
@@ -974,7 +999,7 @@ index 68764342..edaecb14 100644
  // The Show-each-player stepper's card glyphs (§10.3 row 3) — one small raised tile per showing.
  function RepeatGlyphs({ n }) {
      const count = Math.max(1, Number(n) || 1);
-@@ -297,131 +315,167 @@ function RepeatGlyphs({ n }) {
+@@ -297,131 +319,201 @@ function RepeatGlyphs({ n }) {
  // Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt, a banner image and a repeat count (pins batch 2, spec §7/§10.3). The Discord-side fields stay authoritative for what the server accepts; this drawer is the richer web equivalent, built per the pins-2 design board (G8).
  //
  // ⚠️ EDIT AND POST SHARE ONE FORM. `initial` is the announcement object when opened from Broadcast's "Edit"/"Dates and repeats" buttons or HeadsUp's "Set an end date" (null when opened from "+ Post announcement") — pre-fills every field and switches submit() to an announcement.edit op that carries bannerImageUrl and repeatCount (row 8: an edit that omits them would silently wipe them, see core/ops/announcements.js's apply()).
@@ -1003,6 +1028,32 @@ index 68764342..edaecb14 100644
 +    const [bannerBad, setBannerBad] = useState(false);
 +    useEffect(() => { setBannerBad(false); }, [bannerUrl]);
      const [repeatCount, setRepeatCount] = useState(initial?.repeatCount || 1);
++    // 2026-09-27 21:42 EDT (his v36 intake): the accent is chosen here. A NEW post opens on a fresh colour every time, as the bot would mint one; Edit and Post it again keep
++    // the one it has. The card preview, the text box and this post's share of the budget all wear it — never the realm's pink.
++    const [color, setColor] = useState(() => (typeof initial?.color === 'number' ? initial.color : randomAccent()));
++    const [autoColor, setAutoColor] = useState(!(initial && typeof initial.color === 'number'));
++    const accent = hexOf(color);
++    // The text box is the queue card's quote box (his: "the list design we already use in the announcement card (preview + footer)"): folded, it wears the
++    // accent as the card does; open — by Expand or by typing in it — it is the fields' black with the focus glow round the whole box. Folded each time the drawer opens.
++    const [tbOpen, setTbOpen] = useState(false);
++    const [tbFocus, setTbFocus] = useState(false);
++    const [clamps, setClamps] = useState(false);
++    const taRef = useRef(null);
++    const twinRef = useRef(null);
++    const expanded = tbOpen || tbFocus;
++    useLayoutEffect(() => {
++        const t = taRef.current;
++        if (!t) return;
++        const cs = getComputedStyle(t);
++        const two = parseFloat(cs.lineHeight) * 2 + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
++        // measured on a hidden twin, so the box's own height never passes through 'auto' and the fold animates between two real heights
++        const ch = twinRef.current ? twinRef.current.scrollHeight : t.scrollHeight;
++        setClamps(ch > two + 2);
++        t.style.height = `${expanded ? Math.max(150, ch) : two}px`;
++    }, [text, expanded]);
++    // It opens when a person reaches for it — a press in the box, a key in it, Expand — never on the drawer's own focus on open, so it is folded each time
++    // the drawer opens. Collapse folds it without taking the caret away (a blur would hand focus back to the drawer's first field: this one).
++    const fold = () => { if (expanded) { setTbOpen(false); setTbFocus(false); } else { setTbOpen(true); if (taRef.current) taRef.current.focus(); } };
      const [busy, setBusy] = useState(false);
  
 -    useEffect(() => { setBannerBroken(false); setBannerDims(null); }, [bannerLink]);
@@ -1040,6 +1091,7 @@ index 68764342..edaecb14 100644
 -            bannerImageUrl: bannerLink.trim() || null,
 +            bannerImageUrl: bannerUrl || null,
              repeatCount,
++            color,
              // undefined (blank, omit the key) | null (Never ends) | an ISO string (a resolved date).
              expiresAt: neverEnds ? null : (expiresIso || undefined),
          };
@@ -1052,7 +1104,6 @@ index 68764342..edaecb14 100644
 +    // no thumbnail beside the banner link, no echo under either date, a checkbox where the board has a switch, a thin budget line with
 +    // its figure on the wrong side, one pink square for the showings, and a preview that printed the raw markdown. This is board 1's
 +    // markup, class for class, wired to the same state and the same op builder; its look is b1.css (board 1's own rules, scoped .b1).
-+    const pct = (n) => Math.max(0, Math.min(100, (n / EMBED_BUDGET) * 100));
 +    const lines = text.split('\n'); const head = /^#{1,3}\s+/.test(lines[0] || '') ? lines[0].replace(/^#{1,3}\s+/, '') : '';
 +    const body = (head ? lines.slice(1) : lines).join('\n').trim();
 +    const withCode = (t) => t.split(/(\/[a-z][\w-]*(?:\s[a-z][\w-]*)?)/g).map((part, i) => (i % 2 ? html`<code key=${i}>${part}</code>` : part));
@@ -1070,13 +1121,9 @@ index 68764342..edaecb14 100644
 -                       <button class="btn go" disabled=${!ready} onClick=${submit}>${busy ? 'Staging…' : (editing ? 'Stage this edit' : 'Stage post')}</button>`}>
 -            <div class="dwbody bcast-composer">
 -                <div class="bed-main">
-+                       <button class="b3-btn2" onClick=${onCancel}>Cancel</button>
-+                       <button class="b3-btn2 go" disabled=${!ready} onClick=${submit}>${busy ? 'Staging…' : (editing ? 'Stage this edit' : 'Stage post')}</button>`}>
-+            <div class="bed">
-+                <div class="pb-col b3-fady">
-                     <div class="dwfield"><label for="post-text">Text</label>
-                         <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
-                                   value=${text} onInput=${(e) => setText(e.target.value)}></textarea>
+-                    <div class="dwfield"><label for="post-text">Text</label>
+-                        <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
+-                                  value=${text} onInput=${(e) => setText(e.target.value)}></textarea>
 -                        <div class=${'cmeter bcast' + (overBudget ? ' bad' : '')}>
 -                            <i style=${`width:${Math.min(100, (otherLen / EMBED_BUDGET) * 100)}%;opacity:.38`}></i>
 -                            <i style=${`width:${Math.min(100 - Math.min(100, (otherLen / EMBED_BUDGET) * 100), (thisLen / EMBED_BUDGET) * 100)}%;margin-left:${Math.min(100, (otherLen / EMBED_BUDGET) * 100)}%`}></i>
@@ -1103,15 +1150,25 @@ index 68764342..edaecb14 100644
 -                        <${SmartDate} chrome="drawer" id="post-starts" label="Starts"
 -                                      placeholder="in 3 days, or Sep 21"
 -                                      value=${startsAt} iso=${startsIso}
-+                        ${''/* 2026-09-26 18:17 EDT (his: "add another chip before it: the character count chip we already use everywhere else. also add the same icon to the
-+                             character budget chip"; and "why is it so narrow?" — it hugged its own 96px bar): the board's CharCount for this post (the Broadcast
-+                             card's props), then the budget chip taking the rest of the field's width with the same mark */}
-+                        <div class="pb-chars"><${CharCount} n=${text.length} cap=${TEXT_MAX} warnAt=${3600} />
-+                        <div class=${'pb-meter2 g-fact b3-cc' + (overBudget ? ' over' : '')} aria-label="Delivery budget"><${Icon} name="text" />
-+                            <span class=${'cmeter' + (overBudget ? ' bad' : '')}><i style=${`width:${pct(otherLen)}%`}></i><i style=${`width:${Math.min(100 - pct(otherLen), pct(thisLen))}%`}></i></span>
-+                            <span>${overBudget ? html`<b>${(totalLen - EMBED_BUDGET).toLocaleString()}</b> over ${EMBED_BUDGET.toLocaleString()}` : html`<b>${(EMBED_BUDGET - totalLen).toLocaleString()}</b> of ${EMBED_BUDGET.toLocaleString()} left`}</span></div></div></div>
++                       <button class="b3-btn2" onClick=${onCancel}>Cancel</button>
++                       <button class="b3-btn2 go" disabled=${!ready} onClick=${submit}>${busy ? 'Staging…' : (editing ? 'Stage this edit' : 'Stage post')}</button>`}>
++            <div class="bed">
++                <div class="pb-col b3-fady">
++                    <div class="dwfield pb-txf"><div class="pb-lrow"><label for="post-text">Text</label>${!text.trim() ? html`<${Chip} tone="warn" icon="triangle-alert">Required<//>` : overText ? html`<${Chip} tone="warn" icon="triangle-alert">Over ${TEXT_MAX.toLocaleString()}<//>` : html`<span class="f-okm" title="Filled"><${Icon} name="check" /></span>`}</div>
++                        <div class=${'pb-enc b4-tb' + (expanded ? ' b4-tbx' : '') + (clamps && !expanded ? ' b4-tbclip' : '')} style=${`--c:${accent}`} onPointerDown=${(e) => { if (e.target.closest('.b4-fold') || expanded) return; setTbFocus(true); requestAnimationFrame(() => { if (taRef.current) taRef.current.focus(); }); }}>
++                            <textarea id="post-text" ref=${taRef} rows="2" placeholder="Type a # heading on the first line if you want one."
++                                      value=${text} onInput=${(e) => { setText(e.target.value); setTbFocus(true); }} onKeyDown=${(e) => { if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace') setTbFocus(true); }} onBlur=${() => setTbFocus(false)}></textarea>
++                            <textarea class="b4-tbm" ref=${twinRef} aria-hidden="true" tabindex="-1" readonly value=${text}></textarea>
++                            <div class="pb-encf">
++                                <div class="b4-tbc"><${CharCount} n=${text.length} cap=${TEXT_MAX} warnAt=${3600} />
++                                    <div class=${'pb-meter2 g-fact b3-cc' + (overBudget ? ' over' : '')} aria-label="Delivery budget, each live post in its colour"><${Icon} name="text" />
++                                        <${BudgetMeter} segs=${[...liveSegs(allAnnouncements, initial?.id || initial?._id), { n: thisLen, c: accent }]} total=${EMBED_BUDGET} />
++                                        <span>${overBudget ? html`<b>${(totalLen - EMBED_BUDGET).toLocaleString()}</b> over ${EMBED_BUDGET.toLocaleString()}` : html`<b>${(EMBED_BUDGET - totalLen).toLocaleString()}</b> of ${EMBED_BUDGET.toLocaleString()} left`}</span></div></div>
++                                ${clamps ? html`<${FoldBtn} open=${expanded} onMouseDown=${(e) => e.preventDefault()} onClick=${(e) => { e.stopPropagation(); fold(); }} />` : null}
++                            </div></div></div>
 +                    <div class="dw-grid2" style="gap:0 16px">
-+                        <${BoardDate} id="post-starts" label="Starts" opt=${!startsAt.trim()} placeholder="Now" hint=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? 'Goes live when you commit it' : null}
++                        <${BoardDate} id="post-starts" label="Starts" opt=${!startsAt.trim()} placeholder="Now" hint=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? { icon: 'radio', v: 'Now', q: 'when you commit it' } : null}
++                                      rel=${(i) => { const d = Math.round((new Date(`${i}T12:00:00`) - new Date(`${isoLocal()}T12:00:00`)) / 864e5); return d <= 0 ? 'live today' : d === 1 ? 'live tomorrow' : `live in ${d} days`; }}
 +                                      min=${isoLocal()} value=${startsAt} iso=${startsIso}
                                        onChange=${(v, i) => { setStartsAt(v); setStartsIso(i); }} />
 -                        <div class="dwfield ends-field">
@@ -1128,14 +1185,9 @@ index 68764342..edaecb14 100644
 -                                                     value=${expiresAt} iso=${expiresIso}
 -                                                     onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }} />`}
 -                        </div>
-+                        <${BoardDate} id="post-expires" label="Ends" opt=${!expiresAt.trim() && !neverEnds} placeholder=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? 'In 60 days' : 'Blank'}
-+                                      hint=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? `Stops showing ${new Date(new Date(startsIso ? startsIso + 'T12:00:00Z' : Date.now()).getTime() + 60 * 864e5).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '')}` : null}
-+                                      min=${startsIso || isoLocal()} value=${expiresAt} iso=${expiresIso} never=${neverEnds}
-+                                      onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }}
-+                                      right=${html`<button type="button" class="pb-sw" role="switch" aria-checked=${neverEnds ? 'true' : 'false'} onClick=${() => setNeverEnds(!neverEnds)}><span class="pb-swt"><i></i></span>Never ends</button>`} />
-                     </div>
+-                    </div>
 -
-                     <div class="dwfield"><label>Show each player</label>
+-                    <div class="dwfield"><label>Show each player</label>
 -                        <div class="repeat-row">
 -                            <div class="stepper">
 -                                <button type="button" class="step-btn" disabled=${repeatCount <= 1}
@@ -1146,13 +1198,22 @@ index 68764342..edaecb14 100644
 -                            <${RepeatGlyphs} n=${repeatCount} />
 -                            <span class="clock-tag"><${Icon} name="clock" cls="sm" />1 a day max</span>
 -                        </div>
--                    </div>
++                        <${BoardDate} id="post-expires" label="Ends" opt=${!expiresAt.trim() && !neverEnds} placeholder=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? 'In 60 days' : 'Blank'}
++                                      hint=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? { icon: 'clock', v: new Date(new Date(startsIso ? startsIso + 'T12:00:00Z' : Date.now()).getTime() + 60 * 864e5).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', ''), q: '60 days after it starts' } : null}
++                                      rel=${(i) => { const d = Math.round((new Date(`${i}T12:00:00`) - new Date(`${startsIso || isoLocal()}T12:00:00`)) / 864e5); return d <= 0 ? 'ends the day it starts' : `shows for ${d} day${d === 1 ? '' : 's'}`; }}
++                                      min=${startsIso || isoLocal()} value=${expiresAt} iso=${expiresIso} never=${neverEnds}
++                                      onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }}
++                                      right=${html`<button type="button" class="pb-sw" role="switch" aria-checked=${neverEnds ? 'true' : 'false'} onClick=${() => setNeverEnds(!neverEnds)}><span class="pb-swt"><i></i></span>Never ends</button>`} />
+                     </div>
++                    <div class="dwfield"><div class="pb-lrow"><label>Show each player</label></div>
 +                        <div class="pb-rep">
-+                            <div class="pb-step"><button type="button" aria-label="Fewer" disabled=${repeatCount <= 1} onClick=${() => setRepeatCount(Math.max(1, repeatCount - 1))}><${Icon} name="minus" /></button>
-+                                <output>${repeatCount}</output><button type="button" aria-label="More" onClick=${() => setRepeatCount(repeatCount + 1)}><${Icon} name="plus" /></button></div>
-+                            <div class="pb-cards" role="img" aria-label=${`Shown to each player up to ${shown} times, at most once a day`}>
++                            <${Stepper} value=${repeatCount} onChange=${setRepeatCount} />
++                            <div class="pb-cards" style=${`--c:${accent}`} role="img" aria-label=${`Shown to each player up to ${shown} times, at most once a day`}>
 +                                ${Array.from({ length: Math.min(shown, 12) }, (_, i) => html`<span class="pb-mini" key=${i}></span>`)}
 +                                <span class="pb-gapday"><${Icon} name="clock" />1 a day max</span></div></div></div>
++                    <div class="dwfield pb-accf"><div class="pb-lrow"><label for="post-accent">Accent</label>${autoColor ? html`<${Chip} tone="neutral">Auto<//>` : null}${accentTooDark(color) ? html`<${Chip} tone="warn" icon="triangle-alert">Hard to see<//>` : null}</div>
++                        <div class="b4-accline"><${AccentField} id="post-accent" value=${color} onChange=${(n) => { setColor(n); setAutoColor(false); }} />
++                            <span class="pb-echo b4-echo"><${Icon} name="sparkles" /><span>Tints the card, its number and its share of the budget</span></span></div></div>
 +                    <div class="dwfield pb-bnf"><div class="pb-lrow"><label>Banner</label>${!bannerUrl ? html`<${Chip} tone="neutral">Optional<//>` : null}</div>
 +                        <${MediaWell} f=${bn} set=${setBanner} id="post-banner" sources=${['up', 'link']} keyed=${false} what="an image" /></div>
                  </div>
@@ -1169,11 +1230,11 @@ index 68764342..edaecb14 100644
 -                </aside>
 +                <aside class="bed-side pb-card"><div class="bed-sec f-prev"><h5>In Discord</h5><div class="f-prevsc b3-fady">
 +                    ${text.trim() ? html`
-+                        <div class="dcard">${head ? html`<div class="pb-h">${head}</div>` : null}
++                        <div class="dcard" style=${`--c:${accent}`}>${head ? html`<div class="pb-h">${head}</div>` : null}
 +                            ${body ? html`<p>${withCode(body)}</p>` : null}
 +                            ${bannerUrl ? html`<div class=${'pb-img2' + (bannerBad ? ' pb-bad' : '')} style=${!bannerBad ? `background-image:url(${JSON.stringify(bannerUrl)});background-size:cover;background-position:center` : null}>${bannerBad ? html`<${Icon} name="image" cls="xl" />` : html`<img src=${bannerUrl} alt="" style="display:none" onError=${() => setBannerBad(true)} />`}</div>` : null}
 +                            <div class="pb-ts">${startsIso ? `Posted ${new Date(startsIso + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'Posted now'}</div></div>`
-+                        : (typeof window !== 'undefined' && window.B4_COLLECTIVE) ? html`<div class="b4-ghostcard" aria-hidden="true"><div class="dcard"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div></div><p class="empty">Type the announcement and the card builds itself here.</p>`
++                        : (typeof window !== 'undefined' && window.B4_COLLECTIVE) ? html`<div class="b4-ghostcard" aria-hidden="true"><div class="dcard" style=${`--c:${accent}`}><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div></div><p class="empty">Type the announcement and the card builds itself here.</p>`
 +                        : html`<p class="empty">Type the announcement and the card builds itself here.</p>`}
 +                </div></div>
 +                ${''/* 2026-09-26 20:03 EDT (harden): what stands between this post and Stage, as the build drawer says it — the side column's Before staging panel
@@ -1192,14 +1253,12 @@ index 68764342..edaecb14 100644
  
 +// A date field as board 1 · G8 draws it: the label row (with an optional control on its right), the input, and the echo of what the
 +// server resolved — ✓ and the day in the ok colour, or the default in dim. Same server parse and debounce as SmartDate.
-+function BoardDate({ id, label, placeholder, value, iso, onChange, right = null, never = false, dflt = null, opt = false, hint = null, min = '' }) {
++function BoardDate({ id, label, placeholder, value, iso, onChange, right = null, never = false, dflt = null, opt = false, hint = null, rel = null, min = '' }) {
 +    const latest = { current: value };
-+    const [open, setOpen] = useState(false);
++    const pop = usePop({ w: 270, align: right ? 'end' : 'start' });
 +    const picked = useRef('');
 +    // 2026-09-27 18:52 EDT: a picked day writes its own words into the field AND its iso, so it is never sent back through the parser
-+    const box = useRef(null);
-+    useEffect(() => { if (!open) return undefined; const out = (e) => { if (box.current && !box.current.contains(e.target)) setOpen(false); }; document.addEventListener('pointerdown', out); return () => document.removeEventListener('pointerdown', out); }, [open]);
-+    const pick = (s) => { setOpen(false); if (!s) { picked.current = ''; onChange('', null); return; } const t = new Date(`${s}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', ''); picked.current = t; onChange(t, s); };
++    const pick = (s) => { pop.close(); if (!s) { picked.current = ''; onChange('', null); return; } const t = new Date(`${s}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', ''); picked.current = t; onChange(t, s); };
 +    useEffect(() => {
 +        const raw = String(value || '').trim();
 +        if (!raw) { onChange(value, null); return undefined; }
@@ -1209,25 +1268,29 @@ index 68764342..edaecb14 100644
 +    }, [value]);
 +    const raw = String(value || '').trim();
 +    const day = (i) => new Date(i + 'T12:00:00Z').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '');
++    // 2026-09-27 21:42 EDT (his v36 intake: "i want the *design* of Start/End's hints to be improved"): the line under a date is a READOUT, not a sentence — the date
++    // it resolves to first, in ink, then what that means, after a hairline: "Now | goes live when you commit it", "✓ Fri Oct 2 | goes live in 5 days",
++    // "Thu Nov 26 | 60 days after it starts". Its mark carries the state: neutral, ok, or warn with the value in warn ink.
++    const echo = (tone, icon, v, q) => html`<span class="pb-echo b4-echo" data-tone=${tone}><${Icon} name=${icon} /><b>${v}</b>${q ? html`<i aria-hidden="true"></i><span>${q}</span>` : null}</span>`;
++    const mark = !raw ? (opt ? html`<${Chip} tone="neutral">Optional<//>` : null) : iso ? html`<span class="f-okm" title="Readable"><${Icon} name="check" /></span>` : html`<${Chip} tone="warn">Can't read<//>`;
 +    return html`
 +        <div class=${'dwfield' + (right ? ' pb-endf' : '')} data-never=${never ? 'true' : 'false'}>
-+            <div class="pb-lrow"><label for=${id}>${label}</label>${opt ? html`<${Chip} tone="neutral">Optional<//>` : null}${right}</div>
++            <div class="pb-lrow"><label for=${id}>${label}</label>${never ? null : mark}${right}</div>
 +            ${never ? html`<div class="pb-neverval" style="display:flex"><${Icon} name="infinity" />Stays up until you remove it</div>`
-+                : html`<div class="pb-dfld" ref=${box}><input id=${id} type="text" autocomplete="off" spellcheck="false" placeholder=${placeholder} value=${value}
-+                        onInput=${(e) => onChange(e.target.value, null)} onKeyDown=${(e) => { if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(false); } else if (e.key === 'ArrowDown' && !open) { e.preventDefault(); setOpen(true); } }} />
-+                    <button type="button" class="pb-dbtn" aria-label=${`Pick the ${label.toLowerCase()} date`} aria-expanded=${open ? 'true' : 'false'} aria-haspopup="dialog" onClick=${() => setOpen(!open)}><${Icon} name="calendar-days" /></button>
-+                    ${''/* 2026-09-27 18:55 EDT: the queue card's own date pop-up (.b3-datepop), opening DOWN from the field — the same month grid; the quick picks went 2026-09-27 19:16 EDT (his call) */}
-+                    ${open ? html`<div class=${'b3-datepop pb-datepop' + (right ? ' end' : '')} role="dialog" aria-label=${`${label} date`} onKeyDown=${(e) => { if (e.key === 'Escape') { e.stopPropagation(); setOpen(false); document.getElementById(id)?.focus(); } }}>
++                : html`<div class="pb-dfld" ref=${pop.wrap}><input id=${id} type="text" autocomplete="off" spellcheck="false" placeholder=${placeholder} value=${value}
++                        onInput=${(e) => onChange(e.target.value, null)} onKeyDown=${(e) => { if (e.key === 'ArrowDown' && !pop.open) { e.preventDefault(); pop.setOpen(true); } }} />
++                    <button type="button" class="pb-dbtn" ref=${pop.btn} aria-label=${`Pick the ${label.toLowerCase()} date`} aria-expanded=${pop.open ? 'true' : 'false'} aria-haspopup="dialog" onClick=${() => pop.setOpen(!pop.open)}><${Icon} name="calendar-days" /></button>
++                    ${pop.open ? html`<div class="b3-datepop b4-pop fixed" ref=${pop.pop} style="width:270px" role="dialog" aria-label=${`${label} date`}>
 +                        <${DateGrid} value=${iso || ''} min=${min} onPick=${pick} /></div>` : null}</div>`}
-+            ${never ? null : !raw ? (hint ? html`<span class="pb-echo pb-dim">${hint}</span>` : null)
-+                : iso ? html`<span class="pb-echo"><${Icon} name="check" cls="sm" />${day(iso)}</span>` : html`<span class="pb-echo pb-warn">Can't read that as a date yet — try “Friday” or “Oct 2”</span>`}
++            ${never ? null : !raw ? (hint ? echo('neutral', hint.icon, hint.v, hint.q) : null)
++                : iso ? echo('ok', 'check', day(iso), rel ? rel(iso) : null) : echo('warn', 'triangle-alert', 'Try “Friday” or “Oct 2”', null)}
 +        </div>`;
 +}
 +
  // 🔴 AIRTIME PAINTS THREE BAR STATES AND NAMED NONE OF THEM. Solid is showing, hollow-dashed is scheduled, muted is over -- the same shape vocabulary the Track uses, and a reader met it with no key. ⚠️ Deliberately NOT the shared StateKey: that one teaches "dashed = staged", and here a dashed bar means an announcement that is written and simply has not started yet. Same shape, a neighbouring meaning, and the wrong word would be worse than no word.
  //
  // ⚠️ It names only states PRESENT on screen, the rule every key in this portal follows: a season with nothing scheduled should not send somebody hunting for a dashed bar that is not drawn.
-@@ -431,6 +485,7 @@ export function BroadcastRealm({ session }) {
+@@ -431,6 +523,7 @@ export function BroadcastRealm({ session }) {
      const [notice, setNotice] = useState('');
      const [view, setView] = useState('Delivery queue');
      const overlay = useOverlay();
@@ -1235,7 +1298,7 @@ index 68764342..edaecb14 100644
  
  // 🔴 TWO REALMS COULD STAGE WORK AND NEITHER COULD TELL YOU IT HAD ANY. Season and Home both read /api/review to say how much is waiting — that is what feeds the rail's badge and the masthead's staged figure — and Armory and Broadcast, which stage on every edit, said nothing anywhere. You staged four builds, navigated away, and the console had no memory of it outside the Review screen.
  //
-@@ -546,13 +601,13 @@ export function BroadcastRealm({ session }) {
+@@ -546,13 +639,13 @@ export function BroadcastRealm({ session }) {
                                                                                onClick=${() => setShowAdd(true)} />`} />`}
                    viewSlot=${html`
                        ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
@@ -1382,10 +1445,10 @@ index 1cbbf4f2..1aab4e9f 100644
 
 ```diff
 diff --git aportal/ui/icons.js bkit/ui/icons.js
-index 70aca763..9ab5017e 100644
+index 70aca763..c08ee56e 100644
 --- aportal/ui/icons.js	
 +++ bkit/ui/icons.js	
-@@ -7,9 +7,40 @@
+@@ -7,9 +7,42 @@
  // Every icon inherits currentColor and is 1em square (see .ic in shell.css), so it sits in text without a fight. Decorative by default — an icon beside a word is not read twice; pass `label` only when the icon is the ONLY thing carrying the meaning.
  import { h } from '../vendor/preact.mjs';
  import { html } from '../vendor/htm-preact.mjs';
@@ -1411,6 +1474,8 @@ index 70aca763..9ab5017e 100644
 +    'corner-down-left': '<path d="M20 4v7a4 4 0 0 1-4 4H4"/><path d="m9 10-5 5 5 5"/>',
 +    'pencil': '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
 +    'repeat': '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
++    'shuffle': '<path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/>',
++    'calendar-clock': '<path d="M16 14v2.2l1.6 1"/><path d="M16 2v4"/><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M3 10h5"/><path d="M8 2v4"/><circle cx="16" cy="16" r="6"/>',
 +    'text': '<path d="M15 12H3"/><path d="M17 18H3"/><path d="M21 6H3"/>',
 +    'calendar-plus': '<path d="M8 2v4"/><path d="M16 2v4"/><path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"/><path d="M3 10h18"/><path d="M16 19h6"/><path d="M19 16v6"/>',
 +    'crown': '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
@@ -1426,7 +1491,7 @@ index 70aca763..9ab5017e 100644
      'check':        '<path d="M20 6 9 17l-5-5"/>',
      'x':            '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
      'plus':         '<path d="M5 12h14"/><path d="M12 5v14"/>',
-@@ -39,14 +70,56 @@ const PATHS = {
+@@ -39,14 +72,56 @@ const PATHS = {
      'radio':        '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>',
      'calendar':     '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
      'circle-check': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
@@ -1483,7 +1548,7 @@ index 70aca763..9ab5017e 100644
  export const ICON_NAMES = Object.keys(PATHS);
  
  // 🔴 THE SPRITE IS INJECTED AT MODULE EVALUATION, not on DOMContentLoaded. `<use href="#i-…">` resolves against the document, and an element already in the DOM when its symbol arrives is not guaranteed to re-resolve — so waiting can leave icons permanently blank on a page whose markup rendered during parsing. documentElement always exists by the time a module body runs.
-@@ -86,6 +159,9 @@ const FOLD_CLOSED = 'M6 9 L12 15 L18 9';
+@@ -86,6 +161,9 @@ const FOLD_CLOSED = 'M6 9 L12 15 L18 9';
  const FOLD_OPEN = 'M6 15 L12 9 L18 15';
  
  export function Fold({ open, cls }) {

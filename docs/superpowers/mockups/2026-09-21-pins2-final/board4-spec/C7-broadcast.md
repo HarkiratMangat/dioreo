@@ -21,7 +21,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`C7-1` · rendered **1148×452** · 1 instance look like this
+`C7-1` · rendered **1148×580** · 1 instance look like this
 
 ```html
 <div class="b4-panel"><section class="panel" id="manifest"><div class="mtools"><div class="mt-r1"><span class="mlabel"><span>Manifest</span></span><span class="srch">⟨svg⟩<label class="sr" for="manifest-search">Search announcements</label><input id="manifest-search" class="" placeholder="Search the text…"></span><button class="pill lead madd">⟨svg.ic⟩Post announcement</button></div><div class="mt-r2"><span class="mt-
@@ -45,7 +45,7 @@ inside `.b4-panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C7-2` · rendered **1148×420** · 1 instance look like this
+`C7-2` · rendered **1148×548** · 1 instance look like this
 
 ```html
 <section class="panel" id="manifest"><div class="mtools"><div class="mt-r1"><span class="mlabel"><span>Manifest</span></span><span class="srch">⟨svg⟩<label class="sr" for="manifest-search">Search announcements</label><input id="manifest-search" class="" placeholder="Search the text…"></span><button class="pill lead madd">⟨svg.ic⟩Post announcement</button></div><div class="mt-r2"><span class="mt-grp" role="group" aria
@@ -113,11 +113,11 @@ inside `.panel` · 1 on screen · **1 look**
 
 ### `span`
 
-inside `.mlabel` · 6 on screen · **1 look**
+inside `.mlabel` · 8 on screen · **1 look**
 
 #### the one look
 
-`C7-58` · rendered **268×18** · 4 instances look like this
+`C7-58` · rendered **268×18** · 6 instances look like this
 
 ```html
 <span><b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b></span>
@@ -142,9 +142,9 @@ inside `.mlabel` · 6 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.pill` · 13 on screen · **6 looks**
+inside `.pill` · 17 on screen · **7 looks**
 
-#### look 1 of 6
+#### look 1 of 7
 
 `C7-19` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
 
@@ -175,7 +175,7 @@ inside `.pill` · 13 on screen · **6 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 2 of 6
+#### look 2 of 7
 
 `C7-23` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
 
@@ -206,7 +206,7 @@ inside `.pill` · 13 on screen · **6 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 3 of 6
+#### look 3 of 7
 
 `C7-27` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
 
@@ -237,9 +237,9 @@ inside `.pill` · 13 on screen · **6 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 4 of 6
+#### look 4 of 7
 
-`C7-72` · rendered **16×16** · 4 instances look like this · aria-hidden="true"
+`C7-72` · rendered **16×16** · 6 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-trash-2"></use></svg>
@@ -268,7 +268,7 @@ inside `.pill` · 13 on screen · **6 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .rmv · app.css:5191 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 5 of 6
+#### look 5 of 7
 
 `C7-85` · rendered **16×16** · 1 instance look like this · aria-hidden="true"
 
@@ -298,9 +298,9 @@ inside `.pill` · 13 on screen · **6 looks**
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
-#### look 6 of 6
+#### look 6 of 7
 
-`C7-88` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
+`C7-88` · rendered **14×14** · 2 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-radio"></use></svg>
@@ -328,6 +328,8 @@ inside `.pill` · 13 on screen · **6 looks**
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
+*1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+
 
 ### `div.mt-r2`
 
@@ -338,7 +340,7 @@ inside `.mtools` · 1 on screen · **1 look**
 `C7-11` · rendered **1114×32** · 1 instance look like this
 
 ```html
-<div class="mt-r2"><span class="mt-grp" role="group" aria-label="State"><span class="mlabel"><span>State</span></span><button aria-pressed="true" class="chip" title="All state"><span class="cl">All</span> <em>4</em></button><button aria-pressed="false" class="chip topic" title="Only Live now" style="--c: var(--ok);">⟨svg.ic⟩<span class="cl">Live now</span> <em>1</em></button><button aria-pressed="false" class="chip t
+<div class="mt-r2"><span class="mt-grp" role="group" aria-label="State"><span class="mlabel"><span>State</span></span><button aria-pressed="true" class="chip" title="All state"><span class="cl">All</span> <em>6</em></button><button aria-pressed="false" class="chip topic" title="Only Live now" style="--c: var(--ok);">⟨svg.ic⟩<span class="cl">Live now</span> <em>2</em></button><button aria-pressed="false" class="chip t
 ```
 
 | property | winning declaration | computed | from |
@@ -369,7 +371,7 @@ inside `.mt-grp` · 1 on screen · **1 look**
 `C7-15` · rendered **42×32** · 1 instance look like this · aria-pressed="true" title="All state"
 
 ```html
-<button aria-pressed="true" class="chip" title="All state"><span class="cl">All</span> <em>4</em></button>
+<button aria-pressed="true" class="chip" title="All state"><span class="cl">All</span> <em>6</em></button>
 ```
 
 | property | winning declaration | computed | from |
@@ -466,10 +468,10 @@ inside `.chip` · 4 on screen · **4 looks**
 
 #### look 1 of 4
 
-`C7-17` · rendered **7×9** · 1 instance look like this · text “4”
+`C7-17` · rendered **7×9** · 1 instance look like this · text “6”
 
 ```html
-<em>4</em>
+<em>6</em>
 ```
 
 | property | winning declaration | computed | from |
@@ -492,10 +494,10 @@ inside `.chip` · 4 on screen · **4 looks**
 
 #### look 2 of 4
 
-`C7-21` · rendered **7×9** · 1 instance look like this · text “1”
+`C7-21` · rendered **7×9** · 1 instance look like this · text “2”
 
 ```html
-<em>1</em>
+<em>2</em>
 ```
 
 | property | winning declaration | computed | from |
@@ -519,10 +521,10 @@ inside `.chip` · 4 on screen · **4 looks**
 
 #### look 3 of 4
 
-`C7-25` · rendered **7×9** · 1 instance look like this · text “0”
+`C7-25` · rendered **7×9** · 1 instance look like this · text “1”
 
 ```html
-<em>0</em>
+<em>1</em>
 ```
 
 | property | winning declaration | computed | from |
@@ -578,7 +580,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C7-30` · rendered **1146×301** · 1 instance look like this
+`C7-30` · rendered **1146×429** · 1 instance look like this
 
 ```html
 <div class="mscroll"><table class="mtable"><colgroup><col class="c-bc-text"><col class="c-bc-date"><col class="c-bc-date"><col class="c-bc-date"><col class="c-bc-state"><col class="c-ra"></colgroup><thead><tr><th class="sortable" aria-sort="none"><button type="button" class="sortbtn">Announcement ⟨svg.ic.sortic⟩</button></th><th class="sortable" aria-sort="none"><button type="button" class="sortbtn">Posted ⟨svg.ic.so
@@ -604,7 +606,7 @@ inside `.mscroll` · 1 on screen · **1 look**
 
 #### the one look
 
-`C7-31` · rendered **1146×301** · 1 instance look like this
+`C7-31` · rendered **1146×429** · 1 instance look like this
 
 ```html
 <table class="mtable"><colgroup><col class="c-bc-text"><col class="c-bc-date"><col class="c-bc-date"><col class="c-bc-date"><col class="c-bc-state"><col class="c-ra"></colgroup><thead><tr><th class="sortable" aria-sort="none"><button type="button" class="sortbtn">Announcement ⟨svg.ic.sortic⟩</button></th><th class="sortable" aria-sort="none"><button type="button" class="sortbtn">Posted ⟨svg.ic.sortic⟩</button></th><t
@@ -631,7 +633,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`C7-32` · rendered **582×300** · 1 instance look like this
+`C7-32` · rendered **582×428** · 1 instance look like this
 
 ```html
 <col class="c-bc-text">
@@ -659,7 +661,7 @@ inside `.—` · 3 on screen · **1 look**
 
 #### the one look
 
-`C7-33` · rendered **120×300** · 3 instances look like this
+`C7-33` · rendered **120×428** · 3 instances look like this
 
 ```html
 <col class="c-bc-date">
@@ -687,7 +689,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`C7-36` · rendered **140×300** · 1 instance look like this
+`C7-36` · rendered **140×428** · 1 instance look like this
 
 ```html
 <col class="c-bc-state">
@@ -715,7 +717,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`C7-37` · rendered **64×300** · 1 instance look like this
+`C7-37` · rendered **64×428** · 1 instance look like this
 
 ```html
 <col class="c-ra">
@@ -1096,11 +1098,11 @@ inside `.ra` · 1 on screen · **1 look**
 
 ### `td.n`
 
-inside `.—` · 4 on screen · **1 look**
+inside `.—` · 6 on screen · **1 look**
 
 #### the one look
 
-`C7-55` · rendered **582×64** · 4 instances look like this
+`C7-55` · rendered **582×64** · 6 instances look like this
 
 ```html
 <td class="n" style=""><span class="ncell"><span class="bcbar" style="--c: #337ba6;"></span><span><b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b></span></span></td>
@@ -1132,11 +1134,11 @@ inside `.—` · 4 on screen · **1 look**
 
 ### `span.ncell`
 
-inside `.n` · 4 on screen · **1 look**
+inside `.n` · 6 on screen · **1 look**
 
 #### the one look
 
-`C7-56` · rendered **540×18** · 4 instances look like this
+`C7-56` · rendered **540×18** · 6 instances look like this
 
 ```html
 <span class="ncell"><span class="bcbar" style="--c: #337ba6;"></span><span><b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b></span></span>
@@ -1165,9 +1167,9 @@ inside `.n` · 4 on screen · **1 look**
 
 ### `span.bcbar`
 
-inside `.ncell` · 4 on screen · **4 looks**
+inside `.ncell` · 6 on screen · **6 looks**
 
-#### look 1 of 4
+#### look 1 of 6
 
 `C7-57` · rendered **4×43** · 1 instance look like this
 
@@ -1200,7 +1202,7 @@ inside `.ncell` · 4 on screen · **4 looks**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
-#### look 2 of 4
+#### look 2 of 6
 
 `C7-75` · rendered **4×43** · 1 instance look like this
 
@@ -1233,9 +1235,42 @@ inside `.ncell` · 4 on screen · **4 looks**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
-#### look 3 of 4
+#### look 3 of 6
 
 `C7-95` · rendered **4×43** · 1 instance look like this
+
+```html
+<span class="bcbar" style="--c: #3fa7d6;"></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `absolute` | `absolute` | .mtable .ncell .bcbar · app.css:974 |
+| width | `4px` | `4px` | .mtable .ncell .bcbar · app.css:974 |
+| min-width | `0px` | `0px` | .app[data-realm="broadcast"] .mtable .ncell > span · app.css:973 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `10px` | `10px` | .mtable .ncell .bcbar · app.css:974 |
+| bottom | `10px` | `10px` | .mtable .ncell .bcbar · app.css:974 |
+| left | `0px` | `0px` | .mtable .ncell .bcbar · app.css:974 |
+| border-radius | `0 3px 3px 0` | `` | .mtable .ncell .bcbar · app.css:974 |
+| background | `var(--c)` | `` | .mtable .ncell .bcbar · app.css:974 |
+| background-color | `` | `rgb(63, 167, 214)` | .mtable .ncell .bcbar · app.css:974 |
+| background-image | `` | `none` | .mtable .ncell .bcbar · app.css:974 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · table · app.css:1247 |
+| font-weight | ↑ `500` | `500` | inherited · td.n · app.css:1278 |
+| font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| line-height | ↑ `1.35` | `19.575px` | inherited · .mtable td · app.css:2137 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
+
+#### look 4 of 6
+
+`C7-113` · rendered **4×43** · 1 instance look like this
 
 ```html
 <span class="bcbar" style="--c: #1f8a5e;"></span>
@@ -1266,9 +1301,9 @@ inside `.ncell` · 4 on screen · **4 looks**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
-#### look 4 of 4
+#### look 5 of 6
 
-`C7-113` · rendered **4×43** · 1 instance look like this
+`C7-131` · rendered **4×43** · 1 instance look like this
 
 ```html
 <span class="bcbar" style="--c: #8a6bd1;"></span>
@@ -1299,14 +1334,47 @@ inside `.ncell` · 4 on screen · **4 looks**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
+#### look 6 of 6
+
+`C7-149` · rendered **4×43** · 1 instance look like this
+
+```html
+<span class="bcbar" style="--c: #e8873a;"></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `absolute` | `absolute` | .mtable .ncell .bcbar · app.css:974 |
+| width | `4px` | `4px` | .mtable .ncell .bcbar · app.css:974 |
+| min-width | `0px` | `0px` | .app[data-realm="broadcast"] .mtable .ncell > span · app.css:973 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `10px` | `10px` | .mtable .ncell .bcbar · app.css:974 |
+| bottom | `10px` | `10px` | .mtable .ncell .bcbar · app.css:974 |
+| left | `0px` | `0px` | .mtable .ncell .bcbar · app.css:974 |
+| border-radius | `0 3px 3px 0` | `` | .mtable .ncell .bcbar · app.css:974 |
+| background | `var(--c)` | `` | .mtable .ncell .bcbar · app.css:974 |
+| background-color | `` | `rgb(232, 135, 58)` | .mtable .ncell .bcbar · app.css:974 |
+| background-image | `` | `none` | .mtable .ncell .bcbar · app.css:974 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · table · app.css:1247 |
+| font-weight | ↑ `500` | `500` | inherited · td.n · app.css:1278 |
+| font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| line-height | ↑ `1.35` | `19.575px` | inherited · .mtable td · app.css:2137 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
+
 
 ### `b`
 
-inside `.—` · 4 on screen · **1 look**
+inside `.—` · 6 on screen · **1 look**
 
 #### the one look
 
-`C7-59` · rendered **268×18** · 4 instances look like this · text “S6 wrap-up — thanks for playing season 6.” · title="S6 wrap-up — thanks for playing season 6"
+`C7-59` · rendered **268×18** · 6 instances look like this · text “S6 wrap-up — thanks for playing season 6.” · title="S6 wrap-up — thanks for playing season 6"
 
 ```html
 <b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b>
@@ -1336,14 +1404,14 @@ inside `.—` · 4 on screen · **1 look**
 
 ### `td.nums`
 
-inside `.—` · 12 on screen · **1 look**
+inside `.—` · 18 on screen · **1 look**
 
 #### the one look
 
-`C7-60` · rendered **120×64** · 12 instances look like this
+`C7-60` · rendered **120×64** · 18 instances look like this
 
 ```html
-<td class="nums" style=""><span class="bcdt">Jul 14<small>74 days ago</small></span></td>
+<td class="nums" style=""><span class="bcdt">Jul 14<small>75 days ago</small></span></td>
 ```
 
 | property | winning declaration | computed | from |
@@ -1372,14 +1440,14 @@ inside `.—` · 12 on screen · **1 look**
 
 ### `span.bcdt`
 
-inside `.nums` · 8 on screen · **2 looks**
+inside `.nums` · 13 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C7-61` · rendered **104×23** · 4 instances look like this
+`C7-61` · rendered **104×23** · 6 instances look like this
 
 ```html
-<span class="bcdt">Jul 14<small>74 days ago</small></span>
+<span class="bcdt">Jul 14<small>75 days ago</small></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1404,7 +1472,7 @@ inside `.nums` · 8 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C7-66` · rendered **104×9** · 4 instances look like this · text “Aug 11”
+`C7-66` · rendered **104×9** · 7 instances look like this · text “Aug 11”
 
 ```html
 <span class="bcdt">Aug 11</span>
@@ -1433,14 +1501,14 @@ inside `.nums` · 8 on screen · **2 looks**
 
 ### `small`
 
-inside `.bcdt` · 4 on screen · **1 look**
+inside `.bcdt` · 6 on screen · **1 look**
 
 #### the one look
 
-`C7-62` · rendered **104×7** · 4 instances look like this · text “74 days ago”
+`C7-62` · rendered **104×7** · 6 instances look like this · text “75 days ago”
 
 ```html
-<small>74 days ago</small>
+<small>75 days ago</small>
 ```
 
 | property | winning declaration | computed | from |
@@ -1464,11 +1532,11 @@ inside `.bcdt` · 4 on screen · **1 look**
 
 ### `span.bcdt.dim`
 
-inside `.nums` · 3 on screen · **1 look**
+inside `.nums` · 4 on screen · **1 look**
 
 #### the one look
 
-`C7-64` · rendered **104×8** · 3 instances look like this · text “On posting”
+`C7-64` · rendered **104×8** · 4 instances look like this · text “On posting”
 
 ```html
 <span class="bcdt dim">On posting</span>
@@ -1497,9 +1565,9 @@ inside `.nums` · 3 on screen · **1 look**
 
 ### `span.btab`
 
-inside `.—` · 4 on screen · **2 looks**
+inside `.—` · 6 on screen · **3 looks**
 
-#### look 1 of 2
+#### look 1 of 3
 
 `C7-67` · rendered **80×28** · 3 instances look like this
 
@@ -1540,9 +1608,9 @@ inside `.—` · 4 on screen · **2 looks**
 | color | `var(--lc)` | `rgb(133, 147, 159)` | .btab · app.css:980 |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
-#### look 2 of 2
+#### look 2 of 3
 
-`C7-87` · rendered **94×28** · 1 instance look like this
+`C7-87` · rendered **94×28** · 2 instances look like this
 
 ```html
 <span class="btab" style="--lc: var(--ok);">⟨svg.ic⟩<span class="w">Live now</span></span>
@@ -1581,12 +1649,53 @@ inside `.—` · 4 on screen · **2 looks**
 | color | `var(--lc)` | `rgb(123, 219, 99)` | .btab · app.css:980 |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
+#### look 3 of 3
+
+`C7-159` · rendered **103×28** · 1 instance look like this
+
+```html
+<span class="btab" style="--lc: var(--sched);">⟨svg.ic⟩<span class="w">Upcoming</span></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b4 [data-realm="broadcast"] .mtable tbody td > .btab · b4.css:201 |
+| gap | `7px` | `` | .btab · app.css:980 |
+| column-gap | `7px` | `7px` | .btab · app.css:980 |
+| row-gap | `7px` | `7px` | .btab · app.css:980 |
+| align-items | `center` | `center` | .btab · app.css:980 |
+| width | `max-content` | `102.609px` | .b4 [data-realm="broadcast"] .mtable tbody td > .btab · b4.css:201 |
+| height | `28px` | `28px` | .btab · app.css:980 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 11px 0 12px` | `` | .btab · app.css:980 |
+| padding-top | `0px` | `0px` | .btab · app.css:980 |
+| padding-right | `11px` | `11px` | .btab · app.css:980 |
+| padding-bottom | `0px` | `0px` | .btab · app.css:980 |
+| padding-left | `12px` | `12px` | .btab · app.css:980 |
+| border-radius | `6px` | `` | .b4 [data-realm="broadcast"] .btab · b4.css:207 |
+| background | `color-mix(in srgb,var(--lc) 9%,transparent)` | `` | .btab · app.css:980 |
+| background-color | `` | `color(srgb 0.65098 0.501961 0.984314 / 0.09)` | .btab · app.css:980 |
+| background-image | `` | `none` | .btab · app.css:980 |
+| box-shadow | `inset 3px 0 0 var(--lc),inset 0 0 0 1px color-mix(in srgb,var(--lc) 22%,transparent)` | `rgb(166, 128, 251) 3px 0px 0px 0px inset, color(srgb 0.65098 0.501961 0.984314 / 0.22) 0px 0px 0px 1px inset` | .btab · app.css:980 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .btab · app.css:980 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .btab · app.css:980 |
+| font-size | `` | `12px` | .btab · app.css:980 |
+| font-weight | `` | `600` | .btab · app.css:980 |
+| font-style | `` | `normal` | .btab · app.css:980 |
+| font-variant-numeric | `` | `normal` | .btab · app.css:980 |
+| line-height | `` | `12px` | .btab · app.css:980 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
+| white-space | `nowrap` | `` | .btab · app.css:980 |
+| color | `var(--lc)` | `rgb(166, 128, 251)` | .btab · app.css:980 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
+
 
 ### `span.w`
 
-inside `.btab` · 5 on screen · **3 looks**
+inside `.btab` · 7 on screen · **4 looks**
 
-#### look 1 of 3
+#### look 1 of 4
 
 `C7-69` · rendered **36×8** · 3 instances look like this · text “Ended”
 
@@ -1611,7 +1720,7 @@ inside `.btab` · 5 on screen · **3 looks**
 | color | ↑ `var(--lc)` | `rgb(133, 147, 159)` | inherited · .btab · app.css:980 |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
-#### look 2 of 3
+#### look 2 of 4
 
 `C7-86` · rendered **43×9** · 1 instance look like this · text “No end”
 
@@ -1636,9 +1745,9 @@ inside `.btab` · 5 on screen · **3 looks**
 | color | ↑ `var(--warn-ink)` | `rgb(255, 158, 114)` | inherited · .bcdt.never · app.css:979 |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
-#### look 3 of 3
+#### look 3 of 4
 
-`C7-89` · rendered **50×8** · 1 instance look like this · text “Live now”
+`C7-89` · rendered **50×8** · 2 instances look like this · text “Live now”
 
 ```html
 <span class="w">Live now</span>
@@ -1661,14 +1770,39 @@ inside `.btab` · 5 on screen · **3 looks**
 | color | ↑ `var(--lc)` | `rgb(123, 219, 99)` | inherited · .btab · app.css:980 |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
+#### look 4 of 4
+
+`C7-161` · rendered **59×8** · 1 instance look like this · text “Upcoming”
+
+```html
+<span class="w">Upcoming</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .btab · app.css:980 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .btab · app.css:980 |
+| font-size | ↑ `` | `12px` | inherited · .btab · app.css:980 |
+| font-weight | ↑ `` | `600` | inherited · .btab · app.css:980 |
+| font-style | ↑ `` | `normal` | inherited · .btab · app.css:980 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .btab · app.css:980 |
+| line-height | ↑ `` | `12px` | inherited · .btab · app.css:980 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
+| white-space | ↑ `nowrap` | `` | inherited · .btab · app.css:980 |
+| color | ↑ `var(--lc)` | `rgb(166, 128, 251)` | inherited · .btab · app.css:980 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
+
 
 ### `td.ra`
 
-inside `.—` · 4 on screen · **1 look**
+inside `.—` · 6 on screen · **1 look**
 
 #### the one look
 
-`C7-70` · rendered **64×64** · 4 instances look like this
+`C7-70` · rendered **64×64** · 6 instances look like this
 
 ```html
 <td class="ra"><button class="rmv wg-ib wg-del" data-tip="Remove" aria-label="Remove S6 wrap-up — thanks for playing season 6.">⟨svg.ic⟩</button></td>
@@ -1700,11 +1834,11 @@ inside `.—` · 4 on screen · **1 look**
 
 ### `button.rmv.wg-del.wg-ib`
 
-inside `.ra` · 4 on screen · **1 look**
+inside `.ra` · 6 on screen · **1 look**
 
 #### the one look
 
-`C7-71` · rendered **44×44** · 4 instances look like this · aria-label="Remove S6 wrap-up — thanks for playing s"
+`C7-71` · rendered **44×44** · 6 instances look like this · aria-label="Remove S6 wrap-up — thanks for playing s"
 
 ```html
 <button class="rmv wg-ib wg-del" data-tip="Remove" aria-label="Remove S6 wrap-up — thanks for playing season 6.">⟨svg.ic⟩</button>

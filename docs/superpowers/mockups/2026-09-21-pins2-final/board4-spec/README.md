@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the resolved values
 
-*Generated 2026-09-27T23:26:07.833Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html at 1282×888, fresh profile. 1418 looks specced across 579 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **17**. Winning declarations the computed value contradicts: **56** (marked ⚠️).*
+*Generated 2026-09-28T02:12:34.052Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html at 1282×888, fresh profile. 1476 looks specced across 600 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **17**. Winning declarations the computed value contradicts: **64** (marked ⚠️).*
 
 ⚠️ **Not reached** (rendered, classed, never walked — each is a coverage hole):
 
@@ -50,13 +50,13 @@ node $O/maps.cjs
 | [`switches.md`](switches.md) · [`file-map.md`](file-map.md) · [`portal-diff.md`](portal-diff.md) · [`class-map.md`](class-map.md) · [`token-map.md`](token-map.md) · [`portal-class-rules.md`](portal-class-rules.md) | the maps, generated | — |
 | [`tokens.md`](tokens.md) | Tokens as resolved on `:root` | 14 KB |
 | [`motion.md`](motion.md) | @keyframes the board uses | 9 KB |
-| [`C1-armory-manifest.md`](C1-armory-manifest.md) | C1 · The Armory manifest — resting | 309 KB |
+| [`C1-armory-manifest.md`](C1-armory-manifest.md) | C1 · The Armory manifest — resting | 310 KB |
 | [`C2-new-build.md`](C2-new-build.md) | C2 · New build — resting | 265 KB |
 | [`C3-compare.md`](C3-compare.md) | C3 · Compare — resting | 162 KB |
 | [`C4-repairs.md`](C4-repairs.md) | C4 · Repairs — resting | 218 KB |
 | [`C5-export.md`](C5-export.md) | C5 · Export — resting | 80 KB |
-| [`C6-delivery-queue.md`](C6-delivery-queue.md) | C6 · The delivery queue — resting | 101 KB |
-| [`C7-broadcast.md`](C7-broadcast.md) | C7 · The Broadcast manifest, and posting — resting | 104 KB |
+| [`C6-delivery-queue.md`](C6-delivery-queue.md) | C6 · The delivery queue — resting | 169 KB |
+| [`C7-broadcast.md`](C7-broadcast.md) | C7 · The Broadcast manifest, and posting — resting | 112 KB |
 | [`C8-history.md`](C8-history.md) | C8 · History — resting | 235 KB |
 | [`C9-admin-traffic.md`](C9-admin-traffic.md) | C9 · Admin traffic — resting | 11 KB |
-| [`states.md`](states.md) | Reachable states | 1920 KB |
+| [`states.md`](states.md) | Reachable states | 1978 KB |

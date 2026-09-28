@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective (the kit Board 3-E shares) — the switches, and which option the board holds
 
-*Generated 2026-09-27T23:22:41.433Z by `switches.cjs` from the kit's `b3/state.js` DEFAULTS, `b3/board.css`, `gates.css`, `b2.css` and every `useB3`/`b3()` call. **224 keyed selectors are live and 292 are dead** under the values below.*
+*Generated 2026-09-28T02:08:46.233Z by `switches.cjs` from the kit's `b3/state.js` DEFAULTS, `b3/board.css`, `gates.css`, `b2.css` and every `useB3`/`b3()` call. **224 keyed selectors are live and 292 are dead** under the values below.*
 
 ## How to port a switched rule or branch
 
@@ -17,8 +17,8 @@ status: live
 
 | Switch | Board holds | Who ruled it | Live selectors | Dead selectors — do not port | JS branches |
 |---|---|---|---|---|---|
-| `a1` | `"fixed"` | the fixed section treatment — NO fork record; inferred from the kit, where every gate renders under it | `fixed` ×67 (b3/board.css:1621, b3/board.css:1622, b3/board.css:1623, …)<br>`(present)` ×16 (b3/board.css:3393, b3/board.css:3393, b3/board.css:3394, …) | — | ui/icons.js:164<br>ui/manifest.js:125<br>gates/armory.js:41<br>gates/armory.js:73<br>gates/armory.js:191<br>gates/armory.js:1095 |
-| `b1` | `"fixed"` | board chrome | — | — | gates/broadcast.js:135 |
+| `a1` | `"fixed"` | the fixed section treatment — NO fork record; inferred from the kit, where every gate renders under it | `fixed` ×67 (b3/board.css:1621, b3/board.css:1622, b3/board.css:1623, …)<br>`(present)` ×16 (b3/board.css:3393, b3/board.css:3393, b3/board.css:3394, …) | — | ui/icons.js:166<br>ui/manifest.js:125<br>gates/armory.js:41<br>gates/armory.js:73<br>gates/armory.js:191<br>gates/armory.js:1095 |
+| `b1` | `"fixed"` | board chrome | — | — | gates/broadcast.js:147 |
 | `e1` | `"now"` | ⏳ OPEN — Session 4 · §5c (E1–E6 withdrawn 2026-09-15) | `(present)` ×9 (b3/board.css:1592, b3/board.css:1602, b3/board.css:1602, …) | `a` ×11 (b3/board.css:1591, b3/board.css:1593, b3/board.css:1594, …)<br>`b` ×12 (b3/board.css:1591, b3/board.css:1598, b3/board.css:1599, …) | — |
 | `e2` | `"now"` | ⏳ OPEN — Session 4 | — | `b` ×15 (b3/board.css:1675, b3/board.css:1676, b3/board.css:1677, …)<br>`a` ×5 (b3/board.css:1681, b3/board.css:1682, b3/board.css:1683, …) | — |
 | `e2spd` | `"smooth"` | ruled §4 (db) | `smooth` ×1 (gates.css:303) | `quick` ×1 (gates.css:302)<br>`slow` ×1 (gates.css:304) | — |
@@ -45,7 +45,7 @@ status: live
 | `p6day` | `"real"` | board data switch — `real` is the portal's own data; chrome | — | — | ui/armory.js:1405<br>b3/repairs.js:67<br>gates/armory.js:190 |
 | `p6lay` | `"sections"` | ruled §4 (db) | — | — | b3/repairs.js:69 |
 | `p7` | `"new"` | P7 Command search — "Build it properly, and exactly as shown" | — | — | ui/shell.js:365 |
-| `p8` | `"a"` | ruled §4 (db) | — | — | ui/broadcast.js:488<br>gates/broadcast.js:27 |
+| `p8` | `"a"` | ruled §4 (db) | — | — | ui/broadcast.js:526<br>gates/broadcast.js:101 |
 | `p9` | `"b"` | ruled §4 (db) | `b` ×40 (gates.css:667, gates.css:667, gates.css:667, …) | `c` ×6 (b3/board.css:4802, b3/board.css:4803, b3/board.css:4804, …)<br>`d` ×5 (b3/board.css:4809, b3/board.css:4810, b3/board.css:4932, …)<br>`e` ×12 (b3/board.css:4823, b3/board.css:4824, b3/board.css:4824, …) | ui/history.js:162<br>b3/history.js:48<br>gates/history.js:42 |
 | `section` | `"a1"` | board chrome — which gate is open | — | — | b3/dock.js:64 |
 | `xbg` | `"ground"` | ruled §4 (db) | `ground` ×3 (b3/board.css:4243, b3/board.css:4267, b3/board.css:4356) | `mesh` ×2 (b3/board.css:4243, b3/board.css:4267) | — |

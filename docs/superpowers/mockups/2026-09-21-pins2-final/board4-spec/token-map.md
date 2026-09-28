@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the custom properties the portal does not have
 
-*Generated 2026-09-27T23:26:08.128Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `5cf50ac`. 138 of the 221 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
+*Generated 2026-09-28T02:12:34.634Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `fc3c23b`. 140 of the 223 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
 
 | Token | Defined in the kit | The definition |
 |---|---|---|
@@ -51,6 +51,7 @@ status: live
 | `--ft` | `b3/board.css:2374` | `@keyframes b3fadeT{0%{--ft:0px}8%,100%{--ft:var(--fdy,15px)}}` |
 | `--fx-l` | `b3/board.css:4456` | `.b3-xt-chips[data-sx=start]{--fx-l:0px;--fx-r:28px}` |
 | `--fx-r` | `b3/board.css:4456` | `.b3-xt-chips[data-sx=start]{--fx-l:0px;--fx-r:28px}` |
+| `--gc` | `b2.css:288` | `.pb-cgi[data-g=in]{--gc:var(--ok)}.pb-cgi[data-g=out]{--gc:var(--ink3)}` |
 | `--gh-cat-range` | — **not defined anywhere in the kit** | `` |
 | `--gh-div-badge` | — **not defined anywhere in the kit** | `` |
 | `--gh-name-cat` | — **not defined anywhere in the kit** | `` |
@@ -134,6 +135,7 @@ status: live
 | `--sv-caution` | `b3/board.css:2351` | `:root{--sv-error:#FF5A4F;--sv-warn:#FF8A3D;--sv-caution:#F0B447;--sv-info:#85939F}` |
 | `--sv-error` | `b3/board.css:2351` | `:root{--sv-error:#FF5A4F;--sv-warn:#FF8A3D;--sv-caution:#F0B447;--sv-info:#85939F}` |
 | `--sv-info` | `b3/board.css:2351` | `:root{--sv-error:#FF5A4F;--sv-warn:#FF8A3D;--sv-caution:#F0B447;--sv-info:#85939F}` |
+| `--sw` | `b3/broadcast.js:212` | `<button type="button" key=${n} role="option" class="b4-sw" style=${`--sw:${hexOf(n)}`} aria-selected=${n === value ? 'true' : 'false'} aria-` |
 | `--sx` | `b3/volt.js:151` | `+ steps.map(([t, l, sx, sy]) => `${(t * 100).toFixed(3)}%{--lit:${l.toFixed(3)};--sx:${sx.toFixed(1)}%;--sy:${sy.toFixed(1)}%}`).join('')` |
 | `--sy` | `b3/volt.js:151` | `+ steps.map(([t, l, sx, sy]) => `${(t * 100).toFixed(3)}%{--lit:${l.toFixed(3)};--sx:${sx.toFixed(1)}%;--sy:${sy.toFixed(1)}%}`).join('')` |
 | `--tx` | `b3/armory-parts.js:75` | `style=${geo ? `left:${geo.left}px;top:${geo.top}px;--tx:${geo.tx}px` : 'visibility:hidden;left:0;top:0'}>` |

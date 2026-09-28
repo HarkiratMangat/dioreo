@@ -764,4 +764,6 @@ Ten instructions, given as a numbered list against two screenshots and the open 
 | Announcement text | ✅ **past 4,000 Stage is blocked** (the /manage modal's cap, under Discord's 4,068 real limit) | plan §19z-h, 2026-09-26 20:07 EDT | the op accepts 4,001 |
 | The shared 6,000 | ✅ **warn only** — the bot must split delivery (filed) | his popup, 2026-09-27 | the bot still sends one reply over 6,000 |
 | Date picker | ✅ one `DateGrid` for every date field, every realm: the dropdowns' ground, 270 wide, 36px days, Sunday first, no quick picks, every accent through `--dp-c` → `--realm-c` | his asks 2026-09-27 19:12, 19:18 EDT (`docs/claude/pins2/handoffs/2026-09-21-board4-intake.md`) | a date field ships the browser's picker, or a picker with a colour of its own |
+| Announcement accent | ✅ chosen in the post drawer; a new post opens on a fresh generated colour; every surface showing the post wears it, never the realm's pink | his v36 intake, 2026-09-27 20:34 EDT | the edit op still drops `color` (filed) |
+| Queue card chips | ✅ a chip that is a field opens its editor where it sits (End, Start before it begins, showings) | his v36 intake, 2026-09-27 20:34 EDT | — |
 | Phone | ✅ out of scope: "phone doesn't matter… It's a future scope." | 2026-09-21 10:41 EDT | he brings it into scope |
