@@ -855,3 +855,22 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 **His reply, 2026-09-27 20:39 EDT, verbatim** (to "today + 14 days"):
 
 > open it on today + 1 day, so it default highlights to tomorrow's date. Also, honestly "Stop showing it live since Aug 4" line is pretty useless in the picker, so scratch my earlier request about it and just remove that part out of the picker entirely.
+
+### His second batch — 2026-09-27 21:04 EDT, verbatim (three screenshots, `local/pins2-board-3/board4-review/intake-v36/76.png`–`78.png`: the post drawer's Text field and count row, a queue card's text block with Show less, Export's Collapse button)
+
+> * can the text field in the announcement drawer have it's design improved improved?
+>    * i want it to get the list design we already use in the announcement card (preview + footer)
+>    * i want it to have the collapsed/expanded system, with it defaulting to the collapsed state whenever the drawer is opened
+>    * In the footer, put the counter + budget chips stacked, and the "collapse/expand" button
+> * also, update the "show less" button to be worded as "collapse/expand", and can you make it the same sizing/padding/etc of the collapse button that's specifically used in Export drawer's `pick builds...` lists?
+> * and i realize the show less/more button is clickable even when the announcement card's announce is less than its preview threshold. please hide it if not needed. (also create 2 more example announcement the C6 gate. 1. to show me announcement card where the announcement is longer than the preview threshold and has an end date set, such as december 31. 2. to show me an announcement with a sizeable character count such as ~2000 and it's currently scheduled to start on october 31st to nov 14. I basically want to see a few real scenarios on the C6 gate. Actually maybe also another example that shows me an announcement that's in 'staged' state?)
+
+| # | Item | Kind | Status |
+|---|---|---|---|
+| 13 | the post drawer's Text field in the queue card's text-block design (the text, then a footer) | build | logged |
+| 14 | …with the card's collapse/expand, collapsed each time the drawer opens | build | logged |
+| 15 | …its footer: the counter and budget chips stacked, and the Collapse/Expand button | build | logged |
+| 16 | "Show less / Show all" → "Collapse / Expand", sized as Export's Pick builds Collapse button | build | logged |
+| 17 | hide Collapse/Expand when the text fits its preview | build | logged |
+| 18 | C6 examples: (a) longer than the preview, ends Dec 31 · (b) ~2,000 characters, scheduled Oct 31 → Nov 14 · (c) a staged announcement | build | logged |
+
