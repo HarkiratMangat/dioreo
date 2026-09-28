@@ -1043,3 +1043,11 @@ A frame-accurate recording of the hover (open, use → replace → use, close): 
 > hover hide animation still needs refining.
 
 **Rebuilt on the mockup (12:09 EDT), judged on a real recording (the browser's own screencast), not paused frames:** the close had three faults with one cause — the pair's divide came from a grid collapsing 1fr 1fr → 1fr 0fr while the divide, pop and shadow layers placed it at half the width, so mid-close the divide stood apart from the real one (two lines), the replace half squashed into a sliver at the edge for most of the close, and the layers faded separately and showed through each other. Now: the halves stay 1fr 1fr at every frame, so every layer uses the same geometry (width, x and y offsets, one 300ms curve); the whole hover is one group that fades as a single layer — in over 90ms while it widens from the swatch, out over 200ms while it shrinks back — so the replace half dissolves instead of squashing, with no ghosting. The recording `pop-anim.gif` is replaced with the real one (open, use → replace → use, close).
+
+**2026-09-28 12:12 and 12:16 EDT, verbatim** (the second with screenshot `local/pins2-board-3/board4-review/intake-v38/100.png`):
+
+> its so quick and abrupt, not smooth
+>
+> also notice that like 'wipe' that happens over the swatch due to the middle divider? that looks so oof.
+
+**Rebuilt on the mockup (12:17 EDT), logged frame by frame in the browser during a real close:** the two halves are now their own geometry (each its own width, its own outer corners), so the divide, the pop layers and the shadow read the same two widths and never disagree. Close runs as a sequence over ~560ms: the icons fade (120ms) → the replace half folds into the divide (0–250ms: 30 → 18 → 6 → 0px) → the saved half eases back to the swatch and rounds its corners (150–450ms: 30 → 28 → 25.8 → 25px) → only then does the group fade (470–560ms), when it is identical to the swatch beneath, so nothing is seen to vanish. Open is the reverse on one 300ms ease: the saved colour stays put and the new colour grows out from the swatch's right edge, so the divide never crosses the swatch (the 'wipe' is gone). A new slider, **Hover close speed** (150–900ms, default 420), beside **Hover open speed**. The recording `pop-anim.gif` is the real one again.
