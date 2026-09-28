@@ -1067,3 +1067,9 @@ A frame-accurate recording of the hover (open, use → replace → use, close): 
 > why does the selected border disappear SO late?
 
 **Answer and fix (12:40 EDT):** the delay written for the ring's RETURN (so it comes back only as the hover finishes leaving) sat on the rule both directions use, so it also held the ring for ~190ms before hiding. The hiding state now has its own timing: measured each frame, the ring is at 24% by 40ms and gone by 90ms on open; on close it still waits and returns from ~200ms to full by ~390ms.
+
+**2026-09-28 12:47 EDT, verbatim** (his frame sheet `local/pins2-board-3/board4-review/intake-v38/102.png`, moving straight from one saved colour to the next):
+
+> notice frame ~20-29. how the closing swatch is layered over the openning swatch?
+
+**Cause and fix (12:48 EDT):** a slot kept its raised layer for the length of its close (so it would not drop under its neighbour mid-close), and the slot opening next to it had the same layer and came earlier in the row, so the closing one painted over it. Now three layers: at rest, closing, open — the slot opening always sits above the one still closing (logged every frame: closing at 3, opening at 4); the closing layer is held by a class for exactly the close's length, read from the close-speed setting.
