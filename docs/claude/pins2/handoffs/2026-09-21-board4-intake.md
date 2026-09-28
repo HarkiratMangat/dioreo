@@ -1061,3 +1061,9 @@ A frame-accurate recording of the hover (open, use → replace → use, close): 
 **What his frames showed (walked frame by frame):** on the close, the saved half kept its pop and its square inner corners while the replace half folded first, so for ~200ms a tall square-cornered block with a teal tab collapsed, then snapped round; the reversed version (all parts on one curve) still left a square-cornered block with a shrinking teal sliver for its whole tail.
 
 **Rebuilt on the mockup (12:38 EDT), each state measured and recorded in the browser, 24 consecutive frames read per close in both slot directions:** the replace half no longer narrows — it is a card that slides out from under the saved half on open and back under it on close, its width constant, while both halves' inner corners round in the first third of the close so each reads as its own rounded card; the saved half narrows to the swatch; the divide fades in only once it has reached the seam (it no longer crosses the swatch) and fades out first on close; everything moves on one symmetric ease-in-out (340ms close, 300ms open), and the group's opacity drops only after the shape has arrived. Rest, open and closed geometry measured exact for a right-growing and a left-growing slot. The recording `pop-anim.gif` shows both.
+
+**2026-09-28 12:40 EDT, verbatim:**
+
+> why does the selected border disappear SO late?
+
+**Answer and fix (12:40 EDT):** the delay written for the ring's RETURN (so it comes back only as the hover finishes leaving) sat on the rule both directions use, so it also held the ring for ~190ms before hiding. The hiding state now has its own timing: measured each frame, the ring is at 24% by 40ms and gone by 90ms on open; on close it still waits and returns from ~200ms to full by ~390ms.
