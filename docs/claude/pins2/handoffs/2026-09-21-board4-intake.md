@@ -1140,3 +1140,24 @@ flush (picker bottom − swatches bottom): +5.3px
 | **Z · The table's column heads** | ~~smaller badges~~ → a text-less variant of every badge chip: its plate, animation, colours and icon, no words · the weapon name larger · "Build x" smaller, in its usual coloured chip style | a text-less badge is a NEW member of the badge family, so PRE-FLIGHT 61 applies: every badge consumer and `docs/reference/badge-motion.md` read first; how the badge still names itself without text (a hover and an accessible name); the "Build x" chip against W's build chips and the board's build chip; Baseline, "No label" and "No badges" lines in the head; the heads in all three views and at six columns |
 
 *The round is still open.*
+
+### His third C3 Compare batch — 2026-09-28 13:40 EDT, verbatim (two screenshots: `local/pins2-board-3/board4-review/intake-v38/112.png` Table B with BAL-27 and KILO BOLT-ACTION builds 1–3, some cells tinted, some hatched "Not equipped", a two-line cell taller than its tinted neighbour · `113.png` Table C, "Crown-H3 Barrel · 3 builds" hovered and only Build 1's head lit)
+
+> * also, im kind of confused... why are some of these cells highlighted while others arent?
+> * and also, do you notice how the cell's design doesn't apply to it's entire height when the row is larger due to text wrapping?
+>
+> * should hovering over one of these cells that spans multiple builds then highlight all the builds it applies to instead of just the first one?
+
+**His first question, answered from `local/pins2-board-3/redo/b4/compare.js` (`cellState`, lines 155–160):** each weapon's first shown build is its **baseline** and is never tinted; each of that weapon's other builds is compared with it, cell by cell: **tinted** in the weapon's colour where the part differs (including a part the baseline has none of), **hatched "Not equipped"** where the baseline has a part this build lacks, **dimmed** where it matches, and "—" where neither has one. Nothing on the panel says so, which is why it reads as arbitrary — and the baseline's own cells (bright, untinted) look more emphasised than the matching ones (dim), so the emphasis reads inverted.
+
+**His third question, answered by his popup (2026-09-28 13:40 EDT): "Light every build"** — hovering a merged cell lights the head of every build it covers and its whole span.
+
+**Grouped by class (2026-09-28 13:40 EDT).** All are C3, built after the next compact.
+
+| Class | His asks in it | The sweep before building |
+|---|---|---|
+| **AA · What a cell's look means** | "why are some of these cells highlighted while others arent?" — the diff rule is invisible | the four cell states (baseline, differs, missing, matches) and whether each look says its meaning without a key; whether the baseline should lead or recede; where the rule is stated (the strip above the table, class V, or a column head's Baseline chip); all three views, one weapon and several |
+| **AB · A cell's fill fills its row** | the tint (and the hatch) stops short of the row's height when a neighbour wraps to two lines | every filled cell state (differs tint, the weapon-colour edge, the "Not equipped" hatch, the hover crosshair) at a wrapped row's full height; all three views; the longest real part names; Table C's merged lanes |
+| **AC · Hover across a merged cell** | **his answer: light every build** — a merged cell lights the head of every build it covers and its whole span, not only the first | the existing hover ("a hovered cell lights its row and its column") for spans in C and for B's and A's equivalents; keyboard focus the same as hover; the head's lit state against class Z's new heads |
+
+*The round is still open.*
