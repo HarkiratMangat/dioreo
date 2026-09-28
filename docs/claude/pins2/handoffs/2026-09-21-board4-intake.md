@@ -971,3 +971,13 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > also why no toggle for picker height?
 
 **Built on the mockup (11:13 EDT):** the saved slot's icons are black or white by contrast against each half's own colour, no shadow; every state change eases on the board's own tokens (`--ease` cubic-bezier(.2,.8,.3,1), 150 / 220 / 300ms) — the saved slot widens over 300ms with the new-colour half growing out of the seam, its icons fading in after it, and closing in reverse (its layer drops only once the close finishes); a swatch's selection ring, a colour saved into a slot and an empty slot's fill all ease, because the rows are no longer rebuilt on every change (the rebuild was what made them jump); reduced motion is honoured. The picker height is now a slider in every layout (default 137, where the hex field and the swatches end flush), with a live readout of the flush offset — it had been a slider for the top layout only, because in the side layouts the colour area stretched to fit. **For the build (a class, his standing rule):** no state change on the board is a one-frame swap — search the board for lists rebuilt on change and for state properties with no transition when this class is built.
+
+**2026-09-28 11:14–11:20 EDT, verbatim:**
+
+> just overwrite the /Users/harkirat/Downloads/accent_picker_in_form_tunable.html file. i'll open it locally.
+>
+> 2 new layouts i want to see:
+> 1. left column: picker with hue slider stacked under it. right column: swatches with hex/shuffle stacked under them.
+> 2. picker at top, with hue slider + hex/shuffle under it (slider + hex/shuffle inline, not stacked), with swatches under them.
+
+**On the mockup (11:22 EDT), both on the Layout switch beside the current one, measured at 2x:** layout 1 — picker 200 × 137 beside the Recent and Saved rows (its bottom level with the saved swatches), the hue bar under it level with the hex row under the swatches; block 486 × 223, the same height as the current layout. Layout 2 — picker 458 × 137 across the top, hue bar and hex row side by side under it, the swatch rows full width; at 8 a row the swatches come out 52px and the block 455 tall. In both, New colour is icon-only so six hex characters fit. Pictures: `local/pins2-board-3/board4-review/intake-v38/mock-left.png`, `mock-split.png`, `mock-stack.png`.
