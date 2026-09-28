@@ -902,7 +902,7 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 | Class | His asks in it | The sweep before building |
 |---|---|---|
 | **J · The counter-chip family** (queue head and the post footer) | the slots meter in the realm pink, one colour; the Budget chip wider; the character chip's thick border back to the chips' normal border, everywhere it has it, and in the docs/spec; the "1 a day max" chip takes the showings chip's repeat icon | every chip of the family on every gate (queue head, post footer, Edit, Post it again, Bulk and Export counters); which meters are split per post (Budget stays per-post accent) and which are single; every icon that means "repeats"; HANDOFF's Chip shape / Budget rows, C6/C7 |
-| **K · The pop-up family's offset** | down opens touching its trigger, up opens with a gap — one gap both ways, date picker included, "possibly other pop-ups"; **the reference is the build drawer's dropdown menus** (his 09:39 EDT addition) | `usePop` placement; every `ChipPop` and `DateGrid` opener (End, Start, showings, Set end date, Starts, Ends, Accent) and the build drawer's dropdowns (`.f-menu`), each opened down AND up at 2x |
+| **K · The pop-up family's offset** | down opens touching its trigger, up opens with a gap — one gap both ways, date picker included, "possibly other pop-ups"; **the reference is the build drawer's dropdown menus** (his 09:39 EDT addition), which themselves have two bugs (09:43 EDT): a hovered item's highlight escapes the menu's container, and a menu opened upward is cut by the drawer's top scroll fade — a layering fix | `usePop` placement; the dropdowns' item highlight at the first and last item, inside the menu's padding; every pop-up and menu painted ABOVE the drawer's fades (`b3/fady.js`), opened up next to the top fade and down next to the bottom one; every `ChipPop` and `DateGrid` opener (End, Start, showings, Set end date, Starts, Ends, Accent) and the build drawer's dropdowns (`.f-menu`), each opened down AND up at 2x |
 | **L · Copy that restates** | the showings pop-up's "2 times / per player / 1 a day max" goes; the accent's "Tints the card, its number and its share of the budget" hint goes | every helper line and side text in the post drawer and every pop-up: which says something the control does not |
 | **M · The showings stepper pop-up** | the broadcast accent worked into it; the stepper centred in its container | the stepper wherever it sits (drawer Repeat, the card's pop-up): one recipe for its accent |
 | **N · The accent picker** | a real colour selector (a block to pick in) replaces the sixteen presets; a row of the last ~10 shuffled colours, smaller swatches, above the hex and New colour; that history persists across closing the drawer and reloading | the colour field's anatomy against the form system; where the history lives (the board: local storage; the portal: per admin — a data note for Session 5); Edit / Post it again keep their accent |
@@ -911,3 +911,10 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 **Adding to K, 2026-09-28 09:39 EDT, verbatim:**
 
 > adding to the pop-up's position when openned... i think we mostly solved it when setting the position of the dropdown menu pop-ups in the Build drawer.
+
+**Adding to K, 2026-09-28 09:43 EDT, verbatim** (screenshot `local/pins2-board-3/board4-review/intake-v38/87.png`: the build drawer's category menu opened upward above ASSAULT, SECONDARIES highlighted):
+
+> oh actually... i just checked... so while the black container opens in the correct spot both above/below, there's 2 bugs i notice with it.
+>
+> 1. the highlight over the item is escaping the dropdown container (look at secondaries in the screenshot).
+> 2. the dropdown menu pop-up clips into the Build drawer's top scroll fade for the assault/weapon pop-ups. So those 2 need their z-axis fixed i think
