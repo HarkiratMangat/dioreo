@@ -1217,3 +1217,12 @@ And mid-run: *"your sequential-thinking call was so shit! WHERE ARE THE REAL, CH
 | "baseline" | v11's rule (the first build of each weapon) — position only | no reference build: odd ones out (his pick); a gunsmith code is never tinted; a slot most builds leave empty is a quiet dash |
 | (his "both") | — | under a row's name, "BAL-27 only" / "2 of 3 weapons" when only some weapons fill that slot |
 
+### His next correction — 2026-09-28 15:10 EDT, verbatim (his screenshot: the head's "Build 1" chip)
+
+> Talk about hand crafting.... why does the "build x" chip use a different design even tho we already have this chip pre-designed in the board???
+>
+> yk what... prep compact. your at context window limit anyway. post-compact is when you need to actually properly go thru things because im annoyed!
+
+**Open, NOT fixed (for after the compact):** the table heads' "Build N" chip (`.cx-bc`, `local/pins2-board-3/redo/b4/compare.css`) is a hand-made chip; the board already has a designed build chip. Find it FIRST (search the kit for the component that renders "Build N" as a chip — candidates: the build drawer's card head `.pb-bno`/`.f-card-h em`, the Export picker's build keys, the selection bar, the manifest's build number) and use it, on every consumer: the table heads, the one-build column, the Embed captions. Then the same question for every other element this round made: the tile, the limit chip, the − / + marks, the landing tile head — **each must be the board's existing component or be justified as new**.
+
+**State at the compact:** kit `4d07336` (local, NOT published; Version 38 is live); repo `999e483e`+ on `feat/portal-pins2-manifests`, nothing pushed. The build of J–P and C3 stands as recorded above, with his corrections of 14:44 EDT fixed; his judgement of the round is that it is not done — the post-compact session re-walks every element against the board's existing components, measured, before anything is called ready.
