@@ -1052,7 +1052,7 @@ A frame-accurate recording of the hover (open, use → replace → use, close): 
 
 **Rebuilt on the mockup (12:17 EDT), logged frame by frame in the browser during a real close:** the two halves are now their own geometry (each its own width, its own outer corners), so the divide, the pop layers and the shadow read the same two widths and never disagree. Close runs as a sequence over ~560ms: the icons fade (120ms) → the replace half folds into the divide (0–250ms: 30 → 18 → 6 → 0px) → the saved half eases back to the swatch and rounds its corners (150–450ms: 30 → 28 → 25.8 → 25px) → only then does the group fade (470–560ms), when it is identical to the swatch beneath, so nothing is seen to vanish. Open is the reverse on one 300ms ease: the saved colour stays put and the new colour grows out from the swatch's right edge, so the divide never crosses the swatch (the 'wipe' is gone). A new slider, **Hover close speed** (150–900ms, default 420), beside **Hover open speed**. The recording `pop-anim.gif` is the real one again.
 
-**2026-09-28 12:34 and 12:37 EDT, verbatim** (his 32-frame recording `local/pins2-board-3/board4-review/101.gif`, copied into `intake-v38/`):
+**2026-09-28 12:34 and 12:37 EDT, verbatim** (his 32-frame recording, copied to `local/pins2-board-3/board4-review/intake-v38/101.gif`):
 
 > the animation is so bad!!! '/Users/harkirat/Downloads/Arc (09-28-2026 at 12.32.54.PM).gif' view many consecutive frames please.
 >
