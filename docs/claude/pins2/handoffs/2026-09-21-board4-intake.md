@@ -1004,3 +1004,9 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > no, not make it larger in width. but literally make it pop out even more. while keeping the middle divide exactly the same. so it kind of increase in height and width but only towards the outside
 
 **On the mockup (11:51 EDT), measured with a real pointer at 2x:** ~~the hovered half wider (1.35 : 1)~~ → the hovered half grows 3px up, down and outward only; the divide stays where it was (x 372.0 with either half hovered); the other half is untouched; the shadow follows the combined shape, behind both halves. The slider is now **Hovered half pop** (0–8px, default 3). Picture: `pop-trio.png` (use hovered, replace hovered, rest).
+
+**2026-09-28 11:52 EDT, verbatim** (screenshot `local/pins2-board-3/board4-review/intake-v38/94.png`, the divide at 4x: a dark line beside a light one):
+
+> ew what's that middle divider....
+
+**Fixed on the mockup (11:52 EDT):** ~~a dark 1px line with a light 1px line beside it~~ → one 1px hairline in the gap colour the selected swatch's ring already uses (#15171B), on the replace half's edge so it stays put. Picture at 4x: `seam-pair.png`.
