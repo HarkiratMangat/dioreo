@@ -1073,3 +1073,12 @@ A frame-accurate recording of the hover (open, use → replace → use, close): 
 > notice frame ~20-29. how the closing swatch is layered over the openning swatch?
 
 **Cause and fix (12:48 EDT):** a slot kept its raised layer for the length of its close (so it would not drop under its neighbour mid-close), and the slot opening next to it had the same layer and came earlier in the row, so the closing one painted over it. Now three layers: at rest, closing, open — the slot opening always sits above the one still closing (logged every frame: closing at 3, opening at 4); the closing layer is held by a class for exactly the close's length, read from the close-speed setting.
+
+**His values for the accent block — 2026-09-28 12:58 EDT, verbatim** (from the mockup's Copy values):
+
+```
+col 486 · pad 14 · brad 10 · pw 200 · svh 138 · cg 16 · hueh 12 · huer 44 · hueg 14 · rg 16 · bgap 16 · fh 44 · frad 9 · lg 10 · swg 6 · swr 6 · cols 9 · nrec 2 · gw 2.00× · pop 1px · d3 240ms · dc 240ms · lay split · lbl on · div off · newlbl on · hash on
+flush (picker bottom − swatches bottom): +5.3px
+```
+
+**Where class N stands:** the in-form accent block is designed on the mockup — layout 1 (split: picker + hue under it, swatches + hex/shuffle beside), his values above, 9 swatches a row, the saved-colour hover (float, pop 1px outward, replace card sliding out from under, one-hairline divide, contrast ink, hex chips beside Recent / Saved), all motion on the board's tokens with his 240ms open and close. The mockup is kept at `local/pins2-board-3/board4-review/intake-v38/accent-mock.html` (his copy: `~/Downloads/accent_picker_in_form_tunable.html`). **Open for the build:** at picker height 138 in layout 1 the picker ends 5.3px below the swatches (his value, noted, not changed); the history persistence (local storage on the board; per admin in the portal — Session 5 data note). **Not yet started: the C3 Compare items** — the round's focus; batch 1 (classes J–P) is logged and nothing is built.
