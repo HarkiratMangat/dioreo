@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the resolved values
 
-*Generated 2026-09-28T19:09:59.957Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html at 1282×888, fresh profile. 1429 looks specced across 627 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **14**. Winning declarations the computed value contradicts: **76** (marked ⚠️).*
+*Generated 2026-09-28T23:20:48.380Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html at 1282×888, fresh profile. 1426 looks specced across 626 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **14**. Winning declarations the computed value contradicts: **77** (marked ⚠️).*
 
 ⚠️ **Not reached** (rendered, classed, never walked — each is a coverage hole):
 
@@ -56,4 +56,4 @@ node $O/maps.cjs
 | [`C7-broadcast.md`](C7-broadcast.md) | C7 · The Broadcast manifest, and posting — resting | 112 KB |
 | [`C8-history.md`](C8-history.md) | C8 · History — resting | 235 KB |
 | [`C9-admin-traffic.md`](C9-admin-traffic.md) | C9 · Admin traffic — resting | 11 KB |
-| [`states.md`](states.md) | Reachable states | 1913 KB |
+| [`states.md`](states.md) | Reachable states | 1902 KB |

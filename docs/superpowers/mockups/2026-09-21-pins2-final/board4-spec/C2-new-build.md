@@ -4190,7 +4190,7 @@ inside `.f-side` · 1 on screen · **1 look**
 `C2-233` · rendered **333×101** · 1 instance look like this · role="status"
 
 ```html
-<div class="f-stage" id="b4-stage-st" role="status" aria-live="polite"><h5><span>Before staging</span><button type="button" class="f-stmin" aria-label="Minimise Before staging" data-tip="Minimise">⟨svg.ic⟩</button></h5><ul><li><button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span class
+<div class="f-stage" id="b4-stage-st" role="status" aria-live="polite"><h5><span>Before staging</span><button type="button" class="b3-x f-stmin" aria-label="Minimise Before staging" data-tip="Minimise">⟨svg.ic⟩</button></h5><ul><li><button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span 
 ```
 
 | property | winning declaration | computed | from |
@@ -4217,47 +4217,48 @@ inside `.f-side` · 1 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `opacity .2s var(--ease),transform .26s var(--ease),visibility 0s linear 0s` | `` | .b4 .f-stage · b4/classes.css:826 |
+| transition | `opacity .2s var(--ease),transform .26s var(--ease),visibility 0s linear 0s` | `` | .b4 .f-stage · b4/classes.css:820 |
 | z-index | `2` | `2` | .b4 .f-stage · b4/classes.css:482 |
 
 
-### `button.f-stmin`
+### `button.b3-x.f-stmin`
 
 inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-235` · rendered **24×24** · 1 instance look like this · aria-label="Minimise Before staging" type="button"
+`C2-235` · rendered **28×28** · 1 instance look like this · aria-label="Minimise Before staging" type="button"
 
 ```html
-<button type="button" class="f-stmin" aria-label="Minimise Before staging" data-tip="Minimise">⟨svg.ic⟩</button>
+<button type="button" class="b3-x f-stmin" aria-label="Minimise Before staging" data-tip="Minimise">⟨svg.ic⟩</button>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b4 .f-stmin · b4/classes.css:822 |
-| flex | `none` | `` | .b4 .f-stmin · b4/classes.css:822 |
-| align-items | `center` | `center` | .b4 .f-stmin · b4/classes.css:822 |
-| place-items | `center` | `` | .b4 .f-stmin · b4/classes.css:822 |
-| width | `24px` | `24px` | .b4 .f-stmin · b4/classes.css:822 |
-| height | `24px` | `24px` | .b4 .f-stmin · b4/classes.css:822 |
+| display | `grid` | `grid` | .b3-x · b3/board.css:68 |
+| flex | `none` | `` | .b3-x · b3/board.css:68 |
+| align-items | `center` | `center` | .b3-x · b3/board.css:68 |
+| place-items | `center` | `` | .b3-x · b3/board.css:68 |
+| width | `28px` | `28px` | .b3-x · b3/board.css:68 |
+| height | `28px` | `28px` | .b3-x · b3/board.css:68 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0` | `` | .b4 .f-stmin · b4/classes.css:822 |
-| padding-top | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:822 |
-| padding-right | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:822 |
-| padding-bottom | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:822 |
-| padding-left | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:822 |
-| margin | `-7px -5px -7px 0` | `` | .b4 .f-stmin · b4/classes.css:822 |
-| margin-top | `-7px` | `-7px` | .b4 .f-stmin · b4/classes.css:822 |
-| margin-right | `-5px` | `-5px` | .b4 .f-stmin · b4/classes.css:822 |
-| margin-bottom | `-7px` | `-7px` | .b4 .f-stmin · b4/classes.css:822 |
-| margin-left | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:822 |
-| border | `0` | `` | .b4 .f-stmin · b4/classes.css:822 |
-| border-radius | `6px` | `` | .b4 .f-stmin · b4/classes.css:822 |
-| background | `none` | `` | .b4 .f-stmin · b4/classes.css:822 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-stmin · b4/classes.css:822 |
-| background-image | `none` | `none` | .b4 .f-stmin · b4/classes.css:822 |
+| padding | `0` | `` | .b3-x · b3/board.css:68 |
+| padding-top | `0px` | `0px` | .b3-x · b3/board.css:68 |
+| padding-right | `0px` | `0px` | .b3-x · b3/board.css:68 |
+| padding-bottom | `0px` | `0px` | .b3-x · b3/board.css:68 |
+| padding-left | `0px` | `0px` | .b3-x · b3/board.css:68 |
+| margin | `-9px 0` | `` | .b4 .f-stmin · b4/classes.css:819 |
+| margin-top | `-9px` | `-9px` | .b4 .f-stmin · b4/classes.css:819 |
+| margin-right | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:819 |
+| margin-bottom | `-9px` | `-9px` | .b4 .f-stmin · b4/classes.css:819 |
+| margin-left | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:819 |
+| border | `0` | `` | .b3-x · b3/board.css:68 |
+| border-radius | `var(--rad-2)` | `` | .b3-pc .b3-pc-x, .b3-x · b3/board.css:3636 |
+| background | `none` | `` | .b3-x · b3/board.css:68 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-x · b3/board.css:68 |
+| background-image | `none` | `none` | .b3-x · b3/board.css:68 |
+| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-x · b3/board.css:2168 |
 | font | `inherit` | `` | button · app.css:621 |
 | font-family | `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | button · app.css:621 |
 | font-size | `inherit` | `10.5px` | button · app.css:621 |
@@ -4267,16 +4268,16 @@ inside `.—` · 1 on screen · **1 look**
 | line-height | `inherit` | `10.5px` | button · app.css:621 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-stmin · b4/classes.css:822 |
-| transition | `background-color .15s,color .15s` | `` | .b4 .f-stmin · b4/classes.css:822 |
-| cursor | `pointer` | `pointer` | .b4 .f-stmin · b4/classes.css:822 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-x · b3/board.css:68 |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
+| cursor | `pointer` | `pointer` | .b3-x · b3/board.css:68 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `rgba(0, 0, 0, 0)` | `rgb(35, 44, 52)` |
+| box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(133, 147, 159) 0px 0px 0px 1px inset` |
 | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
 
 | part inside | property | at rest | hover |
@@ -4301,7 +4302,6 @@ inside `.—` · 1 on screen · **1 look**
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `1px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
 **:active** — changes
 

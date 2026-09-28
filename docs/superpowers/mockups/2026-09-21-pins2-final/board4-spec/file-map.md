@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — every kit file, and what a port does with it
 
-*Generated 2026-09-28T19:10:00.251Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `4d07336`. A file Board 3-E already labelled keeps Board 3-E's reviewed label (`../../2026-09-15-pins2-board-3/3e/file-map.md`, including its 2026-09-21 correction that `ui/app.js`, `ui/httpClient.js` and `ui/conform.js` are board chrome); a file new since then carries the rule that labelled it, marked "labelled by rule, not reviewed".*
+*Generated 2026-09-28T23:20:48.780Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `d941969`. A file Board 3-E already labelled keeps Board 3-E's reviewed label (`../../2026-09-15-pins2-board-3/3e/file-map.md`, including its 2026-09-21 correction that `ui/app.js`, `ui/httpClient.js` and `ui/conform.js` are board chrome); a file new since then carries the rule that labelled it, marked "labelled by rule, not reviewed".*
 
 | File | Label | Goes to | Note |
 |---|---|---|---|

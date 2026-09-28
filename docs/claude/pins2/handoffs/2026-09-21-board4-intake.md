@@ -1249,3 +1249,5 @@ And mid-run: *"your sequential-thinking call was so shit! WHERE ARE THE REAL, CH
 | wordless badges | "a variant of each badge chip … no text" | `B3Badges bare` | a new member of the badge family, his ask |
 | the showings glyph row under the stepper (`.b4-repg`) | not asked | none | **my addition**, his to keep or drop |
 | the accent block's hex field, copy, New colour, hex chips | his mockup values | the field ground is the form fields' (`local/pins2-board-3/redo/b4/classes.css:57`); copy behaves as the date field's in-field button (`.pb-dbtn`) | his tuned design, kept |
+
+**His answers (2026-09-28 19:16 EDT):** the tile's build chips → **"No, keep Compare's"** (Export's key stays its own); the showings glyph row → **"Drop it"**, removed. Measured after the swaps at 2x: Compare's Build chip computes identical to the manifest's `.b3-sd-gn` on all seven properties (its tracking needed restating at `#compare` scope past the voice reset); Before staging's − shares the card's right edge; the minimised chip is 40px, level with Cancel, in `.f-stm`'s tone.
