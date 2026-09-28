@@ -907,6 +907,7 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 | **M · The showings stepper pop-up** | the broadcast accent worked into it; the stepper centred in its container | the stepper wherever it sits (drawer Repeat, the card's pop-up): one recipe for its accent |
 | **N · The accent picker** | a real colour selector (a block to pick in) replaces the sixteen presets; a row of the last ~10 shuffled colours, smaller swatches, above the hex and New colour; that history persists across closing the drawer and reloading | the colour field's anatomy against the form system; where the history lives (the board: local storage; the portal: per admin — a data note for Session 5); Edit / Post it again keep their accent |
 | **O · Before staging** (a class, his words) | a `−` in its top-right corner minimises it to an icon button left of Cancel — an info mark in a tinted chip | every form drawer's Before staging card (the post drawer, the build drawer Add / three / Bulk / Edit), its jump rows, the footer row it joins; the form-system standard in HANDOFF |
+| **P · A field whose pop-up is open** (added 09:44 EDT) | the date field shows no highlight while its picker is open — the build drawer's dropdown fields and the accent field already wear the focus glow when open | every field that opens a pop-up: Starts, Ends, Accent, the build drawer's dropdowns, the card chips' triggers; one open state (the typing fields' glow) for all |
 
 **Adding to K, 2026-09-28 09:39 EDT, verbatim:**
 
@@ -918,3 +919,7 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 >
 > 1. the highlight over the item is escaping the dropdown container (look at secondaries in the screenshot).
 > 2. the dropdown menu pop-up clips into the Build drawer's top scroll fade for the assault/weapon pop-ups. So those 2 need their z-axis fixed i think
+
+**2026-09-28 09:44 EDT, verbatim** (screenshot `local/pins2-board-3/board4-review/intake-v38/88.png`: Ends with its picker open below, the field unlit):
+
+> also, no highlight on the text field when the date picker is open.
