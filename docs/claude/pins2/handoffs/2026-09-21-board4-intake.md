@@ -933,3 +933,19 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > actually 1 more update, why even make it a pop-up? why not just integrate it into the form surface? similar to how we have the image block integrated?
 
 *His question answered (09:53 EDT): no reason holds. It became a pop-up only because the v36 round put everything a field opens into the pop-up family; a colour he sets on nearly every post, with a picker and three history rows, earns a block in the form the way the banner's image well does.*
+
+**The accent block, worked out on a mockup — 2026-09-28 09:54–10:11 EDT, verbatim** (his popup answer to the saved row: **"Click applies"**; the rest his messages):
+
+> *(09:54)* i realize that sort of changes my entire previous thoughts/notes about the picker... so can you use the visualize widget and make a quick mockup of how the picker section would look layed out in the form?
+>
+> *(popup, on the first mockup)* your mockup is shit, do better and actually make it look like the design from the current picker. and it's also so poorly done, with elements escaping the design, etc.
+>
+> *(10:05)* give me toggles inside the html you're creating so i can tweak sizing, spacing, positions, etc about the design
+>
+> *(10:09)* i also don't like your "replace" button integration/design. when i hover it, just slightly float the color and expand out its size, with 2 icons over it; 1 to select, 1 to replace. with a vertical divider that puts the new color under the 'replace' icon. Also not a fan of the greyish ugly borders.
+>
+> *(10:11, screenshot `local/pins2-board-3/board4-review/intake-v38/90.png`: the Accent field above the Banner block)* your block background is also incorrect... look at the image block's background, it should use the same code so it doesn't feel like another hand crafted element
+>
+> *(10:11, on a hover shot)* THAT'S TERRIBLE!
+
+**What class N now carries** (the mockup is `/private/tmp/…/scratchpad/accent-mock.html` for this session only; its values are to be copied from his tuned sliders): the block is the banner's `.f-media` well (same ground and edge), with the colour area and hue bar in its 136px tile column so the two blocks' columns line up; no grey outlines on empty cells; a saved colour, hovered, floats and widens over its neighbour into two halves — its own colour with a check (use) and, past a divider, the current colour with the replace mark; the widened slot is held open by state so a neighbour cannot steal it mid-move; an empty saved slot fills with the current colour on hover and saves it on click.
