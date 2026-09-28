@@ -837,20 +837,6 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > * also, i realize, what if i don't like the randomly chosen announcement accent and i want it changed? or what if i just want to personally choose a specific color? Does that capability exist? If not, then that needs to be implemented + a color picker field in the announcement drawer (which would auto to a new color ever time the "new announcement" empty drawer is opened. i also want that auto color to reflect direction on the discord preview card instead of showing the pink broadcast accent over there. and of course match the color pickers styling to the existing black style we already use everywhere else for any of the other fields/form menus/etc).
 > * and change the shape of the "1 never ends" "1 of 10 slots" chips to the rectangle shape we use everywhere else for chips. Can we also include the character budget chip beside them (slightly tweaks here tho: instead of showing the pink accent for the fill-bar, show the specific announcement's accent color to show which announcement is using how much of the total budget, does that make sense?).
 
-| # | Item | Kind | Status |
-|---|---|---|---|
-| 1 | the share button takes `--ok` (carried from the v35 round) | build | logged |
-| 2 | Starts/Ends hint lines: a better design | build | logged |
-| 3 | the repeat stepper's black ≠ the text fields' black | build | logged |
-| 4 | the repeat stepper's hover clips at its corners | build | logged |
-| 5 | the post drawer's dead space: the build drawer's wheel method; check every drawer; document it as the standard | build + doc | logged |
-| 6 | the label chips (required, warning, ready…) on the post form, as the build form; document them and the Before staging card as shared across form drawers (e.g. the portal's patch notes drawer) | build + doc | logged |
-| 7 | queue card: the End chip (Never or a date) opens the date picker and stages the end | build | logged |
-| 8 | queue card: a repeat chip beside "Active for 54d" (also for 1), opening a pop-up in the date picker's style to change it | build | logged |
-| ~~9~~ | ~~the picker's header: "Set end date"; "live since Aug 4" as a chip; a divider before the calendar~~ → **remove the header entirely** (his 20:39 EDT, below) | build | logged |
-| 10 | why Set end date opens on Oct 11 → **open on tomorrow** (today + 1, highlighted; his 20:39 EDT, below) | **question** + build | answered in chat, 2026-09-27 20:34 EDT |
-| 11 | choosing an announcement's accent: a colour field in the post drawer, a fresh colour per new announcement, the preview card in that colour, the black field style | **question** + build | answered in chat; build logged |
-| 12 | the queue head's "1 never ends" / "1 of 10 slots" chips in the rectangle chip shape; add the character budget chip, its fill in each announcement's accent | build | logged |
 
 **His reply, 2026-09-27 20:39 EDT, verbatim** (to "today + 14 days"):
 
@@ -865,20 +851,24 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > * also, update the "show less" button to be worded as "collapse/expand", and can you make it the same sizing/padding/etc of the collapse button that's specifically used in Export drawer's `pick builds...` lists?
 > * and i realize the show less/more button is clickable even when the announcement card's announce is less than its preview threshold. please hide it if not needed. (also create 2 more example announcement the C6 gate. 1. to show me announcement card where the announcement is longer than the preview threshold and has an end date set, such as december 31. 2. to show me an announcement with a sizeable character count such as ~2000 and it's currently scheduled to start on october 31st to nov 14. I basically want to see a few real scenarios on the C6 gate. Actually maybe also another example that shows me an announcement that's in 'staged' state?)
 
-| # | Item | Kind | Status |
-|---|---|---|---|
-| 13 | the post drawer's Text field in the queue card's text-block design (the text, then a footer) | build | logged |
-| 14 | …with the card's collapse/expand, collapsed each time the drawer opens | build | logged |
-| 15 | …its footer: the counter and budget chips stacked, and the Collapse/Expand button | build | logged |
-| 16 | "Show less / Show all" → "Collapse / Expand", sized as Export's Pick builds Collapse button | build | logged |
-| 17 | hide Collapse/Expand when the text fits its preview | build | logged |
-| 18 | C6 examples: (a) longer than the preview, ends Dec 31 · (b) ~2,000 characters, scheduled Oct 31 → Nov 14 · (c) a staged announcement | build | logged |
 
 **Adding to 13–15, 2026-09-27 21:07 EDT, verbatim:**
 
 > * when the text field is collapsed, it shows the announcement's accent color, similar to how it does in the announcement card. And when the text field is expanded, it becomes the single black color with the yellow grow around the entire text field.
 
-| # | Item | Kind | Status |
-|---|---|---|---|
-| 19 | the Text field collapsed: the announcement's accent, as the queue card's text block · expanded: the fields' single black with the yellow focus glow around the whole field | build | logged |
+### The round, grouped by class — 2026-09-27 21:10 EDT
+
+*His correction (21:10 EDT): "is this honestly #19? isn't it just a sub point of #13? … why does each point have a #? shouldn't some be grouped as multi-part items? This is showing premptive signs of 'i'm going to go patch your items instead of being a designer and working at the class and catching anything/everything else'." The per-sentence tables are gone; his words above are unchanged. Each group is a CLASS: the build opens every instance of it on the board, not only the one he pointed at, and the sweep column names where to look.*
+
+| Class | His asks in it | The sweep before building |
+|---|---|---|
+| **A · The date picker** (one component, every date field) | Set end date opens on tomorrow; the "Stop showing it / live since" header goes; (done this round: no quick picks, 270px, Sunday first) | every place that opens `DateGrid`; every default date the board sets |
+| **B · The form system** (the build drawer is the reference; every form drawer shares it) | one field ground for every control (the repeat stepper is a different black); a segmented control's hover follows its container's corners (the stepper clips); the label-row chips (required, warning, ready); the hint line under a field, redesigned; Before staging as a shared card; **the Text field** as the queue card's text block — collapsed by default in the accent, expanded in the field black with the focus glow, a footer with the counter and budget chips stacked and Collapse/Expand; a colour field in the same style | every control in the post drawer, the build drawer and the portal's other form drawers (patch notes named): ground, edge, radius, hover, label row, hint; document the set as the form standard |
+| **C · Drawer scrolling** (the drawer shell) | dead space scrolls the column that owns it, as the build drawer; check every drawer; document it as the standard for future drawers | every drawer on the board, and the portal's; each gutter and dead area by a real wheel |
+| **D · An announcement's accent** (its identity, everywhere it shows) | choose or change it; a fresh colour each time the new-announcement drawer opens; the Discord preview card in that colour, not the realm pink; the budget bar split per post in each post's accent | every place the accent or the realm pink stands in for it: queue card, manifest row, preview, chips, bars; the data path (the model stores `color`; create takes one; edit not checked) |
+| **E · Editing from the card** (a fact chip that is a field) | the End chip (Never or a date) opens the picker and stages; a repeat chip beside "Active for" (also for one) opens a pop-up in the picker's style | every fact chip on the queue card and the manifest row: which are fields, which are facts |
+| **F · Collapse / Expand** (one control) | "Show less / Show all" → "Collapse / Expand"; Export's Pick builds button's size; hidden when the text fits | every collapse control on the board (Export, the queue card, the new Text field) |
+| **G · Chip shape and the counter family** | the queue head's "never ends" and "slots" chips become the rectangle chip; the budget chip joins them | every pill-shaped chip left on the board; every counter chip |
+| **H · Action colour** | the share button takes `--ok` (carried from the v35 round) | every button whose action is "confirm, export, share" |
+| **I · The board's examples** (C6, data only) | a long text ending Dec 31; ~2,000 characters scheduled Oct 31 → Nov 14; a staged one | what each gate's examples cannot show yet |
 
