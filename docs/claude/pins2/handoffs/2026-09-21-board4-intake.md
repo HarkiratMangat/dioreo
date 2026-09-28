@@ -981,3 +981,14 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > 2. picker at top, with hue slider + hex/shuffle under it (slider + hex/shuffle inline, not stacked), with swatches under them.
 
 **On the mockup (11:22 EDT), both on the Layout switch beside the current one, measured at 2x:** layout 1 — picker 200 × 137 beside the Recent and Saved rows (its bottom level with the saved swatches), the hue bar under it level with the hex row under the swatches; block 486 × 223, the same height as the current layout. Layout 2 — picker 458 × 137 across the top, hue bar and hex row side by side under it, the swatch rows full width; at 8 a row the swatches come out 52px and the block 455 tall. In both, New colour is icon-only so six hex characters fit. Pictures: `local/pins2-board-3/board4-review/intake-v38/mock-left.png`, `mock-split.png`, `mock-stack.png`.
+
+**2026-09-28 11:22 and 11:39 EDT, verbatim** (the second with screenshot `local/pins2-board-3/board4-review/intake-v38/92.png`: a saved slot open under the pointer, the browser's own tooltip showing):
+
+> picker height doesn't change in the layouts
+>
+> implement a chip:
+> * to the right of the "recent" and "saved", same sized text as those labels but chip should have a border.
+> * when hovering over a swatch in the recent rows, the chip appears shows the hex code of that swatch + a checkmark icon inside the chip, with the chip's text, icon, and border matching the swatch color.
+> * when hovering over a swatch in the saved row, it appears similarly BUT 2 chips appears. 1st chip shows the saved hover color with the checkmark, and the 2nd chip shows the replacement swatch with the loop icon.
+
+**On the mockup (11:40 EDT):** the height slider now drives layout 1 too (the picker had been stretched to its row). The chips sit after the Recent and Saved labels: 20px tall, 6px corners, a 1px border, 12px hex, their text, icon and border in the hovered swatch's colour; Recent shows ✓ and the swatch's hex, Saved shows ✓ and the saved hex, then ↻ and the current colour; they fade and slide in over 220ms (the second 40ms after) and out on leaving the row; the browser's own tooltips on the swatches are gone, the chips carry that job. Measured at 2x in the current layout and layout 1: the pair ends exactly at the block's inner edge on a 242px column. Pictures: `chip-recent.png`, `chip-saved.png` beside the others.
