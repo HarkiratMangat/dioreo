@@ -949,3 +949,15 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > *(10:11, on a hover shot)* THAT'S TERRIBLE!
 
 **What class N now carries** (the mockup is `/private/tmp/…/scratchpad/accent-mock.html` for this session only; its values are to be copied from his tuned sliders): the block is the banner's `.f-media` well (same ground and edge), with the colour area and hue bar in its 136px tile column so the two blocks' columns line up; no grey outlines on empty cells; a saved colour, hovered, floats and widens over its neighbour into two halves — its own colour with a check (use) and, past a divider, the current colour with the replace mark; the widened slot is held open by state so a neighbour cannot steal it mid-move; an empty saved slot fills with the current colour on hover and saves it on click.
+
+**His tuned values and layout, 2026-09-28 11:02 EDT, verbatim** (screenshot `local/pins2-board-3/board4-review/intake-v38/91.png`, his measurements drawn on the mockup):
+
+> try these: `col 486 · pad 14 · brad 10 · pw 200 · svh 110 · cg 16 · hueh 12 · hueg 14 · rg 14 · fh 44 · frad 9 · lg 8 · swg 6 · swr 6 · cols 8 · nrec 2 · gw 2.00× · lay left · lbl on · div off · newlbl on · hash on`
+>
+> And change the layout:
+> * move the hex field and shuffle button under the picker (where the hue slider currently sits).
+> * move the hue slider above the swatches (where the hex field/shuffle currently sit)
+> * adjust the bottom padding to match the ~13-14 pixel.
+> * make the picker's height 132-140px (whatever makes the hex field's bottom border ink flush with the buttom of the swatches ink).
+
+**Built on the mockup and measured at 2x (11:04 EDT):** the colour area 200 × **137** (it stretches, so the flush holds by construction); the hex field's bottom and the last saved swatch's bottom both at 271px; bottom padding **14**, top 14; the hue bar centred in a 44px row where the hex row was; swatches 25px, 8 a row; New colour icon-only at 44 × 44 in the 200px column; the six hex characters fit (the field's gap, copy button and tracking tightened); the reserved hover-text line under Saved removed (hover text moved to tooltips) — it was the 34px.
