@@ -998,3 +998,9 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > i don't like the fact that the hover over the swatch makes it wash out the color. Try this: 1. remove the black border around the hover swatches and use a dropshadow instead, making sure the dropshadow is behind the 2 colors and doesn't drop onto the actual use/replace swatch itself. 2. make the color being hovered over slightly larger than the other color.
 
 **On the mockup (11:48 EDT), measured with a real pointer at 2x:** no white wash on a hovered half; the 4px dark ring is gone and a soft two-layer shadow sits behind the pair (it falls outside the pair, never on its halves); the hovered half widens — 34.5 against 25.5px at the default 1.35 — and the widths ease over the same 300ms. A new slider, **Hovered half size** (100–170%), sets that ratio. Picture: `hv-pair.png`.
+
+**2026-09-28 11:50 EDT, verbatim:**
+
+> no, not make it larger in width. but literally make it pop out even more. while keeping the middle divide exactly the same. so it kind of increase in height and width but only towards the outside
+
+**On the mockup (11:51 EDT), measured with a real pointer at 2x:** ~~the hovered half wider (1.35 : 1)~~ → the hovered half grows 3px up, down and outward only; the divide stays where it was (x 372.0 with either half hovered); the other half is untouched; the shadow follows the combined shape, behind both halves. The slider is now **Hovered half pop** (0–8px, default 3). Picture: `pop-trio.png` (use hovered, replace hovered, rest).
