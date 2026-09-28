@@ -1204,7 +1204,7 @@ His instruction (13:43 EDT): look at every element of the three views and harshl
 
 And mid-run: *"your sequential-thinking call was so shit! WHERE ARE THE REAL, CHALLENGING QUESTIONS??? that entire call of it was questions you already had answers to and things you literally already had judgement on."*
 
-**His popup answers (2026-09-28 15:0x EDT):** Differs → **"A · Odd ones out"**; what a two-weapon comparison is for → **"both"** (builds side by side, and which slots each weapon fills).
+**His popup answers (2026-09-28 between 14:52 and 15:05 EDT):** Differs → **"A · Odd ones out"**; what a two-weapon comparison is for → **"both"** (builds side by side, and which slots each weapon fills).
 
 **Fixed, kit `4d07336` (2026-09-28 15:06 EDT):**
 
