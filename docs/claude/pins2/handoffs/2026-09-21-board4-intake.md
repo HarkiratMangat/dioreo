@@ -820,3 +820,35 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 **Version 36 published** on his popup answer "Publish v36 now" (2026-09-27 20:02 EDT).
 
+## v36 intake round — opened 2026-09-27 20:10 EDT, LOG ONLY until he says it is done
+
+### His first batch — 2026-09-27 20:34 EDT, verbatim (five screenshots, copied to `local/pins2-board-3/board4-review/intake-v36/71.png`–`75.png`: the post drawer's dates and repeat stepper, the stepper's hover, a queue card, the Set end date picker, the queue head's chips)
+
+> * i want the *design* of Start/End's hints to be improved, the "Goes live when...", etc lines.
+> * also notice the color of the text fields and the repeat's picker are different shades of black? correct the repeat picker.
+> * also the repeat picker's hover is clipping at the corners
+> * i also need the announcement drawer's gutter/deadspace scroll/mouse detection logic to be improved to match the refined method you build in the build drawer. the announcement drawer still has weird deadspace that does nothing. (also check it for any other drawers and make sure it's documented as something to standardize so any other drawers/future drawers have the correct scrolling).
+> * You also didn't implement the required/warning/ready/etc chips for the form labels, such as how the build drawer has them. Those are shared across forms. That reminds me, don't forget to document that + the "ready to stage" card in form-based drawers (such as portal's patch notes drawer).
+> * in the broadcast announcement card:
+>    * "never" chip (any end date honestly), should be clickable to open the date picker and stage/change the end date directly there.
+>    * add a chip beside "Active for 54d" that states how many times that announcement repeats (even if it's only once) and make it clickable as well, to open a pop-up to change the repeat amounts (match the pop-up's style to the date picker/dropdown menu styling).
+> * reword "stop showing it" to "Set end date". Put the "live since aug 4" in a chip. and add a sort of divider or something between that top info area (title + live since chip_ and the calendar.
+> * also when i click "set end date" and the date picker pops up... why does it default to oct 11? Can you explain your logic on why it does that?
+> * also, i realize, what if i don't like the randomly chosen announcement accent and i want it changed? or what if i just want to personally choose a specific color? Does that capability exist? If not, then that needs to be implemented + a color picker field in the announcement drawer (which would auto to a new color ever time the "new announcement" empty drawer is opened. i also want that auto color to reflect direction on the discord preview card instead of showing the pink broadcast accent over there. and of course match the color pickers styling to the existing black style we already use everywhere else for any of the other fields/form menus/etc).
+> * and change the shape of the "1 never ends" "1 of 10 slots" chips to the rectangle shape we use everywhere else for chips. Can we also include the character budget chip beside them (slightly tweaks here tho: instead of showing the pink accent for the fill-bar, show the specific announcement's accent color to show which announcement is using how much of the total budget, does that make sense?).
+
+| # | Item | Kind | Status |
+|---|---|---|---|
+| 1 | the share button takes `--ok` (carried from the v35 round) | build | logged |
+| 2 | Starts/Ends hint lines: a better design | build | logged |
+| 3 | the repeat stepper's black ≠ the text fields' black | build | logged |
+| 4 | the repeat stepper's hover clips at its corners | build | logged |
+| 5 | the post drawer's dead space: the build drawer's wheel method; check every drawer; document it as the standard | build + doc | logged |
+| 6 | the label chips (required, warning, ready…) on the post form, as the build form; document them and the Before staging card as shared across form drawers (e.g. the portal's patch notes drawer) | build + doc | logged |
+| 7 | queue card: the End chip (Never or a date) opens the date picker and stages the end | build | logged |
+| 8 | queue card: a repeat chip beside "Active for 54d" (also for 1), opening a pop-up in the date picker's style to change it | build | logged |
+| 9 | the picker's header: "Set end date"; "live since Aug 4" as a chip; a divider before the calendar | build | logged |
+| 10 | why Set end date opens on Oct 11 | **question** | answered in chat, 2026-09-27 20:34 EDT |
+| 11 | choosing an announcement's accent: a colour field in the post drawer, a fresh colour per new announcement, the preview card in that colour, the black field style | **question** + build | answered in chat; build logged |
+| 12 | the queue head's "1 never ends" / "1 of 10 slots" chips in the rectangle chip shape; add the character budget chip, its fill in each announcement's accent | build | logged |
+
