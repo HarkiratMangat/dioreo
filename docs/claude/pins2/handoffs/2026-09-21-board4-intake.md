@@ -874,3 +874,11 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 | 17 | hide Collapse/Expand when the text fits its preview | build | logged |
 | 18 | C6 examples: (a) longer than the preview, ends Dec 31 · (b) ~2,000 characters, scheduled Oct 31 → Nov 14 · (c) a staged announcement | build | logged |
 
+**Adding to 13–15, 2026-09-27 21:07 EDT, verbatim:**
+
+> * when the text field is collapsed, it shows the announcement's accent color, similar to how it does in the announcement card. And when the text field is expanded, it becomes the single black color with the yellow grow around the entire text field.
+
+| # | Item | Kind | Status |
+|---|---|---|---|
+| 19 | the Text field collapsed: the announcement's accent, as the queue card's text block · expanded: the fields' single black with the yellow focus glow around the whole field | build | logged |
+
