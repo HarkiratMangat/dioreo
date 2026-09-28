@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the exact changes to PORTAL code
 
-*Generated 2026-09-28T02:12:34.634Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `fc3c23b`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
+*Generated 2026-09-28T18:24:46.609Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `2b64129`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
 
 ## `app.css` → `portal/public/app.css`
 
@@ -778,7 +778,7 @@ index 9fd1fbd9..ad67927e 100644
 
 ```diff
 diff --git aportal/ui/broadcast.js bkit/ui/broadcast.js
-index 68764342..ee9b2e33 100644
+index 68764342..4ebe204f 100644
 --- aportal/ui/broadcast.js	
 +++ bkit/ui/broadcast.js	
 @@ -3,7 +3,7 @@
@@ -795,9 +795,9 @@ index 68764342..ee9b2e33 100644
  import { useOverlay, Drawer } from './overlay.js';
  import { SmartDate } from './composer.js';
 +import { useB3 } from '../b3/state.js';
-+import { EndPicker, NeverChip, ForeverAhead, stagedEndOf, DateGrid, usePop, FoldBtn, BudgetMeter, Stepper, AccentField, randomAccent, hexOf, accentTooDark } from '../b3/broadcast.js';
++import { EndPicker, NeverChip, ForeverAhead, stagedEndOf, DateGrid, usePop, FoldBtn, BudgetMeter, Stepper, AccentBlock, randomAccent, hexOf, accentTooDark } from '../b3/broadcast.js';
 +import { isoLocal } from '../b3/state.js';
-+import { MediaWell, Chip } from '../b4/form.js';
++import { MediaWell, Chip, useStageMin, StageMinBtn, StageMini } from '../b4/form.js';
 +import { CharCount } from '../gates/lib.js';
  
  // 🔴 NO YEAR. toDateString().slice(4) yields "Aug 14 2026"; the design prints "Aug 14" and so does every other date on this page. Four columns wide, on every row, the year is the same digit repeated 16 times and it pushed the whole table's columns out of register against the design. No year and no leading zero: the design prints "Aug 4", toDateString gives "Aug 04 2026".
@@ -999,7 +999,7 @@ index 68764342..ee9b2e33 100644
  // The Show-each-player stepper's card glyphs (§10.3 row 3) — one small raised tile per showing.
  function RepeatGlyphs({ n }) {
      const count = Math.max(1, Number(n) || 1);
-@@ -297,131 +319,201 @@ function RepeatGlyphs({ n }) {
+@@ -297,131 +319,206 @@ function RepeatGlyphs({ n }) {
  // Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt, a banner image and a repeat count (pins batch 2, spec §7/§10.3). The Discord-side fields stay authoritative for what the server accepts; this drawer is the richer web equivalent, built per the pins-2 design board (G8).
  //
  // ⚠️ EDIT AND POST SHARE ONE FORM. `initial` is the announcement object when opened from Broadcast's "Edit"/"Dates and repeats" buttons or HeadsUp's "Set an end date" (null when opened from "+ Post announcement") — pre-fills every field and switches submit() to an announcement.edit op that carries bannerImageUrl and repeatCount (row 8: an edit that omits them would silently wipe them, see core/ops/announcements.js's apply()).
@@ -1009,11 +1009,16 @@ index 68764342..ee9b2e33 100644
 +export function PostForm({ initial, again = false, allAnnouncements, onSubmit, onCancel }) {
 +    const editing = Boolean(initial) && !again;
      const [text, setText] = useState(initial?.text || '');
-     const [startsAt, setStartsAt] = useState('');
+-    const [startsAt, setStartsAt] = useState('');
 -    const [startsIso, setStartsIso] = useState(initial?.startsAt ? String(initial.startsAt).slice(0, 10) : null);
-+    const [startsIso, setStartsIso] = useState(!again && initial?.startsAt ? String(initial.startsAt).slice(0, 10) : null);
-     const [expiresAt, setExpiresAt] = useState('');
+-    const [expiresAt, setExpiresAt] = useState('');
 -    const [expiresIso, setExpiresIso] = useState(initial?.expiresAt ? String(initial.expiresAt).slice(0, 10) : null);
++    // 2026-09-27 22:58 EDT (found opening Edit at 2x): an edit opened with EMPTY date fields, and BoardDate's empty-field branch then cleared the iso it was given —
++    // so Edit showed "Optional / In 60 days" for a post ending Dec 31, and staging it would have sent no end. The fields open on the words of the dates it has.
++    const dayWords = (v) => new Date(v).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '');
++    const [startsAt, setStartsAt] = useState(!again && initial?.startsAt ? dayWords(initial.startsAt) : '');
++    const [startsIso, setStartsIso] = useState(!again && initial?.startsAt ? String(initial.startsAt).slice(0, 10) : null);
++    const [expiresAt, setExpiresAt] = useState(!again && initial?.expiresAt ? dayWords(initial.expiresAt) : '');
 +    const [expiresIso, setExpiresIso] = useState(!again && initial?.expiresAt ? String(initial.expiresAt).slice(0, 10) : null);
      // "Never ends" is its own switch (row 1, G8) rather than inferred from a blank field, because blank and never are two different real values now (see broadcast.logic.js's buildBroadcastComposerOp).
      const [neverEnds, setNeverEnds] = useState(Boolean(editing && initial && !initial.expiresAt));
@@ -1108,6 +1113,8 @@ index 68764342..ee9b2e33 100644
 +    const body = (head ? lines.slice(1) : lines).join('\n').trim();
 +    const withCode = (t) => t.split(/(\/[a-z][\w-]*(?:\s[a-z][\w-]*)?)/g).map((part, i) => (i % 2 ? html`<code key=${i}>${part}</code>` : part));
 +    const shown = Math.max(1, repeatCount);
++    const [smin, setSmin] = useStageMin();
++    const blockN = checks.filter((c) => c.tone === 'warn').length;
      return html`
 -        <${Drawer} eyebrow=${editing ? 'announcement.edit · tier 1' : 'announcement.post · tier 1'}
 -                   title=${editing ? 'Edit announcement' : 'Post an announcement'} wide onClose=${onCancel}
@@ -1150,6 +1157,7 @@ index 68764342..ee9b2e33 100644
 -                        <${SmartDate} chrome="drawer" id="post-starts" label="Starts"
 -                                      placeholder="in 3 days, or Sep 21"
 -                                      value=${startsAt} iso=${startsIso}
++                       <${StageMini} tone=${blockN ? 'warn' : 'ok'} say=${blockN ? `Before staging: ${checks.filter((c) => c.tone === 'warn').map((c) => c.say.toLowerCase()).join(' · ')}` : 'Ready to stage'} />
 +                       <button class="b3-btn2" onClick=${onCancel}>Cancel</button>
 +                       <button class="b3-btn2 go" disabled=${!ready} onClick=${submit}>${busy ? 'Staging…' : (editing ? 'Stage this edit' : 'Stage post')}</button>`}>
 +            <div class="bed">
@@ -1210,10 +1218,9 @@ index 68764342..ee9b2e33 100644
 +                            <${Stepper} value=${repeatCount} onChange=${setRepeatCount} />
 +                            <div class="pb-cards" style=${`--c:${accent}`} role="img" aria-label=${`Shown to each player up to ${shown} times, at most once a day`}>
 +                                ${Array.from({ length: Math.min(shown, 12) }, (_, i) => html`<span class="pb-mini" key=${i}></span>`)}
-+                                <span class="pb-gapday"><${Icon} name="clock" />1 a day max</span></div></div></div>
++                                <span class="pb-gapday"><${Icon} name="repeat" />1 a day max</span></div></div></div>
 +                    <div class="dwfield pb-accf"><div class="pb-lrow"><label for="post-accent">Accent</label>${autoColor ? html`<${Chip} tone="neutral">Auto<//>` : null}${accentTooDark(color) ? html`<${Chip} tone="warn" icon="triangle-alert">Hard to see<//>` : null}</div>
-+                        <div class="b4-accline"><${AccentField} id="post-accent" value=${color} onChange=${(n) => { setColor(n); setAutoColor(false); }} />
-+                            <span class="pb-echo b4-echo"><${Icon} name="sparkles" /><span>Tints the card, its number and its share of the budget</span></span></div></div>
++                        <${AccentBlock} id="post-accent" value=${color} onChange=${(n) => { setColor(n); setAutoColor(false); }} /></div>
 +                    <div class="dwfield pb-bnf"><div class="pb-lrow"><label>Banner</label>${!bannerUrl ? html`<${Chip} tone="neutral">Optional<//>` : null}</div>
 +                        <${MediaWell} f=${bn} set=${setBanner} id="post-banner" sources=${['up', 'link']} keyed=${false} what="an image" /></div>
                  </div>
@@ -1239,8 +1246,8 @@ index 68764342..ee9b2e33 100644
 +                </div></div>
 +                ${''/* 2026-09-26 20:03 EDT (harden): what stands between this post and Stage, as the build drawer says it — the side column's Before staging panel
 +                     (.f-stage, b4/form.js), one row per check with the same marks; a row jumps to its field. The footer holds only the buttons. */}
-+                <div class="f-stage pb-ready" role="status" aria-live="polite">
-+                    <h5>${!ready && !busy ? 'Before staging' : 'Ready to stage'}</h5>
++                <div class=${'f-stage pb-ready' + (smin ? ' min' : '')} role="status" aria-live="polite" inert=${smin ? true : null}>
++                    <h5><span>${!ready && !busy ? 'Before staging' : 'Ready to stage'}</span><${StageMinBtn} onMin=${() => setSmin(true)} /></h5>
 +                    <ul>${checks.map((c) => html`<li key=${c.k}><button type="button" class="f-st" onClick=${() => { const el = document.getElementById(c.to); if (el) el.focus(); }}
 +                            aria-label=${`${c.label}: ${c.say}`}>
 +                        <span class="f-stm" data-tone=${c.tone}><${Icon} name=${c.tone === 'ok' ? 'check' : 'triangle-alert'} /></span>
@@ -1290,7 +1297,7 @@ index 68764342..ee9b2e33 100644
  // 🔴 AIRTIME PAINTS THREE BAR STATES AND NAMED NONE OF THEM. Solid is showing, hollow-dashed is scheduled, muted is over -- the same shape vocabulary the Track uses, and a reader met it with no key. ⚠️ Deliberately NOT the shared StateKey: that one teaches "dashed = staged", and here a dashed bar means an announcement that is written and simply has not started yet. Same shape, a neighbouring meaning, and the wrong word would be worse than no word.
  //
  // ⚠️ It names only states PRESENT on screen, the rule every key in this portal follows: a season with nothing scheduled should not send somebody hunting for a dashed bar that is not drawn.
-@@ -431,6 +523,7 @@ export function BroadcastRealm({ session }) {
+@@ -431,6 +528,7 @@ export function BroadcastRealm({ session }) {
      const [notice, setNotice] = useState('');
      const [view, setView] = useState('Delivery queue');
      const overlay = useOverlay();
@@ -1298,7 +1305,7 @@ index 68764342..ee9b2e33 100644
  
  // 🔴 TWO REALMS COULD STAGE WORK AND NEITHER COULD TELL YOU IT HAD ANY. Season and Home both read /api/review to say how much is waiting — that is what feeds the rail's badge and the masthead's staged figure — and Armory and Broadcast, which stage on every edit, said nothing anywhere. You staged four builds, navigated away, and the console had no memory of it outside the Review screen.
  //
-@@ -546,13 +639,13 @@ export function BroadcastRealm({ session }) {
+@@ -546,13 +644,13 @@ export function BroadcastRealm({ session }) {
                                                                                onClick=${() => setShowAdd(true)} />`} />`}
                    viewSlot=${html`
                        ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
@@ -1445,10 +1452,10 @@ index 1cbbf4f2..1aab4e9f 100644
 
 ```diff
 diff --git aportal/ui/icons.js bkit/ui/icons.js
-index 70aca763..c08ee56e 100644
+index 70aca763..9424d157 100644
 --- aportal/ui/icons.js	
 +++ bkit/ui/icons.js	
-@@ -7,9 +7,42 @@
+@@ -7,9 +7,44 @@
  // Every icon inherits currentColor and is 1em square (see .ic in shell.css), so it sits in text without a fight. Decorative by default — an icon beside a word is not read twice; pass `label` only when the icon is the ONLY thing carrying the meaning.
  import { h } from '../vendor/preact.mjs';
  import { html } from '../vendor/htm-preact.mjs';
@@ -1465,6 +1472,8 @@ index 70aca763..c08ee56e 100644
 +    'undo-2': '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>',
 +    'wrench': '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
 +    'bot': '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
++    'refresh-cw': '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
++    'bookmark': '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
 +    'rotate-cw': '<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>',
 +    'tag': '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
 +    'arrow-right': '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
@@ -1491,7 +1500,7 @@ index 70aca763..c08ee56e 100644
      'check':        '<path d="M20 6 9 17l-5-5"/>',
      'x':            '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
      'plus':         '<path d="M5 12h14"/><path d="M12 5v14"/>',
-@@ -39,14 +72,56 @@ const PATHS = {
+@@ -39,14 +74,56 @@ const PATHS = {
      'radio':        '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>',
      'calendar':     '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
      'circle-check': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
@@ -1548,7 +1557,7 @@ index 70aca763..c08ee56e 100644
  export const ICON_NAMES = Object.keys(PATHS);
  
  // 🔴 THE SPRITE IS INJECTED AT MODULE EVALUATION, not on DOMContentLoaded. `<use href="#i-…">` resolves against the document, and an element already in the DOM when its symbol arrives is not guaranteed to re-resolve — so waiting can leave icons permanently blank on a page whose markup rendered during parsing. documentElement always exists by the time a module body runs.
-@@ -86,6 +161,9 @@ const FOLD_CLOSED = 'M6 9 L12 15 L18 9';
+@@ -86,6 +163,9 @@ const FOLD_CLOSED = 'M6 9 L12 15 L18 9';
  const FOLD_OPEN = 'M6 15 L12 9 L18 15';
  
  export function Fold({ open, cls }) {

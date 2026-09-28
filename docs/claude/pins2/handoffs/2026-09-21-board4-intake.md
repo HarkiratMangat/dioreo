@@ -1160,4 +1160,35 @@ flush (picker bottom − swatches bottom): +5.3px
 | **AB · A cell's fill fills its row** | the tint (and the hatch) stops short of the row's height when a neighbour wraps to two lines | every filled cell state (differs tint, the weapon-colour edge, the "Not equipped" hatch, the hover crosshair) at a wrapped row's full height; all three views; the longest real part names; Table C's merged lanes |
 | **AC · Hover across a merged cell** | **his answer: light every build** — a merged cell lights the head of every build it covers and its whole span, not only the first | the existing hover ("a hovered cell lights its row and its column") for spans in C and for B's and A's equivalents; keyboard focus the same as hover; the head's lit state against class Z's new heads |
 
-*The round is still open.*
+*The round closed 2026-09-28 13:43 EDT with his "That's it for the intake items so far."*
+
+### Built — 2026-09-28 14:26 EDT, kit `2b64129` (local, NOT published)
+
+His instruction (13:43 EDT): look at every element of the three views and harshly nitpick what he had not spotted, run a thinking pass over every item, and work until C3 Compare is ready for Sessions 4/5. Every class below was opened on the local board at DPR 2 with real input (the chrome-devtools CLI and inline Puppeteer); the spec was regenerated from the kit (`board4-spec/`, all 17 generated files) and HANDOFF.md carries the decisions.
+
+| Class | Built | Measured |
+|---|---|---|
+| J · counter chips | the counter's 2px double ring → the chips' 1px edge (board.css, and the regenerated spec/token map); slots meter one fill in the realm pink; budget meter 112px; "1 a day max" takes the repeat mark | slots fill `rgb(236,72,153)` · budget meter 112 vs 56 |
+| K · pop-up gap and layering | the cause: `usePop` measured the pop-up on its entrance's first frame (translated 7px, scaled .965) and baked that in, so every pop-up sat ~9px high — flush below, 17px above; now measured settled, from the trigger's visible box, 10px both ways (the dropdowns'), entering from the trigger's side; a list or pop-up open in a drawer column eases the column's fade off; a highlighted row keeps the menu's 6px padding | date field 10.2 below · showings chip 9.9 down / 10.1 up · list open: `--ft` 0px · last row 6px inside the menu |
+| L · copy that restates | the showings pop-up's "per player / 1 a day max" and the accent's "Tints the card…" hint are gone | — |
+| M · showings stepper | centred, count and ring in the post's accent, one glyph per showing under it | `mrep.png` |
+| N · accent block | `AccentBlock` from the mockup and his values (layout split), on the image block's ground; Recent/Saved persist; paste strips `#`; copy ticks `--ok`; the old pop-up picker and its rules deleted; its short state classes renamed after `.drawer .x` (the drawer's close button) collided and drew grey boxes round the empty cells | recorded screencast, 63 frames over 1.5s (open, move across, close) walked in order; persistence across a reload; paste `#3a7bd5` → `3A7BD5` |
+| O · Before staging | a − minimises it to an info chip left of Cancel in its tone; one stored choice for the post drawer and the build drawer; the footer grid takes a third column so Cancel and Stage never wrap | chip 40px = Cancel 40px, 8px apart, one row; shared across drawers |
+| P · open field glow | a date field whose picker is open wears the typing fields' glow | computed `box-shadow` carries the `--patch` ring |
+| Q · landing | A's search over twelve weapon tiles, a fresh random draw each time; a chip opens the comparison on that build, the name on every build that fits; **the faded ghost table removed** (my call: with twelve tiles below the words it only showed as cut-off fragments round them) | 12 tiles; a second visit drew a different twelve; a landing chip → 1 build in the table |
+| R · VIEW toggle | Cards · Grid · Lanes · Embed on Bulk's toggle, top-right; the board's Table/Empty forks retired | — |
+| S · same-on chips | "Category" as an attachment chip in the category's colour | `v-twoA.png` |
+| T · the cards control | the "Show the Discord cards" button became the **Embed** view (Bulk's Ledger/Embed precedent) | — |
+| U · the Discord cards' layout | the K7 fix (fixplan, 2026-09-21: 1→1 … 4→4, 5→3+2, 6→3+3, the card named by its build) had been lost when v11 rebuilt Compare; restored, captioned with the build chip | 4 builds → 4 columns |
+| V · the strip | replaced by the limit chip (top-right) and the key line (AA) | — |
+| W · weapon tile | no dot; category in capitals in its colour; chips say what a click does (− / + on hover, the reason at six) | ON hover mark opacity 1; OFF at six: `not-allowed` + "The table holds 6 builds. Take one out first." |
+| X · picker row | the search first, always there, 308px | present with 6 builds |
+| Y · six builds, any weapons | a chip is ON or OFF; weapons arriving together take turns; at six an OFF chip is refused and the limit chip flashes | take-out 6→5; adding SKS at 5 → 6 with SKS's other builds OFF |
+| Z · heads | the weapon once, large, over its builds; the build as its coloured chip; wordless badges (`B3Badges bare`); no "No label"/"No badges" lines | `v-twoB2.png` |
+| AA · what a look means | the key line above the table, in each view's own marks | — |
+| AB · full-height fills | every cell's fill, hatch and edge runs its row's height, in all three views | Muzzle row: every cell 86px |
+| AC · merged hover | a merged lane lights the head of every build it covers | 2-build lane → 2 heads lit |
+
+**My own nitpicks, beyond his items:** weapons of one category share one colour, so identity is carried by the grouped heads rather than by colour; board-1 hairlines under the row names; the cell text re-centred by the flex change (caught and fixed); the Grid view's doubled colour rule; a long group name in a one-build column now wraps; two orphaned rule lines left by the cleanup broke the landing's grid (caught by rendering, fixed); Escape inside a date pop-up closes only the pop-up (checked on the real board).
+
+**Not opened this session (from the v37 list):** History / confirm wheel, Home and gates4 with the new data, the fold animation.

@@ -12,7 +12,7 @@ status: live
 
 ### C2 stage
 
-103 distinct signatures on screen; 96 not already specced above.
+104 distinct signatures on screen; 97 not already specced above.
 
 
 ### `div.on.scrim`
@@ -286,7 +286,7 @@ inside `.dw-nav` · 1 on screen · **1 look**
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .drawer .x · app.css:1398 |
 | transition | `gap 360ms cubic-bezier(.4,0,.2,1),padding 360ms cubic-bezier(.4,0,.2,1),color 200ms ease,background 200ms ease,border-color 200ms ease` | `` | .dw-h .dw-nav .x · gates.css:812 |
 | cursor | `pointer` | `pointer` | .dw-h .x · app.css:1383 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **::after**
 
@@ -461,7 +461,7 @@ inside `.x` · 3 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C2-239` · rendered **61×13** · 1 instance look like this · text “New build”
+`C2-242` · rendered **61×13** · 1 instance look like this · text “New build”
 
 ```html
 <b>New build</b>
@@ -757,9 +757,9 @@ inside `.seg` · 1 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.—` · 25 on screen · **10 looks**
+inside `.—` · 26 on screen · **11 looks**
 
-#### look 1 of 10
+#### look 1 of 11
 
 `C2-17` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
 
@@ -770,7 +770,7 @@ inside `.—` · 25 on screen · **10 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .seg button > .ic · b3/board.css:3315 |
+| flex | `none` | `` | .seg button > .ic · b3/board.css:3312 |
 | width | `14px` | `14px` | .b3-nb .pb-seg .ic · b3/board.css:1073 |
 | height | `14px` | `14px` | .b3-nb .pb-seg .ic · b3/board.css:1073 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -790,7 +790,7 @@ inside `.—` · 25 on screen · **10 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-nb .pb-seg.seg button · b3/board.css:1070 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 2 of 10
+#### look 2 of 11
 
 `C2-18` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
 
@@ -801,7 +801,7 @@ inside `.—` · 25 on screen · **10 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .seg button > .ic · b3/board.css:3315 |
+| flex | `none` | `` | .seg button > .ic · b3/board.css:3312 |
 | width | `14px` | `14px` | .b3-nb .pb-seg .ic · b3/board.css:1073 |
 | height | `14px` | `14px` | .b3-nb .pb-seg .ic · b3/board.css:1073 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -821,7 +821,7 @@ inside `.—` · 25 on screen · **10 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-nb .pb-seg.seg button · b3/board.css:1070 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 3 of 10
+#### look 3 of 11
 
 `C2-28` · rendered **13×13** · 2 instances look like this · aria-hidden="true"
 
@@ -850,7 +850,7 @@ inside `.—` · 25 on screen · **10 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 4 of 10
+#### look 4 of 11
 
 `C2-36` · rendered **15×15** · 2 instances look like this · aria-hidden="true"
 
@@ -875,7 +875,7 @@ inside `.—` · 25 on screen · **10 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 5 of 10
+#### look 5 of 11
 
 `C2-191` · rendered **22×22** · 1 instance look like this · aria-hidden="true"
 
@@ -902,7 +902,7 @@ inside `.—` · 25 on screen · **10 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 6 of 10
+#### look 6 of 11
 
 `C2-195` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -934,7 +934,7 @@ inside `.—` · 25 on screen · **10 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-src button · b4/form.css:163 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-*4 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*5 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `div.pb-in.pb-view`
@@ -1034,8 +1034,9 @@ inside `.f-add` · 1 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | overflow-x | `hidden` | `hidden` | .b4 .f-form.b3-fady · b4.css:400 |
-| overflow-y | `auto` | `auto` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2377 |
-| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) calc(100% - 28px), rgba(0, 0, 0, 0.78) calc(100% - 22.4px), rgba(0, 0, 0, 0.3) calc(100% - 12.6px), rgba(0, 0, 0, 0) 100%)` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2377 |
+| overflow-y | `auto` | `auto` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2374 |
+| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) calc(100% - 28px), rgba(0, 0, 0, 0.78) calc(100% - 22.4px), rgba(0, 0, 0, 0.3) calc(100% - 12.6px), rgba(0, 0, 0, 0) 100%)` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2374 |
+| transition | `--ft .18s var(--ease),--fb .18s var(--ease)` | `` | .b4 :is(.f-form.b3-fady, .pb-col.b3-fady, .drawer.b1 .dw-b) · b4/classes.css:804 |
 
 
 ### `section.f-card`
@@ -1240,9 +1241,9 @@ inside `.f-sec` · 5 on screen · **1 look**
 
 ### `span`
 
-inside `.f-h` · 7 on screen · **3 looks**
+inside `.f-h` · 8 on screen · **4 looks**
 
-#### look 1 of 3
+#### look 1 of 4
 
 `C2-26` · rendered **37×11** · 5 instances look like this · text “Build”
 
@@ -1264,7 +1265,7 @@ inside `.f-h` · 7 on screen · **3 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b4 .f-h · b4/form.css:31 |
 
-#### look 2 of 3
+#### look 2 of 4
 
 `C2-192` · rendered **73×15** · 1 instance look like this · text “No image yet”
 
@@ -1286,7 +1287,7 @@ inside `.f-h` · 7 on screen · **3 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .f-empty · b4/form.css:158 |
 
-#### look 3 of 3
+#### look 3 of 4
 
 `C2-207` · rendered **117×14** · 1 instance look like this · text “Add another build”
 
@@ -1310,6 +1311,29 @@ inside `.f-h` · 7 on screen · **3 looks**
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b4 .f-more · b4/form.css:194 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-more · b4/form.css:194 |
+
+#### look 4 of 4
+
+`C2-234` · rendered **106×11** · 1 instance look like this · text “Before staging”
+
+```html
+<span>Before staging</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 10.5px/1 var(--data)` | `` | inherited · .b4 .f-stage h5 · b4/classes.css:484 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .f-stage h5 · b4/classes.css:484 |
+| font-size | ↑ `` | `10.5px` | inherited · .b4 .f-stage h5 · b4/classes.css:484 |
+| font-weight | ↑ `` | `600` | inherited · .b4 .f-stage h5 · b4/classes.css:484 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-stage h5 · b4/classes.css:484 |
+| line-height | ↑ `` | `10.5px` | inherited · .b4 .f-stage h5 · b4/classes.css:484 |
+| letter-spacing | ↑ `0.12em` | `1.26px` | inherited · .b4 .f-stage h5 · b4/classes.css:484 |
+| text-transform | ↑ `uppercase` | `uppercase` | inherited · .b4 .f-stage h5 · b4/classes.css:484 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .f-stage h5 · b4/classes.css:484 |
 
 
 ### `span.b4-hint`
@@ -1681,7 +1705,7 @@ inside `.f-fld` · 3 on screen · **3 looks**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5006 |
 
 **:hover** — changes nothing on the element itself
 
@@ -1741,7 +1765,7 @@ inside `.f-fld` · 3 on screen · **3 looks**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `pointer` | `pointer` | .b4 .f-fld.closed, .b4 .f-fld.closed .f-in · b4/form.css:49 |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5006 |
 
 **:hover** — changes nothing on the element itself
 
@@ -1800,7 +1824,7 @@ inside `.f-fld` · 3 on screen · **3 looks**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5006 |
 
 **:hover** — changes nothing on the element itself
 
@@ -1862,7 +1886,7 @@ inside `.f-fld` · 3 on screen · **1 look**
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-suf · b4/form.css:65 |
 | transition | `color .15s,background-color .15s` | `` | .b4 .f-suf · b4/form.css:65 |
 | cursor | `pointer` | `pointer` | .b4 .f-suf · b4/form.css:65 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -2164,7 +2188,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5006 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2267,7 +2291,7 @@ inside `.f-fld` · 2 on screen · **1 look**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5006 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2330,7 +2354,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 | opacity | `0.35` | `0.35` | .b4 .f-suf:disabled · b4/form.css:69 |
 | transition | `color .15s,background-color .15s` | `` | .b4 .f-suf · b4/form.css:65 |
 | cursor | `default` | `default` | .b4 .f-suf:disabled · b4/form.css:69 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2577,7 +2601,7 @@ inside `.f-bdgs` · 9 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-bt · b4/form.css:115 |
 | cursor | `pointer` | `pointer` | .b4 .f-bt · b4/form.css:115 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -2885,7 +2909,7 @@ inside `.f-tiers` · 1 on screen · **1 look**
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .f-tier.none[aria-checked="true"] · b4/form.css:143 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-tier · b4/form.css:135 |
 | cursor | `pointer` | `pointer` | .b4 .f-tier · b4/form.css:135 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes
 
@@ -2948,7 +2972,7 @@ inside `.f-tiers` · 4 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-tier · b4/form.css:135 |
 | cursor | `pointer` | `pointer` | .b4 .f-tier · b4/form.css:135 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -3634,7 +3658,7 @@ inside `.f-form` · 1 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b4 .f-more · b4/form.css:194 |
 | transition | `color .15s,border-color .15s,background-color .15s` | `` | .b4 .f-more · b4/form.css:194 |
 | cursor | `pointer` | `pointer` | .b4 .f-more · b4/form.css:194 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -3766,7 +3790,7 @@ inside `.f-prev` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | overflow-x | `hidden` | `hidden` | .b4 .f-prevsc.b3-fady · b4/classes.css:510 |
 | overflow-y | `auto` | `auto` | .b4 .f-prevsc.b3-fady · b4/classes.css:510 |
-| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) calc(100% - 28px), rgba(0, 0, 0, 0.78) calc(100% - 22.4px), rgba(0, 0, 0, 0.3) calc(100% - 12.6px), rgba(0, 0, 0, 0) 100%)` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2377 |
+| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) calc(100% - 28px), rgba(0, 0, 0, 0.78) calc(100% - 22.4px), rgba(0, 0, 0, 0.3) calc(100% - 12.6px), rgba(0, 0, 0, 0) 100%)` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2374 |
 
 
 ### `div.b4-ghostwrap`
@@ -3996,7 +4020,7 @@ inside `.lc-att` · 6 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C2-234` · rendered **309×56** · 1 instance look like this
+`C2-237` · rendered **309×56** · 1 instance look like this
 
 ```html
 <li><button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span><span class="f-stw">Needs a weapon and an attachment</span></button></li>
@@ -4166,7 +4190,7 @@ inside `.f-side` · 1 on screen · **1 look**
 `C2-233` · rendered **333×101** · 1 instance look like this · role="status"
 
 ```html
-<div class="f-stage" id="b4-stage-st" role="status" aria-live="polite"><h5>Before staging</h5><ul><li><button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span><span class="f-stw">Needs a wea
+<div class="f-stage" id="b4-stage-st" role="status" aria-live="polite"><h5><span>Before staging</span><button type="button" class="f-stmin" aria-label="Minimise Before staging" data-tip="Minimise">⟨svg.ic⟩</button></h5><ul><li><button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span class
 ```
 
 | property | winning declaration | computed | from |
@@ -4193,7 +4217,97 @@ inside `.f-side` · 1 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| transition | `opacity .2s var(--ease),transform .26s var(--ease),visibility 0s linear 0s` | `` | .b4 .f-stage · b4/classes.css:826 |
 | z-index | `2` | `2` | .b4 .f-stage · b4/classes.css:482 |
+
+
+### `button.f-stmin`
+
+inside `.—` · 1 on screen · **1 look**
+
+#### the one look
+
+`C2-235` · rendered **24×24** · 1 instance look like this · aria-label="Minimise Before staging" type="button"
+
+```html
+<button type="button" class="f-stmin" aria-label="Minimise Before staging" data-tip="Minimise">⟨svg.ic⟩</button>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 .f-stmin · b4/classes.css:822 |
+| flex | `none` | `` | .b4 .f-stmin · b4/classes.css:822 |
+| align-items | `center` | `center` | .b4 .f-stmin · b4/classes.css:822 |
+| place-items | `center` | `` | .b4 .f-stmin · b4/classes.css:822 |
+| width | `24px` | `24px` | .b4 .f-stmin · b4/classes.css:822 |
+| height | `24px` | `24px` | .b4 .f-stmin · b4/classes.css:822 |
+| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| padding | `0` | `` | .b4 .f-stmin · b4/classes.css:822 |
+| padding-top | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:822 |
+| padding-right | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:822 |
+| padding-bottom | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:822 |
+| padding-left | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:822 |
+| margin | `-7px -5px -7px 0` | `` | .b4 .f-stmin · b4/classes.css:822 |
+| margin-top | `-7px` | `-7px` | .b4 .f-stmin · b4/classes.css:822 |
+| margin-right | `-5px` | `-5px` | .b4 .f-stmin · b4/classes.css:822 |
+| margin-bottom | `-7px` | `-7px` | .b4 .f-stmin · b4/classes.css:822 |
+| margin-left | `0px` | `0px` | .b4 .f-stmin · b4/classes.css:822 |
+| border | `0` | `` | .b4 .f-stmin · b4/classes.css:822 |
+| border-radius | `6px` | `` | .b4 .f-stmin · b4/classes.css:822 |
+| background | `none` | `` | .b4 .f-stmin · b4/classes.css:822 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-stmin · b4/classes.css:822 |
+| background-image | `none` | `none` | .b4 .f-stmin · b4/classes.css:822 |
+| font | `inherit` | `` | button · app.css:621 |
+| font-family | `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | button · app.css:621 |
+| font-size | `inherit` | `10.5px` | button · app.css:621 |
+| font-weight | `inherit` | `600` | button · app.css:621 |
+| font-style | `inherit` | `normal` | button · app.css:621 |
+| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
+| line-height | `inherit` | `10.5px` | button · app.css:621 |
+| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
+| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-stmin · b4/classes.css:822 |
+| transition | `background-color .15s,color .15s` | `` | .b4 .f-stmin · b4/classes.css:822 |
+| cursor | `pointer` | `pointer` | .b4 .f-stmin · b4/classes.css:822 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+
+**:hover** — changes; parts inside it respond (table below)
+
+| property | at rest | hover |
+|---|---|---|
+| background-color | `rgba(0, 0, 0, 0)` | `rgb(35, 44, 52)` |
+| color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+
+**:focus-visible** — changes
+
+| property | at rest | focus-visible |
+|---|---|---|
+| outline-offset | `0px` | `1px` |
+| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
+
+**:active** — changes
+
+| property | at rest | active |
+|---|---|---|
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `button.f-st`
@@ -4202,7 +4316,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-235` · rendered **309×56** · 1 instance look like this · aria-label="New build, build 1: needs a weapon and a" type="button"
+`C2-238` · rendered **309×56** · 1 instance look like this · aria-label="New build, build 1: needs a weapon and a" type="button"
 
 ```html
 <button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span><span class="f-stw">Needs a weapon and an attachment</span></button>
@@ -4241,7 +4355,7 @@ inside `.—` · 1 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-st · b4/classes.css:486 |
 | cursor | `pointer` | `pointer` | .b4 .f-st · b4/classes.css:486 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes
 
@@ -4269,7 +4383,7 @@ inside `.f-st` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-236` · rendered **20×20** · 1 instance look like this
+`C2-239` · rendered **20×20** · 1 instance look like this
 
 ```html
 <span class="f-stm" data-tone="warn">⟨svg.ic⟩</span>
@@ -4308,7 +4422,7 @@ inside `.f-st` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-238` · rendered **259×20** · 1 instance look like this
+`C2-241` · rendered **259×20** · 1 instance look like this
 
 ```html
 <span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span>
@@ -4344,7 +4458,7 @@ inside `.f-stn` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-241` · rendered **28×18** · 1 instance look like this · text “MP”
+`C2-244` · rendered **28×18** · 1 instance look like this · text “MP”
 
 ```html
 <span class="b3-xt-pm" data-arm="MP">MP</span>
@@ -4390,7 +4504,7 @@ inside `.f-st` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-242` · rendered **259×16** · 1 instance look like this · text “Needs a weapon and an attachment”
+`C2-245` · rendered **259×16** · 1 instance look like this · text “Needs a weapon and an attachment”
 
 ```html
 <span class="f-stw">Needs a weapon and an attachment</span>
@@ -4421,7 +4535,7 @@ inside `.drawer` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-243` · rendered **224×40** · 1 instance look like this
+`C2-246` · rendered **224×40** · 1 instance look like this
 
 ```html
 <footer class="dw-f"><button class="b3-btn2">Cancel</button><button class="b3-btn2 go" aria-disabled="true" aria-describedby="b4-stage-st">Stage this MP build</button></footer>
@@ -4467,7 +4581,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-244` · rendered **71×40** · 1 instance look like this · text “Cancel”
+`C2-247` · rendered **71×40** · 1 instance look like this · text “Cancel”
 
 ```html
 <button class="b3-btn2">Cancel</button>
@@ -4493,7 +4607,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | padding-left | `16px (as padding-inline-start)` | `16px` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f :is(.b3-btn2, .btn) · b4.css:267 |
 | padding-inline | `16px` | `` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f :is(.b3-btn2, .btn) · b4.css:267 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
-| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3337 |
+| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3334 |
 | background | `color-mix(in srgb,var(--sunk) 85%,transparent)` | `` | .b3-btn2 · b3/board.css:801 |
 | background-color | `` | `color(srgb 0.0431373 0.0588235 0.0705882 / 0.85)` | .b3-btn2 · b3/board.css:801 |
 | background-image | `` | `none` | .b3-btn2 · b3/board.css:801 |
@@ -4511,7 +4625,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-btn2 · b3/board.css:801 |
 | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | .b3-btn2 · b3/board.css:801 |
 | cursor | `pointer` | `pointer` | .b3-btn2 · b3/board.css:801 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -4549,7 +4663,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-245` · rendered **144×40** · 1 instance look like this · text “Stage this MP build”
+`C2-248` · rendered **144×40** · 1 instance look like this · text “Stage this MP build”
 
 ```html
 <button class="b3-btn2 go" aria-disabled="true" aria-describedby="b4-stage-st">Stage this MP build</button>
@@ -4575,7 +4689,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | padding-left | `16px (as padding-inline-start)` | `16px` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f :is(.b3-btn2, .btn) · b4.css:267 |
 | padding-inline | `16px` | `` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f :is(.b3-btn2, .btn) · b4.css:267 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
-| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3337 |
+| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3334 |
 | background | `var(--ok)` | `` | .b3-btn2.go · b3/board.css:1355 |
 | background-color | `` | `rgb(123, 219, 99)` | .b3-btn2.go · b3/board.css:1355 |
 | background-image | `` | `none` | .b3-btn2.go · b3/board.css:1355 |
@@ -4592,9 +4706,9 @@ inside `.dw-f` · 1 on screen · **1 look**
 | white-space | `nowrap` | `` | .b3-btn2 · b3/board.css:801 |
 | color | `var(--on-ok)` | `rgb(7, 19, 10)` | .b3-btn2.go · b3/board.css:1355 |
 | opacity | `0.45` | `0.45` | .b3-btn2:disabled, .b3-btn2[aria-disabled="true"] · b3/board.css:1357 |
-| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` | `` | .b3-btn2.go · b3/board.css:4139 |
+| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` | `` | .b3-btn2.go · b3/board.css:4136 |
 | cursor | `default` | `default` | .b3-btn2:disabled, .b3-btn2[aria-disabled="true"] · b3/board.css:1357 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes
 
