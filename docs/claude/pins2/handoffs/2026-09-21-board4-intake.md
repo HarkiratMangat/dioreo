@@ -1010,3 +1010,30 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > ew what's that middle divider....
 
 **Fixed on the mockup (11:52 EDT):** ~~a dark 1px line with a light 1px line beside it~~ → one 1px hairline in the gap colour the selected swatch's ring already uses (#15171B), on the replace half's edge so it stays put. Picture at 4x: `seam-pair.png`.
+
+**2026-09-28 11:54–12:00 EDT, verbatim** (screenshots and a recording in `local/pins2-board-3/board4-review/intake-v38/`: `95.png`, `96.gif`, `97.png`–`99.png`):
+
+> 2 bugs... when hovering over an already selected swatch, the swatches selection border doesn't disappear (notice it in the background?). And this change also broke the smoothness of the animation.
+>
+> *(a recording, 11:55 EDT)*
+>
+> also, changing the picker height also changes everything else's spacing...
+>
+> there's also no toggle to change this spacing...
+>
+> your divider is also bugged.
+>
+> and remove these washed borders around the swatches.
+
+**Fixed on the mockup (12:00 EDT), each measured:**
+
+| His point | Cause | Now |
+|---|---|---|
+| the selected slot's ring shows behind its own open pair | the ring-hiding rule skipped the open slot itself | every selected ring in the Saved row fades while any slot is open (computed: transparent) |
+| the animation lost its smoothness | the pop rebuild split the pair into two separately rounded halves whose inner corners animated round → square, so the new-colour half opened as a separate blob | one clipped pair again (the approved motion); the pop is drawn as layers beneath it, grown only outward, on the same 300ms curve |
+| the picker height moved every other spacing | in layout 1 the taller picker stretched the swatch groups' rows | the groups hold their spacing (8 / 14 / 8px at 100, 137 and 194px); the extra height sits under the Saved row |
+| no slider for that gap | the gap to the hue/hex row was the group spacing | new slider **Swatches to hue/hex row** (layouts 1 and 2), moving only that gap |
+| the divide | a line on the replace half's edge, so it stopped short of a popped half | its own 1px hairline at the seam, the full height of the taller half, both slot directions (x = seam exactly) |
+| washed borders around the swatches | a light 1px inset edge | removed from every colour surface in the block: swatches, the hex swatch, the colour area, the hue bar |
+
+A frame-accurate recording of the hover (open, use → replace → use, close): `pop-anim.gif`.
