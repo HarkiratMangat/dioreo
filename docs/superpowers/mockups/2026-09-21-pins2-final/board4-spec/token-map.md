@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the custom properties the portal does not have
 
-*Generated 2026-09-28T18:24:46.609Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `2b64129`. 169 of the 252 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
+*Generated 2026-09-28T19:10:00.251Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `4d07336`. 168 of the 251 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
 
 | Token | Defined in the kit | The definition |
 |---|---|---|
@@ -93,7 +93,6 @@ status: live
 | `--hueh` | `b4/classes.css:839` | `.b4 .acx{--pad:14px;--pw:200px;--svh:138px;--cg:16px;--rg:16px;--bgap:16px;--hueh:12px;--huer:44px;--fh:44px;--frad:9px;--lg:10px;--swg:6px;` |
 | `--huer` | `b4/classes.css:839` | `.b4 .acx{--pad:14px;--pw:200px;--svh:138px;--cg:16px;--rg:16px;--bgap:16px;--hueh:12px;--huer:44px;--fh:44px;--frad:9px;--lg:10px;--swg:6px;` |
 | `--ir` | `b4/classes.css:889` | `.b4 .acx .acx-s.acx-full{--W:var(--sww,100%);--UW:var(--sww,100%);--RL:0px;--RWb:var(--sww,100%);--ox:0px;--oy:0px;--or:var(--swr);--ir:var(` |
-| `--kc` | `b4/compare.js:213` | `${view !== 'd' && baseline ? html`<p class="cx-key" style=${new Set(chosen.map((b) => optionOf(b.weaponName).accent)).size === 1 ? `--kc:${o` |
 | `--lab-bg` | `b3/board.css:497` | `--lab-bg:color-mix(in srgb,var(--sl) 30%,#080C0F);--lab-ink:color-mix(in srgb,var(--sl) 94%,white);` |
 | `--lab-div` | `b3/board.css:489` | `/* \u26a0\ufe0f THE HAIRLINE IS GONE, AND IT IS GONE BECAUSE IT NEVER DREW. `--lab-div:1px solid color-mix(\u2026)` fed into` |
 | `--lab-fam` | `b3/board.css:487` | `html[data-b3-p2lab=key],.b3-lab[data-lab=key]{--lab-sep:"";--lab-w:700;--lab-size:var(--t-micro);--lab-fam:var(--data);` |

@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective (the kit Board 3-E shares) — the switches, and which option the board holds
 
-*Generated 2026-09-28T18:21:36.845Z by `switches.cjs` from the kit's `b3/state.js` DEFAULTS, `b3/board.css`, `gates.css`, `b2.css` and every `useB3`/`b3()` call. **224 keyed selectors are live and 292 are dead** under the values below.*
+*Generated 2026-09-28T19:06:42.368Z by `switches.cjs` from the kit's `b3/state.js` DEFAULTS, `b3/board.css`, `gates.css`, `b2.css` and every `useB3`/`b3()` call. **224 keyed selectors are live and 292 are dead** under the values below.*
 
 ## How to port a switched rule or branch
 

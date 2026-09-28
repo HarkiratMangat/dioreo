@@ -1192,3 +1192,28 @@ His instruction (13:43 EDT): look at every element of the three views and harshl
 **My own nitpicks, beyond his items:** weapons of one category share one colour, so identity is carried by the grouped heads rather than by colour; board-1 hairlines under the row names; the cell text re-centred by the flex change (caught and fixed); the Grid view's doubled colour rule; a long group name in a one-build column now wraps; two orphaned rule lines left by the cleanup broke the landing's grid (caught by rendering, fixed); Escape inside a date pop-up closes only the pop-up (checked on the real board).
 
 **Not opened this session (from the v37 list):** History / confirm wheel, Home and gates4 with the new data, the fold animation.
+
+### His corrections to that build — 2026-09-28 14:44 EDT, verbatim (screenshot `local/pins2-board-3/board4-review/intake-v38/114.png`: the Cards view I had sent)
+
+> * weapon name/category inside the tile are misaligned... we literally already went over this same issue in the armory manifest. not to mention, why is the category label so large??
+> * why are wrapped cells right aligned while others are center aligned?
+> * the "each build is read..." entire hint section is COMPLETE SHIT! it's literally the same design we spent so much time removing and you're back at it! Did you even align your self with the plan, design, notes, etc??? half-assed work!
+> * make the attachment labels right aligned so they actually show what row they belong to. from that far away, and after the fact you removed their dividers, i can't even tell what row they belong to.
+> * and what exactly implies a build is "baseline", that's just you assuming something.
+> * honestly, you say complete, and i look at 1 screenshot and all i see is problems. Yet what did i say earlier? "you don't stop until ... honestly and fully satisfied things i would nitpick and point out or want perfected/refined"!
+
+And mid-run: *"your sequential-thinking call was so shit! WHERE ARE THE REAL, CHALLENGING QUESTIONS??? that entire call of it was questions you already had answers to and things you literally already had judgement on."*
+
+**His popup answers (2026-09-28 15:0x EDT):** Differs → **"A · Odd ones out"**; what a two-weapon comparison is for → **"both"** (builds side by side, and which slots each weapon fills).
+
+**Fixed, kit `4d07336` (2026-09-28 15:06 EDT):**
+
+| His point | Cause | Now |
+|---|---|---|
+| name/category misaligned; category too large | I paired a 14px name with an 11.5px tracked label instead of the manifest's `.wg-line` pair | the manifest's pair (600 14.5px name, 600 9.5px mono capitals at .16em, cap-trimmed) on every tile and group head; the manifest's own +.5/−.25px nudges measured WRONG here (category 0.8px above the name), so none — ink within 0.25px at 2x and 4x (`board4-ink-centre.cjs`, SEL on `.cx-wh` and `.cx-g`) |
+| wrapped vs centred cells | the picture I sent was shot before my alignment fix | every cell's words left-aligned in all views, re-shot after the last edit |
+| the key line | a hint that explains the marks — the "bloat" hint he has had removed before (the Bulk format hint, the accent and showings lines) | removed; the cells carry it: tinted = the odd one out among that weapon's builds, dashed = missing a part the others have, dim = all its builds agree |
+| row names | my "leak" fix had removed the row dividers under the names | dividers restored; names right-aligned against their row |
+| "baseline" | v11's rule (the first build of each weapon) — position only | no reference build: odd ones out (his pick); a gunsmith code is never tinted; a slot most builds leave empty is a quiet dash |
+| (his "both") | — | under a row's name, "BAL-27 only" / "2 of 3 weapons" when only some weapons fill that slot |
+

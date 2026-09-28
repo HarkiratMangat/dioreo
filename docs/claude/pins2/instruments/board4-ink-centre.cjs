@@ -27,7 +27,7 @@ const extra = process.argv[2] || '', K = +(process.env.DSF || 4), N = +(process.
       fs.writeFileSync(__dirname + '/b.png', await p.screenshot({ clip }));
       await el.evaluate((e) => { e.dataset.ok ? e.setAttribute('style', e.dataset.ok) : e.removeAttribute('style'); });
       const cw = Math.round((bb.width + 4) * K), cx = Math.max(0, Math.round((bb.x - rr.x - 2) * K));
-      const r = cp.execSync(`magick ${__dirname}/a.png ${__dirname}/b.png -compose difference -composite -crop ${cw}x${Math.round(rr.height * K)}+${cx}+0 +repage -colorspace gray -threshold 6% -format "%@" info:`).toString();
+      const r = cp.execSync(`magick "${__dirname}/a.png" "${__dirname}/b.png" -compose difference -composite -crop ${cw}x${Math.round(rr.height * K)}+${cx}+0 +repage -colorspace gray -threshold 6% -format "%@" info:`).toString();
       const m = r.match(/(\d+)x(\d+)\+(\d+)\+(\d+)/);
       const ink = m ? (rr.y + (+m[4] + +m[2] / 2) / K) - cy : NaN;
       out.push(`row${ri} ${lab.padEnd(11)} box ${(bb.y + bb.height / 2 - cy).toFixed(2).padStart(6)}  ink ${ink.toFixed(2).padStart(6)}  (${m ? m[2] / K : '-'}px tall)`);
