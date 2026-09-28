@@ -961,3 +961,13 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > * make the picker's height 132-140px (whatever makes the hex field's bottom border ink flush with the buttom of the swatches ink).
 
 **Built on the mockup and measured at 2x (11:04 EDT):** the colour area 200 × **137** (it stretches, so the flush holds by construction); the hex field's bottom and the last saved swatch's bottom both at 271px; bottom padding **14**, top 14; the hue bar centred in a 44px row where the hex row was; swatches 25px, 8 a row; New colour icon-only at 44 × 44 in the 200px column; the six hex characters fit (the field's gap, copy button and tracking tightened); the reserved hover-text line under Saved removed (hover text moved to tooltips) — it was the 34px.
+
+**2026-09-28 11:05–11:12 EDT, verbatim:**
+
+> also, remove the drop shadow from the icon and make them black/white based on contrast
+>
+> and the animation is SO abrupt... i've already stated in the past, all animations should be refined, never a 1 frame reveal/hide
+>
+> also why no toggle for picker height?
+
+**Built on the mockup (11:13 EDT):** the saved slot's icons are black or white by contrast against each half's own colour, no shadow; every state change eases on the board's own tokens (`--ease` cubic-bezier(.2,.8,.3,1), 150 / 220 / 300ms) — the saved slot widens over 300ms with the new-colour half growing out of the seam, its icons fading in after it, and closing in reverse (its layer drops only once the close finishes); a swatch's selection ring, a colour saved into a slot and an empty slot's fill all ease, because the rows are no longer rebuilt on every change (the rebuild was what made them jump); reduced motion is honoured. The picker height is now a slider in every layout (default 137, where the hex field and the swatches end flush), with a live readout of the flush offset — it had been a slider for the top layout only, because in the side layouts the colour area stretched to fit. **For the build (a class, his standing rule):** no state change on the board is a one-frame swap — search the board for lists rebuilt on change and for state properties with no transition when this class is built.
