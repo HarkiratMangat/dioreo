@@ -847,8 +847,11 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 | 6 | the label chips (required, warning, ready…) on the post form, as the build form; document them and the Before staging card as shared across form drawers (e.g. the portal's patch notes drawer) | build + doc | logged |
 | 7 | queue card: the End chip (Never or a date) opens the date picker and stages the end | build | logged |
 | 8 | queue card: a repeat chip beside "Active for 54d" (also for 1), opening a pop-up in the date picker's style to change it | build | logged |
-| 9 | the picker's header: "Set end date"; "live since Aug 4" as a chip; a divider before the calendar | build | logged |
-| 10 | why Set end date opens on Oct 11 | **question** | answered in chat, 2026-09-27 20:34 EDT |
+| ~~9~~ | ~~the picker's header: "Set end date"; "live since Aug 4" as a chip; a divider before the calendar~~ → **remove the header entirely** (his 20:39 EDT, below) | build | logged |
+| 10 | why Set end date opens on Oct 11 → **open on tomorrow** (today + 1, highlighted; his 20:39 EDT, below) | **question** + build | answered in chat, 2026-09-27 20:34 EDT |
 | 11 | choosing an announcement's accent: a colour field in the post drawer, a fresh colour per new announcement, the preview card in that colour, the black field style | **question** + build | answered in chat; build logged |
 | 12 | the queue head's "1 never ends" / "1 of 10 slots" chips in the rectangle chip shape; add the character budget chip, its fill in each announcement's accent | build | logged |
 
+**His reply, 2026-09-27 20:39 EDT, verbatim** (to "today + 14 days"):
+
+> open it on today + 1 day, so it default highlights to tomorrow's date. Also, honestly "Stop showing it live since Aug 4" line is pretty useless in the picker, so scratch my earlier request about it and just remove that part out of the picker entirely.
