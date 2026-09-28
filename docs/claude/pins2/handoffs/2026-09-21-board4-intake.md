@@ -874,3 +874,5 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 | **H · Action colour** | the share button takes `--ok` (carried from the v35 round) | every button whose action is "confirm, export, share" |
 | **I · The board's examples** (C6, data only) | a long text ending Dec 31; ~2,000 characters scheduled Oct 31 → Nov 14; a staged one | what each gate's examples cannot show yet |
 
+**2026-09-27 21:27 EDT — the round is "more or less done", not yet officially** (his plan, verbatim, is in the build log's last entry): he will say done; then its classes are built in this session and published.
+
