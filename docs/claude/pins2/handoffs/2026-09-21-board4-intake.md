@@ -878,3 +878,8 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 **2026-09-27 22:08 EDT — his official close ("That's it for the intake items so far", 21:28 EDT) and the build.** Every class above is built on the kit (the build log's §19zzzz and prep 13 list what and how it was checked) — class F reaches the queue card and the post Text box only; the board's group folds (Armory, Repairs, lanes) are a different role and were left as they are. Two calls of mine he was asked about — both KEPT, his popup answers 2026-09-27 23:07 EDT: the queue now LISTS upcoming and staged posts after the live ones (his examples could not appear on C6 otherwise), and the card keeps its **Set end date** button beside the now-clickable Never chip (his P8 design; both open the same pop-up).
 
+## C3 Compare intake round — opened 2026-09-28 09:21 EDT on Version 38, LOG ONLY until he says it is done
+
+*His plan of 2026-09-27 21:27 EDT (the build log's last entry holds it verbatim): after the compact, "an intake round focused primarily on the C3 Compare gate" — "Don't be strict about it and use it as an excuse to narrow your scope/close your mind!" Open on the board: **Table A/B/C and Empty A/B/C are still his pick.***
+
+*How this round is logged (anchor #62, PRE-FLIGHT 42, 80): his words verbatim and dated below, screenshots copied to `local/pins2-board-3/board4-review/intake-v38/`; after each batch the asks are regrouped by CLASS with the sweep each implies — never one number per sentence. Nothing is built until he says the round is done. Then, in this session: the non-C3 items, and the v37 verification debt (deferred list, "Board 4 v37: states never opened") opened at 2x with real input; the C3 items are built after the next compact.*
