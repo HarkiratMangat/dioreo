@@ -1037,3 +1037,9 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 | washed borders around the swatches | a light 1px inset edge | removed from every colour surface in the block: swatches, the hex swatch, the colour area, the hue bar |
 
 A frame-accurate recording of the hover (open, use → replace → use, close): `pop-anim.gif`.
+
+**2026-09-28 12:03 EDT, verbatim:**
+
+> hover hide animation still needs refining.
+
+**Rebuilt on the mockup (12:09 EDT), judged on a real recording (the browser's own screencast), not paused frames:** the close had three faults with one cause — the pair's divide came from a grid collapsing 1fr 1fr → 1fr 0fr while the divide, pop and shadow layers placed it at half the width, so mid-close the divide stood apart from the real one (two lines), the replace half squashed into a sliver at the edge for most of the close, and the layers faded separately and showed through each other. Now: the halves stay 1fr 1fr at every frame, so every layer uses the same geometry (width, x and y offsets, one 300ms curve); the whole hover is one group that fades as a single layer — in over 90ms while it widens from the swatch, out over 200ms while it shrinks back — so the replace half dissolves instead of squashing, with no ghosting. The recording `pop-anim.gif` is replaced with the real one (open, use → replace → use, close).
