@@ -816,4 +816,7 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 | 6 | any date field, any realm | every accent reads `--dp-c`, which defaults to the realm's `--realm-c` — a Season-coloured test re-coloured all of it with one variable |
 | 7 | the spec and docs | HANDOFF.md (rulings, C6, C7, **D3**), the build log, the ledger, the batch-2 plan |
 | — | his token question | **no token** — a hex mixed nine ways in 18 places; written up for Session 4 as D3 |
+| — | the week's first day (his popup answer, after 19:26 EDT) | **Sunday**, as his picture — kit `4b8fa85` |
+
+**Version 36 published** on his popup answer "Publish v36 now" (2026-09-27 20:02 EDT).
 
