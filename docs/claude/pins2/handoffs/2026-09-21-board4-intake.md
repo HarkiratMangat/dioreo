@@ -992,3 +992,9 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > * when hovering over a swatch in the saved row, it appears similarly BUT 2 chips appears. 1st chip shows the saved hover color with the checkmark, and the 2nd chip shows the replacement swatch with the loop icon.
 
 **On the mockup (11:40 EDT):** the height slider now drives layout 1 too (the picker had been stretched to its row). The chips sit after the Recent and Saved labels: 20px tall, 6px corners, a 1px border, 12px hex, their text, icon and border in the hovered swatch's colour; Recent shows ✓ and the swatch's hex, Saved shows ✓ and the saved hex, then ↻ and the current colour; they fade and slide in over 220ms (the second 40ms after) and out on leaving the row; the browser's own tooltips on the swatches are gone, the chips carry that job. Measured at 2x in the current layout and layout 1: the pair ends exactly at the block's inner edge on a 242px column. Pictures: `chip-recent.png`, `chip-saved.png` beside the others.
+
+**2026-09-28 11:47 EDT, verbatim** (screenshot `local/pins2-board-3/board4-review/intake-v38/93.png`: the use half hovered, washed pale):
+
+> i don't like the fact that the hover over the swatch makes it wash out the color. Try this: 1. remove the black border around the hover swatches and use a dropshadow instead, making sure the dropshadow is behind the 2 colors and doesn't drop onto the actual use/replace swatch itself. 2. make the color being hovered over slightly larger than the other color.
+
+**On the mockup (11:48 EDT), measured with a real pointer at 2x:** no white wash on a hovered half; the 4px dark ring is gone and a soft two-layer shadow sits behind the pair (it falls outside the pair, never on its halves); the hovered half widens — 34.5 against 25.5px at the default 1.35 — and the widths ease over the same 300ms. A new slider, **Hovered half size** (100–170%), sets that ratio. Picture: `hv-pair.png`.
