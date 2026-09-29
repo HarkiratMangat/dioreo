@@ -1269,3 +1269,33 @@ And mid-run: *"your sequential-thinking call was so shit! WHERE ARE THE REAL, CH
 ## Version 40 intake round — opened 2026-09-28 22:38 EDT, LOG ONLY until he says it is done
 
 *His words when he opened it: "talk about shitty, half-ass work. ready for another intake round to fix all your shitty work?" How this round is logged (anchor #62, PRE-FLIGHT 42, 80): his words verbatim and dated, screenshots copied to `docs/pins2/intake-shots/intake-v40/` (tracked, run through pngquant; the `local/` copies are working files), and after each batch the asks grouped by class with the sweep each implies. Nothing is built until he says the round is done.*
+
+### Batch 1 — 2026-09-29 10:21 EDT, verbatim
+
+> * `-` button is terrably integrated into the "stage" card. it literally looks stuck on as an afterthought.
+> * "x of x builds" chip is literally using broadcast's colors
+> * i don't want the `x` button inside the tile to always be showing the border.
+> * the `(-)` chip is really washed out and hides the `-` symbol inside of it, either improve it's entire design or try making the `-` black.
+> * look at '/Users/harkirat/Downloads/Arc (09-28-2026 at 10.46.57.PM).gif', (sprite sheet it show every frame)... notice how the peek card animation appears at the top of the list when i hover away from the weapon tile?
+> * give the shuffle button the same black fill like other input fields, and give it better hover events that match the broadcast accent color.
+> * give the calendar and copy buttons better broadcast accent color tinting/hover events as well.
+> * compare's search bar dropdown menu is incorrectly styled, notice the middle floating weapon categories? That is NOT how we refined it for the build drawer dropdown menus!
+
+Before that, at 10:10 EDT: *"let's do intake first, then you can continue working on the sweep, then we'll compact and bump up to opus 5.5 for the intake requests/designs, etc."*
+
+**His screenshots, in order:** `docs/pins2/intake-shots/intake-v40/01-stage-minus.png` (Before staging's −) · `02-limit-chip.png` (Compare's "5 of 6 builds") · `03-tile-x.png` (the BAL-27 tile, its ×) · `04-corner-minus.png` (a build chip's − corner mark) · `05-shuffle.png` · `06-calendar.png` · `07-copy.png` (the post form's in-field buttons, the last two hovered) · `08-compare-list.png` (Compare's search list) · `09-export-peek-exit.gif`, the recording he named (36 frames, 726×800).
+
+**The GIF, walked frame by frame:** Export's MP file, hovering a build number in the left column. Frames 10–30: the peek card (TYPE 19 · Build 3) fades in at the **bottom** of the preview and holds. Frame 31, the pointer leaving: a ghost of the card flashes at the **top** of the preview, over the "MP builds" head, then is gone by frame 32. The exit animates from a different place than the entry (`docs/pins2/intake-shots/intake-v40/09-export-peek-exit-f29-32.png`, frames 29–32 side by side, the top 260px).
+
+**His asks, by class** (logged 2026-09-29 10:23 EDT; nothing built):
+
+| Class | His asks | The sweep it implies |
+|---|---|---|
+| **A · a reused control, not re-homed** | Before staging's − "stuck on as an afterthought" · the tile's × "always showing the border" | Both are the `.b3-x` swaps of 2026-09-28 19:07 EDT: the component moved in, its placement and resting state did not. Every `.b3-x` (and every component swapped in that pass): where it sits in its host, its resting edge, its hover |
+| **B · colour carried from the component's home gate** | "x of x builds" uses Broadcast's colours | The limit chip is `.g-status` + `.cmeter`, the queue head's slots chip, recorded as "already the board's" — its accent came with it. Every cross-gate reuse, against its host gate's accent |
+| **C · a mark that hides its glyph** | the (−) corner chip is washed out; redesign it or make the − black | the build chips' − / + corner marks (`.cx-kb`), both signs, both states, at 2x |
+| **D · motion that exits somewhere else** | the peek card flashes at the top when the pointer leaves | Export's peek; then every peek, pop-up and list: its exit from where it entered |
+| **E · Broadcast's in-field buttons** | shuffle: the fields' black fill and hover in Broadcast's accent · calendar and copy: accent tint and hover | every icon button in and beside the post form's fields, then the same buttons in the other gates against their own accents |
+| **F · a list not built as the refined one** | Compare's search list floats the category in the middle; "NOT how we refined it for the build drawer" | recorded 2026-09-28 as "`Picker`, already the board's" — its rows are not. Every dropdown list on the board against the build drawer's rows |
+
+**Two of these are last round's claims failing:** A and B are components I recorded as "swapped" or "already the board's" on 2026-09-28; F is the search I recorded as the build drawer's `Picker`. A component's name matching is not its placement, its gate's colour or its rows matching.
