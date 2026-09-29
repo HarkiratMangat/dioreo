@@ -34,6 +34,6 @@ const out = ['---', 'kind: reference', 'status: live', '---', '', '# Board 3-E �
   '**This is where the corrections to boards 1 and 2 live.** Session 2 shipped board 1 and board 2 at ~95%; board 3 ran the portal\'s own code and corrected the rest with rules like these. Each row is a change to `portal/ui/app.css` (or `tokens.css`): find the portal rule for the same selector, change it to this, and close the element with `portalProbe` against board 3.', '',
   '⚠️ Board 3 applied these ON TOP of the portal\'s cascade, so a row can win only because the board stylesheet loads last. When moving it into `app.css`, replace the portal\'s own declaration rather than appending a second rule, and re-probe.', '',
   '| Kit source | Selector | Declarations | Switch |', '|---|---|---|---|', ...rows, ''];
-// OUT_DIR (2026-09-27 02:43 EDT): Board 4 writes beside its own spec (docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/), so Board 3-E's record is not overwritten.
+// OUT_DIR (2026-09-27 02:43 EDT): Board 4 writes beside its own spec (docs/pins2/final/board4-spec/), so Board 3-E's record is not overwritten.
 fs.writeFileSync(path.join(process.env.OUT_DIR || __dirname, 'portal-class-rules.md'), out.join('\n').replace(/^# Board 3-E/m, process.env.OUT_DIR ? '# Board 4: Collective (the kit Board 3-E shares)' : '# Board 3-E'));
 console.log(JSON.stringify({ live, dead, open }));

@@ -2201,7 +2201,7 @@ He reported it twice - *"it feels like it's lagging behind"*, then *"smooth when
 
 ### 3-E version 70 — the intake round (2026-09-20 17:46 EDT)
 
-Seven items, fixed at the class and not at the instance. `p9` is **decided: B · Time rail**; the redesign is deferred. The board's 1px container edges are one mechanism (`--b3-edge` + a shared `outline`, because an outline paints above descendants and an inset ring does not). The export landing is one tile. H1's spacing is thirteen named `--h1-*` relationships driven by a Spacing playground in the gate's own controls and persisted in the board store. The Armory hover mesh is parameterised rather than copied — its middle radial derives from `--c` instead of a hard-coded `--warn`. Full map: `docs/claude/2026-09-20-h1-change-inventory.md` § ROUND 15.
+Seven items, fixed at the class and not at the instance. `p9` is **decided: B · Time rail**; the redesign is deferred. The board's 1px container edges are one mechanism (`--b3-edge` + a shared `outline`, because an outline paints above descendants and an inset ring does not). The export landing is one tile. H1's spacing is thirteen named `--h1-*` relationships driven by a Spacing playground in the gate's own controls and persisted in the board store. The Armory hover mesh is parameterised rather than copied — its middle radial derives from `--c` instead of a hard-coded `--warn`. Full map: `docs/pins2/records/2026-09-20-h1-change-inventory.md` § ROUND 15.
 
 ## 3-E version 68 — the river scrolls, the story reaches the alerts, and two of my own changes were wrong (2026-09-20 14:19 EDT)
 

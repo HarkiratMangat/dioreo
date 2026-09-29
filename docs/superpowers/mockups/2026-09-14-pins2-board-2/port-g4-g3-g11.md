@@ -5,7 +5,7 @@ status: live
 
 # The port sheet — board 2's G4, G3 and G11 against the portal
 
-*Written 2026-09-16 00:47 EDT, plan `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §5b Step 6. Session 5 builds from this; it decides nothing and asks Harkirat nothing.*
+*Written 2026-09-16 00:47 EDT, plan `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §5b Step 6. Session 5 builds from this; it decides nothing and asks Harkirat nothing.*
 
 Ten of Harkirat's 57 review pins of 2026-09-15 say the same thing in different words: a design board settled this and the portal does not show it. Two of the twelve — the New Build drawer (pin 2) and the announcement drawer (pin 48) — already have their sheet at `../2026-09-14-pins2-board/handoff-g9-g8.md`. This file is the other ten.
 

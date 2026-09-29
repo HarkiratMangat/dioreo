@@ -290,7 +290,7 @@ inside `.f-pre` · 20 on screen · **6 looks**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `600 var(--t-xs)/1 var(--ui)` | `` | inherited · .b3-sd-vt button · b3/board.css:892 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-sd-vt button · b3/board.css:892 |
-| font-size | ↑ `12px` | `12px` | inherited · .b4 .bk-view.b3-sd-vt button · b4/classes.css:567 |
+| font-size | ↑ `12px` | `12px` | inherited · .b4 .bk-view.b3-sd-vt button · b4/classes.css:568 |
 | font-weight | ↑ `` | `600` | inherited · .b3-sd-vt button · b3/board.css:892 |
 | font-style | ↑ `` | `normal` | inherited · .b3-sd-vt button · b3/board.css:892 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b3-sd-vt button · b3/board.css:892 |
@@ -346,8 +346,8 @@ inside `.f-pre` · 20 on screen · **6 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `20px` | `20px` | .b3-bdg[data-k="mode"] .b3-mdi .ic · b4/classes.css:628 |
-| height | `20px` | `20px` | .b3-bdg[data-k="mode"] .b3-mdi .ic · b4/classes.css:628 |
+| width | `20px` | `20px` | .b3-bdg[data-k="mode"] .b3-mdi .ic · b4/classes.css:629 |
+| height | `20px` | `20px` | .b3-bdg[data-k="mode"] .b3-mdi .ic · b4/classes.css:629 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
@@ -360,7 +360,7 @@ inside `.f-pre` · 20 on screen · **6 looks**
 | text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:625 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
@@ -844,14 +844,14 @@ inside `.cx-tools` · 1 on screen · **1 look**
 | row-gap | `8px` | `8px` | .g-status · gates.css:401 |
 | flex | `none` | `` | .b4 .cx-cap · b4/compare.css:179 |
 | align-items | `center` | `center` | .g-status · gates.css:401 |
-| height | `28px` | `28px` | .g-status.g-status · b4/classes.css:730 |
+| height | `28px` | `28px` | .g-status.g-status · b4/classes.css:731 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 10px` | `` | .g-status · gates.css:401 |
 | padding-top | `0px` | `0px` | .g-status · gates.css:401 |
 | padding-right | `10px` | `10px` | .g-status · gates.css:401 |
 | padding-bottom | `0px` | `0px` | .g-status · gates.css:401 |
 | padding-left | `10px` | `10px` | .g-status · gates.css:401 |
-| border-radius | `6px` | `` | .g-status.g-status · b4/classes.css:730 |
+| border-radius | `6px` | `` | .g-status.g-status · b4/classes.css:731 |
 | background | `var(--sunk)` | `` | .g-status · gates.css:401 |
 | background-color | `` | `rgb(11, 15, 18)` | .g-status · gates.css:401 |
 | background-image | `` | `none` | .g-status · gates.css:401 |
@@ -884,7 +884,7 @@ inside `.g-status` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | — | `block` | initial |
 | align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status .cmeter · b3/board.css:2532 |
-| width | `56px` | `56px` | .g-status.g-status .cmeter · b4/classes.css:732 |
+| width | `56px` | `56px` | .g-status.g-status .cmeter · b4/classes.css:733 |
 | height | `4px` | `4px` | .cmeter · app.css:2472 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border-radius | `var(--rad-1)` | `` | .cmeter · app.css:2472 |
@@ -1024,14 +1024,14 @@ inside `.cx-tools` · 1 on screen · **1 look**
 | gap | `2px` | `` | .b3-sd-vt · b3/board.css:891 |
 | column-gap | `2px` | `2px` | .b3-sd-vt · b3/board.css:891 |
 | row-gap | `2px` | `2px` | .b3-sd-vt · b3/board.css:891 |
-| flex | `none` | `` | .b4 .bk-view.b3-sd-vt · b4/classes.css:566 |
+| flex | `none` | `` | .b4 .bk-view.b3-sd-vt · b4/classes.css:567 |
 | align-self | `center` | `center` | .b3-sd-vt · b3/board.css:891 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `4px` | `` | .b4 .bk-view.b3-sd-vt · b4/classes.css:566 |
-| padding-top | `4px` | `4px` | .b4 .bk-view.b3-sd-vt · b4/classes.css:566 |
-| padding-right | `4px` | `4px` | .b4 .bk-view.b3-sd-vt · b4/classes.css:566 |
-| padding-bottom | `4px` | `4px` | .b4 .bk-view.b3-sd-vt · b4/classes.css:566 |
-| padding-left | `4px` | `4px` | .b4 .bk-view.b3-sd-vt · b4/classes.css:566 |
+| padding | `4px` | `` | .b4 .bk-view.b3-sd-vt · b4/classes.css:567 |
+| padding-top | `4px` | `4px` | .b4 .bk-view.b3-sd-vt · b4/classes.css:567 |
+| padding-right | `4px` | `4px` | .b4 .bk-view.b3-sd-vt · b4/classes.css:567 |
+| padding-bottom | `4px` | `4px` | .b4 .bk-view.b3-sd-vt · b4/classes.css:567 |
+| padding-left | `4px` | `4px` | .b4 .bk-view.b3-sd-vt · b4/classes.css:567 |
 | border-radius | `var(--rad-pill)` | `` | .b3-sd-vt · b3/board.css:891 |
 | background | `var(--sunk)` | `` | .b3-sd-vt · b3/board.css:891 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-sd-vt · b3/board.css:891 |
@@ -1064,14 +1064,14 @@ inside `.b3-sd-vt` · 1 on screen · **1 look**
 | column-gap | `6px` | `6px` | .b3-sd-vt button · b3/board.css:892 |
 | row-gap | `6px` | `6px` | .b3-sd-vt button · b3/board.css:892 |
 | align-items | `center` | `center` | .b3-sd-vt button · b3/board.css:892 |
-| height | `32px` | `32px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:567 |
+| height | `32px` | `32px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:568 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 13px` | `` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:567 |
-| padding-top | `0px` | `0px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:567 |
-| padding-right | `13px` | `13px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:567 |
-| padding-bottom | `0px` | `0px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:567 |
-| padding-left | `13px` | `13px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:567 |
+| padding | `0 13px` | `` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:568 |
+| padding-top | `0px` | `0px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:568 |
+| padding-right | `13px` | `13px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:568 |
+| padding-bottom | `0px` | `0px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:568 |
+| padding-left | `13px` | `13px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:568 |
 | border | `0` | `` | .b3-sd-vt button · b3/board.css:892 |
 | border-radius | `var(--rad-pill)` | `` | .b3-sd-vt button · b3/board.css:892 |
 | background | `var(--raised)` | `` | .b3-sd-vt button.on · b3/board.css:895 |
@@ -1080,7 +1080,7 @@ inside `.b3-sd-vt` · 1 on screen · **1 look**
 | box-shadow | `inset 0 0 0 1px var(--ink4)` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` | .b3-sd-vt button.on · b3/board.css:895 |
 | font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-sd-vt button · b3/board.css:892 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-sd-vt button · b3/board.css:892 |
-| font-size | `12px` | `12px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:567 |
+| font-size | `12px` | `12px` | .b4 .bk-view.b3-sd-vt button · b4/classes.css:568 |
 | font-weight | `` | `600` | .b3-sd-vt button · b3/board.css:892 |
 | font-style | `` | `normal` | .b3-sd-vt button · b3/board.css:892 |
 | font-variant-numeric | `` | `normal` | .b3-sd-vt button · b3/board.css:892 |
@@ -1326,7 +1326,7 @@ inside `.cx-gr` · 8 on screen · **4 looks**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 12px 0 0` | `` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
 | padding-top | `0px` | `0px` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
-| padding-right | `16px` | `16px` | .b4 #compare.cx .cx-t tbody th.cx-k0 · b4/compare.css:261 |
+| padding-right | `16px` | `16px` | .b4 #compare.cx .cx-t tbody th.cx-k0 · b4/compare.css:263 |
 | padding-bottom | `0px` | `0px` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
 | padding-left | `0px` | `0px` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
 | top | `0px` | `0px` | th · app.css:1248 |
@@ -1343,7 +1343,7 @@ inside `.cx-gr` · 8 on screen · **4 looks**
 | line-height | `` | `15px` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
-| text-align | `right` | `right` | .b4 #compare.cx .cx-t tbody th.cx-k0 · b4/compare.css:261 |
+| text-align | `right` | `right` | .b4 #compare.cx .cx-t tbody th.cx-k0 · b4/compare.css:263 |
 | white-space | `nowrap` | `` | th · app.css:1248 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
 | transition | `color .12s` | `` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
@@ -1365,7 +1365,7 @@ inside `.cx-gr` · 8 on screen · **4 looks**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 12px 0 0` | `` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
 | padding-top | `0px` | `0px` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
-| padding-right | `16px` | `16px` | .b4 #compare.cx .cx-t tbody th.cx-k0 · b4/compare.css:261 |
+| padding-right | `16px` | `16px` | .b4 #compare.cx .cx-t tbody th.cx-k0 · b4/compare.css:263 |
 | padding-bottom | `0px` | `0px` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
 | padding-left | `0px` | `0px` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
 | top | `0px` | `0px` | th · app.css:1248 |
@@ -1382,7 +1382,7 @@ inside `.cx-gr` · 8 on screen · **4 looks**
 | line-height | `` | `15px` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
-| text-align | `right` | `right` | .b4 #compare.cx .cx-t tbody th.cx-k0 · b4/compare.css:261 |
+| text-align | `right` | `right` | .b4 #compare.cx .cx-t tbody th.cx-k0 · b4/compare.css:263 |
 | white-space | `nowrap` | `` | th · app.css:1248 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
 | transition | `color .12s` | `` | .b4 .cx-t th.cx-k0 · b4/compare.css:30 |
@@ -1448,7 +1448,7 @@ inside `.cx-k0` · 11 on screen · **2 looks**
 | line-height | ↑ `` | `16.9px` | inherited · .b4 .cx-v · b4/compare.css:43 |
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
-| text-align | ↑ `left` | `left` | inherited · .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:259 |
+| text-align | ↑ `left` | `left` | inherited · .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:261 |
 | white-space | `nowrap` | `` | .sr · app.css:628 |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b4 .cx-v · b4/compare.css:43 |
 | overflow | `hidden` | `` | .sr · app.css:628 |
@@ -1493,7 +1493,7 @@ inside `.cx-gr` · 1 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-gr th · b4/compare.css:214 |
-| white-space | `normal` | `` | .b4 #compare.cx .cx-t .cx-g · b4/compare.css:257 |
+| white-space | `normal` | `` | .b4 #compare.cx .cx-t .cx-g · b4/compare.css:259 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | th · app.css:1248 |
 
 
@@ -1527,7 +1527,7 @@ inside `.cx-g` · 1 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-align | ↑ `left` | `left` | inherited · .b4 #compare.cx .cx-t .cx-gr th · b4/compare.css:214 |
-| white-space | ↑ `normal` | `` | inherited · .b4 #compare.cx .cx-t .cx-g · b4/compare.css:257 |
+| white-space | ↑ `normal` | `` | inherited · .b4 #compare.cx .cx-t .cx-g · b4/compare.css:259 |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · th · app.css:1248 |
 
 
@@ -1592,7 +1592,7 @@ inside `.cx-h` · 5 on screen · **1 look**
 | column-gap | `7px` | `7px` | .b4 .cx-hn · b4/compare.css:217 |
 | row-gap | `7px` | `7px` | .b4 .cx-hn · b4/compare.css:217 |
 | align-items | `center` | `center` | .b4 .cx-hn · b4/compare.css:34 |
-| min-height | `18px` | `18px` | .b4 .cx-h .cx-hn · b4/classes.css:475 |
+| min-height | `18px` | `18px` | .b4 .cx-h .cx-hn · b4/classes.css:476 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | `600 15px/1.1 var(--ui)` | `` | .b4 .cx-hn · b4/compare.css:34 |
 | font-family | `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 #compare.cx :is(.cx-hn, .cx-hl, .cx-hw, .cx-wh b, .cx-sug b, .cx-tile b, .cx-rank b, h · b4/compare.css:134 |
@@ -1882,7 +1882,7 @@ inside `.b3-bdgs` · 13 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| position | `relative` | `relative` | .b3-bdg[data-k="mode"] · b4/classes.css:625 |
 | gap | `0` | `` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:229 |
 | column-gap | `0px` | `0px` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:229 |
 | row-gap | `0px` | `0px` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:229 |
@@ -1891,17 +1891,17 @@ inside `.b3-bdgs` · 13 on screen · **3 looks**
 | width | `26px` | `26px` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:229 |
 | height | `22px` | `22px` | .b3-bdg · b3/board.css:150 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 7px 0 4px` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
-| padding-top | `0px` | `0px` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| padding | `0 7px 0 4px` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:625 |
+| padding-top | `0px` | `0px` | .b3-bdg[data-k="mode"] · b4/classes.css:625 |
 | padding-right | `0px (as padding-inline-end)` | `0px` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:229 |
-| padding-bottom | `0px` | `0px` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| padding-bottom | `0px` | `0px` | .b3-bdg[data-k="mode"] · b4/classes.css:625 |
 | padding-left | `0px (as padding-inline-start)` | `0px` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:229 |
 | padding-inline | `0` | `` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:229 |
 | border-radius | `var(--rad-1)` | `` | .b3-bdg · b3/board.css:150 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--tc) 9%,transparent),color-mix(in srgb,var(--tc) 4%,transparent))` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
-| background-image | `` | `linear-gradient(color(srgb 0.894118 0.92549 0.956863 / 0.09), color(srgb 0.894118 0.92549 0.956863 / 0.04))` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--tc) 40%,transparent),inset 0 1px 0 color-mix(in srgb,#fff 24%,transparent),0 0 14px -6px color-mix(in srgb,var(--tc) 55%,transparent)` | `color(srgb 0.894118 0.92549 0.956863 / 0.4) 0px 0px 0px 1px inset, color(srgb 1 1 1 / 0.24) 0px 1px 0px 0px inset, color(srgb 0.894118 0.92549 0.956863 / 0.55) 0px 0px 14px -6px` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--tc) 9%,transparent),color-mix(in srgb,var(--tc) 4%,transparent))` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:625 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-bdg[data-k="mode"] · b4/classes.css:625 |
+| background-image | `` | `linear-gradient(color(srgb 0.894118 0.92549 0.956863 / 0.09), color(srgb 0.894118 0.92549 0.956863 / 0.04))` | .b3-bdg[data-k="mode"] · b4/classes.css:625 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--tc) 40%,transparent),inset 0 1px 0 color-mix(in srgb,#fff 24%,transparent),0 0 14px -6px color-mix(in srgb,var(--tc) 55%,transparent)` | `color(srgb 0.894118 0.92549 0.956863 / 0.4) 0px 0px 0px 1px inset, color(srgb 1 1 1 / 0.24) 0px 1px 0px 0px inset, color(srgb 0.894118 0.92549 0.956863 / 0.55) 0px 0px 14px -6px` | .b3-bdg[data-k="mode"] · b4/classes.css:625 |
 | font | `700 var(--t-micro)/1 var(--data)` | `` | .b3-bdg · b3/board.css:150 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-bdg · b3/board.css:150 |
 | font-size | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
@@ -1913,27 +1913,27 @@ inside `.b3-bdgs` · 13 on screen · **3 looks**
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
 | white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
-| color | `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| color | `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | .b3-bdg[data-k="mode"] · b4/classes.css:625 |
 | overflow | `hidden` | `` | .b3-bdg · b3/board.css:1835 |
 | overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1835 |
 | overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1835 |
-| isolation | `isolate` | `isolate` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| isolation | `isolate` | `isolate` | .b3-bdg[data-k="mode"] · b4/classes.css:625 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
-| inset | `0` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
-| top | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
-| right | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
-| bottom | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
-| left | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
-| border-radius | `inherit` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
-| opacity | `0` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
-| content | `""` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
-| z-index | `-1` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
-| pointer-events | `none` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| position | `absolute` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
+| inset | `0` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
+| top | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
+| right | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
+| bottom | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
+| left | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
+| border-radius | `inherit` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
+| opacity | `0` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
+| content | `""` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
+| z-index | `-1` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
+| pointer-events | `none` | .b3-bdg[data-k="mode"]::before · b4/classes.css:630 |
 
 
 ### `svg.b3-zap.ic`
@@ -2066,8 +2066,8 @@ inside `.b3-bdg` · 3 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-bdg[data-k="mode"] .b3-mdi · b4/classes.css:627 |
-| position | `relative` | `relative` | .b3-bdg[data-k="mode"] .b3-mdi · b4/classes.css:627 |
+| display | `inline-flex` | `flex` | .b3-bdg[data-k="mode"] .b3-mdi · b4/classes.css:628 |
+| position | `relative` | `relative` | .b3-bdg[data-k="mode"] .b3-mdi · b4/classes.css:628 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
@@ -2080,7 +2080,7 @@ inside `.b3-bdg` · 3 on screen · **1 look**
 | text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:625 |
 
 
 ### `td.cx-c.s-d`
@@ -2206,7 +2206,7 @@ inside `.cx-c` · 20 on screen · **2 looks**
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .s-n .cx-v · b4/compare.css:263 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .s-n .cx-v · b4/compare.css:265 |
 | transition | `background-color .12s,box-shadow .12s` | `` | .b4 .cx-v · b4/compare.css:43 |
 | cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
 
@@ -2236,7 +2236,7 @@ inside `.cx-v` · 30 on screen · **4 looks**
 | line-height | ↑ `` | `16.9px` | inherited · .b4 .cx-v · b4/compare.css:43 |
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
-| text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:259 |
+| text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:261 |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b4 .cx-v · b4/compare.css:43 |
 | cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
 
@@ -2261,7 +2261,7 @@ inside `.cx-v` · 30 on screen · **4 looks**
 | line-height | ↑ `` | `16.9px` | inherited · .b4 .cx-v · b4/compare.css:43 |
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
-| text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:259 |
+| text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:261 |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .cx-v.rm · b4/compare.css:50 |
 | cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
 
@@ -2311,8 +2311,8 @@ inside `.cx-v` · 30 on screen · **4 looks**
 | line-height | ↑ `` | `16.25px` | inherited · .b4 .cx-v.mono · b4/compare.css:45 |
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
-| text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:259 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b4 .s-n .cx-v · b4/compare.css:263 |
+| text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:261 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b4 .s-n .cx-v · b4/compare.css:265 |
 | cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
 
 
@@ -2606,7 +2606,7 @@ inside `.cx-c` · 5 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .s-n .cx-v · b4/compare.css:263 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .s-n .cx-v · b4/compare.css:265 |
 | transition | `background-color .12s,box-shadow .12s` | `` | .b4 .cx-v · b4/compare.css:43 |
 | cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
 
@@ -2685,30 +2685,30 @@ inside `.cx-same` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b4 .cx-sv · b4/compare.css:92 |
-| gap | `8px` | `` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
-| column-gap | `8px` | `8px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
-| row-gap | `8px` | `8px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
+| gap | `8px` | `` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
+| column-gap | `8px` | `8px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
+| row-gap | `8px` | `8px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
 | align-items | `center` | `center` | .b4 .cx-sv · b4/compare.css:92 |
 | min-width | `0px` | `0px` | .wg-at · app.css:1176 |
-| height | `28px` | `28px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
+| height | `28px` | `28px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px` | `` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
-| padding-top | `0px` | `0px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
-| padding-right | `10px` | `10px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
-| padding-bottom | `0px` | `0px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
-| padding-left | `10px` | `10px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
+| padding | `0 10px` | `` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
+| padding-top | `0px` | `0px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
+| padding-right | `10px` | `10px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
+| padding-bottom | `0px` | `0px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
+| padding-left | `10px` | `10px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
 | border-radius | `5px` | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at, html[data-b3-p2lab]:not([data-b3-p2 · b3/board.css:526 |
 | background | `var(--atbg)` | `` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
 | background-color | `` | `color(srgb 0.0951373 0.111059 0.123059)` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
 | background-image | `` | `none` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
 | box-shadow | `inset 0 0 0 1px var(--atring),var(--atlit,0 0 #0000)` | `color(srgb 1 0.164706 0.333333 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
-| font | `500 12px/1 var(--ui)` | `` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
-| font-size | `` | `12px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
+| font | `500 12px/1 var(--ui)` | `` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
+| font-size | `` | `12px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
 | font-weight | `var(--atw,500)` | `500` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
-| font-style | `` | `normal` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
-| font-variant-numeric | `` | `normal` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
-| line-height | `` | `12px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:285 |
+| font-style | `` | `normal` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
+| font-variant-numeric | `` | `normal` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
+| line-height | `` | `12px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:286 |
 | letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:133 |
 | white-space | `nowrap` | `` | .wg-at · app.css:1176 |

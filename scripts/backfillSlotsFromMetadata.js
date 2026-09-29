@@ -1,4 +1,4 @@
-// scripts/backfillSlotsFromMetadata.js — copies each loadout's attachment SLOTS from its Cloudinary structured metadata into Loadout.attachmentSlots. Plan docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md §5.2 Step 9b, written 2026-09-14 23:59 EDT.
+// scripts/backfillSlotsFromMetadata.js — copies each loadout's attachment SLOTS from its Cloudinary structured metadata into Loadout.attachmentSlots. Plan docs/pins2/plan/2026-09-13-portal-pins-batch-2.md §5.2 Step 9b, written 2026-09-14 23:59 EDT.
 //
 // WHY: the 2026-07-21 vision backfill (scripts/backfillLoadoutSlots.js) wrote the slots into Cloudinary metadata on 130 of 134 images, but it ran before the 2026-07-24 change that also persists them in Mongo — so every build's attachmentSlots is empty while the answer sits in Cloudinary. Compare's slot rows and the New Build drawer's code fill and slot search read the Mongo field. No Gemini call and no Cloudinary write: this only READS metadata.
 //

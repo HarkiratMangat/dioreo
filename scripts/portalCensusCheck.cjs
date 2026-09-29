@@ -2,7 +2,7 @@
 // Written 2026-09-21 12:23 EDT for portal pins batch 2. The census (scripts/portalCensus.cjs) lists what the portal renders; the map says what
 // each thing becomes. This fails on anything the map does not mention, so a missed element is a red line, not a silent skip.
 //
-// The map, docs/superpowers/mockups/2026-09-21-pins2-final/element-map.json, written by Session 4:
+// The map, docs/pins2/final/element-map.json, written by Session 4:
 //   { "standards": { "<name>": { "class": "...", "tokens": {...}, "note": "..." } },
 //     "families":  { "F1a2b3c4": "<standard name>" | { "exempt": "<why, in his words where he gave them>" } | { "rebuilt": "Board 4: Final · <surface>" } },
 //     "loose":     { "<kind> <value>": "<token name>" | { "exempt": "<why>" } } }

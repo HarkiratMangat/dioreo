@@ -5,13 +5,13 @@ status: live
 
 # Board 3-E → Sessions 4 and 5 · the handoff
 
-*Rewritten 2026-09-21 09:43 EDT, when Harkirat asked for a spec that ports **100%** of the board with *"no mistakes"* — board 2's reached ~95%. The first version of this file (2026-09-21 00:02 EDT) was a narrative of decisions; this one is a specification. Plan: `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §10.5.*
+*Rewritten 2026-09-21 09:43 EDT, when Harkirat asked for a spec that ports **100%** of the board with *"no mistakes"* — board 2's reached ~95%. The first version of this file (2026-09-21 00:02 EDT) was a narrative of decisions; this one is a specification. Plan: `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.5.*
 
 **Board 3 closed by Harkirat 2026-09-20 23:55 EDT** — *"the board is more or less done now."* Published at https://claude.ai/artifact/2LxjJwzsg7odUiJKmvq2Jo, **version 77**.
 
 ---
 
-> 🔴 **Read [`../2026-09-21-pins2-final/FINAL.md`](../2026-09-21-pins2-final/FINAL.md) first** *(added 2026-09-21 11:00 EDT)*. This file specifies board 3; that one says which board owns every surface of all three, and which value ships where they overlap.
+> 🔴 **Read [`../2026-09-21-pins2-final/FINAL.md`](../../../pins2/final/FINAL.md) first** *(added 2026-09-21 11:00 EDT)*. This file specifies board 3; that one says which board owns every surface of all three, and which value ships where they overlap.
 
 ## 0 · Why this is five artifacts, and which one to open first
 
@@ -93,7 +93,7 @@ The board side is scoped by gate (`#g-export`, `#g-history`, `#g-armory-manifest
 | Component | `b3/history.js` `B3History` 45–238 | `portal/ui/history.js` `HistoryRealm` 151–252 · `EventDrawer` 131–149 |
 | Diff | `ui/history.js` differs by **19 lines**; the rail itself is DESIGN-CODE | |
 | Values | `3e/resolved-spec/H1-history.md` · `states.md` § H1 · §6 for his spacing | |
-| Governs | `docs/claude/2026-09-20-h1-constraint-table.md` — **no H1 element changes without its row** (linksee anchor #41): a row naming a pin, a ledger decision or a round is a constraint, and changing it is a proposal to show, never a fix to ship | |
+| Governs | `docs/pins2/records/2026-09-20-h1-constraint-table.md` — **no H1 element changes without its row** (linksee anchor #41): a row naming a pin, a ledger decision or a round is a constraint, and changing it is a proposal to show, never a fix to ship | |
 
 | Element | Markup | Status |
 |---|---|---|
@@ -333,7 +333,7 @@ He gave seven items, I fixed them, then he validated each one and **overturned m
 
 ⚠️ **Four items are UNRULED** — he never gave a verdict on the fix. Session 5 should treat 2, 5/7d, 7a and 7e as *built but unconfirmed*.
 
-✅ **Ruled 2026-09-21 16:12 EDT on Board 4:** 2 and 7a are right; 7e was not (rebuilt at the kind chip's size); 5/7d is still unruled. Full rows: `docs/claude/2026-09-20-h1-constraint-table.md` § Ruled on Board 4.
+✅ **Ruled 2026-09-21 16:12 EDT on Board 4:** 2 and 7a are right; 7e was not (rebuilt at the kind chip's size); 5/7d is still unruled. Full rows: `docs/pins2/records/2026-09-20-h1-constraint-table.md` § Ruled on Board 4.
 
 ### Rounds 15–18 (2026-09-20 21:35 → 2026-09-21 00:02 EDT)
 
@@ -360,7 +360,7 @@ He gave seven items, I fixed them, then he validated each one and **overturned m
 
 🔴 **BOARDS 1 AND 2 WERE NOT FROZEN — fixed 2026-09-21 10:34 EDT.** Both linked `../../../../portal/public/app.css`, the LIVE portal build, so they re-rendered with every portal change, including the port they are the spec for. Measured before the fix: 0 computed differences on all 862 and 1,881 elements (the probe gives 5,882 against an empty stylesheet, so it can fail) — Session 2's CSS had not reached them yet, but Session 4 Step 4c and Session 5 edit exactly the rules they inherit, and a board drifting toward the port makes the comparator agree with the port. They now link `../2026-09-14-pins2-board/app.css`, the stylesheet he approved them on, taken from their published artifacts. And both boards now have an enumerating value spec, `resolved-spec-full.md`: **board 1 · 392 looks across 158 signatures, G10 Compare included** (the old curated spec never had it), and board 2 re-run the same way.
 
-🔴 **CORRECTED 2026-09-21 10:41 EDT — the precedence below was too broad.** Board 3's kit runs Session 2's code, so it shows Session 2's PORT of boards 1 and 2 wherever board 3 did not change a rule. Measured over `3e/resolved-spec/`: of **10,604** declaration rows, **6,955** come from board 3's own stylesheets and **3,007** are Session 2's `app.css` untouched — and 326 of 335 signatures mix the two. So "board 3 wins" holds only for what board 3 CHANGED (its own rules, `portal-class-rules.md`, the diff hunks). An inherited value is Session 2's port, which may still carry the 5% he pinned. **Settled 2026-09-21 11:00 EDT:** the port is never an authority; the board that designed the element wins unless board 3 changed it with its own rule. [`../2026-09-21-pins2-final/lineage.md`](../2026-09-21-pins2-final/lineage.md) lists every such value.
+🔴 **CORRECTED 2026-09-21 10:41 EDT — the precedence below was too broad.** Board 3's kit runs Session 2's code, so it shows Session 2's PORT of boards 1 and 2 wherever board 3 did not change a rule. Measured over `3e/resolved-spec/`: of **10,604** declaration rows, **6,955** come from board 3's own stylesheets and **3,007** are Session 2's `app.css` untouched — and 326 of 335 signatures mix the two. So "board 3 wins" holds only for what board 3 CHANGED (its own rules, `portal-class-rules.md`, the diff hunks). An inherited value is Session 2's port, which may still carry the 5% he pinned. **Settled 2026-09-21 11:00 EDT:** the port is never an authority; the board that designed the element wins unless board 3 changed it with its own rule. [`../2026-09-21-pins2-final/lineage.md`](../../../pins2/final/lineage.md) lists every such value.
 
 🔴 **THE PRECEDENCE, stated once (2026-09-21 10:24 EDT).** Board 3-E ran the portal's own code AFTER Session 2 shipped boards 1 and 2 at ~95%, and he corrected what shipped. So: **for any element board 3 draws, board 3 wins over boards 1 and 2.** For an element board 3 does NOT draw, its own board's spec governs — **except where board 3 ruled a whole CLASS** (the control family below: *"the whole control family now"*), which reaches every board. [`3e/portal-class-rules.md`](3e/portal-class-rules.md) lists every board-3 rule that restyles a class the portal already ships — that is where the corrections to the 95% live, and nothing else indexes them.
 
@@ -422,7 +422,7 @@ A pins-2 answer is newer than board 2's spec. Board 2's port sheet already carri
 
 ## 10 · After the board closed — amendments. SESSION 4 WRITES HERE
 
-🔴 **2026-09-21 13:39 EDT — Board 4: Collective changed the kit, and these changes are design, not chrome:** `b2.css` guards 35 board-2 selector parts off `.b1` and `.b3-nb` markup (the `pb-*` collision); `b1.css` carries board 1's stylesheet scoped `.b1`, board 3's button family on every board-1 drawer footer, and board 1's Compare empty state; `ui/armory.js` Compare is board 1's structure (stats and table under the bar, Same and Show cards inside `.pb-cmp`, Rank on one weapon and Category across two, the Code group on one weapon only); `ui/broadcast.js` PostForm is board 1's G8; `ui/manifest.js` rows carry their own `--c`, so the Broadcast manifest takes board 2's row hover. Its spec is `docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/README.md`.
+🔴 **2026-09-21 13:39 EDT — Board 4: Collective changed the kit, and these changes are design, not chrome:** `b2.css` guards 35 board-2 selector parts off `.b1` and `.b3-nb` markup (the `pb-*` collision); `b1.css` carries board 1's stylesheet scoped `.b1`, board 3's button family on every board-1 drawer footer, and board 1's Compare empty state; `ui/armory.js` Compare is board 1's structure (stats and table under the bar, Same and Show cards inside `.pb-cmp`, Rank on one weapon and Category across two, the Code group on one weapon only); `ui/broadcast.js` PostForm is board 1's G8; `ui/manifest.js` rows carry their own `--c`, so the Broadcast manifest takes board 2's row hover. Its spec is `docs/pins2/final/board4-spec/README.md`.
 
 *Added 2026-09-21 10:17 EDT, at Harkirat's question: "is session 4 aware that any decisions with the standardization would mean that the spec goes stale and it'll need to be updated?"*
 
@@ -443,7 +443,7 @@ A pins-2 answer is newer than board 2's spec. Board 2's port sheet already carri
 
 ---
 
-## 11 · The composition problem — ANSWERED 2026-09-21 11:00 EDT in [`../2026-09-21-pins2-final/FINAL.md`](../2026-09-21-pins2-final/FINAL.md), recorded 2026-09-21 10:41 EDT
+## 11 · The composition problem — ANSWERED 2026-09-21 11:00 EDT in [`../2026-09-21-pins2-final/FINAL.md`](../../../pins2/final/FINAL.md), recorded 2026-09-21 10:41 EDT
 
 Three boards changed the same portal in sequence, and each one built on what the one before it shipped:
 

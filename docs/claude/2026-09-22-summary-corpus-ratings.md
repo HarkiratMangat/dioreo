@@ -263,7 +263,7 @@ Steps, all in `local/summary-corpus/` (gitignored, so this machine only):
 
 **Round 1, scored 4:**
 
-> could still be improved tho, such as the "Surfaces I never opened" lines. or the fact you didn't mention/state the `docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md` line. and shouldn't the "Waiting on you" be open checkboxes with number 1./2. following the checkbox?
+> could still be improved tho, such as the "Surfaces I never opened" lines. or the fact you didn't mention/state the `docs/pins2/handoffs/2026-09-21-board4-fixplan.md` line. and shouldn't the "Waiting on you" be open checkboxes with number 1./2. following the checkbox?
 
 **Round 2, scored 4:**
 

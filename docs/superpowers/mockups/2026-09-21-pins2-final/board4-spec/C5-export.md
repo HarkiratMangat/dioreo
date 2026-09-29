@@ -368,7 +368,7 @@ inside `.x` · 4 on screen · **2 looks**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .exs-t b · app.css:5260 |
 | font-size | `` | `16.5px` | .exs-t b · app.css:5260 |
 | font-weight | `` | `600` | .exs-t b · app.css:5260 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | `` | `normal` | .exs-t b · app.css:5260 |
 | line-height | `` | `22.275px` | .exs-t b · app.css:5260 |
 | letter-spacing | — | `normal` | initial |
@@ -433,7 +433,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .dw-lead · app.css:6836 |
 | font-size | `` | `14.5px` | .dw-lead · app.css:6836 |
 | font-weight | `` | `500` | .dw-lead · app.css:6836 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | `` | `normal` | .dw-lead · app.css:6836 |
 | line-height | `` | `21.025px` | .dw-lead · app.css:6836 |
 | letter-spacing | — | `normal` | initial |
@@ -874,7 +874,7 @@ inside `.exs-n` · 2 on screen · **2 looks**
 | font-family | `` | `"Big Shoulders Display", "Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-xf-sq · b3/board.css:4486 |
 | font-size | `` | `19px` | .b3-xf-sq · b3/board.css:4486 |
 | font-weight | `` | `700` | .b3-xf-sq · b3/board.css:4486 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-xf-sq · b3/board.css:4486 |
 | line-height | `` | `19px` | .b3-xf-sq · b3/board.css:4486 |
 | letter-spacing | `var(--tr-fig)` | `0.076px` | .b3-xf-sq · b3/board.css:4486 |
@@ -905,7 +905,7 @@ inside `.exs-n` · 2 on screen · **2 looks**
 | font-family | `` | `"Big Shoulders Display", "Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-xf-sq · b3/board.css:4486 |
 | font-size | `` | `19px` | .b3-xf-sq · b3/board.css:4486 |
 | font-weight | `` | `700` | .b3-xf-sq · b3/board.css:4486 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-xf-sq · b3/board.css:4486 |
 | line-height | `` | `19px` | .b3-xf-sq · b3/board.css:4486 |
 | letter-spacing | `var(--tr-fig)` | `0.076px` | .b3-xf-sq · b3/board.css:4486 |
@@ -1120,7 +1120,7 @@ inside `.b3-xf-fn` · 2 on screen · **1 look**
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | font-size | ↑ `` | `10.5px` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | font-weight | ↑ `` | `500` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | line-height | ↑ `` | `10.5px` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
@@ -1155,7 +1155,7 @@ inside `.b3-xf-fn` · 2 on screen · **1 look**
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | font-size | ↑ `` | `10.5px` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | font-weight | ↑ `` | `500` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | line-height | ↑ `` | `10.5px` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
@@ -1305,7 +1305,7 @@ inside `.exs-t` · 1 on screen · **1 look**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-sm)` | `12px` | .exs-t > span · app.css:5268 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | line-height | ↑ `1.5` | `18px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | text-overflow | `ellipsis` | `ellipsis` | .exs-t > span · gates.css:557 |

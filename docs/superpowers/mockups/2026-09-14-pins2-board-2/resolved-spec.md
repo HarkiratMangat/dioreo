@@ -5,7 +5,7 @@ status: live
 
 # Pins-2 design board 2 — resolved values
 
-*Generated 2026-09-14 16:08 EDT by `extract-spec.cjs` from `index.html` beside it (board version 21, closed by Harkirat 2026-09-14 15:22 EDT), at 1282×888. Plan: `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §10.4.*
+*Generated 2026-09-14 16:08 EDT by `extract-spec.cjs` from `index.html` beside it (board version 21, closed by Harkirat 2026-09-14 15:22 EDT), at 1282×888. Plan: `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.4.*
 
 **Why this file exists.** The board's stylesheet is thirteen review rounds of overrides layered at the end of one `<style>` block, so the first rule a reader finds for a class is usually not the one that renders — the first `.pb-rb` rule reads `44px 116px…`, the rendered row is `32px 28px minmax(0,1fr) 28px 144px 113px`. Each table below is Chrome's own answer (`CSS.getMatchedStylesForNode`, cascade order, `!important` honoured): the **winning declaration** is the expression to port — tokens and `color-mix()` intact — and **computed** is what it rendered to. Hover states are forced with `CSS.forcePseudoState`. A dash means no rule declares the property and the value is inherited.
 

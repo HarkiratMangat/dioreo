@@ -12,8 +12,8 @@ status: live
 | File | What it holds |
 |---|---|
 | [`portal-sync-notes.md`](portal-sync-notes.md) | **The pin log.** Every pin Harkirat has filed on the live portal, newest last, with its crop. Written by `npm run portal:sync`; a session marks each pin as it is handled. |
-| [`portal-pins/`](portal-pins/) | The crops those pins point at — 104 files, ~11MB. They live here rather than in `local/` because the log is tracked and a tracked doc must not cite an untracked path. |
-| [`archive/`](archive/) | Handled pins, swept out of the live log so it stays readable. `kind: archive`, `status: frozen` — never edited after the sweep. |
+| [`portal-pins/`](portal-pins) | The crops those pins point at — 104 files, ~11MB. They live here rather than in `local/` because the log is tracked and a tracked doc must not cite an untracked path. |
+| [`archive/`](archive) | Handled pins, swept out of the live log so it stays readable. `kind: archive`, `status: frozen` — never edited after the sweep. |
 
 ## What does NOT move here
 

@@ -128,7 +128,8 @@ const XREF_SKIP_SOURCES = [
   // Moved from a memory file 2026-09-08 (WP5b, context-carriers plan). It documents EXTERNAL MCP servers' own internals (linksee-memory's installed npm package: dist/mcp/server.js, dist/skill/SKILL.md, dist/lib/map-view.js) -- paths that are real on disk inside that package, never inside this repo, and never will be. XREF_IGNORED_OPTIONAL does not fit: it exempts gitignored-and-absent paths, and these are not gitignored, they simply belong to a different codebase entirely.
   "docs/reference/tool-capability-tests.md",
 ];
-const XREF_SKIP_PREFIXES = ["docs/archive/", "docs/superpowers/"];
+// docs/pins2/{plan,spec,final}/ came out of docs/superpowers/ on 2026-09-28 23:16 EDT and keep its exemption: the plan and FINAL.md cite kit files (`gates4/main.js`, `b3/fady.js`) by their kit-relative names, which live in the gitignored kit. docs/pins2/README.md and the handoffs stay checked.
+const XREF_SKIP_PREFIXES = ["docs/archive/", "docs/superpowers/", "docs/pins2/plan/", "docs/pins2/spec/", "docs/pins2/final/"];
 
 // Gitignored paths that have been TRIAGED and confirmed genuinely optional-by-design. These resolve silently; every OTHER gitignored-and-absent path still WARNs, which is the point — the warning exists because skipping wholesale once masked a real bug (CLAUDE.md and the notes file both pointed at `local/Harkirats-Space.md` after it moved to `docs/`, and the `local/` ignore rule hid it). This list is the narrow retirement of an ANSWERED ambiguity, not a widening of the exemption. ⚠️ An entry belongs here ONLY when the referencing docs are correct and the file is optional at RUNTIME — never to quiet a path someone has not actually chased down. Reason + date required.
 const XREF_IGNORED_OPTIONAL = {
@@ -358,7 +359,7 @@ check(
     const out = [];
     let examined = 0;
     for (const f of tracked()) {
-      const m = f.match(/^docs\/superpowers\/plans\/(\d{4}-\d{2}-\d{2})-/);
+      const m = f.match(/^docs\/(?:superpowers\/plans|pins2\/plan)\/(\d{4}-\d{2}-\d{2})-/);   // docs/pins2/plan/ holds the batch-2 plan since 2026-09-28 23:12 EDT
       if (!m || m[1] < PLAN_AUDIT_FROM) continue;
       const txt = read(f);
       if (txt === null) continue;
@@ -1041,6 +1042,14 @@ const FM_RULE = [
   [".claude/rules/", "rule"],
   ["docs/archive/", "archive"],
   // Claude's tracked scratchpad and the portal's working records, added 2026-09-15 23:57 EDT. Both are "dump freely, sub-folder freely" by design, so their ARCHIVE prefixes must be listed FIRST — these are ordered and the first match wins.
+  // docs/pins2/ — everything portal pins batch 2's Sessions 4 and 5 read, gathered in one folder 2026-09-28 23:12 EDT (Harkirat: "everything is scattered all over the place right now"). One sub-folder per kind, the README is the index; listed before docs/claude/ so nothing falls through to a broader prefix.
+  ["docs/pins2/README.md", "reference"],
+  ["docs/pins2/plan/", "plan"],
+  ["docs/pins2/spec/", "spec"],
+  ["docs/pins2/final/", "reference"],
+  ["docs/pins2/instruments/", "reference"],
+  ["docs/pins2/handoffs/", "record"],
+  ["docs/pins2/records/", "record"],
   ["docs/claude/archive/", "archive"],
   ["docs/claude/", "record"],
   ["docs/portal/archive/", "archive"],

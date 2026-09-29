@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the resolved values
 
-*Generated 2026-09-28T23:20:48.380Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html at 1282×888, fresh profile. 1426 looks specced across 626 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **14**. Winning declarations the computed value contradicts: **77** (marked ⚠️).*
+*Generated 2026-09-29T03:15:46.128Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html at 1282×888, fresh profile. 1423 looks specced across 624 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **14**. Winning declarations the computed value contradicts: **74** (marked ⚠️).*
 
 ⚠️ **Not reached** (rendered, classed, never walked — each is a coverage hole):
 
@@ -33,7 +33,7 @@ status: live
 **Regenerate** after ANY change to the kit — including Session 4 changing a switch — with the kit served on :8900 (`.claude/launch.json` → `repo-static`):
 
 ```bash
-D=docs/superpowers/mockups/2026-09-15-pins2-board-3/3e; O=docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec
+D=docs/superpowers/mockups/2026-09-15-pins2-board-3/3e; O=docs/pins2/final/board4-spec
 OUT_DIR=$O node $D/switches.cjs && OUT_DIR=$O node $D/overrides.cjs
 BOARD=4 node $D/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $D/split-spec.cjs $TMPDIR/b4-spec.md
 node $O/maps.cjs
@@ -56,4 +56,4 @@ node $O/maps.cjs
 | [`C7-broadcast.md`](C7-broadcast.md) | C7 · The Broadcast manifest, and posting — resting | 112 KB |
 | [`C8-history.md`](C8-history.md) | C8 · History — resting | 235 KB |
 | [`C9-admin-traffic.md`](C9-admin-traffic.md) | C9 · Admin traffic — resting | 11 KB |
-| [`states.md`](states.md) | Reachable states | 1902 KB |
+| [`states.md`](states.md) | Reachable states | 1900 KB |

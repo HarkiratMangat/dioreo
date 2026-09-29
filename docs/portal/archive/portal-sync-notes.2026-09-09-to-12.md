@@ -12,7 +12,7 @@ status: dead
 | #1–23 | 2026-09-09 22:07–22:56 | armory 14 · season 4 · analytics 4 · access 1 | Round 1 | 0 of 23 | `docs/CHANGELOG.md`, `docs/db-deferred-list.md`, `local/handoff/2026-09-10-portal-pin-fixes-full-handoff.md` |
 | #24–59 | 2026-09-10 11:41–12:38 | season 15 · armory 10 · analytics 7 · broadcast 2 · access 2 | Round 2, filed in `docs/db-deferred-list.md` (entry of 2026-09-10 12:49 EDT) | 0 of 36 | `docs/db-deferred-list.md`, `docs/reference/portal-decision-ledger.md`, `local/handoff/2026-09-10-p0-clock-and-class-fixes.md`, `local/handoff/2026-09-10-portal-round2-continued.md`, `local/handoff/2026-09-10-portal-round2-verdicts.md`, `local/handoff/2026-09-10-portal-round2.md`, `local/handoff/2026-09-11-portal-round3-close.md` |
 | #60–77 | 2026-09-11 13:38–14:15 | access 18 | An Access round — **moved back to `local/portal-sync-notes.md` 2026-09-15 14:24 EDT at Harkirat's request**; a placeholder holds their position here | 0 of 18 | nothing in `docs/`, `local/handoff/` or `.remember/` |
-| #78–106 | 2026-09-11 22:46 – 2026-09-12 12:31 | access 11 · broadcast 8 · analytics 5 · armory 5 | Batch 2 — the spec and plan `docs/superpowers/{specs,plans}/2026-09-13-portal-pins-batch-2*` were built from these | 29 of 29 | `.remember/remember.md`, `docs/db-deferred-list.md`, `docs/reference/portal-decision-ledger.md`, `docs/superpowers/mockups/2026-08-23-portal-interactive/COMPANION.md`, `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`, `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` |
+| #78–106 | 2026-09-11 22:46 – 2026-09-12 12:31 | access 11 · broadcast 8 · analytics 5 · armory 5 | Batch 2 — the spec and plan `docs/superpowers/{specs,plans}/2026-09-13-portal-pins-batch-2*` were built from these | 29 of 29 | `.remember/remember.md`, `docs/db-deferred-list.md`, `docs/reference/portal-decision-ledger.md`, `docs/superpowers/mockups/2026-08-23-portal-interactive/COMPANION.md`, `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`, `docs/pins2/spec/2026-09-13-portal-pins-batch-2-design.md` |
 
 # Portal pins — what Harkirat saw
 
@@ -543,7 +543,7 @@ no banner? no link to open the rest of the dioreo.app website in a new tab? no e
 
 The sessions need better distinguishing if possible. For example, I'm currently signed into the dev-portal in the Chrome browser, and also in Arc browser and looking this section right now, i can't which of these signed in sessions belongs to which browser.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 1 · S1 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 1 · S1 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-13 18:17 EDT — session rows name browser and OS · Session 1, `feat/portal-pins2-identity`
 
@@ -554,7 +554,7 @@ The sessions need better distinguishing if possible. For example, I'm currently 
 
 give the profile menu pop-up the same mesh gradient tint as the Edit Admin Permissions drawer's admin profile info bar?
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 2 · S1 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 2 · S1 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-13 18:17 EDT — menu wears the avatar mesh, proven 2026-09-13 18:59 EDT on the dev portal with a session carrying a real avatarHash · Session 1, `feat/portal-pins2-identity`
 
@@ -567,7 +567,7 @@ give the profile menu pop-up the same mesh gradient tint as the Edit Admin Permi
 
 all of the icons in the various Analytic's sub-panels (usage/timing/reach/search) are bugged. They have this dashed temp display sort of thing in the background.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 3 · S1 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 3 · S1 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-13 18:17 EDT — solid realm-tinted empty state + dev traffic seed · Session 1, `feat/portal-pins2-identity`
 
@@ -578,7 +578,7 @@ all of the icons in the various Analytic's sub-panels (usage/timing/reach/search
 
 if these buttons are filters for "Level" why don't they have any sort of styling to their button design to signal their severity levels?
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 4 · S2 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 4 · S2 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — Level chips carry a four-bar severity meter with counts · Session 2, `feat/portal-pins2-manifests`
 
@@ -589,7 +589,7 @@ if these buttons are filters for "Level" why don't they have any sort of styling
 
 display the When date in a better format? such as "09-06 19:25" -> "Sept 6 7:25 PM", with it always being relative to the local timezone. So if i view this same page in toronto, it would show based on est timezone. But similarly, if i view this same page in Vancouver, it would show in vancouver's timezone.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 5 · S2 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 5 · S2 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — When reads the viewer's local time, and so does the event drawer · Session 2, `feat/portal-pins2-manifests`
 
@@ -602,7 +602,7 @@ display the When date in a better format? such as "09-06 19:25" -> "Sept 6 7:25 
 
 manifest column's spacing for the analytics realm needs it's own separate spacing adjustment, because currently they don't make sense. "When", "Source", and "Who" should not have this much width spacing. "Kind" is fine. And "What" needs more width spacing for sure.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 6 · S2 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 6 · S2 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — History's columns are sized by role: What 596px against When 150, Source 120, Who 120 · Session 2, `feat/portal-pins2-manifests`
 
@@ -615,7 +615,7 @@ manifest column's spacing for the analytics realm needs it's own separate spacin
 
 honestly, wtf is this lazyyyyy implementation of a toggle for "include admin traffic", this is the worst design implementation of an element I've seen in the entire portal.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 7 · S2 · main · G2 → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 7 · S2 · main · G2 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — Include · Admin traffic chip replaces the checkbox · Session 2, `feat/portal-pins2-manifests`
 
@@ -626,7 +626,7 @@ honestly, wtf is this lazyyyyy implementation of a toggle for "include admin tra
 
 When tapping "Revoke Access" button, the confirmation for it appears under/as another drawer behind the Edit Permissions drawer. As such, i first then have to click "Cancel" to close this drawer and then I can view the revoke access confirmation. This should be all part of the same drawer system. Just like how "Save Changes" physically changes this drawer, Revoke Access should be the same instead of launching a brand new drawer.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 8 · S1 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 8 · S1 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-13 18:17 EDT — Revoke confirms inside the Edit drawer · Session 1, `feat/portal-pins2-identity`
 
@@ -641,7 +641,7 @@ When tapping "Revoke Access" button, the confirmation for it appears under/as an
     3. For the sub-tier system for the portal itself, this would mean identifying and classifying each field and action into which of the 3 sub-tiers it represents. There might be fields, such as the calendar banners, which realistically only comply to “create” and “destroy” because a Modify/edit of a banner is basically the same as destruction. But other fields, such as the actual events in the calendar *can* have modify/edit ability, such as editing an existing event for a typo or something.
     4. Some svg examples of the shapes I was talking about: /Users/harkirat/Downloads/sparkle.svg '/Users/harkirat/Downloads/triangle (1).svg' /Users/harkirat/Downloads/triangle.svg '/Users/harkirat/Downloads/octagon (1).svg' /Users/harkirat/Downloads/octagon.svg
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 9 · DEFERRED — design pending → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 9 · DEFERRED — design pending → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 ## access — 2026-09-12 10:59 EDT · pmtyih6yt · from the dev-portal overlay
 **Element:** `tr.prow:nth-of-type(2) > td.mxc.owncol:nth-of-type(2) > span.mxcell.on > i` · 16×16 at 537,328
@@ -675,7 +675,7 @@ Following up to my previous pin about the permissions restructure, i was thinkin
 - MP Loadouts  #FF3B5D
 - DMZ Loadouts  #337CA6
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 10 · S1 · main · rest DEFERRED → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 10 · S1 · main · rest DEFERRED → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > 🟡 Partly built 2026-09-13 18:17 EDT — realm accents shipped; page/command colours and tiers stay deferred · Session 1, `feat/portal-pins2-identity`
 
@@ -686,7 +686,7 @@ Following up to my previous pin about the permissions restructure, i was thinkin
 
 That would mean this separate "Destructive" permission isn't needed anymore since destructive would be a sub-tier within each permission now.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 11 · DEFERRED — design pending → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 11 · DEFERRED — design pending → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 ## access — 2026-09-12 11:02 EDT · pmtyikesy · from the dev-portal overlay
 **Element:** `#app > div.app > nav.rail` · 88×836 at 0,52
@@ -695,7 +695,7 @@ That would mean this separate "Destructive" permission isn't needed anymore sinc
 
 You'll also notice I added a "History" Realm into my previous permissions restructure pin. History is basically just splitting the manifest out of analytics and into it's own Realm.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 12 · S1 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 12 · S1 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-13 18:17 EDT — History is its own realm · Session 1, `feat/portal-pins2-identity`
 
@@ -706,7 +706,7 @@ You'll also notice I added a "History" Realm into my previous permissions restru
 
 1 admin x 12 permissions just reads oodly. it seems to imply that the 1 admin has 12 permissions. Rework this to better represent the Access panel. Like properly, fully redesign it and drastically integrate it into the panels upper bar (where it sits). Because right now, all these small texts, such as this one, just look and feel like noise.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 13 · S2 · main · G1 · rest DEFERRED → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 13 · S2 · main · G1 · rest DEFERRED → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — By admin's noise line removed (G1); the panel bar's redesign stays deferred with §6 · Session 2, `feat/portal-pins2-manifests`
 
@@ -717,7 +717,7 @@ You'll also notice I added a "History" Realm into my previous permissions restru
 
 I'll be so honest, this nav or whatever it is, is SO useless and ugly. Just remove it.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 14 · S1 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 14 · S1 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-13 18:17 EDT — crumb removed · Session 1, `feat/portal-pins2-identity`
 
@@ -728,7 +728,7 @@ I'll be so honest, this nav or whatever it is, is SO useless and ugly. Just remo
 
 And pls center the search bar to the page. Also allow keyboard usage for it. Like for example, i can press cmd+/ to invoke it but i still need to use my mouse to actually select an item. Let me use my keyboard arrow keys and stuff to actually navigate within it when it's invoked.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 15 · S1 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 15 · S1 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-13 18:17 EDT — command bar centred; palette keys already worked, aria-activedescendant added · Session 1, `feat/portal-pins2-identity`
 
@@ -739,7 +739,7 @@ And pls center the search bar to the page. Also allow keyboard usage for it. Lik
 
 can you also add a button, icon style only; no text, to the right of the profile menu button inside of the nav bar. Like a 2nd method, a direct method to just press sign out instead of having to do it directly from the menu only. So both methods would exist.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 16 · S1 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 16 · S1 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-13 18:17 EDT — icon-only sign-out beside the profile · Session 1, `feat/portal-pins2-identity`
 
@@ -750,7 +750,7 @@ can you also add a button, icon style only; no text, to the right of the profile
 
 this manifest needs drastic refining. 1. Look at the shitty spacing of it's columns. 2. why is the "post announcement" button just randomly floating there? 3. Why are the color chips, left of the Announcement column, so weird and tiny? 4. Why don't the "State" buttons have any color identity? 4. The actual State column just looks so ugly. Implement those badges and states drastically better. Improve their design.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 17 · S2 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 17 · S2 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — Broadcast manifest rebuilt from board 2 G11 rows 1–3 · Session 2, `feat/portal-pins2-manifests`
 
@@ -763,7 +763,7 @@ this manifest needs drastic refining. 1. Look at the shitty spacing of it's colu
 
 Forgot to add the screenshot.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 17 · S2 · main — the screenshot for row 17 → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 17 · S2 · main — the screenshot for row 17 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — Broadcast manifest rebuilt from board 2 G11 rows 1–3 · Session 2, `feat/portal-pins2-manifests`
 
@@ -776,7 +776,7 @@ Improve the Announcement system to include an a banner image or a thumbnail imag
 
 Also add the ability to show that specific announcement N repeated times (with a minimum 24 hour delay between the repeat). So incase i sent a message and want to make sure it pops up at least 3 times over the next few days to make sure the user sees it.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 18 · S1 · agent A → critique → S2 · agent D → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 18 · S1 · agent A → critique → S2 · agent D → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > 🟡 Partly built 2026-09-13 18:17 EDT — agent A backend merged; composer inputs wait for the critique and Session 2 · Session 1, `feat/portal-pins2-identity`
 
@@ -789,7 +789,7 @@ Also add the ability to show that specific announcement N repeated times (with a
 
 Why is the "Heads up" buried half way into the realm??
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 19 · S2 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 19 · S2 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — HeadsUp sits under the masthead, with Set an end date · Session 2, `feat/portal-pins2-manifests`
 
@@ -800,7 +800,7 @@ Why is the "Heads up" buried half way into the realm??
 
 Drastically redesign the card showing the announcement. The # and the "Never ends" is fine but the actual announcement and the "up Nd" is poorly integrated. Honestly, just overall, it could use a must better, nicer redesign.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 20 · S2 · main · G3 → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 20 · S2 · main · G3 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — the announcement card from board 2 G3, with Changes ahead · Session 2, `feat/portal-pins2-manifests`
 
@@ -813,7 +813,7 @@ Drastically redesign the card showing the announcement. The # and the "Never end
 
 why is this just randomly floating in the middle of the panel?
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 21 · S2 · main · G1 → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 21 · S2 · main · G1 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — the hint became the queue heading "Delivery order" · Session 2, `feat/portal-pins2-manifests`
 
@@ -824,7 +824,7 @@ why is this just randomly floating in the middle of the panel?
 
 Same issue i already mentioned on the access realm, these small texts just look and feel like noise to me. Never once have i glaced over it and assumed it was actually informative. In my mind, i glaced over it and assumed it was just more bloated "hint" text that's plaguing the ENTIRE portal UI.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 22 · S2 · main · G1 → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 22 · S2 · main · G1 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — the meta line became "2 of 10 slots used" · Session 2, `feat/portal-pins2-manifests`
 
@@ -835,7 +835,7 @@ Same issue i already mentioned on the access realm, these small texts just look 
 
 That reminds me, *the bloated hint texts are plagueing the entire portal UI!*
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 23 · S2 · main · G1 → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 23 · S2 · main · G1 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — board 2's G1 table applied site by site · Session 2, `feat/portal-pins2-manifests`
 
@@ -848,7 +848,7 @@ That reminds me, *the bloated hint texts are plagueing the entire portal UI!*
 
 why is the "add build" button jsut randomly floating in the middle of the filter bar? Why is the "secondaries" button just randomly alll the way over on that left side? Wheres the "awwards worthy" design, alignment, nitpicking, refinement??
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 24 · S2 · main → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 24 · S2 · main → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — Add build sits at the tools row's right end; the category chips run on one line · Session 2, `feat/portal-pins2-manifests`
 
@@ -874,7 +874,7 @@ Let's drastically redesign Armory's Manifest system.
         - I dont need individual things being editable directly in the row, just make all edits in the edit drawer pop-up.
         - A share icon method which copies the in-bot slash command. Example, I want to share the locus build 2, it would copy `/gunsmiths search weapon:[SNIPER] LOCUS build:2 visibility:Public`.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 25 · S1 · agent B → S2 · main · G4, G6 → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 25 · S1 · agent B → S2 · main · G4, G6 → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > 🟡 Partly built 2026-09-13 18:17 EDT — agent B data layer and build-name report merged; row redesign and G6 wait for Session 2 · Session 1, `feat/portal-pins2-identity`
 
@@ -887,7 +887,7 @@ Let's drastically redesign Armory's Manifest system.
 
 HOLY SHIT, the actual New Build drawer needs MUCH needed refinement, designing refinement, and overall updating to look and actually feel "awwards worthy". Like seriously, this needs brainstorm, a /design-critique, and proper improvement.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 26 · critique → S2 · agent D → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 26 · critique → S2 · agent D → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — New Build drawer built (agent D) · Session 2, `feat/portal-pins2-manifests`
 
@@ -900,7 +900,7 @@ HOLY SHIT, the actual New Build drawer needs MUCH needed refinement, designing r
 
 entire Bulk & Export is honestly redunant, no? because the "export" button already exists in the masthead. And the Bulk creation system could honestly just be wired directly into "New Build". Tell me if I'm missing something? Or if these do anything unique?
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 27 · S2 · main + S2 · agent D → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 27 · S2 · main + S2 · agent D → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — the export block is gone and the paste folded into Bulk create (agent D) · Session 2, `feat/portal-pins2-manifests`
 
@@ -911,7 +911,7 @@ entire Bulk & Export is honestly redunant, no? because the "export" button alrea
 
 The entire "Compare" panel, method, system, layout, design, etc needs a dedicated /impeccable critique. Like the agents should be scoped to stress every element, component, text, layout, function, usability, etc etc of the Compare panel. Not just the front-facing "pick a weapon", but the entire thing, including after a weapon is actually chosen to compare. Because honestly, this panel could use a drastic improvement considering how useful of a component it is within the portal system. Hell, i eventually want to port it over to the main dioreo.app website as it's own dedicated /compare page (file that as a near future project), because that's just how important and great of a system it is and has the capability to be. It needs a much thought-out "awwwards worthy" refinement.
 
-> 📌 Planned 2026-09-13 11:37 EDT — row 28 · critique; /compare filed → `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2
+> 📌 Planned 2026-09-13 11:37 EDT — row 28 · critique; /compare filed → `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §2
 
 > ✅ Built 2026-09-15 09:18 EDT — Compare lines builds up slot by slot against a baseline · Session 2, `feat/portal-pins2-manifests`
 

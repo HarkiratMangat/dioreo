@@ -339,7 +339,7 @@ Grey, small and trailing means *skip me* on this board. The test: does the line 
 | Live | **v9**, <https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh> |
 | On my machine | the 3 regression fixes, which would be **v10** |
 | Pushed | **nothing** |
-| The full audit | `docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md`, "Compact prep" section |
+| The full audit | `docs/pins2/handoffs/2026-09-21-board4-fixplan.md`, "Compact prep" section |
 
 ## Corrections
 
@@ -361,14 +361,14 @@ Grey, small and trailing means *skip me* on this board. The test: does the line 
 ## To paste
 
 ```text
-/compact KEEP: (1) Board 4 v9 is LIVE at https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh; three compact-prep fixes are LOCAL and UNPUBLISHED (drawer-shell rules scoped to the four ruled drawers, the neutral-hover override skipping pressed toggles, the eyebrow header restored) — v10 needs his yes, restated. (2) The carrier is docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md: §0 WORKING CONTRACT at the top (anchor #45), and the "Compact prep" section dated 2026-09-22 at the END — the mistakes as patterns with his quotes, the verified/NOT-looked-at table, corrected claims, instrument recipes, the first job. (3) His C1–C9 and his v6 verdict relayed from the side chat: docs/claude/pins2/handoffs/2026-09-21-board4-intake.md. (4) New rule, anchor #46: a rule on a shared class is rendered on every surface it reaches, and moved controls are hit-tested plus clicked. (5) Kit git at local/pins2-board-3 (kit under redo/); publish only changed files from root redo/. (6) Instruments: docs/claude/pins2/instruments/b4states.cjs (hover/focus/active, child fills, BLOCKED hit-test) and board4-review/r9.cjs r10.cjs r11.cjs. DISCARD: every screenshot read, the render sheets' contents, code and CSS dumps, instrument output tables, the 4.8 diff review, the K2 option rounds' details, tool-hook reminder text.
+/compact KEEP: (1) Board 4 v9 is LIVE at https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh; three compact-prep fixes are LOCAL and UNPUBLISHED (drawer-shell rules scoped to the four ruled drawers, the neutral-hover override skipping pressed toggles, the eyebrow header restored) — v10 needs his yes, restated. (2) The carrier is docs/pins2/handoffs/2026-09-21-board4-fixplan.md: §0 WORKING CONTRACT at the top (anchor #45), and the "Compact prep" section dated 2026-09-22 at the END — the mistakes as patterns with his quotes, the verified/NOT-looked-at table, corrected claims, instrument recipes, the first job. (3) His C1–C9 and his v6 verdict relayed from the side chat: docs/pins2/handoffs/2026-09-21-board4-intake.md. (4) New rule, anchor #46: a rule on a shared class is rendered on every surface it reaches, and moved controls are hit-tested plus clicked. (5) Kit git at local/pins2-board-3 (kit under redo/); publish only changed files from root redo/. (6) Instruments: docs/pins2/instruments/b4states.cjs (hover/focus/active, child fills, BLOCKED hit-test) and board4-review/r9.cjs r10.cjs r11.cjs. DISCARD: every screenshot read, the render sheets' contents, code and CSS dumps, instrument output tables, the 4.8 diff review, the K2 option rounds' details, tool-hook reminder text.
 ```
 
 ```text
 /rename Opus5-High · Pins2 S3 Board 4 after v9 · Sep 22
 Continue the Board 4 fix pass. Before ANY tool call:
-1. read_smart docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md — §0 WORKING CONTRACT at the top, then the "Compact prep" section dated 2026-09-22 at the END. Do not trust the compact summary over it.
-2. read_smart docs/claude/pins2/handoffs/2026-09-21-board4-intake.md (his C1–C9 and his v6 verdict).
+1. read_smart docs/pins2/handoffs/2026-09-21-board4-fixplan.md — §0 WORKING CONTRACT at the top, then the "Compact prep" section dated 2026-09-22 at the END. Do not trust the compact summary over it.
+2. read_smart docs/pins2/handoffs/2026-09-21-board4-intake.md (his C1–C9 and his v6 verdict).
 3. Recall linksee by query: "board 4 shared class every surface" and "board 4 session summary".
 4. FIRST thought: restate §0 as a question→call table and the pass's turn plan (≤10 turns). Then ask questions that could change the work: what did he actually see, what falsifies this, what else does this class reach.
 First job, one render batch: Compare at 1–4 cards; the image tile with a real image; the bulk guide in Edit and DMZ; the DMZ drawer; the live v9 page opened with the chrome-devtools CLI. Do not publish v10 until I say.
