@@ -1598,3 +1598,48 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 | AH | the Discord bar: a fan of the cards in miniature, each edged in its build's colour, a title and a quiet line, a Show / Hide pill in Discord's blurple; the fan closes when the cards are open | `docs/pins2/kit/b4/compare.*` |
 
 **My additions for his verdict:** none beyond his two buttons. Worth considering, not built: an "Export these" button that opens Export with the builds in the table.
+
+## Version 42 intake round — opened 2026-09-29 19:47 EDT
+
+*His words when he opened it: "v42 intake, log these". Logged as the Version 40 and 41 rounds were (anchor #62): his words verbatim and dated, then the asks grouped by class with the sweep each implies. Nothing is built until he says the round is done.*
+
+### His batch — 2026-09-29 19:47 EDT, verbatim
+
+**His fourteen shots, in order** (pasted into the chat, so no file path came with them and none is saved to `docs/pins2/intake-shots/`): 1 · the search list's AK117 row under an "ASSAULT" group label · 2 · META hovered · 3 · TOXIC hovered · 4 · Repairs' shield-and-check chip · 5 · its hover card (SKS · passes every check, Build 1, five checks) · 6 · the warn chip's hover card (PP19 BIZON, Build 3, "Same code as AK117 Build 1") · 7 · a column's edit button hovered · 8 · a column's action row (share, edit │ delete) · 9 · the Discord cards open (.50 GS Build 1, STRIKER Builds 1 and 2) · 10 · the band ("6 of 6 builds", "Same on all 6", the Shared chips) · 11 · the top-right Clear builds and Remove all weapons · 12 · three Shared chips close up · 13 · a − corner disk · 14 · the image mark beside the gutter between two columns.
+
+> * when i said organized by weapon category, i didn't mean with the category as a label. i still want the category label beside each weapon.
+> * also, the hover events inside the search bar drop down menu need improving, to imply what's being selected, etc.
+> * i also notice i can't click a weapon name again in the drop down menu to unselect that weapon/all it's builds, yet i can do it 1 by 1 for each build chip in the menu.
+> * i also realize the search bar width might have been too much, slightly reduce it.
+> * there also seems to be a sort of double border or something on the left corners of the badges when hovering them.
+> * can you also put the image icon and the triangle warn icon in a square chip similar to the shield/checkmark chip used in the "Repair builds" panel? ... Actually, can you change the image icon chip to the same shield/checkmark chip which implies "all is good" with the build (including the pop-up container that appears when hovering it). And similarly for the warn triangle chip.
+> * also edit button should have gotten the --stage tint.
+> * can you also adjust the right side padding of the button's row so it matches the padding under it?
+> * very nice design with the discord cards bar. 4 things tho: why was this color chosen as it's background? and why did you use a chevron instead of the board's new expand/collapse icon?? Change the "3 builds, as the bot posts them" line to "Preview the builds as Discord embeds" and "discord cards" to "Discord preview".  and slightly decrease the size of the rank modes badge icons inside of the preview.
+> * also I'm not a fan of the way the "shared"/"same" chips organize themselves, please improve and refine that.
+> * I'm also not a fan of your "clear builds" "remove all weapons" button designs. They don't follow the button design language we use everywhere else in the board. Reword "clear builds" to "Clear table" and make it the transparent button+hover-tint design we use. Reword "remove all weapons" to "Clear selections" and make it the solid filled button design we use. with appropriate tint colors. We literally have a memory about this very design behavior and why it's important to think of these things in your sequential-thinking run, but it seems you didn't.
+> * can you also move the "x of x builds" chip to beside/right of the search bar and match it's height to the search bar.
+> * the attachment slot/name chips (3rd last screenshot) are also in correct. Their border is supposed to be their accent color matched.
+> * i also asked for the `-`/`+` icon inside the circle to be increased in weight, yet it's still the same thickness.
+> * also, can you make the cap between builds rounded at the top when it touched the weapon name cell?
+
+**By class** (logged 2026-09-29 19:48 EDT; nothing built):
+
+| Class | What he asked | The sweep it implies |
+|---|---|---|
+| **AI · the search list** (Version 41 AF, again) | grouped by category but **no group label**: the category beside each weapon, as before · hover that says what a click will select · a picked weapon's name clicked again takes the weapon and its builds out (the build chips already toggle one by one) · the field slightly narrower than 560px | every row state (unpicked, picked, some builds in) with its hover; the landing's list the same |
+| **AJ · the badge pop** (Version 41 W, again) | a double edge on the left corners of a hovered badge (META, TOXIC) | the pop's own ground over the bare badge's edge: every badge family, outlined and filled, at 2x |
+| **AK · the build's state mark** (Version 41 AC, again) | the image mark and the warn triangle become **Repairs' chips**: the shield-and-check chip that says all is good, with its hover card, and the warn chip with its card | the same verdict and card Repairs shows (`b3/repairs.js`), so a build reads the same in both places |
+| **AL · a column's actions** (Version 41 AB, again) | edit hovers in `--staged` ("--stage" in his words; the board's token is `--staged`) · the action row's right padding equal to the padding under it | the manifest row's recipe for all three buttons; the foot row's padding on every side |
+| **AM · the Discord bar** (Version 41 AH) | he likes it · asked **why its background colour** (answered below) · the board's Fold expand/collapse icon, not a chevron · "Discord cards" → **"Discord preview"**, "N builds, as the bot posts them" → **"Preview the builds as Discord embeds"** · the rank-mode icons in the cards slightly smaller | every place a chevron stands in for Fold; every Discord-card consumer sharing the rank-mode icon size |
+| **AN · the band's chips** (Version 41 AD) | the Shared and Same chips' organisation improved and refined | the band as one layout: the order, the wrapping and the rhythm of both groups |
+| **AO · the top-right buttons** (Version 41 AE) | **"Clear table"**, the board's transparent button with a hover tint · **"Clear selections"**, the board's solid filled button · tints fitting each · they do not follow the board's button language, and a memory records why this matters | the board's button family (`b3-btn2` and its quiet, ghost and solid variants): which is which, by what the action does; the memory, found and applied |
+| **AP · the seats chip** | "x of x builds" moves to the search's right, at the search's height | the top row as one line: search, seats, tools |
+| **AQ · the band's attachment chips** | their edge in their slot's accent colour, as everywhere else | every slot chip on the board against the manifest's |
+| **AR · the corner marks** (Version 41 Z, again) | the − and + are still the same thickness: heavier, as asked | measured stroke at 2x, before and after |
+| **AS · the gap between builds** | the gap's top rounded where it meets the weapon's name cell | the gutter and the head band together |
+
+**His question, answered from the kit** (`docs/pins2/kit/b4/compare.css`, the Version 41 block): the bar's ground is a left-to-right wash of Discord's blurple (`#5865F2` at 9% into the card's sunk ground, fading out by 55% of the width) with a 22% blurple edge, and the Show / Hide pill is blurple at 16%. I chose it to mark the bar as Discord's rather than the board's; nothing he said asked for it.
+
+**Last round's claims failing:** AR (his "one step higher weight", logged Version 41 Z and recorded as built with "a heavier glyph"), AJ (the pop recorded as fixed), AO (built without the board's button language, and without looking for the memory he names).
+

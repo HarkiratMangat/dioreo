@@ -767,7 +767,7 @@ inside `.exs` · 2 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .exs-i · gates.css:539 |
-| position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | grid-template-columns | `64px minmax(0px, 1fr) max-content` | `64px 286px 102px` | .exs-i · gates.css:539 |
 | gap | `13px` | `` | .exs-i · app.css:5254 |
 | column-gap | `16px` | `16px` | .exs-i · gates.css:539 |
@@ -781,13 +781,13 @@ inside `.exs` · 2 on screen · **1 look**
 | padding-right | `18px` | `18px` | .exs-i · gates.css:539 |
 | padding-bottom | `14px` | `14px` | .exs-i · gates.css:539 |
 | padding-left | `6px` | `6px` | .exs-i · gates.css:539 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `10px` | `` | .exs-i · gates.css:539 |
-| outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | background | `var(--sunk)` | `` | .exs-i · gates.css:539 |
 | background-color | `` | `rgb(11, 15, 18)` | .exs-i · gates.css:539 |
 | background-image | `` | `none` | .exs-i · gates.css:539 |
-| box-shadow | `none` | `none` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| box-shadow | `none` | `none` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1257,7 +1257,7 @@ inside `.exs` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .exs-i · gates.css:539 |
-| position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | grid-template-columns | `64px minmax(0px, 1fr) max-content` | `64px 286px 102px` | .exs-i · gates.css:539 |
 | gap | `13px` | `` | .exs-i · app.css:5254 |
 | column-gap | `16px` | `16px` | .exs-i · gates.css:539 |
@@ -1271,13 +1271,13 @@ inside `.exs` · 1 on screen · **1 look**
 | padding-right | `18px` | `18px` | .exs-i · gates.css:539 |
 | padding-bottom | `14px` | `14px` | .exs-i · gates.css:539 |
 | padding-left | `6px` | `6px` | .exs-i · gates.css:539 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `10px` | `` | .exs-i · gates.css:539 |
-| outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | background | `var(--sunk)` | `` | .exs-i · gates.css:539 |
 | background-color | `` | `rgb(11, 15, 18)` | .exs-i · gates.css:539 |
 | background-image | `` | `none` | .exs-i · gates.css:539 |
-| box-shadow | `none` | `none` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| box-shadow | `none` | `none` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |

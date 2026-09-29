@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective (the kit Board 3-E shares) — its rules on SHIPPED portal classes
 
-*Generated 2026-09-29T22:02:22.761Z by `overrides.cjs`. **299 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
+*Generated 2026-09-29T23:51:06.801Z by `overrides.cjs`. **299 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
 
 **This is where the corrections to boards 1 and 2 live.** Session 2 shipped board 1 and board 2 at ~95%; board 3 ran the portal's own code and corrected the rest with rules like these. Each row is a change to `portal/ui/app.css` (or `tokens.css`): find the portal rule for the same selector, change it to this, and close the element with `portalProbe` against board 3.
 
@@ -261,7 +261,7 @@ status: live
 | `gates.css:685` | `.pidx-l` | grid-template-columns: 1fr | unswitched |
 | `gates.css:697` | `.pb` | gap: 52px | unswitched |
 | `gates.css:738` | `.pb input, .pb textarea` | caret-color: var(--patch) | unswitched |
-| `gates.css:739` | `.pb, .g-stage, .b3-sd-list, .dk, .pidx-l` | scrollbar-color: var(--rule2) transparent; scrollbar-width: thin | unswitched |
+| `gates.css:739` | `.pb, .g-stage, .b3-sd-list, .dk:where(:not(.diff-r>*)), .pidx-l` | scrollbar-color: var(--rule2) transparent; scrollbar-width: thin | unswitched |
 | `gates.css:775` | `.dw-f .btn:has(> .ic)` | display:inline-flex;align-items:center;justify-content:center;gap:6px | unswitched |
 | `gates.css:776` | `.dw-f .btn` | padding-inline:18px | unswitched |
 | `gates.css:777` | `.dw-f .btn > .ic` | width:14px;height:14px;flex:none | unswitched |

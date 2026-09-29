@@ -258,6 +258,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-29 15:37 EDT — Board 4 Version 40 intake round built in the kit, all 21 classes (v3.85.0-pre)
 - 2026-09-29 18:06 EDT — Board 4 Version 41 intake round logged and built in the kit, classes V–AH (v3.85.0-pre)
 - 2026-09-29 18:51 EDT — Board 4 published as Version 42; the Session 4/5 docs brought to Version 42 (v3.85.0-pre)
+- 2026-09-29 19:57 EDT — Board 4's spec gets its structure, relations and accessibility walk; History's event drawer fixed in the kit (v3.85.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4499,6 +4500,12 @@ Routing: the kit is excluded from the product's codebase-memory graph because it
 **The Session 4/5 docs, at Version 42.** `docs/pins2/final/board4-spec/HANDOFF.md` still described Compare as Grid, Lanes and Embed behind a VIEW toggle and called both of his latest rounds unreviewed. Its Compare rulings are rewritten from the kit and the two rounds' built tables, and C3 gets the first structure narrative written for Board 4 itself. The Session 4 decisions are recounted on the current kit: the yellow is on 232 kit lines, the dropdown ground is 27 declarations in ten mixes, and Compare's × is now tinted in its weapon's colour. The generator's numbers are read: all 14 unreached elements are gate frame, and only 12 of the 88 contradicted declarations are real (41 are animation frames).
 
 **A gap closed in the plan.** Session 4's precondition checked only that board 3 was closed, so it could have started before the Collective was signed off. §5c Step 1 and the Session 4 prompt now check the sign-off. The Session 5 prompt no longer tells the build to rebuild board 1's drawers from board 1: Board 4 supersedes that.
+
+## 2026-09-29 19:57 EDT — Board 4's spec gets its structure, relations and accessibility walk; History's event drawer fixed in the kit (v3.85.0-pre)
+
+**Why:** the handoff listed five things the spec "does not have yet" and I had sent them to him as a heads-up after being asked to finish everything. Each is now a generator beside the values, run by the same regenerate command: `structure.cjs` (every gate's outline, at rest and in 30 states), `relations.cjs` (his rulings that are measurements, pass or fail), `a11y.cjs` (39 walks: the focus order, names, focus marks, pointer-only elements) and a pop-up pass in the extractor (the date picker, the queue's chip pop-ups, both dropdown lists and two row drawers), which had never been specced because each is closed at rest.
+
+**What opening them found:** History's event drawer drew each key as Board 3's decision dock, because `.dk` names both. The dock's rules are fenced off with `:where()`, and the fix is in the kit, not yet published. The keyboard walk found focusable Broadcast rows with no name and History rows that open only by pointer; both are recorded for the port.
 
 # Part B — Lessons Ledger (thematic)
 

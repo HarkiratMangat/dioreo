@@ -916,7 +916,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | .pb-enc · b2.css:368 |
-| position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | grid-template-columns | `minmax(0px, 1fr) 44px` | `minmax(0px, 1fr) 44px` | .pb-enc · b2.css:221 |
 | align-items | `start` | `start` | .pb-enc · b2.css:221 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -925,9 +925,9 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | padding-right | `0px` | `0px` | .pb-enc · b2.css:368 |
 | padding-bottom | `0px` | `0px` | .pb-enc · b2.css:368 |
 | padding-left | `0px` | `0px` | .pb-enc · b2.css:368 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-2)` | `` | .pb-enc · b2.css:221 |
-| outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%)` | `` | .pb-enc · b2.css:368 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .pb-enc · b2.css:368 |
@@ -955,7 +955,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | .pb-enc · b2.css:368 |
-| position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | grid-template-columns | `minmax(0px, 1fr) 44px` | `minmax(0px, 1fr) 44px` | .pb-enc · b2.css:221 |
 | align-items | `start` | `start` | .pb-enc · b2.css:221 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -964,9 +964,9 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | padding-right | `0px` | `0px` | .pb-enc · b2.css:368 |
 | padding-bottom | `0px` | `0px` | .pb-enc · b2.css:368 |
 | padding-left | `0px` | `0px` | .pb-enc · b2.css:368 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-2)` | `` | .pb-enc · b2.css:221 |
-| outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%)` | `` | .pb-enc · b2.css:368 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .pb-enc · b2.css:368 |
@@ -1121,7 +1121,7 @@ inside `.pb-body` · 4 on screen · **1 look**
 `C6-35` · rendered **674×79** · 4 instances look like this
 
 ```html
-<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.3174%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
+<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.3618%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
 ```
 
 | property | winning declaration | computed | from |
@@ -1148,7 +1148,7 @@ inside `.pb-life3` · 4 on screen · **1 look**
 `C6-36` · rendered **674×43** · 4 instances look like this
 
 ```html
-<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.3174%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="b4-popw"><button type
+<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.3618%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="b4-popw"><button type
 ```
 
 | property | winning declaration | computed | from |
@@ -1353,7 +1353,7 @@ inside `.pb-tl` · 4 on screen · **1 look**
 `C6-41` · rendered **500×20** · 4 instances look like this
 
 ```html
-<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.3174%;"></span></div>
+<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.3618%;"></span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -1451,7 +1451,7 @@ inside `.pb-bar` · 4 on screen · **1 look**
 `C6-44` · rendered **2×18** · 4 instances look like this · title="Up 55 days"
 
 ```html
-<span class="pb-now" title="Up 55 days" style="left: 45.3174%;"></span>
+<span class="pb-now" title="Up 55 days" style="left: 45.3618%;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1462,7 +1462,7 @@ inside `.pb-bar` · 4 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
 | bottom | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
-| left | `45.3174%` | `226.578px` | style attribute |
+| left | `45.3618%` | `226.797px` | style attribute |
 | border-radius | `1px` | `` | .pb-now · b2.css:234 |
 | background | `var(--ink)` | `` | .pb-now · b2.css:234 |
 | background-color | `` | `rgb(232, 237, 241)` | .pb-now · b2.css:234 |
@@ -2278,7 +2278,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | .pb-enc · b2.css:368 |
-| position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | grid-template-columns | `minmax(0px, 1fr) 44px` | `minmax(0px, 1fr) 44px` | .pb-enc · b2.css:221 |
 | align-items | `start` | `start` | .pb-enc · b2.css:221 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -2287,9 +2287,9 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | padding-right | `0px` | `0px` | .pb-enc · b2.css:368 |
 | padding-bottom | `0px` | `0px` | .pb-enc · b2.css:368 |
 | padding-left | `0px` | `0px` | .pb-enc · b2.css:368 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-2)` | `` | .pb-enc · b2.css:221 |
-| outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%)` | `` | .pb-enc · b2.css:368 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .pb-enc · b2.css:368 |
@@ -2317,7 +2317,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | .pb-enc · b2.css:368 |
-| position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | grid-template-columns | `minmax(0px, 1fr) 44px` | `minmax(0px, 1fr) 44px` | .pb-enc · b2.css:221 |
 | align-items | `start` | `start` | .pb-enc · b2.css:221 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -2326,9 +2326,9 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | padding-right | `0px` | `0px` | .pb-enc · b2.css:368 |
 | padding-bottom | `0px` | `0px` | .pb-enc · b2.css:368 |
 | padding-left | `0px` | `0px` | .pb-enc · b2.css:368 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-2)` | `` | .pb-enc · b2.css:221 |
-| outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%)` | `` | .pb-enc · b2.css:368 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .pb-enc · b2.css:368 |

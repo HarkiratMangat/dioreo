@@ -1,0 +1,2294 @@
+---
+kind: reference
+status: live
+---
+
+# Board 4: Collective — structure, generated
+
+*Generated 2026-09-29T23:40:39.027Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
+
+## C1 · The Armory manifest
+
+### Resting
+
+- `section.panel`
+  - `div.mtools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Manifest”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search builds”
+        - `input`
+      - `button.pill.lead.madd`
+        - `svg.ic`
+    - `div.mt-r2`
+      - `span.mt-grp[role=group] “Category”` ×2
+        - `span.mlabel`
+          - `span` — “Category”
+        - `button.chip`
+          - `span.cl` — “All”
+          - `em` — “21”
+        - `button.chip.topic` ×7
+          - `i`
+          - `span.cl` — “Assault”
+          - `em` — “7”
+  - `div.wg-wrap`
+    - `div.wg-heads`
+      - `span.b3-hint`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 21”`
+          - `span.cb`
+      - `span`
+        - `button.wg-sort`
+          - `svg.ic`
+      - `button.wg-fold`
+        - `svg.ic.ic-fold`
+    - `div.wg` ×8
+      - `div.wg-h`
+        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+          - `span.cb`
+        - `div.wg-line`
+          - `b` — “BAL-27”
+          - `small` — “Assault”
+          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `span.b3-bdgs`
+            - `span.b3-bdg` ×2
+              - `svg.ic.b3-zap`
+              - `span.b3-volt`
+              - `span.b3-vl`
+        - `span`
+        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+          - `svg.ic.ic-fold`
+      - `div.wg-r` ×5
+        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+          - `span.cb`
+        - `span.wg-ix` — “1”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Gauge-9 Mono”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+              - `span.wg-ct` — “1I2C4A8A9D”
+            - `span.wg-igb`
+              - `svg.ic`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+            - `svg.ic`
+
+### Try · Open a problem
+
+- `section.panel`
+  - `div.mtools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Manifest”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search builds”
+        - `input`
+      - `button.pill.lead.madd`
+        - `svg.ic`
+    - `div.mt-r2`
+      - `span.mt-grp[role=group] “Category”` ×2
+        - `span.mlabel`
+          - `span` — “Category”
+        - `button.chip`
+          - `span.cl` — “All”
+          - `em` — “21”
+        - `button.chip.topic` ×7
+          - `i`
+          - `span.cl` — “Assault”
+          - `em` — “7”
+  - `div.wg-wrap`
+    - `div.wg-heads`
+      - `span.b3-hint`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 21”`
+          - `span.cb`
+      - `span`
+        - `button.wg-sort`
+          - `svg.ic`
+      - `button.wg-fold`
+        - `svg.ic.ic-fold`
+    - `div.wg` ×8
+      - `div.wg-h`
+        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+          - `span.cb`
+        - `div.wg-line`
+          - `b` — “BAL-27”
+          - `small` — “Assault”
+          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `span.b3-bdgs`
+            - `span.b3-bdg` ×2
+        - `span`
+        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+          - `svg.ic.ic-fold`
+      - `div.wg-r` ×5
+        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+          - `span.cb`
+        - `span.wg-ix` — “1”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Gauge-9 Mono”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+            - `svg.ic`
+
+### Try · Open another
+
+- `section.panel`
+  - `div.mtools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Manifest”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search builds”
+        - `input`
+      - `button.pill.lead.madd`
+        - `svg.ic`
+    - `div.mt-r2`
+      - `span.mt-grp[role=group] “Category”` ×2
+        - `span.mlabel`
+          - `span` — “Category”
+        - `button.chip`
+          - `span.cl` — “All”
+          - `em` — “21”
+        - `button.chip.topic` ×7
+          - `i`
+          - `span.cl` — “Assault”
+          - `em` — “7”
+  - `div.wg-wrap`
+    - `div.wg-heads`
+      - `span.b3-hint`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 21”`
+          - `span.cb`
+      - `span`
+        - `button.wg-sort`
+          - `svg.ic`
+      - `button.wg-fold`
+        - `svg.ic.ic-fold`
+    - `div.wg` ×8
+      - `div.wg-h`
+        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+          - `span.cb`
+        - `div.wg-line`
+          - `b` — “BAL-27”
+          - `small` — “Assault”
+          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `span.b3-bdgs`
+            - `span.b3-bdg` ×2
+        - `span`
+        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+          - `svg.ic.ic-fold`
+      - `div.wg-r` ×5
+        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+          - `span.cb`
+        - `span.wg-ix` — “1”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Gauge-9 Mono”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+            - `svg.ic`
+
+### Try · Pick one build
+
+- `section.panel`
+  - `div.mtools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Manifest”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search builds”
+        - `input`
+      - `button.pill.lead.madd`
+        - `svg.ic`
+    - `div.mt-r2`
+      - `span.mt-grp[role=group] “Category”` ×2
+        - `span.mlabel`
+          - `span` — “Category”
+        - `button.chip`
+          - `span.cl` — “All”
+          - `em` — “21”
+        - `button.chip.topic` ×7
+          - `i`
+          - `span.cl` — “Assault”
+          - `em` — “7”
+  - `div.wg-wrap`
+    - `div.wg-heads`
+      - `span.b3-hint`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Clear 1 of 21”`
+          - `span.cb`
+      - `span`
+        - `button.wg-sort`
+          - `svg.ic`
+      - `button.wg-fold`
+        - `svg.ic.ic-fold`
+    - `div.wg` ×8
+      - `div.wg-h`
+        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+          - `span.cb`
+        - `div.wg-line`
+          - `b` — “BAL-27”
+          - `small` — “Assault”
+          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `span.b3-bdgs`
+            - `span.b3-bdg` ×2
+        - `span`
+        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+          - `svg.ic.ic-fold`
+      - `div.wg-r` ×5
+        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+          - `span.cb`
+        - `span.wg-ix` — “1”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Gauge-9 Mono”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+            - `svg.ic`
+  - `div.selbar.on.b3-selbar[role=region] “Actions for the selected builds”`
+    - `div.b3-sd.mesh`
+      - `div.b3-sd-fold`
+        - `div.b3-sd-list`
+          - `div.b3-sd-lh`
+            - `svg.ic.b3-sd-lh-ic`
+            - `span.b3-nw`
+            - `span.b3-sd-vl` — “View”
+            - `div.b3-sd-vt[role=group] “List view”`
+          - `div.b3-sd-rows[role=list]`
+            - `div.b3-sd-g`
+      - `div.b3-sd-bar`
+        - `span.b3-sd-count “1 selected”` — “1”
+        - `div.b3-sd-chips`
+          - `span.b3-sc`
+            - `i`
+            - `span.b3-nw`
+            - `button “Deselect PP19 BIZON”`
+        - `button.b3-btn2.ghost.b3-sd-tog`
+          - `svg.ic.ic-fold`
+        - `i.b3-vr`
+        - `div.b3-sd-acts`
+          - `button.b3-btn2.b3-sd-edit`
+            - `svg.ic`
+          - `button.b3-btn2.b3-sd-exp`
+            - `svg.ic`
+          - `span.b3-hint`
+            - `button.b3-btn2.dang`
+          - `button.b3-btn2.quiet`
+            - `svg.ic`
+
+### Try · Pick three
+
+- `section.panel`
+  - `div.mtools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Manifest”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search builds”
+        - `input`
+      - `button.pill.lead.madd`
+        - `svg.ic`
+    - `div.mt-r2`
+      - `span.mt-grp[role=group] “Category”` ×2
+        - `span.mlabel`
+          - `span` — “Category”
+        - `button.chip`
+          - `span.cl` — “All”
+          - `em` — “21”
+        - `button.chip.topic` ×7
+          - `i`
+          - `span.cl` — “Assault”
+          - `em` — “7”
+  - `div.wg-wrap`
+    - `div.wg-heads`
+      - `span.b3-hint`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Clear 3 of 21”`
+          - `span.cb`
+      - `span`
+        - `button.wg-sort`
+          - `svg.ic`
+      - `button.wg-fold`
+        - `svg.ic.ic-fold`
+    - `div.wg` ×8
+      - `div.wg-h`
+        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+          - `span.cb`
+        - `div.wg-line`
+          - `b` — “BAL-27”
+          - `small` — “Assault”
+          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `span.b3-bdgs`
+            - `span.b3-bdg` ×2
+        - `span`
+        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+          - `svg.ic.ic-fold`
+      - `div.wg-r` ×5
+        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+          - `span.cb`
+        - `span.wg-ix` — “1”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Gauge-9 Mono”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+            - `svg.ic`
+  - `div.selbar.on.b3-selbar[role=region] “Actions for the selected builds”`
+    - `div.b3-sd.mesh`
+      - `div.b3-sd-fold`
+        - `div.b3-sd-list`
+          - `div.b3-sd-lh`
+            - `svg.ic.b3-sd-lh-ic`
+            - `span.b3-nw`
+            - `span.b3-sd-vl` — “View”
+            - `div.b3-sd-vt[role=group] “List view”`
+          - `div.b3-sd-rows.warn[role=list]`
+            - `div.b3-sd-g`
+      - `div.b3-sd-bar`
+        - `span.b3-sd-count “3 selected”` — “3”
+        - `div.b3-sd-chips`
+          - `span.b3-sc`
+            - `i`
+            - `span.b3-nw`
+            - `button “Deselect PP19 BIZON”`
+        - `button.b3-btn2.ghost.b3-sd-tog`
+          - `svg.ic.ic-fold`
+        - `i.b3-vr`
+        - `div.b3-sd-acts`
+          - `button.b3-btn2.b3-sd-edit`
+            - `svg.ic`
+          - `button.b3-btn2.b3-sd-exp`
+            - `svg.ic`
+          - `span.b3-hint`
+            - `button.b3-btn2.dang`
+          - `button.b3-btn2.quiet`
+            - `svg.ic`
+
+### Try · Pick eight
+
+- `section.panel`
+  - `div.mtools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Manifest”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search builds”
+        - `input`
+      - `button.pill.lead.madd`
+        - `svg.ic`
+    - `div.mt-r2`
+      - `span.mt-grp[role=group] “Category”` ×2
+        - `span.mlabel`
+          - `span` — “Category”
+        - `button.chip`
+          - `span.cl` — “All”
+          - `em` — “21”
+        - `button.chip.topic` ×7
+          - `i`
+          - `span.cl` — “Assault”
+          - `em` — “7”
+  - `div.wg-wrap`
+    - `div.wg-heads`
+      - `span.b3-hint`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Clear 8 of 21”`
+          - `span.cb`
+      - `span`
+        - `button.wg-sort`
+          - `svg.ic`
+      - `button.wg-fold`
+        - `svg.ic.ic-fold`
+    - `div.wg` ×8
+      - `div.wg-h`
+        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+          - `span.cb`
+        - `div.wg-line`
+          - `b` — “BAL-27”
+          - `small` — “Assault”
+          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `span.b3-bdgs`
+            - `span.b3-bdg` ×2
+        - `span`
+        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+          - `svg.ic.ic-fold`
+      - `div.wg-r` ×4
+        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+          - `span.cb`
+        - `span.wg-ix` — “1”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Gauge-9 Mono”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+            - `svg.ic`
+      - `div.wg-r.sel`
+        - `span.wg-cb[role=checkbox] “Select BAL-27 build 5”`
+          - `span.cb.on`
+        - `span.wg-ix` — “5”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Gauge-9 Mono”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1I2C6B8A9D”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 5”`
+            - `svg.ic`
+  - `div.selbar.on.b3-selbar[role=region] “Actions for the selected builds”`
+    - `div.b3-sd.mesh`
+      - `div.b3-sd-fold`
+        - `div.b3-sd-list`
+          - `div.b3-sd-lh`
+            - `svg.ic.b3-sd-lh-ic`
+            - `span.b3-nw`
+            - `span.b3-sd-vl` — “View”
+            - `div.b3-sd-vt[role=group] “List view”`
+          - `div.b3-sd-rows.warn[role=list]`
+            - `div.b3-sd-g` ×5
+      - `div.b3-sd-bar`
+        - `span.b3-sd-count “8 selected”` — “8”
+        - `div.b3-sd-chips`
+          - `span.b3-sc` ×5
+            - `i`
+            - `span.b3-nw`
+            - `button “Deselect BAL-27”`
+        - `button.b3-btn2.ghost.b3-sd-tog`
+          - `svg.ic.ic-fold`
+        - `i.b3-vr`
+        - `div.b3-sd-acts`
+          - `button.b3-btn2.b3-sd-edit`
+            - `svg.ic`
+          - `button.b3-btn2.b3-sd-exp`
+            - `svg.ic`
+          - `span.b3-hint`
+            - `button.b3-btn2.dang`
+          - `button.b3-btn2.quiet`
+            - `svg.ic`
+
+### Try · Clear
+
+- `section.panel`
+  - `div.mtools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Manifest”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search builds”
+        - `input`
+      - `button.pill.lead.madd`
+        - `svg.ic`
+    - `div.mt-r2`
+      - `span.mt-grp[role=group] “Category”` ×2
+        - `span.mlabel`
+          - `span` — “Category”
+        - `button.chip`
+          - `span.cl` — “All”
+          - `em` — “21”
+        - `button.chip.topic` ×7
+          - `i`
+          - `span.cl` — “Assault”
+          - `em` — “7”
+  - `div.wg-wrap`
+    - `div.wg-heads`
+      - `span.b3-hint`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 21”`
+          - `span.cb`
+      - `span`
+        - `button.wg-sort`
+          - `svg.ic`
+      - `button.wg-fold`
+        - `svg.ic.ic-fold`
+    - `div.wg` ×8
+      - `div.wg-h`
+        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+          - `span.cb`
+        - `div.wg-line`
+          - `b` — “BAL-27”
+          - `small` — “Assault”
+          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `span.b3-bdgs`
+            - `span.b3-bdg` ×2
+        - `span`
+        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+          - `svg.ic.ic-fold`
+      - `div.wg-r` ×5
+        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+          - `span.cb`
+        - `span.wg-ix` — “1”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Gauge-9 Mono”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+            - `svg.ic`
+
+## C2 · New build
+
+### Resting
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP build”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP build”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.f-add`
+          - `div.f-form.b3-fady`
+            - `section.f-card “Build 1 of 1”`
+              - `div.f-card-b`
+                - `section.f-sec` ×5
+            - `button.f-more`
+              - `svg.ic`
+              - `span` — “Add another build”
+              - `em` — “Stage several at once”
+          - `aside.f-side`
+            - `div.f-prev`
+              - `h5` — “In Discord”
+              - `div.f-prevsc.b3-fady`
+                - `div.b4-ghostwrap`
+            - `div.f-stage[role=status]`
+              - `h5`
+                - `span` — “Before staging”
+                - `button.b3-x.f-stmin “Minimise Before staging”`
+              - `ul`
+                - `li`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage this MP build”
+
+### State · Add · filled
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP build”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP build”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.f-add`
+          - `div.f-form.b3-fady`
+            - `section.f-card “Build 1 of 1”`
+            - `button.f-more`
+          - `aside.f-side`
+            - `div.f-prev`
+            - `div.f-stage[role=status]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage this MP build”
+
+### State · Add · three
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP build”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP build”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.f-add.multi`
+          - `div.f-form.b3-fady`
+            - `section.f-card.on “Build 1 of 3”`
+            - `section.f-card “Build 2 of 3”` ×2
+            - `button.f-more`
+          - `aside.f-side`
+            - `div.f-prev`
+            - `div.f-stage[role=status]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage 2 MP + 1 DMZ”
+
+### State · Bulk · empty
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP builds”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP builds”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.bk`
+          - `div.bk-edcol`
+            - `div.bk-eh`
+            - `div.bk-frame`
+          - `div.bk-rescol`
+            - `div.bk-rh`
+            - `div.bk-list.b3-fady[role=list]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Nothing to stage yet”
+
+### State · Bulk · one
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP builds”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP builds”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.bk`
+          - `div.bk-edcol`
+            - `div.bk-eh`
+            - `div.bk-frame`
+          - `div.bk-rescol`
+            - `div.bk-rh`
+            - `div.bk-list.b3-fady[role=list]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage this MP build”
+
+### State · Bulk · several
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP builds”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP builds”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.bk`
+          - `div.bk-edcol`
+            - `div.bk-eh`
+            - `div.bk-frame`
+          - `div.bk-rescol`
+            - `div.bk-rh`
+            - `div.bk-list.b3-fady[role=list]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage 2 MP + 1 DMZ”
+
+### State · Bulk · typing
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP builds”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP builds”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.bk`
+          - `div.bk-edcol`
+            - `div.bk-eh`
+            - `div.bk-frame`
+          - `div.bk-rescol`
+            - `div.bk-rh`
+            - `div.bk-list.b3-fady[role=list]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Nothing to stage yet”
+
+### State · Bulk · warning
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP builds”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP builds”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.bk`
+          - `div.bk-edcol`
+            - `div.bk-eh`
+            - `div.bk-frame`
+          - `div.bk-rescol`
+            - `div.bk-rh`
+            - `div.bk-list.b3-fady[role=list]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage 2 MP builds”
+
+### State · Bulk · can’t read
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP builds”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP builds”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.bk`
+          - `div.bk-edcol`
+            - `div.bk-eh`
+            - `div.bk-frame`
+          - `div.bk-rescol`
+            - `div.bk-rh`
+            - `div.bk-list.b3-fady[role=list]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage this MP build”
+
+### State · Bulk · pasted
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP builds”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP builds”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.bk`
+          - `div.bk-edcol`
+            - `div.bk-eh`
+            - `div.bk-frame`
+          - `div.bk-rescol`
+            - `div.bk-rh`
+            - `div.bk-list.b3-fady[role=list]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage 1 MP + 1 DMZ”
+
+### State · Bulk · duplicate
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New MP builds”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New MP builds”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.bk`
+          - `div.bk-edcol`
+            - `div.bk-eh`
+            - `div.bk-frame`
+          - `div.bk-rescol`
+            - `div.bk-rh`
+            - `div.bk-list.b3-fady[role=list]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage this MP build”
+
+### State · DMZ
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “New DMZ build”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Create a loadout”
+      - `h2` — “New DMZ build”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.seg.pb-seg[role=group] “One build or many”`
+          - `span.pb-thumb`
+          - `button` ×2
+            - `svg.ic`
+      - `div.pb-view.pb-in`
+        - `div.f-add`
+          - `div.f-form.b3-fady`
+            - `section.f-card “Build 1 of 1”`
+            - `button.f-more`
+          - `aside.f-side`
+            - `div.f-prev`
+            - `div.f-stage[role=status]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage this DMZ build”
+
+### State · Edit 3 builds
+
+- `div.scrim.on`
+- `aside.drawer.open.wide[role=dialog] “Edit 3 MP builds”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `span.dw-eye` — “Edit loadouts”
+      - `h2` — “Edit 3 MP builds”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.b3-nb`
+      - `div.pb-bar`
+        - `div.mh-mode.b3-xt-mode[role=radiogroup] “Which armory”`
+          - `button[role=radio]` ×2 — “MP”
+        - `span.pb-div`
+        - `div.pb-edchips`
+          - `span.b3-sc`
+            - `i`
+            - `span.b3-nw`
+            - `button “Remove BAL-27 from the editor”`
+      - `div.pb-view.pb-in`
+        - `div.bk`
+          - `div.bk-edcol`
+            - `div.bk-eh`
+            - `div.bk-frame`
+          - `div.bk-rescol`
+            - `div.bk-rh`
+            - `div.bk-list.b3-fady[role=list]`
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “No changes to stage”
+
+## C3 · Compare
+
+### Resting
+
+- `section.pb-panel`
+  - `div.cx`
+    - `div.cx-top`
+      - `div.cx-pick`
+        - `div.f-pick`
+          - `div.f-fld`
+            - `span.f-pre.f-ic`
+              - `svg.ic`
+            - `input.f-in[role=combobox]`
+            - `button.f-suf.f-caret “Open the list”`
+              - `svg.ic.f-cr`
+      - `div.cx-tools`
+        - `button.b3-btn2.cx-tb` ×2
+          - `svg.ic`
+    - `div.cx-tiles.b3-fadx`
+      - `div.cx-tl`
+        - `div.cx-w[role=group] “BAL-27, 5 of 5 builds in the table”`
+          - `div.cx-wh`
+            - `span.cx-wn`
+              - `b` — “BAL-27”
+              - `small` — “Assault”
+            - `button.b3-x.cx-wx “Remove BAL-27 from the comparison”`
+              - `svg.ic`
+          - `div.cx-keys`
+            - `button.cx-k “Build 1: Take Build 1 out of the table”` ×5
+              - `b` — “1”
+              - `i.cx-kb`
+                - `svg.ic`
+    - `div.cx-band`
+      - `span.cx-seats`
+        - `span.cx-sts`
+          - `i.on` ×5
+          - `i`
+        - `span.cx-stt`
+          - `b` — “5”
+      - `div.cx-same`
+        - `span` — “Same on all 5”
+        - `span.cx-sv.wg-at` — “60 Round Reload”
+      - `div.cx-same.cx-shr`
+        - `span` — “Shared”
+        - `span.cx-sh “Barrel: Crown-H3 Barrel, shared by BAL-2”` ×2
+          - `em` — “Barrel”
+          - `span.cx-shv` — “Crown-H3 Barrel”
+          - `span.cx-shb`
+            - `i` ×3 — “1”
+    - `div.cx-tw`
+      - `table.cx-t`
+        - `caption.sr` — “BAL-27, slot by slot. A tint”
+        - `colgroup`
+          - `col.cx-c0`
+          - `col` ×5
+        - `thead`
+          - `tr.cx-gr`
+            - `th.cx-k0`
+              - `span.sr` — “Weapon”
+            - `th.cx-g`
+              - `div.cx-gh`
+                - `span.cx-gn`
+          - `tr`
+            - `th.cx-k0`
+              - `span.sr` — “Slot”
+            - `th.cx-h` ×5
+              - `span.cx-hn`
+                - `span.b3-sd-gn` — “Build 1”
+                - `span.wg-im.cx-im[role=img] “Image uploaded”`
+              - `span.cx-hl.none` — “No label”
+              - `span.cx-hb`
+                - `div.cx-run.b3-fadx`
+        - `tbody`
+          - `tr` ×6
+            - `th.cx-k0` — “Muzzle”
+            - `td.cx-c.s-d` ×5
+              - `span.cx-v`
+                - `span.cx-vt`
+        - `tfoot`
+          - `tr.cx-ft`
+            - `th.cx-k0`
+              - `span.sr` — “Actions”
+            - `td.cx-fa` ×5
+              - `div.wg-acts.cx-acts`
+                - `button.wg-ib.wg-share “Copy share command”`
+                - `button.wg-ib.cx-edit “Edit BAL-27 build 1”`
+                - `i.wg-vr`
+                - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+    - `div.cx-dc`
+      - `button.cx-dcb`
+        - `span.cx-dcf`
+          - `i` ×5
+            - `b` ×3
+        - `span.cx-dct`
+          - `b` — “Discord cards”
+          - `small` — “5 builds, as the bot posts t”
+        - `span.cx-dcp`
+          - `svg.ic.f-cr`
+      - `div.cx-dcw`
+        - `div.cx-dcin`
+          - `div.cx-emb`
+            - `figure.cx-cc` ×5
+              - `figcaption.cx-eh`
+                - `span.b3-sd-gn` — “Build 1”
+              - `div.dcard.lc`
+                - `h6[role=heading]` — “BAL-27”
+                - `div.lc-badges`
+                - `div.lc-rule`
+                - `div.lc-h` — “Attachments”
+                - `ul.lc-att`
+                - `div.lc-h` — “Gunsmith Code”
+                - `div.lc-code` — “1I2C4A8A9D”
+                - `div.lc-img`
+                - `div.lc-foot` — “AR • Build 1 of 5 • Updated ”
+
+### State · Two weapons
+
+- `section.pb-panel`
+  - `div.cx`
+    - `div.cx-top`
+      - `div.cx-pick`
+        - `div.f-pick`
+          - `div.f-fld`
+            - `span.f-pre.f-ic`
+            - `input.f-in[role=combobox]`
+            - `button.f-suf.f-caret “Open the list”`
+      - `div.cx-tools`
+        - `button.b3-btn2.cx-tb` ×2
+          - `svg.ic`
+    - `div.cx-tiles.b3-fadx`
+      - `div.cx-tl`
+        - `div.cx-w[role=group] “BAL-27, 3 of 5 builds in the table”` ×2
+          - `div.cx-wh`
+            - `span.cx-wn`
+            - `button.b3-x.cx-wx “Remove BAL-27 from the comparison”`
+          - `div.cx-keys`
+            - `button.cx-k “Build 1: Take Build 1 out of the table”` ×3
+            - `button.cx-k.cx-kfull “Build 4: The table holds 6 builds. Take ”` ×2
+    - `div.cx-band`
+      - `span.cx-seats.full`
+        - `span.cx-sts`
+          - `i.on` ×6
+        - `span.cx-stt`
+          - `b` — “6”
+      - `div.cx-same`
+        - `span` — “Same on all 6”
+        - `span.cx-sv.wg-at` — “Assault rifle”
+      - `div.cx-same.cx-shr`
+        - `span` — “Shared”
+        - `span.cx-sh “Muzzle: Agency Suppressor, shared by FFA”` ×7
+          - `em` — “Muzzle”
+          - `span.cx-shv` — “Agency Suppressor”
+          - `span.cx-shb`
+            - `i` ×2 — “2”
+    - `div.cx-tw`
+      - `table.cx-t`
+        - `caption.sr` — “BAL-27, FFAR 1, slot by slot”
+        - `colgroup`
+          - `col.cx-c0`
+          - `col` ×3
+          - `col.cx-gc`
+          - `col` ×3
+        - `thead`
+          - `tr.cx-gr`
+            - `th.cx-k0`
+            - `th.cx-g`
+            - `th.cx-gut`
+            - `th.cx-g`
+          - `tr`
+            - `th.cx-k0`
+            - `th.cx-h` ×3
+            - `th.cx-gut`
+            - `th.cx-h` ×3
+        - `tbody`
+          - `tr` ×8
+            - `th.cx-k0` — “Muzzle”
+            - `td.cx-c.s-d` ×3
+            - `td.cx-gut`
+            - `td.cx-c.s-rm`
+            - `td.cx-c.s-n.merged`
+        - `tfoot`
+          - `tr.cx-ft`
+            - `th.cx-k0`
+            - `td.cx-fa` ×3
+            - `td.cx-gut`
+            - `td.cx-fa` ×3
+    - `div.cx-dc`
+      - `button.cx-dcb`
+        - `span.cx-dcf`
+          - `i` ×6
+            - `b` ×3
+        - `span.cx-dct`
+          - `b` — “Discord cards”
+          - `small` — “6 builds, as the bot posts t”
+        - `span.cx-dcp`
+          - `svg.ic.f-cr`
+      - `div.cx-dcw`
+        - `div.cx-dcin`
+          - `div.cx-emb`
+            - `figure.cx-cc` ×6
+
+### State · One build
+
+- `section.pb-panel`
+  - `div.cx`
+    - `div.cx-top`
+      - `div.cx-pick`
+        - `div.f-pick`
+          - `div.f-fld`
+            - `span.f-pre.f-ic`
+            - `input.f-in[role=combobox]`
+            - `button.f-suf.f-caret “Open the list”`
+      - `div.cx-tools`
+        - `button.b3-btn2.cx-tb` ×2
+          - `svg.ic`
+    - `div.cx-tiles.b3-fadx`
+      - `div.cx-tl`
+        - `div.cx-w[role=group] “DL Q33, 1 of 1 builds in the table”`
+          - `div.cx-wh`
+            - `span.cx-wn`
+            - `button.b3-x.cx-wx “Remove DL Q33 from the comparison”`
+          - `div.cx-keys`
+            - `button.cx-k “Build 1: Take Build 1 out of the table”`
+    - `div.cx-band`
+      - `span.cx-seats`
+        - `span.cx-sts`
+          - `i.on`
+          - `i` ×5
+        - `span.cx-stt`
+          - `b` — “1”
+    - `div.cx-tw`
+      - `table.cx-t`
+        - `caption.sr` — “DL Q33, NA-45, slot by slot.”
+        - `colgroup`
+          - `col.cx-c0`
+          - `col`
+          - `col.cx-gc`
+          - `col`
+        - `thead`
+          - `tr.cx-gr`
+            - `th.cx-k0`
+            - `th.cx-g`
+            - `th.cx-gut`
+            - `th.cx-g.sg`
+          - `tr`
+            - `th.cx-k0`
+            - `th.cx-h`
+            - `th.cx-gut`
+            - `th.cx-h.sg`
+        - `tbody`
+          - `tr` ×7
+            - `th.cx-k0` — “Muzzle”
+            - `td.cx-c.s-n`
+            - `td.cx-gut`
+            - `td.cx-c.s-sg`
+        - `tfoot`
+          - `tr.cx-ft`
+            - `th.cx-k0`
+            - `td.cx-fa`
+            - `td.cx-gut`
+            - `td.cx-fa.sg`
+    - `div.cx-dc`
+      - `button.cx-dcb`
+        - `span.cx-dcf`
+          - `i`
+            - `b` ×3
+        - `span.cx-dct`
+          - `b` — “Discord cards”
+          - `small` — “1 build, as the bot posts th”
+        - `span.cx-dcp`
+          - `svg.ic.f-cr`
+      - `div.cx-dcw`
+        - `div.cx-dcin`
+          - `div.cx-emb`
+            - `figure.cx-cc`
+
+### State · Empty
+
+- `section.pb-panel`
+  - `div.cx`
+    - `div.cx-land`
+      - `div.cx-ghost`
+        - `table.cx-t`
+          - `colgroup`
+            - `col.cx-c0`
+            - `col` ×3
+          - `thead`
+            - `tr.cx-gr`
+            - `tr`
+          - `tbody`
+            - `tr` ×4
+      - `div.cx-over`
+        - `div.cx-pick.big`
+          - `div.f-pick`
+            - `div.f-fld`
+        - `p.cx-lead`
+          - `span.b4-echo`
+            - `svg.ic`
+            - `b` — “Pick a weapon”
+            - `i`
+            - `span` — “every one of its builds open”
+          - `svg.ic`
+          - `span.b4-echo`
+            - `svg.ic`
+            - `b` — “Add a second”
+            - `i`
+            - `span` — “to set them side by side”
+        - `div.cx-shelf`
+          - `div.cx-w.cx-wl[role=group] “MACHINE PISTOL, 1 build”` ×16
+            - `div.cx-wh`
+            - `div.cx-keys`
+
+## C4 · Repairs
+
+### Resting
+
+- `section.panel`
+  - `div.ph`
+    - `span.t` — “Armory”
+    - `div.seg[role=tablist] “View”`
+      - `button[role=tab]` ×2
+        - `svg.ic`
+    - `button.b3-rv.on.warn`
+      - `span.b3-rv-n` — “5”
+      - `span.b3-nw`
+        - `span.b3-rv-w` — “Repairs”
+        - `span.b3-rv-s` — “need work”
+  - `div.b3-rp`
+    - `div.b3-rp-h`
+      - `div.b3-rp-t`
+        - `b` — “5 of 125 builds need work”
+      - `div.b3-rp-f[role=group] “Show builds with”`
+        - `button.b3-fc`
+          - `span.b3-nw`
+            - `em` — “5”
+        - `button.b3-fc.warn` ×4
+          - `svg.ic`
+          - `span.b3-nw`
+            - `em` — “1”
+    - `div.b3-tk-bar[role=img] “3 builds block sharing, 2 are below stan”`
+      - `i.bl`
+      - `i.th`
+      - `i.ok`
+    - `section.b3-tk-sec` ×2
+      - `h4.b3-tk-sh`
+        - `i`
+          - `svg.ic`
+        - `b` — “Blocks sharing”
+        - `em` — “3 builds”
+      - `div.b3-tk-list.rows`
+        - `article.b3-tk` ×3
+          - `header.b3-tk-h`
+            - `span.b3-tk-id`
+              - `i`
+              - `b` — “PHARO”
+              - `em` — “Build 1”
+              - `small` — “SMG”
+          - `div.b3-tk-fs`
+            - `div.b3-tk-f` ×2
+              - `span.b3-tk-ic`
+                - `svg.ic`
+              - `span.b3-tk-t`
+                - `b` — “No gunsmith code”
+                - `span` — “Nobody can import it, and it”
+          - `footer.b3-tk-ft`
+            - `span.pb-pill.b3-tk-agec`
+              - `svg.ic`
+            - `button.b3-btn2.sm.go`
+              - `svg.ic`
+    - `h4.b3-tk-sh.b3-tk-okh`
+      - `i`
+        - `svg.ic`
+      - `b` — “Pass every check”
+      - `em` — “120 builds”
+    - `article.b3-tk.b3-tk-pass`
+      - `header.b3-tk-h`
+        - `span.b3-tk-id`
+          - `span.b3-tk-shield`
+            - `svg.ic`
+          - `b` — “The checks every one of them”
+      - `div.b3-tk-cks`
+        - `span.b3-tk-ck` ×5
+          - `span.b3-tk-ic`
+            - `svg.ic`
+          - `b` — “Has an image”
+      - `footer.b3-tk-ft`
+        - `span.pb-pill.b3-tk-agec`
+          - `svg.ic`
+        - `button.b3-btn2.ghost.sm`
+          - `svg.ic`
+          - `span.lbl` — “Show them”
+
+### State · A clean day
+
+- `section.panel`
+  - `div.ph`
+    - `span.t` — “Armory”
+    - `div.seg[role=tablist] “View”`
+      - `button[role=tab]` ×2
+        - `svg.ic`
+    - `button.b3-rv.on.ok`
+      - `span.b3-rv-ok`
+        - `svg.ic`
+      - `span.b3-nw`
+        - `span.b3-rv-w` — “Repairs”
+        - `span.b3-rv-s` — “all pass”
+  - `div.b3-rp`
+    - `article.b3-tk.b3-tk-pass`
+      - `header.b3-tk-h`
+        - `span.b3-tk-id`
+          - `span.b3-tk-shield`
+            - `svg.ic`
+          - `b` — “All 125 builds pass every ch”
+      - `div.b3-tk-cks`
+        - `span.b3-tk-ck` ×5
+          - `span.b3-tk-ic`
+            - `svg.ic`
+          - `b` — “Has an image”
+      - `footer.b3-tk-ft`
+        - `span.pb-pill.b3-tk-agec`
+          - `svg.ic`
+        - `button.b3-btn2.ghost.sm`
+          - `svg.ic`
+          - `span.lbl` — “Show them”
+
+## C5 · Export
+
+### Resting
+
+- `div.pb-stage.g-stage.g-fixed`
+  - `div.scrim.on`
+  - `aside.drawer.open[role=dialog] “Export”`
+    - `header.dw-h`
+      - `div.dw-ttl`
+        - `h2` — “Export”
+      - `div.dw-nav`
+        - `button.x “Close”`
+          - `svg.ic.sm`
+          - `b` — “Close”
+    - `div.dw-b`
+      - `p.dw-lead.exs-lead` — “Download a copy of what’s li”
+      - `ul.exs-facts`
+        - `li`
+          - `svg.ic`
+        - `li.exs-fact-w`
+          - `svg.ic`
+      - `ul.exs.g-exs`
+        - `li.exs-i` ×2
+          - `div.exs-n “125 builds”`
+            - `i.b3-xf-sq` — “125”
+          - `div.exs-t`
+            - `b` — “MP builds”
+            - `div.b3-xf-fid`
+              - `button.b3-xf-fn “Rename dioreo-mp-builds-2026-09-29.txt”`
+                - `span.b3-xf-nm` — “dioreo-mp-builds-2026-09-29”
+                - `span.b3-xf-ext` — “.txt”
+                - `svg.ic`
+          - `button.b3-btn2.sm.go`
+            - `svg.ic`
+        - `li.exs-i.g-pick-open`
+          - `div.exs-n`
+            - `svg.ic`
+          - `div.exs-t`
+            - `b` — “Pick builds…”
+            - `span` — “Search and tick exactly what”
+          - `button.b3-btn2.sm.stage`
+            - `svg.ic`
+
+### State · Picker
+
+- `div.pb-stage.g-stage.g-fixed`
+  - `div.scrim.on`
+  - `aside.drawer.open.wide[role=dialog] “Pick builds to export”`
+    - `header.dw-h`
+      - `div.dw-ttl`
+        - `h2` — “Pick builds to export”
+      - `div.dw-nav`
+        - `button.x.bk “Back”`
+          - `svg.ic.sm`
+          - `b` — “Back”
+        - `button.x “Close”`
+          - `svg.ic.sm`
+          - `b` — “Close”
+    - `div.dw-b`
+      - `div.b3-xt`
+        - `section.b3-xt-cat “Builds to pick”`
+          - `div.b3-xt-top`
+            - `div.b3-xt-row`
+            - `div.mt-grp.b3-xt-chips[role=group] “Jump to a category”`
+          - `div.b3-xt-list.b3-fady`
+            - `section.b3-xt-sec` ×7
+        - `section.b3-xt-side “The files”`
+          - `div.b3-xt-files.b3-fady`
+            - `section.b3-xf.b3-xf-none “dioreo-mp-2026-09-29.txt”`
+          - `div.b3-xt-peek`
+
+### State · Three picked
+
+- `div.pb-stage.g-stage.g-fixed`
+  - `div.scrim.on`
+  - `aside.drawer.open.wide[role=dialog] “Pick builds to export”`
+    - `header.dw-h`
+      - `div.dw-ttl`
+        - `h2` — “Pick builds to export”
+      - `div.dw-nav`
+        - `button.x.bk “Back”`
+          - `svg.ic.sm`
+          - `b` — “Back”
+        - `button.x “Close”`
+          - `svg.ic.sm`
+          - `b` — “Close”
+    - `div.dw-b`
+      - `div.b3-xt`
+        - `section.b3-xt-cat “Builds to pick”`
+          - `div.b3-xt-top`
+            - `div.b3-xt-row`
+            - `div.mt-grp.b3-xt-chips[role=group] “Jump to a category”`
+          - `div.b3-xt-list.b3-fady`
+            - `section.b3-xt-sec` ×7
+        - `section.b3-xt-side “The files”`
+          - `div.b3-xt-files.b3-fady`
+            - `section.b3-xf “dioreo-mp-2026-09-29.txt”`
+          - `div.b3-xt-peek`
+
+## C6 · The delivery queue
+
+### Resting
+
+- `section.panel.g-bpanel.g-fixedhead`
+  - `div.ph`
+    - `span.t` — “Broadcast”
+    - `div.seg[role=tablist] “View”`
+      - `button[role=tab]` ×2
+        - `svg.ic`
+    - `span.sp`
+      - `span.g-status.warn`
+        - `svg.ic`
+        - `span.b3-nw`
+          - `b` — “1”
+      - `span.g-status`
+        - `svg.ic`
+        - `span.cmeter.b4-segs`
+          - `i`
+        - `span.b3-nw`
+          - `b` — “2”
+      - `span.g-status.g-budget`
+        - `svg.ic`
+        - `span.cmeter.b4-segs`
+          - `i` ×2
+        - `span.b3-nw`
+          - `b` — “5,478”
+  - `div.pb-qafter.g-queue`
+    - `div.g-qcards`
+      - `div.pb-card.g-card.g-never`
+        - `span.pb-numr` — “1”
+        - `div.pb-body`
+          - `div.pb-enc.g-fits`
+            - `p` — “Season 7 is live — Reckoning”
+            - `div.pb-encf`
+              - `span.g-fact.b3-cc`
+                - `svg.ic`
+          - `div.pb-life3`
+            - `div.pb-tl`
+              - `div.pb-bar`
+                - `span.pb-track`
+                - `span.pb-span.g-run`
+                - `span.pb-now`
+            - `div.pb-dates`
+              - `span.pb-pill`
+                - `svg.ic`
+              - `span.b4-popw`
+                - `button.pb-pill.g-chipbtn “Change how many times each player sees i”`
+              - `div.pb-cacts`
+                - `span.b3-endwrap.b3-endwarn`
+                - `button.pb-ib.has-word.g-edit`
+                - `i.pb-vr`
+                - `button.pb-ib.pb-del “Remove the announcement”`
+      - `div.pb-card.g-card`
+        - `span.pb-numr` — “2”
+        - `div.pb-body`
+          - `div.pb-enc`
+            - `p` — “Ranked Series 8 rewards are ”
+            - `div.pb-encf`
+              - `span.g-fact.b3-cc`
+                - `svg.ic`
+              - `button.b3-xf-ib.b4-fold`
+                - `svg.ic.ic-fold`
+                - `span.b3-xf-ibl`
+          - `div.pb-life3`
+            - `div.pb-tl`
+              - `div.pb-bar`
+                - `span.pb-track`
+                - `span.pb-span`
+                - `span.pb-now`
+            - `div.pb-dates`
+              - `span.pb-pill`
+                - `svg.ic`
+              - `span.b4-popw`
+                - `button.pb-pill.g-chipbtn “Change how many times each player sees i”`
+              - `div.pb-cacts`
+                - `button.pb-ib.has-word.g-edit`
+                - `i.pb-vr`
+                - `button.pb-ib.pb-del “Remove the announcement”`
+      - `div.pb-card.g-card.g-k-upcoming`
+        - `span.pb-numr.g-numi`
+          - `svg.ic`
+        - `div.pb-body`
+          - `div.pb-enc`
+            - `p` — “Undead Siege is back for Hal”
+            - `div.pb-encf`
+              - `span.g-fact.b3-cc`
+                - `svg.ic`
+              - `button.b3-xf-ib.b4-fold`
+                - `svg.ic.ic-fold`
+                - `span.b3-xf-ibl`
+          - `div.pb-life3`
+            - `div.pb-tl`
+              - `div.pb-bar`
+                - `span.pb-track`
+                - `span.pb-span`
+                - `span.pb-now`
+            - `div.pb-dates`
+              - `span.pb-pill.g-soon`
+                - `svg.ic`
+              - `span.b4-popw`
+                - `button.pb-pill.g-chipbtn “Change how many times each player sees i”`
+              - `div.pb-cacts`
+                - `button.pb-ib.has-word.g-edit`
+                - `i.pb-vr`
+                - `button.pb-ib.pb-del “Remove the announcement”`
+      - `div.pb-card.g-card.g-k-staged`
+        - `span.pb-numr.g-numi`
+          - `svg.ic`
+        - `div.pb-body`
+          - `div.pb-enc.g-fits`
+            - `p` — “Double XP weekend — Oct 3 to”
+            - `div.pb-encf`
+              - `span.g-fact.b3-cc`
+                - `svg.ic`
+          - `div.pb-life3`
+            - `div.pb-tl`
+              - `div.pb-bar`
+                - `span.pb-track`
+                - `span.pb-span.g-stagedspan`
+                - `span.pb-now`
+            - `div.pb-dates`
+              - `span.b3-staged` — “Staged”
+              - `span.pb-pill`
+                - `svg.ic`
+              - `div.pb-cacts`
+                - `button.pb-ib.has-word.g-edit`
+                - `i.pb-vr`
+                - `button.pb-ib.pb-del “Discard the staged post”`
+    - `div.pb-cg`
+      - `h5` — “Changes ahead”
+      - `div.pb-cgi` ×4
+        - `time`
+          - `small` — “OCT”
+        - `div`
+          - `b` — “Double XP weekend — Oct 3 to”
+          - `em`
+            - `svg.ic`
+
+## C7 · The Broadcast manifest, and posting
+
+### Resting
+
+- `div.b4-panel`
+  - `section.panel`
+    - `div.mtools`
+      - `div.mt-r1`
+        - `span.mlabel`
+          - `span` — “Manifest”
+        - `span.srch`
+          - `svg`
+          - `label.sr` — “Search announcements”
+          - `input`
+        - `button.pill.lead.madd`
+          - `svg.ic`
+      - `div.mt-r2`
+        - `span.mt-grp[role=group] “State”`
+          - `span.mlabel`
+            - `span` — “State”
+          - `button.chip`
+            - `span.cl` — “All”
+            - `em` — “6”
+          - `button.chip.topic` ×3
+            - `svg.ic`
+            - `span.cl` — “Live now”
+            - `em` — “2”
+    - `div.mscroll`
+      - `table.mtable`
+        - `colgroup`
+          - `col.c-bc-text`
+          - `col.c-bc-date` ×3
+          - `col.c-bc-state`
+          - `col.c-ra`
+        - `thead`
+          - `tr`
+            - `th.sortable` ×5
+              - `button.sortbtn`
+                - `svg.ic.sortic`
+            - `th.ra`
+              - `span.sr` — “Remove”
+        - `tbody`
+          - `tr` ×6
+            - `td.n`
+              - `span.ncell`
+                - `span.bcbar`
+                - `span`
+            - `td.nums` ×3
+              - `span.bcdt`
+                - `small` — “76 days ago”
+            - `td`
+              - `span.btab`
+                - `svg.ic`
+                - `span.w` — “Ended”
+            - `td.ra`
+              - `button.rmv.wg-ib.wg-del “Remove S6 wrap-up — thanks for playing s”`
+                - `svg.ic`
+
+### State · One staged
+
+- `div.b4-panel`
+  - `section.panel`
+    - `div.mtools`
+      - `div.mt-r1`
+        - `span.mlabel`
+          - `span` — “Manifest”
+        - `span.srch`
+          - `svg`
+          - `label.sr` — “Search announcements”
+          - `input`
+        - `button.pill.lead.madd`
+          - `svg.ic`
+      - `div.mt-r2`
+        - `span.mt-grp[role=group] “State”`
+          - `span.mlabel`
+            - `span` — “State”
+          - `button.chip`
+            - `span.cl` — “All”
+            - `em` — “6”
+          - `button.chip.topic` ×3
+            - `svg.ic`
+            - `span.cl` — “Live now”
+            - `em` — “2”
+    - `div.mscroll`
+      - `table.mtable`
+        - `colgroup`
+          - `col.c-bc-text`
+          - `col.c-bc-date` ×3
+          - `col.c-bc-state`
+          - `col.c-ra`
+        - `thead`
+          - `tr`
+            - `th.sortable` ×5
+            - `th.ra`
+        - `tbody`
+          - `tr` ×6
+            - `td.n`
+            - `td.nums` ×3
+            - `td`
+            - `td.ra`
+
+### State · Posting
+
+- `div.b4-panel`
+  - `section.panel`
+    - `div.mtools`
+      - `div.mt-r1`
+        - `span.mlabel`
+          - `span` — “Manifest”
+        - `span.srch`
+          - `svg`
+          - `label.sr` — “Search announcements”
+          - `input`
+        - `button.pill.lead.madd`
+          - `svg.ic`
+      - `div.mt-r2`
+        - `span.mt-grp[role=group] “State”`
+          - `span.mlabel`
+            - `span` — “State”
+          - `button.chip`
+            - `span.cl` — “All”
+            - `em` — “6”
+          - `button.chip.topic` ×3
+            - `svg.ic`
+            - `span.cl` — “Live now”
+            - `em` — “2”
+    - `div.mscroll`
+      - `table.mtable`
+        - `colgroup`
+          - `col.c-bc-text`
+          - `col.c-bc-date` ×3
+          - `col.c-bc-state`
+          - `col.c-ra`
+        - `thead`
+          - `tr`
+            - `th.sortable` ×5
+            - `th.ra`
+        - `tbody`
+          - `tr` ×6
+            - `td.n`
+            - `td.nums` ×3
+            - `td`
+            - `td.ra`
+- `div.scrim.on`
+- `aside.drawer.open.wide.b1[role=dialog] “Post an announcement”`
+  - `header.dw-h`
+    - `div.dw-ttl`
+      - `h2` — “Post an announcement”
+    - `div.dw-nav`
+      - `button.x “Close”`
+        - `svg.ic.sm`
+        - `b` — “Close”
+  - `div.dw-b`
+    - `div.bed`
+      - `div.pb-col.b3-fady`
+        - `div.dwfield.pb-txf`
+          - `h4.f-h.pb-sech`
+            - `span`
+            - `span.b4-hint`
+          - `div.pb-enc.b4-tb`
+            - `textarea`
+            - `textarea.b4-tbm`
+            - `div.pb-encf`
+        - `div.dw-grid2`
+          - `div.dwfield`
+            - `div.pb-lrow`
+            - `div.pb-dfld`
+            - `span.pb-echo.b4-echo`
+          - `div.dwfield.pb-endf`
+            - `div.pb-lrow`
+            - `div.pb-dfld`
+            - `span.pb-echo.b4-echo`
+        - `div.dwfield`
+          - `div.pb-lrow`
+            - `label` — “Show each player”
+          - `div.pb-rep`
+            - `div.pb-step[role=group] “How many showings”`
+            - `span.pb-gapday`
+        - `div.dwfield.pb-accf`
+          - `h4.f-h.pb-sech`
+            - `span`
+            - `span.b4-hint` — “Auto”
+          - `div.acx`
+            - `div.acx-sv[role=slider] “Saturation and brightness”`
+            - `div.acx-huew`
+            - `div.acx-g.acx-rg`
+            - `div.acx-g`
+            - `div.acx-row1`
+        - `div.dwfield.pb-bnf`
+          - `h4.f-h.pb-sech`
+            - `span`
+            - `span.b4-hint` — “Optional”
+          - `div.f-media`
+            - `div.f-shotbox`
+            - `div.f-mcol`
+      - `aside.bed-side.pb-card`
+        - `div.bed-sec.f-prev`
+          - `h5` — “In Discord”
+          - `div.f-prevsc.b3-fady`
+            - `div.b4-ghostcard`
+            - `p.empty` — “Type the announcement and th”
+        - `div.f-stage.pb-ready[role=status]`
+          - `h5`
+            - `span` — “Before staging”
+            - `button.b3-x.f-stmin “Minimise Before staging”`
+          - `ul`
+            - `li` ×3
+  - `footer.dw-f`
+    - `button.b3-btn2` — “Cancel”
+    - `button.b3-btn2.go` — “Stage post”
+
+## C8 · History
+
+### Resting
+
+- `section.panel.b3-hi`
+  - `div.mtools.b3-hi-tools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Events”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search events”
+        - `input`
+    - `div.mt-r2.b3-hi-f`
+      - `div.b3-fg` ×6
+        - `span.b3-fgl` — “Kind”
+        - `button.b3-fc` ×3
+          - `svg.ic`
+          - `em` — “27”
+  - `div.b3-hi-list.b3-fady`
+    - `div.b3-hi-h`
+      - `span` ×5 — “Time”
+    - `section.b3-hi-dg` ×5
+      - `div.b3-hi-day`
+        - `b.b3-hi-dd` — “Sun, Sep 6”
+        - `span.b3-hi-dm`
+          - `span.b3-hi-dk`
+            - `svg.ic`
+            - `em` — “4”
+      - `div.b3-hi-r.st-a`
+        - `span.when` — “3:25 PM”
+        - `span`
+          - `span.b3-htab`
+            - `svg.ic`
+            - `span.w` — “Change”
+        - `button.what.b3-hi-open`
+          - `span.hlead.has-ent`
+            - `span.s` — “Deleted”
+            - `span.b3-ent`
+              - `svg.ic`
+        - `span.b3-who`
+          - `span.b3-av` — “O”
+          - `span` — “owner”
+        - `span.act`
+          - `button.b3-undo “Reverse this change”`
+            - `svg.ic`
+            - `span` — “Undo”
+      - `div.b3-hi-r.st-z`
+        - `span.when` — “3:22 PM”
+        - `span`
+          - `span.b3-htab`
+            - `svg.ic`
+            - `span.w` — “Change”
+        - `button.what.b3-hi-open`
+          - `span.hlead.has-ent`
+            - `span.s` — “Added new”
+            - `span.b3-ent`
+              - `svg.ic`
+        - `span.b3-who`
+          - `span.b3-av` — “O”
+          - `span` — “owner”
+        - `span.act`
+          - `span.b3-undone`
+            - `svg.ic`
+            - `span` — “Undone”
+      - `div.b3-hi-r.st-a`
+        - `span.when` — “9:36 AM”
+        - `span`
+          - `span.b3-htab`
+            - `svg.ic`
+            - `span.w` — “Change”
+        - `button.what.b3-hi-open`
+          - `span.hlead.has-ent`
+            - `span.s` — “Deleted”
+            - `span.b3-ent`
+              - `svg.ic`
+        - `span.b3-who`
+          - `span.b3-av` — “O”
+          - `span` — “owner”
+        - `span.act`
+          - `button.b3-undo “Reverse this change”`
+            - `svg.ic`
+            - `span` — “Undo”
+      - `div.b3-hi-r.st-z`
+        - `span.when` — “9:36 AM”
+        - `span`
+          - `span.b3-htab`
+            - `svg.ic`
+            - `span.w` — “Change”
+        - `button.what.b3-hi-open`
+          - `span.hlead.has-ent`
+            - `span.s` — “Added new”
+            - `span.b3-ent`
+              - `svg.ic`
+        - `span.b3-who`
+          - `span.b3-av` — “O”
+          - `span` — “owner”
+        - `span.act`
+          - `span.b3-undone`
+            - `svg.ic`
+            - `span` — “Undone”
+  - `div.b3-hi-more`
+    - `button.b3-btn2`
+      - `svg.ic`
+      - `span.b3-nw`
+        - `em` — “1,347 more”
+
+### Try · Only alerts
+
+- `section.panel.b3-hi.uk.uw`
+  - `div.mtools.b3-hi-tools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Events”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search events”
+        - `input`
+      - `button.b3-btn2.ghost.sm`
+        - `svg.ic`
+    - `div.mt-r2.b3-hi-f`
+      - `div.b3-fg` ×6
+        - `span.b3-fgl` — “Kind”
+        - `button.b3-fc` ×3
+          - `svg.ic`
+          - `em` — “27”
+  - `div.b3-hi-list.b3-fady`
+    - `div.b3-hi-h`
+      - `span` ×5 — “Time”
+    - `section.b3-hi-dg`
+      - `div.b3-hi-day`
+        - `b.b3-hi-dd` — “Thu, Aug 27”
+        - `span.b3-hi-dm`
+          - `span.b3-hi-dk`
+            - `svg.ic`
+            - `em` — “21”
+      - `div.b3-hi-r` ×15
+        - `span.when` — “9:37 PM”
+        - `span`
+          - `span.b3-htab.quiet “Alert”`
+            - `svg.ic`
+        - `button.what.b3-hi-open`
+          - `span.hlead`
+            - `span.s` — “Bot online”
+          - `span.b3-lvl`
+            - `span.b3-meter`
+        - `span.b3-who.sys.quiet`
+          - `span.b3-av.sys`
+            - `svg.ic`
+        - `span.act`
+      - `div.b3-hi-r.st-a`
+        - `span.when` — “11:49 AM”
+        - `span`
+          - `span.b3-htab.quiet “Alert”`
+            - `svg.ic`
+        - `button.what.b3-hi-open`
+          - `span.hlead`
+            - `span.s` — “Bot online”
+          - `span.b3-lvl`
+            - `span.b3-meter`
+        - `span.b3-who.sys.quiet`
+          - `span.b3-av.sys`
+            - `svg.ic`
+        - `span.act`
+      - `div.b3-hi-r.st-m`
+        - `span.when` — “11:49 AM”
+        - `span`
+          - `span.b3-htab.quiet “Alert”`
+            - `svg.ic`
+        - `button.what.b3-hi-open`
+          - `span.hlead`
+            - `span.s` — “Bot online”
+          - `span.b3-lvl`
+            - `span.b3-meter`
+        - `span.b3-who.sys.quiet`
+          - `span.b3-av.sys`
+            - `svg.ic`
+        - `span.act`
+      - `div.b3-hi-r.st-z`
+        - `span.when` — “11:48 AM”
+        - `span`
+          - `span.b3-htab.quiet “Alert”`
+            - `svg.ic`
+        - `button.what.b3-hi-open`
+          - `span.hlead`
+            - `span.s` — “Bot online”
+          - `span.b3-lvl`
+            - `span.b3-meter`
+        - `span.b3-who.sys.quiet`
+          - `span.b3-av.sys`
+            - `svg.ic`
+        - `span.act`
+      - `div.b3-hi-r` ×3
+        - `span.when` — “10:43 AM”
+        - `span`
+          - `span.b3-htab.quiet “Alert”`
+            - `svg.ic`
+        - `button.what.b3-hi-open`
+          - `span.hlead`
+            - `span.s` — “Gateway resumed”
+          - `span.b3-lvl`
+            - `span.b3-meter`
+        - `span.b3-who.sys.quiet`
+          - `span.b3-av.sys`
+            - `svg.ic`
+        - `span.act`
+  - `div.b3-hi-more`
+    - `button.b3-btn2`
+      - `svg.ic`
+      - `span.b3-nw`
+        - `em` — “1,347 more”
+
+### Try · Only what can be undone
+
+- `section.panel.b3-hi.uk.uw`
+  - `div.mtools.b3-hi-tools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Events”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search events”
+        - `input`
+      - `button.b3-btn2.ghost.sm`
+        - `svg.ic`
+    - `div.mt-r2.b3-hi-f`
+      - `div.b3-fg` ×6
+        - `span.b3-fgl` — “Kind”
+        - `button.b3-fc` ×3
+          - `svg.ic`
+          - `em` — “27”
+  - `div.b3-hi-list.b3-fady`
+    - `div.b3-hi-h`
+      - `span` ×5 — “Time”
+    - `section.b3-hi-dg`
+      - `div.b3-hi-day`
+        - `b.b3-hi-dd` — “Thu, Aug 27”
+        - `span.b3-hi-dm`
+          - `span.b3-hi-dk`
+            - `svg.ic`
+            - `em` — “21”
+      - `div.b3-hi-r` ×15
+        - `span.when` — “9:37 PM”
+        - `span`
+          - `span.b3-htab.quiet “Alert”`
+            - `svg.ic`
+        - `button.what.b3-hi-open`
+          - `span.hlead`
+            - `span.s` — “Bot online”
+          - `span.b3-lvl`
+            - `span.b3-meter`
+        - `span.b3-who.sys.quiet`
+          - `span.b3-av.sys`
+            - `svg.ic`
+        - `span.act`
+      - `div.b3-hi-r.st-a`
+        - `span.when` — “11:49 AM”
+        - `span`
+          - `span.b3-htab.quiet “Alert”`
+            - `svg.ic`
+        - `button.what.b3-hi-open`
+          - `span.hlead`
+            - `span.s` — “Bot online”
+          - `span.b3-lvl`
+            - `span.b3-meter`
+        - `span.b3-who.sys.quiet`
+          - `span.b3-av.sys`
+            - `svg.ic`
+        - `span.act`
+      - `div.b3-hi-r.st-m`
+        - `span.when` — “11:49 AM”
+        - `span`
+          - `span.b3-htab.quiet “Alert”`
+            - `svg.ic`
+        - `button.what.b3-hi-open`
+          - `span.hlead`
+            - `span.s` — “Bot online”
+          - `span.b3-lvl`
+            - `span.b3-meter`
+        - `span.b3-who.sys.quiet`
+          - `span.b3-av.sys`
+            - `svg.ic`
+        - `span.act`
+      - `div.b3-hi-r.st-z`
+        - `span.when` — “11:48 AM”
+        - `span`
+          - `span.b3-htab.quiet “Alert”`
+            - `svg.ic`
+        - `button.what.b3-hi-open`
+          - `span.hlead`
+            - `span.s` — “Bot online”
+          - `span.b3-lvl`
+            - `span.b3-meter`
+        - `span.b3-who.sys.quiet`
+          - `span.b3-av.sys`
+            - `svg.ic`
+        - `span.act`
+      - `div.b3-hi-r` ×3
+        - `span.when` — “10:43 AM”
+        - `span`
+          - `span.b3-htab.quiet “Alert”`
+            - `svg.ic`
+        - `button.what.b3-hi-open`
+          - `span.hlead`
+            - `span.s` — “Gateway resumed”
+          - `span.b3-lvl`
+            - `span.b3-meter`
+        - `span.b3-who.sys.quiet`
+          - `span.b3-av.sys`
+            - `svg.ic`
+        - `span.act`
+  - `div.b3-hi-more`
+    - `button.b3-btn2`
+      - `svg.ic`
+      - `span.b3-nw`
+        - `em` — “1,347 more”
+
+### Try · Only the probes
+
+- `section.panel.b3-hi`
+  - `div.mtools.b3-hi-tools`
+    - `div.mt-r1`
+      - `span.mlabel`
+        - `span` — “Events”
+      - `span.srch`
+        - `svg`
+        - `label.sr` — “Search events”
+        - `input.has-hits`
+        - `span.mhits` — “0 matches”
+      - `button.b3-btn2.ghost.sm`
+        - `svg.ic`
+    - `div.mt-r2.b3-hi-f`
+      - `div.b3-fg` ×6
+        - `span.b3-fgl` — “Kind”
+        - `button.b3-fc` ×2
+          - `svg.ic`
+          - `em` — “25”
+        - `button.b3-fc.none`
+          - `svg.ic`
+          - `em` — “0”
+  - `div.b3-hi-list.b3-fady`
+  - `p.b3-hi-empty`
+    - `b` — “No event matches these filte”
+  - `div.b3-hi-more`
+    - `button.b3-btn2`
+      - `svg.ic`
+      - `span.b3-nw`
+        - `em` — “1,347 more”
+
+## C9 · Admin traffic
+
+### Resting
+
+- `div.ph`
+  - `span.t` — “Analytics”
+  - `div.seg[role=tablist] “View”`
+    - `button[role=tab]` ×5 — “Health”
+- `span.incg`
+  - `span` — “Include”
+  - `button.chip.incchip`
+    - `svg.ic`
+
+### State · Admin included
+
+*same outline as resting*
+
+*30 states and Try steps walked. Page errors: 0.*

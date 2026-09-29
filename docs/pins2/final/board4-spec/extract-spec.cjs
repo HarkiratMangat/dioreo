@@ -277,6 +277,20 @@ const GATES = [
       await new Promise((r) => setTimeout(r, 800));
     }
   }
+  if (MODE === '4') {
+    // (2026-09-29 19:26 EDT) THE POP-UPS. Each is closed at rest, so no walk above reached one: HANDOFF.md listed the date picker's values as
+    // missing (0 `.b3-dp-*` rows). Each pop-up in board4-walk.cjs's POPS is opened with a real pointer (the family opens on pointer events) and
+    // specced from its parent, so the pop-up's own surface is a row too.
+    const W = require('./board4-walk.cjs');
+    for (const [pi, pop] of W.POPS.entries()) {
+      const o = await W.openPop(p, pop);
+      if (!o.ok) { out.push(`\n### ${pop.g} · ${pop.label}, open\n\n**Not opened:** ${o.why}\n`); await W.closePop(p); continue; }
+      await p.evaluate((sel) => { const e = [...document.querySelectorAll(sel)].find((x) => getComputedStyle(x).display !== 'none' && x.getBoundingClientRect().height > 0); if (e && e.parentElement) e.parentElement.setAttribute('data-spec-pop', '1'); }, pop.sel || W.POP_SEL);
+      await dumpStage(`${pop.g} · ${pop.label}, open`, '[data-spec-pop]', `${pop.g}pop${pi}-`);
+      await p.evaluate(() => document.querySelectorAll('[data-spec-pop]').forEach((e) => e.removeAttribute('data-spec-pop')));
+      await W.closePop(p);
+    }
+  }
   if (MODE === '3e') {
   if (await click('#g-export .exs-i .b3-xf-fn')) await dumpStage('M3 · the landing\'s rename field, open', '#g-export .g-stage', 'M3e-');
   await p.keyboard.press('Escape'); await new Promise((r) => setTimeout(r, 300));

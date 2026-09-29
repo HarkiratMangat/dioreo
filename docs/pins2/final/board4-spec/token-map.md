@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the custom properties the portal does not have
 
-*Generated 2026-09-29T22:05:51.249Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `529df5d9 plus the working tree`. 172 of the 255 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
+*Generated 2026-09-29T23:55:06.394Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `ad65c54c plus the working tree`. 175 of the 259 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
 
 | Token | Defined in the kit | The definition |
 |---|---|---|
@@ -45,6 +45,7 @@ status: live
 | `--cur` | `b3/broadcast.js:303` | `<div class="acx" ref=${root} style=${`--cur:${cur};--on-cur:${onInk(cur)}`}>` |
 | `--dc` | `b4/classes.css:833` | `.b4 .acx{--pad:14px;--pw:200px;--svh:138px;--cg:16px;--rg:16px;--bgap:16px;--hueh:12px;--huer:44px;--fh:44px;--frad:9px;--lg:10px;--swg:6px;` |
 | `--dlen` | `b3/board.css:293` | `.b3-x:hover .ic,.b3-x:focus-visible .ic,.dw-h .x:hover .ic,.b3-pc-x:hover .ic{animation:b3draw .3s cubic-bezier(.16,1,.3,1) both;--dlen:34}` |
+| `--dp-c` | `b3/board.css:1460` (set by script) | `every accent below reads --dp-c, which defaults to the realm's --realm-c — a date field in Season or Access re-colours with no rule of its o` |
 | `--eio` | `b4/classes.css:833` | `.b4 .acx{--pad:14px;--pw:200px;--svh:138px;--cg:16px;--rg:16px;--bgap:16px;--hueh:12px;--huer:44px;--fh:44px;--frad:9px;--lg:10px;--swg:6px;` |
 | `--f-bg` | `b4/form.css:44` | `.b4 .f-fld{--f-bg:color-mix(in srgb,#04070A 52%,var(--sunk));--f-edge:color-mix(in srgb,var(--ink) 12%,transparent);` |
 | `--f-ch` | `b4/form.js:467` | `<section class=${'f-card' + (multi && i === ci ? ' on' : '')} key=${c.id} data-arm=${c.f.mode} style=${`--f-ch:${hueOfCard(c)}`} onFocusIn=$` |
@@ -70,6 +71,7 @@ status: live
 | `--gh-pl` | — **not defined anywhere in the kit** | `` |
 | `--gh-pr` | — **not defined anywhere in the kit** | `` |
 | `--gh-range-div` | — **not defined anywhere in the kit** | `` |
+| `--glo` | `b4.css:84` | `.b4 :is(.wg-r, .b3-hi-r, .app[data-realm="broadcast"] .mtable tbody tr) { --glo:oklch(from var(--c) max(l,.72) c h) }` |
 | `--h1-cell` | — **not defined anywhere in the kit** | `` |
 | `--h1-chip` | `gates.css:990` (set by script) | `The flex `gap` already puts --h1-chip between the label and the first chip, so the margin carries` |
 | `--h1-col` | — **not defined anywhere in the kit** | `` |
@@ -125,6 +127,7 @@ status: live
 | `--mc` | `b4.css:166` | `.b4 .mh-mode button[data-arm="MP"] { --mc:#FF3B5C }` |
 | `--mi` | `b3/armory-parts.js:511` | `modesOf(b).forEach((m, i) => groups.push(html`<span class="b3-bdg" data-k="mode" data-m=${m} key=${`md-${m}`} style=${`--mi:${i}`} aria-labe` |
 | `--mk` | `b4/classes.css:605` | `[data-k=capable]{--mk:#5B9BFF}[data-k=ass]:not(.b3-bdg){--mk:#C08A55}` |
+| `--mw` | `b4/classes.css:153` (set by script) | `hover and the keyboard's row are the same hue wash and ring. The list may widen to its column (--mw, set as it opens) and a row ellipsizes` |
 | `--oc` | `b4/bulk.css:58` | `.b4 .bk-fl [data-o=new]{--oc:var(--ok)}.b4 .bk-fl [data-o=upd]{--oc:var(--focus)}.b4 .bk-fl :is([data-o=warn],[data-o=dup]){--oc:var(--warn)` |
 | `--on-cur` | `b3/broadcast.js:303` | `<div class="acx" ref=${root} style=${`--cur:${cur};--on-cur:${onInk(cur)}`}>` |
 | `--on-sw` | `b3/broadcast.js:321` | `? html`<div key=${i} class=${'acx-s acx-full' + (openI === i ? ' acx-open' : '') + (closing[i] ? ' acx-closing' : '')} data-dir=${i >= NCOL ` |

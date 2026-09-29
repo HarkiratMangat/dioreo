@@ -60,6 +60,7 @@ O=docs/pins2/final/board4-spec
 node $O/switches.cjs && node $O/overrides.cjs
 BOARD=4 node $O/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $O/split-spec.cjs $TMPDIR/b4-spec.md
 node $O/maps.cjs
+node $O/structure.cjs && node $O/relations.cjs && node $O/a11y.cjs
 ```
 
 **The extractor is not deterministic on Board 4** (measured 2026-09-29): three fresh runs of the same kit specced 1420, 1425 and 1428 looks and two runs differ in about 300 lines both ways, so a spec diff after a kit change carries that noise — judge a change against it, not against zero.
@@ -70,7 +71,7 @@ node $O/maps.cjs
 
 | Where | What | Why it stays |
 |---|---|---|
-| `docs/superpowers/mockups/2026-09-14-pins2-board/`, `…-pins2-board-2/`, `…2026-09-15-pins2-board-3/` | boards 1, 2 and 3 — their packages, resolved specs and Board 3-E's `handoff-3e.md` and `3e/` | dated design history; Board 4 carries their designs corrected. `handoff-3e.md` is also the inherited structure narrative `HANDOFF.md` cites, and `3e/measure.cjs` the only relations file there is |
+| `docs/superpowers/mockups/2026-09-14-pins2-board/`, `…-pins2-board-2/`, `…2026-09-15-pins2-board-3/` | boards 1, 2 and 3 — their packages, resolved specs and Board 3-E's `handoff-3e.md` and `3e/` | dated design history; Board 4 carries their designs corrected. `handoff-3e.md` is also the inherited structure narrative `HANDOFF.md` cites, and `3e/measure.cjs` Board 3-E's relations (Board 4's are `final/board4-spec/relations.cjs`) |
 | `docs/portal/portal-sync-notes.md` and `docs/portal/portal-pins/` | the pin log and its crops (the 57 review pins began there) | the portal's own working records |
 | `docs/reference/portal-decision-ledger.md` | settled decisions, Board 4's included | a lookup doc for the whole portal |
 | `docs/db-deferred-list.md` | the Board 4 entries (search "Board 4") — ported work Session 5 carries, states never opened, the badge set | the project's one deferred list |

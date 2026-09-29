@@ -16,8 +16,9 @@ status: live
 1. **This file** — per gate: what it is, the rulings that are current, how it behaves, what the data needs, and what nobody has opened.
 2. **[`file-map.md`](file-map.md)** — what a port does with each kit file. **[`portal-diff.md`](portal-diff.md)** — the kit's changes to portal files, as diffs.
 3. **[`switches.md`](switches.md)** — a selector carrying `html[data-b3-…]` is switched: port a live one without the qualifier, never a dead one.
-4. **[`class-map.md`](class-map.md)** and **[`token-map.md`](token-map.md)** — the classes and custom properties the portal does not have. A declaration ported without them styles nothing, silently.
-5. **The values** — `C1`–`C9` and `states.md`: every resolved declaration, forced hover, focus and active, with its kit `file:line`.
+4. **[`structure.md`](structure.md)**, **[`relations.md`](relations.md)** and **[`a11y.md`](a11y.md)** — generated: what each gate is made of, his rulings that are measurements (pass or fail), and the keyboard and names walk.
+5. **[`class-map.md`](class-map.md)** and **[`token-map.md`](token-map.md)** — the classes and custom properties the portal does not have. A declaration ported without them styles nothing, silently.
+6. **The values** — `C1`–`C9` and `states.md`: every resolved declaration, forced hover, focus and active, with its kit `file:line`.
 
 **Authority when two sources disagree:** the kit at Version 42 (`docs/pins2/kit/`) → his words in the intake log → this file → the plan's build log. This file quotes the first two; it never outranks them.
 
@@ -102,21 +103,21 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | | |
 |---|---|
 | Kit → portal | `b3/armory-parts.js` (badges, `CodeCell`, the selection bar, the problem card) → `portal/ui/armory.js`, `portal/ui/manifest.js` · `ui/manifest.js`, `ui/armory.js` → their portal twins by `portal-diff.md` · `b3/volt.js`, `b3/bolt*.svg` → the META badge |
-| Structure | inherited — [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § M1 (frozen at Board 3-E v77; the kit and the rulings above win where they differ) |
+| Structure | `section.panel`: the tools (`.mtools`: the label, search and Add; row 2 the category chips as a group), then `.wg-wrap` — the heads row (select-all, sort, fold) and a `.wg` per weapon: its head (`.wg-h`: checkbox, the `.wg-line` name · category · N builds · badges, fold) and a `.wg-r` per build (checkbox, number, `.wg-main` with its rail, image mark, `CodeCell` `.wg-code`, `.wg-acts` share │ delete). Picking adds the selection bar (`.selbar.b3-selbar`, region "Actions for the selected builds": the `.b3-sd-list` fold over `.b3-sd-bar` — count, chips, toggle, Edit builds · Export · Clear); a problem opens the problem card · evidence: [`structure.md`](structure.md) § C1 · lineage: [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § M1 (frozen at Board 3-E v77; the kit and the rulings above win where they differ) |
 | States | resting; Try: open a problem, open another, pick one build (the selection bar and its list) |
 | Data | the badge fields below ("What the data needs") |
-| Never opened | CONTROL in Export's tiles and hover card, the selection bar head and the palette · the View toggle's keyboard focus · the Code chip's keyboard focus |
+| Opened 2026-09-29 19:57 EDT | the keyboard focus of the View toggle and the Code chip: [`a11y.md`](a11y.md) § C1, 147–157 stops, every one named and marked · Control: in the board's data on two builds (LOCUS among them); Export writes it as `control` in the Badges line; the tiles carry no rank-mode mark · Export's hover card with Control: not opened |
 
 ### C2 · New build — Add, Bulk, Edit, DMZ — `C2-new-build.md`
 
 | | |
 |---|---|
 | Kit → portal | `b3/drawer.js` (the drawer), `b4/form.js` (Form A, `MediaWell`), `b4/bulk.js` + `b4/bulkformat.js` (Bulk, the format reader and writer, tested in `b4/bulkformat.test.mjs`), `b4/*.css`, `b3/fady.js` → the build drawer in `portal/ui/armory.js` and a shared scroll-edge utility in `portal/ui/` |
-| Structure | board 1's G9 drawer ([`handoff-g9-g8.md`](../../../superpowers/mockups/2026-09-14-pins2-board/handoff-g9-g8.md), frozen) as Board 4 rebuilt it; the rulings above govern where they differ |
+| Structure | `aside.drawer.wide` (dialog "New MP build"): header (eyebrow, title, Close); body `.b3-nb` = `.pb-bar` (the MP/DMZ radio group, the Add build/Bulk create switch) over `.pb-view` — Add: `.f-add` = `.f-form` (a `section.f-card` per build, then Add another) beside `aside.f-side` (`.f-prev` the Discord preview, `.f-stage` Before staging, a status region); Bulk: the format editor beside the Ledger/Embed cards; footer Cancel · Stage · evidence: [`structure.md`](structure.md) § C2 · lineage: [`handoff-g9-g8.md`](../../../superpowers/mockups/2026-09-14-pins2-board/handoff-g9-g8.md), frozen) as Board 4 rebuilt it; the rulings above govern where they differ |
 | States | Add build · Add · filled · Add · three · Bulk · empty / one / several / typing / warning / can't read / pasted / duplicate · DMZ · Edit 3 builds |
 | Keys | Enter, Escape, Tab, arrows in the pickers; ⌘/Ctrl+Enter stages, a blocked Stage jumps to its reason (checked in `b3/drawer.js`) |
 | Edge cases | a misspelt token (`bestt`) warns; a block with no weapon line can't be read; a duplicate block is named; a Rank Mode token on a DMZ block warns; eight builds still jump clear of the fades; closing stages nothing |
-| Never opened | the Code chip in Embed view and in Edit · two-line runs in Edit, the DMZ card, the ghost, and a resize while scrolled · the card jump in Embed view · the 60% chips in Edit and DMZ, and the unchecked Rank Mode tile's word (0.72 × 0.6 ≈ 0.43) · fady's `characterData` observer while typing (cost never measured) · the dropdowns' black ground and the Optional chips, with several builds |
+| Opened 2026-09-29 19:57 EDT | the Code chip in Edit (the ledger card's `CodeCell`); in Embed the card draws Discord's Gunsmith Code block, as Discord does · two-line runs in Edit (two lines, then sideways behind the fade) · the DMZ card and its ghost · the dropdowns' black ground with three builds · a resize while scrolled · fady's observer while typing: 0.07 ms of script per key · the Optional chips with several builds sat under the open list, not looked at |
 
 ### C3 · Compare — `C3-compare.md`
 
@@ -127,14 +128,14 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | States | One weapon · Two weapons · One build · Empty (the board's switch) |
 | Behaviour | `on` = the builds in the table (≤ 6, by id) · `hc` = what is lit: a cell, a column, a row or a weapon · `deny` = a refused chip at six flashes the seats · `dc` = the Discord cards open · `flash` = a copy just made (1.2s) · a weapon added joins with its builds in number order up to six; a number adds only that build |
 | Data | nothing new: share is `shareCommandText`, edit is the build drawer, delete is the manifest's staged deletion |
-| Never opened | the keyboard walk of the landing, the multi-select list (a row's number chips by arrow key), the column actions and the Discord pill · the badge pop by keyboard focus · the band's Shared chips wrapping when six builds of one weapon share most slots · a screen reader over merged cells |
+| Opened 2026-09-29 19:57 EDT | the keyboard walk: [`a11y.md`](a11y.md) § C3, every stop named; the search list's group headers and the table's rows carry a pointer cursor with no action |
 
 ### C4 · Repairs — `C4-repairs.md`
 
 | | |
 |---|---|
 | Kit → portal | `b3/repairs.js` → Repairs in `portal/ui/armory.js` |
-| Structure | inherited — [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § M2 (frozen at v77; the kit and the rulings above win where they differ) |
+| Structure | `section.panel`: the head (`.ph`: realm, View tabs, the repairs count `.b3-rv`), then `.b3-rp` — its head (title and the "Show builds with" group), the three-part bar (`.b3-tk-bar`, an image role), a `section.b3-tk-sec` per severity with its tickets, and "Pass every check" with the passing tile `article.b3-tk-pass` · evidence: [`structure.md`](structure.md) § C4 · lineage: [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § M2 (frozen at v77; the kit and the rulings above win where they differ) |
 | States | Today's · A clean day |
 
 ### C5 · Export — `C5-export.md`
@@ -142,7 +143,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | | |
 |---|---|
 | Kit → portal | `gates/armory.js` (`ExportPicker` and the landing) → `portal/ui/exportPanel.js` · `ui/exportPanel.js` by `portal-diff.md` · `gates/lib.js` (`CharCount`) → `portal/ui/broadcast.js` and `portal/ui/exportPanel.js` |
-| Structure | inherited — [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § M3 (frozen at v77; the kit and the rulings above win where they differ) |
+| Structure | the landing (`aside.drawer` "Export": lead, `.exs-facts`, a file row per armory `.exs`); Picker: `aside.drawer.wide` "Pick builds to export" with Back and Close, body `.b3-xt` = `section.b3-xt-cat` (MP/DMZ, search, the pick-all count, category chips, a group per category of `.b3-xt-w` weapon tiles with build keys) beside `section.b3-xt-side` (the file: count, title, Clear, Collapse, the numbered list, the filename chip, the character count, Copy, Download) · evidence: [`structure.md`](structure.md) § C5 · lineage: [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § M3 (frozen at v77; the kit and the rulings above win where they differ) |
 | States | Landing · Picker · Three picked |
 | Data | the file writes the Bulk create format (deferred list, "Added 2026-09-24 16:47 EDT") |
 
@@ -151,7 +152,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | | |
 |---|---|
 | Kit → portal | `b3/broadcast.js` → `portal/ui/broadcast.js` |
-| Structure | inherited — [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § B1 (frozen at v77), then the v36 intake (2026-09-27 22:08 EDT): the card is `QCard` (`docs/pins2/kit/gates/broadcast.js`) — its End, Start and showings chips open the pop-up family, its quote box folds only when the text runs past two lines, and the queue lists upcoming and staged posts after the live ones |
+| Structure | `section.panel.g-bpanel`: the head (`.ph`: realm, Delivery queue/Airtime tabs, three readouts `.g-status`: never ends, slots, budget), then `.pb-qafter.g-queue` = the cards (`.g-qcards`, a `QCard` per post: never-ending, dated, upcoming, staged) beside Changes ahead (`.pb-cg`) · evidence: [`structure.md`](structure.md) § C6 · lineage: [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § B1 (frozen at v77), then the v36 intake (2026-09-27 22:08 EDT): the card is `QCard` (`docs/pins2/kit/gates/broadcast.js`) — its End, Start and showings chips open the pop-up family, its quote box folds only when the text runs past two lines, and the queue lists upcoming and staged posts after the live ones |
 | States | the queue as it stands on the board: a live post that never ends, a live post ending Dec 31 (354 characters, shown twice), an upcoming post (1,935 characters, Oct 31 → Nov 14) and a staged post (board data: `docs/pins2/kit/data/broadcast.js`, its `staged` list) |
 
 ### C7 · The Broadcast manifest, and posting — `C7-broadcast.md`
@@ -159,29 +160,30 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | | |
 |---|---|
 | Kit → portal | `ui/broadcast.js` (`PostForm`, the columns) by `portal-diff.md` · `gates/lib.js` (`CharCount`) · `b4.css` (the count row, `.pb-ready`) · `b4/form.js` (`MediaWell`) |
-| Structure | board 2's G11 for the manifest; board 1's G8 for the drawer ([`handoff-g9-g8.md`](../../../superpowers/mockups/2026-09-14-pins2-board/handoff-g9-g8.md)), as Board 4 rebuilt it |
+| Structure | the manifest (`section.panel`: `.mtools` with search, Add and the State chips; `.mscroll` › `table.mtable` — text, three dates, state, actions); Posting opens `aside.drawer` "Post an announcement": `.bed` = `.pb-col` (the Text section `.pb-txf` with its heading and `.pb-enc` box; Starts and Ends in `.dw-grid2`; Show each player `.pb-rep`; the Accent section `.acx`; the Banner section `.f-media`) beside `aside.bed-side` (In Discord, Before staging `.f-stage.pb-ready`); footer Cancel · Stage post; a row opens the same drawer as Edit, an Ended row as Post it again · evidence: [`structure.md`](structure.md) § C7 · lineage: [`handoff-g9-g8.md`](../../../superpowers/mockups/2026-09-14-pins2-board/handoff-g9-g8.md)), as Board 4 rebuilt it |
 | States | Saved · One staged · Posting |
 | Limits | empty → Stage off, "Needs its text" · 3,600+ → the counter warns · past 4,000 → blocked, the counter `over` · past the shared 6,000 with the live posts → warned, not blocked; each post costs its text plus the 28-character Posted line (`POSTED_LINE`) · an unreadable date → "Needs a readable date for the start/end" · a banner link that 404s → no empty box |
 | Why 6,000 matters | the bot sends the oldest ten due posts in one reply; over 6,000, or a text over 4,068, Discord rejects the whole reply and the same batch fails on every later command (verified 2026-09-26 21:19 EDT against `utils/announcement.js` and Discord's Embed Limits) |
 | Dates (2026-09-27 23:04 EDT) | `DateGrid` in the pop-up family (`usePop` / `ChipPop`, `docs/pins2/kit/b3/broadcast.js`; surface `.b3-datepop.b4-pop`, `docs/pins2/kit/b3/board.css`): under Starts and Ends from the calendar button, and from the queue card's End and Start chips and Set end date. No quick picks. Under each date a READOUT: "Now \| when you commit it", "Thu Nov 26 \| 60 days after it starts", "✓ Fri Oct 2 \| live in 5 days". Edit opens on the words of the dates it has. **To use it in another realm:** render the family's pop-up under an ancestor that sets `--realm-c`; set `--dp-c` only to override. **Session 5:** the answer to pin group D's "a pop-up date picker on every date field portal-wide" — Season's native date inputs (`docs/pins2/kit/ui/season.js` 624 and 894, and their portal twins) move onto it |
 | Hover (2026-09-27 18:58 EDT) | the fields' hover now shows (it was out-specified by the resting rule, `b4/classes.css`); the Never ends switch and the calendar button have one |
 | Frame (2026-09-27 16:09 EDT) | the build drawer's: one height (`min(84vh, 860px)`), the body never scrolls; the form column (`.pb-col.b3-fady`) and the preview (`.pb-prevsc.b3-fady`) scroll on their own, no native bar; Before staging 16px over Cancel/Stage in every state; labels are the build drawer's field labels; an Optional chip after Starts, Ends and Banner while empty (`b4.css`, `b4/classes.css`, `ui/broadcast.js`) |
-| Never opened | the count row, the over states and Before staging in Edit and Post again, at narrow widths, and its rows' jump by click and keyboard · the one-curve edge on the Broadcast card chip and the filename chip's hover · the other two-segment meters (Broadcast card, shared E6, Armory coverage) · the dead-space wheel with the post drawer open |
+| Opened 2026-09-29 19:57 EDT | the over state (Over 4,000, the counter over, Before staging's "100 over the 4,000-character limit", Stage off) · Post again and Edit · the two-segment budget meter · the queue chips and the filename chip hovered · dead space with the post drawer open: 5 of 90 points moved nothing, with 4,100 characters typed · the rows are focusable with no accessible name ([`a11y.md`](a11y.md) § C7) |
 
 ### C8 · History — `C8-history.md`
 
 | | |
 |---|---|
 | Kit → portal | `b3/history.js` → `portal/ui/history.js`; `ui/history.js` by `portal-diff.md` |
-| Structure | inherited — [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § H1 and § 6 (his spacing numbers; frozen at v77) |
+| Structure | `section.panel.b3-hi`: the tools (`.b3-hi-tools`: label, search; row 2 six filter groups `.b3-fg`), the list `.b3-hi-list.b3-fady` (a column head, then a `section.b3-hi-dg` per day: its label and `.b3-hi-r` rows, each state-classed), More (`.b3-hi-more`); a row opens the event drawer (its title, a `.diff` table of key · value rows, the note, Close · Reverse this change) · evidence: [`structure.md`](structure.md) § C8 · lineage: [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § H1 and § 6 (his spacing numbers; frozen at v77) |
 | Known | History's and Broadcast's row glow read grey against board 3's oklch lift (v14 nitpick) |
-| Never opened | the dead-space wheel with the event drawer open |
+| Opened 2026-09-29 19:57 EDT | the event drawer: its keys were drawn as Board 3's dock, fixed in the kit (below, "What this spec was missing") · dead space with it open: 0 of 42 points · its rows open by pointer only |
 
 ### C9 · Admin traffic — `C9-admin-traffic.md`
 
 | | |
 |---|---|
 | Kit → portal | `gates4/surfaces.js` (`AdminBar`) → Analytics' view bar |
+| Structure | Analytics' view bar: the realm head (`.ph`: label, five View tabs) and the Include chip (`.incg` › `button.chip.incchip`) · evidence: [`structure.md`](structure.md) § C9 |
 | States | Product traffic · Admin included |
 
 
@@ -293,23 +295,35 @@ A design port that stops at CSS ships a Capable badge nobody can save. Every ite
 
 ---
 
-## The generator's numbers, read — 2026-09-29 18:50 EDT
+## The generator's numbers, read — 2026-09-29 19:57 EDT
 
-The README's header counts are the extractor's. Read on the Version 42 kit (regenerated 2026-09-29 18:05 EDT, after the Version 41 build; no kit change since): **1,530 looks across 654 signatures, 0 page errors.**
+The README's header counts are the extractor's. Read on the kit as it stands (regenerated 2026-09-29 19:57 EDT, with the pop-up pass): **1632 looks across 684 signatures, 0 page errors.**
 
 | Count | What it is | What a port does |
 |---|---|---|
-| **14 not reached** | all the board's gate frame: `pb-head`, `pb-gid`, `pb-stage`, `pb-new`, `pb-ctl`, `g-tries`, `g-stage`, `g-scroll`, the `b4-*` stage wrappers and `cx-host` (`gates4/*` and `gates.css`, labelled CHROME or the frame half of MIXED in `file-map.md`) | nothing: none is a portal element |
-| **41 ⚠️ opacity** | animation frames sampled mid-flight: ASS's stink lines (`.b3-ass > i`, 31) and the Rank Mode drift (`.b3-mdw`, 10); opacity is not a length, so these are not conflicts | port the `@keyframes` (`motion.md`) and the declared resting value |
-| **22 ⚠️ layout techniques** | a declared value the layout is meant to override: `td{height:1px}` for full-height cells (11), `.f-in{width:0}` under flex (7), the auto-sized textarea (1), `.mtable` cell widths (2), `.pb-qafter` (1) | port the declaration, never the computed value |
-| **10 ⚠️ unitless line-heights** | `1.5`, `1.35`, `1.7`, `1`, `1.45` read against their computed pixels | port the unitless value |
+| **15 not reached** | all the board's gate frame: `pb-head`, `pb-gid`, `pb-stage`, `pb-new`, `pb-ctl`, `g-tries`, `g-stage`, `g-scroll`, the `b4-*` stage wrappers and `cx-host` (`gates4/*` and `gates.css`, CHROME or the frame half of MIXED in `file-map.md`) | nothing: none is a portal element |
+| **39 ⚠️ opacity** | animation frames sampled mid-flight (ASS's stink lines `.b3-ass > i`, the Rank Mode drift `.b3-mdw`, the volt `.b3-vb`); opacity is not a length, so these are not conflicts | port the `@keyframes` (`motion.md`) and the declared resting value |
+| **24 ⚠️ layout techniques** | a declared value the layout is meant to override: `td{height:1px}` for full-height cells, `.f-in{width:0}` under flex, the auto-sized textarea, `.mtable` cell widths, `.pb-qafter` | port the declaration, never the computed value |
+| **12 ⚠️ unitless line-heights** | `1.5`, `1.35`, `1.7`, `1`, `1.45` read against their computed pixels | port the unitless value |
 | **3 ⚠️ outline-offset** | `-1.5px` rounded by the device | port `-1.5px` |
-| **12 ⚠️ real** | a declaration a later rule overrides: the `th.cx-k0` width of 118px in `docs/pins2/kit/b4/compare.css` (10 rows — Version 41 Y moved the column to 96px on `col.cx-c0` and left this behind); a `style` height of 46px (1); `.pb-lrow .pb-sw` 22px (1) | port the computed value and leave the dead declaration out |
+| **12 ⚠️ real** | a declaration a later rule overrides: the `th.cx-k0` width of 118px in `docs/pins2/kit/b4/compare.css` (Version 41 Y moved the column to 96px on `col.cx-c0` and left it behind); a `style` height of 46px; `.pb-lrow .pb-sw` 22px | port the computed value and leave the dead declaration out |
 
-## What this spec does not have yet
+## What this spec was missing, and how each closed — 2026-09-29 19:57 EDT
 
-- **A structure narrative written for Board 4, except C3** (written 2026-09-29 18:50 EDT, C3's per-gate table) — every other gate's *Structure* row above points at a handoff written for an EARLIER board (`handoff-3e.md` § M1, M2, M3, B1, H1 at Board 3-E v77; `handoff-g9-g8.md` and plan §10.1–§10.4 for C2, C3, C7), so its element lists and `file:line` are those boards'. The kit, the generated markup and this file's rulings are the truth where they differ; Board 4's own per-surface structure narrative was never written (found 2026-09-28 23:59 EDT).
-- **Board 4's measured relations** — Board 3-E had `measure.cjs` (pixel relations); its selectors are board 3's, and Board 4 has no relations file. The values files are resolved declarations, not relations.
-- **Accessibility beyond keys** — focus order, ARIA roles and screen-reader announcements were never walked on Board 4. Keys that are handled are named per gate above; everything else is unrecorded.
-- **The date picker's values** (2026-09-27 19:26 EDT) — the generator walks each gate at rest, and the pop-up is closed at rest, so `C6`/`C7`/`states.md` hold no `.b3-dp-*` row (checked: 0). Its values are the `.b3-dp-*` and `.b3-datepop` rules in `docs/pins2/kit/b3/board.css` and the open calendar button in `docs/pins2/kit/b4.css`, as C7's Dates row says.
-- **The generator's own coverage holes** — the README lists every classed element no pass reached ("Not reached"), and every ⚠️ row is a winning declaration the computed value contradicts. Each is unexamined until opened.
+*This section listed five things the spec "does not have yet". Each now has a generator beside the values, run by the same regenerate command, so it stays true when Session 4 changes the kit.*
+
+| Was missing | Closed by | What it found |
+|---|---|---|
+| A structure narrative for Board 4 | `structure.cjs` → [`structure.md`](structure.md): every gate's stage as an outline, at rest and in each of its 30 states and Try steps; each gate's *Structure* row above is written from it | the rows above |
+| Board 4's measured relations | `relations.cjs` → [`relations.md`](relations.md): his rulings that are sizes, gaps, distances and counts, read off the page | **26 of 26 hold** (Compare's 96px names, 64px rows, 6/16px head gaps, no sideways scroll, 120–260px tiles, 560px search, 18px marks; the 980px build drawer; the post drawer at min(84vh, 860px); every pop-up 10px from its trigger; the date picker 270 wide with 36px days) |
+| Accessibility beyond keys | `a11y.cjs` → [`a11y.md`](a11y.md): 39 walks (every gate at rest and in each state), the sequential focus order with Chrome's roles and names, a focus mark per stop, unnamed controls, pointer-only elements | **2,284 tab stops, 0 unnamed controls.** Three findings for the port: the Broadcast manifest's rows are focusable with no accessible name (18 stops, C7) · History's rows open the event drawer by pointer only — a keyboard reaches the control inside a row, never the row (C8) · Compare's table rows and the search list's group headers carry a pointer cursor with no action (C3). The 71 fields read as "no focus mark" draw their glow on the field's wrapper (`:focus-within`), which the walk does not read; the glow is there (the Weapon field, opened at 2x) |
+| The date picker's values | extract-spec's pop-up pass (`POPS` in `board4-walk.cjs`): the date picker, a card's End chip, Set end date, the showings chip, the build drawer's weapon list, Compare's search list, History's event drawer and a Broadcast row's Edit drawer, each opened with a real pointer and specced from its parent | `states.md` carries 288 `.b3-dp-*` rows (0 before) |
+| The generator's own holes | "The generator's numbers, read", above | 15 unreached are all gate frame; 12 of 90 ⚠️ are real |
+
+**Found while opening them, and fixed in the kit** (2026-09-29 19:57 EDT): History's event drawer drew every key (Kind, Page, Action…) as a rounded box 14px below its value. `.dk` is both Board 3's decision dock and the portal's diff-key cell, and the dock's rules in `docs/pins2/kit/gates.css` reached the drawer. The dock's bare `.dk` selectors are fenced off `.diff-r` children with `:where()` (no specificity added); measured after: margin 0, no edge, level with its value. **This changes what Version 42 shows**, so it goes live only in the next publish.
+
+**Opened and nothing wrong at 2x:** Edit's two-line chip runs and its Code chip · the DMZ card and its ghost · the dropdowns' black ground with three builds · Bulk's Embed cards · Post again and Edit in the post drawer · the over-4,000 state (the Over 4,000 chip, the counter, "100 over the 4,000-character limit", Stage off) · the budget meter in two segments · the queue card chips hovered · the filename chip hovered · a resize to 1100 × 760 while the form column was scrolled (the scroll held, no sideways overflow) · fady while typing in Bulk (0.07 ms of script, 0.23 ms of layout per key).
+
+**Measured and worth a look:** dead space — a wheel moved nothing at 1 of 99 points in Bulk · several (53 of 98 on 2026-09-27), 5 of 90 in the post drawer with 4,100 characters typed (0 of 90 on 2026-09-27, with the text folded), 0 of 42 in History's event drawer.
+
+**Not opened:** Export's hover card on a build with Control (LOCUS carries it; the file writes it as `control` in its Badges line, and the tiles show no rank-mode mark, which no ruling covers) · screen-reader announcements, which need a screen reader, not Chrome's tree.

@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the resolved values
 
-*Generated 2026-09-29T22:05:50.795Z by `extract-spec.cjs` from http://127.0.0.1:8900/docs/pins2/kit/board4.html at 1282×888, fresh profile. 1530 looks specced across 654 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **14**. Winning declarations the computed value contradicts: **88** (marked ⚠️).*
+*Generated 2026-09-29T23:55:06.051Z by `extract-spec.cjs` from http://127.0.0.1:8900/docs/pins2/kit/board4.html at 1282×888, fresh profile. 1632 looks specced across 684 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **15**. Winning declarations the computed value contradicts: **90** (marked ⚠️).*
 
 ⚠️ **Not reached** (rendered, classed, never walked — each is a coverage hole):
 
@@ -18,10 +18,11 @@ status: live
 - `li.b4-open`
 - `div.pb-ctl`
 - `div.b4-stage.g-fixed.g-stage.pb-stage`
+- `div.b4-closed`
 - `div.b1.b4-cmp.cx-host`
 - `div.g-scroll.g-stage.pb-stage`
 - `div.b4-exp`
-- `div.b4-bare.g-fixed.g-stage.pb-stage`
+- `div.b4-bare.g-stage.pb-stage`
 - `div.b4-vb`
 
 🔴 **Board 4: Collective is every finished surface of boards 1–3 on the kit's portal code, no switches.** Regenerate with `BOARD=4` on both scripts: `BOARD=4 node docs/pins2/final/board4-spec/extract-spec.cjs '' $TMPDIR/b4-spec.md` then `BOARD=4 node docs/pins2/final/board4-spec/split-spec.cjs $TMPDIR/b4-spec.md`. Read [`../FINAL.md`](../FINAL.md) first.
@@ -52,8 +53,8 @@ node $O/maps.cjs
 | [`C3-compare.md`](C3-compare.md) | C3 · Compare — resting | 372 KB |
 | [`C4-repairs.md`](C4-repairs.md) | C4 · Repairs — resting | 218 KB |
 | [`C5-export.md`](C5-export.md) | C5 · Export — resting | 80 KB |
-| [`C6-delivery-queue.md`](C6-delivery-queue.md) | C6 · The delivery queue — resting | 170 KB |
+| [`C6-delivery-queue.md`](C6-delivery-queue.md) | C6 · The delivery queue — resting | 171 KB |
 | [`C7-broadcast.md`](C7-broadcast.md) | C7 · The Broadcast manifest, and posting — resting | 110 KB |
 | [`C8-history.md`](C8-history.md) | C8 · History — resting | 235 KB |
 | [`C9-admin-traffic.md`](C9-admin-traffic.md) | C9 · Admin traffic — resting | 11 KB |
-| [`states.md`](states.md) | Reachable states | 1985 KB |
+| [`states.md`](states.md) | Reachable states | 2251 KB |

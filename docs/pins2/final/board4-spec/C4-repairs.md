@@ -1716,12 +1716,12 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-tk · b3/board.css:3140 |
-| position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | grid-template-rows | `auto 1fr auto` | `40.9375px 117.375px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3353 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3140 |
-| outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--warn) 7%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk[data-sev="blocks"] · b3/board.css:3141 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk[data-sev="blocks"] · b3/board.css:3141 |
@@ -1748,12 +1748,12 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-tk · b3/board.css:3140 |
-| position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | grid-template-rows | `auto 1fr auto` | `40.9375px 62.6875px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3353 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3140 |
-| outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--warn) 7%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk[data-sev="blocks"] · b3/board.css:3141 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk[data-sev="blocks"] · b3/board.css:3141 |
@@ -1780,17 +1780,17 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-tk · b3/board.css:3140 |
-| position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | grid-template-rows | `auto 1fr auto` | `40.9375px 62.6875px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3353 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3140 |
-| outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
 | background | `var(--raised)` | `` | .b3-tk · b3/board.css:3140 |
 | background-color | `` | `rgb(31, 39, 46)` | .b3-tk · b3/board.css:3140 |
 | background-image | `` | `none` | .b3-tk · b3/board.css:3140 |
-| box-shadow | `none` | `none` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| box-shadow | `none` | `none` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -3765,17 +3765,17 @@ inside `.b3-rp` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-tk · b3/board.css:3140 |
-| position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin-top | `0px !important !important` | `0px` | .b4 h4.b3-tk-okh + .b3-tk-pass · b4/classes.css:189 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3140 |
-| outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--ok) 6%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk-pass · b3/board.css:3359 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk-pass · b3/board.css:3359 |
 | background-image | `` | `linear-gradient(color(srgb 0.143216 0.195294 0.192863), rgb(31, 39, 46) 90px)` | .b3-tk-pass · b3/board.css:3359 |
-| box-shadow | `none` | `none` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
+| box-shadow | `none` | `none` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
