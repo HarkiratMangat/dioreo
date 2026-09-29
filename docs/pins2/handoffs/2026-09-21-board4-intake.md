@@ -1489,6 +1489,8 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 ### Built in the kit — 2026-09-29 15:33 EDT (after compact 18, Opus 5.5; not published, not reviewed)
 
+**Published 2026-09-29 16:50 EDT as Board 4 Version 41** on his "publish" (the page and the seven changed kit files; the artifact's file listing matches every local byte size).
+
 *Every class below is in `docs/pins2/kit/`; the spec was regenerated from it and its mtimes read (19 of 20 files rewritten; `HANDOFF.md` is hand-written). `r22` 35/35, `paths-resolve` 0 dead, `cites-check` 0 fatal, `counts-check` 13/13, both selftests pass. Measured headless at 2x (Chrome, 1440×900).*
 
 | Class | Built | Where |

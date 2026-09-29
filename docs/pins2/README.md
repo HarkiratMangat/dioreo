@@ -35,13 +35,13 @@ status: live
 
 | | |
 |---|---|
-| Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 40** live |
+| Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 41** live (published 2026-09-29 16:50 EDT on his "publish": the Version 40 intake round, built) |
 | The kit | [`kit/`](kit/README.md), **tracked** — moved here from the gitignored `local/pins2-board-3/redo/` on his call of 2026-09-28 23:27 EDT (*"why not just move the board to the new collective folder?"*). Its git history to the move stays local: `git -C local/pins2-board-3 log --stat` |
 | The spec | `final/board4-spec/`, **regenerated 2026-09-29 00:12 EDT from the tracked kit** — its header carries the counts. The `C*.md` and `states.md` that sat in the live folder before were from kit `ecc93ee`, *before* Version 39: `split-spec.cjs` had written the Version 40 values into a folder nothing pointed at |
 | Board 3-E | **superseded by Board 4** (his 2026-09-28 23:27 EDT). `3e/` in board 3's package is history: `handoff-3e.md` survives only as the inherited *structure* narrative `HANDOFF.md` cites, and the generators moved to `final/board4-spec/` |
 | Publishing the kit | 🔴 he said on 2026-09-20 21:33 EDT that the kit was not to go on the online GitHub. It is tracked now, so a push or a merge into `v3-pre-release` that carries `kit/` puts it there — the approval sentence names it (plan §13 Step 1). Not decided |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
-| Next | his Version 40 intake round is **built in the kit** (2026-09-29 15:33 EDT, all 21 classes A–U, `handoffs/2026-09-21-board4-intake.md` § Built in the kit), **not yet reviewed or published**; his review of it, then Session 3's close, then Session 4 |
+| Next | his Version 40 intake round is **built in the kit and published as Version 41** (2026-09-29 15:33 EDT, all 21 classes A–U, `handoffs/2026-09-21-board4-intake.md` § Built in the kit), **not yet reviewed**; his review of it, then Session 3's close, then Session 4 |
 
 ## Where new things go
 
