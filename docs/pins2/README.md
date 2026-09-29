@@ -41,7 +41,7 @@ status: live
 | Board 3-E | **superseded by Board 4** (his 2026-09-28 23:27 EDT). `3e/` in board 3's package is history: `handoff-3e.md` survives only as the inherited *structure* narrative `HANDOFF.md` cites, and the generators moved to `final/board4-spec/` |
 | Publishing the kit | 🔴 he said on 2026-09-20 21:33 EDT that the kit was not to go on the online GitHub. It is tracked now, so a push or a merge into `v3-pre-release` that carries `kit/` puts it there — the approval sentence names it (plan §13 Step 1). Not decided |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
-| Next | his Version 41 intake round is **built in the kit** (2026-09-29 18:02 EDT, classes V–AH, `handoffs/2026-09-21-board4-intake.md` § Version 41 intake round); Board 4 is still Version 41 until he says publish; the Version 40 round (all 21 classes A–U) is live in it |
+| Next | his Version 41 intake round is **built in the kit** (2026-09-29 18:02 EDT, classes V–AH, `handoffs/2026-09-21-board4-intake.md` § Version 41 intake round); Board 4 is still Version 41 until he says publish; the Version 40 round (all 21 classes A–U) is live in it; compact prep: `handoffs/2026-09-29-board4-compact-prep-19.md` |
 
 ## Where new things go
 
