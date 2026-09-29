@@ -40,7 +40,7 @@ The harness's auto-mode text recommending cat/grep/sed LOSES to this table. The 
   4. Look at every state he will click (hover, pressed, pressed+hover, focus, empty, filled, error) in the real page, with Cloudinary blocked, because that is the artifact he sees.
   5. Instruments find candidates; **his eye is the judge.** A green instrument is never the report, and an instrument must first catch a known case (the first GREY detector missed his C9 grey; the first cap probe invented −4.4px on History).
 - **Design forks are SHOWN, not described.** Render the options, send them with `SendUserFile` (no publish needed), then a popup. Before any popup, check the ruling does not already exist: the intake log's "His ruling" lines, `docs/pins2/records/2026-09-20-h1-constraint-table.md`, the decision ledger, and handoff-3e §4. C4's count chips were asked after they were already decided.
-- **Never publish mid-work.** Ask first, every time. Publish from root `local/pins2-board-3/redo/` with `board4.html` and EVERY changed file in `files` (v1 lacked `b3/bolt-raw.svg`, and META died).
+- **Never publish mid-work.** Ask first, every time. Publish from root `docs/pins2/kit/` with `board4.html` and EVERY changed file in `files` (v1 lacked `b3/bolt-raw.svg`, and META died).
 - **Screenshots and paths:** pass ABSOLUTE `--filePath` to chrome-devtools, because a relative path lands in the repo root. Page ids change: run `list_pages` first.
 - **Timestamps** come from the `[clock]` value or are computed in the script, never typed.
 
@@ -79,10 +79,10 @@ Scope: CSS under `.b4`, and behaviour behind `window.B4_COLLECTIVE`, so Board 3-
 
 ## Facts established before building (so they are not re-derived)
 
-- `p10` (small text) is ruled **`state`** in `local/pins2-board-3/redo/b3/state.js` DEFAULTS. The hint treatment for K3 hints comes from it; hint COPY stays Session 4's.
+- `p10` (small text) is ruled **`state`** in `docs/pins2/kit/b3/state.js` DEFAULTS. The hint treatment for K3 hints comes from it; hint COPY stays Session 4's.
 - Board 2 G11 ruled the staged tab as a **dashed outline** and the State filter chips **with colour dots** (13:06 EDT popup). His intake items C7-6 and C7-7 supersede both; the plan carries both rulings so the change is deliberate.
 - The Ends default: board 1 drew "default · Sun Nov 15", and nothing rules how it is computed. K3 designs the field; the date rule stays his open question.
-- Selection bar actions: Edit `.b3-btn2`, Export `.b3-btn2`, Stage deletion `.b3-btn2.dang`, Clear `.b3-btn2.quiet` (`local/pins2-board-3/redo/b3/armory-parts.js` SelectionDock).
+- Selection bar actions: Edit `.b3-btn2`, Export `.b3-btn2`, Stage deletion `.b3-btn2.dang`, Clear `.b3-btn2.quiet` (`docs/pins2/kit/b3/armory-parts.js` SelectionDock).
 
 ## Turn budget — his ruling (2026-09-21 19:55 EDT): "60+ is unacceptable … scope that correctly and mega batch it"
 
@@ -105,7 +105,7 @@ Roughly 60 turns: about a third went on discovery calls that one evidence batch 
 
 ## Cost (original estimate, superseded above)
 
-Roughly 60–120 turns across `b4.css`, `b1.css`, `local/pins2-board-3/redo/b3/drawer.js`, `local/pins2-board-3/redo/b3/armory-parts.js`, `local/pins2-board-3/redo/ui/armory.js` (Compare), `local/pins2-board-3/redo/ui/broadcast.js` (PostForm, columns), `local/pins2-board-3/redo/ui/manifest.js` (inline edit), the Export picker code, and `gates4/*`. One interim publish for the shell ruling.
+Roughly 60–120 turns across `b4.css`, `b1.css`, `docs/pins2/kit/b3/drawer.js`, `docs/pins2/kit/b3/armory-parts.js`, `docs/pins2/kit/ui/armory.js` (Compare), `docs/pins2/kit/ui/broadcast.js` (PostForm, columns), `docs/pins2/kit/ui/manifest.js` (inline edit), the Export picker code, and `gates4/*`. One interim publish for the shell ruling.
 
 ## Reference-comparison audit (2026-09-21 22:01 EDT) — after I wrongly called it "done"
 
@@ -134,7 +134,7 @@ The lesson (again): I claimed done off a code comment and off resting renders, w
 | K6 Editing-X chips | **Built, pass 2.** "Editing X" is the selection bar's `.b3-sc` chip, one per weapon with ×, and × strips that weapon's blocks from the editor (`removeWeapon`) | `board4-review/k7/c2-editchips.png` |
 | K12 image fallback | **Built, pass 2.** A designed tile at the image's proportion (16/9, dashed, a CSS-drawn broken-image glyph, the key in mono) on Compare's cards and the New-build preview; CSS-only under `.b4`, so 3-E is untouched | in the K7 card sheet |
 | K3 C2 form surfaces | **Built (2026-09-21 21:42 EDT).** The native Category `<select>` takes the combobox's chevron and drops the OS arrow (one field family with the Weapon combobox); placeholders lost their italic; the "BUILD n" label prefix is a quiet chip, not a pink block | `board4-review/c2-review.png` |
-| K4 mesh | **Already dynamic.** Add lights the mesh from the picked weapon's accent, Bulk from the parsed blocks' — the `hueList` effect in `local/pins2-board-3/redo/b3/drawer.js`, no change needed this pass |
+| K4 mesh | **Already dynamic.** Add lights the mesh from the picked weapon's accent, Bulk from the parsed blocks' — the `hueList` effect in `docs/pins2/kit/b3/drawer.js`, no change needed this pass |
 | K5 bulk list + C2-10/12 | **Built.** The bulk editor already renders the Export file's `.b3-xt-ln` rows; added a standing grammar legend so the shape survives the first keypress, and board-chrome prefill states (Bulk · empty / one / several) that fill the list with real builds and light the tally | `board4-review/c2-review.png` "Bulk · several" — 3 builds, tally 3 new, export-style rows |
 | C7-10 drawer hints | **Deferred to Session 4** by the plan's own fact ("hint COPY stays Session 4's"). The Ends field's treatment is in place; the wording is S4's | — |
 
@@ -187,8 +187,8 @@ Silent mode. Questions in popups. Tool routing by the question. Mega-batch. One 
    - board-chrome prefill scenarios.
 
 **Open threads a future session would otherwise miss**
-- **Not published.** Pass 1 lives only in the kit. The next publish must carry at least: `local/pins2-board-3/redo/b4.css`, `local/pins2-board-3/redo/gates4/main.js`, `local/pins2-board-3/redo/gates4/surfaces.js`, `local/pins2-board-3/redo/ui/manifest.js`, `local/pins2-board-3/redo/ui/broadcast.js`, `local/pins2-board-3/redo/b3/armory-parts.js`, `local/pins2-board-3/redo/b3/history.js`, `local/pins2-board-3/redo/b3/drawer.js`, `local/pins2-board-3/redo/gates/armory.js`, `local/pins2-board-3/redo/gates/history.js`, `local/pins2-board-3/redo/b1.css` (root `local/pins2-board-3/redo/`).
-- **The kit's git moved.** Its root is now `local/pins2-board-3/` (the kit sits under `redo/`); the publish root stays `local/pins2-board-3/redo/`.
+- **Not published.** Pass 1 lives only in the kit. The next publish must carry at least: `docs/pins2/kit/b4.css`, `docs/pins2/kit/gates4/main.js`, `docs/pins2/kit/gates4/surfaces.js`, `docs/pins2/kit/ui/manifest.js`, `docs/pins2/kit/ui/broadcast.js`, `docs/pins2/kit/b3/armory-parts.js`, `docs/pins2/kit/b3/history.js`, `docs/pins2/kit/b3/drawer.js`, `docs/pins2/kit/gates/armory.js`, `docs/pins2/kit/gates/history.js`, `docs/pins2/kit/b1.css` (root `docs/pins2/kit/`).
+- **The kit's git moved.** Its root is now `local/pins2-board-3/` (the kit sits under `redo/`); the publish root stays `docs/pins2/kit/`.
 - **Board-4-only behaviour** is gated on `window.B4_COLLECTIVE` (the History Bot-online fold, the selection-list fold); Board 3-E stays as approved.
 - **Kept on purpose:** chips whose pressed state is grey by board 2's ruling ("All", Compare's weapon chip until K6) are unchanged.
 - **Unmeasured:** `b4states` forces `:hover` only. Add `:focus-visible` and `:active` to its loop in pass 2's evidence turn.
@@ -220,7 +220,7 @@ Silent mode, popups only, mega-batch, tool routing by the question, class not in
 
 
 ```text
-/compact KEEP: (1) The Board 4 intake fix pass is mid-flight. Its carrier is docs/pins2/handoffs/2026-09-21-board4-fixplan.md, whose §0 WORKING CONTRACT (linksee anchor #45) must be restated as the first thought after this compact. (2) His C1–C9 comments, verbatim: docs/pins2/handoffs/2026-09-21-board4-intake.md; screenshots in local/pins2-board-3/board4-review/intake/. (3) Pass 1 (K1 K9 K10 K11) is built locally and UNPUBLISHED; v5 is live at https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh. (4) The kit's git root is now local/pins2-board-3 (kit under redo/); the publish root stays local/pins2-board-3/redo, with every changed file listed in the plan's "Not published" line. (5) His rulings today, including hover-only tints, C2 880px, C8 rulings and C4 already decided — never re-ask; check the intake log, the constraint table and the ledger first. (6) Pass 2 order: K2 options sent as files with a popup, then K8, K7, K6, K12; pass 3 is the C2 rebuild. At most 12 turns each. (7) Instruments: docs/pins2/instruments/b4states.cjs (add focus-visible and active next) and local/pins2-board-3/board4-review/shots.cjs; they find candidates, his eye judges. DISCARD: every screenshot read, the CSS and code line dumps, instrument output tables, the probe-debugging turns, the pre-intake round-1 narrative, and tool-hook reminder text.
+/compact KEEP: (1) The Board 4 intake fix pass is mid-flight. Its carrier is docs/pins2/handoffs/2026-09-21-board4-fixplan.md, whose §0 WORKING CONTRACT (linksee anchor #45) must be restated as the first thought after this compact. (2) His C1–C9 comments, verbatim: docs/pins2/handoffs/2026-09-21-board4-intake.md; screenshots in local/pins2-board-3/board4-review/intake/. (3) Pass 1 (K1 K9 K10 K11) is built locally and UNPUBLISHED; v5 is live at https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh. (4) The kit's git root is now local/pins2-board-3 (kit under redo/); the publish root stays docs/pins2/kit, with every changed file listed in the plan's "Not published" line. (5) His rulings today, including hover-only tints, C2 880px, C8 rulings and C4 already decided — never re-ask; check the intake log, the constraint table and the ledger first. (6) Pass 2 order: K2 options sent as files with a popup, then K8, K7, K6, K12; pass 3 is the C2 rebuild. At most 12 turns each. (7) Instruments: docs/pins2/instruments/b4states.cjs (add focus-visible and active next) and local/pins2-board-3/board4-review/shots.cjs; they find candidates, his eye judges. DISCARD: every screenshot read, the CSS and code line dumps, instrument output tables, the probe-debugging turns, the pre-intake round-1 narrative, and tool-hook reminder text.
 ```
 
 ```text
@@ -258,7 +258,7 @@ Every claim below was checked on puppeteer renders with Cloudinary blocked (`boa
 
 **Still flagged, deliberately or unverified:** GREY on Cancel and the drawer close (the `.b3-btn2` / `.dw-h .x` family hovers on `--hi` board-wide — a family change nobody asked for); NOFOCUS on the close (its focus shows on the word child, which the instrument does not read — unverified); NOACTIVE 11 (no `:active` press style in most families — not in his intake); CENTRE "Code" +5.8px (board 1's gap row, by design).
 
-**Publish:** v6 (4.8's whole-tree upload) is still live and he called it broken. Nothing was republished. The next publish, on his yes, sends only changed files from root `local/pins2-board-3/redo/`.
+**Publish:** v6 (4.8's whole-tree upload) is still live and he called it broken. Nothing was republished. The next publish, on his yes, sends only changed files from root `docs/pins2/kit/`.
 
 ## v7 published — the open list, from his v6 verdict (2026-09-21 23:13 EDT)
 

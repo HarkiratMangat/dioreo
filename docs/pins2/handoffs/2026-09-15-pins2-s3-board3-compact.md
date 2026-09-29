@@ -241,7 +241,7 @@ Order of hexes: Optic Muzzle Barrel Stock Laser Underbarrel Rear Grip Ammunition
 
 ## Version 5 — the redo, published 2026-09-15 19:04 EDT
 
-- **The board is gates again.** 19 gates (A1–A9, B1–B3, H1, E1–E6), each one topic with its pins listed on it; the settled log and a "What I need from you" index sit above them. Kit: `local/pins2-board-3/redo/` — it copies v2's `ui/`, `b3/`, `vendor/` and `data/`, adds `gates/*.js`, `gates.css`, `index.html`, `ref/board1-g8.html` (board 1 trimmed to G8) and `verify.cjs`.
+- **The board is gates again.** 19 gates (A1–A9, B1–B3, H1, E1–E6), each one topic with its pins listed on it; the settled log and a "What I need from you" index sit above them. Kit: `docs/pins2/kit/` — it copies v2's `ui/`, `b3/`, `vendor/` and `data/`, adds `gates/*.js`, `gates.css`, `index.html`, `ref/board1-g8.html` (board 1 trimmed to G8) and `verify.cjs`.
 - **Picks are recorded, not commented.** 18 forks write to the artifact db at `decisions/<fork>`; each gate also has a note box at `notes/<gate>`. Read them back with `Artifact action:"read_db"`, collection `decisions` (and `notes`).
 - **The dynamic-pick rule** (his 18:26 EDT message): a refinement ask gets 2+ options and keeps its pick; the pick disappears only when nothing is left to decide. P3, P5, P6, P8, P9 and the export picker each gained a second option because of it.
 - **Checked** by `redo/verify.cjs`: 19 gates, 18 picks, 39 options, every option clicked with 0 page errors, each A1 fix measured on and off, a pick written and painted, board 1's G8 frame loaded, no overflow at 1282px or 390px.

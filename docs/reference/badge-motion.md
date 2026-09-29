@@ -5,7 +5,7 @@ status: live
 
 # Badge motion — the law every badge animation follows
 
-*Written 2026-09-26 13:56 EDT at Harkirat's direction ("document the badge-motion logic/law/direction/etc concretely in the repo so it's never missed again"). Until today this law lived only in comments inside the Board 4 kit's `local/pins2-board-3/redo/b3/board.css` (the BADGE MOTION block), and the kit is gitignored: no fresh clone, no `ctx_search`, and no session designing a new badge could find it. The Rank Mode family then went through six rejected motions in one day, each breaking a rule written here. Read this file before designing, changing or porting any badge motion — on the board, in the portal (`portal/ui/`), or anywhere a badge is drawn.*
+*Written 2026-09-26 13:56 EDT at Harkirat's direction ("document the badge-motion logic/law/direction/etc concretely in the repo so it's never missed again"). Until today this law lived only in comments inside the Board 4 kit's `docs/pins2/kit/b3/board.css` (the BADGE MOTION block), and the kit is gitignored: no fresh clone, no `ctx_search`, and no session designing a new badge could find it. The Rank Mode family then went through six rejected motions in one day, each breaking a rule written here. Read this file before designing, changing or porting any badge motion — on the board, in the portal (`portal/ui/`), or anywhere a badge is drawn.*
 
 ## The five laws
 
@@ -52,5 +52,5 @@ status: live
 
 ## Where the code lives
 
-- Board 4 kit (the design): `local/pins2-board-3/redo/b3/board.css` (the BADGE MOTION block: META, BEST, TOP, TOXIC) and `local/pins2-board-3/redo/b4/classes.css` (CAPABLE, ASS, Rank Mode).
+- Board 4 kit (the design): `docs/pins2/kit/b3/board.css` (the BADGE MOTION block: META, BEST, TOP, TOXIC) and `docs/pins2/kit/b4/classes.css` (CAPABLE, ASS, Rank Mode).
 - The portal (the port, Session 5): `portal/ui/armory.js` and the portal's stylesheets carry the same classes; this law applies there unchanged.

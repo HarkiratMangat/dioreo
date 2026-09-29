@@ -391,12 +391,12 @@ inside `.mt-grp` · 1 on screen · **1 look**
 | padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3391 |
 | padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3391 |
 | border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
-| border-color | `color-mix(in srgb,var(--c) 66%,transparent)!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| border-color | `color-mix(in srgb,var(--c) 66%,transparent)!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
 | border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
-| background | `color-mix(in srgb,var(--c) 24%,var(--sunk))!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
-| background-color | `!important !important` | `color(srgb 0.254902 0.112471 0.197647)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
-| background-image | `!important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
-| box-shadow | `none !important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| background | `color-mix(in srgb,var(--c) 24%,var(--sunk))!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
+| background-color | `!important !important` | `color(srgb 0.254902 0.112471 0.197647)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
+| background-image | `!important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
+| box-shadow | `none !important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
 | font | `inherit` | `` | button · app.css:621 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
 | font-size | `var(--t-sm)` | `12px` | .chip · app.css:1242 |
@@ -407,7 +407,7 @@ inside `.mt-grp` · 1 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | text-decoration | `none` | `` | .chip · app.css:1242 |
-| color | `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| color | `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | button · app.css:621 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
@@ -458,7 +458,7 @@ inside `.chip` · 4 on screen · **1 look**
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | inherited · .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| color | ↑ `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | inherited · .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 
@@ -1411,7 +1411,7 @@ inside `.—` · 18 on screen · **1 look**
 `C7-60` · rendered **120×64** · 18 instances look like this
 
 ```html
-<td class="nums" style=""><span class="bcdt">Jul 14<small>75 days ago</small></span></td>
+<td class="nums" style=""><span class="bcdt">Jul 14<small>76 days ago</small></span></td>
 ```
 
 | property | winning declaration | computed | from |
@@ -1447,7 +1447,7 @@ inside `.nums` · 13 on screen · **2 looks**
 `C7-61` · rendered **104×23** · 6 instances look like this
 
 ```html
-<span class="bcdt">Jul 14<small>75 days ago</small></span>
+<span class="bcdt">Jul 14<small>76 days ago</small></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1505,10 +1505,10 @@ inside `.bcdt` · 6 on screen · **1 look**
 
 #### the one look
 
-`C7-62` · rendered **104×7** · 6 instances look like this · text “75 days ago”
+`C7-62` · rendered **104×7** · 6 instances look like this · text “76 days ago”
 
 ```html
-<small>75 days ago</small>
+<small>76 days ago</small>
 ```
 
 | property | winning declaration | computed | from |

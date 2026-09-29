@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the custom properties the portal does not have
 
-*Generated 2026-09-29T03:16:55.687Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `f41c691`. 168 of the 251 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
+*Generated 2026-09-29T04:08:56.010Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `6572b9eb plus the working tree`. 168 of the 251 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
 
 | Token | Defined in the kit | The definition |
 |---|---|---|

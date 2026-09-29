@@ -5,7 +5,7 @@ const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
 const b1=await open('http://127.0.0.1:8900/docs/superpowers/mockups/2026-09-14-pins2-board/index.html','aside.drawer');
 for(const [lab,file] of [['New build','b1-drawer-g9.png'],['Post an announcement','b1-drawer-g8.png']]){const el=await b1.$(`aside.drawer[aria-label="${lab}"]`);await el.scrollIntoView();await sleep(400);await el.screenshot({path:OUT+'/'+file})}
 const g10=await b1.evaluateHandle(()=>document.querySelectorAll('section.pb-gate')[1].querySelector('.pb-stage'));await g10.asElement().screenshot({path:OUT+'/b1-g10.png'});
-const b4=await open('http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html','#c-admin');
+const b4=await open('http://127.0.0.1:8900/docs/pins2/kit/board4.html','#c-admin');
 const clickIn=async(sec,words,within)=>b4.evaluate((sec,words,within)=>{const root=document.getElementById(sec);const scope=within?(root.querySelector(within)||document.querySelector(within)):root;const h=[...scope.querySelectorAll('button,[role=tab],a,li,[role=option]')].filter(b=>!b.closest('.g-tries')).find(b=>b.textContent.replace(/\s+/g,' ').trim().toLowerCase().includes(words.toLowerCase()));if(h){h.scrollIntoView({block:'center'});h.click();return h.textContent.trim().slice(0,40)}return null},sec,words,within);
 const type=async(sec,sel,text)=>b4.evaluate((sec,sel,text)=>{const e=document.querySelector('#'+sec+' '+sel)||document.querySelector(sel);if(!e)return false;e.focus();const set=Object.getOwnPropertyDescriptor(e.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype,'value').set;set.call(e,text);e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));return true},sec,sel,text);
 // Compare, one weapon

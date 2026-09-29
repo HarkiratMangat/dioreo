@@ -26,3 +26,8 @@ Throwaway-shaped but load-bearing for Board 4: each was used to measure a claim 
 | `board4-image-well-walk.cjs` · `board4-export-card.cjs` · `board4-bulk-walk.cjs` | walks through the image well, the Export hover card and Bulk |
 | `board4-badge-gif.cjs` | a badge's motion as frames, for a gif he can judge |
 | `prep-helpers.py` | `insert_after`, the insert that asserts its line delta |
+| `r22.cjs` | 35 flows on the board — what happens when a person USES a surface, each step asserting an outcome that can fail (Escape closes a clean drawer, a build off drops its column, a list stays inside the drawer). Exit 0 and `PASS 35 FAIL 0`. It compares no two elements, so a layout defect can pass it |
+| `r20.cjs` | every state of every surface swept, screenshots to a temp folder |
+| `paths-resolve.cjs [doc …]` | every path the live docs name, against the disk and the tracked tree — exit 1 on a dead one, `UNTRACKED` listed. The instrument `docs-audit`'s skip of `plan/`, `spec/` and `final/` made necessary |
+
+The spec generators — `switches.cjs`, `overrides.cjs`, `extract-spec.cjs`, `split-spec.cjs`, `maps.cjs` — live beside their outputs in [`../final/board4-spec/`](../final/board4-spec/README.md); the command is in [`../README.md`](../README.md).

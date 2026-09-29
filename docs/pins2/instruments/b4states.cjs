@@ -14,7 +14,7 @@ const puppeteer = require(path.resolve(__dirname, '../../../node_modules/puppete
 const args = process.argv.slice(2);
 const pick = (args.find((a) => !a.startsWith('--')) || '').split(',').filter(Boolean);
 const OUT = (args.find((a) => a.startsWith('--out=')) || '').slice(6);
-const URL = 'http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html';
+const URL = 'http://127.0.0.1:8900/docs/pins2/kit/board4.html';
 const PROPS = ['color', 'background-color', 'background-image', 'border-top-color', 'border-left-color', 'box-shadow', 'outline-style', 'opacity', 'transform', 'text-decoration-line'];
 
 (async () => {

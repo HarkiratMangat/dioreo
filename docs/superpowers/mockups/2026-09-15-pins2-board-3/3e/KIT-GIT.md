@@ -3,6 +3,8 @@ kind: reference
 status: live
 ---
 
+> 🔴 **Superseded 2026-09-28 23:59 EDT:** the kit moved into `docs/pins2/kit/`, tracked, on Harkirat's call of 2026-09-28 23:27 EDT — see `docs/pins2/kit/README.md`. This is the record of the local-only arrangement it replaced.
+
 # This kit has its own local git repo — and it never leaves this machine
 
 *Set up 2026-09-20 21:33 EDT, at Harkirat's instruction: "set up a local git for the kit, i dont want it in the online github for the dioreo repo."*

@@ -1,4 +1,4 @@
-// Board 3-E's rules on SHIPPED PORTAL classes — generated. Run: node docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/overrides.cjs
+// Board 3-E's rules on SHIPPED PORTAL classes — generated. Run: node docs/pins2/final/board4-spec/overrides.cjs
 // 🔴 WHY (2026-09-21 10:24 EDT, Harkirat: "did your extractor consider the tweaks/corrections of what was actually shipped into the
 // portal from board 1 and 2 … Will session 5 be able to actually go and repair those previous designs and make them 100% now?")
 // Board 3's kit runs the portal's own code AFTER Session 2 shipped boards 1 and 2. Where he corrected that shipped design, the
@@ -7,7 +7,7 @@
 // board-only classes), and resolved-spec/ scatters them across 1.4 MB as `from: b3/board.css:NNNN`. This lists every one, live or
 // dead under switches.md, so each is a line Session 5 moves into portal/ui/app.css.
 const fs = require('fs'); const path = require('path');
-const ROOT = path.resolve(__dirname, '../../../../..'); const KIT = path.join(ROOT, 'local/pins2-board-3/redo');
+const ROOT = path.resolve(__dirname, '../../../..'); const KIT = path.join(ROOT, 'docs/pins2/kit');
 const src = fs.readFileSync(path.join(KIT, 'b3/state.js'), 'utf8');
 const D = eval('(' + src.match(/DEFAULTS\s*=\s*(\{[\s\S]*?\n\});/)[1] + ')');
 const BOARD = /^(b3|pb|g|exs|gn|dk|lab|gate|l1|mk)-/;
@@ -35,5 +35,5 @@ const out = ['---', 'kind: reference', 'status: live', '---', '', '# Board 3-E �
   '⚠️ Board 3 applied these ON TOP of the portal\'s cascade, so a row can win only because the board stylesheet loads last. When moving it into `app.css`, replace the portal\'s own declaration rather than appending a second rule, and re-probe.', '',
   '| Kit source | Selector | Declarations | Switch |', '|---|---|---|---|', ...rows, ''];
 // OUT_DIR (2026-09-27 02:43 EDT): Board 4 writes beside its own spec (docs/pins2/final/board4-spec/), so Board 3-E's record is not overwritten.
-fs.writeFileSync(path.join(process.env.OUT_DIR || __dirname, 'portal-class-rules.md'), out.join('\n').replace(/^# Board 3-E/m, process.env.OUT_DIR ? '# Board 4: Collective (the kit Board 3-E shares)' : '# Board 3-E'));
+fs.writeFileSync(path.join(process.env.OUT_DIR || __dirname, 'portal-class-rules.md'), out.join('\n').replace(/^# Board 3-E/m, '# Board 4: Collective (the kit Board 3-E shares)'));
 console.log(JSON.stringify({ live, dead, open }));

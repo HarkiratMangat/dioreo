@@ -5,11 +5,11 @@ status: live
 
 # Board 4: Collective — every kit file, and what a port does with it
 
-*Generated 2026-09-29T03:16:55.687Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `f41c691`. A file Board 3-E already labelled keeps Board 3-E's reviewed label (`../../2026-09-15-pins2-board-3/3e/file-map.md`, including its 2026-09-21 correction that `ui/app.js`, `ui/httpClient.js` and `ui/conform.js` are board chrome); a file new since then carries the rule that labelled it, marked "labelled by rule, not reviewed".*
+*Generated 2026-09-29T04:08:56.010Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `6572b9eb plus the working tree`. A file Board 3-E already labelled keeps Board 3-E's reviewed label (`../../2026-09-15-pins2-board-3/3e/file-map.md`, including its 2026-09-21 correction that `ui/app.js`, `ui/httpClient.js` and `ui/conform.js` are board chrome); a file new since then carries the rule that labelled it, marked "labelled by rule, not reviewed".*
 
 | File | Label | Goes to | Note |
 |---|---|---|---|
-| `KIT-GIT.md` | **CHROME** | — | kit documentation |
+| `README.md` | **UNLABELLED** | — | no rule covers it: decide before porting · labelled by rule, not reviewed |
 | `app.css` | **PORTAL-COPY** | `portal/ui/app.css` (source) → `portal/public/app.css` (built) | `portal-diff.md` re-locates each changed line in the SOURCE by content |
 | `b1.css` | **MIXED** | `portal/ui/app.css` | board 1's G8/G9/G10 rules that Board 4's build drawer, Compare (`.b1 .b4-cmp`) and the post drawer still wear; split by selector against `class-map.md` · labelled by rule, not reviewed |
 | `b2.css` | **MIXED** | board 2's `pb-*` card and queue rules the delivery queue still wears | Board 2's port sheet already maps `pb-*` → `b*` for the queue card |

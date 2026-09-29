@@ -6,7 +6,7 @@
 // Usage: node measure.cjs [url]   → prints each measurement; exit 1 when any rule misses.
 const path = require('path'); const os = require('os'); const fs = require('fs');
 const puppeteer = require(path.resolve(__dirname, '../../../../../node_modules/puppeteer-core'));
-const URL_ = process.argv[2] || 'http://127.0.0.1:8900/local/pins2-board-3/redo/board3e.html';
+const URL_ = process.argv[2] || 'http://127.0.0.1:8900/docs/pins2/kit/board3e.html';
 (async () => {
   const b = await puppeteer.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: 'new', userDataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'b3e-measure-')) });
   const p = await b.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(String(e)));

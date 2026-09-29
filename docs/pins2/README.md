@@ -15,6 +15,7 @@ status: live
 4. **[The handoff, gate by gate](final/board4-spec/HANDOFF.md)** — every current ruling, what the data needs, what was never opened — then the generated values beside it ([`final/board4-spec/README.md`](final/board4-spec/README.md) says the order).
 5. **[His words](handoffs/2026-09-21-board4-intake.md)** — every intake round verbatim and dated, grouped by class, with what was built and measured after each. Where this file, the handoff or the plan paraphrase him, this log wins.
 6. **The ledger** — `docs/reference/portal-decision-ledger.md` (`ctx_search`, never `rg`): the portal's settled decisions, Board 4's included.
+7. **The board itself** — [`kit/`](kit/README.md): serve the repo with `repo-static` and open `/docs/pins2/kit/board4.html`.
 
 ## What is where
 
@@ -22,20 +23,23 @@ status: live
 |---|---|---|
 | [`plan/`](plan/) | the batch-2 plan — Sessions 1–5, their prompts, the gates, the close procedure | plan, live |
 | [`spec/`](spec/) | the batch-2 design spec (2026-09-13) — frozen; the plan records every place it is superseded | spec, frozen |
-| [`final/`](final/) | `FINAL.md` and `lineage.md` (how boards 1–3 became Board 4), and `board4-spec/` — the handoff plus every value generated from the kit | reference |
+| [`final/`](final/) | `FINAL.md` and `lineage.md` (how boards 1–3 became Board 4), and `board4-spec/` — the handoff, every value generated from the kit, and the scripts that generate them | reference |
 | [`handoffs/`](handoffs/) | Session 3's records: the intake log, the fix plans (v11, v15), the critiques, checkpoints, compact preps | record |
 | [`records/`](records/) | the Session 1–2 drafts and checkpoints, and History's constraint table and change inventory (read these only when touching History, C8) | record |
 | [`instruments/`](instruments/) | the Board 4 measuring scripts — [`README.md`](instruments/README.md) lists each and when to run it | reference |
+| [`kit/`](kit/) | the Board 4 kit — the design code itself, tracked. [`README.md`](kit/README.md) says how to serve, open and publish it | reference |
 | [`data/`](data/) | source data the boards used — the CODM mode icons (the Modes badge family) and the weapons-and-attachments source | data |
 | [`intake-shots/`](intake-shots/) | the screenshots his intake and the handoff cite, by round, tracked so a fresh clone can see what he pointed at | images |
 
-## State — as of 2026-09-28 23:12 EDT
+## State — as of 2026-09-29 00:12 EDT
 
 | | |
 |---|---|
 | Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 40** live |
-| The kit | `local/pins2-board-3/redo/` at kit commit `f41c691` — gitignored today, with its own local git repo. **Moving into `docs/pins2/kit/`, tracked** — his call at 2026-09-28 23:28 EDT: "why not just move the board to the new collective folder? wasn't that kind of the point of it?" (deferred list: *Move the Board 4 kit into docs/pins2/*) |
-| The spec | `final/board4-spec/` regenerated from kit `f41c691` |
+| The kit | [`kit/`](kit/README.md), **tracked** — moved here from the gitignored `local/pins2-board-3/redo/` on his call of 2026-09-28 23:27 EDT (*"why not just move the board to the new collective folder?"*). Its git history to the move stays local: `git -C local/pins2-board-3 log --stat` |
+| The spec | `final/board4-spec/`, **regenerated 2026-09-29 00:12 EDT from the tracked kit** — its header carries the counts. The `C*.md` and `states.md` that sat in the live folder before were from kit `ecc93ee`, *before* Version 39: `split-spec.cjs` had written the Version 40 values into a folder nothing pointed at |
+| Board 3-E | **superseded by Board 4** (his 2026-09-28 23:27 EDT). `3e/` in board 3's package is history: `handoff-3e.md` survives only as the inherited *structure* narrative `HANDOFF.md` cites, and the generators moved to `final/board4-spec/` |
+| Publishing the kit | 🔴 he said on 2026-09-20 21:33 EDT that the kit was not to go on the online GitHub. It is tracked now, so a push or a merge into `v3-pre-release` that carries `kit/` puts it there — the approval sentence names it (plan §13 Step 1). Not decided |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
 | Next | his Version 40 intake round (log only, `handoffs/2026-09-21-board4-intake.md` § Version 40 intake round), then Session 3's close, then Session 4 |
 
@@ -47,23 +51,27 @@ status: live
 | a screenshot he gives | `intake-shots/<round>/`, run through `pngquant`, cited by that path |
 | a handoff, compact prep or checkpoint | `handoffs/`, named `YYYY-MM-DD-board4-<topic>.md` |
 | a measuring script | `instruments/`, with a line in its README |
-| a change to the kit | the kit, then regenerate the spec (below) in the same run |
+| a change to the kit | [`kit/`](kit/README.md), then regenerate the spec (below) in the same run — and read the mtimes of what it wrote |
 
 **Regenerate the spec** after any kit change, with the board served (`preview_start` → `repo-static`):
 
 ```bash
-D=docs/superpowers/mockups/2026-09-15-pins2-board-3/3e; O=docs/pins2/final/board4-spec
-OUT_DIR=$O node $D/switches.cjs && OUT_DIR=$O node $D/overrides.cjs
-BOARD=4 node $D/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $D/split-spec.cjs $TMPDIR/b4-spec.md
+O=docs/pins2/final/board4-spec
+node $O/switches.cjs && node $O/overrides.cjs
+BOARD=4 node $O/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $O/split-spec.cjs $TMPDIR/b4-spec.md
 node $O/maps.cjs
 ```
+
+**The extractor is not deterministic on Board 4** (measured 2026-09-29): three fresh runs of the same kit specced 1420, 1425 and 1428 looks and two runs differ in about 300 lines both ways, so a spec diff after a kit change carries that noise — judge a change against it, not against zero.
+
+**Prove the docs still point at things:** `node docs/pins2/instruments/paths-resolve.cjs` reads every path the live docs name and exits 1 on a dead one. `docs-audit`'s `xref` skips `plan/`, `spec/` and `final/`, so nothing else does. **Prove the board still works:** `node docs/pins2/instruments/r22.cjs` walks 35 flows with the kit on :8900.
 
 ## Left in place, and why
 
 | Where | What | Why it stays |
 |---|---|---|
-| `docs/superpowers/mockups/2026-09-14-pins2-board/`, `…-pins2-board-2/`, `…2026-09-15-pins2-board-3/` | boards 1, 2 and 3 — their packages, resolved specs and board 3-E's handoff | dated design history; Board 4 carries their designs corrected. **Board 3's `3e/` folder is also the spec generator** the command above runs |
+| `docs/superpowers/mockups/2026-09-14-pins2-board/`, `…-pins2-board-2/`, `…2026-09-15-pins2-board-3/` | boards 1, 2 and 3 — their packages, resolved specs and Board 3-E's `handoff-3e.md` and `3e/` | dated design history; Board 4 carries their designs corrected. `handoff-3e.md` is also the inherited structure narrative `HANDOFF.md` cites, and `3e/measure.cjs` the only relations file there is |
 | `docs/portal/portal-sync-notes.md` and `docs/portal/portal-pins/` | the pin log and its crops (the 57 review pins began there) | the portal's own working records |
 | `docs/reference/portal-decision-ledger.md` | settled decisions, Board 4's included | a lookup doc for the whole portal |
 | `docs/db-deferred-list.md` | the Board 4 entries (search "Board 4") — ported work Session 5 carries, states never opened, the badge set | the project's one deferred list |
-| `local/pins2-board-3/` | the kit and the review folders | gitignored working files |
+| `local/pins2-board-3/` | the kit's old git history (`.git`), `board4-review/` (the review renders and the flow scripts' older copies) and `redo/shots/` (277 MB of screenshots) | gitignored working files; the kit itself is `kit/` |

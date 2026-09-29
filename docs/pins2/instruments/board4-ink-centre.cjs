@@ -8,7 +8,7 @@ const extra = process.argv[2] || '', K = +(process.env.DSF || 4), N = +(process.
 (async () => {
   const b = await chromium.launch({ channel: 'chrome' });
   const p = await b.newPage({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: K });
-  await p.goto('http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
+  await p.goto('http://127.0.0.1:8900/docs/pins2/kit/board4.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
   await p.emulateMedia({ reducedMotion: 'reduce' }); await p.mouse.move(2, 2);
   await p.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' + extra }); await p.waitForTimeout(200);
   const rows = await p.$$(process.env.SEL || '#manifest .wg-h'); const out = [];

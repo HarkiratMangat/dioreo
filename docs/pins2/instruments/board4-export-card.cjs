@@ -5,7 +5,7 @@ const O = __dirname + '/w';
 (async () => {
   const b = await chromium.launch({ channel: 'chrome' }); const p = await b.newPage({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: 1.5 });
   const errs = []; p.on('pageerror', (e) => errs.push(String(e)));
-  await p.goto('http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
+  await p.goto('http://127.0.0.1:8900/docs/pins2/kit/board4.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
   const sec = p.locator('#c-export'); await sec.locator('.pb-ctl button', { hasText: 'Picker' }).first().click(); await p.waitForTimeout(1300);
   const d = sec.locator('.drawer').first(); await d.scrollIntoViewIfNeeded();
   const side = d.locator('.b3-xt-side');

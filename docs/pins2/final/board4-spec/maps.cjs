@@ -8,12 +8,12 @@
 //   class-map.md   every class the Board 4 spec renders that no portal stylesheet defines, with the kit file:line that does
 //   token-map.md   every custom property the Board 4 spec reads that the portal does not define, with the kit's definition
 const fs = require('fs'); const path = require('path'); const { execFileSync } = require('child_process');
-// docs/pins2/final/board4-spec since 2026-09-28 23:16 EDT (it was one level deeper under docs/superpowers/mockups/) const KIT = path.join(ROOT, 'local/pins2-board-3/redo'); const PORTAL = path.join(ROOT, 'portal');
-const ROOT = path.resolve(__dirname, '../../../..'); const KIT = path.join(ROOT, 'local/pins2-board-3/redo'); const PORTAL = path.join(ROOT, 'portal');
+// docs/pins2/final/board4-spec since 2026-09-28 23:16 EDT (it was one level deeper under docs/superpowers/mockups/) const KIT = path.join(ROOT, 'docs/pins2/kit'); const PORTAL = path.join(ROOT, 'portal');
+const ROOT = path.resolve(__dirname, '../../../..'); const KIT = path.join(ROOT, 'docs/pins2/kit'); const PORTAL = path.join(ROOT, 'portal');
 const MAP3E = path.join(ROOT, 'docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/file-map.md');
 const STAMP = new Date().toISOString();
-const kitHead = (() => { try { return execFileSync('git', ['-C', KIT, 'log', '-1', '--format=%h'], { encoding: 'utf8' }).trim(); } catch { return 'unknown'; } })();
-const fm = (title, lead) => ['---', 'kind: reference', 'status: live', '---', '', `# Board 4: Collective — ${title}`, '', `*Generated ${STAMP} by \`maps.cjs\` from \`local/pins2-board-3/redo/\` at kit commit \`${kitHead}\`. ${lead}*`, ''];
+const kitHead = (() => { try { return require('child_process').execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim() + ' plus the working tree'; } catch (e) { return 'unknown'; } })();
+const fm = (title, lead) => ['---', 'kind: reference', 'status: live', '---', '', `# Board 4: Collective — ${title}`, '', `*Generated ${STAMP} by \`maps.cjs\` from \`docs/pins2/kit/\` at repo commit \`${kitHead}\`. ${lead}*`, ''];
 const walk = (d, skip) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => { const p = path.join(d, e.name); const r = path.relative(KIT, p);
   if (e.name.startsWith('.') || skip.some((s) => r === s || r.startsWith(s + '/'))) return []; return e.isDirectory() ? walk(p, skip) : [r]; });
 const files = walk(KIT, ['vendor', 'node_modules', 'shots']).sort();

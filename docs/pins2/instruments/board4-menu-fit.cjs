@@ -14,7 +14,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const br = await puppeteer.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: 'new' });
     const p = await br.newPage(); await p.setViewport({ width: 1440, height: H, deviceScaleFactor: 2 });
     const errs = []; p.on('pageerror', (e) => errs.push(String(e).slice(0, 160)));
-    await p.goto('http://localhost:8900/local/pins2-board-3/redo/board4.html', { waitUntil: 'networkidle0', timeout: 60000 }); await wait(2500);
+    await p.goto('http://localhost:8900/docs/pins2/kit/board4.html', { waitUntil: 'networkidle0', timeout: 60000 }); await wait(2500);
     await p.evaluate(() => { const h = [...document.querySelectorAll('h1,h2,h3')].find((x) => x.textContent.trim() === 'New build'); let g = h; while (!g.querySelector('.seg')) g = g.parentElement; [...g.querySelector('.seg').querySelectorAll('button')].find((b) => b.textContent.trim() === 'Add · filled').click(); });
     await wait(900);
     const ids = await p.evaluate(() => { const d = document.querySelector('.drawer .f-form').closest('.drawer'); d.scrollIntoView({ block: 'start' }); return [...d.querySelectorAll('input[role=combobox]')].map((i) => i.id); });

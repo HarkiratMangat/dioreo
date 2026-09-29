@@ -26,7 +26,7 @@ He is looking at the **published v6** (https://claude.ai/artifact/FCAFvDXrKQN28S
 
 ## The publish LESSON regardless
 
-Never re-upload an artifact's whole tree to change a few files — **publish only the changed files**; the host keeps the rest. The files changed vs v5 are: `b4.css`, `local/pins2-board-3/redo/gates4/main.js`, `local/pins2-board-3/redo/gates4/surfaces.js`, `local/pins2-board-3/redo/ui/manifest.js`, `local/pins2-board-3/redo/ui/broadcast.js`, `local/pins2-board-3/redo/ui/armory.js`, `local/pins2-board-3/redo/b3/armory-parts.js`, `local/pins2-board-3/redo/b3/history.js`, `local/pins2-board-3/redo/b3/drawer.js`, `local/pins2-board-3/redo/gates/armory.js`, `local/pins2-board-3/redo/gates/history.js`, `b1.css`, `board4.html`.
+Never re-upload an artifact's whole tree to change a few files — **publish only the changed files**; the host keeps the rest. The files changed vs v5 are: `b4.css`, `docs/pins2/kit/gates4/main.js`, `docs/pins2/kit/gates4/surfaces.js`, `docs/pins2/kit/ui/manifest.js`, `docs/pins2/kit/ui/broadcast.js`, `docs/pins2/kit/ui/armory.js`, `docs/pins2/kit/b3/armory-parts.js`, `docs/pins2/kit/b3/history.js`, `docs/pins2/kit/b3/drawer.js`, `docs/pins2/kit/gates/armory.js`, `docs/pins2/kit/gates/history.js`, `b1.css`, `board4.html`.
 
 ## What was BUILT this session (local, committed; kit HEAD `5efa239`, nothing pushed) — built, NOT confirmed good
 

@@ -5,7 +5,7 @@ const fs = require('fs');
 const O = __dirname + '/ass'; fs.mkdirSync(O, { recursive: true });
 (async () => {
   const b = await chromium.launch({ channel: 'chrome' }); const p = await b.newPage({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: 3 });
-  await p.goto('http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
+  await p.goto('http://127.0.0.1:8900/docs/pins2/kit/board4.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
   const h = p.locator('#manifest .wg-h', { hasText: 'KILO 141' }).first(); await h.scrollIntoViewIfNeeded(); await p.mouse.move(2, 2);
   const bd = h.locator('.b3-bdg[data-k=ass]');
   for (const opt of ['a', 'b', 'c']) {

@@ -11,15 +11,15 @@ His asks (2026-09-23 00:10–00:14 EDT): harshly nitpick the Bulk create panel; 
 
 | # | Fault | Cause | Fix | File |
 |---|---|---|---|---|
-| 1 | History's and Broadcast's row glow read grey | Board 4 rewrote both from raw `--c` and dropped board 3's round-15D oklch lift; their hues sit near L .6 | every manifest row (Armory, Broadcast, History) glows in `--glo`, its hue lifted to at least L .72 | `local/pins2-board-3/redo/b4.css` |
-| 2 | The build drawer changed height with its content: 860px for a form, 588px while typing a Bulk block | only `max-height` was set | the drawer keeps `min(84vh, 860px)` in every state | `local/pins2-board-3/redo/b4.css` |
-| 3 | The form scrolled under the header's rule with a hard cut | a mask on the scroller would clip the header controls it carries | ~~a header lift~~ → **replaced in Round 2 (his ruling, local only)**: the form column scrolls with the board's `.b3-fady` fade | `local/pins2-board-3/redo/b4.css` |
-| 4 | A wheel at the end of a drawer's scroll moved the board behind it | `overscroll-behavior:auto` | `contain` on every drawer scroller and textarea | `local/pins2-board-3/redo/b4.css` |
-| 5 | The image tile stopped 35–97px short of its column | a fixed 16:10 tile beside a 150–207px column | the tile fills the well's height, never under 110px | `local/pins2-board-3/redo/b4/form.css` |
-| 6 | "Next free key" sat under the word Key, not under the key field | the hint was a sibling of the key row | the hint renders in the key row's field column | `local/pins2-board-3/redo/b4/form.js`, `local/pins2-board-3/redo/b4/form.css` |
-| 7 | "Discard this draft?" confirmed in success green | the confirm was called without `danger` | red, like every destructive confirm | `local/pins2-board-3/redo/b3/drawer.js` |
-| 8 | The faded example's text ran half-cut above and below its line (form preview, Bulk empty) | the line lay on the example with no clearing | the example opens a clearing where the line sits; wider in the form | `local/pins2-board-3/redo/b4/classes.css` |
-| 9 | Compare Table A: the badge dot hung at the end of the first line | the badge group wraps in a narrow head | the dot is dropped inside a column head | `local/pins2-board-3/redo/b4/compare.css` |
+| 1 | History's and Broadcast's row glow read grey | Board 4 rewrote both from raw `--c` and dropped board 3's round-15D oklch lift; their hues sit near L .6 | every manifest row (Armory, Broadcast, History) glows in `--glo`, its hue lifted to at least L .72 | `docs/pins2/kit/b4.css` |
+| 2 | The build drawer changed height with its content: 860px for a form, 588px while typing a Bulk block | only `max-height` was set | the drawer keeps `min(84vh, 860px)` in every state | `docs/pins2/kit/b4.css` |
+| 3 | The form scrolled under the header's rule with a hard cut | a mask on the scroller would clip the header controls it carries | ~~a header lift~~ → **replaced in Round 2 (his ruling, local only)**: the form column scrolls with the board's `.b3-fady` fade | `docs/pins2/kit/b4.css` |
+| 4 | A wheel at the end of a drawer's scroll moved the board behind it | `overscroll-behavior:auto` | `contain` on every drawer scroller and textarea | `docs/pins2/kit/b4.css` |
+| 5 | The image tile stopped 35–97px short of its column | a fixed 16:10 tile beside a 150–207px column | the tile fills the well's height, never under 110px | `docs/pins2/kit/b4/form.css` |
+| 6 | "Next free key" sat under the word Key, not under the key field | the hint was a sibling of the key row | the hint renders in the key row's field column | `docs/pins2/kit/b4/form.js`, `docs/pins2/kit/b4/form.css` |
+| 7 | "Discard this draft?" confirmed in success green | the confirm was called without `danger` | red, like every destructive confirm | `docs/pins2/kit/b3/drawer.js` |
+| 8 | The faded example's text ran half-cut above and below its line (form preview, Bulk empty) | the line lay on the example with no clearing | the example opens a clearing where the line sits; wider in the form | `docs/pins2/kit/b4/classes.css` |
+| 9 | Compare Table A: the badge dot hung at the end of the first line | the badge group wraps in a narrow head | the dot is dropped inside a column head | `docs/pins2/kit/b4/compare.css` |
 
 Checked after the last edit: drawer heights 860 in five states; key field and hint both at x 543; tile and column both 813–992; header lift 0 at the top and 1 at 140px; `overscroll-behavior: contain`; Discard is `btn dang`; the glows' computed first radial is the lifted hue. The flow test (`local/pins2-board-3/board4-review/r22.cjs`) passes with no FAIL. Shots: `local/pins2-board-3/board4-review/v14prep/v2/`, `local/pins2-board-3/board4-review/v14prep/fa/`.
 
@@ -40,17 +40,17 @@ Checked after the last edit: drawer heights 860 in five states; key field and hi
 
 ## Round 2 — the header lift replaced by the board's fade (2026-09-23 08:32–08:54 EDT) — **published as Version 15 at 2026-09-23 09:26 EDT** on his yes ("yes publish v15", 09:25 EDT): board4.html plus the six changed files, each matching its local byte size in the artifact's file listing
 
-His ruling, 08:32 EDT: *"keeping it stick is the correction direction but the lift is the wrong method of implementing it. Use the fading method we already utilize elsewhere, such as the tile's scrolling in Export's Pick builds... panel."* The method is `.b3-fady` (`local/pins2-board-3/redo/b3/fady.js`): a mask whose top and bottom depths are read from the scroller's own position, so a run that fits has no fade.
+His ruling, 08:32 EDT: *"keeping it stick is the correction direction but the lift is the wrong method of implementing it. Use the fading method we already utilize elsewhere, such as the tile's scrolling in Export's Pick builds... panel."* The method is `.b3-fady` (`docs/pins2/kit/b3/fady.js`): a mask whose top and bottom depths are read from the scroller's own position, so a run that fits has no fade.
 
 | Change | Why | File |
 |---|---|---|
-| the header lift removed | his ruling | `local/pins2-board-3/redo/b4.css` |
-| the form column (`.f-form`) and the preview column (`.f-side`) are the scrollers, each `.b3-fady`; `.dw-b` no longer scrolls for Add build | a mask on `.dw-b` would clip the header controls it carries | `local/pins2-board-3/redo/b4.css`, `local/pins2-board-3/redo/b4/form.js` |
-| the form grid's row is capped (`minmax(0,1fr)`) and both columns stretch to it | an auto row grew to the form's 1160px, then `align-items:start` kept the column at its content height | `local/pins2-board-3/redo/b4.css` |
-| the column clips sideways; a list inside it is never wider than the column | a list wider than its field overflowed the column and scrolled it 69px sideways | `local/pins2-board-3/redo/b4.css` |
-| a picker's list scrolls only itself | `scrollIntoView` on the highlighted row also scrolled the column, up and sideways, as a list opened | `local/pins2-board-3/redo/b4/form.js` (the same Picker serves Compare's weapon search) |
-| the Stage-reason jump finds the column and scrolls before it focuses | it looked for `.dw-b`; and focusing opened the picker, whose row scroll cut a smooth scroll short | `local/pins2-board-3/redo/b3/drawer.js` |
-| Bulk's result list uses `.b3-fady` with a 110px bottom depth | it had an always-on mask that dimmed the first and last card even when the list fit | `local/pins2-board-3/redo/b4/bulk.css`, `local/pins2-board-3/redo/b4/bulk.js`, `local/pins2-board-3/redo/b3/fady.js` (`--fdb`) |
+| the header lift removed | his ruling | `docs/pins2/kit/b4.css` |
+| the form column (`.f-form`) and the preview column (`.f-side`) are the scrollers, each `.b3-fady`; `.dw-b` no longer scrolls for Add build | a mask on `.dw-b` would clip the header controls it carries | `docs/pins2/kit/b4.css`, `docs/pins2/kit/b4/form.js` |
+| the form grid's row is capped (`minmax(0,1fr)`) and both columns stretch to it | an auto row grew to the form's 1160px, then `align-items:start` kept the column at its content height | `docs/pins2/kit/b4.css` |
+| the column clips sideways; a list inside it is never wider than the column | a list wider than its field overflowed the column and scrolled it 69px sideways | `docs/pins2/kit/b4.css` |
+| a picker's list scrolls only itself | `scrollIntoView` on the highlighted row also scrolled the column, up and sideways, as a list opened | `docs/pins2/kit/b4/form.js` (the same Picker serves Compare's weapon search) |
+| the Stage-reason jump finds the column and scrolls before it focuses | it looked for `.dw-b`; and focusing opened the picker, whose row scroll cut a smooth scroll short | `docs/pins2/kit/b3/drawer.js` |
+| Bulk's result list uses `.b3-fady` with a 110px bottom depth | it had an always-on mask that dimmed the first and last card even when the list fit | `docs/pins2/kit/b4/bulk.css`, `docs/pins2/kit/b4/bulk.js`, `docs/pins2/kit/b3/fady.js` (`--fdb`) |
 | ~~Bulk and Edit's editor column as the scroller~~ → reverted (`7fe1164`) | the editor's frame sits inside the scroller, so its top edge faded away when scrolled; filed | — |
 
 Checked after the last edit: Form A, B and C filled and DMZ scrolled (fade 28px at a scrolled edge, 0 at a closed one; tile and column 796–975 in B, 815–994 in C; key field and hint on one edge); three builds (card edge 4px inside the column, the attachment list inside it, `scrollLeft` 0); the reason jump in two states (field 65px and 231px below the column top, pulse on); the header controls hit-test to themselves; Bulk list fade 28/17 at 60px and the last card 155px above the footer at the end; the Export picker's fade unchanged (28/28); the flow test PASS 35, FAIL 0. Shots: `local/pins2-board-3/board4-review/v14prep/v3/`, `local/pins2-board-3/board4-review/v14prep/v4/`.

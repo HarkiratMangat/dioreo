@@ -5,6 +5,8 @@ status: live
 
 # Board 3-E → Sessions 4 and 5 · the handoff
 
+> 🔴 **SUPERSEDED by Board 4: Collective — Harkirat, 2026-09-28 23:27 EDT: "board 3-e got superseded by board 4".** Frozen at Board 3-E v77; start at `docs/pins2/README.md`. This file survives as the inherited structure narrative that Board 4's `HANDOFF.md` cites (§1: M1, M2, M3, B1, H1); the kit (`docs/pins2/kit/`) and `HANDOFF.md` win where they differ. The generators named below moved to `docs/pins2/final/board4-spec/` on 2026-09-28 23:59 EDT, the kit moved to `docs/pins2/kit/`, and Session 4 records its decisions in the plan's §10.6, not in §10 below.
+
 *Rewritten 2026-09-21 09:43 EDT, when Harkirat asked for a spec that ports **100%** of the board with *"no mistakes"* — board 2's reached ~95%. The first version of this file (2026-09-21 00:02 EDT) was a narrative of decisions; this one is a specification. Plan: `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md` §10.5.*
 
 **Board 3 closed by Harkirat 2026-09-20 23:55 EDT** — *"the board is more or less done now."* Published at https://claude.ai/artifact/2LxjJwzsg7odUiJKmvq2Jo, **version 77**.
@@ -38,7 +40,7 @@ status: live
 🔴 **WHY BOARD 2 STOPPED AT 95% — its own deferred list says it, and it is not the spec.** `docs/db-deferred-list.md` § *Point the conformance instruments at the board that holds the live design*: *"A resolved spec alone does not close it; board 2 shipped a 3,316-line one on 2026-09-14 and the port diverged anyway."* Nothing compared the PORTAL against the board after the build. `portalProbe` now can, and it reaches 3-E — proven 2026-09-21 09:46 EDT with its own falsifier, the board against itself, *"every property agrees"*:
 
 ```bash
-node scripts/portalProbe.mjs --realm armory --mockup local/pins2-board-3/redo --mk-page board3e.html --mk-sel '#g-export .exs-i .b3-btn2.stage' --sel '<the portal selector>' --chain --no-seed
+node scripts/portalProbe.mjs --realm armory --mockup docs/pins2/kit --mk-page board3e.html --mk-sel '#g-export .exs-i .b3-btn2.stage' --sel '<the portal selector>' --chain --no-seed
 ```
 
 The board side is scoped by gate (`#g-export`, `#g-history`, `#g-armory-manifest`, `#g-repairs`, `#g-queue`); the portal side by its own class. A difference is a defect unless a ledger row cites it.
@@ -47,7 +49,7 @@ The board side is scoped by gate (`#g-export`, `#g-history`, `#g-armory-manifest
 
 ⚠️ **Three things are Session 4's, not Session 5's:** naming the 204 board-only classes and the new tokens for the portal (§5c owns the element system and its names); the three portal defects in §5; and the control family already deferred to §5c.3b. Session 5 builds from what Session 4 names.
 
-⚠️ **The kit itself stays local**, at Harkirat's instruction (*"i dont want it in the online github"*): `local/pins2-board-3/redo/`, with its own git described in `3e/KIT-GIT.md`, head `b5e3f68`. Everything a builder needs from it is DERIVED into this folder, and the DESIGN-CODE files are read from the kit on this machine. A session in a fresh clone or a worktree without `local/` must stop and say so rather than rebuild from the values alone.
+⚠️ **The kit itself stays local**, at Harkirat's instruction (*"i dont want it in the online github"*): `docs/pins2/kit/`, with its own git described in `3e/KIT-GIT.md`, head `b5e3f68`. Everything a builder needs from it is DERIVED into this folder, and the DESIGN-CODE files are read from the kit on this machine. A session in a fresh clone or a worktree without `local/` must stop and say so rather than rebuild from the values alone.
 
 ---
 
@@ -351,7 +353,7 @@ He gave seven items, I fixed them, then he validated each one and **overturned m
 
 ### Two mechanisms this span created
 
-1. 🔴 **The kit has its own git.** `local/pins2-board-3/redo/.git`, first commit `64b7a57`, one commit per round, no remote, a `pre-push` hook that refuses one, `shots/` excluded, README at `KIT-GIT.md`. **It exists because he asked for a revert and there was nothing to revert to.**
+1. 🔴 **The kit has its own git.** `docs/pins2/kit/.git`, first commit `64b7a57`, one commit per round, no remote, a `pre-push` hook that refuses one, `shots/` excluded, README at `KIT-GIT.md`. **It exists because he asked for a revert and there was nothing to revert to.**
 2. **The session transcript is the version store for anything gitignored.** This repo's heredoc contract puts the previous text into every `assert <anchor> in t`, so `~/.claude/projects/<slug>/*.jsonl` carries the exact prior state of anything a heredoc edited. codebase-memory does **not** (one current graph, no content history), and the artifact service's `ver` needs a `<unix>-<hash>` id that nothing enumerates.
 
 ---
@@ -366,7 +368,7 @@ He gave seven items, I fixed them, then he validated each one and **overturned m
 
 | Surface | Board | Spec | Board 3 draws it? | How Session 5 closes it |
 |---|---|---|---|---|
-| Armory manifest | 2 · G4 | `../2026-09-14-pins2-board-2/resolved-spec-full.md` + `port-g4-g3-g11.md` | **Yes — M1** | board 3's spec; `portalProbe --mockup local/pins2-board-3/redo --mk-page board3e.html --mk-sel '#g-armory-manifest …'` |
+| Armory manifest | 2 · G4 | `../2026-09-14-pins2-board-2/resolved-spec-full.md` + `port-g4-g3-g11.md` | **Yes — M1** | board 3's spec; `portalProbe --mockup docs/pins2/kit --mk-page board3e.html --mk-sel '#g-armory-manifest …'` |
 | History chips and manifest | 2 · G11 | same | **Yes — H1** | board 3 |
 | Delivery-queue card | 1 · G8 / 2 · G3 | `port-g4-g3-g11.md` | **Yes — B1** | board 3 |
 | Export | — | — | **Yes — M3** | board 3 |
@@ -431,7 +433,7 @@ A pins-2 answer is newer than board 2's spec. Board 2's port sheet already carri
 **The contract, per decision:**
 
 1. **Write a row below** — the element, the board's value, the new value, his words with the time, and which `3e/` files it touches.
-2. **If it changes what the board shows** (a switch, a spacing value, a component, a class-level rule such as §5's three defects), change the KIT — `local/pins2-board-3/redo/`, committed to its local git — then move that switch out of ⏳ in `3e/switches.cjs`'s `RULED` map, run `switches.cjs → overrides.cjs → extract-spec.cjs → split-spec.cjs → measure.cjs`, and commit the regenerated files. ⚠️ `portal-diff.md`, `token-map.md`, `class-map.md` and `file-map.md` have NO generator — they are maintained by hand: amend the row a decision touches. The regenerated spec then describes the decision, not the old board.
+2. **If it changes what the board shows** (a switch, a spacing value, a component, a class-level rule such as §5's three defects), change the KIT — `docs/pins2/kit/`, committed to its local git — then move that switch out of ⏳ in `3e/switches.cjs`'s `RULED` map, run `switches.cjs → overrides.cjs → extract-spec.cjs → split-spec.cjs → measure.cjs`, and commit the regenerated files. ⚠️ `portal-diff.md`, `token-map.md`, `class-map.md` and `file-map.md` have NO generator — they are maintained by hand: amend the row a decision touches. The regenerated spec then describes the decision, not the old board.
 3. **If it is copy only** (a rewrite), it lives in plan §10.6's small-text table and in a row below; the resolved-spec text cell is superseded by that row.
 4. **Session 4 is not closed while `switches.md` shows an ⏳ switch it decided.**
 

@@ -6,7 +6,7 @@ const fs = require('fs'), cp = require('child_process');
   const b = await chromium.launch({ channel: 'chrome' });
   for (const K of [2, 4]) {
     const p = await b.newPage({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: K });
-    await p.goto('http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
+    await p.goto('http://127.0.0.1:8900/docs/pins2/kit/board4.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
     await p.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' });
     await p.locator('#c-new-build .pb-ctl button', { hasText: 'Add · filled' }).first().click(); await p.waitForTimeout(1200); await p.mouse.move(2, 2);
     const rows = p.locator('#c-new-build .drawer .f-sec > .f-row, #c-new-build .drawer .f-att');

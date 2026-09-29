@@ -13,7 +13,7 @@
 const fs = require('fs'); const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const CENSUS = path.join(ROOT, 'local', 'census', 'census.json');
-const MAP = path.join(ROOT, 'docs', 'superpowers', 'mockups', '2026-09-21-pins2-final', 'element-map.json');
+const MAP = path.join(ROOT, 'docs', 'pins2', 'final', 'element-map.json');
 if (!fs.existsSync(CENSUS)) { console.error('no census — run node scripts/portalCensus.cjs first'); process.exit(2); }
 const census = JSON.parse(fs.readFileSync(CENSUS, 'utf8'));
 const map = fs.existsSync(MAP) ? JSON.parse(fs.readFileSync(MAP, 'utf8')) : { standards: {}, families: {}, loose: {} };

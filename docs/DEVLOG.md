@@ -253,6 +253,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-17 17:14 EDT — portal pins batch 2 — one badge, thirteen attempts, and the 32 threads it displaced (v3.85.0-pre)
 - 2026-09-17 20:04 EDT — portal pins batch 2 — the 32 threads, regrouped by the class each was an instance of (v3.85.0-pre)
 - 2026-09-17 23:29 EDT — Portal pins batch 2, Session 3: board 3 swept twice, the problem card rebuilt, his 32 threads re-read clause by clause (v3.85.0)
+- 2026-09-29 00:33 EDT — portal pins batch 2 — the Session 4/5 sweep, read the way Session 4 reads it: the kit moved into docs/pins2/kit, Board 3-E retired as an input, and a spec a night stale found and regenerated (v3.85.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4456,6 +4457,16 @@ Two defects surfaced on the way to a green suite, neither of them board work. `s
 **The audit.** Asked to re-read all 32 threads against the board, the honest count was that about half of those called closed were not. Threads had been closed by the change made, not by checking every clause. He deferred the control family (toggle label, chip, switch, readout) to Session 4, fully documented as plan §5c.3b. Everything else was fixed and looked at in the state its thread names (round 4s). Board 3-D is at version 16.
 
 **Lessons.** A popover is verified in every placement it can open in. A rule in a comment is not applied by the comment. Before writing a rule for an element, find every rule already styling it. Close a thread only when every clause is met. A script's output is evidence for a judgement, never a substitute for one; he said so plainly when the audit turned into probes.
+
+## 2026-09-29 00:33 EDT — portal pins batch 2 — the Session 4/5 sweep, read the way Session 4 reads it: the kit moved into docs/pins2/kit, Board 3-E retired as an input, and a spec a night stale found and regenerated (v3.85.0-pre)
+
+Harkirat's verdict on the first sweep, 2026-09-28 23:27 EDT: *"why not just move the board to the new collective folder? wasn't that kind of the point of it?"* and *"board 3-e got superseded by board 4 … that fact your asking questions like that makes me doubt your quality, scope, thoroughness."* The first sweep had gathered files by name. This one opened the plan at §11, the prompt a Session 4 is pasted, and asked of every generated file when it was last written.
+
+**What reading it cold found.** The plan's §5c, §5d, §10.5 and both session prompts still sent Sessions 4 and 5 to Board 3-E's handoff as the spec and told them the kit was local-only with a *stop if absent*. `XREF_SKIP_PREFIXES`, widened the night before to clear 140 errors, meant no gate read a path in the plan, FINAL or HANDOFF, so seven Structure links were dead under a green audit. `split-spec.cjs` wrote its Board 4 values into the OLD folder, so the folder every doc named held the values of kit `ecc93ee`, before Version 39, and the maps were computed from them and dated as current — three docs said "regenerated from f41c691". `r22.cjs`, the 35-flow instrument, had three Compare checks on selectors Version 39 had removed. Twelve linksee anchors were still active with dead paths. And the move itself contradicted his 2026-09-20 21:33 EDT instruction that the kit not go on the online GitHub; nothing had set the two side by side.
+
+**What changed.** The kit is tracked at `docs/pins2/kit/` (121 files, the old kit repo's list and the main repo's identical), the generators live beside their outputs, the spec is regenerated from the tracked kit, the plan, FINAL, HANDOFF and the ledger name Board 4 as the spec and `handoff-3e.md` as inherited structure only, `paths-resolve.cjs` reads the docs the audit skips, the handoff-check's plan pattern and the audit's anti-skim check learned `docs/pins2/plan/` (a green-looking move had broken `npm test`'s pointer-chain check), and the kit's question is filed for him at the push.
+
+**Lessons.** Read the mtimes of what a generator wrote, not its commit message. An exclusion that silences a gate removes its only reader. An instrument nobody ran is a claim about markup that moved. Search the record for the opposite instruction before a move that changes who can see the thing. And run `npm test` after a move: the earlier night ran the audit and the reflow and called it checked.
 
 # Part B — Lessons Ledger (thematic)
 

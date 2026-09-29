@@ -6,7 +6,7 @@ const P=['display','height','padding-top','padding-right','padding-bottom','padd
 const grab=(p,root)=>p.evaluate((root,P)=>{const r=document.querySelector(root);if(!r)return null;const out={};const cnt={};r.querySelectorAll('*').forEach(c=>{if(c.closest('svg')&&c.tagName.toLowerCase()!=='svg')return;const cls=(c.getAttribute('class')||'').split(/\s+/).filter(x=>x&&x!=='b1').sort().join('.');if(!cls)return;const k=c.tagName.toLowerCase()+'.'+cls;cnt[k]=(cnt[k]||0)+1;if(cnt[k]>1)return;const cs=getComputedStyle(c);if(cs.display!=='none')out[k]=P.map(x=>cs.getPropertyValue(x))});return out},root,P);
 const b1=await open('http://127.0.0.1:8900/docs/superpowers/mockups/2026-09-14-pins2-board/index.html','aside.drawer');
 await b1.evaluate(()=>{document.querySelectorAll('section.pb-gate')[1].id='g10'});const A=await grab(b1,'#g10 .pb-view[data-view="0"]');
-const b4=await open('http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html','#c-admin');
+const b4=await open('http://127.0.0.1:8900/docs/pins2/kit/board4.html','#c-admin');
 await b4.evaluate(async()=>{const s=document.getElementById('c-compare');const f=(w)=>[...s.querySelectorAll('button,[role=tab]')].filter(b=>!b.closest('.g-tries')).find(b=>b.textContent.trim().toLowerCase().includes(w));f('compare').click();await new Promise(r=>setTimeout(r,1200));const o=f('or just');o&&o.click()});await new Promise(r=>setTimeout(r,1800));
 const Z=await grab(b4,'#c-compare #compare');
 if(OUT){const e=await b4.$('#c-compare #compare');await e.screenshot({path:OUT})}

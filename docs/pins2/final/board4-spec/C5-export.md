@@ -368,7 +368,7 @@ inside `.x` · 4 on screen · **2 looks**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .exs-t b · app.css:5260 |
 | font-size | `` | `16.5px` | .exs-t b · app.css:5260 |
 | font-weight | `` | `600` | .exs-t b · app.css:5260 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | `` | `normal` | .exs-t b · app.css:5260 |
 | line-height | `` | `22.275px` | .exs-t b · app.css:5260 |
 | letter-spacing | — | `normal` | initial |
@@ -433,7 +433,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .dw-lead · app.css:6836 |
 | font-size | `` | `14.5px` | .dw-lead · app.css:6836 |
 | font-weight | `` | `500` | .dw-lead · app.css:6836 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | `` | `normal` | .dw-lead · app.css:6836 |
 | line-height | `` | `21.025px` | .dw-lead · app.css:6836 |
 | letter-spacing | — | `normal` | initial |
@@ -723,7 +723,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 `C5-17` · rendered **510×240** · 1 instance look like this
 
 ```html
-<ul class="exs g-exs"><li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-28.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-28</span><span class="b3-xf-ext">.txt</spa
+<ul class="exs g-exs"><li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-29.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-29</span><span class="b3-xf-ext">.txt</spa
 ```
 
 | property | winning declaration | computed | from |
@@ -761,7 +761,7 @@ inside `.exs` · 2 on screen · **1 look**
 `C5-18` · rendered **510×75** · 2 instances look like this
 
 ```html
-<li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-28.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-28</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></d
+<li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-29.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-29</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></d
 ```
 
 | property | winning declaration | computed | from |
@@ -874,7 +874,7 @@ inside `.exs-n` · 2 on screen · **2 looks**
 | font-family | `` | `"Big Shoulders Display", "Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-xf-sq · b3/board.css:4486 |
 | font-size | `` | `19px` | .b3-xf-sq · b3/board.css:4486 |
 | font-weight | `` | `700` | .b3-xf-sq · b3/board.css:4486 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-xf-sq · b3/board.css:4486 |
 | line-height | `` | `19px` | .b3-xf-sq · b3/board.css:4486 |
 | letter-spacing | `var(--tr-fig)` | `0.076px` | .b3-xf-sq · b3/board.css:4486 |
@@ -905,7 +905,7 @@ inside `.exs-n` · 2 on screen · **2 looks**
 | font-family | `` | `"Big Shoulders Display", "Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-xf-sq · b3/board.css:4486 |
 | font-size | `` | `19px` | .b3-xf-sq · b3/board.css:4486 |
 | font-weight | `` | `700` | .b3-xf-sq · b3/board.css:4486 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-xf-sq · b3/board.css:4486 |
 | line-height | `` | `19px` | .b3-xf-sq · b3/board.css:4486 |
 | letter-spacing | `var(--tr-fig)` | `0.076px` | .b3-xf-sq · b3/board.css:4486 |
@@ -921,7 +921,7 @@ inside `.exs-i` · 3 on screen · **2 looks**
 `C5-21` · rendered **286×46** · 2 instances look like this
 
 ```html
-<div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-28.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-28</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></div></div>
+<div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-29.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-29</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></div></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -968,7 +968,7 @@ inside `.exs-t` · 2 on screen · **1 look**
 `C5-23` · rendered **228×24** · 2 instances look like this
 
 ```html
-<div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-28.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-28</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></div>
+<div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-29.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-29</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -999,10 +999,10 @@ inside `.b3-xf-fid` · 2 on screen · **1 look**
 
 #### the one look
 
-`C5-24` · rendered **228×24** · 2 instances look like this · aria-label="Rename dioreo-mp-builds-2026-09-28.txt" title="Rename the file" type="button"
+`C5-24` · rendered **228×24** · 2 instances look like this · aria-label="Rename dioreo-mp-builds-2026-09-29.txt" title="Rename the file" type="button"
 
 ```html
-<button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-28.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-28</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button>
+<button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-29.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-29</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button>
 ```
 
 | property | winning declaration | computed | from |
@@ -1105,10 +1105,10 @@ inside `.b3-xf-fn` · 2 on screen · **1 look**
 
 #### the one look
 
-`C5-25` · rendered **170×11** · 2 instances look like this · text “dioreo-mp-builds-2026-09-28”
+`C5-25` · rendered **170×11** · 2 instances look like this · text “dioreo-mp-builds-2026-09-29”
 
 ```html
-<span class="b3-xf-nm">dioreo-mp-builds-2026-09-28</span>
+<span class="b3-xf-nm">dioreo-mp-builds-2026-09-29</span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1120,7 +1120,7 @@ inside `.b3-xf-fn` · 2 on screen · **1 look**
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | font-size | ↑ `` | `10.5px` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | font-weight | ↑ `` | `500` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | line-height | ↑ `` | `10.5px` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
@@ -1155,7 +1155,7 @@ inside `.b3-xf-fn` · 2 on screen · **1 look**
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | font-size | ↑ `` | `10.5px` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | font-weight | ↑ `` | `500` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | line-height | ↑ `` | `10.5px` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3758 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
@@ -1305,7 +1305,7 @@ inside `.exs-t` · 1 on screen · **1 look**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-sm)` | `12px` | .exs-t > span · app.css:5268 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
 | line-height | ↑ `1.5` | `18px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | text-overflow | `ellipsis` | `ellipsis` | .exs-t > span · gates.css:557 |

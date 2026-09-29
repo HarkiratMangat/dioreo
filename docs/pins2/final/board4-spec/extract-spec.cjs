@@ -18,11 +18,11 @@
 // could say "port the winning expression, tokens intact" because it used portal tokens; board 3-E cannot.
 //
 // Usage: node extract-spec.cjs [url] [out.md]
-//   default url  http://127.0.0.1:8900/local/pins2-board-3/redo/board3e.html   (the kit is ES modules, so it needs http, not file://)
+//   default url  http://127.0.0.1:8900/docs/pins2/kit/board3e.html   (the kit is ES modules, so it needs http, not file://)
 //   Needs the kit's dev server up. A FRESH Chrome profile is used every run, so the board renders its defaults — which carry every
 //   ruled pick — rather than whatever a browser remembered.
 const path = require('path'); const fs = require('fs'); const os = require('os');
-const puppeteer = require(path.resolve(__dirname, '../../../../../node_modules/puppeteer-core'));
+const puppeteer = require(path.resolve(__dirname, '../../../../node_modules/puppeteer-core'));
 // 🔴 BOARDS 1 AND 2 TOO (2026-09-21 10:31 EDT). Harkirat: "board 1's designs were very poorly and incorrectly ported into the portal because
 // board 1's session never ran the spec extractor over those refined designs … that's part of session 5's work — fixing those old, bad
 // ports." Board 1's spec was written after the fact by a CURATED extractor (first match only, no states, no G10 Compare at all) and board
@@ -30,20 +30,20 @@ const puppeteer = require(path.resolve(__dirname, '../../../../../node_modules/p
 const MODE = process.env.BOARD || '3e';
 const MK = 'http://127.0.0.1:8900/docs/superpowers/mockups';
 const CFG = {
-  '3e': { url: 'http://127.0.0.1:8900/local/pins2-board-3/redo/board3e.html', wait: '#g-history .b3-hi-r', title: 'Design Board 3-E', out: 'b3e-spec.md', stageAll: '.g-stage',
-    css: ['b3/board.css', 'gates.css', 'app.css', 'b2.css'].map((f) => path.resolve(__dirname, '../../../../../local/pins2-board-3/redo', f)) },
+  '3e': { url: 'http://127.0.0.1:8900/docs/pins2/kit/board3e.html', wait: '#g-history .b3-hi-r', title: 'Design Board 3-E', out: 'b3e-spec.md', stageAll: '.g-stage',
+    css: ['b3/board.css', 'gates.css', 'app.css', 'b2.css'].map((f) => path.resolve(__dirname, '../../../../docs/pins2/kit', f)) },
   '1': { url: `${MK}/2026-09-14-pins2-board/index.html`, wait: 'aside.drawer', title: 'Pins-2 design board 1 (G9 · G10 · G8)', out: 'b1-spec.md', stageAll: '.pb-stage',
-    css: [path.resolve(__dirname, '../../2026-09-14-pins2-board/app.css'), path.resolve(__dirname, '../../2026-09-14-pins2-board/index.html')],
+    css: [path.resolve(__dirname, '../../../superpowers/mockups/2026-09-14-pins2-board/app.css'), path.resolve(__dirname, '../../../superpowers/mockups/2026-09-14-pins2-board/index.html')],
     prepare: () => { ['g9', 'g10', 'g8'].forEach((g, i) => { const s = document.querySelectorAll('section.pb-gate')[i]; if (s) s.id = 'gate-' + g; }); },
     gates: [['G9', 'gate-g9', 'New build drawer'], ['G10', 'gate-g10', 'Compare'], ['G8', 'gate-g8', 'Post an announcement']] },
   '2': { url: `${MK}/2026-09-14-pins2-board-2/index.html`, wait: '#g4man *', title: 'Pins-2 design board 2 (G4 · G6 · G11 · G3 · G1)', out: 'b2-spec.md', stageAll: 'section.pb-gate',
-    css: [path.resolve(__dirname, '../../2026-09-14-pins2-board/app.css'), path.resolve(__dirname, '../../2026-09-14-pins2-board-2/index.html')],
+    css: [path.resolve(__dirname, '../../../superpowers/mockups/2026-09-14-pins2-board/app.css'), path.resolve(__dirname, '../../../superpowers/mockups/2026-09-14-pins2-board-2/index.html')],
     prepare: () => { document.querySelectorAll('section.pb-gate[data-gate]').forEach((s) => { s.id = 'gate-' + s.dataset.gate; }); },
     gates: [['G4', 'gate-g4', 'Armory manifest'], ['G6', 'gate-g6', 'Build name'], ['G11', 'gate-g11', 'Broadcast and History manifests'], ['G3', 'gate-g3', 'Announcement card'], ['G2', 'gate-g2', 'Admin traffic'], ['G1', 'gate-g1', 'Small text']] },
   // 🔴 BOARD 4: COLLECTIVE (2026-09-21 13:33 EDT). Every finished surface of boards 1–3 on one page in the kit's portal code — the one board Session 4
   // standardizes from and Session 5 ports once Board 4: Final supersedes it. Sections are `#c-<id>`; each stage is its `.g-stage`.
-  '4': { url: 'http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html', wait: '#c-admin .b4-vb .incchip', title: 'Board 4: Collective', out: 'b4-spec.md', stageAll: '.b4g',
-    css: ['b3/board.css', 'gates.css', 'app.css', 'b2.css', 'b1.css', 'b4.css'].map((f) => path.resolve(__dirname, '../../../../../local/pins2-board-3/redo', f)),
+  '4': { url: 'http://127.0.0.1:8900/docs/pins2/kit/board4.html', wait: '#c-admin .b4-vb .incchip', title: 'Board 4: Collective', out: 'b4-spec.md', stageAll: '.b4g',
+    css: ['b3/board.css', 'gates.css', 'app.css', 'b2.css', 'b1.css', 'b4.css'].map((f) => path.resolve(__dirname, '../../../../docs/pins2/kit', f)),
     gates: [['C1', 'c-manifest', 'The Armory manifest'], ['C2', 'c-new-build', 'New build'], ['C3', 'c-compare', 'Compare'], ['C4', 'c-repairs', 'Repairs'],
       ['C5', 'c-export', 'Export'], ['C6', 'c-queue', 'The delivery queue'], ['C7', 'c-broadcast', 'The Broadcast manifest, and posting'], ['C8', 'c-history', 'History'],
       ['C9', 'c-admin', 'Admin traffic']] },
@@ -83,7 +83,7 @@ const GATES = [
   await p.setViewport({ width: 1282, height: 888 });
   const c = await p.target().createCDPSession();
   const sheets = {};
-  c.on('CSS.styleSheetAdded', ({ header }) => { sheets[header.styleSheetId] = (header.sourceURL || '').split(/\/redo\/|\/mockups\//).pop() || (header.isInline ? 'inline <style>' : '?'); });
+  c.on('CSS.styleSheetAdded', ({ header }) => { sheets[header.styleSheetId] = (header.sourceURL || '').split(/\/kit\/|\/redo\/|\/mockups\//).pop() || (header.isInline ? 'inline <style>' : '?'); });
   await c.send('DOM.enable'); await c.send('CSS.enable');
   await p.goto(URL_, { waitUntil: 'networkidle0' });
   await p.waitForSelector(CFG.wait, { timeout: 20000 });
@@ -218,7 +218,7 @@ const GATES = [
 
   // ── Motion ──
   const kf = await p.evaluate(() => { const o = []; for (const sh of document.styleSheets) { let rs; try { rs = sh.cssRules; } catch (e) { continue; }
-    for (let i = 0; i < rs.length; i++) if (rs[i].type === 7) o.push([rs[i].name, (sh.href || 'inline').split('/redo/').pop(), rs[i].cssText.replace(/\s+/g, ' ')]); } return o; });
+    for (let i = 0; i < rs.length; i++) if (rs[i].type === 7) o.push([rs[i].name, (sh.href || 'inline').split(/\/kit\/|\/redo\//).pop(), rs[i].cssText.replace(/\s+/g, ' ')]); } return o; });
   const usedKf = new Set([...kitCss.matchAll(/animation(?:-name)?\s*:\s*([\w-]+)/g)].map((x) => x[1]));
   out.push('\n## @keyframes the board uses\n\n' + kf.filter(([n]) => usedKf.has(n)).map(([n, f, t]) => `**\`${n}\`** · ${f}\n\n\`\`\`css\n${t}\n\`\`\`\n`).join('\n'));
 
@@ -294,8 +294,8 @@ const GATES = [
   const cmdOk = MODE !== '3e' ? 'n/a' : await p.evaluate(async () => {
     const host = document.createElement('section'); host.id = 'g-cmd'; host.innerHTML = '<div class="pb-stage g-stage" style="position:relative;min-height:520px;padding:24px"></div>';
     document.getElementById('board').appendChild(host);
-    const { html } = await import('/local/pins2-board-3/redo/vendor/htm-preact.mjs'); const { render } = await import('/local/pins2-board-3/redo/vendor/preact.mjs');
-    const { B3CommandBar } = await import('/local/pins2-board-3/redo/b3/palette.js'); const { hooks } = await import('/local/pins2-board-3/redo/b3/state.js');
+    const { html } = await import('/docs/pins2/kit/vendor/htm-preact.mjs'); const { render } = await import('/docs/pins2/kit/vendor/preact.mjs');
+    const { B3CommandBar } = await import('/docs/pins2/kit/b3/palette.js'); const { hooks } = await import('/docs/pins2/kit/b3/state.js');
     render(html`<${B3CommandBar} commands=${[]} realmLabel="Armory" />`, host.firstElementChild); await new Promise((r) => setTimeout(r, 300));
     window.__cmd = (t) => hooks.paletteType && hooks.paletteType(t); return !!hooks.paletteType;
   }).catch((e) => String(e));

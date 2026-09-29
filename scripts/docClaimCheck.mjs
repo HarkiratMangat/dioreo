@@ -50,7 +50,7 @@ function commands(md) {
 
 function liveDocs() {
     const out = [];
-    for (const dir of ['docs/superpowers/plans', 'docs/reference']) {
+    for (const dir of ['docs/superpowers/plans', 'docs/pins2/plan', 'docs/reference']) {
         const d = path.join(ROOT, dir);
         if (!fs.existsSync(d)) continue;
         for (const f of fs.readdirSync(d)) {

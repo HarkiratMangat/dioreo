@@ -9,7 +9,7 @@ status: live
 
 ## Identity
 
-**Board 4: Collective** — every finished surface of pins-2 boards 1, 2 and 3 on one board in the kit's portal code. Page `local/pins2-board-3/redo/board4.html` (`local/pins2-board-3/redo/gates4/main.js`, `local/pins2-board-3/redo/gates4/surfaces.js`, `local/pins2-board-3/redo/b4.css`); artifact **https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh**, v2 (round-1 fixes) published at his popup yes of 14:50 EDT. Spec `docs/pins2/final/board4-spec/` (12 files). Governing plan `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`.
+**Board 4: Collective** — every finished surface of pins-2 boards 1, 2 and 3 on one board in the kit's portal code. Page `docs/pins2/kit/board4.html` (`docs/pins2/kit/gates4/main.js`, `docs/pins2/kit/gates4/surfaces.js`, `docs/pins2/kit/b4.css`); artifact **https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh**, v2 (round-1 fixes) published at his popup yes of 14:50 EDT. Spec `docs/pins2/final/board4-spec/` (12 files). Governing plan `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`.
 
 ## Goal
 
@@ -60,7 +60,7 @@ C2 880px · C4 counts stay (already decided; the question should never have been
 ## Compact instructions
 
 ```text
-/compact KEEP: Session 3 of docs/pins2/plan/2026-09-13-portal-pins-batch-2.md. Board 4: Collective (kit local/pins2-board-3/redo/board4.html + gates4/main.js + gates4/surfaces.js + b4.css) is published as v2 at https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh after his round-1 review; the handoff is docs/pins2/handoffs/2026-09-21-pins2-s3-board4-round1.md (read it first, then the 12:39 checkpoint for the decisions in his words). Nine surfaces in board 2's gate presentation, each surface alone with a state switch; the drawers use the Export picker's shell and mesh; bulk editor caret measured aligned; publish list must include b3/bolt-raw.svg. Repo 2bb71e84, kit 7d4bc6e on kit branch board4/round1, nothing pushed. Standing: every push/PR/merge/publish needs his approval restated; board 3-E is closed; no sub-agents; silent mode; popups; tool routing by the question (no rg/sed/cat for discovery, chrome-devtools CLI for the browser, codebase-memory project Applications-Claude-Code-Diors-Builds-local-pins2-board-3-redo for kit code); read the record before planning. DROP: the screenshot reads, the instrument debugging, the tool-output dumps.
+/compact KEEP: Session 3 of docs/pins2/plan/2026-09-13-portal-pins-batch-2.md. Board 4: Collective (kit docs/pins2/kit/board4.html + gates4/main.js + gates4/surfaces.js + b4.css) is published as v2 at https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh after his round-1 review; the handoff is docs/pins2/handoffs/2026-09-21-pins2-s3-board4-round1.md (read it first, then the 12:39 checkpoint for the decisions in his words). Nine surfaces in board 2's gate presentation, each surface alone with a state switch; the drawers use the Export picker's shell and mesh; bulk editor caret measured aligned; publish list must include b3/bolt-raw.svg. Repo 2bb71e84, kit 7d4bc6e on kit branch board4/round1, nothing pushed. Standing: every push/PR/merge/publish needs his approval restated; board 3-E is closed; no sub-agents; silent mode; popups; tool routing by the question (no rg/sed/cat for discovery, chrome-devtools CLI for the browser, codebase-memory project Applications-Claude-Code-Diors-Builds-local-pins2-board-3-redo for kit code); read the record before planning. DROP: the screenshot reads, the instrument debugging, the tool-output dumps.
 ```
 
 ## Post-compact start prompt

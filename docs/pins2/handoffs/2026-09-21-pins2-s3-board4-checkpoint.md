@@ -12,7 +12,7 @@ status: live
 | | |
 |---|---|
 | Repo branch | `feat/portal-pins2-manifests` · nothing pushed · every commit is local |
-| Kit (local git, never GitHub) | `local/pins2-board-3/redo/` · latest commit is the `wip(board4)` one |
+| Kit (local git, never GitHub) | `docs/pins2/kit/` · latest commit is the `wip(board4)` one |
 | Kit server | `.claude/launch.json` → `repo-static` on :8900 (serves the repo root) |
 | Portal harness | `.claude/launch.json` → `portal-harness` on :8901; build first: `node -e "require('./scripts/buildPortal').build()"` |
 | `docs:audit` | one known error (v3.85.0 DEVLOG entry with no CHANGELOG heading — Session 3's close writes it) |
@@ -28,19 +28,19 @@ status: live
 6. **The port is never an authority** — *"the final product in the portal should be the CORRECT, non-buggy versions of the finalized designs."* His port estimates, by eye: board 2's manifest ~95%, board 2 overall 80–95%, **board 1 ~20–30%**.
 7. **The coverage hole he named** — *"how would S5 even know what else to replace/adopt in the portal when identical designs are hand written throughout the portal? … if S4 fails to identify, find, or state an element, S5 would basically skip it."* Answered with the census below.
 8. **Board-3 ambiguity** — *"can likely be resolved by pulling out of this session's transcript"*: `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/f61cc326-e8ef-4206-bcb9-ad3bcbded968.jsonl`.
-9. His earlier session rule, still binding: board 3 should have been built by cloning board 2's G4 (*"since board 2's G4 manifest was already the refined correct functioning mockup"*, 2026-09-16 02:22 EDT) — the kit carries `local/pins2-board-3/redo/b2.css` for that reason.
+9. His earlier session rule, still binding: board 3 should have been built by cloning board 2's G4 (*"since board 2's G4 manifest was already the refined correct functioning mockup"*, 2026-09-16 02:22 EDT) — the kit carries `docs/pins2/kit/b2.css` for that reason.
 
 ## What was built this hour
 
 | Thing | Where | State |
 |---|---|---|
-| **Board 4: Collective** | kit `local/pins2-board-3/redo/board4.html` + `local/pins2-board-3/redo/gates4/main.js` | 10 surfaces render, 0 page errors, drawers open from their Try buttons (the first `press()` matched its own Try button — fixed by excluding `.g-tries`) |
+| **Board 4: Collective** | kit `docs/pins2/kit/board4.html` + `docs/pins2/kit/gates4/main.js` | 10 surfaces render, 0 page errors, drawers open from their Try buttons (the first `press()` matched its own Try button — fixed by excluding `.g-tries`) |
 | Surfaces | C1 manifest · C2 New build · C3 Compare · C4 Repairs · C5 Export · C6 queue · C7 Broadcast manifest + post drawer · C8 History · C9 Command search · C10 Admin traffic | each names its boards; open questions listed per surface (H1's five, M2's `.b3-fc` hue, and "Session 2's port" on C3/C7/C10 until closed) |
-| **`local/pins2-board-3/redo/b1.css`** | kit | board 1's own stylesheet, scoped `.b1` (243 rules kept, 29 board-chrome rules dropped), plus a RECONCILED block restoring board-1 values later stylesheets overrode, and board 3's button family on board 1's drawer footers |
-| **Post drawer (board 1 · G8)** | kit `local/pins2-board-3/redo/ui/broadcast.js` PostForm + new `BoardDate` | rebuilt on board 1's markup class for class, same state and op builder, `cls="b1"`. Measured element by element vs board 1: 69 → **17 differences, all data or state** (repeat count 1 vs 3, the banner link failing to load, default end date). Footer status line removed to match board 1 |
-| Drawer `cls` prop | kit `local/pins2-board-3/redo/ui/overlay.js` | a design hunk Session 5 ports |
-| Board date stub | kit `local/pins2-board-3/redo/ui/httpClient.js` | parses "in N days", "tomorrow", "Sep 20" — board chrome only |
-| **Compare (board 1 · G10)** | kit `local/pins2-board-3/redo/ui/armory.js` Compare | classes remapped to board 1's (`pb-tbl`, `pb-k`, `pb-base`, `pb-v`, `pb-d`, `pb-x`, `pb-rm`, `pb-m`, `pb-gap`, `pb-same`, `pb-fold`, `pb-cut`, `pb-over`), wrapped in `pb-cmp`, Meta/Toxic/Image removed (board 1 names Rank on one weapon and Category across two), root `class="b1"`. **`node --check` passes; NOT yet rendered or measured** — next step |
+| **`docs/pins2/kit/b1.css`** | kit | board 1's own stylesheet, scoped `.b1` (243 rules kept, 29 board-chrome rules dropped), plus a RECONCILED block restoring board-1 values later stylesheets overrode, and board 3's button family on board 1's drawer footers |
+| **Post drawer (board 1 · G8)** | kit `docs/pins2/kit/ui/broadcast.js` PostForm + new `BoardDate` | rebuilt on board 1's markup class for class, same state and op builder, `cls="b1"`. Measured element by element vs board 1: 69 → **17 differences, all data or state** (repeat count 1 vs 3, the banner link failing to load, default end date). Footer status line removed to match board 1 |
+| Drawer `cls` prop | kit `docs/pins2/kit/ui/overlay.js` | a design hunk Session 5 ports |
+| Board date stub | kit `docs/pins2/kit/ui/httpClient.js` | parses "in N days", "tomorrow", "Sep 20" — board chrome only |
+| **Compare (board 1 · G10)** | kit `docs/pins2/kit/ui/armory.js` Compare | classes remapped to board 1's (`pb-tbl`, `pb-k`, `pb-base`, `pb-v`, `pb-d`, `pb-x`, `pb-rm`, `pb-m`, `pb-gap`, `pb-same`, `pb-fold`, `pb-cut`, `pb-over`), wrapped in `pb-cmp`, Meta/Toxic/Image removed (board 1 names Rank on one weapon and Category across two), root `class="b1"`. **`node --check` passes; NOT yet rendered or measured** — next step |
 | **Element census** | `scripts/portalCensus.cjs` (`npm run portal:census`) | every realm, every state in `portal/fixtures/states/*.json`, every view tab, forced hover/focus/active; groups by LOOK with colours read as their variable; drift groups for near-copies; the hand-typed value scan. First run: **78 passes · 763 families (109 buttons) · 42 drift groups · 249 hand-typed values used 339 times**; `--plant` falsifier passed. Output `local/census/` (gitignored — regenerate) |
 | **Census check** | `scripts/portalCensusCheck.cjs` (`npm run portal:census:check`) | fails on any family or value unassigned in the element map, `element-map.json` beside FINAL.md (Session 4 creates it) (Session 4 writes it); `--after` also fails on a standard still drawn more than one way. Family ids are hashes of the look |
 | Plan | §5c Step 4f (census → map → check), Step 4g (standardization artifact, then Board 4: Final), §5d Step 8 closes on the census and adds a no-new-hand-typed-values ratchet to `npm test` | committed |
@@ -48,7 +48,7 @@ status: live
 
 ## Measured findings to carry
 
-- **Board 1 G9 (New build)**: the kit's `local/pins2-board-3/redo/b3/drawer.js` is board 1's design already (structure matches). Values not yet measured element by element — do it with the same method as G8.
+- **Board 1 G9 (New build)**: the kit's `docs/pins2/kit/b3/drawer.js` is board 1's design already (structure matches). Values not yet measured element by element — do it with the same method as G8.
 - **Board 2 G2 (admin traffic)**: portal matches board 2 by eye.
 - **Board 2 G11 (Broadcast manifest)**: close by eye; not measured.
 - **Shared portal rules Session 2 changed** that board 1's look depended on: drawer side column 320 → 340, drawer footer buttons 44 → 40 and to pills. These are SHARED — every drawer — so the standard is Session 4's (E1). Board 4 restores board 1's values only inside `.b1`.
@@ -84,7 +84,7 @@ status: live
 ## Compact instructions — what to keep and what to drop
 
 ```text
-/compact KEEP: Session 3 of docs/pins2/plan/2026-09-13-portal-pins-batch-2.md is building BOARD 4: COLLECTIVE (kit local/pins2-board-3/redo/board4.html + gates4/main.js) at Harkirat's direction: every finished surface of boards 1-3 on one board in portal code, no switches; then Session 4 standardizes in a SEPARATE artifact and Board 4: Final (a new artifact) supersedes the Collective; Session 5 ports Final. The handoff is docs/pins2/handoffs/2026-09-21-pins2-s3-board4-checkpoint.md — read it in full first. Decided today, binding: board 3's button family applies to board 1's drawers; Session 4 draws (anchor #44); phone is out of scope; the port is never an authority ("the final product in the portal should be the CORRECT, non-buggy versions of the finalized designs"); board 1 ported ~20-30%, board 2 80-95%. Built: b1.css (board 1's stylesheet scoped .b1), the post drawer rebuilt on board 1's markup (measured to data-only differences), Compare's classes remapped to board 1's (written, NOT yet rendered or measured — the next step), scripts/portalCensus.cjs + portalCensusCheck.cjs (763 families, 42 drift groups, 249 hand-typed values). Measuring method: docs/pins2/instruments/ (elcmp/g10cmp pair elements by class path). Repo head 3716fe58+ on feat/portal-pins2-manifests, kit head 15f4d1d, nothing pushed or published. Standing: every push/PR/merge/publish needs his approval restated; board 3-E is closed; no sub-agents; silent mode; popups for questions; one heredoc per Bash call. DROP: the narration of the census build, the individual screenshot reads, the earlier-today spec-audit back-and-forth (it is all in the handoff and the plan), tool-output dumps.
+/compact KEEP: Session 3 of docs/pins2/plan/2026-09-13-portal-pins-batch-2.md is building BOARD 4: COLLECTIVE (kit docs/pins2/kit/board4.html + gates4/main.js) at Harkirat's direction: every finished surface of boards 1-3 on one board in portal code, no switches; then Session 4 standardizes in a SEPARATE artifact and Board 4: Final (a new artifact) supersedes the Collective; Session 5 ports Final. The handoff is docs/pins2/handoffs/2026-09-21-pins2-s3-board4-checkpoint.md — read it in full first. Decided today, binding: board 3's button family applies to board 1's drawers; Session 4 draws (anchor #44); phone is out of scope; the port is never an authority ("the final product in the portal should be the CORRECT, non-buggy versions of the finalized designs"); board 1 ported ~20-30%, board 2 80-95%. Built: b1.css (board 1's stylesheet scoped .b1), the post drawer rebuilt on board 1's markup (measured to data-only differences), Compare's classes remapped to board 1's (written, NOT yet rendered or measured — the next step), scripts/portalCensus.cjs + portalCensusCheck.cjs (763 families, 42 drift groups, 249 hand-typed values). Measuring method: docs/pins2/instruments/ (elcmp/g10cmp pair elements by class path). Repo head 3716fe58+ on feat/portal-pins2-manifests, kit head 15f4d1d, nothing pushed or published. Standing: every push/PR/merge/publish needs his approval restated; board 3-E is closed; no sub-agents; silent mode; popups for questions; one heredoc per Bash call. DROP: the narration of the census build, the individual screenshot reads, the earlier-today spec-audit back-and-forth (it is all in the handoff and the plan), tool-output dumps.
 ```
 
 ## Post-compact start prompt
@@ -92,18 +92,18 @@ status: live
 ```text
 /rename Opus5-High · Pins2 S3 Board 4 Collective · Sep 21
 Continue Session 3 of docs/pins2/plan/2026-09-13-portal-pins-batch-2.md. Read docs/pins2/handoffs/2026-09-21-pins2-s3-board4-checkpoint.md in full before the first tool call — it carries every decision of today in my words, what is built, what is measured, and the next steps in order.
-You are building Board 4: Collective (kit local/pins2-board-3/redo/board4.html). Next: render and measure Compare against board 1 (docs/pins2/instruments/g10cmp.cjs), fix until only data differs; then New build (board 1 G9) and the Broadcast manifest (board 2 G11) the same way; re-render every section and update each section's open line; teach 3e/extract-spec.cjs a BOARD=4 mode and generate Board 4's spec; update FINAL.md, the plan's §10.5 and §11 prompts, handoff-3e, the ledger and .remember; then ask me before publishing Board 4 as a NEW artifact.
+You are building Board 4: Collective (kit docs/pins2/kit/board4.html). Next: render and measure Compare against board 1 (docs/pins2/instruments/g10cmp.cjs), fix until only data differs; then New build (board 1 G9) and the Broadcast manifest (board 2 G11) the same way; re-render every section and update each section's open line; teach 3e/extract-spec.cjs a BOARD=4 mode and generate Board 4's spec; update FINAL.md, the plan's §10.5 and §11 prompts, handoff-3e, the ledger and .remember; then ask me before publishing Board 4 as a NEW artifact.
 Start the kit server (.claude/launch.json → repo-static, :8900) and the harness (portal-harness, :8901, after the portal build).
 Silent mode. Questions in popups. Tool routing by the question. One heredoc per Bash call. Push, PR, merge and publish each need my approval restated.
 ```
 
 ## Next, in order
 
-**Published 2026-09-21 13:47 EDT** at his popup yes of 13:39 EDT: Board 4: Collective v1, https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh — a NEW artifact; 3-E untouched. It is republished only from `local/pins2-board-3/redo/board4.html` in the session that published it, or with this URL.
+**Published 2026-09-21 13:47 EDT** at his popup yes of 13:39 EDT: Board 4: Collective v1, https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh — a NEW artifact; 3-E untouched. It is republished only from `docs/pins2/kit/board4.html` in the session that published it, or with this URL.
 
 *Progress at 2026-09-21 13:39 EDT: steps 1–4 done (Compare, New build and the Broadcast manifest measured and brought to their boards; every section re-rendered and its open line rewritten; `BOARD=4` spec at `docs/pins2/final/board4-spec/README.md`), step 5's records written. Left: step 6, his yes to publish, then step 7.*
 
-1. Render and measure Compare against board 1 (`scratchpad/g10cmp.cjs` pattern: pair by class path, list differences), fix in `local/pins2-board-3/redo/b1.css` or markup, re-measure until only data differs.
+1. Render and measure Compare against board 1 (`scratchpad/g10cmp.cjs` pattern: pair by class path, list differences), fix in `docs/pins2/kit/b1.css` or markup, re-measure until only data differs.
 2. Measure C2 New build (board 1 G9) and C7's manifest (board 2 G11) the same way; fix.
 3. Re-render all of Board 4; read every section; update each section's "open" line (drop "Session 2's port" where closed).
 4. `BOARD=4`: teach `3e/extract-spec.cjs` board 4 (sections are `#c-<id> .g-stage`), generate its spec.

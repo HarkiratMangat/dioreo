@@ -17,7 +17,7 @@ const puppeteer = require(path.resolve(__dirname, '../../../node_modules/puppete
 const BASE = 'http://127.0.0.1:8900/';
 const B1 = BASE + 'docs/superpowers/mockups/2026-09-14-pins2-board/index.html';
 const B2 = BASE + 'docs/superpowers/mockups/2026-09-14-pins2-board-2/index.html';
-const B4 = BASE + 'local/pins2-board-3/redo/board4.html';
+const B4 = BASE + 'docs/pins2/kit/board4.html';
 const args = process.argv.slice(2);
 const pick = (args.find((a) => !a.startsWith('--')) || '').split(',').filter(Boolean);
 const WHY = (args.find((a) => a.startsWith('--why=')) || '').slice(6);

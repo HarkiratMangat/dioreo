@@ -5,7 +5,7 @@ const { chromium } = require(process.env.PW || 'playwright');
   const b = await chromium.launch({ channel: 'chrome' });
   for (const W of [1440, 1280]) {
     const p = await b.newPage({ viewport: { width: W, height: 960 }, deviceScaleFactor: 2 });
-    await p.goto('http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
+    await p.goto('http://127.0.0.1:8900/docs/pins2/kit/board4.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
     for (const st of ['Add · filled', 'Add · three', 'DMZ']) {
       const sec = p.locator('#c-new-build'); await sec.locator('.pb-ctl button', { hasText: st }).first().click(); await p.waitForTimeout(1200);
       if (st === 'DMZ') { await p.evaluate(() => { const t = [...document.querySelectorAll('#c-new-build .f-tier')].find((x) => x.textContent.includes('BEST')); t && t.click(); }); await p.waitForTimeout(300); }

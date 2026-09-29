@@ -211,7 +211,7 @@ check(
       const c = read(carrier);
       if (c === null) continue;
       // Only the head of a carrier counts: a path named in its history section is not what a session is pointed at.
-      for (const m of c.split("\n").slice(0, 60).join("\n").matchAll(/(docs\/superpowers\/plans\/[\w.\-]+\.md)/g)) {
+      for (const m of c.split("\n").slice(0, 60).join("\n").matchAll(/(docs\/(?:superpowers\/plans|pins2\/plan)\/[\w.\-]+\.md)/g)) {
         if (existsSync(join(REPO, m[1]))) targets.add(m[1]);
       }
     }
@@ -1041,13 +1041,13 @@ const FM_KINDS = {
 const FM_RULE = [
   [".claude/rules/", "rule"],
   ["docs/archive/", "archive"],
-  // Claude's tracked scratchpad and the portal's working records, added 2026-09-15 23:57 EDT. Both are "dump freely, sub-folder freely" by design, so their ARCHIVE prefixes must be listed FIRST — these are ordered and the first match wins.
-  // docs/pins2/ — everything portal pins batch 2's Sessions 4 and 5 read, gathered in one folder 2026-09-28 23:12 EDT (Harkirat: "everything is scattered all over the place right now"). One sub-folder per kind, the README is the index; listed before docs/claude/ so nothing falls through to a broader prefix.
+  // Claude's tracked scratchpad and the portal's working records, added 2026-09-15 23:57 EDT. Both are "dump freely, sub-folder freely" by design, so their ARCHIVE prefixes must be listed FIRST — these are ordered and the first match wins. docs/pins2/ — everything portal pins batch 2's Sessions 4 and 5 read, gathered in one folder 2026-09-28 23:12 EDT (Harkirat: "everything is scattered all over the place right now"). One sub-folder per kind, the README is the index; listed before docs/claude/ so nothing falls through to a broader prefix.
   ["docs/pins2/README.md", "reference"],
   ["docs/pins2/plan/", "plan"],
   ["docs/pins2/spec/", "spec"],
   ["docs/pins2/final/", "reference"],
   ["docs/pins2/instruments/", "reference"],
+  ["docs/pins2/kit/", "reference"],
   ["docs/pins2/handoffs/", "record"],
   ["docs/pins2/records/", "record"],
   ["docs/claude/archive/", "archive"],

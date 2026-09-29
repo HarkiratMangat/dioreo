@@ -10,7 +10,7 @@ await shotEl(b1,'#gate-g9 .pb-stage','b1-g9.png');await shotEl(b1,'#gate-g10 .pb
 const b2=await open('http://127.0.0.1:8900/docs/superpowers/mockups/2026-09-14-pins2-board-2/index.html','#g4man *');
 await shotEl(b2,'#g11bc','b2-g11bc.png');await shotEl(b2,'section[data-gate=g2]','b2-g2.png');
 // board 4
-const b4=await open('http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html','#c-admin');
+const b4=await open('http://127.0.0.1:8900/docs/pins2/kit/board4.html','#c-admin');
 const tr=async(id,label)=>{await b4.evaluate((id,label)=>{const t=[...document.querySelectorAll('#'+id+' .g-tries button')].find(x=>x.textContent.trim()===label);t&&t.click()},id,label);await new Promise(r=>setTimeout(r,2500))};
 // Board 4 after round 1 (2026-09-21 15:13 EDT): no Try buttons open a surface; each section's head switch picks the state.
 const st=async(id,label)=>{await b4.evaluate((id,label)=>{const t=[...document.querySelectorAll('#'+id+' .pb-ctl button')].find(x=>x.textContent.trim()===label);t&&t.click()},id,label);await new Promise(r=>setTimeout(r,1400))};

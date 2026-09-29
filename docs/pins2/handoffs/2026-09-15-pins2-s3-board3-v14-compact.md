@@ -5,7 +5,7 @@ status: frozen
 
 # Handoff — pins 2, Session 3, board 3 at version 14
 
-*Written 2026-09-15 21:01 EDT for a compact Harkirat asked for at ~950k context. Branch `feat/portal-pins2-manifests`, clean, unpushed. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc>, kit `local/pins2-board-3/redo/` (gitignored), tracked record `docs/superpowers/mockups/2026-09-15-pins2-board-3/README.md`.*
+*Written 2026-09-15 21:01 EDT for a compact Harkirat asked for at ~950k context. Branch `feat/portal-pins2-manifests`, clean, unpushed. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc>, kit `docs/pins2/kit/` (gitignored), tracked record `docs/superpowers/mockups/2026-09-15-pins2-board-3/README.md`.*
 
 ## Read these first, in this order
 
@@ -25,7 +25,7 @@ He is frustrated, and the reason matters more than the list: **what he refines i
 | 4 | The "Build N · 1 problem" warn chip is not aligned with the Share button beside it | `.b3-fchip` is 34px in a 44px row cell; align it to the same centre line as `.wg-acts`'s 44px buttons, or give both one height token |
 | 5 | The Collapse label's reveal is not smooth and not the speed he asked for | `max-width` transitions are not smooth by construction — the easing applies to a width that snaps at the content edge. Animate `clip-path` or a `grid-template-columns: 0fr → 1fr`, and set the duration he asked for rather than the 0.18s default |
 
-**How to work them:** open the surface in the harness, measure the defect (computed style plus rects) BEFORE writing CSS, fix it in the shared rule, re-measure with the switch on and off, put the reading in `verify.cjs` so it can fail later, then reply on his thread with the numbers. `local/pins2-board-3/redo/verify.cjs` already carries the tools-row, checkbox-column and divider checks and the three probes in `/tmp/*.cjs` are the pattern for the rest.
+**How to work them:** open the surface in the harness, measure the defect (computed style plus rects) BEFORE writing CSS, fix it in the shared rule, re-measure with the switch on and off, put the reading in `verify.cjs` so it can fail later, then reply on his thread with the numbers. `docs/pins2/kit/verify.cjs` already carries the tools-row, checkbox-column and divider checks and the three probes in `/tmp/*.cjs` are the pattern for the rest.
 
 ## State
 

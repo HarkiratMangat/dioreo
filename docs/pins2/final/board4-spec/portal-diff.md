@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the exact changes to PORTAL code
 
-*Generated 2026-09-29T03:16:55.687Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `f41c691`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
+*Generated 2026-09-29T04:08:56.010Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `6572b9eb plus the working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
 
 ## `app.css` → `portal/public/app.css`
 
@@ -1450,7 +1450,7 @@ index 1cbbf4f2..1aab4e9f 100644
 
 ```diff
 diff --git aportal/ui/icons.js bkit/ui/icons.js
-index 70aca763..9424d157 100644
+index 70aca763..97ed1396 100644
 --- aportal/ui/icons.js	
 +++ bkit/ui/icons.js	
 @@ -7,9 +7,44 @@

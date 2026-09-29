@@ -1,7 +1,7 @@
 const path=require('path'),fs=require('fs'),os=require('os');const puppeteer=require(path.resolve('node_modules/puppeteer-core'));const OUT=process.argv[2];
 (async()=>{const b=await puppeteer.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:'new',userDataDir:fs.mkdtempSync(path.join(os.tmpdir(),'b4-'))});
 const p=await b.newPage();const errs=[];p.on('pageerror',e=>errs.push(String(e).slice(0,200)));p.on('console',m=>{if(m.type()==='error')errs.push('console: '+m.text().slice(0,160))});
-await p.setViewport({width:1282,height:900});await p.goto('http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html',{waitUntil:'networkidle0'});await new Promise(r=>setTimeout(r,3000));
+await p.setViewport({width:1282,height:900});await p.goto('http://127.0.0.1:8900/docs/pins2/kit/board4.html',{waitUntil:'networkidle0'});await new Promise(r=>setTimeout(r,3000));
 const ids=await p.evaluate(()=>[...document.querySelectorAll('section[id^=c-]')].map(s=>s.id));console.log('sections',ids.join(' '));
 const clickTry=async(id,label)=>p.evaluate((id,label)=>{const s=document.getElementById(id);const t=[...s.querySelectorAll('.g-tries button')].find(x=>x.textContent.trim()===label);if(t){t.click();return true}return false},id,label);
 for(const id of ids){const el=await p.$('#'+id);await el.scrollIntoView();await new Promise(r=>setTimeout(r,700));
