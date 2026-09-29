@@ -607,7 +607,7 @@ status: live
 
 ### 5c.4 · His review
 
-- [ ] **Step 5:** board 4 (named before Board 4: Collective existed: it is Session 4's own artifact, **Board 4: Final**, Step 4g) — the apply map, the small-text table and the exemptions as before-and-after captures per realm, each "after" rendered by injecting the board-3 styles into the live page, never committed. Rounds until Harkirat closes it. Answers become §10.6, which opens with **Board 4 closed by Harkirat** and the time, and ledger rows. A tweak to a board-3 design goes in a popup with both captures.
+- [ ] **Step 5:** board 4 (named before Board 4: Collective existed: it is Session 4's own standardization artifact, Step 4g's "its OWN artifact" — not Board 4: Collective, and not Board 4: Final, the redraw that follows once he settles it) — the apply map, the small-text table and the exemptions as before-and-after captures per realm, each "after" rendered by injecting the board-3 styles into the live page, never committed. Rounds until Harkirat closes it. Answers become §10.6, which opens with **Board 4 closed by Harkirat** and the time, and ledger rows. A tweak to a board-3 design goes in a popup with both captures.
 
 ### 5c.5 · Close
 
@@ -768,7 +768,7 @@ RETURN: plan §8.2 shape, plus local/pins2/d-after-*.png from chrome-devtools ta
 | G9 | **Answered 2026-09-14 01:18 EDT** on the design board | The New Build drawer (§10.1) — Add build and Bulk create, MP and DMZ | Answered: §10.1 as amended, rows 15–18 added |
 | G12 | ~~Session 3 §5b~~ | ~~Each pin that reverses a §10 or §10.4 answer, rendered on the portal~~ | **Folded into G13 2026-09-15 14:48 EDT** — board 3 draws every reversal as a proposal |
 | G13 | Session 3 §5b | Board 3: the OPEN design forks only (P1–P9 minus the settled; E1–E6 withdrawn to §5c) | **Answered — board 3 closed by Harkirat 2026-09-20 23:55 EDT at Design Board 3-E v77** (https://claude.ai/artifact/2LxjJwzsg7odUiJKmvq2Jo). Its spec is now Board 4's, `docs/pins2/final/board4-spec/` (§10.5); `handoff-3e.md` + `3e/` are frozen history. The earlier boards `CV6NJjCSjxCPxgjdhwVcyL` and `2yJmND6URRPwLbNJbzySFc` are history, not design |
-| G14 | Session 4 §5c | Board 4: Final (Step 4g's artifact, not Board 4: Collective): the apply map, the small-text table and the exemptions, as before-and-after captures | **Open** — answers in §10.6 |
+| G14 | Session 4 §5c | Session 4's standardization board (Step 4g's own artifact; not Board 4: Collective, not Board 4: Final): the apply map, the small-text table and the exemptions, as before-and-after captures | **Open** — answers in §10.6 |
 | G10 | **Answered 2026-09-14 01:18 EDT** on the design board | Compare (§10.2) in its four states, cards behind "Show cards" | Answered: §10.2 as amended |
 
 G1–G4, G6 and G11 are answered by the §4b board session, in comment rounds on an Artifact until Harkirat closes it, and written into §10.4 — decided 2026-09-14 02:17 EDT, replacing the two popups Session 2 Step 7 used to ask. G8–G10 were answered on the design board by 2026-09-14 01:18 EDT (§10's first paragraph). G5 and G7 belonged to the deferred permission work and are gone.
@@ -982,7 +982,7 @@ G1–G4, G6 and G11 are answered by the §4b board session, in comment rounds on
 
 ### 10.6 · Session 4 — the standardization table
 
-*Written by Session 4 when Harkirat closes Board 4: Final (§5c Steps 4g and 5).*
+*Written by Session 4 when Harkirat closes its standardization board (§5c Steps 4g and 5); Board 4: Final is drawn after that.*
 
 ## 11 · Prompts
 
@@ -1260,5 +1260,5 @@ Each session's work must be on `v3-pre-release` before the next session starts: 
 
 **Sweep amendment (2026-09-29 00:13 EDT):** after his 2026-09-28 23:27 EDT doubts about the Session 4/5 sweep, rows 84–88 above. The sweep had gathered files by name; what it missed was found by reading the plan as Session 4 reads it (§11's prompt first) and by asking of every generated file when it was last written.
 
-**Sweep amendment 2 (2026-09-29 12:21 EDT):** class A, B and C of the sweep, after the Version 40 intake round closed. Two instruments now read what no gate did: `docs/pins2/instruments/cites-check.cjs` (every `path:line` cite judged by the words beside it; the live docs pass, and every cite in this plan outside Sessions 4 and 5's sections is history and reported, never fatal) and `counts-check.cjs` (13 numbers in the live docs against the file, constant or count that decides them; all hold). Found and fixed: §0, §11 and the pins2 README gave three different reading orders for Session 4 (the README now defers to §11); Step 5, G14 and §10.6 called Session 4's own artifact "board 4" when Board 4 is now the Collective (they say Board 4: Final); two `HANDOFF.md` cites in D1 (a line off by one, a hex the row never named). Class C, a cold run of Step 1 and Step 4f: the `git show origin/v3-pre-release:…` precondition fails by design until Session 3 merges; `portal:status`, `index:health`, `summaryShape` and the portal build exit 0; `portal:census` needs the harness on :8901 as Step 4f says, and `portal:census:check` reads the element map from its new home beside `FINAL.md` ("map NOT WRITTEN YET", as it should be before Step 4f).
+**Sweep amendment 2 (2026-09-29 12:21 EDT):** class A, B and C of the sweep, after the Version 40 intake round closed. Two instruments now read what no gate did: `docs/pins2/instruments/cites-check.cjs` (every `path:line` cite judged by the words beside it; the live docs pass — for this plan vacuously, since Sessions 4 and 5's own sections carry no cites; every cite outside them is history and reported, never fatal) and `counts-check.cjs` (13 numbers in the live docs against the file, constant or count that decides them; all hold). Found and fixed: §0, §11 and the pins2 README gave three different reading orders for Session 4 (the README now defers to §11); Step 5, G14 and §10.6 called Session 4's own artifact "board 4" when Board 4 is now the Collective (they now name it Session 4's standardization board, Step 4g's own artifact; a first edit named it Board 4: Final, which Step 4g says is the redraw that follows, and was corrected the same hour); two `HANDOFF.md` cites in D1 (a line off by one, a hex the row never named). Class C, a cold run of Step 1 and Step 4f: the `git show origin/v3-pre-release:…` precondition fails by design until Session 3 merges; `portal:status`, `index:health`, `summaryShape` and the portal build exit 0; `portal:census` needs the harness on :8901 as Step 4f says, and `portal:census:check` reads the element map from its new home beside `FINAL.md` ("map NOT WRITTEN YET", as it should be before Step 4f).
 
