@@ -1344,3 +1344,77 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 | **M · badge hover** | the compact badges pop up the full badge on hover | the compact badge wherever it appears (Compare heads and elsewhere) |
 
 **Kept as they are, his call:** the hover signals · the odd-one-out tint · the mix of filled and outlined badges.
+
+### Batch 3 — Compare's Cards view, then Lanes, the Discord cards and the empty state (2026-09-29 10:53 → 11:56 EDT)
+
+**The shots:** `docs/pins2/intake-shots/intake-v40/11-compare-cards.png` (Cards view, six of six builds on, five weapon tiles) · `12-compare-lanes.png` (Lanes view, the pointer on CX-FR) · `13-compare-embed.png` (the Discord cards, BAL-27 builds 1–5) · `14-compare-empty.png` (the empty landing, twelve tiles).
+
+**Cards view — my observations (10:53 EDT) and his verdicts (11:56 EDT, verbatim):**
+
+| My observation | His verdict |
+|---|---|
+| the table scrolls sideways; KILO's head cut off | "correct, table scrolls sideways, which we already concluded in the previous screenshot that it shouldnt. And thus that also covers the \"scrollbar covers the last row\" issue." |
+| the scrollbar covers the Perk row | (covered by the above) |
+| the tiles wrap raggedly (2 · 2 · 1), widths follow content, ~60% of the tile area empty | "correct, tiles wrap with 60% of the tile area wasted." — and the three sub-points below |
+| the table has no right padding | (no verdict given) |
+| "6 of 6" reads neutral at the limit | "the \"6 of 6\" chip needs a complete redesign. I also want that chip, as well as any additional chips related to compare, such as the \"Same on all 4 Clarent Light Stock 60 Round Reload\" chips to be placed between the tiles and table instead." |
+| "View" floats between the chip and the toggle | "\"view\" floats is fine because that's literally that toggle's label design throughout the board/portal." |
+| SO-14 and USS 9 have every build off but look the same | "also fine because the dashed border of their builds says \"not shown\"." |
+| filled cells are boxes, empty cells bare | "also fine." |
+| cell boxes don't fill their rows | "we already discussed this in the earlier screenshot that each row's height should be the consistent amount, enough to allow an attachment to wrap into 2 lines max." |
+| row dividers stop at the label column | "also mostly fine, but I DO NOT like the row dividers and their design at the very top, the ones touching the foot of the weapon names. Those aren't even needed up there." |
+| KILO's build head is a tall tint with nothing under the chip | "fine since kilo doesn't have any badges assigned. But that does bring up the question of, where tf is the build name label, even if a name isn't assigned?" |
+| tiles and table ~30px apart, no section break | "the color separates them, and it's mostly fine. BUT you're correct that they do need some sort of subtle design indicator to separate different weapons apart." |
+| boxes three and four deep | "unsure what you mean?" — *what I meant: bordered containers nested inside each other — the panel's card holds a tile, the tile holds bordered build chips; the panel holds a tinted head card, which holds the bordered build chip, which sits over bordered badge chips; the panel holds bordered cell boxes. Every level draws its own edge, so most of what the eye meets is outlines.* |
+| the tiles and the table speak two languages | "honestly color design/glow is supposed to, but the tiles have a much fainter glow than the table columns, so the tiles need their color adjusted to match." |
+| the top bar is mostly empty | "correct and i want it to remain navigation/search, with the important chips like the build limit being in that collective area i mentioned." |
+
+**His sub-points on the tiles (11:56 EDT, verbatim):**
+
+> * The widths following their context is fine, however i do want a min/max width set, so the width following content is contained within a limit. I was thinking min: 120px, max:260px, that should allow up to 6 builds per weapon which is more than enough realistically, and if circumstances change, we can adjust it in the future.
+> * Let's also nudge the weapon name up so it's top ink matches the current ~10px (i think?) padding, and put the weapon category text under it.
+> * I want the tiles to wrap to 2 lines max, with any overflow going into a sideways faded scroll.
+
+**His other notes (11:56 EDT, verbatim):**
+
+> * remove the "grid" view entirely. Let's leave it as "Card" (this view) and "lanes" (my next screenshot). Tho that doesn't mean my points from Grid's screenshot observations are void, since the views are all more or less the same thing.
+> * "Embed" was never a "View", so idk why you decided to add it there, when i had explicitly asked for it's "show" button to be drastically better designed and integrated below the tables, not for it to be it's own "View" (look at the prior intake note on it).
+> * for one build, just show the table as we regularly do. no reason to have a separate panel/view for it. (just offer a suggested build/weapon beside it in a column. Clearly designed to say/show it's a suggestion rather than the normal design as if it was a selected comparison).
+
+**Lanes (11:56 EDT, verbatim):** *"next screenshot attached; lanes view. and honestly i dont need a full obversation/verdict round on it. From these 2 prior screenshot observation rounds, you get the idea of what needs refining."*
+
+**The Discord cards (11:56 EDT, verbatim):**
+
+> * look how bugged they look. Correct, nitpick, and refine them. Don't redesign them completely, since they're still "discord preview" in a sense, but their overall implementation, elements, etc all need refining/nitpicking.
+
+*My inventory of `13-compare-embed.png`, for the build (not his words, not yet measured):* each image placeholder's name chip ("BAL-27-2") is cut by the placeholder's bottom edge · the image names run one off the builds (Build 1 → BAL-27-2 … Build 5 → BAL-27-1) — the fixture or the mapping, to check · cards in a row stretch to the tallest, so Build 4 carries ~110px of empty card · the footer says "AR" where the head says "ASSAULT" · Build 5's "Recommended Rank Mode" row wraps its last mode and pipe onto a second line · the "From Board 1 · G10" provenance line shows, cut off, under the panel.
+
+**The empty state (11:56 EDT, verbatim):**
+
+> * You removed the faded image in the background??
+> * and what did i say about the "Pick a weapon and every one of its builds opens in columns. Add a second to set them side by side." line? i said its giving the same issue as "a hint that *looks* skippable". What does that mean? Remove it? Is that what i said? Is that what that "a hint that looks skippable" issue was documented as?
+> * also, match the tiles design. idk why you made them all uniform. And make sure their layout flows outward from the center. keep the 3 rows, and columns isn't a strict number since i want them to flow outwards and that can change depending on a tile's size/number of tiles max per row. just contrain it to a specific total area width of ~900px, min 10 tiles, max 16, whatever randomly fits in that 3 row, ~900 px wide area.
+>    * also their hover state needs improving, they currently only trigger it when hovering over the weapon title area. the empty space doesn't trigger the hover. A hover of the empty space should also show that ALL the builds for that weapon are being selected. Also, improve the design of the `+` icon you used in the tile's empty space hover; and make it always shown so the tiles design implies that these are actionable elements.
+
+**What the record says, for his three questions (read 2026-09-29 11:57 EDT):**
+
+- **The faded image.** His v10 intake item 34: *"i like the faded background image you have"* — logged **keep: the faded background image**. It is gone from the landing: I dropped a thing he had kept.
+- **"A hint that looks skippable".** Documented three times, and never as "remove it": board 3's README, *"The hint line was skippable because it was skippable"* — a line that restates what is on screen is skipped, so it was made to state what the reader cannot see; `docs/pins2/kit/b3/board.css`, *"IT STILL LOOKS SKIPABLE"* — grey, small and trailing something louder is the board's grammar for "you may skip this", and the test is *"does the line carry a fact the reader cannot already see?"*; the History inventory, *"Made a readout, not nicer prose."* Lines that only restated what was visible were deleted; lines carrying a real fact got a real treatment. The landing line carries one (what a pick does), so the documented answer is a designed element, not removal. On 2026-09-28 19:53 EDT I removed it and the one-build line, and recorded that as his answer.
+- **Embed.** His 13:19 EDT batch (class T): *"i also hate the design and integration of the \"show cards\" button... fully redesign that element and it's integration into the panel"* — and T's sweep said the ledger decision (Compare keeps its Discord cards, collapsed behind a toggle) stands. I turned it into a fourth view instead.
+
+**By class** (continuing batch 2's G–M; logged 2026-09-29 11:57 EDT; nothing built):
+
+| Class | What he asked | The sweep it implies |
+|---|---|---|
+| **G · the table's frame** (again) | no sideways scroll; that also removes the scrollbar over the last row | both remaining views at six builds across three weapons |
+| **H · the weapon heads** (more) | remove the row dividers along the foot of the weapon names; a subtle indicator separating one weapon from the next | the head row and the body together, as one division system |
+| **N · the weapon tiles** | width follows content within 120–260px · the name's top ink at the tile's ~10px padding, the category under it · at most 2 rows, overflow into a sideways faded scroll · the tiles' tint as strong as the table columns' | every tile (Compare's picked tiles and the landing's) and the table's column tint as the reference |
+| **O · Compare's status area** | the limit chip redesigned entirely · it and every Compare chip (the "Same on all 4 …" chips) between the tiles and the table · the top bar stays navigation and search | every chip Compare shows about the comparison, gathered into one band |
+| **P · the build head** | the build's name label, shown even when the build has no name | the build head in both views, against the manifest's build row |
+| **Q · the views** | Grid removed; Cards and Lanes only · Embed is not a view: the "show the Discord cards" control, redesigned, below the table (his 13:19 EDT T) · one build: the regular table, with a suggested build or weapon in a column beside it, designed to read as a suggestion | the VIEW toggle's options; the one-build panel retired; where a suggestion is drawn from |
+| **R · the Discord cards** | refine and nitpick, not redesign: "their overall implementation, elements, etc" | my inventory above, then every Discord-card consumer (build drawer preview, Bulk's Discord view, Export's hover card) on the same renderer |
+| **S · the empty landing** | the faded background image back · the landing line as a designed element, not removed · the tiles as the real tile design, not uniform · flow outward from the centre, 3 rows, ~900px wide, 10–16 tiles, whatever fits · the whole tile hovers, and hovering its space shows all its builds selected · the `+` redesigned and always shown | the landing against his v10 keep and the Compare batches of 2026-09-28; the tile component shared with N |
+
+**Kept as they are, his call:** the "View" label beside the toggle · dashed build chips meaning "not shown" · boxed filled cells beside bare empty ones · a build head without badges keeping its tinted height · colour as the separation between the tiles and the table. **Lanes:** no round of its own; the Grid and Cards verdicts apply to it.
+
+**Last round's claims failing again:** the faded image (his keep, dropped), the skippable-hint rule (applied as removal), Embed (his redesign ask, turned into a view). Each was in the record I was working from.
