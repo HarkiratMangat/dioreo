@@ -254,6 +254,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-17 20:04 EDT — portal pins batch 2 — the 32 threads, regrouped by the class each was an instance of (v3.85.0-pre)
 - 2026-09-17 23:29 EDT — Portal pins batch 2, Session 3: board 3 swept twice, the problem card rebuilt, his 32 threads re-read clause by clause (v3.85.0)
 - 2026-09-29 00:33 EDT — portal pins batch 2 — the Session 4/5 sweep, read the way Session 4 reads it: the kit moved into docs/pins2/kit, Board 3-E retired as an input, and a spec a night stale found and regenerated (v3.85.0-pre)
+- 2026-09-29 12:23 EDT — Board 4 Version 40 intake round logged and closed (21 classes), and the Session 4/5 sweep's classes A, B and C run with two new instruments (v3.85.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4467,6 +4468,12 @@ Harkirat's verdict on the first sweep, 2026-09-28 23:27 EDT: *"why not just move
 **What changed.** The kit is tracked at `docs/pins2/kit/` (121 files, the old kit repo's list and the main repo's identical), the generators live beside their outputs, the spec is regenerated from the tracked kit, the plan, FINAL, HANDOFF and the ledger name Board 4 as the spec and `handoff-3e.md` as inherited structure only, `paths-resolve.cjs` reads the docs the audit skips, the handoff-check's plan pattern and the audit's anti-skim check learned `docs/pins2/plan/` (a green-looking move had broken `npm test`'s pointer-chain check), and the kit's question is filed for him at the push.
 
 **Lessons.** Read the mtimes of what a generator wrote, not its commit message. An exclusion that silences a gate removes its only reader. An instrument nobody ran is a claim about markup that moved. Search the record for the opposite instruction before a move that changes who can see the thing. And run `npm test` after a move: the earlier night ran the audit and the reflow and called it checked.
+
+## 2026-09-29 12:23 EDT — Board 4 Version 40 intake round logged and closed (21 classes), and the Session 4/5 sweep's classes A, B and C run with two new instruments (v3.85.0-pre)
+
+He opened the round with four batches and closed it at 12:08 EDT. The second and third batches ran in his new format: he sent one screenshot, I named what I saw wrong, he gave a verdict on each point, and both went into the log. Three of the previous round's calls turned out to contradict the record: I had dropped the faded landing image he had kept, deleted a "skippable" hint where the documented fix was to redesign it, and turned his "redesign the show-cards button" into a fourth view. The round's closing index lists all 21 classes for the build that follows the compact.
+
+The sweep then ran its three classes. `cites-check.cjs` judges each `path:line` cite by the words beside it and caught two stale cites in HANDOFF.md's D1. `counts-check.cjs` checks 13 numbers against what decides them, and all 13 hold. A cold run of Session 4's Step 1 and Step 4f passed wherever it should, and the census now finds 427 families where the 2026-09-21 run found 763. The docs index still held 133 files that no longer exist, among them the old Version 35 handoff; they are deleted, and the fact that the index never prunes is filed. Seven linksee anchors named the old paths or Board 3-E as live, and all seven are superseded by #69.
 
 # Part B — Lessons Ledger (thematic)
 

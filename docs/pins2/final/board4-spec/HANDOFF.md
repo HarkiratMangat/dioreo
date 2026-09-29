@@ -194,7 +194,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 
 | Fact | Where it is written |
 |---|---|
-| The token is `--patch: #F2C230` — his #F3C231 is the same colour one step off per channel, and appears in the kit only inside a comment | `portal/ui/tokens.css:58`; `docs/pins2/kit/b4/classes.css:426` |
+| The token is `--patch: #F2C230` — his #F3C231 is the same colour one step off per channel, and appears in the kit only inside a comment | `portal/ui/tokens.css:58`; `docs/pins2/kit/b4/classes.css:427` |
 | The portal's own token file calls it **"the portal's global accent"**; it was Broadcast's realm colour until Broadcast moved to pink | `portal/ui/tokens.css:118` |
 | Two more names carry the same hex with a different meaning: `--pn` (patch notes) and `--tier-best` (the Best badge's gold, kept separate "so a later retune of one never moves the other") | `portal/ui/tokens.css:69`, `:239`–`:240` |
 | **Why this yellow was chosen: no record says.** It arrived with the portal as its accent | — |
@@ -208,7 +208,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | Selection | the checkbox's checked fill; the selection bar's count square | `portal/ui/app.css:692` (`.cb.on`); `docs/pins2/kit/b3/board.css:719`, `:730`, `:765` |
 | Focus and typing | every text field's focus ring and glow, the caret, the text highlight | `docs/pins2/kit/b4/classes.css:143`–`:149`, `:211`–`:212` |
 | "The system did this" | the wand chips (his pick, 2026-09-24 13:33 EDT: "not really a confirmation, it's more like a 'look at this magic'") | `docs/pins2/kit/b4/classes.css:426`–`:430` |
-| Rank | the Best tier's gold (by hex, and `--tier-best`) | `docs/pins2/kit/b3/board.css:167`, `:180`, `:190`; `docs/pins2/kit/b4/classes.css:129`, `:200` |
+| Rank | the Best tier's gold (by hex, `#F2C230`, and `--tier-best`) | `docs/pins2/kit/b3/board.css:167`, `:180`, `:190`; `docs/pins2/kit/b4/classes.css:129`, `:200` |
 | Pressed and fallback | some pressed toggles; the portal's fallback accent when a realm has none | `docs/pins2/kit/b4.css:115`; `portal/ui/tokens.css:475`–`:519` |
 
 **The decision:** whether one colour should carry selection, focus, "magic" and rank at once, or each role gets its own token (and which roles keep `--patch`). **Session 4 discusses it with him before changing anything** — his words.

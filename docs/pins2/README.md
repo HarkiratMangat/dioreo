@@ -10,7 +10,7 @@ status: live
 ## Read in this order
 
 1. **This file.**
-2. **[The plan](plan/2026-09-13-portal-pins-batch-2.md)** — §0 first, then **§5c** (Session 4) or **§5d** (Session 5), §1, §7, §9, §13, and the session's prompt in **§11**. The plan governs; [its spec](spec/2026-09-13-portal-pins-batch-2-design.md) is the frozen decision record it cites.
+2. **[The plan](plan/2026-09-13-portal-pins-batch-2.md)** — §0 first, then the session's prompt in **§11**, which names its own reading list — Session 4's is §0, §1, §2b, §9, §10.5 and §13, then **§5c**; Session 5's is in its prompt, then **§5d**. Where §0's default list and a prompt differ, the prompt wins (§0 item 1). The plan governs; [its spec](spec/2026-09-13-portal-pins-batch-2-design.md) is the frozen decision record it cites.
 3. **[FINAL.md](final/FINAL.md)** — which board owns each surface, and the rule for which value wins.
 4. **[The handoff, gate by gate](final/board4-spec/HANDOFF.md)** — every current ruling, what the data needs, what was never opened — then the generated values beside it ([`final/board4-spec/README.md`](final/board4-spec/README.md) says the order).
 5. **[His words](handoffs/2026-09-21-board4-intake.md)** — every intake round verbatim and dated, grouped by class, with what was built and measured after each. Where this file, the handoff or the plan paraphrase him, this log wins.
@@ -41,7 +41,7 @@ status: live
 | Board 3-E | **superseded by Board 4** (his 2026-09-28 23:27 EDT). `3e/` in board 3's package is history: `handoff-3e.md` survives only as the inherited *structure* narrative `HANDOFF.md` cites, and the generators moved to `final/board4-spec/` |
 | Publishing the kit | 🔴 he said on 2026-09-20 21:33 EDT that the kit was not to go on the online GitHub. It is tracked now, so a push or a merge into `v3-pre-release` that carries `kit/` puts it there — the approval sentence names it (plan §13 Step 1). Not decided |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
-| Next | his Version 40 intake round is **closed** (2026-09-29 12:08 EDT, 21 classes A–U, `handoffs/2026-09-21-board4-intake.md` § Version 40 intake round and its closing index); the build of it follows a compact, then Session 3's close, then Session 4 |
+| Next | his Version 40 intake round is **closed** (2026-09-29 12:08 EDT, 21 classes A–U, `handoffs/2026-09-21-board4-intake.md` § Version 40 intake round and its closing index); the build of it follows a compact (`handoffs/2026-09-29-board4-compact-prep-18.md`), then Session 3's close, then Session 4 |
 
 ## Where new things go
 
