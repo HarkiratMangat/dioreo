@@ -1299,3 +1299,48 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 | **F · a list not built as the refined one** | Compare's search list floats the category in the middle; "NOT how we refined it for the build drawer" | recorded 2026-09-28 as "`Picker`, already the board's" — its rows are not. Every dropdown list on the board against the build drawer's rows |
 
 **Two of these are last round's claims failing:** A and B are components I recorded as "swapped" or "already the board's" on 2026-09-28; F is the search I recorded as the build drawer's `Picker`. A component's name matching is not its placement, its gate's colour or its rows matching.
+
+### Batch 2 — Compare's Grid view, item by item (his format from 2026-09-29 10:29 EDT)
+
+*His method for the rest of the round: he sends one screenshot; I say what I see wrong, what needs refining and what needs more Awwwards-worthiness, concisely; he gives his verdict on each; both are logged here; then the next screenshot. Asked 10:29 EDT: "look at this screenshot and tell me what you see wrong, what needs improving, what needs refining, what needs \"more\" awwards worthiness, etc. Keep the points concise. then i'll give you my verdict on what i see."*
+
+**The shot:** `docs/pins2/intake-shots/intake-v40/10-compare-grid.png` — Compare, Grid view, BAL-27 (Builds 1–4) · CX-9 (Build 1) · KILO BOLT-ACTION (Build 3), the pointer on CX-9's CX-FR (Stock).
+
+**His context first (10:50 EDT, verbatim):** *"the table is currently scrolled over to the side a bit; the table isn't/shouldn't be a scrollable component."* So the row names spilling past the left edge and KILO's head overflowing the right are the table being scrolled sideways, and the ask is that the table not scroll.
+
+| My observation (10:29 EDT) | His verdict (10:50 EDT, verbatim) |
+|---|---|
+| row-name column too narrow; labels spill left ("munition", "-27 ONLY") | the table was scrolled; it should not be a scrollable component |
+| KILO's head overflows the table's right edge; the table stops ~100px short of the card | (same: scrolled) |
+| the weapon groups are divided inconsistently: a ~26px strip after BAL-27, a hairline after CX-9 | "the empty gap between the build 4 columns and the cx9 column reads as broken deadspace, similarly between the cx9 column and the kilo bolt column. So the division between weapons needs a significant redesign." |
+| four hover signals at once (row, column, cell box, head chip) | "the hover signals are fine" |
+| two vocabularies for empty: "—" and hatched "Not equipped" | "the two ways to say \"empty\" is a correct observation." |
+| row heights jump 66–96px from early wrapping | "row heights correct... each row height needs to be pre-set to the height as if the attachment were to overflow into 2 lines." |
+| badges mix filled and outlined; KILO's head has none | "badges mix is fine. but the badges need hover states that pop-up the full badge when hovering over the compact variant of their design." |
+| "dim = all builds agree" reads as disabled | "dim \"all builds agree\" correct, it needs a rework." |
+| the maroon odd-one-out blocks are the loudest thing | "maroon blocks, it's fine." |
+| the weapon heads are flat labels | "the weapon heads are flat labels, correct observation." |
+| the rows blur together across 1,800px | "the rows blur together, correct observation." |
+
+**His additions (10:50 EDT, verbatim):**
+
+> * the attachment slot labels should be in their respective accent colors and full caps.
+> * remove the "bal-27 only" "all weapons" etc label system.
+> * The weapon category text/chip shouldn't be above the weapon name.
+> * i also hate the style of the weapon name's row.
+> * need better division between cells, columns, rows, etc.
+> * where's the gunsmith code??
+
+**By class** (logged 2026-09-29 10:51 EDT; nothing built):
+
+| Class | What he asked | The sweep it implies |
+|---|---|---|
+| **G · the table's frame** | not scrollable; fits its card | every view (Cards · Grid · Lanes · Embed) at the widest case (6 builds, 3 weapons) and the working width |
+| **H · the weapon head row** | "significant redesign" of the division between weapons; heads are flat labels; he hates the name row's style; the category not above the name | the head row as one design across views: how a weapon group starts and ends, head to last row |
+| **I · the grid's structure** | better division between cells, columns and rows; rows blur together; every row pre-set to two lines' height | one rhythm for rows and one for columns, in all views |
+| **J · the row names** | slot labels in their slot accent colours, full caps; remove the "BAL-27 only" / "2 of 3 weapons" sub-labels (my `.cx-use`, from his "both" of 2026-09-28) | the row-name column in every view; where else the slot accents already appear, so the colours match |
+| **K · a cell's states** | one vocabulary for empty; rework "all builds agree" | every cell state (odd one out, missing, empty, agree, hovered) as one set, all views |
+| **L · missing data** | "where's the gunsmith code??" | what each build carries that no view shows (code, image, label), against the manifest's build row |
+| **M · badge hover** | the compact badges pop up the full badge on hover | the compact badge wherever it appears (Compare heads and elsewhere) |
+
+**Kept as they are, his call:** the hover signals · the odd-one-out tint · the mix of filled and outlined badges.
