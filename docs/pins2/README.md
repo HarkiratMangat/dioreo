@@ -26,6 +26,7 @@ status: live
 | [`handoffs/`](handoffs/) | Session 3's records: the intake log, the fix plans (v11, v15), the critiques, checkpoints, compact preps | record |
 | [`records/`](records/) | the Session 1–2 drafts and checkpoints, and History's constraint table and change inventory (read these only when touching History, C8) | record |
 | [`instruments/`](instruments/) | the Board 4 measuring scripts — [`README.md`](instruments/README.md) lists each and when to run it | reference |
+| [`data/`](data/) | source data the boards used — the CODM mode icons (the Modes badge family) and the weapons-and-attachments source | data |
 | [`intake-shots/`](intake-shots/) | the screenshots his intake and the handoff cite, by round, tracked so a fresh clone can see what he pointed at | images |
 
 ## State — as of 2026-09-28 23:12 EDT

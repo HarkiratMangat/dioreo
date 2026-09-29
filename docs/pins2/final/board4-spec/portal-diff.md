@@ -1534,12 +1534,12 @@ index 70aca763..9424d157 100644
 +PATHS['b2-fold'] = '<path d="M12 22v-6M12 8V2M4 12H2M10 12H8M16 12h-2M22 12h-2m-5 7-3-3-3 3m6-14-3 3-3-3"/>';
 +PATHS['b2-unfold'] = '<path d="M12 22v-6M12 8V2M4 12H2M10 12H8M16 12h-2M22 12h-2m-5 7-3 3-3-3m6-14-3-3-3 3"/>';
 +// 2026-09-26 11:14 EDT — his EXPANDED marks (his 11:10 EDT: "the same icons but each one has had their strokes expanded"): every stroke is his own outline at
-+// his own width, drawn as a fill (docs/claude/pins2/data/2026-09-25-codm-mode-icons/normalized-expanded, same 24-unit grid and centring as the stroke
++// his own width, drawn as a fill (docs/pins2/data/2026-09-25-codm-mode-icons/normalized-expanded, same 24-unit grid and centring as the stroke
 +// copies). A fill carries his weights exactly (x1.0) and cannot be re-weighted. 2026-09-26 11:43 EDT: his pick over his strokes x1.3 — these ARE the marks now
 +// (the stroke copies, the drawing fork and its sprite swap are gone); drawn at 20px in the 22px plate (b4/classes.css).
 +// 2026-09-26 11:43 EDT (his "see if you can still improve it to better see the detail"): each drawing scaled up uniformly by 1.1, its longest side 22 of 24
 +// units instead of 20 — 10% more of every line, nothing restyled; 23 and 24 were rendered too and touched the plate's ring at 20px.
-+// 2026-09-26 12:27 EDT — his FILL marks (docs/claude/pins2/data/2026-09-25-codm-mode-icons/fill-v2, his second fill; the first was removed 2026-09-26 12:48 EDT at his word): the same drawings with their shapes filled solid. His 12:22 EDT
++// 2026-09-26 12:27 EDT — his FILL marks (docs/pins2/data/2026-09-25-codm-mode-icons/fill-v2, his second fill; the first was removed 2026-09-26 12:48 EDT at his word): the same drawings with their shapes filled solid. His 12:22 EDT
 +// "improve the filled variant. and put both on the board for me to check": 2026-09-26 12:53 EDT: his pick over his expanded
 +// outlines ("v2 filled looks better. choose that") — these ARE the marks; the fork and the expanded set are gone. Both sets follow one rule — as large as the 20px box allows, width up to 24 units and height up to 22 (23+ put the ink on the
 +// plate's 1px ring) — so the wide marks (S&D, DOM, TDM) grow to the box's width. Uniform per mark; nothing is restyled.
