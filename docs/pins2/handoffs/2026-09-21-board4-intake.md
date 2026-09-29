@@ -1577,6 +1577,8 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 ### Built in the kit — 2026-09-29 18:02 EDT (not published, not reviewed)
 
+**Published 2026-09-29 18:42 EDT as Board 4 Version 42** on his "you can publish v42" (the page and the six changed kit files; every byte size in the artifact's listing matches the local file). **AG, measured 2026-09-29 18:50 EDT:** the 4px gutter column and the cells' own spacing put the weapon heads 16px apart against 6px between one weapon's builds (cell boxes 28px against 18px).
+
 *Measured headless at 2x (Chrome, 1440×900): the table fits (no sideways scroll) at six builds across three weapons, 6 columns each with its actions and image mark, 7 shared-value chips in the band, no VIEW toggle; from the landing a build number opens the table with the bar's list still open. `r22` 35/35. The spec regenerated from the kit.*
 
 | Class | Built | Where |

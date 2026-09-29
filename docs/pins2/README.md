@@ -31,17 +31,17 @@ status: live
 | [`data/`](data/) | source data the boards used — the CODM mode icons (the Modes badge family) and the weapons-and-attachments source | data |
 | [`intake-shots/`](intake-shots/) | the screenshots his intake and the handoff cite, by round, tracked so a fresh clone can see what he pointed at | images |
 
-## State — as of 2026-09-29 00:12 EDT
+## State — as of 2026-09-29 18:50 EDT
 
 | | |
 |---|---|
-| Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 41** live (published 2026-09-29 16:50 EDT on his "publish": the Version 40 intake round, built) |
+| Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 42** live (published 2026-09-29 18:42 EDT on his "you can publish v42": the Version 40 and Version 41 intake rounds, built); his review pending; **not signed off** |
 | The kit | [`kit/`](kit/README.md), **tracked** — moved here from the gitignored `local/pins2-board-3/redo/` on his call of 2026-09-28 23:27 EDT (*"why not just move the board to the new collective folder?"*). Its git history to the move stays local: `git -C local/pins2-board-3 log --stat` |
 | The spec | `final/board4-spec/`, **regenerated 2026-09-29 00:12 EDT from the tracked kit** — its header carries the counts. The `C*.md` and `states.md` that sat in the live folder before were from kit `ecc93ee`, *before* Version 39: `split-spec.cjs` had written the Version 40 values into a folder nothing pointed at |
 | Board 3-E | **superseded by Board 4** (his 2026-09-28 23:27 EDT). `3e/` in board 3's package is history: `handoff-3e.md` survives only as the inherited *structure* narrative `HANDOFF.md` cites, and the generators moved to `final/board4-spec/` |
 | Publishing the kit | 🔴 he said on 2026-09-20 21:33 EDT that the kit was not to go on the online GitHub. It is tracked now, so a push or a merge into `v3-pre-release` that carries `kit/` puts it there — the approval sentence names it (plan §13 Step 1). Not decided |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
-| Next | his Version 41 intake round is **built in the kit** (2026-09-29 18:02 EDT, classes V–AH, `handoffs/2026-09-21-board4-intake.md` § Version 41 intake round); Board 4 is still Version 41 until he says publish; the Version 40 round (all 21 classes A–U) is live in it; compact prep: `handoffs/2026-09-29-board4-compact-prep-19.md` |
+| Next | Version 42 holds the Version 40 round (all 21 classes A–U) and the Version 41 round's 13 (V–AH); his review of Version 42 and the Collective's sign-off (plan §5c Step 1 now checks for it); then Session 3's close (plan §13) on his word. The Session 4/5 docs were brought to Version 42 at 2026-09-29 18:50 EDT: `final/board4-spec/HANDOFF.md` (Compare rewritten, the Session 4 decisions D1–D3 recounted, the generator's numbers triaged), `final/FINAL.md`, this table, the plan's Session 4 precondition and Session 5 prompt |
 
 ## Where new things go
 

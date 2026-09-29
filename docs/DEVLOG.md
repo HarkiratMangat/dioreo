@@ -257,6 +257,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-29 12:23 EDT — Board 4 Version 40 intake round logged and closed (21 classes), and the Session 4/5 sweep's classes A, B and C run with two new instruments (v3.85.0-pre)
 - 2026-09-29 15:37 EDT — Board 4 Version 40 intake round built in the kit, all 21 classes (v3.85.0-pre)
 - 2026-09-29 18:06 EDT — Board 4 Version 41 intake round logged and built in the kit, classes V–AH (v3.85.0-pre)
+- 2026-09-29 18:51 EDT — Board 4 published as Version 42; the Session 4/5 docs brought to Version 42 (v3.85.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4490,6 +4491,14 @@ Lesson: an instrument's check can pass without testing anything. r22's one-build
 He sent ten screenshots and fifteen asks about Compare: hover states ranked by strength rather than hue; the badge pop fixed (the run's edge-fade mask was cutting it); Lanes scrapped, so Compare is Cards alone; the gunsmith code on two lines in white, with the name column 16px narrower; corner marks in the build's colour; a tinted ×; share, edit and delete under each column, with the code cell copying on click; the image mark beside each Build chip; shared values as chips in the band; Clear builds and Remove all weapons where the VIEW toggle was; a multi-select search, grouped by category, with each weapon's build numbers; a colour wash per weapon instead of a divider line; and a redesigned Discord bar. Built in the kit, not published, not reviewed.
 
 Routing: the kit is excluded from the product's codebase-memory graph because it copies portal/ui, but .cbmignore already said it should have its own graph. It had never been indexed, so kit code questions went to rg and sed. It is indexed now.
+
+## 2026-09-29 18:51 EDT — Board 4 published as Version 42; the Session 4/5 docs brought to Version 42 (v3.85.0-pre)
+
+**Published.** His "you can publish v42" put the Version 41 round (Compare classes V–AH) live as Board 4 Version 42: the page plus the six kit files changed since Version 41, every byte size matching the artifact's listing.
+
+**The Session 4/5 docs, at Version 42.** `docs/pins2/final/board4-spec/HANDOFF.md` still described Compare as Grid, Lanes and Embed behind a VIEW toggle and called both of his latest rounds unreviewed. Its Compare rulings are rewritten from the kit and the two rounds' built tables, and C3 gets the first structure narrative written for Board 4 itself. The Session 4 decisions are recounted on the current kit: the yellow is on 232 kit lines, the dropdown ground is 27 declarations in ten mixes, and Compare's × is now tinted in its weapon's colour. The generator's numbers are read: all 14 unreached elements are gate frame, and only 12 of the 88 contradicted declarations are real (41 are animation frames).
+
+**A gap closed in the plan.** Session 4's precondition checked only that board 3 was closed, so it could have started before the Collective was signed off. §5c Step 1 and the Session 4 prompt now check the sign-off. The Session 5 prompt no longer tells the build to rebuild board 1's drawers from board 1: Board 4 supersedes that.
 
 # Part B — Lessons Ledger (thematic)
 
