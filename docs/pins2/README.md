@@ -34,7 +34,7 @@ status: live
 | | |
 |---|---|
 | Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 40** live |
-| The kit | `local/pins2-board-3/redo/` at kit commit `f41c691` — **gitignored**, with its own local git repo (`local/pins2-board-3/redo/KIT-GIT.md`); the published artifact is the only copy off this disk |
+| The kit | `local/pins2-board-3/redo/` at kit commit `f41c691` — gitignored today, with its own local git repo. **Moving into `docs/pins2/kit/`, tracked** — his call at 2026-09-28 23:28 EDT: "why not just move the board to the new collective folder? wasn't that kind of the point of it?" (deferred list: *Move the Board 4 kit into docs/pins2/*) |
 | The spec | `final/board4-spec/` regenerated from kit `f41c691` |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
 | Next | his Version 40 intake round (log only, `handoffs/2026-09-21-board4-intake.md` § Version 40 intake round), then Session 3's close, then Session 4 |
