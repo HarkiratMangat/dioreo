@@ -7,6 +7,8 @@ status: live
 
 *Rewritten 2026-09-27 02:47 EDT after Harkirat's harsh review ("i have doubts with your quality and level of work"). The first version (02:29 EDT) presented my paraphrases as his words, mixed superseded alternatives in with current rulings, invented a responsive rule and pointed at maps with none of Board 4's classes. Those are gone. This file is the AUTHORED half of the spec; everything generated sits beside it (README).*
 
+> ⚠️ **REOPENED BY THE VERSION 40 INTAKE ROUND (closed 2026-09-29 12:08 EDT), NOT YET BUILT.** His round overturns or extends rows this file states as current, above all C3 Compare (views: Cards and Lanes only, Grid removed, Embed is not a view; the heads, the grid's division, the tiles, the landing, the Discord cards, the one-build state) and C7's post form (section headings, date readouts, the in-field buttons), plus Before staging's −, the tile's ×, the limit chip and Export's peek exit. Until the build that follows the compact lands, read those rows against [the intake log's Version 40 round](../../handoffs/2026-09-21-board4-intake.md) — its closing index lists every class (A–U), and his words there win.
+
 ## Who reads this, and in what order
 
 **Route (his popup answer, 2026-09-27, before 02:40 EDT):** Session 4 standardizes over Board 4: Collective and publishes **Board 4: Final**; Session 5 ports Board 4: Final. So this file is Session 4's input first and Session 5's second. Where Session 4 changes a value, the regenerated spec wins over any value quoted here.

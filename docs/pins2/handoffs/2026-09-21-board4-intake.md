@@ -1266,7 +1266,7 @@ And mid-run: *"your sequential-thinking call was so shit! WHERE ARE THE REAL, CH
 
 **Fixed (2026-09-28 21:45 EDT, kit v40, local):** the build drawer's lists join the pop-up family (as `usePop` does): fixed, 10px off the field, inside the drawer's body and the window, height capped to the room. When neither side has room, the page moves just enough for the list to open downward. Any scroll outside the list closes it, and the column fades drop their mask while a list is open. **Measured** with the new `docs/pins2/instruments/board4-menu-fit.cjs` (it now fails a list that is clipped by a mask or covered by a header): before, 4 of 12 cases clipped at 700px tall; after, 0 of 12 at 700 and 960, every gap 10px. Compare's search list: 10.2px off its field. A date pop-up forced upward stays fully visible (it draws over the drawer's title, as the pop-up family does).
 
-## Version 40 intake round — opened 2026-09-28 22:38 EDT, LOG ONLY until he says it is done
+## Version 40 intake round — opened 2026-09-28 22:38 EDT, closed 2026-09-29 12:08 EDT ("That's it for the intake items")
 
 *His words when he opened it: "talk about shitty, half-ass work. ready for another intake round to fix all your shitty work?" How this round is logged (anchor #62, PRE-FLIGHT 42, 80): his words verbatim and dated, screenshots copied to `docs/pins2/intake-shots/intake-v40/` (tracked, run through pngquant; the `local/` copies are working files), and after each batch the asks grouped by class with the sweep each implies. Nothing is built until he says the round is done.*
 
@@ -1418,3 +1418,71 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 **Kept as they are, his call:** the "View" label beside the toggle · dashed build chips meaning "not shown" · boxed filled cells beside bare empty ones · a build head without badges keeping its tinted height · colour as the separation between the tiles and the table. **Lanes:** no round of its own; the Grid and Cards verdicts apply to it.
 
 **Last round's claims failing again:** the faded image (his keep, dropped), the skippable-hint rule (applied as removal), Embed (his redesign ask, turned into a view). Each was in the record I was working from.
+
+### Batch 4 — the announcement drawer, 2026-09-29 12:08 EDT, verbatim (his two shots: `docs/pins2/intake-shots/intake-v40/15-build-heading.png`, the build drawer's "Build" heading with its "Weapon required" chip and rule, as the reference · `16-post-form.png`, the post form: Text with "Required", the count chips, Starts/Ends with "Optional" and their readouts, Show each player, Accent with "Auto")
+
+> * i've already asked 2-3 times now for you to implement that same heading label design as the build drawer, yet you've failed still. "Text" should get the same design as the "Build" heading label used in the build drawer, including the horizontal line and it's text sizing. Same with "Accent" and "Banner". So roughly, like this:
+>
+> ```
+> Text --------------
+> [announcement text field here. no other label above it]
+>
+> Starts                       Ends
+> [field here]                 [field here]
+>
+> Shows each player
+> [picker]
+>
+> Accent -----------------
+> [color-picker]
+>
+> Banner --------------
+> [image-picker]
+> ```
+>
+> * the "Now | when you commit it" "Fri Nov 27" lines sit too far from the field and read as separate elements. I also need their overall design to be improved to imply they're hint chips because this is the same "hint text that looks like it has no purpose" issue.
+>
+> That's it for the intake items.
+
+**By class** (logged 2026-09-29 12:10 EDT; nothing built):
+
+| Class | What he asked | The sweep it implies |
+|---|---|---|
+| **T · form section headings** | Text, Accent and Banner become the build drawer's heading: its text size and its rule to the right (`15-build-heading.png`); the Text field has no other label above it; Starts, Ends and Show each player stay plain field labels | the build drawer's heading as the recipe; every form drawer (Add, Bulk, Edit, post, and the portal's patch-notes drawer) for which labels are sections and which are fields |
+| **U · the date readouts** | the Starts/Ends readouts sit closer to their fields and read as part of them; designed as hint chips, not grey text — "the same \"hint text that looks like it has no purpose\" issue" | every readout and helper line under a field on the board (the counts, the dates, the stepper's "1 a day max"), against the skippable-hint rule as documented (batch 3) |
+
+**What the record shows about "2-3 times":** the log holds his 2026-09-27 20:34 EDT asks for the build drawer's status chips on the form labels and for a better design of the Start/End hints, both in the post form. It holds **no logged ask for the heading-with-rule treatment itself** under any wording I could find. Either it was said in chat and I never logged it, or I logged it so loosely that it cannot be found. Both are my logging failures; his count stands. The Start/End readouts are this round's second ask on the same lines (U repeats 2026-09-27 20:34 EDT).
+
+**Open at build time, not guessed now:** his sketch leaves out the Required / Optional / Auto chips. The build drawer's "Build" heading keeps its "Weapon required" chip beside it, so a rule heading keeps its chip. Whether Starts and Ends keep their "Optional" chips is not in his words: ask with renders at the build. His sketch reads "Shows each player"; the board reads "Show each player" — copy is Session 4's (anchor #15), so no rename.
+
+### Ambiguities in this round, to settle with renders at the build (checked 2026-09-29 12:10 EDT)
+
+- **Batch 2, "The weapon category text/chip shouldn't be above the weapon name."** In `10-compare-grid.png` the category sits on the name's own line, to its right, cap-top aligned, so nothing is literally above it. Batch 3 separately asks for the tiles' category **under** the name. Which head placement he means is a build-time question with renders.
+- **Batch 3, "Let's leave it as \"Card\"".** The toggle reads "Cards"; logged as his words, not a rename.
+- **Batch 3, 120–260px tiles "should allow up to 6 builds".** His arithmetic on today's chip size; the build measures six chips, their gaps and the padding against 260px and says so if it does not fit, rather than shrinking the chips.
+
+### The round, all classes in one index (for the build after the compact)
+
+| Class | Gate | In one line |
+|---|---|---|
+| A | C2 · C3 | reused `.b3-x` controls not re-homed: Before staging's −, the tile's always-bordered × |
+| B | C3 | the limit chip in Broadcast's colours (and O: redesigned, moved) |
+| C | C3 | the build chips' − / + corner marks wash out their glyph |
+| D | C5 | Export's peek card exits from the top of the list |
+| E | C7 | the post form's shuffle, calendar and copy buttons: field fill, Broadcast accent tint and hover |
+| F | C3 | Compare's search list is not the build drawer's refined rows |
+| G | C3 | the table never scrolls sideways |
+| H | C3 | the weapon heads and the division between weapons: redesign; no top dividers; a subtle weapon separator |
+| I | C3 | cell, column and row division; rows pre-set to two lines' height |
+| J | C3 | row names in slot accents, full caps; the "BAL-27 only" sub-labels removed |
+| K | C3 | one "empty"; "all builds agree" reworked |
+| L | C3 | the gunsmith code shown |
+| M | C3 · all | compact badges pop up the full badge on hover |
+| N | C3 | weapon tiles: 120–260px, name up and category under, 2 rows then a faded sideways scroll, tint as strong as the table |
+| O | C3 | the status band between tiles and table: the limit chip redesigned, the Same-on chips moved there |
+| P | C3 | the build head shows the build's name label, named or not |
+| Q | C3 | views: Cards and Lanes only; Embed back as a control below the table; one build = the table plus a suggestion column |
+| R | C3 | the Discord cards refined, not redesigned |
+| S | C3 | the empty landing: faded image back, the line designed not removed, real tiles flowing from the centre, whole-tile hover, a visible `+` |
+| T | C7 · forms | form section headings as the build drawer's |
+| U | C7 · forms | date readouts attached to their fields, designed as hint chips |
