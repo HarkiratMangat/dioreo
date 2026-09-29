@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective (the kit Board 3-E shares) — its rules on SHIPPED portal classes
 
-*Generated 2026-09-29T19:33:13.410Z by `overrides.cjs`. **299 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
+*Generated 2026-09-29T22:02:22.761Z by `overrides.cjs`. **299 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
 
 **This is where the corrections to boards 1 and 2 live.** Session 2 shipped board 1 and board 2 at ~95%; board 3 ran the portal's own code and corrected the rest with rules like these. Each row is a change to `portal/ui/app.css` (or `tokens.css`): find the portal rule for the same selector, change it to this, and close the element with `portalProbe` against board 3.
 

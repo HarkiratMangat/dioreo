@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the custom properties the portal does not have
 
-*Generated 2026-09-29T19:36:37.040Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `c3f437d4 plus the working tree`. 171 of the 254 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
+*Generated 2026-09-29T22:05:51.249Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `529df5d9 plus the working tree`. 172 of the 255 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
 
 | Token | Defined in the kit | The definition |
 |---|---|---|
@@ -47,9 +47,9 @@ status: live
 | `--dlen` | `b3/board.css:293` | `.b3-x:hover .ic,.b3-x:focus-visible .ic,.dw-h .x:hover .ic,.b3-pc-x:hover .ic{animation:b3draw .3s cubic-bezier(.16,1,.3,1) both;--dlen:34}` |
 | `--eio` | `b4/classes.css:833` | `.b4 .acx{--pad:14px;--pw:200px;--svh:138px;--cg:16px;--rg:16px;--bgap:16px;--hueh:12px;--huer:44px;--fh:44px;--frad:9px;--lg:10px;--swg:6px;` |
 | `--f-bg` | `b4/form.css:44` | `.b4 .f-fld{--f-bg:color-mix(in srgb,#04070A 52%,var(--sunk));--f-edge:color-mix(in srgb,var(--ink) 12%,transparent);` |
-| `--f-ch` | `b4/form.js:462` | `<section class=${'f-card' + (multi && i === ci ? ' on' : '')} key=${c.id} data-arm=${c.f.mode} style=${`--f-ch:${hueOfCard(c)}`} onFocusIn=$` |
+| `--f-ch` | `b4/form.js:467` | `<section class=${'f-card' + (multi && i === ci ? ' on' : '')} key=${c.id} data-arm=${c.f.mode} style=${`--f-ch:${hueOfCard(c)}`} onFocusIn=$` |
 | `--f-edge` | `b4/classes.css:143` | `.b4 .f-fld:focus-within, .b4 .f-pick.open .f-fld{--f-edge:var(--patch)!important;box-shadow:inset 0 0 0 1px var(--patch),0 0 0 5px color-mix` |
-| `--f-hue` | `b4/form.js:301` | `<div class="f-card-b" style=${`--f-hue:${hue}`}>` |
+| `--f-hue` | `b4/form.js:306` | `<div class="f-card-b" style=${`--f-hue:${hue}`}>` |
 | `--f-lw` | `b4/classes.css:404` | `.b4 .f-card-b{--f-lw:96px;container:f-card / inline-size}` |
 | `--f-sidew` | `b4.css:131` | `.b4 .drawer.wide:has(.b3-nb) { width:min(980px, 100vw - 40px); --f-sidew:333px }` |
 | `--fb` | `b4/classes.css:806` | `.b4 :is(.f-form.b3-fady,.pb-col.b3-fady,.drawer.b1 .dw-b):has(.f-pick.open .f-menu,.b4-pop){--ft:0px!important;--fb:0px!important;-webkit-ma` |
@@ -94,6 +94,7 @@ status: live
 | `--hueh` | `b4/classes.css:833` | `.b4 .acx{--pad:14px;--pw:200px;--svh:138px;--cg:16px;--rg:16px;--bgap:16px;--hueh:12px;--huer:44px;--fh:44px;--frad:9px;--lg:10px;--swg:6px;` |
 | `--huer` | `b4/classes.css:833` | `.b4 .acx{--pad:14px;--pw:200px;--svh:138px;--cg:16px;--rg:16px;--bgap:16px;--hueh:12px;--huer:44px;--fh:44px;--frad:9px;--lg:10px;--swg:6px;` |
 | `--ir` | `b4/classes.css:883` | `.b4 .acx .acx-s.acx-full{--W:var(--sww,100%);--UW:var(--sww,100%);--RL:0px;--RWb:var(--sww,100%);--ox:0px;--oy:0px;--or:var(--swr);--ir:var(` |
+| `--k` | `b2.css:262` | `[data-k=R]{--k:var(--danger-ink)}[data-k=F]{--k:var(--info)}[data-k=N]{--k:var(--warn-ink)}[data-k=K]{--k:var(--ok)}[data-k=A]{--k:var(--sch` |
 | `--lab-bg` | `b3/board.css:497` | `--lab-bg:color-mix(in srgb,var(--sl) 30%,#080C0F);--lab-ink:color-mix(in srgb,var(--sl) 94%,white);` |
 | `--lab-div` | `b3/board.css:489` | `/* \u26a0\ufe0f THE HAIRLINE IS GONE, AND IT IS GONE BECAUSE IT NEVER DREW. `--lab-div:1px solid color-mix(\u2026)` fed into` |
 | `--lab-fam` | `b3/board.css:487` | `html[data-b3-p2lab=key],.b3-lab[data-lab=key]{--lab-sep:"";--lab-w:700;--lab-size:var(--t-micro);--lab-fam:var(--data);` |
@@ -116,7 +117,7 @@ status: live
 | `--lh-pr` | — **not defined anywhere in the kit** | `` |
 | `--lh-vl-vt` | — **not defined anywhere in the kit** | `` |
 | `--lit` | `b3/board.css:1900` | `.b3-bdg[data-k=meta]{--lit:.06;--b3-amb:1.6;--b3-glow:1.7;overflow:hidden}` |
-| `--m` | `gates/armory.js:680` | `<section class=${'b3-xf' + (isShut ? ' shut' : '') + (count ? '' : ' b3-xf-none')} key=${f.key} data-fk=${f.key} style=${`--m:${MODE_HEX[f.m` |
+| `--m` | `b4/compare.js:302` | `<span class="cx-dcf" aria-hidden="true">${chosen.map((b, k) => html`<i key=${String(b._id)} style=${`--c:${optionOf(b.weaponName).accent};--` |
 | `--m1` | `b4.css:34` | `html:is([data-b3-xbg=mesh],[data-b3-xbg=ground]) :is(.drawer:has(.b3-nb), .drawer.b1, .drawer .b4-ask){ --m1:#ff3b5c;--m2:#f6a93b;` |
 | `--m2` | `b4.css:34` | `html:is([data-b3-xbg=mesh],[data-b3-xbg=ground]) :is(.drawer:has(.b3-nb), .drawer.b1, .drawer .b4-ask){ --m1:#ff3b5c;--m2:#f6a93b;` |
 | `--m3` | `ui/access.js:191` | `style=${tint ? `--m1:${tint[0]};--m2:${tint[1] \|\| tint[0]};--m3:${tint[2] \|\| tint[1] \|\| tint[0]}` : null}>` |

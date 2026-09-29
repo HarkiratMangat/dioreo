@@ -1529,3 +1529,70 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 **Settled from his own words, not asked:** the weapon's category sits under its name in the tiles and in the table's heads alike (his N: "put the weapon category text under it"), so it is never above or beside the name. The weapon head's band (H) is my design for his "significant redesign"; a gutter-only variant was rendered (`forks/H2-gutter-only.png`) and not built.
 
 **Not verified or left as found:** the image names running one off the builds in `13-compare-embed.png` do not reproduce with the images loading (Build 1 shows its own code); `b4states` flags five META badges' animation layer (`.b3-vrest`, 31px in the 26px bare plate) as CONTAIN, decorative and clipped; Build 5's rank-mode line wraps where Discord would at that width.
+
+## Version 41 intake round — opened 2026-09-29 16:58 EDT
+
+*His words when he opened it: "ready for intake of v41?" Logged as the Version 40 round was (anchor #62): his words verbatim and dated, screenshots in `docs/pins2/intake-shots/intake-v41/` run through pngquant, and after each batch the asks grouped by class with the sweep each implies. Nothing is built until he says the round is done.*
+
+### His batch — 2026-09-29 17:47 EDT, verbatim (closed with it: "that's it for the intake items")
+
+**His ten shots:** `docs/pins2/intake-shots/intake-v41/01-badge-meta-hover.png` · `02-badge-best-hover.png` · `03-chip-on-minus.png` · `04-chip-off-plus.png` · `05-merged-cell-count.png` · `06-seats.png` · `07-weapon-divider.png` · `08-chip-green-red-minus.png` · `09-tile-x-hover.png` · `10-discord-bar.png`.
+
+> * the hover-state need refining. Currently in the table, hovering on a weapon name does nothing. Hovering over attachments shared by multiple builds does nothing — oh wait it does do something but it's barely visible since the hover states/tints all match so closely, and since the actual attachment itself doesn't change. Hovering the "muzzle", "barrel", etc attachment slot labels does nothing. Honestly, overall, nitpick every hover-state of every element on the compare panel and refine it, improve it. (update: seems the hover improvement issue for the cells is primarily needed when multiple builds of the same weapon are on the table. it looks pretty good when each column is a different weapon)
+> * hovering the badges is broken/bugged.
+> * I'm scrapping the "lanes" view. Let's just keep the cards view + the discord previews underneath.
+> * wrap gunsmith code into 2 lines and change it's color to use the white text color. Then use that additional empty space on the left side to nudge over and expand things by ~16px towards the left.
+> * make the `-` and `+` icon's 1 step higher weight? use the same color for their hover states and circle as well. Also it shows the red circle regardless of the weapon category, so that needs to be fixed.
+> * The `x` icon button is also incorrect and not using the tinted hover event i asked for earlier.
+> * below each column, i want a set of 3 button: share icon to copy the discord slash command, an edit icon to open the build in the drawer, and trash bin icon to remove the build from the table. And ofc clicking the trash bin would stage it for deletion. I also want the gunsmith code cell to appear a "copy" icon when hovering it, and clicking anywhere in it's cell should copy the gunsmith code, with the 'copy' icon momentarily changing to the --ok checkmark to confirm it's been copied. Use the same tinting logic for the buttons as the armory manifest rows since it's essentially the same icons/buttons.
+> * in each column, to the right of the "build x" chip, and right aligned, i want the --ok image icon OR the --warn triangle icon.
+> * and instead of this "2 build" text inside of the shared attachment, use the space above the table that's designated for this very info and provide that info as a properly designed chip.
+> * now that the "view" toggles are being removed and that same is available/empty, add a "Clear" button or something similar up there to quickly deselect the 6 builds and an option to remove each weapon tile off the tile area. any other buttons worth adding up there? what do you think? i'll let you decide and add them if you think, and then i can give my verdict if i don't like any.
+> * can you allow implement multi-selecting weapons in the search bar/dropdown menu instead of having to open it back up each time to add a weapon?
+>    * Can you also expand the actual search bar and the drop down menu's width by 1.5-2x, probably match the one on the empty state?
+>    * Can you also the way the drop down menu is organized and order it so it's grouped by weapon category, with each weapon alphabetical within.
+>    * Can you also remove the "x builds" chip inside of it and instead add the square build # chips? this way either the entire weapon (and all it's builds) can be easily put into the table, or clicking a specific build can pre-select only that specific build when putting it into the build. Basically following the same selection logic as the tiles. And don't forget to give the same chip design in the empty state search bar.
+> * I'm honestly not a fan of the divider line between each different weapon in the table. the gap there is also too large. Think of something else to better represent a "division".
+> * the "show discord cards" toggle also needs a drastic design improvement.
+>
+> that's it for the intake items. i feel like you could finish all of them before we compact. use sequential-thinking to thoroughly consider each of my points, then mega-batch and get it all done quickly.
+
+**By class** (logged 2026-09-29 17:56 EDT):
+
+| Class | What he asked | The sweep it implies |
+|---|---|---|
+| **V · hover** | the weapon name, the slot labels and shared cells do nothing or barely show; nitpick every hover on the panel | hierarchy by strength, not hue: the hovered cell strongest, its row and column a faint lift; the weapon head lights its columns; a slot label lights its row; a tile chip and a band chip light their cells |
+| **W · badge pop** | broken | the pop has no ground of its own (META is outlined, so the bare badge showed through) and the next column painted over it |
+| **X · views** | Lanes scrapped: Cards, and the Discord previews under it | the VIEW toggle gone |
+| **Y · the code row** | its label on two lines in white; the freed space moves the table ~16px left | the name column 112 → 96px |
+| **Z · corner marks** | − and + a step heavier; circle and hover in the build's colour, never red | ON and OFF chips alike |
+| **AA · the tile ×** | the tinted hover he asked for | its colour on hover, past the board's neutral rule |
+| **AB · a column's actions** | share, edit, delete under each column, the manifest row's buttons and tints; the code cell copies on click with a copy icon that flips to ok | the foot row; edit opens the drawer; delete stages and takes the build out |
+| **AC · image mark** | right of the Build chip: ok image or warn triangle | the manifest's `.wg-im` |
+| **AD · shared values** | no "2 builds" in the cell; a chip in the band instead | a "Shared" group beside "Same on all" |
+| **AE · top-right** | a Clear, and remove every weapon; more if worth it | Clear builds · Remove all weapons |
+| **AF · the search** | multi-select, 1.5–2× wider (the landing's), grouped by category A–Z, build-number chips (whole weapon or one build), the same on the landing | the shared Picker, opt-in |
+| **AG · weapon division** | no line; the gap smaller; something better | the weapon's colour on its columns, a 4px gutter |
+| **AH · the Discord bar** | a drastic redesign | a preview-led bar |
+
+### Built in the kit — 2026-09-29 18:02 EDT (not published, not reviewed)
+
+*Measured headless at 2x (Chrome, 1440×900): the table fits (no sideways scroll) at six builds across three weapons, 6 columns each with its actions and image mark, 7 shared-value chips in the band, no VIEW toggle; from the landing a build number opens the table with the bar's list still open. `r22` 35/35. The spec regenerated from the kit.*
+
+| Class | Built | Where |
+|---|---|---|
+| V | hover ranked by strength: the hovered cell (ring 90%, fill 22%, white) above its row and column (a faint lift); a weapon head lights its columns; a slot label lights its row; a tile's chip and a band chip light their cells | `docs/pins2/kit/b4/compare.*` |
+| W | the pop has its own ground (an outlined badge showed the bare one through it), and the run's edge-fade mask drops while a badge in a run that fits is hovered — measured, the mask was what cut the pop | `docs/pins2/kit/b4/classes.css` |
+| X | Lanes gone; Compare is Cards alone; its rules removed | `docs/pins2/kit/b4/compare.*` |
+| Y | "GUNSMITH / CODE" on two lines in white; the name column 112 → 96px (names 9.5px, .12em, UNDERBARREL fits) | `docs/pins2/kit/b4/compare.*` |
+| Z | the − / + disk in the build's colour for ON and OFF alike, a heavier glyph; an ON chip's hover in its colour, never red | `docs/pins2/kit/b4/compare.css` |
+| AA | the tile's × takes its weapon's colour on hover, past the board's neutral `!important` rule | `docs/pins2/kit/b4/compare.css` |
+| AB | under each column the manifest row's share · edit │ delete (`.wg-ib`, its tints); share copies `shareCommandText`, edit opens the build in the drawer over the panel, delete takes it out of the table and stages its deletion (the board's stand-in message); the code cell copies from anywhere, its copy mark turns to ok | `docs/pins2/kit/b4/compare.js`, `docs/pins2/kit/gates4/surfaces.js` |
+| AC | the manifest's image mark right of the Build chip: ok image, or the warn triangle | `docs/pins2/kit/b4/compare.js` |
+| AD | no count in a shared cell; a "Shared" group in the band: the slot in its colour, the value, the builds as numbers in the weapon's colour | `docs/pins2/kit/b4/compare.*` |
+| AE | Clear builds · Remove all weapons, where VIEW was | `docs/pins2/kit/b4/compare.js` |
+| AF | the search 560px (the landing's), grouped by category A–Z, open after each pick, each weapon's build numbers as the tile's chips (a row adds the weapon, a number one build, or toggles it once the weapon is in); the same on the landing, whose first pick reopens the bar's list — through four opt-in props on the shared Picker, off for the build drawer | `docs/pins2/kit/b4/form.js`, `docs/pins2/kit/b4/compare.*` |
+| AG | no line: each weapon's columns carry a wash of its colour; the gap between weapons is 16px against 6px between builds | `docs/pins2/kit/b4/compare.css` |
+| AH | the Discord bar: a fan of the cards in miniature, each edged in its build's colour, a title and a quiet line, a Show / Hide pill in Discord's blurple; the fan closes when the cards are open | `docs/pins2/kit/b4/compare.*` |
+
+**My additions for his verdict:** none beyond his two buttons. Worth considering, not built: an "Export these" button that opens Export with the builds in the table.

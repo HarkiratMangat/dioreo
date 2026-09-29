@@ -256,6 +256,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-29 00:33 EDT — portal pins batch 2 — the Session 4/5 sweep, read the way Session 4 reads it: the kit moved into docs/pins2/kit, Board 3-E retired as an input, and a spec a night stale found and regenerated (v3.85.0-pre)
 - 2026-09-29 12:23 EDT — Board 4 Version 40 intake round logged and closed (21 classes), and the Session 4/5 sweep's classes A, B and C run with two new instruments (v3.85.0-pre)
 - 2026-09-29 15:37 EDT — Board 4 Version 40 intake round built in the kit, all 21 classes (v3.85.0-pre)
+- 2026-09-29 18:06 EDT — Board 4 Version 41 intake round logged and built in the kit, classes V–AH (v3.85.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4483,6 +4484,12 @@ His Version 40 intake round (21 classes, A–U) is built in `docs/pins2/kit/`: C
 During the build he settled four things by rendered images: the Starts and Ends "Optional" chips stay; the landing tile's + is a bare glyph that shows a tinted box on hover; the tiles keep their own edge and take only the stronger colour; the readout chips get a solid ground and a tinted mark.
 
 Lesson: an instrument's check can pass without testing anything. r22's one-build flow clicked an element Version 40 removed, and its assertion was already true before the click; it now asserts the suggested column exists and that Add removes it. Likewise, counts-check read the intake index to the end of the file, so the next table doubled its count.
+
+## 2026-09-29 18:06 EDT — Board 4 Version 41 intake round logged and built in the kit, classes V–AH (v3.85.0-pre)
+
+He sent ten screenshots and fifteen asks about Compare: hover states ranked by strength rather than hue; the badge pop fixed (the run's edge-fade mask was cutting it); Lanes scrapped, so Compare is Cards alone; the gunsmith code on two lines in white, with the name column 16px narrower; corner marks in the build's colour; a tinted ×; share, edit and delete under each column, with the code cell copying on click; the image mark beside each Build chip; shared values as chips in the band; Clear builds and Remove all weapons where the VIEW toggle was; a multi-select search, grouped by category, with each weapon's build numbers; a colour wash per weapon instead of a divider line; and a redesigned Discord bar. Built in the kit, not published, not reviewed.
+
+Routing: the kit is excluded from the product's codebase-memory graph because it copies portal/ui, but .cbmignore already said it should have its own graph. It had never been indexed, so kit code questions went to rg and sed. It is indexed now.
 
 # Part B — Lessons Ledger (thematic)
 
