@@ -19,7 +19,8 @@ const CLAIMS = [
   { id: 'posted-line', doc: 'docs/pins2/final/board4-spec/HANDOFF.md', re: /the (\d+)-character Posted line/, truth: () => { const t = read('utils/announcement.js').match(/description: `\$\{doc\.text\}([^`]*)`/); return t ? t[1].replace(/\\n/g, '\n').replace(/\$\{postedTs\}/, '1790000000').length : null; }, src: "utils/announcement.js's description suffix with a 10-digit timestamp" },
   { id: 'posted-line-kit', doc: 'docs/pins2/final/board4-spec/HANDOFF.md', re: /the (\d+)-character Posted line/, truth: () => kitConst('POSTED_LINE'), src: 'kit ui/broadcast.js POSTED_LINE' },
   { id: 'text-over', doc: 'docs/pins2/final/board4-spec/HANDOFF.md', re: /a text over ([\d,]+), Discord rejects/, truth: () => 4096 - kitConst('POSTED_LINE'), src: "Discord's 4,096-character embed description, less the Posted line" },
-  { id: 'intake-classes', doc: 'docs/pins2/README.md', re: /(\d+) classes A–U/, truth: () => { const s = read('docs/pins2/handoffs/2026-09-21-board4-intake.md'); const i = s.lastIndexOf('### The round, all classes in one index'); return i < 0 ? null : (s.slice(i).match(/^\| [A-Z] \|/gm) || []).length; }, src: "the intake log's closing index rows" },
+  // 2026-09-29 15:37 EDT: the index is read up to the next heading. It read to the end of the file, so the "Built in the kit" table that follows it doubled the count to 42
+  { id: 'intake-classes', doc: 'docs/pins2/README.md', re: /(\d+) classes A–U/, truth: () => { const s = read('docs/pins2/handoffs/2026-09-21-board4-intake.md'); const i = s.lastIndexOf('### The round, all classes in one index'); const j = s.indexOf('\n### ', i + 1); return i < 0 ? null : (s.slice(i, j < 0 ? undefined : j).match(/^\| [A-Z] \|/gm) || []).length; }, src: "the intake log's closing index rows" },
 ];
 function run(mutate) {
   let bad = 0;

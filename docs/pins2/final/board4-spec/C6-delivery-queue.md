@@ -95,9 +95,9 @@ inside `.panel` · 1 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.—` · 39 on screen · **12 looks**
+inside `.—` · 39 on screen · **13 looks**
 
-#### look 1 of 12
+#### look 1 of 13
 
 `C6-5` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -128,7 +128,7 @@ inside `.—` · 39 on screen · **12 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 2 of 12
+#### look 2 of 13
 
 `C6-9` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -156,7 +156,35 @@ inside `.—` · 39 on screen · **12 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 3 of 12
+#### look 3 of 13
+
+`C6-13` · rendered **13×13** · 2 instances look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-list"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status > * · b3/board.css:2530 |
+| width | `13px` | `13px` | .g-status .ic · gates.css:404 |
+| height | `13px` | `13px` | .g-status .ic · gates.css:404 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `500 var(--t-xs)/1 var(--data)` | `` | inherited · .g-status · gates.css:401 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .g-status · gates.css:401 |
+| font-size | ↑ `` | `10.5px` | inherited · .g-status · gates.css:401 |
+| font-weight | ↑ `` | `500` | inherited · .g-status · gates.css:401 |
+| font-style | ↑ `` | `normal` | inherited · .g-status · gates.css:401 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .g-status · gates.css:401 |
+| line-height | ↑ `` | `10.5px` | inherited · .g-status · gates.css:401 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .g-status · gates.css:401 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+
+#### look 4 of 13
 
 `C6-34` · rendered **12×12** · 4 instances look like this · aria-hidden="true"
 
@@ -182,9 +210,9 @@ inside `.—` · 39 on screen · **12 looks**
 | color | `var(--ink4)` | `rgb(92, 106, 117)` | .g-fact .ic · gates.css:376 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:727 |
+| cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:728 |
 
-#### look 4 of 12
+#### look 5 of 13
 
 `C6-40` · rendered **13×13** · 7 instances look like this · aria-hidden="true"
 
@@ -212,7 +240,7 @@ inside `.—` · 39 on screen · **12 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 5 of 12
+#### look 6 of 13
 
 `C6-49` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -241,41 +269,10 @@ inside `.—` · 39 on screen · **12 looks**
 | color | `inherit` | `rgb(255, 158, 114)` | .pb-end.g-noend .ic, .pb-end.g-stagedend .ic · b3/board.css:4377 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · .g-chipbtn · b4/classes.css:709 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .g-chipbtn · b4/classes.css:710 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 6 of 12
-
-`C6-62` · rendered **16×16** · 4 instances look like this · aria-hidden="true"
-
-```html
-<svg class="ic" aria-hidden="true"><use href="#i-square-pen"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `16px` | `16px` | .ic · b2.css:10 |
-| height | `16px` | `16px` | .ic · b2.css:10 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .g-card .pb-cacts .g-edit · gates.css:395 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .g-card .pb-cacts .g-edit · gates.css:395 |
-| font-size | ↑ `` | `12px` | inherited · .g-card .pb-cacts .g-edit · gates.css:395 |
-| font-weight | ↑ `` | `600` | inherited · .g-card .pb-cacts .g-edit · gates.css:395 |
-| font-style | ↑ `` | `normal` | inherited · .g-card .pb-cacts .g-edit · gates.css:395 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .g-card .pb-cacts .g-edit · gates.css:395 |
-| line-height | ↑ `` | `12px` | inherited · .g-card .pb-cacts .g-edit · gates.css:395 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .g-card .pb-cacts .g-edit · gates.css:395 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · .pb-ib · b2.css:72 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
-
-*6 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*7 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `span.sp`
@@ -326,14 +323,14 @@ inside `.sp` · 1 on screen · **1 look**
 | column-gap | `8px` | `8px` | .g-status · gates.css:401 |
 | row-gap | `8px` | `8px` | .g-status · gates.css:401 |
 | align-items | `center` | `center` | .g-status · gates.css:401 |
-| height | `28px` | `28px` | .g-status.g-status · b4/classes.css:731 |
+| height | `28px` | `28px` | .g-status.g-status · b4/classes.css:732 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 10px` | `` | .g-status · gates.css:401 |
 | padding-top | `0px` | `0px` | .g-status · gates.css:401 |
 | padding-right | `10px` | `10px` | .g-status · gates.css:401 |
 | padding-bottom | `0px` | `0px` | .g-status · gates.css:401 |
 | padding-left | `10px` | `10px` | .g-status · gates.css:401 |
-| border-radius | `6px` | `` | .g-status.g-status · b4/classes.css:731 |
+| border-radius | `6px` | `` | .g-status.g-status · b4/classes.css:732 |
 | background | `var(--sunk)` | `` | .g-status · gates.css:401 |
 | background-color | `` | `rgb(11, 15, 18)` | .g-status · gates.css:401 |
 | background-image | `` | `none` | .g-status · gates.css:401 |
@@ -351,9 +348,9 @@ inside `.sp` · 1 on screen · **1 look**
 
 ### `span.b3-nw`
 
-inside `.g-status` · 3 on screen · **1 look**
+inside `.g-status` · 3 on screen · **2 looks**
 
-#### the one look
+#### look 1 of 2
 
 `C6-10` · rendered **76×11** · 1 instance look like this
 
@@ -381,12 +378,62 @@ inside `.g-status` · 3 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | color | `inherit` | `rgb(255, 158, 114)` | .b3-nw · b3/board.css:950 |
 
+#### look 2 of 2
+
+`C6-16` · rendered **114×11** · 2 instances look like this
+
+```html
+<span class="b3-nw"><b>2</b>of 10 slots used</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-nw · b3/board.css:950 |
+| gap | `7px` | `` | .b3-nw · b3/board.css:950 |
+| column-gap | `7px` | `7px` | .b3-nw · b3/board.css:950 |
+| row-gap | `7px` | `7px` | .b3-nw · b3/board.css:950 |
+| align-items | `center` | `center` | html[data-b3-a1="fixed"] .g-status .b3-nw · b3/board.css:2531 |
+| align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status > * · b3/board.css:2530 |
+| min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `inherit` | `` | .b3-nw · b3/board.css:950 |
+| font-family | `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nw · b3/board.css:950 |
+| font-size | `inherit` | `10.5px` | .b3-nw · b3/board.css:950 |
+| font-weight | `inherit` | `500` | .b3-nw · b3/board.css:950 |
+| font-style | `inherit` | `normal` | .b3-nw · b3/board.css:950 |
+| font-variant-numeric | `inherit` | `normal` | .b3-nw · b3/board.css:950 |
+| line-height | `inherit` | `10.5px` | .b3-nw · b3/board.css:950 |
+| letter-spacing | — | `normal` | initial |
+| color | `inherit` | `rgb(133, 147, 159)` | .b3-nw · b3/board.css:950 |
+
 
 ### `b`
 
-inside `.b3-nw` · 7 on screen · **2 looks**
+inside `.b3-nw` · 7 on screen · **3 looks**
 
-#### look 1 of 2
+#### look 1 of 3
+
+`C6-11` · rendered **6×11** · 3 instances look like this · text “1”
+
+```html
+<b>1</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `inherit` | `` | inherited · .b3-nw · b3/board.css:950 |
+| font-family | ↑ `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-nw · b3/board.css:950 |
+| font-size | ↑ `inherit` | `10.5px` | inherited · .b3-nw · b3/board.css:950 |
+| font-weight | `600` | `600` | .g-status b · gates.css:403 |
+| font-style | ↑ `inherit` | `normal` | inherited · .b3-nw · b3/board.css:950 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · .b3-nw · b3/board.css:950 |
+| line-height | ↑ `inherit` | `10.5px` | inherited · .b3-nw · b3/board.css:950 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .g-status.warn b · gates.css:406 |
+
+#### look 2 of 3
 
 `C6-188` · rendered **212×32** · 2 instances look like this · text “Double XP weekend — Oct 3 to Oct 5. Every match”
 
@@ -411,7 +458,7 @@ inside `.b3-nw` · 7 on screen · **2 looks**
 | overflow-x | `hidden` | `hidden` | .pb-cgi b · b2.css:285 |
 | overflow-y | `hidden` | `hidden` | .pb-cgi b · b2.css:285 |
 
-#### look 2 of 2
+#### look 3 of 3
 
 `C6-195` · rendered **212×16** · 2 instances look like this · text “Undead Siege is back for Halloween”
 
@@ -456,14 +503,14 @@ inside `.sp` · 1 on screen · **1 look**
 | column-gap | `8px` | `8px` | .g-status · gates.css:401 |
 | row-gap | `8px` | `8px` | .g-status · gates.css:401 |
 | align-items | `center` | `center` | .g-status · gates.css:401 |
-| height | `28px` | `28px` | .g-status.g-status · b4/classes.css:731 |
+| height | `28px` | `28px` | .g-status.g-status · b4/classes.css:732 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 10px` | `` | .g-status · gates.css:401 |
 | padding-top | `0px` | `0px` | .g-status · gates.css:401 |
 | padding-right | `10px` | `10px` | .g-status · gates.css:401 |
 | padding-bottom | `0px` | `0px` | .g-status · gates.css:401 |
 | padding-left | `10px` | `10px` | .g-status · gates.css:401 |
-| border-radius | `6px` | `` | .g-status.g-status · b4/classes.css:731 |
+| border-radius | `6px` | `` | .g-status.g-status · b4/classes.css:732 |
 | background | `var(--sunk)` | `` | .g-status · gates.css:401 |
 | background-color | `` | `rgb(11, 15, 18)` | .g-status · gates.css:401 |
 | background-image | `` | `none` | .g-status · gates.css:401 |
@@ -493,9 +540,9 @@ inside `.g-status` · 2 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .cmeter.b4-segs · b4/classes.css:736 |
+| display | `flex` | `flex` | .cmeter.b4-segs · b4/classes.css:737 |
 | align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status .cmeter · b3/board.css:2532 |
-| width | `56px` | `56px` | .g-status.g-status .cmeter · b4/classes.css:733 |
+| width | `56px` | `56px` | .g-status.g-status .cmeter · b4/classes.css:734 |
 | height | `4px` | `4px` | .cmeter · app.css:2472 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border-radius | `var(--rad-1)` | `` | .cmeter · app.css:2472 |
@@ -511,9 +558,9 @@ inside `.g-status` · 2 on screen · **1 look**
 | line-height | ↑ `` | `10.5px` | inherited · .g-status · gates.css:401 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .g-status · gates.css:401 |
-| overflow | `hidden` | `` | .cmeter.b4-segs · b4/classes.css:736 |
-| overflow-x | `hidden` | `hidden` | .cmeter.b4-segs · b4/classes.css:736 |
-| overflow-y | `hidden` | `hidden` | .cmeter.b4-segs · b4/classes.css:736 |
+| overflow | `hidden` | `` | .cmeter.b4-segs · b4/classes.css:737 |
+| overflow-x | `hidden` | `hidden` | .cmeter.b4-segs · b4/classes.css:737 |
+| overflow-y | `hidden` | `hidden` | .cmeter.b4-segs · b4/classes.css:737 |
 
 
 ### `i`
@@ -531,11 +578,11 @@ inside `.cmeter` · 3 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | .cmeter i · app.css:2480 |
-| flex | `none` | `` | .cmeter.b4-segs > i · b4/classes.css:737 |
+| flex | `none` | `` | .cmeter.b4-segs > i · b4/classes.css:738 |
 | width | `20%` | `11.1875px` | style attribute |
-| height | `100%` | `4px` | .cmeter.b4-segs > i · b4/classes.css:737 |
+| height | `100%` | `4px` | .cmeter.b4-segs > i · b4/classes.css:738 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `0` | `` | .cmeter.b4-segs > i · b4/classes.css:737 |
+| border-radius | `0` | `` | .cmeter.b4-segs > i · b4/classes.css:738 |
 | background | `var(--r-broadcast)` | `` | style attribute |
 | background-color | `` | `rgb(236, 72, 153)` | style attribute |
 | background-image | `` | `none` | style attribute |
@@ -560,11 +607,11 @@ inside `.cmeter` · 3 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | .cmeter i · app.css:2480 |
-| flex | `none` | `` | .cmeter.b4-segs > i · b4/classes.css:737 |
+| flex | `none` | `` | .cmeter.b4-segs > i · b4/classes.css:738 |
 | width | `2.33333%` | `2.60938px` | style attribute |
-| height | `100%` | `4px` | .cmeter.b4-segs > i · b4/classes.css:737 |
+| height | `100%` | `4px` | .cmeter.b4-segs > i · b4/classes.css:738 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `0` | `` | .cmeter.b4-segs > i · b4/classes.css:737 |
+| border-radius | `0` | `` | .cmeter.b4-segs > i · b4/classes.css:738 |
 | background | `rgb(242, 194, 48)` | `` | style attribute |
 | background-color | `rgb(242, 194, 48)` | `rgb(242, 194, 48)` | style attribute |
 | background-image | `initial` | `none` | style attribute |
@@ -589,15 +636,15 @@ inside `.cmeter` · 3 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | .cmeter i · app.css:2480 |
-| flex | `none` | `` | .cmeter.b4-segs > i · b4/classes.css:737 |
+| flex | `none` | `` | .cmeter.b4-segs > i · b4/classes.css:738 |
 | width | `6.36667%` | `7.125px` | style attribute |
-| height | `100%` | `4px` | .cmeter.b4-segs > i · b4/classes.css:737 |
+| height | `100%` | `4px` | .cmeter.b4-segs > i · b4/classes.css:738 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `0` | `` | .cmeter.b4-segs > i · b4/classes.css:737 |
+| border-radius | `0` | `` | .cmeter.b4-segs > i · b4/classes.css:738 |
 | background | `rgb(63, 167, 214)` | `` | style attribute |
 | background-color | `rgb(63, 167, 214)` | `rgb(63, 167, 214)` | style attribute |
 | background-image | `initial` | `none` | style attribute |
-| box-shadow | `color-mix(in srgb, rgb(4, 7, 10) 85%, transparent 15%) 1.5px 0px 0px inset` | `color(srgb 0.0156863 0.027451 0.0392157 / 0.85) 1.5px 0px 0px 0px inset` | .cmeter.b4-segs > i + i · b4/classes.css:738 |
+| box-shadow | `color-mix(in srgb, rgb(4, 7, 10) 85%, transparent 15%) 1.5px 0px 0px inset` | `color(srgb 0.0156863 0.027451 0.0392157 / 0.85) 1.5px 0px 0px 0px inset` | .cmeter.b4-segs > i + i · b4/classes.css:739 |
 | font | ↑ `500 var(--t-xs)/1 var(--data)` | `` | inherited · .g-status · gates.css:401 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .g-status · gates.css:401 |
 | font-size | ↑ `` | `10.5px` | inherited · .g-status · gates.css:401 |
@@ -628,14 +675,14 @@ inside `.sp` · 1 on screen · **1 look**
 | column-gap | `8px` | `8px` | .g-status · gates.css:401 |
 | row-gap | `8px` | `8px` | .g-status · gates.css:401 |
 | align-items | `center` | `center` | .g-status · gates.css:401 |
-| height | `28px` | `28px` | .g-status.g-status · b4/classes.css:731 |
+| height | `28px` | `28px` | .g-status.g-status · b4/classes.css:732 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 10px` | `` | .g-status · gates.css:401 |
 | padding-top | `0px` | `0px` | .g-status · gates.css:401 |
 | padding-right | `10px` | `10px` | .g-status · gates.css:401 |
 | padding-bottom | `0px` | `0px` | .g-status · gates.css:401 |
 | padding-left | `10px` | `10px` | .g-status · gates.css:401 |
-| border-radius | `6px` | `` | .g-status.g-status · b4/classes.css:731 |
+| border-radius | `6px` | `` | .g-status.g-status · b4/classes.css:732 |
 | background | `var(--sunk)` | `` | .g-status · gates.css:401 |
 | background-color | `` | `rgb(11, 15, 18)` | .g-status · gates.css:401 |
 | background-image | `` | `none` | .g-status · gates.css:401 |
@@ -895,7 +942,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | overflow | `hidden` | `` | .pb-enc · b2.css:368 |
 | overflow-x | `hidden` | `hidden` | .pb-enc · b2.css:368 |
 | overflow-y | `hidden` | `hidden` | .pb-enc · b2.css:368 |
-| cursor | `default` | `default` | .pb-enc.g-fits · b4/classes.css:727 |
+| cursor | `default` | `default` | .pb-enc.g-fits · b4/classes.css:728 |
 
 #### look 2 of 2
 
@@ -934,7 +981,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | overflow | `hidden` | `` | .pb-enc · b2.css:368 |
 | overflow-x | `hidden` | `hidden` | .pb-enc · b2.css:368 |
 | overflow-y | `hidden` | `hidden` | .pb-enc · b2.css:368 |
-| cursor | `default` | `default` | .pb-enc.g-fits · b4/classes.css:727 |
+| cursor | `default` | `default` | .pb-enc.g-fits · b4/classes.css:728 |
 
 
 ### `p`
@@ -956,12 +1003,12 @@ inside `.pb-enc` · 4 on screen · **1 look**
 | padding | `14px 18px 12px` | `` | .g-card .pb-enc p · gates.css:367 |
 | padding-top | `14px` | `14px` | .g-card .pb-enc p · gates.css:367 |
 | padding-right | `18px` | `18px` | .g-card .pb-enc p · gates.css:367 |
-| padding-bottom | `0px` | `0px` | .g-card.g-card .pb-enc > p · b4/classes.css:791 |
+| padding-bottom | `0px` | `0px` | .g-card.g-card .pb-enc > p · b4/classes.css:792 |
 | padding-left | `18px` | `18px` | .g-card .pb-enc p · gates.css:367 |
 | margin | `0` | `` | .pb-enc p · b2.css:222 |
 | margin-top | `0px` | `0px` | .pb-enc p · b2.css:222 |
 | margin-right | `0px` | `0px` | .pb-enc p · b2.css:222 |
-| margin-bottom | `12px` | `12px` | .g-card.g-card .pb-enc > p · b4/classes.css:791 |
+| margin-bottom | `12px` | `12px` | .g-card.g-card .pb-enc > p · b4/classes.css:792 |
 | margin-left | `0px` | `0px` | .pb-enc p · b2.css:222 |
 | font | `500 var(--t-md)/1.55 var(--ui)` | `` | .pb-enc p · b2.css:369 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .pb-enc p · b2.css:369 |
@@ -971,12 +1018,12 @@ inside `.pb-enc` · 4 on screen · **1 look**
 | font-variant-numeric | `` | `normal` | .pb-enc p · b2.css:369 |
 | line-height | `` | `22.475px` | .pb-enc p · b2.css:369 |
 | letter-spacing | — | `normal` | initial |
-| white-space | `pre-line` | `` | .g-card.g-card .pb-enc > p · b4/classes.css:791 |
+| white-space | `pre-line` | `` | .g-card.g-card .pb-enc > p · b4/classes.css:792 |
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .pb-enc p · b2.css:222 |
 | overflow | `hidden` | `` | .pb-enc p · b2.css:222 |
 | overflow-x | `hidden` | `hidden` | .pb-enc p · b2.css:222 |
 | overflow-y | `hidden` | `hidden` | .pb-enc p · b2.css:222 |
-| cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:727 |
+| cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:728 |
 
 
 ### `div.pb-encf`
@@ -1016,7 +1063,7 @@ inside `.pb-enc` · 4 on screen · **1 look**
 | line-height | `` | `10.5px` | .pb-encf · b2.css:370 |
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .pb-encf · b2.css:370 |
-| cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:727 |
+| cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:728 |
 
 
 ### `span.b3-cc.g-fact`
@@ -1062,7 +1109,7 @@ inside `.pb-encf` · 4 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .g-fact.b3-cc · b3/board.css:3669 |
 | transition | `color 200ms ease-out,box-shadow 200ms ease-out,background 200ms ease-out` | `` | .g-fact.b3-cc · b3/board.css:3678 |
-| cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:727 |
+| cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:728 |
 
 
 ### `div.pb-life3`
@@ -1074,7 +1121,7 @@ inside `.pb-body` · 4 on screen · **1 look**
 `C6-35` · rendered **674×79** · 4 instances look like this
 
 ```html
-<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 44.8772%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
+<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.2566%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
 ```
 
 | property | winning declaration | computed | from |
@@ -1101,7 +1148,7 @@ inside `.pb-life3` · 4 on screen · **1 look**
 `C6-36` · rendered **674×43** · 4 instances look like this
 
 ```html
-<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 44.8772%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="b4-popw"><button type
+<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.2566%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="b4-popw"><button type
 ```
 
 | property | winning declaration | computed | from |
@@ -1197,7 +1244,7 @@ inside `.b3-dt` · 12 on screen · **4 looks**
 | font-variant-numeric | `` | `normal` | .pb-cgi em · b2.css:286 |
 | line-height | `` | `10.5px` | .pb-cgi em · b2.css:286 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--staged)` | `rgb(216, 242, 74)` | .pb-cgi[data-g="st"] em · b4/classes.css:734 |
+| color | `var(--staged)` | `rgb(216, 242, 74)` | .pb-cgi[data-g="st"] em · b4/classes.css:735 |
 
 #### look 3 of 4
 
@@ -1306,7 +1353,7 @@ inside `.pb-tl` · 4 on screen · **1 look**
 `C6-41` · rendered **500×20** · 4 instances look like this
 
 ```html
-<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 44.8772%;"></span></div>
+<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.2566%;"></span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -1377,7 +1424,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | — | `block` | initial |
 | position | `absolute` | `absolute` | .pb-span · b2.css:231 |
-| min-width | `12px` | `12px` | .g-card .pb-span · b4/classes.css:723 |
+| min-width | `12px` | `12px` | .g-card .pb-span · b4/classes.css:724 |
 | height | `6px` | `6px` | .pb-span · b2.css:231 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `7px` | `7px` | .pb-tl .pb-span · b2.css:377 |
@@ -1404,7 +1451,7 @@ inside `.pb-bar` · 4 on screen · **1 look**
 `C6-44` · rendered **2×18** · 4 instances look like this · title="Up 55 days"
 
 ```html
-<span class="pb-now" title="Up 55 days" style="left: 44.8772%;"></span>
+<span class="pb-now" title="Up 55 days" style="left: 45.2566%;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1415,7 +1462,7 @@ inside `.pb-bar` · 4 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
 | bottom | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
-| left | `44.8772%` | `224.375px` | style attribute |
+| left | `45.2566%` | `226.281px` | style attribute |
 | border-radius | `1px` | `` | .pb-now · b2.css:234 |
 | background | `var(--ink)` | `` | .pb-now · b2.css:234 |
 | background-color | `` | `rgb(232, 237, 241)` | .pb-now · b2.css:234 |
@@ -1467,10 +1514,10 @@ inside `.b3-dt` · 8 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b4-popw · b4/classes.css:697 |
-| position | `relative` | `relative` | .b4-popw · b4/classes.css:697 |
-| justify-self | `end` | `end` | .b3-dt-e > .b4-popw · b4/classes.css:699 |
-| min-width | `0px` | `0px` | .b4-popw · b4/classes.css:697 |
+| display | `inline-flex` | `flex` | .b4-popw · b4/classes.css:698 |
+| position | `relative` | `relative` | .b4-popw · b4/classes.css:698 |
+| justify-self | `end` | `end` | .b3-dt-e > .b4-popw · b4/classes.css:700 |
+| min-width | `0px` | `0px` | .b4-popw · b4/classes.css:698 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1508,12 +1555,12 @@ inside `.b4-popw` · 1 on screen · **1 look**
 | padding-right | `10px` | `10px` | .pb-end · b3/board.css:4375 |
 | padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4375 |
 | padding-left | `10px` | `10px` | .pb-end · b3/board.css:4375 |
-| margin | `0` | `` | .g-chipbtn · b4/classes.css:709 |
-| margin-top | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| margin-right | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| margin-bottom | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| margin-left | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| border | `0` | `` | .g-chipbtn · b4/classes.css:709 |
+| margin | `0` | `` | .g-chipbtn · b4/classes.css:710 |
+| margin-top | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| margin-right | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| margin-bottom | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| margin-left | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| border | `0` | `` | .g-chipbtn · b4/classes.css:710 |
 | border-radius | `6px` | `` | .pb-end · b2.css:549 |
 | background | `var(--sunk)` | `` | .pb-end · b2.css:549 |
 | background-color | `` | `rgb(11, 15, 18)` | .pb-end · b2.css:549 |
@@ -1530,8 +1577,8 @@ inside `.b4-popw` · 1 on screen · **1 look**
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .pb-end · b2.css:549 |
 | color | `var(--warn-ink) !important !important` | `rgb(255, 158, 114)` | .g-noend · gates.css:384 |
-| transition | `background-color .12s ease,box-shadow .12s ease,color .12s ease` | `` | .g-chipbtn · b4/classes.css:709 |
-| cursor | `pointer` | `pointer` | .g-chipbtn · b4/classes.css:709 |
+| transition | `background-color .12s ease,box-shadow .12s ease,color .12s ease` | `` | .g-chipbtn · b4/classes.css:710 |
+| cursor | `pointer` | `pointer` | .g-chipbtn · b4/classes.css:710 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes
@@ -1653,12 +1700,12 @@ inside `.b4-popw` · 3 on screen · **1 look**
 | padding-right | `10px` | `10px` | .pb-pill · b2.css:237 |
 | padding-bottom | `0px` | `0px` | .pb-pill · b2.css:237 |
 | padding-left | `10px` | `10px` | .pb-pill · b2.css:237 |
-| margin | `0` | `` | .g-chipbtn · b4/classes.css:709 |
-| margin-top | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| margin-right | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| margin-bottom | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| margin-left | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| border | `0` | `` | .g-chipbtn · b4/classes.css:709 |
+| margin | `0` | `` | .g-chipbtn · b4/classes.css:710 |
+| margin-top | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| margin-right | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| margin-bottom | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| margin-left | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| border | `0` | `` | .g-chipbtn · b4/classes.css:710 |
 | border-radius | `6px` | `` | .pb-pill · b2.css:553 |
 | background | `var(--sunk)` | `` | .pb-pill · b2.css:237 |
 | background-color | `` | `rgb(11, 15, 18)` | .pb-pill · b2.css:237 |
@@ -1675,8 +1722,8 @@ inside `.b4-popw` · 3 on screen · **1 look**
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .pb-pill · b2.css:237 |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .pb-pill · b2.css:237 |
-| transition | `background-color .12s ease,box-shadow .12s ease,color .12s ease` | `` | .g-chipbtn · b4/classes.css:709 |
-| cursor | `pointer` | `pointer` | .g-chipbtn · b4/classes.css:709 |
+| transition | `background-color .12s ease,box-shadow .12s ease,color .12s ease` | `` | .g-chipbtn · b4/classes.css:710 |
+| cursor | `pointer` | `pointer` | .g-chipbtn · b4/classes.css:710 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes; parts inside it respond (table below)
@@ -2484,7 +2531,7 @@ inside `.pb-bar` · 2 on screen · **2 looks**
 | display | — | `block` | initial |
 | position | `absolute` | `absolute` | .pb-span · b2.css:231 |
 | width | `calc(64.8419%)` | `314.859px` | style attribute |
-| min-width | `12px` | `12px` | .g-card .pb-span · b4/classes.css:723 |
+| min-width | `12px` | `12px` | .g-card .pb-span · b4/classes.css:724 |
 | height | `6px` | `6px` | .pb-span · b2.css:231 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `7px` | `7px` | .pb-tl .pb-span · b2.css:377 |
@@ -2513,7 +2560,7 @@ inside `.pb-bar` · 2 on screen · **2 looks**
 | display | — | `block` | initial |
 | position | `absolute` | `absolute` | .pb-span · b2.css:231 |
 | width | `calc(8.42004%)` | `40.875px` | style attribute |
-| min-width | `12px` | `12px` | .g-card .pb-span · b4/classes.css:723 |
+| min-width | `12px` | `12px` | .g-card .pb-span · b4/classes.css:724 |
 | height | `6px` | `6px` | .pb-span · b2.css:231 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `7px` | `7px` | .pb-tl .pb-span · b2.css:377 |
@@ -2558,12 +2605,12 @@ inside `.b4-popw` · 3 on screen · **1 look**
 | padding-right | `10px` | `10px` | .pb-end · b3/board.css:4375 |
 | padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4375 |
 | padding-left | `10px` | `10px` | .pb-end · b3/board.css:4375 |
-| margin | `0` | `` | .g-chipbtn · b4/classes.css:709 |
-| margin-top | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| margin-right | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| margin-bottom | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| margin-left | `0px` | `0px` | .g-chipbtn · b4/classes.css:709 |
-| border | `0` | `` | .g-chipbtn · b4/classes.css:709 |
+| margin | `0` | `` | .g-chipbtn · b4/classes.css:710 |
+| margin-top | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| margin-right | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| margin-bottom | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| margin-left | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
+| border | `0` | `` | .g-chipbtn · b4/classes.css:710 |
 | border-radius | `6px` | `` | .pb-end · b2.css:549 |
 | background | `var(--sunk)` | `` | .pb-end · b2.css:549 |
 | background-color | `` | `rgb(11, 15, 18)` | .pb-end · b2.css:549 |
@@ -2580,8 +2627,8 @@ inside `.b4-popw` · 3 on screen · **1 look**
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .pb-end · b2.css:549 |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .pb-end · b2.css:549 |
-| transition | `background-color .12s ease,box-shadow .12s ease,color .12s ease` | `` | .g-chipbtn · b4/classes.css:709 |
-| cursor | `pointer` | `pointer` | .g-chipbtn · b4/classes.css:709 |
+| transition | `background-color .12s ease,box-shadow .12s ease,color .12s ease` | `` | .g-chipbtn · b4/classes.css:710 |
+| cursor | `pointer` | `pointer` | .g-chipbtn · b4/classes.css:710 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
 
 **:hover** — changes; parts inside it respond (table below)
@@ -2690,12 +2737,12 @@ inside `.pb-card` · 2 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .g-card .pb-numr.g-numi · b4/classes.css:717 |
-| align-items | `start` | `start` | .g-card .pb-numr.g-numi · b4/classes.css:717 |
+| display | `grid` | `grid` | .g-card .pb-numr.g-numi · b4/classes.css:718 |
+| align-items | `start` | `start` | .g-card .pb-numr.g-numi · b4/classes.css:718 |
 | justify-self | `center` | `center` | .pb-numr · b2.css:219 |
-| place-items | `start center` | `` | .g-card .pb-numr.g-numi · b4/classes.css:717 |
+| place-items | `start center` | `` | .g-card .pb-numr.g-numi · b4/classes.css:718 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding-top | `10px` | `10px` | .g-card .pb-numr.g-numi · b4/classes.css:717 |
+| padding-top | `10px` | `10px` | .g-card .pb-numr.g-numi · b4/classes.css:718 |
 | font | `700 40px/.8 var(--display)` | `` | .pb-numr · b2.css:219 |
 | font-family | `` | `"Big Shoulders Display", "Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .pb-numr · b2.css:219 |
 | font-size | `58px` | `58px` | .pb-numr · b2.css:367 |
@@ -2716,12 +2763,12 @@ inside `.pb-card` · 2 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .g-card .pb-numr.g-numi · b4/classes.css:717 |
-| align-items | `start` | `start` | .g-card .pb-numr.g-numi · b4/classes.css:717 |
+| display | `grid` | `grid` | .g-card .pb-numr.g-numi · b4/classes.css:718 |
+| align-items | `start` | `start` | .g-card .pb-numr.g-numi · b4/classes.css:718 |
 | justify-self | `center` | `center` | .pb-numr · b2.css:219 |
-| place-items | `start center` | `` | .g-card .pb-numr.g-numi · b4/classes.css:717 |
+| place-items | `start center` | `` | .g-card .pb-numr.g-numi · b4/classes.css:718 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding-top | `10px` | `10px` | .g-card .pb-numr.g-numi · b4/classes.css:717 |
+| padding-top | `10px` | `10px` | .g-card .pb-numr.g-numi · b4/classes.css:718 |
 | font | `700 40px/.8 var(--display)` | `` | .pb-numr · b2.css:219 |
 | font-family | `` | `"Big Shoulders Display", "Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .pb-numr · b2.css:219 |
 | font-size | `58px` | `58px` | .pb-numr · b2.css:367 |
@@ -2804,8 +2851,8 @@ inside `.g-qcards` · 1 on screen · **1 look**
 | padding-bottom | `16px` | `16px` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
 | padding-left | `18px` | `18px` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
 | border-radius | `var(--rad-3)` | `` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
-| outline | `1.5px dashed color-mix(in srgb,var(--staged) 70%,transparent)` | `` | .g-card.g-k-staged · b4/classes.css:719 |
-| outline-offset | ⚠️ `-1.5px` | `-1px` | .g-card.g-k-staged · b4/classes.css:719 · **a later rule wins — port the computed value and find that rule** |
+| outline | `1.5px dashed color-mix(in srgb,var(--staged) 70%,transparent)` | `` | .g-card.g-k-staged · b4/classes.css:720 |
+| outline-offset | ⚠️ `-1.5px` | `-1px` | .g-card.g-k-staged · b4/classes.css:720 · **a later rule wins — port the computed value and find that rule** |
 | background | `var(--raised)` | `` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
 | background-color | `` | `rgb(31, 39, 46)` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
 | background-image | `` | `none` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
@@ -2850,7 +2897,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | display | — | `block` | initial |
 | position | `absolute` | `absolute` | .pb-span · b2.css:231 |
 | width | `calc(1.46827%)` | `12px` | style attribute |
-| min-width | `12px` | `12px` | .g-card .pb-span · b4/classes.css:723 |
+| min-width | `12px` | `12px` | .g-card .pb-span · b4/classes.css:724 |
 | height | `6px` | `6px` | .pb-span · b2.css:231 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `7px` | `7px` | .pb-tl .pb-span · b2.css:377 |
@@ -2858,9 +2905,9 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | border-radius | `3px` | `` | .pb-span · b2.css:231 |
 | outline | `1.5px dashed var(--staged)` | `` | .g-stagedspan · gates.css:386 |
 | outline-offset | ⚠️ `-1.5px` | `-1px` | .g-stagedspan · gates.css:386 · **a later rule wins — port the computed value and find that rule** |
-| background | `color-mix(in srgb,var(--staged) 22%,transparent)` | `` | .g-card.g-k-staged .pb-span.g-stagedspan · b4/classes.css:724 |
-| background-color | `` | `color(srgb 0.847059 0.94902 0.290196 / 0.22)` | .g-card.g-k-staged .pb-span.g-stagedspan · b4/classes.css:724 |
-| background-image | `` | `none` | .g-card.g-k-staged .pb-span.g-stagedspan · b4/classes.css:724 |
+| background | `color-mix(in srgb,var(--staged) 22%,transparent)` | `` | .g-card.g-k-staged .pb-span.g-stagedspan · b4/classes.css:725 |
+| background-color | `` | `color(srgb 0.847059 0.94902 0.290196 / 0.22)` | .g-card.g-k-staged .pb-span.g-stagedspan · b4/classes.css:725 |
+| background-image | `` | `none` | .g-card.g-k-staged .pb-span.g-stagedspan · b4/classes.css:725 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2885,14 +2932,14 @@ inside `.pb-dates` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-staged · b3/board.css:1061 |
 | align-items | `center` | `center` | .b3-staged · b3/board.css:1061 |
-| height | `28px` | `28px` | .pb-dates > .b3-staged · b4/classes.css:722 |
+| height | `28px` | `28px` | .pb-dates > .b3-staged · b4/classes.css:723 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px` | `` | .pb-dates > .b3-staged · b4/classes.css:722 |
-| padding-top | `0px` | `0px` | .pb-dates > .b3-staged · b4/classes.css:722 |
-| padding-right | `10px` | `10px` | .pb-dates > .b3-staged · b4/classes.css:722 |
-| padding-bottom | `0px` | `0px` | .pb-dates > .b3-staged · b4/classes.css:722 |
-| padding-left | `10px` | `10px` | .pb-dates > .b3-staged · b4/classes.css:722 |
-| border-radius | `6px` | `` | .pb-dates > .b3-staged · b4/classes.css:722 |
+| padding | `0 10px` | `` | .pb-dates > .b3-staged · b4/classes.css:723 |
+| padding-top | `0px` | `0px` | .pb-dates > .b3-staged · b4/classes.css:723 |
+| padding-right | `10px` | `10px` | .pb-dates > .b3-staged · b4/classes.css:723 |
+| padding-bottom | `0px` | `0px` | .pb-dates > .b3-staged · b4/classes.css:723 |
+| padding-left | `10px` | `10px` | .pb-dates > .b3-staged · b4/classes.css:723 |
+| border-radius | `6px` | `` | .pb-dates > .b3-staged · b4/classes.css:723 |
 | outline | `1px dashed var(--staged)` | `` | .b3-staged · b3/board.css:1061 |
 | outline-offset | `-1px` | `-1px` | .b3-staged · b3/board.css:1061 |
 | font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-staged · b3/board.css:1061 |

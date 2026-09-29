@@ -255,6 +255,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-17 23:29 EDT — Portal pins batch 2, Session 3: board 3 swept twice, the problem card rebuilt, his 32 threads re-read clause by clause (v3.85.0)
 - 2026-09-29 00:33 EDT — portal pins batch 2 — the Session 4/5 sweep, read the way Session 4 reads it: the kit moved into docs/pins2/kit, Board 3-E retired as an input, and a spec a night stale found and regenerated (v3.85.0-pre)
 - 2026-09-29 12:23 EDT — Board 4 Version 40 intake round logged and closed (21 classes), and the Session 4/5 sweep's classes A, B and C run with two new instruments (v3.85.0-pre)
+- 2026-09-29 15:37 EDT — Board 4 Version 40 intake round built in the kit, all 21 classes (v3.85.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4474,6 +4475,14 @@ Harkirat's verdict on the first sweep, 2026-09-28 23:27 EDT: *"why not just move
 He opened the round with four batches and closed it at 12:08 EDT. The second and third batches ran in his new format: he sent one screenshot, I named what I saw wrong, he gave a verdict on each point, and both went into the log. Three of the previous round's calls turned out to contradict the record: I had dropped the faded landing image he had kept, deleted a "skippable" hint where the documented fix was to redesign it, and turned his "redesign the show-cards button" into a fourth view. The round's closing index lists all 21 classes for the build that follows the compact.
 
 The sweep then ran its three classes. `cites-check.cjs` judges each `path:line` cite by the words beside it and caught two stale cites in HANDOFF.md's D1. `counts-check.cjs` checks 13 numbers against what decides them, and all 13 hold. A cold run of Session 4's Step 1 and Step 4f passed wherever it should, and the census now finds 427 families where the 2026-09-21 run found 763. The docs index still held 133 files that no longer exist, among them the old Version 35 handoff; they are deleted, and the fact that the index never prunes is filed. Seven linksee anchors named the old paths or Board 3-E as live, and all seven are superseded by #69.
+
+## 2026-09-29 15:37 EDT — Board 4 Version 40 intake round built in the kit, all 21 classes (v3.85.0-pre)
+
+His Version 40 intake round (21 classes, A–U) is built in `docs/pins2/kit/`: Compare's tiles, band, table, weapon groups and landing; the Discord cards moved under the table; the post form's section headings and hint-chip readouts; the Export peek's exit; the compact badges' hover; the in-field buttons in Broadcast's colour. Not reviewed, not published, not pushed.
+
+During the build he settled four things by rendered images: the Starts and Ends "Optional" chips stay; the landing tile's + is a bare glyph that shows a tinted box on hover; the tiles keep their own edge and take only the stronger colour; the readout chips get a solid ground and a tinted mark.
+
+Lesson: an instrument's check can pass without testing anything. r22's one-build flow clicked an element Version 40 removed, and its assertion was already true before the click; it now asserts the suggested column exists and that Add removes it. Likewise, counts-check read the intake index to the end of the file, so the next table doubled its count.
 
 # Part B — Lessons Ledger (thematic)
 

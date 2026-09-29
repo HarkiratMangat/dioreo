@@ -1486,3 +1486,44 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 | S | C3 | the empty landing: faded image back, the line designed not removed, real tiles flowing from the centre, whole-tile hover, a visible `+` |
 | T | C7 · forms | form section headings as the build drawer's |
 | U | C7 · forms | date readouts attached to their fields, designed as hint chips |
+
+### Built in the kit — 2026-09-29 15:33 EDT (after compact 18, Opus 5.5; not published, not reviewed)
+
+*Every class below is in `docs/pins2/kit/`; the spec was regenerated from it and its mtimes read (19 of 20 files rewritten; `HANDOFF.md` is hand-written). `r22` 35/35, `paths-resolve` 0 dead, `cites-check` 0 fatal, `counts-check` 13/13, both selftests pass. Measured headless at 2x (Chrome, 1440×900).*
+
+| Class | Built | Where |
+|---|---|---|
+| A | the tile's × and Before staging's − have no ring at rest; ground and ring on hover; sized to the heading they sit in (26 and 24px) | `docs/pins2/kit/b4/compare.css`, `docs/pins2/kit/b4/classes.css` |
+| B | the limit chip is gone with O: its seats take each build's weapon colour, never Broadcast's | `docs/pins2/kit/b4/compare.js` |
+| C | the − / + corner mark is a solid disk in the build's colour (red to take out) with a near-black glyph, 18px | `docs/pins2/kit/b4/compare.css` |
+| D | Export's peek keeps the build it showed until its fade ends, and keeps being placed for it: on leave it fades where it was (measured: top moves 9px with the exit's drift, never to the list's top) | `docs/pins2/kit/gates/armory.js` |
+| E | shuffle takes the fields' dark fill; shuffle, copy and calendar are tinted in Broadcast's colour and fill with it on hover | `docs/pins2/kit/b4/classes.css` |
+| F | the list owns its alignment (`.f-menu li{text-align:left}`): the landing had centred its words and the list inherited it | `docs/pins2/kit/b4/classes.css` |
+| G | fixed columns, no sideways scroll at six builds across three weapons (r22 now asserts it) | `docs/pins2/kit/b4/compare.css`, `docs/pins2/instruments/r22.cjs` |
+| H | a weapon is a group: its head a band over its builds (name, its category under it), a gutter with one hairline between weapons, head to last row; no rule under the names (board 1's 1px cell foot removed) | `docs/pins2/kit/b4/compare.*` |
+| I | every body row 64px (two lines); a hairline between rows | `docs/pins2/kit/b4/compare.css` |
+| J | row names in capitals in their slot's colour; the "BAL-27 only" marks removed | `docs/pins2/kit/b4/compare.*` |
+| K | one empty, the dash; a missing part among builds that carry it is the dash in the odd-one-out tint; agreement merges into one cell with its count (Lanes' answer, now in Cards too) | `docs/pins2/kit/b4/compare.*` |
+| L | the gunsmith code is always a row ("GUNSMITH CODE", on two lines) | `docs/pins2/kit/b4/compare.js` |
+| M | a compact badge opens, in place, into its full badge on hover; the tooltip no longer repeats the word | `docs/pins2/kit/b3/armory-parts.js`, `docs/pins2/kit/b4/classes.css` |
+| N | tiles 120–260px wide, name at the 10px padding with its category under it, two rows then the sideways fade, the column heads' colour | `docs/pins2/kit/b4/compare.*` |
+| O | the top is search and VIEW; a band between the tiles and the table holds the seats readout and the "Same on all" chips | `docs/pins2/kit/b4/compare.*` |
+| P | every build head names its label or says "No label" | `docs/pins2/kit/b4/compare.js` |
+| Q | VIEW is Cards and Lanes; the Discord cards open from a bar under the table; one build is the table with a dashed suggested column and an Add | `docs/pins2/kit/b4/compare.*`, `docs/pins2/instruments/r22.cjs` |
+| R | a card is as tall as its content (no stretching to the row's tallest); a failed image's name chip sits inside its tile | `docs/pins2/kit/b4/compare.css` |
+| S | the faded table behind the landing (his v10 keep), the line as two readouts, 10–16 real tiles in at most three centred rows across 900px, whole-tile hover lighting every build, the + always shown | `docs/pins2/kit/b4/compare.*` |
+| T | Text, Accent and Banner are the build drawer's `.f-h` heading (15px, 600, the rule to the right, the chip beside) | `docs/pins2/kit/ui/broadcast.js`, `docs/pins2/kit/b4/classes.css` |
+| U | a readout is a hint chip 6px under its field: a solid ground, its mark in the board's tinted square in the readout's tone | `docs/pins2/kit/b4/classes.css` |
+
+**His calls during the build, verbatim where typed:**
+
+| When | Asked | His answer |
+|---|---|---|
+| 13:3x EDT, popup (renders `intake-shots/intake-v40/forks/T-optional-*.png`) | keep or drop the "Optional" chips on Starts and Ends | **Keep them** |
+| 14:31 EDT | the landing tile's + (my tinted box) | *"Not a fan of that + icon button"* — four rendered (`forks/plus-options.png`); *"#2 bare glyph"*, then *"when hovered, show #1's resting box."* |
+| 15:30 EDT | the tiles | *"i only asked for the tile's get get the more prominant color, i didn't ask for them to get the upper border treatment. more or less the tiles were fine as they were."* — the top-edge highlight removed, the tile's radius (10px) and ring back, the stronger colour kept |
+| 15:30 EDT | the landing's two readouts (his screenshot) | *"improve the design of these chips."* — a solid ground (the faded table showed through), the mark in the board's tinted square, one row with a step mark between; the date readouts are the same class and changed with them |
+
+**Settled from his own words, not asked:** the weapon's category sits under its name in the tiles and in the table's heads alike (his N: "put the weapon category text under it"), so it is never above or beside the name. The weapon head's band (H) is my design for his "significant redesign"; a gutter-only variant was rendered (`forks/H2-gutter-only.png`) and not built.
+
+**Not verified or left as found:** the image names running one off the builds in `13-compare-embed.png` do not reproduce with the images loading (Build 1 shows its own code); `b4states` flags five META badges' animation layer (`.b3-vrest`, 31px in the 26px bare plate) as CONTAIN, decorative and clipped; Build 5's rank-mode line wraps where Discord would at that width.

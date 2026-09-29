@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the exact changes to PORTAL code
 
-*Generated 2026-09-29T04:08:56.010Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `6572b9eb plus the working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
+*Generated 2026-09-29T19:36:37.040Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `c3f437d4 plus the working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
 
 ## `app.css` → `portal/public/app.css`
 
@@ -778,7 +778,7 @@ index 9fd1fbd9..ad67927e 100644
 
 ```diff
 diff --git aportal/ui/broadcast.js bkit/ui/broadcast.js
-index 68764342..af0b90ad 100644
+index 68764342..fb041aec 100644
 --- aportal/ui/broadcast.js	
 +++ bkit/ui/broadcast.js	
 @@ -3,7 +3,7 @@
@@ -999,7 +999,7 @@ index 68764342..af0b90ad 100644
  // The Show-each-player stepper's card glyphs (§10.3 row 3) — one small raised tile per showing.
  function RepeatGlyphs({ n }) {
      const count = Math.max(1, Number(n) || 1);
-@@ -297,131 +319,204 @@ function RepeatGlyphs({ n }) {
+@@ -297,131 +319,206 @@ function RepeatGlyphs({ n }) {
  // Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt, a banner image and a repeat count (pins batch 2, spec §7/§10.3). The Discord-side fields stay authoritative for what the server accepts; this drawer is the richer web equivalent, built per the pins-2 design board (G8).
  //
  // ⚠️ EDIT AND POST SHARE ONE FORM. `initial` is the announcement object when opened from Broadcast's "Edit"/"Dates and repeats" buttons or HeadsUp's "Set an end date" (null when opened from "+ Post announcement") — pre-fills every field and switches submit() to an announcement.edit op that carries bannerImageUrl and repeatCount (row 8: an edit that omits them would silently wipe them, see core/ops/announcements.js's apply()).
@@ -1105,6 +1105,8 @@ index 68764342..af0b90ad 100644
          Promise.resolve(onSubmit(op)).then((ok) => { if (ok === false) setBusy(false); });
      }
  
++    // 2026-09-29 13:23 EDT (his V40 class T, "i've already asked 2-3 times"): Text, Accent and Banner are SECTIONS, headed as the build drawer heads Build — the .f-h
++    // heading, its size and its rule running to the right, its state chip beside it. Starts, Ends and Show each player stay field labels.
 +    // 🔴 BOARD 1 · G8, AS DRAWN (Board 4: Collective, 2026-09-21 12:32 EDT). Session 2's port of this drawer kept the fields and lost the design:
 +    // no thumbnail beside the banner link, no echo under either date, a checkbox where the board has a switch, a thin budget line with
 +    // its figure on the wrong side, one pink square for the showings, and a preview that printed the raw markdown. This is board 1's
@@ -1162,7 +1164,7 @@ index 68764342..af0b90ad 100644
 +                       <button class="b3-btn2 go" disabled=${!ready} onClick=${submit}>${busy ? 'Staging…' : (editing ? 'Stage this edit' : 'Stage post')}</button>`}>
 +            <div class="bed">
 +                <div class="pb-col b3-fady">
-+                    <div class="dwfield pb-txf"><div class="pb-lrow"><label for="post-text">Text</label>${!text.trim() ? html`<${Chip} tone="warn" icon="triangle-alert">Required<//>` : overText ? html`<${Chip} tone="warn" icon="triangle-alert">Over ${TEXT_MAX.toLocaleString()}<//>` : html`<span class="f-okm" title="Filled"><${Icon} name="check" /></span>`}</div>
++                    <div class="dwfield pb-txf"><h4 class="f-h pb-sech"><span><label for="post-text">Text</label></span>${!text.trim() ? html`<${Chip} tone="warn" icon="triangle-alert">Required<//>` : overText ? html`<${Chip} tone="warn" icon="triangle-alert">Over ${TEXT_MAX.toLocaleString()}<//>` : html`<span class="f-okm" title="Filled"><${Icon} name="check" /></span>`}</h4>
 +                        <div class=${'pb-enc b4-tb' + (expanded ? ' b4-tbx' : '') + (clamps && !expanded ? ' b4-tbclip' : '')} style=${`--c:${accent}`} onPointerDown=${(e) => { if (e.target.closest('.b4-fold') || expanded) return; setTbFocus(true); requestAnimationFrame(() => { if (taRef.current) taRef.current.focus(); }); }}>
 +                            <textarea id="post-text" ref=${taRef} rows="2" placeholder="Type a # heading on the first line if you want one."
 +                                      value=${text} onInput=${(e) => { setText(e.target.value); setTbFocus(true); }} onKeyDown=${(e) => { if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace') setTbFocus(true); }} onBlur=${() => setTbFocus(false)}></textarea>
@@ -1217,9 +1219,9 @@ index 68764342..af0b90ad 100644
 +                        <div class="pb-rep">
 +                            <${Stepper} value=${repeatCount} onChange=${setRepeatCount} />
 +                            <span class="pb-gapday"><${Icon} name="repeat" />1 a day max</span></div></div>
-+                    <div class="dwfield pb-accf"><div class="pb-lrow"><label for="post-accent">Accent</label>${autoColor ? html`<${Chip} tone="neutral">Auto<//>` : null}${accentTooDark(color) ? html`<${Chip} tone="warn" icon="triangle-alert">Hard to see<//>` : null}</div>
++                    <div class="dwfield pb-accf"><h4 class="f-h pb-sech"><span><label for="post-accent">Accent</label></span>${autoColor ? html`<${Chip} tone="neutral">Auto<//>` : null}${accentTooDark(color) ? html`<${Chip} tone="warn" icon="triangle-alert">Hard to see<//>` : null}</h4>
 +                        <${AccentBlock} id="post-accent" value=${color} onChange=${(n) => { setColor(n); setAutoColor(false); }} /></div>
-+                    <div class="dwfield pb-bnf"><div class="pb-lrow"><label>Banner</label>${!bannerUrl ? html`<${Chip} tone="neutral">Optional<//>` : null}</div>
++                    <div class="dwfield pb-bnf"><h4 class="f-h pb-sech"><span><label>Banner</label></span>${!bannerUrl ? html`<${Chip} tone="neutral">Optional<//>` : null}</h4>
 +                        <${MediaWell} f=${bn} set=${setBanner} id="post-banner" sources=${['up', 'link']} keyed=${false} what="an image" /></div>
                  </div>
 -                <aside class="bed-side">
@@ -1295,7 +1297,7 @@ index 68764342..af0b90ad 100644
  // 🔴 AIRTIME PAINTS THREE BAR STATES AND NAMED NONE OF THEM. Solid is showing, hollow-dashed is scheduled, muted is over -- the same shape vocabulary the Track uses, and a reader met it with no key. ⚠️ Deliberately NOT the shared StateKey: that one teaches "dashed = staged", and here a dashed bar means an announcement that is written and simply has not started yet. Same shape, a neighbouring meaning, and the wrong word would be worse than no word.
  //
  // ⚠️ It names only states PRESENT on screen, the rule every key in this portal follows: a season with nothing scheduled should not send somebody hunting for a dashed bar that is not drawn.
-@@ -431,6 +526,7 @@ export function BroadcastRealm({ session }) {
+@@ -431,6 +528,7 @@ export function BroadcastRealm({ session }) {
      const [notice, setNotice] = useState('');
      const [view, setView] = useState('Delivery queue');
      const overlay = useOverlay();
@@ -1303,7 +1305,7 @@ index 68764342..af0b90ad 100644
  
  // 🔴 TWO REALMS COULD STAGE WORK AND NEITHER COULD TELL YOU IT HAD ANY. Season and Home both read /api/review to say how much is waiting — that is what feeds the rail's badge and the masthead's staged figure — and Armory and Broadcast, which stage on every edit, said nothing anywhere. You staged four builds, navigated away, and the console had no memory of it outside the Review screen.
  //
-@@ -546,13 +642,13 @@ export function BroadcastRealm({ session }) {
+@@ -546,13 +644,13 @@ export function BroadcastRealm({ session }) {
                                                                                onClick=${() => setShowAdd(true)} />`} />`}
                    viewSlot=${html`
                        ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}

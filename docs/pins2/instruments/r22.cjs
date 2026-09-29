@@ -95,14 +95,19 @@ const w = (ms) => new Promise((r) => setTimeout(r, ms));
   s = await ev(() => ({ cols: document.querySelectorAll('#c-compare th.cx-h').length, word: (document.querySelector('#c-compare .cx-w[aria-label]') || { getAttribute: () => '' }).getAttribute('aria-label') }));
   ok('turning a build off drops its column and the weapon reads "4 of 5 builds in the table"', s.cols === 4 && /4 of 5 builds in the table/.test(s.word || ''), s);
   await typeInto('#c-compare .cx-pick input', 'ffar'); await p.keyboard.press('Enter'); await w(400);
-  s = await ev(() => ({ weapons: [...document.querySelectorAll('#c-compare .cx-wh b')].map((e) => e.textContent), cols: document.querySelectorAll('#c-compare th.cx-h').length, stat: (document.querySelector('#c-compare .cx-stat') || {}).textContent }));
-  ok('adding a weapon from the picker lines it up (six columns, the rest named)', s.weapons.length === 2 && s.cols === 6, s);
+  s = await ev(() => ({ weapons: [...document.querySelectorAll('#c-compare .cx-wh b')].map((e) => e.textContent), cols: document.querySelectorAll('#c-compare th.cx-h').length, fit: (() => { const t = document.querySelector('#c-compare .cx-tw'); return t ? t.scrollWidth <= t.clientWidth + 1 : false; })() }));
+  // 2026-09-29 13:29 EDT (his V40 class G): the table fits its panel at six columns — it never scrolls sideways
+  ok('adding a weapon from the picker lines it up (six columns, the rest named)', s.weapons.length === 2 && s.cols === 6 && s.fit, s);
   await ev(() => { const x = document.querySelectorAll('#c-compare .cx-wx')[0]; x && x.click(); }); await w(300);
   s = await ev(() => ({ weapons: [...document.querySelectorAll('#c-compare .cx-wh b')].map((e) => e.textContent), cols: document.querySelectorAll('#c-compare th.cx-h').length }));
   ok('removing the first weapon leaves the second on its own', s.weapons.length === 1 && s.cols >= 2, s);
   await st('c-compare', 'One build');
-  await ev(() => { const x = document.querySelector('#c-compare .cx-rival .cx-wadd'); x && x.click(); }); await w(400);
-  ok('one build: a rival chip opens the side-by-side table', (await ev(() => document.querySelectorAll('#c-compare th.cx-h').length)) >= 2, null);
+  // 2026-09-29 13:29 EDT (his V40 class Q): one build is the table with a suggested column beside it; Add puts the suggestion's weapon in. Before, this clicked a
+  // .cx-rival that Version 40 removed, and its check (two heads) was true before any click — a flow that could not fail.
+  const s0 = await ev(() => ({ sg: document.querySelectorAll('#c-compare th.cx-h.sg').length, heads: document.querySelectorAll('#c-compare th.cx-h').length }));
+  await ev(() => { const x = document.querySelector('#c-compare .cx-sgadd'); x && x.click(); }); await w(500);
+  s = await ev(() => ({ sg: document.querySelectorAll('#c-compare th.cx-h.sg').length, heads: document.querySelectorAll('#c-compare th.cx-h').length, weapons: document.querySelectorAll('#c-compare .cx-tl .cx-w').length }));
+  ok('one build: a rival chip opens the side-by-side table', s0.sg === 1 && s0.heads === 2 && s.sg === 0 && s.heads >= 2 && s.weapons === 2, { s0, s });
   await st('c-compare', 'Empty');
   await ev(() => { const x = [...document.querySelectorAll('#c-compare .cx-wadd')].find((b) => /^Compare its builds/.test(b.getAttribute('data-tip') || '')); x && x.click(); }); await w(400);
   ok('empty: a suggested weapon opens its table', (await ev(() => document.querySelectorAll('#c-compare th.cx-h').length)) >= 2, null);

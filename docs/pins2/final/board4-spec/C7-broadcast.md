@@ -12,7 +12,7 @@ status: live
 
 ### C7 stage
 
-40 distinct signatures on screen; 33 not already specced above.
+40 distinct signatures on screen; 32 not already specced above.
 
 
 ### `div.b4-panel`
@@ -391,12 +391,12 @@ inside `.mt-grp` · 1 on screen · **1 look**
 | padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3391 |
 | padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3391 |
 | border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
-| border-color | `color-mix(in srgb,var(--c) 66%,transparent)!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
+| border-color | `color-mix(in srgb,var(--c) 66%,transparent)!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:283 |
 | border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
-| background | `color-mix(in srgb,var(--c) 24%,var(--sunk))!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
-| background-color | `!important !important` | `color(srgb 0.254902 0.112471 0.197647)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
-| background-image | `!important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
-| box-shadow | `none !important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
+| background | `color-mix(in srgb,var(--c) 24%,var(--sunk))!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:283 |
+| background-color | `!important !important` | `color(srgb 0.254902 0.112471 0.197647)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:283 |
+| background-image | `!important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:283 |
+| box-shadow | `none !important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:283 |
 | font | `inherit` | `` | button · app.css:621 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
 | font-size | `var(--t-sm)` | `12px` | .chip · app.css:1242 |
@@ -407,7 +407,7 @@ inside `.mt-grp` · 1 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | text-decoration | `none` | `` | .chip · app.css:1242 |
-| color | `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
+| color | `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:283 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | button · app.css:621 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
@@ -458,7 +458,7 @@ inside `.chip` · 4 on screen · **1 look**
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | inherited · .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:282 |
+| color | ↑ `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | inherited · .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:283 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 
@@ -1365,40 +1365,6 @@ inside `.ncell` · 6 on screen · **6 looks**
 | letter-spacing | — | `normal` | initial |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
-| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
-
-
-### `b`
-
-inside `.—` · 6 on screen · **1 look**
-
-#### the one look
-
-`C7-59` · rendered **268×18** · 6 instances look like this · text “S6 wrap-up — thanks for playing season 6.” · title="S6 wrap-up — thanks for playing season 6"
-
-```html
-<b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-base)/1.35 var(--ui)` | `` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| font-size | `` | `13px` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| font-weight | `` | `600` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| font-style | `` | `normal` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| font-variant-numeric | `` | `normal` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| line-height | `` | `17.55px` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| letter-spacing | — | `normal` | initial |
-| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
-| text-overflow | `ellipsis` | `ellipsis` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| white-space | `nowrap` | `` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| overflow | `hidden` | `` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| overflow-x | `hidden` | `hidden` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| overflow-y | `hidden` | `hidden` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
 | cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
