@@ -14,7 +14,7 @@ status: live
 | Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 44** live — his Version 40, 41 and 42 intake rounds built, History's event-drawer fix, the upward passing card fixed |
 | Sign-off | **not signed off**; the plan's §5c Step 1 now checks for it before Session 4 starts |
 | Branch | `feat/portal-pins2-manifests`, **nothing pushed**; this stretch's commits `ad65c54c` → `771bae48` and this record |
-| Spec | `final/board4-spec/` regenerated from the kit; four generators added beside the values, all run by the regenerate command: `structure.cjs`, `relations.cjs` (33 of 33 hold), `a11y.cjs` (39 walks) and the pop-up pass in `extract-spec.cjs`; the shared walker is `board4-walk.cjs` |
+| Spec | `docs/pins2/final/board4-spec/` regenerated from the kit; four generators added beside the values, all run by the regenerate command: `structure.cjs`, `relations.cjs` (33 of 33 hold), `a11y.cjs` (39 walks) and the pop-up pass in `extract-spec.cjs`; the shared walker is `board4-walk.cjs` |
 | Instruments | r22 35/35; paths-resolve 0 dead; cites-check 0 fatal; counts-check 13/13; docs:audit's only error the old v3.85.0 devlog-orphan |
 
 ## His words this stretch
@@ -26,7 +26,7 @@ status: live
 1. His review of Version 44 on the board; log any findings by class and build them on his word.
 2. His sign-off of the Collective (the phrase §5c Step 1 checks for goes in plan §10.5 with his words and the time).
 3. Session 3's close (plan §13), each step on his word; a push carrying `docs/pins2/kit/` names the kit (his 2026-09-20 instruction).
-4. Session 4 takes D1–D4 in `final/board4-spec/HANDOFF.md` (D4: a sprite icon ignores CSS stroke-width — 5 rules measured dead).
+4. Session 4 takes D1–D4 in `docs/pins2/final/board4-spec/HANDOFF.md` (D4: a sprite icon ignores CSS stroke-width — 5 rules measured dead).
 
 ## Lessons paid for (linksee caveats)
 
