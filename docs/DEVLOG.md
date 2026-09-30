@@ -259,6 +259,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-29 18:06 EDT — Board 4 Version 41 intake round logged and built in the kit, classes V–AH (v3.85.0-pre)
 - 2026-09-29 18:51 EDT — Board 4 published as Version 42; the Session 4/5 docs brought to Version 42 (v3.85.0-pre)
 - 2026-09-29 19:57 EDT — Board 4's spec gets its structure, relations and accessibility walk; History's event drawer fixed in the kit (v3.85.0-pre)
+- 2026-09-29 21:00 EDT — Board 4 Version 42 intake built in the kit, classes AI–AS (v3.85.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4506,6 +4507,12 @@ Routing: the kit is excluded from the product's codebase-memory graph because it
 **Why:** the handoff listed five things the spec "does not have yet" and I had sent them to him as a heads-up after being asked to finish everything. Each is now a generator beside the values, run by the same regenerate command: `structure.cjs` (every gate's outline, at rest and in 30 states), `relations.cjs` (his rulings that are measurements, pass or fail), `a11y.cjs` (39 walks: the focus order, names, focus marks, pointer-only elements) and a pop-up pass in the extractor (the date picker, the queue's chip pop-ups, both dropdown lists and two row drawers), which had never been specced because each is closed at rest.
 
 **What opening them found:** History's event drawer drew each key as Board 3's decision dock, because `.dk` names both. The dock's rules are fenced off with `:where()`, and the fix is in the kit, not yet published. The keyboard walk found focusable Broadcast rows with no name and History rows that open only by pointer; both are recorded for the port.
+
+## 2026-09-29 21:00 EDT — Board 4 Version 42 intake built in the kit, classes AI–AS (v3.85.0-pre)
+
+**His Version 42 round, built** (eleven classes, all on Compare except the badge pop, which is every compact badge). The list keeps its category order without label rows, previews what a click will do, and lets a picked weapon's name take it out. The heads carry the selection list's verdict chip and its card. Clear table and Reset now use the board's own buttons, and the seats chip sits beside the search. The band is a two-row key aligned to the table, built from the manifest's attachment chips. Each gap between builds ends in a round cap under its weapon's band.
+
+**What the build found:** the corner mark could not get heavier because a sprite icon's own `stroke-width` beats any CSS on it. Of the 20 such rules in the kit, 5 are measured dead on the resting board, which becomes Session 4's D4. His four notes during the build all traced to classes rather than instances. The card looked hand-made because two Compare rules reached into the list's card, and the empty space beside the chip came from a wrapper's margin meant for another field. Both are now scoped: 0 Compare rules reach the card.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -1645,3 +1645,34 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 **Last round's claims failing:** AR (his "one step higher weight", logged Version 41 Z and recorded as built with "a heavier glyph"), AJ (the pop recorded as fixed), AO (built without the board's button language, and without looking for the memory he names).
 
+### Built in the kit — 2026-09-29 20:25 EDT (not published, not reviewed)
+
+*His go: "That's it for the intake items so far" (2026-09-29 20:03 EDT). Measured headless at 2x and 4x (Chrome, 1440 × 900 and 1282 × 888); the crops are `docs/pins2/intake-shots/intake-v42/built/`. `relations.cjs` gained seven of this round's rulings and holds 33 of 33.*
+
+| Class | Built | Measured |
+|---|---|---|
+| AI | the list keeps the category order, with a hairline where a category starts and **no label rows**; each row carries its category beside the name in the tiles' label (capitals, the data face, its colour); the field and the landing's are 480px; a picked weapon's name takes it and its builds out; a row's hover previews its click — every number going in (the landing tile's hover), or a picked weapon's numbers coming out with its name struck; a number previews only itself; the keyboard's highlighted row does the same | 0 label rows, 68 rows each with its category; a name click took the picked weapon out (2 tiles → 1) |
+| AJ | the compact badge hides while its full badge is open, the pop takes the badge's own 3px corners (it had 7px), and the compact badges after it step back | the pop sits on the compact badge's exact box, 3px corners, nothing showing at either end (`badgepop.png`) |
+| AK | the image mark is the selection list's verdict chip (`ProblemChip`): a 22px square at the build chip's height, the shield when every Repairs check passes, the triangle when one fails, the same hover card, whose Open build opens the drawer | 0px off the build chip's height and centre line; the card is 368 × 307 (`verdict-card.png`) |
+| AL | edit hovers in `--staged` with the manifest's plate recipe (a new `.wg-edit`, beside `.wg-share` and `.wg-del`); the actions sit at the column's right, the last plate 15px from the edge and 15px from the foot | 15 / 15 at 1440 and 1282 (`foot-edit.png`) |
+| AM | "Discord preview" / "Preview the builds as Discord embeds"; the pill's disclosure is the board's fold mark; the rank-mode marks in every Discord preview are 19px (Discord's inline emoji in an embed), from 22 | 19px in the build drawer's preview (`dcbar.png`) |
+| AN | the band is a two-row key over the table: "Same on all N" and "Shared" in the row-name column's face and width, the chips starting where the builds start, two rows at most then the sideways fade; a Shared chip ends in its builds' numbers after a hairline, in the weapon's colour, no boxes | chips 0px off the first build column, names 0px off the row names (`band.png`) |
+| AO | "Clear table" is the board's transparent button whose hover tints — Export's Clear for a file (`.b3-xf-clr`); "Reset" is the board's solid fill in the delete hue — the drawers' Discard (`.b3-btn2.go.dang`): both throw away what was set up, neither touches a build. Clear table leaves the landing's faded table under a readout chip ("No builds in the table │ turn on a build number in the tiles above"), not a sentence | `clear-hover.png`, `reset-hover.png`, `off.png` |
+| AP | the seats chip sits right of the search at its height; the top-right buttons at the same height | all 42px on one centre line |
+| AQ | every band chip is the manifest's attachment chip (`.wg-at`), its edge in its slot's colour | ring 46% of the slot colour on every chip |
+| AR | the − and + are drawn inline (`mark` in `docs/pins2/kit/b4/compare.js`): 1.6px of ink, about twice what showed | 1.625px (`kb-on.png`) |
+| AS | a gap between two builds of one weapon ends in a round cap under the weapon's band | `gapcap.png` |
+
+**Why AR had not changed, and the class under it:** every `Icon` is a `<use>` of a sprite symbol that carries `stroke-width="2"` on itself, and a CSS `stroke-width` on the icon cannot reach past that attribute. Last round's "heavier glyph" rule was dead, and of the 20 `stroke-width` rules on `.ic` in the kit, measured on the resting board: **5 are dead** (every icon they match is a sprite: `app.css` `.ic.sm`, `b3/board.css` `.b3-bdg .ic`, `b4/classes.css` `.b4-hint .ic`, `.f-stm .ic` and `.g-card .pb-numr.g-numi .ic`), 12 match nothing at rest (opened states not checked), and 3 now reach the inline corner mark. The corner mark is fixed by drawing it inline; the rest are listed for Session 4 (HANDOFF.md, D4) because making them live changes looks he approved.
+
+**Found and fixed along the way:** the table's cells carried a pointer cursor with no action (the accessibility walk); the list's category rows were `pointer-events:none` labels a pointer still showed, and are gone with AI.
+
+**His notes during the build, verbatim, and what each changed** (2026-09-29 20:44 EDT):
+
+| When | His words | Changed |
+|---|---|---|
+| 20:36 EDT | *"icons are on the left side in a button."* (the Discord pill) | the fold mark leads the pill's word, as on every board button |
+| 20:39 EDT | *"your \"all builds pass\" container is also incorrect. why did you handcraft it?"* | it was the list's own card (`ProblemChip`), but two Compare rules reached into it — the head's old label-chip rule (`.cx-hn small`) boxed its title, and the voice reset re-set its type. Both now stop at `.b3-pc`; measured after: **0 Compare rules reach any of the card's 42 nodes** |
+| 20:40 EDT | *"and why so much empty space to the right of the shield/checkmark chip?"* | the list's wrapper (`.wg-fwrap`) carries an 18px margin meant for the manifest's code field; zeroed in the head, the chip sits 12px from the column's edge, as the build chip does from the other |
+| 20:41 EDT | *"why are these left aligned?"* (the band's names) | right-aligned against their chips, their ink ending 14px from the column's edge, where the table's row names end |
+

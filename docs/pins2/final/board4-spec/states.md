@@ -170,7 +170,7 @@ inside `.chip` · 19 on screen · **8 looks**
 
 #### look 1 of 8
 
-`manifestt0-217` · rendered **307×307** · 1 instance look like this
+`manifestt0-217` · rendered **311×311** · 1 instance look like this
 
 ```html
 <i></i>
@@ -202,7 +202,7 @@ inside `.chip` · 19 on screen · **8 looks**
 
 #### look 2 of 8
 
-`manifestt0-325` · rendered **272×272** · 1 instance look like this
+`manifestt0-325` · rendered **273×273** · 1 instance look like this
 
 ```html
 <i></i>
@@ -361,7 +361,7 @@ inside `.chip` · 19 on screen · **8 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.0153218` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.164096` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -601,7 +601,7 @@ inside `.b3-bdg` · 8 on screen · **3 looks**
 | text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:625 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:626 |
-| opacity | ⚠️ `0.72` | `0.914562` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0.72` | `0.974113` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
 | animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
@@ -1666,7 +1666,7 @@ inside `.chip` · 19 on screen · **3 looks**
 
 #### look 1 of 3
 
-`manifestt1-393` · rendered **4×9** · 1 instance look like this
+`manifestt1-393` · rendered **4×8** · 1 instance look like this
 
 ```html
 <i></i>
@@ -1694,7 +1694,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.525882` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.643624` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -1730,7 +1730,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.0275975` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.199314` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -1766,7 +1766,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.898273` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.839728` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -1775,36 +1775,9 @@ inside `.chip` · 19 on screen · **3 looks**
 
 ### `span.b3-mdw`
 
-inside `.b3-bdg` · 8 on screen · **3 looks**
+inside `.b3-bdg` · 8 on screen · **2 looks**
 
-#### look 1 of 3
-
-`manifestt1-495` · rendered **14×10** · 1 instance look like this · text “HP”
-
-```html
-<span class="b3-mdw">HP</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:625 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:626 |
-| opacity | ⚠️ `0.72` | `0.949254` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
-| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-#### look 2 of 3
+#### look 1 of 2
 
 `manifestt1-511` · rendered **20×10** · 1 instance look like this · text “FTL”
 
@@ -1827,11 +1800,11 @@ inside `.b3-bdg` · 8 on screen · **3 looks**
 | text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:625 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:626 |
-| opacity | ⚠️ `0.72` | `1` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0.72` | `0.920602` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
 | animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
-#### look 3 of 3
+#### look 2 of 2
 
 `manifestt1-515` · rendered **47×10** · 1 instance look like this · text “Control”
 
@@ -1854,16 +1827,16 @@ inside `.b3-bdg` · 8 on screen · **3 looks**
 | text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:625 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:626 |
-| opacity | ⚠️ `0.72` | `0.743305` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0.72` | `0.800107` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
 | animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 
 ### `span.b3-vb`
 
-inside `.b3-vl` · 6 on screen · **1 look**
+inside `.b3-vl` · 6 on screen · **2 looks**
 
-#### the one look
+#### look 1 of 2
 
 `manifestt1-318` · rendered **58×22** · 2 instances look like this
 
@@ -1919,10 +1892,66 @@ inside `.b3-vl` · 6 on screen · **1 look**
 | mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3221 |
 | content | `""` | .b3-vb::after · b3/board.css:3221 |
 
+#### look 2 of 2
+
+`manifestt1-319` · rendered **58×22** · 1 instance look like this
+
+```html
+<span class="b3-vb" style="--pk: 0.22; --ha: 25.1%; --sx: 35.5%; --sy: 73.7%; animation: 9.91s linear 0s infinite normal none running b3vb11;"></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3218 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| inset | `0` | `` | .b3-vb · b3/board.css:3218 |
+| top | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
+| right | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
+| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
+| left | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
+| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3218 |
+| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941177 / 0.55616) 0px 0px 23.36px -4.9px` | .b3-vb · b3/board.css:3218 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
+| opacity | `0` | `0` | .b3-vb · b3/board.css:3218 |
+| animation | `9.91s linear 0s infinite normal none running b3vb11` | `` | style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b3-vb::after · b3/board.css:3221 |
+| padding | `1px` | .b3-vb::after · b3/board.css:3221 |
+| padding-top | `1px` | .b3-vb::after · b3/board.css:3221 |
+| padding-right | `1px` | .b3-vb::after · b3/board.css:3221 |
+| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3221 |
+| padding-left | `1px` | .b3-vb::after · b3/board.css:3221 |
+| inset | `0` | .b3-vb::after · b3/board.css:3221 |
+| top | `0px` | .b3-vb::after · b3/board.css:3221 |
+| right | `0px` | .b3-vb::after · b3/board.css:3221 |
+| bottom | `0px` | .b3-vb::after · b3/board.css:3221 |
+| left | `0px` | .b3-vb::after · b3/board.css:3221 |
+| border-radius | `inherit` | .b3-vb::after · b3/board.css:3221 |
+| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3221 |
+| background-color | `` | .b3-vb::after · b3/board.css:3221 |
+| background-image | `` | .b3-vb::after · b3/board.css:3221 |
+| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3221 |
+| content | `""` | .b3-vb::after · b3/board.css:3221 |
+
 
 ### manifest · Pick one build
 
-113 distinct signatures on screen; 47 not already specced above.
+113 distinct signatures on screen; 48 not already specced above.
 
 
 ### `span`
@@ -2154,7 +2183,7 @@ inside `.chip` · 20 on screen · **4 looks**
 
 #### look 1 of 4
 
-`manifestt2-393` · rendered **4×7** · 1 instance look like this
+`manifestt2-393` · rendered **4×6** · 1 instance look like this
 
 ```html
 <i></i>
@@ -2182,7 +2211,7 @@ inside `.chip` · 20 on screen · **4 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.621351` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.785492` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -2190,7 +2219,7 @@ inside `.chip` · 20 on screen · **4 looks**
 
 #### look 2 of 4
 
-`manifestt2-394` · rendered **4×11** · 1 instance look like this
+`manifestt2-394` · rendered **4×10** · 1 instance look like this
 
 ```html
 <i></i>
@@ -2218,7 +2247,7 @@ inside `.chip` · 20 on screen · **4 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.164343` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.387848` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -2254,7 +2283,7 @@ inside `.chip` · 20 on screen · **4 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.86535` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.523775` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -2885,9 +2914,36 @@ inside `.wg-rail` · 109 on screen · **5 looks**
 
 ### `span.b3-mdw`
 
-inside `.b3-bdg` · 8 on screen · **1 look**
+inside `.b3-bdg` · 8 on screen · **2 looks**
 
-#### the one look
+#### look 1 of 2
+
+`manifestt2-507` · rendered **20×10** · 1 instance look like this · text “TDM”
+
+```html
+<span class="b3-mdw">TDM</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:625 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:626 |
+| opacity | ⚠️ `0.72` | `0.742973` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
+| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+#### look 2 of 2
 
 `manifestt2-511` · rendered **20×10** · 1 instance look like this · text “FTL”
 
@@ -2915,6 +2971,67 @@ inside `.b3-bdg` · 8 on screen · **1 look**
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 
+### `span.b3-vb`
+
+inside `.b3-vl` · 6 on screen · **1 look**
+
+#### the one look
+
+`manifestt2-488` · rendered **58×22** · 1 instance look like this
+
+```html
+<span class="b3-vb" style="--pk: 0.34; --ha: 43.9%; --sx: 30.6%; --sy: 49.3%; animation: 8.2s linear 0s infinite normal none running b3vb02;"></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3218 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| inset | `0` | `` | .b3-vb · b3/board.css:3218 |
+| top | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
+| right | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
+| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
+| left | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
+| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3218 |
+| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.66752) 0px 0px 29.12px -4.3px` | .b3-vb · b3/board.css:3218 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
+| opacity | `0` | `0` | .b3-vb · b3/board.css:3218 |
+| animation | `8.2s linear 0s infinite normal none running b3vb02` | `` | style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b3-vb::after · b3/board.css:3221 |
+| padding | `1px` | .b3-vb::after · b3/board.css:3221 |
+| padding-top | `1px` | .b3-vb::after · b3/board.css:3221 |
+| padding-right | `1px` | .b3-vb::after · b3/board.css:3221 |
+| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3221 |
+| padding-left | `1px` | .b3-vb::after · b3/board.css:3221 |
+| inset | `0` | .b3-vb::after · b3/board.css:3221 |
+| top | `0px` | .b3-vb::after · b3/board.css:3221 |
+| right | `0px` | .b3-vb::after · b3/board.css:3221 |
+| bottom | `0px` | .b3-vb::after · b3/board.css:3221 |
+| left | `0px` | .b3-vb::after · b3/board.css:3221 |
+| border-radius | `inherit` | .b3-vb::after · b3/board.css:3221 |
+| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3221 |
+| background-color | `` | .b3-vb::after · b3/board.css:3221 |
+| background-image | `` | .b3-vb::after · b3/board.css:3221 |
+| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3221 |
+| content | `""` | .b3-vb::after · b3/board.css:3221 |
+
+
 ### `button.b3-fchip`
 
 inside `.wg-fwrap` · 4 on screen · **1 look**
@@ -2929,32 +3046,32 @@ inside `.wg-fwrap` · 4 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| display | `grid` | `grid` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
 | position | `relative` | `relative` | .b3-fchip · b3/board.css:568 |
 | gap | `5px` | `` | .b3-fx-sm .b3-fchip · b3/board.css:959 |
 | column-gap | `5px` | `5px` | .b3-fx-sm .b3-fchip · b3/board.css:959 |
 | row-gap | `5px` | `5px` | .b3-fx-sm .b3-fchip · b3/board.css:959 |
-| align-items | `center` | `center` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| place-items | `center` | `` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| width | `22px` | `22px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| height | `22px` | `22px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| align-items | `center` | `center` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| place-items | `center` | `` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| width | `22px` | `22px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| height | `22px` | `22px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0` | `` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| padding-top | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| padding-right | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| padding-bottom | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| padding-left | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| margin | `0 -3.5px` | `` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| margin-top | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| margin-right | `-3.5px` | `-3.5px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| margin-bottom | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| margin-left | `-3.5px` | `-3.5px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| border | `0` | `` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| padding | `0` | `` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| padding-top | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| padding-right | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| padding-bottom | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| padding-left | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| margin | `0 -3.5px` | `` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| margin-top | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| margin-right | `-3.5px` | `-3.5px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| margin-bottom | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| margin-left | `-3.5px` | `-3.5px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| border | `0` | `` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
 | border-radius | `var(--rad-box)` | `` | .b3-fchip · b3/board.css:568 |
-| background | `none` | `` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| background-image | `none` | `none` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| background | `none` | `` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| background-image | `none` | `none` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
 | box-shadow | `none` | `none` | .b3-sd-rows :is(.b3-sd-r, .b3-sd-tr) .b3-fx.b3-fx-sm .b3-fchip · b3/board.css:3561 |
 | font | `700 var(--t-xs)/1 var(--data)` | `` | .b3-fx-sm .b3-fchip · b3/board.css:959 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fx-sm .b3-fchip · b3/board.css:959 |
@@ -2978,7 +3095,7 @@ inside `.wg-fwrap` · 4 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| display | `none` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip::before, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3557 |
+| display | `none` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip::before, .b4 #compare .cx-hn .b3-fx-sm .b3-fchip:: · b3/board.css:3557 |
 | position | `absolute` | .b3-fchip::before · b3/board.css:571 |
 | width | `5px` | .b3-fchip::before · b3/board.css:571 |
 | top | `1px` | .b3-fchip::before · b3/board.css:576 |
@@ -2994,7 +3111,7 @@ inside `.wg-fwrap` · 4 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| display | `none` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip::before, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3557 |
+| display | `none` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip::before, .b4 #compare .cx-hn .b3-fx-sm .b3-fchip:: · b3/board.css:3557 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -4813,7 +4930,7 @@ inside `.pill` · 130 on screen · **1 look**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fchip · b3/board.css:568 |
-| color | ↑ `var(--warn)` | `rgb(255, 122, 69)` | inherited · .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| color | ↑ `var(--warn)` | `rgb(255, 122, 69)` | inherited · .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fchip · b3/board.css:568 |
@@ -4854,7 +4971,7 @@ inside `.chip` · 20 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.473078` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.487057` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -4890,7 +5007,7 @@ inside `.chip` · 20 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.000375167` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.00193353` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -4926,7 +5043,7 @@ inside `.chip` · 20 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.870663` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.882814` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -5032,7 +5149,7 @@ inside `.b3-bdg` · 8 on screen · **1 look**
 | text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:625 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:626 |
-| opacity | ⚠️ `0.72` | `0.744432` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0.72` | `0.752577` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
 | animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
@@ -5071,7 +5188,7 @@ inside `.b3-vl` · 6 on screen · **1 look**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.0631043` | .b3-vb · b3/board.css:3218 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.0856961` | .b3-vb · b3/board.css:3218 · **a later rule wins — port the computed value and find that rule** |
 | animation | `8.2s linear 0s infinite normal none running b3vb00` | `` | style attribute |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
@@ -5112,32 +5229,32 @@ inside `.wg-fwrap` · 6 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| display | `grid` | `grid` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
 | position | `relative` | `relative` | .b3-fchip · b3/board.css:568 |
 | gap | `5px` | `` | .b3-fx-sm .b3-fchip · b3/board.css:959 |
 | column-gap | `5px` | `5px` | .b3-fx-sm .b3-fchip · b3/board.css:959 |
 | row-gap | `5px` | `5px` | .b3-fx-sm .b3-fchip · b3/board.css:959 |
-| align-items | `center` | `center` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| place-items | `center` | `` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| width | `22px` | `22px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| height | `22px` | `22px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| align-items | `center` | `center` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| place-items | `center` | `` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| width | `22px` | `22px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| height | `22px` | `22px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0` | `` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| padding-top | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| padding-right | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| padding-bottom | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| padding-left | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| margin | `0 -3.5px` | `` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| margin-top | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| margin-right | `-3.5px` | `-3.5px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| margin-bottom | `0px` | `0px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| margin-left | `-3.5px` | `-3.5px` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| border | `0` | `` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| padding | `0` | `` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| padding-top | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| padding-right | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| padding-bottom | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| padding-left | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| margin | `0 -3.5px` | `` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| margin-top | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| margin-right | `-3.5px` | `-3.5px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| margin-bottom | `0px` | `0px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| margin-left | `-3.5px` | `-3.5px` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| border | `0` | `` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
 | border-radius | `var(--rad-box)` | `` | .b3-fchip · b3/board.css:568 |
-| background | `none` | `` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
-| background-image | `none` | `none` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| background | `none` | `` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| background-image | `none` | `none` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
 | box-shadow | `none` | `none` | .b3-sd-rows :is(.b3-sd-r, .b3-sd-tr) .b3-fx.b3-fx-sm .b3-fchip · b3/board.css:3561 |
 | font | `700 var(--t-xs)/1 var(--data)` | `` | .b3-fx-sm .b3-fchip · b3/board.css:959 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fx-sm .b3-fchip · b3/board.css:959 |
@@ -5149,7 +5266,7 @@ inside `.wg-fwrap` · 6 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .b3-fchip · b3/board.css:568 |
-| color | `var(--warn)` | `rgb(255, 122, 69)` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
+| color | `var(--warn)` | `rgb(255, 122, 69)` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3556 |
 | overflow | `hidden` | `` | .b3-fchip · b3/board.css:568 |
 | overflow-x | `hidden` | `hidden` | .b3-fchip · b3/board.css:568 |
 | overflow-y | `hidden` | `hidden` | .b3-fchip · b3/board.css:568 |
@@ -5161,7 +5278,7 @@ inside `.wg-fwrap` · 6 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| display | `none` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip::before, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3557 |
+| display | `none` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip::before, .b4 #compare .cx-hn .b3-fx-sm .b3-fchip:: · b3/board.css:3557 |
 | position | `absolute` | .b3-fchip::before · b3/board.css:571 |
 | width | `5px` | .b3-fchip::before · b3/board.css:571 |
 | top | `1px` | .b3-fchip::before · b3/board.css:576 |
@@ -5177,7 +5294,7 @@ inside `.wg-fwrap` · 6 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| display | `none` | .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip::before, .b3-sd-rows .b3-sd-r .b3-fx-sm .b3-fchip · b3/board.css:3557 |
+| display | `none` | .b4 #compare .cx-hn .b3-fx-sm .b3-fchip::before, .b4 #compare .cx-hn .b3-fx-sm .b3-fchip:: · b3/board.css:3557 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -5720,7 +5837,7 @@ inside `.chip` · 28 on screen · **7 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.0255428` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.0478487` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -5756,7 +5873,7 @@ inside `.chip` · 28 on screen · **7 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.842434` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.828241` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -5792,7 +5909,7 @@ inside `.chip` · 28 on screen · **7 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.440044` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.435514` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -6845,7 +6962,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.848958` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.842498` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -6881,7 +6998,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.443694` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.440074` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -6917,7 +7034,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.215796` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.24571` | .b3-ass > i · b4/classes.css:381 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
@@ -6951,7 +7068,7 @@ inside `.b3-bdg` · 8 on screen · **1 look**
 | text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:625 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:626 |
-| opacity | ⚠️ `0.72` | `0.985891` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0.72` | `0.989751` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
 | animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
@@ -10196,7 +10313,7 @@ inside `.f-prevsc` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds2-659` · rendered **333×382** · 1 instance look like this
+`new-builds2-659` · rendered **333×379** · 1 instance look like this
 
 ```html
 <div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">BAL-27</h6><div class="lc-badges"><span data-k="meta">META</span><span data-k="best">BEST AR</span></div><div class="lc-modes"><b>Recommended Rank Mode:</b><span data-m="HP">⟨svg.ic⟩HP</span><i aria-hidden="true">|</i><span data-m="S&amp;D">⟨svg.ic⟩S&amp;D</span></div><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="
@@ -10232,7 +10349,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds2-663` · rendered **303×22** · 1 instance look like this
+`new-builds2-663` · rendered **303×19** · 1 instance look like this
 
 ```html
 <div class="lc-modes"><b>Recommended Rank Mode:</b><span data-m="HP">⟨svg.ic⟩HP</span><i aria-hidden="true">|</i><span data-m="S&amp;D">⟨svg.ic⟩S&amp;D</span></div>
@@ -11945,7 +12062,7 @@ inside `.bk-body` · 3 on screen · **2 looks**
 `new-builds3-74` · rendered **175×22** · 2 instances look like this
 
 ```html
-<div class="bk-run b3-fadx" data-rows="2" style="--fl: 0px; --fr: 0px;"><span class="b3-bdgs in" style="--ph: 0.412;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt" data-volt-on="1"><img alt="" aria-hidden="true" src="blob:http://127.0.0.1:8900/e666b740-c62e-4023-9e21-e4858326919b"></span><span class="b3-vl" aria-hidden="true"><span class="b3-vrest"><span style="animation: 9.91s linear 0s
+<div class="bk-run b3-fadx" data-rows="2" style="--fl: 0px; --fr: 0px;"><span class="b3-bdgs in" style="--ph: 0.412;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt" data-volt-on="1"><img alt="" aria-hidden="true" src="blob:http://127.0.0.1:8900/cf5e0d21-631f-4881-914f-7da0ae7bb924"></span><span class="b3-vl" aria-hidden="true"><span class="b3-vrest"><span style="animation: 9.91s linear 0s
 ```
 
 | property | winning declaration | computed | from |
@@ -12132,7 +12249,7 @@ inside `.bk-run` · 2 on screen · **1 look**
 `new-builds3-75` · rendered **175×22** · 2 instances look like this
 
 ```html
-<span class="b3-bdgs in" style="--ph: 0.412;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt" data-volt-on="1"><img alt="" aria-hidden="true" src="blob:http://127.0.0.1:8900/e666b740-c62e-4023-9e21-e4858326919b"></span><span class="b3-vl" aria-hidden="true"><span class="b3-vrest"><span style="animation: 9.91s linear 0s infinite normal none running b3vr1;"></span></span><span class="b3-vb" 
+<span class="b3-bdgs in" style="--ph: 0.412;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt" data-volt-on="1"><img alt="" aria-hidden="true" src="blob:http://127.0.0.1:8900/cf5e0d21-631f-4881-914f-7da0ae7bb924"></span><span class="b3-vl" aria-hidden="true"><span class="b3-vrest"><span style="animation: 9.91s linear 0s infinite normal none running b3vr1;"></span></span><span class="b3-vb" 
 ```
 
 | property | winning declaration | computed | from |
@@ -15387,7 +15504,7 @@ inside `.bk-card` · 2 on screen · **1 look**
 
 ### new-build · Bulk · can’t read
 
-74 distinct signatures on screen; 12 not already specced above.
+74 distinct signatures on screen; 11 not already specced above.
 
 
 ### `aside.drawer.open.wide[role=dialog]`
@@ -15928,67 +16045,6 @@ inside `.bk-card` · 2 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
-
-
-### `span.b3-vb`
-
-inside `.b3-vl` · 3 on screen · **1 look**
-
-#### the one look
-
-`new-builds8-122` · rendered **58×22** · 1 instance look like this
-
-```html
-<span class="b3-vb" style="--pk: 0.3; --ha: 37.6%; --sx: 32.0%; --sy: 60.9%; animation: 9.91s linear 0s infinite normal none running b3vb10;"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3218 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vb · b3/board.css:3218 |
-| top | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
-| right | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
-| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
-| left | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
-| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3218 |
-| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.6304) 0px 0px 27.2px -4.5px` | .b3-vb · b3/board.css:3218 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | `0` | `0` | .b3-vb · b3/board.css:3218 |
-| animation | `9.91s linear 0s infinite normal none running b3vb10` | `` | style attribute |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-vb::after · b3/board.css:3221 |
-| padding | `1px` | .b3-vb::after · b3/board.css:3221 |
-| padding-top | `1px` | .b3-vb::after · b3/board.css:3221 |
-| padding-right | `1px` | .b3-vb::after · b3/board.css:3221 |
-| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3221 |
-| padding-left | `1px` | .b3-vb::after · b3/board.css:3221 |
-| inset | `0` | .b3-vb::after · b3/board.css:3221 |
-| top | `0px` | .b3-vb::after · b3/board.css:3221 |
-| right | `0px` | .b3-vb::after · b3/board.css:3221 |
-| bottom | `0px` | .b3-vb::after · b3/board.css:3221 |
-| left | `0px` | .b3-vb::after · b3/board.css:3221 |
-| border-radius | `inherit` | .b3-vb::after · b3/board.css:3221 |
-| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3221 |
-| background-color | `` | .b3-vb::after · b3/board.css:3221 |
-| background-image | `` | .b3-vb::after · b3/board.css:3221 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3221 |
-| content | `""` | .b3-vb::after · b3/board.css:3221 |
 
 
 ### `p.bk-msg`
@@ -16601,7 +16657,7 @@ inside `.lc-att` · 10 on screen · **1 look**
 
 ### new-build · Edit 3 builds
 
-75 distinct signatures on screen; 10 not already specced above.
+75 distinct signatures on screen; 9 not already specced above.
 
 
 ### `div.pb-edchips`
@@ -17059,70 +17115,9 @@ inside `.bk-run` · 3 on screen · **1 look**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
 
 
-### `span.b3-vb`
-
-inside `.b3-vl` · 3 on screen · **1 look**
-
-#### the one look
-
-`new-builds12-204` · rendered **58×22** · 1 instance look like this
-
-```html
-<span class="b3-vb" style="--pk: 0.3; --ha: 37.6%; --sx: 32.0%; --sy: 60.9%; animation: 9.91s linear 0s infinite normal none running b3vb10;"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3218 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vb · b3/board.css:3218 |
-| top | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
-| right | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
-| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
-| left | `0px` | `0px` | .b3-vb · b3/board.css:3218 |
-| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3218 |
-| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.6304) 0px 0px 27.2px -4.5px` | .b3-vb · b3/board.css:3218 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | `0` | `0` | .b3-vb · b3/board.css:3218 |
-| animation | `9.91s linear 0s infinite normal none running b3vb10` | `` | style attribute |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-vb::after · b3/board.css:3221 |
-| padding | `1px` | .b3-vb::after · b3/board.css:3221 |
-| padding-top | `1px` | .b3-vb::after · b3/board.css:3221 |
-| padding-right | `1px` | .b3-vb::after · b3/board.css:3221 |
-| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3221 |
-| padding-left | `1px` | .b3-vb::after · b3/board.css:3221 |
-| inset | `0` | .b3-vb::after · b3/board.css:3221 |
-| top | `0px` | .b3-vb::after · b3/board.css:3221 |
-| right | `0px` | .b3-vb::after · b3/board.css:3221 |
-| bottom | `0px` | .b3-vb::after · b3/board.css:3221 |
-| left | `0px` | .b3-vb::after · b3/board.css:3221 |
-| border-radius | `inherit` | .b3-vb::after · b3/board.css:3221 |
-| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3221 |
-| background-color | `` | .b3-vb::after · b3/board.css:3221 |
-| background-image | `` | .b3-vb::after · b3/board.css:3221 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3221 |
-| content | `""` | .b3-vb::after · b3/board.css:3221 |
-
-
 ### compare · Two weapons
 
-105 distinct signatures on screen; 25 not already specced above.
+111 distinct signatures on screen; 27 not already specced above.
 
 
 ### `section.pb-panel`
@@ -17131,7 +17126,7 @@ inside `.b1` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares1-1` · rendered **1148×1128** · 1 instance look like this
+`compares1-1` · rendered **1148×1130** · 1 instance look like this
 
 ```html
 <section class="pb-panel"><div id="compare" class="cx" data-f="a" data-st="table"><div class="cx-top"><div class="cx-pick"><div class="f-pick"><div class="f-fld"><span class="f-pre f-ic">⟨svg.ic⟩</span><input data-bare="true" id="cx-q" class="f-in" placeholder="Add weapons" role="combobox" aria-expanded="false" aria-controls="cx-q-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="
@@ -17176,7 +17171,7 @@ inside `.pb-panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares1-2` · rendered **1116×1096** · 1 instance look like this
+`compares1-2` · rendered **1116×1098** · 1 instance look like this
 
 ```html
 <div id="compare" class="cx" data-f="a" data-st="table"><div class="cx-top"><div class="cx-pick"><div class="f-pick"><div class="f-fld"><span class="f-pre f-ic">⟨svg.ic⟩</span><input data-bare="true" id="cx-q" class="f-in" placeholder="Add weapons" role="combobox" aria-expanded="false" aria-controls="cx-q-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="true"><button type="button
@@ -17198,24 +17193,127 @@ inside `.pb-panel` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `svg.ic`
+### `span.cx-seats.full`
 
-inside `.f-pre` · 49 on screen · **1 look**
+inside `.cx-top` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares1-41` · rendered **0×0** · 2 instances look like this · aria-hidden="true"
+`compares1-12` · rendered **212×42** · 1 instance look like this
 
 ```html
-<svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg>
+<span class="cx-seats full" aria-live="polite" data-tip="At most 6 builds sit side by side"><span class="cx-sts" aria-hidden="true"><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i></span><span class="cx-stt"><b>6</b>of 6 builds<
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| gap | `12px` | `` | .b4 #compare .cx-top .cx-seats · b4/compare.css:432 |
+| column-gap | `12px` | `12px` | .b4 #compare .cx-top .cx-seats · b4/compare.css:432 |
+| row-gap | `12px` | `12px` | .b4 #compare .cx-top .cx-seats · b4/compare.css:432 |
+| align-items | `center` | `center` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| height | `42px` | `42px` | .b4 #compare .cx-top .cx-seats · b4/compare.css:432 |
+| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| padding | `0 15px 0 14px` | `` | .b4 #compare .cx-top .cx-seats · b4/compare.css:432 |
+| padding-top | `0px` | `0px` | .b4 #compare .cx-top .cx-seats · b4/compare.css:432 |
+| padding-right | `15px` | `15px` | .b4 #compare .cx-top .cx-seats · b4/compare.css:432 |
+| padding-bottom | `0px` | `0px` | .b4 #compare .cx-top .cx-seats · b4/compare.css:432 |
+| padding-left | `14px` | `14px` | .b4 #compare .cx-top .cx-seats · b4/compare.css:432 |
+| border-radius | `9px` | `` | .b4 #compare .cx-top .cx-seats · b4/compare.css:432 |
+| background | `color-mix(in srgb,#04070A 42%,var(--sunk))` | `` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| background-color | `` | `color(srgb 0.0316078 0.0456471 0.0574118)` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| background-image | `` | `none` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 11%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.11) 0px 0px 0px 1px inset` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| font | `500 12px/1 var(--data)` | `` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-size | `` | `12px` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-weight | `` | `500` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-style | `` | `normal` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-variant-numeric | `` | `normal` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| line-height | `` | `12px` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| white-space | `nowrap` | `` | .b4 #compare .cx-seats · b4/compare.css:265 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 #compare .cx-seats · b4/compare.css:265 |
+
+
+### `span.cx-stt`
+
+inside `.cx-seats` · 1 on screen · **1 look**
+
+#### the one look
+
+`compares1-20` · rendered **91×12** · 1 instance look like this
+
+```html
+<span class="cx-stt"><b>6</b>of 6 builds</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `500 12px/1 var(--data)` | `` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-size | ↑ `` | `12px` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-weight | ↑ `` | `500` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-style | ↑ `` | `normal` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| line-height | ↑ `` | `12px` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| white-space | ↑ `nowrap` | `` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b4 #compare .cx-seats.full .cx-stt · b4/compare.css:271 |
+
+
+### `b`
+
+inside `.cx-stt` · 38 on screen · **1 look**
+
+#### the one look
+
+`compares1-50` · rendered **8×13** · 2 instances look like this · text “4”
+
+```html
+<b>4</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-size | ↑ `` | `13px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-weight | `bolder` | `900` | strong, b · user-agent:? |
+| font-style | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| line-height | ↑ `` | `13px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | ↑ `var(--ink4)` | `rgb(92, 106, 117)` | inherited · .b4 .cx-k.cx-kfull, .b4 .cx-k.cx-kfull:hover · b4/compare.css:154 |
+| cursor | ↑ `not-allowed` | `not-allowed` | inherited · .b4 .cx-k.cx-kfull, .b4 .cx-k.cx-kfull:hover · b4/compare.css:154 |
+
+
+### `svg.cx-kg.ic`
+
+inside `.cx-kb` · 8 on screen · **1 look**
+
+#### the one look
+
+`compares1-51` · rendered **0×0** · 2 instances look like this · aria-hidden="true"
+
+```html
+<svg class="ic cx-kg" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 8h7M8 4.5v7"></path></svg>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-block` | `inline-block` | .ic · app.css:6457 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `11px` | `11px` | .b4 #compare .cx-kb .ic · b4/compare.css:237 |
-| height | `11px` | `11px` | .b4 #compare .cx-kb .ic · b4/compare.css:237 |
+| width | `10px` | `10px` | .b4 #compare .cx-kb .cx-kg · b4/compare.css:446 |
+| height | `10px` | `10px` | .b4 #compare .cx-kb .cx-kg · b4/compare.css:446 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
@@ -17234,46 +17332,16 @@ inside `.f-pre` · 49 on screen · **1 look**
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
 
-### `b`
-
-inside `.cx-wn` · 38 on screen · **1 look**
-
-#### the one look
-
-`compares1-40` · rendered **8×13** · 2 instances look like this · text “4”
-
-```html
-<b>4</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| font-size | ↑ `` | `13px` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| font-weight | `bolder` | `900` | strong, b · user-agent:? |
-| font-style | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| line-height | ↑ `` | `13px` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink4)` | `rgb(92, 106, 117)` | inherited · .b4 .cx-k.cx-kfull, .b4 .cx-k.cx-kfull:hover · b4/compare.css:154 |
-| cursor | ↑ `not-allowed` | `not-allowed` | inherited · .b4 .cx-k.cx-kfull, .b4 .cx-k.cx-kfull:hover · b4/compare.css:154 |
-
-
 ### `button.cx-k.cx-kfull`
 
 inside `.cx-keys` · 2 on screen · **1 look**
 
 #### the one look
 
-`compares1-39` · rendered **34×34** · 2 instances look like this · aria-label="Build 4: The table holds 6 builds. Take " aria-pressed="false" type="button"
+`compares1-49` · rendered **34×34** · 2 instances look like this · aria-label="Build 4: The table holds 6 builds. Take " aria-pressed="false" type="button"
 
 ```html
-<button type="button" class="cx-k cx-kfull" aria-pressed="false" data-tip="The table holds 6 builds. Take one out first." aria-label="Build 4: The table holds 6 builds. Take one out first."><b>4</b><i class="cx-kb" aria-hidden="true">⟨svg.ic⟩</i></button>
+<button type="button" class="cx-k cx-kfull" aria-pressed="false" data-tip="The table holds 6 builds. Take one out first." aria-label="Build 4: The table holds 6 builds. Take one out first."><b>4</b><i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i></button>
 ```
 
 | property | winning declaration | computed | from |
@@ -17348,26 +17416,28 @@ inside `.cx` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares1-65` · rendered **1116×100** · 1 instance look like this
+`compares1-75` · rendered **1116×102** · 1 instance look like this
 
 ```html
-<div class="cx-band"><span class="cx-seats full" aria-live="polite" data-tip="At most 6 builds sit side by side"><span class="cx-sts" aria-hidden="true"><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i></span><span class="cx-stt"
+<div class="cx-band"><span class="cx-bn">Same on all 6</span><div class="cx-bv cx-same b3-fadx" data-rows="2" style="--fl: 0px; --fr: 0px;"><div class="cx-bvl"><span class="cx-sv wg-at" data-slot="Category" style="--sl: #ff3b5c;">Assault rifle</span></div></div><span class="cx-bn">Shared</span><div class="cx-bv cx-same b3-fadx" data-rows="2" style="--fl: 0px; --fr: 0px;"><div class="cx-bvl"><span class="wg-at cx-shc"
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b4 #compare .cx-band · b4/compare.css:264 |
+| display | `grid` | `grid` | .b4 #compare .cx-band · b4/compare.css:461 |
+| grid-template-columns | `96px minmax(0px, 1fr)` | `96px 1014px` | .b4 #compare .cx-band · b4/compare.css:461 |
 | gap | `8px 16px` | `` | .b4 #compare .cx-band · b4/compare.css:264 |
-| column-gap | `16px` | `16px` | .b4 #compare .cx-band · b4/compare.css:264 |
-| row-gap | `8px` | `8px` | .b4 #compare .cx-band · b4/compare.css:264 |
+| column-gap | `6px` | `6px` | .b4 #compare .cx-band · b4/compare.css:461 |
+| row-gap | `10px` | `10px` | .b4 #compare .cx-band · b4/compare.css:461 |
 | flex-wrap | `wrap` | `wrap` | .b4 #compare .cx-band · b4/compare.css:264 |
-| align-items | `center` | `center` | .b4 #compare .cx-band · b4/compare.css:264 |
+| align-items | `start` | `start` | .b4 #compare .cx-band · b4/compare.css:461 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0 0 16px` | `` | .b4 #compare .cx-band · b4/compare.css:264 |
-| margin-top | `0px` | `0px` | .b4 #compare .cx-band · b4/compare.css:264 |
-| margin-right | `0px` | `0px` | .b4 #compare .cx-band · b4/compare.css:264 |
-| margin-bottom | `16px` | `16px` | .b4 #compare .cx-band · b4/compare.css:264 |
-| margin-left | `0px` | `0px` | .b4 #compare .cx-band · b4/compare.css:264 |
+| padding-left | `0px` | `0px` | .b4 #compare .cx-band · b4/compare.css:461 |
+| margin | `0 0 16px` | `` | .b4 #compare .cx-band · b4/compare.css:461 |
+| margin-top | `0px` | `0px` | .b4 #compare .cx-band · b4/compare.css:461 |
+| margin-right | `0px` | `0px` | .b4 #compare .cx-band · b4/compare.css:461 |
+| margin-bottom | `16px` | `16px` | .b4 #compare .cx-band · b4/compare.css:461 |
+| margin-left | `0px` | `0px` | .b4 #compare .cx-band · b4/compare.css:461 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -17376,86 +17446,85 @@ inside `.cx` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `span.cx-seats.full`
+### `div.b3-fadx.cx-bv.cx-same`
 
-inside `.cx-band` · 1 on screen · **1 look**
+inside `.cx-band` · 2 on screen · **1 look**
 
 #### the one look
 
-`compares1-66` · rendered **191×30** · 1 instance look like this
+`compares1-81` · rendered **1014×64** · 1 instance look like this
 
 ```html
-<span class="cx-seats full" aria-live="polite" data-tip="At most 6 builds sit side by side"><span class="cx-sts" aria-hidden="true"><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i><i class="on" style="--c: #ff3b5c;"></i></span><span class="cx-stt"><b>6</b>of 6 builds<
+<div class="cx-bv cx-same b3-fadx" data-rows="2" style="--fl: 0px; --fr: 0px;"><div class="cx-bvl"><span class="wg-at cx-shc" data-slot="Muzzle" aria-label="Muzzle: Agency Suppressor, shared by FFAR 1 builds 2, 3" style="--sl: var(--sl-muzzle, var(--sl-unknown)); --c: #ff3b5c;">Agency Suppressor<span class="cx-shb" aria-hidden="true"><i>2</i><i>3</i></span></span><span class="wg-at cx-shc" data-slot="Barrel" aria-lab
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| gap | `10px` | `` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| column-gap | `10px` | `10px` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| row-gap | `10px` | `10px` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| align-items | `center` | `center` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| height | `30px` | `30px` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| padding | `0 11px 0 10px` | `` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| padding-top | `0px` | `0px` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| padding-right | `11px` | `11px` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| padding-bottom | `0px` | `0px` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| padding-left | `10px` | `10px` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| border-radius | `8px` | `` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| background | `color-mix(in srgb,#04070A 42%,var(--sunk))` | `` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| background-color | `` | `color(srgb 0.0316078 0.0456471 0.0574118)` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| background-image | `` | `none` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 11%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.11) 0px 0px 0px 1px inset` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| font | `500 12px/1 var(--data)` | `` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-size | `` | `12px` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-weight | `` | `500` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-style | `` | `normal` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-variant-numeric | `` | `normal` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| line-height | `` | `12px` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| white-space | `nowrap` | `` | .b4 #compare .cx-seats · b4/compare.css:265 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 #compare .cx-seats · b4/compare.css:265 |
-
-
-### `span.cx-stt`
-
-inside `.cx-seats` · 1 on screen · **1 look**
-
-#### the one look
-
-`compares1-74` · rendered **91×12** · 1 instance look like this
-
-```html
-<span class="cx-stt"><b>6</b>of 6 builds</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
+| display | `flex` | `flex` | .b4 .cx-same · b4/compare.css:73 |
+| grid-column | `2` | `` | .b4 #compare .cx-band > .cx-bv · b4/compare.css:463 |
+| gap | `6px` | `` | .b4 .cx-same · b4/compare.css:73 |
+| column-gap | `6px` | `6px` | .b4 .cx-same · b4/compare.css:73 |
+| row-gap | `6px` | `6px` | .b4 .cx-same · b4/compare.css:73 |
+| flex-wrap | `wrap` | `wrap` | .b4 .cx-same · b4/compare.css:73 |
+| align-items | `center` | `center` | .b4 .cx-same · b4/compare.css:73 |
+| min-width | `0px` | `0px` | .b4 #compare .cx-band > .cx-bv · b4/compare.css:463 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `500 12px/1 var(--data)` | `` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-size | ↑ `` | `12px` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-weight | ↑ `` | `500` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-style | ↑ `` | `normal` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| line-height | ↑ `` | `12px` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| white-space | ↑ `nowrap` | `` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b4 #compare .cx-seats.full .cx-stt · b4/compare.css:271 |
+| padding | `0` | `` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| padding-top | `0px` | `0px` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| padding-right | `0px` | `0px` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| padding-bottom | `0px` | `0px` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| padding-left | `0px` | `0px` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| margin | `0` | `` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| margin-top | `0px` | `0px` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| margin-right | `0px` | `0px` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| margin-bottom | `0px` | `0px` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| margin-left | `0px` | `0px` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| box-shadow | `none` | `none` | .b4 #compare .cx-band .cx-same · b4/compare.css:464 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| mask-image | `linear-gradient(to right,rgb(0 0 0/0) 0,rgb(0 0 0/.3) calc(var(--fl,0px)*.45),rgb(0 0 0/.78) calc(var(--fl,0px)*.8),#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),rgb(0 0 0/.78) calc(100% - var(--fr,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fr,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(to right, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 100%, rgba(0, 0, 0, 0.78) 100%, rgba(0, 0, 0, 0.3) 100%, rgba(0, 0, 0, 0) 100%)` | :is(.b3-sd-atts, .b3-fadx) · b3/board.css:2781 |
+| animation | `none!important !important` | `` | :is(.b3-sd-atts, .b3-fadx) · b3/board.css:2781 |
+
+
+### `div.cx-bvl`
+
+inside `.cx-bv` · 2 on screen · **1 look**
+
+#### the one look
+
+`compares1-82` · rendered **1014×64** · 1 instance look like this
+
+```html
+<div class="cx-bvl"><span class="wg-at cx-shc" data-slot="Muzzle" aria-label="Muzzle: Agency Suppressor, shared by FFAR 1 builds 2, 3" style="--sl: var(--sl-muzzle, var(--sl-unknown)); --c: #ff3b5c;">Agency Suppressor<span class="cx-shb" aria-hidden="true"><i>2</i><i>3</i></span></span><span class="wg-at cx-shc" data-slot="Barrel" aria-label="Barrel: Crown-H3 Barrel, shared by BAL-27 builds 1, 2, 3" style="--sl: var(
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b4 #compare .cx-bvl · b4/compare.css:465 |
+| gap | `8px` | `` | .b4 #compare .cx-bvl · b4/compare.css:465 |
+| column-gap | `8px` | `8px` | .b4 #compare .cx-bvl · b4/compare.css:465 |
+| row-gap | `8px` | `8px` | .b4 #compare .cx-bvl · b4/compare.css:465 |
+| flex-wrap | `wrap` | `wrap` | .b4 #compare .cx-bvl · b4/compare.css:465 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
 ### `span.cx-sv.wg-at`
 
-inside `.cx-same` · 1 on screen · **1 look**
+inside `.cx-bvl` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares1-78` · rendered **157×28** · 1 instance look like this · text “Assault rifle”
+`compares1-79` · rendered **157×28** · 1 instance look like this · text “Assault rifle”
 
 ```html
 <span class="cx-sv wg-at" data-slot="Category" style="--sl: #ff3b5c;">Assault rifle</span>
@@ -17467,6 +17536,7 @@ inside `.cx-same` · 1 on screen · **1 look**
 | gap | `8px` | `` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:287 |
 | column-gap | `8px` | `8px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:287 |
 | row-gap | `8px` | `8px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:287 |
+| flex | `none` | `` | .b4 #compare .cx-bvl > .wg-at · b4/compare.css:466 |
 | align-items | `center` | `center` | .b4 .cx-sv · b4/compare.css:75 |
 | min-width | `0px` | `0px` | .wg-at · app.css:1176 |
 | height | `28px` | `28px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:287 |
@@ -17488,11 +17558,12 @@ inside `.cx-same` · 1 on screen · **1 look**
 | font-style | `` | `normal` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:287 |
 | font-variant-numeric | `` | `normal` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:287 |
 | line-height | `` | `12px` | .b4 .cx-same .cx-sv.wg-at · b4/classes.css:287 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | white-space | `nowrap` | `` | .wg-at · app.css:1176 |
 | color | `var(--atink)` | `rgb(232, 237, 241)` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
 | transition | `box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` | `` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| cursor | `default` | `default` | .b4 #compare .cx-bvl > .wg-at · b4/compare.css:466 |
 
 **::before**
 
@@ -17524,138 +17595,216 @@ inside `.cx-same` · 1 on screen · **1 look**
 | content | `attr(data-slot) var(--lab-sep,":")` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
 
 
-### `div.cx-same.cx-shr`
+### `span.cx-shc.wg-at`
 
-inside `.cx-band` · 1 on screen · **1 look**
+inside `.cx-bvl` · 7 on screen · **3 looks**
 
-#### the one look
+#### look 1 of 3
 
-`compares1-79` · rendered **1116×62** · 1 instance look like this
+`compares1-83` · rendered **220×28** · 1 instance look like this · aria-label="Muzzle: Agency Suppressor, shared by FFA"
 
 ```html
-<div class="cx-same cx-shr"><span>Shared</span><span class="cx-sh" aria-label="Muzzle: Agency Suppressor, shared by FFAR 1 builds 2, 3" style="--sl: var(--sl-muzzle, var(--sl-unknown)); --c: #ff3b5c;"><em>Muzzle</em><span class="cx-shv">Agency Suppressor</span><span class="cx-shb"><i>2</i><i>3</i></span></span><span class="cx-sh" aria-label="Barrel: Crown-H3 Barrel, shared by BAL-27 builds 1, 2, 3" style="--sl: var(-
+<span class="wg-at cx-shc" data-slot="Muzzle" aria-label="Muzzle: Agency Suppressor, shared by FFAR 1 builds 2, 3" style="--sl: var(--sl-muzzle, var(--sl-unknown)); --c: #ff3b5c;">Agency Suppressor<span class="cx-shb" aria-hidden="true"><i>2</i><i>3</i></span></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b4 .cx-same · b4/compare.css:73 |
-| gap | `6px` | `` | .b4 .cx-same · b4/compare.css:73 |
-| column-gap | `6px` | `6px` | .b4 .cx-same · b4/compare.css:73 |
-| row-gap | `6px` | `6px` | .b4 .cx-same · b4/compare.css:73 |
-| flex-wrap | `wrap` | `wrap` | .b4 .cx-same · b4/compare.css:73 |
-| align-items | `center` | `center` | .b4 .cx-same · b4/compare.css:73 |
+| display | `inline-flex` | `flex` | .wg-at · app.css:1176 |
+| flex | `none` | `` | .b4 #compare .cx-bvl > .wg-at · b4/compare.css:466 |
+| align-items | `center` | `center` | .wg-at · app.css:1176 |
+| min-width | `0px` | `0px` | .wg-at · app.css:1176 |
+| height | `28px` | `28px` | .wg-at · app.css:1176 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding-left | `16px` | `16px` | .b4 #compare .cx-band .cx-shr · b4/compare.css:390 |
-| margin | `0` | `` | .b4 #compare .cx-band .cx-shr · b4/compare.css:390 |
-| margin-top | `0px` | `0px` | .b4 #compare .cx-band .cx-shr · b4/compare.css:390 |
-| margin-right | `0px` | `0px` | .b4 #compare .cx-band .cx-shr · b4/compare.css:390 |
-| margin-bottom | `0px` | `0px` | .b4 #compare .cx-band .cx-shr · b4/compare.css:390 |
-| margin-left | `0px` | `0px` | .b4 #compare .cx-band .cx-shr · b4/compare.css:390 |
-| box-shadow | `inset 1px 0 0 color-mix(in srgb,var(--ink) 12%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.12) 1px 0px 0px 0px inset` | .b4 #compare .cx-band .cx-shr · b4/compare.css:390 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| padding | `0 10px` | `` | .wg-at · app.css:1176 |
+| padding-top | `0px` | `0px` | .wg-at · app.css:1176 |
+| padding-right | `10px` | `10px` | .wg-at · app.css:1176 |
+| padding-bottom | `0px` | `0px` | .wg-at · app.css:1176 |
+| padding-left | `10px` | `10px` | .wg-at · app.css:1176 |
+| border-radius | `5px` | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at, html[data-b3-p2lab]:not([data-b3-p2 · b3/board.css:526 |
+| background | `var(--atbg)` | `` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| background-color | `` | `color(srgb 0.0951373 0.111059 0.123059)` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| background-image | `` | `none` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| box-shadow | `inset 0 0 0 1px var(--atring),var(--atlit,0 0 #0000)` | `color(srgb 1 0.439216 0.341176 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| font | `500 var(--t-sm)/1 var(--ui)` | `` | .wg-at · app.css:1176 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-at · app.css:1176 |
+| font-size | `` | `12px` | .wg-at · app.css:1176 |
+| font-weight | `var(--atw,500)` | `500` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| font-style | `` | `normal` | .wg-at · app.css:1176 |
+| font-variant-numeric | `` | `normal` | .wg-at · app.css:1176 |
+| line-height | `` | `12px` | .wg-at · app.css:1176 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| white-space | `nowrap` | `` | .wg-at · app.css:1176 |
+| color | `var(--atink)` | `rgb(232, 237, 241)` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| transition | `box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` | `` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| cursor | `default` | `default` | .b4 #compare .cx-bvl > .wg-at · b4/compare.css:466 |
 
+**::before**
 
-### `em`
+| property | winning declaration | from |
+|---|---|---|
+| display | `inline-flex` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| flex | `none` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| align-items | `center` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| align-self | `stretch` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding | `var(--lab-pad,0)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-top | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-right | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-bottom | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-left | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| margin-right | `var(--lab-gap,.42ch)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| margin-left | `var(--lab-ml,0)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| border-right | `var(--lab-div,0 solid transparent)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| border-radius | `var(--lab-rad,0)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| background | `var(--lab-bg,transparent)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| background-color | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| background-image | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| box-shadow | `var(--lab-ring,0 0 #0000)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| font-family | `var(--lab-fam,inherit)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| font-size | `var(--lab-size,inherit)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| font-weight | `var(--lab-w,700)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| letter-spacing | `var(--lab-tr,inherit)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| text-transform | `var(--lab-tt,none)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| color | `var(--lab-ink,var(--sl))` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| content | `attr(data-slot) var(--lab-sep,":")` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
 
-inside `.cx-sh` · 40 on screen · **4 looks**
+#### look 2 of 3
 
-#### look 1 of 4
-
-`compares1-82` · rendered **42×10** · 1 instance look like this · text “Muzzle”
+`compares1-101` · rendered **206×28** · 1 instance look like this · aria-label="Rear Grip: Serpent Wrap, shared by FFAR "
 
 ```html
-<em>Muzzle</em>
+<span class="wg-at cx-shc" data-slot="Rear Grip" aria-label="Rear Grip: Serpent Wrap, shared by FFAR 1 builds 2, 3" style="--sl: var(--sl-rear-grip, var(--sl-unknown)); --c: #ff3b5c;">Serpent Wrap<span class="cx-shb" aria-hidden="true"><i>2</i><i>3</i></span></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | — | `block` | initial |
+| display | `inline-flex` | `flex` | .wg-at · app.css:1176 |
+| flex | `none` | `` | .b4 #compare .cx-bvl > .wg-at · b4/compare.css:466 |
+| align-items | `center` | `center` | .wg-at · app.css:1176 |
+| min-width | `0px` | `0px` | .wg-at · app.css:1176 |
+| height | `28px` | `28px` | .wg-at · app.css:1176 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 9.5px/1 var(--data)` | `` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-size | `` | `9.5px` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-weight | `` | `600` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-style | `normal` | `normal` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| line-height | `` | `9.5px` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| letter-spacing | `0.14em` | `1.33px` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| color | `var(--sl)` | `rgb(255, 112, 87)` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| cursor | ↑ `default` | `default` | inherited · .b4 #compare .cx-sh · b4/compare.css:391 |
+| padding | `0 10px` | `` | .wg-at · app.css:1176 |
+| padding-top | `0px` | `0px` | .wg-at · app.css:1176 |
+| padding-right | `10px` | `10px` | .wg-at · app.css:1176 |
+| padding-bottom | `0px` | `0px` | .wg-at · app.css:1176 |
+| padding-left | `10px` | `10px` | .wg-at · app.css:1176 |
+| border-radius | `5px` | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at, html[data-b3-p2lab]:not([data-b3-p2 · b3/board.css:526 |
+| background | `var(--atbg)` | `` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| background-color | `` | `color(srgb 0.0951373 0.111059 0.123059)` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| background-image | `` | `none` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| box-shadow | `inset 0 0 0 1px var(--atring),var(--atlit,0 0 #0000)` | `color(srgb 0.686275 0.580392 1 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| font | `500 var(--t-sm)/1 var(--ui)` | `` | .wg-at · app.css:1176 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-at · app.css:1176 |
+| font-size | `` | `12px` | .wg-at · app.css:1176 |
+| font-weight | `var(--atw,500)` | `500` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| font-style | `` | `normal` | .wg-at · app.css:1176 |
+| font-variant-numeric | `` | `normal` | .wg-at · app.css:1176 |
+| line-height | `` | `12px` | .wg-at · app.css:1176 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| white-space | `nowrap` | `` | .wg-at · app.css:1176 |
+| color | `var(--atink)` | `rgb(232, 237, 241)` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| transition | `box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` | `` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| cursor | `default` | `default` | .b4 #compare .cx-bvl > .wg-at · b4/compare.css:466 |
 
-#### look 2 of 4
+**::before**
 
-`compares1-108` · rendered **63×10** · 1 instance look like this · text “Rear Grip”
+| property | winning declaration | from |
+|---|---|---|
+| display | `inline-flex` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| flex | `none` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| align-items | `center` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| align-self | `stretch` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding | `var(--lab-pad,0)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-top | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-right | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-bottom | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-left | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| margin-right | `var(--lab-gap,.42ch)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| margin-left | `var(--lab-ml,0)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| border-right | `var(--lab-div,0 solid transparent)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| border-radius | `var(--lab-rad,0)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| background | `var(--lab-bg,transparent)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| background-color | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| background-image | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| box-shadow | `var(--lab-ring,0 0 #0000)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| font-family | `var(--lab-fam,inherit)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| font-size | `var(--lab-size,inherit)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| font-weight | `var(--lab-w,700)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| letter-spacing | `var(--lab-tr,inherit)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| text-transform | `var(--lab-tt,none)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| color | `var(--lab-ink,var(--sl))` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| content | `attr(data-slot) var(--lab-sep,":")` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+
+#### look 3 of 3
+
+`compares1-105` · rendered **245×28** · 2 instances look like this · aria-label="Ammunition: 60 Round Reload, shared by B"
 
 ```html
-<em>Rear Grip</em>
+<span class="wg-at cx-shc" data-slot="Ammunition" aria-label="Ammunition: 60 Round Reload, shared by BAL-27 builds 1, 2, 3" style="--sl: var(--sl-ammunition, var(--sl-unknown)); --c: #ff3b5c;">60 Round Reload<span class="cx-shb" aria-hidden="true"><i>1</i><i>2</i><i>3</i></span></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | — | `block` | initial |
+| display | `inline-flex` | `flex` | .wg-at · app.css:1176 |
+| flex | `none` | `` | .b4 #compare .cx-bvl > .wg-at · b4/compare.css:466 |
+| align-items | `center` | `center` | .wg-at · app.css:1176 |
+| min-width | `0px` | `0px` | .wg-at · app.css:1176 |
+| height | `28px` | `28px` | .wg-at · app.css:1176 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 9.5px/1 var(--data)` | `` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-size | `` | `9.5px` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-weight | `` | `600` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-style | `normal` | `normal` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| line-height | `` | `9.5px` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| letter-spacing | `0.14em` | `1.33px` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| color | `var(--sl)` | `rgb(175, 148, 255)` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| cursor | ↑ `default` | `default` | inherited · .b4 #compare .cx-sh · b4/compare.css:391 |
+| padding | `0 10px` | `` | .wg-at · app.css:1176 |
+| padding-top | `0px` | `0px` | .wg-at · app.css:1176 |
+| padding-right | `10px` | `10px` | .wg-at · app.css:1176 |
+| padding-bottom | `0px` | `0px` | .wg-at · app.css:1176 |
+| padding-left | `10px` | `10px` | .wg-at · app.css:1176 |
+| border-radius | `5px` | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at, html[data-b3-p2lab]:not([data-b3-p2 · b3/board.css:526 |
+| background | `var(--atbg)` | `` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| background-color | `` | `color(srgb 0.0951373 0.111059 0.123059)` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| background-image | `` | `none` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| box-shadow | `inset 0 0 0 1px var(--atring),var(--atlit,0 0 #0000)` | `color(srgb 1 0.164706 0.333333 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| font | `500 var(--t-sm)/1 var(--ui)` | `` | .wg-at · app.css:1176 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-at · app.css:1176 |
+| font-size | `` | `12px` | .wg-at · app.css:1176 |
+| font-weight | `var(--atw,500)` | `500` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| font-style | `` | `normal` | .wg-at · app.css:1176 |
+| font-variant-numeric | `` | `normal` | .wg-at · app.css:1176 |
+| line-height | `` | `12px` | .wg-at · app.css:1176 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| white-space | `nowrap` | `` | .wg-at · app.css:1176 |
+| color | `var(--atink)` | `rgb(232, 237, 241)` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| transition | `box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` | `` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
+| cursor | `default` | `default` | .b4 #compare .cx-bvl > .wg-at · b4/compare.css:466 |
 
-#### look 3 of 4
+**::before**
 
-`compares1-114` · rendered **70×10** · 2 instances look like this · text “Ammunition”
-
-```html
-<em>Ammunition</em>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 9.5px/1 var(--data)` | `` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-size | `` | `9.5px` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-weight | `` | `600` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-style | `normal` | `normal` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| line-height | `` | `9.5px` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| letter-spacing | `0.14em` | `1.33px` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| color | `var(--sl)` | `rgb(255, 42, 85)` | .b4 #compare.cx .cx-sh em · b4/compare.css:393 |
-| cursor | ↑ `default` | `default` | inherited · .b4 #compare .cx-sh · b4/compare.css:391 |
-
-#### look 4 of 4
-
-`compares1-587` · rendered **54×14** · 2 instances look like this · text “Underbarrel”
-
-```html
-<em>Underbarrel</em>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | `var(--t-micro)` | `9.5px` | .lc-att li em · app.css:3540 |
-| font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .lc-att li em · app.css:3540 |
-| line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| color | `var(--sl,var(--dc-dim))` | `rgb(76, 142, 255)` | .b4 .lc-att li em · b4/classes.css:204 |
+| property | winning declaration | from |
+|---|---|---|
+| display | `inline-flex` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| flex | `none` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| align-items | `center` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| align-self | `stretch` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding | `var(--lab-pad,0)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-top | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-right | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-bottom | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| padding-left | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| margin-right | `var(--lab-gap,.42ch)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| margin-left | `var(--lab-ml,0)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| border-right | `var(--lab-div,0 solid transparent)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| border-radius | `var(--lab-rad,0)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| background | `var(--lab-bg,transparent)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| background-color | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| background-image | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| box-shadow | `var(--lab-ring,0 0 #0000)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| font-family | `var(--lab-fam,inherit)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| font-size | `var(--lab-size,inherit)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| font-weight | `var(--lab-w,700)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| letter-spacing | `var(--lab-tr,inherit)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| text-transform | `var(--lab-tt,none)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| color | `var(--lab-ink,var(--sl))` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
+| content | `attr(data-slot) var(--lab-sep,":")` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
 
 
 ### `div.cx-tw`
@@ -17664,7 +17813,7 @@ inside `.cx` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares1-127` · rendered **1128×727** · 1 instance look like this
+`compares1-115` · rendered **1128×727** · 1 instance look like this
 
 ```html
 <div class="cx-tw"><table class="cx-t" data-f="a" style="--n: 6;"><caption class="sr">BAL-27, FFAR 1, slot by slot. A tinted c…</caption><colgroup><col class="cx-c0"><col><col><col><col class="cx-gc"><col><col><col></colgroup><thead><tr class="cx-gr"><th class="cx-k0"><span class="sr">Weapon</span></th><th colspan="3" scope="colgroup" class="cx-g" style="--c: #ff3b5c;"><div class="cx-gh"><span class="cx-gn"><b>BAL-27
@@ -17694,7 +17843,7 @@ inside `.cx-tw` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares1-128` · rendered **1128×727** · 1 instance look like this
+`compares1-116` · rendered **1128×727** · 1 instance look like this
 
 ```html
 <table class="cx-t" data-f="a" style="--n: 6;"><caption class="sr">BAL-27, FFAR 1, slot by slot. A tinted c…</caption><colgroup><col class="cx-c0"><col><col><col><col class="cx-gc"><col><col><col></colgroup><thead><tr class="cx-gr"><th class="cx-k0"><span class="sr">Weapon</span></th><th colspan="3" scope="colgroup" class="cx-g" style="--c: #ff3b5c;"><div class="cx-gh"><span class="cx-gn"><b>BAL-27</b><small>Assault<
@@ -17720,7 +17869,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares1-130` · rendered **96×727** · 1 instance look like this
+`compares1-118` · rendered **96×727** · 1 instance look like this
 
 ```html
 <col class="cx-c0">
@@ -17748,7 +17897,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares1-131` · rendered **4×727** · 1 instance look like this
+`compares1-119` · rendered **4×727** · 1 instance look like this
 
 ```html
 <col class="cx-gc">
@@ -17863,7 +18012,7 @@ inside `.cx-gr` · 2 on screen · **2 looks**
 
 #### look 1 of 2
 
-`compares1-140` · rendered **4×52** · 1 instance look like this · aria-hidden="true"
+`compares1-128` · rendered **4×52** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <th class="cx-gut" aria-hidden="true"></th>
@@ -17891,15 +18040,15 @@ inside `.cx-gr` · 2 on screen · **2 looks**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-gr th · b4/compare.css:175 |
 | white-space | `nowrap` | `` | th · app.css:1248 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | th · app.css:1248 |
 
 #### look 2 of 2
 
-`compares1-220` · rendered **4×101** · 1 instance look like this · aria-hidden="true"
+`compares1-214` · rendered **4×101** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <th class="cx-gut" aria-hidden="true"></th>
@@ -17927,11 +18076,37 @@ inside `.cx-gr` · 2 on screen · **2 looks**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | `left` | `left` | th · app.css:1248 |
 | white-space | `nowrap` | `` | th · app.css:1248 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | th · app.css:1248 |
+
+
+### `em`
+
+inside `.b3-bdg` · 33 on screen · **1 look**
+
+#### the one look
+
+`compares1-587` · rendered **54×14** · 2 instances look like this · text “Underbarrel”
+
+```html
+<em>Underbarrel</em>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | `var(--t-micro)` | `9.5px` | .lc-att li em · app.css:3540 |
+| font-weight | — | `400` | initial |
+| font-style | `normal` | `normal` | .lc-att li em · app.css:3540 |
+| line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| color | `var(--sl,var(--dc-dim))` | `rgb(76, 142, 255)` | .b4 .lc-att li em · b4/classes.css:204 |
 
 
 ### `span.cx-vt`
@@ -17957,11 +18132,11 @@ inside `.cx-v` · 37 on screen · **1 look**
 | font-style | ↑ `` | `normal` | inherited · .b4 .cx-v · b4/compare.css:43 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-v · b4/compare.css:43 |
 | line-height | ↑ `` | `16.9px` | inherited · .b4 .cx-v · b4/compare.css:43 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:210 |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b4 .cx-v · b4/compare.css:43 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `default` | `default` | inherited · .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 
 ### `td.cx-gut`
@@ -17996,8 +18171,8 @@ inside `.—` · 9 on screen · **2 looks**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
 | cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
@@ -18030,8 +18205,8 @@ inside `.—` · 9 on screen · **2 looks**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
 
@@ -18069,11 +18244,11 @@ inside `.—` · 4 on screen · **1 look**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | `default` | `default` | .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 
 ### `div.cx-emb`
@@ -18172,8 +18347,8 @@ inside `.cx-eh` · 6 on screen · **1 look**
 | font-style | ↑ `` | `normal` | inherited · .b4 .cx-cc figcaption · b4/compare.css:78 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-cc figcaption · b4/compare.css:78 |
 | line-height | ↑ `` | `15px` | inherited · .b4 .cx-cc figcaption · b4/compare.css:78 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b4 .cx-cc figcaption · b4/compare.css:78 |
 
 
@@ -18254,7 +18429,7 @@ inside `.dcard` · 6 on screen · **1 look**
 
 ### compare · One build
 
-103 distinct signatures on screen; 38 not already specced above.
+104 distinct signatures on screen; 38 not already specced above.
 
 
 ### `section.pb-panel`
@@ -18263,7 +18438,7 @@ inside `.b1` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-1` · rendered **1148×994** · 1 instance look like this
+`compares2-1` · rendered **1148×948** · 1 instance look like this
 
 ```html
 <section class="pb-panel"><div id="compare" class="cx" data-f="a" data-st="one"><div class="cx-top"><div class="cx-pick"><div class="f-pick"><div class="f-fld"><span class="f-pre f-ic">⟨svg.ic⟩</span><input data-bare="true" id="cx-q" class="f-in" placeholder="Add weapons" role="combobox" aria-expanded="false" aria-controls="cx-q-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="tr
@@ -18308,7 +18483,7 @@ inside `.pb-panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-2` · rendered **1116×962** · 1 instance look like this
+`compares2-2` · rendered **1116×916** · 1 instance look like this
 
 ```html
 <div id="compare" class="cx" data-f="a" data-st="one"><div class="cx-top"><div class="cx-pick"><div class="f-pick"><div class="f-fld"><span class="f-pre f-ic">⟨svg.ic⟩</span><input data-bare="true" id="cx-q" class="f-in" placeholder="Add weapons" role="combobox" aria-expanded="false" aria-controls="cx-q-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="true"><button type="button" 
@@ -18332,11 +18507,11 @@ inside `.pb-panel` · 1 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.f-pre` · 16 on screen · **3 looks**
+inside `.f-pre` · 13 on screen · **2 looks**
 
-#### look 1 of 3
+#### look 1 of 2
 
-`compares2-65` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
+`compares2-64` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg>
@@ -18366,9 +18541,9 @@ inside `.f-pre` · 16 on screen · **3 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-btn2 · b3/board.css:801 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 2 of 3
+#### look 2 of 2
 
-`compares2-79` · rendered **11×11** · 2 instances look like this · aria-hidden="true"
+`compares2-80` · rendered **11×11** · 2 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-award"></use></svg>
@@ -18388,43 +18563,187 @@ inside `.f-pre` · 16 on screen · **3 looks**
 | font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
 | line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.703216 0.599686 1)` | inherited · .b3-bdg · b3/board.css:150 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 3 of 3
 
-`compares2-104` · rendered **11×11** · 2 instances look like this · aria-hidden="true"
+### `i.on`
+
+inside `.cx-sts` · 1 on screen · **1 look**
+
+#### the one look
+
+`compares2-14` · rendered **10×18** · 1 instance look like this
 
 ```html
-<svg class="ic" aria-hidden="true"><use href="#i-award"></use></svg>
+<i class="on" style="--c: #4361ee;"></i>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `11px` | `11px` | .b3-bdg .ic · b3/board.css:152 |
-| height | `11px` | `11px` | .b3-bdg .ic · b3/board.css:152 |
+| display | — | `block` | initial |
+| width | `10px` | `10px` | .b4 #compare .cx-top .cx-sts i · b4/compare.css:434 |
+| height | `18px` | `18px` | .b4 #compare .cx-top .cx-sts i · b4/compare.css:434 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `3px` | `` | .b4 #compare .cx-sts i · b4/compare.css:268 |
+| background | `var(--c)` | `` | .b4 #compare .cx-sts i.on · b4/compare.css:269 |
+| background-color | `` | `rgb(67, 97, 238)` | .b4 #compare .cx-sts i.on · b4/compare.css:269 |
+| background-image | `` | `none` | .b4 #compare .cx-sts i.on · b4/compare.css:269 |
+| box-shadow | `none` | `none` | .b4 #compare .cx-sts i.on · b4/compare.css:269 |
+| font | ↑ `500 12px/1 var(--data)` | `` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-size | ↑ `` | `12px` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-weight | ↑ `` | `500` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| line-height | ↑ `` | `12px` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| white-space | ↑ `nowrap` | `` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
+| transition | `background-color .2s var(--ease),box-shadow .2s var(--ease)` | `` | .b4 #compare .cx-sts i · b4/compare.css:268 |
+
+
+### `i`
+
+inside `.cx-sts` · 8 on screen · **3 looks**
+
+#### look 1 of 3
+
+`compares2-81` · rendered **0×0** · 1 instance look like this
+
+```html
+<i></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `inline` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
 | font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
 | font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
 | line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.337412 0.85851 0.744627)` | inherited · .b3-bdg · b3/board.css:150 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.703216 0.599686 1)` | inherited · .b3-bdg · b3/board.css:150 |
+
+#### look 2 of 3
+
+`compares2-85` · rendered **0×0** · 1 instance look like this
+
+```html
+<i></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `absolute` | `absolute` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
+| width | `300%` | `300%` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `50%` | `50%` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
+| left | `50%` | `50%` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
+| background | `conic-gradient(transparent 0 38%,color-mix(in srgb,var(--tc) 34%,transparent) 48%,color-mix(in srgb,#fff 72%,var(--tc)) 56%,color-mix(in srgb,var(--tc) 34%,transparent) 64%,transparent 74%,color-mix(in srgb,var(--tc) 26%,transparent) 88%,transparent 96%)` | `` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
+| background-image | `` | `conic-gradient(rgba(0, 0, 0, 0) 0deg, rgba(0, 0, 0, 0) 38%, color(srgb 0.662745 0.545098 1 / 0.34) 48%, color(srgb 0.905569 0.872627 1) 56%, color(srgb 0.662745 0.545098 1 / 0.34) 64%, rgba(0, 0, 0, 0) 74%, color(srgb 0.662745 0.545098 1 / 0.26) 88%, rgba(0, 0, 0, 0) 96%)` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
+| white-space | ↑ `nowrap` | `` | inherited · .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
+| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.703216 0.599686 1)` | inherited · .b3-bdg · b3/board.css:150 |
+| animation | `b3rimr 5.4s linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
+
+#### look 3 of 3
+
+`compares2-167` · rendered **40×30** · 1 instance look like this
+
+```html
+<i style="--c: #4361ee; --k: 0; --m: 0;"><b></b><b></b><b></b></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| position | `relative` | `relative` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| gap | `4px` | `` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| column-gap | `4px` | `4px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| row-gap | `4px` | `4px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| width | `40px` | `40px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| height | `30px` | `30px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| padding | `0 6px 0 8px` | `` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| padding-top | `0px` | `0px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| padding-right | `6px` | `6px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| padding-bottom | `0px` | `0px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| padding-left | `8px` | `8px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| margin-left | `0px` | `0px` | .b4 #compare .cx-dcf > i:first-child · b4/compare.css:403 |
+| border-radius | `5px` | `` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| background | `#2B2D31` | `` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| background-color | `rgb(43, 45, 49)` | `rgb(43, 45, 49)` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| background-image | `initial` | `none` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| box-shadow | `inset 3px 0 0 var(--c),0 4px 10px -4px rgba(0,0,0,.7)` | `rgb(67, 97, 238) 3px 0px 0px 0px inset, rgba(0, 0, 0, 0.7) 0px 4px 10px -4px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| font | ↑ `500 13.5px/1 var(--ui)` | `` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
+| font-size | ↑ `` | `13.5px` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
+| font-weight | ↑ `` | `500` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
+| line-height | ↑ `` | `13.5px` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
+| transform | `rotate(calc((var(--k) - var(--m)) * 5deg)) translateY(calc((var(--k) - var(--m)) * (var(--k) - var(--m)) * .6px))` | `matrix(1, 0, 0, 1, 0, 0)` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| transition | `transform .28s var(--ease),margin .28s var(--ease)` | `` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
+
+
+### `b`
+
+inside `.cx-stt` · 9 on screen · **1 look**
+
+#### the one look
+
+`compares2-38` · rendered **8×13** · 1 instance look like this · text “1”
+
+```html
+<b>1</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-size | ↑ `` | `13px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-weight | `bolder` | `900` | strong, b · user-agent:? |
+| font-style | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| line-height | ↑ `` | `13px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | ↑ `color-mix(in srgb,var(--c) 28%,white)` | `color(srgb 0.793569 0.82651 0.981333)` | inherited · .b4 .cx-k[aria-pressed="true"] · b4/compare.css:14 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
 
 
 ### `div.cx-w[role=group]`
@@ -18433,7 +18752,7 @@ inside `.cx-tl` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-19` · rendered **120×91** · 1 instance look like this · aria-label="DL Q33, 1 of 1 builds in the table" role="group"
+`compares2-29` · rendered **120×91** · 1 instance look like this · aria-label="DL Q33, 1 of 1 builds in the table" role="group"
 
 ```html
 <div class="cx-w" role="group" aria-label="DL Q33, 1 of 1 builds in the table" style="--c: #4361ee;"><div class="cx-wh"><span class="cx-wn"><b>DL Q33</b><small>Sniper</small></span><button type="button" class="b3-x cx-wx" aria-label="Remove DL Q33 from the comparison" data-tip="Remove the weapon">⟨svg.ic⟩</button></div><div class="cx-keys"><button type="button" class="cx-k" aria-pressed="true" data-tip="Take Build 1 
@@ -18468,43 +18787,13 @@ inside `.cx-tl` · 1 on screen · **1 look**
 | transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 .cx-w · b4/compare.css:147 |
 
 
-### `b`
-
-inside `.cx-wn` · 9 on screen · **1 look**
-
-#### the one look
-
-`compares2-28` · rendered **8×13** · 1 instance look like this · text “1”
-
-```html
-<b>1</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| font-size | ↑ `` | `13px` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| font-weight | `bolder` | `900` | strong, b · user-agent:? |
-| font-style | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| line-height | ↑ `` | `13px` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `color-mix(in srgb,var(--c) 28%,white)` | `color(srgb 0.793569 0.82651 0.981333)` | inherited · .b4 .cx-k[aria-pressed="true"] · b4/compare.css:14 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
-
-
 ### `small`
 
 inside `.cx-wn` · 4 on screen · **1 look**
 
 #### the one look
 
-`compares2-23` · rendered **43×7** · 3 instances look like this · text “Sniper”
+`compares2-33` · rendered **34×7** · 3 instances look like this · text “Sniper”
 
 ```html
 <small>Sniper</small>
@@ -18521,8 +18810,8 @@ inside `.cx-wn` · 4 on screen · **1 look**
 | font-style | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
 | font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
 | line-height | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | white-space | `nowrap` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
 | color | `var(--c)` | `rgb(67, 97, 238)` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
 
@@ -18533,10 +18822,10 @@ inside `.cx-keys` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-27` · rendered **34×34** · 1 instance look like this · aria-label="Build 1: Take Build 1 out of the table" aria-pressed="true" type="button"
+`compares2-37` · rendered **34×34** · 1 instance look like this · aria-label="Build 1: Take Build 1 out of the table" aria-pressed="true" type="button"
 
 ```html
-<button type="button" class="cx-k" aria-pressed="true" data-tip="Take Build 1 out of the table" aria-label="Build 1: Take Build 1 out of the table"><b>1</b><i class="cx-kb" aria-hidden="true">⟨svg.ic⟩</i></button>
+<button type="button" class="cx-k" aria-pressed="true" data-tip="Take Build 1 out of the table" aria-label="Build 1: Take Build 1 out of the table"><b>1</b><i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i></button>
 ```
 
 | property | winning declaration | computed | from |
@@ -18624,10 +18913,10 @@ inside `.cx-k` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-29` · rendered **11×11** · 1 instance look like this · aria-hidden="true"
+`compares2-39` · rendered **11×11** · 1 instance look like this · aria-hidden="true"
 
 ```html
-<i class="cx-kb" aria-hidden="true">⟨svg.ic⟩</i>
+<i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i>
 ```
 
 | property | winning declaration | computed | from |
@@ -18664,218 +18953,16 @@ inside `.cx-k` · 1 on screen · **1 look**
 | pointer-events | `none` | `none` | .b4 .cx-kb · b4/compare.css:155 |
 
 
-### `i.on`
-
-inside `.cx-sts` · 1 on screen · **1 look**
-
-#### the one look
-
-`compares2-34` · rendered **9×14** · 1 instance look like this
-
-```html
-<i class="on" style="--c: #4361ee;"></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| width | `9px` | `9px` | .b4 #compare .cx-sts i · b4/compare.css:268 |
-| height | `14px` | `14px` | .b4 #compare .cx-sts i · b4/compare.css:268 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `3px` | `` | .b4 #compare .cx-sts i · b4/compare.css:268 |
-| background | `var(--c)` | `` | .b4 #compare .cx-sts i.on · b4/compare.css:269 |
-| background-color | `` | `rgb(67, 97, 238)` | .b4 #compare .cx-sts i.on · b4/compare.css:269 |
-| background-image | `` | `none` | .b4 #compare .cx-sts i.on · b4/compare.css:269 |
-| box-shadow | `none` | `none` | .b4 #compare .cx-sts i.on · b4/compare.css:269 |
-| font | ↑ `500 12px/1 var(--data)` | `` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-size | ↑ `` | `12px` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-weight | ↑ `` | `500` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| line-height | ↑ `` | `12px` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| white-space | ↑ `nowrap` | `` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 #compare .cx-seats · b4/compare.css:265 |
-| transition | `background-color .2s var(--ease),box-shadow .2s var(--ease)` | `` | .b4 #compare .cx-sts i · b4/compare.css:268 |
-
-
-### `i`
-
-inside `.cx-sts` · 10 on screen · **5 looks**
-
-#### look 1 of 5
-
-`compares2-80` · rendered **0×0** · 1 instance look like this
-
-```html
-<i></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `inline` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.703216 0.599686 1)` | inherited · .b3-bdg · b3/board.css:150 |
-
-#### look 2 of 5
-
-`compares2-84` · rendered **0×0** · 1 instance look like this
-
-```html
-<i></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| width | `300%` | `300%` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `50%` | `50%` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| left | `50%` | `50%` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| background | `conic-gradient(transparent 0 38%,color-mix(in srgb,var(--tc) 34%,transparent) 48%,color-mix(in srgb,#fff 72%,var(--tc)) 56%,color-mix(in srgb,var(--tc) 34%,transparent) 64%,transparent 74%,color-mix(in srgb,var(--tc) 26%,transparent) 88%,transparent 96%)` | `` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| background-image | `` | `conic-gradient(rgba(0, 0, 0, 0) 0deg, rgba(0, 0, 0, 0) 38%, color(srgb 0.662745 0.545098 1 / 0.34) 48%, color(srgb 0.905569 0.872627 1) 56%, color(srgb 0.662745 0.545098 1 / 0.34) 64%, rgba(0, 0, 0, 0) 74%, color(srgb 0.662745 0.545098 1 / 0.26) 88%, rgba(0, 0, 0, 0) 96%)` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
-| white-space | ↑ `nowrap` | `` | inherited · .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.703216 0.599686 1)` | inherited · .b3-bdg · b3/board.css:150 |
-| animation | `b3rimr 5.4s linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-
-#### look 3 of 5
-
-`compares2-105` · rendered **0×0** · 1 instance look like this
-
-```html
-<i></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `inline` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.337412 0.85851 0.744627)` | inherited · .b3-bdg · b3/board.css:150 |
-
-#### look 4 of 5
-
-`compares2-109` · rendered **0×0** · 1 instance look like this
-
-```html
-<i></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| width | `300%` | `300%` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `50%` | `50%` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| left | `50%` | `50%` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| background | `conic-gradient(transparent 0 38%,color-mix(in srgb,var(--tc) 34%,transparent) 48%,color-mix(in srgb,#fff 72%,var(--tc)) 56%,color-mix(in srgb,var(--tc) 34%,transparent) 64%,transparent 74%,color-mix(in srgb,var(--tc) 26%,transparent) 88%,transparent 96%)` | `` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| background-image | `` | `conic-gradient(rgba(0, 0, 0, 0) 0deg, rgba(0, 0, 0, 0) 38%, color(srgb 0.247059 0.839216 0.709804 / 0.34) 48%, color(srgb 0.789176 0.95498 0.918745) 56%, color(srgb 0.247059 0.839216 0.709804 / 0.34) 64%, rgba(0, 0, 0, 0) 74%, color(srgb 0.247059 0.839216 0.709804 / 0.26) 88%, rgba(0, 0, 0, 0) 96%)` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
-| white-space | ↑ `nowrap` | `` | inherited · .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.337412 0.85851 0.744627)` | inherited · .b3-bdg · b3/board.css:150 |
-| animation | `b3rimr 5.4s linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim > i · b3/board.css:3248 |
-
-#### look 5 of 5
-
-`compares2-185` · rendered **40×30** · 1 instance look like this
-
-```html
-<i style="--c: #4361ee; --k: 0; --m: 0;"><b></b><b></b><b></b></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| position | `relative` | `relative` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| gap | `4px` | `` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| column-gap | `4px` | `4px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| row-gap | `4px` | `4px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| width | `40px` | `40px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| height | `30px` | `30px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| padding | `0 6px 0 8px` | `` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| padding-top | `0px` | `0px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| padding-right | `6px` | `6px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| padding-bottom | `0px` | `0px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| padding-left | `8px` | `8px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| margin-left | `0px` | `0px` | .b4 #compare .cx-dcf > i:first-child · b4/compare.css:403 |
-| border-radius | `5px` | `` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| background | `#2B2D31` | `` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| background-color | `rgb(43, 45, 49)` | `rgb(43, 45, 49)` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| background-image | `initial` | `none` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| box-shadow | `inset 3px 0 0 var(--c),0 4px 10px -4px rgba(0,0,0,.7)` | `rgb(67, 97, 238) 3px 0px 0px 0px inset, rgba(0, 0, 0, 0.7) 0px 4px 10px -4px` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| font | ↑ `500 13.5px/1 var(--ui)` | `` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
-| font-size | ↑ `` | `13.5px` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
-| font-weight | ↑ `` | `500` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
-| line-height | ↑ `` | `13.5px` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
-| transform | `rotate(calc((var(--k) - var(--m)) * 5deg)) translateY(calc((var(--k) - var(--m)) * (var(--k) - var(--m)) * .6px))` | `matrix(1, 0, 0, 1, 0, 0)` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| transition | `transform .28s var(--ease),margin .28s var(--ease)` | `` | .b4 #compare .cx-dcf > i · b4/compare.css:401 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-dcb · b4/compare.css:316 |
-
-
 ### `div.cx-tw`
 
 inside `.cx` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-42` · rendered **1128×663** · 1 instance look like this
+`compares2-41` · rendered **1128×663** · 1 instance look like this
 
 ```html
-<div class="cx-tw"><table class="cx-t" data-f="a" style="--n: 2;"><caption class="sr">DL Q33, LW3-TUNDRA, slot by slot. A tint…</caption><colgroup><col class="cx-c0"><col><col class="cx-gc"><col></colgroup><thead><tr class="cx-gr"><th class="cx-k0"><span class="sr">Weapon</span></th><th colspan="1" scope="colgroup" class="cx-g" style="--c: #4361ee;"><div class="cx-gh"><span class="cx-gn"><b>DL Q33</b><small>Sniper</s
+<div class="cx-tw"><table class="cx-t" data-f="a" style="--n: 2;"><caption class="sr">DL Q33, HDR, slot by slot. A tinted cell…</caption><colgroup><col class="cx-c0"><col><col class="cx-gc"><col></colgroup><thead><tr class="cx-gr"><th class="cx-k0"><span class="sr">Weapon</span></th><th colspan="1" scope="colgroup" class="cx-g" style="--c: #4361ee;"><div class="cx-gh"><span class="cx-gn"><b>DL Q33</b><small>Sniper</s
 ```
 
 | property | winning declaration | computed | from |
@@ -18902,10 +18989,10 @@ inside `.cx-tw` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-43` · rendered **1128×663** · 1 instance look like this
+`compares2-42` · rendered **1128×663** · 1 instance look like this
 
 ```html
-<table class="cx-t" data-f="a" style="--n: 2;"><caption class="sr">DL Q33, LW3-TUNDRA, slot by slot. A tint…</caption><colgroup><col class="cx-c0"><col><col class="cx-gc"><col></colgroup><thead><tr class="cx-gr"><th class="cx-k0"><span class="sr">Weapon</span></th><th colspan="1" scope="colgroup" class="cx-g" style="--c: #4361ee;"><div class="cx-gh"><span class="cx-gn"><b>DL Q33</b><small>Sniper</small></span></div><
+<table class="cx-t" data-f="a" style="--n: 2;"><caption class="sr">DL Q33, HDR, slot by slot. A tinted cell…</caption><colgroup><col class="cx-c0"><col><col class="cx-gc"><col></colgroup><thead><tr class="cx-gr"><th class="cx-k0"><span class="sr">Weapon</span></th><th colspan="1" scope="colgroup" class="cx-g" style="--c: #4361ee;"><div class="cx-gh"><span class="cx-gn"><b>DL Q33</b><small>Sniper</small></span></div><
 ```
 
 | property | winning declaration | computed | from |
@@ -18928,7 +19015,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-45` · rendered **96×663** · 1 instance look like this
+`compares2-44` · rendered **96×663** · 1 instance look like this
 
 ```html
 <col class="cx-c0">
@@ -18956,7 +19043,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-46` · rendered **4×663** · 1 instance look like this
+`compares2-45` · rendered **4×663** · 1 instance look like this
 
 ```html
 <col class="cx-gc">
@@ -18984,7 +19071,7 @@ inside `.cx-gr` · 9 on screen · **1 look**
 
 #### the one look
 
-`compares2-150` · rendered **96×64** · 1 instance look like this · text “Perk”
+`compares2-132` · rendered **96×64** · 1 instance look like this · text “Perk”
 
 ```html
 <th scope="row" class="cx-k0" style="--sl: var(--sl-perk, var(--sl-unknown));">Perk</th>
@@ -19030,7 +19117,7 @@ inside `.cx-gr` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-50` · rendered **499×52** · 1 instance look like this
+`compares2-49` · rendered **499×52** · 1 instance look like this
 
 ```html
 <th colspan="1" scope="colgroup" class="cx-g" style="--c: #4361ee;"><div class="cx-gh"><span class="cx-gn"><b>DL Q33</b><small>Sniper</small></span></div></th>
@@ -19059,8 +19146,8 @@ inside `.cx-gr` · 1 on screen · **1 look**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ⚠️ `1.5` | `14.25px` | .b4 #compare.cx .cx-g · b4/compare.css:176 · **a later rule wins — port the computed value and find that rule** |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | `left` | `left` | .b4 #compare .cx-t .cx-gr th.cx-g · b4/compare.css:283 |
 | white-space | `normal` | `` | .b4 #compare.cx .cx-t .cx-g · b4/compare.css:208 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | th · app.css:1248 |
@@ -19073,10 +19160,10 @@ inside `.cx-gr` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-56` · rendered **499×52** · 1 instance look like this
+`compares2-55` · rendered **499×52** · 1 instance look like this
 
 ```html
-<th colspan="1" scope="colgroup" class="cx-g sg" style="--c: #4361ee;"><div class="cx-gh"><span class="cx-gn"><b>LW3-TUNDRA</b><small>Sniper</small></span><span class="cx-sgw"><span class="b4-hint" data-tone="magic">⟨svg.ic⟩Suggested</span><button type="button" class="b3-btn2 cx-sgadd">⟨svg.ic⟩Add</button></span></div></th>
+<th colspan="1" scope="colgroup" class="cx-g sg" style="--c: #4361ee;"><div class="cx-gh"><span class="cx-gn"><b>HDR</b><small>Sniper</small></span><span class="cx-sgw"><span class="b4-hint" data-tone="magic">⟨svg.ic⟩Suggested</span><button type="button" class="b3-btn2 cx-sgadd">⟨svg.ic⟩Add</button></span></div></th>
 ```
 
 | property | winning declaration | computed | from |
@@ -19104,8 +19191,8 @@ inside `.cx-gr` · 1 on screen · **1 look**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ⚠️ `1.5` | `14.25px` | .b4 #compare.cx .cx-g · b4/compare.css:176 · **a later rule wins — port the computed value and find that rule** |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | `left` | `left` | .b4 #compare .cx-t .cx-gr th.cx-g · b4/compare.css:283 |
 | white-space | `normal` | `` | .b4 #compare.cx .cx-t .cx-g · b4/compare.css:208 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | th · app.css:1248 |
@@ -19118,7 +19205,7 @@ inside `.cx-gh` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-61` · rendered **169×28** · 1 instance look like this
+`compares2-60` · rendered **169×28** · 1 instance look like this
 
 ```html
 <span class="cx-sgw"><span class="b4-hint" data-tone="magic">⟨svg.ic⟩Suggested</span><button type="button" class="b3-btn2 cx-sgadd">⟨svg.ic⟩Add</button></span>
@@ -19143,8 +19230,8 @@ inside `.cx-gh` · 1 on screen · **1 look**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `1.5` | `14.25px` | inherited · .b4 #compare.cx .cx-g · b4/compare.css:176 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-t .cx-gr th.cx-g · b4/compare.css:283 |
 | white-space | ↑ `normal` | `` | inherited · .b4 #compare.cx .cx-t .cx-g · b4/compare.css:208 |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · th · app.css:1248 |
@@ -19156,7 +19243,7 @@ inside `.cx-sgw` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-64` · rendered **63×28** · 1 instance look like this · type="button"
+`compares2-63` · rendered **63×28** · 1 instance look like this · type="button"
 
 ```html
 <button type="button" class="b3-btn2 cx-sgadd">⟨svg.ic⟩Add</button>
@@ -19243,10 +19330,10 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-68` · rendered **499×101** · 1 instance look like this
+`compares2-67` · rendered **499×101** · 1 instance look like this
 
 ```html
-<th scope="col" class="cx-h" style="--c: #4361ee;"><span class="cx-hn"><span class="b3-sd-gn">Build 1</span><span class="wg-im cx-im" role="img" aria-label="Image uploaded" data-tip="Image uploaded">⟨svg.ic⟩</span></span><span class="cx-hl none">No label</span><span class="cx-hb"><div class="cx-run b3-fadx" data-rows="2" style="--fl: 0px; --fr: 0px;"><span class="b3-bdgs bare" style="--ph: 0.430;"><span class="b3-bw"
+<th scope="col" class="cx-h" style="--c: #4361ee;"><span class="cx-hn"><span class="b3-sd-gn">Build 1</span><span class="cx-vd"><span class="wg-fwrap b3-fx b3-fx-sm b3-okx"><button type="button" class="b3-fchip" aria-expanded="false" aria-haspopup="dialog" aria-label="DL Q33 build 1 passes every check — open the card">⟨svg.ic⟩</button></span></span></span><span class="cx-hl none">No label</span><span class="cx-hb"><d
 ```
 
 | property | winning declaration | computed | from |
@@ -19272,8 +19359,8 @@ inside `.—` · 1 on screen · **1 look**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | `left` | `left` | .b4 .cx-t th.cx-h · b4/compare.css:33 |
 | white-space | `nowrap` | `` | th · app.css:1248 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | th · app.css:1248 |
@@ -19281,11 +19368,11 @@ inside `.—` · 1 on screen · **1 look**
 
 ### `span.b3-bdg[role=img]`
 
-inside `.b3-bw` · 3 on screen · **2 looks**
+inside `.b3-bw` · 1 on screen · **1 look**
 
-#### look 1 of 2
+#### the one look
 
-`compares2-78` · rendered **26×22** · 1 instance look like this · aria-label="Top 5 in Sniper" role="img"
+`compares2-79` · rendered **26×22** · 1 instance look like this · aria-label="Top 5 in Sniper" role="img"
 
 ```html
 <span class="b3-bdg" data-k="tier" data-t="top5" role="img" aria-description="Top 5" aria-label="Top 5 in Sniper">⟨svg.ic⟩<i class="b3-rim" aria-hidden="true"><i></i></i></span>
@@ -19321,8 +19408,8 @@ inside `.b3-bw` · 3 on screen · **2 looks**
 | font-style | `` | `normal` | .b3-bdg · b3/board.css:150 |
 | font-variant-numeric | `` | `normal` | .b3-bdg · b3/board.css:150 |
 | line-height | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
 | white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
 | color | `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.703216 0.599686 1)` | .b3-bdg · b3/board.css:150 |
@@ -19330,61 +19417,14 @@ inside `.b3-bw` · 3 on screen · **2 looks**
 | overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1835 |
 | overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1835 |
 
-#### look 2 of 2
-
-`compares2-103` · rendered **26×22** · 1 instance look like this · aria-label="Top 3 in Sniper" role="img"
-
-```html
-<span class="b3-bdg" data-k="tier" data-t="top3" role="img" aria-description="Top 3" aria-label="Top 3 in Sniper">⟨svg.ic⟩<i class="b3-rim" aria-hidden="true"><i></i></i></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg · b3/board.css:1835 |
-| gap | `0` | `` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:183 |
-| column-gap | `0px` | `0px` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:183 |
-| row-gap | `0px` | `0px` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:183 |
-| align-items | `center` | `center` | .b3-bdg · b3/board.css:150 |
-| justify-content | `center` | `center` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:183 |
-| width | `26px` | `26px` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:183 |
-| height | `22px` | `22px` | .b3-bdg · b3/board.css:150 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 8px 0 7px` | `` | .b3-bdg · b3/board.css:150 |
-| padding-top | `0px` | `0px` | .b3-bdg · b3/board.css:150 |
-| padding-right | `0px (as padding-inline-end)` | `0px` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:183 |
-| padding-bottom | `0px` | `0px` | .b3-bdg · b3/board.css:150 |
-| padding-left | `0px (as padding-inline-start)` | `0px` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:183 |
-| padding-inline | `0` | `` | .b4 .b3-bdgs.bare .b3-bdg · b4/compare.css:183 |
-| border-radius | `var(--rad-1)` | `` | .b3-bdg · b3/board.css:150 |
-| background | `color-mix(in srgb,var(--tc) 13%,transparent)` | `` | .b3-bdg · b3/board.css:150 |
-| background-color | `` | `color(srgb 0.247059 0.839216 0.709804 / 0.13)` | .b3-bdg · b3/board.css:150 |
-| background-image | `` | `none` | .b3-bdg · b3/board.css:150 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--tc) 50%,transparent)` | `color(srgb 0.247059 0.839216 0.709804 / 0.5) 0px 0px 0px 1px inset` | .b3-bdg · b3/board.css:150 |
-| font | `700 var(--t-micro)/1 var(--data)` | `` | .b3-bdg · b3/board.css:150 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-bdg · b3/board.css:150 |
-| font-size | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
-| font-weight | `` | `700` | .b3-bdg · b3/board.css:150 |
-| font-style | `` | `normal` | .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | `` | `normal` | .b3-bdg · b3/board.css:150 |
-| line-height | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
-| white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
-| color | `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.337412 0.85851 0.744627)` | .b3-bdg · b3/board.css:150 |
-| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1835 |
-| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1835 |
-| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1835 |
-
 
 ### `span.b3-bdg`
 
-inside `.b3-bpop` · 3 on screen · **2 looks**
+inside `.b3-bpop` · 1 on screen · **1 look**
 
-#### look 1 of 2
+#### the one look
 
-`compares2-81` · rendered **0×0** · 1 instance look like this · aria-label="Top 5 in Sniper"
+`compares2-82` · rendered **0×0** · 1 instance look like this · aria-label="Top 5 in Sniper"
 
 ```html
 <span class="b3-bdg" data-k="tier" data-t="top5" aria-label="Top 5 in Sniper">⟨svg.ic⟩TOP 5<i class="b3-rim" aria-hidden="true"><i></i></i></span>
@@ -19420,8 +19460,8 @@ inside `.b3-bpop` · 3 on screen · **2 looks**
 | font-style | `` | `normal` | .b3-bdg · b3/board.css:150 |
 | font-variant-numeric | `` | `normal` | .b3-bdg · b3/board.css:150 |
 | line-height | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
 | white-space | `nowrap` | `` | .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
 | color | `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.703216 0.599686 1)` | .b3-bdg · b3/board.css:150 |
@@ -19453,85 +19493,14 @@ inside `.b3-bpop` · 3 on screen · **2 looks**
 | content | `""` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
 | pointer-events | `none` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
 
-#### look 2 of 2
-
-`compares2-106` · rendered **0×0** · 1 instance look like this · aria-label="Top 3 in Sniper"
-
-```html
-<span class="b3-bdg" data-k="tier" data-t="top3" aria-label="Top 3 in Sniper">⟨svg.ic⟩TOP 3<i class="b3-rim" aria-hidden="true"><i></i></i></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `inline-flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg · b3/board.css:1835 |
-| gap | `5px` | `` | .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| column-gap | `5px` | `5px` | .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| row-gap | `5px` | `5px` | .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| align-items | `center` | `center` | .b3-bdg · b3/board.css:150 |
-| justify-content | `flex-start` | `flex-start` | .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| width | `auto` | `auto` | .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| height | `22px` | `22px` | .b3-bdg · b3/board.css:150 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 8px 0 7px` | `` | .b3-bdg · b3/board.css:150 |
-| padding-top | `0px` | `0px` | .b3-bdg · b3/board.css:150 |
-| padding-right | `8px (as padding-inline-end)` | `8px` | .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| padding-bottom | `0px` | `0px` | .b3-bdg · b3/board.css:150 |
-| padding-left | `7px (as padding-inline-start)` | `7px` | .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| padding-inline | `7px 8px` | `` | .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| border-radius | `var(--rad-1)` | `` | .b3-bdg · b3/board.css:150 |
-| background | `color-mix(in srgb,var(--tc) 13%,transparent)` | `` | .b3-bdg · b3/board.css:150 |
-| background-color | `` | `color(srgb 0.247059 0.839216 0.709804 / 0.13)` | .b3-bdg · b3/board.css:150 |
-| background-image | `` | `none` | .b3-bdg · b3/board.css:150 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--tc) 50%,transparent)` | `color(srgb 0.247059 0.839216 0.709804 / 0.5) 0px 0px 0px 1px inset` | .b3-bdg · b3/board.css:150 |
-| font | `700 var(--t-micro)/1 var(--data)` | `` | .b3-bdg · b3/board.css:150 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-bdg · b3/board.css:150 |
-| font-size | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
-| font-weight | `` | `700` | .b3-bdg · b3/board.css:150 |
-| font-style | `` | `normal` | .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | `` | `normal` | .b3-bdg · b3/board.css:150 |
-| line-height | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
-| white-space | `nowrap` | `` | .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| color | `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.337412 0.85851 0.744627)` | .b3-bdg · b3/board.css:150 |
-| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1835 |
-| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1835 |
-| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1835 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| display | `none` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| position | `absolute` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| padding | `1.6px` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| padding-top | `1.6px` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| padding-right | `1.6px` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| padding-bottom | `1.6px` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| padding-left | `1.6px` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| inset | `0` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| top | `0px` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| right | `0px` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| bottom | `0px` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| left | `0px` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| border-radius | `inherit` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| background | `conic-gradient(from var(--b3-ang),transparent 0 38%,color-mix(in srgb,var(--tc) 34%,transparent) 48%,color-mix(in srgb,#fff 72%,var(--tc)) 56%,color-mix(in srgb,var(--tc) 34%,transparent) 64%,transparent 74%,color-mix(in srgb,var(--tc) 26%,transparent) 88%,transparent 96%)` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| background-color | `` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| background-image | `` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| mask-image | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px), linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px)` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| content | `""` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-| pointer-events | `none` | .b3-bdgs.in .b3-bdg[data-t^="top"]::after · b3/board.css:1967 |
-
 
 ### `i.b3-rim`
 
-inside `.b3-bdg` · 2 on screen · **2 looks**
+inside `.b3-bdg` · 1 on screen · **1 look**
 
-#### look 1 of 2
+#### the one look
 
-`compares2-83` · rendered **0×0** · 1 instance look like this · aria-hidden="true"
+`compares2-84` · rendered **0×0** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <i class="b3-rim" aria-hidden="true"><i></i></i>
@@ -19560,50 +19529,11 @@ inside `.b3-bdg` · 2 on screen · **2 looks**
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
 | line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
 | white-space | ↑ `nowrap` | `` | inherited · .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.703216 0.599686 1)` | inherited · .b3-bdg · b3/board.css:150 |
-| mask-image | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px), linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px), linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px)` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| pointer-events | `none` | `none` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-
-#### look 2 of 2
-
-`compares2-108` · rendered **0×0** · 1 instance look like this · aria-hidden="true"
-
-```html
-<i class="b3-rim" aria-hidden="true"><i></i></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| position | `absolute` | `absolute` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `1.6px` | `` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| padding-top | `1.6px` | `1.6px` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| padding-right | `1.6px` | `1.6px` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| padding-bottom | `1.6px` | `1.6px` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| padding-left | `1.6px` | `1.6px` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| inset | `0` | `` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| top | `0px` | `0px` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| right | `0px` | `0px` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| bottom | `0px` | `0px` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| left | `0px` | `0px` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| border-radius | `inherit` | `` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
-| white-space | ↑ `nowrap` | `` | inherited · .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:952 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.337412 0.85851 0.744627)` | inherited · .b3-bdg · b3/board.css:150 |
 | mask-image | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px), linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px), linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px)` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
 | pointer-events | `none` | `none` | .b3-bdgs.in .b3-bdg[data-t^="top"] .b3-rim · b3/board.css:3245 |
 
@@ -19614,10 +19544,10 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-86` · rendered **499×101** · 1 instance look like this
+`compares2-87` · rendered **499×101** · 1 instance look like this
 
 ```html
-<th scope="col" class="cx-h sg" style="--c: #4361ee;"><span class="cx-hn"><span class="b3-sd-gn">Build 1</span></span><span class="cx-hl none">No label</span><span class="cx-hb"><div class="cx-run b3-fadx" data-rows="2" style="--fl: 0px; --fr: 0px;"><span class="b3-bdgs bare" style="--ph: 0.428;"><span class="b3-bw"><span class="b3-bdg" data-k="meta" role="img" aria-label="Meta" aria-description="Meta">⟨svg.ic.b3-zap
+<th scope="col" class="cx-h sg" style="--c: #4361ee;"><span class="cx-hn"><span class="b3-sd-gn">Build 1</span></span><span class="cx-hl none">No label</span><span class="cx-hb"></span></th>
 ```
 
 | property | winning declaration | computed | from |
@@ -19645,8 +19575,8 @@ inside `.—` · 1 on screen · **1 look**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | `left` | `left` | .b4 .cx-t th.cx-h · b4/compare.css:33 |
 | white-space | `nowrap` | `` | th · app.css:1248 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | th · app.css:1248 |
@@ -19658,7 +19588,7 @@ inside `.—` · 6 on screen · **2 looks**
 
 #### look 1 of 2
 
-`compares2-111` · rendered **499×64** · 5 instances look like this
+`compares2-93` · rendered **499×64** · 5 instances look like this
 
 ```html
 <td colspan="1" class="cx-c s-n" style="--c: #4361ee;"><span class="cx-v"><span class="cx-vt">OWC Light Suppressor</span></span></td>
@@ -19685,15 +19615,15 @@ inside `.—` · 6 on screen · **2 looks**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | `default` | `default` | .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 #### look 2 of 2
 
-`compares2-159` · rendered **499×64** · 1 instance look like this
+`compares2-141` · rendered **499×64** · 1 instance look like this
 
 ```html
 <td colspan="1" class="cx-c s-n" style="--c: #4361ee;"><button type="button" class="cx-v mono cx-code" aria-label="Copy gunsmith code 1B2A4A5A8A"><span class="cx-vt">1B2A4A5A8A</span><span class="cx-cpi" aria-hidden="true">⟨svg.ic⟩</span></button></td>
@@ -19720,23 +19650,23 @@ inside `.—` · 6 on screen · **2 looks**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | `default` | `default` | .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 
 ### `span.cx-v`
 
-inside `.cx-c` · 9 on screen · **1 look**
+inside `.cx-c` · 10 on screen · **1 look**
 
 #### the one look
 
-`compares2-124` · rendered **487×56** · 4 instances look like this
+`compares2-98` · rendered **487×56** · 5 instances look like this
 
 ```html
-<span class="cx-v"><span class="cx-vt">28.2" Tiger Team</span></span>
+<span class="cx-v"><span class="cx-vt">OWC Light Suppressor</span></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -19768,12 +19698,12 @@ inside `.cx-c` · 9 on screen · **1 look**
 | font-style | `` | `normal` | .b4 .cx-v · b4/compare.css:43 |
 | font-variant-numeric | `` | `normal` | .b4 .cx-v · b4/compare.css:43 |
 | line-height | `` | `16.9px` | .b4 .cx-v · b4/compare.css:43 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 #compare .cx-t td.s-sg .cx-v · b4/compare.css:310 |
 | transition | `background-color .12s var(--ease),box-shadow .12s var(--ease),color .12s var(--ease)` | `` | .b4 #compare .cx-t .cx-v · b4/compare.css:361 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `default` | `default` | inherited · .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 
 ### `span.cx-vt`
@@ -19782,10 +19712,10 @@ inside `.cx-v` · 14 on screen · **2 looks**
 
 #### look 1 of 2
 
-`compares2-125` · rendered **467×9** · 4 instances look like this · text “28.2" Tiger Team”
+`compares2-99` · rendered **467×9** · 5 instances look like this · text “OWC Light Suppressor”
 
 ```html
-<span class="cx-vt">28.2" Tiger Team</span>
+<span class="cx-vt">OWC Light Suppressor</span>
 ```
 
 | property | winning declaration | computed | from |
@@ -19799,18 +19729,18 @@ inside `.cx-v` · 14 on screen · **2 looks**
 | font-style | ↑ `` | `normal` | inherited · .b4 .cx-v · b4/compare.css:43 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-v · b4/compare.css:43 |
 | line-height | ↑ `` | `16.9px` | inherited · .b4 .cx-v · b4/compare.css:43 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:210 |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 #compare .cx-t td.s-sg .cx-v · b4/compare.css:310 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `default` | `default` | inherited · .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 #### look 2 of 2
 
-`compares2-167` · rendered **467×9** · 1 instance look like this · text “2F4D5A8A9E”
+`compares2-149` · rendered **467×9** · 1 instance look like this · text “1B4A5A6A8A”
 
 ```html
-<span class="cx-vt">2F4D5A8A9E</span>
+<span class="cx-vt">1B4A5A6A8A</span>
 ```
 
 | property | winning declaration | computed | from |
@@ -19824,20 +19754,95 @@ inside `.cx-v` · 14 on screen · **2 looks**
 | font-style | ↑ `` | `normal` | inherited · .b4 .cx-v.mono · b4/compare.css:45 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-v.mono · b4/compare.css:45 |
 | line-height | ↑ `` | `16.25px` | inherited · .b4 .cx-v.mono · b4/compare.css:45 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:210 |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 #compare .cx-t td.s-sg .cx-v · b4/compare.css:310 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `default` | `default` | inherited · .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
+
+
+### `td.cx-c.s-sg`
+
+inside `.—` · 6 on screen · **2 looks**
+
+#### look 1 of 2
+
+`compares2-97` · rendered **499×64** · 5 instances look like this
+
+```html
+<td colspan="1" class="cx-c s-sg" style="--c: #4361ee;"><span class="cx-v"><span class="cx-vt">OWC Light Suppressor</span></span></td>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `table-cell` | `table-cell` | td, th · user-agent:? |
+| height | ⚠️ `1px` | `64px` | .b4 #compare.cx .cx-t td.cx-c · b4/compare.css:185 · **a later rule wins — port the computed value and find that rule** |
+| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-t tbody :is(td.cx-c, th.cx-k0) · b4/compare.css:296 |
+| padding | `4px 6px` | `` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
+| padding-top | `4px` | `4px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
+| padding-right | `6px` | `6px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
+| padding-bottom | `4px` | `4px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
+| padding-left | `6px` | `6px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
+| border-bottom | `0` | `` | .b4 #compare.cx .cx-t :is(th, td) · b4/compare.css:291 |
+| background | `color-mix(in srgb,var(--c) 6%,var(--sunk))` | `` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
+| background-color | `` | `color(srgb 0.0563137 0.0781176 0.122353)` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
+| background-image | `` | `none` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
+| box-shadow | `inset 0 -1px 0 color-mix(in srgb,var(--ink) 7%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.07) 0px -1px 0px 0px inset` | .b4 #compare .cx-t tbody tr:not(:last-child) :is(td.cx-c, th.cx-k0) · b4/compare.css:298 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · table · app.css:1247 |
+| font-weight | ↑ `normal` | `400` | inherited · table · user-agent:? |
+| font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
+| cursor | `default` | `default` | .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
+
+#### look 2 of 2
+
+`compares2-147` · rendered **499×64** · 1 instance look like this
+
+```html
+<td colspan="1" class="cx-c s-sg" style="--c: #4361ee;"><span class="cx-v mono"><span class="cx-vt">1B4A5A6A8A</span></span></td>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `table-cell` | `table-cell` | td, th · user-agent:? |
+| height | ⚠️ `1px` | `64px` | .b4 #compare.cx .cx-t td.cx-c · b4/compare.css:185 · **a later rule wins — port the computed value and find that rule** |
+| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-t tbody :is(td.cx-c, th.cx-k0) · b4/compare.css:296 |
+| padding | `4px 6px` | `` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
+| padding-top | `4px` | `4px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
+| padding-right | `6px` | `6px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
+| padding-bottom | `4px` | `4px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
+| padding-left | `6px` | `6px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
+| border-bottom | `0` | `` | .b4 #compare.cx .cx-t :is(th, td) · b4/compare.css:291 |
+| border-radius | `0` | `` | .b4 #compare .cx-t[data-f="a"] tbody tr:last-child td.cx-c · b4/compare.css:385 |
+| background | `color-mix(in srgb,var(--c) 6%,var(--sunk))` | `` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
+| background-color | `` | `color(srgb 0.0563137 0.0781176 0.122353)` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
+| background-image | `` | `none` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · table · app.css:1247 |
+| font-weight | ↑ `normal` | `400` | inherited · table · user-agent:? |
+| font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
+| cursor | `default` | `default` | .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 
 ### `td.cx-c.s-x.sg`
 
-inside `.—` · 2 on screen · **1 look**
+inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-115` · rendered **499×64** · 2 instances look like this
+`compares2-105` · rendered **499×64** · 1 instance look like this
 
 ```html
 <td colspan="1" class="cx-c s-x sg" style="--c: #4361ee;"><span class="cx-v x"><span class="cx-vt">—</span></span></td>
@@ -19864,86 +19869,11 @@ inside `.—` · 2 on screen · **1 look**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-
-### `td.cx-c.s-sg`
-
-inside `.—` · 5 on screen · **2 looks**
-
-#### look 1 of 2
-
-`compares2-123` · rendered **499×64** · 4 instances look like this
-
-```html
-<td colspan="1" class="cx-c s-sg" style="--c: #4361ee;"><span class="cx-v"><span class="cx-vt">28.2" Tiger Team</span></span></td>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `table-cell` | `table-cell` | td, th · user-agent:? |
-| height | ⚠️ `1px` | `64px` | .b4 #compare.cx .cx-t td.cx-c · b4/compare.css:185 · **a later rule wins — port the computed value and find that rule** |
-| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-t tbody :is(td.cx-c, th.cx-k0) · b4/compare.css:296 |
-| padding | `4px 6px` | `` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
-| padding-top | `4px` | `4px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
-| padding-right | `6px` | `6px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
-| padding-bottom | `4px` | `4px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
-| padding-left | `6px` | `6px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
-| border-bottom | `0` | `` | .b4 #compare.cx .cx-t :is(th, td) · b4/compare.css:291 |
-| background | `color-mix(in srgb,var(--c) 6%,var(--sunk))` | `` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
-| background-color | `` | `color(srgb 0.0563137 0.0781176 0.122353)` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
-| background-image | `` | `none` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
-| box-shadow | `inset 0 -1px 0 color-mix(in srgb,var(--ink) 7%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.07) 0px -1px 0px 0px inset` | .b4 #compare .cx-t tbody tr:not(:last-child) :is(td.cx-c, th.cx-k0) · b4/compare.css:298 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · table · app.css:1247 |
-| font-weight | ↑ `normal` | `400` | inherited · table · user-agent:? |
-| font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-#### look 2 of 2
-
-`compares2-165` · rendered **499×64** · 1 instance look like this
-
-```html
-<td colspan="1" class="cx-c s-sg" style="--c: #4361ee;"><span class="cx-v mono"><span class="cx-vt">2F4D5A8A9E</span></span></td>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `table-cell` | `table-cell` | td, th · user-agent:? |
-| height | ⚠️ `1px` | `64px` | .b4 #compare.cx .cx-t td.cx-c · b4/compare.css:185 · **a later rule wins — port the computed value and find that rule** |
-| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-t tbody :is(td.cx-c, th.cx-k0) · b4/compare.css:296 |
-| padding | `4px 6px` | `` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
-| padding-top | `4px` | `4px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
-| padding-right | `6px` | `6px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
-| padding-bottom | `4px` | `4px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
-| padding-left | `6px` | `6px` | .b4 #compare .cx-t[data-f="a"] tbody td.cx-c · b4/compare.css:297 |
-| border-bottom | `0` | `` | .b4 #compare.cx .cx-t :is(th, td) · b4/compare.css:291 |
-| border-radius | `0` | `` | .b4 #compare .cx-t[data-f="a"] tbody tr:last-child td.cx-c · b4/compare.css:385 |
-| background | `color-mix(in srgb,var(--c) 6%,var(--sunk))` | `` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
-| background-color | `` | `color(srgb 0.0563137 0.0781176 0.122353)` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
-| background-image | `` | `none` | .b4 #compare .cx-t[data-f="a"] td.cx-c, .b4 #compare .cx-t[data-f="a"] td.cx-fa · b4/compare.css:347 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · table · app.css:1247 |
-| font-weight | ↑ `normal` | `400` | inherited · table · user-agent:? |
-| font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | `default` | `default` | .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 
 ### `td.cx-c.s-x`
@@ -19952,7 +19882,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-135` · rendered **499×64** · 1 instance look like this
+`compares2-117` · rendered **499×64** · 1 instance look like this
 
 ```html
 <td colspan="1" class="cx-c s-x" style="--c: #4361ee;"><span class="cx-v x"><span class="cx-vt">—</span></span></td>
@@ -19979,11 +19909,11 @@ inside `.—` · 1 on screen · **1 look**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | `default` | `default` | .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 
 ### `span.cx-v.mono`
@@ -19992,10 +19922,10 @@ inside `.cx-c` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-166` · rendered **487×56** · 1 instance look like this
+`compares2-148` · rendered **487×56** · 1 instance look like this
 
 ```html
-<span class="cx-v mono"><span class="cx-vt">2F4D5A8A9E</span></span>
+<span class="cx-v mono"><span class="cx-vt">1B4A5A6A8A</span></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -20027,12 +19957,12 @@ inside `.cx-c` · 1 on screen · **1 look**
 | font-style | `` | `normal` | .b4 .cx-v.mono · b4/compare.css:45 |
 | font-variant-numeric | `` | `normal` | .b4 .cx-v.mono · b4/compare.css:45 |
 | line-height | `` | `16.25px` | .b4 .cx-v.mono · b4/compare.css:45 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 #compare .cx-t td.s-sg .cx-v · b4/compare.css:310 |
 | transition | `background-color .12s var(--ease),box-shadow .12s var(--ease),color .12s var(--ease)` | `` | .b4 #compare .cx-t .cx-v · b4/compare.css:361 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `default` | `default` | inherited · .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 
 ### `td.cx-fa`
@@ -20041,10 +19971,10 @@ inside `.cx-ft` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-171` · rendered **499×62** · 1 instance look like this
+`compares2-153` · rendered **499×62** · 1 instance look like this
 
 ```html
-<td class="cx-fa" style="--c: #4361ee;"><div class="wg-acts cx-acts"><button type="button" class="wg-ib wg-share" aria-label="Copy share command" data-tip="Copy share command">⟨svg.ic⟩</button><button type="button" class="wg-ib cx-edit" aria-label="Edit DL Q33 build 1" data-tip="Edit in the drawer">⟨svg.ic⟩</button><i class="wg-vr" aria-hidden="true"></i><button type="button" class="wg-ib wg-del" aria-label="Stage de
+<td class="cx-fa" style="--c: #4361ee;"><div class="wg-acts cx-acts"><button type="button" class="wg-ib wg-share" aria-label="Copy share command" data-tip="Copy share command">⟨svg.ic⟩</button><button type="button" class="wg-ib wg-edit cx-edit" aria-label="Edit DL Q33 build 1" data-tip="Edit in the drawer">⟨svg.ic⟩</button><i class="wg-vr" aria-hidden="true"></i><button type="button" class="wg-ib wg-del" aria-label="
 ```
 
 | property | winning declaration | computed | from |
@@ -20053,7 +19983,7 @@ inside `.cx-ft` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `8px 6px 10px` | `` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:384 |
 | padding-top | `8px` | `8px` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:384 |
-| padding-right | `6px` | `6px` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:384 |
+| padding-right | `15px` | `15px` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:457 |
 | padding-bottom | `10px` | `10px` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:384 |
 | padding-left | `6px` | `6px` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:384 |
 | border-bottom | `0` | `` | .b4 #compare.cx .cx-t :is(th, td) · b4/compare.css:291 |
@@ -20067,8 +19997,8 @@ inside `.cx-ft` · 1 on screen · **1 look**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
 
@@ -20079,7 +20009,7 @@ inside `.cx-ft` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-181` · rendered **499×62** · 1 instance look like this
+`compares2-163` · rendered **499×62** · 1 instance look like this
 
 ```html
 <td class="cx-fa sg" style="--c: #4361ee;"></td>
@@ -20091,7 +20021,7 @@ inside `.cx-ft` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `8px 6px 10px` | `` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:384 |
 | padding-top | `8px` | `8px` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:384 |
-| padding-right | `6px` | `6px` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:384 |
+| padding-right | `15px` | `15px` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:457 |
 | padding-bottom | `10px` | `10px` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:384 |
 | padding-left | `6px` | `6px` | .b4 #compare .cx-t td.cx-fa · b4/compare.css:384 |
 | border-bottom | `0` | `` | .b4 #compare.cx .cx-t :is(th, td) · b4/compare.css:291 |
@@ -20105,8 +20035,8 @@ inside `.cx-ft` · 1 on screen · **1 look**
 | font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
 | line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
 
@@ -20117,7 +20047,7 @@ inside `.cx-dcin` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-196` · rendered **1080×345** · 1 instance look like this
+`compares2-178` · rendered **1080×345** · 1 instance look like this
 
 ```html
 <div class="cx-emb" data-n="1"><figure class="cx-cc" style="--c: #4361ee;"><figcaption class="cx-eh"><span class="b3-sd-gn">Build 1</span></figcaption><div class="dcard lc" style="--c: #4361ee;"><h6 role="heading" aria-level="3">DL Q33</h6><div class="lc-badges"><span data-k="top5">TOP 5 SNIPER</span></div><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzl
@@ -20151,7 +20081,7 @@ inside `.cx-emb` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-197` · rendered **520×345** · 1 instance look like this
+`compares2-179` · rendered **520×345** · 1 instance look like this
 
 ```html
 <figure class="cx-cc" style="--c: #4361ee;"><figcaption class="cx-eh"><span class="b3-sd-gn">Build 1</span></figcaption><div class="dcard lc" style="--c: #4361ee;"><h6 role="heading" aria-level="3">DL Q33</h6><div class="lc-badges"><span data-k="top5">TOP 5 SNIPER</span></div><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>O
@@ -20185,7 +20115,7 @@ inside `.cx-cc` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-200` · rendered **520×313** · 1 instance look like this
+`compares2-182` · rendered **520×313** · 1 instance look like this
 
 ```html
 <div class="dcard lc" style="--c: #4361ee;"><h6 role="heading" aria-level="3">DL Q33</h6><div class="lc-badges"><span data-k="top5">TOP 5 SNIPER</span></div><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>OWC Light Suppressor</code><em>Muzzle</em></li><li style="--sl: var(--sl-barrel, var(--sl-unknown));"><code>MIP Light</co
@@ -20222,7 +20152,7 @@ inside `.lc-badges` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares2-202` · rendered **86×20** · 1 instance look like this · text “TOP 5 SNIPER”
+`compares2-184` · rendered **86×20** · 1 instance look like this · text “TOP 5 SNIPER”
 
 ```html
 <span data-k="top5">TOP 5 SNIPER</span>
@@ -20251,8 +20181,8 @@ inside `.lc-badges` · 1 on screen · **1 look**
 | font-style | `` | `normal` | .b4 .lc-badges span · b4/classes.css:197 |
 | font-variant-numeric | `` | `normal` | .b4 .lc-badges span · b4/classes.css:197 |
 | line-height | `` | `10px` | .b4 .lc-badges span · b4/classes.css:197 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | color | `color-mix(in srgb,var(--tc) 72%,white)` | `color(srgb 0.757176 0.672471 1)` | .b4 .lc-badges span · b4/classes.css:197 |
 
 
@@ -20262,7 +20192,7 @@ inside `.—` · 5 on screen · **1 look**
 
 #### the one look
 
-`compares2-215` · rendered **20×14** · 1 instance look like this · text “Perk”
+`compares2-197` · rendered **20×14** · 1 instance look like this · text “Perk”
 
 ```html
 <em>Perk</em>
@@ -20277,14 +20207,14 @@ inside `.—` · 5 on screen · **1 look**
 | font-weight | — | `400` | initial |
 | font-style | `normal` | `normal` | .lc-att li em · app.css:3540 |
 | line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | color | `var(--sl,var(--dc-dim))` | `rgb(255, 143, 208)` | .b4 .lc-att li em · b4/classes.css:204 |
 
 
 ### compare · Empty
 
-59 distinct signatures on screen; 25 not already specced above.
+63 distinct signatures on screen; 26 not already specced above.
 
 
 ### `section.pb-panel`
@@ -20486,11 +20416,11 @@ inside `.—` · 1 on screen · **1 look**
 
 ### `b`
 
-inside `.cx-gn` · 49 on screen · **2 looks**
+inside `.cx-gn` · 53 on screen · **2 looks**
 
 #### look 1 of 2
 
-`compares3-146` · rendered **86×13** · 2 instances look like this · text “Pick a weapon”
+`compares3-152` · rendered **86×13** · 2 instances look like this · text “Pick a weapon”
 
 ```html
 <b>Pick a weapon</b>
@@ -20507,15 +20437,15 @@ inside `.cx-gn` · 49 on screen · **2 looks**
 | font-style | ↑ `` | `normal` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
 | line-height | ↑ `` | `12.5px` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
 | white-space | `nowrap` | `` | .b4 .b4-echo:not(#_) b · b4/classes.css:937 |
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .b4-echo:not(#_) b · b4/classes.css:937 |
 
 #### look 2 of 2
 
-`compares3-166` · rendered **8×13** · 30 instances look like this · text “1”
+`compares3-172` · rendered **8×13** · 34 instances look like this · text “1”
 
 ```html
 <b>1</b>
@@ -20532,8 +20462,8 @@ inside `.cx-gn` · 49 on screen · **2 looks**
 | font-style | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
 | line-height | ↑ `` | `13px` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .cx-k[aria-pressed="false"], .b4 .cx-wl .cx-k · b4/compare.css:152 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
@@ -20541,89 +20471,11 @@ inside `.cx-gn` · 49 on screen · **2 looks**
 
 ### `small`
 
-inside `.cx-gn` · 17 on screen · **4 looks**
+inside `.cx-gn` · 17 on screen · **5 looks**
 
-#### look 1 of 4
+#### look 1 of 5
 
-`compares3-173` · rendered **22×7** · 1 instance look like this · text “LMG”
-
-```html
-<small>LMG</small>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 9.5px/9.5px var(--data)` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-size | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-weight | `` | `600` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-style | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| line-height | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-| white-space | `nowrap` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| color | `var(--c)` | `rgb(132, 94, 194)` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-
-#### look 2 of 4
-
-`compares3-188` · rendered **22×7** · 4 instances look like this · text “SMG”
-
-```html
-<small>SMG</small>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 9.5px/9.5px var(--data)` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-size | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-weight | `` | `600` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-style | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| line-height | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-| white-space | `nowrap` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| color | `var(--c)` | `rgb(255, 210, 63)` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-
-#### look 3 of 4
-
-`compares3-227` · rendered **79×7** · 2 instances look like this · text “Secondaries”
-
-```html
-<small>Secondaries</small>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 9.5px/9.5px var(--data)` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-size | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-weight | `` | `600` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-style | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| line-height | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-| white-space | `nowrap` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| color | `var(--c)` | `rgb(63, 110, 142)` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-
-#### look 4 of 4
-
-`compares3-320` · rendered **58×7** · 2 instances look like this · text “Marksman”
+`compares3-209` · rendered **46×7** · 2 instances look like this · text “Marksman”
 
 ```html
 <small>Marksman</small>
@@ -20640,21 +20492,125 @@ inside `.cx-gn` · 17 on screen · **4 looks**
 | font-style | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
 | font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
 | line-height | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 | white-space | `nowrap` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
 | color | `var(--c)` | `rgb(61, 220, 151)` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 
+#### look 2 of 5
+
+`compares3-230` · rendered **40×7** · 3 instances look like this · text “Shotgun”
+
+```html
+<small>Shotgun</small>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `600 9.5px/9.5px var(--data)` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-size | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-weight | `` | `600` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-style | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| line-height | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+| white-space | `nowrap` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| color | `var(--c)` | `rgb(246, 169, 59)` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+
+#### look 3 of 5
+
+`compares3-257` · rendered **63×7** · 1 instance look like this · text “Secondaries”
+
+```html
+<small>Secondaries</small>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `600 9.5px/9.5px var(--data)` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-size | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-weight | `` | `600` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-style | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| line-height | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+| white-space | `nowrap` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| color | `var(--c)` | `rgb(63, 110, 142)` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+
+#### look 4 of 5
+
+`compares3-272` · rendered **17×7** · 1 instance look like this · text “LMG”
+
+```html
+<small>LMG</small>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `600 9.5px/9.5px var(--data)` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-size | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-weight | `` | `600` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-style | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| line-height | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+| white-space | `nowrap` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| color | `var(--c)` | `rgb(132, 94, 194)` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+
+#### look 5 of 5
+
+`compares3-302` · rendered **17×7** · 3 instances look like this · text “SMG”
+
+```html
+<small>SMG</small>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `600 9.5px/9.5px var(--data)` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-size | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-weight | `` | `600` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-style | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| font-variant-numeric | `` | `normal` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| line-height | `` | `9.5px` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+| white-space | `nowrap` | `` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| color | `var(--c)` | `rgb(255, 210, 63)` | .b4 #compare.cx .cx-wn > small · b4/compare.css:230 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+
 
 ### `svg.ic`
 
-inside `.wg-im` · 59 on screen · **8 looks**
+inside `.b3-fchip` · 29 on screen · **9 looks**
 
-#### look 1 of 8
+#### look 1 of 9
 
-`compares3-145` · rendered **22×22** · 2 instances look like this · aria-hidden="true"
+`compares3-151` · rendered **22×22** · 2 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-columns-3"></use></svg>
@@ -20684,17 +20640,17 @@ inside `.wg-im` · 59 on screen · **8 looks**
 | font-style | ↑ `` | `normal` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
 | line-height | ↑ `` | `12.5px` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
 | white-space | ↑ `nowrap` | `` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b4 .b4-echo:not(#_) > .ic · b4/classes.css:936 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 2 of 8
+#### look 2 of 9
 
-`compares3-149` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
+`compares3-155` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
@@ -20720,9 +20676,9 @@ inside `.wg-im` · 59 on screen · **8 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 3 of 8
+#### look 3 of 9
 
-`compares3-163` · rendered **16×16** · 3 instances look like this · aria-hidden="true"
+`compares3-169` · rendered **16×16** · 3 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg>
@@ -20742,8 +20698,8 @@ inside `.wg-im` · 59 on screen · **8 looks**
 | font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 | color | ↑ `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.410196 0.504314 0.946667)` | inherited · .b4 #compare .cx-wplus · b4/compare.css:254 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
@@ -20751,40 +20707,9 @@ inside `.wg-im` · 59 on screen · **8 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 4 of 8
+#### look 4 of 9
 
-`compares3-175` · rendered **16×16** · 1 instance look like this · aria-hidden="true"
-
-```html
-<svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `16px` | `16px` | .b4 #compare .cx-wplus .ic · b4/compare.css:256 |
-| height | `16px` | `16px` | .b4 #compare .cx-wplus .ic · b4/compare.css:256 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-| color | ↑ `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.614118 0.494902 0.808627)` | inherited · .b4 #compare .cx-wplus · b4/compare.css:254 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
-
-#### look 5 of 8
-
-`compares3-190` · rendered **16×16** · 4 instances look like this · aria-hidden="true"
+`compares3-193` · rendered **16×16** · 3 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg>
@@ -20804,18 +20729,18 @@ inside `.wg-im` · 59 on screen · **8 looks**
 | font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-| color | ↑ `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 1 0.858824 0.397647)` | inherited · .b4 #compare .cx-wplus · b4/compare.css:254 |
+| color | ↑ `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 1 0.385098 0.488627)` | inherited · .b4 #compare .cx-wplus · b4/compare.css:254 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 6 of 8
+#### look 5 of 9
 
-`compares3-229` · rendered **16×16** · 2 instances look like this · aria-hidden="true"
+`compares3-211` · rendered **16×16** · 2 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg>
@@ -20835,16 +20760,47 @@ inside `.wg-im` · 59 on screen · **8 looks**
 | font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-| color | ↑ `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.397647 0.545098 0.64549)` | inherited · .b4 #compare .cx-wplus · b4/compare.css:254 |
+| color | ↑ `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.391373 0.890196 0.673725)` | inherited · .b4 #compare .cx-wplus · b4/compare.css:254 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-*2 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+#### look 6 of 9
+
+`compares3-232` · rendered **16×16** · 3 instances look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `16px` | `16px` | .b4 #compare .cx-wplus .ic · b4/compare.css:256 |
+| height | `16px` | `16px` | .b4 #compare .cx-wplus .ic · b4/compare.css:256 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+| color | ↑ `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.971765 0.730196 0.385098)` | inherited · .b4 #compare .cx-wplus · b4/compare.css:254 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+
+*3 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `span.cx-vt`
@@ -20853,7 +20809,7 @@ inside `.cx-v` · 12 on screen · **1 look**
 
 #### the one look
 
-`compares3-127` · rendered **298×9** · 3 instances look like this · text “1I2C4A8A9D”
+`compares3-133` · rendered **298×9** · 3 instances look like this · text “1I2C4A8A9D”
 
 ```html
 <span class="cx-vt">1I2C4A8A9D</span>
@@ -20870,11 +20826,11 @@ inside `.cx-v` · 12 on screen · **1 look**
 | font-style | ↑ `` | `normal` | inherited · .b4 .cx-v.mono · b4/compare.css:45 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-v.mono · b4/compare.css:45 |
 | line-height | ↑ `` | `16.25px` | inherited · .b4 .cx-v.mono · b4/compare.css:45 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | `left` | `left` | .b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt · b4/compare.css:210 |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b4 .s-n .cx-v · b4/compare.css:214 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `default` | `default` | inherited · .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 
 ### `span.cx-v.mono`
@@ -20883,7 +20839,7 @@ inside `.cx-c` · 3 on screen · **1 look**
 
 #### the one look
 
-`compares3-126` · rendered **318×56** · 3 instances look like this
+`compares3-132` · rendered **318×56** · 3 instances look like this
 
 ```html
 <span class="cx-v mono"><span class="cx-vt">1I2C4A8A9D</span></span>
@@ -20916,12 +20872,12 @@ inside `.cx-c` · 3 on screen · **1 look**
 | font-style | `` | `normal` | .b4 .cx-v.mono · b4/compare.css:45 |
 | font-variant-numeric | `` | `normal` | .b4 .cx-v.mono · b4/compare.css:45 |
 | line-height | `` | `16.25px` | .b4 .cx-v.mono · b4/compare.css:45 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .s-n .cx-v · b4/compare.css:214 |
 | transition | `background-color .12s var(--ease),box-shadow .12s var(--ease),color .12s var(--ease)` | `` | .b4 #compare .cx-t .cx-v · b4/compare.css:361 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `default` | `default` | inherited · .b4 #compare .cx-t td.cx-c · b4/compare.css:473 |
 
 
 ### `div.cx-over`
@@ -20930,7 +20886,7 @@ inside `.cx-land` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares3-134` · rendered **1116×413** · 1 instance look like this
+`compares3-140` · rendered **1116×413** · 1 instance look like this
 
 ```html
 <div class="cx-over"><div class="cx-pick big"><div class="f-pick"><div class="f-fld"><span class="f-pre f-ic">⟨svg.ic⟩</span><input data-bare="true" id="cx-q-big" class="f-in" placeholder="Add a weapon to compare" role="combobox" aria-expanded="false" aria-controls="cx-q-big-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="true"><button type="button" class="f-suf f-caret" tabinde
@@ -20962,7 +20918,7 @@ inside `.cx-over` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares3-135` · rendered **560×52** · 1 instance look like this
+`compares3-141` · rendered **480×52** · 1 instance look like this
 
 ```html
 <div class="cx-pick big"><div class="f-pick"><div class="f-fld"><span class="f-pre f-ic">⟨svg.ic⟩</span><input data-bare="true" id="cx-q-big" class="f-in" placeholder="Add a weapon to compare" role="combobox" aria-expanded="false" aria-controls="cx-q-big-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="true"><button type="button" class="f-suf f-caret" tabindex="-1" aria-label="Op
@@ -20971,7 +20927,7 @@ inside `.cx-over` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | div · user-agent:? |
-| width | `min(560px, 100%)` | `560px` | .b4 #compare .cx-over > .cx-pick.big · b4/compare.css:244 |
+| width | `min(480px, 100%)` | `480px` | .b4 #compare .cx-over > .cx-pick.big · b4/compare.css:430 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -20988,7 +20944,7 @@ inside `.cx-pick` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares3-136` · rendered **560×52** · 1 instance look like this
+`compares3-142` · rendered **480×52** · 1 instance look like this
 
 ```html
 <div class="f-pick"><div class="f-fld"><span class="f-pre f-ic">⟨svg.ic⟩</span><input data-bare="true" id="cx-q-big" class="f-in" placeholder="Add a weapon to compare" role="combobox" aria-expanded="false" aria-controls="cx-q-big-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="true"><button type="button" class="f-suf f-caret" tabindex="-1" aria-label="Open the list">⟨svg.ic.f-cr
@@ -21015,7 +20971,7 @@ inside `.f-pick` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares3-137` · rendered **560×52** · 1 instance look like this
+`compares3-143` · rendered **480×52** · 1 instance look like this
 
 ```html
 <div class="f-fld"><span class="f-pre f-ic">⟨svg.ic⟩</span><input data-bare="true" id="cx-q-big" class="f-in" placeholder="Add a weapon to compare" role="combobox" aria-expanded="false" aria-controls="cx-q-big-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="true"><button type="button" class="f-suf f-caret" tabindex="-1" aria-label="Open the list">⟨svg.ic.f-cr⟩</button></div>
@@ -21055,7 +21011,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares3-138` · rendered **28×52** · 1 instance look like this
+`compares3-144` · rendered **28×52** · 1 instance look like this
 
 ```html
 <span class="f-pre f-ic">⟨svg.ic⟩</span>
@@ -21080,8 +21036,8 @@ inside `.f-fld` · 1 on screen · **1 look**
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-pre · b4/form.css:55 |
 
@@ -21092,7 +21048,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares3-140` · rendered **495×52** · 1 instance look like this · aria-expanded="false" role="combobox"
+`compares3-146` · rendered **415×52** · 1 instance look like this · aria-expanded="false" role="combobox"
 
 ```html
 <input data-bare="true" id="cx-q-big" class="f-in" placeholder="Add a weapon to compare" role="combobox" aria-expanded="false" aria-controls="cx-q-big-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="true">
@@ -21102,7 +21058,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `inline-block` | `block` | input, textarea, select, button · user-agent:? |
 | flex | `1` | `` | .b4 .f-fld .f-in, .b4 .drawer .f-fld .f-in · b4/form.css:50 |
-| width | ⚠️ `0px` | `495px` | .b4 .f-fld > .f-in · b4/classes.css:180 · **a later rule wins — port the computed value and find that rule** |
+| width | ⚠️ `0px` | `415px` | .b4 .f-fld > .f-in · b4/classes.css:180 · **a later rule wins — port the computed value and find that rule** |
 | min-width | `0px` | `0px` | .b4 .f-fld .f-in, .b4 .drawer .f-fld .f-in · b4/form.css:50 |
 | height | `100%` | `52px` | .b4 .f-fld .f-in, .b4 .drawer .f-fld .f-in · b4/form.css:50 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
@@ -21156,7 +21112,7 @@ inside `.cx-over` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares3-143` · rendered **723×30** · 1 instance look like this
+`compares3-149` · rendered **723×30** · 1 instance look like this
 
 ```html
 <p class="cx-lead"><span class="b4-echo" data-tone="neutral">⟨svg.ic⟩<b>Pick a weapon</b><i aria-hidden="true"></i><span>every one of its builds opens in columns</span></span>⟨svg.ic⟩<span class="b4-echo" data-tone="neutral">⟨svg.ic⟩<b>Add a second</b><i aria-hidden="true"></i><span>to set them side by side</span></span></p>
@@ -21196,7 +21152,7 @@ inside `.cx-lead` · 2 on screen · **1 look**
 
 #### the one look
 
-`compares3-144` · rendered **395×30** · 2 instances look like this
+`compares3-150` · rendered **395×30** · 2 instances look like this
 
 ```html
 <span class="b4-echo" data-tone="neutral">⟨svg.ic⟩<b>Pick a weapon</b><i aria-hidden="true"></i><span>every one of its builds opens in columns</span></span>
@@ -21229,8 +21185,8 @@ inside `.cx-lead` · 2 on screen · **1 look**
 | font-style | `` | `normal` | .b4 .b4-echo:not(#_) · b4/classes.css:934 |
 | font-variant-numeric | `` | `normal` | .b4 .b4-echo:not(#_) · b4/classes.css:934 |
 | line-height | `` | `12.5px` | .b4 .b4-echo:not(#_) · b4/classes.css:934 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
 | white-space | `nowrap` | `` | .b4 .b4-echo:not(#_) · b4/classes.css:934 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .b4-echo:not(#_) · b4/classes.css:934 |
@@ -21242,7 +21198,7 @@ inside `.b4-echo` · 2 on screen · **1 look**
 
 #### the one look
 
-`compares3-147` · rendered **1×12** · 2 instances look like this · aria-hidden="true"
+`compares3-153` · rendered **1×12** · 2 instances look like this · aria-hidden="true"
 
 ```html
 <i aria-hidden="true"></i>
@@ -21265,11 +21221,46 @@ inside `.b4-echo` · 2 on screen · **1 look**
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
 | line-height | ↑ `` | `12.5px` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
 | white-space | ↑ `nowrap` | `` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
+
+
+### `span`
+
+inside `.b4-echo` · 2 on screen · **1 look**
+
+#### the one look
+
+`compares3-154` · rendered **243×13** · 2 instances look like this · text “every one of its builds opens in columns”
+
+```html
+<span>every one of its builds opens in columns</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| min-width | `0px` | `0px` | .b4 .b4-echo:not(#_) > span · b4/classes.css:939 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `500 12.5px/1 var(--ui)` | `` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
+| font-size | ↑ `` | `12.5px` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
+| font-weight | ↑ `` | `500` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
+| font-style | ↑ `` | `normal` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
+| line-height | ↑ `` | `12.5px` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
+| text-overflow | `ellipsis` | `ellipsis` | .b4 .b4-echo:not(#_) > span · b4/classes.css:939 |
+| white-space | ↑ `nowrap` | `` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .b4-echo:not(#_) · b4/classes.css:934 |
+| overflow | `hidden` | `` | .b4 .b4-echo:not(#_) > span · b4/classes.css:939 |
+| overflow-x | `hidden` | `hidden` | .b4 .b4-echo:not(#_) > span · b4/classes.css:939 |
+| overflow-y | `hidden` | `hidden` | .b4 .b4-echo:not(#_) > span · b4/classes.css:939 |
 
 
 ### `div.cx-shelf`
@@ -21278,7 +21269,7 @@ inside `.cx-over` · 1 on screen · **1 look**
 
 #### the one look
 
-`compares3-155` · rendered **900×293** · 1 instance look like this
+`compares3-161` · rendered **900×293** · 1 instance look like this
 
 ```html
 <div class="cx-shelf"><div class="cx-w cx-wl" role="group" aria-label="DL Q33, 1 build" style="--c: #4361ee;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="DL Q33: Compare its build" data-tip="Compare its build"><span class="cx-wn"><b>DL Q33</b><small>Sniper</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx
@@ -21308,11 +21299,11 @@ inside `.cx-over` · 1 on screen · **1 look**
 
 ### `div.cx-w.cx-wl[role=group]`
 
-inside `.cx-shelf` · 16 on screen · **6 looks**
+inside `.cx-shelf` · 16 on screen · **7 looks**
 
-#### look 1 of 6
+#### look 1 of 7
 
-`compares3-156` · rendered **120×91** · 3 instances look like this · aria-label="DL Q33, 1 build" role="group"
+`compares3-162` · rendered **120×91** · 3 instances look like this · aria-label="DL Q33, 1 build" role="group"
 
 ```html
 <div class="cx-w cx-wl" role="group" aria-label="DL Q33, 1 build" style="--c: #4361ee;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="DL Q33: Compare its build" data-tip="Compare its build"><span class="cx-wn"><b>DL Q33</b><small>Sniper</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx-k" data-tip="Compare 
@@ -21348,12 +21339,164 @@ inside `.cx-shelf` · 16 on screen · **6 looks**
 | transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 #compare .cx-wl · b4/compare.css:249 |
 | cursor | `pointer` | `pointer` | .b4 #compare .cx-wl · b4/compare.css:249 |
 
-#### look 2 of 6
+#### look 2 of 7
 
-`compares3-168` · rendered **120×91** · 1 instance look like this · aria-label="PKM, 2 builds" role="group"
+`compares3-186` · rendered **134×91** · 3 instances look like this · aria-label="XM4, 3 builds" role="group"
 
 ```html
-<div class="cx-w cx-wl" role="group" aria-label="PKM, 2 builds" style="--c: #845ec2;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="PKM: Compare its builds, up to 6" data-tip="Compare its builds, up to 6"><span class="cx-wn"><b>PKM</b><small>LMG</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx-k" data-tip=
+<div class="cx-w cx-wl" role="group" aria-label="XM4, 3 builds" style="--c: #ff3b5c;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="XM4: Compare its builds, up to 6" data-tip="Compare its builds, up to 6"><span class="cx-wn"><b>XM4</b><small>Assault</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx-k" data-
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .cx-w · b4/compare.css:225 |
+| gap | `12px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| column-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| row-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| width | `max-content` | `134px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| min-width | `120px` | `120px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| max-width | `260px` | `260px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-top | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-right | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-bottom | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-left | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| border-radius | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk))` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background-image | `` | `linear-gradient(color(srgb 0.167529 0.0812549 0.108314), rgb(11, 15, 18))` | .b4 #compare .cx-w · b4/compare.css:225 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 #compare .cx-w · b4/compare.css:225 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 #compare .cx-wl · b4/compare.css:249 |
+| cursor | `pointer` | `pointer` | .b4 #compare .cx-wl · b4/compare.css:249 |
+
+#### look 3 of 7
+
+`compares3-204` · rendered **174×91** · 2 instances look like this · aria-label="SKS, 4 builds" role="group"
+
+```html
+<div class="cx-w cx-wl" role="group" aria-label="SKS, 4 builds" style="--c: #3ddc97;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="SKS: Compare its builds, up to 6" data-tip="Compare its builds, up to 6"><span class="cx-wn"><b>SKS</b><small>Marksman</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx-k" data
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .cx-w · b4/compare.css:225 |
+| gap | `12px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| column-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| row-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| width | `max-content` | `174px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| min-width | `120px` | `120px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| max-width | `260px` | `260px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-top | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-right | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-bottom | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-left | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| border-radius | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk))` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background-image | `` | `linear-gradient(color(srgb 0.0686274 0.163333 0.138392), rgb(11, 15, 18))` | .b4 #compare .cx-w · b4/compare.css:225 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 #compare .cx-w · b4/compare.css:225 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 #compare .cx-wl · b4/compare.css:249 |
+| cursor | `pointer` | `pointer` | .b4 #compare .cx-wl · b4/compare.css:249 |
+
+#### look 4 of 7
+
+`compares3-225` · rendered **120×91** · 3 instances look like this · aria-label="BY15, 1 build" role="group"
+
+```html
+<div class="cx-w cx-wl" role="group" aria-label="BY15, 1 build" style="--c: #f6a93b;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="BY15: Compare its build" data-tip="Compare its build"><span class="cx-wn"><b>BY15</b><small>Shotgun</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx-k" data-tip="Compare Build
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .cx-w · b4/compare.css:225 |
+| gap | `12px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| column-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| row-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| width | `max-content` | `120px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| min-width | `120px` | `120px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| max-width | `260px` | `260px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-top | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-right | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-bottom | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-left | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| border-radius | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk))` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background-image | `` | `linear-gradient(color(srgb 0.162941 0.137333 0.0914902), rgb(11, 15, 18))` | .b4 #compare .cx-w · b4/compare.css:225 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 #compare .cx-w · b4/compare.css:225 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 #compare .cx-wl · b4/compare.css:249 |
+| cursor | `pointer` | `pointer` | .b4 #compare .cx-wl · b4/compare.css:249 |
+
+#### look 5 of 7
+
+`compares3-252` · rendered **132×91** · 1 instance look like this · aria-label="CROSSBOW, 2 builds" role="group"
+
+```html
+<div class="cx-w cx-wl" role="group" aria-label="CROSSBOW, 2 builds" style="--c: #3F6E8E;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="CROSSBOW: Compare its builds, up to 6" data-tip="Compare its builds, up to 6"><span class="cx-wn"><b>CROSSBOW</b><small>Secondaries</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button"
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .cx-w · b4/compare.css:225 |
+| gap | `12px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| column-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| row-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| width | `max-content` | `132.078px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| min-width | `120px` | `120px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| max-width | `260px` | `260px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-top | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-right | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-bottom | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| padding-left | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
+| border-radius | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk))` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-w · b4/compare.css:225 |
+| background-image | `` | `linear-gradient(color(srgb 0.0696471 0.107255 0.133804), rgb(11, 15, 18))` | .b4 #compare .cx-w · b4/compare.css:225 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 #compare .cx-w · b4/compare.css:225 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 #compare .cx-wl · b4/compare.css:249 |
+| cursor | `pointer` | `pointer` | .b4 #compare .cx-wl · b4/compare.css:249 |
+
+#### look 6 of 7
+
+`compares3-267` · rendered **120×91** · 1 instance look like this · aria-label="HADES, 1 build" role="group"
+
+```html
+<div class="cx-w cx-wl" role="group" aria-label="HADES, 1 build" style="--c: #845ec2;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="HADES: Compare its build" data-tip="Compare its build"><span class="cx-wn"><b>HADES</b><small>LMG</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx-k" data-tip="Compare Build 
 ```
 
 | property | winning declaration | computed | from |
@@ -21386,157 +21529,7 @@ inside `.cx-shelf` · 16 on screen · **6 looks**
 | transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 #compare .cx-wl · b4/compare.css:249 |
 | cursor | `pointer` | `pointer` | .b4 #compare .cx-wl · b4/compare.css:249 |
 
-#### look 3 of 6
-
-`compares3-183` · rendered **120×91** · 4 instances look like this · aria-label="MAC-10, 2 builds" role="group"
-
-```html
-<div class="cx-w cx-wl" role="group" aria-label="MAC-10, 2 builds" style="--c: #ffd23f;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="MAC-10: Compare its builds, up to 6" data-tip="Compare its builds, up to 6"><span class="cx-wn"><b>MAC-10</b><small>SMG</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx-k" 
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b4 #compare .cx-w · b4/compare.css:225 |
-| gap | `12px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| column-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| row-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| width | `max-content` | `120px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| min-width | `120px` | `120px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| max-width | `260px` | `260px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-top | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-right | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-bottom | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-left | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| border-radius | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk))` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background-image | `` | `linear-gradient(color(srgb 0.167529 0.158235 0.0935294), rgb(11, 15, 18))` | .b4 #compare .cx-w · b4/compare.css:225 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 #compare .cx-w · b4/compare.css:225 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 #compare .cx-wl · b4/compare.css:249 |
-| cursor | `pointer` | `pointer` | .b4 #compare .cx-wl · b4/compare.css:249 |
-
-#### look 4 of 6
-
-`compares3-222` · rendered **133×91** · 2 instances look like this · aria-label="DOBVRA, 1 build" role="group"
-
-```html
-<div class="cx-w cx-wl" role="group" aria-label="DOBVRA, 1 build" style="--c: #3F6E8E;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="DOBVRA: Compare its build" data-tip="Compare its build"><span class="cx-wn"><b>DOBVRA</b><small>Secondaries</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx-k" data-tip="Com
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b4 #compare .cx-w · b4/compare.css:225 |
-| gap | `12px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| column-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| row-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| width | `max-content` | `133.422px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| min-width | `120px` | `120px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| max-width | `260px` | `260px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-top | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-right | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-bottom | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-left | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| border-radius | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk))` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background-image | `` | `linear-gradient(color(srgb 0.0696471 0.107255 0.133804), rgb(11, 15, 18))` | .b4 #compare .cx-w · b4/compare.css:225 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 #compare .cx-w · b4/compare.css:225 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 #compare .cx-wl · b4/compare.css:249 |
-| cursor | `pointer` | `pointer` | .b4 #compare .cx-wl · b4/compare.css:249 |
-
-#### look 5 of 6
-
-`compares3-234` · rendered **126×91** · 4 instances look like this · aria-label="GRAU 5.56, 1 build" role="group"
-
-```html
-<div class="cx-w cx-wl" role="group" aria-label="GRAU 5.56, 1 build" style="--c: #ff3b5c;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="GRAU 5.56: Compare its build" data-tip="Compare its build"><span class="cx-wn"><b>GRAU 5.56</b><small>Assault</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx-k" data-tip
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b4 #compare .cx-w · b4/compare.css:225 |
-| gap | `12px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| column-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| row-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| width | `max-content` | `126.344px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| min-width | `120px` | `120px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| max-width | `260px` | `260px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-top | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-right | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-bottom | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-left | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| border-radius | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk))` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background-image | `` | `linear-gradient(color(srgb 0.167529 0.0812549 0.108314), rgb(11, 15, 18))` | .b4 #compare .cx-w · b4/compare.css:225 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 #compare .cx-w · b4/compare.css:225 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 #compare .cx-wl · b4/compare.css:249 |
-| cursor | `pointer` | `pointer` | .b4 #compare .cx-wl · b4/compare.css:249 |
-
-#### look 6 of 6
-
-`compares3-315` · rendered **134×91** · 2 instances look like this · aria-label="SO-14, 3 builds" role="group"
-
-```html
-<div class="cx-w cx-wl" role="group" aria-label="SO-14, 3 builds" style="--c: #3ddc97;"><div class="cx-wh"><button type="button" class="cx-wadd" aria-label="SO-14: Compare its builds, up to 6" data-tip="Compare its builds, up to 6"><span class="cx-wn"><b>SO-14</b><small>Marksman</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button></div><div class="cx-keys"><button type="button" class="cx-k
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b4 #compare .cx-w · b4/compare.css:225 |
-| gap | `12px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| column-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| row-gap | `12px` | `12px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| width | `max-content` | `134px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| min-width | `120px` | `120px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| max-width | `260px` | `260px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| box-sizing | `border-box` | `border-box` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-top | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-right | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-bottom | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| padding-left | `10px` | `10px` | .b4 #compare .cx-w · b4/compare.css:225 |
-| border-radius | `10px` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk))` | `` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-w · b4/compare.css:225 |
-| background-image | `` | `linear-gradient(color(srgb 0.0686274 0.163333 0.138392), rgb(11, 15, 18))` | .b4 #compare .cx-w · b4/compare.css:225 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 #compare .cx-w · b4/compare.css:225 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| text-align | ↑ `initial` | `start` | inherited · .b4 #compare .cx-over · b4/compare.css:243 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background .18s var(--ease),box-shadow .18s var(--ease)` | `` | .b4 #compare .cx-wl · b4/compare.css:249 |
-| cursor | `pointer` | `pointer` | .b4 #compare .cx-wl · b4/compare.css:249 |
+*1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `button.cx-wadd`
@@ -21545,7 +21538,7 @@ inside `.cx-wh` · 16 on screen · **1 look**
 
 #### the one look
 
-`compares3-158` · rendered **100×25** · 16 instances look like this · aria-label="DL Q33: Compare its build" type="button"
+`compares3-164` · rendered **100×25** · 16 instances look like this · aria-label="DL Q33: Compare its build" type="button"
 
 ```html
 <button type="button" class="cx-wadd" aria-label="DL Q33: Compare its build" data-tip="Compare its build"><span class="cx-wn"><b>DL Q33</b><small>Sniper</small></span><span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span></button>
@@ -21608,11 +21601,11 @@ inside `.cx-wh` · 16 on screen · **1 look**
 
 ### `span.cx-wplus`
 
-inside `.cx-wadd` · 16 on screen · **6 looks**
+inside `.cx-wadd` · 16 on screen · **7 looks**
 
-#### look 1 of 6
+#### look 1 of 7
 
-`compares3-162` · rendered **26×26** · 3 instances look like this · aria-hidden="true"
+`compares3-168` · rendered **26×26** · 3 instances look like this · aria-hidden="true"
 
 ```html
 <span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span>
@@ -21644,57 +21637,16 @@ inside `.cx-wadd` · 16 on screen · **6 looks**
 | font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 | color | `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.410196 0.504314 0.946667)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
 | transition | `background-color .16s var(--ease),box-shadow .16s var(--ease),color .16s var(--ease)` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 
-#### look 2 of 6
+#### look 2 of 7
 
-`compares3-174` · rendered **26×26** · 1 instance look like this · aria-hidden="true"
-
-```html
-<span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| flex | `none` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| align-items | `center` | `center` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| place-items | `center` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| width | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| height | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `-6px -4px -6px 0` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-top | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-right | `-4px` | `-4px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-bottom | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-left | `0px` | `0px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| border-radius | `8px` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| background | `transparent` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| background-image | `initial` | `none` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| box-shadow | `transparent 0px 0px 0px 1px inset` | `rgba(0, 0, 0, 0) 0px 0px 0px 1px inset` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-| color | `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.614118 0.494902 0.808627)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| transition | `background-color .16s var(--ease),box-shadow .16s var(--ease),color .16s var(--ease)` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-
-#### look 3 of 6
-
-`compares3-189` · rendered **26×26** · 4 instances look like this · aria-hidden="true"
+`compares3-192` · rendered **26×26** · 3 instances look like this · aria-hidden="true"
 
 ```html
 <span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span>
@@ -21726,98 +21678,16 @@ inside `.cx-wadd` · 16 on screen · **6 looks**
 | font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-| color | `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 1 0.858824 0.397647)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| transition | `background-color .16s var(--ease),box-shadow .16s var(--ease),color .16s var(--ease)` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-
-#### look 4 of 6
-
-`compares3-228` · rendered **26×26** · 2 instances look like this · aria-hidden="true"
-
-```html
-<span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| flex | `none` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| align-items | `center` | `center` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| place-items | `center` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| width | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| height | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `-6px -4px -6px 0` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-top | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-right | `-4px` | `-4px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-bottom | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-left | `0px` | `0px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| border-radius | `8px` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| background | `transparent` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| background-image | `initial` | `none` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| box-shadow | `transparent 0px 0px 0px 1px inset` | `rgba(0, 0, 0, 0) 0px 0px 0px 1px inset` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-| color | `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.397647 0.545098 0.64549)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| transition | `background-color .16s var(--ease),box-shadow .16s var(--ease),color .16s var(--ease)` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
-
-#### look 5 of 6
-
-`compares3-240` · rendered **26×26** · 4 instances look like this · aria-hidden="true"
-
-```html
-<span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| flex | `none` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| align-items | `center` | `center` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| place-items | `center` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| width | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| height | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `-6px -4px -6px 0` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-top | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-right | `-4px` | `-4px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-bottom | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| margin-left | `0px` | `0px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| border-radius | `8px` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| background | `transparent` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| background-image | `initial` | `none` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| box-shadow | `transparent 0px 0px 0px 1px inset` | `rgba(0, 0, 0, 0) 0px 0px 0px 1px inset` | .b4 #compare .cx-wplus · b4/compare.css:254 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 | color | `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 1 0.385098 0.488627)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
 | transition | `background-color .16s var(--ease),box-shadow .16s var(--ease),color .16s var(--ease)` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 
-#### look 6 of 6
+#### look 3 of 7
 
-`compares3-321` · rendered **26×26** · 2 instances look like this · aria-hidden="true"
+`compares3-210` · rendered **26×26** · 2 instances look like this · aria-hidden="true"
 
 ```html
 <span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span>
@@ -21849,24 +21719,149 @@ inside `.cx-wadd` · 16 on screen · **6 looks**
 | font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 | color | `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.391373 0.890196 0.673725)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
 | transition | `background-color .16s var(--ease),box-shadow .16s var(--ease),color .16s var(--ease)` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
 
+#### look 4 of 7
+
+`compares3-231` · rendered **26×26** · 3 instances look like this · aria-hidden="true"
+
+```html
+<span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| flex | `none` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| align-items | `center` | `center` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| place-items | `center` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| width | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| height | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin | `-6px -4px -6px 0` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-top | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-right | `-4px` | `-4px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-bottom | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-left | `0px` | `0px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| border-radius | `8px` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| background | `transparent` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| background-image | `initial` | `none` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| box-shadow | `transparent 0px 0px 0px 1px inset` | `rgba(0, 0, 0, 0) 0px 0px 0px 1px inset` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+| color | `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.971765 0.730196 0.385098)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| transition | `background-color .16s var(--ease),box-shadow .16s var(--ease),color .16s var(--ease)` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+
+#### look 5 of 7
+
+`compares3-258` · rendered **26×26** · 1 instance look like this · aria-hidden="true"
+
+```html
+<span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| flex | `none` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| align-items | `center` | `center` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| place-items | `center` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| width | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| height | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin | `-6px -4px -6px 0` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-top | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-right | `-4px` | `-4px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-bottom | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-left | `0px` | `0px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| border-radius | `8px` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| background | `transparent` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| background-image | `initial` | `none` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| box-shadow | `transparent 0px 0px 0px 1px inset` | `rgba(0, 0, 0, 0) 0px 0px 0px 1px inset` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+| color | `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.397647 0.545098 0.64549)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| transition | `background-color .16s var(--ease),box-shadow .16s var(--ease),color .16s var(--ease)` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+
+#### look 6 of 7
+
+`compares3-273` · rendered **26×26** · 1 instance look like this · aria-hidden="true"
+
+```html
+<span class="cx-wplus" aria-hidden="true">⟨svg.ic⟩</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| flex | `none` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| align-items | `center` | `center` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| place-items | `center` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| width | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| height | `26px` | `26px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin | `-6px -4px -6px 0` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-top | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-right | `-4px` | `-4px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-bottom | `-6px` | `-6px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| margin-left | `0px` | `0px` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| border-radius | `8px` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| background | `transparent` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| background-image | `initial` | `none` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| box-shadow | `transparent 0px 0px 0px 1px inset` | `rgba(0, 0, 0, 0) 0px 0px 0px 1px inset` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-align | ↑ `left` | `left` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+| color | `color-mix(in srgb,var(--c) 80%,white)` | `color(srgb 0.614118 0.494902 0.808627)` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| transition | `background-color .16s var(--ease),box-shadow .16s var(--ease),color .16s var(--ease)` | `` | .b4 #compare .cx-wplus · b4/compare.css:254 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 #compare .cx-wadd · b4/compare.css:250 |
+
+*1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+
 
 ### `button.cx-k`
 
-inside `.cx-keys` · 30 on screen · **1 look**
+inside `.cx-keys` · 34 on screen · **1 look**
 
 #### the one look
 
-`compares3-165` · rendered **34×34** · 30 instances look like this · aria-label="Build 1: Compare Build 1" type="button"
+`compares3-171` · rendered **34×34** · 34 instances look like this · aria-label="Build 1: Compare Build 1" type="button"
 
 ```html
-<button type="button" class="cx-k" data-tip="Compare Build 1" aria-label="Build 1: Compare Build 1"><b>1</b><i class="cx-kb" aria-hidden="true">⟨svg.ic⟩</i></button>
+<button type="button" class="cx-k" data-tip="Compare Build 1" aria-label="Build 1: Compare Build 1"><b>1</b><i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i></button>
 ```
 
 | property | winning declaration | computed | from |
@@ -27263,9 +27258,9 @@ inside `.mlabel` · 18 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.pill` · 54 on screen · **10 looks**
+inside `.pill` · 54 on screen · **11 looks**
 
-#### look 1 of 10
+#### look 1 of 11
 
 `broadcasts2-203` · rendered **16×16** · 2 instances look like this · aria-hidden="true"
 
@@ -27296,7 +27291,7 @@ inside `.pill` · 54 on screen · **10 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 .drawer.b1 .pb-dbtn · b4.css:544 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 2 of 10
+#### look 2 of 11
 
 `broadcasts2-229` · rendered **13×13** · 2 instances look like this · aria-hidden="true"
 
@@ -27327,7 +27322,7 @@ inside `.pill` · 54 on screen · **10 looks**
 | cursor | ↑ `default` | `default` | inherited · .b4 .pb-step.pb-step > button:disabled · b4/classes.css:778 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 3 of 10
+#### look 3 of 11
 
 `broadcasts2-232` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
 
@@ -27355,7 +27350,7 @@ inside `.pill` · 54 on screen · **10 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 4 of 10
+#### look 4 of 11
 
 `broadcasts2-246` · rendered **13×13** · 2 instances look like this · aria-hidden="true"
 
@@ -27382,7 +27377,7 @@ inside `.pill` · 54 on screen · **10 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 5 of 10
+#### look 5 of 11
 
 `broadcasts2-250` · rendered **12×12** · 3 instances look like this · aria-hidden="true"
 
@@ -27410,9 +27405,9 @@ inside `.pill` · 54 on screen · **10 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 6 of 10
+#### look 6 of 11
 
-`broadcasts2-291` · rendered **9×9** · 6 instances look like this · aria-hidden="true"
+`broadcasts2-291` · rendered **9×9** · 3 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-check"></use></svg>
@@ -27444,7 +27439,7 @@ inside `.pill` · 54 on screen · **10 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 .acx .acx-hb · b4/classes.css:894 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-*4 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*5 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `em`
@@ -27666,7 +27661,7 @@ inside `.drawer` · 1 on screen · **1 look**
 `broadcasts2-173` · rendered **878×660** · 1 instance look like this
 
 ```html
-<div class="dw-b" style="--fo: 0px; --ft: 0px; --fb: 0px;"><div class="bed"><div class="pb-col b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="dwfield pb-txf"><h4 class="f-h pb-sech"><span><label for="post-text">Text</label></span><span class="b4-hint" data-tone="warn">⟨svg.ic⟩Required</span></h4><div class="pb-enc b4-tb" style="--c: #37C1B3;"><textarea id="post-text" rows="2" placeholder="Type a # hea
+<div class="dw-b" style="--fo: 0px; --ft: 0px; --fb: 0px;"><div class="bed"><div class="pb-col b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="dwfield pb-txf"><h4 class="f-h pb-sech"><span><label for="post-text">Text</label></span><span class="b4-hint" data-tone="warn">⟨svg.ic⟩Required</span></h4><div class="pb-enc b4-tb" style="--c: #515BE0;"><textarea id="post-text" rows="2" placeholder="Type a # hea
 ```
 
 | property | winning declaration | computed | from |
@@ -27701,7 +27696,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 `broadcasts2-174` · rendered **830×612** · 1 instance look like this
 
 ```html
-<div class="bed"><div class="pb-col b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="dwfield pb-txf"><h4 class="f-h pb-sech"><span><label for="post-text">Text</label></span><span class="b4-hint" data-tone="warn">⟨svg.ic⟩Required</span></h4><div class="pb-enc b4-tb" style="--c: #37C1B3;"><textarea id="post-text" rows="2" placeholder="Type a # heading on the first line if you want one." style="height: 70.
+<div class="bed"><div class="pb-col b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="dwfield pb-txf"><h4 class="f-h pb-sech"><span><label for="post-text">Text</label></span><span class="b4-hint" data-tone="warn">⟨svg.ic⟩Required</span></h4><div class="pb-enc b4-tb" style="--c: #515BE0;"><textarea id="post-text" rows="2" placeholder="Type a # heading on the first line if you want one." style="height: 70.
 ```
 
 | property | winning declaration | computed | from |
@@ -27732,7 +27727,7 @@ inside `.bed` · 1 on screen · **1 look**
 `broadcasts2-175` · rendered **498×618** · 1 instance look like this
 
 ```html
-<div class="pb-col b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="dwfield pb-txf"><h4 class="f-h pb-sech"><span><label for="post-text">Text</label></span><span class="b4-hint" data-tone="warn">⟨svg.ic⟩Required</span></h4><div class="pb-enc b4-tb" style="--c: #37C1B3;"><textarea id="post-text" rows="2" placeholder="Type a # heading on the first line if you want one." style="height: 70.95px;"></textarea
+<div class="pb-col b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="dwfield pb-txf"><h4 class="f-h pb-sech"><span><label for="post-text">Text</label></span><span class="b4-hint" data-tone="warn">⟨svg.ic⟩Required</span></h4><div class="pb-enc b4-tb" style="--c: #515BE0;"><textarea id="post-text" rows="2" placeholder="Type a # heading on the first line if you want one." style="height: 70.95px;"></textarea
 ```
 
 | property | winning declaration | computed | from |
@@ -27775,7 +27770,7 @@ inside `.pb-col` · 1 on screen · **1 look**
 `broadcasts2-176` · rendered **490×192** · 1 instance look like this
 
 ```html
-<div class="dwfield pb-txf"><h4 class="f-h pb-sech"><span><label for="post-text">Text</label></span><span class="b4-hint" data-tone="warn">⟨svg.ic⟩Required</span></h4><div class="pb-enc b4-tb" style="--c: #37C1B3;"><textarea id="post-text" rows="2" placeholder="Type a # heading on the first line if you want one." style="height: 70.95px;"></textarea><textarea class="b4-tbm" aria-hidden="true" tabindex="-1" readonly="t
+<div class="dwfield pb-txf"><h4 class="f-h pb-sech"><span><label for="post-text">Text</label></span><span class="b4-hint" data-tone="warn">⟨svg.ic⟩Required</span></h4><div class="pb-enc b4-tb" style="--c: #515BE0;"><textarea id="post-text" rows="2" placeholder="Type a # heading on the first line if you want one." style="height: 70.95px;"></textarea><textarea class="b4-tbm" aria-hidden="true" tabindex="-1" readonly="t
 ```
 
 | property | winning declaration | computed | from |
@@ -27940,7 +27935,7 @@ inside `.dwfield` · 1 on screen · **1 look**
 `broadcasts2-182` · rendered **490×156** · 1 instance look like this
 
 ```html
-<div class="pb-enc b4-tb" style="--c: #37C1B3;"><textarea id="post-text" rows="2" placeholder="Type a # heading on the first line if you want one." style="height: 70.95px;"></textarea><textarea class="b4-tbm" aria-hidden="true" tabindex="-1" readonly="true"></textarea><div class="pb-encf"><div class="b4-tbc"><span class="g-fact b3-cc" title="0 of the 4,000 characters one paste can carry">⟨svg.ic⟩0 characters</span><d
+<div class="pb-enc b4-tb" style="--c: #515BE0;"><textarea id="post-text" rows="2" placeholder="Type a # heading on the first line if you want one." style="height: 70.95px;"></textarea><textarea class="b4-tbm" aria-hidden="true" tabindex="-1" readonly="true"></textarea><div class="pb-encf"><div class="b4-tbc"><span class="g-fact b3-cc" title="0 of the 4,000 characters one paste can carry">⟨svg.ic⟩0 characters</span><d
 ```
 
 | property | winning declaration | computed | from |
@@ -27961,8 +27956,8 @@ inside `.dwfield` · 1 on screen · **1 look**
 | outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%)` | `` | .pb-enc · b2.css:368 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .pb-enc · b2.css:368 |
-| background-image | `` | `linear-gradient(color(srgb 0.0552157 0.107686 0.114784), rgb(11, 15, 18) 64%)` | .pb-enc · b2.css:368 |
-| box-shadow | `inset 0 1px 0 color-mix(in srgb,var(--c) 30%,transparent)` | `color(srgb 0.215686 0.756863 0.701961 / 0.3) 0px 1px 0px 0px inset` | .pb-enc · gates.css:871 |
+| background-image | `` | `linear-gradient(color(srgb 0.0623529 0.0796863 0.127137), rgb(11, 15, 18) 64%)` | .pb-enc · b2.css:368 |
+| box-shadow | `inset 0 1px 0 color-mix(in srgb,var(--c) 30%,transparent)` | `color(srgb 0.317647 0.356863 0.878431 / 0.3) 0px 1px 0px 0px inset` | .pb-enc · gates.css:871 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -28179,7 +28174,7 @@ inside `.b4-tbc` · 1 on screen · **1 look**
 `broadcasts2-188` · rendered **306×28** · 1 instance look like this · aria-label="Delivery budget, each live post in its c"
 
 ```html
-<div class="pb-meter2 g-fact b3-cc" aria-label="Delivery budget, each live post in its colour">⟨svg.ic⟩<span class="cmeter b4-segs"><i style="width: 2.33333%; background: rgb(242, 194, 48);"></i><i style="width: 6.36667%; background: rgb(63, 167, 214);"></i><i style="width: 0.466667%; background: rgb(55, 193, 179);"></i></span><span><b>5,450</b> of 6,000 left</span></div>
+<div class="pb-meter2 g-fact b3-cc" aria-label="Delivery budget, each live post in its colour">⟨svg.ic⟩<span class="cmeter b4-segs"><i style="width: 2.33333%; background: rgb(242, 194, 48);"></i><i style="width: 6.36667%; background: rgb(63, 167, 214);"></i><i style="width: 0.466667%; background: rgb(81, 91, 224);"></i></span><span><b>5,450</b> of 6,000 left</span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -28232,7 +28227,7 @@ inside `.pb-meter2` · 1 on screen · **1 look**
 `broadcasts2-190` · rendered **140×6** · 1 instance look like this
 
 ```html
-<span class="cmeter b4-segs"><i style="width: 2.33333%; background: rgb(242, 194, 48);"></i><i style="width: 6.36667%; background: rgb(63, 167, 214);"></i><i style="width: 0.466667%; background: rgb(55, 193, 179);"></i></span>
+<span class="cmeter b4-segs"><i style="width: 2.33333%; background: rgb(242, 194, 48);"></i><i style="width: 6.36667%; background: rgb(63, 167, 214);"></i><i style="width: 0.466667%; background: rgb(81, 91, 224);"></i></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -28343,7 +28338,7 @@ inside `.cmeter` · 8 on screen · **7 looks**
 `broadcasts2-193` · rendered **1×6** · 1 instance look like this
 
 ```html
-<i style="width: 0.466667%; background: rgb(55, 193, 179);"></i>
+<i style="width: 0.466667%; background: rgb(81, 91, 224);"></i>
 ```
 
 | property | winning declaration | computed | from |
@@ -28354,8 +28349,8 @@ inside `.cmeter` · 8 on screen · **7 looks**
 | height | `100%` | `6px` | .b4 .drawer.b1:has(.pb-bnf) .pb-meter2 .cmeter > i · b4.css:495 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border-radius | `0 999px 999px 0` | `` | .b4 .drawer.b1:has(.pb-bnf) .pb-meter2 .cmeter > i:last-child · b4.css:497 |
-| background | `rgb(55, 193, 179)` | `` | style attribute |
-| background-color | `rgb(55, 193, 179)` | `rgb(55, 193, 179)` | style attribute |
+| background | `rgb(81, 91, 224)` | `` | style attribute |
+| background-color | `rgb(81, 91, 224)` | `rgb(81, 91, 224)` | style attribute |
 | background-image | `initial` | `none` | style attribute |
 | box-shadow | `color-mix(in srgb, rgb(4, 7, 10) 85%, transparent 15%) 1.5px 0px 0px inset` | `color(srgb 0.0156863 0.027451 0.0392157 / 0.85) 1.5px 0px 0px 0px inset` | .cmeter.b4-segs > i + i · b4/classes.css:739 |
 | font | ↑ `500 var(--t-sm)/1 var(--data)` | `` | inherited · .b1 .pb-meter2 span · b1.css:234 |
@@ -28442,7 +28437,7 @@ inside `.cmeter` · 8 on screen · **7 looks**
 `broadcasts2-240` · rendered **12×12** · 1 instance look like this
 
 ```html
-<i style="left: 71.5026%; top: 24.3137%; background: rgb(55, 193, 179);"></i>
+<i style="left: 63.8393%; top: 12.1569%; background: rgb(81, 91, 224);"></i>
 ```
 
 | property | winning declaration | computed | from |
@@ -28452,11 +28447,11 @@ inside `.cmeter` · 8 on screen · **7 looks**
 | width | `12px` | `12px` | .b4 .acx .acx-sv i · b4/classes.css:840 |
 | height | `12px` | `12px` | .b4 .acx .acx-sv i · b4/classes.css:840 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `24.3137%` | `33.5469px` | style attribute |
-| left | `71.5026%` | `143px` | style attribute |
+| top | `12.1569%` | `16.7656px` | style attribute |
+| left | `63.8393%` | `127.672px` | style attribute |
 | border-radius | `50%` | `` | .b4 .acx :is(.acx-sv, .acx-hue) i · b4/classes.css:839 |
-| background | `rgb(55, 193, 179)` | `` | style attribute |
-| background-color | `rgb(55, 193, 179)` | `rgb(55, 193, 179)` | style attribute |
+| background | `rgb(81, 91, 224)` | `` | style attribute |
+| background-color | `rgb(81, 91, 224)` | `rgb(81, 91, 224)` | style attribute |
 | background-image | `initial` | `none` | style attribute |
 | box-shadow | `rgb(255, 255, 255) 0px 0px 0px 2px, rgba(0, 0, 0, 0.45) 0px 0px 0px 3px, rgba(0, 0, 0, 0.5) 0px 2px 6px` | `rgb(255, 255, 255) 0px 0px 0px 2px, rgba(0, 0, 0, 0.45) 0px 0px 0px 3px, rgba(0, 0, 0, 0.5) 0px 2px 6px 0px` | .b4 .acx :is(.acx-sv, .acx-hue) i · b4/classes.css:839 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
@@ -29014,7 +29009,7 @@ inside `.pb-col` · 1 on screen · **1 look**
 `broadcasts2-233` · rendered **490×267** · 1 instance look like this
 
 ```html
-<div class="dwfield pb-accf"><h4 class="f-h pb-sech"><span><label for="post-accent">Accent</label></span><span class="b4-hint" data-tone="neutral">Auto</span></h4><div class="acx" style="--cur: #37C1B3; --on-cur: #0B0F12;"><div class="acx-sv" role="slider" tabindex="0" aria-label="Saturation and brightness" aria-valuetext="#37C1B3" style="background: linear-gradient(to top, rgb(0, 0, 0), transparent), linear-gradient
+<div class="dwfield pb-accf"><h4 class="f-h pb-sech"><span><label for="post-accent">Accent</label></span><span class="b4-hint" data-tone="neutral">Auto</span></h4><div class="acx" style="--cur: #515BE0; --on-cur: #FFFFFF;"><div class="acx-sv" role="slider" tabindex="0" aria-label="Saturation and brightness" aria-valuetext="#515BE0" style="background: linear-gradient(to top, rgb(0, 0, 0), transparent), linear-gradient
 ```
 
 | property | winning declaration | computed | from |
@@ -29044,7 +29039,7 @@ inside `.dwfield` · 1 on screen · **1 look**
 `broadcasts2-238` · rendered **490×231** · 1 instance look like this
 
 ```html
-<div class="acx" style="--cur: #37C1B3; --on-cur: #0B0F12;"><div class="acx-sv" role="slider" tabindex="0" aria-label="Saturation and brightness" aria-valuetext="#37C1B3" style="background: linear-gradient(to top, rgb(0, 0, 0), transparent), linear-gradient(to right, rgb(255, 255, 255), rgb(0, 255, 229));"><i style="left: 71.5026%; top: 24.3137%; background: rgb(55, 193, 179);"></i></div><div class="acx-huew"><div cl
+<div class="acx" style="--cur: #515BE0; --on-cur: #FFFFFF;"><div class="acx-sv" role="slider" tabindex="0" aria-label="Saturation and brightness" aria-valuetext="#515BE0" style="background: linear-gradient(to top, rgb(0, 0, 0), transparent), linear-gradient(to right, rgb(255, 255, 255), rgb(0, 18, 255));"><i style="left: 63.8393%; top: 12.1569%; background: rgb(81, 91, 224);"></i></div><div class="acx-huew"><div clas
 ```
 
 | property | winning declaration | computed | from |
@@ -29082,7 +29077,7 @@ inside `.acx` · 1 on screen · **1 look**
 `broadcasts2-239` · rendered **200×138** · 1 instance look like this · aria-label="Saturation and brightness" role="slider"
 
 ```html
-<div class="acx-sv" role="slider" tabindex="0" aria-label="Saturation and brightness" aria-valuetext="#37C1B3" style="background: linear-gradient(to top, rgb(0, 0, 0), transparent), linear-gradient(to right, rgb(255, 255, 255), rgb(0, 255, 229));"><i style="left: 71.5026%; top: 24.3137%; background: rgb(55, 193, 179);"></i></div>
+<div class="acx-sv" role="slider" tabindex="0" aria-label="Saturation and brightness" aria-valuetext="#515BE0" style="background: linear-gradient(to top, rgb(0, 0, 0), transparent), linear-gradient(to right, rgb(255, 255, 255), rgb(0, 18, 255));"><i style="left: 63.8393%; top: 12.1569%; background: rgb(81, 91, 224);"></i></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -29093,9 +29088,9 @@ inside `.acx` · 1 on screen · **1 look**
 | height | `var(--svh)` | `138px` | .b4 .acx .acx-sv · b4/classes.css:837 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border-radius | `8px` | `` | .b4 .acx .acx-sv · b4/classes.css:837 |
-| background | `linear-gradient(to top, rgb(0, 0, 0), transparent), linear-gradient(to right, rgb(255, 255, 255), rgb(0, 255, 229))` | `` | style attribute |
+| background | `linear-gradient(to top, rgb(0, 0, 0), transparent), linear-gradient(to right, rgb(255, 255, 255), rgb(0, 18, 255))` | `` | style attribute |
 | background-color | `initial` | `rgba(0, 0, 0, 0)` | style attribute |
-| background-image | `linear-gradient(to top, rgb(0, 0, 0), transparent), linear-gradient(to right, rgb(255, 255, 255), rgb(0, 255, 229))` | `linear-gradient(to top, rgb(0, 0, 0), rgba(0, 0, 0, 0)), linear-gradient(to right, rgb(255, 255, 255), rgb(0, 255, 229))` | style attribute |
+| background-image | `linear-gradient(to top, rgb(0, 0, 0), transparent), linear-gradient(to right, rgb(255, 255, 255), rgb(0, 18, 255))` | `linear-gradient(to top, rgb(0, 0, 0), rgba(0, 0, 0, 0)), linear-gradient(to right, rgb(255, 255, 255), rgb(0, 18, 255))` | style attribute |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -29125,7 +29120,7 @@ inside `.acx` · 1 on screen · **1 look**
 `broadcasts2-241` · rendered **200×44** · 1 instance look like this
 
 ```html
-<div class="acx-huew"><div class="acx-hue" role="slider" tabindex="0" aria-label="Hue" aria-valuemin="0" aria-valuemax="360" aria-valuenow="174"><i style="left: calc(var(--hueh) / 2 + 1px + 0.48309178743961356 * (100% - var(--hueh) - 2px)); background: rgb(0, 255, 229);"></i></div></div>
+<div class="acx-huew"><div class="acx-hue" role="slider" tabindex="0" aria-label="Hue" aria-valuemin="0" aria-valuemax="360" aria-valuenow="236"><i style="left: calc(var(--hueh) / 2 + 1px + 0.6550116550116549 * (100% - var(--hueh) - 2px)); background: rgb(0, 18, 255);"></i></div></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -29152,7 +29147,7 @@ inside `.acx-huew` · 1 on screen · **1 look**
 `broadcasts2-242` · rendered **200×12** · 1 instance look like this · aria-label="Hue" role="slider"
 
 ```html
-<div class="acx-hue" role="slider" tabindex="0" aria-label="Hue" aria-valuemin="0" aria-valuemax="360" aria-valuenow="174"><i style="left: calc(var(--hueh) / 2 + 1px + 0.48309178743961356 * (100% - var(--hueh) - 2px)); background: rgb(0, 255, 229);"></i></div>
+<div class="acx-hue" role="slider" tabindex="0" aria-label="Hue" aria-valuemin="0" aria-valuemax="360" aria-valuenow="236"><i style="left: calc(var(--hueh) / 2 + 1px + 0.6550116550116549 * (100% - var(--hueh) - 2px)); background: rgb(0, 18, 255);"></i></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -29942,7 +29937,7 @@ inside `.acx-s` · 3 on screen · **2 looks**
 `broadcasts2-284` · rendered **22×22** · 2 instances look like this · aria-hidden="false"
 
 ```html
-<span class="acx-ov" aria-hidden="false"><b class="acx-sh"></b><b class="acx-pu"></b><b class="acx-pr"></b><b class="acx-dv"></b><span class="acx-h" data-hv=""><button type="button" class="acx-hb" aria-label="Use #EC4899">⟨svg.ic⟩</button><button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #EC4899 with #37C1B3">⟨svg.ic⟩</button></span></span>
+<span class="acx-ov" aria-hidden="false"><b class="acx-sh"></b><b class="acx-pu"></b><b class="acx-pr"></b><b class="acx-dv"></b><span class="acx-h" data-hv=""><button type="button" class="acx-hb" aria-label="Use #EC4899">⟨svg.ic⟩</button><button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #EC4899 with #515BE0">⟨svg.ic⟩</button></span></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -29972,7 +29967,7 @@ inside `.acx-s` · 3 on screen · **2 looks**
 `broadcasts2-306` · rendered **22×22** · 1 instance look like this · aria-hidden="false"
 
 ```html
-<span class="acx-ov" aria-hidden="false"><b class="acx-sh"></b><b class="acx-pu"></b><b class="acx-pr"></b><b class="acx-dv"></b><span class="acx-h" data-hv=""><button type="button" class="acx-hb" aria-label="Use #E1A43A">⟨svg.ic⟩</button><button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #E1A43A with #37C1B3">⟨svg.ic⟩</button></span></span>
+<span class="acx-ov" aria-hidden="false"><b class="acx-sh"></b><b class="acx-pu"></b><b class="acx-pr"></b><b class="acx-dv"></b><span class="acx-h" data-hv=""><button type="button" class="acx-hb" aria-label="Use #E1A43A">⟨svg.ic⟩</button><button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #E1A43A with #515BE0">⟨svg.ic⟩</button></span></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -30185,7 +30180,7 @@ inside `.acx-ov` · 3 on screen · **2 looks**
 | bottom | `calc(0px - var(--pr))` | `0px` | .b4 .acx .acx-pr · b4/classes.css:901 |
 | left | `calc(var(--ox) + var(--RL))` | `0px` | .b4 .acx .acx-pr · b4/classes.css:901 |
 | border-radius | `var(--ir) var(--or) var(--or) var(--ir)` | `` | .b4 .acx .acx-pr · b4/classes.css:901 |
-| background-color | `var(--cur)` | `rgb(55, 193, 179)` | .b4 .acx .acx-pr · b4/classes.css:901 |
+| background-color | `var(--cur)` | `rgb(81, 91, 224)` | .b4 .acx .acx-pr · b4/classes.css:901 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | `bolder` | `700` | strong, b · user-agent:? |
@@ -30216,7 +30211,7 @@ inside `.acx-ov` · 3 on screen · **2 looks**
 | bottom | `calc(0px - var(--pr))` | `0px` | .b4 .acx .acx-pr · b4/classes.css:901 |
 | left | `calc(var(--ox) + var(--RL))` | `0px` | .b4 .acx .acx-pr · b4/classes.css:901 |
 | border-radius | `var(--ir) var(--or) var(--or) var(--ir)` | `` | .b4 .acx .acx-pr · b4/classes.css:901 |
-| background-color | `var(--cur)` | `rgb(55, 193, 179)` | .b4 .acx .acx-pr · b4/classes.css:901 |
+| background-color | `var(--cur)` | `rgb(81, 91, 224)` | .b4 .acx .acx-pr · b4/classes.css:901 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | `bolder` | `700` | strong, b · user-agent:? |
@@ -30306,7 +30301,7 @@ inside `.acx-ov` · 3 on screen · **2 looks**
 `broadcasts2-289` · rendered **22×22** · 2 instances look like this
 
 ```html
-<span class="acx-h" data-hv=""><button type="button" class="acx-hb" aria-label="Use #EC4899">⟨svg.ic⟩</button><button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #EC4899 with #37C1B3">⟨svg.ic⟩</button></span>
+<span class="acx-h" data-hv=""><button type="button" class="acx-hb" aria-label="Use #EC4899">⟨svg.ic⟩</button><button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #EC4899 with #515BE0">⟨svg.ic⟩</button></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -30335,7 +30330,7 @@ inside `.acx-ov` · 3 on screen · **2 looks**
 `broadcasts2-311` · rendered **22×22** · 1 instance look like this
 
 ```html
-<span class="acx-h" data-hv=""><button type="button" class="acx-hb" aria-label="Use #E1A43A">⟨svg.ic⟩</button><button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #E1A43A with #37C1B3">⟨svg.ic⟩</button></span>
+<span class="acx-h" data-hv=""><button type="button" class="acx-hb" aria-label="Use #E1A43A">⟨svg.ic⟩</button><button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #E1A43A with #515BE0">⟨svg.ic⟩</button></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -30431,10 +30426,10 @@ inside `.acx-h` · 6 on screen · **5 looks**
 
 #### look 2 of 5
 
-`broadcasts2-292` · rendered **22×22** · 2 instances look like this · aria-label="Replace #EC4899 with #37C1B3" type="button"
+`broadcasts2-292` · rendered **22×22** · 2 instances look like this · aria-label="Replace #EC4899 with #515BE0" type="button"
 
 ```html
-<button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #EC4899 with #37C1B3">⟨svg.ic⟩</button>
+<button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #EC4899 with #515BE0">⟨svg.ic⟩</button>
 ```
 
 | property | winning declaration | computed | from |
@@ -30462,7 +30457,7 @@ inside `.acx-h` · 6 on screen · **5 looks**
 | border | `0` | `` | .b4 .acx button · b4/classes.css:836 |
 | border-radius | `var(--ir) var(--or) var(--or) var(--ir)` | `` | .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
 | background | `none` | `` | .b4 .acx button · b4/classes.css:836 |
-| background-color | `var(--cur)` | `rgb(55, 193, 179)` | .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
+| background-color | `var(--cur)` | `rgb(81, 91, 224)` | .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
 | background-image | `none` | `none` | .b4 .acx button · b4/classes.css:836 |
 | box-shadow | `none` | `none` | .b4 .acx button · b4/classes.css:836 |
 | font | `inherit` | `` | .b4 .acx button · b4/classes.css:836 |
@@ -30474,7 +30469,7 @@ inside `.acx-h` · 6 on screen · **5 looks**
 | line-height | `inherit` | `19.5px` | .b4 .acx button · b4/classes.css:836 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--on-cur)` | `rgb(11, 15, 18)` | .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
+| color | `var(--on-cur)` | `rgb(255, 255, 255)` | .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
 | overflow | `hidden` | `` | .b4 .acx .acx-hb · b4/classes.css:894 |
 | overflow-x | `hidden` | `hidden` | .b4 .acx .acx-hb · b4/classes.css:894 |
 | overflow-y | `hidden` | `hidden` | .b4 .acx .acx-hb · b4/classes.css:894 |
@@ -30626,10 +30621,10 @@ inside `.acx-h` · 6 on screen · **5 looks**
 
 #### look 5 of 5
 
-`broadcasts2-314` · rendered **22×22** · 1 instance look like this · aria-label="Replace #E1A43A with #37C1B3" type="button"
+`broadcasts2-314` · rendered **22×22** · 1 instance look like this · aria-label="Replace #E1A43A with #515BE0" type="button"
 
 ```html
-<button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #E1A43A with #37C1B3">⟨svg.ic⟩</button>
+<button type="button" class="acx-hb" tabindex="-1" aria-label="Replace #E1A43A with #515BE0">⟨svg.ic⟩</button>
 ```
 
 | property | winning declaration | computed | from |
@@ -30657,7 +30652,7 @@ inside `.acx-h` · 6 on screen · **5 looks**
 | border | `0` | `` | .b4 .acx button · b4/classes.css:836 |
 | border-radius | `var(--ir) var(--or) var(--or) var(--ir)` | `` | .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
 | background | `none` | `` | .b4 .acx button · b4/classes.css:836 |
-| background-color | `var(--cur)` | `rgb(55, 193, 179)` | .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
+| background-color | `var(--cur)` | `rgb(81, 91, 224)` | .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
 | background-image | `none` | `none` | .b4 .acx button · b4/classes.css:836 |
 | box-shadow | `none` | `none` | .b4 .acx button · b4/classes.css:836 |
 | font | `inherit` | `` | .b4 .acx button · b4/classes.css:836 |
@@ -30669,7 +30664,7 @@ inside `.acx-h` · 6 on screen · **5 looks**
 | line-height | `inherit` | `19.5px` | .b4 .acx button · b4/classes.css:836 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--on-cur)` | `rgb(11, 15, 18)` | .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
+| color | `var(--on-cur)` | `rgb(255, 255, 255)` | .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
 | overflow | `hidden` | `` | .b4 .acx .acx-hb · b4/classes.css:894 |
 | overflow-x | `hidden` | `hidden` | .b4 .acx .acx-hb · b4/classes.css:894 |
 | overflow-y | `hidden` | `hidden` | .b4 .acx .acx-hb · b4/classes.css:894 |
@@ -30696,10 +30691,10 @@ inside `.acx-sw` · 6 on screen · **2 looks**
 
 #### look 1 of 2
 
-`broadcasts2-316` · rendered **22×22** · 4 instances look like this · aria-label="Save #37C1B3 here" type="button"
+`broadcasts2-316` · rendered **22×22** · 4 instances look like this · aria-label="Save #515BE0 here" type="button"
 
 ```html
-<button type="button" class="acx-s acx-empty" aria-label="Save #37C1B3 here">⟨svg.ic⟩</button>
+<button type="button" class="acx-s acx-empty" aria-label="Save #515BE0 here">⟨svg.ic⟩</button>
 ```
 
 | property | winning declaration | computed | from |
@@ -30746,63 +30741,63 @@ inside `.acx-sw` · 6 on screen · **2 looks**
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `color(srgb 0.909804 0.929412 0.945098 / 0.05)` | `rgb(55, 193, 179)` |
+| background-color | `color(srgb 0.909804 0.929412 0.945098 / 0.05)` | `rgb(81, 91, 224)` |
 | box-shadow | `none` | `rgba(0, 0, 0, 0.7) 0px 6px 14px -6px` |
-| color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
+| color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
 | transform | `none` | `matrix(1, 0, 0, 1, 0, -2)` |
 
 | part inside | property | at rest | hover |
 |---|---|---|---|
-| ::before | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::before | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::before | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | stroke | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | stroke | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
+| ::before | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::before | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::before | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | stroke | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | stroke | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
 
 **:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
-| background-color | `color(srgb 0.909804 0.929412 0.945098 / 0.05)` | `rgb(55, 193, 179)` |
+| background-color | `color(srgb 0.909804 0.929412 0.945098 / 0.05)` | `rgb(81, 91, 224)` |
 | box-shadow | `none` | `rgba(0, 0, 0, 0.7) 0px 6px 14px -6px` |
-| color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
+| color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
 | transform | `none` | `matrix(1, 0, 0, 1, 0, -2)` |
 
 | part inside | property | at rest | focus-visible |
 |---|---|---|---|
-| ::before | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::before | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::before | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | stroke | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | stroke | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
+| ::before | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::before | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::before | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | stroke | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | stroke | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
 
 **:active** — changes nothing on the element itself
 
 #### look 2 of 2
 
-`broadcasts2-320` · rendered **22×22** · 2 instances look like this · aria-label="Save #37C1B3 here" type="button"
+`broadcasts2-320` · rendered **22×22** · 2 instances look like this · aria-label="Save #515BE0 here" type="button"
 
 ```html
-<button type="button" class="acx-s acx-empty" aria-label="Save #37C1B3 here">⟨svg.ic⟩</button>
+<button type="button" class="acx-s acx-empty" aria-label="Save #515BE0 here">⟨svg.ic⟩</button>
 ```
 
 | property | winning declaration | computed | from |
@@ -30849,54 +30844,54 @@ inside `.acx-sw` · 6 on screen · **2 looks**
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `color(srgb 0.909804 0.929412 0.945098 / 0.05)` | `rgb(55, 193, 179)` |
+| background-color | `color(srgb 0.909804 0.929412 0.945098 / 0.05)` | `rgb(81, 91, 224)` |
 | box-shadow | `none` | `rgba(0, 0, 0, 0.7) 0px 6px 14px -6px` |
-| color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
+| color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
 | transform | `none` | `matrix(1, 0, 0, 1, 0, -2)` |
 
 | part inside | property | at rest | hover |
 |---|---|---|---|
-| ::before | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::before | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::before | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | stroke | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | stroke | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
+| ::before | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::before | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::before | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | stroke | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | stroke | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
 
 **:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
-| background-color | `color(srgb 0.909804 0.929412 0.945098 / 0.05)` | `rgb(55, 193, 179)` |
+| background-color | `color(srgb 0.909804 0.929412 0.945098 / 0.05)` | `rgb(81, 91, 224)` |
 | box-shadow | `none` | `rgba(0, 0, 0, 0.7) 0px 6px 14px -6px` |
-| color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
+| color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
 | transform | `none` | `matrix(1, 0, 0, 1, 0, -2)` |
 
 | part inside | property | at rest | focus-visible |
 |---|---|---|---|
-| ::before | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::before | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::before | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| ::after | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| svg.ic | stroke | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | border-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | outline-color | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
-| use | stroke | `rgb(92, 106, 117)` | `rgb(11, 15, 18)` |
+| ::before | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::before | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::before | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| ::after | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| svg.ic | stroke | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | border-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | outline-color | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
+| use | stroke | `rgb(92, 106, 117)` | `rgb(255, 255, 255)` |
 
 **:active** — changes nothing on the element itself
 
@@ -30910,7 +30905,7 @@ inside `.acx` · 1 on screen · **1 look**
 `broadcasts2-328` · rendered **246×49** · 1 instance look like this
 
 ```html
-<div class="acx-row1"><label class="acx-hex"><s></s><em>#</em><input id="post-accent" maxlength="7" spellcheck="true" autocomplete="off" aria-label="Hex colour"><button type="button" class="acx-ib" aria-label="Copy #37C1B3" data-tip="Copy">⟨svg.ic⟩</button></label><button type="button" class="acx-new" aria-label="New colour" data-tip="New colour">⟨svg.ic⟩</button></div>
+<div class="acx-row1"><label class="acx-hex"><s></s><em>#</em><input id="post-accent" maxlength="7" spellcheck="true" autocomplete="off" aria-label="Hex colour"><button type="button" class="acx-ib" aria-label="Copy #515BE0" data-tip="Copy">⟨svg.ic⟩</button></label><button type="button" class="acx-new" aria-label="New colour" data-tip="New colour">⟨svg.ic⟩</button></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -30939,7 +30934,7 @@ inside `.acx-row1` · 1 on screen · **1 look**
 `broadcasts2-329` · rendered **194×44** · 1 instance look like this
 
 ```html
-<label class="acx-hex"><s></s><em>#</em><input id="post-accent" maxlength="7" spellcheck="true" autocomplete="off" aria-label="Hex colour"><button type="button" class="acx-ib" aria-label="Copy #37C1B3" data-tip="Copy">⟨svg.ic⟩</button></label>
+<label class="acx-hex"><s></s><em>#</em><input id="post-accent" maxlength="7" spellcheck="true" autocomplete="off" aria-label="Hex colour"><button type="button" class="acx-ib" aria-label="Copy #515BE0" data-tip="Copy">⟨svg.ic⟩</button></label>
 ```
 
 | property | winning declaration | computed | from |
@@ -30998,10 +30993,10 @@ inside `.acx-hex` · 1 on screen · **1 look**
 
 #### the one look
 
-`broadcasts2-331` · rendered **28×28** · 1 instance look like this · aria-label="Copy #37C1B3" type="button"
+`broadcasts2-331` · rendered **28×28** · 1 instance look like this · aria-label="Copy #515BE0" type="button"
 
 ```html
-<button type="button" class="acx-ib" aria-label="Copy #37C1B3" data-tip="Copy">⟨svg.ic⟩</button>
+<button type="button" class="acx-ib" aria-label="Copy #515BE0" data-tip="Copy">⟨svg.ic⟩</button>
 ```
 
 | property | winning declaration | computed | from |
@@ -31430,7 +31425,7 @@ inside `.bed` · 1 on screen · **1 look**
 `broadcasts2-353` · rendered **320×612** · 1 instance look like this
 
 ```html
-<aside class="bed-side pb-card"><div class="bed-sec f-prev"><h5>In Discord</h5><div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 0px;"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard" style="--c: #37C1B3;"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></di
+<aside class="bed-side pb-card"><div class="bed-sec f-prev"><h5>In Discord</h5><div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 0px;"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard" style="--c: #515BE0;"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></di
 ```
 
 | property | winning declaration | computed | from |
@@ -31478,7 +31473,7 @@ inside `.bed-side` · 1 on screen · **1 look**
 `broadcasts2-354` · rendered **320×311** · 1 instance look like this
 
 ```html
-<div class="bed-sec f-prev"><h5>In Discord</h5><div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 0px;"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard" style="--c: #37C1B3;"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div></div><p class="empty">Type th
+<div class="bed-sec f-prev"><h5>In Discord</h5><div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 0px;"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard" style="--c: #515BE0;"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div></div><p class="empty">Type th
 ```
 
 | property | winning declaration | computed | from |
@@ -31511,7 +31506,7 @@ inside `.bed-sec` · 1 on screen · **1 look**
 `broadcasts2-355` · rendered **320×250** · 1 instance look like this
 
 ```html
-<div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 0px;"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard" style="--c: #37C1B3;"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div></div><p class="empty">Type the announcement and the card build…</p></div>
+<div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 0px;"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard" style="--c: #515BE0;"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div></div><p class="empty">Type the announcement and the card build…</p></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -31540,7 +31535,7 @@ inside `.f-prevsc` · 1 on screen · **1 look**
 `broadcasts2-356` · rendered **320×110** · 1 instance look like this · aria-hidden="true"
 
 ```html
-<div class="b4-ghostcard" aria-hidden="true"><div class="dcard" style="--c: #37C1B3;"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div></div>
+<div class="b4-ghostcard" aria-hidden="true"><div class="dcard" style="--c: #515BE0;"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -31567,7 +31562,7 @@ inside `.b4-ghostcard` · 1 on screen · **1 look**
 `broadcasts2-357` · rendered **320×110** · 1 instance look like this
 
 ```html
-<div class="dcard" style="--c: #37C1B3;"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div>
+<div class="dcard" style="--c: #515BE0;"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -34796,260 +34791,7 @@ inside `.f-menu` · 67 on screen · **1 look**
 
 ### C3 · the search list, open
 
-14 distinct signatures on screen; 5 not already specced above.
-
-
-### `li.f-grp[role=presentation]`
-
-inside `.f-menu` · 7 on screen · **7 looks**
-
-#### look 1 of 7
-
-`C3pop5-8` · rendered **548×22** · 1 instance look like this · text “Assault” · role="presentation"
-
-```html
-<li class="f-grp" role="presentation" style="--c: #ff3b5c;">Assault</li>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-menu li · b4/form.css:85 |
-| gap | `10px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| column-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| row-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| align-items | `center` | `center` | .b4 .f-menu li · b4/form.css:85 |
-| min-height | `0px` | `0px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 10px 6px` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-top | `6px` | `6px` | .b4 #compare .f-menu li.f-grp:first-child · b4/compare.css:341 |
-| padding-right | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-bottom | `6px` | `6px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-left | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| border-radius | `8px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| background | `none` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-image | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-shadow | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font | `600 9.5px/1 var(--data)` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-size | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-weight | `` | `600` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-style | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-variant-numeric | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| line-height | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-align | `left` | `left` | .b4 .f-menu li · b4/classes.css:270 |
-| color | `var(--c,var(--ink3))` | `rgb(255, 59, 92)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| cursor | `pointer` | `pointer` | .b4 .f-menu li · b4/form.css:85 |
-| pointer-events | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-
-#### look 2 of 7
-
-`C3pop5-130` · rendered **548×28** · 1 instance look like this · text “SMG” · role="presentation"
-
-```html
-<li class="f-grp" role="presentation" style="--c: #ffd23f;">SMG</li>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-menu li · b4/form.css:85 |
-| gap | `10px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| column-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| row-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| align-items | `center` | `center` | .b4 .f-menu li · b4/form.css:85 |
-| min-height | `0px` | `0px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 10px 6px` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-top | `12px` | `12px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-right | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-bottom | `6px` | `6px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-left | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| border-radius | `8px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| background | `none` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-image | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-shadow | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font | `600 9.5px/1 var(--data)` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-size | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-weight | `` | `600` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-style | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-variant-numeric | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| line-height | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-align | `left` | `left` | .b4 .f-menu li · b4/classes.css:270 |
-| color | `var(--c,var(--ink3))` | `rgb(255, 210, 63)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| cursor | `pointer` | `pointer` | .b4 .f-menu li · b4/form.css:85 |
-| pointer-events | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-
-#### look 3 of 7
-
-`C3pop5-228` · rendered **548×28** · 1 instance look like this · text “LMG” · role="presentation"
-
-```html
-<li class="f-grp" role="presentation" style="--c: #845ec2;">LMG</li>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-menu li · b4/form.css:85 |
-| gap | `10px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| column-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| row-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| align-items | `center` | `center` | .b4 .f-menu li · b4/form.css:85 |
-| min-height | `0px` | `0px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 10px 6px` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-top | `12px` | `12px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-right | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-bottom | `6px` | `6px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-left | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| border-radius | `8px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| background | `none` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-image | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-shadow | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font | `600 9.5px/1 var(--data)` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-size | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-weight | `` | `600` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-style | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-variant-numeric | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| line-height | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-align | `left` | `left` | .b4 .f-menu li · b4/classes.css:270 |
-| color | `var(--c,var(--ink3))` | `rgb(132, 94, 194)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| cursor | `pointer` | `pointer` | .b4 .f-menu li · b4/form.css:85 |
-| pointer-events | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-
-#### look 4 of 7
-
-`C3pop5-277` · rendered **548×28** · 1 instance look like this · text “Marksman” · role="presentation"
-
-```html
-<li class="f-grp" role="presentation" style="--c: #3ddc97;">Marksman</li>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-menu li · b4/form.css:85 |
-| gap | `10px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| column-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| row-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| align-items | `center` | `center` | .b4 .f-menu li · b4/form.css:85 |
-| min-height | `0px` | `0px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 10px 6px` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-top | `12px` | `12px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-right | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-bottom | `6px` | `6px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-left | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| border-radius | `8px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| background | `none` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-image | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-shadow | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font | `600 9.5px/1 var(--data)` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-size | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-weight | `` | `600` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-style | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-variant-numeric | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| line-height | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-align | `left` | `left` | .b4 .f-menu li · b4/classes.css:270 |
-| color | `var(--c,var(--ink3))` | `rgb(61, 220, 151)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| cursor | `pointer` | `pointer` | .b4 .f-menu li · b4/form.css:85 |
-| pointer-events | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-
-#### look 5 of 7
-
-`C3pop5-321` · rendered **548×28** · 1 instance look like this · text “Sniper” · role="presentation"
-
-```html
-<li class="f-grp" role="presentation" style="--c: #4361ee;">Sniper</li>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-menu li · b4/form.css:85 |
-| gap | `10px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| column-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| row-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| align-items | `center` | `center` | .b4 .f-menu li · b4/form.css:85 |
-| min-height | `0px` | `0px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 10px 6px` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-top | `12px` | `12px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-right | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-bottom | `6px` | `6px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-left | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| border-radius | `8px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| background | `none` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-image | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-shadow | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font | `600 9.5px/1 var(--data)` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-size | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-weight | `` | `600` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-style | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-variant-numeric | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| line-height | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-align | `left` | `left` | .b4 .f-menu li · b4/classes.css:270 |
-| color | `var(--c,var(--ink3))` | `rgb(67, 97, 238)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| cursor | `pointer` | `pointer` | .b4 .f-menu li · b4/form.css:85 |
-| pointer-events | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-
-#### look 6 of 7
-
-`C3pop5-390` · rendered **548×28** · 1 instance look like this · text “Shotgun” · role="presentation"
-
-```html
-<li class="f-grp" role="presentation" style="--c: #f6a93b;">Shotgun</li>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-menu li · b4/form.css:85 |
-| gap | `10px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| column-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| row-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
-| align-items | `center` | `center` | .b4 .f-menu li · b4/form.css:85 |
-| min-height | `0px` | `0px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 10px 6px` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-top | `12px` | `12px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-right | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-bottom | `6px` | `6px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| padding-left | `10px` | `10px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| border-radius | `8px` | `` | .b4 .f-menu li · b4/classes.css:266 |
-| background | `none` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| background-image | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| box-shadow | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font | `600 9.5px/1 var(--data)` | `` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-size | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-weight | `` | `600` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-style | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| font-variant-numeric | `` | `normal` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| line-height | `` | `9.5px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| letter-spacing | `0.16em` | `1.52px` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-transform | `uppercase` | `uppercase` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| text-align | `left` | `left` | .b4 .f-menu li · b4/classes.css:270 |
-| color | `var(--c,var(--ink3))` | `rgb(246, 169, 59)` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-| cursor | `pointer` | `pointer` | .b4 .f-menu li · b4/form.css:85 |
-| pointer-events | `none` | `none` | .b4 #compare .f-menu li.f-grp · b4/compare.css:340 |
-
-*1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+17 distinct signatures on screen; 7 not already specced above.
 
 
 ### `li.on[role=option]`
@@ -35058,10 +34800,10 @@ inside `.f-menu` · 1 on screen · **1 look**
 
 #### the one look
 
-`C3pop5-9` · rendered **548×42** · 1 instance look like this · aria-selected="false" role="option"
+`C3pop5-8` · rendered **468×42** · 1 instance look like this · aria-selected="false" role="option"
 
 ```html
-<li id="cx-q-o0" role="option" aria-selected="false" class="on" style="--c: #ff3b5c;"><span class="f-ol">AK117</span><span class="cx-mk"><button type="button" tabindex="-1" class="cx-k" aria-pressed="false" aria-label="Build 1 of AK117" data-tip="Put Build 1 in"><b>1</b></button></span><span class="f-tick"></span></li>
+<li id="cx-q-o0" role="option" aria-selected="false" class="on" style="--c: #ff3b5c;"><span class="f-ol">AK117</span><span class="f-om" style="--c: #ff3b5c;">Assault</span><span class="cx-mk"><button type="button" tabindex="-1" class="cx-k" aria-pressed="false" aria-label="Build 1 of AK117" data-tip="Put Build 1 in"><b>1</b><i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i></button></span><span class="f-tick"></s
 ```
 
 | property | winning declaration | computed | from |
@@ -35115,7 +34857,7 @@ inside `.on` · 68 on screen · **1 look**
 `C3pop5-11` · rendered **26×26** · 68 instances look like this
 
 ```html
-<span class="cx-mk"><button type="button" tabindex="-1" class="cx-k" aria-pressed="false" aria-label="Build 1 of AK117" data-tip="Put Build 1 in"><b>1</b></button></span>
+<span class="cx-mk"><button type="button" tabindex="-1" class="cx-k" aria-pressed="false" aria-label="Build 1 of AK117" data-tip="Put Build 1 in"><b>1</b><i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i></button></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -35126,7 +34868,7 @@ inside `.on` · 68 on screen · **1 look**
 | row-gap | `5px` | `5px` | .b4 #compare .f-menu .cx-mk · b4/compare.css:342 |
 | flex | `none` | `` | .b4 #compare .f-menu .cx-mk · b4/compare.css:342 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `auto` | `455.562px` | .b4 #compare .f-menu .cx-mk · b4/compare.css:342 |
+| margin-left | `auto` | `0px` | .b4 #compare .f-menu .cx-mk · b4/compare.css:342 |
 | font | ↑ `600 13.5px/1 var(--ui)` | `` | inherited · .b4 .f-menu li · b4/classes.css:266 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-menu li · b4/classes.css:266 |
 | font-size | ↑ `` | `13.5px` | inherited · .b4 .f-menu li · b4/classes.css:266 |
@@ -35134,8 +34876,8 @@ inside `.on` · 68 on screen · **1 look**
 | font-style | ↑ `` | `normal` | inherited · .b4 .f-menu li · b4/classes.css:266 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-menu li · b4/classes.css:266 |
 | line-height | ↑ `` | `13.5px` | inherited · .b4 .f-menu li · b4/classes.css:266 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .f-menu li · b4/classes.css:270 |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b4 .f-menu li.on · b4/classes.css:156 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-menu li · b4/form.css:85 |
@@ -35143,14 +34885,92 @@ inside `.on` · 68 on screen · **1 look**
 
 ### `button.cx-k`
 
-inside `.cx-mk` · 125 on screen · **2 looks**
+inside `.cx-mk` · 125 on screen · **3 looks**
 
-#### look 1 of 2
+#### look 1 of 3
 
-`C3pop5-12` · rendered **26×26** · 119 instances look like this · aria-label="Build 1 of AK117" aria-pressed="false" type="button"
+`C3pop5-12` · rendered **26×26** · 1 instance look like this · aria-label="Build 1 of AK117" aria-pressed="false" type="button"
 
 ```html
-<button type="button" tabindex="-1" class="cx-k" aria-pressed="false" aria-label="Build 1 of AK117" data-tip="Put Build 1 in"><b>1</b></button>
+<button type="button" tabindex="-1" class="cx-k" aria-pressed="false" aria-label="Build 1 of AK117" data-tip="Put Build 1 in"><b>1</b><i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i></button>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 .cx-k · b4/compare.css:12 |
+| position | `relative` | `relative` | .b4 .cx-k · b4/compare.css:12 |
+| align-items | `center` | `center` | .b4 .cx-k · b4/compare.css:12 |
+| place-items | `center` | `` | .b4 .cx-k · b4/compare.css:12 |
+| width | `26px` | `26px` | .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| height | `26px` | `26px` | .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| padding | `0` | `` | .b4 .cx-k · b4/compare.css:12 |
+| padding-top | `0px` | `0px` | .b4 .cx-k · b4/compare.css:12 |
+| padding-right | `0px` | `0px` | .b4 .cx-k · b4/compare.css:12 |
+| padding-bottom | `0px` | `0px` | .b4 .cx-k · b4/compare.css:12 |
+| padding-left | `0px` | `0px` | .b4 .cx-k · b4/compare.css:12 |
+| margin | `0` | `` | .b4 .cx-k · b4/compare.css:12 |
+| margin-top | `0px` | `0px` | .b4 .cx-k · b4/compare.css:12 |
+| margin-right | `0px` | `0px` | .b4 .cx-k · b4/compare.css:12 |
+| margin-bottom | `0px` | `0px` | .b4 .cx-k · b4/compare.css:12 |
+| margin-left | `0px` | `0px` | .b4 .cx-k · b4/compare.css:12 |
+| border | `0` | `` | .b4 .cx-k · b4/compare.css:12 |
+| border-radius | `6px` | `` | .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| outline | `1px dashed color-mix(in srgb,var(--c) 55%,transparent)` | `` | .b4 .cx-k[aria-pressed="false"], .b4 .cx-wl .cx-k · b4/compare.css:152 |
+| outline-offset | `-1px` | `-1px` | .b4 .cx-k[aria-pressed="false"], .b4 .cx-wl .cx-k · b4/compare.css:152 |
+| background | `color-mix(in srgb,var(--c) 26%,var(--sunk))` | `` | .b4 #compare .f-menu li:is(:hover, .on):not(:has(.cx-k:hover)):has(.cx-mk:not([data-picked · b4/compare.css:442 |
+| background-color | `` | `color(srgb 0.291922 0.103686 0.146039)` | .b4 #compare .f-menu li:is(:hover, .on):not(:has(.cx-k:hover)):has(.cx-mk:not([data-picked · b4/compare.css:442 |
+| background-image | `` | `none` | .b4 #compare .f-menu li:is(:hover, .on):not(:has(.cx-k:hover)):has(.cx-mk:not([data-picked · b4/compare.css:442 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 72%,transparent)` | `color(srgb 1 0.231373 0.360784 / 0.72) 0px 0px 0px 1px inset` | .b4 #compare .f-menu li:is(:hover, .on):not(:has(.cx-k:hover)):has(.cx-mk:not([data-picked · b4/compare.css:442 |
+| font | `600 13px/1 var(--data)` | `` | .b4 .cx-k · b4/compare.css:12 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 .cx-k · b4/compare.css:12 |
+| font-size | `12px` | `12px` | .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| font-weight | `` | `600` | .b4 .cx-k · b4/compare.css:12 |
+| font-style | `` | `normal` | .b4 .cx-k · b4/compare.css:12 |
+| font-variant-numeric | `` | `normal` | .b4 .cx-k · b4/compare.css:12 |
+| line-height | `` | `12px` | .b4 .cx-k · b4/compare.css:12 |
+| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
+| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `color-mix(in srgb,var(--c) 28%,white)` | `color(srgb 1 0.784784 0.82102)` | .b4 #compare .f-menu li:is(:hover, .on):not(:has(.cx-k:hover)):has(.cx-mk:not([data-picked · b4/compare.css:442 |
+| transition | `background-color .15s,color .15s,box-shadow .15s,transform .1s` | `` | .b4 .cx-k · b4/compare.css:12 |
+| cursor | `pointer` | `pointer` | .b4 .cx-k · b4/compare.css:12 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+
+**:hover** — changes; parts inside it respond (table below)
+
+| property | at rest | hover |
+|---|---|---|
+| background-color | `color(srgb 0.291922 0.103686 0.146039)` | `color(srgb 1 0.231373 0.360784 / 0.09)` |
+| box-shadow | `color(srgb 1 0.231373 0.360784 / 0.72) 0px 0px 0px 1px inset` | `rgb(255, 59, 92) 0px 0px 0px 1px inset` |
+| color | `color(srgb 1 0.784784 0.82102)` | `rgb(232, 237, 241)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `color(srgb 1 0.784784 0.82102)` | `rgb(232, 237, 241)` |
+| ::before | border-color | `color(srgb 1 0.784784 0.82102)` | `rgb(232, 237, 241)` |
+| ::before | outline-color | `color(srgb 1 0.784784 0.82102)` | `rgb(232, 237, 241)` |
+| ::after | color | `color(srgb 1 0.784784 0.82102)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `color(srgb 1 0.784784 0.82102)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `color(srgb 1 0.784784 0.82102)` | `rgb(232, 237, 241)` |
+| b | color | `color(srgb 1 0.784784 0.82102)` | `rgb(232, 237, 241)` |
+| b | border-color | `color(srgb 1 0.784784 0.82102)` | `rgb(232, 237, 241)` |
+| b | outline-color | `color(srgb 1 0.784784 0.82102)` | `rgb(232, 237, 241)` |
+
+**:focus-visible** — changes nothing on the element itself
+
+**:active** — changes
+
+| property | at rest | active |
+|---|---|---|
+| transform | `none` | `matrix(1, 0, 0, 1, 0, 1)` |
+
+#### look 2 of 3
+
+`C3pop5-20` · rendered **26×26** · 118 instances look like this · aria-label="Build 1 of AS VAL" aria-pressed="false" type="button"
+
+```html
+<button type="button" tabindex="-1" class="cx-k" aria-pressed="false" aria-label="Build 1 of AS VAL" data-tip="Put Build 1 in"><b>1</b><i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i></button>
 ```
 
 | property | winning declaration | computed | from |
@@ -35214,8 +35034,15 @@ inside `.cx-mk` · 125 on screen · **2 looks**
 | b | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
 | b | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
 | b | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| i.cx-kb | opacity | `0` | `1` |
+| i.cx-kb | transform | `matrix(0.6, 0, 0, 0.6, 0, 0)` | `none` |
 
-**:focus-visible** — changes nothing on the element itself
+**:focus-visible** — changes nothing on the element itself; parts inside it respond (table below)
+
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| i.cx-kb | opacity | `0` | `1` |
+| i.cx-kb | transform | `matrix(0.6, 0, 0, 0.6, 0, 0)` | `none` |
 
 **:active** — changes
 
@@ -35223,12 +35050,12 @@ inside `.cx-mk` · 125 on screen · **2 looks**
 |---|---|---|
 | transform | `none` | `matrix(1, 0, 0, 1, 0, 1)` |
 
-#### look 2 of 2
+#### look 3 of 3
 
-`C3pop5-24` · rendered **26×26** · 6 instances look like this · aria-label="Build 1 of BAL-27" aria-pressed="true" type="button"
+`C3pop5-32` · rendered **26×26** · 6 instances look like this · aria-label="Build 1 of BAL-27" aria-pressed="true" type="button"
 
 ```html
-<button type="button" tabindex="-1" class="cx-k" aria-pressed="true" aria-label="Build 1 of BAL-27" data-tip="Take Build 1 out"><b>1</b></button>
+<button type="button" tabindex="-1" class="cx-k" aria-pressed="true" aria-label="Build 1 of BAL-27" data-tip="Take Build 1 out"><b>1</b><i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i></button>
 ```
 
 | property | winning declaration | computed | from |
@@ -35289,12 +35116,19 @@ inside `.cx-mk` · 125 on screen · **2 looks**
 | b | color | `color(srgb 1 0.784784 0.82102)` | `rgb(255, 255, 255)` |
 | b | border-color | `color(srgb 1 0.784784 0.82102)` | `rgb(255, 255, 255)` |
 | b | outline-color | `color(srgb 1 0.784784 0.82102)` | `rgb(255, 255, 255)` |
+| i.cx-kb | opacity | `0` | `1` |
+| i.cx-kb | transform | `matrix(0.6, 0, 0, 0.6, 0, 0)` | `none` |
 
-**:focus-visible** — changes
+**:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
+
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| i.cx-kb | opacity | `0` | `1` |
+| i.cx-kb | transform | `matrix(0.6, 0, 0, 0.6, 0, 0)` | `none` |
 
 **:active** — changes
 
@@ -35309,7 +35143,7 @@ inside `.cx-k` · 125 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C3pop5-13` · rendered **7×12** · 119 instances look like this · text “1”
+`C3pop5-13` · rendered **7×12** · 7 instances look like this · text “1”
 
 ```html
 <b>1</b>
@@ -35326,15 +35160,15 @@ inside `.cx-k` · 125 on screen · **2 looks**
 | font-style | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
 | line-height | ↑ `` | `12px` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .cx-k[aria-pressed="false"], .b4 .cx-wl .cx-k · b4/compare.css:152 |
+| color | ↑ `color-mix(in srgb,var(--c) 28%,white)` | `color(srgb 1 0.784784 0.82102)` | inherited · .b4 #compare .f-menu li:is(:hover, .on):not(:has(.cx-k:hover)):has(.cx-mk:not([data-picked · b4/compare.css:442 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
 
 #### look 2 of 2
 
-`C3pop5-25` · rendered **7×12** · 6 instances look like this · text “1”
+`C3pop5-21` · rendered **7×12** · 118 instances look like this · text “1”
 
 ```html
 <b>1</b>
@@ -35351,11 +35185,391 @@ inside `.cx-k` · 125 on screen · **2 looks**
 | font-style | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
 | line-height | ↑ `` | `12px` | inherited · .b4 .cx-k · b4/compare.css:12 |
-| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
-| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:101 |
+| letter-spacing | `normal` | `normal` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `color-mix(in srgb,var(--c) 28%,white)` | `color(srgb 1 0.784784 0.82102)` | inherited · .b4 .cx-k[aria-pressed="true"] · b4/compare.css:14 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .cx-k[aria-pressed="false"], .b4 .cx-wl .cx-k · b4/compare.css:152 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
+
+
+### `i.cx-kb`
+
+inside `.cx-k` · 125 on screen · **8 looks**
+
+#### look 1 of 8
+
+`C3pop5-14` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
+
+```html
+<i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| position | `absolute` | `absolute` | .b4 .cx-kb · b4/compare.css:155 |
+| align-items | `center` | `center` | .b4 .cx-kb · b4/compare.css:155 |
+| place-items | `center` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| width | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| height | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| right | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| border-radius | `50%` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| background | `color-mix(in srgb,var(--c) 88%,white)` | `` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-color | `` | `color(srgb 1 0.323608 0.43749)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-image | `` | `none` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| box-shadow | `0 0 0 2px var(--sunk)` | `rgb(11, 15, 18) 0px 0px 0px 2px` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-size | ↑ `12px` | `12px` | inherited · .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| font-weight | ↑ `` | `600` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| line-height | ↑ `` | `12px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `rgb(10, 13, 18)` | `rgb(10, 13, 18)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| opacity | `1` | `1` | .b4 #compare .f-menu li:is(:hover, .on):not(:has(.cx-k:hover)) .cx-k .cx-kb · b4/compare.css:441 |
+| transform | `none` | `none` | .b4 #compare .f-menu li:is(:hover, .on):not(:has(.cx-k:hover)) .cx-k .cx-kb · b4/compare.css:441 |
+| transition | `opacity .16s var(--ease),transform .2s var(--ease)` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| pointer-events | `none` | `none` | .b4 .cx-kb · b4/compare.css:155 |
+
+#### look 2 of 8
+
+`C3pop5-22` · rendered **8×8** · 34 instances look like this · aria-hidden="true"
+
+```html
+<i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| position | `absolute` | `absolute` | .b4 .cx-kb · b4/compare.css:155 |
+| align-items | `center` | `center` | .b4 .cx-kb · b4/compare.css:155 |
+| place-items | `center` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| width | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| height | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| right | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| border-radius | `50%` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| background | `color-mix(in srgb,var(--c) 88%,white)` | `` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-color | `` | `color(srgb 1 0.323608 0.43749)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-image | `` | `none` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| box-shadow | `0 0 0 2px var(--sunk)` | `rgb(11, 15, 18) 0px 0px 0px 2px` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-size | ↑ `12px` | `12px` | inherited · .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| font-weight | ↑ `` | `600` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| line-height | ↑ `` | `12px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `rgb(10, 13, 18)` | `rgb(10, 13, 18)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| opacity | `0` | `0` | .b4 .cx-kb · b4/compare.css:155 |
+| transform | `scale(0.6)` | `matrix(0.6, 0, 0, 0.6, 0, 0)` | .b4 .cx-kb · b4/compare.css:155 |
+| transition | `opacity .16s var(--ease),transform .2s var(--ease)` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| pointer-events | `none` | `none` | .b4 .cx-kb · b4/compare.css:155 |
+
+#### look 3 of 8
+
+`C3pop5-222` · rendered **8×8** · 26 instances look like this · aria-hidden="true"
+
+```html
+<i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| position | `absolute` | `absolute` | .b4 .cx-kb · b4/compare.css:155 |
+| align-items | `center` | `center` | .b4 .cx-kb · b4/compare.css:155 |
+| place-items | `center` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| width | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| height | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| right | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| border-radius | `50%` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| background | `color-mix(in srgb,var(--c) 88%,white)` | `` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-color | `` | `color(srgb 1 0.844706 0.337412)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-image | `` | `none` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| box-shadow | `0 0 0 2px var(--sunk)` | `rgb(11, 15, 18) 0px 0px 0px 2px` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-size | ↑ `12px` | `12px` | inherited · .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| font-weight | ↑ `` | `600` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| line-height | ↑ `` | `12px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `rgb(10, 13, 18)` | `rgb(10, 13, 18)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| opacity | `0` | `0` | .b4 .cx-kb · b4/compare.css:155 |
+| transform | `scale(0.6)` | `matrix(0.6, 0, 0, 0.6, 0, 0)` | .b4 .cx-kb · b4/compare.css:155 |
+| transition | `opacity .16s var(--ease),transform .2s var(--ease)` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| pointer-events | `none` | `none` | .b4 .cx-kb · b4/compare.css:155 |
+
+#### look 4 of 8
+
+`C3pop5-386` · rendered **8×8** · 12 instances look like this · aria-hidden="true"
+
+```html
+<i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| position | `absolute` | `absolute` | .b4 .cx-kb · b4/compare.css:155 |
+| align-items | `center` | `center` | .b4 .cx-kb · b4/compare.css:155 |
+| place-items | `center` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| width | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| height | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| right | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| border-radius | `50%` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| background | `color-mix(in srgb,var(--c) 88%,white)` | `` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-color | `` | `color(srgb 0.575529 0.444392 0.78949)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-image | `` | `none` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| box-shadow | `0 0 0 2px var(--sunk)` | `rgb(11, 15, 18) 0px 0px 0px 2px` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-size | ↑ `12px` | `12px` | inherited · .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| font-weight | ↑ `` | `600` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| line-height | ↑ `` | `12px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `rgb(10, 13, 18)` | `rgb(10, 13, 18)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| opacity | `0` | `0` | .b4 .cx-kb · b4/compare.css:155 |
+| transform | `scale(0.6)` | `matrix(0.6, 0, 0, 0.6, 0, 0)` | .b4 .cx-kb · b4/compare.css:155 |
+| transition | `opacity .16s var(--ease),transform .2s var(--ease)` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| pointer-events | `none` | `none` | .b4 .cx-kb · b4/compare.css:155 |
+
+#### look 5 of 8
+
+`C3pop5-466` · rendered **8×8** · 14 instances look like this · aria-hidden="true"
+
+```html
+<i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| position | `absolute` | `absolute` | .b4 .cx-kb · b4/compare.css:155 |
+| align-items | `center` | `center` | .b4 .cx-kb · b4/compare.css:155 |
+| place-items | `center` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| width | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| height | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| right | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| border-radius | `50%` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| background | `color-mix(in srgb,var(--c) 88%,white)` | `` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-color | `` | `color(srgb 0.33051 0.879216 0.641098)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-image | `` | `none` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| box-shadow | `0 0 0 2px var(--sunk)` | `rgb(11, 15, 18) 0px 0px 0px 2px` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-size | ↑ `12px` | `12px` | inherited · .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| font-weight | ↑ `` | `600` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| line-height | ↑ `` | `12px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `rgb(10, 13, 18)` | `rgb(10, 13, 18)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| opacity | `0` | `0` | .b4 .cx-kb · b4/compare.css:155 |
+| transform | `scale(0.6)` | `matrix(0.6, 0, 0, 0.6, 0, 0)` | .b4 .cx-kb · b4/compare.css:155 |
+| transition | `opacity .16s var(--ease),transform .2s var(--ease)` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| pointer-events | `none` | `none` | .b4 .cx-kb · b4/compare.css:155 |
+
+#### look 6 of 8
+
+`C3pop5-542` · rendered **8×8** · 19 instances look like this · aria-hidden="true"
+
+```html
+<i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| position | `absolute` | `absolute` | .b4 .cx-kb · b4/compare.css:155 |
+| align-items | `center` | `center` | .b4 .cx-kb · b4/compare.css:155 |
+| place-items | `center` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| width | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| height | `14px` | `14px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| right | `-5px` | `-5px` | .b4 #compare .f-menu .cx-mk .cx-k .cx-kb · b4/compare.css:440 |
+| border-radius | `50%` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| background | `color-mix(in srgb,var(--c) 88%,white)` | `` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-color | `` | `color(srgb 0.351216 0.454745 0.941333)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| background-image | `` | `none` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| box-shadow | `0 0 0 2px var(--sunk)` | `rgb(11, 15, 18) 0px 0px 0px 2px` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-size | ↑ `12px` | `12px` | inherited · .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| font-weight | ↑ `` | `600` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| line-height | ↑ `` | `12px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `rgb(10, 13, 18)` | `rgb(10, 13, 18)` | .b4 #compare .cx-kb · b4/compare.css:236 |
+| opacity | `0` | `0` | .b4 .cx-kb · b4/compare.css:155 |
+| transform | `scale(0.6)` | `matrix(0.6, 0, 0, 0.6, 0, 0)` | .b4 .cx-kb · b4/compare.css:155 |
+| transition | `opacity .16s var(--ease),transform .2s var(--ease)` | `` | .b4 .cx-kb · b4/compare.css:155 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| pointer-events | `none` | `none` | .b4 .cx-kb · b4/compare.css:155 |
+
+*2 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+
+
+### `svg.cx-kg.ic`
+
+inside `.cx-kb` · 125 on screen · **1 look**
+
+#### the one look
+
+`C3pop5-15` · rendered **8×8** · 125 instances look like this · aria-hidden="true"
+
+```html
+<svg class="ic cx-kg" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 8h7M8 4.5v7"></path></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `8px` | `8px` | .b4 #compare .f-menu .cx-kb .cx-kg · b4/compare.css:447 |
+| height | `8px` | `8px` | .b4 #compare .f-menu .cx-kb .cx-kg · b4/compare.css:447 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 13px/1 var(--data)` | `` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-size | ↑ `12px` | `12px` | inherited · .b4 #compare .f-menu .cx-mk .cx-k · b4/compare.css:343 |
+| font-weight | ↑ `` | `600` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| font-style | ↑ `italic` | `italic` | inherited · i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| line-height | ↑ `` | `12px` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | ↑ `rgb(10, 13, 18)` | `rgb(10, 13, 18)` | inherited · .b4 #compare .cx-kb · b4/compare.css:236 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .cx-k · b4/compare.css:12 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+
+
+### `li.f-g0[role=option]`
+
+inside `.f-menu` · 6 on screen · **1 look**
+
+#### the one look
+
+`C3pop5-216` · rendered **468×42** · 6 instances look like this · aria-selected="false" role="option"
+
+```html
+<li id="cx-q-o17" role="option" aria-selected="false" class=" f-g0" style="--c: #ffd23f;"><span class="f-ol">CBR4</span><span class="f-om" style="--c: #ffd23f;">SMG</span><span class="cx-mk"><button type="button" tabindex="-1" class="cx-k" aria-pressed="false" aria-label="Build 1 of CBR4" data-tip="Put Build 1 in"><b>1</b><i class="cx-kb" aria-hidden="true">⟨svg.ic.cx-kg⟩</i></button><button type="button" tabindex="-
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b4 .f-menu li · b4/form.css:85 |
+| position | `relative` | `relative` | .b4 #compare .f-menu li.f-g0 · b4/compare.css:438 |
+| gap | `10px` | `` | .b4 .f-menu li · b4/classes.css:266 |
+| column-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
+| row-gap | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
+| align-items | `center` | `center` | .b4 .f-menu li · b4/form.css:85 |
+| min-height | `42px` | `42px` | .b4 .f-menu li · b4/classes.css:266 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 10px` | `` | .b4 .f-menu li · b4/classes.css:266 |
+| padding-top | `0px` | `0px` | .b4 .f-menu li · b4/classes.css:266 |
+| padding-right | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
+| padding-bottom | `0px` | `0px` | .b4 .f-menu li · b4/classes.css:266 |
+| padding-left | `10px` | `10px` | .b4 .f-menu li · b4/classes.css:266 |
+| margin-top | `9px` | `9px` | .b4 #compare .f-menu li.f-g0 · b4/compare.css:438 |
+| border-radius | `8px` | `` | .b4 .f-menu li · b4/classes.css:266 |
+| font | `600 13.5px/1 var(--ui)` | `` | .b4 .f-menu li · b4/classes.css:266 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-menu li · b4/classes.css:266 |
+| font-size | `` | `13.5px` | .b4 .f-menu li · b4/classes.css:266 |
+| font-weight | `` | `600` | .b4 .f-menu li · b4/classes.css:266 |
+| font-style | `` | `normal` | .b4 .f-menu li · b4/classes.css:266 |
+| font-variant-numeric | `` | `normal` | .b4 .f-menu li · b4/classes.css:266 |
+| line-height | `` | `13.5px` | .b4 .f-menu li · b4/classes.css:266 |
+| letter-spacing | — | `normal` | initial |
+| text-align | `left` | `left` | .b4 .f-menu li · b4/classes.css:270 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .f-menu li · b4/classes.css:266 |
+| cursor | `pointer` | `pointer` | .b4 .f-menu li · b4/form.css:85 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b4 #compare .f-menu li.f-g0::before · b4/compare.css:439 |
+| height | `1px` | .b4 #compare .f-menu li.f-g0::before · b4/compare.css:439 |
+| top | `-5px` | .b4 #compare .f-menu li.f-g0::before · b4/compare.css:439 |
+| right | `10px` | .b4 #compare .f-menu li.f-g0::before · b4/compare.css:439 |
+| left | `10px` | .b4 #compare .f-menu li.f-g0::before · b4/compare.css:439 |
+| background | `color-mix(in srgb,var(--ink) 9%,transparent)` | .b4 #compare .f-menu li.f-g0::before · b4/compare.css:439 |
+| background-color | `` | .b4 #compare .f-menu li.f-g0::before · b4/compare.css:439 |
+| background-image | `` | .b4 #compare .f-menu li.f-g0::before · b4/compare.css:439 |
+| content | `""` | .b4 #compare .f-menu li.f-g0::before · b4/compare.css:439 |
+| pointer-events | `none` | .b4 #compare .f-menu li.f-g0::before · b4/compare.css:439 |
+
+**:hover** — changes nothing on the element itself; parts inside it respond (table below)
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| button.cx-k | color | `rgb(133, 147, 159)` | `color(srgb 1 0.950588 0.789177)` |
+| button.cx-k | background-color | `rgba(0, 0, 0, 0)` | `color(srgb 0.291922 0.257647 0.116471)` |
+| button.cx-k | border-color | `rgb(133, 147, 159)` | `color(srgb 1 0.950588 0.789177)` |
+| button.cx-k | box-shadow | `none` | `color(srgb 1 0.823529 0.247059 / 0.72) 0px 0px 0px 1px inset` |
+| button.cx-k | outline-color | `color(srgb 1 0.823529 0.247059 / 0.55)` | `rgba(0, 0, 0, 0)` |
+| b | color | `rgb(133, 147, 159)` | `color(srgb 1 0.950588 0.789177)` |
+| b | border-color | `rgb(133, 147, 159)` | `color(srgb 1 0.950588 0.789177)` |
+| b | outline-color | `rgb(133, 147, 159)` | `color(srgb 1 0.950588 0.789177)` |
+| i.cx-kb | opacity | `0` | `1` |
+| i.cx-kb | transform | `matrix(0.6, 0, 0, 0.6, 0, 0)` | `none` |
+| button.cx-k | color | `rgb(133, 147, 159)` | `color(srgb 1 0.950588 0.789177)` |
+| button.cx-k | background-color | `rgba(0, 0, 0, 0)` | `color(srgb 0.291922 0.257647 0.116471)` |
+| button.cx-k | border-color | `rgb(133, 147, 159)` | `color(srgb 1 0.950588 0.789177)` |
+| button.cx-k | box-shadow | `none` | `color(srgb 1 0.823529 0.247059 / 0.72) 0px 0px 0px 1px inset` |
+| button.cx-k | outline-color | `color(srgb 1 0.823529 0.247059 / 0.55)` | `rgba(0, 0, 0, 0)` |
+| b | color | `rgb(133, 147, 159)` | `color(srgb 1 0.950588 0.789177)` |
+| b | border-color | `rgb(133, 147, 159)` | `color(srgb 1 0.950588 0.789177)` |
+| b | outline-color | `rgb(133, 147, 159)` | `color(srgb 1 0.950588 0.789177)` |
+| i.cx-kb | opacity | `0` | `1` |
+| i.cx-kb | transform | `matrix(0.6, 0, 0, 0.6, 0, 0)` | `none` |
+
+**:focus-visible** — changes
+
+| property | at rest | focus-visible |
+|---|---|---|
+| outline-offset | `0px` | `2px` |
+| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
+
+**:active** — changes nothing on the element itself
 
 
 ### C8 · an event's drawer, open
@@ -36043,9 +36257,9 @@ inside `.dw-f` · 1 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.pill` · 54 on screen · **2 looks**
+inside `.pill` · 54 on screen · **1 look**
 
-#### look 1 of 2
+#### the one look
 
 `C7pop7-181` · rendered **11×11** · 1 instance look like this · aria-hidden="true"
 
@@ -36072,40 +36286,6 @@ inside `.pill` · 54 on screen · **2 looks**
 | color | ↑ `var(--ok)` | `rgb(123, 219, 99)` | inherited · .b4 .f-okm · b4/classes.css:424 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-
-#### look 2 of 2
-
-`C7pop7-292` · rendered **9×9** · 3 instances look like this · aria-hidden="true"
-
-```html
-<svg class="ic" aria-hidden="true"><use href="#i-refresh-cw"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `13px` | `13px` | .b4 .acx .acx-hb .ic · b4/classes.css:911 |
-| height | `13px` | `13px` | .b4 .acx .acx-hb .ic · b4/classes.css:911 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · .b4 .acx button · b4/classes.css:836 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .acx button · b4/classes.css:836 |
-| font-size | ↑ `inherit` | `13px` | inherited · .b4 .acx button · b4/classes.css:836 |
-| font-weight | ↑ `inherit` | `400` | inherited · .b4 .acx button · b4/classes.css:836 |
-| font-style | ↑ `inherit` | `normal` | inherited · .b4 .acx button · b4/classes.css:836 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · .b4 .acx button · b4/classes.css:836 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · .b4 .acx button · b4/classes.css:836 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--on-cur)` | `rgb(255, 255, 255)` | inherited · .b4 .acx .acx-hb + .acx-hb · b4/classes.css:896 |
-| opacity | `0` | `0` | .b4 .acx .acx-hb .ic · b4/classes.css:911 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| transform | `scale(0.7)` | `matrix(0.7, 0, 0, 0.7, 0, 0)` | .b4 .acx .acx-hb .ic · b4/classes.css:911 |
-| transition | `opacity .12s cubic-bezier(.4,0,.6,1),transform .12s cubic-bezier(.4,0,.6,1)` | `` | .b4 .acx .acx-hb .ic · b4/classes.css:911 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .acx .acx-hb · b4/classes.css:894 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
 
 ### `span.f-okm`

@@ -1121,7 +1121,7 @@ inside `.pb-body` · 4 on screen · **1 look**
 `C6-35` · rendered **674×79** · 4 instances look like this
 
 ```html
-<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.3618%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
+<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 56 days" style="left: 45.3837%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
 ```
 
 | property | winning declaration | computed | from |
@@ -1148,7 +1148,7 @@ inside `.pb-life3` · 4 on screen · **1 look**
 `C6-36` · rendered **674×43** · 4 instances look like this
 
 ```html
-<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.3618%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="b4-popw"><button type
+<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 56 days" style="left: 45.3837%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="b4-popw"><button type
 ```
 
 | property | winning declaration | computed | from |
@@ -1353,7 +1353,7 @@ inside `.pb-tl` · 4 on screen · **1 look**
 `C6-41` · rendered **500×20** · 4 instances look like this
 
 ```html
-<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 55 days" style="left: 45.3618%;"></span></div>
+<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 56 days" style="left: 45.3837%;"></span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -1448,10 +1448,10 @@ inside `.pb-bar` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-44` · rendered **2×18** · 4 instances look like this · title="Up 55 days"
+`C6-44` · rendered **2×18** · 4 instances look like this · title="Up 56 days"
 
 ```html
-<span class="pb-now" title="Up 55 days" style="left: 45.3618%;"></span>
+<span class="pb-now" title="Up 56 days" style="left: 45.3837%;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1462,7 +1462,7 @@ inside `.pb-bar` · 4 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
 | bottom | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
-| left | `45.3618%` | `226.797px` | style attribute |
+| left | `45.3837%` | `226.906px` | style attribute |
 | border-radius | `1px` | `` | .pb-now · b2.css:234 |
 | background | `var(--ink)` | `` | .pb-now · b2.css:234 |
 | background-color | `` | `rgb(232, 237, 241)` | .pb-now · b2.css:234 |
@@ -1610,7 +1610,7 @@ inside `.pb-life3` · 4 on screen · **1 look**
 `C6-50` · rendered **674×28** · 4 instances look like this
 
 ```html
-<div class="pb-dates"><span class="pb-pill">⟨svg.ic⟩Active for 55d</span><span class="b4-popw"><button type="button" id="" class="pb-pill g-chipbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Change how many times each player sees it — once">⟨svg.ic⟩Shown once</button></span><div class="pb-cacts"><span class="b3-endwrap b3-endwarn"><span class="b4-popw"><button type="button" id="" class="b3-endbtn" aria
+<div class="pb-dates"><span class="pb-pill">⟨svg.ic⟩Active for 56d</span><span class="b4-popw"><button type="button" id="" class="pb-pill g-chipbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Change how many times each player sees it — once">⟨svg.ic⟩Shown once</button></span><div class="pb-cacts"><span class="b3-endwrap b3-endwarn"><span class="b4-popw"><button type="button" id="" class="b3-endbtn" aria
 ```
 
 | property | winning declaration | computed | from |
@@ -1639,7 +1639,7 @@ inside `.pb-dates` · 3 on screen · **1 look**
 `C6-51` · rendered **122×28** · 3 instances look like this
 
 ```html
-<span class="pb-pill">⟨svg.ic⟩Active for 55d</span>
+<span class="pb-pill">⟨svg.ic⟩Active for 56d</span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1787,7 +1787,7 @@ inside `.pb-dates` · 4 on screen · **1 look**
 | margin-top | `` | `-5px` | .pb-dates .pb-cacts · b2.css:511 |
 | margin-right | `` | `0px` | .pb-dates .pb-cacts · b2.css:511 |
 | margin-bottom | `` | `-5px` | .pb-dates .pb-cacts · b2.css:511 |
-| margin-left | `` | `176.453px` | .pb-dates .pb-cacts · b2.css:511 |
+| margin-left | `` | `176.266px` | .pb-dates .pb-cacts · b2.css:511 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2786,10 +2786,10 @@ inside `.pb-dates` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-137` · rendered **113×28** · 1 instance look like this
+`C6-137` · rendered **115×28** · 1 instance look like this
 
 ```html
-<span class="pb-pill g-soon">⟨svg.ic⟩Starts in 31d</span>
+<span class="pb-pill g-soon">⟨svg.ic⟩Starts in 30d</span>
 ```
 
 | property | winning declaration | computed | from |

@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — relations, measured
 
-*Generated 2026-09-29T23:55:33.439Z by `relations.cjs` from the running kit at 1282×888. Each row is one of his rulings that is a RELATION (a size, a gap, a distance, a count), with where he ruled it; the value is read off the page. 26 of 26 hold. Page errors: 0. Session 5 reruns this against Board 4: Final and reads the same numbers off the portal.*
+*Generated 2026-09-30T00:50:17.851Z by `relations.cjs` from the running kit at 1282×888. Each row is one of his rulings that is a RELATION (a size, a gap, a distance, a count), with where he ruled it; the value is read off the page. 33 of 33 hold. Page errors: 0. Session 5 reruns this against Board 4: Final and reads the same numbers off the portal.*
 
 | Gate | State | Relation | Ruled | Expect | Measured | |
 |---|---|---|---|---|---|---|
@@ -18,7 +18,14 @@ status: live
 | C3 | Two weapons | narrowest weapon tile (≥ 120) | Version 40 N | ≥120 | 134 | ✓ |
 | C3 | Two weapons | widest weapon tile (≤ 260) | Version 40 N | ≤260 | 214 | ✓ |
 | C3 | Two weapons | a build chip's corner mark | Version 40 C | 18 | 18 | ✓ |
-| C3 | Two weapons | the search field | Version 41 AF | 560 | 560 | ✓ |
+| C3 | Two weapons | the search field | Version 42 AI (560 → slightly narrower) | 480 | 480 | ✓ |
+| C3 | Two weapons | the seats chip against the search, height difference | Version 42 AP | 0 | 0 | ✓ |
+| C3 | Two weapons | the top-right buttons against the search, height difference | Version 42 AO/AP | 0 | 0 | ✓ |
+| C3 | Two weapons | the band's chips against the first build column, x difference | Version 42 AN | 0 | 0 | ✓ |
+| C3 | Two weapons | a column's last action plate: gap to the right edge minus gap to the foot | Version 42 AL | 0 | 0 | ✓ |
+| C3 | Two weapons | the corner mark's stroke, in px of ink (≥ 1.5) | Version 42 AR | ≥1.5 | 1.6 | ✓ |
+| C3 | Two weapons | the verdict chip against the build chip, height difference | Version 42 AK | 0 | 0 | ✓ |
+| C3 | Two weapons | gaps between builds of one weapon that end in a round cap | Version 42 AS | ≥1 | 4 | ✓ |
 | C3 | Empty | landing tiles (10–16) | Version 40 S | 10–16 | 16 | ✓ |
 | C3 | Empty | landing tile rows (≤ 3) | Version 40 S | ≤3 | 3 | ✓ |
 | C2 | Add build | the build drawer | intake:703 (2026-09-24 22:30) | 980 | 980 | ✓ |

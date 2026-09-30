@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the custom properties the portal does not have
 
-*Generated 2026-09-29T23:55:06.394Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `ad65c54c plus the working tree`. 175 of the 259 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
+*Generated 2026-09-30T00:48:54.905Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `17389c97 plus the working tree`. 175 of the 259 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
 
 | Token | Defined in the kit | The definition |
 |---|---|---|
@@ -48,9 +48,9 @@ status: live
 | `--dp-c` | `b3/board.css:1460` (set by script) | `every accent below reads --dp-c, which defaults to the realm's --realm-c — a date field in Season or Access re-colours with no rule of its o` |
 | `--eio` | `b4/classes.css:833` | `.b4 .acx{--pad:14px;--pw:200px;--svh:138px;--cg:16px;--rg:16px;--bgap:16px;--hueh:12px;--huer:44px;--fh:44px;--frad:9px;--lg:10px;--swg:6px;` |
 | `--f-bg` | `b4/form.css:44` | `.b4 .f-fld{--f-bg:color-mix(in srgb,#04070A 52%,var(--sunk));--f-edge:color-mix(in srgb,var(--ink) 12%,transparent);` |
-| `--f-ch` | `b4/form.js:467` | `<section class=${'f-card' + (multi && i === ci ? ' on' : '')} key=${c.id} data-arm=${c.f.mode} style=${`--f-ch:${hueOfCard(c)}`} onFocusIn=$` |
+| `--f-ch` | `b4/form.js:468` | `<section class=${'f-card' + (multi && i === ci ? ' on' : '')} key=${c.id} data-arm=${c.f.mode} style=${`--f-ch:${hueOfCard(c)}`} onFocusIn=$` |
 | `--f-edge` | `b4/classes.css:143` | `.b4 .f-fld:focus-within, .b4 .f-pick.open .f-fld{--f-edge:var(--patch)!important;box-shadow:inset 0 0 0 1px var(--patch),0 0 0 5px color-mix` |
-| `--f-hue` | `b4/form.js:306` | `<div class="f-card-b" style=${`--f-hue:${hue}`}>` |
+| `--f-hue` | `b4/form.js:307` | `<div class="f-card-b" style=${`--f-hue:${hue}`}>` |
 | `--f-lw` | `b4/classes.css:404` | `.b4 .f-card-b{--f-lw:96px;container:f-card / inline-size}` |
 | `--f-sidew` | `b4.css:131` | `.b4 .drawer.wide:has(.b3-nb) { width:min(980px, 100vw - 40px); --f-sidew:333px }` |
 | `--fb` | `b4/classes.css:806` | `.b4 :is(.f-form.b3-fady,.pb-col.b3-fady,.drawer.b1 .dw-b):has(.f-pick.open .f-menu,.b4-pop){--ft:0px!important;--fb:0px!important;-webkit-ma` |
@@ -119,7 +119,7 @@ status: live
 | `--lh-pr` | — **not defined anywhere in the kit** | `` |
 | `--lh-vl-vt` | — **not defined anywhere in the kit** | `` |
 | `--lit` | `b3/board.css:1900` | `.b3-bdg[data-k=meta]{--lit:.06;--b3-amb:1.6;--b3-glow:1.7;overflow:hidden}` |
-| `--m` | `b4/compare.js:302` | `<span class="cx-dcf" aria-hidden="true">${chosen.map((b, k) => html`<i key=${String(b._id)} style=${`--c:${optionOf(b.weaponName).accent};--` |
+| `--m` | `b4/compare.js:323` | `<span class="cx-dcf" aria-hidden="true">${chosen.map((b, k) => html`<i key=${String(b._id)} style=${`--c:${optionOf(b.weaponName).accent};--` |
 | `--m1` | `b4.css:34` | `html:is([data-b3-xbg=mesh],[data-b3-xbg=ground]) :is(.drawer:has(.b3-nb), .drawer.b1, .drawer .b4-ask){ --m1:#ff3b5c;--m2:#f6a93b;` |
 | `--m2` | `b4.css:34` | `html:is([data-b3-xbg=mesh],[data-b3-xbg=ground]) :is(.drawer:has(.b3-nb), .drawer.b1, .drawer .b4-ask){ --m1:#ff3b5c;--m2:#f6a93b;` |
 | `--m3` | `ui/access.js:191` | `style=${tint ? `--m1:${tint[0]};--m2:${tint[1] \|\| tint[0]};--m3:${tint[2] \|\| tint[1] \|\| tint[0]}` : null}>` |

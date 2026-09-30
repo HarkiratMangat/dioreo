@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — structure, generated
 
-*Generated 2026-09-29T23:40:39.027Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
+*Generated 2026-09-30T00:49:01.387Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
 
 ## C1 · The Armory manifest
 
@@ -1066,8 +1066,16 @@ status: live
             - `input.f-in[role=combobox]`
             - `button.f-suf.f-caret “Open the list”`
               - `svg.ic.f-cr`
+      - `span.cx-seats`
+        - `span.cx-sts`
+          - `i.on` ×5
+          - `i`
+        - `span.cx-stt`
+          - `b` — “5”
       - `div.cx-tools`
-        - `button.b3-btn2.cx-tb` ×2
+        - `button.b3-btn2.quiet.cx-tb.cx-clr`
+          - `svg.ic`
+        - `button.b3-btn2.go.dang.cx-tb`
           - `svg.ic`
     - `div.cx-tiles.b3-fadx`
       - `div.cx-tl`
@@ -1082,24 +1090,18 @@ status: live
             - `button.cx-k “Build 1: Take Build 1 out of the table”` ×5
               - `b` — “1”
               - `i.cx-kb`
-                - `svg.ic`
+                - `svg.ic.cx-kg`
     - `div.cx-band`
-      - `span.cx-seats`
-        - `span.cx-sts`
-          - `i.on` ×5
-          - `i`
-        - `span.cx-stt`
-          - `b` — “5”
-      - `div.cx-same`
-        - `span` — “Same on all 5”
-        - `span.cx-sv.wg-at` — “60 Round Reload”
-      - `div.cx-same.cx-shr`
-        - `span` — “Shared”
-        - `span.cx-sh “Barrel: Crown-H3 Barrel, shared by BAL-2”` ×2
-          - `em` — “Barrel”
-          - `span.cx-shv` — “Crown-H3 Barrel”
-          - `span.cx-shb`
-            - `i` ×3 — “1”
+      - `span.cx-bn` — “Same on all 5”
+      - `div.cx-bv.cx-same.b3-fadx`
+        - `div.cx-bvl`
+          - `span.cx-sv.wg-at` — “60 Round Reload”
+      - `span.cx-bn` — “Shared”
+      - `div.cx-bv.cx-same.b3-fadx`
+        - `div.cx-bvl`
+          - `span.wg-at.cx-shc “Barrel: Crown-H3 Barrel, shared by BAL-2”` ×2
+            - `span.cx-shb`
+              - `i` ×3 — “1”
     - `div.cx-tw`
       - `table.cx-t`
         - `caption.sr` — “BAL-27, slot by slot. A tint”
@@ -1116,10 +1118,17 @@ status: live
           - `tr`
             - `th.cx-k0`
               - `span.sr` — “Slot”
-            - `th.cx-h` ×5
+            - `th.cx-h.cx-hj` ×4
               - `span.cx-hn`
                 - `span.b3-sd-gn` — “Build 1”
-                - `span.wg-im.cx-im[role=img] “Image uploaded”`
+                - `span.cx-vd`
+              - `span.cx-hl.none` — “No label”
+              - `span.cx-hb`
+                - `div.cx-run.b3-fadx`
+            - `th.cx-h`
+              - `span.cx-hn`
+                - `span.b3-sd-gn` — “Build 5”
+                - `span.cx-vd`
               - `span.cx-hl.none` — “No label”
               - `span.cx-hb`
                 - `div.cx-run.b3-fadx`
@@ -1136,7 +1145,7 @@ status: live
             - `td.cx-fa` ×5
               - `div.wg-acts.cx-acts`
                 - `button.wg-ib.wg-share “Copy share command”`
-                - `button.wg-ib.cx-edit “Edit BAL-27 build 1”`
+                - `button.wg-ib.wg-edit.cx-edit “Edit BAL-27 build 1”`
                 - `i.wg-vr`
                 - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
     - `div.cx-dc`
@@ -1145,10 +1154,10 @@ status: live
           - `i` ×5
             - `b` ×3
         - `span.cx-dct`
-          - `b` — “Discord cards”
-          - `small` — “5 builds, as the bot posts t”
+          - `b` — “Discord preview”
+          - `small` — “Preview the builds as Discor”
         - `span.cx-dcp`
-          - `svg.ic.f-cr`
+          - `svg.ic.ic-fold`
       - `div.cx-dcw`
         - `div.cx-dcin`
           - `div.cx-emb`
@@ -1177,8 +1186,15 @@ status: live
             - `span.f-pre.f-ic`
             - `input.f-in[role=combobox]`
             - `button.f-suf.f-caret “Open the list”`
+      - `span.cx-seats.full`
+        - `span.cx-sts`
+          - `i.on` ×6
+        - `span.cx-stt`
+          - `b` — “6”
       - `div.cx-tools`
-        - `button.b3-btn2.cx-tb` ×2
+        - `button.b3-btn2.quiet.cx-tb.cx-clr`
+          - `svg.ic`
+        - `button.b3-btn2.go.dang.cx-tb`
           - `svg.ic`
     - `div.cx-tiles.b3-fadx`
       - `div.cx-tl`
@@ -1190,21 +1206,15 @@ status: live
             - `button.cx-k “Build 1: Take Build 1 out of the table”` ×3
             - `button.cx-k.cx-kfull “Build 4: The table holds 6 builds. Take ”` ×2
     - `div.cx-band`
-      - `span.cx-seats.full`
-        - `span.cx-sts`
-          - `i.on` ×6
-        - `span.cx-stt`
-          - `b` — “6”
-      - `div.cx-same`
-        - `span` — “Same on all 6”
-        - `span.cx-sv.wg-at` — “Assault rifle”
-      - `div.cx-same.cx-shr`
-        - `span` — “Shared”
-        - `span.cx-sh “Muzzle: Agency Suppressor, shared by FFA”` ×7
-          - `em` — “Muzzle”
-          - `span.cx-shv` — “Agency Suppressor”
-          - `span.cx-shb`
-            - `i` ×2 — “2”
+      - `span.cx-bn` — “Same on all 6”
+      - `div.cx-bv.cx-same.b3-fadx`
+        - `div.cx-bvl`
+          - `span.cx-sv.wg-at` — “Assault rifle”
+      - `span.cx-bn` — “Shared”
+      - `div.cx-bv.cx-same.b3-fadx`
+        - `div.cx-bvl`
+          - `span.wg-at.cx-shc “Muzzle: Agency Suppressor, shared by FFA”` ×7
+            - `span.cx-shb`
     - `div.cx-tw`
       - `table.cx-t`
         - `caption.sr` — “BAL-27, FFAR 1, slot by slot”
@@ -1221,9 +1231,11 @@ status: live
             - `th.cx-g`
           - `tr`
             - `th.cx-k0`
-            - `th.cx-h` ×3
+            - `th.cx-h.cx-hj` ×2
+            - `th.cx-h`
             - `th.cx-gut`
-            - `th.cx-h` ×3
+            - `th.cx-h.cx-hj` ×2
+            - `th.cx-h`
         - `tbody`
           - `tr` ×8
             - `th.cx-k0` — “Muzzle”
@@ -1243,10 +1255,10 @@ status: live
           - `i` ×6
             - `b` ×3
         - `span.cx-dct`
-          - `b` — “Discord cards”
-          - `small` — “6 builds, as the bot posts t”
+          - `b` — “Discord preview”
+          - `small` — “Preview the builds as Discor”
         - `span.cx-dcp`
-          - `svg.ic.f-cr`
+          - `svg.ic.ic-fold`
       - `div.cx-dcw`
         - `div.cx-dcin`
           - `div.cx-emb`
@@ -1263,8 +1275,16 @@ status: live
             - `span.f-pre.f-ic`
             - `input.f-in[role=combobox]`
             - `button.f-suf.f-caret “Open the list”`
+      - `span.cx-seats`
+        - `span.cx-sts`
+          - `i.on`
+          - `i` ×5
+        - `span.cx-stt`
+          - `b` — “1”
       - `div.cx-tools`
-        - `button.b3-btn2.cx-tb` ×2
+        - `button.b3-btn2.quiet.cx-tb.cx-clr`
+          - `svg.ic`
+        - `button.b3-btn2.go.dang.cx-tb`
           - `svg.ic`
     - `div.cx-tiles.b3-fadx`
       - `div.cx-tl`
@@ -1274,16 +1294,9 @@ status: live
             - `button.b3-x.cx-wx “Remove DL Q33 from the comparison”`
           - `div.cx-keys`
             - `button.cx-k “Build 1: Take Build 1 out of the table”`
-    - `div.cx-band`
-      - `span.cx-seats`
-        - `span.cx-sts`
-          - `i.on`
-          - `i` ×5
-        - `span.cx-stt`
-          - `b` — “1”
     - `div.cx-tw`
       - `table.cx-t`
-        - `caption.sr` — “DL Q33, NA-45, slot by slot.”
+        - `caption.sr` — “DL Q33, LOCUS, slot by slot.”
         - `colgroup`
           - `col.cx-c0`
           - `col`
@@ -1305,7 +1318,7 @@ status: live
             - `th.cx-k0` — “Muzzle”
             - `td.cx-c.s-n`
             - `td.cx-gut`
-            - `td.cx-c.s-sg`
+            - `td.cx-c.s-x.sg`
         - `tfoot`
           - `tr.cx-ft`
             - `th.cx-k0`
@@ -1318,10 +1331,10 @@ status: live
           - `i`
             - `b` ×3
         - `span.cx-dct`
-          - `b` — “Discord cards”
-          - `small` — “1 build, as the bot posts th”
+          - `b` — “Discord preview”
+          - `small` — “Preview the builds as Discor”
         - `span.cx-dcp`
-          - `svg.ic.f-cr`
+          - `svg.ic.ic-fold`
       - `div.cx-dcw`
         - `div.cx-dcin`
           - `div.cx-emb`
@@ -1359,7 +1372,7 @@ status: live
             - `i`
             - `span` — “to set them side by side”
         - `div.cx-shelf`
-          - `div.cx-w.cx-wl[role=group] “MACHINE PISTOL, 1 build”` ×16
+          - `div.cx-w.cx-wl[role=group] “BY15, 1 build”` ×16
             - `div.cx-wh`
             - `div.cx-keys`
 
@@ -1763,7 +1776,7 @@ status: live
                 - `span`
             - `td.nums` ×3
               - `span.bcdt`
-                - `small` — “76 days ago”
+                - `small` — “77 days ago”
             - `td`
               - `span.btab`
                 - `svg.ic`

@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective (the kit Board 3-E shares) — its rules on SHIPPED portal classes
 
-*Generated 2026-09-29T23:51:06.801Z by `overrides.cjs`. **299 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
+*Generated 2026-09-30T00:44:46.591Z by `overrides.cjs`. **300 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
 
 **This is where the corrections to boards 1 and 2 live.** Session 2 shipped board 1 and board 2 at ~95%; board 3 ran the portal's own code and corrected the rest with rules like these. Each row is a change to `portal/ui/app.css` (or `tokens.css`): find the portal rule for the same selector, change it to this, and close the element with `portalProbe` against board 3.
 
@@ -133,6 +133,7 @@ status: live
 | `b3/board.css:2774` | `.wg-r .wg-rail` | max-height:76px;overflow-y:auto;overscroll-behavior:auto;scrollbar-width:none; -webkit-mask-image:linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft | unswitched |
 | `b3/board.css:2777` | `.wg-r .wg-rail::-webkit-scrollbar` | width:0;height:0 | unswitched |
 | `b3/board.css:2848` | `.wg-r .wg-rail,.b3-sd-chips` | --fdy:15px | unswitched |
+| `b3/board.css:3082` | `.b4 #compare .cx-clr:hover:not(:disabled),.b3-xf-f .b3-btn2.b3-xf-clr:hover:not(:disabled)` | color:var(--danger-ink);background:color-mix(in srgb,var(--danger-ink) 12%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger-ink) 55%,transparent) | unswitched |
 | `b3/board.css:3190` | `.wg-r.bad::after` | left:0;right:auto;width:4px;-webkit-mask-image:radial-gradient(ellipse farthest-side at 0 50%,#000 0,#000 90%,transparent 100%),linear-gradient(to bottom,transparent 0,rgb(0 0 0/.14) 10%,rgb(0 0 0/.42) 24%,rgb(0 0 0/.78) | unswitched |
 | `b3/board.css:3191` | `.wg-r.bad::before,.wg-r.bad:hover::before,.wg-r.bad.open::before` | display:none | unswitched |
 | `b3/board.css:3260` | `12.5%` | transform:translate3d(27.27%,35.37%,0) | unswitched |

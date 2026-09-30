@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the resolved values
 
-*Generated 2026-09-29T23:55:06.051Z by `extract-spec.cjs` from http://127.0.0.1:8900/docs/pins2/kit/board4.html at 1282×888, fresh profile. 1632 looks specced across 684 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **15**. Winning declarations the computed value contradicts: **90** (marked ⚠️).*
+*Generated 2026-09-30T00:48:54.447Z by `extract-spec.cjs` from http://127.0.0.1:8900/docs/pins2/kit/board4.html at 1282×888, fresh profile. 1636 looks specced across 687 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **15**. Winning declarations the computed value contradicts: **90** (marked ⚠️).*
 
 ⚠️ **Not reached** (rendered, classed, never walked — each is a coverage hole):
 
@@ -51,11 +51,11 @@ node $O/structure.cjs && node $O/relations.cjs && node $O/a11y.cjs
 | [`motion.md`](motion.md) | @keyframes the board uses | 9 KB |
 | [`C1-armory-manifest.md`](C1-armory-manifest.md) | C1 · The Armory manifest — resting | 310 KB |
 | [`C2-new-build.md`](C2-new-build.md) | C2 · New build — resting | 271 KB |
-| [`C3-compare.md`](C3-compare.md) | C3 · Compare — resting | 372 KB |
+| [`C3-compare.md`](C3-compare.md) | C3 · Compare — resting | 404 KB |
 | [`C4-repairs.md`](C4-repairs.md) | C4 · Repairs — resting | 218 KB |
 | [`C5-export.md`](C5-export.md) | C5 · Export — resting | 80 KB |
 | [`C6-delivery-queue.md`](C6-delivery-queue.md) | C6 · The delivery queue — resting | 171 KB |
 | [`C7-broadcast.md`](C7-broadcast.md) | C7 · The Broadcast manifest, and posting — resting | 110 KB |
 | [`C8-history.md`](C8-history.md) | C8 · History — resting | 235 KB |
 | [`C9-admin-traffic.md`](C9-admin-traffic.md) | C9 · Admin traffic — resting | 11 KB |
-| [`states.md`](states.md) | Reachable states | 2251 KB |
+| [`states.md`](states.md) | Reachable states | 2273 KB |
