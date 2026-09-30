@@ -698,6 +698,11 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 ## 🔔 Reminders / watch-for
 
 
+### `[P2 · S]` Morphing marks draw through the CSS `d` property — check the portal's browsers before Session 5 ports them
+
+**Filed 2026-09-29 23:27 EDT, the Session 4/5 readiness pass.** Caret (`docs/pins2/kit/b4/form.js`, its path set only by an inline `d:path(...)` style with no `d` attribute), Fold (`app.css .ic-fold path`), `ProblemChip`'s edge (`docs/pins2/kit/b3/armory-parts.js`) and the Picker's tick (`b4/classes.css`) morph by transitioning CSS `d`. A browser without CSS `d` support draws the first three as nothing; the tick keeps its ✓ (it carries a `d` attribute) but never shows its ×. **Verify:** name the portal's supported browsers; for each mark, a `d` attribute holds its rest shape, and the page in each browser shows every mark.
+
+
 ### `[P2 · S]` Rate real end-of-run summaries against the rebuilt Silent contract — next session
 
 **Still not done, 2026-09-23 09:00 EDT:** the session it was filed for spent its run on Board 4 and never added a real summary to the corpus page. Carried to the next session that is not mid-intake.

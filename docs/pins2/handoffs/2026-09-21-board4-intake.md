@@ -1732,3 +1732,4 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 | BA | the Picker ticks every row `sel(o)` marks (the build drawer's end ✓), `aria-multiselectable` | 2 of 2 panel weapons ticked (was 0), FFAR 1 with no build on included |
 | BB | a ticked row's hovered ✓ morphs into the × (`d:path`, the board's morph rule) in `--danger-ink`; a hover on one of its numbers leaves the ✓; the strike deleted | hovered tick path the ×, colour rgb(255,138,133); strike none |
 
+**Version 45 published** 2026-09-29 23:16 EDT on his "publish" (the page and the eleven changed kit files, each checked against the artifact's file listing by size). Then his order for the Session 4/5 readiness pass; its record is `docs/pins2/final/board4-spec/HANDOFF.md` § *Ready for Sessions 4 and 5*.

@@ -38,7 +38,7 @@ O=docs/pins2/final/board4-spec
 node $O/switches.cjs && node $O/overrides.cjs
 BOARD=4 node $O/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $O/split-spec.cjs $TMPDIR/b4-spec.md
 node $O/maps.cjs
-node $O/structure.cjs && node $O/relations.cjs && node $O/a11y.cjs
+node $O/structure.cjs && node $O/relations.cjs && node $O/a11y.cjs && node $O/hover-relations.cjs
 ```
 
 `relations.cjs` measures his rulings that are relations on the running board ([`relations.md`](relations.md)); `measure.cjs` is Board 3-E's, its selectors board 3's.
