@@ -35,13 +35,13 @@ status: live
 
 | | |
 |---|---|
-| Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 43** live (published 2026-09-29 21:30 EDT on his "publish": the Version 40, 41 and 42 intake rounds, built, and History's event-drawer fix); **not signed off** |
+| Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 44** live (2026-09-29 21:39 EDT: the upward passing card fixed; Version 43 published 2026-09-29 21:30 EDT on his "publish": the Version 40, 41 and 42 intake rounds, built, and History's event-drawer fix); **not signed off** |
 | The kit | [`kit/`](kit/README.md), **tracked** — moved here from the gitignored `local/pins2-board-3/redo/` on his call of 2026-09-28 23:27 EDT (*"why not just move the board to the new collective folder?"*). Its git history to the move stays local: `git -C local/pins2-board-3 log --stat` |
 | The spec | `final/board4-spec/`, **regenerated 2026-09-29 00:12 EDT from the tracked kit** — its header carries the counts. The `C*.md` and `states.md` that sat in the live folder before were from kit `ecc93ee`, *before* Version 39: `split-spec.cjs` had written the Version 40 values into a folder nothing pointed at |
 | Board 3-E | **superseded by Board 4** (his 2026-09-28 23:27 EDT). `3e/` in board 3's package is history: `handoff-3e.md` survives only as the inherited *structure* narrative `HANDOFF.md` cites, and the generators moved to `final/board4-spec/` |
 | Publishing the kit | 🔴 he said on 2026-09-20 21:33 EDT that the kit was not to go on the online GitHub. It is tracked now, so a push or a merge into `v3-pre-release` that carries `kit/` puts it there — the approval sentence names it (plan §13 Step 1). Not decided |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
-| Next | his review of Version 43 (the Version 40 round's all 21 classes A–U, the Version 41 round's 13, the Version 42 round's 11); then the Collective's sign-off (plan §5c Step 1) and Session 3's close (plan §13), each on his word |
+| Next | his review of Version 44 (the Version 40 round's all 21 classes A–U, the Version 41 round's 13, the Version 42 round's 11); then the Collective's sign-off (plan §5c Step 1) and Session 3's close (plan §13), each on his word; compact prep: `handoffs/2026-09-29-board4-compact-prep-20.md` |
 
 ## Where new things go
 
