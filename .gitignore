@@ -101,3 +101,14 @@ CLAUDE.local.md
 # Board-round screenshots I take while verifying a gate — scratch, never a deliverable.
 # They were swept into a commit by `git add -A` on 2026-09-20 17:46 EDT and removed again.
 shots/
+
+# Screenshots stay on this Mac — Harkirat, 2026-09-29 23:35 EDT: "kit can be tracked but leave screenshots local". Board captures and his pasted shots
+# live in local/pins2/intake-shots/ (already ignored under local/); the portal pin crops (docs/portal/portal-pins/), the summary captures
+# (docs/reference/silent-summary/) and every other image under docs/ stay where they are, untracked. These lines refuse an image anywhere
+# under docs/ except the kit's own design assets, so a future session cannot re-track one by accident.
+docs/**/*.png
+docs/**/*.webp
+docs/**/*.jpg
+docs/**/*.jpeg
+docs/**/*.gif
+!docs/pins2/kit/**

@@ -12,7 +12,7 @@ status: live
 | File | What it holds |
 |---|---|
 | [`portal-sync-notes.md`](portal-sync-notes.md) | **The pin log.** Every pin Harkirat has filed on the live portal, newest last, with its crop. Written by `npm run portal:sync`; a session marks each pin as it is handled. |
-| [`portal-pins/`](portal-pins) | The crops those pins point at — 104 files, ~11MB. They live here rather than in `local/` because the log is tracked and a tracked doc must not cite an untracked path. |
+| `portal-pins/` (**this Mac only**) | The crops those pins point at — 104 files, ~11MB. **Not tracked and never pushed** (his call, 2026-09-29 23:36 EDT: "kit can be tracked but leave screenshots local"), superseding the earlier reason they were tracked (a tracked doc citing an untracked file): the log still cites them at this path, and on this Mac they are there. A fresh clone does not have them |
 | [`archive/`](archive) | Handled pins, swept out of the live log so it stays readable. `kind: archive`, `status: frozen` — never edited after the sweep. |
 
 ## What does NOT move here

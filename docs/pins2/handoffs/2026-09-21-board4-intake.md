@@ -5,6 +5,8 @@ status: live
 
 # Board 4 intake round — 2026-09-21 17:40 EDT
 
+> 📷 **The screenshots are on this Mac only, in `local/pins2/intake-shots/`** (2026-09-29 23:35 EDT, Harkirat: "kit can be tracked but leave screenshots local"). Every shot this log cites is at that path, by round; a fresh clone does not have them, and that is deliberate — they were never pushed.
+
 *His comments gate by gate, verbatim. Nothing is fixed until every gate is in; then one pass, by class, checking neighbouring elements.*
 
 ## C1 · The Armory manifest
@@ -824,7 +826,7 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 *One round, not two: it opened at 10:55 EDT on his 10:52 EDT order ("i'm going to go review the board, then we'll do an intake round, then you'll prep for compact, and after the compact you'll work on making the requested improvements and changes, then we'll compact again and after that we'll work on finishing the spec, docs, etc for session 4 and 5"), paused for the post drawer work he asked to have built, and resumed here after the compact and Version 36.*
 
-### His first batch — 2026-09-27 20:34 EDT, verbatim (five screenshots, copied to `docs/pins2/intake-shots/intake-v36/71.png`–`75.png`: the post drawer's dates and repeat stepper, the stepper's hover, a queue card, the Set end date picker, the queue head's chips)
+### His first batch — 2026-09-27 20:34 EDT, verbatim (five screenshots, copied to `local/pins2/intake-shots/intake-v36/71.png`–`75.png`: the post drawer's dates and repeat stepper, the stepper's hover, a queue card, the Set end date picker, the queue head's chips)
 
 > * i want the *design* of Start/End's hints to be improved, the "Goes live when...", etc lines.
 > * also notice the color of the text fields and the repeat's picker are different shades of black? correct the repeat picker.
@@ -844,7 +846,7 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 > open it on today + 1 day, so it default highlights to tomorrow's date. Also, honestly "Stop showing it live since Aug 4" line is pretty useless in the picker, so scratch my earlier request about it and just remove that part out of the picker entirely.
 
-### His second batch — 2026-09-27 21:04 EDT, verbatim (three screenshots, `docs/pins2/intake-shots/intake-v36/76.png`–`78.png`: the post drawer's Text field and count row, a queue card's text block with Show less, Export's Collapse button)
+### His second batch — 2026-09-27 21:04 EDT, verbatim (three screenshots, `local/pins2/intake-shots/intake-v36/76.png`–`78.png`: the post drawer's Text field and count row, a queue card's text block with Show less, Export's Collapse button)
 
 > * can the text field in the announcement drawer have it's design improved improved?
 >    * i want it to get the list design we already use in the announcement card (preview + footer)
@@ -884,7 +886,7 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 *How this round is logged (anchor #62, PRE-FLIGHT 42, 80): his words verbatim and dated below, screenshots copied to `local/pins2-board-3/board4-review/intake-v38/`; after each batch the asks are regrouped by CLASS with the sweep each implies — never one number per sentence. Nothing is built until he says the round is done. Then, in this session: the non-C3 items, and the v37 verification debt (deferred list, "Board 4 v37: states never opened") opened at 2x with real input; the C3 items are built after the next compact.*
 
-### His first batch — 2026-09-28 09:38 EDT, verbatim (eight screenshots, `docs/pins2/intake-shots/intake-v38/79.png`–`86.png`: the queue head's three chips, the post drawer's character chip, the showings pop-up opening down and up, the Set end date picker opening down, the "1 a day max" chip, the accent pop-up, Before staging)
+### His first batch — 2026-09-28 09:38 EDT, verbatim (eight screenshots, `local/pins2/intake-shots/intake-v38/79.png`–`86.png`: the queue head's three chips, the post drawer's character chip, the showings pop-up opening down and up, the Set end date picker opening down, the "1 a day max" chip, the accent pop-up, Before staging)
 
 > * the "x of x slots" chip's fill-bar should be the pink accent color, not multi colored
 > * increase the width of the Budget chip in this screenshot
@@ -913,18 +915,18 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 > adding to the pop-up's position when openned... i think we mostly solved it when setting the position of the dropdown menu pop-ups in the Build drawer.
 
-**Adding to K, 2026-09-28 09:43 EDT, verbatim** (screenshot `docs/pins2/intake-shots/intake-v38/87.png`: the build drawer's category menu opened upward above ASSAULT, SECONDARIES highlighted):
+**Adding to K, 2026-09-28 09:43 EDT, verbatim** (screenshot `local/pins2/intake-shots/intake-v38/87.png`: the build drawer's category menu opened upward above ASSAULT, SECONDARIES highlighted):
 
 > oh actually... i just checked... so while the black container opens in the correct spot both above/below, there's 2 bugs i notice with it.
 >
 > 1. the highlight over the item is escaping the dropdown container (look at secondaries in the screenshot).
 > 2. the dropdown menu pop-up clips into the Build drawer's top scroll fade for the assault/weapon pop-ups. So those 2 need their z-axis fixed i think
 
-**2026-09-28 09:44 EDT, verbatim** (screenshot `docs/pins2/intake-shots/intake-v38/88.png`: Ends with its picker open below, the field unlit):
+**2026-09-28 09:44 EDT, verbatim** (screenshot `local/pins2/intake-shots/intake-v38/88.png`: Ends with its picker open below, the field unlit):
 
 > also, no highlight on the text field when the date picker is open.
 
-**Updating N, 2026-09-28 09:52 EDT, verbatim** (screenshot `docs/pins2/intake-shots/intake-v38/89.png`: the Accent field with the "Tints the card…" hint beside it):
+**Updating N, 2026-09-28 09:52 EDT, verbatim** (screenshot `local/pins2/intake-shots/intake-v38/89.png`: the Accent field with the "Tints the card…" hint beside it):
 
 > update to my "shuffle history" palette... instead of making it inside the actual pop-up, since we're removing the bloated "Tints the card..." text, that space is empty. So put the history palette there. And since we have more space, let's extend the idea of the history palette to also custom inputted hex colors? Actually why don't we make it 3 rows of ~10 colors? row 1&2 = shuffle/hex history, auto populated by their results. and row 3 = my custom saved history, where whatever color is selected in the accent picker can then be saved to my row, and clicking over an already set/saved color will replace it with the new one (add hover-events and stuff so it's user friendly). Please don't half ass this. OH 1 more tweak: can you make it so when a hex code is pasted into the accent picker's hex field, it auto strips `#`. And also add a copy icon into it's field since theres enough space inside it.
 
@@ -944,13 +946,13 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 >
 > *(10:09)* i also don't like your "replace" button integration/design. when i hover it, just slightly float the color and expand out its size, with 2 icons over it; 1 to select, 1 to replace. with a vertical divider that puts the new color under the 'replace' icon. Also not a fan of the greyish ugly borders.
 >
-> *(10:11, screenshot `docs/pins2/intake-shots/intake-v38/90.png`: the Accent field above the Banner block)* your block background is also incorrect... look at the image block's background, it should use the same code so it doesn't feel like another hand crafted element
+> *(10:11, screenshot `local/pins2/intake-shots/intake-v38/90.png`: the Accent field above the Banner block)* your block background is also incorrect... look at the image block's background, it should use the same code so it doesn't feel like another hand crafted element
 >
 > *(10:11, on a hover shot)* THAT'S TERRIBLE!
 
 **What class N now carries** (the mockup is `/private/tmp/…/scratchpad/accent-mock.html` for this session only; its values are to be copied from his tuned sliders): the block is the banner's `.f-media` well (same ground and edge), with the colour area and hue bar in its 136px tile column so the two blocks' columns line up; no grey outlines on empty cells; a saved colour, hovered, floats and widens over its neighbour into two halves — its own colour with a check (use) and, past a divider, the current colour with the replace mark; the widened slot is held open by state so a neighbour cannot steal it mid-move; an empty saved slot fills with the current colour on hover and saves it on click.
 
-**His tuned values and layout, 2026-09-28 11:02 EDT, verbatim** (screenshot `docs/pins2/intake-shots/intake-v38/91.png`, his measurements drawn on the mockup):
+**His tuned values and layout, 2026-09-28 11:02 EDT, verbatim** (screenshot `local/pins2/intake-shots/intake-v38/91.png`, his measurements drawn on the mockup):
 
 > try these: `col 486 · pad 14 · brad 10 · pw 200 · svh 110 · cg 16 · hueh 12 · hueg 14 · rg 14 · fh 44 · frad 9 · lg 8 · swg 6 · swr 6 · cols 8 · nrec 2 · gw 2.00× · lay left · lbl on · div off · newlbl on · hash on`
 >
@@ -980,9 +982,9 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 > 1. left column: picker with hue slider stacked under it. right column: swatches with hex/shuffle stacked under them.
 > 2. picker at top, with hue slider + hex/shuffle under it (slider + hex/shuffle inline, not stacked), with swatches under them.
 
-**On the mockup (11:22 EDT), both on the Layout switch beside the current one, measured at 2x:** layout 1 — picker 200 × 137 beside the Recent and Saved rows (its bottom level with the saved swatches), the hue bar under it level with the hex row under the swatches; block 486 × 223, the same height as the current layout. Layout 2 — picker 458 × 137 across the top, hue bar and hex row side by side under it, the swatch rows full width; at 8 a row the swatches come out 52px and the block 455 tall. In both, New colour is icon-only so six hex characters fit. Pictures: `docs/pins2/intake-shots/intake-v38/mock-left.png`, `mock-split.png`, `mock-stack.png`.
+**On the mockup (11:22 EDT), both on the Layout switch beside the current one, measured at 2x:** layout 1 — picker 200 × 137 beside the Recent and Saved rows (its bottom level with the saved swatches), the hue bar under it level with the hex row under the swatches; block 486 × 223, the same height as the current layout. Layout 2 — picker 458 × 137 across the top, hue bar and hex row side by side under it, the swatch rows full width; at 8 a row the swatches come out 52px and the block 455 tall. In both, New colour is icon-only so six hex characters fit. Pictures: `local/pins2/intake-shots/intake-v38/mock-left.png`, `mock-split.png`, `mock-stack.png`.
 
-**2026-09-28 11:22 and 11:39 EDT, verbatim** (the second with screenshot `docs/pins2/intake-shots/intake-v38/92.png`: a saved slot open under the pointer, the browser's own tooltip showing):
+**2026-09-28 11:22 and 11:39 EDT, verbatim** (the second with screenshot `local/pins2/intake-shots/intake-v38/92.png`: a saved slot open under the pointer, the browser's own tooltip showing):
 
 > picker height doesn't change in the layouts
 >
@@ -993,7 +995,7 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 **On the mockup (11:40 EDT):** the height slider now drives layout 1 too (the picker had been stretched to its row). The chips sit after the Recent and Saved labels: 20px tall, 6px corners, a 1px border, 12px hex, their text, icon and border in the hovered swatch's colour; Recent shows ✓ and the swatch's hex, Saved shows ✓ and the saved hex, then ↻ and the current colour; they fade and slide in over 220ms (the second 40ms after) and out on leaving the row; the browser's own tooltips on the swatches are gone, the chips carry that job. Measured at 2x in the current layout and layout 1: the pair ends exactly at the block's inner edge on a 242px column. Pictures: `chip-recent.png`, `chip-saved.png` beside the others.
 
-**2026-09-28 11:47 EDT, verbatim** (screenshot `docs/pins2/intake-shots/intake-v38/93.png`: the use half hovered, washed pale):
+**2026-09-28 11:47 EDT, verbatim** (screenshot `local/pins2/intake-shots/intake-v38/93.png`: the use half hovered, washed pale):
 
 > i don't like the fact that the hover over the swatch makes it wash out the color. Try this: 1. remove the black border around the hover swatches and use a dropshadow instead, making sure the dropshadow is behind the 2 colors and doesn't drop onto the actual use/replace swatch itself. 2. make the color being hovered over slightly larger than the other color.
 
@@ -1005,7 +1007,7 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 **On the mockup (11:51 EDT), measured with a real pointer at 2x:** ~~the hovered half wider (1.35 : 1)~~ → the hovered half grows 3px up, down and outward only; the divide stays where it was (x 372.0 with either half hovered); the other half is untouched; the shadow follows the combined shape, behind both halves. The slider is now **Hovered half pop** (0–8px, default 3). Picture: `pop-trio.png` (use hovered, replace hovered, rest).
 
-**2026-09-28 11:52 EDT, verbatim** (screenshot `docs/pins2/intake-shots/intake-v38/94.png`, the divide at 4x: a dark line beside a light one):
+**2026-09-28 11:52 EDT, verbatim** (screenshot `local/pins2/intake-shots/intake-v38/94.png`, the divide at 4x: a dark line beside a light one):
 
 > ew what's that middle divider....
 
@@ -1052,7 +1054,7 @@ A frame-accurate recording of the hover (open, use → replace → use, close): 
 
 **Rebuilt on the mockup (12:17 EDT), logged frame by frame in the browser during a real close:** the two halves are now their own geometry (each its own width, its own outer corners), so the divide, the pop layers and the shadow read the same two widths and never disagree. Close runs as a sequence over ~560ms: the icons fade (120ms) → the replace half folds into the divide (0–250ms: 30 → 18 → 6 → 0px) → the saved half eases back to the swatch and rounds its corners (150–450ms: 30 → 28 → 25.8 → 25px) → only then does the group fade (470–560ms), when it is identical to the swatch beneath, so nothing is seen to vanish. Open is the reverse on one 300ms ease: the saved colour stays put and the new colour grows out from the swatch's right edge, so the divide never crosses the swatch (the 'wipe' is gone). A new slider, **Hover close speed** (150–900ms, default 420), beside **Hover open speed**. The recording `pop-anim.gif` is the real one again.
 
-**2026-09-28 12:34 and 12:37 EDT, verbatim** (his 32-frame recording, copied to `docs/pins2/intake-shots/intake-v38/101.gif`):
+**2026-09-28 12:34 and 12:37 EDT, verbatim** (his 32-frame recording, copied to `local/pins2/intake-shots/intake-v38/101.gif`):
 
 > the animation is so bad!!! '/Users/harkirat/Downloads/Arc (09-28-2026 at 12.32.54.PM).gif' view many consecutive frames please.
 >
@@ -1068,7 +1070,7 @@ A frame-accurate recording of the hover (open, use → replace → use, close): 
 
 **Answer and fix (12:40 EDT):** the delay written for the ring's RETURN (so it comes back only as the hover finishes leaving) sat on the rule both directions use, so it also held the ring for ~190ms before hiding. The hiding state now has its own timing: measured each frame, the ring is at 24% by 40ms and gone by 90ms on open; on close it still waits and returns from ~200ms to full by ~390ms.
 
-**2026-09-28 12:47 EDT, verbatim** (his frame sheet `docs/pins2/intake-shots/intake-v38/102.png`, moving straight from one saved colour to the next):
+**2026-09-28 12:47 EDT, verbatim** (his frame sheet `local/pins2/intake-shots/intake-v38/102.png`, moving straight from one saved colour to the next):
 
 > notice frame ~20-29. how the closing swatch is layered over the openning swatch?
 
@@ -1083,7 +1085,7 @@ flush (picker bottom − swatches bottom): +5.3px
 
 **Where class N stands:** the in-form accent block is designed on the mockup — layout 1 (split: picker + hue under it, swatches + hex/shuffle beside), his values above, 9 swatches a row, the saved-colour hover (float, pop 1px outward, replace card sliding out from under, one-hairline divide, contrast ink, hex chips beside Recent / Saved), all motion on the board's tokens with his 240ms open and close. The mockup is kept at `local/pins2-board-3/board4-review/intake-v38/accent-mock.html` (his copy: `~/Downloads/accent_picker_in_form_tunable.html`). **Open for the build:** at picker height 138 in layout 1 the picker ends 5.3px below the swatches (his value, noted, not changed); the history persistence (local storage on the board; per admin in the portal — Session 5 data note). **Not yet started: the C3 Compare items** — the round's focus; batch 1 (classes J–P) is logged and nothing is built.
 
-### His first C3 Compare batch — 2026-09-28 13:19 EDT, verbatim (four screenshots: `docs/pins2/intake-shots/intake-v38/103.png` Empty A, the search and its Try chips · `104.png` Empty B, the twelve weapon tiles · `105.png` the "CLASS Assault rifle" chip in the table's same-on line · `106.png` the "Show the Discord cards" button)
+### His first C3 Compare batch — 2026-09-28 13:19 EDT, verbatim (four screenshots: `local/pins2/intake-shots/intake-v38/103.png` Empty A, the search and its Try chips · `104.png` Empty B, the twelve weapon tiles · `105.png` the "CLASS Assault rifle" chip in the table's same-on line · `106.png` the "Show the Discord cards" button)
 
 > Empty state:
 >
@@ -1115,7 +1117,7 @@ flush (picker bottom − swatches bottom): +5.3px
 
 *The round is still open: "still more notes remaining…".*
 
-### His second C3 Compare batch — 2026-09-28 13:33 EDT, verbatim (five screenshots: `docs/pins2/intake-shots/intake-v38/107.png` the strip above the table, "6 builds · 7 slots · 7 rows differ · 2 not shown: BAL-27 Builds 4, 5" · `108.png` the BAL-27 and FFAR 1 tiles, builds 4 and 5 carrying orange dots, a pointer on 5 · `109.png` one tile with the search to its right and the strip below · `110.png` the DL Q33 tile, "1 build" · `111.png` the table's column heads, BAL-27 and KILO BOLT-ACTION builds 1–3)
+### His second C3 Compare batch — 2026-09-28 13:33 EDT, verbatim (five screenshots: `local/pins2/intake-shots/intake-v38/107.png` the strip above the table, "6 builds · 7 slots · 7 rows differ · 2 not shown: BAL-27 Builds 4, 5" · `108.png` the BAL-27 and FFAR 1 tiles, builds 4 and 5 carrying orange dots, a pointer on 5 · `109.png` one tile with the search to its right and the strip below · `110.png` the DL Q33 tile, "1 build" · `111.png` the table's column heads, BAL-27 and KILO BOLT-ACTION builds 1–3)
 
 > * drastically redesign this info area that sits above the table.
 > * improve the usability of the weapon/build buttons because nothing about them currently implies that clicking that build number chip would remove it from the table.
@@ -1141,7 +1143,7 @@ flush (picker bottom − swatches bottom): +5.3px
 
 *The round is still open.*
 
-### His third C3 Compare batch — 2026-09-28 13:40 EDT, verbatim (two screenshots: `docs/pins2/intake-shots/intake-v38/112.png` Table B with BAL-27 and KILO BOLT-ACTION builds 1–3, some cells tinted, some hatched "Not equipped", a two-line cell taller than its tinted neighbour · `113.png` Table C, "Crown-H3 Barrel · 3 builds" hovered and only Build 1's head lit)
+### His third C3 Compare batch — 2026-09-28 13:40 EDT, verbatim (two screenshots: `local/pins2/intake-shots/intake-v38/112.png` Table B with BAL-27 and KILO BOLT-ACTION builds 1–3, some cells tinted, some hatched "Not equipped", a two-line cell taller than its tinted neighbour · `113.png` Table C, "Crown-H3 Barrel · 3 builds" hovered and only Build 1's head lit)
 
 > * also, im kind of confused... why are some of these cells highlighted while others arent?
 > * and also, do you notice how the cell's design doesn't apply to it's entire height when the row is larger due to text wrapping?
@@ -1193,7 +1195,7 @@ His instruction (13:43 EDT): look at every element of the three views and harshl
 
 **Not opened this session (from the v37 list):** History / confirm wheel, Home and gates4 with the new data, the fold animation.
 
-### His corrections to that build — 2026-09-28 14:44 EDT, verbatim (screenshot `docs/pins2/intake-shots/intake-v38/114.png`: the Cards view I had sent)
+### His corrections to that build — 2026-09-28 14:44 EDT, verbatim (screenshot `local/pins2/intake-shots/intake-v38/114.png`: the Cards view I had sent)
 
 > * weapon name/category inside the tile are misaligned... we literally already went over this same issue in the armory manifest. not to mention, why is the category label so large??
 > * why are wrapped cells right aligned while others are center aligned?
@@ -1268,7 +1270,7 @@ And mid-run: *"your sequential-thinking call was so shit! WHERE ARE THE REAL, CH
 
 ## Version 40 intake round — opened 2026-09-28 22:38 EDT, closed 2026-09-29 12:08 EDT ("That's it for the intake items")
 
-*His words when he opened it: "talk about shitty, half-ass work. ready for another intake round to fix all your shitty work?" How this round is logged (anchor #62, PRE-FLIGHT 42, 80): his words verbatim and dated, screenshots copied to `docs/pins2/intake-shots/intake-v40/` (tracked, run through pngquant; the `local/` copies are working files), and after each batch the asks grouped by class with the sweep each implies. Nothing is built until he says the round is done.*
+*His words when he opened it: "talk about shitty, half-ass work. ready for another intake round to fix all your shitty work?" How this round is logged (anchor #62, PRE-FLIGHT 42, 80): his words verbatim and dated, screenshots copied to `local/pins2/intake-shots/intake-v40/` (tracked, run through pngquant; the `local/` copies are working files), and after each batch the asks grouped by class with the sweep each implies. Nothing is built until he says the round is done.*
 
 ### Batch 1 — 2026-09-29 10:21 EDT, verbatim
 
@@ -1283,9 +1285,9 @@ And mid-run: *"your sequential-thinking call was so shit! WHERE ARE THE REAL, CH
 
 Before that, at 10:10 EDT: *"let's do intake first, then you can continue working on the sweep, then we'll compact and bump up to opus 5.5 for the intake requests/designs, etc."*
 
-**His screenshots, in order:** `docs/pins2/intake-shots/intake-v40/01-stage-minus.png` (Before staging's −) · `02-limit-chip.png` (Compare's "5 of 6 builds") · `03-tile-x.png` (the BAL-27 tile, its ×) · `04-corner-minus.png` (a build chip's − corner mark) · `05-shuffle.png` · `06-calendar.png` · `07-copy.png` (the post form's in-field buttons, the last two hovered) · `08-compare-list.png` (Compare's search list) · `09-export-peek-exit.gif`, the recording he named (36 frames, 726×800).
+**His screenshots, in order:** `local/pins2/intake-shots/intake-v40/01-stage-minus.png` (Before staging's −) · `02-limit-chip.png` (Compare's "5 of 6 builds") · `03-tile-x.png` (the BAL-27 tile, its ×) · `04-corner-minus.png` (a build chip's − corner mark) · `05-shuffle.png` · `06-calendar.png` · `07-copy.png` (the post form's in-field buttons, the last two hovered) · `08-compare-list.png` (Compare's search list) · `09-export-peek-exit.gif`, the recording he named (36 frames, 726×800).
 
-**The GIF, walked frame by frame:** Export's MP file, hovering a build number in the left column. Frames 10–30: the peek card (TYPE 19 · Build 3) fades in at the **bottom** of the preview and holds. Frame 31, the pointer leaving: a ghost of the card flashes at the **top** of the preview, over the "MP builds" head, then is gone by frame 32. The exit animates from a different place than the entry (`docs/pins2/intake-shots/intake-v40/09-export-peek-exit-f29-32.png`, frames 29–32 side by side, the top 260px).
+**The GIF, walked frame by frame:** Export's MP file, hovering a build number in the left column. Frames 10–30: the peek card (TYPE 19 · Build 3) fades in at the **bottom** of the preview and holds. Frame 31, the pointer leaving: a ghost of the card flashes at the **top** of the preview, over the "MP builds" head, then is gone by frame 32. The exit animates from a different place than the entry (`local/pins2/intake-shots/intake-v40/09-export-peek-exit-f29-32.png`, frames 29–32 side by side, the top 260px).
 
 **His asks, by class** (logged 2026-09-29 10:23 EDT; nothing built):
 
@@ -1304,7 +1306,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 *His method for the rest of the round: he sends one screenshot; I say what I see wrong, what needs refining and what needs more Awwwards-worthiness, concisely; he gives his verdict on each; both are logged here; then the next screenshot. Asked 10:29 EDT: "look at this screenshot and tell me what you see wrong, what needs improving, what needs refining, what needs \"more\" awwards worthiness, etc. Keep the points concise. then i'll give you my verdict on what i see."*
 
-**The shot:** `docs/pins2/intake-shots/intake-v40/10-compare-grid.png` — Compare, Grid view, BAL-27 (Builds 1–4) · CX-9 (Build 1) · KILO BOLT-ACTION (Build 3), the pointer on CX-9's CX-FR (Stock).
+**The shot:** `local/pins2/intake-shots/intake-v40/10-compare-grid.png` — Compare, Grid view, BAL-27 (Builds 1–4) · CX-9 (Build 1) · KILO BOLT-ACTION (Build 3), the pointer on CX-9's CX-FR (Stock).
 
 **His context first (10:50 EDT, verbatim):** *"the table is currently scrolled over to the side a bit; the table isn't/shouldn't be a scrollable component."* So the row names spilling past the left edge and KILO's head overflowing the right are the table being scrolled sideways, and the ask is that the table not scroll.
 
@@ -1347,7 +1349,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 ### Batch 3 — Compare's Cards view, then Lanes, the Discord cards and the empty state (2026-09-29 10:53 → 11:56 EDT)
 
-**The shots:** `docs/pins2/intake-shots/intake-v40/11-compare-cards.png` (Cards view, six of six builds on, five weapon tiles) · `12-compare-lanes.png` (Lanes view, the pointer on CX-FR) · `13-compare-embed.png` (the Discord cards, BAL-27 builds 1–5) · `14-compare-empty.png` (the empty landing, twelve tiles).
+**The shots:** `local/pins2/intake-shots/intake-v40/11-compare-cards.png` (Cards view, six of six builds on, five weapon tiles) · `12-compare-lanes.png` (Lanes view, the pointer on CX-FR) · `13-compare-embed.png` (the Discord cards, BAL-27 builds 1–5) · `14-compare-empty.png` (the empty landing, twelve tiles).
 
 **Cards view — my observations (10:53 EDT) and his verdicts (11:56 EDT, verbatim):**
 
@@ -1419,7 +1421,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 **Last round's claims failing again:** the faded image (his keep, dropped), the skippable-hint rule (applied as removal), Embed (his redesign ask, turned into a view). Each was in the record I was working from.
 
-### Batch 4 — the announcement drawer, 2026-09-29 12:08 EDT, verbatim (his two shots: `docs/pins2/intake-shots/intake-v40/15-build-heading.png`, the build drawer's "Build" heading with its "Weapon required" chip and rule, as the reference · `16-post-form.png`, the post form: Text with "Required", the count chips, Starts/Ends with "Optional" and their readouts, Show each player, Accent with "Auto")
+### Batch 4 — the announcement drawer, 2026-09-29 12:08 EDT, verbatim (his two shots: `local/pins2/intake-shots/intake-v40/15-build-heading.png`, the build drawer's "Build" heading with its "Weapon required" chip and rule, as the reference · `16-post-form.png`, the post form: Text with "Required", the count chips, Starts/Ends with "Optional" and their readouts, Show each player, Accent with "Auto")
 
 > * i've already asked 2-3 times now for you to implement that same heading label design as the build drawer, yet you've failed still. "Text" should get the same design as the "Build" heading label used in the build drawer, including the horizontal line and it's text sizing. Same with "Accent" and "Banner". So roughly, like this:
 >
@@ -1521,7 +1523,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 | When | Asked | His answer |
 |---|---|---|
-| 13:3x EDT, popup (renders `intake-shots/intake-v40/forks/T-optional-*.png`) | keep or drop the "Optional" chips on Starts and Ends | **Keep them** |
+| 13:3x EDT, popup (renders `local/pins2/intake-shots/intake-v40/forks/T-optional-*.png`) | keep or drop the "Optional" chips on Starts and Ends | **Keep them** |
 | 14:31 EDT | the landing tile's + (my tinted box) | *"Not a fan of that + icon button"* — four rendered (`forks/plus-options.png`); *"#2 bare glyph"*, then *"when hovered, show #1's resting box."* |
 | 15:30 EDT | the tiles | *"i only asked for the tile's get get the more prominant color, i didn't ask for them to get the upper border treatment. more or less the tiles were fine as they were."* — the top-edge highlight removed, the tile's radius (10px) and ring back, the stronger colour kept |
 | 15:30 EDT | the landing's two readouts (his screenshot) | *"improve the design of these chips."* — a solid ground (the faded table showed through), the mark in the board's tinted square, one row with a step mark between; the date readouts are the same class and changed with them |
@@ -1532,11 +1534,11 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 ## Version 41 intake round — opened 2026-09-29 16:58 EDT
 
-*His words when he opened it: "ready for intake of v41?" Logged as the Version 40 round was (anchor #62): his words verbatim and dated, screenshots in `docs/pins2/intake-shots/intake-v41/` run through pngquant, and after each batch the asks grouped by class with the sweep each implies. Nothing is built until he says the round is done.*
+*His words when he opened it: "ready for intake of v41?" Logged as the Version 40 round was (anchor #62): his words verbatim and dated, screenshots in `local/pins2/intake-shots/intake-v41/` run through pngquant, and after each batch the asks grouped by class with the sweep each implies. Nothing is built until he says the round is done.*
 
 ### His batch — 2026-09-29 17:47 EDT, verbatim (closed with it: "that's it for the intake items")
 
-**His ten shots:** `docs/pins2/intake-shots/intake-v41/01-badge-meta-hover.png` · `02-badge-best-hover.png` · `03-chip-on-minus.png` · `04-chip-off-plus.png` · `05-merged-cell-count.png` · `06-seats.png` · `07-weapon-divider.png` · `08-chip-green-red-minus.png` · `09-tile-x-hover.png` · `10-discord-bar.png`.
+**His ten shots:** `local/pins2/intake-shots/intake-v41/01-badge-meta-hover.png` · `02-badge-best-hover.png` · `03-chip-on-minus.png` · `04-chip-off-plus.png` · `05-merged-cell-count.png` · `06-seats.png` · `07-weapon-divider.png` · `08-chip-green-red-minus.png` · `09-tile-x-hover.png` · `10-discord-bar.png`.
 
 > * the hover-state need refining. Currently in the table, hovering on a weapon name does nothing. Hovering over attachments shared by multiple builds does nothing — oh wait it does do something but it's barely visible since the hover states/tints all match so closely, and since the actual attachment itself doesn't change. Hovering the "muzzle", "barrel", etc attachment slot labels does nothing. Honestly, overall, nitpick every hover-state of every element on the compare panel and refine it, improve it. (update: seems the hover improvement issue for the cells is primarily needed when multiple builds of the same weapon are on the table. it looks pretty good when each column is a different weapon)
 > * hovering the badges is broken/bugged.
@@ -1605,7 +1607,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 ### His batch — 2026-09-29 19:47 EDT, verbatim
 
-**His fourteen shots, in order** — `docs/pins2/intake-shots/intake-v42/01-list-group-label.png` … `14-image-mark-gap.png`, taken from the session transcript, where a pasted image is stored: 1 · the search list's AK117 row under an "ASSAULT" group label · 2 · META hovered · 3 · TOXIC hovered · 4 · Repairs' shield-and-check chip · 5 · its hover card (SKS · passes every check, Build 1, five checks) · 6 · the warn chip's hover card (PP19 BIZON, Build 3, "Same code as AK117 Build 1") · 7 · a column's edit button hovered · 8 · a column's action row (share, edit │ delete) · 9 · the Discord cards open (.50 GS Build 1, STRIKER Builds 1 and 2) · 10 · the band ("6 of 6 builds", "Same on all 6", the Shared chips) · 11 · the top-right Clear builds and Remove all weapons · 12 · three Shared chips close up · 13 · a − corner disk · 14 · the image mark beside the gutter between two columns.
+**His fourteen shots, in order** — `local/pins2/intake-shots/intake-v42/01-list-group-label.png` … `14-image-mark-gap.png`, taken from the session transcript, where a pasted image is stored: 1 · the search list's AK117 row under an "ASSAULT" group label · 2 · META hovered · 3 · TOXIC hovered · 4 · Repairs' shield-and-check chip · 5 · its hover card (SKS · passes every check, Build 1, five checks) · 6 · the warn chip's hover card (PP19 BIZON, Build 3, "Same code as AK117 Build 1") · 7 · a column's edit button hovered · 8 · a column's action row (share, edit │ delete) · 9 · the Discord cards open (.50 GS Build 1, STRIKER Builds 1 and 2) · 10 · the band ("6 of 6 builds", "Same on all 6", the Shared chips) · 11 · the top-right Clear builds and Remove all weapons · 12 · three Shared chips close up · 13 · a − corner disk · 14 · the image mark beside the gutter between two columns.
 
 > * when i said organized by weapon category, i didn't mean with the category as a label. i still want the category label beside each weapon.
 > * also, the hover events inside the search bar drop down menu need improving, to imply what's being selected, etc.
@@ -1647,7 +1649,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 ### Built in the kit — 2026-09-29 20:25 EDT (not published, not reviewed)
 
-*His go: "That's it for the intake items so far" (2026-09-29 20:03 EDT). Measured headless at 2x and 4x (Chrome, 1440 × 900 and 1282 × 888); the crops are `docs/pins2/intake-shots/intake-v42/built/`. `relations.cjs` gained seven of this round's rulings and holds 33 of 33.*
+*His go: "That's it for the intake items so far" (2026-09-29 20:03 EDT). Measured headless at 2x and 4x (Chrome, 1440 × 900 and 1282 × 888); the crops are `local/pins2/intake-shots/intake-v42/built/`. `relations.cjs` gained seven of this round's rulings and holds 33 of 33.*
 
 | Class | Built | Measured |
 |---|---|---|
@@ -1678,7 +1680,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 **Published 2026-09-29 21:30 EDT as Board 4 Version 43** on his "publish" (the page and the seven changed kit files, which also carry History's event-drawer fix; every byte size in the artifact's listing matches the local file). **His answer on the manifest (verbatim):** *"no, leave armory manifest's image icon. that serves a different purpose"* — the Armory manifest keeps its image mark; the verdict chip is Compare's alone.
 
-**His question after Version 43 (2026-09-29 21:37 EDT, verbatim):** *"why does it show as green sometimes and grey other times (the green header + grey bottom is the correct style btw)?"* — The passing card is green top to bottom **when it opens upward**. On a downward card the header's green fills the outline and the body paints grey inside it (`b3/board.css`, the direction rule); the ok tone's green was written for every card, so on an upward card, whose body has no ground of its own, the whole outline went green. Scoped to downward cards in `docs/pins2/kit/b3/board.css`; measured after: upward, the header green, the body and the pointer grey (`docs/pins2/intake-shots/intake-v42/built/verdict-card-up.png`). It showed everywhere the card opens (the selection list, Repairs, Compare) near the bottom of the window. In the kit, not published.
+**His question after Version 43 (2026-09-29 21:37 EDT, verbatim):** *"why does it show as green sometimes and grey other times (the green header + grey bottom is the correct style btw)?"* — The passing card is green top to bottom **when it opens upward**. On a downward card the header's green fills the outline and the body paints grey inside it (`b3/board.css`, the direction rule); the ok tone's green was written for every card, so on an upward card, whose body has no ground of its own, the whole outline went green. Scoped to downward cards in `docs/pins2/kit/b3/board.css`; measured after: upward, the header green, the body and the pointer grey (`local/pins2/intake-shots/intake-v42/built/verdict-card-up.png`). It showed everywhere the card opens (the selection list, Repairs, Compare) near the bottom of the window. In the kit, not published.
 
 **Published 2026-09-29 21:39 EDT as Board 4 Version 44** on his "publish and prep compact" (the page and `b3/board.css`; its byte size in the artifact's listing matches the local file).
 
@@ -1688,7 +1690,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 ### His batch — 2026-09-29 22:16 EDT, verbatim
 
-**His eight shots, in order** — `docs/pins2/intake-shots/intake-v44/`, taken from the session transcript: 01 · the divider between two groups of Compare's list (STRIKER · SHOTGUN / .50 GS · SECONDARIES) · 02 · the HOLGER 26 weapon head hovered: the three build heads stacked in one column's width · 03 · the same with HOLGER 26 and AS VAL · 04 · a build head: Build 1, the shield, "No label", the badges · 05 · the post drawer's two chips ("7 characters", "5,443 of 6,000 left") · 06 · the delivery queue's budget chip ("5,478" white) · 07 · Compare's list open with FFAR 1 in the panel and no mark on its row · 08 · GRAU 5.56's struck-through name close up.
+**His eight shots, in order** — `local/pins2/intake-shots/intake-v44/`, taken from the session transcript: 01 · the divider between two groups of Compare's list (STRIKER · SHOTGUN / .50 GS · SECONDARIES) · 02 · the HOLGER 26 weapon head hovered: the three build heads stacked in one column's width · 03 · the same with HOLGER 26 and AS VAL · 04 · a build head: Build 1, the shield, "No label", the badges · 05 · the post drawer's two chips ("7 characters", "5,443 of 6,000 left") · 06 · the delivery queue's budget chip ("5,478" white) · 07 · Compare's list open with FFAR 1 in the panel and no mark on its row · 08 · GRAU 5.56's struck-through name close up.
 
 > * can you order build drawer's weapon name dropdown similar to how you ordered the compare searchbar dropdown menu? so grouped by category, weapons alphabetically, and using this divider line between the groups, while keeping the`[N builds]`  chip.
 > * also the table is really bugged when you hover over the weapon name.
@@ -1718,7 +1720,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 ### Built in the kit — 2026-09-29 22:55 EDT (not published)
 
-*Measured headless at 2x (Chrome, 1282 × 888), through real mouse hovers; before and after numbers from `docs/pins2/instruments/board4-v44-probe.cjs`; crops in `docs/pins2/intake-shots/intake-v44/built/`. `relations.cjs` gained four of this round's rulings and holds 37 of 37.*
+*Measured headless at 2x (Chrome, 1282 × 888), through real mouse hovers; before and after numbers from `docs/pins2/instruments/board4-v44-probe.cjs`; crops in `local/pins2/intake-shots/intake-v44/built/`. `relations.cjs` gained four of this round's rulings and holds 37 of 37.*
 
 | Class | Built | Measured |
 |---|---|---|

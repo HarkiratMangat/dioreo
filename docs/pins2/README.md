@@ -29,7 +29,7 @@ status: live
 | [`instruments/`](instruments/) | the Board 4 measuring scripts — [`README.md`](instruments/README.md) lists each and when to run it | reference |
 | [`kit/`](kit/) | the Board 4 kit — the design code itself, tracked. [`README.md`](kit/README.md) says how to serve, open and publish it | reference |
 | [`data/`](data/) | source data the boards used — the CODM mode icons (the Modes badge family) and the weapons-and-attachments source | data |
-| [`intake-shots/`](intake-shots/) | the screenshots his intake and the handoff cite, by round, tracked so a fresh clone can see what he pointed at | images |
+| `local/pins2/intake-shots/` (**this Mac only**) | the screenshots his intake and the handoff cite, by round, and the readiness crops. **Not tracked, never pushed** (2026-09-29 23:35 EDT, his: "kit can be tracked but leave screenshots local"); every doc cites them at this path. **Every other image under `docs/`** — the portal pin crops (`docs/portal/portal-pins/`), board 3's `p1-portal.png`, `docs/pins2/data/`'s source capture, the summary captures — is likewise on this Mac only, untracked where it sits | images |
 
 ## State — as of 2026-09-29 18:50 EDT
 
@@ -48,7 +48,7 @@ status: live
 | New thing | Home |
 |---|---|
 | his words in an intake round | the intake log, as a new dated section |
-| a screenshot he gives | `intake-shots/<round>/`, run through `pngquant`, cited by that path |
+| a screenshot he gives | `local/pins2/intake-shots/<round>/` (this Mac only; `.gitignore` refuses any image under `docs/pins2/` outside the kit), run through `pngquant`, cited by that path |
 | a handoff, compact prep or checkpoint | `handoffs/`, named `YYYY-MM-DD-board4-<topic>.md` |
 | a measuring script | `instruments/`, with a line in its README |
 | a change to the kit | [`kit/`](kit/README.md), then regenerate the spec (below) in the same run — and read the mtimes of what it wrote |

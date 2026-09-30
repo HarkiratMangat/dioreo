@@ -13,7 +13,7 @@ status: live
 |---|---|
 | Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 40** live; the kit at `docs/pins2/kit/`, unchanged this session |
 | Branch | `feat/portal-pins2-manifests`, **nothing pushed**; this session's commits start at `a030e712` |
-| The intake round | **closed 2026-09-29 12:08 EDT** — four batches, 21 classes A–U, his 15 screenshots and his GIF (plus my frame crop of the GIF) in `docs/pins2/intake-shots/intake-v40/`; `docs/pins2/handoffs/2026-09-21-board4-intake.md` § Version 40 intake round, **its closing index first** |
+| The intake round | **closed 2026-09-29 12:08 EDT** — four batches, 21 classes A–U, his 15 screenshots and his GIF (plus my frame crop of the GIF) in `local/pins2/intake-shots/intake-v40/`; `docs/pins2/handoffs/2026-09-21-board4-intake.md` § Version 40 intake round, **its closing index first** |
 | HANDOFF.md | carries a banner: the rows the round reopened (C3 Compare, C7's post form, Before staging's −, the tile ×, the limit chip, Export's peek) are not settled until the build lands |
 | His open items | the build of A–U · the kit and the online GitHub: "decide at the push" · every push, PR, merge and publish on his restated word |
 

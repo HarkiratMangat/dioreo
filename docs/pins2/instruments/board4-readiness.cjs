@@ -3,7 +3,7 @@
 // 2x into docs/pins2/intake-shots/readiness-v45/ and its checkable clauses read off the page. The crops are judged by eye one at a time; the numbers print.
 // Usage (the kit on :8900): node docs/pins2/instruments/board4-readiness.cjs  → one JSON object of measurements, and the crops
 const W = require('../final/board4-spec/board4-walk.cjs');
-const D = require('path').resolve(__dirname, '../intake-shots/readiness-v45');
+const D = require('path').resolve(__dirname, '../../../local/pins2/intake-shots/readiness-v45')   // screenshots stay on this Mac (his call, 2026-09-29 23:31 EDT);
 (async () => {
   const { b, p, errs } = await W.open(); await p.setViewport({ width: 1282, height: 888, deviceScaleFactor: 2 }); await W.sleep(600);
   const out = {}; const miss = [];
