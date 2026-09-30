@@ -1294,7 +1294,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 | Class | His asks | The sweep it implies |
 |---|---|---|
 | **A · a reused control, not re-homed** | Before staging's − "stuck on as an afterthought" · the tile's × "always showing the border" | Both are the `.b3-x` swaps of 2026-09-28 19:07 EDT: the component moved in, its placement and resting state did not. Every `.b3-x` (and every component swapped in that pass): where it sits in its host, its resting edge, its hover |
-| **B · colour carried from the component's home gate** | "x of x builds" uses Broadcast's colours | The limit chip is `.g-status` + `.cmeter`, the queue head's slots chip, recorded as "already the board's". *My reading, not measured:* the kit's `b4/compare.css` gives its meter `--ink`, yet his shot shows pink, so a Broadcast rule wins over it — find which at the build. Every cross-gate reuse, against its host gate's accent |
+| **B · colour carried from the component's home gate** | "x of x builds" uses Broadcast's colours | The limit chip is `.g-status` + `.cmeter`, the queue head's slots chip, recorded as "already the board's". *My reading, not measured:* the kit's `docs/pins2/kit/b4/compare.css` gives its meter `--ink`, yet his shot shows pink, so a Broadcast rule wins over it — find which at the build. Every cross-gate reuse, against its host gate's accent |
 | **C · a mark that hides its glyph** | the (−) corner chip is washed out; redesign it or make the − black | the build chips' − / + corner marks (`.cx-kb`), both signs, both states, at 2x |
 | **D · motion that exits somewhere else** | the peek card flashes at the top when the pointer leaves | Export's peek; then every peek, pop-up and list: its exit from where it entered |
 | **E · Broadcast's in-field buttons** | shuffle (the Accent block's New colour button, `.acx-new` in `docs/pins2/kit/b3/broadcast.js`): the fields' black fill and hover in Broadcast's accent · calendar and copy: accent tint and hover | every icon button in and beside the post form's fields, then the same buttons in the other gates against their own accents |
@@ -1665,7 +1665,7 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 | AR | the − and + are drawn inline (`mark` in `docs/pins2/kit/b4/compare.js`): 1.6px of ink, about twice what showed | 1.625px (`kb-on.png`) |
 | AS | a gap between two builds of one weapon ends in a round cap under the weapon's band | `gapcap.png` |
 
-**Why AR had not changed, and the class under it:** every `Icon` is a `<use>` of a sprite symbol that carries `stroke-width="2"` on itself, and a CSS `stroke-width` on the icon cannot reach past that attribute. Last round's "heavier glyph" rule was dead, and of the 20 `stroke-width` rules on `.ic` in the kit, measured on the resting board: **5 are dead** (every icon they match is a sprite: `app.css` `.ic.sm`, `b3/board.css` `.b3-bdg .ic`, `b4/classes.css` `.b4-hint .ic`, `.f-stm .ic` and `.g-card .pb-numr.g-numi .ic`), 12 match nothing at rest (opened states not checked), and 3 now reach the inline corner mark. The corner mark is fixed by drawing it inline; the rest are listed for Session 4 (HANDOFF.md, D4) because making them live changes looks he approved.
+**Why AR had not changed, and the class under it:** every `Icon` is a `<use>` of a sprite symbol that carries `stroke-width="2"` on itself, and a CSS `stroke-width` on the icon cannot reach past that attribute. Last round's "heavier glyph" rule was dead, and of the 20 `stroke-width` rules on `.ic` in the kit, measured on the resting board: **5 are dead** (every icon they match is a sprite: `app.css` `.ic.sm`, `docs/pins2/kit/b3/board.css` `.b3-bdg .ic`, `docs/pins2/kit/b4/classes.css` `.b4-hint .ic`, `.f-stm .ic` and `.g-card .pb-numr.g-numi .ic`), 12 match nothing at rest (opened states not checked), and 3 now reach the inline corner mark. The corner mark is fixed by drawing it inline; the rest are listed for Session 4 (HANDOFF.md, D4) because making them live changes looks he approved.
 
 **Found and fixed along the way:** the table's cells carried a pointer cursor with no action (the accessibility walk); the list's category rows were `pointer-events:none` labels a pointer still showed, and are gone with AI.
 
@@ -1680,9 +1680,9 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 
 **Published 2026-09-29 21:30 EDT as Board 4 Version 43** on his "publish" (the page and the seven changed kit files, which also carry History's event-drawer fix; every byte size in the artifact's listing matches the local file). **His answer on the manifest (verbatim):** *"no, leave armory manifest's image icon. that serves a different purpose"* — the Armory manifest keeps its image mark; the verdict chip is Compare's alone.
 
-**His question after Version 43 (2026-09-29 21:37 EDT, verbatim):** *"why does it show as green sometimes and grey other times (the green header + grey bottom is the correct style btw)?"* — The passing card is green top to bottom **when it opens upward**. On a downward card the header's green fills the outline and the body paints grey inside it (`b3/board.css`, the direction rule); the ok tone's green was written for every card, so on an upward card, whose body has no ground of its own, the whole outline went green. Scoped to downward cards in `docs/pins2/kit/b3/board.css`; measured after: upward, the header green, the body and the pointer grey (`local/pins2/intake-shots/intake-v42/built/verdict-card-up.png`). It showed everywhere the card opens (the selection list, Repairs, Compare) near the bottom of the window. In the kit, not published.
+**His question after Version 43 (2026-09-29 21:37 EDT, verbatim):** *"why does it show as green sometimes and grey other times (the green header + grey bottom is the correct style btw)?"* — The passing card is green top to bottom **when it opens upward**. On a downward card the header's green fills the outline and the body paints grey inside it (`docs/pins2/kit/b3/board.css`, the direction rule); the ok tone's green was written for every card, so on an upward card, whose body has no ground of its own, the whole outline went green. Scoped to downward cards in `docs/pins2/kit/b3/board.css`; measured after: upward, the header green, the body and the pointer grey (`local/pins2/intake-shots/intake-v42/built/verdict-card-up.png`). It showed everywhere the card opens (the selection list, Repairs, Compare) near the bottom of the window. In the kit, not published.
 
-**Published 2026-09-29 21:39 EDT as Board 4 Version 44** on his "publish and prep compact" (the page and `b3/board.css`; its byte size in the artifact's listing matches the local file).
+**Published 2026-09-29 21:39 EDT as Board 4 Version 44** on his "publish and prep compact" (the page and `docs/pins2/kit/b3/board.css`; its byte size in the artifact's listing matches the local file).
 
 ## Version 44 intake round — opened and closed 2026-09-29 22:16 EDT
 
@@ -1876,7 +1876,7 @@ Read: the global accent `--patch` (`#F2C230`) retires into the staged yellow eve
 | BP · a pinned card holds the board | `takePop` let any hover cut the pinned card | `popHeld`: no hover or focus opens another while one is pinned; a click still moves the pin |
 | BQ · bundled images | 640px, shown at up to 480 CSS px (960 device px) | 1440px webp from the originals (2388 / 2700 wide) |
 | BR · the pointer side's stroke | painted content started on the body edge and covered half the 1px stroke | content starts 1px further in on the pointer side, every pcPath card |
-| BS · the manifest image mark | a bare icon | Compare's chip, border and pinnable image card; `BuildImage` + the ± mark moved into `b3/armory-parts.js` |
+| BS · the manifest image mark | a bare icon | Compare's chip, border and pinnable image card; `BuildImage` + the ± mark moved into `docs/pins2/kit/b3/armory-parts.js` |
 | BT · fault tile tints | `thin` had no tint | the tan Repairs already gives `thin` (the bar), tiles and the section mark |
 | BU · one field glow | six rings across 77 fields | Pick builds' 2px staged ring + 5px halo on every field (measured: 71 of 72 fields, the last is Compare's search, measured 2px by hand) |
 | BV · ± on Pick builds' tiles | — | Compare's `.cx-kb` badge on `.b3-xt-c` |
@@ -1968,7 +1968,7 @@ Read: the global accent `--patch` (`#F2C230`) retires into the staged yellow eve
 | Class | Cause | Fix (V71) |
 |---|---|---|
 | CM · the stepper | three see-through 2px strokes (ring + two dividers) that doubled at the joints; the board's generic 1px button box on hover; the disabled minus lit | one line colour showing through a 2px gap and padding between three cells; hover/focus outlines its own cell on the line; disabled does not light. "Could be better" → three options rendered (`local/pins2/intake-shots/checks/stepper-options.png`), his pick pending |
-| CN · menus outside the faded column | a mask fades everything inside the column, so the board switched the fade off while a list or pop-up was open | `b3/layer.js`: an open list (Picker) or pop-up (PopBox) inside a faded column renders into a layer beside it; the fade stays on. Measured: list in the layer, column mask on (28px / 28px), a pick lands |
+| CN · menus outside the faded column | a mask fades everything inside the column, so the board switched the fade off while a list or pop-up was open | `docs/pins2/kit/b3/layer.js`: an open list (Picker) or pop-up (PopBox) inside a faded column renders into a layer beside it; the fade stays on. Measured: list in the layer, column mask on (28px / 28px), a pick lands |
 | — · Pick all | (question) | answered: the chip is unchanged; its checkbox ring and tick went from the patch gold to `--staged` in V53–V54 (his `--patch` retirement). Crops `pickall-hover-e66a5e89.png` / `-now.png` |
 - 17:16 EDT — "also, instead of the broadcast pink, give the repeat chip and the start/end chips the announcement's specific accent color on hover" → V72 (2026-09-30 17:18 EDT): the Shown chip (queue card and Broadcast row) and the start/end date chips hover in their announcement's own `--c`; their pop-ups take the same tone (`t-accent`); Never and a staged end keep warn. Measured on three cards: gold, orange, blue
 - 17:17 EDT — "i can literally see the difference in your screenshot. look at it's tint/shade" (Pick all) → the checkbox's ring and tick: the patch gold before V53, `--staged` since (his `--patch` retirement); the chip itself measured unchanged
@@ -1976,3 +1976,89 @@ Read: the global accent `--patch` (`#F2C230`) retires into the staged yellow eve
 - Pick all: "the checkbox as staged yellow is fine. What i was referring to is the actual border of the entire \"pick all\" chip and the inside color/tint of the entire chip." → measured: the chip's own border and fill are identical before and now; the Export drawer's ambient glow behind it (a radial gradient on `aside.drawer`) was the patch gold at 13% and is staged yellow since the V53–V54 `--patch` sweep, and the chip's 11% fill shows it. His call pending
 - Drawer glow (popup answer): "use patch gold for the background glow for the drawer, as well as any other drawer/background surface it got changed, such as the selection dock. and give it a better variable than `--patch`, to something like `--meshGold`" → V74 (2026-09-30 17:28 EDT): `--meshGold: #F2C230` (app.css :root); the four mesh surfaces the V53 sweep had turned staged — the build/Post drawers (b4.css), the selection dock (`.b3-sd.mesh`), the Export drawer (`.drawer:has(.b3-xt)`), the export sheet (`.drawer:has(.exs)`) — read it. Measured: the Export and Post drawers' glow is gold again. Ledger § Colour names carries the token
 - 17:29 EDT — "opening the menu makes the entire bottom fade move up." → V75 (2026-09-30 17:30 EDT): the V71 layer carried `.f-form .f-pick` for the list's styles and `.b4 .f-form` out-weighed its own positioning, so it sat in the column's parent grid as a new row and the column lost 28px (602 → 574). The layer's box now wins (out of flow, no size, no mask). Measured: New build column 602 → 602 with the list open, Post drawer column 618 → 618 with a pop-up open, both fades on
+
+## Version 75 review (17:36–17:45 EDT)
+
+*Logged 2026-09-30 17:45 EDT. His notes, verbatim:*
+
+> - why is the repeat-picker in staged yellow tint inside the post drawer? it should be using the pink broadcast tint.
+> - also, in the post drawer, when a date picker is open, the field goes back to the 1 px glow. The date picker also isn't matching pink broadcast accent.
+> - where's your pre-start sequential-thinking?
+> - also, is it just me or is the timing of the image mark/all-pass mark/date-picker/repeat-picker/problems-container pop-ups different? measure the reveal/hide time of the animation for this build problem chip pop-up and similarly measure the other pop-ups
+> - correct your tool routing, mega-batching, turns/calls!
+
+| Class | What it covers | Fix / sweep |
+|---|---|---|
+| CO — accent fallback in the Post drawer | the stepper's `--step-c` fell back to `--staged` (no `--c` in the drawer) | `.drawer.b1` stepper takes `--r-broadcast`; the cards' repeat pop keeps `--c` |
+| CP — an open pop-up's field ring | classes.css's 1px `[aria-expanded]` input rule; focus moves into the pop-up | the open `.pb-dfld` joins ONE FOCUS GLOW (box halo + 2px `::after`); `board4-rings-painted.cjs` now walks the OPEN state (HEAD 1.0px all sides → 2.0) |
+| CQ — the drawer's date pop tone | PopBox had no tone (neutral line) | `tone="pink"` |
+| CR — pop-up timing (measured, not changed) | hint/problem cards vs PopBox | table in the V76 report; his call |
+
+## Pop-up timing sets (17:50–18:16 EDT)
+
+*Logged 2026-09-30 18:22 EDT. His notes, verbatim:*
+
+> - okay 2 animations is fine. but what i'm not understanding is what each of the pop-ups are showing a different time in their opens after/fades in/grows/fades out/gone after columns? is that a measurement issue? or is that their actual set deterministic times?
+> - you said only 2 set of times, yet from your latest summary i see 3 sets?
+> - why does the image mark wait? and not wait when closing? and vice-versa with the all-pass/problem pop-up?
+> - ok so this is how we're going to set it: there will be 3 animation sets — 1. Open: Wait > fade > grow. Close: Wait > fade > removed. 2. Open: Wait > fade. Close: Wait > fade > removed. 3. Open: Fade. Close: Fade > removed. Timings: 1. Open: 120 > 70 > 600. Close: 140 > 110 > 200. 2. Open: 120 > 160. Close: 140 > 110 > 200. 3. Open: 160. Close: 140 >200. — if it's a pop-up that can open with a hover, such as the image mark, all-pass mark, problem chip, stage deletion, etc, they must use `1` or `2`. 1 being for more informative pop-ups such as all-pass mark, problem, stage-deletion, etc. 2 being for anything else, such as the image mark, hint pop-ups, etc. 3 being for anything that requires a button/click to open, never auto-opens on a hover, such as the date-picker, repeat-picker, start-date, etc
+> - 1. i provided the sequence already … the timing were for this sequence. 2. keep the shrink. A) sure. wait to mouse hover only. B) sure. C) sure. D) idc, your choice. i personally dont care for "reduced motion".
+> - note that i might as you to increase some of the timings after physically trying it out and after the first-frame lag is fixed.
+> - silent-mode working style — correct your drift.
+
+| Class | What it covers | Fix / sweep |
+|---|---|---|
+| CS — pop-up timing | every pop-up family: Hint (.b3-hc), ProblemChip (.b3-pc), PopBox (.b3-datepop), Export's peek | ONE table, `docs/pins2/kit/b3/poptime.js` (`POPT`, also --pop<set>-<name> on :root); classes `pop-s1/2/3`; image marks' own `delay` removed; Stage deletion Hint = set 1; waits on the mouse only; the handoff (`popWarm`); data-tip tooltips stay off (his 2026-09-11 call) |
+| CT — first-frame lag | measured 145–193ms click → first frame (CPU profile: forced layouts, focus, fady repainting the column) | PopBox shows in the measuring frame, focus a frame later; fady skips pop-up mutations; ProblemChip reads its scroller on the hover. Now ~127ms (pickers), ~77ms (problem chip by click) |
+
+## Version 77 review (18:29 EDT)
+
+*Logged 2026-09-30 18:31 EDT. His notes, verbatim:*
+
+> slightly refine them to be more smoother? i think i made them too fast. also, i notice that if i hover over the problem pop-up and then move my mouse over it's container, it remains open. Can you implement the same thing for the image mark pop-up?
+
+| Class | What it covers | Fix / sweep |
+|---|---|---|
+| CU — smoother timing | `docs/pins2/kit/b3/poptime.js` | 1: 120·140·600 / 160·180(+220)·260 · 2: 120·220 / 160·180·240 · 3: 200 / 180·220; set 1's fades eased (were linear); a load-time check that `removed` outlasts the close motion |
+| CV — hover onto the card | Hint's card took no pointer events, so reaching it closed it | the image card (`.b3-hc.has-media`) takes the pointer while open; a click inside it no longer toggles the pin. Other hints unchanged (asked) |
+
+*2026-09-30 19:01 EDT — his answer to "Should the other hint cards, like the Stage deletion hint, also stay open while hovered?": "yes". CV widened: every open hint card (`.b3-hc.in`) takes the pointer.*
+
+## Version 79 review (19:02 EDT)
+
+*Logged 2026-09-30 19:17 EDT. His note, verbatim:*
+
+> the animations seem "broken" for some of the pop-ups. please sweep them thoroughly and test them.
+
+| Class | What it covers | Fix / sweep |
+|---|---|---|
+| CW — the handoff | moving between marks: the open card was CUT in one frame and the next reached the screen ~100ms later — a blink (filmed) | the open card leaves with its own fade (`soft`), the next fades in over it |
+| CX — set 1's fade curve | `cubic-bezier(.23,1,.32,1)` reached 76% opacity in one frame — a pop | `ease-out`, as sets 2 and 3 |
+| CY — Export's peek sweep | V77 dropped the 70ms row-to-row dwell, so a sweep flashed every row it crossed (filmed) | the dwell is back for row to row; the 120ms open wait and 160ms close wait stay |
+| CZ — a double read | the problem card read its scroller twice per open (29ms, profiled) | read once per open |
+
+Sweep: every family (problem, all-pass, image mark ×2, text hint, peek, three pickers) × every path (hover/leave, into the card, re-enter while fading, pin + outside, handoff, row to row, click + Esc/outside/button, fast re-clicks), frame by frame, plus filmstrips.
+
+## Version 80 review (19:23 EDT)
+
+*Logged 2026-09-30 19:25 EDT. His note, verbatim:*
+
+> still off, none of the image mark animations morph their arc anymore. it's just a straight fade in.
+
+| Class | What it covers | Fix / sweep |
+|---|---|---|
+| DA — the arc's morph | V77 read set 2/3's "no grow" as "no motion" and froze the outline for every hint and picker | the arc morphs in every set (`arc: 600` in `docs/pins2/kit/b3/poptime.js`, the container's spring); only set 1's body grows. Hints and pickers both |
+
+*2026-09-30 19:30 EDT — his: "also add this divider line in the attachment's dropdown menu as well" (screenshots: the weapon list's hairline between XM4 ASSAULT and CBR4 SMG; the attachment list with none). Class DB: the attachment Picker is `grouped` by slot, the Picker's own hairline (f-g0).*
+
+## Sign-off, and the Session 4/5 prep (19:31–19:37 EDT)
+
+*Logged 2026-09-30 19:51 EDT. His words, verbatim:*
+
+> - approved, run the held checks. board is done. all that's left now is prepping it thoroughly for session 4 and 5.
+> - ask better sequential-thinking.
+> - think retrospectively and into the future. everything the session 4/5 need. the files, the paths, the plan, the specs, the numbers of every surface, element, component, panel, state, hover, color, etc etc etc. OPEN YOUR MIND. OPEN YOUR SCOPE. AND THINK! ASK. WONDER. STOP ASKING SHITTY NARROW MINDED, NARROW SCOPED QUESTIONS.
+> - (on "Session 3 took 81 versions") session 3 took 81 versions on BOARD 4... something that was supposed to be ~5-6. don't forget board 3-a, 3-b, 3-c, 3-d, 3-e which were all part of session 3.
+
+**Board 4: Collective is signed off at Version 81.** What the prep added is `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`'s Sign-off amendment and `docs/pins2/final/board4-spec/HANDOFF.md` § Start here.
+

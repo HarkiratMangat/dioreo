@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — structure, generated
 
-*Generated 2026-09-30T03:57:13.890Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
+*Generated 2026-09-30T23:36:49.507Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
 
 ## C1 · The Armory manifest
 
@@ -66,10 +66,14 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
-          - `div.wg-rail`
-            - `span.wg-at` ×4 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx`
+            - `span.wg-rl`
+              - `span.wg-at` ×4 — “Monolithic Suppressor”
+              - `span.wg-at.nocode.ghost` — “Not listed”
+        - `span.b3-hint.wg-imh`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
+              - `svg.ic`
         - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -90,10 +94,13 @@ status: live
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
-          - `div.wg-rail`
-            - `span.wg-at` ×5 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx.over`
+            - `span.wg-rl`
+              - `span.wg-at` ×5 — “Monolithic Suppressor”
+        - `span.b3-hint.wg-imh`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
+              - `svg.ic`
         - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -156,8 +163,9 @@ status: live
             - `svg.ic`
             - `b` — “Build 1”
             - `i`
-          - `div.b3-pc.in.pinned.b3-pc-fixed[role=dialog] “Problems with .50 GS”`
+          - `div.b3-pc.pop-s1.in.pinned.b3-pc-fixed[role=dialog] “Problems with .50 GS”`
             - `svg.b3-pc-edge`
+            - `svg.b3-pc-edge.b3-pc-line`
             - `i.b3-pc-tape`
             - `section.b3-pc-b`
         - `button.wg-ib.wg-fbtn “Collapse .50 GS”`
@@ -167,10 +175,11 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
-          - `div.wg-rail`
-            - `span.wg-at` ×4 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
         - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -189,10 +198,11 @@ status: live
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
-          - `div.wg-rail`
-            - `span.wg-at` ×5 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx.over`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
         - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -246,7 +256,7 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs`
+          - `span.b3-bdgs.in`
             - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
@@ -260,10 +270,15 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
-          - `div.wg-rail`
-            - `span.wg-at` ×4 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh.pinned`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
+          - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
+            - `svg.b3-pc-edge`
+            - `svg.b3-pc-edge.b3-pc-line`
+            - `span.b3-hc-media`
         - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -282,10 +297,11 @@ status: live
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
-          - `div.wg-rail`
-            - `span.wg-at` ×5 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx.over`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
         - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -339,7 +355,7 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs`
+          - `span.b3-bdgs.in`
             - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
@@ -353,10 +369,15 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
-          - `div.wg-rail`
-            - `span.wg-at` ×4 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh.pinned`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
+          - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
+            - `svg.b3-pc-edge`
+            - `svg.b3-pc-edge.b3-pc-line`
+            - `span.b3-hc-media`
         - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -375,10 +396,11 @@ status: live
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
-          - `div.wg-rail`
-            - `span.wg-at` ×5 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx.over`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
         - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -462,7 +484,7 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs`
+          - `span.b3-bdgs.in`
             - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
@@ -476,10 +498,15 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
-          - `div.wg-rail`
-            - `span.wg-at` ×4 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh.pinned`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
+          - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
+            - `svg.b3-pc-edge`
+            - `svg.b3-pc-edge.b3-pc-line`
+            - `span.b3-hc-media`
         - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -498,10 +525,11 @@ status: live
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
-          - `div.wg-rail`
-            - `span.wg-at` ×5 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx.over`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
         - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -585,7 +613,7 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs`
+          - `span.b3-bdgs.in`
             - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
@@ -599,10 +627,15 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
-          - `div.wg-rail`
-            - `span.wg-at` ×4 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh.pinned`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
+          - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
+            - `svg.b3-pc-edge`
+            - `svg.b3-pc-edge.b3-pc-line`
+            - `span.b3-hc-media`
         - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -621,10 +654,11 @@ status: live
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
-          - `div.wg-rail`
-            - `span.wg-at` ×5 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx.over`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
         - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -708,7 +742,7 @@ status: live
           - `b` — “.50 GS”
           - `small` — “Secondaries”
           - `em.wg-nb.b3-sd-gn` — “2 builds”
-          - `span.b3-bdgs`
+          - `span.b3-bdgs.in`
             - `span.b3-bdg “Top 3 in Secondaries”`
         - `span.wg-fwrap.b3-fx`
           - `button.b3-fchip`
@@ -722,10 +756,15 @@ status: live
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
-          - `div.wg-rail`
-            - `span.wg-at` ×4 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh.pinned`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
+          - `span.b3-hc.pop-s2.in.has-media.t-ok[role=tooltip]`
+            - `svg.b3-pc-edge`
+            - `svg.b3-pc-edge.b3-pc-line`
+            - `span.b3-hc-media`
         - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -744,10 +783,11 @@ status: live
           - `span.wg-plate`
             - `small` — “Build name”
             - `span` — “Sidearm”
-          - `div.wg-rail`
-            - `span.wg-at` ×5 — “Monolithic Suppressor”
-        - `span.wg-im[role=img] “Image uploaded”`
-          - `svg.ic`
+          - `div.wg-rail.b3-fadx.over`
+            - `span.wg-rl`
+        - `span.b3-hint.wg-imh`
+          - `span.wg-fwrap.b3-fx.b3-fx-sm.cx-imx.wg-imx.b3-okx`
+            - `button.b3-fchip “.50 GS’s build image”`
         - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
@@ -1287,23 +1327,20 @@ status: live
               - `span.sr` — “Slot”
             - `th.cx-h.cx-hj` ×4
               - `span.cx-hn`
-                - `span.b3-sd-gn` — “Build 1”
+                - `span.cx-hs`
                 - `span.cx-vd`
-              - `span.cx-hb`
-                - `div.cx-run.b3-fadx`
+                - `span.cx-hb`
             - `th.cx-h`
               - `span.cx-hn`
-                - `span.b3-sd-gn` — “Build 5”
+                - `span.cx-hs`
                 - `span.cx-vd`
-              - `span.cx-hb`
-                - `div.cx-run.b3-fadx`
+                - `span.cx-hb`
         - `tbody`
-          - `tr` ×8
-            - `th.cx-k0.code`
-              - `br`
-            - `td.cx-c.s-n` ×5
-              - `span.cx-v.wg-plate.cx-nm`
-                - `span.cx-vt` — “Long range”
+          - `tr` ×7
+            - `th.cx-k0` — “Muzzle”
+            - `td.cx-c.s-d` ×5
+              - `span.cx-v`
+                - `span.cx-vt`
         - `tfoot`
           - `tr.cx-ft`
             - `th.cx-k0`
@@ -1404,11 +1441,12 @@ status: live
             - `th.cx-h.cx-hj` ×2
             - `th.cx-h`
         - `tbody`
-          - `tr` ×9
-            - `th.cx-k0.code`
-            - `td.cx-c.s-n` ×3
+          - `tr` ×8
+            - `th.cx-k0` — “Muzzle”
+            - `td.cx-c.s-d` ×3
             - `td.cx-gut`
-            - `td.cx-c.s-n` ×3
+            - `td.cx-c.s-rm`
+            - `td.cx-c.s-n.merged`
         - `tfoot`
           - `tr.cx-ft`
             - `th.cx-k0`
@@ -1462,7 +1500,7 @@ status: live
             - `button.cx-k “Build 1, Quickscope: Take Build 1 out of”`
     - `div.cx-tw`
       - `table.cx-t`
-        - `caption.sr` — “DL Q33, NA-45, slot by slot.”
+        - `caption.sr` — “DL Q33, RYTEC AMR, slot by s”
         - `colgroup`
           - `col.cx-c0`
           - `col`
@@ -1480,11 +1518,11 @@ status: live
             - `th.cx-gut`
             - `th.cx-h.sg`
         - `tbody`
-          - `tr` ×8
-            - `th.cx-k0.code`
+          - `tr` ×7
+            - `th.cx-k0` — “Muzzle”
             - `td.cx-c.s-n`
             - `td.cx-gut`
-            - `td.cx-c.s-x.sg`
+            - `td.cx-c.s-sg`
         - `tfoot`
           - `tr.cx-ft`
             - `th.cx-k0`
@@ -1520,7 +1558,7 @@ status: live
             - `tr.cx-gr`
             - `tr`
           - `tbody`
-            - `tr` ×8
+            - `tr` ×7
       - `div.cx-over`
         - `div.cx-pick.big`
           - `div.f-pick`
@@ -1538,7 +1576,7 @@ status: live
             - `i`
             - `span` — “to set them side by side”
         - `div.cx-shelf`
-          - `div.cx-w.cx-wl[role=group] “USS 9, 3 builds”` ×16
+          - `div.cx-w.cx-wl[role=group] “R9-0, 1 build”` ×16
             - `div.cx-wh`
             - `div.cx-keys`
 
@@ -1565,7 +1603,7 @@ status: live
         - `button.b3-fc`
           - `span.b3-nw`
             - `em` — “5”
-        - `button.b3-fc.warn` ×4
+        - `button.b3-fc.warn` ×5
           - `svg.ic`
           - `span.b3-nw`
             - `em` — “1”
@@ -1588,12 +1626,12 @@ status: live
               - `em` — “Build 1”
               - `small` — “SMG”
           - `div.b3-tk-fs`
-            - `div.b3-tk-f` ×2
+            - `div.b3-tk-f` ×3
               - `span.b3-tk-ic`
                 - `svg.ic`
               - `span.b3-tk-t`
                 - `b` — “No gunsmith code”
-                - `span` — “Nobody can import it, and it”
+                - `span.b3-fh`
           - `footer.b3-tk-ft`
             - `span.pb-pill.b3-tk-agec`
               - `svg.ic`
@@ -1683,8 +1721,8 @@ status: live
           - `div.exs-t`
             - `b` — “MP builds”
             - `div.b3-xf-fid`
-              - `button.b3-xf-fn “Rename dioreo-mp-builds-2026-09-29.txt”`
-                - `span.b3-xf-nm` — “dioreo-mp-builds-2026-09-29”
+              - `button.b3-xf-fn “Rename dioreo-mp-builds-2026-09-30.txt”`
+                - `span.b3-xf-nm` — “dioreo-mp-builds-2026-09-30”
                 - `span.b3-xf-ext` — “.txt”
                 - `svg.ic`
           - `button.b3-btn2.sm.go`
@@ -1723,7 +1761,7 @@ status: live
             - `section.b3-xt-sec` ×7
         - `section.b3-xt-side “The files”`
           - `div.b3-xt-files.b3-fady`
-            - `section.b3-xf.b3-xf-none “dioreo-mp-2026-09-29.txt”`
+            - `section.b3-xf.b3-xf-none “dioreo-mp-2026-09-30.txt”`
           - `div.b3-xt-peek`
 
 ### State · Three picked
@@ -1751,7 +1789,7 @@ status: live
             - `section.b3-xt-sec` ×7
         - `section.b3-xt-side “The files”`
           - `div.b3-xt-files.b3-fady`
-            - `section.b3-xf “dioreo-mp-2026-09-29.txt”`
+            - `section.b3-xf “dioreo-mp-2026-09-30.txt”`
           - `div.b3-xt-peek`
 
 ## C6 · The delivery queue
@@ -1939,7 +1977,7 @@ status: live
             - `th.ra`
               - `span.sr` — “Remove”
         - `tbody`
-          - `tr` ×6
+          - `tr “Open “S6 wrap-up — thanks for playing se”` ×6
             - `td.n`
               - `span.ncell`
                 - `span.bcbar`
@@ -1992,7 +2030,7 @@ status: live
             - `th.sortable` ×5
             - `th.ra`
         - `tbody`
-          - `tr` ×6
+          - `tr “Open “S6 wrap-up — thanks for playing se”` ×6
             - `td.n`
             - `td.nums` ×3
             - `td`
@@ -2035,7 +2073,7 @@ status: live
             - `th.sortable` ×5
             - `th.ra`
         - `tbody`
-          - `tr` ×6
+          - `tr “Open “S6 wrap-up — thanks for playing se”` ×6
             - `td.n`
             - `td.nums` ×3
             - `td`

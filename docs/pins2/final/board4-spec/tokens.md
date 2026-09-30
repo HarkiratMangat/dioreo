@@ -151,6 +151,7 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--h1-top` | `16px` | JS · `b3/state.js` stamp() |
 | `--h1-undo` | `90px` | JS · `b3/state.js` stamp() |
 | `--h1-who` | `100px` | JS · `b3/state.js` stamp() |
+| `--hc-c` | — | component |
 | `--hdr-h` | `52px` | :root |
 | `--hi` | `#232C34` | :root |
 | `--hi-gut` | — | component |
@@ -203,6 +204,7 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--m4` | — | fallback only |
 | `--marks-w` | — | component |
 | `--mc` | — | component |
+| `--meshGold` | `#F2C230` | :root |
 | `--mk` | — | component |
 | `--mode-dmz` | `#3DA5F5` | :root |
 | `--mode-mp` | `#FF3430` | :root |
@@ -221,7 +223,6 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--ow-pill-min` | `126px` | :root |
 | `--p` | — | fallback only |
 | `--paper` | `#171E24` | :root |
-| `--patch` | `#F2C230` | :root |
 | `--pb-inset` | `5px` | :root |
 | `--pcb` | — | component |
 | `--pcbg` | — | component |

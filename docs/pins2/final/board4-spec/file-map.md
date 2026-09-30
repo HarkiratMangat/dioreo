@@ -5,11 +5,11 @@ status: live
 
 # Board 4: Collective — every kit file, and what a port does with it
 
-*Generated 2026-09-30T03:57:07.373Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `e66a5e89 plus the working tree`. A file Board 3-E already labelled keeps Board 3-E's reviewed label (`../../2026-09-15-pins2-board-3/3e/file-map.md`, including its 2026-09-21 correction that `ui/app.js`, `ui/httpClient.js` and `ui/conform.js` are board chrome); a file new since then carries the rule that labelled it, marked "labelled by rule, not reviewed".*
+*Generated 2026-09-30T23:42:19.173Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `aa0528b7 plus the working tree`. A file Board 3-E already labelled keeps Board 3-E's reviewed label (`../../2026-09-15-pins2-board-3/3e/file-map.md`, including its 2026-09-21 correction that `ui/app.js`, `ui/httpClient.js` and `ui/conform.js` are board chrome); a file new since then carries the rule that labelled it, marked "labelled by rule, not reviewed".*
 
 | File | Label | Goes to | Note |
 |---|---|---|---|
-| `README.md` | **UNLABELLED** | — | no rule covers it: decide before porting · labelled by rule, not reviewed |
+| `README.md` | **CHROME** | — | the kit's own README: how to serve, open and publish the board · labelled by rule, not reviewed |
 | `app.css` | **PORTAL-COPY** | `portal/ui/app.css` (source) → `portal/public/app.css` (built) | `portal-diff.md` re-locates each changed line in the SOURCE by content |
 | `b1.css` | **MIXED** | `portal/ui/app.css` | board 1's G8/G9/G10 rules that Board 4's build drawer, Compare (`.b1 .b4-cmp`) and the post drawer still wear; split by selector against `class-map.md` · labelled by rule, not reviewed |
 | `b2.css` | **MIXED** | board 2's `pb-*` card and queue rules the delivery queue still wears | Board 2's port sheet already maps `pb-*` → `b*` for the queue card |
@@ -24,7 +24,9 @@ status: live
 | `b3/drawer.js` | **DESIGN-CODE** | the build drawer in `portal/ui/armory.js` | Board 1 G9's drawer as board 3 carries it; its structural spec is `../2026-09-14-pins2-board/handoff-g9-g8.md` |
 | `b3/fady.js` | **DESIGN-CODE** | a shared scroll-edge utility in `portal/ui/` | The edge fade on every horizontally-scrolling run |
 | `b3/history.js` | **DESIGN-CODE** | `portal/ui/history.js` | The time rail (p9 = B), the toolbar, the filter groups, the row glow. 19-line diff on `ui/history.js` alone; the rest lives here |
+| `b3/layer.js` | **DESIGN-CODE** | a shared portal module (`portal/ui/layer.js`) | an open list or pop-up inside a faded column renders into a layer beside it, so the fade stays on · labelled by rule, not reviewed |
 | `b3/palette.js` | **DESIGN-CODE** | `portal/ui/palette.js` | Command search, settled "as shown". ⚠️ The LOOK ships; the RANKING is its own session |
+| `b3/poptime.js` | **DESIGN-CODE** | a shared portal module (`portal/ui/poptime.js`), imported by every pop-up | the pop-up timing sets, the ONE place to retune them; sets `--pop<set>-<name>` on `:root` at load — see `motion-timing.md` · labelled by rule, not reviewed |
 | `b3/ref-band.svg` | **CHROME** | — |  |
 | `b3/ref-strip.svg` | **CHROME** | — |  |
 | `b3/repairs.js` | **DESIGN-CODE** | Repairs, rendered from `portal/ui/armory.js` | Tickets by severity, the pass card, `agoShort`, the `.pb-pill` age chip |
@@ -58,6 +60,7 @@ status: live
 | `data/csrf.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
 | `data/previews.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
 | `data/review.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
+| `data/thumbs.js` | **CHROME** | — | a fixture or reference the board renders; never ships · labelled by rule, not reviewed |
 | `gates.css` | **MIXED** | the export landing, the H1 toolbar and the edge rule → `portal/ui/app.css`; the gate frame is chrome | Its own header says "the board's chrome AND this round's fixes" — tonight's export landing rules live here and ARE the design |
 | `gates/armory.js` | **MIXED** | `ExportPicker` + the landing → `portal/ui/exportPanel.js`; `PaletteSpecimen`/`SlotSpecimen` and the gate sections are chrome | The export design is ~700 lines of BOARD-ONLY code with a 4-line diff against the portal. It is a code port, not a CSS port |
 | `gates/broadcast.js` | **MIXED** | the queue gate wraps `b3/broadcast.js` → `portal/ui/broadcast.js` |  |
@@ -78,6 +81,13 @@ status: live
 | `shot-lab.cjs` | **CHROME** | — | a board instrument · labelled by rule, not reviewed |
 | `shot-volt.cjs` | **CHROME** | — | a board instrument · labelled by rule, not reviewed |
 | `sweep-screens.cjs` | **CHROME** | — | a board instrument · labelled by rule, not reviewed |
+| `thumbs/50GS-2.webp` | **CHROME** | — | bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary · labelled by rule, not reviewed |
+| `thumbs/BAL-27-2.webp` | **CHROME** | — | bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary · labelled by rule, not reviewed |
+| `thumbs/DL-Q33-1.webp` | **CHROME** | — | bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary · labelled by rule, not reviewed |
+| `thumbs/FENNEC-1.webp` | **CHROME** | — | bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary · labelled by rule, not reviewed |
+| `thumbs/HOLGER-26-2.webp` | **CHROME** | — | bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary · labelled by rule, not reviewed |
+| `thumbs/SO-14-1.webp` | **CHROME** | — | bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary · labelled by rule, not reviewed |
+| `thumbs/STRIKER-2.webp` | **CHROME** | — | bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary · labelled by rule, not reviewed |
 | `ui/access.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/access.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/analytics.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
@@ -99,7 +109,7 @@ status: live
 | `ui/exportPanel.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file |
 | `ui/exportPanel.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/history.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file |
-| `ui/home.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
+| `ui/home.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file |
 | `ui/httpClient.js` | **CHROME** | — never ported | A FAKE fetch client: every GET answers from `data/*.js` fixtures and every write stages into an in-page store. **Applying it would replace the portal's real network layer.** Its base is also pre-Preact (`009931ae`), so its diff is mostly portal drift. |
 | `ui/icons.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file |
 | `ui/manifest.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file |
@@ -112,13 +122,13 @@ status: live
 | `ui/palette.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/review.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/review.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
-| `ui/season.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
-| `ui/season.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
+| `ui/season.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file |
+| `ui/season.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file |
 | `ui/shell.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file |
 | `ui/timeline.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/tips.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/tips.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
-| `ui/track.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
+| `ui/track.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file |
 | `ui/track.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/tray.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |
 | `ui/useMeasured.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunks by `portal-diff.md` § *How to apply*: every `useB3()` branch collapses to the arm `switches.md` names, and no `../b3/` import is ever carried. Never copy the whole file · **identical to the portal now** — nothing to apply |

@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective (the kit Board 3-E shares) — its rules on SHIPPED portal classes
 
-*Generated 2026-09-30T03:52:45.651Z by `overrides.cjs`. **300 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
+*Generated 2026-09-30T23:32:28.073Z by `overrides.cjs`. **326 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
 
 **This is where the corrections to boards 1 and 2 live.** Session 2 shipped board 1 and board 2 at ~95%; board 3 ran the portal's own code and corrected the rest with rules like these. Each row is a change to `portal/ui/app.css` (or `tokens.css`): find the portal rule for the same selector, change it to this, and close the element with `portalProbe` against board 3.
 
@@ -79,17 +79,17 @@ status: live
 | `b3/board.css:451` | `html[data-b3-p2sty=neutralbg] .wg-sc` | color:var(--sl,var(--ink2)) | live switch — drop the qualifier |
 | `b3/board.css:534` | `html[data-b3-p2lab] .wg-at:not([data-slot])` | padding-left:11px | live switch — drop the qualifier |
 | `b3/board.css:723` | `html[data-b3-p4=b] .cb` | border-radius:6px;background:var(--desk);box-shadow:inset 0 1px 2px rgba(0,0,0,.55),var(--b3-ring) | live switch — drop the qualifier |
-| `b3/board.css:728` | `html[data-b3-p4=b] .wg-cb:hover .cb:not(.on)::after,html[data-b3-p4=b] .cb:hover:not(.on)::after` | background:color-mix(in srgb,var(--patch) 40%,transparent) | live switch — drop the qualifier |
-| `b3/board.css:729` | `html[data-b3-p4=b] .wg-cb:hover .cb,html[data-b3-p4=b] .cb:hover` | box-shadow:inset 0 1px 2px rgba(0,0,0,.55),inset 0 0 0 1px color-mix(in srgb,var(--patch) 45%,transparent) | live switch — drop the qualifier |
-| `b3/board.css:730` | `html[data-b3-p4=b] .cb.on` | background:linear-gradient(180deg,#F7D567,var(--patch));box-shadow:0 0 0 3px color-mix(in srgb,var(--patch) 22%,transparent),inset 0 -1px 0 rgba(0,0,0,.18) | live switch — drop the qualifier |
+| `b3/board.css:728` | `html[data-b3-p4=b] .wg-cb:hover .cb:not(.on)::after,html[data-b3-p4=b] .cb:hover:not(.on)::after` | background:color-mix(in srgb,var(--staged) 40%,transparent) | live switch — drop the qualifier |
+| `b3/board.css:729` | `html[data-b3-p4=b] .wg-cb:hover .cb,html[data-b3-p4=b] .cb:hover` | box-shadow:inset 0 1px 2px rgba(0,0,0,.55),inset 0 0 0 1px color-mix(in srgb,var(--staged) 45%,transparent) | live switch — drop the qualifier |
+| `b3/board.css:730` | `html[data-b3-p4=b] .cb.on` | background:var(--staged);box-shadow:0 0 0 3px color-mix(in srgb,var(--staged) 22%,transparent),inset 0 -1px 0 rgba(0,0,0,.18) | live switch — drop the qualifier |
 | `b3/board.css:731` | `html[data-b3-p4=b] .cb.on::after` | background:var(--on-accent) | live switch — drop the qualifier |
-| `b3/board.css:732` | `html[data-b3-p4=b] .wg-cb[aria-checked=mixed] .cb` | background:linear-gradient(180deg,#F7D567,var(--patch));box-shadow:0 0 0 3px color-mix(in srgb,var(--patch) 18%,transparent) | live switch — drop the qualifier |
+| `b3/board.css:732` | `html[data-b3-p4=b] .wg-cb[aria-checked=mixed] .cb` | background:var(--staged);box-shadow:0 0 0 3px color-mix(in srgb,var(--staged) 18%,transparent) | live switch — drop the qualifier |
 | `b3/board.css:733` | `html[data-b3-p4=b] .wg-cb[aria-checked=mixed] .cb::after` | -webkit-mask:none;mask:none;left:4.5px;top:8px;width:9px;height:2px;border-radius:1px;background:var(--on-accent) | live switch — drop the qualifier |
 | `b3/board.css:1240` | `.chip.topic i,.pill .dot,.b3-sc > i,.b3-sd-gh > i` | border-radius:50% | unswitched |
 | `b3/board.css:1589` | `html[data-b3-e1] .pill.lead.mh-new .mh-plus` | display:none | ⏳ Session 4 |
 | `b3/board.css:1599` | `html[data-b3-e1] .pill.lead.mh-new:focus-visible,html[data-b3-e1] .mtools .pill.lead.madd:focus-visible` | outline:2px solid var(--focus);outline-offset:2px | ⏳ Session 4 |
-| `b3/board.css:1618` | `html[data-b3-a1=fixed] .mtools .pill.lead.madd` | min-height:0;padding:10px 15px;gap:7px;background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink) | live switch — drop the qualifier |
-| `b3/board.css:1619` | `html[data-b3-a1=fixed] .mtools .pill.lead.madd:hover` | background:color-mix(in srgb,var(--patch) 24%,transparent) | live switch — drop the qualifier |
+| `b3/board.css:1618` | `html[data-b3-a1=fixed] .mtools .pill.lead.madd` | min-height:0;padding:10px 15px;gap:7px;background:color-mix(in srgb,var(--staged) 14%,transparent);color:var(--ink) | live switch — drop the qualifier |
+| `b3/board.css:1619` | `html[data-b3-a1=fixed] .mtools .pill.lead.madd:hover` | background:color-mix(in srgb,var(--staged) 24%,transparent) | live switch — drop the qualifier |
 | `b3/board.css:1620` | `html[data-b3-a1=fixed] .mtools .pill.lead.madd .ic` | width:12px;height:12px | live switch — drop the qualifier |
 | `b3/board.css:1629` | `html[data-b3-e1] .racktools .chip::before` | content:"";width:14px;height:14px;background:currentColor;-webkit-mask:var(--b3-cud) center/14px no-repeat;mask:var(--b3-cud) center/14px no-repeat | ⏳ Session 4 |
 | `b3/board.css:1630` | `html[data-b3-e1] .racktools .chip + .chip::before` | -webkit-mask-image:var(--b3-cdu);mask-image:var(--b3-cdu) | ⏳ Session 4 |
@@ -122,70 +122,96 @@ status: live
 | `b3/board.css:2017` | `87.5%` | --tx1:26%;--ty1:22%;--tx2:76%;--ty2:50%;--tx3:26%;--ty3:22% | unswitched |
 | `b3/board.css:2033` | `.wg-line` | align-items:baseline | unswitched |
 | `b3/board.css:2034` | `.wg-line > .b3-bdgs,.wg-line > span:not(:has(> b)),.wg-line > i,.wg-line > button` | align-self:center | unswitched |
-| `b3/board.css:2257` | `html[data-b3-p4=b] .wg-cb:hover .cb.on,html[data-b3-p4=b] .cb.on:hover` | background:color-mix(in srgb,var(--patch) 24%,var(--desk)); box-shadow:inset 0 1px 2px rgba(0,0,0,.55),inset 0 0 0 1px color-mix(in srgb,var(--patch) 70%,transparent) | live switch — drop the qualifier |
-| `b3/board.css:2260` | `html[data-b3-p4=b] .wg-cb:hover .cb.on::after,html[data-b3-p4=b] .cb.on:hover::after` | background:color-mix(in srgb,var(--patch) 82%,transparent) | live switch — drop the qualifier |
+| `b3/board.css:2257` | `html[data-b3-p4=b] .wg-cb:hover .cb.on,html[data-b3-p4=b] .cb.on:hover` | background:color-mix(in srgb,var(--staged) 24%,var(--desk)); box-shadow:inset 0 1px 2px rgba(0,0,0,.55),inset 0 0 0 1px color-mix(in srgb,var(--staged) 70%,transparent) | live switch — drop the qualifier |
+| `b3/board.css:2260` | `html[data-b3-p4=b] .wg-cb:hover .cb.on::after,html[data-b3-p4=b] .cb.on:hover::after` | background:color-mix(in srgb,var(--staged) 82%,transparent) | live switch — drop the qualifier |
 | `b3/board.css:2282` | `.b3-sd-gn,.f-menu .f-oc` | font:600 var(--t-xs)/1 var(--data);letter-spacing:var(--b3-tr-tight);color:color-mix(in srgb,var(--c) 58%,var(--ink)) | unswitched |
 | `b3/board.css:2373` | `.b3-fady,.b3-sd-rows,.b3-cmdl,.b3dock-list,.b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3-sc ~ .b3-sc ~ .b3-sc)` | overflow-y:auto;scrollbar-width:none;overscroll-behavior:contain; -webkit-mask-image:linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rg | unswitched |
 | `b3/board.css:2378` | `.b3-fady::-webkit-scrollbar,.b3-sd-rows::-webkit-scrollbar,.b3-cmdl::-webkit-scrollbar, .b3dock-list::-webkit-scrollbar,.b3dock-cur::-webkit-scrollbar,.b3-sd-ch` | width:0;height:0 | unswitched |
 | `b3/board.css:2410` | `.b3-sd-gn,.f-menu .f-oc` | display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:6px; font:600 var(--t-xs)/1 var(--data);letter-spacing:var(--b3-tr-tight); color:color-mix(in srgb,var(--c) 58%,var(--ink)); box-shadow:inset | unswitched |
 | `b3/board.css:2702` | `:is(.b3-fady,.b3-sd-rows,.b3-cmdl,.b3dock-list,.b3dock-cur,.b3-sd-chips):has(.b3-pc)` | -webkit-mask-image:none;mask-image:none | unswitched |
 | `b3/board.css:2737` | `html[data-b3-p2sty] .wg-r .wg-at[style],html[data-b3-p2sty] .b3-sd .wg-at[style],html[data-b3-p2sty] .g-pick .wg-at[style],html[data-b3-p2sty] .b3-wr-rail .wg-a` | --atink:var(--ink);--atw:500 | live switch — drop the qualifier |
-| `b3/board.css:2774` | `.wg-r .wg-rail` | max-height:76px;overflow-y:auto;overscroll-behavior:auto;scrollbar-width:none; -webkit-mask-image:linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft | unswitched |
-| `b3/board.css:2777` | `.wg-r .wg-rail::-webkit-scrollbar` | width:0;height:0 | unswitched |
-| `b3/board.css:2848` | `.wg-r .wg-rail,.b3-sd-chips` | --fdy:15px | unswitched |
-| `b3/board.css:3082` | `.b4 #compare .cx-clr:hover:not(:disabled),.b3-xf-f .b3-btn2.b3-xf-clr:hover:not(:disabled)` | color:var(--danger-ink);background:color-mix(in srgb,var(--danger-ink) 12%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger-ink) 55%,transparent) | unswitched |
-| `b3/board.css:3190` | `.wg-r.bad::after` | left:0;right:auto;width:4px;-webkit-mask-image:radial-gradient(ellipse farthest-side at 0 50%,#000 0,#000 90%,transparent 100%),linear-gradient(to bottom,transparent 0,rgb(0 0 0/.14) 10%,rgb(0 0 0/.42) 24%,rgb(0 0 0/.78) | unswitched |
-| `b3/board.css:3191` | `.wg-r.bad::before,.wg-r.bad:hover::before,.wg-r.bad.open::before` | display:none | unswitched |
-| `b3/board.css:3260` | `12.5%` | transform:translate3d(27.27%,35.37%,0) | unswitched |
-| `b3/board.css:3260` | `37.5%` | transform:translate3d(68.18%,40.24%,0) | unswitched |
-| `b3/board.css:3260` | `62.5%` | transform:translate3d(79.55%,15.85%,0) | unswitched |
-| `b3/board.css:3260` | `87.5%` | transform:translate3d(29.55%,13.41%,0) | unswitched |
-| `b3/board.css:3261` | `12.5%` | transform:translate3d(76.32%,30.00%,0) | unswitched |
-| `b3/board.css:3261` | `37.5%` | transform:translate3d(31.58%,28.57%,0) | unswitched |
-| `b3/board.css:3261` | `62.5%` | transform:translate3d(47.37%,58.57%,0) | unswitched |
-| `b3/board.css:3261` | `87.5%` | transform:translate3d(100.00%,35.71%,0) | unswitched |
-| `b3/board.css:3262` | `12.5%` | transform:translate3d(96.88%,20.97%,0) | unswitched |
-| `b3/board.css:3262` | `37.5%` | transform:translate3d(109.38%,59.68%,0) | unswitched |
-| `b3/board.css:3262` | `62.5%` | transform:translate3d(46.88%,59.68%,0) | unswitched |
-| `b3/board.css:3262` | `87.5%` | transform:translate3d(40.62%,17.74%,0) | unswitched |
-| `b3/board.css:3287` | `html[data-b3-p4] .wg-cb[aria-checked=mixed]:hover .cb:not(.on)::after,html[data-b3-p4] .wg-cb[aria-checked=mixed] .cb:hover:not(.on)::after` | background:var(--on-accent);clip-path:inset(0 0 0 0) | live switch — drop the qualifier |
-| `b3/board.css:3302` | `.mt-grp .chip > :is(.cl,em)` | text-box:trim-both cap alphabetic | unswitched |
-| `b3/board.css:3303` | `.chip.topic em` | color:oklch(from var(--c) max(l,.76) c h);font-weight:700;opacity:1 | unswitched |
-| `b3/board.css:3304` | `.chip.topic[aria-pressed=true] em` | background:none;opacity:1;color:oklch(from var(--c) max(l,.8) c h) | unswitched |
-| `b3/board.css:3305` | `.mt-grp .chip:not(.topic) em` | font-style:normal;font-family:var(--data);font-size:var(--t-micro);font-weight:700;color:var(--ink2);margin-left:5px | unswitched |
-| `b3/board.css:3306` | `.chip.topic i` | transition:box-shadow var(--b3-d1) var(--ease) | unswitched |
-| `b3/board.css:3307` | `.chip.topic:hover i` | box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 35%,transparent) | unswitched |
-| `b3/board.css:3310` | `.seg button[aria-pressed=true],.seg button[aria-selected=true]` | box-shadow:inset 0 0 0 1px var(--ink4) | unswitched |
-| `b3/board.css:3311` | `.seg button:has(> .ic)` | display:inline-flex;align-items:center;gap:6px | unswitched |
-| `b3/board.css:3312` | `.seg button > .ic` | width:13px;height:13px;flex:none | unswitched |
-| `b3/board.css:3377` | `html[data-b3-p2sty=neutralbg] :is(.wg-r,.b3-sd,.g-pick,.b3-wr-rail,.bk-atts,.bk-legend,.cx-same,.g-spec-r) .wg-at[style]` | --atring:color-mix(in srgb,var(--sl) 46%,transparent);--atring-hi:color-mix(in srgb,var(--sl) 72%,transparent) | live switch — drop the qualifier |
-| `b3/board.css:3390` | `html[data-b3-a1] .mtools .mt-r2 > .mt-grp,html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first-child` | gap:3px | live switch — drop the qualifier |
-| `b3/board.css:3391` | `html[data-b3-a1] .mtools .mt-r2 .chip` | padding-inline:7px | live switch — drop the qualifier |
-| `b3/board.css:3392` | `html[data-b3-a1] .mtools .mt-r2 .seg button` | padding-inline:10px | live switch — drop the qualifier |
-| `b3/board.css:3436` | `.wg-h > .wg-line` | align-items:center | unswitched |
-| `b3/board.css:3437` | `.wg-h > .wg-line > :is(b,small)` | text-box:trim-both cap alphabetic | unswitched |
-| `b3/board.css:3444` | `.wg-h > .wg-line > b` | transform:translateY(.5px) | unswitched |
-| `b3/board.css:3445` | `.wg-h > .wg-line > small` | transform:translateY(-.25px) | unswitched |
-| `b3/board.css:3449` | `html[data-b3-a1] .mtools .mt-r2 .chip em` | font-size:var(--t-sm);margin-left:0 | live switch — drop the qualifier |
-| `b3/board.css:3450` | `html[data-b3-a1] .mtools .mt-r2 .chip.topic` | gap:5px | live switch — drop the qualifier |
-| `b3/board.css:3451` | `html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic)` | display:inline-flex;align-items:center;gap:5px | live switch — drop the qualifier |
-| `b3/board.css:3486` | `.lab` | display:grid;grid-template-columns:minmax(0,1fr);gap:16px | unswitched |
-| `b3/board.css:3630` | `.wg-at.nocode:not(#_),.wg-sc.nocode:not(#_)` | box-shadow:none;outline:1px dashed color-mix(in srgb,var(--warn) 72%,transparent);outline-offset:-1px; background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--warn) 11%,transparent) 0 4px,transparent 4px 8px) | unswitched |
-| `b3/board.css:3632` | `.wg-at.nocode:not(#_)::before` | color:color-mix(in srgb,var(--warn) 80%,var(--ink3)) | unswitched |
-| `b3/board.css:3637` | `.b3-pc .b3-pc-open,.b3dock .b3dock-tries button,.b3dock-panel footer button` | border-radius:var(--rad-box) | unswitched |
-| `b3/board.css:4000` | `.band-best` | --bc:#F2C230 | unswitched |
-| `b3/board.css:4000` | `.band-top` | --bc:#A99BFF | unswitched |
-| `b3/board.css:4000` | `.band-meta` | --bc:#38D6F0 | unswitched |
-| `b3/board.css:4089` | `.b3-tk,.b3-xf,.pb-enc,.b3-sd,.drawer .b4-ask` | outline:1px solid var(--b3-edge,var(--rule2));outline-offset:-1px | unswitched |
-| `b3/board.css:4169` | `.b3-btn2:is(.go,.stage)` | transition:background var(--b3-d1),box-shadow var(--b3-d1) | unswitched |
-| `b3/board.css:4169` | `.b3-btn2:is(.go,.stage):hover` | transform:none | unswitched |
-| `b3/board.css:4874` | `.b3-hi-dg > .b3-hi-r:is(.st-m,.st-z)` | border-top-color:transparent | unswitched |
-| `b3/board.css:4934` | `.b3-hi-r:is(.st-m,.st-z)` | border-top-color:transparent | unswitched |
-| `b3/board.css:4996` | `.chip:hover:not(:disabled)` | background:var(--hi);color:var(--ink) | unswitched |
-| `b3/board.css:4997` | `.b3-sd-vt button.on:hover,.seg button[aria-selected=true]:hover` | background:color-mix(in srgb,var(--ink) 12%,var(--raised));color:var(--ink) | unswitched |
-| `b3/board.css:5011` | `:is(button,[role=button],[role=tab],[role=checkbox],[role=radio],.b3-fc,.b3-xt-wn,.b3-xt-c,.seg button,.pill,.chip,.b3-btn2,.b3-hi-h,.b3-fgl,.mlabel,.b3-hi-day)` | -webkit-user-select:none;user-select:none | unswitched |
-| `b3/board.css:5177` | `.wg-r .wg-ix` | font-weight:700;font-variant-numeric:tabular-nums | unswitched |
-| `b3/board.css:5178` | `.wg-line` | gap:10px | unswitched |
+| `b3/board.css:2779` | `.wg-r .wg-rail` | display:block;min-width:0 | unswitched |
+| `b3/board.css:2780` | `.wg-r .wg-rail > .wg-rl` | display:flex;flex-wrap:wrap;align-items:center;gap:6px | unswitched |
+| `b3/board.css:2851` | `.wg-r .wg-rail,.b3-sd-chips` | --fdy:15px | unswitched |
+| `b3/board.css:3085` | `.b4 #compare .cx-clr:hover:not(:disabled),.b3-xf-f .b3-btn2.b3-xf-clr:hover:not(:disabled)` | color:var(--danger-ink);background:color-mix(in srgb,var(--danger-ink) 12%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger-ink) 55%,transparent) | unswitched |
+| `b3/board.css:3182` | `.wg-r.bad::after` | left:0;right:auto;width:4px;-webkit-mask-image:radial-gradient(ellipse farthest-side at 0 50%,#000 0,#000 90%,transparent 100%),linear-gradient(to bottom,transparent 0,rgb(0 0 0/.14) 10%,rgb(0 0 0/.42) 24%,rgb(0 0 0/.78) | unswitched |
+| `b3/board.css:3183` | `.wg-r.bad::before,.wg-r.bad:hover::before,.wg-r.bad.open::before` | display:none | unswitched |
+| `b3/board.css:3252` | `12.5%` | transform:translate3d(27.27%,35.37%,0) | unswitched |
+| `b3/board.css:3252` | `37.5%` | transform:translate3d(68.18%,40.24%,0) | unswitched |
+| `b3/board.css:3252` | `62.5%` | transform:translate3d(79.55%,15.85%,0) | unswitched |
+| `b3/board.css:3252` | `87.5%` | transform:translate3d(29.55%,13.41%,0) | unswitched |
+| `b3/board.css:3253` | `12.5%` | transform:translate3d(76.32%,30.00%,0) | unswitched |
+| `b3/board.css:3253` | `37.5%` | transform:translate3d(31.58%,28.57%,0) | unswitched |
+| `b3/board.css:3253` | `62.5%` | transform:translate3d(47.37%,58.57%,0) | unswitched |
+| `b3/board.css:3253` | `87.5%` | transform:translate3d(100.00%,35.71%,0) | unswitched |
+| `b3/board.css:3254` | `12.5%` | transform:translate3d(96.88%,20.97%,0) | unswitched |
+| `b3/board.css:3254` | `37.5%` | transform:translate3d(109.38%,59.68%,0) | unswitched |
+| `b3/board.css:3254` | `62.5%` | transform:translate3d(46.88%,59.68%,0) | unswitched |
+| `b3/board.css:3254` | `87.5%` | transform:translate3d(40.62%,17.74%,0) | unswitched |
+| `b3/board.css:3279` | `html[data-b3-p4] .wg-cb[aria-checked=mixed]:hover .cb:not(.on)::after,html[data-b3-p4] .wg-cb[aria-checked=mixed] .cb:hover:not(.on)::after` | background:var(--on-accent);clip-path:inset(0 0 0 0) | live switch — drop the qualifier |
+| `b3/board.css:3294` | `.mt-grp .chip > :is(.cl,em)` | text-box:trim-both cap alphabetic | unswitched |
+| `b3/board.css:3295` | `.chip.topic em` | color:oklch(from var(--c) max(l,.76) c h);font-weight:700;opacity:1 | unswitched |
+| `b3/board.css:3296` | `.chip.topic[aria-pressed=true] em` | background:none;opacity:1;color:oklch(from var(--c) max(l,.8) c h) | unswitched |
+| `b3/board.css:3297` | `.mt-grp .chip:not(.topic) em` | font-style:normal;font-family:var(--data);font-size:var(--t-micro);font-weight:700;color:var(--ink2);margin-left:5px | unswitched |
+| `b3/board.css:3298` | `.chip.topic i` | transition:box-shadow var(--b3-d1) var(--ease) | unswitched |
+| `b3/board.css:3299` | `.chip.topic:hover i` | box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 35%,transparent) | unswitched |
+| `b3/board.css:3302` | `.seg button[aria-pressed=true],.seg button[aria-selected=true]` | box-shadow:inset 0 0 0 1px var(--ink4) | unswitched |
+| `b3/board.css:3303` | `.seg button:has(> .ic)` | display:inline-flex;align-items:center;gap:6px | unswitched |
+| `b3/board.css:3304` | `.seg button > .ic` | width:13px;height:13px;flex:none | unswitched |
+| `b3/board.css:3369` | `html[data-b3-p2sty=neutralbg] :is(.wg-r,.b3-sd,.g-pick,.b3-wr-rail,.bk-atts,.bk-legend,.cx-same,.g-spec-r) .wg-at[style]` | --atring:color-mix(in srgb,var(--sl) 46%,transparent);--atring-hi:color-mix(in srgb,var(--sl) 72%,transparent) | live switch — drop the qualifier |
+| `b3/board.css:3382` | `html[data-b3-a1] .mtools .mt-r2 > .mt-grp,html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first-child` | gap:3px | live switch — drop the qualifier |
+| `b3/board.css:3383` | `html[data-b3-a1] .mtools .mt-r2 .chip` | padding-inline:7px | live switch — drop the qualifier |
+| `b3/board.css:3384` | `html[data-b3-a1] .mtools .mt-r2 .seg button` | padding-inline:10px | live switch — drop the qualifier |
+| `b3/board.css:3428` | `.wg-h > .wg-line` | align-items:center | unswitched |
+| `b3/board.css:3429` | `.wg-h > .wg-line > :is(b,small)` | text-box:trim-both cap alphabetic | unswitched |
+| `b3/board.css:3436` | `.wg-h > .wg-line > b` | transform:translateY(.5px) | unswitched |
+| `b3/board.css:3437` | `.wg-h > .wg-line > small` | transform:translateY(-.25px) | unswitched |
+| `b3/board.css:3441` | `html[data-b3-a1] .mtools .mt-r2 .chip em` | font-size:var(--t-sm);margin-left:0 | live switch — drop the qualifier |
+| `b3/board.css:3442` | `html[data-b3-a1] .mtools .mt-r2 .chip.topic` | gap:5px | live switch — drop the qualifier |
+| `b3/board.css:3443` | `html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic)` | display:inline-flex;align-items:center;gap:5px | live switch — drop the qualifier |
+| `b3/board.css:3478` | `.lab` | display:grid;grid-template-columns:minmax(0,1fr);gap:16px | unswitched |
+| `b3/board.css:3622` | `.wg-at.nocode:not(#_),.wg-sc.nocode:not(#_)` | box-shadow:none;outline:1px dashed color-mix(in srgb,var(--warn) 72%,transparent);outline-offset:-1px; background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--warn) 11%,transparent) 0 4px,transparent 4px 8px) | unswitched |
+| `b3/board.css:3624` | `.wg-at.nocode:not(#_)::before` | color:color-mix(in srgb,var(--warn) 80%,var(--ink3)) | unswitched |
+| `b3/board.css:3629` | `.b3-pc .b3-pc-open,.b3dock .b3dock-tries button,.b3dock-panel footer button` | border-radius:var(--rad-box) | unswitched |
+| `b3/board.css:3992` | `.band-best` | --bc:#F2C230 | unswitched |
+| `b3/board.css:3992` | `.band-top` | --bc:#A99BFF | unswitched |
+| `b3/board.css:3992` | `.band-meta` | --bc:#38D6F0 | unswitched |
+| `b3/board.css:4081` | `.b3-tk,.b3-xf,.pb-enc,.b3-sd,.drawer .b4-ask` | outline:1px solid var(--b3-edge,var(--rule2));outline-offset:-1px | unswitched |
+| `b3/board.css:4161` | `.b3-btn2:is(.go,.stage)` | transition:background var(--b3-d1),box-shadow var(--b3-d1) | unswitched |
+| `b3/board.css:4161` | `.b3-btn2:is(.go,.stage):hover` | transform:none | unswitched |
+| `b3/board.css:4866` | `.b3-hi-dg > .b3-hi-r:is(.st-m,.st-z)` | border-top-color:transparent | unswitched |
+| `b3/board.css:4926` | `.b3-hi-r:is(.st-m,.st-z)` | border-top-color:transparent | unswitched |
+| `b3/board.css:4988` | `.chip:hover:not(:disabled)` | background:var(--hi);color:var(--ink) | unswitched |
+| `b3/board.css:4989` | `.b3-sd-vt button.on:hover,.seg button[aria-selected=true]:hover` | background:color-mix(in srgb,var(--ink) 12%,var(--raised));color:var(--ink) | unswitched |
+| `b3/board.css:5003` | `:is(button,[role=button],[role=tab],[role=checkbox],[role=radio],.b3-fc,.b3-xt-wn,.b3-xt-c,.seg button,.pill,.chip,.b3-btn2,.b3-hi-h,.b3-fgl,.mlabel,.b3-hi-day)` | -webkit-user-select:none;user-select:none | unswitched |
+| `b3/board.css:5169` | `.wg-r .wg-ix` | font-weight:700;font-variant-numeric:tabular-nums | unswitched |
+| `b3/board.css:5170` | `.wg-line` | gap:10px | unswitched |
+| `b3/board.css:5197` | `.wg-at.ghost:not(#_)` | color:color-mix(in srgb,var(--warn) 55%,var(--ink3)) | unswitched |
+| `b3/board.css:5238` | `.cx-noimg` | display:grid;justify-items:center;align-content:center;gap:6px;width:220px;height:124px;box-sizing:border-box;padding:12px;border-radius:8px;text-align:center;line-height:1.2; background:repeating-linear-gradient(-45deg, | unswitched |
+| `b3/board.css:5240` | `.cx-noimg .ic` | width:22px;height:22px;color:var(--warn) | unswitched |
+| `b3/board.css:5241` | `.cx-noimg b` | font:600 var(--t-sm)/1.2 var(--ui);color:var(--ink) | unswitched |
+| `b3/board.css:5242` | `.cx-noimg small` | font:500 var(--t-xs)/1.3 var(--ui);color:var(--ink3) | unswitched |
+| `b3/board.css:5245` | `.cx-noimg.fail` | background:#050709;box-shadow:none | unswitched |
+| `b3/board.css:5246` | `.cx-noimg.fail .ic` | color:var(--warn) | unswitched |
+| `b3/board.css:5247` | `.cx-imkey` | display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:5px;font:600 11px/1 var(--data);color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix( | unswitched |
+| `b3/board.css:5269` | `.cx-noimg` | box-shadow:none!important | unswitched |
+| `b3/board.css:5270` | `.cx-noimg:not(.fail)` | background:#0A0D10 | unswitched |
+| `b3/board.css:5272` | `.cx-noimg:not(.fail) b` | color:var(--ink) | unswitched |
+| `b3/board.css:5283` | `.wg-r > .wg-imh` | display:grid;place-items:center | unswitched |
+| `b3/board.css:5314` | `.b4 :is(#_,.wg-r) .wg-imx.b3-fx.b3-fx-sm` | width:28px;height:28px;margin:0 | unswitched |
+| `b3/board.css:5315` | `.b4 :is(#_,.wg-r) .wg-imx.b3-fx.b3-fx-sm .b3-fchip` | width:28px;height:28px;border-radius:8px;padding:0;display:grid;place-items:center | unswitched |
+| `b3/board.css:5316` | `.b4 :is(#_,.wg-r) .wg-imx.b3-fx.b3-fx-sm .b3-fchip .ic` | width:16px;height:16px | unswitched |
+| `b3/board.css:5321` | `.b4 :is(#_,.b3-xt) .b3-xt-tiles > .cx-w` | box-sizing:border-box;width:auto;min-width:0;max-width:none;margin:0 0 8px;border:0;break-inside:avoid | unswitched |
+| `b3/board.css:5322` | `.b4 :is(#_,.b3-xt) .cx-wl.some` | box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 55%,transparent) | unswitched |
+| `b3/board.css:5323` | `.b4 :is(#_,.b3-xt) .cx-wl.all` | background:linear-gradient(180deg,color-mix(in srgb,var(--c) 24%,var(--sunk)),var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 80%,transparent) | unswitched |
+| `b3/board.css:5324` | `.b4 :is(#_._,.b3-xt) .cx-wl .cx-wn > small` | text-transform:none;letter-spacing:normal | unswitched |
+| `b3/board.css:5325` | `.b4 :is(#_._,.b3-xt) .cx-wl .cx-wn > b` | letter-spacing:normal | unswitched |
+| `b3/board.css:5326` | `.b4 :is(#_,.b3-xt) .cx-wn > small .b3-xt-wc` | font:inherit;letter-spacing:inherit;color:var(--ink3) | unswitched |
+| `b3/board.css:5327` | `.b4 :is(#_,.b3-xt) .cx-wn > small .b3-xt-wc b` | color:color-mix(in srgb,var(--c) 70%,white) | unswitched |
+| `b3/board.css:5328` | `.b4 :is(#_,.b3-xt) .cx-k.b3-xt-c` | width:auto;min-width:34px;height:34px;padding:0 9px;display:inline-flex;align-items:center;justify-content:center;gap:5px | unswitched |
+| `b3/board.css:5329` | `.b4 :is(#_,.b3-xt) .cx-wl .cx-k.b3-xt-c[aria-pressed=true]` | background:color-mix(in srgb,var(--c) 34%,var(--sunk));color:#fff;outline-color:transparent;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 85%,transparent) | unswitched |
+| `b3/board.css:5330` | `.b4 :is(#_,.b3-xt) .cx-k.b3-xt-c b` | font:600 13px/1 var(--data);color:inherit | unswitched |
+| `b3/board.css:5339` | `:is(.bc-tt > .pb-pill.bc-rep, .pb-pill.g-chipbtn, .pb-end.g-chipbtn:not(.g-noend):not(.g-stagedend)):is(:hover,[aria-expanded=true]) .ic` | color:inherit | unswitched |
 | `gates.css:51` | `.pidx` | margin: 0 0 22px; border-radius: var(--rad-3); background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); overflow: hidden | unswitched |
 | `gates.css:52` | `.pidx-h` | display: flex; align-items: baseline; gap: 14px; padding: 18px 20px 12px | unswitched |
 | `gates.css:53` | `.pidx-h h2` | margin: 0; font: 600 var(--t-lg)/1 var(--ui); color: var(--ink) | unswitched |
@@ -200,7 +226,7 @@ status: live
 | `gates.css:71` | `.pidx-l .v .ic` | width: 13px; height: 13px | unswitched |
 | `gates.css:197` | `.pk` | margin: 16px 0 0; padding: 16px 18px 18px; border-radius: var(--rad-3); background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule) | unswitched |
 | `gates.css:198` | `.pk-h` | display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; margin-bottom: 14px | unswitched |
-| `gates.css:199` | `.pk-k` | display: inline-grid; place-items: center; height: 22px; padding: 0 9px; border-radius: 5px; background: var(--patch); font: 700 var(--t-micro)/1 var(--data); letter-spacing: .14em; text-transform: uppercase; color: var( | unswitched |
+| `gates.css:199` | `.pk-k` | display: inline-grid; place-items: center; height: 22px; padding: 0 9px; border-radius: 5px; background: var(--staged); font: 700 var(--t-micro)/1 var(--data); letter-spacing: .14em; text-transform: uppercase; color: var | unswitched |
 | `gates.css:201` | `.pk-h b` | font: 600 var(--t-md)/1 var(--ui); color: var(--ink) | unswitched |
 | `gates.css:202` | `.pk-ask` | flex: 1; min-width: 220px; font: 500 var(--t-sm)/1.45 var(--ui); color: var(--ink3) | unswitched |
 | `gates.css:203` | `.pk-st` | display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: var(--rad-pill); background: var(--sunk); box-shadow: var(--b3-ring); font: 600 var(--t-xs)/1 var(--data); color: var(--i | unswitched |
@@ -209,13 +235,13 @@ status: live
 | `gates.css:207` | `.pk-st.on` | color: var(--ok); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 45%, transparent) | unswitched |
 | `gates.css:208` | `.pk-os` | display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px | unswitched |
 | `gates.css:209` | `.pk-o` | display: grid; grid-template-rows: 1fr auto; border-radius: var(--rad-2); background: var(--sunk); box-shadow: var(--b3-ring); overflow: hidden | unswitched |
-| `gates.css:210` | `.pk-o.shown` | box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--patch) 55%, transparent) | unswitched |
+| `gates.css:210` | `.pk-o.shown` | box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--staged) 55%, transparent) | unswitched |
 | `gates.css:211` | `.pk-o.picked` | background: color-mix(in srgb, var(--ok) 7%, var(--sunk)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 45%, transparent) | unswitched |
 | `gates.css:212` | `.pk-ob` | display: grid; gap: 7px; padding: 13px 14px 12px; border: 0; background: none; text-align: left; cursor: pointer | unswitched |
 | `gates.css:213` | `.pk-ol` | font: 600 var(--t-base)/1.1 var(--ui); color: var(--ink) | unswitched |
 | `gates.css:214` | `.pk-ow` | font: 500 var(--t-sm)/1.45 var(--ui); color: var(--ink3) | unswitched |
 | `gates.css:215` | `.pk-osee` | font: 600 var(--t-micro)/1 var(--data); letter-spacing: .12em; text-transform: uppercase; color: var(--ink4) | unswitched |
-| `gates.css:216` | `.pk-o.shown .pk-osee` | color: var(--patch) | unswitched |
+| `gates.css:216` | `.pk-o.shown .pk-osee` | color: var(--staged) | unswitched |
 | `gates.css:217` | `.pk-of` | display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 12px 12px | unswitched |
 | `gates.css:218` | `.pk-mine` | display: inline-flex; align-items: center; gap: 6px; font: 600 var(--t-xs)/1 var(--data); color: var(--smg) | unswitched |
 | `gates.css:219` | `.pk-mine .ic` | width: 12px; height: 12px | unswitched |
@@ -243,37 +269,37 @@ status: live
 | `gates.css:259` | `html[data-b3-a1=fixed] .wg-r::before` | top: 12px; bottom: 12px; width: 2.5px; border-radius: 0 2px 2px 0 | live switch — drop the qualifier |
 | `gates.css:271` | `html[data-b3-a1=fixed] :is(.wg-ib, .wg-fold, .wg-sort, .wg-code, .wg-cb, .wg-igb):hover:not(:disabled), html[data-b3-a1=fixed] :is(.wg-ib, .wg-fold, .wg-sort, .` | background: none | live switch — drop the qualifier |
 | `gates.css:278` | `html[data-b3-a1=fixed] :is(.wg-ib, .wg-fold):hover::before, html[data-b3-a1=fixed] :is(.wg-ib, .wg-fold):focus-visible::before` | background: var(--hi); box-shadow: inset 0 0 0 1px var(--ink4) | live switch — drop the qualifier |
-| `gates.css:280` | `html[data-b3-a1=fixed] .wg-ib.wg-del:hover::before` | background: color-mix(in srgb, var(--danger-ink) 12%, var(--raised)); box-shadow: inset 0 0 0 1px var(--danger-edge) | live switch — drop the qualifier |
-| `gates.css:288` | `html[data-b3-a1=fixed] .wg-code .wg-igb` | transition: background var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease), color var(--dur-1) var(--ease) | live switch — drop the qualifier |
-| `gates.css:290` | `html[data-b3-a1=fixed] .wg-code:hover .wg-igb` | background: var(--raised); color: var(--ink2); box-shadow: none | live switch — drop the qualifier |
-| `gates.css:291` | `html[data-b3-a1=fixed] .wg-code .wg-igb:hover, html[data-b3-a1=fixed] .wg-code:focus-visible .wg-igb` | background: color-mix(in srgb, var(--c) 16%, var(--raised)); color: color-mix(in srgb, var(--c) 72%, white); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 50%, transparent) | live switch — drop the qualifier |
-| `gates.css:317` | `html[data-b3-a1=fixed] .wg-line small` | display: inline-flex; align-items: center | live switch — drop the qualifier |
-| `gates.css:318` | `html[data-b3-a1=fixed] .wg-nb` | display: inline-flex; align-items: center | live switch — drop the qualifier |
-| `gates.css:319` | `html[data-b3-a1=fixed] .wg-nb::before` | margin: 0 9px | live switch — drop the qualifier |
-| `gates.css:321` | `html[data-b3-a1=fixed] .wg-ig` | position: relative; box-shadow: none | live switch — drop the qualifier |
-| `gates.css:322` | `html[data-b3-a1=fixed] .wg-ig::after` | content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: var(--b3-ring) | live switch — drop the qualifier |
-| `gates.css:324` | `html[data-b3-a1=fixed] .wg-igf` | box-shadow: inset 0 3px 4px -2px rgba(0, 0, 0, .45) | live switch — drop the qualifier |
-| `gates.css:325` | `html[data-b3-a1=fixed] .wg-igb` | box-shadow: none; border-left: 1px solid var(--rule2) | live switch — drop the qualifier |
-| `gates.css:326` | `html[data-b3-a1=fixed] .wg-code` | cursor: pointer | live switch — drop the qualifier |
-| `gates.css:327` | `html[data-b3-a1=fixed] .wg-code:hover .wg-ig` | box-shadow: none | live switch — drop the qualifier |
-| `gates.css:328` | `html[data-b3-a1=fixed] .wg-code:hover .wg-ig::after` | box-shadow: var(--b3-ring) | live switch — drop the qualifier |
-| `gates.css:514` | `.exs` | display: grid; gap: 10px; margin: 0; padding: 0; list-style: none | unswitched |
-| `gates.css:684` | `.pk-os` | grid-template-columns: 1fr | unswitched |
-| `gates.css:685` | `.pidx-l` | grid-template-columns: 1fr | unswitched |
-| `gates.css:697` | `.pb` | gap: 52px | unswitched |
-| `gates.css:738` | `.pb input, .pb textarea` | caret-color: var(--patch) | unswitched |
-| `gates.css:739` | `.pb, .g-stage, .b3-sd-list, .dk:where(:not(.diff-r>*)), .pidx-l` | scrollbar-color: var(--rule2) transparent; scrollbar-width: thin | unswitched |
-| `gates.css:775` | `.dw-f .btn:has(> .ic)` | display:inline-flex;align-items:center;justify-content:center;gap:6px | unswitched |
-| `gates.css:776` | `.dw-f .btn` | padding-inline:18px | unswitched |
-| `gates.css:777` | `.dw-f .btn > .ic` | width:14px;height:14px;flex:none | unswitched |
-| `gates.css:779` | `.dw-f .btn > .ic:first-child` | margin-left:-4px | unswitched |
-| `gates.css:803` | `html:not([data-kbd]) .drawer .x:focus-visible` | outline: none; box-shadow: none | unswitched |
-| `gates.css:811` | `.dw-nav` | margin-left:auto;flex:none;display:flex;align-items:center;gap:6px | unswitched |
-| `gates.css:812` | `.dw-h .dw-nav .x` | margin-left:0;width:auto;min-width:28px;display:inline-flex;align-items:center;justify-content:center;gap:0;padding:0 6px; transition:gap 360ms cubic-bezier(.4,0,.2,1),padding 360ms cubic-bezier(.4,0,.2,1),color 200ms ea | unswitched |
-| `gates.css:814` | `.dw-h .dw-nav .x > b` | display:inline-block;max-width:0;overflow:hidden;opacity:0;white-space:nowrap;font:600 12px/1 var(--ui); transform:translateX(-3px);transition:max-width 360ms cubic-bezier(.4,0,.2,1),opacity 240ms ease 60ms,transform 360 | unswitched |
-| `gates.css:816` | `.dw-h .dw-nav .x:hover,.dw-h .dw-nav .x:focus-visible` | gap:6px;padding:0 10px 0 7px | unswitched |
-| `gates.css:817` | `.dw-h .dw-nav .x:hover > b,.dw-h .dw-nav .x:focus-visible > b` | max-width:3.4em;opacity:1;transform:none | unswitched |
-| `gates.css:818` | `.dw-h .dw-nav .x,.dw-h .dw-nav .x > b` | transition:none | unswitched |
+| `gates.css:282` | `html[data-b3-a1=fixed] .wg-ib.wg-del:hover::before` | background: color-mix(in srgb, var(--danger-ink) 14%, var(--raised)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger-ink) 45%, transparent) | live switch — drop the qualifier |
+| `gates.css:290` | `html[data-b3-a1=fixed] .wg-code .wg-igb` | transition: background var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease), color var(--dur-1) var(--ease) | live switch — drop the qualifier |
+| `gates.css:292` | `html[data-b3-a1=fixed] .wg-code:hover .wg-igb` | background: var(--raised); color: var(--ink2); box-shadow: none | live switch — drop the qualifier |
+| `gates.css:293` | `html[data-b3-a1=fixed] .wg-code .wg-igb:hover, html[data-b3-a1=fixed] .wg-code:focus-visible .wg-igb` | background: color-mix(in srgb, var(--c) 16%, var(--raised)); color: color-mix(in srgb, var(--c) 72%, white); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 50%, transparent) | live switch — drop the qualifier |
+| `gates.css:319` | `html[data-b3-a1=fixed] .wg-line small` | display: inline-flex; align-items: center | live switch — drop the qualifier |
+| `gates.css:320` | `html[data-b3-a1=fixed] .wg-nb` | display: inline-flex; align-items: center | live switch — drop the qualifier |
+| `gates.css:321` | `html[data-b3-a1=fixed] .wg-nb::before` | margin: 0 9px | live switch — drop the qualifier |
+| `gates.css:323` | `html[data-b3-a1=fixed] .wg-ig` | position: relative; box-shadow: none | live switch — drop the qualifier |
+| `gates.css:324` | `html[data-b3-a1=fixed] .wg-ig::after` | content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: var(--b3-ring) | live switch — drop the qualifier |
+| `gates.css:326` | `html[data-b3-a1=fixed] .wg-igf` | box-shadow: inset 0 3px 4px -2px rgba(0, 0, 0, .45) | live switch — drop the qualifier |
+| `gates.css:327` | `html[data-b3-a1=fixed] .wg-igb` | box-shadow: none; border-left: 1px solid var(--rule2) | live switch — drop the qualifier |
+| `gates.css:328` | `html[data-b3-a1=fixed] .wg-code` | cursor: pointer | live switch — drop the qualifier |
+| `gates.css:329` | `html[data-b3-a1=fixed] .wg-code:hover .wg-ig` | box-shadow: none | live switch — drop the qualifier |
+| `gates.css:330` | `html[data-b3-a1=fixed] .wg-code:hover .wg-ig::after` | box-shadow: var(--b3-ring) | live switch — drop the qualifier |
+| `gates.css:518` | `.exs` | display: grid; gap: 10px; margin: 0; padding: 0; list-style: none | unswitched |
+| `gates.css:688` | `.pk-os` | grid-template-columns: 1fr | unswitched |
+| `gates.css:689` | `.pidx-l` | grid-template-columns: 1fr | unswitched |
+| `gates.css:701` | `.pb` | gap: 52px | unswitched |
+| `gates.css:742` | `.pb input, .pb textarea` | caret-color: var(--staged) | unswitched |
+| `gates.css:743` | `.pb, .g-stage, .b3-sd-list, .dk:where(:not(.diff-r>*)), .pidx-l` | scrollbar-color: var(--rule2) transparent; scrollbar-width: thin | unswitched |
+| `gates.css:779` | `.dw-f .btn:has(> .ic)` | display:inline-flex;align-items:center;justify-content:center;gap:6px | unswitched |
+| `gates.css:780` | `.dw-f .btn` | padding-inline:18px | unswitched |
+| `gates.css:781` | `.dw-f .btn > .ic` | width:14px;height:14px;flex:none | unswitched |
+| `gates.css:783` | `.dw-f .btn > .ic:first-child` | margin-left:-4px | unswitched |
+| `gates.css:807` | `html:not([data-kbd]) .drawer .x:focus-visible` | outline: none; box-shadow: none | unswitched |
+| `gates.css:815` | `.dw-nav` | margin-left:auto;flex:none;display:flex;align-items:center;gap:6px | unswitched |
+| `gates.css:816` | `.dw-h .dw-nav .x` | margin-left:0;width:auto;min-width:28px;display:inline-flex;align-items:center;justify-content:center;gap:0;padding:0 6px; transition:gap 360ms cubic-bezier(.4,0,.2,1),padding 360ms cubic-bezier(.4,0,.2,1),color 200ms ea | unswitched |
+| `gates.css:818` | `.dw-h .dw-nav .x > b` | display:inline-block;max-width:0;overflow:hidden;opacity:0;white-space:nowrap;font:600 12px/1 var(--ui); transform:translateX(-3px);transition:max-width 360ms cubic-bezier(.4,0,.2,1),opacity 240ms ease 60ms,transform 360 | unswitched |
+| `gates.css:820` | `.dw-h .dw-nav .x:hover,.dw-h .dw-nav .x:focus-visible` | gap:6px;padding:0 10px 0 7px | unswitched |
+| `gates.css:821` | `.dw-h .dw-nav .x:hover > b,.dw-h .dw-nav .x:focus-visible > b` | max-width:3.4em;opacity:1;transform:none | unswitched |
+| `gates.css:822` | `.dw-h .dw-nav .x,.dw-h .dw-nav .x > b` | transition:none | unswitched |
 | `b2.css:10` | `.ic` | width:16px;height:16px;flex:none | unswitched |
 | `b2.css:11` | `.pb` | max-width:1148px;margin:0 auto;padding:44px 32px 160px;display:grid;gap:96px;position:relative;z-index:1;box-sizing:content-box | unswitched |
 | `b2.css:23` | `.pb-seg.seg:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *))` | position:relative;display:inline-flex | unswitched |

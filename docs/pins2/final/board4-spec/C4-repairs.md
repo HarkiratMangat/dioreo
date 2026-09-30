@@ -12,7 +12,7 @@ status: live
 
 ### C4 stage
 
-68 distinct signatures on screen; 68 not already specced above.
+75 distinct signatures on screen; 75 not already specced above.
 
 
 ### `section.panel`
@@ -21,7 +21,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-1` · rendered **1148×1129** · 1 instance look like this
+`C4-1` · rendered **1148×1267** · 1 instance look like this
 
 ```html
 <section class="panel"><div class="ph"><span class="t">Armory</span><div class="seg" role="tablist" aria-label="View"><button type="button" role="tab" aria-selected="false">⟨svg.ic⟩Tier board</button><button type="button" role="tab" aria-selected="false">⟨svg.ic⟩Compare</button></div><button type="button" class="b3-rv on warn" aria-pressed="true"><span class="b3-rv-n">5</span><span class="b3-nw"><span class="b3-rv-w"
@@ -30,30 +30,30 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| justify-self | `stretch` | `stretch` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3724 |
-| width | `auto` | `1148px` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3724 |
-| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0 22px` | `` | .panel · app.css:723 |
-| margin-top | `0px` | `0px` | .panel · app.css:723 |
+| justify-self | `stretch` | `stretch` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3716 |
+| width | `auto` | `1148px` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3716 |
+| min-width | `0px` | `0px` | main .panel, main section · app.css:683 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| margin | `0 22px` | `` | .panel · app.css:726 |
+| margin-top | `0px` | `0px` | .panel · app.css:726 |
 | margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:103 |
-| margin-bottom | `0px` | `0px` | .panel · app.css:723 |
+| margin-bottom | `0px` | `0px` | .panel · app.css:726 |
 | margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:103 |
-| border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
-| border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
-| background | `var(--paper)` | `` | .panel · app.css:723 |
-| background-color | `` | `rgb(23, 30, 36)` | .panel · app.css:723 |
-| background-image | `` | `none` | .panel · app.css:723 |
-| box-shadow | `0 1px 0 rgba(255,255,255,.03) inset,0 18px 42px -30px var(--scrim-90)` | `rgba(255, 255, 255, 0.03) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.9) 0px 18px 42px -30px` | .panel, .identity · app.css:1631 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| border | `1px solid var(--rule2)` | `` | .panel · app.css:2853 |
+| border-radius | `var(--rad-2)` | `` | .panel · app.css:726 |
+| background | `var(--paper)` | `` | .panel · app.css:726 |
+| background-color | `` | `rgb(23, 30, 36)` | .panel · app.css:726 |
+| background-image | `` | `none` | .panel · app.css:726 |
+| box-shadow | `0 1px 0 rgba(255,255,255,.03) inset,0 18px 42px -30px var(--scrim-90)` | `rgba(255, 255, 255, 0.03) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.9) 0px 18px 42px -30px` | .panel, .identity · app.css:1638 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .panel · app.css:723 |
-| overflow-x | `hidden` | `hidden` | .panel · app.css:723 |
-| overflow-y | `hidden` | `hidden` | .panel · app.css:723 |
+| overflow | `hidden` | `` | .panel · app.css:726 |
+| overflow-x | `hidden` | `hidden` | .panel · app.css:726 |
+| overflow-y | `hidden` | `hidden` | .panel · app.css:726 |
 
 
 ### `div.ph`
@@ -70,26 +70,26 @@ inside `.panel` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .ph · app.css:726 |
-| gap | `12px` | `` | .ph · app.css:726 |
-| column-gap | `12px` | `12px` | .ph · app.css:726 |
-| row-gap | `12px` | `12px` | .ph · app.css:726 |
-| flex-wrap | `wrap` | `wrap` | .ph · app.css:726 |
-| align-items | `center` | `center` | .ph · app.css:726 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px 14px` | `` | .ph · app.css:726 |
-| padding-top | `10px` | `10px` | .ph · app.css:726 |
-| padding-right | `14px` | `14px` | .ph · app.css:726 |
-| padding-bottom | `10px` | `10px` | .ph · app.css:726 |
-| padding-left | `14px` | `14px` | .ph · app.css:726 |
-| border-bottom | `1px solid var(--rule)` | `` | .ph · app.css:726 |
-| background | `var(--raised)` | `` | .ph · app.css:726 |
-| background-color | `` | `rgb(31, 39, 46)` | .ph · app.css:726 |
-| background-image | `` | `none` | .ph · app.css:726 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `flex` | `flex` | .ph · app.css:729 |
+| gap | `12px` | `` | .ph · app.css:729 |
+| column-gap | `12px` | `12px` | .ph · app.css:729 |
+| row-gap | `12px` | `12px` | .ph · app.css:729 |
+| flex-wrap | `wrap` | `wrap` | .ph · app.css:729 |
+| align-items | `center` | `center` | .ph · app.css:729 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `10px 14px` | `` | .ph · app.css:729 |
+| padding-top | `10px` | `10px` | .ph · app.css:729 |
+| padding-right | `14px` | `14px` | .ph · app.css:729 |
+| padding-bottom | `10px` | `10px` | .ph · app.css:729 |
+| padding-left | `14px` | `14px` | .ph · app.css:729 |
+| border-bottom | `1px solid var(--rule)` | `` | .ph · app.css:729 |
+| background | `var(--raised)` | `` | .ph · app.css:729 |
+| background-color | `` | `rgb(31, 39, 46)` | .ph · app.css:729 |
+| background-image | `` | `none` | .ph · app.css:729 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -109,14 +109,14 @@ inside `.ph` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | `var(--t-micro)` | `9.5px` | .ph .t · app.css:2860 |
-| font-weight | `700` | `700` | .ph .t · app.css:727 |
-| line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
-| letter-spacing | `var(--tr-micro)` | `0.95px` | .ph .t · app.css:2860 |
-| text-transform | `uppercase` | `uppercase` | .ph .t · app.css:727 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .ph .t · app.css:727 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | `var(--t-micro)` | `9.5px` | .ph .t · app.css:2867 |
+| font-weight | `700` | `700` | .ph .t · app.css:730 |
+| line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:617 |
+| letter-spacing | `var(--tr-micro)` | `0.95px` | .ph .t · app.css:2867 |
+| text-transform | `uppercase` | `uppercase` | .ph .t · app.css:730 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .ph .t · app.css:730 |
 
 
 ### `div.seg[role=tablist]`
@@ -133,39 +133,39 @@ inside `.ph` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .seg · app.css:731 |
-| gap | `2px` | `` | .seg · app.css:731 |
-| column-gap | `2px` | `2px` | .seg · app.css:731 |
-| row-gap | `2px` | `2px` | .seg · app.css:731 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `3px` | `` | .seg · app.css:4768 |
-| padding-top | `3px` | `3px` | .seg · app.css:4768 |
-| padding-right | `3px` | `3px` | .seg · app.css:4768 |
-| padding-bottom | `3px` | `3px` | .seg · app.css:4768 |
-| padding-left | `3px` | `3px` | .seg · app.css:4768 |
-| border | `1px solid var(--rule)` | `` | .seg · app.css:731 |
-| border-radius | `var(--rad-pill)` | `` | .seg · app.css:4768 |
-| background | `var(--sunk)` | `` | .seg · app.css:731 |
-| background-color | `` | `rgb(11, 15, 18)` | .seg · app.css:731 |
-| background-image | `` | `none` | .seg · app.css:731 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `flex` | `flex` | .seg · app.css:734 |
+| gap | `2px` | `` | .seg · app.css:734 |
+| column-gap | `2px` | `2px` | .seg · app.css:734 |
+| row-gap | `2px` | `2px` | .seg · app.css:734 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `3px` | `` | .seg · app.css:4778 |
+| padding-top | `3px` | `3px` | .seg · app.css:4778 |
+| padding-right | `3px` | `3px` | .seg · app.css:4778 |
+| padding-bottom | `3px` | `3px` | .seg · app.css:4778 |
+| padding-left | `3px` | `3px` | .seg · app.css:4778 |
+| border | `1px solid var(--rule)` | `` | .seg · app.css:734 |
+| border-radius | `var(--rad-pill)` | `` | .seg · app.css:4778 |
+| background | `var(--sunk)` | `` | .seg · app.css:734 |
+| background-color | `` | `rgb(11, 15, 18)` | .seg · app.css:734 |
+| background-image | `` | `none` | .seg · app.css:734 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
 ### `svg.ic`
 
-inside `.—` · 49 on screen · **11 looks**
+inside `.—` · 52 on screen · **12 looks**
 
-#### look 1 of 11
+#### look 1 of 12
 
-`C4-21` · rendered **16×13** · 4 instances look like this · aria-hidden="true"
+`C4-21` · rendered **16×13** · 5 instances look like this · aria-hidden="true"
 
 ```html
-<svg class="ic" aria-hidden="true"><use href="#i-layers"></use></svg>
+<svg class="ic" aria-hidden="true"><use href="#i-image-off"></use></svg>
 ```
 
 | property | winning declaration | computed | from |
@@ -202,11 +202,11 @@ inside `.—` · 49 on screen · **11 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6474 |
 
-#### look 2 of 11
+#### look 2 of 12
 
-`C4-43` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
+`C4-47` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-lock"></use></svg>
@@ -214,27 +214,27 @@ inside `.—` · 49 on screen · **11 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
+| display | `inline-block` | `block` | .ic · app.css:6467 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3662 |
-| height | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3662 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
+| width | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3654 |
+| height | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3654 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
 | font-style | ↑ `italic` | `italic` | inherited · i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| color | ↑ `var(--warn)` | `rgb(255, 122, 69)` | inherited · .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3663 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| color | ↑ `var(--warn)` | `rgb(255, 122, 69)` | inherited · .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3655 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 3 of 11
+#### look 3 of 12
 
-`C4-57` · rendered **15×15** · 3 instances look like this · aria-hidden="true"
+`C4-61` · rendered **15×15** · 7 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-code"></use></svg>
@@ -242,23 +242,23 @@ inside `.—` · 49 on screen · **11 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
+| display | `inline-block` | `block` | .ic · app.css:6467 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `15px` | `15px` | .b3-tk-ic .ic · b3/board.css:3158 |
-| height | `15px` | `15px` | .b3-tk-ic .ic · b3/board.css:3158 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| width | `15px` | `15px` | .b3-tk-ic .ic · b3/board.css:3161 |
+| height | `15px` | `15px` | .b3-tk-ic .ic · b3/board.css:3161 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--warn)` | `rgb(255, 122, 69)` | inherited · .b3-tk-ic[data-sev="blocks"] · b3/board.css:3157 |
+| color | ↑ `var(--warn)` | `rgb(255, 122, 69)` | inherited · .b3-tk-ic:is([data-sev="blocks"], [data-sev="thin"]) · b3/board.css:5309 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 4 of 11
+#### look 4 of 12
 
-`C4-75` · rendered **14×14** · 6 instances look like this · aria-hidden="true"
+`C4-91` · rendered **14×14** · 6 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg>
@@ -266,11 +266,11 @@ inside `.—` · 49 on screen · **11 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
+| display | `inline-block` | `block` | .ic · app.css:6467 |
 | flex | `none` | `` | .ic · b2.css:10 |
 | width | `14px` | `14px` | .pb-pill .ic · b2.css:238 |
 | height | `14px` | `14px` | .pb-pill .ic · b2.css:238 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | ↑ `500 var(--t-sm)/1 var(--ui)` | `` | inherited · .pb-pill · b2.css:237 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .pb-pill · b2.css:237 |
 | font-size | ↑ `` | `12px` | inherited · .pb-pill · b2.css:237 |
@@ -284,9 +284,9 @@ inside `.—` · 49 on screen · **11 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 5 of 11
+#### look 5 of 12
 
-`C4-77` · rendered **14×14** · 10 instances look like this · aria-hidden="true"
+`C4-93` · rendered **14×14** · 10 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-wrench"></use></svg>
@@ -294,11 +294,11 @@ inside `.—` · 49 on screen · **11 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
+| display | `inline-block` | `block` | .ic · app.css:6467 |
 | flex | `none` | `` | .ic · b2.css:10 |
 | width | `14px` | `14px` | .b3-btn2.sm .ic · b3/board.css:1354 |
 | height | `14px` | `14px` | .b3-btn2.sm .ic · b3/board.css:1354 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-btn2 · b3/board.css:801 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-btn2 · b3/board.css:801 |
 | font-size | ↑ `` | `12px` | inherited · .b3-btn2 · b3/board.css:801 |
@@ -314,11 +314,11 @@ inside `.—` · 49 on screen · **11 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-btn2 · b3/board.css:801 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6474 |
 
-#### look 6 of 11
+#### look 6 of 12
 
-`C4-131` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
+`C4-167` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"></use></svg>
@@ -326,25 +326,25 @@ inside `.—` · 49 on screen · **11 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
+| display | `inline-block` | `block` | .ic · app.css:6467 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3662 |
-| height | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3662 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
+| width | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3654 |
+| height | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3654 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
 | font-style | ↑ `italic` | `italic` | inherited · i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-tk-sh[data-sev="thin"] > i · b3/board.css:3664 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-tk-sh[data-sev="thin"] > i · b3/board.css:5311 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-*5 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*6 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `button.b3-rv.on.warn`
@@ -368,13 +368,13 @@ inside `.ph` · 1 on screen · **1 look**
 | row-gap | `10px` | `10px` | .b3-rv · b3/board.css:1258 |
 | align-items | `center` | `center` | .b3-rv · b3/board.css:1258 |
 | height | `34px` | `34px` | .b3-rv · b3/board.css:1258 |
-| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 14px 0 6px` | `` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4205 |
-| padding-top | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4205 |
-| padding-right | `14px` | `14px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4205 |
-| padding-bottom | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4205 |
-| padding-left | `6px` | `6px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4205 |
+| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
+| padding | `0 14px 0 6px` | `` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4197 |
+| padding-top | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4197 |
+| padding-right | `14px` | `14px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4197 |
+| padding-bottom | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4197 |
+| padding-left | `6px` | `6px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4197 |
 | margin-left | `auto` | `677.578px` | .b3-rv · b3/board.css:1258 |
 | border | `0` | `` | .b3-rv · b3/board.css:1258 |
 | border-radius | `var(--rad-pill)` | `` | .b3-rv · b3/board.css:1258 |
@@ -382,13 +382,13 @@ inside `.ph` · 1 on screen · **1 look**
 | background-color | `!important !important` | `color(srgb 1 0.478431 0.270588 / 0.16)` | .b4 :is(.b3-fc, .b3-rv, .cx-k, .b3-xt-c):is([aria-pressed="true"], [aria-checked="true"],  · b4/classes.css:219 |
 | background-image | `!important !important` | `none` | .b4 :is(.b3-fc, .b3-rv, .cx-k, .b3-xt-c):is([aria-pressed="true"], [aria-checked="true"],  · b4/classes.css:219 |
 | box-shadow | `inset 0 0 0 1px var(--c) !important !important` | `rgb(255, 122, 69) 0px 0px 0px 1px inset` | .b4 :is(.b3-fc, .b3-rv, .cx-k, .b3-xt-c):is([aria-pressed="true"], [aria-checked="true"],  · b4/classes.css:219 |
-| font | `inherit` | `` | button · app.css:621 |
-| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
-| font-size | `inherit` | `13px` | button · app.css:621 |
-| font-weight | `inherit` | `400` | button · app.css:621 |
-| font-style | `inherit` | `normal` | button · app.css:621 |
-| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
-| line-height | `inherit` | `19.5px` | button · app.css:621 |
+| font | `inherit` | `` | button · app.css:624 |
+| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:624 |
+| font-size | `inherit` | `13px` | button · app.css:624 |
+| font-weight | `inherit` | `400` | button · app.css:624 |
+| font-style | `inherit` | `normal` | button · app.css:624 |
+| font-variant-numeric | `inherit` | `normal` | button · app.css:624 |
+| line-height | `inherit` | `19.5px` | button · app.css:624 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-rv.warn · b3/board.css:1272 |
@@ -397,7 +397,7 @@ inside `.ph` · 1 on screen · **1 look**
 | overflow-y | `hidden` | `hidden` | .b3-rv.warn · b3/board.css:1272 |
 | transition | `background var(--b3-d1),box-shadow var(--b3-d1)` | `` | .b3-rv · b3/board.css:1258 |
 | cursor | `pointer` | `pointer` | .b3-rv · b3/board.css:1258 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes
 
@@ -437,7 +437,7 @@ inside `.b3-rv` · 1 on screen · **1 look**
 | place-items | `center` | `` | .b3-rv-n · b3/board.css:1265 |
 | min-width | `22px` | `22px` | .b3-rv-n · b3/board.css:1265 |
 | height | `22px` | `22px` | .b3-rv-n · b3/board.css:1265 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 7px` | `` | .b3-rv-n · b3/board.css:1265 |
 | padding-top | `0px` | `0px` | .b3-rv-n · b3/board.css:1265 |
 | padding-right | `7px` | `7px` | .b3-rv-n · b3/board.css:1265 |
@@ -464,7 +464,7 @@ inside `.b3-rv` · 1 on screen · **1 look**
 
 ### `span.b3-nw`
 
-inside `.b3-rv` · 11 on screen · **4 looks**
+inside `.b3-rv` · 12 on screen · **4 looks**
 
 #### look 1 of 4
 
@@ -477,12 +477,12 @@ inside `.b3-rv` · 11 on screen · **4 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-nw · b3/board.css:950 |
-| gap | `7px` | `` | .b3-rv .b3-nw · b3/board.css:4206 |
-| column-gap | `7px` | `7px` | .b3-rv .b3-nw · b3/board.css:4206 |
-| row-gap | `7px` | `7px` | .b3-rv .b3-nw · b3/board.css:4206 |
+| gap | `7px` | `` | .b3-rv .b3-nw · b3/board.css:4198 |
+| column-gap | `7px` | `7px` | .b3-rv .b3-nw · b3/board.css:4198 |
+| row-gap | `7px` | `7px` | .b3-rv .b3-nw · b3/board.css:4198 |
 | align-items | `baseline` | `baseline` | .b3-nw · b3/board.css:950 |
 | min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `inherit` | `` | .b3-nw · b3/board.css:950 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nw · b3/board.css:950 |
 | font-size | `inherit` | `13px` | .b3-nw · b3/board.css:950 |
@@ -512,7 +512,7 @@ inside `.b3-rv` · 11 on screen · **4 looks**
 | row-gap | `7px` | `7px` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2051 |
 | align-items | `baseline` | `baseline` | .b3-nw · b3/board.css:950 |
 | min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `inherit` | `` | .b3-nw · b3/board.css:950 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nw · b3/board.css:950 |
 | font-size | `inherit` | `12px` | .b3-nw · b3/board.css:950 |
@@ -529,10 +529,10 @@ inside `.b3-rv` · 11 on screen · **4 looks**
 
 #### look 3 of 4
 
-`C4-22` · rendered **149×12** · 4 instances look like this
+`C4-22` · rendered **96×12** · 5 instances look like this
 
 ```html
-<span class="b3-nw">2 or fewer attachments<em>1</em></span>
+<span class="b3-nw">Missing image<em>1</em></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -543,7 +543,7 @@ inside `.b3-rv` · 11 on screen · **4 looks**
 | row-gap | `7px` | `7px` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2051 |
 | align-items | `baseline` | `baseline` | .b3-nw · b3/board.css:950 |
 | min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `inherit` | `` | .b3-nw · b3/board.css:950 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nw · b3/board.css:950 |
 | font-size | `inherit` | `12px` | .b3-nw · b3/board.css:950 |
@@ -560,7 +560,7 @@ inside `.b3-rv` · 11 on screen · **4 looks**
 
 #### look 4 of 4
 
-`C4-183` · rendered **0×0** · 5 instances look like this
+`C4-221` · rendered **0×0** · 5 instances look like this
 
 ```html
 <span class="b3-nw"><b>PHARO</b><small>SMG</small></span>
@@ -574,7 +574,7 @@ inside `.b3-rv` · 11 on screen · **4 looks**
 | row-gap | `10px` | `10px` | .b3-sd-gh .b3-nw, .b3-wg-h .b3-nw · b3/board.css:951 |
 | align-items | `baseline` | `baseline` | .b3-nw · b3/board.css:950 |
 | min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `inherit` | `` | .b3-nw · b3/board.css:950 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nw · b3/board.css:950 |
 | font-size | `inherit` | `13px` | .b3-nw · b3/board.css:950 |
@@ -601,7 +601,7 @@ inside `.b3-nw` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-rv-w · b3/board.css:1261 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-rv-w · b3/board.css:1261 |
 | font-size | `` | `12px` | .b3-rv-w · b3/board.css:1261 |
@@ -631,7 +631,7 @@ inside `.b3-nw` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | margin-right | `calc(var(--b3-tr) * -1)` | `-1.045px` | .b3-rv-s · b3/board.css:1262 |
 | font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-rv-s · b3/board.css:1262 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-rv-s · b3/board.css:1262 |
@@ -653,10 +653,10 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-12` · rendered **1146×1066** · 1 instance look like this
+`C4-12` · rendered **1146×1204** · 1 instance look like this
 
 ```html
-<div class="b3-rp" id="b3-repairs"><div class="b3-rp-h"><div class="b3-rp-t"><b>5 of 125 builds need work</b></div><div class="b3-rp-f" role="group" aria-label="Show builds with"><button type="button" class="b3-fc" aria-pressed="true"><span class="b3-nw">All<em>5</em></span></button><button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">2 or fewer attachments<em>1</em></span></butto
+<div class="b3-rp" id="b3-repairs"><div class="b3-rp-h"><div class="b3-rp-t"><b>5 of 125 builds need work</b></div><div class="b3-rp-f" role="group" aria-label="Show builds with"><button type="button" class="b3-fc" aria-pressed="true"><span class="b3-nw">All<em>5</em></span></button><button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">Missing image<em>1</em></span></button><button
 ```
 
 | property | winning declaration | computed | from |
@@ -665,17 +665,17 @@ inside `.panel` · 1 on screen · **1 look**
 | gap | `16px` | `` | .b3-rp · b3/board.css:1223 |
 | column-gap | `16px` | `16px` | .b3-rp · b3/board.css:1223 |
 | row-gap | `16px` | `16px` | .b3-rp · b3/board.css:1223 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `20px 18px 22px` | `` | .b3-rp · b3/board.css:1223 |
 | padding-top | `20px` | `20px` | .b3-rp · b3/board.css:1223 |
 | padding-right | `18px` | `18px` | .b3-rp · b3/board.css:1223 |
 | padding-bottom | `22px` | `22px` | .b3-rp · b3/board.css:1223 |
 | padding-left | `18px` | `18px` | .b3-rp · b3/board.css:1223 |
 | border-top | `1px solid var(--rule)` | `` | .b3-rp · b3/board.css:1223 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -689,7 +689,7 @@ inside `.b3-rp` · 1 on screen · **1 look**
 `C4-13` · rendered **1110×32** · 1 instance look like this
 
 ```html
-<div class="b3-rp-h"><div class="b3-rp-t"><b>5 of 125 builds need work</b></div><div class="b3-rp-f" role="group" aria-label="Show builds with"><button type="button" class="b3-fc" aria-pressed="true"><span class="b3-nw">All<em>5</em></span></button><button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">2 or fewer attachments<em>1</em></span></button><button type="button" class="b3-f
+<div class="b3-rp-h"><div class="b3-rp-t"><b>5 of 125 builds need work</b></div><div class="b3-rp-f" role="group" aria-label="Show builds with"><button type="button" class="b3-fc" aria-pressed="true"><span class="b3-nw">All<em>5</em></span></button><button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">Missing image<em>1</em></span></button><button type="button" class="b3-fc warn" a
 ```
 
 | property | winning declaration | computed | from |
@@ -701,11 +701,11 @@ inside `.b3-rp` · 1 on screen · **1 look**
 | flex-wrap | `wrap` | `wrap` | .b3-rp-h · b3/board.css:1224 |
 | align-items | `center` | `center` | .b3-rp-h · b3/board.css:1224 |
 | justify-content | `space-between` | `space-between` | .b3-rp-h · b3/board.css:1224 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -728,20 +728,20 @@ inside `.b3-rp-h` · 1 on screen · **1 look**
 | gap | `6px` | `` | .b3-rp-t · b3/board.css:1225 |
 | column-gap | `6px` | `6px` | .b3-rp-t · b3/board.css:1225 |
 | row-gap | `6px` | `6px` | .b3-rp-t · b3/board.css:1225 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
 ### `b`
 
-inside `.b3-rp-t` · 39 on screen · **9 looks**
+inside `.b3-rp-t` · 43 on screen · **10 looks**
 
-#### look 1 of 9
+#### look 1 of 10
 
 `C4-15` · rendered **202×18** · 1 instance look like this · text “5 of 125 builds need work”
 
@@ -752,7 +752,7 @@ inside `.b3-rp-t` · 39 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `600 var(--t-lg)/1.1 var(--ui)` | `` | .b3-rp-t b · b3/board.css:1226 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-rp-t b · b3/board.css:1226 |
 | font-size | `` | `16.5px` | .b3-rp-t b · b3/board.css:1226 |
@@ -763,9 +763,9 @@ inside `.b3-rp-t` · 39 on screen · **9 looks**
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-rp-t b · b3/board.css:1226 |
 
-#### look 2 of 9
+#### look 2 of 10
 
-`C4-44` · rendered **103×15** · 3 instances look like this · text “Blocks sharing”
+`C4-48` · rendered **103×15** · 3 instances look like this · text “Blocks sharing”
 
 ```html
 <b>Blocks sharing</b>
@@ -774,21 +774,21 @@ inside `.b3-rp-t` · 39 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
 | font-weight | `bolder` | `900` | strong, b · user-agent:? |
-| font-style | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
+| font-style | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
 
-#### look 3 of 9
+#### look 3 of 10
 
-`C4-51` · rendered **46×16** · 6 instances look like this · text “PHARO”
+`C4-55` · rendered **46×16** · 6 instances look like this · text “PHARO”
 
 ```html
 <b>PHARO</b>
@@ -797,20 +797,20 @@ inside `.b3-rp-t` · 39 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-md,15px)/1.1 var(--ui)` | `` | .b3-tk-id b · b3/board.css:3147 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-id b · b3/board.css:3147 |
-| font-size | `` | `14.5px` | .b3-tk-id b · b3/board.css:3147 |
-| font-weight | `` | `600` | .b3-tk-id b · b3/board.css:3147 |
-| font-style | `` | `normal` | .b3-tk-id b · b3/board.css:3147 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id b · b3/board.css:3147 |
-| line-height | `` | `15.95px` | .b3-tk-id b · b3/board.css:3147 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | `600 var(--t-md,15px)/1.1 var(--ui)` | `` | .b3-tk-id b · b3/board.css:3150 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-id b · b3/board.css:3150 |
+| font-size | `` | `14.5px` | .b3-tk-id b · b3/board.css:3150 |
+| font-weight | `` | `600` | .b3-tk-id b · b3/board.css:3150 |
+| font-style | `` | `normal` | .b3-tk-id b · b3/board.css:3150 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id b · b3/board.css:3150 |
+| line-height | `` | `15.95px` | .b3-tk-id b · b3/board.css:3150 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-id b · b3/board.css:3147 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-id b · b3/board.css:3150 |
 
-#### look 4 of 9
+#### look 4 of 10
 
-`C4-59` · rendered **457×15** · 6 instances look like this · text “No gunsmith code”
+`C4-63` · rendered **457×15** · 7 instances look like this · text “No gunsmith code”
 
 ```html
 <b>No gunsmith code</b>
@@ -819,20 +819,43 @@ inside `.b3-rp-t` · 39 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-sm)/1.25 var(--ui)` | `` | .b3-tk-t b · b3/board.css:3160 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-t b · b3/board.css:3160 |
-| font-size | `` | `12px` | .b3-tk-t b · b3/board.css:3160 |
-| font-weight | `` | `600` | .b3-tk-t b · b3/board.css:3160 |
-| font-style | `` | `normal` | .b3-tk-t b · b3/board.css:3160 |
-| font-variant-numeric | `` | `normal` | .b3-tk-t b · b3/board.css:3160 |
-| line-height | `` | `15px` | .b3-tk-t b · b3/board.css:3160 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | `600 var(--t-sm)/1.25 var(--ui)` | `` | .b3-tk-t b · b3/board.css:3163 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-t b · b3/board.css:3163 |
+| font-size | `` | `12px` | .b3-tk-t b · b3/board.css:3163 |
+| font-weight | `` | `600` | .b3-tk-t b · b3/board.css:3163 |
+| font-style | `` | `normal` | .b3-tk-t b · b3/board.css:3163 |
+| font-variant-numeric | `` | `normal` | .b3-tk-t b · b3/board.css:3163 |
+| line-height | `` | `15px` | .b3-tk-t b · b3/board.css:3163 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-t b · b3/board.css:3160 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-t b · b3/board.css:3163 |
 
-#### look 5 of 9
+#### look 5 of 10
 
-`C4-184` · rendered **0×0** · 5 instances look like this · text “PHARO”
+`C4-80` · rendered **65×11** · 3 instances look like this · text “4 of 5 empty”
+
+```html
+<b>4 of 5 empty</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | `700 var(--t-xs)/1 var(--ui)` | `` | .b3-fh-tag.two b · b3/board.css:5202 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-fh-tag.two b · b3/board.css:5202 |
+| font-size | `` | `10.5px` | .b3-fh-tag.two b · b3/board.css:5202 |
+| font-weight | `` | `700` | .b3-fh-tag.two b · b3/board.css:5202 |
+| font-style | `` | `normal` | .b3-fh-tag.two b · b3/board.css:5202 |
+| font-variant-numeric | `` | `normal` | .b3-fh-tag.two b · b3/board.css:5202 |
+| line-height | `` | `10.5px` | .b3-fh-tag.two b · b3/board.css:5202 |
+| letter-spacing | — | `normal` | initial |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-t b · b3/board.css:3163 |
+
+#### look 6 of 10
+
+`C4-222` · rendered **0×0** · 5 instances look like this · text “PHARO”
 
 ```html
 <b>PHARO</b>
@@ -841,7 +864,7 @@ inside `.b3-rp-t` · 39 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `600 var(--t-base)/1 var(--ui)` | `` | .b3-wg-h b · b3/board.css:1289 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-wg-h b · b3/board.css:1289 |
 | font-size | `` | `13px` | .b3-wg-h b · b3/board.css:1289 |
@@ -852,29 +875,7 @@ inside `.b3-rp-t` · 39 on screen · **9 looks**
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-wg-h b · b3/board.css:1289 |
 
-#### look 6 of 9
-
-`C4-188` · rendered **0×0** · 3 instances look like this · text “1 unshareable”
-
-```html
-<b>1 unshareable</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `700 var(--t-xs)/1 var(--data)` | `` | .b3-wg-p b · b3/board.css:1293 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-wg-p b · b3/board.css:1293 |
-| font-size | `` | `10.5px` | .b3-wg-p b · b3/board.css:1293 |
-| font-weight | `` | `700` | .b3-wg-p b · b3/board.css:1293 |
-| font-style | `` | `normal` | .b3-wg-p b · b3/board.css:1293 |
-| font-variant-numeric | `` | `normal` | .b3-wg-p b · b3/board.css:1293 |
-| line-height | `` | `10.5px` | .b3-wg-p b · b3/board.css:1293 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-wg-p b · b3/board.css:1293 |
-
-*3 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*4 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `div.b3-rp-f[role=group]`
@@ -883,10 +884,10 @@ inside `.b3-rp-h` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-16` · rendered **723×32** · 1 instance look like this · aria-label="Show builds with" role="group"
+`C4-16` · rendered **869×32** · 1 instance look like this · aria-label="Show builds with" role="group"
 
 ```html
-<div class="b3-rp-f" role="group" aria-label="Show builds with"><button type="button" class="b3-fc" aria-pressed="true"><span class="b3-nw">All<em>5</em></span></button><button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">2 or fewer attachments<em>1</em></span></button><button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">Near-duplicate<em>2</em
+<div class="b3-rp-f" role="group" aria-label="Show builds with"><button type="button" class="b3-fc" aria-pressed="true"><span class="b3-nw">All<em>5</em></span></button><button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">Missing image<em>1</em></span></button><button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">2 or fewer attachments<em>1</em>
 ```
 
 | property | winning declaration | computed | from |
@@ -896,11 +897,11 @@ inside `.b3-rp-h` · 1 on screen · **1 look**
 | column-gap | `6px` | `6px` | .b3-rp-f · b3/board.css:1228 |
 | row-gap | `6px` | `6px` | .b3-rp-f · b3/board.css:1228 |
 | flex-wrap | `wrap` | `wrap` | .b3-rp-f · b3/board.css:1228 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -925,8 +926,8 @@ inside `.b3-rp-f` · 1 on screen · **1 look**
 | row-gap | `7px` | `7px` | .b3-fc · b3/board.css:1229 |
 | align-items | `center` | `center` | .b3-fc · b3/board.css:1229 |
 | height | `32px` | `32px` | .b3-fc · b3/board.css:1229 |
-| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
 | padding | `0 12px 0 10px` | `` | .b3-fc · b3/board.css:2335 |
 | padding-top | `0px` | `0px` | .b3-fc · b3/board.css:2335 |
 | padding-right | `12px` | `12px` | .b3-fc · b3/board.css:2335 |
@@ -951,7 +952,7 @@ inside `.b3-rp-f` · 1 on screen · **1 look**
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-fc[aria-pressed="true"] · b3/board.css:1244 |
 | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` | `` | .b3-fc · b3/board.css:1229 |
 | cursor | `pointer` | `pointer` | .b3-fc · b3/board.css:1229 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -987,9 +988,9 @@ inside `.b3-rp-f` · 1 on screen · **1 look**
 
 ### `em`
 
-inside `.b3-nw` · 18 on screen · **7 looks**
+inside `.b3-nw` · 24 on screen · **8 looks**
 
-#### look 1 of 7
+#### look 1 of 8
 
 `C4-19` · rendered **6×11** · 1 instance look like this · text “5”
 
@@ -1000,11 +1001,11 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-fc em · b3/board.css:1231 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fc em · b3/board.css:1231 |
 | font-size | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
-| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4779 |
+| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4771 |
 | font-style | `normal` | `normal` | .b3-fc em · b3/board.css:1231 |
 | font-variant-numeric | `` | `normal` | .b3-fc em · b3/board.css:1231 |
 | line-height | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
@@ -1012,12 +1013,12 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `oklch(from var(--c) max(l, .8) c h)` | `oklch(0.8 0.175748 41.2014)` | .b3-fc[aria-pressed="true"] em · b3/board.css:4780 |
+| color | `oklch(from var(--c) max(l, .8) c h)` | `oklch(0.8 0.175748 41.2014)` | .b3-fc[aria-pressed="true"] em · b3/board.css:4772 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
-#### look 2 of 7
+#### look 2 of 8
 
-`C4-23` · rendered **6×11** · 4 instances look like this · text “1”
+`C4-23` · rendered **6×11** · 5 instances look like this · text “1”
 
 ```html
 <em>1</em>
@@ -1026,11 +1027,11 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-fc em · b3/board.css:1231 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fc em · b3/board.css:1231 |
 | font-size | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
-| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4779 |
+| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4771 |
 | font-style | `normal` | `normal` | .b3-fc em · b3/board.css:1231 |
 | font-variant-numeric | `` | `normal` | .b3-fc em · b3/board.css:1231 |
 | line-height | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
@@ -1038,12 +1039,12 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.76 0.175748 41.2014)` | .b3-fc em · b3/board.css:4779 |
+| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.76 0.175748 41.2014)` | .b3-fc em · b3/board.css:4771 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
-#### look 3 of 7
+#### look 3 of 8
 
-`C4-45` · rendered **62×24** · 1 instance look like this · text “3 builds”
+`C4-49` · rendered **62×24** · 1 instance look like this · text “3 builds”
 
 ```html
 <em>3 builds</em>
@@ -1051,21 +1052,21 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-tk-sh > em · b3/board.css:3665 |
-| align-items | `center` | `center` | .b3-tk-sh > em · b3/board.css:3665 |
-| place-items | `center` | `` | .b3-tk-sh > em · b3/board.css:3665 |
+| display | `inline-grid` | `grid` | .b3-tk-sh > em · b3/board.css:3657 |
+| align-items | `center` | `center` | .b3-tk-sh > em · b3/board.css:3657 |
+| place-items | `center` | `` | .b3-tk-sh > em · b3/board.css:3657 |
 | height | `24px` | `24px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 8px` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | padding-top | `0px` | `0px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | padding-right | `8px` | `8px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | padding-bottom | `0px` | `0px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | padding-left | `8px` | `8px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | border-radius | `6px` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
-| background | `color-mix(in srgb,var(--warn) 10%,var(--sunk))` | `` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3666 |
-| background-color | `` | `color(srgb 0.138824 0.100784 0.0905882)` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3666 |
-| background-image | `` | `none` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3666 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.35) 0px 0px 0px 1px inset` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3666 |
+| background | `color-mix(in srgb,var(--warn) 10%,var(--sunk))` | `` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3658 |
+| background-color | `` | `color(srgb 0.138824 0.100784 0.0905882)` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3658 |
+| background-image | `` | `none` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3658 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.35) 0px 0px 0px 1px inset` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3658 |
 | font | `600 12px/1 var(--ui)` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-size | `` | `12px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
@@ -1073,13 +1074,13 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | font-style | `` | `normal` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-variant-numeric | `` | `normal` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | line-height | `` | `12px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3666 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3658 |
 
-#### look 4 of 7
+#### look 4 of 8
 
-`C4-52` · rendered **38×12** · 5 instances look like this · text “Build 1”
+`C4-56` · rendered **38×12** · 5 instances look like this · text “Build 1”
 
 ```html
 <em>Build 1</em>
@@ -1088,20 +1089,44 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-tk-id em · b3/board.css:3148 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-id em · b3/board.css:3148 |
-| font-size | `` | `12px` | .b3-tk-id em · b3/board.css:3148 |
-| font-weight | `` | `600` | .b3-tk-id em · b3/board.css:3148 |
-| font-style | `normal` | `normal` | .b3-tk-id em · b3/board.css:3148 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id em · b3/board.css:3148 |
-| line-height | `` | `12px` | .b3-tk-id em · b3/board.css:3148 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-tk-id em · b3/board.css:3151 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-id em · b3/board.css:3151 |
+| font-size | `` | `12px` | .b3-tk-id em · b3/board.css:3151 |
+| font-weight | `` | `600` | .b3-tk-id em · b3/board.css:3151 |
+| font-style | `normal` | `normal` | .b3-tk-id em · b3/board.css:3151 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id em · b3/board.css:3151 |
+| line-height | `` | `12px` | .b3-tk-id em · b3/board.css:3151 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-id em · b3/board.css:3148 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-id em · b3/board.css:3151 |
 
-#### look 5 of 7
+#### look 5 of 8
 
-`C4-133` · rendered **62×24** · 1 instance look like this · text “2 builds”
+`C4-73` · rendered **42×10** · 5 instances look like this · text “Slots”
+
+```html
+<em>Slots</em>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding-right | `7px` | `7px` | .b3-fh-cmp em · b3/board.css:5177 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-fh-cmp em · b3/board.css:5177 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fh-cmp em · b3/board.css:5177 |
+| font-size | `` | `9.5px` | .b3-fh-cmp em · b3/board.css:5177 |
+| font-weight | `` | `600` | .b3-fh-cmp em · b3/board.css:5177 |
+| font-style | `normal` | `normal` | .b3-fh-cmp em · b3/board.css:5177 |
+| font-variant-numeric | `` | `normal` | .b3-fh-cmp em · b3/board.css:5177 |
+| line-height | `` | `9.5px` | .b3-fh-cmp em · b3/board.css:5177 |
+| letter-spacing | `0.14em` | `1.33px` | .b3-fh-cmp em · b3/board.css:5177 |
+| text-transform | `uppercase` | `uppercase` | .b3-fh-cmp em · b3/board.css:5177 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-fh-cmp em · b3/board.css:5177 |
+
+#### look 6 of 8
+
+`C4-169` · rendered **62×24** · 1 instance look like this · text “2 builds”
 
 ```html
 <em>2 builds</em>
@@ -1109,21 +1134,21 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-tk-sh > em · b3/board.css:3665 |
-| align-items | `center` | `center` | .b3-tk-sh > em · b3/board.css:3665 |
-| place-items | `center` | `` | .b3-tk-sh > em · b3/board.css:3665 |
+| display | `inline-grid` | `grid` | .b3-tk-sh > em · b3/board.css:3657 |
+| align-items | `center` | `center` | .b3-tk-sh > em · b3/board.css:3657 |
+| place-items | `center` | `` | .b3-tk-sh > em · b3/board.css:3657 |
 | height | `24px` | `24px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 8px` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | padding-top | `0px` | `0px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | padding-right | `8px` | `8px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | padding-bottom | `0px` | `0px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | padding-left | `8px` | `8px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | border-radius | `6px` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
-| background | `var(--sunk)` | `` | .b3-tk-sh > em · b3/board.css:3665 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-sh > em · b3/board.css:3665 |
-| background-image | `` | `none` | .b3-tk-sh > em · b3/board.css:3665 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-tk-sh > em · b3/board.css:3665 |
+| background | `var(--sunk)` | `` | .b3-tk-sh > em · b3/board.css:3657 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-sh > em · b3/board.css:3657 |
+| background-image | `` | `none` | .b3-tk-sh > em · b3/board.css:3657 |
+| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-tk-sh > em · b3/board.css:3657 |
 | font | `600 12px/1 var(--ui)` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-size | `` | `12px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
@@ -1131,45 +1156,23 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | font-style | `` | `normal` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-variant-numeric | `` | `normal` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | line-height | `` | `12px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-sec h4 em · b3/board.css:3356 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-sec h4 em · b3/board.css:3348 |
 
-#### look 6 of 7
-
-`C4-186` · rendered **0×0** · 5 instances look like this · text “1 build”
-
-```html
-<em>1 build</em>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-wg-h em · b3/board.css:1291 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-wg-h em · b3/board.css:1291 |
-| font-size | `` | `10.5px` | .b3-wg-h em · b3/board.css:1291 |
-| font-weight | `` | `500` | .b3-wg-h em · b3/board.css:1291 |
-| font-style | `normal` | `normal` | .b3-wg-h em · b3/board.css:1291 |
-| font-variant-numeric | `` | `normal` | .b3-wg-h em · b3/board.css:1291 |
-| line-height | `` | `10.5px` | .b3-wg-h em · b3/board.css:1291 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-wg-h em · b3/board.css:1291 |
-
-*1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*2 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `button.b3-fc.warn`
 
-inside `.b3-rp-f` · 4 on screen · **1 look**
+inside `.b3-rp-f` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-20` · rendered **194×32** · 4 instances look like this · aria-pressed="false" type="button"
+`C4-20` · rendered **141×32** · 5 instances look like this · aria-pressed="false" type="button"
 
 ```html
-<button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">2 or fewer attachments<em>1</em></span></button>
+<button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">Missing image<em>1</em></span></button>
 ```
 
 | property | winning declaration | computed | from |
@@ -1180,8 +1183,8 @@ inside `.b3-rp-f` · 4 on screen · **1 look**
 | row-gap | `7px` | `7px` | .b3-fc · b3/board.css:1229 |
 | align-items | `center` | `center` | .b3-fc · b3/board.css:1229 |
 | height | `32px` | `32px` | .b3-fc · b3/board.css:1229 |
-| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
 | padding | `0 12px 0 10px` | `` | .b3-fc · b3/board.css:2335 |
 | padding-top | `0px` | `0px` | .b3-fc · b3/board.css:2335 |
 | padding-right | `12px` | `12px` | .b3-fc · b3/board.css:2335 |
@@ -1206,7 +1209,7 @@ inside `.b3-rp-f` · 4 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-fc · b3/board.css:1229 |
 | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` | `` | .b3-fc · b3/board.css:1229 |
 | cursor | `pointer` | `pointer` | .b3-fc · b3/board.css:1229 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -1247,7 +1250,7 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-36` · rendered **1110×6** · 1 instance look like this · aria-label="3 builds block sharing, 2 are below stan" role="img"
+`C4-40` · rendered **1110×6** · 1 instance look like this · aria-label="3 builds block sharing, 2 are below stan" role="img"
 
 ```html
 <div class="b3-tk-bar" role="img" aria-label="3 builds block sharing, 2 are below standard, 120 pass"><i class="bl" style="flex: 3 1 0%;"></i><i class="th" style="flex: 2 1 0%;"></i><i class="ok" style="flex: 120 1 0%;"></i></div>
@@ -1255,27 +1258,27 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk-bar · b3/board.css:3134 |
-| gap | `2px` | `` | .b3-tk-bar · b3/board.css:3134 |
-| column-gap | `2px` | `2px` | .b3-tk-bar · b3/board.css:3134 |
-| row-gap | `2px` | `2px` | .b3-tk-bar · b3/board.css:3134 |
-| height | `6px` | `6px` | .b3-tk-bar · b3/board.css:3134 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `4px 0 16px` | `` | .b3-tk-bar · b3/board.css:3134 |
-| margin-top | `4px` | `4px` | .b3-tk-bar · b3/board.css:3134 |
-| margin-right | `0px` | `0px` | .b3-tk-bar · b3/board.css:3134 |
-| margin-bottom | `16px` | `16px` | .b3-tk-bar · b3/board.css:3134 |
-| margin-left | `0px` | `0px` | .b3-tk-bar · b3/board.css:3134 |
-| border-radius | `3px` | `` | .b3-tk-bar · b3/board.css:3134 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `flex` | `flex` | .b3-tk-bar · b3/board.css:3137 |
+| gap | `2px` | `` | .b3-tk-bar · b3/board.css:3137 |
+| column-gap | `2px` | `2px` | .b3-tk-bar · b3/board.css:3137 |
+| row-gap | `2px` | `2px` | .b3-tk-bar · b3/board.css:3137 |
+| height | `6px` | `6px` | .b3-tk-bar · b3/board.css:3137 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| margin | `4px 0 16px` | `` | .b3-tk-bar · b3/board.css:3137 |
+| margin-top | `4px` | `4px` | .b3-tk-bar · b3/board.css:3137 |
+| margin-right | `0px` | `0px` | .b3-tk-bar · b3/board.css:3137 |
+| margin-bottom | `16px` | `16px` | .b3-tk-bar · b3/board.css:3137 |
+| margin-left | `0px` | `0px` | .b3-tk-bar · b3/board.css:3137 |
+| border-radius | `3px` | `` | .b3-tk-bar · b3/board.css:3137 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-tk-bar · b3/board.css:3134 |
-| overflow-x | `hidden` | `hidden` | .b3-tk-bar · b3/board.css:3134 |
-| overflow-y | `hidden` | `hidden` | .b3-tk-bar · b3/board.css:3134 |
+| overflow | `hidden` | `` | .b3-tk-bar · b3/board.css:3137 |
+| overflow-x | `hidden` | `hidden` | .b3-tk-bar · b3/board.css:3137 |
+| overflow-y | `hidden` | `hidden` | .b3-tk-bar · b3/board.css:3137 |
 
 
 ### `i.bl`
@@ -1284,7 +1287,7 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-37` · rendered **27×6** · 1 instance look like this
+`C4-41` · rendered **27×6** · 1 instance look like this
 
 ```html
 <i class="bl" style="flex: 3 1 0%;"></i>
@@ -1294,17 +1297,17 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | — | `block` | initial |
 | flex | `3 1 0%` | `` | style attribute |
-| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3135 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3135 |
-| background | `var(--warn)` | `` | .b3-tk-bar .bl · b3/board.css:3136 |
-| background-color | `` | `rgb(255, 122, 69)` | .b3-tk-bar .bl · b3/board.css:3136 |
-| background-image | `` | `none` | .b3-tk-bar .bl · b3/board.css:3136 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3138 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3138 |
+| background | `var(--warn)` | `` | .b3-tk-bar .bl · b3/board.css:3139 |
+| background-color | `` | `rgb(255, 122, 69)` | .b3-tk-bar .bl · b3/board.css:3139 |
+| background-image | `` | `none` | .b3-tk-bar .bl · b3/board.css:3139 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -1315,7 +1318,7 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-38` · rendered **18×6** · 1 instance look like this
+`C4-42` · rendered **18×6** · 1 instance look like this
 
 ```html
 <i class="th" style="flex: 2 1 0%;"></i>
@@ -1325,17 +1328,17 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | — | `block` | initial |
 | flex | `2 1 0%` | `` | style attribute |
-| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3135 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3135 |
-| background | `color-mix(in srgb,var(--warn) 45%,var(--rule2))` | `` | .b3-tk-bar .th · b3/board.css:3137 |
-| background-color | `` | `color(srgb 0.575098 0.368431 0.298627)` | .b3-tk-bar .th · b3/board.css:3137 |
-| background-image | `` | `none` | .b3-tk-bar .th · b3/board.css:3137 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3138 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3138 |
+| background | `color-mix(in srgb,var(--warn) 45%,var(--rule2))` | `` | .b3-tk-bar .th · b3/board.css:3140 |
+| background-color | `` | `color(srgb 0.575098 0.368431 0.298627)` | .b3-tk-bar .th · b3/board.css:3140 |
+| background-image | `` | `none` | .b3-tk-bar .th · b3/board.css:3140 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -1346,7 +1349,7 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-39` · rendered **1062×6** · 1 instance look like this
+`C4-43` · rendered **1062×6** · 1 instance look like this
 
 ```html
 <i class="ok" style="flex: 120 1 0%;"></i>
@@ -1356,17 +1359,17 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | — | `block` | initial |
 | flex | `120 1 0%` | `` | style attribute |
-| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3135 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3135 |
-| background | `color-mix(in srgb,var(--ok) 32%,var(--rule2))` | `` | .b3-tk-bar .ok · b3/board.css:3138 |
-| background-color | `` | `color(srgb 0.30902 0.464157 0.342902)` | .b3-tk-bar .ok · b3/board.css:3138 |
-| background-image | `` | `none` | .b3-tk-bar .ok · b3/board.css:3138 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3138 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3138 |
+| background | `color-mix(in srgb,var(--ok) 32%,var(--rule2))` | `` | .b3-tk-bar .ok · b3/board.css:3141 |
+| background-color | `` | `color(srgb 0.30902 0.464157 0.342902)` | .b3-tk-bar .ok · b3/board.css:3141 |
+| background-image | `` | `none` | .b3-tk-bar .ok · b3/board.css:3141 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -1377,7 +1380,7 @@ inside `.b3-rp` · 2 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-40` · rendered **1110×434** · 1 instance look like this
+`C4-44` · rendered **1110×560** · 1 instance look like this
 
 ```html
 <section class="b3-tk-sec"><h4 class="b3-tk-sh" data-sev="blocks"><i aria-hidden="true">⟨svg.ic⟩</i><b>Blocks sharing</b><em>3 builds</em></h4><div class="b3-tk-list rows"><article class="b3-tk" data-sev="blocks" style="--c: #ffd23f;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>PHARO</b><em>Build 1</em><small>SMG</small></span><span class="b3-tk-sev">Blocks sharing</span></header><div 
@@ -1386,18 +1389,18 @@ inside `.b3-rp` · 2 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| min-width | `0px` | `0px` | main .panel, main section · app.css:683 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 #### look 2 of 2
 
-`C4-128` · rendered **1110×204** · 1 instance look like this
+`C4-164` · rendered **1110×216** · 1 instance look like this
 
 ```html
 <section class="b3-tk-sec"><h4 class="b3-tk-sh" data-sev="thin"><i aria-hidden="true">⟨svg.ic⟩</i><b>Below standard</b><em>2 builds</em></h4><div class="b3-tk-list rows"><article class="b3-tk" data-sev="thin" style="--c: #ff3b5c;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>KILO 141</b><em>Build 2</em><small>Assault</small></span><span class="b3-tk-sev">Below standard</span></header><d
@@ -1406,13 +1409,13 @@ inside `.b3-rp` · 2 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-top | `18px` | `18px` | .b3-tk-sec + .b3-tk-sec · b3/board.css:3354 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| min-width | `0px` | `0px` | main .panel, main section · app.css:683 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| margin-top | `18px` | `18px` | .b3-tk-sec + .b3-tk-sec · b3/board.css:3346 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -1423,7 +1426,7 @@ inside `.b3-tk-sec` · 2 on screen · **1 look**
 
 #### the one look
 
-`C4-41` · rendered **1110×28** · 2 instances look like this
+`C4-45` · rendered **1110×28** · 2 instances look like this
 
 ```html
 <h4 class="b3-tk-sh" data-sev="blocks"><i aria-hidden="true">⟨svg.ic⟩</i><b>Blocks sharing</b><em>3 builds</em></h4>
@@ -1431,48 +1434,48 @@ inside `.b3-tk-sec` · 2 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| gap | `10px` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| column-gap | `10px` | `10px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| row-gap | `10px` | `10px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| align-items | `center` | `center` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0 0 12px` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| margin-top | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| margin-right | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| margin-bottom | `12px` | `12px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| margin-left | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font | `600 var(--t-md)/1 var(--ui)` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-size | `` | `14.5px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-weight | `` | `600` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-style | `` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-variant-numeric | `` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| line-height | `` | `14.5px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| letter-spacing | `0px` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| text-transform | `none` | `none` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
+| display | `flex` | `flex` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| gap | `10px` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| column-gap | `10px` | `10px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| row-gap | `10px` | `10px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| align-items | `center` | `center` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| margin | `0 0 12px` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| margin-top | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| margin-right | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| margin-bottom | `12px` | `12px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| margin-left | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font | `600 var(--t-md)/1 var(--ui)` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-size | `` | `14.5px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-weight | `` | `600` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-style | `` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-variant-numeric | `` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| line-height | `` | `14.5px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| letter-spacing | `0px` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| text-transform | `none` | `none` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
 
 **::after**
 
 | property | winning declaration | from |
 |---|---|---|
-| flex | `1` | .b3-tk-sh::after · b3/board.css:3667 |
-| height | `1px` | .b3-tk-sh::after · b3/board.css:3667 |
-| margin-left | `4px` | .b3-tk-sh::after · b3/board.css:3667 |
-| background | `var(--rule2)` | .b3-tk-sh::after · b3/board.css:3667 |
-| background-color | `` | .b3-tk-sh::after · b3/board.css:3667 |
-| background-image | `` | .b3-tk-sh::after · b3/board.css:3667 |
-| content | `""` | .b3-tk-sh::after · b3/board.css:3667 |
+| flex | `1` | .b3-tk-sh::after · b3/board.css:3659 |
+| height | `1px` | .b3-tk-sh::after · b3/board.css:3659 |
+| margin-left | `4px` | .b3-tk-sh::after · b3/board.css:3659 |
+| background | `var(--rule2)` | .b3-tk-sh::after · b3/board.css:3659 |
+| background-color | `` | .b3-tk-sh::after · b3/board.css:3659 |
+| background-image | `` | .b3-tk-sh::after · b3/board.css:3659 |
+| content | `""` | .b3-tk-sh::after · b3/board.css:3659 |
 
 
 ### `i`
 
-inside `.b3-tk-sh` · 20 on screen · **9 looks**
+inside `.b3-tk-sh` · 8 on screen · **7 looks**
 
-#### look 1 of 9
+#### look 1 of 7
 
-`C4-42` · rendered **28×28** · 1 instance look like this · aria-hidden="true"
+`C4-46` · rendered **28×28** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <i aria-hidden="true">⟨svg.ic⟩</i>
@@ -1480,31 +1483,31 @@ inside `.b3-tk-sh` · 20 on screen · **9 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-sh > i · b3/board.css:3661 |
-| align-items | `center` | `center` | .b3-tk-sh > i · b3/board.css:3661 |
-| place-items | `center` | `` | .b3-tk-sh > i · b3/board.css:3661 |
-| width | `28px` | `28px` | .b3-tk-sh > i · b3/board.css:3661 |
-| height | `28px` | `28px` | .b3-tk-sh > i · b3/board.css:3661 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `8px` | `` | .b3-tk-sh > i · b3/board.css:3661 |
-| background | `color-mix(in srgb,var(--warn) 14%,transparent)` | `` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3663 |
-| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.14)` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3663 |
-| background-image | `` | `none` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3663 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 30%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.3) 0px 0px 0px 1px inset` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3663 |
-| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
+| display | `grid` | `grid` | .b3-tk-sh > i · b3/board.css:3653 |
+| align-items | `center` | `center` | .b3-tk-sh > i · b3/board.css:3653 |
+| place-items | `center` | `` | .b3-tk-sh > i · b3/board.css:3653 |
+| width | `28px` | `28px` | .b3-tk-sh > i · b3/board.css:3653 |
+| height | `28px` | `28px` | .b3-tk-sh > i · b3/board.css:3653 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `8px` | `` | .b3-tk-sh > i · b3/board.css:3653 |
+| background | `color-mix(in srgb,var(--warn) 14%,transparent)` | `` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3655 |
+| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.14)` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3655 |
+| background-image | `` | `none` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3655 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 30%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.3) 0px 0px 0px 1px inset` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3655 |
+| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3660 |
-| color | `var(--warn)` | `rgb(255, 122, 69)` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3663 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| color | `var(--warn)` | `rgb(255, 122, 69)` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3655 |
 
-#### look 2 of 9
+#### look 2 of 7
 
-`C4-50` · rendered **8×8** · 2 instances look like this · aria-hidden="true"
+`C4-54` · rendered **8×8** · 2 instances look like this · aria-hidden="true"
 
 ```html
 <i aria-hidden="true"></i>
@@ -1513,50 +1516,26 @@ inside `.b3-tk-sh` · 20 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3146 |
-| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3146 |
-| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3146 |
-| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3146 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3146 |
-| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3146 |
-| background-color | `` | `rgb(255, 210, 63)` | .b3-tk-id > i · b3/board.css:3146 |
-| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3146 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3149 |
+| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background-color | `` | `rgb(255, 210, 63)` | .b3-tk-id > i · b3/board.css:3149 |
+| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3149 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 3 of 9
+#### look 3 of 7
 
-`C4-69` · rendered **12×18** · 4 instances look like this
-
-```html
-<i class=""></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| width | `12px` | `12px` | .b3-tk-ev.slots i · b3/board.css:3163 |
-| height | `18px` | `18px` | .b3-tk-ev.slots i · b3/board.css:3163 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `3px` | `` | .b3-tk-ev.slots i · b3/board.css:3163 |
-| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-tk-ev.slots i · b3/board.css:3163 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-#### look 4 of 9
-
-`C4-81` · rendered **8×8** · 1 instance look like this · aria-hidden="true"
+`C4-97` · rendered **8×8** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <i aria-hidden="true"></i>
@@ -1565,61 +1544,26 @@ inside `.b3-tk-sh` · 20 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3146 |
-| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3146 |
-| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3146 |
-| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3146 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3146 |
-| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3146 |
-| background-color | `` | `rgb(63, 110, 142)` | .b3-tk-id > i · b3/board.css:3146 |
-| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3146 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3149 |
+| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background-color | `` | `rgb(63, 110, 142)` | .b3-tk-id > i · b3/board.css:3149 |
+| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3149 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 5 of 9
+#### look 4 of 7
 
-`C4-93` · rendered **24×22** · 8 instances look like this · text “1C”
-
-```html
-<i class="">1C</i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| align-items | `center` | `center` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| place-items | `center` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| min-width | `24px` | `24px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| height | `22px` | `22px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 4px` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-top | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-right | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-bottom | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-left | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| border-radius | `5px` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| background | `var(--sunk)` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| background-image | `` | `none` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font | `600 11px/1 var(--data)` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-size | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-weight | `` | `600` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-style | `normal` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-variant-numeric | `` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| line-height | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-
-#### look 6 of 9
-
-`C4-106` · rendered **8×8** · 1 instance look like this · aria-hidden="true"
+`C4-132` · rendered **8×8** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <i aria-hidden="true"></i>
@@ -1628,24 +1572,84 @@ inside `.b3-tk-sh` · 20 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3146 |
-| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3146 |
-| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3146 |
-| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3146 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3146 |
-| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3146 |
-| background-color | `` | `rgb(246, 169, 59)` | .b3-tk-id > i · b3/board.css:3146 |
-| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3146 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3149 |
+| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background-color | `` | `rgb(246, 169, 59)` | .b3-tk-id > i · b3/board.css:3149 |
+| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3149 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-*3 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+#### look 5 of 7
+
+`C4-166` · rendered **28×28** · 1 instance look like this · aria-hidden="true"
+
+```html
+<i aria-hidden="true">⟨svg.ic⟩</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-tk-sh > i · b3/board.css:3653 |
+| align-items | `center` | `center` | .b3-tk-sh > i · b3/board.css:3653 |
+| place-items | `center` | `` | .b3-tk-sh > i · b3/board.css:3653 |
+| width | `28px` | `28px` | .b3-tk-sh > i · b3/board.css:3653 |
+| height | `28px` | `28px` | .b3-tk-sh > i · b3/board.css:3653 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `8px` | `` | .b3-tk-sh > i · b3/board.css:3653 |
+| background | `var(--sunk)` | `` | .b3-tk-sh[data-sev="thin"] > i · b3/board.css:5311 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-sh[data-sev="thin"] > i · b3/board.css:5311 |
+| background-image | `` | `none` | .b3-tk-sh[data-sev="thin"] > i · b3/board.css:5311 |
+| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-tk-sh[data-sev="thin"] > i · b3/board.css:5311 |
+| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3652 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-sh[data-sev="thin"] > i · b3/board.css:5311 |
+
+#### look 6 of 7
+
+`C4-174` · rendered **8×8** · 1 instance look like this · aria-hidden="true"
+
+```html
+<i aria-hidden="true"></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3149 |
+| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background-color | `` | `rgb(255, 59, 92)` | .b3-tk-id > i · b3/board.css:3149 |
+| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3149 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+*1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `div.b3-tk-list.rows`
@@ -1654,7 +1658,7 @@ inside `.b3-tk-sec` · 2 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-46` · rendered **1110×394** · 1 instance look like this
+`C4-50` · rendered **1110×520** · 1 instance look like this
 
 ```html
 <div class="b3-tk-list rows"><article class="b3-tk" data-sev="blocks" style="--c: #ffd23f;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>PHARO</b><em>Build 1</em><small>SMG</small></span><span class="b3-tk-sev">Blocks sharing</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No guns
@@ -1662,23 +1666,23 @@ inside `.b3-tk-sec` · 2 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-list · b3/board.css:3139 |
-| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `549px 549px` | .b3-tk-list · b3/board.css:3139 |
-| gap | `12px` | `` | .b3-tk-list · b3/board.css:3139 |
-| column-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3139 |
-| row-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3139 |
-| align-items | `stretch` | `stretch` | .b3-tk-list.rows · b3/board.css:3352 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-list · b3/board.css:3142 |
+| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `549px 549px` | .b3-tk-list · b3/board.css:3142 |
+| gap | `12px` | `` | .b3-tk-list · b3/board.css:3142 |
+| column-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3142 |
+| row-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3142 |
+| align-items | `stretch` | `stretch` | .b3-tk-list.rows · b3/board.css:3344 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 #### look 2 of 2
 
-`C4-134` · rendered **1110×164** · 1 instance look like this
+`C4-170` · rendered **1110×176** · 1 instance look like this
 
 ```html
 <div class="b3-tk-list rows"><article class="b3-tk" data-sev="thin" style="--c: #ff3b5c;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>KILO 141</b><em>Build 2</em><small>Assault</small></span><span class="b3-tk-sev">Below standard</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="near-duplicate"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t">
@@ -1686,17 +1690,17 @@ inside `.b3-tk-sec` · 2 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-list · b3/board.css:3139 |
-| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `549px 549px` | .b3-tk-list · b3/board.css:3139 |
-| gap | `12px` | `` | .b3-tk-list · b3/board.css:3139 |
-| column-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3139 |
-| row-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3139 |
-| align-items | `stretch` | `stretch` | .b3-tk-list.rows · b3/board.css:3352 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-list · b3/board.css:3142 |
+| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `549px 549px` | .b3-tk-list · b3/board.css:3142 |
+| gap | `12px` | `` | .b3-tk-list · b3/board.css:3142 |
+| column-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3142 |
+| row-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3142 |
+| align-items | `stretch` | `stretch` | .b3-tk-list.rows · b3/board.css:3344 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -1707,39 +1711,39 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 
 #### look 1 of 3
 
-`C4-47` · rendered **549×218** · 2 instances look like this
+`C4-51` · rendered **549×320** · 2 instances look like this
 
 ```html
-<article class="b3-tk" data-sev="blocks" style="--c: #ffd23f;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>PHARO</b><em>Build 1</em><small>SMG</small></span><span class="b3-tk-sev">Blocks sharing</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No gunsmith code</b><span>Nobody can
+<article class="b3-tk" data-sev="blocks" style="--c: #ffd23f;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>PHARO</b><em>Build 1</em><small>SMG</small></span><span class="b3-tk-sev">Blocks sharing</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No gunsmith code</b><span class="b3-
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk · b3/board.css:3140 |
-| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| grid-template-rows | `auto 1fr auto` | `40.9375px 117.375px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3353 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3140 |
-| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4089 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--warn) 7%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk[data-sev="blocks"] · b3/board.css:3141 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk[data-sev="blocks"] · b3/board.css:3141 |
-| background-image | `` | `linear-gradient(color(srgb 0.183059 0.175726 0.186706), rgb(31, 39, 46) 90px)` | .b3-tk[data-sev="blocks"] · b3/board.css:3141 |
-| box-shadow | `none` | `none` | .b3-tk[data-sev="blocks"] · b3/board.css:4091 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk · b3/board.css:3143 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| grid-template-rows | `auto 1fr auto` | `40.9375px 219px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3345 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3143 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4081 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--warn) 7%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| background-image | `` | `linear-gradient(color(srgb 0.183059 0.175726 0.186706), rgb(31, 39, 46) 90px)` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| box-shadow | `none` | `none` | .b3-tk[data-sev="blocks"] · b3/board.css:4083 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-tk · b3/board.css:3140 |
-| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3140 |
-| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3140 |
+| overflow | `hidden` | `` | .b3-tk · b3/board.css:3143 |
+| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
+| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
 
 #### look 2 of 3
 
-`C4-103` · rendered **549×164** · 1 instance look like this
+`C4-129` · rendered **549×188** · 1 instance look like this
 
 ```html
 <article class="b3-tk" data-sev="blocks" style="--c: #f6a93b;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>JAK-12</b><em>Build 1</em><small>Shotgun</small></span><span class="b3-tk-sev">Blocks sharing</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="code-length-mismatch"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Code disagrees wit
@@ -1747,31 +1751,31 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk · b3/board.css:3140 |
-| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| grid-template-rows | `auto 1fr auto` | `40.9375px 62.6875px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3353 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3140 |
-| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4089 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--warn) 7%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk[data-sev="blocks"] · b3/board.css:3141 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk[data-sev="blocks"] · b3/board.css:3141 |
-| background-image | `` | `linear-gradient(color(srgb 0.183059 0.175726 0.186706), rgb(31, 39, 46) 90px)` | .b3-tk[data-sev="blocks"] · b3/board.css:3141 |
-| box-shadow | `none` | `none` | .b3-tk[data-sev="blocks"] · b3/board.css:4091 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk · b3/board.css:3143 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| grid-template-rows | `auto 1fr auto` | `40.9375px 87.5px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3345 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3143 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4081 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--warn) 7%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| background-image | `` | `linear-gradient(color(srgb 0.183059 0.175726 0.186706), rgb(31, 39, 46) 90px)` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| box-shadow | `none` | `none` | .b3-tk[data-sev="blocks"] · b3/board.css:4083 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-tk · b3/board.css:3140 |
-| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3140 |
-| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3140 |
+| overflow | `hidden` | `` | .b3-tk · b3/board.css:3143 |
+| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
+| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
 
 #### look 3 of 3
 
-`C4-135` · rendered **549×164** · 2 instances look like this
+`C4-171` · rendered **549×176** · 2 instances look like this
 
 ```html
 <article class="b3-tk" data-sev="thin" style="--c: #ff3b5c;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>KILO 141</b><em>Build 2</em><small>Assault</small></span><span class="b3-tk-sev">Below standard</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="near-duplicate"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Same code as AK117 Build 1
@@ -1779,27 +1783,27 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk · b3/board.css:3140 |
-| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| grid-template-rows | `auto 1fr auto` | `40.9375px 62.6875px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3353 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3140 |
-| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4089 |
-| background | `var(--raised)` | `` | .b3-tk · b3/board.css:3140 |
-| background-color | `` | `rgb(31, 39, 46)` | .b3-tk · b3/board.css:3140 |
-| background-image | `` | `none` | .b3-tk · b3/board.css:3140 |
-| box-shadow | `none` | `none` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk · b3/board.css:3143 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| grid-template-rows | `auto 1fr auto` | `40.9375px 75px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3345 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3143 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4081 |
+| background | `var(--raised)` | `` | .b3-tk · b3/board.css:3143 |
+| background-color | `` | `rgb(31, 39, 46)` | .b3-tk · b3/board.css:3143 |
+| background-image | `` | `none` | .b3-tk · b3/board.css:3143 |
+| box-shadow | `none` | `none` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-tk · b3/board.css:3140 |
-| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3140 |
-| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3140 |
+| overflow | `hidden` | `` | .b3-tk · b3/board.css:3143 |
+| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
+| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
 
 
 ### `header.b3-tk-h`
@@ -1808,7 +1812,7 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-48` · rendered **547×41** · 5 instances look like this
+`C4-52` · rendered **547×41** · 5 instances look like this
 
 ```html
 <header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>PHARO</b><em>Build 1</em><small>SMG</small></span><span class="b3-tk-sev">Blocks sharing</span></header>
@@ -1816,36 +1820,36 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| position | `static` | `static` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| grid-column | `1/-1` | `` | header · app.css:682 |
-| gap | `10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| column-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| row-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| align-items | `center` | `center` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| min-width | `0px` | `0px` | header · app.css:1427 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `14px 16px 10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| padding-top | `14px` | `14px` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| padding-right | `16px` | `16px` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| padding-bottom | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| padding-left | `16px` | `16px` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| top | `0px` | `0px` | header · app.css:682 |
-| border-bottom | `1px solid var(--rule)` | `` | header · app.css:682 |
-| background | `none` | `` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| background-image | `none` | `none` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `flex` | `flex` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| position | `static` | `static` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| grid-column | `1/-1` | `` | header · app.css:685 |
+| gap | `10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| column-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| row-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| align-items | `center` | `center` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| min-width | `0px` | `0px` | header · app.css:1434 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `14px 16px 10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| padding-top | `14px` | `14px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| padding-right | `16px` | `16px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| padding-bottom | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| padding-left | `16px` | `16px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| top | `0px` | `0px` | header · app.css:685 |
+| border-bottom | `1px solid var(--rule)` | `` | header · app.css:685 |
+| background | `none` | `` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| background-image | `none` | `none` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| z-index | `40` | `40` | header · app.css:682 |
+| z-index | `40` | `40` | header · app.css:685 |
 
 #### look 2 of 2
 
-`C4-315` · rendered **1108×55** · 1 instance look like this
+`C4-355` · rendered **1108×55** · 1 instance look like this
 
 ```html
 <header class="b3-tk-h"><span class="b3-tk-id"><span class="b3-tk-shield" aria-hidden="true">⟨svg.ic⟩</span><b>The checks every one of them passes</b></span></header>
@@ -1853,32 +1857,32 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| position | `static` | `static` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| grid-column | `1/-1` | `` | header · app.css:682 |
-| gap | `10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| column-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| row-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| align-items | `center` | `center` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| min-width | `0px` | `0px` | header · app.css:1427 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `14px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3814 |
-| padding-top | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3814 |
-| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3814 |
-| padding-bottom | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3814 |
-| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3814 |
-| top | `0px` | `0px` | header · app.css:682 |
-| border-bottom | `1px solid var(--rule)` | `` | header · app.css:682 |
-| background | `none` | `` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| background-image | `none` | `none` | .b3-tk .b3-tk-h · b3/board.css:3144 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `flex` | `flex` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| position | `static` | `static` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| grid-column | `1/-1` | `` | header · app.css:685 |
+| gap | `10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| column-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| row-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| align-items | `center` | `center` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| min-width | `0px` | `0px` | header · app.css:1434 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `14px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3806 |
+| padding-top | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3806 |
+| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3806 |
+| padding-bottom | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3806 |
+| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3806 |
+| top | `0px` | `0px` | header · app.css:685 |
+| border-bottom | `1px solid var(--rule)` | `` | header · app.css:685 |
+| background | `none` | `` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| background-image | `none` | `none` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| z-index | `40` | `40` | header · app.css:682 |
+| z-index | `40` | `40` | header · app.css:685 |
 
 
 ### `span.b3-tk-id`
@@ -1887,7 +1891,7 @@ inside `.b3-tk-h` · 6 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-49` · rendered **136×16** · 5 instances look like this
+`C4-53` · rendered **136×16** · 5 instances look like this
 
 ```html
 <span class="b3-tk-id"><i aria-hidden="true"></i><b>PHARO</b><em>Build 1</em><small>SMG</small></span>
@@ -1895,23 +1899,23 @@ inside `.b3-tk-h` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-tk-id · b3/board.css:3145 |
-| gap | `8px` | `` | .b3-tk-id · b3/board.css:3145 |
-| column-gap | `8px` | `8px` | .b3-tk-id · b3/board.css:3145 |
-| row-gap | `8px` | `8px` | .b3-tk-id · b3/board.css:3145 |
-| align-items | `baseline` | `baseline` | .b3-tk-id · b3/board.css:3145 |
-| min-width | `0px` | `0px` | .b3-tk-id · b3/board.css:3145 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `inline-flex` | `flex` | .b3-tk-id · b3/board.css:3148 |
+| gap | `8px` | `` | .b3-tk-id · b3/board.css:3148 |
+| column-gap | `8px` | `8px` | .b3-tk-id · b3/board.css:3148 |
+| row-gap | `8px` | `8px` | .b3-tk-id · b3/board.css:3148 |
+| align-items | `baseline` | `baseline` | .b3-tk-id · b3/board.css:3148 |
+| min-width | `0px` | `0px` | .b3-tk-id · b3/board.css:3148 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 #### look 2 of 2
 
-`C4-316` · rendered **301×26** · 1 instance look like this
+`C4-356` · rendered **301×26** · 1 instance look like this
 
 ```html
 <span class="b3-tk-id"><span class="b3-tk-shield" aria-hidden="true">⟨svg.ic⟩</span><b>The checks every one of them passes</b></span>
@@ -1919,17 +1923,17 @@ inside `.b3-tk-h` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-tk-id · b3/board.css:3145 |
-| gap | `12px` | `` | .b3-tk-pass .b3-tk-id · b3/board.css:3657 |
-| column-gap | `12px` | `12px` | .b3-tk-pass .b3-tk-id · b3/board.css:3657 |
-| row-gap | `12px` | `12px` | .b3-tk-pass .b3-tk-id · b3/board.css:3657 |
-| align-items | `center` | `center` | .b3-tk-pass .b3-tk-id · b3/board.css:3657 |
-| min-width | `0px` | `0px` | .b3-tk-id · b3/board.css:3145 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `inline-flex` | `flex` | .b3-tk-id · b3/board.css:3148 |
+| gap | `12px` | `` | .b3-tk-pass .b3-tk-id · b3/board.css:3649 |
+| column-gap | `12px` | `12px` | .b3-tk-pass .b3-tk-id · b3/board.css:3649 |
+| row-gap | `12px` | `12px` | .b3-tk-pass .b3-tk-id · b3/board.css:3649 |
+| align-items | `center` | `center` | .b3-tk-pass .b3-tk-id · b3/board.css:3649 |
+| min-width | `0px` | `0px` | .b3-tk-id · b3/board.css:3148 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -1940,7 +1944,7 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 
 #### look 1 of 9
 
-`C4-53` · rendered **20×10** · 2 instances look like this · text “SMG”
+`C4-57` · rendered **20×10** · 2 instances look like this · text “SMG”
 
 ```html
 <small>SMG</small>
@@ -1949,21 +1953,21 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3149 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3149 |
-| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3149 |
-| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3149 |
-| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3149 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3149 |
-| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3149 |
-| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3149 |
-| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3149 |
-| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 1 0.862353 0.412706)` | .b3-tk-id small · b3/board.css:3149 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3152 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3152 |
+| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3152 |
+| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3152 |
+| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3152 |
+| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 1 0.862353 0.412706)` | .b3-tk-id small · b3/board.css:3152 |
 
 #### look 2 of 9
 
-`C4-84` · rendered **74×10** · 1 instance look like this · text “Secondaries”
+`C4-100` · rendered **74×10** · 1 instance look like this · text “Secondaries”
 
 ```html
 <small>Secondaries</small>
@@ -1972,21 +1976,21 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3149 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3149 |
-| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3149 |
-| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3149 |
-| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3149 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3149 |
-| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3149 |
-| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3149 |
-| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3149 |
-| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 0.412706 0.556471 0.654353)` | .b3-tk-id small · b3/board.css:3149 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3152 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3152 |
+| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3152 |
+| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3152 |
+| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3152 |
+| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 0.412706 0.556471 0.654353)` | .b3-tk-id small · b3/board.css:3152 |
 
 #### look 3 of 9
 
-`C4-109` · rendered **47×10** · 1 instance look like this · text “Shotgun”
+`C4-135` · rendered **47×10** · 1 instance look like this · text “Shotgun”
 
 ```html
 <small>Shotgun</small>
@@ -1995,21 +1999,21 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3149 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3149 |
-| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3149 |
-| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3149 |
-| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3149 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3149 |
-| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3149 |
-| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3149 |
-| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3149 |
-| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 0.972471 0.736941 0.400471)` | .b3-tk-id small · b3/board.css:3149 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3152 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3152 |
+| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3152 |
+| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3152 |
+| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3152 |
+| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 0.972471 0.736941 0.400471)` | .b3-tk-id small · b3/board.css:3152 |
 
 #### look 4 of 9
 
-`C4-141` · rendered **47×10** · 1 instance look like this · text “Assault”
+`C4-177` · rendered **47×10** · 1 instance look like this · text “Assault”
 
 ```html
 <small>Assault</small>
@@ -2018,21 +2022,21 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3149 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3149 |
-| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3149 |
-| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3149 |
-| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3149 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3149 |
-| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3149 |
-| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3149 |
-| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3149 |
-| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 1 0.400471 0.501412)` | .b3-tk-id small · b3/board.css:3149 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3152 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3152 |
+| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3152 |
+| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3152 |
+| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3152 |
+| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 1 0.400471 0.501412)` | .b3-tk-id small · b3/board.css:3152 |
 
 #### look 5 of 9
 
-`C4-185` · rendered **0×0** · 2 instances look like this · text “SMG”
+`C4-223` · rendered **0×0** · 2 instances look like this · text “SMG”
 
 ```html
 <small>SMG</small>
@@ -2041,7 +2045,7 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2407 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2407 |
 | font-size | `` | `9.5px` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2407 |
@@ -2056,7 +2060,7 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 
 #### look 6 of 9
 
-`C4-193` · rendered **0×0** · 1 instance look like this
+`C4-231` · rendered **0×0** · 1 instance look like this
 
 ```html
 <small><span>Coming Soon</span></small>
@@ -2070,18 +2074,18 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 | row-gap | `8px` | `8px` | .b3-wr-b small · b3/board.css:1313 |
 | align-items | `center` | `center` | .b3-wr-b small · b3/board.css:1313 |
 | min-width | `0px` | `0px` | .b3-wr-b small · b3/board.css:1313 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:624 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
 | font-size | `smaller` | `10.8333px` | small · user-agent:? |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `16.25px` | inherited · button · app.css:621 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:624 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| line-height | ↑ `inherit` | `16.25px` | inherited · button · app.css:624 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:621 |
+| color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:624 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-wr-main · b3/board.css:1307 |
 
 *3 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
@@ -2089,166 +2093,254 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 
 ### `div.b3-tk-fs`
 
-inside `.b3-tk` · 5 on screen · **2 looks**
+inside `.b3-tk` · 5 on screen · **3 looks**
 
-#### look 1 of 2
+#### look 1 of 3
 
-`C4-54` · rendered **547×117** · 2 instances look like this
+`C4-58` · rendered **547×219** · 2 instances look like this
 
 ```html
-<div class="b3-tk-fs"><div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No gunsmith code</b><span>Nobody can import it, and it cannot be s…</span></span></div><div class="b3-tk-f" data-k="few-attachments"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Attachments missing</b><span>1 of 5 slots filled — the card renders
+<div class="b3-tk-fs"><div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No gunsmith code</b><span class="b3-fh"><span class="b3-fh-tag warn">Can’t be shared or imported</span></span></span></div><div class="b3-tk-f" data-k="few-attachments"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Attachments missing</b><span cl
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-fs · b3/board.css:3153 |
-| gap | `2px` | `` | .b3-tk-fs · b3/board.css:3153 |
-| column-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3153 |
-| row-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3153 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px 10px` | `` | .b3-tk-fs · b3/board.css:3153 |
-| padding-top | `0px` | `0px` | .b3-tk-fs · b3/board.css:3153 |
-| padding-right | `10px` | `10px` | .b3-tk-fs · b3/board.css:3153 |
-| padding-bottom | `10px` | `10px` | .b3-tk-fs · b3/board.css:3153 |
-| padding-left | `10px` | `10px` | .b3-tk-fs · b3/board.css:3153 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-fs · b3/board.css:3156 |
+| gap | `2px` | `` | .b3-tk-fs · b3/board.css:3156 |
+| column-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3156 |
+| row-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3156 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `0 10px 10px` | `` | .b3-tk-fs · b3/board.css:3156 |
+| padding-top | `0px` | `0px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-right | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-bottom | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-left | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 2 of 2
+#### look 2 of 3
 
-`C4-110` · rendered **547×63** · 3 instances look like this
+`C4-136` · rendered **547×88** · 1 instance look like this
 
 ```html
-<div class="b3-tk-fs"><div class="b3-tk-f" data-k="code-length-mismatch"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Code disagrees with the build</b><span>Importing the code fills 4 slots, not th…</span></span><span class="b3-tk-ev pairs" aria-hidden="true"><i class="">1C</i><i class="">2B</i><i class="">6B</i><i class="">9A</i><i class="gap"></i></span></div></div>
+<div class="b3-tk-fs"><div class="b3-tk-f" data-k="code-length-mismatch"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Code disagrees with the build</b><span class="b3-fh" role="img" aria-label="The code fills 4 slots; the build lists 5"><span class="b3-fh-cmp" style="--n: 5;"><em>Code</em><i class="b3-fh-pr" style="--sl: var(--sl-muzzle, var(--sl-unknown));">1C</i><i class="b3-fh-p
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-fs · b3/board.css:3153 |
-| gap | `2px` | `` | .b3-tk-fs · b3/board.css:3153 |
-| column-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3153 |
-| row-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3153 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px 10px` | `` | .b3-tk-fs · b3/board.css:3153 |
-| padding-top | `0px` | `0px` | .b3-tk-fs · b3/board.css:3153 |
-| padding-right | `10px` | `10px` | .b3-tk-fs · b3/board.css:3153 |
-| padding-bottom | `10px` | `10px` | .b3-tk-fs · b3/board.css:3153 |
-| padding-left | `10px` | `10px` | .b3-tk-fs · b3/board.css:3153 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-fs · b3/board.css:3156 |
+| gap | `2px` | `` | .b3-tk-fs · b3/board.css:3156 |
+| column-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3156 |
+| row-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3156 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `0 10px 10px` | `` | .b3-tk-fs · b3/board.css:3156 |
+| padding-top | `0px` | `0px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-right | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-bottom | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-left | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 3 of 3
+
+`C4-178` · rendered **547×75** · 2 instances look like this
+
+```html
+<div class="b3-tk-fs"><div class="b3-tk-f" data-k="near-duplicate"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Same code as AK117 Build 1</b><span class="b3-fh"><span class="b3-fh-twin" style="--t: var(--warn);"><code>1C2B4A8B9A</code></span><span class="b3-fh-tag thin">One of the two is redundant</span></span></span></div></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-tk-fs · b3/board.css:3156 |
+| gap | `2px` | `` | .b3-tk-fs · b3/board.css:3156 |
+| column-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3156 |
+| row-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3156 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `0 10px 10px` | `` | .b3-tk-fs · b3/board.css:3156 |
+| padding-top | `0px` | `0px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-right | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-bottom | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-left | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
 ### `div.b3-tk-f`
 
-inside `.b3-tk-fs` · 6 on screen · **3 looks**
+inside `.b3-tk-fs` · 7 on screen · **5 looks**
 
-#### look 1 of 3
+#### look 1 of 5
 
-`C4-55` · rendered **527×53** · 4 instances look like this
+`C4-59` · rendered **527×65** · 3 instances look like this
 
 ```html
-<div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No gunsmith code</b><span>Nobody can import it, and it cannot be s…</span></span></div>
+<div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No gunsmith code</b><span class="b3-fh"><span class="b3-fh-tag warn">Can’t be shared or imported</span></span></span></div>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3154 |
-| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 457px 0px` | .b3-tk-f · b3/board.css:3154 |
-| gap | `12px` | `` | .b3-tk-f · b3/board.css:3154 |
-| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3154 |
-| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3154 |
-| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3154 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3154 |
-| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3154 |
-| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3154 |
-| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3154 |
-| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3154 |
-| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3154 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3157 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 457px 0px` | .b3-tk-f · b3/board.css:3157 |
+| gap | `12px` | `` | .b3-tk-f · b3/board.css:3157 |
+| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3157 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3157 |
+| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3157 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 2 of 3
+#### look 2 of 5
 
-`C4-61` · rendered **527×53** · 1 instance look like this
+`C4-66` · rendered **527×75** · 1 instance look like this
 
 ```html
-<div class="b3-tk-f" data-k="few-attachments"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Attachments missing</b><span>1 of 5 slots filled — the card renders 4…</span></span><span class="b3-tk-ev slots" aria-hidden="true"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span></div>
+<div class="b3-tk-f" data-k="few-attachments"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Attachments missing</b><span class="b3-fh" role="img" aria-label="1 of 5 slots filled"><span class="b3-fh-cmp" style="--n: 5;"><em>Slots</em><i class="b3-fh-pr" style="--sl: var(--sl-unknown);"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i><i class="b3-
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3154 |
-| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 381px 76px` | .b3-tk-f · b3/board.css:3154 |
-| gap | `12px` | `` | .b3-tk-f · b3/board.css:3154 |
-| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3154 |
-| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3154 |
-| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3154 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3154 |
-| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3154 |
-| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3154 |
-| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3154 |
-| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3154 |
-| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3154 |
-| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-f + .b3-tk-f · b3/board.css:3155 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3157 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 457px 0px` | .b3-tk-f · b3/board.css:3157 |
+| gap | `12px` | `` | .b3-tk-f · b3/board.css:3157 |
+| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3157 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3157 |
+| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3157 |
+| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-f + .b3-tk-f · b3/board.css:3158 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 3 of 3
+#### look 3 of 5
 
-`C4-86` · rendered **527×107** · 1 instance look like this
+`C4-82` · rendered **527×65** · 1 instance look like this
 
 ```html
-<div class="b3-tk-f" data-k="code-length-mismatch"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Code disagrees with the build</b><span>Importing the code fills 5 slots, not th…</span></span><span class="b3-tk-ev pairs" aria-hidden="true"><i class="">1C</i><i class="">6C</i><i class="">7A</i><i class="">8A</i><i class="extra">9A</i></span></div>
+<div class="b3-tk-f" data-k="missing-image"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No Image or Key</b><span class="b3-fh"><span class="b3-fh-tag warn">Cloudinary hosted image not found</span></span></span></div>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3154 |
-| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 321px 136px` | .b3-tk-f · b3/board.css:3154 |
-| gap | `12px` | `` | .b3-tk-f · b3/board.css:3154 |
-| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3154 |
-| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3154 |
-| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3154 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3154 |
-| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3154 |
-| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3154 |
-| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3154 |
-| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3154 |
-| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3154 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3157 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 457px 0px` | .b3-tk-f · b3/board.css:3157 |
+| gap | `12px` | `` | .b3-tk-f · b3/board.css:3157 |
+| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3157 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3157 |
+| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3157 |
+| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-f + .b3-tk-f · b3/board.css:3158 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 4 of 5
+
+`C4-102` · rendered **527×209** · 1 instance look like this
+
+```html
+<div class="b3-tk-f" data-k="code-length-mismatch"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Code disagrees with the build</b><span class="b3-fh" role="img" aria-label="The code fills 5 slots; the build lists 4"><span class="b3-fh-cmp" style="--n: 5;"><em>Code</em><i class="b3-fh-pr" style="--sl: var(--sl-muzzle, var(--sl-unknown));">1C</i><i class="b3-fh-pr" style="--sl: var(--
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3157 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 457px 0px` | .b3-tk-f · b3/board.css:3157 |
+| gap | `12px` | `` | .b3-tk-f · b3/board.css:3157 |
+| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3157 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3157 |
+| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3157 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 5 of 5
+
+`C4-137` · rendered **527×78** · 1 instance look like this
+
+```html
+<div class="b3-tk-f" data-k="code-length-mismatch"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Code disagrees with the build</b><span class="b3-fh" role="img" aria-label="The code fills 4 slots; the build lists 5"><span class="b3-fh-cmp" style="--n: 5;"><em>Code</em><i class="b3-fh-pr" style="--sl: var(--sl-muzzle, var(--sl-unknown));">1C</i><i class="b3-fh-pr" style="--sl: var(--
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3157 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 457px 0px` | .b3-tk-f · b3/board.css:3157 |
+| gap | `12px` | `` | .b3-tk-f · b3/board.css:3157 |
+| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3157 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3157 |
+| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3157 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
 ### `span.b3-tk-ic`
 
-inside `.b3-tk-f` · 11 on screen · **3 looks**
+inside `.b3-tk-f` · 12 on screen · **2 looks**
 
-#### look 1 of 3
+#### look 1 of 2
 
-`C4-56` · rendered **30×30** · 3 instances look like this
+`C4-60` · rendered **30×30** · 7 instances look like this
 
 ```html
 <span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span>
@@ -2256,53 +2348,27 @@ inside `.b3-tk-f` · 11 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3156 |
-| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3156 |
-| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3156 |
-| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3156 |
-| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3156 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3156 |
-| background | `color-mix(in srgb,var(--warn) 14%,transparent)` | `` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3157 |
-| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.14)` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3157 |
-| background-image | `` | `none` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3157 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3159 |
+| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3159 |
+| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3159 |
+| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3159 |
+| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3159 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3159 |
+| background | `color-mix(in srgb,var(--warn) 14%,transparent)` | `` | .b3-tk-ic:is([data-sev="blocks"], [data-sev="thin"]) · b3/board.css:5309 |
+| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.14)` | .b3-tk-ic:is([data-sev="blocks"], [data-sev="thin"]) · b3/board.css:5309 |
+| background-image | `` | `none` | .b3-tk-ic:is([data-sev="blocks"], [data-sev="thin"]) · b3/board.css:5309 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 30%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.3) 0px 0px 0px 1px inset` | .b3-tk-ic:is([data-sev="blocks"], [data-sev="thin"]) · b3/board.css:5309 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--warn)` | `rgb(255, 122, 69)` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3157 |
+| color | `var(--warn)` | `rgb(255, 122, 69)` | .b3-tk-ic:is([data-sev="blocks"], [data-sev="thin"]) · b3/board.css:5309 |
 
-#### look 2 of 3
+#### look 2 of 2
 
-`C4-62` · rendered **30×30** · 3 instances look like this
-
-```html
-<span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3156 |
-| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3156 |
-| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3156 |
-| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3156 |
-| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3156 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3156 |
-| background | `var(--sunk)` | `` | .b3-tk-ic · b3/board.css:3156 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-ic · b3/board.css:3156 |
-| background-image | `` | `none` | .b3-tk-ic · b3/board.css:3156 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-tk-ic · b3/board.css:3156 |
-
-#### look 3 of 3
-
-`C4-322` · rendered **30×30** · 5 instances look like this
+`C4-362` · rendered **30×30** · 5 instances look like this
 
 ```html
 <span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span>
@@ -2310,81 +2376,644 @@ inside `.b3-tk-f` · 11 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3156 |
-| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3156 |
-| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3156 |
-| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3156 |
-| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3156 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3156 |
-| background | `color-mix(in srgb,var(--ok) 13%,transparent)` | `` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3366 |
-| background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.13)` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3366 |
-| background-image | `` | `none` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3366 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3159 |
+| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3159 |
+| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3159 |
+| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3159 |
+| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3159 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3159 |
+| background | `color-mix(in srgb,var(--ok) 13%,transparent)` | `` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3358 |
+| background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.13)` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3358 |
+| background-image | `` | `none` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3358 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ok) 30%,transparent)` | `color(srgb 0.482353 0.858824 0.388235 / 0.3) 0px 0px 0px 1px inset` | .b3-tk-ic[data-sev="ok"] · b3/board.css:5310 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ok)` | `rgb(123, 219, 99)` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3366 |
+| color | `var(--ok)` | `rgb(123, 219, 99)` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3358 |
 
 
 ### `span.b3-tk-t`
 
-inside `.b3-tk-f` · 6 on screen · **1 look**
+inside `.b3-tk-f` · 7 on screen · **3 looks**
 
-#### the one look
+#### look 1 of 3
 
-`C4-58` · rendered **457×33** · 6 instances look like this
+`C4-62` · rendered **457×45** · 4 instances look like this
 
 ```html
-<span class="b3-tk-t"><b>No gunsmith code</b><span>Nobody can import it, and it cannot be s…</span></span>
+<span class="b3-tk-t"><b>No gunsmith code</b><span class="b3-fh"><span class="b3-fh-tag warn">Can’t be shared or imported</span></span></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-t · b3/board.css:3159 |
-| gap | `3px` | `` | .b3-tk-t · b3/board.css:3159 |
-| column-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3159 |
-| row-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3159 |
-| min-width | `0px` | `0px` | .b3-tk-t · b3/board.css:3159 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-t · b3/board.css:3162 |
+| gap | `3px` | `` | .b3-tk-t · b3/board.css:3162 |
+| column-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3162 |
+| row-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3162 |
+| min-width | `0px` | `0px` | .b3-tk-t · b3/board.css:3162 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 2 of 3
+
+`C4-69` · rendered **457×55** · 1 instance look like this
+
+```html
+<span class="b3-tk-t"><b>Attachments missing</b><span class="b3-fh" role="img" aria-label="1 of 5 slots filled"><span class="b3-fh-cmp" style="--n: 5;"><em>Slots</em><i class="b3-fh-pr" style="--sl: var(--sl-unknown);"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i></span><span class="b3-fh-tag thin two"><b>4 of 5 empty</b><span>on the card</span></
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-tk-t · b3/board.css:3162 |
+| gap | `3px` | `` | .b3-tk-t · b3/board.css:3162 |
+| column-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3162 |
+| row-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3162 |
+| min-width | `0px` | `0px` | .b3-tk-t · b3/board.css:3162 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 3 of 3
+
+`C4-105` · rendered **457×58** · 2 instances look like this
+
+```html
+<span class="b3-tk-t"><b>Code disagrees with the build</b><span class="b3-fh" role="img" aria-label="The code fills 5 slots; the build lists 4"><span class="b3-fh-cmp" style="--n: 5;"><em>Code</em><i class="b3-fh-pr" style="--sl: var(--sl-muzzle, var(--sl-unknown));">1C</i><i class="b3-fh-pr" style="--sl: var(--sl-laser, var(--sl-unknown));">6C</i><i class="b3-fh-pr" style="--sl: var(--sl-ammunition, var(--sl-unknown
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-tk-t · b3/board.css:3162 |
+| gap | `3px` | `` | .b3-tk-t · b3/board.css:3162 |
+| column-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3162 |
+| row-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3162 |
+| min-width | `0px` | `0px` | .b3-tk-t · b3/board.css:3162 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `span`
+### `span.b3-fh`
 
-inside `.b3-tk-t` · 12 on screen · **3 looks**
+inside `.b3-tk-t` · 4 on screen · **1 look**
 
-#### look 1 of 3
+#### the one look
 
-`C4-60` · rendered **457×15** · 6 instances look like this · text “Nobody can import it, and it cannot be shared”
+`C4-64` · rendered **457×20** · 4 instances look like this
 
 ```html
-<span>Nobody can import it, and it cannot be s…</span>
+<span class="b3-fh"><span class="b3-fh-tag warn">Can’t be shared or imported</span></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b3-fh · b3/board.css:5175 |
+| gap | `6px 10px` | `` | .b3-fh · b3/board.css:5175 |
+| column-gap | `10px` | `10px` | .b3-fh · b3/board.css:5175 |
+| row-gap | `6px` | `6px` | .b3-fh · b3/board.css:5175 |
+| flex-wrap | `wrap` | `wrap` | .b3-fh · b3/board.css:5175 |
+| align-items | `center` | `center` | .b3-fh · b3/board.css:5175 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| margin-top | `7px` | `7px` | .b3-fh · b3/board.css:5175 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `span.b3-fh-tag.warn`
+
+inside `.b3-fh` · 2 on screen · **1 look**
+
+#### the one look
+
+`C4-65` · rendered **156×20** · 2 instances look like this · text “Can’t be shared or imported”
+
+```html
+<span class="b3-fh-tag warn">Can’t be shared or imported</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| gap | `6px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| column-gap | `6px` | `6px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| row-gap | `6px` | `6px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| align-items | `center` | `center` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| height | `20px` | `20px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `0 7px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-top | `0px` | `0px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-right | `7px` | `7px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-bottom | `0px` | `0px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-left | `7px` | `7px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| border-radius | `5px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| background | `color-mix(in srgb,var(--warn) 12%,transparent)` | `` | .b3-fh-tag.warn · b3/board.css:5188 |
+| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.12)` | .b3-fh-tag.warn · b3/board.css:5188 |
+| background-image | `` | `none` | .b3-fh-tag.warn · b3/board.css:5188 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 32%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.32) 0px 0px 0px 1px inset` | .b3-fh-tag.warn · b3/board.css:5188 |
+| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-size | `` | `10.5px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-weight | `` | `600` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-style | `` | `normal` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-variant-numeric | `` | `normal` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| line-height | `` | `10.5px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| letter-spacing | — | `normal` | initial |
+| white-space | `nowrap` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-fh-tag.warn · b3/board.css:5188 |
+
+
+### `span.b3-fh[role=img]`
+
+inside `.b3-tk-t` · 3 on screen · **2 looks**
+
+#### look 1 of 2
+
+`C4-71` · rendered **457×30** · 1 instance look like this · aria-label="1 of 5 slots filled" role="img"
+
+```html
+<span class="b3-fh" role="img" aria-label="1 of 5 slots filled"><span class="b3-fh-cmp" style="--n: 5;"><em>Slots</em><i class="b3-fh-pr" style="--sl: var(--sl-unknown);"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i></span><span class="b3-fh-tag thin two"><b>4 of 5 empty</b><span>on the card</span></span></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b3-fh · b3/board.css:5175 |
+| gap | `10px` | `` | .b3-fh:has(> .b3-fh-cmp) · b3/board.css:5200 |
+| column-gap | `10px` | `10px` | .b3-fh:has(> .b3-fh-cmp) · b3/board.css:5200 |
+| row-gap | `10px` | `10px` | .b3-fh:has(> .b3-fh-cmp) · b3/board.css:5200 |
+| flex-wrap | `nowrap` | `nowrap` | .b3-fh:has(> .b3-fh-cmp) · b3/board.css:5200 |
+| align-items | `stretch` | `stretch` | .b3-fh:has(> .b3-fh-cmp) · b3/board.css:5200 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| margin-top | `7px` | `7px` | .b3-fh · b3/board.css:5175 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 2 of 2
+
+`C4-107` · rendered **457×33** · 2 instances look like this · aria-label="The code fills 5 slots; the build lists " role="img"
+
+```html
+<span class="b3-fh" role="img" aria-label="The code fills 5 slots; the build lists 4"><span class="b3-fh-cmp" style="--n: 5;"><em>Code</em><i class="b3-fh-pr" style="--sl: var(--sl-muzzle, var(--sl-unknown));">1C</i><i class="b3-fh-pr" style="--sl: var(--sl-laser, var(--sl-unknown));">6C</i><i class="b3-fh-pr" style="--sl: var(--sl-ammunition, var(--sl-unknown));">7A</i><i class="b3-fh-pr" style="--sl: var(--sl-rear-
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b3-fh · b3/board.css:5175 |
+| gap | `10px` | `` | .b3-fh:has(> .b3-fh-cmp) · b3/board.css:5200 |
+| column-gap | `10px` | `10px` | .b3-fh:has(> .b3-fh-cmp) · b3/board.css:5200 |
+| row-gap | `10px` | `10px` | .b3-fh:has(> .b3-fh-cmp) · b3/board.css:5200 |
+| flex-wrap | `nowrap` | `nowrap` | .b3-fh:has(> .b3-fh-cmp) · b3/board.css:5200 |
+| align-items | `stretch` | `stretch` | .b3-fh:has(> .b3-fh-cmp) · b3/board.css:5200 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| margin-top | `7px` | `7px` | .b3-fh · b3/board.css:5175 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `span.b3-fh-cmp`
+
+inside `.b3-fh` · 3 on screen · **2 looks**
+
+#### look 1 of 2
+
+`C4-72` · rendered **192×30** · 1 instance look like this
+
+```html
+<span class="b3-fh-cmp" style="--n: 5;"><em>Slots</em><i class="b3-fh-pr" style="--sl: var(--sl-unknown);"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i><i class="b3-fh-pr gap"></i></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-fh-cmp · b3/board.css:5176 |
+| grid-template-columns | `auto repeat(var(--n),26px)` | `42.1562px 26px 26px 26px 26px 26px` | .b3-fh-cmp · b3/board.css:5222 |
+| gap | `5px 4px` | `` | .b3-fh-cmp · b3/board.css:5222 |
+| column-gap | `4px` | `4px` | .b3-fh-cmp · b3/board.css:5222 |
+| row-gap | `5px` | `5px` | .b3-fh-cmp · b3/board.css:5222 |
+| align-items | `center` | `center` | .b3-fh-cmp · b3/board.css:5176 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 2 of 2
+
+`C4-108` · rendered **192×33** · 2 instances look like this
+
+```html
+<span class="b3-fh-cmp" style="--n: 5;"><em>Code</em><i class="b3-fh-pr" style="--sl: var(--sl-muzzle, var(--sl-unknown));">1C</i><i class="b3-fh-pr" style="--sl: var(--sl-laser, var(--sl-unknown));">6C</i><i class="b3-fh-pr" style="--sl: var(--sl-ammunition, var(--sl-unknown));">7A</i><i class="b3-fh-pr" style="--sl: var(--sl-rear-grip, var(--sl-unknown));">8A</i><i class="b3-fh-pr">9A</i><em>Build</em><i class="b3-
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-fh-cmp · b3/board.css:5176 |
+| grid-template-columns | `auto repeat(var(--n),26px)` | `42.1562px 26px 26px 26px 26px 26px` | .b3-fh-cmp · b3/board.css:5222 |
+| gap | `5px 4px` | `` | .b3-fh-cmp · b3/board.css:5222 |
+| column-gap | `4px` | `4px` | .b3-fh-cmp · b3/board.css:5222 |
+| row-gap | `5px` | `5px` | .b3-fh-cmp · b3/board.css:5222 |
+| align-items | `center` | `center` | .b3-fh-cmp · b3/board.css:5176 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `i.b3-fh-pr`
+
+inside `.b3-fh-cmp` · 10 on screen · **7 looks**
+
+#### look 1 of 7
+
+`C4-74` · rendered **26×18** · 1 instance look like this
+
+```html
+<i class="b3-fh-pr" style="--sl: var(--sl-unknown);"></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-fh-pr · b3/board.css:5179 |
+| align-items | `center` | `center` | .b3-fh-pr · b3/board.css:5179 |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| place-items | `center` | `` | .b3-fh-pr · b3/board.css:5179 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `18px` | `18px` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `1px solid transparent` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| border-color | `color-mix(in srgb,var(--sl,var(--ink3)) 62%,transparent)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| border-radius | `4px` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `color-mix(in srgb,var(--sl,var(--ink3)) 16%,#04070A)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-color | `` | `color(srgb 0.106039 0.125333 0.145255)` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font | `600 10.5px/1 var(--data)` | `` | .b3-fh-pr · b3/board.css:5179 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fh-pr · b3/board.css:5179 |
+| font-size | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| font-weight | `` | `600` | .b3-fh-pr · b3/board.css:5179 |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| font-variant-numeric | `` | `normal` | .b3-fh-pr · b3/board.css:5179 |
+| line-height | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| letter-spacing | `0.02em` | `0.21px` | .b3-fh-pr · b3/board.css:5179 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-fh-pr · b3/board.css:5179 |
+
+#### look 2 of 7
+
+`C4-110` · rendered **26×18** · 2 instances look like this · text “1C”
+
+```html
+<i class="b3-fh-pr" style="--sl: var(--sl-muzzle, var(--sl-unknown));">1C</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-fh-pr · b3/board.css:5179 |
+| align-items | `center` | `center` | .b3-fh-pr · b3/board.css:5179 |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| place-items | `center` | `` | .b3-fh-pr · b3/board.css:5179 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `18px` | `18px` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `1px solid transparent` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| border-color | `color-mix(in srgb,var(--sl,var(--ink3)) 62%,transparent)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| border-radius | `4px` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `color-mix(in srgb,var(--sl,var(--ink3)) 16%,#04070A)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-color | `` | `color(srgb 0.173176 0.0933333 0.0875294)` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font | `600 10.5px/1 var(--data)` | `` | .b3-fh-pr · b3/board.css:5179 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fh-pr · b3/board.css:5179 |
+| font-size | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| font-weight | `` | `600` | .b3-fh-pr · b3/board.css:5179 |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| font-variant-numeric | `` | `normal` | .b3-fh-pr · b3/board.css:5179 |
+| line-height | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| letter-spacing | `0.02em` | `0.21px` | .b3-fh-pr · b3/board.css:5179 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-fh-pr · b3/board.css:5179 |
+
+#### look 3 of 7
+
+`C4-111` · rendered **26×18** · 2 instances look like this · text “6C”
+
+```html
+<i class="b3-fh-pr" style="--sl: var(--sl-laser, var(--sl-unknown));">6C</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-fh-pr · b3/board.css:5179 |
+| align-items | `center` | `center` | .b3-fh-pr · b3/board.css:5179 |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| place-items | `center` | `` | .b3-fh-pr · b3/board.css:5179 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `18px` | `18px` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `1px solid transparent` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| border-color | `color-mix(in srgb,var(--sl,var(--ink3)) 62%,transparent)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| border-radius | `4px` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `color-mix(in srgb,var(--sl,var(--ink3)) 16%,#04070A)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-color | `` | `color(srgb 0.0131765 0.177412 0.130196)` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font | `600 10.5px/1 var(--data)` | `` | .b3-fh-pr · b3/board.css:5179 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fh-pr · b3/board.css:5179 |
+| font-size | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| font-weight | `` | `600` | .b3-fh-pr · b3/board.css:5179 |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| font-variant-numeric | `` | `normal` | .b3-fh-pr · b3/board.css:5179 |
+| line-height | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| letter-spacing | `0.02em` | `0.21px` | .b3-fh-pr · b3/board.css:5179 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-fh-pr · b3/board.css:5179 |
+
+#### look 4 of 7
+
+`C4-112` · rendered **26×18** · 1 instance look like this · text “7A”
+
+```html
+<i class="b3-fh-pr" style="--sl: var(--sl-ammunition, var(--sl-unknown));">7A</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-fh-pr · b3/board.css:5179 |
+| align-items | `center` | `center` | .b3-fh-pr · b3/board.css:5179 |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| place-items | `center` | `` | .b3-fh-pr · b3/board.css:5179 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `18px` | `18px` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `1px solid transparent` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| border-color | `color-mix(in srgb,var(--sl,var(--ink3)) 62%,transparent)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| border-radius | `4px` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `color-mix(in srgb,var(--sl,var(--ink3)) 16%,#04070A)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-color | `` | `color(srgb 0.173176 0.0494118 0.0862745)` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font | `600 10.5px/1 var(--data)` | `` | .b3-fh-pr · b3/board.css:5179 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fh-pr · b3/board.css:5179 |
+| font-size | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| font-weight | `` | `600` | .b3-fh-pr · b3/board.css:5179 |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| font-variant-numeric | `` | `normal` | .b3-fh-pr · b3/board.css:5179 |
+| line-height | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| letter-spacing | `0.02em` | `0.21px` | .b3-fh-pr · b3/board.css:5179 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-fh-pr · b3/board.css:5179 |
+
+#### look 5 of 7
+
+`C4-113` · rendered **26×18** · 2 instances look like this · text “8A”
+
+```html
+<i class="b3-fh-pr" style="--sl: var(--sl-rear-grip, var(--sl-unknown));">8A</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-fh-pr · b3/board.css:5179 |
+| align-items | `center` | `center` | .b3-fh-pr · b3/board.css:5179 |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| place-items | `center` | `` | .b3-fh-pr · b3/board.css:5179 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `18px` | `18px` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `1px solid transparent` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| border-color | `color-mix(in srgb,var(--sl,var(--ink3)) 62%,transparent)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| border-radius | `4px` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `color-mix(in srgb,var(--sl,var(--ink3)) 16%,#04070A)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-color | `` | `color(srgb 0.12298 0.115922 0.192941)` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font | `600 10.5px/1 var(--data)` | `` | .b3-fh-pr · b3/board.css:5179 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fh-pr · b3/board.css:5179 |
+| font-size | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| font-weight | `` | `600` | .b3-fh-pr · b3/board.css:5179 |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| font-variant-numeric | `` | `normal` | .b3-fh-pr · b3/board.css:5179 |
+| line-height | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| letter-spacing | `0.02em` | `0.21px` | .b3-fh-pr · b3/board.css:5179 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-fh-pr · b3/board.css:5179 |
+
+#### look 6 of 7
+
+`C4-114` · rendered **26×18** · 1 instance look like this · text “9A”
+
+```html
+<i class="b3-fh-pr">9A</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-fh-pr · b3/board.css:5179 |
+| align-items | `center` | `center` | .b3-fh-pr · b3/board.css:5179 |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| place-items | `center` | `` | .b3-fh-pr · b3/board.css:5179 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `18px` | `18px` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `1px solid transparent` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| border-color | `color-mix(in srgb,var(--sl,var(--ink3)) 62%,transparent)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| border-radius | `4px` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `color-mix(in srgb,var(--sl,var(--ink3)) 16%,#04070A)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-color | `` | `color(srgb 0.0966275 0.115294 0.132706)` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font | `600 10.5px/1 var(--data)` | `` | .b3-fh-pr · b3/board.css:5179 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fh-pr · b3/board.css:5179 |
+| font-size | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| font-weight | `` | `600` | .b3-fh-pr · b3/board.css:5179 |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| font-variant-numeric | `` | `normal` | .b3-fh-pr · b3/board.css:5179 |
+| line-height | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| letter-spacing | `0.02em` | `0.21px` | .b3-fh-pr · b3/board.css:5179 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-fh-pr · b3/board.css:5179 |
+
+*1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+
+
+### `i.b3-fh-pr.gap`
+
+inside `.b3-fh-cmp` · 5 on screen · **1 look**
+
+#### the one look
+
+`C4-75` · rendered **26×18** · 5 instances look like this
+
+```html
+<i class="b3-fh-pr gap"></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-fh-pr · b3/board.css:5179 |
+| align-items | `center` | `center` | .b3-fh-pr · b3/board.css:5179 |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| place-items | `center` | `` | .b3-fh-pr · b3/board.css:5179 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `18px` | `18px` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `1px dashed color-mix(in srgb,var(--warn) 72%,transparent)` | `` | .b3-fh-cmp i.gap, .b3-fh-cmp i.b3-fh-at.gap · b3/board.css:5226 |
+| border-color | `color-mix(in srgb,var(--sl,var(--ink3)) 62%,transparent)` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| border-radius | `4px` | `` | .b3-fh-cmp i.b3-fh-pr · b3/board.css:5224 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| outline-offset | `-1px` | `-1px` | .b3-fh-cmp i.gap · b3/board.css:5181 |
+| background | `repeating-linear-gradient(-45deg,color-mix(in srgb,var(--warn) 34%,transparent) 0 2px,transparent 2px 5px)` | `` | .b3-fh-cmp i.gap, .b3-fh-cmp i.b3-fh-at.gap · b3/board.css:5226 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-fh-cmp i.gap, .b3-fh-cmp i.b3-fh-at.gap · b3/board.css:5226 |
+| background-image | `` | `repeating-linear-gradient(-45deg, color(srgb 1 0.478431 0.270588 / 0.34) 0px, color(srgb 1 0.478431 0.270588 / 0.34) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 5px)` | .b3-fh-cmp i.gap, .b3-fh-cmp i.b3-fh-at.gap · b3/board.css:5226 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font | `600 10.5px/1 var(--data)` | `` | .b3-fh-pr · b3/board.css:5179 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fh-pr · b3/board.css:5179 |
+| font-size | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| font-weight | `` | `600` | .b3-fh-pr · b3/board.css:5179 |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| font-variant-numeric | `` | `normal` | .b3-fh-pr · b3/board.css:5179 |
+| line-height | `` | `10.5px` | .b3-fh-pr · b3/board.css:5179 |
+| letter-spacing | `0.02em` | `0.21px` | .b3-fh-pr · b3/board.css:5179 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-fh-pr · b3/board.css:5179 |
+
+
+### `span.b3-fh-tag.thin.two`
+
+inside `.b3-fh` · 1 on screen · **1 look**
+
+#### the one look
+
+`C4-79` · rendered **85×30** · 1 instance look like this
+
+```html
+<span class="b3-fh-tag thin two"><b>4 of 5 empty</b><span>on the card</span></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| gap | `3px` | `` | .b3-fh-tag.two · b3/board.css:5201 |
+| column-gap | `3px` | `3px` | .b3-fh-tag.two · b3/board.css:5201 |
+| row-gap | `3px` | `3px` | .b3-fh-tag.two · b3/board.css:5201 |
+| flex-direction | `column` | `column` | .b3-fh-tag.two · b3/board.css:5201 |
+| align-items | `flex-start` | `flex-start` | .b3-fh-tag.two · b3/board.css:5201 |
+| justify-content | `center` | `center` | .b3-fh-tag.two · b3/board.css:5201 |
+| height | `auto` | `30px` | .b3-fh-tag.two · b3/board.css:5201 |
+| min-height | `30px` | `30px` | .b3-fh-tag.two · b3/board.css:5227 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `0 10px` | `` | .b3-fh-tag.two · b3/board.css:5201 |
+| padding-top | `0px` | `0px` | .b3-fh-tag.two · b3/board.css:5201 |
+| padding-right | `10px` | `10px` | .b3-fh-tag.two · b3/board.css:5201 |
+| padding-bottom | `0px` | `0px` | .b3-fh-tag.two · b3/board.css:5201 |
+| padding-left | `10px` | `10px` | .b3-fh-tag.two · b3/board.css:5201 |
+| border-radius | `5px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| background | `color-mix(in srgb,var(--ink) 6%,transparent)` | `` | .b3-fh-tag.thin · b3/board.css:5189 |
+| background-color | `` | `color(srgb 0.909804 0.929412 0.945098 / 0.06)` | .b3-fh-tag.thin · b3/board.css:5189 |
+| background-image | `` | `none` | .b3-fh-tag.thin · b3/board.css:5189 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 11%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.11) 0px 0px 0px 1px inset` | .b3-fh-tag.thin · b3/board.css:5189 |
+| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-size | `` | `10.5px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-weight | `` | `600` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-style | `` | `normal` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-variant-numeric | `` | `normal` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| line-height | `` | `10.5px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| letter-spacing | — | `normal` | initial |
+| white-space | `nowrap` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-fh-tag.thin · b3/board.css:5189 |
+
+
+### `span`
+
+inside `.b3-fh-tag` · 9 on screen · **4 looks**
+
+#### look 1 of 4
+
+`C4-81` · rendered **59×11** · 1 instance look like this · text “on the card”
+
+```html
+<span>on the card</span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-xs)/1.4 var(--ui)` | `` | .b3-tk-t span · b3/board.css:3161 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-t span · b3/board.css:3161 |
-| font-size | `` | `10.5px` | .b3-tk-t span · b3/board.css:3161 |
-| font-weight | `` | `500` | .b3-tk-t span · b3/board.css:3161 |
-| font-style | `` | `normal` | .b3-tk-t span · b3/board.css:3161 |
-| font-variant-numeric | `` | `normal` | .b3-tk-t span · b3/board.css:3161 |
-| line-height | `` | `14.7px` | .b3-tk-t span · b3/board.css:3161 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | `500 var(--t-xs)/1 var(--ui)` | `` | .b3-fh-tag.two span · b3/board.css:5203 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-fh-tag.two span · b3/board.css:5203 |
+| font-size | `` | `10.5px` | .b3-fh-tag.two span · b3/board.css:5203 |
+| font-weight | `` | `500` | .b3-fh-tag.two span · b3/board.css:5203 |
+| font-style | `` | `normal` | .b3-fh-tag.two span · b3/board.css:5203 |
+| font-variant-numeric | `` | `normal` | .b3-fh-tag.two span · b3/board.css:5203 |
+| line-height | `` | `10.5px` | .b3-fh-tag.two span · b3/board.css:5203 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-tk-t span · b3/board.css:3161 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-fh-tag.thin.two span · b3/board.css:5228 |
 
-#### look 2 of 3
+#### look 2 of 4
 
-`C4-176` · rendered **0×0** · 5 instances look like this · text “Build”
+`C4-123` · rendered **72×11** · 2 instances look like this · text “from the build”
+
+```html
+<span>from the build</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | `500 var(--t-xs)/1 var(--ui)` | `` | .b3-fh-tag.two span · b3/board.css:5203 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-fh-tag.two span · b3/board.css:5203 |
+| font-size | `` | `10.5px` | .b3-fh-tag.two span · b3/board.css:5203 |
+| font-weight | `` | `500` | .b3-fh-tag.two span · b3/board.css:5203 |
+| font-style | `` | `normal` | .b3-fh-tag.two span · b3/board.css:5203 |
+| font-variant-numeric | `` | `normal` | .b3-fh-tag.two span · b3/board.css:5203 |
+| line-height | `` | `10.5px` | .b3-fh-tag.two span · b3/board.css:5203 |
+| letter-spacing | — | `normal` | initial |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| color | `color-mix(in srgb,var(--warn-ink) 70%,var(--ink3))` | `color(srgb 0.856471 0.606667 0.5)` | .b3-fh-tag.two span · b3/board.css:5203 |
+
+#### look 3 of 4
+
+`C4-214` · rendered **0×0** · 5 instances look like this · text “Build”
 
 ```html
 <span>Build</span>
@@ -2393,7 +3022,7 @@ inside `.b3-tk-t` · 12 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | ↑ `600 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-wh · b3/board.css:1296 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-wh · b3/board.css:1296 |
 | font-size | ↑ `` | `9.5px` | inherited · .b3-wh · b3/board.css:1296 |
@@ -2405,9 +3034,9 @@ inside `.b3-tk-t` · 12 on screen · **3 looks**
 | text-transform | ↑ `uppercase` | `uppercase` | inherited · .b3-wh · b3/board.css:1296 |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-wh · b3/board.css:1296 |
 
-#### look 3 of 3
+#### look 4 of 4
 
-`C4-194` · rendered **0×0** · 1 instance look like this · text “Coming Soon”
+`C4-232` · rendered **0×0** · 1 instance look like this · text “Coming Soon”
 
 ```html
 <span>Coming Soon</span>
@@ -2416,7 +3045,7 @@ inside `.b3-tk-t` · 12 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `500 var(--t-xs)/1 var(--ui)` | `` | .b3-wr-b small span · b3/board.css:1315 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-wr-b small span · b3/board.css:1315 |
 | font-size | `` | `10.5px` | .b3-wr-b small span · b3/board.css:1315 |
@@ -2436,73 +3065,13 @@ inside `.b3-tk-t` · 12 on screen · **3 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-wr-main · b3/board.css:1307 |
 
 
-### `span.b3-tk-ev.slots`
-
-inside `.b3-tk-f` · 1 on screen · **1 look**
-
-#### the one look
-
-`C4-67` · rendered **76×18** · 1 instance look like this · aria-hidden="true"
-
-```html
-<span class="b3-tk-ev slots" aria-hidden="true"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-tk-ev · b3/board.css:3162 |
-| gap | `4px` | `` | .b3-tk-ev · b3/board.css:3162 |
-| column-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3162 |
-| row-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3162 |
-| align-items | `center` | `center` | .b3-tk-ev · b3/board.css:3162 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `i.on`
-
-inside `.b3-tk-ev` · 1 on screen · **1 look**
-
-#### the one look
-
-`C4-68` · rendered **12×18** · 1 instance look like this
-
-```html
-<i class="on"></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| width | `12px` | `12px` | .b3-tk-ev.slots i · b3/board.css:3163 |
-| height | `18px` | `18px` | .b3-tk-ev.slots i · b3/board.css:3163 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `3px` | `` | .b3-tk-ev.slots i · b3/board.css:3163 |
-| background | `var(--c)` | `` | .b3-tk-ev.slots i.on · b3/board.css:3164 |
-| background-color | `` | `rgb(255, 210, 63)` | .b3-tk-ev.slots i.on · b3/board.css:3164 |
-| background-image | `` | `none` | .b3-tk-ev.slots i.on · b3/board.css:3164 |
-| box-shadow | `none` | `none` | .b3-tk-ev.slots i.on · b3/board.css:3164 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
 ### `footer.b3-tk-ft`
 
 inside `.b3-tk` · 6 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-73` · rendered **547×58** · 5 instances look like this
+`C4-89` · rendered **547×58** · 5 instances look like this
 
 ```html
 <footer class="b3-tk-ft"><span class="pb-pill b3-tk-agec">⟨svg.ic⟩Last edit: 3 months ago</span><button type="button" class="b3-btn2 sm go">⟨svg.ic⟩Repair build</button></footer>
@@ -2510,28 +3079,28 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk-ft · b3/board.css:3173 |
-| gap | `8px` | `` | .b3-tk-ft · b3/board.css:3338 |
-| column-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3338 |
-| row-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3338 |
-| align-items | `center` | `center` | .b3-tk-ft · b3/board.css:3173 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 16px 14px 18px` | `` | .b3-tk-ft · b3/board.css:3338 |
-| padding-top | `12px` | `12px` | .b3-tk-ft · b3/board.css:3338 |
-| padding-right | `16px` | `16px` | .b3-tk-ft · b3/board.css:3338 |
-| padding-bottom | `14px` | `14px` | .b3-tk-ft · b3/board.css:3338 |
-| padding-left | `18px` | `18px` | .b3-tk-ft · b3/board.css:3338 |
-| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-ft · b3/board.css:3173 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `flex` | `flex` | .b3-tk-ft · b3/board.css:3165 |
+| gap | `8px` | `` | .b3-tk-ft · b3/board.css:3330 |
+| column-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3330 |
+| row-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3330 |
+| align-items | `center` | `center` | .b3-tk-ft · b3/board.css:3165 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `12px 16px 14px 18px` | `` | .b3-tk-ft · b3/board.css:3330 |
+| padding-top | `12px` | `12px` | .b3-tk-ft · b3/board.css:3330 |
+| padding-right | `16px` | `16px` | .b3-tk-ft · b3/board.css:3330 |
+| padding-bottom | `14px` | `14px` | .b3-tk-ft · b3/board.css:3330 |
+| padding-left | `18px` | `18px` | .b3-tk-ft · b3/board.css:3330 |
+| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-ft · b3/board.css:3165 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 #### look 2 of 2
 
-`C4-341` · rendered **1108×56** · 1 instance look like this
+`C4-381` · rendered **1108×56** · 1 instance look like this
 
 ```html
 <footer class="b3-tk-ft"><span class="pb-pill b3-tk-agec">⟨svg.ic⟩106 with no edit in 90 days</span><button type="button" class="b3-btn2 ghost sm">⟨svg.ic⟩<span class="lbl">Show them</span></button></footer>
@@ -2539,23 +3108,23 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk-ft · b3/board.css:3173 |
-| gap | `8px` | `` | .b3-tk-ft · b3/board.css:3338 |
-| column-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3338 |
-| row-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3338 |
-| align-items | `center` | `center` | .b3-tk-ft · b3/board.css:3173 |
-| justify-content | `space-between` | `space-between` | .b3-tk-pass .b3-tk-ft · b3/board.css:3658 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3818 |
-| padding-top | `12px` | `12px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3818 |
-| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3818 |
-| padding-bottom | `12px` | `12px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3818 |
-| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3818 |
-| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-ft · b3/board.css:3173 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `flex` | `flex` | .b3-tk-ft · b3/board.css:3165 |
+| gap | `8px` | `` | .b3-tk-ft · b3/board.css:3330 |
+| column-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3330 |
+| row-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3330 |
+| align-items | `center` | `center` | .b3-tk-ft · b3/board.css:3165 |
+| justify-content | `space-between` | `space-between` | .b3-tk-pass .b3-tk-ft · b3/board.css:3650 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `12px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3810 |
+| padding-top | `12px` | `12px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3810 |
+| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3810 |
+| padding-bottom | `12px` | `12px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3810 |
+| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3810 |
+| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-ft · b3/board.css:3165 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -2566,7 +3135,7 @@ inside `.b3-tk-ft` · 6 on screen · **1 look**
 
 #### the one look
 
-`C4-74` · rendered **177×28** · 6 instances look like this
+`C4-90` · rendered **177×28** · 6 instances look like this
 
 ```html
 <span class="pb-pill b3-tk-agec">⟨svg.ic⟩Last edit: 3 months ago</span>
@@ -2580,13 +3149,13 @@ inside `.b3-tk-ft` · 6 on screen · **1 look**
 | row-gap | `6px` | `6px` | .pb-pill · b2.css:237 |
 | align-items | `center` | `center` | .pb-pill · b2.css:237 |
 | height | `28px` | `28px` | .pb-pill · b2.css:553 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 10px` | `` | .pb-pill · b2.css:237 |
 | padding-top | `0px` | `0px` | .pb-pill · b2.css:237 |
 | padding-right | `10px` | `10px` | .pb-pill · b2.css:237 |
 | padding-bottom | `0px` | `0px` | .pb-pill · b2.css:237 |
 | padding-left | `10px` | `10px` | .pb-pill · b2.css:237 |
-| margin-right | `auto` | `215.891px` | .b3-tk-agec · b3/board.css:3340 |
+| margin-right | `auto` | `215.891px` | .b3-tk-agec · b3/board.css:3332 |
 | border-radius | `6px` | `` | .pb-pill · b2.css:553 |
 | background | `var(--sunk)` | `` | .pb-pill · b2.css:237 |
 | background-color | `` | `rgb(11, 15, 18)` | .pb-pill · b2.css:237 |
@@ -2610,7 +3179,7 @@ inside `.b3-tk-ft` · 10 on screen · **1 look**
 
 #### the one look
 
-`C4-76` · rendered **112×32** · 10 instances look like this · type="button"
+`C4-92` · rendered **112×32** · 10 instances look like this · type="button"
 
 ```html
 <button type="button" class="b3-btn2 sm go">⟨svg.ic⟩Repair build</button>
@@ -2622,18 +3191,18 @@ inside `.b3-tk-ft` · 10 on screen · **1 look**
 | gap | `7px` | `` | .b3-btn2.sm · b3/board.css:1353 |
 | column-gap | `7px` | `7px` | .b3-btn2.sm · b3/board.css:1353 |
 | row-gap | `7px` | `7px` | .b3-btn2.sm · b3/board.css:1353 |
-| flex | `none` | `` | .b3-tk-ft > .b3-btn2 · b3/board.css:3339 |
+| flex | `none` | `` | .b3-tk-ft > .b3-btn2 · b3/board.css:3331 |
 | align-items | `center` | `center` | .b3-btn2 · b3/board.css:801 |
 | height | `32px` | `32px` | .b3-btn2.sm · b3/board.css:1353 |
-| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
 | padding | `0 12px 0 10px` | `` | .b3-btn2.sm · b3/board.css:1353 |
 | padding-top | `0px` | `0px` | .b3-btn2.sm · b3/board.css:1353 |
 | padding-right | `12px` | `12px` | .b3-btn2.sm · b3/board.css:1353 |
 | padding-bottom | `0px` | `0px` | .b3-btn2.sm · b3/board.css:1353 |
 | padding-left | `10px` | `10px` | .b3-btn2.sm · b3/board.css:1353 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
-| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3334 |
+| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3326 |
 | background | `var(--ok)` | `` | .b3-btn2.go · b3/board.css:1355 |
 | background-color | `` | `rgb(123, 219, 99)` | .b3-btn2.go · b3/board.css:1355 |
 | background-image | `` | `none` | .b3-btn2.go · b3/board.css:1355 |
@@ -2649,9 +3218,9 @@ inside `.b3-tk-ft` · 10 on screen · **1 look**
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .b3-btn2 · b3/board.css:801 |
 | color | `var(--on-ok)` | `rgb(7, 19, 10)` | .b3-btn2.go · b3/board.css:1355 |
-| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` | `` | .b3-btn2.go · b3/board.css:4142 |
+| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` | `` | .b3-btn2.go · b3/board.css:4134 |
 | cursor | `pointer` | `pointer` | .b3-btn2 · b3/board.css:801 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes
 
@@ -2677,146 +3246,333 @@ inside `.b3-tk-ft` · 10 on screen · **1 look**
 | transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
 
 
-### `span.b3-tk-ev.pairs`
+### `i.b3-fh-at`
 
-inside `.b3-tk-f` · 2 on screen · **1 look**
+inside `.b3-fh-cmp` · 9 on screen · **5 looks**
 
-#### the one look
+#### look 1 of 5
 
-`C4-92` · rendered **136×22** · 2 instances look like this · aria-hidden="true"
+`C4-116` · rendered **26×8** · 2 instances look like this · title="Muzzle · Monolithic Suppressor"
 
 ```html
-<span class="b3-tk-ev pairs" aria-hidden="true"><i class="">1C</i><i class="">6C</i><i class="">7A</i><i class="">8A</i><i class="extra">9A</i></span>
+<i class="b3-fh-at" title="Muzzle · Monolithic Suppressor" style="--sl: var(--sl-muzzle, var(--sl-unknown));"></i>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-tk-ev · b3/board.css:3162 |
-| gap | `4px` | `` | .b3-tk-ev · b3/board.css:3162 |
-| column-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3162 |
-| row-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3162 |
-| align-items | `center` | `center` | .b3-tk-ev · b3/board.css:3162 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | — | `block` | initial |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `8px` | `8px` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `0` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| border-radius | `3px` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `var(--sl,var(--ink3))` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| background-color | `` | `rgb(255, 112, 87)` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 2 of 5
+
+`C4-117` · rendered **26×8** · 2 instances look like this · title="Laser · OWC Laser - Tactical"
+
+```html
+<i class="b3-fh-at" title="Laser · OWC Laser - Tactical" style="--sl: var(--sl-laser, var(--sl-unknown));"></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `8px` | `8px` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `0` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| border-radius | `3px` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `var(--sl,var(--ink3))` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| background-color | `` | `rgb(0, 246, 155)` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 3 of 5
+
+`C4-118` · rendered **26×8** · 2 instances look like this · title="Ammunition · Extended Mag A"
+
+```html
+<i class="b3-fh-at" title="Ammunition · Extended Mag A" style="--sl: var(--sl-ammunition, var(--sl-unknown));"></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `8px` | `8px` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `0` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| border-radius | `3px` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `var(--sl,var(--ink3))` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| background-color | `` | `rgb(255, 42, 85)` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 4 of 5
+
+`C4-119` · rendered **26×8** · 2 instances look like this · title="Rear Grip · Granulated Grip Tape"
+
+```html
+<i class="b3-fh-at" title="Rear Grip · Granulated Grip Tape" style="--sl: var(--sl-rear-grip, var(--sl-unknown));"></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `8px` | `8px` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `0` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| border-radius | `3px` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `var(--sl,var(--ink3))` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| background-color | `` | `rgb(175, 148, 255)` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 5 of 5
+
+`C4-152` · rendered **26×8** · 1 instance look like this · title="Barrel · MIP Extended Light Barrel"
+
+```html
+<i class="b3-fh-at" title="Barrel · MIP Extended Light Barrel" style="--sl: var(--sl-barrel, var(--sl-unknown));"></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `8px` | `8px` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `0` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| border-radius | `3px` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| background | `var(--sl,var(--ink3))` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| background-color | `` | `rgb(255, 154, 60)` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| background-image | `` | `none` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `i.extra`
+### `i.b3-fh-at.gap`
 
-inside `.b3-tk-ev` · 1 on screen · **1 look**
+inside `.b3-fh-cmp` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-97` · rendered **24×22** · 1 instance look like this · text “9A”
+`C4-120` · rendered **26×8** · 1 instance look like this · title=""
 
 ```html
-<i class="extra">9A</i>
+<i class="b3-fh-at gap" title=""></i>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| align-items | `center` | `center` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| place-items | `center` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| min-width | `24px` | `24px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| height | `22px` | `22px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 4px` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-top | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-right | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-bottom | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-left | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| border-radius | `5px` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| background | `color-mix(in srgb,var(--warn) 16%,transparent)` | `` | .b3-tk-ev.pairs i.extra · b3/board.css:3166 |
-| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.16)` | .b3-tk-ev.pairs i.extra · b3/board.css:3166 |
-| background-image | `` | `none` | .b3-tk-ev.pairs i.extra · b3/board.css:3166 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 45%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.45) 0px 0px 0px 1px inset` | .b3-tk-ev.pairs i.extra · b3/board.css:3166 |
-| font | `600 11px/1 var(--data)` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-size | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-weight | `` | `600` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-style | `normal` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-variant-numeric | `` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| line-height | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
+| display | — | `block` | initial |
+| align-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| justify-self | `center` | `center` | .b3-fh-cmp i · b3/board.css:5223 |
+| width | `26px` | `26px` | .b3-fh-cmp i · b3/board.css:5223 |
+| height | `8px` | `8px` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| box-sizing | `border-box` | `border-box` | .b3-fh-cmp i · b3/board.css:5223 |
+| border | `1px dashed color-mix(in srgb,var(--warn) 72%,transparent)` | `` | .b3-fh-cmp i.gap, .b3-fh-cmp i.b3-fh-at.gap · b3/board.css:5226 |
+| border-radius | `3px` | `` | .b3-fh-cmp i.b3-fh-at · b3/board.css:5225 |
+| outline | `none!important !important` | `` | .b3-fh-cmp i · b3/board.css:5223 |
+| outline-offset | `-1px` | `-1px` | .b3-fh-cmp i.gap · b3/board.css:5181 |
+| background | `repeating-linear-gradient(-45deg,color-mix(in srgb,var(--warn) 34%,transparent) 0 2px,transparent 2px 5px)` | `` | .b3-fh-cmp i.gap, .b3-fh-cmp i.b3-fh-at.gap · b3/board.css:5226 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-fh-cmp i.gap, .b3-fh-cmp i.b3-fh-at.gap · b3/board.css:5226 |
+| background-image | `` | `repeating-linear-gradient(-45deg, color(srgb 1 0.478431 0.270588 / 0.34) 0px, color(srgb 1 0.478431 0.270588 / 0.34) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 5px)` | .b3-fh-cmp i.gap, .b3-fh-cmp i.b3-fh-at.gap · b3/board.css:5226 |
+| box-shadow | `none !important !important` | `none` | .b3-fh-cmp i · b3/board.css:5223 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| font-style | `normal` | `normal` | .b3-fh-cmp i · b3/board.css:5178 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-tk-ev.pairs i.extra · b3/board.css:3166 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `i.gap`
+### `span.b3-fh-tag.two.warn`
 
-inside `.b3-tk-ev` · 1 on screen · **1 look**
+inside `.b3-fh` · 2 on screen · **1 look**
 
 #### the one look
 
-`C4-122` · rendered **24×22** · 1 instance look like this
+`C4-121` · rendered **92×33** · 2 instances look like this
 
 ```html
-<i class="gap"></i>
+<span class="b3-fh-tag warn two"><b>1 missing</b><span>from the build</span></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| align-items | `center` | `center` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| place-items | `center` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| min-width | `24px` | `24px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| height | `22px` | `22px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 4px` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-top | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-right | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-bottom | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| padding-left | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| border-radius | `5px` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| outline | `1px dashed color-mix(in srgb,var(--warn) 60%,transparent)` | `` | .b3-tk-ev.pairs i.gap · b3/board.css:3167 |
-| outline-offset | `-1px` | `-1px` | .b3-tk-ev.pairs i.gap · b3/board.css:3167 |
-| background | `none` | `` | .b3-tk-ev.pairs i.gap · b3/board.css:3167 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk-ev.pairs i.gap · b3/board.css:3167 |
-| background-image | `none` | `none` | .b3-tk-ev.pairs i.gap · b3/board.css:3167 |
-| font | `600 11px/1 var(--data)` | `` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-size | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-weight | `` | `600` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-style | `normal` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| font-variant-numeric | `` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3165 |
-| line-height | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3165 |
+| display | `inline-flex` | `flex` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| gap | `3px` | `` | .b3-fh-tag.two · b3/board.css:5201 |
+| column-gap | `3px` | `3px` | .b3-fh-tag.two · b3/board.css:5201 |
+| row-gap | `3px` | `3px` | .b3-fh-tag.two · b3/board.css:5201 |
+| flex-direction | `column` | `column` | .b3-fh-tag.two · b3/board.css:5201 |
+| align-items | `flex-start` | `flex-start` | .b3-fh-tag.two · b3/board.css:5201 |
+| justify-content | `center` | `center` | .b3-fh-tag.two · b3/board.css:5201 |
+| height | `auto` | `32.5px` | .b3-fh-tag.two · b3/board.css:5201 |
+| min-height | `30px` | `30px` | .b3-fh-tag.two · b3/board.css:5227 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `0 10px` | `` | .b3-fh-tag.two · b3/board.css:5201 |
+| padding-top | `0px` | `0px` | .b3-fh-tag.two · b3/board.css:5201 |
+| padding-right | `10px` | `10px` | .b3-fh-tag.two · b3/board.css:5201 |
+| padding-bottom | `0px` | `0px` | .b3-fh-tag.two · b3/board.css:5201 |
+| padding-left | `10px` | `10px` | .b3-fh-tag.two · b3/board.css:5201 |
+| border-radius | `5px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| background | `color-mix(in srgb,var(--warn) 12%,transparent)` | `` | .b3-fh-tag.warn · b3/board.css:5188 |
+| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.12)` | .b3-fh-tag.warn · b3/board.css:5188 |
+| background-image | `` | `none` | .b3-fh-tag.warn · b3/board.css:5188 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 32%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.32) 0px 0px 0px 1px inset` | .b3-fh-tag.warn · b3/board.css:5188 |
+| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-size | `` | `10.5px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-weight | `` | `600` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-style | `` | `normal` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-variant-numeric | `` | `normal` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| line-height | `` | `10.5px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-ev.pairs i · b3/board.css:3165 |
+| white-space | `nowrap` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-fh-tag.warn · b3/board.css:5188 |
 
 
-### `span.b3-tk-ev.twin`
+### `span.b3-fh-twin`
 
-inside `.b3-tk-f` · 2 on screen · **1 look**
+inside `.b3-fh` · 2 on screen · **1 look**
 
 #### the one look
 
-`C4-149` · rendered **80×21** · 2 instances look like this · aria-hidden="true"
+`C4-185` · rendered **80×20** · 2 instances look like this
 
 ```html
-<span class="b3-tk-ev twin" aria-hidden="true" style="--t: #ff3b5c;"><code>1C2B4A8B9A</code></span>
+<span class="b3-fh-twin" style="--t: var(--warn);"><code>1C2B4A8B9A</code></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-tk-ev · b3/board.css:3162 |
-| gap | `7px` | `` | .b3-tk-ev.twin · b3/board.css:3168 |
-| column-gap | `7px` | `7px` | .b3-tk-ev.twin · b3/board.css:3168 |
-| row-gap | `7px` | `7px` | .b3-tk-ev.twin · b3/board.css:3168 |
-| align-items | `center` | `center` | .b3-tk-ev · b3/board.css:3162 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-xs)/1 var(--ui)` | `` | .b3-tk-ev.twin · b3/board.css:3168 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-ev.twin · b3/board.css:3168 |
-| font-size | `` | `10.5px` | .b3-tk-ev.twin · b3/board.css:3168 |
-| font-weight | `` | `500` | .b3-tk-ev.twin · b3/board.css:3168 |
-| font-style | `` | `normal` | .b3-tk-ev.twin · b3/board.css:3168 |
-| font-variant-numeric | `` | `normal` | .b3-tk-ev.twin · b3/board.css:3168 |
-| line-height | `` | `10.5px` | .b3-tk-ev.twin · b3/board.css:3168 |
+| display | `inline-flex` | `flex` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| gap | `6px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| column-gap | `6px` | `6px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| row-gap | `6px` | `6px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| align-items | `center` | `center` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| height | `20px` | `20px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `0 7px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-top | `0px` | `0px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-right | `7px` | `7px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-bottom | `0px` | `0px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-left | `7px` | `7px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| border-radius | `5px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| background | `color-mix(in srgb,var(--t) 10%,transparent)` | `` | .b3-fh-twin · b3/board.css:5190 |
+| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.1)` | .b3-fh-twin · b3/board.css:5190 |
+| background-image | `` | `none` | .b3-fh-twin · b3/board.css:5190 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--t) 45%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.45) 0px 0px 0px 1px inset` | .b3-fh-twin · b3/board.css:5190 |
+| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-size | `` | `10.5px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-weight | `500` | `500` | .b3-fh-twin · b3/board.css:5190 |
+| font-style | `` | `normal` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-variant-numeric | `` | `normal` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| line-height | `` | `10.5px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-ev.twin · b3/board.css:3168 |
+| white-space | `nowrap` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-fh-twin · b3/board.css:5190 |
+
+
+### `span.b3-fh-tag.thin`
+
+inside `.b3-fh` · 2 on screen · **1 look**
+
+#### the one look
+
+`C4-186` · rendered **156×20** · 2 instances look like this · text “One of the two is redundant”
+
+```html
+<span class="b3-fh-tag thin">One of the two is redundant</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| gap | `6px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| column-gap | `6px` | `6px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| row-gap | `6px` | `6px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| align-items | `center` | `center` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| height | `20px` | `20px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `0 7px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-top | `0px` | `0px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-right | `7px` | `7px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-bottom | `0px` | `0px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| padding-left | `7px` | `7px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| border-radius | `5px` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| background | `color-mix(in srgb,var(--ink) 6%,transparent)` | `` | .b3-fh-tag.thin · b3/board.css:5189 |
+| background-color | `` | `color(srgb 0.909804 0.929412 0.945098 / 0.06)` | .b3-fh-tag.thin · b3/board.css:5189 |
+| background-image | `` | `none` | .b3-fh-tag.thin · b3/board.css:5189 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 11%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.11) 0px 0px 0px 1px inset` | .b3-fh-tag.thin · b3/board.css:5189 |
+| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-size | `` | `10.5px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-weight | `` | `600` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-style | `` | `normal` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| font-variant-numeric | `` | `normal` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| line-height | `` | `10.5px` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| letter-spacing | — | `normal` | initial |
+| white-space | `nowrap` | `` | .b3-fh-tag, .b3-fh-twin · b3/board.css:5187 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-fh-tag.thin · b3/board.css:5189 |
 
 
 ### `div.b3-wh[role=row]`
@@ -2825,7 +3581,7 @@ inside `.b3-work` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-175` · rendered **0×0** · 1 instance look like this · role="row"
+`C4-213` · rendered **0×0** · 1 instance look like this · role="row"
 
 ```html
 <div class="b3-wh" role="row"><span>Build</span><span>Problems</span><span>Last edit</span><span>On the card</span><span></span></div>
@@ -2838,7 +3594,7 @@ inside `.b3-work` · 1 on screen · **1 look**
 | column-gap | `16px` | `16px` | .b3-wh, .b3-wr-main · b3/board.css:1295 |
 | align-items | `center` | `center` | .b3-wh, .b3-wr-main · b3/board.css:1295 |
 | min-height | `38px` | `38px` | .b3-wh · b3/board.css:1296 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 130px 0 18px` | `` | .b3-wh · b3/board.css:1296 |
 | padding-top | `0px` | `0px` | .b3-wh · b3/board.css:1296 |
 | padding-right | `130px` | `130px` | .b3-wh · b3/board.css:1296 |
@@ -2870,25 +3626,25 @@ inside `.b3-work` · 5 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-181` · rendered **0×0** · 1 instance look like this · role="rowgroup"
+`C4-219` · rendered **0×0** · 1 instance look like this · role="rowgroup"
 
 ```html
-<div class="b3-wg" role="rowgroup" style="--c: #ffd23f;"><div class="b3-wg-h" role="row"><span class="b3-nw"><b>PHARO</b><small>SMG</small></span><em>1 build</em><span class="b3-wg-p"><b>1 unshareable</b>2 problems</span></div><div class="b3-wr" role="row" style="--c: #ffd23f;"><button type="button" class="b3-wr-main" aria-expanded="false"><span class="b3-wr-b"><b>Build 1</b><small><span>Coming Soon</span></small></s
+<div class="b3-wg" role="rowgroup" style="--c: #ffd23f;"><div class="b3-wg-h" role="row"><span class="b3-nw"><b>PHARO</b><small>SMG</small></span><em>1 build</em><span class="b3-wg-p"><b>1 unshareable</b>3 problems</span></div><div class="b3-wr" role="row" style="--c: #ffd23f;"><button type="button" class="b3-wr-main" aria-expanded="false"><span class="b3-wr-b"><b>Build 1</b><small><span>Coming Soon</span></small></s
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | div · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | border-radius | `var(--rad-3)` | `` | .b3-wg · b3/board.css:2592 |
 | background | `var(--paper)` | `` | .b3-wg · b3/board.css:2592 |
 | background-color | `` | `rgb(23, 30, 36)` | .b3-wg · b3/board.css:2592 |
 | background-image | `` | `none` | .b3-wg · b3/board.css:2592 |
 | box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-wg · b3/board.css:2592 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | overflow | `hidden` | `` | .b3-wg · b3/board.css:2592 |
@@ -2897,7 +3653,7 @@ inside `.b3-work` · 5 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C4-211` · rendered **0×0** · 4 instances look like this · role="rowgroup"
+`C4-251` · rendered **0×0** · 4 instances look like this · role="rowgroup"
 
 ```html
 <div class="b3-wg" role="rowgroup" style="--c: #3F6E8E;"><div class="b3-wg-h" role="row"><span class="b3-nw"><b>.50 GS</b><small>Secondaries</small></span><em>1 build</em><span class="b3-wg-p"><b>1 unshareable</b>1 problem</span></div><div class="b3-wr" role="row" style="--c: #3F6E8E;"><button type="button" class="b3-wr-main" aria-expanded="false"><span class="b3-wr-b"><b>Build 1</b></span><span class="b3-wr-f"><span
@@ -2906,7 +3662,7 @@ inside `.b3-work` · 5 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | div · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | margin-top | `10px` | `10px` | .b3-work > .b3-wg + .b3-wg · b3/board.css:2590 |
 | border-top | `1px solid var(--rule2)` | `` | .b3-wg + .b3-wg · b3/board.css:1286 |
 | border-radius | `var(--rad-3)` | `` | .b3-wg · b3/board.css:2592 |
@@ -2914,10 +3670,10 @@ inside `.b3-work` · 5 on screen · **2 looks**
 | background-color | `` | `rgb(23, 30, 36)` | .b3-wg · b3/board.css:2592 |
 | background-image | `` | `none` | .b3-wg · b3/board.css:2592 |
 | box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-wg · b3/board.css:2592 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | overflow | `hidden` | `` | .b3-wg · b3/board.css:2592 |
@@ -2931,10 +3687,10 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 
 #### look 1 of 4
 
-`C4-182` · rendered **0×0** · 2 instances look like this · role="row"
+`C4-220` · rendered **0×0** · 2 instances look like this · role="row"
 
 ```html
-<div class="b3-wg-h" role="row"><span class="b3-nw"><b>PHARO</b><small>SMG</small></span><em>1 build</em><span class="b3-wg-p"><b>1 unshareable</b>2 problems</span></div>
+<div class="b3-wg-h" role="row"><span class="b3-nw"><b>PHARO</b><small>SMG</small></span><em>1 build</em><span class="b3-wg-p"><b>1 unshareable</b>3 problems</span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -2946,7 +3702,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | row-gap | `10px` | `10px` | .b3-wg-h · b3/board.css:1287 |
 | align-items | `center` | `center` | .b3-wg-h · b3/board.css:1287 |
 | min-height | `40px` | `40px` | .b3-wg-h · b3/board.css:1287 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 16px 0 20px` | `` | .b3-wg-h · b3/board.css:1287 |
 | padding-top | `0px` | `0px` | .b3-wg-h · b3/board.css:1287 |
 | padding-right | `16px` | `16px` | .b3-wg-h · b3/board.css:1287 |
@@ -2956,10 +3712,10 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | background | `linear-gradient(90deg,color-mix(in srgb,var(--c) 9%,transparent),transparent 42%),var(--sunk)` | `` | .b3-wg-h · b3/board.css:1287 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-wg-h · b3/board.css:1287 |
 | background-image | `` | `linear-gradient(90deg, color(srgb 1 0.823529 0.247059 / 0.09), rgba(0, 0, 0, 0) 42%), none` | .b3-wg-h · b3/board.css:1287 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -2980,7 +3736,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 
 #### look 2 of 4
 
-`C4-212` · rendered **0×0** · 1 instance look like this · role="row"
+`C4-252` · rendered **0×0** · 1 instance look like this · role="row"
 
 ```html
 <div class="b3-wg-h" role="row"><span class="b3-nw"><b>.50 GS</b><small>Secondaries</small></span><em>1 build</em><span class="b3-wg-p"><b>1 unshareable</b>1 problem</span></div>
@@ -2995,7 +3751,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | row-gap | `10px` | `10px` | .b3-wg-h · b3/board.css:1287 |
 | align-items | `center` | `center` | .b3-wg-h · b3/board.css:1287 |
 | min-height | `40px` | `40px` | .b3-wg-h · b3/board.css:1287 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 16px 0 20px` | `` | .b3-wg-h · b3/board.css:1287 |
 | padding-top | `0px` | `0px` | .b3-wg-h · b3/board.css:1287 |
 | padding-right | `16px` | `16px` | .b3-wg-h · b3/board.css:1287 |
@@ -3005,10 +3761,10 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | background | `linear-gradient(90deg,color-mix(in srgb,var(--c) 9%,transparent),transparent 42%),var(--sunk)` | `` | .b3-wg-h · b3/board.css:1287 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-wg-h · b3/board.css:1287 |
 | background-image | `` | `linear-gradient(90deg, color(srgb 0.247059 0.431373 0.556863 / 0.09), rgba(0, 0, 0, 0) 42%), none` | .b3-wg-h · b3/board.css:1287 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -3029,7 +3785,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 
 #### look 3 of 4
 
-`C4-237` · rendered **0×0** · 1 instance look like this · role="row"
+`C4-277` · rendered **0×0** · 1 instance look like this · role="row"
 
 ```html
 <div class="b3-wg-h" role="row"><span class="b3-nw"><b>JAK-12</b><small>Shotgun</small></span><em>1 build</em><span class="b3-wg-p"><b>1 unshareable</b>1 problem</span></div>
@@ -3044,7 +3800,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | row-gap | `10px` | `10px` | .b3-wg-h · b3/board.css:1287 |
 | align-items | `center` | `center` | .b3-wg-h · b3/board.css:1287 |
 | min-height | `40px` | `40px` | .b3-wg-h · b3/board.css:1287 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 16px 0 20px` | `` | .b3-wg-h · b3/board.css:1287 |
 | padding-top | `0px` | `0px` | .b3-wg-h · b3/board.css:1287 |
 | padding-right | `16px` | `16px` | .b3-wg-h · b3/board.css:1287 |
@@ -3054,10 +3810,10 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | background | `linear-gradient(90deg,color-mix(in srgb,var(--c) 9%,transparent),transparent 42%),var(--sunk)` | `` | .b3-wg-h · b3/board.css:1287 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-wg-h · b3/board.css:1287 |
 | background-image | `` | `linear-gradient(90deg, color(srgb 0.964706 0.662745 0.231373 / 0.09), rgba(0, 0, 0, 0) 42%), none` | .b3-wg-h · b3/board.css:1287 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -3078,7 +3834,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 
 #### look 4 of 4
 
-`C4-262` · rendered **0×0** · 1 instance look like this · role="row"
+`C4-302` · rendered **0×0** · 1 instance look like this · role="row"
 
 ```html
 <div class="b3-wg-h" role="row"><span class="b3-nw"><b>KILO 141</b><small>Assault</small></span><em>1 build</em><span class="b3-wg-p">1 problem</span></div>
@@ -3093,7 +3849,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | row-gap | `10px` | `10px` | .b3-wg-h · b3/board.css:1287 |
 | align-items | `center` | `center` | .b3-wg-h · b3/board.css:1287 |
 | min-height | `40px` | `40px` | .b3-wg-h · b3/board.css:1287 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 16px 0 20px` | `` | .b3-wg-h · b3/board.css:1287 |
 | padding-top | `0px` | `0px` | .b3-wg-h · b3/board.css:1287 |
 | padding-right | `16px` | `16px` | .b3-wg-h · b3/board.css:1287 |
@@ -3103,10 +3859,10 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | background | `linear-gradient(90deg,color-mix(in srgb,var(--c) 9%,transparent),transparent 42%),var(--sunk)` | `` | .b3-wg-h · b3/board.css:1287 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-wg-h · b3/board.css:1287 |
 | background-image | `` | `linear-gradient(90deg, color(srgb 1 0.231373 0.360784 / 0.09), rgba(0, 0, 0, 0) 42%), none` | .b3-wg-h · b3/board.css:1287 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -3132,10 +3888,10 @@ inside `.b3-wg-h` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-187` · rendered **0×0** · 5 instances look like this
+`C4-225` · rendered **0×0** · 5 instances look like this
 
 ```html
-<span class="b3-wg-p"><b>1 unshareable</b>2 problems</span>
+<span class="b3-wg-p"><b>1 unshareable</b>3 problems</span>
 ```
 
 | property | winning declaration | computed | from |
@@ -3145,7 +3901,7 @@ inside `.b3-wg-h` · 5 on screen · **1 look**
 | column-gap | `9px` | `9px` | .b3-wg-p · b3/board.css:1292 |
 | row-gap | `9px` | `9px` | .b3-wg-p · b3/board.css:1292 |
 | align-items | `baseline` | `baseline` | .b3-wg-p · b3/board.css:1292 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | margin-left | `auto` | `auto` | .b3-wg-p · b3/board.css:1292 |
 | font | `600 var(--t-xs)/1 var(--data)` | `` | .b3-wg-p · b3/board.css:1292 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-wg-p · b3/board.css:1292 |
@@ -3164,10 +3920,10 @@ inside `.b3-wg` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-189` · rendered **0×0** · 5 instances look like this · role="row"
+`C4-227` · rendered **0×0** · 5 instances look like this · role="row"
 
 ```html
-<div class="b3-wr" role="row" style="--c: #ffd23f;"><button type="button" class="b3-wr-main" aria-expanded="false"><span class="b3-wr-b"><b>Build 1</b><small><span>Coming Soon</span></small></span><span class="b3-wr-f"><span class="b3-pchip blocks">⟨svg.ic⟩No gunsmith code</span><span class="b3-pchip thin">⟨svg.ic⟩4 empty slots</span></span><span class="b3-wr-u">3 months ago</span><span class="b3-wr-c"><span class="b
+<div class="b3-wr" role="row" style="--c: #ffd23f;"><button type="button" class="b3-wr-main" aria-expanded="false"><span class="b3-wr-b"><b>Build 1</b><small><span>Coming Soon</span></small></span><span class="b3-wr-f"><span class="b3-pchip blocks">⟨svg.ic⟩No gunsmith code</span><span class="b3-pchip thin">⟨svg.ic⟩4 empty slots</span><span class="b3-pchip thin">⟨svg.ic⟩No Image or Key</span></span><span class="b3-wr-
 ```
 
 | property | winning declaration | computed | from |
@@ -3176,12 +3932,12 @@ inside `.b3-wg` · 5 on screen · **1 look**
 | position | `relative` | `relative` | .b3-wr · b3/board.css:1304 |
 | grid-template-columns | `minmax(0px, 1fr) 110px` | `minmax(0px, 1fr) 110px` | .b3-wr · b3/board.css:1304 |
 | align-items | `stretch` | `stretch` | .b3-wr · b3/board.css:2230 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | border-top | `1px solid var(--rule3)` | `` | .b3-wr · b3/board.css:1304 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | transition | `background var(--b3-d1)` | `` | .b3-wr · b3/board.css:1304 |
@@ -3207,10 +3963,10 @@ inside `.b3-wr` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-190` · rendered **0×0** · 5 instances look like this · aria-expanded="false" type="button"
+`C4-228` · rendered **0×0** · 5 instances look like this · aria-expanded="false" type="button"
 
 ```html
-<button type="button" class="b3-wr-main" aria-expanded="false"><span class="b3-wr-b"><b>Build 1</b><small><span>Coming Soon</span></small></span><span class="b3-wr-f"><span class="b3-pchip blocks">⟨svg.ic⟩No gunsmith code</span><span class="b3-pchip thin">⟨svg.ic⟩4 empty slots</span></span><span class="b3-wr-u">3 months ago</span><span class="b3-wr-c"><span class="b3-img" title="Image uploaded">⟨svg.ic⟩</span><span c
+<button type="button" class="b3-wr-main" aria-expanded="false"><span class="b3-wr-b"><b>Build 1</b><small><span>Coming Soon</span></small></span><span class="b3-wr-f"><span class="b3-pchip blocks">⟨svg.ic⟩No gunsmith code</span><span class="b3-pchip thin">⟨svg.ic⟩4 empty slots</span><span class="b3-pchip thin">⟨svg.ic⟩No Image or Key</span></span><span class="b3-wr-u">3 months ago</span><span class="b3-wr-c"><span cl
 ```
 
 | property | winning declaration | computed | from |
@@ -3226,24 +3982,24 @@ inside `.b3-wr` · 5 on screen · **1 look**
 | padding-right | `20px` | `20px` | .b3-wr-main · b3/board.css:1307 |
 | padding-bottom | `8px` | `8px` | .b3-wr-main · b3/board.css:1307 |
 | padding-left | `18px` | `18px` | .b3-wr-main · b3/board.css:1307 |
-| border | `0` | `` | button · app.css:621 |
-| border-radius | `var(--ctl-rad, 5px)` | `` | input, select, textarea, button · app.css:388 |
-| background | `transparent` | `` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2799 |
-| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2799 |
-| background-image | `initial` | `none` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2799 |
-| font | `inherit` | `` | button · app.css:621 |
-| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
-| font-size | `inherit` | `13px` | button · app.css:621 |
-| font-weight | `inherit` | `400` | button · app.css:621 |
-| font-style | `inherit` | `normal` | button · app.css:621 |
-| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
-| line-height | `inherit` | `19.5px` | button · app.css:621 |
+| border | `0` | `` | button · app.css:624 |
+| border-radius | `var(--ctl-rad, 5px)` | `` | input, select, textarea, button · app.css:391 |
+| background | `transparent` | `` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2802 |
+| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2802 |
+| background-image | `initial` | `none` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2802 |
+| font | `inherit` | `` | button · app.css:624 |
+| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:624 |
+| font-size | `inherit` | `13px` | button · app.css:624 |
+| font-weight | `inherit` | `400` | button · app.css:624 |
+| font-style | `inherit` | `normal` | button · app.css:624 |
+| font-variant-numeric | `inherit` | `normal` | button · app.css:624 |
+| line-height | `inherit` | `19.5px` | button · app.css:624 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `start` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
+| color | `inherit` | `rgb(232, 237, 241)` | button · app.css:624 |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5559 |
 | cursor | `pointer` | `pointer` | .b3-wr-main · b3/board.css:1307 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes nothing on the element itself
 
@@ -3267,7 +4023,7 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-191` · rendered **0×0** · 5 instances look like this
+`C4-229` · rendered **0×0** · 5 instances look like this
 
 ```html
 <span class="b3-wr-b"><b>Build 1</b><small><span>Coming Soon</span></small></span>
@@ -3280,18 +4036,18 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 | column-gap | `7px` | `7px` | .b3-wr-b · b3/board.css:1310 |
 | row-gap | `7px` | `7px` | .b3-wr-b · b3/board.css:1310 |
 | min-width | `0px` | `0px` | .b3-wr-b · b3/board.css:1310 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:624 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:624 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:624 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:624 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:621 |
+| color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:624 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-wr-main · b3/board.css:1307 |
 
 
@@ -3301,10 +4057,10 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-195` · rendered **0×0** · 5 instances look like this
+`C4-233` · rendered **0×0** · 5 instances look like this
 
 ```html
-<span class="b3-wr-f"><span class="b3-pchip blocks">⟨svg.ic⟩No gunsmith code</span><span class="b3-pchip thin">⟨svg.ic⟩4 empty slots</span></span>
+<span class="b3-wr-f"><span class="b3-pchip blocks">⟨svg.ic⟩No gunsmith code</span><span class="b3-pchip thin">⟨svg.ic⟩4 empty slots</span><span class="b3-pchip thin">⟨svg.ic⟩No Image or Key</span></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -3314,18 +4070,18 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 | column-gap | `6px` | `6px` | .b3-wr-f · b3/board.css:1316 |
 | row-gap | `6px` | `6px` | .b3-wr-f · b3/board.css:1316 |
 | flex-wrap | `wrap` | `wrap` | .b3-wr-f · b3/board.css:1316 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:624 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:624 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:624 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:624 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:621 |
+| color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:624 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-wr-main · b3/board.css:1307 |
 
 
@@ -3335,7 +4091,7 @@ inside `.b3-wr-f` · 3 on screen · **1 look**
 
 #### the one look
 
-`C4-196` · rendered **0×0** · 3 instances look like this
+`C4-234` · rendered **0×0** · 3 instances look like this
 
 ```html
 <span class="b3-pchip blocks">⟨svg.ic⟩No gunsmith code</span>
@@ -3350,7 +4106,7 @@ inside `.b3-wr-f` · 3 on screen · **1 look**
 | row-gap | `7px` | `7px` | .b3-pchip · b3/board.css:1325 |
 | align-items | `center` | `center` | .b3-pchip · b3/board.css:1325 |
 | height | `28px` | `28px` | .b3-pchip · b3/board.css:1325 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 10px 0 14px` | `` | .b3-pchip · b3/board.css:1325 |
 | padding-top | `0px` | `0px` | .b3-pchip · b3/board.css:1325 |
 | padding-right | `10px` | `10px` | .b3-pchip · b3/board.css:1325 |
@@ -3395,11 +4151,11 @@ inside `.b3-wr-f` · 3 on screen · **1 look**
 
 ### `span.b3-pchip.thin`
 
-inside `.b3-wr-f` · 3 on screen · **1 look**
+inside `.b3-wr-f` · 4 on screen · **1 look**
 
 #### the one look
 
-`C4-198` · rendered **0×0** · 3 instances look like this
+`C4-236` · rendered **0×0** · 4 instances look like this
 
 ```html
 <span class="b3-pchip thin">⟨svg.ic⟩4 empty slots</span>
@@ -3414,7 +4170,7 @@ inside `.b3-wr-f` · 3 on screen · **1 look**
 | row-gap | `7px` | `7px` | .b3-pchip · b3/board.css:1325 |
 | align-items | `center` | `center` | .b3-pchip · b3/board.css:1325 |
 | height | `28px` | `28px` | .b3-pchip · b3/board.css:1325 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 10px 0 14px` | `` | .b3-pchip · b3/board.css:1325 |
 | padding-top | `0px` | `0px` | .b3-pchip · b3/board.css:1325 |
 | padding-right | `10px` | `10px` | .b3-pchip · b3/board.css:1325 |
@@ -3463,7 +4219,7 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-200` · rendered **0×0** · 5 instances look like this · text “3 months ago”
+`C4-240` · rendered **0×0** · 5 instances look like this · text “3 months ago”
 
 ```html
 <span class="b3-wr-u">3 months ago</span>
@@ -3472,7 +4228,7 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `500 var(--t-sm)/1 var(--data)` | `` | .b3-wr-u · b3/board.css:1331 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-wr-u · b3/board.css:1331 |
 | font-size | `` | `12px` | .b3-wr-u · b3/board.css:1331 |
@@ -3494,10 +4250,10 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-201` · rendered **0×0** · 5 instances look like this
+`C4-241` · rendered **0×0** · 5 instances look like this
 
 ```html
-<span class="b3-wr-c"><span class="b3-img" title="Image uploaded">⟨svg.ic⟩</span><span class="none">no code</span></span>
+<span class="b3-wr-c"><span class="b3-img no" title="No image">⟨svg.ic⟩</span><span class="none">no code</span></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -3508,31 +4264,31 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 | row-gap | `8px` | `8px` | .b3-wr-c · b3/board.css:1332 |
 | align-items | `center` | `center` | .b3-wr-c · b3/board.css:1332 |
 | min-width | `0px` | `0px` | .b3-wr-c · b3/board.css:1332 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:624 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:624 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:624 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:624 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:621 |
+| color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:624 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-wr-main · b3/board.css:1307 |
 
 
-### `span.b3-img`
+### `span.b3-img.no`
 
-inside `.b3-wr-c` · 5 on screen · **1 look**
+inside `.b3-wr-c` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-202` · rendered **0×0** · 5 instances look like this · title="Image uploaded"
+`C4-242` · rendered **0×0** · 1 instance look like this · title="No image"
 
 ```html
-<span class="b3-img" title="Image uploaded">⟨svg.ic⟩</span>
+<span class="b3-img no" title="No image">⟨svg.ic⟩</span>
 ```
 
 | property | winning declaration | computed | from |
@@ -3542,19 +4298,19 @@ inside `.b3-wr-c` · 5 on screen · **1 look**
 | place-items | `center` | `` | .b3-img · b3/board.css:1054 |
 | width | `26px` | `26px` | .b3-img · b3/board.css:1054 |
 | height | `26px` | `26px` | .b3-img · b3/board.css:1054 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | border-radius | `8px` | `` | .b3-img · b3/board.css:1054 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:624 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:624 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:624 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:624 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `color-mix(in srgb,var(--ok) 80%,var(--ink3))` | `color(srgb 0.490196 0.802353 0.435294)` | .b3-img · b3/board.css:1054 |
+| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-img.no · b3/board.css:1056 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-wr-main · b3/board.css:1307 |
 
 
@@ -3564,7 +4320,7 @@ inside `.b3-wr-c` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-204` · rendered **0×0** · 1 instance look like this · text “no code”
+`C4-244` · rendered **0×0** · 1 instance look like this · text “no code”
 
 ```html
 <span class="none">no code</span>
@@ -3573,7 +4329,7 @@ inside `.b3-wr-c` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-wr-c .none · b3/board.css:1334 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-wr-c .none · b3/board.css:1334 |
 | font-size | `` | `10.5px` | .b3-wr-c .none · b3/board.css:1334 |
@@ -3594,7 +4350,7 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-205` · rendered **0×0** · 5 instances look like this · aria-hidden="true"
+`C4-245` · rendered **0×0** · 5 instances look like this · aria-hidden="true"
 
 ```html
 <span class="b3-fold2" aria-hidden="true">⟨svg.ic.ic-fold⟩<b>Expand</b></span>
@@ -3609,7 +4365,7 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 | align-items | `center` | `center` | .b3-fold2 · b3/board.css:2198 |
 | justify-self | `end` | `end` | .b3-fold2 · b3/board.css:2198 |
 | height | `30px` | `30px` | .b3-fold2 · b3/board.css:2198 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding | `0 7px` | `` | .b3-fold2 · b3/board.css:2198 |
 | padding-top | `0px` | `0px` | .b3-fold2 · b3/board.css:2198 |
 | padding-right | `7px` | `7px` | .b3-fold2 · b3/board.css:2198 |
@@ -3620,13 +4376,13 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 | background-color | `` | `rgb(11, 15, 18)` | .b3-fold2 · b3/board.css:2198 |
 | background-image | `` | `none` | .b3-fold2 · b3/board.css:2198 |
 | box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-fold2 · b3/board.css:2198 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:624 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:624 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:624 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:624 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
@@ -3641,7 +4397,7 @@ inside `.b3-fold2` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-206` · rendered **0×0** · 5 instances look like this · aria-hidden="true"
+`C4-246` · rendered **0×0** · 5 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic ic-fold" aria-hidden="true"><use href="#i-b2-unfold"></use></svg>
@@ -3649,18 +4405,18 @@ inside `.b3-fold2` · 5 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
+| display | `inline-block` | `block` | .ic · app.css:6467 |
 | flex | `none` | `` | .b3-fold2 .ic, .b3-fold2 svg · b3/board.css:2200 |
 | width | `15px` | `15px` | .b3-fold2 .ic, .b3-fold2 svg · b3/board.css:2200 |
 | height | `15px` | `15px` | .b3-fold2 .ic, .b3-fold2 svg · b3/board.css:2200 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:624 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:624 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:624 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:624 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
@@ -3668,7 +4424,7 @@ inside `.b3-fold2` · 5 on screen · **1 look**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-wr-main · b3/board.css:1307 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6474 |
 
 
 ### `span.b3-wr-a`
@@ -3677,7 +4433,7 @@ inside `.b3-wr` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-208` · rendered **0×0** · 5 instances look like this
+`C4-248` · rendered **0×0** · 5 instances look like this
 
 ```html
 <span class="b3-wr-a"><button type="button" class="b3-btn2 sm go">⟨svg.ic⟩Repair build</button></span>
@@ -3688,17 +4444,52 @@ inside `.b3-wr` · 5 on screen · **1 look**
 | display | `flex` | `flex` | .b3-wr-a · b3/board.css:1336 |
 | align-items | `center` | `center` | .b3-wr-a · b3/board.css:2231 |
 | justify-content | `flex-end` | `flex-end` | .b3-wr-a · b3/board.css:1336 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | padding-right | `16px` | `16px` | .b3-wr-a · b3/board.css:1336 |
 | background | `transparent` | `` | .b3-wr-main, .b3-wr-a · b3/board.css:2485 |
 | background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b3-wr-main, .b3-wr-a · b3/board.css:2485 |
 | background-image | `initial` | `none` | .b3-wr-main, .b3-wr-a · b3/board.css:2485 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `span.b3-img`
+
+inside `.b3-wr-c` · 4 on screen · **1 look**
+
+#### the one look
+
+`C4-268` · rendered **0×0** · 4 instances look like this · title="Image uploaded"
+
+```html
+<span class="b3-img" title="Image uploaded">⟨svg.ic⟩</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-img · b3/board.css:1054 |
+| align-items | `center` | `center` | .b3-img · b3/board.css:1054 |
+| place-items | `center` | `` | .b3-img · b3/board.css:1054 |
+| width | `26px` | `26px` | .b3-img · b3/board.css:1054 |
+| height | `26px` | `26px` | .b3-img · b3/board.css:1054 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `8px` | `` | .b3-img · b3/board.css:1054 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:624 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:624 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:624 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:624 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `color-mix(in srgb,var(--ok) 80%,var(--ink3))` | `color(srgb 0.490196 0.802353 0.435294)` | .b3-img · b3/board.css:1054 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-wr-main · b3/board.css:1307 |
 
 
 ### `h4.b3-tk-okh.b3-tk-sh`
@@ -3707,7 +4498,7 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-309` · rendered **1110×28** · 1 instance look like this
+`C4-349` · rendered **1110×28** · 1 instance look like this
 
 ```html
 <h4 class="b3-tk-sh b3-tk-okh" data-sev="ok"><i aria-hidden="true">⟨svg.ic⟩</i><b>Pass every check</b><em>120 builds</em></h4>
@@ -3720,7 +4511,7 @@ inside `.b3-rp` · 1 on screen · **1 look**
 | column-gap | `10px` | `10px` | .b4 h4.b3-tk-okh · b4/classes.css:30 |
 | row-gap | `10px` | `10px` | .b4 h4.b3-tk-okh · b4/classes.css:30 |
 | align-items | `center` | `center` | .b4 h4.b3-tk-okh · b4/classes.css:30 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | margin | `32px 0 12px` | `` | .b4 h4.b3-tk-okh · b4/classes.css:30 |
 | margin-top | `18px !important !important` | `18px` | .b4 h4.b3-tk-okh · b4/classes.css:188 |
 | margin-right | `0px` | `0px` | .b4 h4.b3-tk-okh · b4/classes.css:30 |
@@ -3741,13 +4532,13 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| flex | `1` | .b3-tk-sh::after · b3/board.css:3667 |
-| height | `1px` | .b3-tk-sh::after · b3/board.css:3667 |
-| margin-left | `4px` | .b3-tk-sh::after · b3/board.css:3667 |
-| background | `var(--rule2)` | .b3-tk-sh::after · b3/board.css:3667 |
-| background-color | `` | .b3-tk-sh::after · b3/board.css:3667 |
-| background-image | `` | .b3-tk-sh::after · b3/board.css:3667 |
-| content | `""` | .b3-tk-sh::after · b3/board.css:3667 |
+| flex | `1` | .b3-tk-sh::after · b3/board.css:3659 |
+| height | `1px` | .b3-tk-sh::after · b3/board.css:3659 |
+| margin-left | `4px` | .b3-tk-sh::after · b3/board.css:3659 |
+| background | `var(--rule2)` | .b3-tk-sh::after · b3/board.css:3659 |
+| background-color | `` | .b3-tk-sh::after · b3/board.css:3659 |
+| background-image | `` | .b3-tk-sh::after · b3/board.css:3659 |
+| content | `""` | .b3-tk-sh::after · b3/board.css:3659 |
 
 
 ### `article.b3-tk.b3-tk-pass`
@@ -3756,7 +4547,7 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-314` · rendered **1110×187** · 1 instance look like this
+`C4-354` · rendered **1110×187** · 1 instance look like this
 
 ```html
 <article class="b3-tk b3-tk-pass" data-sev="ok"><header class="b3-tk-h"><span class="b3-tk-id"><span class="b3-tk-shield" aria-hidden="true">⟨svg.ic⟩</span><b>The checks every one of them passes</b></span></header><div class="b3-tk-cks"><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>Has an image</b></span><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>3 or
@@ -3764,27 +4555,27 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk · b3/board.css:3140 |
-| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| display | `grid` | `grid` | .b3-tk · b3/board.css:3143 |
+| position | `relative` | `relative` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | margin-top | `0px !important !important` | `0px` | .b4 h4.b3-tk-okh + .b3-tk-pass · b4/classes.css:189 |
-| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3140 |
-| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4089 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--ok) 6%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk-pass · b3/board.css:3359 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk-pass · b3/board.css:3359 |
-| background-image | `` | `linear-gradient(color(srgb 0.143216 0.195294 0.192863), rgb(31, 39, 46) 90px)` | .b3-tk-pass · b3/board.css:3359 |
-| box-shadow | `none` | `none` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3143 |
+| outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4081 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--ok) 6%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk-pass · b3/board.css:3351 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk-pass · b3/board.css:3351 |
+| background-image | `` | `linear-gradient(color(srgb 0.143216 0.195294 0.192863), rgb(31, 39, 46) 90px)` | .b3-tk-pass · b3/board.css:3351 |
+| box-shadow | `none` | `none` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:872 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-tk · b3/board.css:3140 |
-| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3140 |
-| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3140 |
+| overflow | `hidden` | `` | .b3-tk · b3/board.css:3143 |
+| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
+| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
 
 
 ### `span.b3-tk-shield`
@@ -3793,7 +4584,7 @@ inside `.b3-tk-id` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-317` · rendered **26×26** · 1 instance look like this · aria-hidden="true"
+`C4-357` · rendered **26×26** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <span class="b3-tk-shield" aria-hidden="true">⟨svg.ic⟩</span>
@@ -3801,23 +4592,23 @@ inside `.b3-tk-id` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-shield · b3/board.css:3655 |
-| align-items | `center` | `center` | .b3-tk-shield · b3/board.css:3655 |
-| place-items | `center` | `` | .b3-tk-shield · b3/board.css:3655 |
-| width | `26px` | `26px` | .b3-tk-shield · b3/board.css:3655 |
-| height | `26px` | `26px` | .b3-tk-shield · b3/board.css:3655 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `8px` | `` | .b3-tk-shield · b3/board.css:3655 |
-| background | `color-mix(in srgb,var(--ok) 13%,transparent)` | `` | .b3-tk-shield · b3/board.css:3655 |
-| background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.13)` | .b3-tk-shield · b3/board.css:3655 |
-| background-image | `` | `none` | .b3-tk-shield · b3/board.css:3655 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ok) 30%,transparent)` | `color(srgb 0.482353 0.858824 0.388235 / 0.3) 0px 0px 0px 1px inset` | .b3-tk-shield · b3/board.css:3655 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-shield · b3/board.css:3647 |
+| align-items | `center` | `center` | .b3-tk-shield · b3/board.css:3647 |
+| place-items | `center` | `` | .b3-tk-shield · b3/board.css:3647 |
+| width | `26px` | `26px` | .b3-tk-shield · b3/board.css:3647 |
+| height | `26px` | `26px` | .b3-tk-shield · b3/board.css:3647 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| border-radius | `8px` | `` | .b3-tk-shield · b3/board.css:3647 |
+| background | `color-mix(in srgb,var(--ok) 13%,transparent)` | `` | .b3-tk-shield · b3/board.css:3647 |
+| background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.13)` | .b3-tk-shield · b3/board.css:3647 |
+| background-image | `` | `none` | .b3-tk-shield · b3/board.css:3647 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ok) 30%,transparent)` | `color(srgb 0.482353 0.858824 0.388235 / 0.3) 0px 0px 0px 1px inset` | .b3-tk-shield · b3/board.css:3647 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ok)` | `rgb(123, 219, 99)` | .b3-tk-shield · b3/board.css:3655 |
+| color | `var(--ok)` | `rgb(123, 219, 99)` | .b3-tk-shield · b3/board.css:3647 |
 
 
 ### `div.b3-tk-cks`
@@ -3826,7 +4617,7 @@ inside `.b3-tk` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-320` · rendered **1108×74** · 1 instance look like this
+`C4-360` · rendered **1108×74** · 1 instance look like this
 
 ```html
 <div class="b3-tk-cks"><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>Has an image</b></span><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>3 or more attachments</b></span><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>A code of its own</b></span><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>Ha
@@ -3834,22 +4625,22 @@ inside `.b3-tk` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3815 |
-| grid-template-columns | `repeat(5, minmax(0px, 1fr))` | `repeat(5, minmax(0px, 1fr))` | .b3-tk-cks · b3/board.css:3362 |
-| gap | `8px` | `` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3815 |
-| column-gap | `8px` | `8px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3815 |
-| row-gap | `8px` | `8px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3815 |
-| flex-wrap | `wrap` | `wrap` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3815 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `14px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3815 |
-| padding-top | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3815 |
-| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3815 |
-| padding-bottom | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3815 |
-| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3815 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `flex` | `flex` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3807 |
+| grid-template-columns | `repeat(5, minmax(0px, 1fr))` | `repeat(5, minmax(0px, 1fr))` | .b3-tk-cks · b3/board.css:3354 |
+| gap | `8px` | `` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3807 |
+| column-gap | `8px` | `8px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3807 |
+| row-gap | `8px` | `8px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3807 |
+| flex-wrap | `wrap` | `wrap` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3807 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `14px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3807 |
+| padding-top | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3807 |
+| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3807 |
+| padding-bottom | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3807 |
+| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3807 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -3860,7 +4651,7 @@ inside `.b3-tk-cks` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-321` · rendered **172×46** · 5 instances look like this
+`C4-361` · rendered **172×46** · 5 instances look like this
 
 ```html
 <span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>Has an image</b></span>
@@ -3868,27 +4659,27 @@ inside `.b3-tk-cks` · 5 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ck · b3/board.css:3364 |
-| grid-template-columns | `30px minmax(0px, 1fr)` | `30px 114.781px` | .b3-tk-ck · b3/board.css:3364 |
-| gap | `9px` | `` | .b3-tk-cks .b3-tk-ck · b3/board.css:3731 |
-| column-gap | `9px` | `9px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3731 |
-| row-gap | `9px` | `9px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3731 |
-| flex | `1 1 auto` | `` | .b3-tk.b3-tk-pass .b3-tk-ck · b3/board.css:3816 |
-| align-items | `center` | `center` | .b3-tk-ck · b3/board.css:3364 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `8px 10px 8px 8px` | `` | .b3-tk-cks .b3-tk-ck · b3/board.css:3731 |
-| padding-top | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3731 |
-| padding-right | `10px` | `10px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3731 |
-| padding-bottom | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3731 |
-| padding-left | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3731 |
-| border-radius | `var(--rad-2)` | `` | .b3-tk-ck · b3/board.css:3364 |
-| background | `color-mix(in srgb,var(--ok) 4%,var(--sunk))` | `` | .b3-tk-ck · b3/board.css:3364 |
-| background-color | `` | `color(srgb 0.0607059 0.0908235 0.0832941)` | .b3-tk-ck · b3/board.css:3364 |
-| background-image | `` | `none` | .b3-tk-ck · b3/board.css:3364 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| display | `grid` | `grid` | .b3-tk-ck · b3/board.css:3356 |
+| grid-template-columns | `30px minmax(0px, 1fr)` | `30px 114.781px` | .b3-tk-ck · b3/board.css:3356 |
+| gap | `9px` | `` | .b3-tk-cks .b3-tk-ck · b3/board.css:3723 |
+| column-gap | `9px` | `9px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3723 |
+| row-gap | `9px` | `9px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3723 |
+| flex | `1 1 auto` | `` | .b3-tk.b3-tk-pass .b3-tk-ck · b3/board.css:3808 |
+| align-items | `center` | `center` | .b3-tk-ck · b3/board.css:3356 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `8px 10px 8px 8px` | `` | .b3-tk-cks .b3-tk-ck · b3/board.css:3723 |
+| padding-top | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3723 |
+| padding-right | `10px` | `10px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3723 |
+| padding-bottom | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3723 |
+| padding-left | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3723 |
+| border-radius | `var(--rad-2)` | `` | .b3-tk-ck · b3/board.css:3356 |
+| background | `color-mix(in srgb,var(--ok) 4%,var(--sunk))` | `` | .b3-tk-ck · b3/board.css:3356 |
+| background-color | `` | `color(srgb 0.0607059 0.0908235 0.0832941)` | .b3-tk-ck · b3/board.css:3356 |
+| background-image | `` | `none` | .b3-tk-ck · b3/board.css:3356 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
@@ -3899,7 +4690,7 @@ inside `.b3-tk-ft` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-344` · rendered **108×32** · 1 instance look like this · type="button"
+`C4-384` · rendered **108×32** · 1 instance look like this · type="button"
 
 ```html
 <button type="button" class="b3-btn2 ghost sm">⟨svg.ic⟩<span class="lbl">Show them</span></button>
@@ -3911,22 +4702,22 @@ inside `.b3-tk-ft` · 1 on screen · **1 look**
 | gap | `7px` | `` | .b3-btn2.sm · b3/board.css:1353 |
 | column-gap | `7px` | `7px` | .b3-btn2.sm · b3/board.css:1353 |
 | row-gap | `7px` | `7px` | .b3-btn2.sm · b3/board.css:1353 |
-| flex | `none` | `` | .b3-tk-ft > .b3-btn2 · b3/board.css:3339 |
+| flex | `none` | `` | .b3-tk-ft > .b3-btn2 · b3/board.css:3331 |
 | align-items | `center` | `center` | .b3-btn2 · b3/board.css:801 |
 | height | `32px` | `32px` | .b3-btn2.sm · b3/board.css:1353 |
-| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
 | padding | `0 12px 0 10px` | `` | .b3-btn2.sm · b3/board.css:1353 |
 | padding-top | `0px` | `0px` | .b3-btn2.sm · b3/board.css:1353 |
 | padding-right | `12px` | `12px` | .b3-btn2.sm · b3/board.css:1353 |
 | padding-bottom | `0px` | `0px` | .b3-btn2.sm · b3/board.css:1353 |
 | padding-left | `10px` | `10px` | .b3-btn2.sm · b3/board.css:1353 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
-| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3334 |
+| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3326 |
 | background | `none` | `` | .b3-btn2.ghost · b3/board.css:811 |
 | background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-btn2.ghost · b3/board.css:811 |
 | background-image | `none` | `none` | .b3-btn2.ghost · b3/board.css:811 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--rule2) 70%,transparent)` | `color(srgb 0.227451 0.278431 0.321569 / 0.7) 0px 0px 0px 1px inset` | .b3-btn2.ghost · b3/board.css:3335 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--rule2) 70%,transparent)` | `color(srgb 0.227451 0.278431 0.321569 / 0.7) 0px 0px 0px 1px inset` | .b3-btn2.ghost · b3/board.css:3327 |
 | font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-btn2 · b3/board.css:801 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-btn2 · b3/board.css:801 |
 | font-size | `` | `12px` | .b3-btn2 · b3/board.css:801 |
@@ -3937,10 +4728,10 @@ inside `.b3-tk-ft` · 1 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .b3-btn2 · b3/board.css:801 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-btn2.ghost · b3/board.css:3335 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-btn2.ghost · b3/board.css:3327 |
 | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | .b3-btn2 · b3/board.css:801 |
 | cursor | `pointer` | `pointer` | .b3-btn2 · b3/board.css:801 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -3988,7 +4779,7 @@ inside `.b3-btn2` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-346` · rendered **65×12** · 1 instance look like this · text “Show them”
+`C4-386` · rendered **65×12** · 1 instance look like this · text “Show them”
 
 ```html
 <span class="lbl">Show them</span>
@@ -3997,7 +4788,7 @@ inside `.b3-btn2` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-btn2 · b3/board.css:801 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-btn2 · b3/board.css:801 |
 | font-size | ↑ `` | `12px` | inherited · .b3-btn2 · b3/board.css:801 |
@@ -4009,5 +4800,5 @@ inside `.b3-btn2` · 1 on screen · **1 look**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-btn2 · b3/board.css:801 |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-btn2.ghost · b3/board.css:3335 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-btn2.ghost · b3/board.css:3327 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-btn2 · b3/board.css:801 |

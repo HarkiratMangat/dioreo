@@ -22,7 +22,12 @@ const files = walk(KIT, ['vendor', 'node_modules', 'shots']).sort();
 const prior = new Map(fs.readFileSync(MAP3E, 'utf8').split('\n').filter((l) => /^\| `/.test(l)).map((l) => { const c = l.split('|').map((x) => x.trim()); return [c[1].replace(/`/g, ''), c.slice(2, 5)]; }));
 const portalTwin = (f) => { if (f === 'app.css') return 'portal/public/app.css'; const m = f.match(/^ui\/(.+)$/); return m && fs.existsSync(path.join(PORTAL, 'ui', m[1])) ? `portal/ui/${m[1]}` : null; };
 const differs = (f) => { const t = portalTwin(f); if (!t) return null; try { execFileSync('git', ['diff', '--no-index', '--quiet', path.join(ROOT, t), path.join(KIT, f)]); return false; } catch { return true; } };
-const RULES = [[/^b4\/.*\.test\.mjs$/, 'CHROME', '—', 'a test of the design code; ports with it as a test, never as UI'],
+// 2026-09-30 19:42 EDT (the Session 4/5 prep): the files Versions 69–81 added, labelled so nothing new reads UNLABELLED
+const RULES = [[/^b3\/poptime\.js$/, 'DESIGN-CODE', 'a shared portal module (`portal/ui/poptime.js`), imported by every pop-up', 'the pop-up timing sets, the ONE place to retune them; sets `--pop<set>-<name>` on `:root` at load — see `motion-timing.md`'],
+  [/^b3\/layer\.js$/, 'DESIGN-CODE', 'a shared portal module (`portal/ui/layer.js`)', 'an open list or pop-up inside a faded column renders into a layer beside it, so the fade stays on'],
+  [/^thumbs\//, 'CHROME', '—', 'bundled images for the seven named builds, so the board shows real pictures offline; the portal reads Cloudinary'],
+  [/^README\.md$/, 'CHROME', '—', "the kit's own README: how to serve, open and publish the board"],
+  [/^b4\/.*\.test\.mjs$/, 'CHROME', '—', 'a test of the design code; ports with it as a test, never as UI'],
   [/^b4\//, 'DESIGN-CODE', 'the portal file named in HANDOFF.md for its gate', 'Board 4\'s own design code (the build form, Bulk, Compare and their styles)'],
   [/^b1\.css$/, 'MIXED', '`portal/ui/app.css`', 'board 1\'s G8/G9/G10 rules that Board 4\'s build drawer, Compare (`.b1 .b4-cmp`) and the post drawer still wear; split by selector against `class-map.md`'],
   [/^b4\.css$/, 'DESIGN-CODE', '`portal/ui/app.css`', 'Board 4\'s own stylesheet (the post form\'s count row, the Before staging panel, drawer sizes)'],

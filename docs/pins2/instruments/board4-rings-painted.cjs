@@ -6,8 +6,8 @@ const { W, boot } = require('./board4-checks-lib.cjs'); const fs = require('fs')
 const OUT = path.resolve(__dirname, '../../../local/pins2/intake-shots/checks');
 (async () => { const { b, p, errs } = await boot(4); const D = 4; const tag = process.argv[2] || 'now'; let bad = 0, n = 0;
   const SIDES = ['top', 'right', 'bottom', 'left'];
-  const test = async (label, h) => { await h.evaluate((e) => e.scrollIntoView({ block: 'center' })); await h.click({ delay: 10 }).catch(() => h.focus()); await W.sleep(380);
-    const bx = await h.evaluate((f) => { let w = f; for (let e = f, k = 0; e && k < 4; e = e.parentElement, k++) { const s = getComputedStyle(e); if ((s.outlineStyle !== 'none' && s.outlineWidth !== '0px') || /216, 242, 74|0\.847059 0\.94902/.test(s.boxShadow) || /216, 242, 74/.test(s.borderTopColor)) { w = e; } } const r = w.getBoundingClientRect(); return { x: r.x + scrollX, y: r.y + scrollY, w: r.width, h: r.height, rad: parseFloat(getComputedStyle(w).borderTopLeftRadius) || 0, cls: w.tagName.toLowerCase() + '.' + [...w.classList].slice(0, 2).join('.') }; });
+  const test = async (label, h, own = null) => { await h.evaluate((e) => e.scrollIntoView({ block: 'center' })); await h.click({ delay: 10 }).catch(() => h.focus()); await W.sleep(380);
+    const bx = await (own || h).evaluate((f) => { let w = f; for (let e = f, k = 0; e && k < 4; e = e.parentElement, k++) { const s = getComputedStyle(e); if ((s.outlineStyle !== 'none' && s.outlineWidth !== '0px') || /216, 242, 74|0\.847059 0\.94902/.test(s.boxShadow) || /216, 242, 74/.test(s.borderTopColor)) { w = e; } } const r = w.getBoundingClientRect(); return { x: r.x + scrollX, y: r.y + scrollY, w: r.width, h: r.height, rad: parseFloat(getComputedStyle(w).borderTopLeftRadius) || 0, cls: w.tagName.toLowerCase() + '.' + [...w.classList].slice(0, 2).join('.') }; });
     const pad = 10, file = path.join(OUT, `ringp-${tag}-${n}.png`); await p.screenshot({ path: file, clip: { x: bx.x - pad, y: bx.y - pad, width: bx.w + pad * 2, height: bx.h + pad * 2 } });
     // the PNG's own size, never a computed one: a fractional clip rounds, and one pixel of row width skews every sample below the first row
     const [Wd, Hd] = execFileSync('magick', ['identify', '-format', '%w %h', file]).toString().split(' ').map(Number); const raw = execFileSync('magick', [file, '-depth', '8', 'rgb:-'], { maxBuffer: 1 << 29 });
@@ -27,6 +27,9 @@ const OUT = path.resolve(__dirname, '../../../local/pins2/intake-shots/checks');
     await h.evaluate((e) => e.blur()); };
   await W.setState(p, 'c-broadcast', 'Posting');
   for (const id of ['post-text', 'post-starts', 'post-expires', 'post-accent']) { const h = await p.$('#' + id); if (h) await test('Post drawer ' + id, h); }
+  // 2026-09-30 17:39 EDT, his: "when a date picker is open, the field goes back to the 1 px glow" — focus moves into the pop-up, so a check that only focuses
+  // fields never saw it. The OPEN state: click the date button and walk the field box with its pop-up showing.
+  for (const id of ['post-starts', 'post-expires']) { const h = await p.$(`.pb-dfld:has(#${id}) > .pb-dbtn`); if (h) { await test('Post drawer ' + id + ' OPEN', h, await p.$(`.pb-dfld:has(#${id})`)); await p.keyboard.press('Escape'); await W.sleep(250); } }
   await W.setState(p, 'c-new-build', 'Add build'); for (const id of ['nb-w', 'nb-code']) { const h = await p.$('#' + id); if (h) await test('New build ' + id, h); }
   await W.setState(p, 'c-export', 'Picker'); { const h = await p.$('#xt-q'); if (h) await test('Export search', h); }
   await W.setState(p, 'c-new-build', 'Bulk · empty'); { const h = await p.$('#pb-ta'); if (h) await test('Bulk text', h); }

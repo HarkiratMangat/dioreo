@@ -29,14 +29,15 @@ const REL = [
   R('C3', 'Empty', 'landing tile rows (≤ 3)', 'Version 40 S', '≤3', `new Set([...document.querySelectorAll('#c-compare .cx-w')].map((x) => Math.round(x.getBoundingClientRect().top))).size`),
   // V44 (2026-09-29 22:45 EDT, his Version 44 intake)
   R('C3', 'One weapon', 'a slot every build shares that has no table row', 'Version 44 AV', 0, `[...document.querySelectorAll('#c-compare .cx-band .cx-sv')].filter((c) => c.dataset.slot !== 'Category' && ![...document.querySelectorAll('#c-compare .cx-t:not([data-ghost]) tbody th.cx-k0')].some((t) => t.textContent.trim() === c.dataset.slot)).length`),
-  R('C3', 'One weapon', 'build heads without a name row cell (BUILD NAME, one per build)', 'his note 2026-09-29 23:41 EDT (the name as its own row)', 0, `(() => { const r = [...document.querySelectorAll('#c-compare .cx-t:not([data-ghost]) tbody tr')].find((t) => /build\s*name/i.test(t.querySelector('th').textContent)); return r ? document.querySelectorAll('#c-compare .cx-t:not([data-ghost]) thead th.cx-h').length - r.querySelectorAll('.cx-nm').length : 99; })()`),
-  R('C3', 'One weapon', 'a "Not set" name cell at full strength (it is dimmed)', 'his note 2026-09-29 23:41 EDT', 0, `[...document.querySelectorAll('#c-compare .cx-nm.unset')].filter((e) => +getComputedStyle(e).opacity >= 1).length + (document.querySelector('#c-compare .cx-nm.unset') ? 0 : 99)`),
+  // 2026-09-30 19:41 EDT: his 23:41 EDT name row was reversed by his Version 47 round (BN: "the name row, its label and its shaded cell go; the head stacks the
+  // build-name plate"), so the two rows that asserted it now assert its absence
+  R('C3', 'One weapon', 'no BUILD NAME row in the table (the name lives in the head\'s plate)', 'BN, his Version 47 round (reverses his 2026-09-29 23:41 EDT name row)', 0, `[...document.querySelectorAll('#c-compare .cx-t:not([data-ghost]) tbody tr')].filter((t) => t.querySelector('th') && /build\s*name/i.test(t.querySelector('th').textContent)).length`),
   R('C7', 'Posting', 'a count readout whose numeral is the colour of its words', 'Version 44 AZ', 0, `[...document.querySelectorAll('#c-broadcast .b3-cc .b3-nw > b')].filter((b) => getComputedStyle(b).color === getComputedStyle(b.parentElement).color).length + (document.querySelector('#c-broadcast .b3-cc .b3-nw > b') ? 0 : 99)`),
   R('C2', 'Add build', 'the build drawer', 'intake:703 (2026-09-24 22:30)', 980, `(() => { const d = document.querySelector('#c-new-build .drawer'); return d && d.getBoundingClientRect().width; })()`, 1),
   R('C7', 'Posting', "the post drawer's height, min(84vh, 860px)", 'Frame (2026-09-27 16:09 EDT)', Math.round(Math.min(888 * 0.84, 860)), `(() => { const d = document.querySelector('#c-broadcast .drawer'); return d && d.getBoundingClientRect().height; })()`, 1),
 ];
 const POPREL = [
-  ['the pop-up\'s distance from its trigger\'s visible box', 'pop-up family (2026-09-28 14:25 EDT)', 10],
+  ['the pop-up\'s distance from its trigger\'s visible box', 'CI, his Version 68 round: the arc\'s tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT)', 4],
 ];
 (async () => {
   const { b, p, errs } = await open();
@@ -73,7 +74,7 @@ const POPREL = [
       const gap = pb.top >= fb.bottom - 1 ? pb.top - fb.bottom : fb.top - pb.bottom;
       const day = pp.querySelector('[class*="dp-d"]:not([class*="dp-dow"])'); const db = day && day.getBoundingClientRect();
       return { gap, w: pb.width, cls: pp.className, day: db ? [db.width, db.height] : null }; }, pop.trigger.split(',')[0], POP_SEL);
-    const ok = m && Math.abs(m.gap - 10) <= 1; if (!ok) fail++;
+    const ok = m && Math.abs(m.gap - POPREL[0][2]) <= 1;   // the ruling's own number, not a copy of it if (!ok) fail++;
     rows.push(`| ${pop.g} | ${pop.state || 'resting'} | ${pop.label}: ${POPREL[0][0]} | ${POPREL[0][1]} | 10 | ${m ? Math.round(m.gap * 10) / 10 : '**not measured**'} | ${ok ? '✓' : '✗'} |`);
     if (m && m.day) {
       const w = Math.abs(m.w - 270) <= 1; if (!w) fail++;

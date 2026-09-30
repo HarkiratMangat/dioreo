@@ -29,19 +29,20 @@ status: live
 | [`instruments/`](instruments/) | the Board 4 measuring scripts — [`README.md`](instruments/README.md) lists each and when to run it | reference |
 | [`kit/`](kit/) | the Board 4 kit — the design code itself, tracked. [`README.md`](kit/README.md) says how to serve, open and publish it | reference |
 | [`data/`](data/) | source data the boards used — the CODM mode icons (the Modes badge family) and the weapons-and-attachments source | data |
-| `local/pins2/intake-shots/` (**this Mac only**) | the screenshots his intake and the handoff cite, by round, and the readiness crops. **Not tracked, never pushed** (2026-09-29 23:35 EDT, his: "kit can be tracked but leave screenshots local"); every doc cites them at this path. **Every other image under `docs/`** — the portal pin crops (`docs/portal/portal-pins/`), board 3's `p1-portal.png`, `docs/pins2/data/`'s source capture, the summary captures — is likewise on this Mac only, untracked where it sits | images |
+| `local/pins2/intake-shots/` (**this Mac only**, absolute path `/Applications/Claude Code/Diors-Builds/local/pins2/intake-shots/` — a worktree has no `local/`) | the screenshots his intake and the handoff cite, by round, and the readiness crops. **Not tracked, never pushed** (2026-09-29 23:35 EDT, his: "kit can be tracked but leave screenshots local"); every doc cites them at this path. **Every other image under `docs/`** — the portal pin crops (`docs/portal/portal-pins/`), board 3's `p1-portal.png`, `docs/pins2/data/`'s source capture, the summary captures — is likewise on this Mac only, untracked where it sits | images |
 
-## State — as of 2026-09-29 18:50 EDT
+## State — as of 2026-09-30 19:51 EDT
 
 | | |
 |---|---|
-| Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 46** live (2026-09-29 23:44 EDT: the build name as its own row; compact prep 21 at `handoffs/2026-09-29-board4-compact-prep-21.md`); Version 45 published 2026-09-29 23:16 EDT on his "publish": his Version 44 round, classes AT–BB); the Session 4/5 readiness sweep done 2026-09-29 23:27 EDT (HANDOFF.md § Ready for Sessions 4 and 5); built earlier 2026-09-29 22:59 EDT, not published (2026-09-29 21:39 EDT: the upward passing card fixed; Version 43 published 2026-09-29 21:30 EDT on his "publish": the Version 40, 41 and 42 intake rounds, built, and History's event-drawer fix); **not signed off** |
-| The kit | [`kit/`](kit/README.md), **tracked** — moved here from the gitignored `local/pins2-board-3/redo/` on his call of 2026-09-28 23:27 EDT (*"why not just move the board to the new collective folder?"*). Its git history to the move stays local: `git -C local/pins2-board-3 log --stat` |
-| The spec | `final/board4-spec/`, **regenerated 2026-09-29 00:12 EDT from the tracked kit** — its header carries the counts. The `C*.md` and `states.md` that sat in the live folder before were from kit `ecc93ee`, *before* Version 39: `split-spec.cjs` had written the Version 40 values into a folder nothing pointed at |
-| Board 3-E | **superseded by Board 4** (his 2026-09-28 23:27 EDT). `3e/` in board 3's package is history: `handoff-3e.md` survives only as the inherited *structure* narrative `HANDOFF.md` cites, and the generators moved to `final/board4-spec/` |
-| Publishing the kit | 🔴 he said on 2026-09-20 21:33 EDT that the kit was not to go on the online GitHub. It is tracked now, so a push or a merge into `v3-pre-release` that carries `kit/` puts it there — the approval sentence names it (plan §13 Step 1). Not decided |
+| Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 81 — SIGNED OFF** 2026-09-30 19:31 EDT (*"approved, run the held checks. board is done."*). Versions 46–81 are `final/board4-spec/HANDOFF.md` § Since Version 45; his words, every round, in the intake log |
+| The kit | [`kit/`](kit/README.md), tracked at `docs/pins2/kit/`, 131 files (moved from the gitignored `local/pins2-board-3/redo/` on his call of 2026-09-28 23:27 EDT). Its history before the move: `git -C local/pins2-board-3 log --stat` |
+| The spec | `final/board4-spec/`, **regenerated 2026-09-30 19:51 EDT from the Version 81 kit**, with four new generated files: `motion-timing.md`, `colours.md`, `components.md`, `inventory.md` |
+| The held checks, at Version 81 | `final/board4-spec/HANDOFF.md` § Ready for Sessions 4 and 5 |
+| Board 3-E | superseded by Board 4 (2026-09-28 23:27 EDT); `3e/` in board 3's package is history |
+| 🔴 The kit on GitHub — **his call, undecided** | he said on 2026-09-20 21:33 EDT the kit was not to go on the online GitHub. Sessions 4 and 5 branch from `v3-pre-release` and their Step 1 stops without `docs/pins2/kit/board4.html`. The options: **(a)** push the kit with Session 3's close (it becomes public on GitHub) · **(b)** merge Session 3 without `kit/` and let Sessions 4 and 5 branch from `feat/portal-pins2-manifests` instead · **(c)** keep `kit/` out of git (gitignored again) and have each session read it from this Mac's checkout by absolute path · **(d)** a private home for it (a private repo or a submodule). Whichever he picks, the plan's §5c/§5d Step 1 and §13 Step 1 change to match |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
-| Next | his sign-off of the Collective (plan §5c Step 1 checks for it), then Session 3's close (plan §13) on his word — the kit's place on GitHub decided at the push; before that, the rounds: the Version 40 round's all 21 classes A–U, the Version 41 round's 13, the Version 42 round's 11); then the Collective's sign-off (plan §5c Step 1) and Session 3's close (plan §13), each on his word; compact prep: `handoffs/2026-09-29-board4-compact-prep-20.md` |
+| Next | his call on the kit (above), then Session 3's close (plan §13) — push, PR and merge each on his word, restated — then Session 4 (plan §11's prompt) |
 
 ## Where new things go
 
@@ -60,7 +61,9 @@ O=docs/pins2/final/board4-spec
 node $O/switches.cjs && node $O/overrides.cjs
 BOARD=4 node $O/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $O/split-spec.cjs $TMPDIR/b4-spec.md
 node $O/maps.cjs
+node $O/motion.cjs && node $O/colours.cjs && node $O/components.cjs
 node $O/structure.cjs && node $O/relations.cjs && node $O/a11y.cjs && node $O/hover-relations.cjs
+node $O/inventory.cjs   # last: it reads the files above
 ```
 
 **The extractor is not deterministic on Board 4** (measured 2026-09-29): three fresh runs of the same kit specced 1420, 1425 and 1428 looks and two runs differ in about 300 lines both ways, so a spec diff after a kit change carries that noise — judge a change against it, not against zero.

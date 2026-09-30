@@ -25,7 +25,7 @@ status: live
 - V67: Repairs caption removed (PHARO's cleared image had made it show); pop stepper = drawer's
 - V68: one focus ring per composite field (ring on the box)
 - V69–V70: pop-up family = the cards' arc container (`PopBox`, tone per chip, tip on the chip's centre); ring as an `::after` over the content; Post drawer 880 → 910 (form 496, preview 340)
-- V71: menus/pop-ups inside a faded column render in a layer beside it (`b3/layer.js`); stepper rebuilt
+- V71: menus/pop-ups inside a faded column render in a layer beside it (`docs/pins2/kit/b3/layer.js`); stepper rebuilt
 - V72: Shown + start/end chips hover and pop in the announcement's accent (`t-accent`)
 - V73: stepper C (his pick): one ring, − / + inset pills, 17px glyphs, accent-tinted hover
 - V74: `--meshGold` #F2C230 on the drawers' / selection dock's mesh glow (ledger § Colour names)

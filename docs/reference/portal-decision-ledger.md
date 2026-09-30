@@ -768,3 +768,19 @@ Ten instructions, given as a numbered list against two screenshots and the open 
 | Announcement accent | ✅ chosen in the post drawer; a new post opens on a fresh generated colour; every surface showing the post wears it, never the realm's pink | his v36 intake, 2026-09-27 20:34 EDT | the edit op still drops `color` (filed) |
 | Queue card chips | ✅ a chip that is a field opens its editor where it sits (End, Start before it begins, showings); Set end date stays beside the Never chip ("Keep both", 2026-09-27 23:07 EDT); the queue lists live, then upcoming, then staged posts ("Keep it") | his v36 intake, 2026-09-27 20:34 EDT | — |
 | Phone | ✅ out of scope: "phone doesn't matter… It's a future scope." | 2026-09-21 10:41 EDT | he brings it into scope |
+
+## Decided 2026-09-28 → 2026-09-30 — Board 4: Collective, Versions 46–81 (signed off 2026-09-30 19:31 EDT)
+
+*Written 2026-09-30 19:51 EDT. His rulings since Version 45, each built and measured on the board; the detail, per surface, is `docs/pins2/final/board4-spec/HANDOFF.md` § Since Version 45, his words in `docs/pins2/handoffs/2026-09-21-board4-intake.md`.*
+
+| Surface | Decision | Why | Reopens if |
+|---|---|---|---|
+| Sign-off | ✅ Board 4: Collective is the design at Version 81 | "approved, run the held checks. board is done." (2026-09-30 19:31 EDT) | — |
+| Focus ring | ✅ one ring: 2px staged inside the box + 5px halo; a composite field rings its box; kept while its picker is open | V63–V76 (BU, CH, CK, CP) | a field shows two rings, or 1px on any side |
+| Card border | ✅ drawn once, above the content | V63–V64 (BW) | a doubled or thin edge on an arc card |
+| Pop-up container | ✅ `PopBox`: arc at its trigger, outline over content, tone per chip, sized to content, rendered beside a faded column | V66–V71 (CI, CN, CC) | a pop-up without its arc, or a column's fade switched off |
+| Pop-up timing | ✅ three sets in `docs/pins2/kit/b3/poptime.js`; waits for the mouse only; crossfade handoff; the arc morphs in every set; hint cards hold on hover | his spec 2026-09-30 18:13 EDT, retuned 18:29 and 19:23 EDT (CS–DA) | a pop-up's timing comes from anywhere but that table |
+| Delete hover | ✅ one: `--danger-ink` 14% + a 45% ring | V64 (CA) | a second delete hover appears |
+| Stepper | ✅ Stepper C | his pick, V73 (CM); pink in the Post drawer (CO) | — |
+| Grouped lists | ✅ a hairline where a group starts, weapons and attachments | V81 (DB) | a grouped list without it |
+
