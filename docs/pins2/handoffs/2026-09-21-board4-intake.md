@@ -1676,3 +1676,5 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 | 20:40 EDT | *"and why so much empty space to the right of the shield/checkmark chip?"* | the list's wrapper (`.wg-fwrap`) carries an 18px margin meant for the manifest's code field; zeroed in the head, the chip sits 12px from the column's edge, as the build chip does from the other |
 | 20:41 EDT | *"why are these left aligned?"* (the band's names) | right-aligned against their chips, their ink ending 14px from the column's edge, where the table's row names end |
 
+**Published 2026-09-29 21:30 EDT as Board 4 Version 43** on his "publish" (the page and the seven changed kit files, which also carry History's event-drawer fix; every byte size in the artifact's listing matches the local file). **His answer on the manifest (verbatim):** *"no, leave armory manifest's image icon. that serves a different purpose"* — the Armory manifest keeps its image mark; the verdict chip is Compare's alone.
+

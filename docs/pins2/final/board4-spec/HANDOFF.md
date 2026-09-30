@@ -3,10 +3,12 @@ kind: reference
 status: live
 ---
 
-# Board 4: Collective — the handoff, gate by gate (Version 42)
+# Board 4: Collective — the handoff, gate by gate (Version 43)
 
 *Rewritten 2026-09-27 02:47 EDT after Harkirat's harsh review ("i have doubts with your quality and level of work"). The first version (02:29 EDT) presented my paraphrases as his words, mixed superseded alternatives in with current rulings, invented a responsive rule and pointed at maps with none of Board 4's classes. Those are gone. This file is the AUTHORED half of the spec; everything generated sits beside it (README).*
 
+> 🔨 **VERSION 43 (2026-09-29 21:30 EDT, his "publish"): his Version 42 round (classes AI–AS, the Compare rows below) and History's event-drawer fix are live; the Armory manifest keeps its image mark (his: "that serves a different purpose").**
+>
 > 🔨 **VERSION 42 — rewritten 2026-09-29 18:50 EDT.** Board 4 Version 42 (published 2026-09-29 18:42 EDT on his "you can publish v42") carries his Version 40 round (classes A–U) and his Version 41 round (classes V–AH), both built; **his review of Version 42 is pending and the Collective is not signed off**. The Compare rows and C3's per-gate table below are rewritten from the kit and the two rounds' "Built in the kit" tables in [the intake log](../../handoffs/2026-09-21-board4-intake.md); every other row names the class that changed it. His words there still win over this file.
 
 ## Who reads this, and in what order
