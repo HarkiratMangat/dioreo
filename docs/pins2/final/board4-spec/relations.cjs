@@ -27,6 +27,10 @@ const REL = [
   R('C3', 'Two weapons', 'gaps between builds of one weapon that end in a round cap', 'Version 42 AS', '≥1', `[...document.querySelectorAll('#c-compare th.cx-h.cx-hj')].filter((e) => /radial-gradient/.test(getComputedStyle(e, '::after').backgroundImage)).length`),
   R('C3', 'Empty', 'landing tiles (10–16)', 'Version 40 S', '10–16', `document.querySelectorAll('#c-compare .cx-w').length`),
   R('C3', 'Empty', 'landing tile rows (≤ 3)', 'Version 40 S', '≤3', `new Set([...document.querySelectorAll('#c-compare .cx-w')].map((x) => Math.round(x.getBoundingClientRect().top))).size`),
+  // V44 (2026-09-29 22:45 EDT, his Version 44 intake)
+  R('C3', 'One weapon', 'a slot every build shares that has no table row', 'Version 44 AV', 0, `[...document.querySelectorAll('#c-compare .cx-band .cx-sv')].filter((c) => c.dataset.slot !== 'Category' && ![...document.querySelectorAll('#c-compare .cx-t:not([data-ghost]) tbody th.cx-k0')].some((t) => t.textContent.trim() === c.dataset.slot)).length`),
+  R('C3', 'One weapon', 'an unset build name drawn as a box (a frame or a fill)', 'Version 44 AX ("too intrusive")', 0, `[...document.querySelectorAll('#c-compare .cx-pl.unset')].filter((e) => { const c = getComputedStyle(e); return c.outlineStyle !== 'none' || c.boxShadow !== 'none' || c.backgroundImage !== 'none'; }).length`),
+  R('C7', 'Posting', 'a count readout whose numeral is the colour of its words', 'Version 44 AZ', 0, `[...document.querySelectorAll('#c-broadcast .b3-cc .b3-nw > b')].filter((b) => getComputedStyle(b).color === getComputedStyle(b.parentElement).color).length + (document.querySelector('#c-broadcast .b3-cc .b3-nw > b') ? 0 : 99)`),
   R('C2', 'Add build', 'the build drawer', 'intake:703 (2026-09-24 22:30)', 980, `(() => { const d = document.querySelector('#c-new-build .drawer'); return d && d.getBoundingClientRect().width; })()`, 1),
   R('C7', 'Posting', "the post drawer's height, min(84vh, 860px)", 'Frame (2026-09-27 16:09 EDT)', Math.round(Math.min(888 * 0.84, 860)), `(() => { const d = document.querySelector('#c-broadcast .drawer'); return d && d.getBoundingClientRect().height; })()`, 1),
 ];
@@ -46,6 +50,19 @@ const POPREL = [
     const v = await p.evaluate(`(${r.fn})`).catch(() => null);
     const ok = judge(r.expect, v, r.tol); if (!ok) fail++;
     rows.push(`| ${r.g} | ${r.state} | ${r.what} | ${r.source} | ${r.expect} | ${v == null ? '**not found**' : Math.round(v * 10) / 10} | ${ok ? '✓' : '✗'} |`);
+  }
+  // V44 AU (his: "the table is really bugged when you hover over the weapon name"): every hover target of Compare's table, by a REAL mouse hover —
+  // a class toggled by hand would have missed it — and no th or td may move, resize or stop being a table cell
+  {
+    await setState(p, 'c-compare', 'Two weapons'); cur['c-compare'] = 'Two weapons'; await p.mouse.move(2, 2); await sleep(400);
+    const boxes = () => p.evaluate(() => { const t = document.querySelector('#c-compare .cx-t:not([data-ghost])').getBoundingClientRect(); return [...document.querySelectorAll('#c-compare .cx-t:not([data-ghost]) :is(th,td)')].map((e) => { const r = e.getBoundingClientRect(); return [r.x - t.x, r.y - t.y, r.width, r.height, getComputedStyle(e).display]; }); });
+    const rest = await boxes(); let worst = 0, nonCell = 0, n = 0;
+    for (const sel of ['.cx-gr th.cx-g', 'th.cx-h', 'tbody th.cx-k0', 'td.cx-c', '.cx-band .wg-at', '.cx-tiles .cx-k']) {
+      const pts = await p.evaluate((sel) => [...document.querySelectorAll(`#c-compare ${sel}`)].slice(0, 4).map((e) => { e.scrollIntoView({ block: 'center' }); const r = e.getBoundingClientRect(); return [r.x + r.width / 2, r.y + Math.min(r.height / 2, 14)]; }), sel);
+      for (const [x, y] of pts) { n++; await p.mouse.move(x, y); await sleep(220); (await boxes()).forEach((q, i) => { const r0 = rest[i]; if (!r0) return; worst = Math.max(worst, ...[0, 1, 2, 3].map((j) => Math.abs(q[j] - r0[j]))); if (!/table-cell/.test(q[4])) nonCell++; }); await p.mouse.move(2, 2); await sleep(150); }
+    }
+    const v = Math.round((worst + nonCell) * 10) / 10; const ok = v <= 0.5; if (!ok) fail++;
+    rows.push(`| C3 | Two weapons | ${n} real hovers across the table (weapon heads, build heads, slot names, cells, band chips, tile chips): the most a cell moves, plus cells that stop being cells | Version 44 AU | 0 | ${v} | ${ok ? '✓' : '✗'} |`);
   }
   for (const pop of POPS.filter((x) => !x.drawer)) {
     const o = await openPop(p, pop);

@@ -286,7 +286,7 @@ inside `.dw-nav` · 1 on screen · **1 look**
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .drawer .x · app.css:1398 |
 | transition | `gap 360ms cubic-bezier(.4,0,.2,1),padding 360ms cubic-bezier(.4,0,.2,1),color 200ms ease,background 200ms ease,border-color 200ms ease` | `` | .dw-h .dw-nav .x · gates.css:812 |
 | cursor | `pointer` | `pointer` | .dw-h .x · app.css:1383 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **::after**
 
@@ -1705,7 +1705,7 @@ inside `.f-fld` · 3 on screen · **3 looks**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5006 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5012 |
 
 **:hover** — changes nothing on the element itself
 
@@ -1765,7 +1765,7 @@ inside `.f-fld` · 3 on screen · **3 looks**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `pointer` | `pointer` | .b4 .f-fld.closed, .b4 .f-fld.closed .f-in · b4/form.css:49 |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5006 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5012 |
 
 **:hover** — changes nothing on the element itself
 
@@ -1824,7 +1824,7 @@ inside `.f-fld` · 3 on screen · **3 looks**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5006 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5012 |
 
 **:hover** — changes nothing on the element itself
 
@@ -1886,7 +1886,7 @@ inside `.f-fld` · 3 on screen · **1 look**
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-suf · b4/form.css:65 |
 | transition | `color .15s,background-color .15s` | `` | .b4 .f-suf · b4/form.css:65 |
 | cursor | `pointer` | `pointer` | .b4 .f-suf · b4/form.css:65 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -2188,7 +2188,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5006 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5012 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2291,7 +2291,7 @@ inside `.f-fld` · 2 on screen · **1 look**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5006 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5012 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2354,7 +2354,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 | opacity | `0.35` | `0.35` | .b4 .f-suf:disabled · b4/form.css:69 |
 | transition | `color .15s,background-color .15s` | `` | .b4 .f-suf · b4/form.css:65 |
 | cursor | `default` | `default` | .b4 .f-suf:disabled · b4/form.css:69 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2601,7 +2601,7 @@ inside `.f-bdgs` · 9 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-bt · b4/form.css:115 |
 | cursor | `pointer` | `pointer` | .b4 .f-bt · b4/form.css:115 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -2909,7 +2909,7 @@ inside `.f-tiers` · 1 on screen · **1 look**
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .f-tier.none[aria-checked="true"] · b4/form.css:143 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-tier · b4/form.css:135 |
 | cursor | `pointer` | `pointer` | .b4 .f-tier · b4/form.css:135 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes
 
@@ -2972,7 +2972,7 @@ inside `.f-tiers` · 4 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-tier · b4/form.css:135 |
 | cursor | `pointer` | `pointer` | .b4 .f-tier · b4/form.css:135 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -3658,7 +3658,7 @@ inside `.f-form` · 1 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b4 .f-more · b4/form.css:194 |
 | transition | `color .15s,border-color .15s,background-color .15s` | `` | .b4 .f-more · b4/form.css:194 |
 | cursor | `pointer` | `pointer` | .b4 .f-more · b4/form.css:194 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -4271,7 +4271,7 @@ inside `.—` · 1 on screen · **1 look**
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-stage h5 .f-stmin:not(#_) · b4/classes.css:918 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .b3-x · b3/board.css:68 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -4355,7 +4355,7 @@ inside `.—` · 1 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-st · b4/classes.css:488 |
 | cursor | `pointer` | `pointer` | .b4 .f-st · b4/classes.css:488 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes
 
@@ -4625,7 +4625,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-btn2 · b3/board.css:801 |
 | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | .b3-btn2 · b3/board.css:801 |
 | cursor | `pointer` | `pointer` | .b3-btn2 · b3/board.css:801 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -4706,9 +4706,9 @@ inside `.dw-f` · 1 on screen · **1 look**
 | white-space | `nowrap` | `` | .b3-btn2 · b3/board.css:801 |
 | color | `var(--on-ok)` | `rgb(7, 19, 10)` | .b3-btn2.go · b3/board.css:1355 |
 | opacity | `0.45` | `0.45` | .b3-btn2:disabled, .b3-btn2[aria-disabled="true"] · b3/board.css:1357 |
-| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` | `` | .b3-btn2.go · b3/board.css:4136 |
+| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` | `` | .b3-btn2.go · b3/board.css:4142 |
 | cursor | `default` | `default` | .b3-btn2:disabled, .b3-btn2[aria-disabled="true"] · b3/board.css:1357 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes
 

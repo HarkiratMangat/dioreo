@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the exact changes to PORTAL code
 
-*Generated 2026-09-30T00:48:54.905Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `17389c97 plus the working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
+*Generated 2026-09-30T02:48:12.281Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `bd5463b1 plus the working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
 
 ## `app.css` → `portal/public/app.css`
 
@@ -778,7 +778,7 @@ index 9fd1fbd9..ad67927e 100644
 
 ```diff
 diff --git aportal/ui/broadcast.js bkit/ui/broadcast.js
-index 68764342..fb041aec 100644
+index 68764342..b97ba53b 100644
 --- aportal/ui/broadcast.js	
 +++ bkit/ui/broadcast.js	
 @@ -3,7 +3,7 @@
@@ -795,7 +795,7 @@ index 68764342..fb041aec 100644
  import { useOverlay, Drawer } from './overlay.js';
  import { SmartDate } from './composer.js';
 +import { useB3 } from '../b3/state.js';
-+import { EndPicker, NeverChip, ForeverAhead, stagedEndOf, DateGrid, usePop, FoldBtn, BudgetMeter, Stepper, AccentBlock, randomAccent, hexOf, accentTooDark } from '../b3/broadcast.js';
++import { EndPicker, NeverChip, ForeverAhead, stagedEndOf, DateGrid, usePop, FoldBtn, BudgetMeter, BudgetReadout, Stepper, AccentBlock, randomAccent, hexOf, accentTooDark } from '../b3/broadcast.js';
 +import { isoLocal } from '../b3/state.js';
 +import { MediaWell, Chip, useStageMin, StageMinBtn, StageMini } from '../b4/form.js';
 +import { CharCount } from '../gates/lib.js';
@@ -1173,7 +1173,7 @@ index 68764342..fb041aec 100644
 +                                <div class="b4-tbc"><${CharCount} n=${text.length} cap=${TEXT_MAX} warnAt=${3600} />
 +                                    <div class=${'pb-meter2 g-fact b3-cc' + (overBudget ? ' over' : '')} aria-label="Delivery budget, each live post in its colour"><${Icon} name="text" />
 +                                        <${BudgetMeter} segs=${[...liveSegs(allAnnouncements, initial?.id || initial?._id), { n: thisLen, c: accent }]} total=${EMBED_BUDGET} />
-+                                        <span>${overBudget ? html`<b>${(totalLen - EMBED_BUDGET).toLocaleString()}</b> over ${EMBED_BUDGET.toLocaleString()}` : html`<b>${(EMBED_BUDGET - totalLen).toLocaleString()}</b> of ${EMBED_BUDGET.toLocaleString()} left`}</span></div></div>
++                                        <${BudgetReadout} used=${totalLen} total=${EMBED_BUDGET} /></div></div>
 +                                ${clamps ? html`<${FoldBtn} open=${expanded} onMouseDown=${(e) => e.preventDefault()} onClick=${(e) => { e.stopPropagation(); fold(); }} />` : null}
 +                            </div></div></div>
 +                    <div class="dw-grid2" style="gap:0 16px">

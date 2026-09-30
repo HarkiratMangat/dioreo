@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective (the kit Board 3-E shares) — its rules on SHIPPED portal classes
 
-*Generated 2026-09-30T00:44:46.591Z by `overrides.cjs`. **300 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
+*Generated 2026-09-30T02:43:57.459Z by `overrides.cjs`. **300 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
 
 **This is where the corrections to boards 1 and 2 live.** Session 2 shipped board 1 and board 2 at ~95%; board 3 ran the portal's own code and corrected the rest with rules like these. Each row is a change to `portal/ui/app.css` (or `tokens.css`): find the portal rule for the same selector, change it to this, and close the element with `portalProbe` against board 3.
 
@@ -170,22 +170,22 @@ status: live
 | `b3/board.css:3450` | `html[data-b3-a1] .mtools .mt-r2 .chip.topic` | gap:5px | live switch — drop the qualifier |
 | `b3/board.css:3451` | `html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic)` | display:inline-flex;align-items:center;gap:5px | live switch — drop the qualifier |
 | `b3/board.css:3486` | `.lab` | display:grid;grid-template-columns:minmax(0,1fr);gap:16px | unswitched |
-| `b3/board.css:3628` | `.wg-at.nocode:not(#_),.wg-sc.nocode:not(#_)` | box-shadow:none;outline:1px dashed color-mix(in srgb,var(--warn) 72%,transparent);outline-offset:-1px; background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--warn) 11%,transparent) 0 4px,transparent 4px 8px) | unswitched |
-| `b3/board.css:3630` | `.wg-at.nocode:not(#_)::before` | color:color-mix(in srgb,var(--warn) 80%,var(--ink3)) | unswitched |
-| `b3/board.css:3635` | `.b3-pc .b3-pc-open,.b3dock .b3dock-tries button,.b3dock-panel footer button` | border-radius:var(--rad-box) | unswitched |
-| `b3/board.css:3994` | `.band-best` | --bc:#F2C230 | unswitched |
-| `b3/board.css:3994` | `.band-top` | --bc:#A99BFF | unswitched |
-| `b3/board.css:3994` | `.band-meta` | --bc:#38D6F0 | unswitched |
-| `b3/board.css:4083` | `.b3-tk,.b3-xf,.pb-enc,.b3-sd,.drawer .b4-ask` | outline:1px solid var(--b3-edge,var(--rule2));outline-offset:-1px | unswitched |
-| `b3/board.css:4163` | `.b3-btn2:is(.go,.stage)` | transition:background var(--b3-d1),box-shadow var(--b3-d1) | unswitched |
-| `b3/board.css:4163` | `.b3-btn2:is(.go,.stage):hover` | transform:none | unswitched |
-| `b3/board.css:4868` | `.b3-hi-dg > .b3-hi-r:is(.st-m,.st-z)` | border-top-color:transparent | unswitched |
-| `b3/board.css:4928` | `.b3-hi-r:is(.st-m,.st-z)` | border-top-color:transparent | unswitched |
-| `b3/board.css:4990` | `.chip:hover:not(:disabled)` | background:var(--hi);color:var(--ink) | unswitched |
-| `b3/board.css:4991` | `.b3-sd-vt button.on:hover,.seg button[aria-selected=true]:hover` | background:color-mix(in srgb,var(--ink) 12%,var(--raised));color:var(--ink) | unswitched |
-| `b3/board.css:5005` | `:is(button,[role=button],[role=tab],[role=checkbox],[role=radio],.b3-fc,.b3-xt-wn,.b3-xt-c,.seg button,.pill,.chip,.b3-btn2,.b3-hi-h,.b3-fgl,.mlabel,.b3-hi-day)` | -webkit-user-select:none;user-select:none | unswitched |
-| `b3/board.css:5171` | `.wg-r .wg-ix` | font-weight:700;font-variant-numeric:tabular-nums | unswitched |
-| `b3/board.css:5172` | `.wg-line` | gap:10px | unswitched |
+| `b3/board.css:3630` | `.wg-at.nocode:not(#_),.wg-sc.nocode:not(#_)` | box-shadow:none;outline:1px dashed color-mix(in srgb,var(--warn) 72%,transparent);outline-offset:-1px; background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--warn) 11%,transparent) 0 4px,transparent 4px 8px) | unswitched |
+| `b3/board.css:3632` | `.wg-at.nocode:not(#_)::before` | color:color-mix(in srgb,var(--warn) 80%,var(--ink3)) | unswitched |
+| `b3/board.css:3637` | `.b3-pc .b3-pc-open,.b3dock .b3dock-tries button,.b3dock-panel footer button` | border-radius:var(--rad-box) | unswitched |
+| `b3/board.css:4000` | `.band-best` | --bc:#F2C230 | unswitched |
+| `b3/board.css:4000` | `.band-top` | --bc:#A99BFF | unswitched |
+| `b3/board.css:4000` | `.band-meta` | --bc:#38D6F0 | unswitched |
+| `b3/board.css:4089` | `.b3-tk,.b3-xf,.pb-enc,.b3-sd,.drawer .b4-ask` | outline:1px solid var(--b3-edge,var(--rule2));outline-offset:-1px | unswitched |
+| `b3/board.css:4169` | `.b3-btn2:is(.go,.stage)` | transition:background var(--b3-d1),box-shadow var(--b3-d1) | unswitched |
+| `b3/board.css:4169` | `.b3-btn2:is(.go,.stage):hover` | transform:none | unswitched |
+| `b3/board.css:4874` | `.b3-hi-dg > .b3-hi-r:is(.st-m,.st-z)` | border-top-color:transparent | unswitched |
+| `b3/board.css:4934` | `.b3-hi-r:is(.st-m,.st-z)` | border-top-color:transparent | unswitched |
+| `b3/board.css:4996` | `.chip:hover:not(:disabled)` | background:var(--hi);color:var(--ink) | unswitched |
+| `b3/board.css:4997` | `.b3-sd-vt button.on:hover,.seg button[aria-selected=true]:hover` | background:color-mix(in srgb,var(--ink) 12%,var(--raised));color:var(--ink) | unswitched |
+| `b3/board.css:5011` | `:is(button,[role=button],[role=tab],[role=checkbox],[role=radio],.b3-fc,.b3-xt-wn,.b3-xt-c,.seg button,.pill,.chip,.b3-btn2,.b3-hi-h,.b3-fgl,.mlabel,.b3-hi-day)` | -webkit-user-select:none;user-select:none | unswitched |
+| `b3/board.css:5177` | `.wg-r .wg-ix` | font-weight:700;font-variant-numeric:tabular-nums | unswitched |
+| `b3/board.css:5178` | `.wg-line` | gap:10px | unswitched |
 | `gates.css:51` | `.pidx` | margin: 0 0 22px; border-radius: var(--rad-3); background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); overflow: hidden | unswitched |
 | `gates.css:52` | `.pidx-h` | display: flex; align-items: baseline; gap: 14px; padding: 18px 20px 12px | unswitched |
 | `gates.css:53` | `.pidx-h h2` | margin: 0; font: 600 var(--t-lg)/1 var(--ui); color: var(--ink) | unswitched |

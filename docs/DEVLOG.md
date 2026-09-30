@@ -261,6 +261,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-29 19:57 EDT — Board 4's spec gets its structure, relations and accessibility walk; History's event drawer fixed in the kit (v3.85.0-pre)
 - 2026-09-29 21:00 EDT — Board 4 Version 42 intake built in the kit, classes AI–AS (v3.85.0-pre)
 - 2026-09-29 21:39 EDT — Board 4 Versions 43 and 44 published; compact prep 20 (v3.85.0-pre)
+- 2026-09-29 22:55 EDT — Board 4 Version 44 intake logged and built in the kit, classes AT–BB (v3.85.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4520,6 +4521,14 @@ Routing: the kit is excluded from the product's codebase-memory graph because it
 **Version 43** carried his Version 42 round and History's event-drawer fix. The Armory manifest keeps its image mark, at his word: "that serves a different purpose".
 
 **Version 44** fixed a card he caught changing colour. The passing card went green top to bottom whenever it opened upward, because the ok tone's outline fill ignored the direction rule that gives a downward card its grey body.
+
+## 2026-09-29 22:55 EDT — Board 4 Version 44 intake logged and built in the kit, classes AT–BB (v3.85.0-pre)
+
+**What he asked:** nine asks in one message, and "that's honestly it for the intakes". The build drawer's weapon list grouped like Compare's; the table breaking when a weapon's name is hovered; shared slots kept as rows; a smoother badge pop; "No label" → "Name not set" with a set and an unset design; PHARO and .50 GS on the manifest; the post drawer's "5,443" in white; a tick on every weapon in Compare's list, turning into a red × on hover.
+
+**What was underneath:** three of the nine were a class he had already named. The hover break was a CSS class collision — V42's lit-band class `cx-bl` was also an old dead rule's `display:flex` — the second collision in two rounds after History's `.dk`. The abrupt hide was board 3's thread c9604d47 again: a `display:none` pop can only animate in. And the two budget chips were two hand-written texts, one muted on purpose. Each is now fixed at its class: the hover is measured by real mouse hovers in `relations.cjs` (37 of 37 hold), the pop unfurls from the compact badge's width and folds back, and one readout carries every count.
+
+**His notes during the build:** "2 sequential-thinking calls?" — the pass had stopped at two thoughts before an evidence batch; it resumed to eighteen. And "i don't like the 'name not set' chip. its too intrusive" — the dashed empty plate became a quiet dim line.
 
 # Part B — Lessons Ledger (thematic)
 

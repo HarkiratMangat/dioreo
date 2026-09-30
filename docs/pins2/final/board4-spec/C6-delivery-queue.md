@@ -204,7 +204,7 @@ inside `.—` · 39 on screen · **13 looks**
 | font-size | ↑ `` | `10.5px` | inherited · .g-fact · gates.css:374 |
 | font-weight | ↑ `` | `500` | inherited · .g-fact · gates.css:374 |
 | font-style | ↑ `` | `normal` | inherited · .g-fact · gates.css:374 |
-| font-variant-numeric | ↑ `tabular-nums` | `tabular-nums` | inherited · .g-fact.b3-cc · b3/board.css:3669 |
+| font-variant-numeric | ↑ `tabular-nums` | `tabular-nums` | inherited · .g-fact.b3-cc · b3/board.css:3671 |
 | line-height | ↑ `` | `10.5px` | inherited · .g-fact · gates.css:374 |
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink4)` | `rgb(92, 106, 117)` | .g-fact .ic · gates.css:376 |
@@ -214,7 +214,7 @@ inside `.—` · 39 on screen · **13 looks**
 
 #### look 5 of 13
 
-`C6-40` · rendered **13×13** · 7 instances look like this · aria-hidden="true"
+`C6-42` · rendered **13×13** · 7 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-calendar-days"></use></svg>
@@ -242,7 +242,7 @@ inside `.—` · 39 on screen · **13 looks**
 
 #### look 6 of 13
 
-`C6-49` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
+`C6-51` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-infinity"></use></svg>
@@ -266,7 +266,7 @@ inside `.—` · 39 on screen · **13 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .pb-end · b2.css:549 |
-| color | `inherit` | `rgb(255, 158, 114)` | .pb-end.g-noend .ic, .pb-end.g-stagedend .ic · b3/board.css:4377 |
+| color | `inherit` | `rgb(255, 158, 114)` | .pb-end.g-noend .ic, .pb-end.g-stagedend .ic · b3/board.css:4383 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .g-chipbtn · b4/classes.css:710 |
@@ -348,9 +348,9 @@ inside `.sp` · 1 on screen · **1 look**
 
 ### `span.b3-nw`
 
-inside `.g-status` · 3 on screen · **2 looks**
+inside `.g-status` · 7 on screen · **3 looks**
 
-#### look 1 of 2
+#### look 1 of 3
 
 `C6-10` · rendered **76×11** · 1 instance look like this
 
@@ -378,7 +378,7 @@ inside `.g-status` · 3 on screen · **2 looks**
 | letter-spacing | — | `normal` | initial |
 | color | `inherit` | `rgb(255, 158, 114)` | .b3-nw · b3/board.css:950 |
 
-#### look 2 of 2
+#### look 2 of 3
 
 `C6-16` · rendered **114×11** · 2 instances look like this
 
@@ -406,12 +406,40 @@ inside `.g-status` · 3 on screen · **2 looks**
 | letter-spacing | — | `normal` | initial |
 | color | `inherit` | `rgb(133, 147, 159)` | .b3-nw · b3/board.css:950 |
 
+#### look 3 of 3
+
+`C6-35` · rendered **89×11** · 4 instances look like this
+
+```html
+<span class="b3-nw"><b>112</b>characters</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-nw · b3/board.css:950 |
+| gap | `7px` | `` | .b3-nw · b3/board.css:950 |
+| column-gap | `7px` | `7px` | .b3-nw · b3/board.css:950 |
+| row-gap | `7px` | `7px` | .b3-nw · b3/board.css:950 |
+| align-items | `baseline` | `baseline` | .b3-nw · b3/board.css:950 |
+| min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `inherit` | `` | .b3-nw · b3/board.css:950 |
+| font-family | `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nw · b3/board.css:950 |
+| font-size | `inherit` | `10.5px` | .b3-nw · b3/board.css:950 |
+| font-weight | `inherit` | `500` | .b3-nw · b3/board.css:950 |
+| font-style | `inherit` | `normal` | .b3-nw · b3/board.css:950 |
+| font-variant-numeric | `inherit` | `tabular-nums` | .b3-nw · b3/board.css:950 |
+| line-height | `inherit` | `10.5px` | .b3-nw · b3/board.css:950 |
+| letter-spacing | — | `normal` | initial |
+| color | `inherit` | `rgb(157, 170, 180)` | .b3-nw · b3/board.css:950 |
+| cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:728 |
+
 
 ### `b`
 
-inside `.b3-nw` · 7 on screen · **3 looks**
+inside `.b3-nw` · 11 on screen · **4 looks**
 
-#### look 1 of 3
+#### look 1 of 4
 
 `C6-11` · rendered **6×11** · 3 instances look like this · text “1”
 
@@ -433,9 +461,32 @@ inside `.b3-nw` · 7 on screen · **3 looks**
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .g-status.warn b · gates.css:406 |
 
-#### look 2 of 3
+#### look 2 of 4
 
-`C6-188` · rendered **212×32** · 2 instances look like this · text “Double XP weekend — Oct 3 to Oct 5. Every match”
+`C6-36` · rendered **19×11** · 4 instances look like this · text “112”
+
+```html
+<b>112</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `inherit` | `` | .g-fact.b3-cc .b3-nw > b · b3/board.css:3687 |
+| font-family | `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .g-fact.b3-cc .b3-nw > b · b3/board.css:3687 |
+| font-size | `inherit` | `10.5px` | .g-fact.b3-cc .b3-nw > b · b3/board.css:3687 |
+| font-weight | `inherit` | `500` | .g-fact.b3-cc .b3-nw > b · b3/board.css:3687 |
+| font-style | `inherit` | `normal` | .g-fact.b3-cc .b3-nw > b · b3/board.css:3687 |
+| font-variant-numeric | `inherit` | `tabular-nums` | .g-fact.b3-cc .b3-nw > b · b3/board.css:3687 |
+| line-height | `inherit` | `10.5px` | .g-fact.b3-cc .b3-nw > b · b3/board.css:3687 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .g-fact.b3-cc .b3-nw > b · b3/board.css:3687 |
+| cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:728 |
+
+#### look 3 of 4
+
+`C6-196` · rendered **212×32** · 2 instances look like this · text “Double XP weekend — Oct 3 to Oct 5. Every match”
 
 ```html
 <b>Double XP weekend — Oct 3 to Oct 5. Ever…</b>
@@ -458,9 +509,9 @@ inside `.b3-nw` · 7 on screen · **3 looks**
 | overflow-x | `hidden` | `hidden` | .pb-cgi b · b2.css:285 |
 | overflow-y | `hidden` | `hidden` | .pb-cgi b · b2.css:285 |
 
-#### look 3 of 3
+#### look 4 of 4
 
-`C6-195` · rendered **212×16** · 2 instances look like this · text “Undead Siege is back for Halloween”
+`C6-203` · rendered **212×16** · 2 instances look like this · text “Undead Siege is back for Halloween”
 
 ```html
 <b>Undead Siege is back for Halloween</b>
@@ -707,7 +758,7 @@ inside `.panel` · 1 on screen · **1 look**
 `C6-25` · rendered **1146×1026** · 1 instance look like this
 
 ```html
-<div class="pb-qafter g-queue" data-col="on"><div class="g-qcards"><div class="pb-card g-card g-never" style="--c: #f2c230;"><span class="pb-numr">1</span><div class="pb-body"><div class="pb-enc g-fits" data-open="false"><p>Season 7 is live — Reckoning drops today…</p><div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩112 characters</span></div></div><div c
+<div class="pb-qafter g-queue" data-col="on"><div class="g-qcards"><div class="pb-card g-card g-never" style="--c: #f2c230;"><span class="pb-numr">1</span><div class="pb-body"><div class="pb-enc g-fits" data-open="false"><p>Season 7 is live — Reckoning drops today…</p><div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>112</b>character
 ```
 
 | property | winning declaration | computed | from |
@@ -725,11 +776,11 @@ inside `.panel` · 1 on screen · **1 look**
 | padding-right | `` | `16px` | .g-queue · gates.css:364 |
 | padding-bottom | `` | `16px` | .g-queue · gates.css:364 |
 | padding-left | `` | `16px` | .g-queue · gates.css:364 |
-| border-radius | `0 0 5px 5px` | `` | .panel > .pb-qafter · b3/board.css:4971 |
+| border-radius | `0 0 5px 5px` | `` | .panel > .pb-qafter · b3/board.css:4977 |
 | background | `var(--paper)` | `` | .pb-qafter · b2.css:271 |
 | background-color | `` | `rgb(23, 30, 36)` | .pb-qafter · b2.css:271 |
 | background-image | `` | `none` | .pb-qafter · b2.css:271 |
-| box-shadow | `inset 0 1px 0 0 var(--rule2)` | `rgb(58, 71, 82) 0px 1px 0px 0px inset` | .panel > .pb-qafter · b3/board.css:4971 |
+| box-shadow | `inset 0 1px 0 0 var(--rule2)` | `rgb(58, 71, 82) 0px 1px 0px 0px inset` | .panel > .pb-qafter · b3/board.css:4977 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -747,7 +798,7 @@ inside `.pb-qafter` · 1 on screen · **1 look**
 `C6-26` · rendered **796×994** · 1 instance look like this
 
 ```html
-<div class="g-qcards"><div class="pb-card g-card g-never" style="--c: #f2c230;"><span class="pb-numr">1</span><div class="pb-body"><div class="pb-enc g-fits" data-open="false"><p>Season 7 is live — Reckoning drops today…</p><div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩112 characters</span></div></div><div class="pb-life3"><div class="pb-tl"><span clas
+<div class="g-qcards"><div class="pb-card g-card g-never" style="--c: #f2c230;"><span class="pb-numr">1</span><div class="pb-body"><div class="pb-enc g-fits" data-open="false"><p>Season 7 is live — Reckoning drops today…</p><div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>112</b>characters</span></span></div></div><div class="pb-lif
 ```
 
 | property | winning declaration | computed | from |
@@ -774,7 +825,7 @@ inside `.g-qcards` · 1 on screen · **1 look**
 `C6-27` · rendered **796×239** · 1 instance look like this
 
 ```html
-<div class="pb-card g-card g-never" style="--c: #f2c230;"><span class="pb-numr">1</span><div class="pb-body"><div class="pb-enc g-fits" data-open="false"><p>Season 7 is live — Reckoning drops today…</p><div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩112 characters</span></div></div><div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</e
+<div class="pb-card g-card g-never" style="--c: #f2c230;"><span class="pb-numr">1</span><div class="pb-body"><div class="pb-enc g-fits" data-open="false"><p>Season 7 is live — Reckoning drops today…</p><div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>112</b>characters</span></span></div></div><div class="pb-life3"><div class="pb-tl"
 ```
 
 | property | winning declaration | computed | from |
@@ -850,7 +901,7 @@ inside `.pb-card` · 2 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C6-68` · rendered **25×50** · 1 instance look like this · text “2”
+`C6-70` · rendered **25×50** · 1 instance look like this · text “2”
 
 ```html
 <span class="pb-numr">2</span>
@@ -882,7 +933,7 @@ inside `.pb-card` · 4 on screen · **1 look**
 `C6-29` · rendered **674×207** · 4 instances look like this
 
 ```html
-<div class="pb-body"><div class="pb-enc g-fits" data-open="false"><p>Season 7 is live — Reckoning drops today…</p><div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩112 characters</span></div></div><div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-tr
+<div class="pb-body"><div class="pb-enc g-fits" data-open="false"><p>Season 7 is live — Reckoning drops today…</p><div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>112</b>characters</span></span></div></div><div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div 
 ```
 
 | property | winning declaration | computed | from |
@@ -910,7 +961,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 `C6-30` · rendered **674×117** · 1 instance look like this
 
 ```html
-<div class="pb-enc g-fits" data-open="false"><p>Season 7 is live — Reckoning drops today…</p><div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩112 characters</span></div></div>
+<div class="pb-enc g-fits" data-open="false"><p>Season 7 is live — Reckoning drops today…</p><div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>112</b>characters</span></span></div></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -928,7 +979,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-2)` | `` | .pb-enc · b2.css:221 |
 | outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4089 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%)` | `` | .pb-enc · b2.css:368 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .pb-enc · b2.css:368 |
 | background-image | `` | `linear-gradient(color(srgb 0.106549 0.107961 0.0788235), rgb(11, 15, 18) 64%)` | .pb-enc · b2.css:368 |
@@ -946,10 +997,10 @@ inside `.pb-body` · 2 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C6-153` · rendered **674×117** · 1 instance look like this
+`C6-159` · rendered **674×117** · 1 instance look like this
 
 ```html
-<div class="pb-enc g-fits" data-open="false"><p>Double XP weekend — Oct 3 to Oct 5. Ever…</p><div class="pb-encf"><span class="g-fact b3-cc" title="121 of the 4,000 characters one paste can carry">⟨svg.ic⟩121 characters</span></div></div>
+<div class="pb-enc g-fits" data-open="false"><p>Double XP weekend — Oct 3 to Oct 5. Ever…</p><div class="pb-encf"><span class="g-fact b3-cc" title="121 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>121</b>characters</span></span></div></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -967,7 +1018,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-2)` | `` | .pb-enc · b2.css:221 |
 | outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4089 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%)` | `` | .pb-enc · b2.css:368 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .pb-enc · b2.css:368 |
 | background-image | `` | `linear-gradient(color(srgb 0.079098 0.0846274 0.131255), rgb(11, 15, 18) 64%)` | .pb-enc · b2.css:368 |
@@ -1035,7 +1086,7 @@ inside `.pb-enc` · 4 on screen · **1 look**
 `C6-32` · rendered **672×44** · 4 instances look like this
 
 ```html
-<div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩112 characters</span></div>
+<div class="pb-encf"><span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>112</b>characters</span></span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -1072,43 +1123,43 @@ inside `.pb-encf` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-33` · rendered **127×22** · 4 instances look like this · title="112 of the 4,000 characters one paste ca"
+`C6-33` · rendered **128×22** · 4 instances look like this · title="112 of the 4,000 characters one paste ca"
 
 ```html
-<span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩112 characters</span>
+<span class="g-fact b3-cc" title="112 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>112</b>characters</span></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .g-fact · gates.css:374 |
-| position | `relative` | `relative` | .g-fact.b3-cc · b3/board.css:3669 |
+| position | `relative` | `relative` | .g-fact.b3-cc · b3/board.css:3671 |
 | gap | `7px` | `` | .g-fact · gates.css:374 |
 | column-gap | `7px` | `7px` | .g-fact · gates.css:374 |
 | row-gap | `7px` | `7px` | .g-fact · gates.css:374 |
 | align-items | `center` | `center` | .g-fact · gates.css:374 |
-| height | `22px` | `22px` | .g-fact.b3-cc · b3/board.css:3866 |
+| height | `22px` | `22px` | .g-fact.b3-cc · b3/board.css:3872 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 9px` | `` | .g-fact · gates.css:374 |
 | padding-top | `0px` | `0px` | .g-fact · gates.css:374 |
-| padding-right | `10px` | `10px` | .g-fact.b3-cc · b3/board.css:3678 |
+| padding-right | `10px` | `10px` | .g-fact.b3-cc · b3/board.css:3680 |
 | padding-bottom | `0px` | `0px` | .g-fact · gates.css:374 |
-| padding-left | `10px` | `10px` | .g-fact.b3-cc · b3/board.css:3678 |
-| border | `0` | `` | .g-fact.b3-cc · b3/board.css:3678 |
+| padding-left | `10px` | `10px` | .g-fact.b3-cc · b3/board.css:3680 |
+| border | `0` | `` | .g-fact.b3-cc · b3/board.css:3680 |
 | border-radius | `6px` | `` | .g-fact · gates.css:374 |
 | background | `var(--sunk)` | `` | .g-fact · gates.css:374 |
 | background-color | `` | `rgb(11, 15, 18)` | .g-fact · gates.css:374 |
 | background-image | `` | `none` | .g-fact · gates.css:374 |
-| box-shadow | `inset 0 0 0 1px var(--cc-edge)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .g-fact.b3-cc · b3/board.css:3678 |
+| box-shadow | `inset 0 0 0 1px var(--cc-edge)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .g-fact.b3-cc · b3/board.css:3680 |
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .g-fact · gates.css:374 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .g-fact · gates.css:374 |
 | font-size | `` | `10.5px` | .g-fact · gates.css:374 |
 | font-weight | `` | `500` | .g-fact · gates.css:374 |
 | font-style | `` | `normal` | .g-fact · gates.css:374 |
-| font-variant-numeric | `tabular-nums` | `tabular-nums` | .g-fact.b3-cc · b3/board.css:3669 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .g-fact.b3-cc · b3/board.css:3671 |
 | line-height | `` | `10.5px` | .g-fact · gates.css:374 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .g-fact.b3-cc · b3/board.css:3669 |
-| transition | `color 200ms ease-out,box-shadow 200ms ease-out,background 200ms ease-out` | `` | .g-fact.b3-cc · b3/board.css:3678 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .g-fact.b3-cc · b3/board.css:3671 |
+| transition | `color 200ms ease-out,box-shadow 200ms ease-out,background 200ms ease-out` | `` | .g-fact.b3-cc · b3/board.css:3680 |
 | cursor | ↑ `default` | `default` | inherited · .pb-enc.g-fits · b4/classes.css:728 |
 
 
@@ -1118,10 +1169,10 @@ inside `.pb-body` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-35` · rendered **674×79** · 4 instances look like this
+`C6-37` · rendered **674×79** · 4 instances look like this
 
 ```html
-<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 56 days" style="left: 45.3837%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
+<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 56 days" style="left: 45.4323%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
 ```
 
 | property | winning declaration | computed | from |
@@ -1145,19 +1196,19 @@ inside `.pb-life3` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-36` · rendered **674×43** · 4 instances look like this
+`C6-38` · rendered **674×43** · 4 instances look like this
 
 ```html
-<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 56 days" style="left: 45.3837%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="b4-popw"><button type
+<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 56 days" style="left: 45.4323%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="b4-popw"><button type
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .pb-tl · b2.css:374 |
-| grid-template-columns | `max-content minmax(0px, 1fr) max-content` | `75px 500px 75px` | .pb-tl · b3/board.css:4376 |
+| grid-template-columns | `max-content minmax(0px, 1fr) max-content` | `75px 500px 75px` | .pb-tl · b3/board.css:4382 |
 | gap | `12px` | `` | .pb-tl · b2.css:374 |
 | column-gap | `12px` | `12px` | .pb-tl · b2.css:374 |
-| row-gap | `5px` | `5px` | .pb-tl · b3/board.css:4286 |
+| row-gap | `5px` | `5px` | .pb-tl · b3/board.css:4292 |
 | align-items | `center` | `center` | .pb-tl · b2.css:374 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
@@ -1174,7 +1225,7 @@ inside `.pb-tl` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-37` · rendered **0×0** · 4 instances look like this
+`C6-39` · rendered **0×0** · 4 instances look like this
 
 ```html
 <span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span>
@@ -1182,7 +1233,7 @@ inside `.pb-tl` · 4 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `contents` | `contents` | .b3-dt · b3/board.css:4287 |
+| display | `contents` | `contents` | .b3-dt · b3/board.css:4293 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1198,7 +1249,7 @@ inside `.b3-dt` · 12 on screen · **4 looks**
 
 #### look 1 of 4
 
-`C6-38` · rendered **35×10** · 8 instances look like this · text “Start”
+`C6-40` · rendered **35×10** · 8 instances look like this · text “Start”
 
 ```html
 <em>Start</em>
@@ -1207,22 +1258,22 @@ inside `.b3-dt` · 12 on screen · **4 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| justify-self | `start` | `start` | .b3-dt > em · b3/board.css:4288 |
+| justify-self | `start` | `start` | .b3-dt > em · b3/board.css:4294 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-dt > em · b3/board.css:4288 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-dt > em · b3/board.css:4288 |
-| font-size | `` | `9.5px` | .b3-dt > em · b3/board.css:4288 |
-| font-weight | `` | `600` | .b3-dt > em · b3/board.css:4288 |
-| font-style | `normal` | `normal` | .b3-dt > em · b3/board.css:4288 |
-| font-variant-numeric | `` | `normal` | .b3-dt > em · b3/board.css:4288 |
-| line-height | `` | `9.5px` | .b3-dt > em · b3/board.css:4288 |
-| letter-spacing | `var(--b3-tr-wide)` | `1.33px` | .b3-dt > em · b3/board.css:4288 |
-| text-transform | `uppercase` | `uppercase` | .b3-dt > em · b3/board.css:4288 |
-| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b3-dt > em · b3/board.css:4288 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-dt > em · b3/board.css:4294 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-dt > em · b3/board.css:4294 |
+| font-size | `` | `9.5px` | .b3-dt > em · b3/board.css:4294 |
+| font-weight | `` | `600` | .b3-dt > em · b3/board.css:4294 |
+| font-style | `normal` | `normal` | .b3-dt > em · b3/board.css:4294 |
+| font-variant-numeric | `` | `normal` | .b3-dt > em · b3/board.css:4294 |
+| line-height | `` | `9.5px` | .b3-dt > em · b3/board.css:4294 |
+| letter-spacing | `var(--b3-tr-wide)` | `1.33px` | .b3-dt > em · b3/board.css:4294 |
+| text-transform | `uppercase` | `uppercase` | .b3-dt > em · b3/board.css:4294 |
+| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b3-dt > em · b3/board.css:4294 |
 
 #### look 2 of 4
 
-`C6-189` · rendered **212×12** · 1 instance look like this
+`C6-197` · rendered **212×12** · 1 instance look like this
 
 ```html
 <em>⟨svg.ic⟩Starts showing once committed</em>
@@ -1248,7 +1299,7 @@ inside `.b3-dt` · 12 on screen · **4 looks**
 
 #### look 3 of 4
 
-`C6-196` · rendered **212×12** · 1 instance look like this
+`C6-204` · rendered **212×12** · 1 instance look like this
 
 ```html
 <em>⟨svg.ic⟩Starts showing</em>
@@ -1274,7 +1325,7 @@ inside `.b3-dt` · 12 on screen · **4 looks**
 
 #### look 4 of 4
 
-`C6-203` · rendered **212×12** · 2 instances look like this
+`C6-211` · rendered **212×12** · 2 instances look like this
 
 ```html
 <em>⟨svg.ic⟩Stops showing</em>
@@ -1305,7 +1356,7 @@ inside `.b3-dt` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-39` · rendered **75×28** · 4 instances look like this
+`C6-41` · rendered **75×28** · 4 instances look like this
 
 ```html
 <span class="pb-end">⟨svg.ic⟩Aug 4</span>
@@ -1319,14 +1370,14 @@ inside `.b3-dt` · 4 on screen · **1 look**
 | row-gap | `6px` | `6px` | .pb-end · b2.css:549 |
 | align-items | `center` | `center` | .pb-end · b2.css:549 |
 | justify-content | `center` | `center` | .pb-end · b2.css:549 |
-| justify-self | `start` | `start` | .b3-dt > .pb-end · b3/board.css:4289 |
+| justify-self | `start` | `start` | .b3-dt > .pb-end · b3/board.css:4295 |
 | height | `28px` | `28px` | .pb-end · b2.css:549 |
 | box-sizing | `border-box` | `border-box` | .pb-end · b2.css:549 |
-| padding | `0 10px` | `` | .pb-end · b3/board.css:4375 |
-| padding-top | `0px` | `0px` | .pb-end · b3/board.css:4375 |
-| padding-right | `10px` | `10px` | .pb-end · b3/board.css:4375 |
-| padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4375 |
-| padding-left | `10px` | `10px` | .pb-end · b3/board.css:4375 |
+| padding | `0 10px` | `` | .pb-end · b3/board.css:4381 |
+| padding-top | `0px` | `0px` | .pb-end · b3/board.css:4381 |
+| padding-right | `10px` | `10px` | .pb-end · b3/board.css:4381 |
+| padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4381 |
+| padding-left | `10px` | `10px` | .pb-end · b3/board.css:4381 |
 | border-radius | `6px` | `` | .pb-end · b2.css:549 |
 | background | `var(--sunk)` | `` | .pb-end · b2.css:549 |
 | background-color | `` | `rgb(11, 15, 18)` | .pb-end · b2.css:549 |
@@ -1350,10 +1401,10 @@ inside `.pb-tl` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-41` · rendered **500×20** · 4 instances look like this
+`C6-43` · rendered **500×20** · 4 instances look like this
 
 ```html
-<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 56 days" style="left: 45.3837%;"></span></div>
+<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 56 days" style="left: 45.4323%;"></span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -1378,7 +1429,7 @@ inside `.pb-bar` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-42` · rendered **500×6** · 4 instances look like this
+`C6-44` · rendered **500×6** · 4 instances look like this
 
 ```html
 <span class="pb-track"></span>
@@ -1414,7 +1465,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-43` · rendered **438×6** · 1 instance look like this
+`C6-45` · rendered **438×6** · 1 instance look like this
 
 ```html
 <span class="pb-span g-run" style="left: 12.3369%; right: 0px;"></span>
@@ -1448,10 +1499,10 @@ inside `.pb-bar` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-44` · rendered **2×18** · 4 instances look like this · title="Up 56 days"
+`C6-46` · rendered **2×18** · 4 instances look like this · title="Up 56 days"
 
 ```html
-<span class="pb-now" title="Up 56 days" style="left: 45.3837%;"></span>
+<span class="pb-now" title="Up 56 days" style="left: 45.4323%;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1462,7 +1513,7 @@ inside `.pb-bar` · 4 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
 | bottom | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
-| left | `45.3837%` | `226.906px` | style attribute |
+| left | `45.4323%` | `227.156px` | style attribute |
 | border-radius | `1px` | `` | .pb-now · b2.css:234 |
 | background | `var(--ink)` | `` | .pb-now · b2.css:234 |
 | background-color | `` | `rgb(232, 237, 241)` | .pb-now · b2.css:234 |
@@ -1481,7 +1532,7 @@ inside `.pb-tl` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-45` · rendered **0×0** · 4 instances look like this
+`C6-47` · rendered **0×0** · 4 instances look like this
 
 ```html
 <span class="b3-dt b3-dt-e"><em>End</em><span class="b4-popw"><button type="button" id="" class="pb-end g-noend g-chipbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Set an end date — it never ends">⟨svg.ic⟩Never</button></span></span>
@@ -1489,7 +1540,7 @@ inside `.pb-tl` · 4 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `contents` | `contents` | .b3-dt · b3/board.css:4287 |
+| display | `contents` | `contents` | .b3-dt · b3/board.css:4293 |
 | justify-self | `stretch` | `stretch` | .pb-tl > :last-child · b2.css:548 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
@@ -1506,7 +1557,7 @@ inside `.b3-dt` · 8 on screen · **1 look**
 
 #### the one look
 
-`C6-47` · rendered **75×28** · 8 instances look like this
+`C6-49` · rendered **75×28** · 8 instances look like this
 
 ```html
 <span class="b4-popw"><button type="button" id="" class="pb-end g-noend g-chipbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Set an end date — it never ends">⟨svg.ic⟩Never</button></span>
@@ -1533,7 +1584,7 @@ inside `.b4-popw` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-48` · rendered **75×28** · 1 instance look like this · aria-label="Set an end date — it never ends" aria-expanded="false" type="button"
+`C6-50` · rendered **75×28** · 1 instance look like this · aria-label="Set an end date — it never ends" aria-expanded="false" type="button"
 
 ```html
 <button type="button" id="" class="pb-end g-noend g-chipbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Set an end date — it never ends">⟨svg.ic⟩Never</button>
@@ -1550,11 +1601,11 @@ inside `.b4-popw` · 1 on screen · **1 look**
 | height | `28px` | `28px` | .pb-end · b2.css:549 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | .pb-end · b2.css:549 |
-| padding | `0 10px` | `` | .pb-end · b3/board.css:4375 |
-| padding-top | `0px` | `0px` | .pb-end · b3/board.css:4375 |
-| padding-right | `10px` | `10px` | .pb-end · b3/board.css:4375 |
-| padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4375 |
-| padding-left | `10px` | `10px` | .pb-end · b3/board.css:4375 |
+| padding | `0 10px` | `` | .pb-end · b3/board.css:4381 |
+| padding-top | `0px` | `0px` | .pb-end · b3/board.css:4381 |
+| padding-right | `10px` | `10px` | .pb-end · b3/board.css:4381 |
+| padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4381 |
+| padding-left | `10px` | `10px` | .pb-end · b3/board.css:4381 |
 | margin | `0` | `` | .g-chipbtn · b4/classes.css:710 |
 | margin-top | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
 | margin-right | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
@@ -1579,7 +1630,7 @@ inside `.b4-popw` · 1 on screen · **1 look**
 | color | `var(--warn-ink) !important !important` | `rgb(255, 158, 114)` | .g-noend · gates.css:384 |
 | transition | `background-color .12s ease,box-shadow .12s ease,color .12s ease` | `` | .g-chipbtn · b4/classes.css:710 |
 | cursor | `pointer` | `pointer` | .g-chipbtn · b4/classes.css:710 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes
 
@@ -1607,7 +1658,7 @@ inside `.pb-life3` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-50` · rendered **674×28** · 4 instances look like this
+`C6-52` · rendered **674×28** · 4 instances look like this
 
 ```html
 <div class="pb-dates"><span class="pb-pill">⟨svg.ic⟩Active for 56d</span><span class="b4-popw"><button type="button" id="" class="pb-pill g-chipbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Change how many times each player sees it — once">⟨svg.ic⟩Shown once</button></span><div class="pb-cacts"><span class="b3-endwrap b3-endwarn"><span class="b4-popw"><button type="button" id="" class="b3-endbtn" aria
@@ -1636,7 +1687,7 @@ inside `.pb-dates` · 3 on screen · **1 look**
 
 #### the one look
 
-`C6-51` · rendered **122×28** · 3 instances look like this
+`C6-53` · rendered **122×28** · 3 instances look like this
 
 ```html
 <span class="pb-pill">⟨svg.ic⟩Active for 56d</span>
@@ -1679,7 +1730,7 @@ inside `.b4-popw` · 3 on screen · **1 look**
 
 #### the one look
 
-`C6-54` · rendered **111×28** · 3 instances look like this · aria-label="Change how many times each player sees i" aria-expanded="false" type="button"
+`C6-56` · rendered **111×28** · 3 instances look like this · aria-label="Change how many times each player sees i" aria-expanded="false" type="button"
 
 ```html
 <button type="button" id="" class="pb-pill g-chipbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Change how many times each player sees it — once">⟨svg.ic⟩Shown once</button>
@@ -1724,7 +1775,7 @@ inside `.b4-popw` · 3 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .pb-pill · b2.css:237 |
 | transition | `background-color .12s ease,box-shadow .12s ease,color .12s ease` | `` | .g-chipbtn · b4/classes.css:710 |
 | cursor | `pointer` | `pointer` | .g-chipbtn · b4/classes.css:710 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -1769,7 +1820,7 @@ inside `.pb-dates` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-56` · rendered **249×28** · 4 instances look like this
+`C6-58` · rendered **249×28** · 4 instances look like this
 
 ```html
 <div class="pb-cacts"><span class="b3-endwrap b3-endwarn"><span class="b4-popw"><button type="button" id="" class="b3-endbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Set end date">⟨svg.ic⟩Set end date</button></span></span><button type="button" class="pb-ib has-word g-edit">⟨svg.ic⟩Edit</button><i class="pb-vr" aria-hidden="true"></i><button type="button" class="pb-ib pb-del" aria-label="Remove the a
@@ -1781,7 +1832,7 @@ inside `.pb-dates` · 4 on screen · **1 look**
 | gap | `12px` | `` | .pb-dates .pb-cacts · b2.css:511 |
 | column-gap | `12px` | `12px` | .pb-dates .pb-cacts · b2.css:511 |
 | row-gap | `12px` | `12px` | .pb-dates .pb-cacts · b2.css:511 |
-| align-items | `center` | `center` | .pb-dates .pb-cacts · b3/board.css:4381 |
+| align-items | `center` | `center` | .pb-dates .pb-cacts · b3/board.css:4387 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `-5px calc(-1 * var(--pb-inset)) -5px auto` | `` | .pb-dates .pb-cacts · b2.css:511 |
 | margin-top | `` | `-5px` | .pb-dates .pb-cacts · b2.css:511 |
@@ -1802,7 +1853,7 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-57` · rendered **115×28** · 1 instance look like this
+`C6-59` · rendered **115×28** · 1 instance look like this
 
 ```html
 <span class="b3-endwrap b3-endwarn"><span class="b4-popw"><button type="button" id="" class="b3-endbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Set end date">⟨svg.ic⟩Set end date</button></span></span>
@@ -1810,9 +1861,9 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-endwarn · b3/board.css:4301 |
+| display | `inline-flex` | `flex` | .b3-endwarn · b3/board.css:4307 |
 | position | `relative` | `relative` | .b3-endwrap · b3/board.css:1450 |
-| align-items | `center` | `center` | .b3-endwarn · b3/board.css:4301 |
+| align-items | `center` | `center` | .b3-endwarn · b3/board.css:4307 |
 | justify-self | `end` | `end` | .b3-endwrap · b3/board.css:1450 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
@@ -1829,7 +1880,7 @@ inside `.b4-popw` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-59` · rendered **115×28** · 1 instance look like this · aria-label="Set end date" aria-expanded="false" type="button"
+`C6-61` · rendered **115×28** · 1 instance look like this · aria-label="Set end date" aria-expanded="false" type="button"
 
 ```html
 <button type="button" id="" class="b3-endbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Set end date">⟨svg.ic⟩Set end date</button>
@@ -1838,24 +1889,24 @@ inside `.b4-popw` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-endbtn · b3/board.css:1451 |
-| gap | `7px` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| column-gap | `7px` | `7px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| row-gap | `7px` | `7px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
+| gap | `7px` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| column-gap | `7px` | `7px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| row-gap | `7px` | `7px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
 | align-items | `center` | `center` | .b3-endbtn · b3/board.css:1451 |
-| height | `28px` | `28px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
+| height | `28px` | `28px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 11px 0 9px` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| padding-top | `0px` | `0px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| padding-right | `11px` | `11px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| padding-bottom | `0px` | `0px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| padding-left | `9px` | `9px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
+| padding | `0 11px 0 9px` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| padding-top | `0px` | `0px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| padding-right | `11px` | `11px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| padding-bottom | `0px` | `0px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| padding-left | `9px` | `9px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
 | border | `0` | `` | .b3-endbtn · b3/board.css:1451 |
-| border-radius | `var(--rad-2)` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| background | `color-mix(in srgb,var(--warn) 9%,var(--sunk))` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| background-color | `` | `color(srgb 0.129255 0.0965882 0.0885882)` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| background-image | `` | `none` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 38%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.38) 0px 0px 0px 1px inset` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
+| border-radius | `var(--rad-2)` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| background | `color-mix(in srgb,var(--warn) 9%,var(--sunk))` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| background-color | `` | `color(srgb 0.129255 0.0965882 0.0885882)` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| background-image | `` | `none` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 38%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.38) 0px 0px 0px 1px inset` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
 | font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-endbtn · b3/board.css:1451 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-endbtn · b3/board.css:1451 |
 | font-size | `` | `12px` | .b3-endbtn · b3/board.css:1451 |
@@ -1866,10 +1917,10 @@ inside `.b4-popw` · 1 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .b3-endbtn · b3/board.css:1451 |
-| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
-| transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4657 |
+| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
+| transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4663 |
 | cursor | `pointer` | `pointer` | .b3-endbtn · b3/board.css:1451 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes
 
@@ -1897,7 +1948,7 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-61` · rendered **69×28** · 4 instances look like this · type="button"
+`C6-63` · rendered **69×28** · 4 instances look like this · type="button"
 
 ```html
 <button type="button" class="pb-ib has-word g-edit">⟨svg.ic⟩Edit</button>
@@ -1906,16 +1957,16 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .pb-ib.has-word · b3/board.css:555 |
-| position | `relative` | `relative` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
+| position | `relative` | `relative` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
 | gap | `7px` | `` | .g-card .pb-cacts .g-edit · gates.css:395 |
 | column-gap | `7px` | `7px` | .g-card .pb-cacts .g-edit · gates.css:395 |
 | row-gap | `7px` | `7px` | .g-card .pb-cacts .g-edit · gates.css:395 |
 | flex | `none` | `` | .pb-ib · b2.css:72 |
 | align-items | `center` | `center` | .pb-ib.has-word · b3/board.css:555 |
 | place-items | `center` | `` | .pb-ib · b2.css:72 |
-| width | `auto` | `68.9688px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| min-width | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| height | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
+| width | `auto` | `68.9688px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| min-width | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| height | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0 13px 0 10px` | `` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2445 |
@@ -1923,11 +1974,11 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 | padding-right | `13px` | `13px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2445 |
 | padding-bottom | `0px` | `0px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2445 |
 | padding-left | `10px` | `10px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2445 |
-| margin | `0` | `` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| margin-top | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| margin-right | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| margin-bottom | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
+| margin | `0` | `` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| margin-top | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| margin-right | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| margin-bottom | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
 | border | `0` | `` | .pb-ib · b2.css:72 |
 | border-radius | `0` | `` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2445 |
 | background | `none!important !important` | `` | .pb-ib, .pb-fbtn · b2.css:462 |
@@ -1946,7 +1997,7 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .pb-ib · b2.css:72 |
 | isolation | `isolate` | `isolate` | .pb-ib, .pb-fbtn · b2.css:462 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **::before**
 
@@ -1958,7 +2009,7 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 | right | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2448 |
 | bottom | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2448 |
 | left | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2448 |
-| border-radius | `var(--rad-2)` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4655 |
+| border-radius | `var(--rad-2)` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4661 |
 | background | `var(--raised)` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
 | background-color | `` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
 | background-image | `` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
@@ -1971,14 +2022,14 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| inset | `-8px -6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| top | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| right | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| bottom | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| left | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| border-radius | `inherit` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| content | `""` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
+| position | `absolute` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| inset | `-8px -6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| top | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| right | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| bottom | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| left | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| border-radius | `inherit` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| content | `""` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -2025,7 +2076,7 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-63` · rendered **1×20** · 4 instances look like this · aria-hidden="true"
+`C6-65` · rendered **1×20** · 4 instances look like this · aria-hidden="true"
 
 ```html
 <i class="pb-vr" aria-hidden="true"></i>
@@ -2037,7 +2088,7 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 | flex | `none` | `` | .pb-vr · b2.css:582 |
 | align-self | `center` | `center` | .pb-vr · b2.css:582 |
 | width | `1px` | `1px` | .pb-vr · b2.css:582 |
-| height | `20px` | `20px` | .pb-dates .pb-cacts .pb-vr · b3/board.css:4385 |
+| height | `20px` | `20px` | .pb-dates .pb-cacts .pb-vr · b3/board.css:4391 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin-right | `calc(-1 * var(--pb-inset, 5px))` | `0px` | .g-card .pb-cacts .pb-vr · gates.css:400 |
 | background | `var(--rule2)` | `` | .pb-vr · b2.css:582 |
@@ -2058,7 +2109,7 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-64` · rendered **28×28** · 4 instances look like this · aria-label="Remove the announcement" type="button"
+`C6-66` · rendered **28×28** · 4 instances look like this · aria-label="Remove the announcement" type="button"
 
 ```html
 <button type="button" class="pb-ib pb-del" aria-label="Remove the announcement">⟨svg.ic⟩</button>
@@ -2067,25 +2118,25 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .pb-ib · b2.css:72 |
-| position | `relative` | `relative` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
+| position | `relative` | `relative` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
 | flex | `none` | `` | .pb-ib · b2.css:72 |
 | align-items | `center` | `center` | .pb-ib · b2.css:72 |
 | place-items | `center` | `` | .pb-ib · b2.css:72 |
-| width | `auto` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| min-width | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| height | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
+| width | `auto` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| min-width | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| height | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0` | `` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4383 |
-| padding-top | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4383 |
-| padding-right | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4383 |
-| padding-bottom | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4383 |
-| padding-left | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4383 |
-| margin | `0` | `` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| margin-top | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| margin-right | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| margin-bottom | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4382 |
+| padding | `0` | `` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4389 |
+| padding-top | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4389 |
+| padding-right | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4389 |
+| padding-bottom | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4389 |
+| padding-left | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4389 |
+| margin | `0` | `` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| margin-top | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| margin-right | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| margin-bottom | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4388 |
 | border | `0` | `` | .pb-ib · b2.css:72 |
 | border-radius | `var(--rad-2)` | `` | .pb-ib · b2.css:72 |
 | background | `none!important !important` | `` | .pb-ib, .pb-fbtn · b2.css:462 |
@@ -2104,19 +2155,19 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .pb-ib · b2.css:72 |
 | isolation | `isolate` | `isolate` | .pb-ib, .pb-fbtn · b2.css:462 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
 | position | `absolute` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
-| inset | `0` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4655 |
-| top | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4655 |
-| right | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4655 |
-| bottom | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4655 |
-| left | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4655 |
-| border-radius | `var(--rad-2)` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4655 |
+| inset | `0` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4661 |
+| top | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4661 |
+| right | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4661 |
+| bottom | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4661 |
+| left | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4661 |
+| border-radius | `var(--rad-2)` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4661 |
 | background | `var(--raised)` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
 | background-color | `` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
 | background-image | `` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
@@ -2129,14 +2180,14 @@ inside `.pb-cacts` · 4 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| inset | `-8px -6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| top | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| right | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| bottom | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| left | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| border-radius | `inherit` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
-| content | `""` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4384 |
+| position | `absolute` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| inset | `-8px -6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| top | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| right | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| bottom | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| left | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| border-radius | `inherit` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
+| content | `""` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4390 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -2183,7 +2234,7 @@ inside `.pb-card` · 6 on screen · **1 look**
 
 #### the one look
 
-`C6-78` · rendered **42×12** · 2 instances look like this · text “Expand”
+`C6-82` · rendered **42×12** · 2 instances look like this · text “Expand”
 
 ```html
 <span>Expand</span>
@@ -2193,19 +2244,19 @@ inside `.pb-card` · 6 on screen · **1 look**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 11.5px/1 var(--ui)` | `` | .b3-xf-ibl > span · b3/board.css:4513 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-xf-ibl > span · b3/board.css:4513 |
-| font-size | `` | `11.5px` | .b3-xf-ibl > span · b3/board.css:4513 |
-| font-weight | `` | `500` | .b3-xf-ibl > span · b3/board.css:4513 |
-| font-style | `` | `normal` | .b3-xf-ibl > span · b3/board.css:4513 |
-| font-variant-numeric | `` | `normal` | .b3-xf-ibl > span · b3/board.css:4513 |
-| line-height | `` | `11.5px` | .b3-xf-ibl > span · b3/board.css:4513 |
+| font | `500 11.5px/1 var(--ui)` | `` | .b3-xf-ibl > span · b3/board.css:4519 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-xf-ibl > span · b3/board.css:4519 |
+| font-size | `` | `11.5px` | .b3-xf-ibl > span · b3/board.css:4519 |
+| font-weight | `` | `500` | .b3-xf-ibl > span · b3/board.css:4519 |
+| font-style | `` | `normal` | .b3-xf-ibl > span · b3/board.css:4519 |
+| font-variant-numeric | `` | `normal` | .b3-xf-ibl > span · b3/board.css:4519 |
+| line-height | `` | `11.5px` | .b3-xf-ibl > span · b3/board.css:4519 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| white-space | `nowrap` | `` | .b3-xf-ibl > span · b3/board.css:4513 |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-xf-ib · b3/board.css:4501 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-xf-ib · b3/board.css:4501 |
+| white-space | `nowrap` | `` | .b3-xf-ibl > span · b3/board.css:4519 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-xf-ib · b3/board.css:4507 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-xf-ib · b3/board.css:4507 |
 
 
 ### `div.g-card.pb-card`
@@ -2214,10 +2265,10 @@ inside `.g-qcards` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-67` · rendered **796×239** · 1 instance look like this
+`C6-69` · rendered **796×239** · 1 instance look like this
 
 ```html
-<div class="pb-card g-card" style="--c: #3fa7d6;"><span class="pb-numr">2</span><div class="pb-body"><div class="pb-enc" data-open="false"><p>Ranked Series 8 rewards are locked in — …</p><div class="pb-encf"><span class="g-fact b3-cc" title="354 of the 4,000 characters one paste can carry">⟨svg.ic⟩354 characters</span><button type="button" class="b3-xf-ib b4-fold" aria-expanded="false">⟨svg.ic.ic-fold⟩<span class="b3
+<div class="pb-card g-card" style="--c: #3fa7d6;"><span class="pb-numr">2</span><div class="pb-body"><div class="pb-enc" data-open="false"><p>Ranked Series 8 rewards are locked in — …</p><div class="pb-encf"><span class="g-fact b3-cc" title="354 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>354</b>characters</span></span><button type="button" class="b3-xf-ib b4-fold" aria-expanded="false
 ```
 
 | property | winning declaration | computed | from |
@@ -2269,10 +2320,10 @@ inside `.pb-body` · 2 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C6-70` · rendered **674×117** · 1 instance look like this
+`C6-72` · rendered **674×117** · 1 instance look like this
 
 ```html
-<div class="pb-enc" data-open="false"><p>Ranked Series 8 rewards are locked in — …</p><div class="pb-encf"><span class="g-fact b3-cc" title="354 of the 4,000 characters one paste can carry">⟨svg.ic⟩354 characters</span><button type="button" class="b3-xf-ib b4-fold" aria-expanded="false">⟨svg.ic.ic-fold⟩<span class="b3-xf-ibl"><span>Expand</span></span></button></div></div>
+<div class="pb-enc" data-open="false"><p>Ranked Series 8 rewards are locked in — …</p><div class="pb-encf"><span class="g-fact b3-cc" title="354 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>354</b>characters</span></span><button type="button" class="b3-xf-ib b4-fold" aria-expanded="false">⟨svg.ic.ic-fold⟩<span class="b3-xf-ibl"><span>Expand</span></span></button></div></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -2290,7 +2341,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-2)` | `` | .pb-enc · b2.css:221 |
 | outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4089 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%)` | `` | .pb-enc · b2.css:368 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .pb-enc · b2.css:368 |
 | background-image | `` | `linear-gradient(color(srgb 0.0574118 0.100549 0.124392), rgb(11, 15, 18) 64%)` | .pb-enc · b2.css:368 |
@@ -2308,10 +2359,10 @@ inside `.pb-body` · 2 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C6-111` · rendered **674×117** · 1 instance look like this
+`C6-115` · rendered **674×117** · 1 instance look like this
 
 ```html
-<div class="pb-enc" data-open="false"><p>Undead Siege is back for Halloween The n…</p><div class="pb-encf"><span class="g-fact b3-cc" title="1,935 of the 4,000 characters one paste can carry">⟨svg.ic⟩1,935 characters</span><button type="button" class="b3-xf-ib b4-fold" aria-expanded="false">⟨svg.ic.ic-fold⟩<span class="b3-xf-ibl"><span>Expand</span></span></button></div></div>
+<div class="pb-enc" data-open="false"><p>Undead Siege is back for Halloween The n…</p><div class="pb-encf"><span class="g-fact b3-cc" title="1,935 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>1,935</b>characters</span></span><button type="button" class="b3-xf-ib b4-fold" aria-expanded="false">⟨svg.ic.ic-fold⟩<span class="b3-xf-ibl"><span>Expand</span></span></button></div></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -2329,7 +2380,7 @@ inside `.pb-body` · 2 on screen · **2 looks**
 | border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-2)` | `` | .pb-enc · b2.css:221 |
 | outline | `0` | `` | .dk:where(:not(.diff-r > *)), .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4083 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4089 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%)` | `` | .pb-enc · b2.css:368 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .pb-enc · b2.css:368 |
 | background-image | `` | `linear-gradient(color(srgb 0.103804 0.0917647 0.0815686), rgb(11, 15, 18) 64%)` | .pb-enc · b2.css:368 |
@@ -2352,7 +2403,7 @@ inside `.pb-encf` · 2 on screen · **1 look**
 
 #### the one look
 
-`C6-75` · rendered **76×28** · 2 instances look like this · aria-expanded="false" type="button"
+`C6-79` · rendered **76×28** · 2 instances look like this · aria-expanded="false" type="button"
 
 ```html
 <button type="button" class="b3-xf-ib b4-fold" aria-expanded="false">⟨svg.ic.ic-fold⟩<span class="b3-xf-ibl"><span>Expand</span></span></button>
@@ -2360,24 +2411,24 @@ inside `.pb-encf` · 2 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-xf-ib · b3/board.css:4501 |
-| position | `relative` | `relative` | .b3-xf-ib · b3/board.css:4501 |
-| align-items | `center` | `center` | .b3-xf-ib · b3/board.css:4501 |
-| height | `28px` | `28px` | .b3-xf-ib · b3/board.css:4501 |
+| display | `inline-flex` | `flex` | .b3-xf-ib · b3/board.css:4507 |
+| position | `relative` | `relative` | .b3-xf-ib · b3/board.css:4507 |
+| align-items | `center` | `center` | .b3-xf-ib · b3/board.css:4507 |
+| height | `28px` | `28px` | .b3-xf-ib · b3/board.css:4507 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 7px` | `` | .b3-xf-ib · b3/board.css:4501 |
-| padding-top | `0px` | `0px` | .b3-xf-ib · b3/board.css:4501 |
-| padding-right | `7px` | `7px` | .b3-xf-ib · b3/board.css:4501 |
-| padding-bottom | `0px` | `0px` | .b3-xf-ib · b3/board.css:4501 |
-| padding-left | `7px` | `7px` | .b3-xf-ib · b3/board.css:4501 |
-| border | `0` | `` | .b3-xf-ib · b3/board.css:4501 |
-| border-radius | `var(--rad-2)` | `` | .b3-xf-ib · b3/board.css:4501 |
-| outline | `1px solid var(--rule2)` | `` | .b3-xf-ib · b3/board.css:4501 |
-| outline-offset | `-1px` | `-1px` | .b3-xf-ib · b3/board.css:4501 |
-| background | `var(--raised)` | `` | .b3-xf-ib · b3/board.css:4501 |
-| background-color | `` | `rgb(31, 39, 46)` | .b3-xf-ib · b3/board.css:4501 |
-| background-image | `` | `none` | .b3-xf-ib · b3/board.css:4501 |
+| padding | `0 7px` | `` | .b3-xf-ib · b3/board.css:4507 |
+| padding-top | `0px` | `0px` | .b3-xf-ib · b3/board.css:4507 |
+| padding-right | `7px` | `7px` | .b3-xf-ib · b3/board.css:4507 |
+| padding-bottom | `0px` | `0px` | .b3-xf-ib · b3/board.css:4507 |
+| padding-left | `7px` | `7px` | .b3-xf-ib · b3/board.css:4507 |
+| border | `0` | `` | .b3-xf-ib · b3/board.css:4507 |
+| border-radius | `var(--rad-2)` | `` | .b3-xf-ib · b3/board.css:4507 |
+| outline | `1px solid var(--rule2)` | `` | .b3-xf-ib · b3/board.css:4507 |
+| outline-offset | `-1px` | `-1px` | .b3-xf-ib · b3/board.css:4507 |
+| background | `var(--raised)` | `` | .b3-xf-ib · b3/board.css:4507 |
+| background-color | `` | `rgb(31, 39, 46)` | .b3-xf-ib · b3/board.css:4507 |
+| background-image | `` | `none` | .b3-xf-ib · b3/board.css:4507 |
 | font | `inherit` | `` | button · app.css:621 |
 | font-family | `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | button · app.css:621 |
 | font-size | `inherit` | `10.5px` | button · app.css:621 |
@@ -2387,22 +2438,22 @@ inside `.pb-encf` · 2 on screen · **1 look**
 | line-height | `inherit` | `10.5px` | button · app.css:621 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-xf-ib · b3/board.css:4501 |
-| transition | `background var(--b3-d1),color var(--b3-d1)` | `` | .b3-xf-ib · b3/board.css:4501 |
-| cursor | `pointer` | `pointer` | .b3-xf-ib · b3/board.css:4501 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-xf-ib · b3/board.css:4507 |
+| transition | `background var(--b3-d1),color var(--b3-d1)` | `` | .b3-xf-ib · b3/board.css:4507 |
+| cursor | `pointer` | `pointer` | .b3-xf-ib · b3/board.css:4507 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **::after**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-xf-ib::after · b3/board.css:4508 |
-| inset | `-8px -4px` | .b3-xf-ib::after · b3/board.css:4508 |
-| top | `-8px` | .b3-xf-ib::after · b3/board.css:4508 |
-| right | `-4px` | .b3-xf-ib::after · b3/board.css:4508 |
-| bottom | `-8px` | .b3-xf-ib::after · b3/board.css:4508 |
-| left | `-4px` | .b3-xf-ib::after · b3/board.css:4508 |
-| content | `""` | .b3-xf-ib::after · b3/board.css:4508 |
+| position | `absolute` | .b3-xf-ib::after · b3/board.css:4514 |
+| inset | `-8px -4px` | .b3-xf-ib::after · b3/board.css:4514 |
+| top | `-8px` | .b3-xf-ib::after · b3/board.css:4514 |
+| right | `-4px` | .b3-xf-ib::after · b3/board.css:4514 |
+| bottom | `-8px` | .b3-xf-ib::after · b3/board.css:4514 |
+| left | `-4px` | .b3-xf-ib::after · b3/board.css:4514 |
+| content | `""` | .b3-xf-ib::after · b3/board.css:4514 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -2453,7 +2504,7 @@ inside `.b3-xf-ib` · 2 on screen · **1 look**
 
 #### the one look
 
-`C6-76` · rendered **14×14** · 2 instances look like this · aria-hidden="true"
+`C6-80` · rendered **14×14** · 2 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic ic-fold" aria-hidden="true"><use href="#i-b2-unfold"></use></svg>
@@ -2462,9 +2513,9 @@ inside `.b3-xf-ib` · 2 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `0 0 auto` | `` | .b3-xf-ib .ic · b3/board.css:4506 |
-| width | `14px` | `14px` | .b3-xf-ib .ic · b3/board.css:4506 |
-| height | `14px` | `14px` | .b3-xf-ib .ic · b3/board.css:4506 |
+| flex | `0 0 auto` | `` | .b3-xf-ib .ic · b3/board.css:4512 |
+| width | `14px` | `14px` | .b3-xf-ib .ic · b3/board.css:4512 |
+| height | `14px` | `14px` | .b3-xf-ib .ic · b3/board.css:4512 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | ↑ `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · button · app.css:621 |
@@ -2476,10 +2527,10 @@ inside `.b3-xf-ib` · 2 on screen · **1 look**
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-xf-ib · b3/board.css:4501 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-xf-ib · b3/board.css:4507 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-xf-ib · b3/board.css:4501 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-xf-ib · b3/board.css:4507 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
 
@@ -2489,7 +2540,7 @@ inside `.b3-xf-ib` · 2 on screen · **1 look**
 
 #### the one look
 
-`C6-77` · rendered **42×12** · 2 instances look like this
+`C6-81` · rendered **42×12** · 2 instances look like this
 
 ```html
 <span class="b3-xf-ibl"><span>Expand</span></span>
@@ -2497,9 +2548,9 @@ inside `.b3-xf-ib` · 2 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-xf-ibl · b3/board.css:4512 |
+| display | `inline-flex` | `flex` | .b3-xf-ibl · b3/board.css:4518 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `6px` | `6px` | .b3-xf-ibl · b3/board.css:4512 |
+| margin-left | `6px` | `6px` | .b3-xf-ibl · b3/board.css:4518 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | ↑ `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · button · app.css:621 |
 | font-size | ↑ `inherit` | `10.5px` | inherited · button · app.css:621 |
@@ -2510,8 +2561,8 @@ inside `.b3-xf-ib` · 2 on screen · **1 look**
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-xf-ib · b3/board.css:4501 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-xf-ib · b3/board.css:4501 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-xf-ib · b3/board.css:4507 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-xf-ib · b3/board.css:4507 |
 
 
 ### `span.pb-span`
@@ -2520,7 +2571,7 @@ inside `.pb-bar` · 2 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C6-87` · rendered **315×6** · 1 instance look like this
+`C6-91` · rendered **315×6** · 1 instance look like this
 
 ```html
 <span class="pb-span" style="left: 35.1581%; width: calc(64.8419%);"></span>
@@ -2549,7 +2600,7 @@ inside `.pb-bar` · 2 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C6-129` · rendered **41×6** · 1 instance look like this
+`C6-135` · rendered **41×6** · 1 instance look like this
 
 ```html
 <span class="pb-span" style="left: 63.9687%; width: calc(8.42004%);"></span>
@@ -2583,7 +2634,7 @@ inside `.b4-popw` · 3 on screen · **1 look**
 
 #### the one look
 
-`C6-92` · rendered **82×28** · 3 instances look like this · aria-label="Change the end date, Dec 31" aria-expanded="false" type="button"
+`C6-96` · rendered **82×28** · 3 instances look like this · aria-label="Change the end date, Dec 31" aria-expanded="false" type="button"
 
 ```html
 <button type="button" id="" class="pb-end g-chipbtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Change the end date, Dec 31">⟨svg.ic⟩Dec 31</button>
@@ -2600,11 +2651,11 @@ inside `.b4-popw` · 3 on screen · **1 look**
 | height | `28px` | `28px` | .pb-end · b2.css:549 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | .pb-end · b2.css:549 |
-| padding | `0 10px` | `` | .pb-end · b3/board.css:4375 |
-| padding-top | `0px` | `0px` | .pb-end · b3/board.css:4375 |
-| padding-right | `10px` | `10px` | .pb-end · b3/board.css:4375 |
-| padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4375 |
-| padding-left | `10px` | `10px` | .pb-end · b3/board.css:4375 |
+| padding | `0 10px` | `` | .pb-end · b3/board.css:4381 |
+| padding-top | `0px` | `0px` | .pb-end · b3/board.css:4381 |
+| padding-right | `10px` | `10px` | .pb-end · b3/board.css:4381 |
+| padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4381 |
+| padding-left | `10px` | `10px` | .pb-end · b3/board.css:4381 |
 | margin | `0` | `` | .g-chipbtn · b4/classes.css:710 |
 | margin-top | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
 | margin-right | `0px` | `0px` | .g-chipbtn · b4/classes.css:710 |
@@ -2629,7 +2680,7 @@ inside `.b4-popw` · 3 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .pb-end · b2.css:549 |
 | transition | `background-color .12s ease,box-shadow .12s ease,color .12s ease` | `` | .g-chipbtn · b4/classes.css:710 |
 | cursor | `pointer` | `pointer` | .g-chipbtn · b4/classes.css:710 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5005 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5011 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -2674,10 +2725,10 @@ inside `.g-qcards` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-107` · rendered **796×239** · 1 instance look like this
+`C6-111` · rendered **796×239** · 1 instance look like this
 
 ```html
-<div class="pb-card g-card g-k-upcoming" style="--c: #e8873a;"><span class="pb-numr g-numi" title="Upcoming">⟨svg.ic⟩</span><div class="pb-body"><div class="pb-enc" data-open="false"><p>Undead Siege is back for Halloween The n…</p><div class="pb-encf"><span class="g-fact b3-cc" title="1,935 of the 4,000 characters one paste can carry">⟨svg.ic⟩1,935 characters</span><button type="button" class="b3-xf-ib b4-fold" aria-
+<div class="pb-card g-card g-k-upcoming" style="--c: #e8873a;"><span class="pb-numr g-numi" title="Upcoming">⟨svg.ic⟩</span><div class="pb-body"><div class="pb-enc" data-open="false"><p>Undead Siege is back for Halloween The n…</p><div class="pb-encf"><span class="g-fact b3-cc" title="1,935 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>1,935</b>characters</span></span><button type="butto
 ```
 
 | property | winning declaration | computed | from |
@@ -2729,7 +2780,7 @@ inside `.pb-card` · 2 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C6-108` · rendered **36×46** · 1 instance look like this · title="Upcoming"
+`C6-112` · rendered **36×46** · 1 instance look like this · title="Upcoming"
 
 ```html
 <span class="pb-numr g-numi" title="Upcoming">⟨svg.ic⟩</span>
@@ -2755,7 +2806,7 @@ inside `.pb-card` · 2 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C6-150` · rendered **36×46** · 1 instance look like this · title="Staged"
+`C6-156` · rendered **36×46** · 1 instance look like this · title="Staged"
 
 ```html
 <span class="pb-numr g-numi" title="Staged">⟨svg.ic⟩</span>
@@ -2786,7 +2837,7 @@ inside `.pb-dates` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-137` · rendered **115×28** · 1 instance look like this
+`C6-143` · rendered **115×28** · 1 instance look like this
 
 ```html
 <span class="pb-pill g-soon">⟨svg.ic⟩Starts in 30d</span>
@@ -2829,10 +2880,10 @@ inside `.g-qcards` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-149` · rendered **796×239** · 1 instance look like this
+`C6-155` · rendered **796×239** · 1 instance look like this
 
 ```html
-<div class="pb-card g-card g-k-staged" style="--c: #8e6def;"><span class="pb-numr g-numi" title="Staged">⟨svg.ic⟩</span><div class="pb-body"><div class="pb-enc g-fits" data-open="false"><p>Double XP weekend — Oct 3 to Oct 5. Ever…</p><div class="pb-encf"><span class="g-fact b3-cc" title="121 of the 4,000 characters one paste can carry">⟨svg.ic⟩121 characters</span></div></div><div class="pb-life3"><div class="pb-tl">
+<div class="pb-card g-card g-k-staged" style="--c: #8e6def;"><span class="pb-numr g-numi" title="Staged">⟨svg.ic⟩</span><div class="pb-body"><div class="pb-enc g-fits" data-open="false"><p>Double XP weekend — Oct 3 to Oct 5. Ever…</p><div class="pb-encf"><span class="g-fact b3-cc" title="121 of the 4,000 characters one paste can carry">⟨svg.ic⟩<span class="b3-nw"><b>121</b>characters</span></span></div></div><div cla
 ```
 
 | property | winning declaration | computed | from |
@@ -2886,7 +2937,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-166` · rendered **12×6** · 1 instance look like this
+`C6-174` · rendered **12×6** · 1 instance look like this
 
 ```html
 <span class="pb-span g-stagedspan" style="left: 47.4216%; width: calc(1.46827%);"></span>
@@ -2922,7 +2973,7 @@ inside `.pb-dates` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-173` · rendered **60×28** · 1 instance look like this · text “Staged”
+`C6-181` · rendered **60×28** · 1 instance look like this · text “Staged”
 
 ```html
 <span class="b3-staged">Staged</span>
@@ -2960,7 +3011,7 @@ inside `.pb-qafter` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-183` · rendered **300×287** · 1 instance look like this
+`C6-191` · rendered **300×287** · 1 instance look like this
 
 ```html
 <div class="pb-cg"><h5>Changes ahead</h5><div class="pb-cgi" data-g="st"><time datetime="2026-10-03T12:00:00.000Z"><small>OCT</small>3</time><div><b>Double XP weekend — Oct 3 to Oct 5. Ever…</b><em>⟨svg.ic⟩Starts showing once committed</em></div></div><div class="pb-cgi" data-g="in"><time datetime="2026-10-31T16:00:00.000Z"><small>OCT</small>31</time><div><b>Undead Siege is back for Halloween</b><em>⟨svg.ic⟩Starts sh
@@ -2988,7 +3039,7 @@ inside `.pb-cg` · 4 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C6-184` · rendered **300×68** · 2 instances look like this
+`C6-192` · rendered **300×68** · 2 instances look like this
 
 ```html
 <div class="pb-cgi" data-g="st"><time datetime="2026-10-03T12:00:00.000Z"><small>OCT</small>3</time><div><b>Double XP weekend — Oct 3 to Oct 5. Ever…</b><em>⟨svg.ic⟩Starts showing once committed</em></div></div>
@@ -3023,7 +3074,7 @@ inside `.pb-cg` · 4 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C6-191` · rendered **300×52** · 2 instances look like this
+`C6-199` · rendered **300×52** · 2 instances look like this
 
 ```html
 <div class="pb-cgi" data-g="in"><time datetime="2026-10-31T16:00:00.000Z"><small>OCT</small>31</time><div><b>Undead Siege is back for Halloween</b><em>⟨svg.ic⟩Starts showing</em></div></div>
@@ -3063,7 +3114,7 @@ inside `.pb-cgi` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-185` · rendered **52×27** · 4 instances look like this
+`C6-193` · rendered **52×27** · 4 instances look like this
 
 ```html
 <time datetime="2026-10-03T12:00:00.000Z"><small>OCT</small>3</time>
@@ -3093,7 +3144,7 @@ inside `.—` · 4 on screen · **1 look**
 
 #### the one look
 
-`C6-186` · rendered **21×10** · 4 instances look like this · text “OCT”
+`C6-194` · rendered **21×10** · 4 instances look like this · text “OCT”
 
 ```html
 <small>OCT</small>
@@ -3120,7 +3171,7 @@ inside `.pb-cgi` · 4 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C6-187` · rendered **212×48** · 2 instances look like this
+`C6-195` · rendered **212×48** · 2 instances look like this
 
 ```html
 <div><b>Double XP weekend — Oct 3 to Oct 5. Ever…</b><em>⟨svg.ic⟩Starts showing once committed</em></div>
@@ -3143,7 +3194,7 @@ inside `.pb-cgi` · 4 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C6-194` · rendered **212×32** · 2 instances look like this
+`C6-202` · rendered **212×32** · 2 instances look like this
 
 ```html
 <div><b>Undead Siege is back for Halloween</b><em>⟨svg.ic⟩Starts showing</em></div>

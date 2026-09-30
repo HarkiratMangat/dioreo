@@ -1681,3 +1681,54 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 **His question after Version 43 (2026-09-29 21:37 EDT, verbatim):** *"why does it show as green sometimes and grey other times (the green header + grey bottom is the correct style btw)?"* — The passing card is green top to bottom **when it opens upward**. On a downward card the header's green fills the outline and the body paints grey inside it (`b3/board.css`, the direction rule); the ok tone's green was written for every card, so on an upward card, whose body has no ground of its own, the whole outline went green. Scoped to downward cards in `docs/pins2/kit/b3/board.css`; measured after: upward, the header green, the body and the pointer grey (`docs/pins2/intake-shots/intake-v42/built/verdict-card-up.png`). It showed everywhere the card opens (the selection list, Repairs, Compare) near the bottom of the window. In the kit, not published.
 
 **Published 2026-09-29 21:39 EDT as Board 4 Version 44** on his "publish and prep compact" (the page and `b3/board.css`; its byte size in the artifact's listing matches the local file).
+
+## Version 44 intake round — opened and closed 2026-09-29 22:16 EDT
+
+*His words when he opened it: "v44 intake, log these", and in the same message "that's honestly it for the intakes. The board is almost more or less done, as long as everything from this intake round gets corrected and build correctly and nothing else breaks." So the round is logged and built in one go. Logged by class (anchor #62), 2026-09-29 22:26 EDT.*
+
+### His batch — 2026-09-29 22:16 EDT, verbatim
+
+**His eight shots, in order** — `docs/pins2/intake-shots/intake-v44/`, taken from the session transcript: 01 · the divider between two groups of Compare's list (STRIKER · SHOTGUN / .50 GS · SECONDARIES) · 02 · the HOLGER 26 weapon head hovered: the three build heads stacked in one column's width · 03 · the same with HOLGER 26 and AS VAL · 04 · a build head: Build 1, the shield, "No label", the badges · 05 · the post drawer's two chips ("7 characters", "5,443 of 6,000 left") · 06 · the delivery queue's budget chip ("5,478" white) · 07 · Compare's list open with FFAR 1 in the panel and no mark on its row · 08 · GRAU 5.56's struck-through name close up.
+
+> * can you order build drawer's weapon name dropdown similar to how you ordered the compare searchbar dropdown menu? so grouped by category, weapons alphabetically, and using this divider line between the groups, while keeping the`[N builds]`  chip.
+> * also the table is really bugged when you hover over the weapon name.
+> * also, why are you hiding away the attachment slots when the builds share them? leave them in the table AND state them as the chip above. The chip above is not a replacement for the actual row.
+> * refine the animation of the badge's pop. Its so abrupt. i want the animation to be smoother to reveal/hide them.
+> * can we also improve the design of the "no label" text. and also reword it to "Name not set". i want a slightly different design for a "not set" state and a set-state with the name. I believe the armory manifest also has a design created for the build label.
+>    * side note, can you add the Pharo to the armory manifest row. it's a good showcase of edge cases and i want it carried forward for session 4/5 to look at as an example if needed. similarly, add the .50 GS to the armory manifest rows as well.
+> * and in the announcement drawer, shouldn't the "5,443" be in white color? i attached screenshots of the other variant of that chip. It seems you hand crafted them, otherwise they should have used the same color system, no?
+> * and inside the compare's search bar menu, can you add a checkmark to each weapon that's been selected? Because notice how i have the FFAR 1 selected and sitting in the compare panel, yet when i look at the dropdown menu, i get no indication that it's selected and sitting idle?
+> * also i can BARELY see your crossed out line. so adding onto my above point, when a weapon is selected, hovering over it should change the checkmark to a red (check the board's correct color for this) `x` to signal that clicking the weapon again will remove it.
+
+**By class** (logged 2026-09-29 22:26 EDT):
+
+| Class | What he asked | The sweep it implies |
+|---|---|---|
+| **AT · the build drawer's weapon list** | grouped by category, A–Z inside each, Compare's hairline between groups, the "N builds" chip kept | the Picker is one component: its grouping and hairline belong to the Picker, not to one consumer (the hairline was scoped to `#compare`) |
+| **AU · the table's hover** | hovering the weapon name breaks the table | every hover target of the table, measured by real mouse hovers: no cell may move or change display |
+| **AV · shared slots** | a slot every build shares stays a table row AND a band chip; the chip is not a replacement | the band's two chip kinds against their rows: Same and Shared both light what they summarise |
+| **AW · the badge pop** (Version 41 W, Version 42 AJ, board 3's c9604d47 "the hide is still an abrupt disappear") | the reveal and the hide smoother | every bare-badge run (Compare's heads, the manifest), both directions, frame by frame |
+| **AX · the build's name** | "No label" → **"Name not set"**; a distinct not-set design and set design; the manifest's build-name design reused | the manifest's `.wg-plate` as the one component; "set" decided the same way in both places |
+| **AY · the manifest's rows** | PHARO and .50 GS added as edge-case exemplars, carried to Sessions 4/5 | why each is an edge case, recorded in the HANDOFF |
+| **AZ · the count readouts** | the drawer's "5,443" white, as the queue's; he suspects a handcrafted twin | one readout of a numeral and its words, used by the queue's chip, the drawer's chip and the character counter |
+| **BA · the list's selected state** | a check on every weapon in the panel, even one with no build on (FFAR 1) | the Picker's own end tick, now for a list that picks several |
+| **BB · removing from the list** | the strike is barely visible; hovering a selected row turns the check into a red × | the board's delete hue; a mark that morphs, never swaps |
+
+**Last rounds' claims failing:** AU (the Version 42 cap's `cx-bl` class collided with a dead rule — the same class of defect as Version 42's `.dk`), AW (board 3's thread c9604d47 said the hide was abrupt; it still was), AZ (the drawer's numeral was muted on purpose on 2026-09-26, reading "the counter's text style" as its colour).
+
+### Built in the kit — 2026-09-29 22:55 EDT (not published)
+
+*Measured headless at 2x (Chrome, 1282 × 888), through real mouse hovers; before and after numbers from `docs/pins2/instruments/board4-v44-probe.cjs`; crops in `docs/pins2/intake-shots/intake-v44/built/`. `relations.cjs` gained four of this round's rulings and holds 37 of 37.*
+
+| Class | Built | Measured |
+|---|---|---|
+| AT | the build drawer's weapon list grouped as Compare's: one category order (`CAT_ORDER`, form.js), A–Z inside, the category word in its colour, the "N builds" chip kept; the hairline moved from `#compare` into the Picker's own rules (classes.css) | first rows AK117 · AS VAL · BAL-27 … (were .50 GS · 3-LINE RIFLE · AK117 …); 6 hairlines (were 0); 68 of 68 count chips |
+| AU | the cause: V42's lit-band class `cx-bl` was also an old dead rule's `display:flex`, so hovering a weapon's name made its build heads flex boxes. Renamed `cx-hbl`, dead rule deleted; every class Compare mints was audited against every rule that names it (the only foreign rule left, `.cx-same`/`.cx-sv`, is Compare's own earlier band chip) | weapon-head hover: 336.5px of movement and 6 non-cell frames → 0 and 0; 24 real hovers across six kinds of target: 0px |
+| AV | a slot every build shares stays a row (one merged cell per weapon) and is also a Same chip, never also a Shared one; a Same chip lights its row on hover | One weapon: AMMUNITION is a Same chip and a row; no Same chip lacks a row |
+| AW | the pop unfurls from the compact badge's width to the full badge's (`interpolate-size`) and folds back, opaque throughout; the compact badge hides the instant the pop covers it and returns only once it has folded; the badges after it fade out and back on a transition set on the rest rule | 9 distinct widths in and 9 out (was 4 in, and out a cut to 0); 0 frames with both badges showing |
+| AX | the name is the manifest's `.wg-plate`; with none, "Name not set". **His note mid-build: "i don't like the 'name not set' chip. its too intrusive"** — the dashed empty plate became a quiet dim line, no frame or fill, holding the plate's height only when a named plate shares the row; a name is decided as the manifest decides it (`displayBuildLabel`) | unset line 15.6px tall with no named plate in the row |
+| AY | PHARO and .50 GS added to the manifest's weapons, each with why it is an edge case | both on the manifest |
+| AZ | one readout (`BudgetReadout`, b3/broadcast.js) for both budget chips; `CharCount` carries the same pair; the drawer's 2026-09-26 mute removed | drawer "5,450" rgb(157,170,180) → rgb(232,237,241), the queue's white; "0 characters" numeral white |
+| BA | the Picker ticks every row `sel(o)` marks (the build drawer's end ✓), `aria-multiselectable` | 2 of 2 panel weapons ticked (was 0), FFAR 1 with no build on included |
+| BB | a ticked row's hovered ✓ morphs into the × (`d:path`, the board's morph rule) in `--danger-ink`; a hover on one of its numbers leaves the ✓; the strike deleted | hovered tick path the ×, colour rgb(255,138,133); strike none |
+

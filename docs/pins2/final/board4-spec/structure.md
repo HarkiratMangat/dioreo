@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — structure, generated
 
-*Generated 2026-09-30T00:49:01.387Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
+*Generated 2026-09-30T02:48:18.423Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
 
 ## C1 · The Armory manifest
 
@@ -28,7 +28,7 @@ status: live
           - `span` — “Category”
         - `button.chip`
           - `span.cl` — “All”
-          - `em` — “21”
+          - `em` — “24”
         - `button.chip.topic` ×7
           - `i`
           - `span.cl` — “Assault”
@@ -36,49 +36,72 @@ status: live
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
-        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 21”`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 24”`
           - `span.cb`
       - `span`
         - `button.wg-sort`
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
-    - `div.wg` ×8
+    - `div.wg` ×10
       - `div.wg-h`
-        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+        - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
           - `span.cb`
         - `div.wg-line`
-          - `b` — “BAL-27”
-          - `small` — “Assault”
-          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `b` — “.50 GS”
+          - `small` — “Secondaries”
+          - `em.wg-nb.b3-sd-gn` — “2 builds”
           - `span.b3-bdgs`
-            - `span.b3-bdg` ×2
-              - `svg.ic.b3-zap`
-              - `span.b3-volt`
-              - `span.b3-vl`
-        - `span`
-        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+            - `span.b3-bdg “Top 3 in Secondaries”`
+              - `svg.ic`
+        - `span.wg-fwrap.b3-fx`
+          - `button.b3-fchip`
+            - `svg.ic`
+            - `b` — “Build 1”
+            - `i`
+        - `button.wg-ib.wg-fbtn “Collapse .50 GS”`
           - `svg.ic.ic-fold`
-      - `div.wg-r` ×5
-        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+      - `div.wg-r.bad`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 1”`
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
           - `div.wg-rail`
-            - `span.wg-at` ×5 — “Gauge-9 Mono”
+            - `span.wg-at` ×4 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
           - `svg.ic`
-        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
-              - `span.wg-ct` — “1I2C4A8A9D”
+              - `span.wg-ct.bad` — “1C6C7A8A9A”
             - `span.wg-igb`
               - `svg.ic`
         - `div.wg-acts`
           - `button.wg-ib.wg-share “Copy share command”`
             - `svg.ic`
           - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
+            - `svg.ic`
+      - `div.wg-r`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
+          - `span.cb`
+        - `span.wg-ix` — “2”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Monolithic Suppressor”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+              - `span.wg-ct` — “1C2A7A8A9A”
+            - `span.wg-igb`
+              - `svg.ic`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
             - `svg.ic`
 
 ### Try · Open a problem
@@ -100,7 +123,7 @@ status: live
           - `span` — “Category”
         - `button.chip`
           - `span.cl` — “All”
-          - `em` — “21”
+          - `em` — “24”
         - `button.chip.topic` ×7
           - `i`
           - `span.cl` — “Assault”
@@ -108,36 +131,44 @@ status: live
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
-        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 21”`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 24”`
           - `span.cb`
       - `span`
         - `button.wg-sort`
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
-    - `div.wg` ×8
+    - `div.wg` ×10
       - `div.wg-h`
-        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+        - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
           - `span.cb`
         - `div.wg-line`
-          - `b` — “BAL-27”
-          - `small` — “Assault”
-          - `em.wg-nb.b3-sd-gn` — “5 builds”
-          - `span.b3-bdgs`
-            - `span.b3-bdg` ×2
-        - `span`
-        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+          - `b` — “.50 GS”
+          - `small` — “Secondaries”
+          - `em.wg-nb.b3-sd-gn` — “2 builds”
+          - `span.b3-bdgs.in`
+            - `span.b3-bdg “Top 3 in Secondaries”`
+        - `span.wg-fwrap.b3-fx`
+          - `button.b3-fchip`
+            - `svg.ic`
+            - `b` — “Build 1”
+            - `i`
+          - `div.b3-pc.in.pinned.b3-pc-fixed[role=dialog] “Problems with .50 GS”`
+            - `svg.b3-pc-edge`
+            - `i.b3-pc-tape`
+            - `section.b3-pc-b`
+        - `button.wg-ib.wg-fbtn “Collapse .50 GS”`
           - `svg.ic.ic-fold`
-      - `div.wg-r` ×5
-        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+      - `div.wg-r.bad`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 1”`
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
           - `div.wg-rail`
-            - `span.wg-at` ×5 — “Gauge-9 Mono”
+            - `span.wg-at` ×4 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
           - `svg.ic`
-        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
             - `span.wg-igb`
@@ -145,7 +176,26 @@ status: live
           - `button.wg-ib.wg-share “Copy share command”`
             - `svg.ic`
           - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
+            - `svg.ic`
+      - `div.wg-r`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
+          - `span.cb`
+        - `span.wg-ix` — “2”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Monolithic Suppressor”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
             - `svg.ic`
 
 ### Try · Open another
@@ -167,7 +217,7 @@ status: live
           - `span` — “Category”
         - `button.chip`
           - `span.cl` — “All”
-          - `em` — “21”
+          - `em` — “24”
         - `button.chip.topic` ×7
           - `i`
           - `span.cl` — “Assault”
@@ -175,36 +225,40 @@ status: live
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
-        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 21”`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 24”`
           - `span.cb`
       - `span`
         - `button.wg-sort`
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
-    - `div.wg` ×8
+    - `div.wg` ×10
       - `div.wg-h`
-        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+        - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
           - `span.cb`
         - `div.wg-line`
-          - `b` — “BAL-27”
-          - `small` — “Assault”
-          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `b` — “.50 GS”
+          - `small` — “Secondaries”
+          - `em.wg-nb.b3-sd-gn` — “2 builds”
           - `span.b3-bdgs`
-            - `span.b3-bdg` ×2
-        - `span`
-        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+            - `span.b3-bdg “Top 3 in Secondaries”`
+        - `span.wg-fwrap.b3-fx`
+          - `button.b3-fchip`
+            - `svg.ic`
+            - `b` — “Build 1”
+            - `i`
+        - `button.wg-ib.wg-fbtn “Collapse .50 GS”`
           - `svg.ic.ic-fold`
-      - `div.wg-r` ×5
-        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+      - `div.wg-r.bad`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 1”`
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
           - `div.wg-rail`
-            - `span.wg-at` ×5 — “Gauge-9 Mono”
+            - `span.wg-at` ×4 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
           - `svg.ic`
-        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
             - `span.wg-igb`
@@ -212,7 +266,26 @@ status: live
           - `button.wg-ib.wg-share “Copy share command”`
             - `svg.ic`
           - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
+            - `svg.ic`
+      - `div.wg-r`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
+          - `span.cb`
+        - `span.wg-ix` — “2”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Monolithic Suppressor”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
             - `svg.ic`
 
 ### Try · Pick one build
@@ -234,7 +307,7 @@ status: live
           - `span` — “Category”
         - `button.chip`
           - `span.cl` — “All”
-          - `em` — “21”
+          - `em` — “24”
         - `button.chip.topic` ×7
           - `i`
           - `span.cl` — “Assault”
@@ -242,36 +315,40 @@ status: live
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
-        - `span.wg-cb.b3-allcb[role=checkbox] “Clear 1 of 21”`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Clear 1 of 24”`
           - `span.cb`
       - `span`
         - `button.wg-sort`
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
-    - `div.wg` ×8
+    - `div.wg` ×10
       - `div.wg-h`
-        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+        - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
           - `span.cb`
         - `div.wg-line`
-          - `b` — “BAL-27”
-          - `small` — “Assault”
-          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `b` — “.50 GS”
+          - `small` — “Secondaries”
+          - `em.wg-nb.b3-sd-gn` — “2 builds”
           - `span.b3-bdgs`
-            - `span.b3-bdg` ×2
-        - `span`
-        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+            - `span.b3-bdg “Top 3 in Secondaries”`
+        - `span.wg-fwrap.b3-fx`
+          - `button.b3-fchip`
+            - `svg.ic`
+            - `b` — “Build 1”
+            - `i`
+        - `button.wg-ib.wg-fbtn “Collapse .50 GS”`
           - `svg.ic.ic-fold`
-      - `div.wg-r` ×5
-        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+      - `div.wg-r.bad`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 1”`
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
           - `div.wg-rail`
-            - `span.wg-at` ×5 — “Gauge-9 Mono”
+            - `span.wg-at` ×4 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
           - `svg.ic`
-        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
             - `span.wg-igb`
@@ -279,7 +356,26 @@ status: live
           - `button.wg-ib.wg-share “Copy share command”`
             - `svg.ic`
           - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
+            - `svg.ic`
+      - `div.wg-r`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
+          - `span.cb`
+        - `span.wg-ix` — “2”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Monolithic Suppressor”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
             - `svg.ic`
   - `div.selbar.on.b3-selbar[role=region] “Actions for the selected builds”`
     - `div.b3-sd.mesh`
@@ -331,7 +427,7 @@ status: live
           - `span` — “Category”
         - `button.chip`
           - `span.cl` — “All”
-          - `em` — “21”
+          - `em` — “24”
         - `button.chip.topic` ×7
           - `i`
           - `span.cl` — “Assault”
@@ -339,36 +435,40 @@ status: live
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
-        - `span.wg-cb.b3-allcb[role=checkbox] “Clear 3 of 21”`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Clear 3 of 24”`
           - `span.cb`
       - `span`
         - `button.wg-sort`
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
-    - `div.wg` ×8
+    - `div.wg` ×10
       - `div.wg-h`
-        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+        - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
           - `span.cb`
         - `div.wg-line`
-          - `b` — “BAL-27”
-          - `small` — “Assault”
-          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `b` — “.50 GS”
+          - `small` — “Secondaries”
+          - `em.wg-nb.b3-sd-gn` — “2 builds”
           - `span.b3-bdgs`
-            - `span.b3-bdg` ×2
-        - `span`
-        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+            - `span.b3-bdg “Top 3 in Secondaries”`
+        - `span.wg-fwrap.b3-fx`
+          - `button.b3-fchip`
+            - `svg.ic`
+            - `b` — “Build 1”
+            - `i`
+        - `button.wg-ib.wg-fbtn “Collapse .50 GS”`
           - `svg.ic.ic-fold`
-      - `div.wg-r` ×5
-        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+      - `div.wg-r.bad`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 1”`
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
           - `div.wg-rail`
-            - `span.wg-at` ×5 — “Gauge-9 Mono”
+            - `span.wg-at` ×4 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
           - `svg.ic`
-        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
             - `span.wg-igb`
@@ -376,7 +476,26 @@ status: live
           - `button.wg-ib.wg-share “Copy share command”`
             - `svg.ic`
           - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
+            - `svg.ic`
+      - `div.wg-r`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
+          - `span.cb`
+        - `span.wg-ix` — “2”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Monolithic Suppressor”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
             - `svg.ic`
   - `div.selbar.on.b3-selbar[role=region] “Actions for the selected builds”`
     - `div.b3-sd.mesh`
@@ -428,7 +547,7 @@ status: live
           - `span` — “Category”
         - `button.chip`
           - `span.cl` — “All”
-          - `em` — “21”
+          - `em` — “24”
         - `button.chip.topic` ×7
           - `i`
           - `span.cl` — “Assault”
@@ -436,36 +555,40 @@ status: live
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
-        - `span.wg-cb.b3-allcb[role=checkbox] “Clear 8 of 21”`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Clear 8 of 24”`
           - `span.cb`
       - `span`
         - `button.wg-sort`
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
-    - `div.wg` ×8
+    - `div.wg` ×10
       - `div.wg-h`
-        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+        - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
           - `span.cb`
         - `div.wg-line`
-          - `b` — “BAL-27”
-          - `small` — “Assault”
-          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `b` — “.50 GS”
+          - `small` — “Secondaries”
+          - `em.wg-nb.b3-sd-gn` — “2 builds”
           - `span.b3-bdgs`
-            - `span.b3-bdg` ×2
-        - `span`
-        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+            - `span.b3-bdg “Top 3 in Secondaries”`
+        - `span.wg-fwrap.b3-fx`
+          - `button.b3-fchip`
+            - `svg.ic`
+            - `b` — “Build 1”
+            - `i`
+        - `button.wg-ib.wg-fbtn “Collapse .50 GS”`
           - `svg.ic.ic-fold`
-      - `div.wg-r` ×4
-        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+      - `div.wg-r.bad`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 1”`
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
           - `div.wg-rail`
-            - `span.wg-at` ×5 — “Gauge-9 Mono”
+            - `span.wg-at` ×4 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
           - `svg.ic`
-        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
             - `span.wg-igb`
@@ -473,18 +596,18 @@ status: live
           - `button.wg-ib.wg-share “Copy share command”`
             - `svg.ic`
           - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
             - `svg.ic`
-      - `div.wg-r.sel`
-        - `span.wg-cb[role=checkbox] “Select BAL-27 build 5”`
-          - `span.cb.on`
-        - `span.wg-ix` — “5”
+      - `div.wg-r`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
+          - `span.cb`
+        - `span.wg-ix` — “2”
         - `div.wg-main`
           - `div.wg-rail`
-            - `span.wg-at` ×5 — “Gauge-9 Mono”
+            - `span.wg-at` ×5 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
           - `svg.ic`
-        - `button.wg-code “Copy gunsmith code 1I2C6B8A9D”`
+        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
             - `span.wg-igb`
@@ -492,7 +615,7 @@ status: live
           - `button.wg-ib.wg-share “Copy share command”`
             - `svg.ic`
           - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 5”`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
             - `svg.ic`
   - `div.selbar.on.b3-selbar[role=region] “Actions for the selected builds”`
     - `div.b3-sd.mesh`
@@ -544,7 +667,7 @@ status: live
           - `span` — “Category”
         - `button.chip`
           - `span.cl` — “All”
-          - `em` — “21”
+          - `em` — “24”
         - `button.chip.topic` ×7
           - `i`
           - `span.cl` — “Assault”
@@ -552,36 +675,40 @@ status: live
   - `div.wg-wrap`
     - `div.wg-heads`
       - `span.b3-hint`
-        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 21”`
+        - `span.wg-cb.b3-allcb[role=checkbox] “Select all 24”`
           - `span.cb`
       - `span`
         - `button.wg-sort`
           - `svg.ic`
       - `button.wg-fold`
         - `svg.ic.ic-fold`
-    - `div.wg` ×8
+    - `div.wg` ×10
       - `div.wg-h`
-        - `span.wg-cb[role=checkbox] “Select every BAL-27 build”`
+        - `span.wg-cb[role=checkbox] “Select every .50 GS build”`
           - `span.cb`
         - `div.wg-line`
-          - `b` — “BAL-27”
-          - `small` — “Assault”
-          - `em.wg-nb.b3-sd-gn` — “5 builds”
+          - `b` — “.50 GS”
+          - `small` — “Secondaries”
+          - `em.wg-nb.b3-sd-gn` — “2 builds”
           - `span.b3-bdgs`
-            - `span.b3-bdg` ×2
-        - `span`
-        - `button.wg-ib.wg-fbtn “Collapse BAL-27”`
+            - `span.b3-bdg “Top 3 in Secondaries”`
+        - `span.wg-fwrap.b3-fx`
+          - `button.b3-fchip`
+            - `svg.ic`
+            - `b` — “Build 1”
+            - `i`
+        - `button.wg-ib.wg-fbtn “Collapse .50 GS”`
           - `svg.ic.ic-fold`
-      - `div.wg-r` ×5
-        - `span.wg-cb[role=checkbox] “Select BAL-27 build 1”`
+      - `div.wg-r.bad`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 1”`
           - `span.cb`
         - `span.wg-ix` — “1”
         - `div.wg-main`
           - `div.wg-rail`
-            - `span.wg-at` ×5 — “Gauge-9 Mono”
+            - `span.wg-at` ×4 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
           - `svg.ic`
-        - `button.wg-code “Copy gunsmith code 1I2C4A8A9D”`
+        - `button.wg-code “Copy gunsmith code 1C6C7A8A9A”`
           - `span.wg-ig`
             - `span.wg-igf`
             - `span.wg-igb`
@@ -589,7 +716,26 @@ status: live
           - `button.wg-ib.wg-share “Copy share command”`
             - `svg.ic`
           - `i.wg-vr`
-          - `button.wg-ib.wg-del “Stage deletion of BAL-27 build 1”`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 1”`
+            - `svg.ic`
+      - `div.wg-r`
+        - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
+          - `span.cb`
+        - `span.wg-ix` — “2”
+        - `div.wg-main`
+          - `div.wg-rail`
+            - `span.wg-at` ×5 — “Monolithic Suppressor”
+        - `span.wg-im[role=img] “Image uploaded”`
+          - `svg.ic`
+        - `button.wg-code “Copy gunsmith code 1C2A7A8A9A”`
+          - `span.wg-ig`
+            - `span.wg-igf`
+            - `span.wg-igb`
+        - `div.wg-acts`
+          - `button.wg-ib.wg-share “Copy share command”`
+            - `svg.ic`
+          - `i.wg-vr`
+          - `button.wg-ib.wg-del “Stage deletion of .50 GS build 2”`
             - `svg.ic`
 
 ## C2 · New build
@@ -1122,18 +1268,20 @@ status: live
               - `span.cx-hn`
                 - `span.b3-sd-gn` — “Build 1”
                 - `span.cx-vd`
-              - `span.cx-hl.none` — “No label”
+              - `span.wg-plate.cx-pl.unset`
+                - `span` — “Name not set”
               - `span.cx-hb`
                 - `div.cx-run.b3-fadx`
             - `th.cx-h`
               - `span.cx-hn`
                 - `span.b3-sd-gn` — “Build 5”
                 - `span.cx-vd`
-              - `span.cx-hl.none` — “No label”
+              - `span.wg-plate.cx-pl.unset`
+                - `span` — “Name not set”
               - `span.cx-hb`
                 - `div.cx-run.b3-fadx`
         - `tbody`
-          - `tr` ×6
+          - `tr` ×7
             - `th.cx-k0` — “Muzzle”
             - `td.cx-c.s-d` ×5
               - `span.cx-v`
@@ -1296,7 +1444,7 @@ status: live
             - `button.cx-k “Build 1: Take Build 1 out of the table”`
     - `div.cx-tw`
       - `table.cx-t`
-        - `caption.sr` — “DL Q33, LOCUS, slot by slot.”
+        - `caption.sr` — “DL Q33, 3-LINE RIFLE, slot b”
         - `colgroup`
           - `col.cx-c0`
           - `col`
@@ -1314,11 +1462,11 @@ status: live
             - `th.cx-gut`
             - `th.cx-h.sg`
         - `tbody`
-          - `tr` ×7
+          - `tr` ×6
             - `th.cx-k0` — “Muzzle”
             - `td.cx-c.s-n`
             - `td.cx-gut`
-            - `td.cx-c.s-x.sg`
+            - `td.cx-c.s-sg`
         - `tfoot`
           - `tr.cx-ft`
             - `th.cx-k0`
@@ -1354,7 +1502,7 @@ status: live
             - `tr.cx-gr`
             - `tr`
           - `tbody`
-            - `tr` ×4
+            - `tr` ×7
       - `div.cx-over`
         - `div.cx-pick.big`
           - `div.f-pick`
@@ -1372,7 +1520,7 @@ status: live
             - `i`
             - `span` — “to set them side by side”
         - `div.cx-shelf`
-          - `div.cx-w.cx-wl[role=group] “BY15, 1 build”` ×16
+          - `div.cx-w.cx-wl[role=group] “SWITCHBLADE X9, 3 builds”` ×16
             - `div.cx-wh`
             - `div.cx-keys`
 
@@ -1625,6 +1773,7 @@ status: live
             - `div.pb-encf`
               - `span.g-fact.b3-cc`
                 - `svg.ic`
+                - `span.b3-nw`
           - `div.pb-life3`
             - `div.pb-tl`
               - `div.pb-bar`
@@ -1649,6 +1798,7 @@ status: live
             - `div.pb-encf`
               - `span.g-fact.b3-cc`
                 - `svg.ic`
+                - `span.b3-nw`
               - `button.b3-xf-ib.b4-fold`
                 - `svg.ic.ic-fold`
                 - `span.b3-xf-ibl`
@@ -1676,6 +1826,7 @@ status: live
             - `div.pb-encf`
               - `span.g-fact.b3-cc`
                 - `svg.ic`
+                - `span.b3-nw`
               - `button.b3-xf-ib.b4-fold`
                 - `svg.ic.ic-fold`
                 - `span.b3-xf-ibl`
@@ -1703,6 +1854,7 @@ status: live
             - `div.pb-encf`
               - `span.g-fact.b3-cc`
                 - `svg.ic`
+                - `span.b3-nw`
           - `div.pb-life3`
             - `div.pb-tl`
               - `div.pb-bar`
