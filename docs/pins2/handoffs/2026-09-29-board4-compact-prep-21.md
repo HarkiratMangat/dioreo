@@ -12,7 +12,7 @@ status: live
 | | |
 |---|---|
 | Live | Board 4 `FCAFvDXrKQN28SotQLJhTh` **Version 46** (2026-09-29 23:44 EDT): Version 45 (his V44 round AT–BB, 23:16 EDT) plus the build name as its own table row |
-| In the kit, NOT published | the name cell's clipped descenders fixed (`b4/compare.css`, `.cx-nm .cx-vt`) · seven builds named, one per category (`data/armory.js`: BAL-27 2 "Long range", FENNEC 1 "Hip-fire" (not "Run and gun": the click-flow suite types a FENNEC "Run and gun" into Bulk and expects a NEW card; naming the stored build that made it an Update, 34/35 — renamed, the flow re-run), HOLGER 26 2 "Anchor", SO-14 1 "Long-range support marksman", DL Q33 1 "Quickscope", STRIKER 2 "Close quarters", .50 GS 2 "Sidearm") · the wheel routing (`b3/fady.js`: a column that cannot scroll is passed over — post drawer 22 of 58 dead → 0) · `relations.cjs` 38/38 |
+| In the kit, NOT published | the name cell's clipped descenders fixed (`docs/pins2/kit/b4/compare.css`, `.cx-nm .cx-vt`) · seven builds named, one per category (`docs/pins2/kit/data/armory.js`: BAL-27 2 "Long range", FENNEC 1 "Hip-fire" (not "Run and gun": the click-flow suite types a FENNEC "Run and gun" into Bulk and expects a NEW card; naming the stored build that made it an Update, 34/35 — renamed, the flow re-run), HOLGER 26 2 "Anchor", SO-14 1 "Long-range support marksman", DL Q33 1 "Quickscope", STRIKER 2 "Close quarters", .50 GS 2 "Sidearm") · the wheel routing (`docs/pins2/kit/b3/fady.js`: a column that cannot scroll is passed over — post drawer 22 of 58 dead → 0) · `relations.cjs` 38/38 |
 | **His order after the compact** | **publish** these as Version 47 (his words: "after compact, publish"), then **continue the checks and sweeps** |
 | Sign-off | not signed off |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed; **history rewritten** so no screenshot is in it (every one of 546 commits differs from its original only by image files; backup ref `backup/pins2-with-screenshots-20260929-2335`, local only — delete only on his word) |
@@ -50,6 +50,6 @@ status: live
 
 ## Next
 
-1. Publish Version 47 on his "after compact, publish": the page plus `b4/compare.css`, `data/armory.js`, `b3/fady.js` (and any file changed after), checked against the artifact's listing.
+1. Publish Version 47 on his "after compact, publish": the page plus `docs/pins2/kit/b4/compare.css`, `docs/pins2/kit/data/armory.js`, `docs/pins2/kit/b3/fady.js` (and any file changed after), checked against the artifact's listing.
 2. Items 1–4 above, measured; then the records (HANDOFF, intake log, DEVLOG, README, remember) and a commit.
 3. His sign-off; Session 3's close (plan §13) on his word — the push now carries the kit and no screenshot.
