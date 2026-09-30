@@ -348,6 +348,8 @@ The README's header counts are the extractor's. Read on the kit as it stands (re
 
 ## Ready for Sessions 4 and 5 — the sweep of 2026-09-29 23:27 EDT
 
+> 🔨 **Session 4 standardizes hover states, tints and styles across the board** (his 2026-09-30 14:32 EDT: "please document for session 4 that standardizing hover states/tints/styles is part of it's work"). Found by hand at V63 and fixed at V64: two delete hovers (the manifest/Compare one's ring was `--danger-edge`, all but invisible), the queue's Edit neutral where every other Edit lights `--staged`, the Broadcast "Shown N times" chip with no hover. The method for the rest: hover every control, record its box before and after (`::before` included, where most of the board draws its boxes), and bucket by role; the V63 baseline is `local/pins2/intake-shots/intake-v47/hover-inventory-v63.json` (this Mac only). The drawn-border, clip, pinned-scroll and hover-state checks that found V62–V63's faults are tracked as `docs/pins2/instruments/board4-checks.cjs` (+ `-lib.cjs`), held with the other checks until he approves a version. `board4-rings.cjs` walks every text field in the gates AND the drawers they open and wants one 2px focus ring with its 5px halo per field (V68: 21 of 21).
+
 *His order, 2026-09-29 23:16 EDT: "THOROUGHLY make sure you're fully prepped and ready for session 4/5 … every element, every panel, every sub-panel, every state, every hover, every open, every gate, every color, every rule, every decision". A 25-thought pass named what the spec could not yet show; this is what it found and what closed it.*
 
 | Was missing | Closed by | What it found |

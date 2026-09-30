@@ -984,6 +984,8 @@ G1–G4, G6 and G11 are answered by the §4b board session, in comment rounds on
 
 ### 10.6 · Session 4 — the standardization table
 
+> 🔨 2026-09-30 14:51 EDT: **Session 4 standardizes hover states, tints and styles across the board** (his 2026-09-30 14:32 EDT: "please document for session 4 that standardizing hover states/tints/styles is part of it's work"). Found by hand at V63 and fixed at V64: two delete hovers (the manifest/Compare one's ring was `--danger-edge`, all but invisible), the queue's Edit neutral where every other Edit lights `--staged`, the Broadcast "Shown N times" chip with no hover. The method for the rest: hover every control, record its box before and after (`::before` included, where most of the board draws its boxes), and bucket by role; the V63 baseline is `local/pins2/intake-shots/intake-v47/hover-inventory-v63.json` (this Mac only).
+
 *Written by Session 4 when Harkirat closes its standardization board (§5c Steps 4g and 5); Board 4: Final is drawn after that.*
 
 ## 11 · Prompts

@@ -1852,3 +1852,127 @@ Read: the global accent `--patch` (`#F2C230`) retires into the staged yellow eve
 > 12:42 EDT (shot `28-pointer-off-anchor.png`: the failed card clamped left, its pointer landing left of the image mark; logged 2026-09-30 12:42 EDT): talk about lazy ass work!!!!
 
 > 12:50 EDT (shots `29-no-image-card.png`, `30-never-ends-chip.png`; logged 2026-09-30 12:50 EDT): change the design of the "no image" container: remove the strips · remove that border line near the arc (literally already told you to do this earlier... talk about "instance instead of class") · make the background the same color/style as this "1 never ends" warning chip · change "No image yet" text to "No Image or Key" in white · remove that bottom hint and instead put the "Cloudinary hosted image not found" hint in a --warn tinted chip · then prep compact quickly
+
+## Version 62 review — his notes, verbatim (logged 2026-09-30 13:35 EDT)
+
+**13:07 EDT**
+- "image mark's pop-up doesn't anchor to the button... we literally fixed this with the all-pass mark and problem chip SO long ago, i don't even know how you managed to reintroduce this bug... prime example of your lazy, shitty, not-awwwards-worthy worth."
+- "When the pop-ups are frozen in open state, they instantly hide when hovering over a different mark, when open, they shouldn't trigger other marks."
+- "why are the handful of images you downloaded/showcased so low resolution?"
+- "the border, on the side where the arc opens, is not uniform. The inside color is eating into the container's border."
+- "extend the image mark pop-up system to the armory manifest row's image mark icon, including the border around the mark."
+- "why did these 'repair panel' icons look their color/tints?"
+- "the input field glow design is different in Export's Pick Builds Search bar vs every other input field in the board. 1. ALLLL your scripts and sweeps and you didn't even discover that! 2. i actually like Pick Builds' search bar glow style better, so standardize that as the glow design."
+
+**13:11 EDT** — "also, implement the `(-)`/`(+)` circle design into Pick Build's tiles." · "Correct your compliance drift! correct tool routing, sequential-thinking, mega-batching, plan/steps/turns/calls, etc."
+
+**13:13 EDT** — "your sequential-thinking run was so shit. you didn't even ask the hard, challenging questions. the issues. your failures to do the work correctly the first time. etc."
+
+### Classes, built for Version 63
+
+| Class | Cause | Fix |
+|---|---|---|
+| BO · a fixed card follows its anchor | Hint never re-placed itself on scroll (ProblemChip learned it 2026-09-18); the pin made it visible | any scroll re-places it, an anchor scrolled out closes it, Escape lets it go; the up-card's `bottom` reads the layout viewport (quirks mode: innerHeight) |
+| BP · a pinned card holds the board | `takePop` let any hover cut the pinned card | `popHeld`: no hover or focus opens another while one is pinned; a click still moves the pin |
+| BQ · bundled images | 640px, shown at up to 480 CSS px (960 device px) | 1440px webp from the originals (2388 / 2700 wide) |
+| BR · the pointer side's stroke | painted content started on the body edge and covered half the 1px stroke | content starts 1px further in on the pointer side, every pcPath card |
+| BS · the manifest image mark | a bare icon | Compare's chip, border and pinnable image card; `BuildImage` + the ± mark moved into `b3/armory-parts.js` |
+| BT · fault tile tints | `thin` had no tint | the tan Repairs already gives `thin` (the bar), tiles and the section mark |
+| BU · one field glow | six rings across 77 fields | Pick builds' 2px staged ring + 5px halo on every field (measured: 71 of 72 fields, the last is Compare's search, measured 2px by hand) |
+| BV · ± on Pick builds' tiles | — | Compare's `.cx-kb` badge on `.b3-xt-c` |
+
+## Version 63 review — his notes, verbatim (logged 2026-09-30 14:51 EDT)
+
+**14:32 EDT**
+- "border is still incorrect. in-fact it's a bit more broken now. notice the corners having a rough, almost double border? Notice how it thins out at some parts?"
+- "control's badge is clipping on the right side."
+- "the \"blocks sharing\" section icon colors are wrong: attachments missing and no image icons should be in the same style as the \"no gunsmith code\" chip above them. They all should have borders as well."
+- "meanwhile i don't know why you used the tan tin on the below-standards section. Make that section label's icon chip the black/greyish white color. Make the icons inside, such as the one beside \"Same code as AK117 Build 1\" in the --warn color. Same as the other problem/warn chips."
+- "the minus/plus is clipping behind the build # buttons. and they also don't appear when hovering on the main tile surface (which is supposed to highlight/select all builds for that weapon)"
+- "compare table's 'delete' button seems to be using a different tint logic? because Im confused why the button looks different in the broadcast cards vs the armory manifest/compare table??"
+- "also, \"edit\" button in the broadcast cards isn't using the --staged hover-state."
+- "and the \"shown x\" isn't using the broadcast pink accent hover-state."
+- "if it isn't already noted, please document for session 4 that standardizing hover states/tints/styles is part of it's work."
+- "actually scratch the plus/minus icon on the Pick Build's tiles... can we instead change their tile design to match the compare empty state tiles? (side note: nudge the `+` chip's position downward so it sits more with uniform spacing above and to its right) · but in the pick build's tiles include the badge icons like they currently include. · and keep their width sizing as-is of ~182px each. UNLESS you think you can make compare's empty state tile's sizing/placement logic work in the Pick Builds drawer (still keeping center aligned and going outward)? Give it a try."
+
+**14:34 EDT** — "AND WTF IS THIS SHITTY ASS WORK???? HOLY LAZY HALF-ASS BEHAVIOR!" (the manifest row's image mark, clipped on its right)
+
+### Classes, built for Version 64
+
+| Class | Cause | Fix |
+|---|---|---|
+| BW · one border | every pcPath card drew its edge twice (stroke under the content + the image's ring / rows inset on 13px radii); V63's 1px pointer-side inset made it worse | the stroke drawn again ABOVE the content (`.b3-pc-line`), every second edge removed, edge-touching content on the path's own 14px radius. Drawn-edge check: pass/problem cards 0 of 433–533 samples off; image cards' residue is picture pixels, corners single |
+| BX · badge pop bounds | only the column and an overflowing run bounded the pop | every clipping ancestor bounds it; 3 CONTROL badges open inside |
+| BY · Repairs tiles | a tint per severity | every fault tile a warn chip with a ring; passing tiles green with a ring; Below standard's mark black / greyish white |
+| BZ · the manifest image mark | Compare's 22px chip rule (an id) beat the row's 28px | 28px at the same weight; right edge painted by the chip |
+| CA · delete / Edit / Shown | two delete hovers; queue Edit neutral; Shown no hover | one delete hover (the queue's), Edit `--staged`, Shown Broadcast pink; Session 4 note in HANDOFF + plan §10.6 |
+| CB · Pick builds tiles | ± scratched | Compare's landing tile (shared rules `:is(#compare, .b3-xt)`), centred flowing rows, badge icons kept, count on the category line, ✓ when all in; Compare's + nudged 2px (6px above, 6px right, measured on both) |
+
+## Version 64–65 review — his notes, verbatim (logged 2026-09-30 15:24 EDT)
+
+- 15:06 EDT — two crops of the manifest image mark: "look at these 2 screenshots, tell me what you see wrong." → the glyph sat 8px/4px off centre (the compact chip's padding); centred, V65.
+- 15:11 EDT — "you claimed \"broadcast pink hover\", yet..." → V64 lit only the Broadcast list's chip; every pressable Shown chip pink, glyph too, V65.
+- 15:17 EDT — "what's with all this empty wasted space in this pop-up? shrink it and center the buttons in the container." · "also, for the pick builds tiles, use the prior 3 column width, the dynamic fit doesn't look that nice in the smaller area."
+- 15:18 EDT — "and control still clips on the right."
+
+| Class | Cause | Fix (V66) |
+|---|---|---|
+| CC · pop-ups sized to what they hold | the showings pop-up borrowed the date picker's 270px shell, footer pushed right | `usePop`/`ChipPop` take `w="auto"`: no fixed width, placed by the measured one; footer centred (202px, 9px either side of the buttons) |
+| CD · Pick builds tiles | the centred flow read badly in the drawer | back to its three columns (181px each), Compare's tile look kept |
+| CE · a badge's unfold | a left-opening badge laid its contents from the left and cut the emblem for ~200ms (52/80 → 76/80); every pop also started 1.5px too narrow for its glyph | contents sit against the edge it grows from; the pop starts at the bare badge's 3px padding and grows it. 21 of 21 badges keep the glyph inside at every sampled frame (40–600ms) |
+
+## Version 66 review — his notes, verbatim (logged 2026-09-30 16:44 EDT)
+
+- 16:42 EDT — "why were these toggles in the repair panel moved down here? also \"every check found something - the list above is all of it\" is such as USELESS line, did you just add it? i've never noticed it before." · "and why is the repeat picker in staged color? use whatever design/color it has in the drawer."
+
+| Class | Cause | Fix (V67) |
+|---|---|---|
+| CF · Repairs' head | the caption existed since the kit moved (62037a6f) but shows only when every one of the five checks has a fault; clearing PHARO's image in the board data (V61) made that true for the first time, and the caption plus the new Missing image chip wrapped the filters under the title | caption removed; the filters sit beside the title again (measured on one line) |
+| CG · the showings stepper | the pop-up gave the Post drawer's stepper its own size and tinted its ring and count in the announcement's accent (gold on that card) | the pop-up's stepper is the drawer's: 132×44, neutral ring, white count (measured identical) |
+
+## Mini intake round (16:44 EDT) — his notes, verbatim (logged 2026-09-30 16:53 EDT)
+
+- 16:44 EDT — "mini intake round: what do you see wrong in this screenshot?" (the Post drawer's colour hex field, focused)
+  - my answer, which he confirmed: two rings (the hex box's and the field's), the inner one's 5px halo spilling over the swatch and copy segments, both 1px not 2px; the same in the text box (two rings), Starts and Ends (1px)
+- 16:46 EDT — "did i ask you to work? i asked you a question and literally stated \"mini intake round\"."
+- 16:49 EDT — "i was about to point out those other fields as well. in addition to them, what do you notice specifically in this screenshot that's wrong, other than the incorrect glow/outline color/thickness?" (the Post text box, focused)
+  - my answer, which he confirmed: the ring's corners are square inside the field's rounded ones; the ring stops at the text and its bottom lands on the dashed divider, so it reads dashed; the count, the 6,000 budget and Collapse sit outside the ring but inside the glow; along the sides the ring runs 1px in from the field's frame, two stacked lines
+- 16:51 EDT — "correct. add that to the intake as well. now go fix all of the things."
+
+| Class | Cause | Fix (V68) |
+|---|---|---|
+| CH · one focus ring per field | composite fields (the text box with its footer, the hex field, the date fields) rang the inner input AND the box; V64's 2px rule for those inputs lost to the generic rule's specificity | the box carries the ring (a 2px inset outline on its own radius + the 5px halo) while its input or textarea has focus; the input carries none. `board4-rings.cjs` (tracked) walks every field in the gates and the drawers: before 8 of 21 off |
+
+## Version 68 review — his notes, verbatim (logged 2026-09-30 17:07 EDT)
+
+- 16:55 EDT — "for these pop-ups, give them the arc and smooth animation of the pop-up container used elsewhere. including the outer glow and border color. so for the \"shown once\" repeat picker pop up, it would get the broadcast's pink glow/border to match the tint of the \"shown once\" chip. And the calendar pop-up here would get the glow/border to match the \"set end date\" chip. background remains the black and everything else remains as-is. (although, make the repeat picker toggle's lines 1 px thicker, i can barely see them)."
+- 16:59 EDT — "the fields/glow are clipping on the right side. also the main text field's outline still isn't correct: the 2px outline is only applying to the upper portion, bottom portion is still 1 px."
+- 17:01 EDT — "text is also clipping. so idk what you did but you seemed to have messed up the middle gutter." (\"Never ends\")
+- 17:03 EDT — "and why does openning the dropdown menu remove the top/bottom scroll fade??" (the build drawer's attachment list) — a question, answered in the report, not built
+- 17:05 EDT — "then increase the overall width of the post drawer by ~ 30px. add 10px into the form side, and 20px into the discord preview side."
+
+| Class | Cause | Fix (V69) |
+|---|---|---|
+| CI · the pop-up family takes the cards' container | pop-ups were a plain rounded box with a keyframe pop | `PopBox` (b3/broadcast.js): pcPath arc at the button that opened it, the outline over the content, the glow, the cards' entrance and exit; tone from the chip (showings pink, Set end date and Never warn, the rest neutral); black kept. Tips measured on the trigger's centre, 4px off it |
+| CJ · the stepper's lines | 1px at 12% | 2px (drawer and pop-up, one stepper) |
+| CK · a ring over the content | an outline paints beneath the box's children: the footer and the date input covered half of it | the ring is an `::after` layer over the content. `board4-rings-painted.cjs` (new, pixels, 8 fields): 0 off |
+| CL · the Post drawer's width | measured the same in V62: the left column 486px, the Starts/Ends row 493px, so the column's content ran 7px past its clipping edge (right ring, glow, "Never ends") | his call: 880 → 910 (form 496, preview 340); the column's track may shrink, so it can't overflow again |
+- 17:08 EDT — "don't forget to give these the proper pop-up/tint treatment too." (the start and end date chips' calendars) → V70 (2026-09-30 17:09 EDT): every pop-up's line is its chip's own ring while open (neutral `--ink3`, pink 60%, warn 60%); a pop-up aligned to a narrow chip slides so the arc's tip stays on the chip's centre (was 3–7px off on the end-date chips; now 0 on all six measured)
+
+## Version 70 review — his notes, verbatim (logged 2026-09-30 17:16 EDT)
+
+- 17:10 EDT — "also, holy shit, what a terrible implementation of this." (the 2px stepper: rest, hover +, hover −)
+- 17:11 EDT — "yes" (to: draw the menus outside the column so the fade can stay on)
+- 17:13 EDT — "did you change the tint on this \"pick all\" chip earlier? because i think it looked different before." · "step.png could be better."
+
+| Class | Cause | Fix (V71) |
+|---|---|---|
+| CM · the stepper | three see-through 2px strokes (ring + two dividers) that doubled at the joints; the board's generic 1px button box on hover; the disabled minus lit | one line colour showing through a 2px gap and padding between three cells; hover/focus outlines its own cell on the line; disabled does not light. "Could be better" → three options rendered (`local/pins2/intake-shots/checks/stepper-options.png`), his pick pending |
+| CN · menus outside the faded column | a mask fades everything inside the column, so the board switched the fade off while a list or pop-up was open | `b3/layer.js`: an open list (Picker) or pop-up (PopBox) inside a faded column renders into a layer beside it; the fade stays on. Measured: list in the layer, column mask on (28px / 28px), a pick lands |
+| — · Pick all | (question) | answered: the chip is unchanged; its checkbox ring and tick went from the patch gold to `--staged` in V53–V54 (his `--patch` retirement). Crops `pickall-hover-e66a5e89.png` / `-now.png` |
+- 17:16 EDT — "also, instead of the broadcast pink, give the repeat chip and the start/end chips the announcement's specific accent color on hover" → V72 (2026-09-30 17:18 EDT): the Shown chip (queue card and Broadcast row) and the start/end date chips hover in their announcement's own `--c`; their pop-ups take the same tone (`t-accent`); Never and a staged end keep warn. Measured on three cards: gold, orange, blue
+- 17:17 EDT — "i can literally see the difference in your screenshot. look at it's tint/shade" (Pick all) → the checkbox's ring and tick: the patch gold before V53, `--staged` since (his `--patch` retirement); the chip itself measured unchanged
+- 17:2x EDT (popup answers) — stepper: "C but use make the plus/minus larger and give them proper tinted hover-events instead of grey." → V73 (2026-09-30 17:25 EDT): one ring, − and + as inset pills, 17px glyphs, hover/focus tinted in the announcement's accent (`--c`; staged where there is none — the Post drawer), disabled faded with no ground
+- Pick all: "the checkbox as staged yellow is fine. What i was referring to is the actual border of the entire \"pick all\" chip and the inside color/tint of the entire chip." → measured: the chip's own border and fill are identical before and now; the Export drawer's ambient glow behind it (a radial gradient on `aside.drawer`) was the patch gold at 13% and is staged yellow since the V53–V54 `--patch` sweep, and the chip's 11% fill shows it. His call pending
+- Drawer glow (popup answer): "use patch gold for the background glow for the drawer, as well as any other drawer/background surface it got changed, such as the selection dock. and give it a better variable than `--patch`, to something like `--meshGold`" → V74 (2026-09-30 17:28 EDT): `--meshGold: #F2C230` (app.css :root); the four mesh surfaces the V53 sweep had turned staged — the build/Post drawers (b4.css), the selection dock (`.b3-sd.mesh`), the Export drawer (`.drawer:has(.b3-xt)`), the export sheet (`.drawer:has(.exs)`) — read it. Measured: the Export and Post drawers' glow is gold again. Ledger § Colour names carries the token
+- 17:29 EDT — "opening the menu makes the entire bottom fade move up." → V75 (2026-09-30 17:30 EDT): the V71 layer carried `.f-form .f-pick` for the list's styles and `.b4 .f-form` out-weighed its own positioning, so it sat in the column's parent grid as a new row and the column lost 28px (602 → 574). The layer's box now wins (out of flow, no size, no mask). Measured: New build column 602 → 602 with the list open, Post drawer column 618 → 618 with a pop-up open, both fades on
