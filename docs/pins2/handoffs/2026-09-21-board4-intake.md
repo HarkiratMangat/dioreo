@@ -1735,3 +1735,120 @@ Before that, at 10:10 EDT: *"let's do intake first, then you can continue workin
 | BB | a ticked row's hovered ✓ morphs into the × (`d:path`, the board's morph rule) in `--danger-ink`; a hover on one of its numbers leaves the ✓; the strike deleted | hovered tick path the ×, colour rgb(255,138,133); strike none |
 
 **Version 45 published** 2026-09-29 23:16 EDT on his "publish" (the page and the eleven changed kit files, each checked against the artifact's file listing by size). Then his order for the Session 4/5 readiness pass; its record is `docs/pins2/final/board4-spec/HANDOFF.md` § *Ready for Sessions 4 and 5*.
+
+## Version 47 intake round — opened 2026-09-30 09:47 EDT, closed 09:58 EDT ("That's it for the intake.")
+
+*Opened with "let's do a minor intake round, i found some bugs and tweaks" while the Session 3 checks were running (they paused at the Broadcast row names, C7). Board 4 is Version 47.*
+
+### His batch — 2026-09-30 09:58 EDT, verbatim
+
+**His seven shots, in order** — `local/pins2/intake-shots/intake-v47/` (this Mac only): 01 · two manifest rows with their build-name plates (HOLGER 26 Build 2 "Sidearm"-style plate, BAL-27 Build 1 "Long range") · 02 · a Compare build head (Build 3, the shield) hovered · 03 · the .50 GS row: two chip lines, the image mark, the code, share, delete · 04 · the JAK-12 row with its problem pop-up ("Code disagrees with the build"), the hatched 8-R Dragon's Breath chip · 05 · Compare's BUILD NAME cell "Long range" · 06 · Repairs' detail for .50 GS ("Importing the code fills 5 slots, not the 4 listed here") · 07 · Repairs' detail for JAK-12 ("fills 4 slots, not the 5 listed here").
+
+> * unsure what's causing it but .50 gs' attachment chips/manifest row isn't middle aligned.
+> * in the table, when hovering a build, it shows a hard corners since we rounded off the middle gap, so correct it and refine it.
+> * both these manifest row problem screenshots show "Code disagrees with the build", for the jak12 i can tell by the design that the gunsmith code only has 8 characters while the build has 5 attachments. But for the .50GS, i can't tell exactly what's wrong by a quick glance. Like internall i know that .50gs has a 10 character gunsmith code but only 4 attachments, but at a glance, i wouldn't be able to deduce that info. So add some sort of attachment chip that shows that there's no 5th attachment despite the code being for a 5 attachment build.
+>    * as such, i also want you to improve the actual info of each of the warnings so their hint/message is more clear to state what the actual issue is. because while both of these have a "Code disagrees with the build", the reason the code disagrees is different between them yet it's the same warning with no additional info. and i DONT want a long line of prose, so you have to think like a designer on how you can implement that info in a useful and nicely designed "hint" as part of the warn description.
+>    * update: i realize that detailed explanations do exist, but they only exist inside the 'Repair panel'. And they're also just a line of prose. so please just refine them, rephrase them, make them better designed, and implement them into the problem pop-up as well.
+> * also... idk why but i fele like the build name chip looks "different" in the table. Can you confirm if it's exactly the same as the manifest (excluding the "build name" label being removed out of it)?
+
+**By class** (logged 2026-09-30 10:00 EDT):
+
+| Class | What he asked | The sweep it implies |
+|---|---|---|
+| **BC · the .50 GS row's middle** | the row's chips and controls are not middle-aligned | measured on the drawn ink, every manifest row, not only .50 GS |
+| **BD · Compare's hovered build** | a hovered build shows hard corners where the gap between two builds is now rounded | every lit state that meets a rounded cap: build head, cell, weapon band, joined and end columns |
+| **BE · the missing attachment, drawn** | a chip that shows the slot the code carries and the build does not list | the counterpart of the hatched chip JAK-12 already shows for the opposite case; every surface that draws a build's chips from the same parts |
+| **BF · every warning's detail** | each fault says what is actually wrong, as a designed hint, not a line of prose; Repairs' detail refined and the same hint in the problem pop-up | all five faults, one source (`faultLine`), both surfaces |
+| **BG · the name cell against the plate** | confirm Compare's name cell is the manifest's plate, minus its caption | measured property by property, then corrected where it differs |
+| **BH · a repeat's count in the Broadcast rows** | added 10:01 EDT, verbatim: "oh 1 more actually: there's nothing in the C7 broadcast rows that states the # of times the announcement is repeated." | the manifest row says how many times an announcement repeats, in the row's own grammar; the delivery queue and the post drawer already carry repeats, so the row reads from the same field |
+| **BI · the badge pop's two faults** | added 10:08 EDT, verbatim, with his recording `local/pins2/intake-shots/intake-v47/08-badge-pop.gif`: "1 more bug: … notice how with the badges, when i hover off of them, their hiding animation get's 'stuck' for a split moment? Also how their badge moves over towards the left when hovering onto them? correct both issues." | the pop (Version 44 AW) everywhere it runs: the fold-back must never pause, and the badge under the pointer must not move |
+
+### His corrections during the build — 2026-09-30 10:14–10:16 EDT, verbatim (logged 2026-09-30 10:18 EDT)
+
+His shots: the pop-up's CODE/BUILD tally (two rows of five pips), and a weapon band hovered with its three builds lit as three rounded tiles.
+
+> * improve the "code" / "build" because they currently read as the same text wrapped into 2 line.
+> * also, look at the weapon name hover, when all builds are highlighted, it looks odd. better integrate that.
+
+On `bh-table-s.png` (the Shown column): "THAT'S SUCH A TERRIBLE IMPLEMENTATION OF THE REPEAT CHIP INTO THE ROW! also why giving it a brand new column? make it inline with the announcement text."
+
+| Class | Correction |
+|---|---|
+| BF | the two rows must be two different things at a glance: the code's own pairs over the build's attachments, slot by slot |
+| BD | a hovered weapon band lights its builds as one piece with the band, not three separate tiles |
+| BH | no column: the repeat count is a chip inline with the announcement's text |
+
+### Two more tweaks — 2026-09-30 10:29 EDT, verbatim (logged 2026-09-30 10:29 EDT)
+
+His shots: a Compare build head (Build 1, the shield, the META and BEST badges); the "CLEAR 1 OF 24" hint pop-up (grey edge, yellow glow); the "Nothing is deleted yet" pop-up of Stage deletion (grey edge, yellow glow).
+
+> * can you add the --ok/--warn image mark, stacked under the all-pass mark, in the table columns? Hovering it would pop-up the build's iimage in our usual pop-up container design.
+> * also notice how i requested for that subtle outer glow on pop-up containers a while back? Can you also add that glow to the Problem/All-Pass pop-up containers? tinted with their green/orange accents.
+> * Can you also kind of change/standardize the multi-use pop-up container (such as the "clear 1 of 24" popup)? notice how it's border is grey yet it's glow is the yellow #F3C231 tint? Can you make the border and glow of the pop-up in the same color theme instead of being grey/yellow? Like similarly for the "stage deletion" button's pop-up, it's glow and border should be the --del color theme yk?
+
+| Class | What he asked | The sweep it implies |
+|---|---|---|
+| **BJ · the image mark in Compare's heads** | the manifest's --ok/--warn image mark, stacked under the verdict chip in each build head; hovering it shows the build's image in the board's pop-up container | the same mark and the same image pop-up everywhere a build shows its image state |
+| **BK · the verdict pop-ups' glow** | the pop-up family's subtle outer glow on the Problem and All-pass pop-ups, tinted by their own accent (orange, green) | every pop-up container that lacks the glow |
+| **BL · one theme per pop-up** | a pop-up's edge and glow are one colour: the default one in the board's yellow on both, Stage deletion's in --del on both | every pop-up variant: the edge and the glow read the same token |
+
+### His correction to the pop-up's comparison — 2026-09-30 10:30 EDT, verbatim (logged 2026-09-30 10:31 EDT)
+
+> too much wasted space. 1. rephrase the "1 in the code..." and "1 listed..." hint, it's confusing. and make it inline/to the right of the chips, as a chip that = their total height. and decrease the height of the Build chip blocks, also make the washed ones a solid fill.
+
+### His review of Version 48 — 2026-09-30 11:14 EDT, verbatim (logged 2026-09-30 11:17 EDT)
+
+His shots (`local/pins2/intake-shots/intake-v47/09`–`16`) and recording `18-pop-skeleton.gif`. His closing line: "Honestly, most of these above points shouldnt even have to be stated, they're just you doing poor quality work!!!" — the image pop-up's broken picture and the misaligned marks were in my own 10:31 capture and I explained them away instead of fixing them.
+
+> * show me the fork board?
+> * .50's attachment chips cell scrolls downward... it should be scrolling to the side.
+> * the red chip is misaligned with it's row. and the code's stripped chip is larger than the code chips.
+> * also, make the colored chip's width the same as the code chips above them. and give the code chips a tint+colored border that matches the below solid filled chip's color.
+> * Improve "attachments missing" design please.
+> * all-pass mark and the image-mark... are misaligned · image mark has no hover events + shows the incorrect mouse pointer · image mark also doesn't have the tinted border like the all-pass mark above it · remove the "card image" text, it's useless · make the image fill inside the container, no grey border around the image · improve the state/placeholder when no image is detected · the container should mold to the image's aspect ratio but be constrained to a specific min/max size · the image marks pop-up also doesn't open downward at all · the all pass-mark and the image mark should default to openning upwards unless constrained by the scroll/page position. Currently the all-pass mark opens downward and hides the table.
+> * the pop-up's animation is also bugged. The container skeletons when hovering off of it and hovering onto the build column beside it.
+> * and why tf are the build name cells so small? let's do this, clean up and refine the build # cell: move the `build x` chip downward and make the gap between it and the badge chips ~10px · Change the build name chip back so it's original design (the "build name" text inside of it), make it's width ~140px, left aligned with the ~10px padding on the left. Remove the outside "build name" label, and remove the different shaded cell background behind the build name chip. it'll sit inside the "build x" cell. Move the build name chip above the `build x` chip, keeping a ~10px gap between them, with its top border/ink aligned with all-pass mark's chip top border · and as i said earlier, fix the alignment on the image mark chip and give it the border (10px gap between the all-pass mark and image mark chips) · Does that all make sense?
+
+| Class | Correction |
+|---|---|
+| BC′ · the manifest rail | two lines, then SIDEWAYS behind the fade (the Bulk rule), never downward — every row |
+| BF′ · the comparison | every cell one size (the hatched ones too), build pills the code chips' width, each code chip tinted and ringed in its attachment's slot colour; "Attachments missing" redesigned in the same language |
+| BJ′ · the two marks | one object: the image mark takes the shield's box, ring, hover and pointer, 10px under it, centred on it; the image fills its container, which follows the image's shape within limits; no title; a designed no-image state; both open UPWARD unless there is no room |
+| BM · the pop-up's close | no skeleton frame when the pointer moves to the next build's pop-up |
+| BN · the build head (reverses his 23:41 EDT name row) | the name row, its label and its shaded cell go; the head stacks the build-name plate in its original design (caption inside, ~140px, 10px in, its top on the shield's top), 10px, the Build chip, 10px, the badges |
+
+### His notes on Version 49 — 2026-09-30 11:30–11:44 EDT, verbatim (logged 2026-09-30 11:44 EDT)
+
+> this would show the --warn colored image mark with the crossed line then, correct? instead of the --ok image mark … an "image didn't load" being in the --ok image mark is fine because that means the image is set, it just had a problem.
+
+> * staged colors, yes sweep. · build images, download images locally for the handful of build you gave build names to. not all 133 … and pharo also doesn't have one so i can also see a "not set" i guess. · then publish.
+
+> and yeah, make it neutral, like just solid black, no border inside or stripped lines. and change the text to "Image is set but failed to load", remove the "the build still has one" text and replace it with the image's key in an --ok tinted chip.
+
+> '…/Arc (09-30-2026 at 11.41.11.AM).gif' (`local/pins2/intake-shots/intake-v47/19-image-pop-reveal.gif`) image mark pop-ups reveal animation also needs refining. 1. in inside context doesn't animate with it. 2. why is it revealing towards the bottom right corner?
+
+### The badge run in Compare's heads — 2026-09-30 11:48 EDT, verbatim (logged 2026-09-30 11:49 EDT; shot `20-badges-two-lines.png`: Build 5's badges on two lines)
+
+> can you also put the badges in 1 line? with overflow fading to a sideways scroll. and make the badge pop reveal based on the position of the badge/required room needed by the pop? so say a badge is near the right side border, it would reveal towards the left and hide those badges. but if hovering over `meta` or something, which is on the left side, it would reveals towards the right and hide those right side badges.
+
+> 11:52 EDT (shot `21-badges-past-padding.png`, logged 2026-09-30 11:52 EDT): notice how the control badge is past the 10px padding? it should have triggered the fadding effect at that point...
+
+> 12:01 EDT (shot `22-old-yellow-left.png`: a ticked checkbox and the selection bar's "5" chip; logged 2026-09-30 12:03 EDT): you know you're supposed to change all these old yellow colors, such as this chip's color, the glow of the active text/dropdown fields, etc to `#D8F24A`, right? also look at the checkbox... that's clearly not the --staged color, it's more #E4F887. Also did you check all of it's stages?
+
+Read: the global accent `--patch` (`#F2C230`) retires into the staged yellow everywhere it is the ACCENT. Not touched, because they are not the accent: the BEST tier's gold (the badge, `--tier-best`, the Legendary and S tiers) and Patch Notes' own topic colour `--pn`.
+
+### His notes on Version 53 — 2026-09-30 12:11 EDT, verbatim (logged 2026-09-30 12:13 EDT; recordings `23-12.02.25.gif`, `24-12.03.00.gif`, `25-12.04.31.gif`)
+
+> * the skeleton bug still happens when the pop-up opens downward · image mark's pop-up still animates incorrectly when it opens upward, but animates correctly when opening downward · image mark's pop-up animation clips under the build column when it hides away, when opened downward · why is there a `--patch` and a `--pn`? that's just confusing. why not just replace that old chip's variable to `--staged`? · cyan ring for keyboard focus is fine.
+
+> 12:15 EDT (logged 2026-09-30 12:16 EDT): and image mark's popup container animation is STILL INCORRECT! what's so difficult about it???? the container already has the animation created, why is it not using it??? — and, to "clear one build's image in the board's own data (for example PHARO's)": yes, pharo.
+
+### His notes on Version 58 — 2026-09-30 12:35 EDT, verbatim (logged 2026-09-30 12:36 EDT; shots `26-v58-56..59.png`)
+
+> * remove the straight border you added under the arc. for the "image didn't load", just make that inner arc the black fill. For the image, leave it that grey fill. · also adjust the size of the image's pop-up by 1.5x, leave the "image didn't load" pop-up sized as-is. · and when for this right most column, can you nudge the pop-up's position a bit towards the left so it doesn't accidentally open out of bounds? the all-pass's opening position is correct when it opens on the right side. · can you also make it where clicking the image mark freezes the pop-up in an open position, then either clicking outside of it or clicking the image mark again will close it/unfreeze it
+
+> 12:41 EDT (shot `27-missing-image-hint.png`, logged 2026-09-30 12:41 EDT): this warning is just redundant. change "no image on the card" to "No Image or Key". and "no thumbnail on the card" to "Cloudinary hosted image not found" in --warn tint.
+
+> 12:42 EDT (shot `28-pointer-off-anchor.png`: the failed card clamped left, its pointer landing left of the image mark; logged 2026-09-30 12:42 EDT): talk about lazy ass work!!!!
+
+> 12:50 EDT (shots `29-no-image-card.png`, `30-never-ends-chip.png`; logged 2026-09-30 12:50 EDT): change the design of the "no image" container: remove the strips · remove that border line near the arc (literally already told you to do this earlier... talk about "instance instead of class") · make the background the same color/style as this "1 never ends" warning chip · change "No image yet" text to "No Image or Key" in white · remove that bottom hint and instead put the "Cloudinary hosted image not found" hint in a --warn tinted chip · then prep compact quickly

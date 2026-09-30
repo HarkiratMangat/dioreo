@@ -268,7 +268,7 @@
   --win-18:rgba(31,138,94,.18); --win-20:rgba(31,138,94,.20); --win-45:rgba(31,138,94,.45);
 
   --row-selected:#20303B;    /* the Manifest's tbody tr.on, one step past --hi */
-  --on-staged:#1A2000;       /* ink ON --staged's lime fill (13.4:1), re-derived 2026-09-13 17:32 EDT when --staged left cyan */
+  --on-staged:#1A2000;       /* ink ON --staged's fill, the staged yellow #D8F24A (13.4:1), re-derived 2026-09-13 17:32 EDT when --staged left cyan */
   --on-ok:#07130A;           /* ink ON --ok's green fill (11.0:1) — confirm buttons fill with --ok since 2026-09-13 17:32 EDT */
 
   /* the scrim behind the preview drawer and the command palette — a colder base than --scrim-* */

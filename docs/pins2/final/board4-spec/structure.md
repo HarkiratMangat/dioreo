@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — structure, generated
 
-*Generated 2026-09-30T02:48:18.423Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
+*Generated 2026-09-30T03:57:13.890Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
 
 ## C1 · The Armory manifest
 
@@ -86,7 +86,10 @@ status: live
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
-        - `div.wg-main`
+        - `div.wg-main.named`
+          - `span.wg-plate`
+            - `small` — “Build name”
+            - `span` — “Sidearm”
           - `div.wg-rail`
             - `span.wg-at` ×5 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
@@ -182,7 +185,10 @@ status: live
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
-        - `div.wg-main`
+        - `div.wg-main.named`
+          - `span.wg-plate`
+            - `small` — “Build name”
+            - `span` — “Sidearm”
           - `div.wg-rail`
             - `span.wg-at` ×5 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
@@ -272,7 +278,10 @@ status: live
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
-        - `div.wg-main`
+        - `div.wg-main.named`
+          - `span.wg-plate`
+            - `small` — “Build name”
+            - `span` — “Sidearm”
           - `div.wg-rail`
             - `span.wg-at` ×5 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
@@ -362,7 +371,10 @@ status: live
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
-        - `div.wg-main`
+        - `div.wg-main.named`
+          - `span.wg-plate`
+            - `small` — “Build name”
+            - `span` — “Sidearm”
           - `div.wg-rail`
             - `span.wg-at` ×5 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
@@ -482,7 +494,10 @@ status: live
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
-        - `div.wg-main`
+        - `div.wg-main.named`
+          - `span.wg-plate`
+            - `small` — “Build name”
+            - `span` — “Sidearm”
           - `div.wg-rail`
             - `span.wg-at` ×5 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
@@ -602,7 +617,10 @@ status: live
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
-        - `div.wg-main`
+        - `div.wg-main.named`
+          - `span.wg-plate`
+            - `small` — “Build name”
+            - `span` — “Sidearm”
           - `div.wg-rail`
             - `span.wg-at` ×5 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
@@ -722,7 +740,10 @@ status: live
         - `span.wg-cb[role=checkbox] “Select .50 GS build 2”`
           - `span.cb`
         - `span.wg-ix` — “2”
-        - `div.wg-main`
+        - `div.wg-main.named`
+          - `span.wg-plate`
+            - `small` — “Build name”
+            - `span` — “Sidearm”
           - `div.wg-rail`
             - `span.wg-at` ×5 — “Monolithic Suppressor”
         - `span.wg-im[role=img] “Image uploaded”`
@@ -1233,7 +1254,7 @@ status: live
             - `button.b3-x.cx-wx “Remove BAL-27 from the comparison”`
               - `svg.ic`
           - `div.cx-keys`
-            - `button.cx-k “Build 1: Take Build 1 out of the table”` ×5
+            - `button.cx-k “Build 1, Long range: Take Build 1 out of”` ×5
               - `b` — “1”
               - `i.cx-kb`
                 - `svg.ic.cx-kg`
@@ -1268,24 +1289,21 @@ status: live
               - `span.cx-hn`
                 - `span.b3-sd-gn` — “Build 1”
                 - `span.cx-vd`
-              - `span.wg-plate.cx-pl.unset`
-                - `span` — “Name not set”
               - `span.cx-hb`
                 - `div.cx-run.b3-fadx`
             - `th.cx-h`
               - `span.cx-hn`
                 - `span.b3-sd-gn` — “Build 5”
                 - `span.cx-vd`
-              - `span.wg-plate.cx-pl.unset`
-                - `span` — “Name not set”
               - `span.cx-hb`
                 - `div.cx-run.b3-fadx`
         - `tbody`
-          - `tr` ×7
-            - `th.cx-k0` — “Muzzle”
-            - `td.cx-c.s-d` ×5
-              - `span.cx-v`
-                - `span.cx-vt`
+          - `tr` ×8
+            - `th.cx-k0.code`
+              - `br`
+            - `td.cx-c.s-n` ×5
+              - `span.cx-v.wg-plate.cx-nm`
+                - `span.cx-vt` — “Long range”
         - `tfoot`
           - `tr.cx-ft`
             - `th.cx-k0`
@@ -1312,6 +1330,7 @@ status: live
             - `figure.cx-cc` ×5
               - `figcaption.cx-eh`
                 - `span.b3-sd-gn` — “Build 1”
+                - `span.cx-hl` — “Long range”
               - `div.dcard.lc`
                 - `h6[role=heading]` — “BAL-27”
                 - `div.lc-badges`
@@ -1351,7 +1370,7 @@ status: live
             - `span.cx-wn`
             - `button.b3-x.cx-wx “Remove BAL-27 from the comparison”`
           - `div.cx-keys`
-            - `button.cx-k “Build 1: Take Build 1 out of the table”` ×3
+            - `button.cx-k “Build 1, Long range: Take Build 1 out of”` ×3
             - `button.cx-k.cx-kfull “Build 4: The table holds 6 builds. Take ”` ×2
     - `div.cx-band`
       - `span.cx-bn` — “Same on all 6”
@@ -1385,12 +1404,11 @@ status: live
             - `th.cx-h.cx-hj` ×2
             - `th.cx-h`
         - `tbody`
-          - `tr` ×8
-            - `th.cx-k0` — “Muzzle”
-            - `td.cx-c.s-d` ×3
+          - `tr` ×9
+            - `th.cx-k0.code`
+            - `td.cx-c.s-n` ×3
             - `td.cx-gut`
-            - `td.cx-c.s-rm`
-            - `td.cx-c.s-n.merged`
+            - `td.cx-c.s-n` ×3
         - `tfoot`
           - `tr.cx-ft`
             - `th.cx-k0`
@@ -1441,10 +1459,10 @@ status: live
             - `span.cx-wn`
             - `button.b3-x.cx-wx “Remove DL Q33 from the comparison”`
           - `div.cx-keys`
-            - `button.cx-k “Build 1: Take Build 1 out of the table”`
+            - `button.cx-k “Build 1, Quickscope: Take Build 1 out of”`
     - `div.cx-tw`
       - `table.cx-t`
-        - `caption.sr` — “DL Q33, 3-LINE RIFLE, slot b”
+        - `caption.sr` — “DL Q33, NA-45, slot by slot.”
         - `colgroup`
           - `col.cx-c0`
           - `col`
@@ -1462,11 +1480,11 @@ status: live
             - `th.cx-gut`
             - `th.cx-h.sg`
         - `tbody`
-          - `tr` ×6
-            - `th.cx-k0` — “Muzzle”
+          - `tr` ×8
+            - `th.cx-k0.code`
             - `td.cx-c.s-n`
             - `td.cx-gut`
-            - `td.cx-c.s-sg`
+            - `td.cx-c.s-x.sg`
         - `tfoot`
           - `tr.cx-ft`
             - `th.cx-k0`
@@ -1502,7 +1520,7 @@ status: live
             - `tr.cx-gr`
             - `tr`
           - `tbody`
-            - `tr` ×7
+            - `tr` ×8
       - `div.cx-over`
         - `div.cx-pick.big`
           - `div.f-pick`
@@ -1520,7 +1538,7 @@ status: live
             - `i`
             - `span` — “to set them side by side”
         - `div.cx-shelf`
-          - `div.cx-w.cx-wl[role=group] “SWITCHBLADE X9, 3 builds”` ×16
+          - `div.cx-w.cx-wl[role=group] “USS 9, 3 builds”` ×16
             - `div.cx-wh`
             - `div.cx-keys`
 

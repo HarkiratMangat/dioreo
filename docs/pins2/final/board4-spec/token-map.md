@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the custom properties the portal does not have
 
-*Generated 2026-09-30T02:48:12.281Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `bd5463b1 plus the working tree`. 175 of the 259 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
+*Generated 2026-09-30T03:57:07.373Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `e66a5e89 plus the working tree`. 175 of the 259 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
 
 | Token | Defined in the kit | The definition |
 |---|---|---|
@@ -119,7 +119,7 @@ status: live
 | `--lh-pr` | — **not defined anywhere in the kit** | `` |
 | `--lh-vl-vt` | — **not defined anywhere in the kit** | `` |
 | `--lit` | `b3/board.css:1900` | `.b3-bdg[data-k=meta]{--lit:.06;--b3-amb:1.6;--b3-glow:1.7;overflow:hidden}` |
-| `--m` | `b4/compare.js:336` | `<span class="cx-dcf" aria-hidden="true">${chosen.map((b, k) => html`<i key=${String(b._id)} style=${`--c:${optionOf(b.weaponName).accent};--` |
+| `--m` | `b4/compare.js:338` | `<span class="cx-dcf" aria-hidden="true">${chosen.map((b, k) => html`<i key=${String(b._id)} style=${`--c:${optionOf(b.weaponName).accent};--` |
 | `--m1` | `b4.css:34` | `html:is([data-b3-xbg=mesh],[data-b3-xbg=ground]) :is(.drawer:has(.b3-nb), .drawer.b1, .drawer .b4-ask){ --m1:#ff3b5c;--m2:#f6a93b;` |
 | `--m2` | `b4.css:34` | `html:is([data-b3-xbg=mesh],[data-b3-xbg=ground]) :is(.drawer:has(.b3-nb), .drawer.b1, .drawer .b4-ask){ --m1:#ff3b5c;--m2:#f6a93b;` |
 | `--m3` | `ui/access.js:191` | `style=${tint ? `--m1:${tint[0]};--m2:${tint[1] \|\| tint[0]};--m3:${tint[2] \|\| tint[1] \|\| tint[0]}` : null}>` |
@@ -157,8 +157,8 @@ status: live
 | `--sl` | `b2.css:325` | `.pb-rail > span{--sl:var(--ink4);height:24px;padding:0 8px;border-radius:5px;background:color-mix(in srgb,var(--sl) 9%,var(--sunk));box-shad` |
 | `--sl-` | `gates/armory.js:133` (set by script) | `const put = (k, v) => { document.documentElement.style.setProperty(`--sl-${k}`, v); setMine((m) => ({ ...m, [k]: v })); };` |
 | `--sl-ba` | — **not defined anywhere in the kit** | `` |
-| `--sl-muzzl` | — **not defined anywhere in the kit** | `` |
 | `--sl-sto` | — **not defined anywhere in the kit** | `` |
+| `--sl-u` | — **not defined anywhere in the kit** | `` |
 | `--sl-unkn` | — **not defined anywhere in the kit** | `` |
 | `--sl-unknow` | — **not defined anywhere in the kit** | `` |
 | `--sl-unknown` | `b3/board.css:3372` | `:root{--sl-unknown:#94A3B3}` |

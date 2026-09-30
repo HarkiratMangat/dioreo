@@ -151,7 +151,7 @@ inside `.mt-r1` · 3 on screen · **1 look**
 
 ### `span`
 
-inside `.mlabel` · 10 on screen · **4 looks**
+inside `.mlabel` · 13 on screen · **4 looks**
 
 #### look 1 of 4
 
@@ -202,7 +202,33 @@ inside `.mlabel` · 10 on screen · **4 looks**
 
 #### look 3 of 4
 
-`C1-145` · rendered **599×0** · 5 instances look like this
+`C1-111` · rendered **72×15** · 4 instances look like this · text “Sidearm”
+
+```html
+<span>Sidearm</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `-webkit-box` | `flow-root` | .wg-plate span · app.css:1174 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 var(--t-sm)/1.25 var(--ui)` | `` | inherited · .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-size | ↑ `` | `12px` | inherited · .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-weight | ↑ `` | `600` | inherited · .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-style | ↑ `` | `normal` | inherited · .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| line-height | ↑ `` | `15px` | inherited · .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| overflow | `hidden` | `` | .wg-plate span · app.css:1174 |
+| overflow-x | `hidden` | `hidden` | .wg-plate span · app.css:1174 |
+| overflow-y | `hidden` | `hidden` | .wg-plate span · app.css:1174 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+#### look 4 of 4
+
+`C1-148` · rendered **599×0** · 5 instances look like this
 
 ```html
 <span></span>
@@ -219,32 +245,6 @@ inside `.mlabel` · 10 on screen · **4 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-#### look 4 of 4
-
-`C1-656` · rendered **76×15** · 1 instance look like this · text “Coming Soon”
-
-```html
-<span>Coming Soon</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `-webkit-box` | `flow-root` | .wg-plate span · app.css:1174 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-sm)/1.25 var(--ui)` | `` | inherited · .wg-plate · app.css:1171 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .wg-plate · app.css:1171 |
-| font-size | ↑ `` | `12px` | inherited · .wg-plate · app.css:1171 |
-| font-weight | ↑ `` | `600` | inherited · .wg-plate · app.css:1171 |
-| font-style | ↑ `` | `normal` | inherited · .wg-plate · app.css:1171 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .wg-plate · app.css:1171 |
-| line-height | ↑ `` | `15px` | inherited · .wg-plate · app.css:1171 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .wg-plate · app.css:1171 |
-| overflow | `hidden` | `` | .wg-plate span · app.css:1174 |
-| overflow-x | `hidden` | `hidden` | .wg-plate span · app.css:1174 |
-| overflow-y | `hidden` | `hidden` | .wg-plate span · app.css:1174 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
 
 
 ### `span.srch`
@@ -1322,7 +1322,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-51` · rendered **1146×2600** · 1 instance look like this
+`C1-51` · rendered **1146×2614** · 1 instance look like this
 
 ```html
 <div class="wg-wrap"><div class="wg-heads"><span class="b3-hint" data-side="top-start"><span class="wg-cb b3-allcb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select all 24"><span class="cb"></span></span></span><span><button type="button" class="wg-sort" aria-sort="ascending">Weapon⟨svg.ic⟩</button></span><button type="button" class="wg-fold">⟨svg.ic.ic-fold⟩Collapse all</button></div><div class="
@@ -1815,11 +1815,11 @@ inside `.wg-fold` · 11 on screen · **2 looks**
 
 ### `div.wg`
 
-inside `.wg-wrap` · 10 on screen · **6 looks**
+inside `.wg-wrap` · 10 on screen · **7 looks**
 
-#### look 1 of 6
+#### look 1 of 7
 
-`C1-61` · rendered **1146×223** · 3 instances look like this
+`C1-61` · rendered **1146×237** · 1 instance look like this
 
 ```html
 <div class="wg" data-w=".50 GS" style="--c: #3F6E8E;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every .50 GS build"><span class="cb"></span></span><div class="wg-line"><b>.50 GS</b><small>Secondaries</small><em class="wg-nb b3-sd-gn">2 builds</em><span class="b3-bdgs" style="--ph: 0.881;"><span class="b3-bdg" data-k="ti
@@ -1837,9 +1837,9 @@ inside `.wg-wrap` · 10 on screen · **6 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 2 of 6
+#### look 2 of 7
 
-`C1-129` · rendered **1146×478** · 1 instance look like this
+`C1-132` · rendered **1146×478** · 1 instance look like this
 
 ```html
 <div class="wg" data-w="BAL-27" style="--c: #ff3b5c;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every BAL-27 build"><span class="cb"></span></span><div class="wg-line"><b>BAL-27</b><small>Assault</small><em class="wg-nb b3-sd-gn">5 builds</em><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">
@@ -1857,9 +1857,9 @@ inside `.wg-wrap` · 10 on screen · **6 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 3 of 6
+#### look 3 of 7
 
-`C1-273` · rendered **1146×308** · 2 instances look like this
+`C1-279` · rendered **1146×308** · 2 instances look like this
 
 ```html
 <div class="wg" data-w="HOLGER 26" style="--c: #845ec2;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every HOLGER 26 build"><span class="cb"></span></span><div class="wg-line"><b>HOLGER 26</b><small>LMG</small><em class="wg-nb b3-sd-gn">3 builds</em><span class="b3-bdgs" style="--ph: 0.433;"><span class="b3-bdg" data-k="t
@@ -1877,9 +1877,9 @@ inside `.wg-wrap` · 10 on screen · **6 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 4 of 6
+#### look 4 of 7
 
-`C1-371` · rendered **1146×138** · 2 instances look like this
+`C1-380` · rendered **1146×138** · 2 instances look like this
 
 ```html
 <div class="wg" data-w="JAK-12" style="--c: #f6a93b;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every JAK-12 build"><span class="cb"></span></span><div class="wg-line"><b>JAK-12</b><small>Shotgun</small><em class="wg-nb b3-sd-gn">1 build</em><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="meta">⟨
@@ -1897,9 +1897,29 @@ inside `.wg-wrap` · 10 on screen · **6 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 5 of 6
+#### look 5 of 7
 
-`C1-628` · rendered **1146×119** · 1 instance look like this
+`C1-433` · rendered **1146×223** · 2 instances look like this
+
+```html
+<div class="wg" data-w="KILO 141" style="--c: #ff3b5c;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every KILO 141 build"><span class="cb"></span></span><div class="wg-line"><b>KILO 141</b><small>Assault</small><em class="wg-nb b3-sd-gn">2 builds</em><span class="b3-bdgs" style="--ph: 0.301;"><span class="b3-bdg" data-k="
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | div · user-agent:? |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-top | `1px solid var(--rule)` | `` | .wg · app.css:1116 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 6 of 7
+
+`C1-637` · rendered **1146×119** · 1 instance look like this
 
 ```html
 <div class="wg" data-w="PHARO" style="--c: #ffd23f;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every PHARO build"><span class="cb"></span></span><div class="wg-line"><b>PHARO</b><small>SMG</small><em class="wg-nb b3-sd-gn">1 build</em><span class="b3-bdgs" style="--ph: 0.340;"><span class="b3-bdg" data-k="toxic">⟨svg.ic
@@ -1917,25 +1937,7 @@ inside `.wg-wrap` · 10 on screen · **6 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 6 of 6
-
-`C1-764` · rendered **1146×393** · 1 instance look like this
-
-```html
-<div class="wg" data-w="SKS" style="--c: #3ddc97;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every SKS build"><span class="cb"></span></span><div class="wg-line"><b>SKS</b><small>Marksman</small><em class="wg-nb b3-sd-gn">4 builds</em><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="tier" data-t="
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-top | `1px solid var(--rule)` | `` | .wg · app.css:1116 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+*1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `div.wg-h`
@@ -2003,7 +2005,7 @@ inside `.wg` · 10 on screen · **7 looks**
 
 #### look 2 of 7
 
-`C1-130` · rendered **1146×52** · 2 instances look like this · aria-expanded="true"
+`C1-133` · rendered **1146×52** · 2 instances look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every BAL-27 build"><span class="cb"></span></span><div class="wg-line"><b>BAL-27</b><small>Assault</small><em class="wg-nb b3-sd-gn">5 builds</em><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span 
@@ -2062,7 +2064,7 @@ inside `.wg` · 10 on screen · **7 looks**
 
 #### look 3 of 7
 
-`C1-274` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
+`C1-280` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every HOLGER 26 build"><span class="cb"></span></span><div class="wg-line"><b>HOLGER 26</b><small>LMG</small><em class="wg-nb b3-sd-gn">3 builds</em><span class="b3-bdgs" style="--ph: 0.433;"><span class="b3-bdg" data-k="tier" data-t="capable" aria-label="Capable in LMG">⟨svg.ic
@@ -2121,7 +2123,7 @@ inside `.wg` · 10 on screen · **7 looks**
 
 #### look 4 of 7
 
-`C1-372` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
+`C1-381` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every JAK-12 build"><span class="cb"></span></span><div class="wg-line"><b>JAK-12</b><small>Shotgun</small><em class="wg-nb b3-sd-gn">1 build</em><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span c
@@ -2180,7 +2182,7 @@ inside `.wg` · 10 on screen · **7 looks**
 
 #### look 5 of 7
 
-`C1-496` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
+`C1-505` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every LOCUS build"><span class="cb"></span></span><div class="wg-line"><b>LOCUS</b><small>Sniper</small><em class="wg-nb b3-sd-gn">2 builds</em><span class="b3-bdgs" style="--ph: 0.298;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span cla
@@ -2239,7 +2241,7 @@ inside `.wg` · 10 on screen · **7 looks**
 
 #### look 6 of 7
 
-`C1-629` · rendered **1146×52** · 2 instances look like this · aria-expanded="true"
+`C1-638` · rendered **1146×52** · 2 instances look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every PHARO build"><span class="cb"></span></span><div class="wg-line"><b>PHARO</b><small>SMG</small><em class="wg-nb b3-sd-gn">1 build</em><span class="b3-bdgs" style="--ph: 0.340;"><span class="b3-bdg" data-k="toxic">⟨svg.ic⟩TOXIC<i class="b3-tox" aria-hidden="true"><i></i><i>
@@ -2437,9 +2439,9 @@ inside `.wg-line` · 15 on screen · **2 looks**
 
 ### `small`
 
-inside `.wg-line` · 11 on screen · **8 looks**
+inside `.wg-line` · 14 on screen · **11 looks**
 
-#### look 1 of 8
+#### look 1 of 11
 
 `C1-67` · rendered **79×10** · 2 instances look like this · text “Secondaries”
 
@@ -2466,9 +2468,33 @@ inside `.wg-line` · 11 on screen · **8 looks**
 | transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3445 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
-#### look 2 of 8
+#### look 2 of 11
 
-`C1-135` · rendered **51×10** · 2 instances look like this · text “Assault”
+`C1-110` · rendered **72×10** · 1 instance look like this · text “Build name”
+
+```html
+<small>Build name</small>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-plate small · app.css:1173 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-plate small · app.css:1173 |
+| font-size | `` | `9.5px` | .wg-plate small · app.css:1173 |
+| font-weight | `` | `600` | .wg-plate small · app.css:1173 |
+| font-style | `` | `normal` | .wg-plate small · app.css:1173 |
+| font-variant-numeric | `` | `normal` | .wg-plate small · app.css:1173 |
+| line-height | `` | `9.5px` | .wg-plate small · app.css:1173 |
+| letter-spacing | `0.16em` | `1.52px` | .wg-plate small · app.css:1173 |
+| text-transform | `uppercase` | `uppercase` | .wg-plate small · app.css:1173 |
+| color | `color-mix(in srgb,var(--c) 70%,var(--ink2))` | `color(srgb 0.357647 0.501961 0.601569)` | .wg-plate small · app.css:1173 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+#### look 3 of 11
+
+`C1-138` · rendered **51×10** · 2 instances look like this · text “Assault”
 
 ```html
 <small>Assault</small>
@@ -2493,9 +2519,33 @@ inside `.wg-line` · 11 on screen · **8 looks**
 | transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3445 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
-#### look 3 of 8
+#### look 4 of 11
 
-`C1-279` · rendered **22×10** · 1 instance look like this · text “LMG”
+`C1-157` · rendered **72×10** · 1 instance look like this · text “Build name”
+
+```html
+<small>Build name</small>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-plate small · app.css:1173 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-plate small · app.css:1173 |
+| font-size | `` | `9.5px` | .wg-plate small · app.css:1173 |
+| font-weight | `` | `600` | .wg-plate small · app.css:1173 |
+| font-style | `` | `normal` | .wg-plate small · app.css:1173 |
+| font-variant-numeric | `` | `normal` | .wg-plate small · app.css:1173 |
+| line-height | `` | `9.5px` | .wg-plate small · app.css:1173 |
+| letter-spacing | `0.16em` | `1.52px` | .wg-plate small · app.css:1173 |
+| text-transform | `uppercase` | `uppercase` | .wg-plate small · app.css:1173 |
+| color | `color-mix(in srgb,var(--c) 70%,var(--ink2))` | `color(srgb 0.884706 0.361961 0.464314)` | .wg-plate small · app.css:1173 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+#### look 5 of 11
+
+`C1-285` · rendered **22×10** · 1 instance look like this · text “LMG”
 
 ```html
 <small>LMG</small>
@@ -2520,88 +2570,31 @@ inside `.wg-line` · 11 on screen · **8 looks**
 | transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3445 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
-#### look 4 of 8
+#### look 6 of 11
 
-`C1-377` · rendered **51×10** · 1 instance look like this · text “Shotgun”
+`C1-333` · rendered **72×10** · 1 instance look like this · text “Build name”
 
 ```html
-<small>Shotgun</small>
+<small>Build name</small>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
-| align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
+| display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-size | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-weight | `` | `600` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-style | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-variant-numeric | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| line-height | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| letter-spacing | `0.16em` | `1.52px` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| text-transform | `uppercase` | `uppercase` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| white-space | `nowrap` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| color | `var(--c)` | `rgb(246, 169, 59)` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3445 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-plate small · app.css:1173 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-plate small · app.css:1173 |
+| font-size | `` | `9.5px` | .wg-plate small · app.css:1173 |
+| font-weight | `` | `600` | .wg-plate small · app.css:1173 |
+| font-style | `` | `normal` | .wg-plate small · app.css:1173 |
+| font-variant-numeric | `` | `normal` | .wg-plate small · app.css:1173 |
+| line-height | `` | `9.5px` | .wg-plate small · app.css:1173 |
+| letter-spacing | `0.16em` | `1.52px` | .wg-plate small · app.css:1173 |
+| text-transform | `uppercase` | `uppercase` | .wg-plate small · app.css:1173 |
+| color | `color-mix(in srgb,var(--c) 70%,var(--ink2))` | `color(srgb 0.547059 0.458039 0.744314)` | .wg-plate small · app.css:1173 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
 
-#### look 5 of 8
-
-`C1-501` · rendered **43×10** · 1 instance look like this · text “Sniper”
-
-```html
-<small>Sniper</small>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
-| align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-size | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-weight | `` | `600` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-style | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-variant-numeric | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| line-height | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| letter-spacing | `0.16em` | `1.52px` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| text-transform | `uppercase` | `uppercase` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| white-space | `nowrap` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| color | `var(--c)` | `rgb(67, 97, 238)` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3445 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-#### look 6 of 8
-
-`C1-634` · rendered **22×10** · 2 instances look like this · text “SMG”
-
-```html
-<small>SMG</small>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
-| align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-size | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-weight | `` | `600` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-style | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| font-variant-numeric | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| line-height | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| letter-spacing | `0.16em` | `1.52px` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| text-transform | `uppercase` | `uppercase` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| white-space | `nowrap` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| color | `var(--c)` | `rgb(255, 210, 63)` | .wg-line small, .f-menu .f-om · app.css:1125 |
-| transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3445 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-*2 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*5 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `em.b3-sd-gn.wg-nb`
@@ -2662,7 +2655,7 @@ inside `.wg-line` · 10 on screen · **7 looks**
 
 #### look 2 of 7
 
-`C1-136` · rendered **73×22** · 2 instances look like this · text “5 builds”
+`C1-139` · rendered **73×22** · 2 instances look like this · text “5 builds”
 
 ```html
 <em class="wg-nb b3-sd-gn">5 builds</em>
@@ -2714,7 +2707,7 @@ inside `.wg-line` · 10 on screen · **7 looks**
 
 #### look 3 of 7
 
-`C1-280` · rendered **73×22** · 1 instance look like this · text “3 builds”
+`C1-286` · rendered **73×22** · 1 instance look like this · text “3 builds”
 
 ```html
 <em class="wg-nb b3-sd-gn">3 builds</em>
@@ -2766,7 +2759,7 @@ inside `.wg-line` · 10 on screen · **7 looks**
 
 #### look 4 of 7
 
-`C1-378` · rendered **67×22** · 1 instance look like this · text “1 build”
+`C1-387` · rendered **67×22** · 1 instance look like this · text “1 build”
 
 ```html
 <em class="wg-nb b3-sd-gn">1 build</em>
@@ -2818,7 +2811,7 @@ inside `.wg-line` · 10 on screen · **7 looks**
 
 #### look 5 of 7
 
-`C1-502` · rendered **73×22** · 1 instance look like this · text “2 builds”
+`C1-511` · rendered **73×22** · 1 instance look like this · text “2 builds”
 
 ```html
 <em class="wg-nb b3-sd-gn">2 builds</em>
@@ -2870,7 +2863,7 @@ inside `.wg-line` · 10 on screen · **7 looks**
 
 #### look 6 of 7
 
-`C1-635` · rendered **67×22** · 2 instances look like this · text “1 build”
+`C1-644` · rendered **67×22** · 2 instances look like this · text “1 build”
 
 ```html
 <em class="wg-nb b3-sd-gn">1 build</em>
@@ -3007,7 +3000,7 @@ inside `.b3-bdgs` · 21 on screen · **8 looks**
 
 #### look 2 of 8
 
-`C1-138` · rendered **58×22** · 3 instances look like this
+`C1-141` · rendered **58×22** · 3 instances look like this
 
 ```html
 <span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl" aria-hidden="true"></span></span>
@@ -3074,7 +3067,7 @@ inside `.b3-bdgs` · 21 on screen · **8 looks**
 
 #### look 3 of 8
 
-`C1-142` · rendered **111×22** · 3 instances look like this · aria-label="Best in Assault"
+`C1-145` · rendered **111×22** · 3 instances look like this · aria-label="Best in Assault"
 
 ```html
 <span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Assault">⟨svg.ic⟩BEST<em>ASSAULT</em></span>
@@ -3117,7 +3110,7 @@ inside `.b3-bdgs` · 21 on screen · **8 looks**
 
 #### look 4 of 8
 
-`C1-282` · rendered **78×22** · 1 instance look like this · aria-label="Capable in LMG"
+`C1-288` · rendered **78×22** · 1 instance look like this · aria-label="Capable in LMG"
 
 ```html
 <span class="b3-bdg" data-k="tier" data-t="capable" aria-label="Capable in LMG">⟨svg.ic⟩CAPABLE<i class="b3-rim" aria-hidden="true"><i></i></i></span>
@@ -3160,7 +3153,7 @@ inside `.b3-bdgs` · 21 on screen · **8 looks**
 
 #### look 5 of 8
 
-`C1-285` · rendered **55×22** · 8 instances look like this · aria-label="Rank mode DOM"
+`C1-291` · rendered **55×22** · 8 instances look like this · aria-label="Rank mode DOM"
 
 ```html
 <span class="b3-bdg" data-k="mode" data-m="DOM" aria-label="Rank mode DOM" style="--mi: 0;"><i class="b3-mdi" aria-hidden="true">⟨svg.ic⟩</i><span class="b3-mdw">DOM</span></span>
@@ -3220,7 +3213,7 @@ inside `.b3-bdgs` · 21 on screen · **8 looks**
 
 #### look 6 of 8
 
-`C1-384` · rendered **65×22** · 1 instance look like this · aria-label="Top 5 in Shotgun"
+`C1-393` · rendered **65×22** · 1 instance look like this · aria-label="Top 5 in Shotgun"
 
 ```html
 <span class="b3-bdg" data-k="tier" data-t="top5" aria-label="Top 5 in Shotgun">⟨svg.ic⟩TOP 5<i class="b3-rim" aria-hidden="true"><i></i></i></span>
@@ -3651,7 +3644,7 @@ inside `.wg` · 5 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C1-649` · rendered **1146×66** · 1 instance look like this
+`C1-658` · rendered **1146×66** · 1 instance look like this
 
 ```html
 <div class="wg-r bad" tabindex="0"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select PHARO build 1"><span class="cb"></span></span><span class="wg-ix" title="">1</span><div class="wg-main named"><span class="wg-plate"><small>Build name</small><span>Coming Soon</span></span><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" title="" style="--sl: var
@@ -3773,11 +3766,11 @@ inside `.wg-r` · 24 on screen · **1 look**
 
 ### `div.wg-main`
 
-inside `.wg-r` · 23 on screen · **1 look**
+inside `.wg-r` · 20 on screen · **1 look**
 
 #### the one look
 
-`C1-84` · rendered **705×84** · 23 instances look like this
+`C1-84` · rendered **705×84** · 20 instances look like this
 
 ```html
 <div class="wg-main"><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Monolithic Suppressor</span><span class="wg-at" data-slot="Laser" title="Laser" style="--sl: var(--sl-laser, var(--sl-unknown));">OWC Laser - Tactical</span><span class="wg-at" data-slot="Rear Grip" title="Rear Grip" style="--sl: va
@@ -3808,11 +3801,11 @@ inside `.wg-r` · 23 on screen · **1 look**
 
 ### `div.wg-rail`
 
-inside `.wg-main` · 24 on screen · **2 looks**
+inside `.wg-main` · 24 on screen · **3 looks**
 
-#### look 1 of 2
+#### look 1 of 3
 
-`C1-85` · rendered **705×62** · 23 instances look like this
+`C1-85` · rendered **705×62** · 22 instances look like this
 
 ```html
 <div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Monolithic Suppressor</span><span class="wg-at" data-slot="Laser" title="Laser" style="--sl: var(--sl-laser, var(--sl-unknown));">OWC Laser - Tactical</span><span class="wg-at" data-slot="Rear Grip" title="Rear Grip" style="--sl: var(--sl-rear-grip, var
@@ -3839,9 +3832,38 @@ inside `.wg-main` · 24 on screen · **2 looks**
 | mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 100%, rgba(0, 0, 0, 0.78) 100%, rgba(0, 0, 0, 0.3) 100%, rgba(0, 0, 0, 0) 100%)` | .wg-r .wg-rail · b3/board.css:2774 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
 
-#### look 2 of 2
+#### look 2 of 3
 
-`C1-657` · rendered **585×28** · 1 instance look like this
+`C1-112` · rendered **589×76** · 1 instance look like this
+
+```html
+<div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 15px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Monolithic Suppressor</span><span class="wg-at" data-slot="Barrel" title="Barrel" style="--sl: var(--sl-barrel, var(--sl-unknown));">MIP Extended Light Barrel</span><span class="wg-at" data-slot="Underbarrel" title="Underbarrel" style="--sl: var(--sl-u
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .wg-rail · app.css:1175 |
+| gap | `6px` | `` | .wg-rail · app.css:1175 |
+| column-gap | `6px` | `6px` | .wg-rail · app.css:1175 |
+| row-gap | `6px` | `6px` | .wg-rail · app.css:1175 |
+| flex-wrap | `wrap` | `wrap` | .wg-rail · app.css:1175 |
+| align-items | `center` | `center` | .wg-rail · app.css:1175 |
+| min-width | `0px` | `0px` | .wg-rail · app.css:1175 |
+| max-height | `76px` | `76px` | .wg-r .wg-rail · b3/board.css:2774 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow-y | `auto` | `auto` | .wg-r .wg-rail · b3/board.css:2774 |
+| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) calc(100% - 15px), rgba(0, 0, 0, 0.78) calc(100% - 12px), rgba(0, 0, 0, 0.3) calc(100% - 6.75px), rgba(0, 0, 0, 0) 100%)` | .wg-r .wg-rail · b3/board.css:2774 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+#### look 3 of 3
+
+`C1-666` · rendered **585×28** · 1 instance look like this
 
 ```html
 <div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" title="" style="--sl: var(--sl-unknown);">Coming soon — check back later!</span><span class="wg-at gap">Empty</span><span class="wg-at gap">Empty</span><span class="wg-at gap">Empty</span><span class="wg-at gap">Empty</span></div>
@@ -4143,7 +4165,7 @@ inside `.wg-rail` · 114 on screen · **9 looks**
 
 #### look 5 of 9
 
-`C1-111` · rendered **217×28** · 19 instances look like this · text “MIP Extended Light Barrel” · title="Barrel"
+`C1-114` · rendered **217×28** · 19 instances look like this · text “MIP Extended Light Barrel” · title="Barrel"
 
 ```html
 <span class="wg-at" data-slot="Barrel" title="Barrel" style="--sl: var(--sl-barrel, var(--sl-unknown));">MIP Extended Light Barrel</span>
@@ -4210,7 +4232,7 @@ inside `.wg-rail` · 114 on screen · **9 looks**
 
 #### look 6 of 9
 
-`C1-112` · rendered **214×28** · 5 instances look like this · text “Lightweight Trigger” · title="Underbarrel"
+`C1-115` · rendered **214×28** · 5 instances look like this · text “Lightweight Trigger” · title="Underbarrel"
 
 ```html
 <span class="wg-at" data-slot="Underbarrel" title="Underbarrel" style="--sl: var(--sl-underbarrel, var(--sl-unknown));">Lightweight Trigger</span>
@@ -4882,14 +4904,14 @@ inside `.wg-acts` · 24 on screen · **1 look**
 
 ### `div.wg-r`
 
-inside `.wg` · 19 on screen · **1 look**
+inside `.wg` · 19 on screen · **2 looks**
 
-#### the one look
+#### look 1 of 2
 
-`C1-104` · rendered **1146×85** · 19 instances look like this
+`C1-104` · rendered **1146×99** · 1 instance look like this
 
 ```html
-<div class="wg-r" tabindex="0"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select .50 GS build 2"><span class="cb"></span></span><span class="wg-ix" title="">2</span><div class="wg-main"><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Monolithic Suppressor</span>
+<div class="wg-r" tabindex="0"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select .50 GS build 2"><span class="cb"></span></span><span class="wg-ix" title="">2</span><div class="wg-main named"><span class="wg-plate"><small>Build name</small><span>Sidearm</span></span><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 15px;"><span class="wg-at" data-slot="Muzzle" title="Muzzl
 ```
 
 | property | winning declaration | computed | from |
@@ -4961,6 +4983,401 @@ inside `.wg` · 19 on screen · **1 look**
 
 **:active** — changes nothing on the element itself
 
+#### look 2 of 2
+
+`C1-151` · rendered **1146×85** · 18 instances look like this
+
+```html
+<div class="wg-r" tabindex="0"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select BAL-27 build 1"><span class="cb"></span></span><span class="wg-ix" title="">1</span><div class="wg-main named"><span class="wg-plate"><small>Build name</small><span>Long range</span></span><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muz
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .wg-r · app.css:1157 |
+| position | `relative` | `relative` | .wg-r · app.css:1157 |
+| grid-template-columns | `32px 28px minmax(0px, 1fr) 28px 144px 113px` | `32px 28px 705px 28px 144px 113px` | .wg-r · app.css:1157 |
+| column-gap | `var(--s3)` | `12px` | .wg-r · app.css:1157 |
+| align-items | `center` | `center` | .wg-r · app.css:1157 |
+| min-height | `58px` | `58px` | html[data-b3-a1="fixed"] .wg-r · gates.css:257 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 var(--s4) 0 20px` | `` | .wg-r · app.css:1157 |
+| padding-top | `` | `0px` | .wg-r · app.css:1157 |
+| padding-right | `` | `16px` | .wg-r · app.css:1157 |
+| padding-bottom | `` | `0px` | .wg-r · app.css:1157 |
+| padding-left | `` | `20px` | .wg-r · app.css:1157 |
+| border-top | `1px solid var(--rule3)` | `` | .wg-r · app.css:1157 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| transition | `background .18s` | `` | .wg-r · app.css:1157 |
+| cursor | `pointer` | `pointer` | .wg-r · app.css:1157 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .wg-r::before · app.css:1159 |
+| width | `2.5px` | html[data-b3-a1="fixed"] .wg-r::before · gates.css:259 |
+| top | `12px` | html[data-b3-a1="fixed"] .wg-r::before · gates.css:259 |
+| bottom | `12px` | html[data-b3-a1="fixed"] .wg-r::before · gates.css:259 |
+| left | `0px` | .wg-r::before · app.css:1159 |
+| border-radius | `0 2px 2px 0` | html[data-b3-a1="fixed"] .wg-r::before · gates.css:259 |
+| background | `var(--c)` | .wg-r::before · app.css:1159 |
+| background-color | `` | .wg-r::before · app.css:1159 |
+| background-image | `` | .wg-r::before · app.css:1159 |
+| opacity | `0` | .wg-r::before · app.css:1159 |
+| transition | `opacity .18s` | .wg-r::before · app.css:1159 |
+| content | `""` | .wg-r::before · app.css:1159 |
+
+**:hover** — changes; parts inside it respond (table below)
+
+| property | at rest | hover |
+|---|---|---|
+| background-color | `rgba(0, 0, 0, 0)` | `rgb(23, 30, 36)` |
+| background-image | `none` | `radial-gradient(360px 80px at 14% 40%, color(srgb 1.08802 0.325069 0.430231 / 0.16), rgba(0, 0, 0, 0) 72%), radial-gradient(420px 100px at 76% 70%, color(srgb 1.08802 0.325069 0.430231 / 0.07), rgba(0, 0, 0, 0) 70%), radial-gradient(260px 70px at 46% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.06), rgba(0, 0, 0, 0) 70%), none` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | opacity | `0` | `1` |
+| span.wg-ix | color | `rgb(133, 147, 159)` | `rgb(255, 59, 92)` |
+| span.wg-ix | border-color | `rgb(133, 147, 159)` | `rgb(255, 59, 92)` |
+| span.wg-ix | outline-color | `rgb(133, 147, 159)` | `rgb(255, 59, 92)` |
+| span.wg-at | box-shadow | `color(srgb 1 0.439216 0.341176 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 1 0.439216 0.341176 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 1 0.603922 0.235294 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 1 0.603922 0.235294 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 0.952941 0.819608 0.247059 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 0.952941 0.819608 0.247059 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 0.686275 0.580392 1 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 0.686274 0.580392 1 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 1 0.164706 0.333333 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 1 0.164706 0.333333 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+
+**:focus-visible** — changes
+
+| property | at rest | focus-visible |
+|---|---|---|
+| outline-offset | `0px` | `-2px` |
+| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
+
+**:active** — changes nothing on the element itself
+
+
+### `div.named.wg-main`
+
+inside `.wg-r` · 4 on screen · **3 looks**
+
+#### look 1 of 3
+
+`C1-108` · rendered **705×98** · 1 instance look like this
+
+```html
+<div class="wg-main named"><span class="wg-plate"><small>Build name</small><span>Sidearm</span></span><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 15px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Monolithic Suppressor</span><span class="wg-at" data-slot="Barrel" title="Barrel" style="--sl: var(--sl-barrel, var(--sl-unknown));">MIP Extended Ligh
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .wg-main · app.css:1169 |
+| grid-template-columns | `auto minmax(0px, 1fr)` | `96.2031px 588.797px` | .wg-main.named · app.css:1170 |
+| gap | `6px` | `` | .wg-main · app.css:1169 |
+| column-gap | `20px` | `20px` | .wg-main.named · app.css:1170 |
+| row-gap | `6px` | `6px` | .wg-main · app.css:1169 |
+| align-items | `center` | `center` | .wg-main.named · app.css:1170 |
+| align-self | `center` | `center` | .wg-main · app.css:1169 |
+| min-width | `0px` | `0px` | .wg-main · app.css:1169 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `11px 0` | `` | .wg-main · app.css:1169 |
+| padding-top | `11px` | `11px` | .wg-main · app.css:1169 |
+| padding-right | `0px` | `0px` | .wg-main · app.css:1169 |
+| padding-bottom | `11px` | `11px` | .wg-main · app.css:1169 |
+| padding-left | `0px` | `0px` | .wg-main · app.css:1169 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+#### look 2 of 3
+
+`C1-155` · rendered **705×84** · 2 instances look like this
+
+```html
+<div class="wg-main named"><span class="wg-plate"><small>Build name</small><span>Long range</span></span><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Gauge-9 Mono</span><span class="wg-at" data-slot="Barrel" title="Barrel" style="--sl: var(--sl-barrel, var(--sl-unknown));">Crown-H3 Barrel</span><s
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .wg-main · app.css:1169 |
+| grid-template-columns | `auto minmax(0px, 1fr)` | `96.2031px 588.797px` | .wg-main.named · app.css:1170 |
+| gap | `6px` | `` | .wg-main · app.css:1169 |
+| column-gap | `20px` | `20px` | .wg-main.named · app.css:1170 |
+| row-gap | `6px` | `6px` | .wg-main · app.css:1169 |
+| align-items | `center` | `center` | .wg-main.named · app.css:1170 |
+| align-self | `center` | `center` | .wg-main · app.css:1169 |
+| min-width | `0px` | `0px` | .wg-main · app.css:1169 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `11px 0` | `` | .wg-main · app.css:1169 |
+| padding-top | `11px` | `11px` | .wg-main · app.css:1169 |
+| padding-right | `0px` | `0px` | .wg-main · app.css:1169 |
+| padding-bottom | `11px` | `11px` | .wg-main · app.css:1169 |
+| padding-left | `0px` | `0px` | .wg-main · app.css:1169 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+#### look 3 of 3
+
+`C1-662` · rendered **705×65** · 1 instance look like this
+
+```html
+<div class="wg-main named"><span class="wg-plate"><small>Build name</small><span>Coming Soon</span></span><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" title="" style="--sl: var(--sl-unknown);">Coming soon — check back later!</span><span class="wg-at gap">Empty</span><span class="wg-at gap">Empty</span><span class="wg-at gap">Empty</span><span class="wg-at gap">Empty</span></div></
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .wg-main · app.css:1169 |
+| grid-template-columns | `auto minmax(0px, 1fr)` | `99.9844px 585.016px` | .wg-main.named · app.css:1170 |
+| gap | `6px` | `` | .wg-main · app.css:1169 |
+| column-gap | `20px` | `20px` | .wg-main.named · app.css:1170 |
+| row-gap | `6px` | `6px` | .wg-main · app.css:1169 |
+| align-items | `center` | `center` | .wg-main.named · app.css:1170 |
+| align-self | `center` | `center` | .wg-main · app.css:1169 |
+| min-width | `0px` | `0px` | .wg-main · app.css:1169 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `11px 0` | `` | .wg-main · app.css:1169 |
+| padding-top | `11px` | `11px` | .wg-main · app.css:1169 |
+| padding-right | `0px` | `0px` | .wg-main · app.css:1169 |
+| padding-bottom | `11px` | `11px` | .wg-main · app.css:1169 |
+| padding-left | `0px` | `0px` | .wg-main · app.css:1169 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+
+### `span.wg-plate`
+
+inside `.wg-main` · 4 on screen · **4 looks**
+
+#### look 1 of 4
+
+`C1-109` · rendered **96×43** · 1 instance look like this
+
+```html
+<span class="wg-plate"><small>Build name</small><span>Sidearm</span></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| position | `relative` | `relative` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| gap | `3px` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| column-gap | `3px` | `3px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| row-gap | `3px` | `3px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| align-self | `center` | `center` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| max-width | `156px` | `156px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `7px 12px 8px` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-top | `7px` | `7px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-right | `12px` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-bottom | `8px` | `8px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-left | `12px` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| border-radius | `var(--rad-2)` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background | `linear-gradient(100deg,color-mix(in srgb,var(--c) 22%,var(--raised)),color-mix(in srgb,var(--c) 7%,var(--raised)))` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background-image | `` | `linear-gradient(100deg, color(srgb 0.149176 0.214196 0.263216), color(srgb 0.130353 0.172431 0.206745))` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 38%,transparent)` | `color(srgb 0.247059 0.431373 0.556863 / 0.38) 0px 0px 0px 1px inset` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font | `600 var(--t-sm)/1.25 var(--ui)` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-size | `` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-weight | `` | `600` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-style | `` | `normal` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-variant-numeric | `` | `normal` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| line-height | `` | `15px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .wg-plate::after · app.css:1172 |
+| width | `1px` | .wg-plate::after · app.css:1172 |
+| top | `0px` | .wg-plate::after · app.css:1172 |
+| right | `-10px` | .wg-plate::after · app.css:1172 |
+| bottom | `0px` | .wg-plate::after · app.css:1172 |
+| background | `var(--rule2)` | .wg-plate::after · app.css:1172 |
+| background-color | `` | .wg-plate::after · app.css:1172 |
+| background-image | `` | .wg-plate::after · app.css:1172 |
+| content | `""` | .wg-plate::after · app.css:1172 |
+
+#### look 2 of 4
+
+`C1-156` · rendered **96×43** · 1 instance look like this
+
+```html
+<span class="wg-plate"><small>Build name</small><span>Long range</span></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| position | `relative` | `relative` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| gap | `3px` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| column-gap | `3px` | `3px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| row-gap | `3px` | `3px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| align-self | `center` | `center` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| max-width | `156px` | `156px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `7px 12px 8px` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-top | `7px` | `7px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-right | `12px` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-bottom | `8px` | `8px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-left | `12px` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| border-radius | `var(--rad-2)` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background | `linear-gradient(100deg,color-mix(in srgb,var(--c) 22%,var(--raised)),color-mix(in srgb,var(--c) 7%,var(--raised)))` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background-image | `` | `linear-gradient(100deg, color(srgb 0.314824 0.170196 0.220078), color(srgb 0.183059 0.158431 0.19302))` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 38%,transparent)` | `color(srgb 1 0.231373 0.360784 / 0.38) 0px 0px 0px 1px inset` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font | `600 var(--t-sm)/1.25 var(--ui)` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-size | `` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-weight | `` | `600` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-style | `` | `normal` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-variant-numeric | `` | `normal` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| line-height | `` | `15px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .wg-plate::after · app.css:1172 |
+| width | `1px` | .wg-plate::after · app.css:1172 |
+| top | `0px` | .wg-plate::after · app.css:1172 |
+| right | `-10px` | .wg-plate::after · app.css:1172 |
+| bottom | `0px` | .wg-plate::after · app.css:1172 |
+| background | `var(--rule2)` | .wg-plate::after · app.css:1172 |
+| background-color | `` | .wg-plate::after · app.css:1172 |
+| background-image | `` | .wg-plate::after · app.css:1172 |
+| content | `""` | .wg-plate::after · app.css:1172 |
+
+#### look 3 of 4
+
+`C1-332` · rendered **96×43** · 1 instance look like this
+
+```html
+<span class="wg-plate"><small>Build name</small><span>Anchor</span></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| position | `relative` | `relative` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| gap | `3px` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| column-gap | `3px` | `3px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| row-gap | `3px` | `3px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| align-self | `center` | `center` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| max-width | `156px` | `156px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `7px 12px 8px` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-top | `7px` | `7px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-right | `12px` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-bottom | `8px` | `8px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-left | `12px` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| border-radius | `var(--rad-2)` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background | `linear-gradient(100deg,color-mix(in srgb,var(--c) 22%,var(--raised)),color-mix(in srgb,var(--c) 7%,var(--raised)))` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background-image | `` | `linear-gradient(100deg, color(srgb 0.208706 0.200392 0.308078), color(srgb 0.149294 0.168039 0.22102))` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 38%,transparent)` | `color(srgb 0.517647 0.368627 0.760784 / 0.38) 0px 0px 0px 1px inset` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font | `600 var(--t-sm)/1.25 var(--ui)` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-size | `` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-weight | `` | `600` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-style | `` | `normal` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-variant-numeric | `` | `normal` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| line-height | `` | `15px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .wg-plate::after · app.css:1172 |
+| width | `1px` | .wg-plate::after · app.css:1172 |
+| top | `0px` | .wg-plate::after · app.css:1172 |
+| right | `-10px` | .wg-plate::after · app.css:1172 |
+| bottom | `0px` | .wg-plate::after · app.css:1172 |
+| background | `var(--rule2)` | .wg-plate::after · app.css:1172 |
+| background-color | `` | .wg-plate::after · app.css:1172 |
+| background-image | `` | .wg-plate::after · app.css:1172 |
+| content | `""` | .wg-plate::after · app.css:1172 |
+
+#### look 4 of 4
+
+`C1-663` · rendered **100×43** · 1 instance look like this
+
+```html
+<span class="wg-plate"><small>Build name</small><span>Coming Soon</span></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| position | `relative` | `relative` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| gap | `3px` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| column-gap | `3px` | `3px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| row-gap | `3px` | `3px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| align-self | `center` | `center` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| max-width | `156px` | `156px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `7px 12px 8px` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-top | `7px` | `7px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-right | `12px` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-bottom | `8px` | `8px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| padding-left | `12px` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| border-radius | `var(--rad-2)` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background | `linear-gradient(100deg,color-mix(in srgb,var(--c) 22%,var(--raised)),color-mix(in srgb,var(--c) 7%,var(--raised)))` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| background-image | `` | `linear-gradient(100deg, color(srgb 0.314824 0.300471 0.195059), color(srgb 0.183059 0.199882 0.185059))` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 38%,transparent)` | `color(srgb 1 0.823529 0.247059 / 0.38) 0px 0px 0px 1px inset` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font | `600 var(--t-sm)/1.25 var(--ui)` | `` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-size | `` | `12px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-weight | `` | `600` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-style | `` | `normal` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| font-variant-numeric | `` | `normal` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| line-height | `` | `15px` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .wg-plate, .b4 #compare .cx-t .cx-v.cx-nm · app.css:1171 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .wg-plate::after · app.css:1172 |
+| width | `1px` | .wg-plate::after · app.css:1172 |
+| top | `0px` | .wg-plate::after · app.css:1172 |
+| right | `-10px` | .wg-plate::after · app.css:1172 |
+| bottom | `0px` | .wg-plate::after · app.css:1172 |
+| background | `var(--rule2)` | .wg-plate::after · app.css:1172 |
+| background-color | `` | .wg-plate::after · app.css:1172 |
+| background-image | `` | .wg-plate::after · app.css:1172 |
+| content | `""` | .wg-plate::after · app.css:1172 |
+
 
 ### `span.wg-ct`
 
@@ -4968,7 +5385,7 @@ inside `.wg-igf` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-120` · rendered **82×12** · 21 instances look like this · text “1C2A7A8A9A” · title=""
+`C1-123` · rendered **82×12** · 21 instances look like this · text “1C2A7A8A9A” · title=""
 
 ```html
 <span class="wg-ct" title="">1C2A7A8A9A</span>
@@ -4999,7 +5416,7 @@ inside `.b3-bdg` · 3 on screen · **1 look**
 
 #### the one look
 
-`C1-139` · rendered **11×11** · 3 instances look like this · aria-hidden="true"
+`C1-142` · rendered **11×11** · 3 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic b3-zap" aria-hidden="true"><use href="#i-zap"></use></svg>
@@ -5033,7 +5450,7 @@ inside `.b3-bdg` · 3 on screen · **1 look**
 
 #### the one look
 
-`C1-140` · rendered **58×22** · 3 instances look like this
+`C1-143` · rendered **58×22** · 3 instances look like this
 
 ```html
 <span class="b3-volt"></span>
@@ -5074,7 +5491,7 @@ inside `.b3-bdg` · 3 on screen · **1 look**
 
 #### the one look
 
-`C1-141` · rendered **58×22** · 3 instances look like this · aria-hidden="true"
+`C1-144` · rendered **58×22** · 3 instances look like this · aria-hidden="true"
 
 ```html
 <span class="b3-vl" aria-hidden="true"></span>
@@ -5112,7 +5529,7 @@ inside `.b3-bdg` · 8 on screen · **1 look**
 
 #### the one look
 
-`C1-286` · rendered **20×20** · 8 instances look like this · aria-hidden="true"
+`C1-292` · rendered **20×20** · 8 instances look like this · aria-hidden="true"
 
 ```html
 <i class="b3-mdi" aria-hidden="true">⟨svg.ic⟩</i>
@@ -5142,7 +5559,7 @@ inside `.b3-bdg` · 8 on screen · **1 look**
 
 #### the one look
 
-`C1-288` · rendered **20×10** · 8 instances look like this · text “DOM”
+`C1-294` · rendered **20×10** · 8 instances look like this · text “DOM”
 
 ```html
 <span class="b3-mdw">DOM</span>
@@ -5172,7 +5589,7 @@ inside `.wg-rail` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-409` · rendered **210×28** · 1 instance look like this · text “8-R Dragon's Breath” · title="Ammunition — not in the gunsmith code"
+`C1-418` · rendered **210×28** · 1 instance look like this · text “8-R Dragon's Breath” · title="Ammunition — not in the gunsmith code"
 
 ```html
 <span class="wg-at nocode" data-slot="Ammunition" title="Ammunition — not in the gunsmith code" style="--sl: var(--sl-ammunition, var(--sl-unknown));">8-R Dragon's Breath</span>
@@ -5240,108 +5657,13 @@ inside `.wg-rail` · 1 on screen · **1 look**
 | content | `attr(data-slot) var(--lab-sep,":")` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
 
 
-### `div.named.wg-main`
-
-inside `.wg-r` · 1 on screen · **1 look**
-
-#### the one look
-
-`C1-653` · rendered **705×65** · 1 instance look like this
-
-```html
-<div class="wg-main named"><span class="wg-plate"><small>Build name</small><span>Coming Soon</span></span><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" title="" style="--sl: var(--sl-unknown);">Coming soon — check back later!</span><span class="wg-at gap">Empty</span><span class="wg-at gap">Empty</span><span class="wg-at gap">Empty</span><span class="wg-at gap">Empty</span></div></
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .wg-main · app.css:1169 |
-| grid-template-columns | `auto minmax(0px, 1fr)` | `99.9844px 585.016px` | .wg-main.named · app.css:1170 |
-| gap | `6px` | `` | .wg-main · app.css:1169 |
-| column-gap | `20px` | `20px` | .wg-main.named · app.css:1170 |
-| row-gap | `6px` | `6px` | .wg-main · app.css:1169 |
-| align-items | `center` | `center` | .wg-main.named · app.css:1170 |
-| align-self | `center` | `center` | .wg-main · app.css:1169 |
-| min-width | `0px` | `0px` | .wg-main · app.css:1169 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `11px 0` | `` | .wg-main · app.css:1169 |
-| padding-top | `11px` | `11px` | .wg-main · app.css:1169 |
-| padding-right | `0px` | `0px` | .wg-main · app.css:1169 |
-| padding-bottom | `11px` | `11px` | .wg-main · app.css:1169 |
-| padding-left | `0px` | `0px` | .wg-main · app.css:1169 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
-
-
-### `span.wg-plate`
-
-inside `.wg-main` · 1 on screen · **1 look**
-
-#### the one look
-
-`C1-654` · rendered **100×43** · 1 instance look like this
-
-```html
-<span class="wg-plate"><small>Build name</small><span>Coming Soon</span></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .wg-plate · app.css:1171 |
-| position | `relative` | `relative` | .wg-plate · app.css:1171 |
-| gap | `3px` | `` | .wg-plate · app.css:1171 |
-| column-gap | `3px` | `3px` | .wg-plate · app.css:1171 |
-| row-gap | `3px` | `3px` | .wg-plate · app.css:1171 |
-| align-self | `center` | `center` | .wg-plate · app.css:1171 |
-| max-width | `156px` | `156px` | .wg-plate · app.css:1171 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `7px 12px 8px` | `` | .wg-plate · app.css:1171 |
-| padding-top | `7px` | `7px` | .wg-plate · app.css:1171 |
-| padding-right | `12px` | `12px` | .wg-plate · app.css:1171 |
-| padding-bottom | `8px` | `8px` | .wg-plate · app.css:1171 |
-| padding-left | `12px` | `12px` | .wg-plate · app.css:1171 |
-| border-radius | `var(--rad-2)` | `` | .wg-plate · app.css:1171 |
-| background | `linear-gradient(100deg,color-mix(in srgb,var(--c) 22%,var(--raised)),color-mix(in srgb,var(--c) 7%,var(--raised)))` | `` | .wg-plate · app.css:1171 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .wg-plate · app.css:1171 |
-| background-image | `` | `linear-gradient(100deg, color(srgb 0.314824 0.300471 0.195059), color(srgb 0.183059 0.199882 0.185059))` | .wg-plate · app.css:1171 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 38%,transparent)` | `color(srgb 1 0.823529 0.247059 / 0.38) 0px 0px 0px 1px inset` | .wg-plate · app.css:1171 |
-| font | `600 var(--t-sm)/1.25 var(--ui)` | `` | .wg-plate · app.css:1171 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-plate · app.css:1171 |
-| font-size | `` | `12px` | .wg-plate · app.css:1171 |
-| font-weight | `` | `600` | .wg-plate · app.css:1171 |
-| font-style | `` | `normal` | .wg-plate · app.css:1171 |
-| font-variant-numeric | `` | `normal` | .wg-plate · app.css:1171 |
-| line-height | `` | `15px` | .wg-plate · app.css:1171 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .wg-plate · app.css:1171 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .wg-plate::after · app.css:1172 |
-| width | `1px` | .wg-plate::after · app.css:1172 |
-| top | `0px` | .wg-plate::after · app.css:1172 |
-| right | `-10px` | .wg-plate::after · app.css:1172 |
-| bottom | `0px` | .wg-plate::after · app.css:1172 |
-| background | `var(--rule2)` | .wg-plate::after · app.css:1172 |
-| background-color | `` | .wg-plate::after · app.css:1172 |
-| background-image | `` | .wg-plate::after · app.css:1172 |
-| content | `""` | .wg-plate::after · app.css:1172 |
-
-
 ### `span.gap.wg-at`
 
 inside `.wg-rail` · 4 on screen · **1 look**
 
 #### the one look
 
-`C1-659` · rendered **58×28** · 4 instances look like this · text “Empty”
+`C1-668` · rendered **58×28** · 4 instances look like this · text “Empty”
 
 ```html
 <span class="wg-at gap">Empty</span>
@@ -5385,7 +5707,7 @@ inside `.wg-r` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-665` · rendered **144×34** · 1 instance look like this
+`C1-674` · rendered **144×34** · 1 instance look like this
 
 ```html
 <span class="wg-ig none"><span class="wg-cnone">⟨svg.ic⟩No code</span></span>
@@ -5435,7 +5757,7 @@ inside `.wg-ig` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-666` · rendered **68×14** · 1 instance look like this
+`C1-675` · rendered **68×14** · 1 instance look like this
 
 ```html
 <span class="wg-cnone">⟨svg.ic⟩No code</span>

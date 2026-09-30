@@ -69,8 +69,9 @@ const D = require('path').resolve(__dirname, '../../../local/pins2/intake-shots/
   out.chipsRest = await op(); const meta = await centre('#c-new-build .f-bt[aria-label=META]'); await p.mouse.move(meta[0], meta[1]); await W.sleep(300); out.chipsHoverMeta = await op(); await p.mouse.click(meta[0], meta[1]); await p.mouse.move(2, 2); await W.sleep(350); out.chipsMetaTicked = await op();
   await shot('#c-new-build .f-bdgs', 'chips-meta-ticked');
   // 9 · the discard confirm
-  await W.setState(p, 'c-new-build', 'Add build'); await W.clickReal(p, '#c-new-build #nb-w'); await p.keyboard.type('bal'); await W.sleep(300); await p.keyboard.press('ArrowDown'); await p.keyboard.press('Enter'); await W.sleep(400); await p.keyboard.press('Escape'); await W.sleep(300); await p.keyboard.press('Escape'); await W.sleep(500);
-  out.discard = await ev(() => { const t = document.querySelector('#c-new-build').textContent; return /Discard this draft\?/.test(t); }); await shot('#c-new-build .drawer', 'discard-confirm');
+  await W.setState(p, 'c-new-build', 'Add build'); await W.clickReal(p, '#c-new-build #nb-w'); await p.keyboard.type('bal'); await W.sleep(300); await p.keyboard.press('ArrowDown'); await p.keyboard.press('Enter'); await W.sleep(400); await p.keyboard.press('Escape'); await W.sleep(500);   // ONE Escape opens the confirm; a second is its "Keep editing" (2026-09-30: two had closed it before the read)
+  // the confirm is `.b4-ask` (the board's own message layer, outside the gate), so it is read where it opens, not inside #c-new-build (2026-09-30)
+  out.discard = await ev(() => { const c = [...document.querySelectorAll('.b4-ask, .cfm')].find((e) => e.getBoundingClientRect().width > 0 && /Discard/.test(e.textContent)); return c ? c.textContent.replace(/\s+/g, ' ').trim().slice(0, 80) : false; }); await shot('.b4-ask', 'discard-confirm'); await p.keyboard.press('Escape'); await W.sleep(400);
   // 10 · the wheel in every drawer's dead space scrolls the column that owns it
   const wheel = async (gate, state, sel, name) => { if (state) await W.setState(p, gate, state); await W.sleep(400);
     const box = await ev((sel) => { const d = document.querySelector(sel); if (!d) return null; d.scrollIntoView({ block: 'start' }); const q = d.getBoundingClientRect(); return [q.x, q.y, q.width, Math.min(q.height, innerHeight - q.y)]; }, sel); if (!box) return { name, miss: sel };
@@ -89,7 +90,9 @@ const D = require('path').resolve(__dirname, '../../../local/pins2/intake-shots/
   out.wheel.push(await wheel('c-new-build', 'Bulk · several', '#c-new-build .drawer', 'Bulk several'));
   out.wheel.push(await wheel('c-new-build', 'Edit 3 builds', '#c-new-build .drawer', 'Edit 3'));
   out.wheel.push(await wheel('c-broadcast', 'Posting', '#c-broadcast .drawer', 'Post'));
-  await W.setState(p, 'c-export', 'Picker'); await ev(() => { const d = document.querySelector('#c-export aside.drawer'); if (d) d.id = 'xpick'; });
+  // 2026-09-30: the id goes on the OPEN drawer, and the probe says which it took and whether its list can move — a closed or wrong drawer reads as '66 of 66 dead'
+  // an Escape pressed for the discard confirm also backs the Export picker out to its landing view while its switch still reads Picker — so go through Landing first
+  await W.setState(p, 'c-export', 'Landing'); await W.setState(p, 'c-export', 'Picker'); await W.sleep(400); out.xpick = await ev(() => { const all = [...document.querySelectorAll('#c-export aside.drawer')]; const d = all.find((x) => x.classList.contains('open')) || null; if (d) d.id = 'xpick'; const l = d && d.querySelector('.b3-xt-list'); return { drawers: all.map((x) => x.className), took: d && d.className, listOver: l ? l.scrollHeight - l.clientHeight : null, listTop: l ? l.scrollTop : null }; });
   out.wheel.push(await wheel('c-export', null, '#xpick', 'Export picker'));
   out.pageErrors = errs; console.log(JSON.stringify(out, null, 1)); await b.close();
 })();

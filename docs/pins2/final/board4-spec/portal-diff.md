@@ -5,13 +5,13 @@ status: live
 
 # Board 4: Collective — the exact changes to PORTAL code
 
-*Generated 2026-09-30T02:48:12.281Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `bd5463b1 plus the working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
+*Generated 2026-09-30T03:57:07.373Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `e66a5e89 plus the working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
 
 ## `app.css` → `portal/public/app.css`
 
 ```diff
 diff --git aportal/public/app.css bkit/app.css
-index 85107e32..8c47c2ea 100644
+index 85107e32..7bcc0d7b 100644
 --- aportal/public/app.css	
 +++ bkit/app.css	
 @@ -439,7 +439,18 @@ button {
@@ -43,7 +43,14 @@ index 85107e32..8c47c2ea 100644
  .wg-nb{font-style:normal;letter-spacing:.14em;color:var(--ink3)}
  .wg-nb::before{content:"";display:inline-block;width:3px;height:3px;margin:0 9px 2px;border-radius:var(--rad-round);background:var(--ink4)}
  .wg-tags{display:flex;align-items:center;gap:6px;min-height:22px;padding-left:var(--s4);margin-left:var(--s2);box-shadow:inset 1px 0 0 var(--rule2)}
-@@ -1163,7 +1174,7 @@ main{overflow:auto;padding-bottom:140px}
+@@ -1157,13 +1168,13 @@ main{overflow:auto;padding-bottom:140px}
+ .wg-r:hover .wg-ix{color:var(--c)}
+ .wg-main{display:grid;gap:6px;align-self:center;min-width:0;padding:11px 0}
+ .wg-main.named{grid-template-columns:auto minmax(0,1fr);column-gap:20px;align-items:center}
+-.wg-plate{position:relative;display:grid;gap:3px;align-self:center;max-width:156px;padding:7px 12px 8px;border-radius:var(--rad-2);background:linear-gradient(100deg,color-mix(in srgb,var(--c) 22%,var(--raised)),color-mix(in srgb,var(--c) 7%,var(--raised)));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 38%,transparent);font:600 var(--t-sm)/1.25 var(--ui);color:var(--ink)}
++.wg-plate,.b4 #compare .cx-t .cx-v.cx-nm{position:relative;display:grid;gap:3px;align-self:center;max-width:156px;padding:7px 12px 8px;border-radius:var(--rad-2);background:linear-gradient(100deg,color-mix(in srgb,var(--c) 22%,var(--raised)),color-mix(in srgb,var(--c) 7%,var(--raised)));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 38%,transparent);font:600 var(--t-sm)/1.25 var(--ui);color:var(--ink)}
+ .wg-plate::after{content:"";position:absolute;top:0;bottom:0;right:-10px;width:1px;background:var(--rule2)}
+ .wg-plate small{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb,var(--c) 70%,var(--ink2))}
  .wg-plate span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
  .wg-rail{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}
  .wg-at{display:inline-flex;align-items:center;min-width:0;height:28px;padding:0 10px;border-radius:var(--rad-2);background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 4%,var(--sunk)),var(--sunk));box-shadow:inset 0 0 0 1px var(--rule2),inset 0 1px 0 color-mix(in srgb,var(--ink) 6%,transparent);font:500 var(--t-sm)/1 var(--ui);color:var(--ink);white-space:nowrap}

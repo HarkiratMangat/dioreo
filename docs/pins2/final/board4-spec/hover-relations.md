@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — hover relations
 
-*Generated 2026-09-30T03:26:10.854Z by `hover-relations.cjs` from the kit's stylesheets. 191 rules in which one element's hover, focus or press restyles another element — the relations the value files cannot show, because they force states on each element alone. A port that copies only per-element values loses every one of these. JS-driven hovers (Compare's lighting, the badge pop) are in HANDOFF.md and measured with a real mouse in relations.cjs.*
+*Generated 2026-09-30T04:06:57.063Z by `hover-relations.cjs` from the kit's stylesheets. 191 rules in which one element's hover, focus or press restyles another element — the relations the value files cannot show, because they force states on each element alone. A port that copies only per-element values loses every one of these. JS-driven hovers (Compare's lighting, the badge pop) are in HANDOFF.md and measured with a real mouse in relations.cjs.*
 
 ## `app.css` — 60
 
