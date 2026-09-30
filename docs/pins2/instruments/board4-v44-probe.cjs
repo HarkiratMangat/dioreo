@@ -27,7 +27,7 @@ const W = require('../final/board4-spec/board4-walk.cjs');
     out.rows = await p.evaluate(() => ({ rows: [...document.querySelectorAll('#c-compare .cx-t:not([data-ghost]) tbody th.cx-k0')].map((t) => t.textContent.trim()),
       same: [...document.querySelectorAll('#c-compare .cx-band .cx-sv')].map((c) => c.dataset.slot), shared: [...document.querySelectorAll('#c-compare .cx-band .cx-shc')].map((c) => c.dataset.slot) }));
     // AX: the head's name
-    out.names = await p.evaluate(() => [...document.querySelectorAll('#c-compare th.cx-h')].map((h) => { const n = h.querySelector('.cx-pl, .cx-hl'); return n ? `${n.className}: ${n.textContent.trim()}` : null; }));
+    out.names = await p.evaluate(() => [...document.querySelectorAll('#c-compare .cx-nm')].map((n) => `${n.className}: ${n.textContent.trim()}`));   // since 2026-09-29 23:41 EDT the name is a table row
     // AW: the pop, frame by frame
     const bw = await p.evaluate(() => { const e = document.querySelector('#c-compare .b3-bdgs.bare .b3-bw'); if (!e) return null; e.scrollIntoView({ block: 'center' }); const r = e.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; });
     if (bw) {
