@@ -21,7 +21,7 @@ status: live
 
 ## Start here — Session 4, then Session 5
 
-> 🔴 **The kit has moved past Version 81 by his calls of 2026-10-01 (not published):** the Label field's live count, a tinted chip (11:32 and 12:24 EDT), and the manifest's By slot view retired with its toggle (12:24 EDT; `docs/ideas/2026-10-01-armory-by-slot-view.md`). Version 81 is what he signed off; the kit at `docs/pins2/kit/` (its own git, commit `f83099d`) is that plus these two, and the spec here is regenerated from it.
+> 🔴 **The kit has moved past Version 81 by his calls of 2026-10-01 (not published):** the Label field's live count, a tinted chip (11:32 and 12:24 EDT), and the manifest's By slot view retired with its toggle (12:24 EDT; `docs/ideas/2026-10-01-armory-by-slot-view.md`). Version 81 is what he signed off; the kit at `docs/pins2/kit/` (its own git, commit `8a488d2`; since `f83099d` only its README and one comment changed) is that plus these two, and the spec here is regenerated from it.
 
 *Written 2026-09-30 19:51 EDT, when he signed the Collective off. The rest of this file is the detail; this is what each session must not miss.*
 
