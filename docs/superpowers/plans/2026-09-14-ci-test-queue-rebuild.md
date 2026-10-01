@@ -149,6 +149,17 @@ Built on `ci/test-queue-rebuild` in the session that wrote the plan. Measured on
 | D2: `syntax-check` fails unless hooks-macos succeeded or was skipped | **hooks-macos is advisory** (a warning and a summary line) until it has been green on real macOS runs; it had never run on a macOS image, and a first-run mismatch must not block every hooks PR. Promotion is filed. `.claude/settings.json` also counts as a hook change |
 | (not planned) | `self-check.test.sh` stopped piping into `grep -q` under pipefail (a SIGPIPE false FAIL under load); two missing-rg cases stopped hiding git; the runner self-test compares parallel against serial instead of against wall-clock constants, which would have flaked on a loaded CI runner; `handoffCheck.mjs` stopped describing `npm test` as an `&&` chain |
 
+### After the merge into `origin/v3-pre-release` (written 2026-10-01 18:39 EDT)
+
+Merged as `32e47d27`; two commits followed (`d302e7ca`, `64587acd`). **Each row is something the merge or the re-measurement found that this plan did not predict.**
+
+| Plan or PR said | What the merged tree showed |
+|---|---|
+| §0: add Session 2's new test files to the manifest | Two tests (`armorySlotFill`, `manifestSelection`), both from #194's chain. Registered in the chain's position. Neither writes into the repo (three traced runs), so neither needs a lock |
+| C1: the self-test proves the manifest equals the chain at `8c5e8a90` | That check alone would have stayed green with the two tests missing, so it now reads the chain at `ec4f581f` too, and a second check fails on a test-shaped package.json script that no entry runs. Both were shown to fail against a manifest with the two entries removed and an invented script |
+| PR body: `npm test` 258.6 s → 85.1 s | **Did not reproduce.** The replaced chain on the merged tree took 220.6 s (134 of 134 passed). The runner took 199 s, 145 s, 110 s and 140 s across four full uncached runs (137 of 137 passed each), on a Mac that macOS's background daemons were loading (load average 13 to 30). Two causes are real: the pool starts entries in manifest order, so the hooks suite, listed near the end, started last and ran alone at the tail, and the weights count slots rather than the processes an entry starts, so the hooks suite takes 14 s alone and 68 to 140 s inside the pool. The manifest now lists the eight longest first; the weights are filed in `docs/db-deferred-list.md` with a Verify condition that needs a quiet machine |
+| PR body: nothing changed → 0.6 s | Reproduced: 0.5 s with 137 of 137 cached. The first warm run after a full uncached run re-runs two entries once (`hotpatch.test.js`, `testRunner.test.mjs`), then settles |
+
 ## §7 — After pins batch 2 merges: re-size the jobs (added 2026-10-01 17:57 EDT, Session 3's close, at Harkirat's ask)
 
 Harkirat, 2026-10-01 17:56 EDT: *"update into the plan for phase 3 if 6 is still the right call or if more are needed, due to the new repo size and new tests"*.
@@ -160,6 +171,8 @@ Harkirat, 2026-10-01 17:56 EDT: *"update into the plan for phase 3 if 6 is still
 - [ ] **F1 — measure.** After merging `origin/v3-pre-release` (the brief's own first step) and registering batch 2's tests in `scripts/testManifest.mjs` with weights, run CI and record each job's wall time plus the runner's durations report for `tests` and `browser`. A timing taken before the new tests are registered measures an incomplete suite.
 - [ ] **F2 — decide, with the numbers written into §6.** Six stays if the slowest job finishes within **180 s** of its own start (half the 364 s single job; *a default, Harkirat may set another*). If `tests` or `browser` is over, split **that lane** across two or more jobs by the manifest's weights (a matrix shard index on the runner's lane) rather than adding unrelated jobs; `records`, `changes` and `hooks-macos` are candidates only if they are the slowest.
 - [ ] **F3 — verify the split.** Every manifest entry runs in exactly one shard (count both ways against the manifest), and the aggregate `syntax-check` waits for every shard.
+
+**Before any GitHub run (2026-10-01 18:39 EDT), what the merged tree predicts.** F1, F2 and F3 stay open: a local proxy on a loaded Mac is not a runner. Each job's commands at CI's 4 slots, one job after another: tests **114 s**, browser walks **64 s**, records and site **28 s**, hooks **68 s** (the hooks suite takes 14 s alone). The last GitHub run, on the pre-merge tree, took tests 73 s, browser 70 s, records 38 s, hooks on macOS 37 s. #194's single job ran 26% longer than #191's (364 s against 288 s), and applying that to the pre-merge jobs gives about 92, 88 and 48 s. **Prediction: the slowest job finishes near 90 s, well inside 180 s, so six stays.** It is a prediction until the merged tree's run reports each job's wall time.
 
 ## Audit log
 
