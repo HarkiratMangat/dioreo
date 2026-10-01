@@ -51,7 +51,7 @@ ${attView === 'slot' && slotsHere.length
                                         : html`<span class="wg-sc empty" key=${s}>—</span>`; })}</div>`
 ```
 
-**The toggle, the realm's** (`ui/armory.js`, the Manifest's `extraChips`):
+**The toggle, the realm's** (`docs/pins2/kit/ui/armory.js`, the Manifest's `extraChips`):
 
 ```js
                                    extraChips=${html`<span class="mlabel"><span>Attachments</span></span><span class="seg" role="tablist" aria-label="Attachments">

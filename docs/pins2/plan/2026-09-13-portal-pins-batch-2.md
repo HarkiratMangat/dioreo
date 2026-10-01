@@ -535,6 +535,7 @@ status: live
 > ⟦ONE MESSAGE⟧ Step 8 — records, then §13.
 
 - [ ] **Step 8:** ✅ *(2026-09-17 12:59 EDT — both prod actions asked in ONE popup and both approved; `docs/pins2/records/2026-09-15-s2-devlog-draft.md` has its review paragraph. OPEN: the CHANGELOG entry, which cannot be written until the PR exists because `docs-audit`'s `changelog-pr-citation` rejects an unfilled `(#PR)`, and §13 itself)* the prod slot backfill and the FSS metadata re-sync asked in one popup
+  - [ ] *(added 2026-10-01 13:10 EDT by the readiness audit's integration thread — Session 3's close carries these)* **The audit's residuals:** (1) the **73 P2 findings not sampled** and the **69 Could-not-settle rows**, in `local/pins2/audit/merged.md` (this Mac) — triage each into the handoff set or `docs/db-deferred-list.md`; the 19-row sample was 74% real; (2) **`docs:audit` fails CI on `devlog-orphan` v3.85.0** (a DEVLOG heading with no CHANGELOG heading since 2026-09-17) — restore the heading or correct the DEVLOG before the push; (3) linksee anchors #66–#69 still call the kit's publication undecided — retire them (option c settled it, 2026-09-30 21:03 EDT); (4) `.claude/settings.local.json` carries a machine permission the app added — leave it out of the close's commits.
 
 ## 5c · SESSION 4 — standardization: the rewrites, where each design applies, the exemptions
 

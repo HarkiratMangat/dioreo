@@ -21,6 +21,8 @@ status: live
 
 ## Start here — Session 4, then Session 5
 
+> 🔴 **The kit has moved past Version 81 by his calls of 2026-10-01 (not published):** the Label field's live count, a tinted chip (11:32 and 12:24 EDT), and the manifest's By slot view retired with its toggle (12:24 EDT; `docs/ideas/2026-10-01-armory-by-slot-view.md`). Version 81 is what he signed off; the kit at `docs/pins2/kit/` (its own git, commit `f83099d`) is that plus these two, and the spec here is regenerated from it.
+
 *Written 2026-09-30 19:51 EDT, when he signed the Collective off. The rest of this file is the detail; this is what each session must not miss.*
 
 | | Session 4 — standardizes the element system, draws Board 4: Final | Session 5 — ports Board 4: Final into `portal/ui` |
@@ -390,7 +392,7 @@ A design port that stops at CSS ships a Capable badge nobody can save. Every ite
 | **A board component imported from the kit's b3 or b4 folders** | the gate files | port the component INTO the `portal/ui/` file [`file-map.md`](file-map.md) names; never keep a path into the kit |
 | **Design hunk** | everything else, and the live arm of every branch | apply |
 
-**`app.css` is the one hunk that does not apply where it says.** It is written against `portal/public/app.css`, the BUILT file (untracked; `buildPortal` overwrites it). Apply it to the sources by content: hunks 1–2 and 4–8 (the tokens and the bare `button` rules at its top) land on `portal/ui/tokens.css`, hunks 9–103 on `portal/ui/app.css` — `patch -p1 -F3` relocates all 102 (measured 2026-10-01 10:51 EDT) — and hunk 3 (`--on-staged`'s comment) is ported by hand. The other 13 files apply to `portal/ui/` as written (`git apply --check`, 2026-10-01 00:09 EDT).
+**`app.css` is the one hunk that does not apply where it says.** It is written against `portal/public/app.css`, the BUILT file (untracked; `buildPortal` overwrites it). Apply it to the sources by content: hunks 1–2 and 4–8 (the tokens and the bare `button` rules at its top) land on `portal/ui/tokens.css`, hunks 9–104 on `portal/ui/app.css` — `patch -p1 -F3` relocates all 103 (re-measured 2026-10-01 13:10 EDT on the diff regenerated after By slot's removal) — and hunk 3 (`--on-staged`'s comment) is ported by hand. The other 13 files apply to `portal/ui/` as written (`git apply --check`, 2026-10-01 00:09 EDT).
 
 ## Added by the readiness audit — 2026-10-01 (the kit wins where this and the kit differ)
 
@@ -427,6 +429,41 @@ A design port that stops at CSS ships a Capable badge nobody can save. Every ite
 **Kit → portal, completed** (each gate's row above names its main files; these are the rest it imports): C1 + `docs/pins2/kit/b3/poptime.js` · C2 + `docs/pins2/kit/b3/layer.js`, `docs/pins2/kit/b3/armory-parts.js`, and `docs/pins2/kit/b4/*.css` → `portal/public/app.css` · C4 + `docs/pins2/kit/b3/armory-parts.js` (`FaultHint`, `PASS_LINES`) · C5 + `docs/pins2/kit/b4/bulkformat.js` (Export writes the Bulk format byte for byte), `docs/pins2/kit/b3/poptime.js` · C6 + `docs/pins2/kit/gates/broadcast.js` (`QCard`), `docs/pins2/kit/gates/lib.js` (`PanelHead`), `docs/pins2/kit/b3/layer.js`, `docs/pins2/kit/b3/poptime.js` · C7 + `docs/pins2/kit/b3/layer.js`, `docs/pins2/kit/b3/poptime.js` · the MIXED stylesheets (`docs/pins2/kit/b3/board.css`, `b1.css`, `b2.css`, `gates.css`) → `portal/public/app.css` by `file-map.md`.
 
 **Measurement contracts no Board 4 instrument checks — Session 5 measures them on the portal:** `3e/measure.cjs`'s 13 relations (History, Export, the manifest; `relations.cjs` covers C2, C3, C6 and C7 only) · board 2's `measure.cjs` C1–C14 · the manifest's checkboxes on one left edge (his thread ad82e23b: "you seriously couldn't have aligned it with ALL of the other checkboxes positions?") · the build, Bulk and Edit drawers at 980 and the Post drawer at 910 (`relations.md` asserts Add only) · every field's 9px corner (one is asserted) · the × deselect's centre (plan:589) · words beside words on one baseline · `b4states.cjs`'s buckets · five instruments with no Version 81 run: `board4-v44-probe.cjs`, `board4-unchecked.cjs`, `board4-menu-fit.cjs`, `board4-readiness.cjs`, `b4states.cjs`.
+
+**Rulings no instrument checks** (from the readiness audit's worker D, 2026-10-01 13:10 EDT; each is a relation, state or timing this file rules that no tracked instrument measures — a later change can break any of them silently, so Session 5 measures each on the portal):
+
+| Ruling | Where | Kind | Nearest instrument, and why it does not measure it |
+|---|---|---|---|
+| The Share button hovers in `--ok` | HANDOFF.md:147 | state | `board4-readiness.cjs` read it once at V45 (HANDOFF.md:147 'hovered: green ink rgb(123,219,99)'); it is not in the V81 held list (D-27) and none of the eight named instruments covers it |
+| Selection bar: soft drop shadow and subtle border; Edit builds / Export hover in `--staged` / `--ok` | HANDOFF.md:151 | state | `board4-checks.cjs` reads Edit's hover only |
+| Every form field and the tier container take a 9px corner | HANDOFF.md:104 | relation | `board4-rings*.cjs` measure the ring, not the radius |
+| Chips are rectangles with 6px corners | HANDOFF.md:146 | relation | `board4-class-sweep.js` measures one recipe across a class; nothing asserts 6px |
+| The build drawer is 980 wide: form 581, preview 333 | HANDOFF.md:103 | relation | `relations.cjs` asserts the 980 only |
+| The Post drawer is 910 wide: form 496, preview 340 | HANDOFF.md:87 | relation | `relations.cjs` asserts the drawer's height (746) only |
+| Before staging sits 16px over Cancel/Stage in every state; its − is 24px | HANDOFF.md:232 | relation | `board4-readiness.cjs` captures the card's presence; asserts nothing |
+| Stepper C: one 2px ring, − and + inset pills 4px in, 17px glyphs, disabled has no ground | HANDOFF.md:86 | relation / state | none (0 hits for pb-step in any instrument) |
+| Date picker: Sunday first, today a dot, 38px rows, no quick picks; Set end date opens on the held date, else tomorrow | HANDOFF.md:134 | state | `relations.cjs` asserts width 270 and day 36 only |
+| Queue meters: slots 56px, budget chip 112px, one pink fill | HANDOFF.md:135 | relation | `board4-v44-probe.cjs` reads the budget numerals, not the widths |
+| Collapse / Expand hidden when the text fits; every fold eases ~260ms | HANDOFF.md:137 | state / timing | `board4-poptiming.cjs` times pop-ups; `foldEase` is a Web Animations call (D-20) |
+| Post limits: Stage off when empty, counter warns from 3,600, blocked past 4,000, warn-only past the shared 6,000, 28-character Posted line | HANDOFF.md:133 | state | `r22.cjs` has no over-limit flow (35 flows listed); `board4-menu-fit.cjs` names no limit |
+| ⌘/Ctrl+Enter stages; a blocked Stage jumps to its reason | HANDOFF.md:181 | state | none — the row says 'checked in `b3/drawer.js`', i.e. read, not run |
+| Compare cells: hover ring 90%, fill 22%, white text; row and column a faint lift | HANDOFF.md:125 | state | `relations.cjs` / `board4-v44-probe.cjs` prove no hover MOVES the table (24 hovers, 0px), not what lights |
+| A row name lights its row; a Same chip lights its row; a band chip lights its cells | HANDOFF.md:124 | state | same |
+| Compare's Discord bar: the fan closes while the cards are open; each card as tall as its content; rank marks 19px | HANDOFF.md:129 | state / relation | none |
+| Rank Mode marks 20px in the plate, fill v2, motion C with drifting periods | HANDOFF.md:99 | relation / timing | none (0 hits for b3-mdw outside capture scripts) |
+| ASS motion A · Stink lines | HANDOFF.md:96 | timing | `board4-badge-gif.cjs` records frames for a person to judge; HANDOFF.md:436 says the motion was not re-watched |
+| PopBox's tone per chip (post accent, warn, Broadcast pink, neutral) and `w="auto"` sizing | HANDOFF.md:68 | state | `board4-arc.cjs` / `board4-popups.cjs` record shapes and frames, not tone or width |
+| The manifest rail: two lines, then sideways behind the fade, in every row | HANDOFF.md:76 | relation | none (`board4-row-boxes.cjs` covers form rows) |
+| A hovered weapon band lights its builds as one piece | HANDOFF.md:78 | state | `hover-relations.cjs` lists the CSS rule; nothing hovers it on the page |
+| FaultHint: every cell one size; the tall 'N missing / from the build' tag | HANDOFF.md:80 | relation | none |
+| Mesh glow in `--meshGold` on the drawers and the selection dock | HANDOFF.md:73 | colour | `colours.cjs` lists reads; nothing asserts the use |
+| The image mark is a 28px chip at the shield's weight; its card waits for its image before it measures | HANDOFF.md:77 | relation | `board4-poptiming.cjs` / `-arc.cjs` / `-popups.cjs` film the card; the 28px is unmeasured |
+| Repairs: every fault tile a warn chip with a ring; passing tiles green with a ring; Below standard's mark black | HANDOFF.md:82 | state | none |
+| The repeat count is a chip inline with the announcement's text | HANDOFF.md:85 | relation | none |
+| History's spacing numbers (his H1 / §6) | HANDOFF.md:240 | relation | none — the numbers sit in `handoff-3e.md` § 6, frozen and outside the handoff set |
+| A wheel in a drawer's dead space scrolls the column that owns it — 'every drawer' | HANDOFF.md:116 | state | `board4-unchecked.cjs` item 10 (V45); not in the V81 held list (D-27) |
+| Unchecked chips rest at 0.6, 1 on hover; disabled 0.18 | HANDOFF.md:111 | state | `board4-readiness.cjs` prints uncheckedOpacity once at V45; HANDOFF.md:111 says the 0.6 'was not re-read by number' |
+| C1, C4, C5, C8 and C9 have no ruled relation at all (inventory.md: 0 / 0) though their rows state sizes and gaps (the category label centred on the row, the pass tile's spacing, Pick builds' three columns, History's spacing) | HANDOFF.md:154 | relation | `relations.cjs` lists C2, C3, C6, C7 only |
 
 **Opened on Board 4, 2026-10-01 11:38 EDT** (his calls of 2026-10-01 11:32 EDT; screenshots in `local/pins2/audit/states/`, on this Mac): the By slot list view, Export with an empty file (Copy and Download both disabled), a queue card's text box opened, the "Nothing is deleted yet" card with its steps, the stepper at its minimum (− disabled) and the over-limit count chip (4,120 characters, red) all render. **What they showed, and his calls (2026-10-01 12:24 EDT):** **By slot is retired** — a build with a label pushed its slot cells right of the column heads, and he took the view off the board rather than fix it now: `docs/ideas/2026-10-01-armory-by-slot-view.md` holds its spec, code, history and the defect; **below about 1,000px wide** the 980px build drawer and the 910px post drawer clip on the right, Compare's toolbar and table run past the stage at 960 and 800, Export's file card overlaps its picker at 800 and the selection bar's buttons clip at 800 — **deferred** with the phone layout to one responsiveness rework (`docs/db-deferred-list.md`, Queued). At 1,100 every gate fits. Screen-reader roles are dropped (his call: not needed). **Still not seen:** the selection list's One table view — its markup renders five rows, but the list did not open under the script (neither a click nor a real pointer press opened it), so nobody has looked at it yet.
 
