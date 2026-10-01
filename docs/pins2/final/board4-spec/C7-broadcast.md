@@ -1490,7 +1490,7 @@ inside `.—` · 18 on screen · **1 look**
 `C7-61` · rendered **120×64** · 18 instances look like this
 
 ```html
-<td class="nums" style=""><span class="bcdt">Jul 14<small>77 days ago</small></span></td>
+<td class="nums" style=""><span class="bcdt">Jul 14<small>78 days ago</small></span></td>
 ```
 
 | property | winning declaration | computed | from |
@@ -1526,7 +1526,7 @@ inside `.nums` · 13 on screen · **2 looks**
 `C7-62` · rendered **104×23** · 6 instances look like this
 
 ```html
-<span class="bcdt">Jul 14<small>77 days ago</small></span>
+<span class="bcdt">Jul 14<small>78 days ago</small></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1584,10 +1584,10 @@ inside `.bcdt` · 6 on screen · **1 look**
 
 #### the one look
 
-`C7-63` · rendered **104×7** · 6 instances look like this · text “77 days ago”
+`C7-63` · rendered **104×7** · 6 instances look like this · text “78 days ago”
 
 ```html
-<small>77 days ago</small>
+<small>78 days ago</small>
 ```
 
 | property | winning declaration | computed | from |

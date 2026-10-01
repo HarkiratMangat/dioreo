@@ -74,8 +74,11 @@ const POPREL = [
       const gap = pb.top >= fb.bottom - 1 ? pb.top - fb.bottom : fb.top - pb.bottom;
       const day = pp.querySelector('[class*="dp-d"]:not([class*="dp-dow"])'); const db = day && day.getBoundingClientRect();
       return { gap, w: pb.width, cls: pp.className, day: db ? [db.width, db.height] : null }; }, pop.trigger.split(',')[0], POP_SEL);
-    const ok = m && Math.abs(m.gap - POPREL[0][2]) <= 1;   // the ruling's own number, not a copy of it if (!ok) fail++;
-    rows.push(`| ${pop.g} | ${pop.state || 'resting'} | ${pop.label}: ${POPREL[0][0]} | ${POPREL[0][1]} | 10 | ${m ? Math.round(m.gap * 10) / 10 : '**not measured**'} | ${ok ? '✓' : '✗'} |`);
+    // His rule of 2026-10-01 11:32 EDT: a list the field itself opens is a DROPDOWN (.f-menu) — 10px below, no arc; a pop-up opened only by
+    // its button (the date picker's calendar) takes CI's arc, its tip 4px off. The row printed "10" while judging 4 until then.
+    const drop = m && /\bf-menu\b/.test(m.cls); const exp = drop ? 10 : POPREL[0][2];
+    const ok = m && Math.abs(m.gap - exp) <= 1;   // the ruling's own number, not a copy of it if (!ok) fail++;
+    rows.push(`| ${pop.g} | ${pop.state || 'resting'} | ${pop.label}: ${POPREL[0][0]} | ${drop ? 'his rule of 2026-10-01 11:32 EDT: a list the field opens is a dropdown, 10px below, no arc' : POPREL[0][1]} | ${exp} | ${m ? Math.round(m.gap * 10) / 10 : '**not measured**'} | ${ok ? '✓' : '✗'} |`);
     if (m && m.day) {
       const w = Math.abs(m.w - 270) <= 1; if (!w) fail++;
       rows.push(`| ${pop.g} | ${pop.state || 'resting'} | the date picker's width | intake:801 | 270 | ${Math.round(m.w)} | ${w ? '✓' : '✗'} |`);

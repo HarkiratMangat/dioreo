@@ -615,7 +615,7 @@ status: live
 
 ### 5c.5 · Close
 
-- [ ] **Step 6:** pin marks for Session 4's pins (`> 📌 Planned <stamp> — §10.6 row N`) · `DESIGN.md`'s token table rewritten as a document · close by §13.
+- [ ] **Step 6:** pin marks for Session 4's pins (`> 📌 Planned <stamp> — §10.6 row N`) · **the portal's design records, brought to the standard** *(his question of 2026-10-01 11:50 EDT — "does session 4's completion include updating things such as the design.md, product.md, etc")*: `DESIGN.md` whole — its token table rewritten as a document, its palette and radii to the standard (the retired `--patch` → `--staged` and `--meshGold`, the 9px field and 6px chip corners), its *Known divergences*, and its line calling the mockups the design authority, which Board 4 and §10.6 now are · `PRODUCT.md`'s design principles, checked against the standard and changed only where a principle changed (keep its `impeccable:product-schema` comment verbatim) · each `.impeccable/surfaces/*.md` brief whose realm's direction the standard changed · `docs/superpowers/mockups/2026-08-23-portal-interactive/COMPANION.md` marked superseded where Board 4 replaced it · the decision ledger's rows (Step 5) · the root `CLAUDE.md` nav-map rows for `DESIGN.md` and `PRODUCT.md` if what they say changed · close by §13.
 
 ## 5d · SESSION 5 — the build
 
@@ -659,7 +659,7 @@ status: live
 
 ### 5d.3 · Close
 
-- [ ] **Step 10:** pin marks `> ✅ Built <stamp> · Session 5` · CHANGELOG, DEVLOG, ledger rows, `docs/db-deferred-list.md` · close by §13.
+- [ ] **Step 10:** pin marks `> ✅ Built <stamp> · Session 5` · CHANGELOG, DEVLOG, ledger rows, `docs/db-deferred-list.md` · **`DESIGN.md` and the other design records Step 6 of §5c brought to the standard, re-read against what was BUILT** — a value the build changed, or a divergence it closed or opened, is written there (his question of 2026-10-01 11:50 EDT) · close by §13.
 
 ## 6 · DEFERRED — the permission restructure and the Access panel bar
 

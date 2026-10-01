@@ -723,7 +723,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 `C5-17` · rendered **510×240** · 1 instance look like this
 
 ```html
-<ul class="exs g-exs"><li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-30.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-30</span><span class="b3-xf-ext">.txt</spa
+<ul class="exs g-exs"><li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-10-01.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-10-01</span><span class="b3-xf-ext">.txt</spa
 ```
 
 | property | winning declaration | computed | from |
@@ -761,7 +761,7 @@ inside `.exs` · 2 on screen · **1 look**
 `C5-18` · rendered **510×75** · 2 instances look like this
 
 ```html
-<li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-30.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-30</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></d
+<li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-10-01.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-10-01</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></d
 ```
 
 | property | winning declaration | computed | from |
@@ -921,7 +921,7 @@ inside `.exs-i` · 3 on screen · **2 looks**
 `C5-21` · rendered **286×46** · 2 instances look like this
 
 ```html
-<div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-30.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-30</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></div></div>
+<div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-10-01.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-10-01</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></div></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -968,7 +968,7 @@ inside `.exs-t` · 2 on screen · **1 look**
 `C5-23` · rendered **228×24** · 2 instances look like this
 
 ```html
-<div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-30.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-30</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></div>
+<div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-10-01.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-10-01</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -999,10 +999,10 @@ inside `.b3-xf-fid` · 2 on screen · **1 look**
 
 #### the one look
 
-`C5-24` · rendered **228×24** · 2 instances look like this · aria-label="Rename dioreo-mp-builds-2026-09-30.txt" title="Rename the file" type="button"
+`C5-24` · rendered **228×24** · 2 instances look like this · aria-label="Rename dioreo-mp-builds-2026-10-01.txt" title="Rename the file" type="button"
 
 ```html
-<button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-30.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-30</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button>
+<button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-10-01.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-10-01</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button>
 ```
 
 | property | winning declaration | computed | from |
@@ -1105,10 +1105,10 @@ inside `.b3-xf-fn` · 2 on screen · **1 look**
 
 #### the one look
 
-`C5-25` · rendered **170×11** · 2 instances look like this · text “dioreo-mp-builds-2026-09-30”
+`C5-25` · rendered **170×11** · 2 instances look like this · text “dioreo-mp-builds-2026-10-01”
 
 ```html
-<span class="b3-xf-nm">dioreo-mp-builds-2026-09-30</span>
+<span class="b3-xf-nm">dioreo-mp-builds-2026-10-01</span>
 ```
 
 | property | winning declaration | computed | from |

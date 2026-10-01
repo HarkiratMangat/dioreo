@@ -107,7 +107,7 @@ Every `setTimeout`/`setInterval` whose delay is a number or a timing name, with 
 | `b4/bulk.js` | 254 | `drawLine` | Timeout | `0` |
 | `b4/bulk.js` | 266 | `drawLine` | Timeout | `0` |
 | `b4/compare.js` | 142 | `copy` | Timeout | `1200` |
-| `b4/form.js` | 348 | `tierOf` | Timeout | `1400` |
+| `b4/form.js` | 352 | `tierOf` | Timeout | `1400` |
 | `gates/armory.js` | 177 | `OpenProblems` | Timeout | `320` |
 | `gates/armory.js` | 308 | `renameScope` | Timeout | `1100` |
 | `gates/armory.js` | 498 | `copyFile` | Timeout | `1300` |
@@ -701,21 +701,21 @@ Every `setTimeout`/`setInterval` whose delay is a number or a timing name, with 
 |---|---|---|---|
 | 18 | `.b4 .f-card` | transition | `box-shadow .2s,background-color .2s` |
 | 44 | `.b4 .f-fld` | transition | `box-shadow .16s ease,background-color .16s ease` |
-| 65 | `.b4 .f-suf` | transition | `color .15s,background-color .15s` |
-| 73 | `.b4 .f-cr path` | transition | `d .24s cubic-bezier(.32,.72,0,1)` |
-| 81 | `.b4 .f-menu` | animation | `f-in .16s cubic-bezier(.23,1,.32,1)` |
-| 104 | `.b4 .f-att.auto .f-fld` | animation | `f-lit .6s cubic-bezier(.16,1,.3,1) backwards` |
-| 108 | `.b4 .f-att.auto:nth-child(2) .f-fld` | animation-delay | `50ms` |
-| 108 | `.b4 .f-att.auto:nth-child(3) .f-fld` | animation-delay | `100ms` |
-| 108 | `.b4 .f-att.auto:nth-child(4) .f-fld` | animation-delay | `150ms` |
-| 108 | `.b4 .f-att.auto:nth-child(5) .f-fld` | animation-delay | `200ms` |
-| 109 | `.b4 .f-att.auto .f-fld` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
-| 115 | `.b4 .f-bt` | transition | `box-shadow .15s,background-color .15s` |
-| 129 | `.b4 .f-bt .b3-bdgs,.b4 .f-tier .b3-bdgs` | transition | `filter .18s,opacity .18s` |
-| 135 | `.b4 .f-tier` | transition | `box-shadow .15s,background-color .15s` |
-| 163 | `.b4 .f-src button` | transition | `color .15s,background-color .15s` |
-| 170 | `.b4 .f-drop` | transition | `border-color .15s,color .15s,background-color .15s` |
-| 194 | `.b4 .f-more` | transition | `color .15s,border-color .15s,background-color .15s` |
+| 69 | `.b4 .f-suf` | transition | `color .15s,background-color .15s` |
+| 77 | `.b4 .f-cr path` | transition | `d .24s cubic-bezier(.32,.72,0,1)` |
+| 85 | `.b4 .f-menu` | animation | `f-in .16s cubic-bezier(.23,1,.32,1)` |
+| 108 | `.b4 .f-att.auto .f-fld` | animation | `f-lit .6s cubic-bezier(.16,1,.3,1) backwards` |
+| 112 | `.b4 .f-att.auto:nth-child(2) .f-fld` | animation-delay | `50ms` |
+| 112 | `.b4 .f-att.auto:nth-child(3) .f-fld` | animation-delay | `100ms` |
+| 112 | `.b4 .f-att.auto:nth-child(4) .f-fld` | animation-delay | `150ms` |
+| 112 | `.b4 .f-att.auto:nth-child(5) .f-fld` | animation-delay | `200ms` |
+| 113 | `.b4 .f-att.auto .f-fld` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
+| 119 | `.b4 .f-bt` | transition | `box-shadow .15s,background-color .15s` |
+| 133 | `.b4 .f-bt .b3-bdgs,.b4 .f-tier .b3-bdgs` | transition | `filter .18s,opacity .18s` |
+| 139 | `.b4 .f-tier` | transition | `box-shadow .15s,background-color .15s` |
+| 167 | `.b4 .f-src button` | transition | `color .15s,background-color .15s` |
+| 174 | `.b4 .f-drop` | transition | `border-color .15s,color .15s,background-color .15s` |
+| 198 | `.b4 .f-more` | transition | `color .15s,border-color .15s,background-color .15s` |
 
 ### `gates.css` — 7
 

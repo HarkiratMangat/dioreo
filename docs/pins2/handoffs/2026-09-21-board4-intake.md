@@ -2063,3 +2063,18 @@ Sweep: every family (problem, all-pass, image mark ×2, text hint, peek, three p
 **Board 4: Collective is signed off at Version 81.** What the prep added is `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`'s Sign-off amendment and `docs/pins2/final/board4-spec/HANDOFF.md` § Start here.
 
 *2026-09-30 21:16 EDT — his calls: "yes update the entry (also why even ask me? what does the user-agreement say about this stuff?), and go with c." · "yes, approved — run the history rewrite with the backup ref" (the auto-mode check refused it twice; he ran the `filter-branch` himself at 21:13 EDT). The Rank Mode entry was brought current; the kit is on this Mac only (option c).*
+
+## The readiness audit's three calls (2026-10-01 11:32 EDT)
+
+*Logged 2026-10-01 11:38 EDT. His words, verbatim, answering the audit's questions in the Project thread:*
+
+> 1. keep them as they are, because even tho the arc itself is only 4px, the overall container is still decently away from the field. We can standardize it as: if button only to open = pop-up @ 4px below field; with arc. if clicking field itself also opens = dropdown list @ 10px below field; no arc. So basically the searches/dropdowns open with no arc and 10px gap. And then things like the date picker, which only open if the calendar icon button is directly clicked, open with an arc and 4px gap.
+> 2. yes, show a character counter. We have enough space width/empty space inside the field to put it inside there, i think?
+> 3. states 1-5 yes. state 6, i don't care about a screen reader. state 7, check for a window ~800-1100px, incase i shrink the width of my browser for something. but i don't need a whole mobile view check.
+
+| Class | What he asked | Where it landed |
+|---|---|---|
+| **Dropdown or pop-up** | a list the field opens: 10px, no arc · a pop-up its button opens: arc, tip 4px | `HANDOFF.md` § Added by the readiness audit (a standard for every realm); `relations.cjs` judges each family by its own number |
+| **The Label count** | a live count inside the field | kit `b4/form.js` + `b4/form.css` (`.f-cnt`): `n/32` on the field's right, amber from 28 |
+| **States never opened** | states 1–5; widths 800–1,100px; no screen reader, no mobile | opened and recorded in `HANDOFF.md` (the One table view would not open under the script — still not seen): two defects found (By slot misaligns a named build; drawers, Compare, Export and the selection bar clip below ~1,000px) |
+

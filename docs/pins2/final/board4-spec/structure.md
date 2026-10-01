@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — structure, generated
 
-*Generated 2026-09-30T23:36:49.507Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
+*Generated 2026-10-01T15:44:21.109Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
 
 ## C1 · The Armory manifest
 
@@ -1500,7 +1500,7 @@ status: live
             - `button.cx-k “Build 1, Quickscope: Take Build 1 out of”`
     - `div.cx-tw`
       - `table.cx-t`
-        - `caption.sr` — “DL Q33, RYTEC AMR, slot by s”
+        - `caption.sr` — “DL Q33, KOSHKA, slot by slot”
         - `colgroup`
           - `col.cx-c0`
           - `col`
@@ -1576,7 +1576,7 @@ status: live
             - `i`
             - `span` — “to set them side by side”
         - `div.cx-shelf`
-          - `div.cx-w.cx-wl[role=group] “R9-0, 1 build”` ×16
+          - `div.cx-w.cx-wl[role=group] “USS 9, 3 builds”` ×16
             - `div.cx-wh`
             - `div.cx-keys`
 
@@ -1721,8 +1721,8 @@ status: live
           - `div.exs-t`
             - `b` — “MP builds”
             - `div.b3-xf-fid`
-              - `button.b3-xf-fn “Rename dioreo-mp-builds-2026-09-30.txt”`
-                - `span.b3-xf-nm` — “dioreo-mp-builds-2026-09-30”
+              - `button.b3-xf-fn “Rename dioreo-mp-builds-2026-10-01.txt”`
+                - `span.b3-xf-nm` — “dioreo-mp-builds-2026-10-01”
                 - `span.b3-xf-ext` — “.txt”
                 - `svg.ic`
           - `button.b3-btn2.sm.go`
@@ -1761,7 +1761,7 @@ status: live
             - `section.b3-xt-sec` ×7
         - `section.b3-xt-side “The files”`
           - `div.b3-xt-files.b3-fady`
-            - `section.b3-xf.b3-xf-none “dioreo-mp-2026-09-30.txt”`
+            - `section.b3-xf.b3-xf-none “dioreo-mp-2026-10-01.txt”`
           - `div.b3-xt-peek`
 
 ### State · Three picked
@@ -1789,7 +1789,7 @@ status: live
             - `section.b3-xt-sec` ×7
         - `section.b3-xt-side “The files”`
           - `div.b3-xt-files.b3-fady`
-            - `section.b3-xf “dioreo-mp-2026-09-30.txt”`
+            - `section.b3-xf “dioreo-mp-2026-10-01.txt”`
           - `div.b3-xt-peek`
 
 ## C6 · The delivery queue
@@ -1984,7 +1984,7 @@ status: live
                 - `span`
             - `td.nums` ×3
               - `span.bcdt`
-                - `small` — “77 days ago”
+                - `small` — “78 days ago”
             - `td`
               - `span.btab`
                 - `svg.ic`

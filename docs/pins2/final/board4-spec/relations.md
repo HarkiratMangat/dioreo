@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — relations, measured
 
-*Generated 2026-09-30T23:41:53.617Z by `relations.cjs` from the running kit at 1282×888. Each row is one of his rulings that is a RELATION (a size, a gap, a distance, a count), with where he ruled it; the value is read off the page. 37 of 37 hold. Page errors: 0. Session 5 reruns this against Board 4: Final and reads the same numbers off the portal.*
+*Generated 2026-10-01T15:45:49.511Z by `relations.cjs` from the running kit at 1282×888. Each row is one of his rulings that is a RELATION (a size, a gap, a distance, a count), with where he ruled it; the value is read off the page. 37 of 37 hold. Page errors: 0. Session 5 reruns this against Board 4: Final and reads the same numbers off the portal.*
 
 | Gate | State | Relation | Ruled | Expect | Measured | |
 |---|---|---|---|---|---|---|
@@ -34,15 +34,15 @@ status: live
 | C2 | Add build | the build drawer | intake:703 (2026-09-24 22:30) | 980 | 980 | ✓ |
 | C7 | Posting | the post drawer's height, min(84vh, 860px) | Frame (2026-09-27 16:09 EDT) | 746 | 745.9 | ✓ |
 | C3 | Two weapons | 22 real hovers across the table (weapon heads, build heads, slot names, cells, band chips, tile chips): the most a cell moves, plus cells that stop being cells | Version 44 AU | 0 | 0 | ✓ |
-| C7 | Posting | the date picker, from Starts: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 10 | 4.5 | ✓ |
+| C7 | Posting | the date picker, from Starts: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 4.5 | ✓ |
 | C7 | Posting | the date picker's width | intake:801 | 270 | 270 | ✓ |
 | C7 | Posting | a day's width | intake:801 | 36 | 36 | ✓ |
-| C6 | resting | a card's End chip: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 10 | 3.7 | ✓ |
+| C6 | resting | a card's End chip: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 3.7 | ✓ |
 | C6 | resting | the date picker's width | intake:801 | 270 | 270 | ✓ |
 | C6 | resting | a day's width | intake:801 | 36 | 36 | ✓ |
-| C6 | resting | Set end date: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 10 | 3.7 | ✓ |
+| C6 | resting | Set end date: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 3.7 | ✓ |
 | C6 | resting | the date picker's width | intake:801 | 270 | 270 | ✓ |
 | C6 | resting | a day's width | intake:801 | 36 | 36 | ✓ |
-| C6 | resting | the showings chip: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 10 | 3.7 | ✓ |
-| C2 | Add build | the weapon list: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 10 | 9.9 | ✗ |
-| C3 | Two weapons | the search list: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 10 | 10.2 | ✗ |
+| C6 | resting | the showings chip: the pop-up's distance from its trigger's visible box | CI, his Version 68 round: the arc's tip 4px off the trigger (was 10, 2026-09-28 14:25 EDT) | 4 | 3.7 | ✓ |
+| C2 | Add build | the weapon list: the pop-up's distance from its trigger's visible box | his rule of 2026-10-01 11:32 EDT: a list the field opens is a dropdown, 10px below, no arc | 10 | 9.9 | ✓ |
+| C3 | Two weapons | the search list: the pop-up's distance from its trigger's visible box | his rule of 2026-10-01 11:32 EDT: a list the field opens is a dropdown, 10px below, no arc | 10 | 10.2 | ✓ |

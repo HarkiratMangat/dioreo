@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the resolved values
 
-*Generated 2026-09-30T23:36:43.108Z by `extract-spec.cjs` from http://127.0.0.1:8900/docs/pins2/kit/board4.html at 1282×888, fresh profile. 1671 looks specced across 716 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **15**. Winning declarations the computed value contradicts: **67** (marked ⚠️).*
+*Generated 2026-10-01T15:44:09.050Z by `extract-spec.cjs` from http://127.0.0.1:8900/docs/pins2/kit/board4.html at 1282×888, fresh profile. 1677 looks specced across 716 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **15**. Winning declarations the computed value contradicts: **69** (marked ⚠️).*
 
 ⚠️ **Not reached** (rendered, classed, never walked — each is a coverage hole):
 
@@ -31,14 +31,14 @@ status: live
 
 🔴 **Read [`HANDOFF.md`](HANDOFF.md) first — the authored half: per gate what it is, how it behaves and what he ruled. A `from` selector carrying `html[data-b3-…]` is SWITCHED:** read [`switches.md`](switches.md) (port a live one without the qualifier, never a dead one), then [`file-map.md`](file-map.md), [`portal-diff.md`](portal-diff.md), [`class-map.md`](class-map.md), [`token-map.md`](token-map.md) and [`portal-class-rules.md`](portal-class-rules.md) — all generated for Board 4 — before porting a single declaration.
 
-**Regenerate** after ANY change to the kit — including Session 4 changing a switch — with the kit served on :8900 (`.claude/launch.json` → `repo-static`). **The one full command is [`../../README.md`](../../README.md) § Regenerate the spec** (motion, colours, components, hover relations and the inventory too); the block below is its first half:
+**Regenerate** after ANY change to the kit — including Session 4 changing a switch — with the kit served on :8900 (`.claude/launch.json` → `repo-static`). **The one full command is `docs/pins2/README.md` § Regenerate the spec** (it adds motion, colours, components, hover relations, the copy inventory and the inventory); the block below is its first half:
 
 ```bash
 O=docs/pins2/final/board4-spec
 node $O/switches.cjs && node $O/overrides.cjs
 BOARD=4 node $O/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $O/split-spec.cjs $TMPDIR/b4-spec.md
 node $O/maps.cjs
-node $O/copy.cjs   # every visible string → copy.md (static, no server)
+node $O/copy.cjs
 node $O/structure.cjs && node $O/relations.cjs && node $O/a11y.cjs
 ```
 
@@ -51,12 +51,12 @@ node $O/structure.cjs && node $O/relations.cjs && node $O/a11y.cjs
 | [`tokens.md`](tokens.md) | Tokens as resolved on `:root` | 14 KB |
 | [`motion.md`](motion.md) | @keyframes the board uses | 9 KB |
 | [`C1-armory-manifest.md`](C1-armory-manifest.md) | C1 · The Armory manifest — resting | 370 KB |
-| [`C2-new-build.md`](C2-new-build.md) | C2 · New build — resting | 271 KB |
-| [`C3-compare.md`](C3-compare.md) | C3 · Compare — resting | 425 KB |
+| [`C2-new-build.md`](C2-new-build.md) | C2 · New build — resting | 275 KB |
+| [`C3-compare.md`](C3-compare.md) | C3 · Compare — resting | 429 KB |
 | [`C4-repairs.md`](C4-repairs.md) | C4 · Repairs — resting | 269 KB |
 | [`C5-export.md`](C5-export.md) | C5 · Export — resting | 80 KB |
 | [`C6-delivery-queue.md`](C6-delivery-queue.md) | C6 · The delivery queue — resting | 174 KB |
 | [`C7-broadcast.md`](C7-broadcast.md) | C7 · The Broadcast manifest, and posting — resting | 119 KB |
 | [`C8-history.md`](C8-history.md) | C8 · History — resting | 235 KB |
 | [`C9-admin-traffic.md`](C9-admin-traffic.md) | C9 · Admin traffic — resting | 11 KB |
-| [`states.md`](states.md) | Reachable states | 2232 KB |
+| [`states.md`](states.md) | Reachable states | 2238 KB |

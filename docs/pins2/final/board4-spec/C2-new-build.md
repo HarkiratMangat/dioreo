@@ -12,7 +12,7 @@ status: live
 
 ### C2 stage
 
-104 distinct signatures on screen; 97 not already specced above.
+105 distinct signatures on screen; 98 not already specced above.
 
 
 ### `div.on.scrim`
@@ -402,9 +402,9 @@ inside `.x` · 1 on screen · **1 look**
 
 ### `b`
 
-inside `.x` · 3 on screen · **3 looks**
+inside `.x` · 4 on screen · **4 looks**
 
-#### look 1 of 3
+#### look 1 of 4
 
 `C2-9` · rendered **0×12** · 1 instance look like this · text “Close” · aria-hidden="true"
 
@@ -437,7 +437,7 @@ inside `.x` · 3 on screen · **3 looks**
 | transition | `max-width 360ms cubic-bezier(.4,0,.2,1),opacity 240ms ease 60ms,transform 360ms cubic-bezier(.4,0,.2,1)` | `` | .dw-h .dw-nav .x > b · gates.css:818 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .dw-h .x · app.css:1390 |
 
-#### look 2 of 3
+#### look 2 of 4
 
 `C2-57` · rendered **9×11** · 1 instance look like this · text “1”
 
@@ -459,9 +459,31 @@ inside `.x` · 3 on screen · **3 looks**
 | letter-spacing | — | `normal` | initial |
 | color | `var(--f-hue,var(--ink))` | `rgb(255, 59, 92)` | .b4 .f-bno b · b4/classes.css:258 |
 
-#### look 3 of 3
+#### look 3 of 4
 
-`C2-242` · rendered **61×13** · 1 instance look like this · text “New build”
+`C2-60` · rendered **8×12** · 1 instance look like this · text “0”
+
+```html
+<b>0</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `500 12px/1 var(--data)` | `` | inherited · .b4 .f-pre.f-cnt · b4/form.css:59 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b4 .f-pre.f-cnt · b4/form.css:59 |
+| font-size | ↑ `` | `12px` | inherited · .b4 .f-pre.f-cnt · b4/form.css:59 |
+| font-weight | `600` | `600` | .b4 .f-pre.f-cnt b · b4/form.css:60 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
+| font-variant-numeric | ↑ `tabular-nums` | `tabular-nums` | inherited · .b4 .f-pre.f-cnt · b4/form.css:59 |
+| line-height | ↑ `` | `12px` | inherited · .b4 .f-pre.f-cnt · b4/form.css:59 |
+| letter-spacing | ↑ `0.04em` | `0.48px` | inherited · .b4 .f-pre.f-cnt · b4/form.css:59 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-pre.f-cnt b · b4/form.css:60 |
+
+#### look 4 of 4
+
+`C2-244` · rendered **61×13** · 1 instance look like this · text “New build”
 
 ```html
 <b>New build</b>
@@ -862,8 +884,8 @@ inside `.—` · 26 on screen · **11 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6467 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `15px` | `15px` | .b4 .f-pre .ic · b4/form.css:58 |
-| height | `15px` | `15px` | .b4 .f-pre .ic · b4/form.css:58 |
+| width | `15px` | `15px` | .b4 .f-pre .ic · b4/form.css:62 |
+| height | `15px` | `15px` | .b4 .f-pre .ic · b4/form.css:62 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -877,7 +899,7 @@ inside `.—` · 26 on screen · **11 looks**
 
 #### look 5 of 11
 
-`C2-191` · rendered **22×22** · 1 instance look like this · aria-hidden="true"
+`C2-193` · rendered **22×22** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-image-off"></use></svg>
@@ -887,16 +909,16 @@ inside `.—` · 26 on screen · **11 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6467 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `22px` | `22px` | .b4 .f-empty .ic · b4/form.css:159 |
-| height | `22px` | `22px` | .b4 .f-empty .ic · b4/form.css:159 |
+| width | `22px` | `22px` | .b4 .f-empty .ic · b4/form.css:163 |
+| height | `22px` | `22px` | .b4 .f-empty .ic · b4/form.css:163 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| font | ↑ `500 11.5px/1.3 var(--ui)` | `` | inherited · .b4 .f-empty · b4/form.css:158 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-empty · b4/form.css:158 |
-| font-size | ↑ `` | `11.5px` | inherited · .b4 .f-empty · b4/form.css:158 |
-| font-weight | ↑ `` | `500` | inherited · .b4 .f-empty · b4/form.css:158 |
+| font | ↑ `500 11.5px/1.3 var(--ui)` | `` | inherited · .b4 .f-empty · b4/form.css:162 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-empty · b4/form.css:162 |
+| font-size | ↑ `` | `11.5px` | inherited · .b4 .f-empty · b4/form.css:162 |
+| font-weight | ↑ `` | `500` | inherited · .b4 .f-empty · b4/form.css:162 |
 | font-style | ↑ `normal` | `normal` | inherited · .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-empty · b4/form.css:158 |
-| line-height | ↑ `` | `14.95px` | inherited · .b4 .f-empty · b4/form.css:158 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-empty · b4/form.css:162 |
+| line-height | ↑ `` | `14.95px` | inherited · .b4 .f-empty · b4/form.css:162 |
 | letter-spacing | — | `normal` | initial |
 | color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b4 .f-shot:not(.has) .f-empty .ic · b4/classes.css:305 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
@@ -904,7 +926,7 @@ inside `.—` · 26 on screen · **11 looks**
 
 #### look 6 of 11
 
-`C2-195` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
+`C2-197` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-upload"></use></svg>
@@ -914,24 +936,24 @@ inside `.—` · 26 on screen · **11 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6467 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `13px` | `13px` | .b4 .f-src button .ic · b4/form.css:164 |
-| height | `13px` | `13px` | .b4 .f-src button .ic · b4/form.css:164 |
+| width | `13px` | `13px` | .b4 .f-src button .ic · b4/form.css:168 |
+| height | `13px` | `13px` | .b4 .f-src button .ic · b4/form.css:168 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| font | ↑ `600 12.5px/1 var(--ui)` | `` | inherited · .b4 .f-src button · b4/form.css:163 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-src button · b4/form.css:163 |
-| font-size | ↑ `` | `12.5px` | inherited · .b4 .f-src button · b4/form.css:163 |
-| font-weight | ↑ `` | `600` | inherited · .b4 .f-src button · b4/form.css:163 |
-| font-style | ↑ `` | `normal` | inherited · .b4 .f-src button · b4/form.css:163 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-src button · b4/form.css:163 |
-| line-height | ↑ `` | `12.5px` | inherited · .b4 .f-src button · b4/form.css:163 |
+| font | ↑ `600 12.5px/1 var(--ui)` | `` | inherited · .b4 .f-src button · b4/form.css:167 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-src button · b4/form.css:167 |
+| font-size | ↑ `` | `12.5px` | inherited · .b4 .f-src button · b4/form.css:167 |
+| font-weight | ↑ `` | `600` | inherited · .b4 .f-src button · b4/form.css:167 |
+| font-style | ↑ `` | `normal` | inherited · .b4 .f-src button · b4/form.css:167 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-src button · b4/form.css:167 |
+| line-height | ↑ `` | `12.5px` | inherited · .b4 .f-src button · b4/form.css:167 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| white-space | ↑ `nowrap` | `` | inherited · .b4 .f-src button · b4/form.css:163 |
+| white-space | ↑ `nowrap` | `` | inherited · .b4 .f-src button · b4/form.css:167 |
 | color | ↑ `color-mix(in srgb,var(--realm-c,var(--ink)) 26%,white)` | `color(srgb 0.983686 0.809333 0.809333)` | inherited · .b4 .f-src button[aria-checked="true"] · b4/classes.css:124 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-src button · b4/form.css:163 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-src button · b4/form.css:167 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6474 |
 
 *5 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
@@ -1122,7 +1144,7 @@ inside `.f-card-b` · 5 on screen · **4 looks**
 
 #### look 2 of 4
 
-`C2-59` · rendered **569×80** · 2 instances look like this
+`C2-61` · rendered **569×80** · 2 instances look like this
 
 ```html
 <section class="f-sec" data-s="code"><h4 class="f-h"><span>Gunsmith code</span><span class="b4-hint" data-tone="neutral">Optional</span></h4><div class="f-fld f-code"><input data-bare="true" id="nb-code" class="f-in mono" spellcheck="true" autocomplete="off" placeholder="Paste the code from the game" aria-label="Gunsmith code"><button type="button" class="f-suf f-cp" aria-label="Copy the code" disabled="">⟨svg.ic⟩</b
@@ -1145,7 +1167,7 @@ inside `.f-card-b` · 5 on screen · **4 looks**
 
 #### look 3 of 4
 
-`C2-80` · rendered **569×234** · 1 instance look like this
+`C2-82` · rendered **569×234** · 1 instance look like this
 
 ```html
 <section class="f-sec" data-s="rank"><h4 class="f-h"><span>Badges</span><span class="b4-hint" data-tone="neutral">Optional</span></h4><div class="f-row f-rank"><div class="f-lab"><span class="f-rl">Grade</span></div><div class="f-bdgs" role="group" aria-label="Grade"><button type="button" class="f-bt wg-cb" role="checkbox" aria-checked="false" aria-label="META" title=""><span class="cb" aria-hidden="true"></span><spa
@@ -1168,7 +1190,7 @@ inside `.f-card-b` · 5 on screen · **4 looks**
 
 #### look 4 of 4
 
-`C2-183` · rendered **569×211** · 1 instance look like this
+`C2-185` · rendered **569×211** · 1 instance look like this
 
 ```html
 <section class="f-sec" data-s="image"><h4 class="f-h"><span>Image</span><span class="b4-hint" data-tone="neutral">Optional</span></h4><div class="f-media"><div class="f-shotbox"><div class="f-shot" role="img" aria-label="No image chosen yet" style="--ar: 4/3;"><span class="f-empty">⟨svg.ic⟩<span>No image yet</span></span></div></div><div class="f-mcol"><div class="f-src" role="radiogroup" aria-label="Where the image 
@@ -1267,7 +1289,7 @@ inside `.f-h` · 8 on screen · **4 looks**
 
 #### look 2 of 4
 
-`C2-192` · rendered **73×15** · 1 instance look like this · text “No image yet”
+`C2-194` · rendered **73×15** · 1 instance look like this · text “No image yet”
 
 ```html
 <span>No image yet</span>
@@ -1277,19 +1299,19 @@ inside `.f-h` · 8 on screen · **4 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| font | ↑ `500 11.5px/1.3 var(--ui)` | `` | inherited · .b4 .f-empty · b4/form.css:158 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-empty · b4/form.css:158 |
-| font-size | ↑ `` | `11.5px` | inherited · .b4 .f-empty · b4/form.css:158 |
-| font-weight | ↑ `` | `500` | inherited · .b4 .f-empty · b4/form.css:158 |
+| font | ↑ `500 11.5px/1.3 var(--ui)` | `` | inherited · .b4 .f-empty · b4/form.css:162 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-empty · b4/form.css:162 |
+| font-size | ↑ `` | `11.5px` | inherited · .b4 .f-empty · b4/form.css:162 |
+| font-weight | ↑ `` | `500` | inherited · .b4 .f-empty · b4/form.css:162 |
 | font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-empty · b4/form.css:158 |
-| line-height | ↑ `` | `14.95px` | inherited · .b4 .f-empty · b4/form.css:158 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-empty · b4/form.css:162 |
+| line-height | ↑ `` | `14.95px` | inherited · .b4 .f-empty · b4/form.css:162 |
 | letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .f-empty · b4/form.css:158 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .f-empty · b4/form.css:162 |
 
 #### look 3 of 4
 
-`C2-207` · rendered **117×14** · 1 instance look like this · text “Add another build”
+`C2-209` · rendered **117×14** · 1 instance look like this · text “Add another build”
 
 ```html
 <span>Add another build</span>
@@ -1299,22 +1321,22 @@ inside `.f-h` · 8 on screen · **4 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| font | ↑ `600 13.5px/1 var(--ui)` | `` | inherited · .b4 .f-more · b4/form.css:194 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-more · b4/form.css:194 |
-| font-size | ↑ `` | `13.5px` | inherited · .b4 .f-more · b4/form.css:194 |
-| font-weight | ↑ `` | `600` | inherited · .b4 .f-more · b4/form.css:194 |
+| font | ↑ `600 13.5px/1 var(--ui)` | `` | inherited · .b4 .f-more · b4/form.css:198 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-more · b4/form.css:198 |
+| font-size | ↑ `` | `13.5px` | inherited · .b4 .f-more · b4/form.css:198 |
+| font-weight | ↑ `` | `600` | inherited · .b4 .f-more · b4/form.css:198 |
 | font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-more · b4/form.css:194 |
-| line-height | ↑ `` | `13.5px` | inherited · .b4 .f-more · b4/form.css:194 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-more · b4/form.css:198 |
+| line-height | ↑ `` | `13.5px` | inherited · .b4 .f-more · b4/form.css:198 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b4 .f-more · b4/form.css:194 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-more · b4/form.css:194 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b4 .f-more · b4/form.css:198 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-more · b4/form.css:198 |
 
 #### look 4 of 4
 
-`C2-234` · rendered **106×11** · 1 instance look like this · text “Before staging”
+`C2-236` · rendered **106×11** · 1 instance look like this · text “Before staging”
 
 ```html
 <span>Before staging</span>
@@ -1568,8 +1590,8 @@ inside `.f-row` · 2 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | div · user-agent:? |
-| position | `relative` | `relative` | .b4 .f-pick · b4/form.css:77 |
-| min-width | `0px` | `0px` | .b4 .f-pick · b4/form.css:77 |
+| position | `relative` | `relative` | .b4 .f-pick · b4/form.css:81 |
+| min-width | `0px` | `0px` | .b4 .f-pick · b4/form.css:81 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1779,7 +1801,7 @@ inside `.f-fld` · 3 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C2-77` · rendered **422×42** · 1 instance look like this · aria-expanded="false" role="combobox"
+`C2-79` · rendered **422×42** · 1 instance look like this · aria-expanded="false" role="combobox"
 
 ```html
 <input data-bare="true" id="c1-a0" class="f-in" placeholder="Search attachments" role="combobox" aria-expanded="false" aria-controls="c1-a0-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="true">
@@ -1851,29 +1873,29 @@ inside `.f-fld` · 3 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b4 .f-suf · b4/form.css:65 |
-| flex | `none` | `` | .b4 .f-suf · b4/form.css:65 |
-| align-items | `center` | `center` | .b4 .f-suf · b4/form.css:65 |
-| place-items | `center` | `` | .b4 .f-suf · b4/form.css:65 |
-| width | `32px` | `32px` | .b4 .f-suf · b4/form.css:65 |
-| height | `32px` | `32px` | .b4 .f-suf · b4/form.css:65 |
+| display | `grid` | `grid` | .b4 .f-suf · b4/form.css:69 |
+| flex | `none` | `` | .b4 .f-suf · b4/form.css:69 |
+| align-items | `center` | `center` | .b4 .f-suf · b4/form.css:69 |
+| place-items | `center` | `` | .b4 .f-suf · b4/form.css:69 |
+| width | `32px` | `32px` | .b4 .f-suf · b4/form.css:69 |
+| height | `32px` | `32px` | .b4 .f-suf · b4/form.css:69 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
-| padding | `0` | `` | .b4 .f-suf · b4/form.css:65 |
-| padding-top | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| padding-right | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| padding-bottom | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| padding-left | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| margin | `0` | `` | .b4 .f-suf · b4/form.css:65 |
-| margin-top | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| margin-right | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| margin-bottom | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| margin-left | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| border | `0` | `` | .b4 .f-suf · b4/form.css:65 |
-| border-radius | `5px` | `` | .b4 .f-suf · b4/form.css:65 |
-| background | `none` | `` | .b4 .f-suf · b4/form.css:65 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-suf · b4/form.css:65 |
-| background-image | `none` | `none` | .b4 .f-suf · b4/form.css:65 |
+| padding | `0` | `` | .b4 .f-suf · b4/form.css:69 |
+| padding-top | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| padding-right | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| padding-bottom | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| padding-left | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| margin | `0` | `` | .b4 .f-suf · b4/form.css:69 |
+| margin-top | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| margin-right | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| margin-bottom | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| margin-left | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| border | `0` | `` | .b4 .f-suf · b4/form.css:69 |
+| border-radius | `5px` | `` | .b4 .f-suf · b4/form.css:69 |
+| background | `none` | `` | .b4 .f-suf · b4/form.css:69 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-suf · b4/form.css:69 |
+| background-image | `none` | `none` | .b4 .f-suf · b4/form.css:69 |
 | font | `inherit` | `` | button · app.css:624 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:624 |
 | font-size | `inherit` | `13px` | button · app.css:624 |
@@ -1883,9 +1905,9 @@ inside `.f-fld` · 3 on screen · **1 look**
 | line-height | `inherit` | `19.5px` | button · app.css:624 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-suf · b4/form.css:65 |
-| transition | `color .15s,background-color .15s` | `` | .b4 .f-suf · b4/form.css:65 |
-| cursor | `pointer` | `pointer` | .b4 .f-suf · b4/form.css:65 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-suf · b4/form.css:69 |
+| transition | `color .15s,background-color .15s` | `` | .b4 .f-suf · b4/form.css:69 |
+| cursor | `pointer` | `pointer` | .b4 .f-suf · b4/form.css:69 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes; parts inside it respond (table below)
@@ -1942,8 +1964,8 @@ inside `.f-suf` · 3 on screen · **1 look**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6467 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `15px` | `15px` | .b4 .f-suf .ic · b4/form.css:71 |
-| height | `15px` | `15px` | .b4 .f-suf .ic · b4/form.css:71 |
+| width | `15px` | `15px` | .b4 .f-suf .ic · b4/form.css:75 |
+| height | `15px` | `15px` | .b4 .f-suf .ic · b4/form.css:75 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:624 |
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
@@ -1955,10 +1977,10 @@ inside `.f-suf` · 3 on screen · **1 look**
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .f-suf · b4/form.css:65 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .f-suf · b4/form.css:69 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-suf · b4/form.css:65 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-suf · b4/form.css:69 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6474 |
 
 
@@ -1977,8 +1999,8 @@ inside `.f-row` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | div · user-agent:? |
-| position | `relative` | `relative` | .b4 .f-pick · b4/form.css:77 |
-| min-width | `0px` | `0px` | .b4 .f-pick · b4/form.css:77 |
+| position | `relative` | `relative` | .b4 .f-pick · b4/form.css:81 |
+| min-width | `0px` | `0px` | .b4 .f-pick · b4/form.css:81 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2042,16 +2064,16 @@ inside `.f-pre` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `block` | `block` | .b4 .f-dot · b4/form.css:59 |
-| flex | `none` | `` | .b4 .f-dot · b4/form.css:59 |
-| width | `9px` | `9px` | .b4 .f-dot · b4/form.css:59 |
-| height | `9px` | `9px` | .b4 .f-dot · b4/form.css:59 |
+| display | `block` | `block` | .b4 .f-dot · b4/form.css:63 |
+| flex | `none` | `` | .b4 .f-dot · b4/form.css:63 |
+| width | `9px` | `9px` | .b4 .f-dot · b4/form.css:63 |
+| height | `9px` | `9px` | .b4 .f-dot · b4/form.css:63 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| border-radius | `50%` | `` | .b4 .f-dot · b4/form.css:59 |
-| background | `var(--c)` | `` | .b4 .f-dot · b4/form.css:59 |
-| background-color | `` | `rgb(255, 59, 92)` | .b4 .f-dot · b4/form.css:59 |
-| background-image | `` | `none` | .b4 .f-dot · b4/form.css:59 |
-| box-shadow | `0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)` | `color(srgb 1 0.231373 0.360784 / 0.18) 0px 0px 0px 3px` | .b4 .f-dot · b4/form.css:59 |
+| border-radius | `50%` | `` | .b4 .f-dot · b4/form.css:63 |
+| background | `var(--c)` | `` | .b4 .f-dot · b4/form.css:63 |
+| background-color | `` | `rgb(255, 59, 92)` | .b4 .f-dot · b4/form.css:63 |
+| background-image | `` | `none` | .b4 .f-dot · b4/form.css:63 |
+| box-shadow | `0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)` | `color(srgb 1 0.231373 0.360784 / 0.18) 0px 0px 0px 3px` | .b4 .f-dot · b4/form.css:63 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2143,7 +2165,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-58` · rendered **482×42** · 1 instance look like this
+`C2-58` · rendered **424×42** · 1 instance look like this
 
 ```html
 <input data-bare="true" id="c1-l" class="f-in" placeholder="Like Close range" maxlength="32" spellcheck="true" autocomplete="off">
@@ -2153,7 +2175,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `inline-block` | `block` | input, textarea, select, button · user-agent:? |
 | flex | `1` | `` | .b4 .f-fld .f-in, .b4 .drawer .f-fld .f-in · b4/form.css:50 |
-| width | ⚠️ `0px` | `481.891px` | .b4 .f-fld > .f-in · b4/classes.css:180 · **a later rule wins — port the computed value and find that rule** |
+| width | ⚠️ `0px` | `424.156px` | .b4 .f-fld > .f-in · b4/classes.css:180 · **a later rule wins — port the computed value and find that rule** |
 | min-width | `0px` | `0px` | .b4 .f-fld .f-in, .b4 .drawer .f-fld .f-in · b4/form.css:50 |
 | height | `100%` | `42px` | .b4 .f-fld .f-in, .b4 .drawer .f-fld .f-in · b4/form.css:50 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
@@ -2201,13 +2223,51 @@ inside `.f-fld` · 1 on screen · **1 look**
 **:active** — changes nothing on the element itself
 
 
+### `span.f-cnt.f-pre`
+
+inside `.f-fld` · 1 on screen · **1 look**
+
+#### the one look
+
+`C2-59` · rendered **58×42** · 1 instance look like this · title="A label holds 32 characters at most"
+
+```html
+<span class="f-pre f-cnt" title="A label holds 32 characters at most"><b>0</b>/32</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b4 .f-pre · b4/form.css:55 |
+| gap | `1px` | `` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| column-gap | `1px` | `1px` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| row-gap | `1px` | `1px` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| flex | `none` | `` | .b4 .f-pre · b4/form.css:55 |
+| align-items | `center` | `center` | .b4 .f-pre · b4/form.css:55 |
+| align-self | `stretch` | `stretch` | .b4 .f-pre · b4/form.css:55 |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| padding | `0 13px` | `` | .b4 .f-pre · b4/form.css:55 |
+| padding-top | `0px` | `0px` | .b4 .f-pre · b4/form.css:55 |
+| padding-right | `13px` | `13px` | .b4 .f-pre · b4/form.css:55 |
+| padding-bottom | `0px` | `0px` | .b4 .f-pre · b4/form.css:55 |
+| padding-left | `13px` | `13px` | .b4 .f-pre · b4/form.css:55 |
+| font | `500 12px/1 var(--data)` | `` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| font-size | `` | `12px` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| font-weight | `` | `500` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| font-style | `` | `normal` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| line-height | `` | `12px` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| letter-spacing | `0.04em` | `0.48px` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b4 .f-pre.f-cnt · b4/form.css:59 |
+
+
 ### `div.f-code.f-fld`
 
 inside `.f-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-63` · rendered **569×42** · 1 instance look like this
+`C2-65` · rendered **569×42** · 1 instance look like this
 
 ```html
 <div class="f-fld f-code"><input data-bare="true" id="nb-code" class="f-in mono" spellcheck="true" autocomplete="off" placeholder="Paste the code from the game" aria-label="Gunsmith code"><button type="button" class="f-suf f-cp" aria-label="Copy the code" disabled="">⟨svg.ic⟩</button></div>
@@ -2246,7 +2306,7 @@ inside `.f-fld` · 2 on screen · **1 look**
 
 #### the one look
 
-`C2-64` · rendered **532×42** · 2 instances look like this · aria-label="Gunsmith code"
+`C2-66` · rendered **532×42** · 2 instances look like this · aria-label="Gunsmith code"
 
 ```html
 <input data-bare="true" id="nb-code" class="f-in mono" spellcheck="true" autocomplete="off" placeholder="Paste the code from the game" aria-label="Gunsmith code">
@@ -2310,7 +2370,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-65` · rendered **32×32** · 1 instance look like this · aria-label="Copy the code" type="button"
+`C2-67` · rendered **32×32** · 1 instance look like this · aria-label="Copy the code" type="button"
 
 ```html
 <button type="button" class="f-suf f-cp" aria-label="Copy the code" disabled="">⟨svg.ic⟩</button>
@@ -2318,29 +2378,29 @@ inside `.f-fld` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b4 .f-suf · b4/form.css:65 |
-| flex | `none` | `` | .b4 .f-suf · b4/form.css:65 |
-| align-items | `center` | `center` | .b4 .f-suf · b4/form.css:65 |
-| place-items | `center` | `` | .b4 .f-suf · b4/form.css:65 |
-| width | `32px` | `32px` | .b4 .f-suf · b4/form.css:65 |
-| height | `32px` | `32px` | .b4 .f-suf · b4/form.css:65 |
+| display | `grid` | `grid` | .b4 .f-suf · b4/form.css:69 |
+| flex | `none` | `` | .b4 .f-suf · b4/form.css:69 |
+| align-items | `center` | `center` | .b4 .f-suf · b4/form.css:69 |
+| place-items | `center` | `` | .b4 .f-suf · b4/form.css:69 |
+| width | `32px` | `32px` | .b4 .f-suf · b4/form.css:69 |
+| height | `32px` | `32px` | .b4 .f-suf · b4/form.css:69 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
-| padding | `0` | `` | .b4 .f-suf · b4/form.css:65 |
-| padding-top | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| padding-right | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| padding-bottom | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| padding-left | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| margin | `0` | `` | .b4 .f-suf · b4/form.css:65 |
-| margin-top | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| margin-right | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| margin-bottom | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| margin-left | `0px` | `0px` | .b4 .f-suf · b4/form.css:65 |
-| border | `0` | `` | .b4 .f-suf · b4/form.css:65 |
-| border-radius | `5px` | `` | .b4 .f-suf · b4/form.css:65 |
-| background | `none` | `` | .b4 .f-suf · b4/form.css:65 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-suf · b4/form.css:65 |
-| background-image | `none` | `none` | .b4 .f-suf · b4/form.css:65 |
+| padding | `0` | `` | .b4 .f-suf · b4/form.css:69 |
+| padding-top | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| padding-right | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| padding-bottom | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| padding-left | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| margin | `0` | `` | .b4 .f-suf · b4/form.css:69 |
+| margin-top | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| margin-right | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| margin-bottom | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| margin-left | `0px` | `0px` | .b4 .f-suf · b4/form.css:69 |
+| border | `0` | `` | .b4 .f-suf · b4/form.css:69 |
+| border-radius | `5px` | `` | .b4 .f-suf · b4/form.css:69 |
+| background | `none` | `` | .b4 .f-suf · b4/form.css:69 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-suf · b4/form.css:69 |
+| background-image | `none` | `none` | .b4 .f-suf · b4/form.css:69 |
 | font | `inherit` | `` | button · app.css:624 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:624 |
 | font-size | `inherit` | `13px` | button · app.css:624 |
@@ -2350,10 +2410,10 @@ inside `.f-fld` · 1 on screen · **1 look**
 | line-height | `inherit` | `19.5px` | button · app.css:624 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-suf · b4/form.css:65 |
-| opacity | `0.35` | `0.35` | .b4 .f-suf:disabled · b4/form.css:69 |
-| transition | `color .15s,background-color .15s` | `` | .b4 .f-suf · b4/form.css:65 |
-| cursor | `default` | `default` | .b4 .f-suf:disabled · b4/form.css:69 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-suf · b4/form.css:69 |
+| opacity | `0.35` | `0.35` | .b4 .f-suf:disabled · b4/form.css:73 |
+| transition | `color .15s,background-color .15s` | `` | .b4 .f-suf · b4/form.css:69 |
+| cursor | `default` | `default` | .b4 .f-suf:disabled · b4/form.css:73 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes nothing on the element itself
@@ -2374,7 +2434,7 @@ inside `.f-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-72` · rendered **569×42** · 1 instance look like this
+`C2-74` · rendered **569×42** · 1 instance look like this
 
 ```html
 <div class="f-atts"><div class="f-att"><span class="f-slot q">Attachment 1</span><div class="f-pick"><div class="f-fld"><input data-bare="true" id="c1-a0" class="f-in" placeholder="Search attachments" role="combobox" aria-expanded="false" aria-controls="c1-a0-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="true"><button type="button" class="f-suf f-caret" tabindex="-1" aria-labe
@@ -2382,7 +2442,7 @@ inside `.f-sec` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b4 .f-atts · b4/form.css:98 |
+| display | `grid` | `grid` | .b4 .f-atts · b4/form.css:102 |
 | gap | `10px` | `` | .b4 .f-atts · b4/classes.css:408 |
 | column-gap | `10px` | `10px` | .b4 .f-atts · b4/classes.css:408 |
 | row-gap | `10px` | `10px` | .b4 .f-atts · b4/classes.css:408 |
@@ -2401,7 +2461,7 @@ inside `.f-atts` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-73` · rendered **569×42** · 1 instance look like this
+`C2-75` · rendered **569×42** · 1 instance look like this
 
 ```html
 <div class="f-att"><span class="f-slot q">Attachment 1</span><div class="f-pick"><div class="f-fld"><input data-bare="true" id="c1-a0" class="f-in" placeholder="Search attachments" role="combobox" aria-expanded="false" aria-controls="c1-a0-list" aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="true"><button type="button" class="f-suf f-caret" tabindex="-1" aria-label="Open the list">⟨s
@@ -2411,7 +2471,7 @@ inside `.f-atts` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
 | grid-template-columns | `var(--f-lw) minmax(0,1fr)` | `96px 459px` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
-| gap | `14px` | `` | .b4 .f-att · b4/form.css:99 |
+| gap | `14px` | `` | .b4 .f-att · b4/form.css:103 |
 | column-gap | `14px` | `14px` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
 | row-gap | `8px` | `8px` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
 | align-items | `center` | `center` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
@@ -2430,7 +2490,7 @@ inside `.f-att` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-74` · rendered **96×13** · 1 instance look like this · text “Attachment 1”
+`C2-76` · rendered **96×13** · 1 instance look like this · text “Attachment 1”
 
 ```html
 <span class="f-slot q">Attachment 1</span>
@@ -2454,7 +2514,7 @@ inside `.f-att` · 1 on screen · **1 look**
 | line-height | `` | `13px` | .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:410 |
 | letter-spacing | — | `normal` | initial |
 | white-space | `nowrap` | `` | .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:410 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-slot.q · b4/form.css:101 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-slot.q · b4/form.css:105 |
 
 
 ### `div.f-rank.f-row`
@@ -2463,7 +2523,7 @@ inside `.f-sec` · 2 on screen · **1 look**
 
 #### the one look
 
-`C2-84` · rendered **569×42** · 2 instances look like this
+`C2-86` · rendered **569×42** · 2 instances look like this
 
 ```html
 <div class="f-row f-rank"><div class="f-lab"><span class="f-rl">Grade</span></div><div class="f-bdgs" role="group" aria-label="Grade"><button type="button" class="f-bt wg-cb" role="checkbox" aria-checked="false" aria-label="META" title=""><span class="cb" aria-hidden="true"></span><span class="b3-bdgs" style="--ph: 0.434;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class=
@@ -2473,12 +2533,12 @@ inside `.f-sec` · 2 on screen · **1 look**
 |---|---|---|---|
 | display | `flex` | `flex` | .b4 .f-sec > .f-row.f-rank · b4/classes.css:417 |
 | grid-template-columns | `var(--f-lw) minmax(0,1fr)` | `96px minmax(0px, 1fr)` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
-| gap | `8px` | `` | .b4 .f-rank · b4/form.css:112 |
+| gap | `8px` | `` | .b4 .f-rank · b4/form.css:116 |
 | column-gap | `14px` | `14px` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
 | row-gap | `8px` | `8px` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
 | flex-wrap | `wrap` | `wrap` | .b4 .f-sec > .f-row.f-rank · b4/classes.css:417 |
 | align-items | `center` | `center` | .b4 .f-sec > .f-row.f-rank · b4/classes.css:417 |
-| min-width | `0px` | `0px` | .b4 .f-rank · b4/form.css:112 |
+| min-width | `0px` | `0px` | .b4 .f-rank · b4/form.css:116 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2494,7 +2554,7 @@ inside `.f-lab` · 3 on screen · **1 look**
 
 #### the one look
 
-`C2-86` · rendered **37×9** · 3 instances look like this · text “Grade”
+`C2-88` · rendered **37×9** · 3 instances look like this · text “Grade”
 
 ```html
 <span class="f-rl">Grade</span>
@@ -2523,7 +2583,7 @@ inside `.f-row` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-87` · rendered **459×42** · 1 instance look like this · aria-label="Grade" role="group"
+`C2-89` · rendered **459×42** · 1 instance look like this · aria-label="Grade" role="group"
 
 ```html
 <div class="f-bdgs" role="group" aria-label="Grade"><button type="button" class="f-bt wg-cb" role="checkbox" aria-checked="false" aria-label="META" title=""><span class="cb" aria-hidden="true"></span><span class="b3-bdgs" style="--ph: 0.434;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl" aria-hidden="true"></span></span></span></button><button type="button" cla
@@ -2531,13 +2591,13 @@ inside `.f-row` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| gap | `8px` | `` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| column-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| row-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
+| display | `flex` | `flex` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
+| gap | `8px` | `` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
+| column-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
+| row-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
 | flex | `1 1 0` | `` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:677 |
-| flex-wrap | `wrap` | `wrap` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| align-items | `center` | `center` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
+| flex-wrap | `wrap` | `wrap` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
+| align-items | `center` | `center` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
 | justify-self | `start` | `start` | .b4 .f-bdgs, .b4 .f-tgrp · b4/classes.css:413 |
 | min-width | `0px` | `0px` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:677 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
@@ -2555,7 +2615,7 @@ inside `.f-bdgs` · 9 on screen · **1 look**
 
 #### the one look
 
-`C2-88` · rendered **100×42** · 9 instances look like this · aria-label="META" role="checkbox" title="" type="button"
+`C2-90` · rendered **100×42** · 9 instances look like this · aria-label="META" role="checkbox" title="" type="button"
 
 ```html
 <button type="button" class="f-bt wg-cb" role="checkbox" aria-checked="false" aria-label="META" title=""><span class="cb" aria-hidden="true"></span><span class="b3-bdgs" style="--ph: 0.434;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl" aria-hidden="true"></span></span></span></button>
@@ -2563,32 +2623,32 @@ inside `.f-bdgs` · 9 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b4 .f-bt.wg-cb · b4/form.css:122 |
-| gap | `8px` | `` | .b4 .f-bt · b4/form.css:115 |
-| column-gap | `8px` | `8px` | .b4 .f-bt · b4/form.css:115 |
-| row-gap | `8px` | `8px` | .b4 .f-bt · b4/form.css:115 |
-| align-items | `center` | `center` | .b4 .f-bt.wg-cb · b4/form.css:122 |
+| display | `inline-flex` | `flex` | .b4 .f-bt.wg-cb · b4/form.css:126 |
+| gap | `8px` | `` | .b4 .f-bt · b4/form.css:119 |
+| column-gap | `8px` | `8px` | .b4 .f-bt · b4/form.css:119 |
+| row-gap | `8px` | `8px` | .b4 .f-bt · b4/form.css:119 |
+| align-items | `center` | `center` | .b4 .f-bt.wg-cb · b4/form.css:126 |
 | place-items | `center` | `` | .wg-cb · app.css:1127 |
-| width | `auto` | `99.9844px` | .b4 .f-bt.wg-cb · b4/form.css:122 |
-| height | `42px` | `42px` | .b4 .f-bt.wg-cb · b4/form.css:122 |
+| width | `auto` | `99.9844px` | .b4 .f-bt.wg-cb · b4/form.css:126 |
+| height | `42px` | `42px` | .b4 .f-bt.wg-cb · b4/form.css:126 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
-| padding | `0 8px 0 4px` | `` | .b4 .f-bt · b4/form.css:115 |
-| padding-top | `0px` | `0px` | .b4 .f-bt · b4/form.css:115 |
-| padding-right | `8px` | `8px` | .b4 .f-bt · b4/form.css:115 |
-| padding-bottom | `0px` | `0px` | .b4 .f-bt · b4/form.css:115 |
-| padding-left | `4px` | `4px` | .b4 .f-bt · b4/form.css:115 |
-| margin | `0` | `` | .b4 .f-bt.wg-cb · b4/form.css:122 |
-| margin-top | `0px` | `0px` | .b4 .f-bt.wg-cb · b4/form.css:122 |
-| margin-right | `0px` | `0px` | .b4 .f-bt.wg-cb · b4/form.css:122 |
-| margin-bottom | `0px` | `0px` | .b4 .f-bt.wg-cb · b4/form.css:122 |
-| margin-left | `0px` | `0px` | .b4 .f-bt.wg-cb · b4/form.css:122 |
-| border | `0` | `` | .b4 .f-bt · b4/form.css:115 |
-| border-radius | `var(--fld-rad)` | `` | .b4 .f-bt · b4/form.css:115 |
-| background | `color-mix(in srgb,#04070A 40%,var(--sunk))` | `` | .b4 .f-bt · b4/form.css:115 |
-| background-color | `` | `color(srgb 0.0321569 0.0462745 0.0580392)` | .b4 .f-bt · b4/form.css:115 |
-| background-image | `` | `none` | .b4 .f-bt · b4/form.css:115 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.12) 0px 0px 0px 1px inset` | .b4 .f-bt · b4/form.css:115 |
+| padding | `0 8px 0 4px` | `` | .b4 .f-bt · b4/form.css:119 |
+| padding-top | `0px` | `0px` | .b4 .f-bt · b4/form.css:119 |
+| padding-right | `8px` | `8px` | .b4 .f-bt · b4/form.css:119 |
+| padding-bottom | `0px` | `0px` | .b4 .f-bt · b4/form.css:119 |
+| padding-left | `4px` | `4px` | .b4 .f-bt · b4/form.css:119 |
+| margin | `0` | `` | .b4 .f-bt.wg-cb · b4/form.css:126 |
+| margin-top | `0px` | `0px` | .b4 .f-bt.wg-cb · b4/form.css:126 |
+| margin-right | `0px` | `0px` | .b4 .f-bt.wg-cb · b4/form.css:126 |
+| margin-bottom | `0px` | `0px` | .b4 .f-bt.wg-cb · b4/form.css:126 |
+| margin-left | `0px` | `0px` | .b4 .f-bt.wg-cb · b4/form.css:126 |
+| border | `0` | `` | .b4 .f-bt · b4/form.css:119 |
+| border-radius | `var(--fld-rad)` | `` | .b4 .f-bt · b4/form.css:119 |
+| background | `color-mix(in srgb,#04070A 40%,var(--sunk))` | `` | .b4 .f-bt · b4/form.css:119 |
+| background-color | `` | `color(srgb 0.0321569 0.0462745 0.0580392)` | .b4 .f-bt · b4/form.css:119 |
+| background-image | `` | `none` | .b4 .f-bt · b4/form.css:119 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.12) 0px 0px 0px 1px inset` | .b4 .f-bt · b4/form.css:119 |
 | font | `inherit` | `` | button · app.css:624 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:624 |
 | font-size | `inherit` | `13px` | button · app.css:624 |
@@ -2599,8 +2659,8 @@ inside `.f-bdgs` · 9 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:624 |
-| transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-bt · b4/form.css:115 |
-| cursor | `pointer` | `pointer` | .b4 .f-bt · b4/form.css:115 |
+| transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-bt · b4/form.css:119 |
+| cursor | `pointer` | `pointer` | .b4 .f-bt · b4/form.css:119 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes; parts inside it respond (table below)
@@ -2640,7 +2700,7 @@ inside `.f-bt` · 13 on screen · **1 look**
 
 #### the one look
 
-`C2-90` · rendered **58×22** · 13 instances look like this
+`C2-92` · rendered **58×22** · 13 instances look like this
 
 ```html
 <span class="b3-bdgs" style="--ph: 0.434;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl" aria-hidden="true"></span></span></span>
@@ -2656,9 +2716,9 @@ inside `.f-bt` · 13 on screen · **1 look**
 | align-items | `center` | `center` | .b3-bdgs · b3/board.css:148 |
 | min-height | `22px` | `22px` | .b3-bdgs · b3/board.css:148 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| padding-left | `0px` | `0px` | .b4 .f-bt .b3-bdgs, .b4 .f-tier .b3-bdgs · b4/form.css:141 |
-| margin-left | `0px` | `0px` | .b4 .f-bt .b3-bdgs, .b4 .f-tier .b3-bdgs · b4/form.css:141 |
-| box-shadow | `none` | `none` | .b4 .f-bt .b3-bdgs, .b4 .f-tier .b3-bdgs · b4/form.css:141 |
+| padding-left | `0px` | `0px` | .b4 .f-bt .b3-bdgs, .b4 .f-tier .b3-bdgs · b4/form.css:145 |
+| margin-left | `0px` | `0px` | .b4 .f-bt .b3-bdgs, .b4 .f-tier .b3-bdgs · b4/form.css:145 |
+| box-shadow | `none` | `none` | .b4 .f-bt .b3-bdgs, .b4 .f-tier .b3-bdgs · b4/form.css:145 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:624 |
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
 | font-size | ↑ `inherit` | `13px` | inherited · button · app.css:624 |
@@ -2670,9 +2730,9 @@ inside `.f-bt` · 13 on screen · **1 look**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:624 |
-| opacity | `0.6` | `0.6` | .b4 .f-bt:not([aria-checked="true"]) .b3-bdgs · b4/form.css:132 |
-| transition | `filter .18s,opacity .18s` | `` | .b4 .f-bt .b3-bdgs, .b4 .f-tier .b3-bdgs · b4/form.css:129 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-bt · b4/form.css:115 |
+| opacity | `0.6` | `0.6` | .b4 .f-bt:not([aria-checked="true"]) .b3-bdgs · b4/form.css:136 |
+| transition | `filter .18s,opacity .18s` | `` | .b4 .f-bt .b3-bdgs, .b4 .f-tier .b3-bdgs · b4/form.css:133 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-bt · b4/form.css:119 |
 
 
 ### `i`
@@ -2681,7 +2741,7 @@ inside `.b3-tox` · 9 on screen · **3 looks**
 
 #### look 1 of 3
 
-`C2-108` · rendered **0×0** · 1 instance look like this
+`C2-110` · rendered **0×0** · 1 instance look like this
 
 ```html
 <i></i>
@@ -2715,11 +2775,11 @@ inside `.b3-tox` · 9 on screen · **3 looks**
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-bt · b4/form.css:115 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-bt · b4/form.css:119 |
 
 #### look 2 of 3
 
-`C2-109` · rendered **0×0** · 1 instance look like this
+`C2-111` · rendered **0×0** · 1 instance look like this
 
 ```html
 <i></i>
@@ -2753,11 +2813,11 @@ inside `.b3-tox` · 9 on screen · **3 looks**
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-bt · b4/form.css:115 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-bt · b4/form.css:119 |
 
 #### look 3 of 3
 
-`C2-110` · rendered **0×0** · 1 instance look like this
+`C2-112` · rendered **0×0** · 1 instance look like this
 
 ```html
 <i></i>
@@ -2791,7 +2851,7 @@ inside `.b3-tox` · 9 on screen · **3 looks**
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:381 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:381 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:381 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-bt · b4/form.css:115 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-bt · b4/form.css:119 |
 
 
 ### `div.f-tgrp`
@@ -2800,7 +2860,7 @@ inside `.f-row` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-114` · rendered **419×42** · 1 instance look like this
+`C2-116` · rendered **419×42** · 1 instance look like this
 
 ```html
 <div class="f-tgrp"><div class="f-tiers" role="radiogroup" aria-label="Tier"><button type="button" class="f-tier none" role="radio" aria-checked="true">No tier</button><button type="button" class="f-tier" role="radio" aria-checked="false" aria-label="Best" title=""><span class="b3-bdgs" style="--ph: 0.704;"><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Assault">⟨svg.ic⟩BEST<em>ASSAULT</em></spa
@@ -2832,7 +2892,7 @@ inside `.f-tgrp` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-115` · rendered **419×42** · 1 instance look like this · aria-label="Tier" role="radiogroup"
+`C2-117` · rendered **419×42** · 1 instance look like this · aria-label="Tier" role="radiogroup"
 
 ```html
 <div class="f-tiers" role="radiogroup" aria-label="Tier"><button type="button" class="f-tier none" role="radio" aria-checked="true">No tier</button><button type="button" class="f-tier" role="radio" aria-checked="false" aria-label="Best" title=""><span class="b3-bdgs" style="--ph: 0.704;"><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Assault">⟨svg.ic⟩BEST<em>ASSAULT</em></span></span></button><b
@@ -2840,20 +2900,20 @@ inside `.f-tgrp` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| gap | `2px` | `` | .b4 .f-tiers · b4/form.css:134 |
-| column-gap | `2px` | `2px` | .b4 .f-tiers · b4/form.css:134 |
-| row-gap | `2px` | `2px` | .b4 .f-tiers · b4/form.css:134 |
-| flex-wrap | `nowrap` | `nowrap` | .b4 .f-tiers · b4/form.css:134 |
-| align-items | `center` | `center` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| justify-self | `start` | `start` | .b4 .f-tiers · b4/form.css:134 |
+| display | `flex` | `flex` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
+| gap | `2px` | `` | .b4 .f-tiers · b4/form.css:138 |
+| column-gap | `2px` | `2px` | .b4 .f-tiers · b4/form.css:138 |
+| row-gap | `2px` | `2px` | .b4 .f-tiers · b4/form.css:138 |
+| flex-wrap | `nowrap` | `nowrap` | .b4 .f-tiers · b4/form.css:138 |
+| align-items | `center` | `center` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
+| justify-self | `start` | `start` | .b4 .f-tiers · b4/form.css:138 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| padding | `4px` | `` | .b4 .f-tiers · b4/form.css:134 |
-| padding-top | `4px` | `4px` | .b4 .f-tiers · b4/form.css:134 |
-| padding-right | `4px` | `4px` | .b4 .f-tiers · b4/form.css:134 |
-| padding-bottom | `4px` | `4px` | .b4 .f-tiers · b4/form.css:134 |
-| padding-left | `4px` | `4px` | .b4 .f-tiers · b4/form.css:134 |
-| border-radius | `9px` | `` | .b4 .f-tiers · b4/form.css:134 |
+| padding | `4px` | `` | .b4 .f-tiers · b4/form.css:138 |
+| padding-top | `4px` | `4px` | .b4 .f-tiers · b4/form.css:138 |
+| padding-right | `4px` | `4px` | .b4 .f-tiers · b4/form.css:138 |
+| padding-bottom | `4px` | `4px` | .b4 .f-tiers · b4/form.css:138 |
+| padding-left | `4px` | `4px` | .b4 .f-tiers · b4/form.css:138 |
+| border-radius | `9px` | `` | .b4 .f-tiers · b4/form.css:138 |
 | background | `none` | `` | .b4 .f-tgrp > .f-tiers · b4/classes.css:290 |
 | background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-tgrp > .f-tiers · b4/classes.css:290 |
 | background-image | `none` | `none` | .b4 .f-tgrp > .f-tiers · b4/classes.css:290 |
@@ -2872,7 +2932,7 @@ inside `.f-tiers` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-116` · rendered **52×34** · 1 instance look like this · text “No tier” · role="radio" type="button"
+`C2-118` · rendered **52×34** · 1 instance look like this · text “No tier” · role="radio" type="button"
 
 ```html
 <button type="button" class="f-tier none" role="radio" aria-checked="true">No tier</button>
@@ -2880,9 +2940,9 @@ inside `.f-tiers` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b4 .f-tier · b4/form.css:135 |
-| align-items | `center` | `center` | .b4 .f-tier · b4/form.css:135 |
-| height | `34px` | `34px` | .b4 .f-tier · b4/form.css:135 |
+| display | `inline-flex` | `flex` | .b4 .f-tier · b4/form.css:139 |
+| align-items | `center` | `center` | .b4 .f-tier · b4/form.css:139 |
+| height | `34px` | `34px` | .b4 .f-tier · b4/form.css:139 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
 | padding | `0 6px` | `` | .b4 .f-tier.none · b4/classes.css:596 |
@@ -2890,25 +2950,25 @@ inside `.f-tiers` · 1 on screen · **1 look**
 | padding-right | `6px` | `6px` | .b4 .f-tier.none · b4/classes.css:596 |
 | padding-bottom | `0px` | `0px` | .b4 .f-tier.none · b4/classes.css:596 |
 | padding-left | `6px` | `6px` | .b4 .f-tier.none · b4/classes.css:596 |
-| border | `0` | `` | .b4 .f-tier · b4/form.css:135 |
-| border-radius | `6px` | `` | .b4 .f-tier · b4/form.css:135 |
-| background | `color-mix(in srgb,var(--ink) 7%,var(--sunk))` | `` | .b4 .f-tier[aria-checked="true"] · b4/form.css:137 |
-| background-color | `` | `color(srgb 0.103804 0.119765 0.131804)` | .b4 .f-tier[aria-checked="true"] · b4/form.css:137 |
-| background-image | `` | `none` | .b4 .f-tier[aria-checked="true"] · b4/form.css:137 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 26%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.26) 0px 0px 0px 1px inset` | .b4 .f-tier[aria-checked="true"] · b4/form.css:137 |
-| font | `600 12.5px/1 var(--ui)` | `` | .b4 .f-tier.none · b4/form.css:142 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-tier.none · b4/form.css:142 |
-| font-size | `` | `12.5px` | .b4 .f-tier.none · b4/form.css:142 |
-| font-weight | `` | `600` | .b4 .f-tier.none · b4/form.css:142 |
-| font-style | `` | `normal` | .b4 .f-tier.none · b4/form.css:142 |
-| font-variant-numeric | `` | `normal` | .b4 .f-tier.none · b4/form.css:142 |
-| line-height | `` | `12.5px` | .b4 .f-tier.none · b4/form.css:142 |
+| border | `0` | `` | .b4 .f-tier · b4/form.css:139 |
+| border-radius | `6px` | `` | .b4 .f-tier · b4/form.css:139 |
+| background | `color-mix(in srgb,var(--ink) 7%,var(--sunk))` | `` | .b4 .f-tier[aria-checked="true"] · b4/form.css:141 |
+| background-color | `` | `color(srgb 0.103804 0.119765 0.131804)` | .b4 .f-tier[aria-checked="true"] · b4/form.css:141 |
+| background-image | `` | `none` | .b4 .f-tier[aria-checked="true"] · b4/form.css:141 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 26%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.26) 0px 0px 0px 1px inset` | .b4 .f-tier[aria-checked="true"] · b4/form.css:141 |
+| font | `600 12.5px/1 var(--ui)` | `` | .b4 .f-tier.none · b4/form.css:146 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-tier.none · b4/form.css:146 |
+| font-size | `` | `12.5px` | .b4 .f-tier.none · b4/form.css:146 |
+| font-weight | `` | `600` | .b4 .f-tier.none · b4/form.css:146 |
+| font-style | `` | `normal` | .b4 .f-tier.none · b4/form.css:146 |
+| font-variant-numeric | `` | `normal` | .b4 .f-tier.none · b4/form.css:146 |
+| line-height | `` | `12.5px` | .b4 .f-tier.none · b4/form.css:146 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| white-space | `nowrap` | `` | .b4 .f-tier.none · b4/form.css:142 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .f-tier.none[aria-checked="true"] · b4/form.css:143 |
-| transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-tier · b4/form.css:135 |
-| cursor | `pointer` | `pointer` | .b4 .f-tier · b4/form.css:135 |
+| white-space | `nowrap` | `` | .b4 .f-tier.none · b4/form.css:146 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .f-tier.none[aria-checked="true"] · b4/form.css:147 |
+| transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-tier · b4/form.css:139 |
+| cursor | `pointer` | `pointer` | .b4 .f-tier · b4/form.css:139 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes
@@ -2936,7 +2996,7 @@ inside `.f-tiers` · 4 on screen · **1 look**
 
 #### the one look
 
-`C2-117` · rendered **119×34** · 4 instances look like this · aria-label="Best" role="radio" title="" type="button"
+`C2-119` · rendered **119×34** · 4 instances look like this · aria-label="Best" role="radio" title="" type="button"
 
 ```html
 <button type="button" class="f-tier" role="radio" aria-checked="false" aria-label="Best" title=""><span class="b3-bdgs" style="--ph: 0.704;"><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Assault">⟨svg.ic⟩BEST<em>ASSAULT</em></span></span></button>
@@ -2944,9 +3004,9 @@ inside `.f-tiers` · 4 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b4 .f-tier · b4/form.css:135 |
-| align-items | `center` | `center` | .b4 .f-tier · b4/form.css:135 |
-| height | `34px` | `34px` | .b4 .f-tier · b4/form.css:135 |
+| display | `inline-flex` | `flex` | .b4 .f-tier · b4/form.css:139 |
+| align-items | `center` | `center` | .b4 .f-tier · b4/form.css:139 |
+| height | `34px` | `34px` | .b4 .f-tier · b4/form.css:139 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
 | padding | `0 4px` | `` | .b4 .f-tier · b4/classes.css:595 |
@@ -2954,12 +3014,12 @@ inside `.f-tiers` · 4 on screen · **1 look**
 | padding-right | `4px` | `4px` | .b4 .f-tier · b4/classes.css:595 |
 | padding-bottom | `0px` | `0px` | .b4 .f-tier · b4/classes.css:595 |
 | padding-left | `4px` | `4px` | .b4 .f-tier · b4/classes.css:595 |
-| border | `0` | `` | .b4 .f-tier · b4/form.css:135 |
-| border-radius | `6px` | `` | .b4 .f-tier · b4/form.css:135 |
-| background | `none` | `` | .b4 .f-tier · b4/form.css:135 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-tier · b4/form.css:135 |
-| background-image | `none` | `none` | .b4 .f-tier · b4/form.css:135 |
-| box-shadow | `transparent 0px 0px 0px 1px inset` | `rgba(0, 0, 0, 0) 0px 0px 0px 1px inset` | .b4 .f-tier · b4/form.css:135 |
+| border | `0` | `` | .b4 .f-tier · b4/form.css:139 |
+| border-radius | `6px` | `` | .b4 .f-tier · b4/form.css:139 |
+| background | `none` | `` | .b4 .f-tier · b4/form.css:139 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-tier · b4/form.css:139 |
+| background-image | `none` | `none` | .b4 .f-tier · b4/form.css:139 |
+| box-shadow | `transparent 0px 0px 0px 1px inset` | `rgba(0, 0, 0, 0) 0px 0px 0px 1px inset` | .b4 .f-tier · b4/form.css:139 |
 | font | `inherit` | `` | button · app.css:624 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:624 |
 | font-size | `inherit` | `13px` | button · app.css:624 |
@@ -2970,8 +3030,8 @@ inside `.f-tiers` · 4 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:624 |
-| transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-tier · b4/form.css:135 |
-| cursor | `pointer` | `pointer` | .b4 .f-tier · b4/form.css:135 |
+| transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-tier · b4/form.css:139 |
+| cursor | `pointer` | `pointer` | .b4 .f-tier · b4/form.css:139 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes; parts inside it respond (table below)
@@ -3003,7 +3063,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 
 #### look 1 of 7
 
-`C2-208` · rendered **130×13** · 1 instance look like this · text “Stage several at once”
+`C2-210` · rendered **130×13** · 1 instance look like this · text “Stage several at once”
 
 ```html
 <em>Stage several at once</em>
@@ -3013,22 +3073,22 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| font | `500 12.5px/1 var(--ui)` | `` | .b4 .f-more em · b4/form.css:197 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-more em · b4/form.css:197 |
-| font-size | `` | `12.5px` | .b4 .f-more em · b4/form.css:197 |
-| font-weight | `` | `500` | .b4 .f-more em · b4/form.css:197 |
-| font-style | `normal` | `normal` | .b4 .f-more em · b4/form.css:197 |
-| font-variant-numeric | `` | `normal` | .b4 .f-more em · b4/form.css:197 |
-| line-height | `` | `12.5px` | .b4 .f-more em · b4/form.css:197 |
+| font | `500 12.5px/1 var(--ui)` | `` | .b4 .f-more em · b4/form.css:201 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-more em · b4/form.css:201 |
+| font-size | `` | `12.5px` | .b4 .f-more em · b4/form.css:201 |
+| font-weight | `` | `500` | .b4 .f-more em · b4/form.css:201 |
+| font-style | `normal` | `normal` | .b4 .f-more em · b4/form.css:201 |
+| font-variant-numeric | `` | `normal` | .b4 .f-more em · b4/form.css:201 |
+| line-height | `` | `12.5px` | .b4 .f-more em · b4/form.css:201 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-more em · b4/form.css:197 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-more · b4/form.css:194 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-more em · b4/form.css:201 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-more · b4/form.css:198 |
 
 #### look 2 of 7
 
-`C2-219` · rendered **39×14** · 1 instance look like this · text “Muzzle”
+`C2-221` · rendered **39×14** · 1 instance look like this · text “Muzzle”
 
 ```html
 <em>Muzzle</em>
@@ -3049,7 +3109,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 
 #### look 3 of 7
 
-`C2-221` · rendered **38×14** · 1 instance look like this · text “Barrel”
+`C2-223` · rendered **38×14** · 1 instance look like this · text “Barrel”
 
 ```html
 <em>Barrel</em>
@@ -3070,7 +3130,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 
 #### look 4 of 7
 
-`C2-223` · rendered **32×14** · 1 instance look like this · text “Stock”
+`C2-225` · rendered **32×14** · 1 instance look like this · text “Stock”
 
 ```html
 <em>Stock</em>
@@ -3091,7 +3151,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 
 #### look 5 of 7
 
-`C2-225` · rendered **64×14** · 1 instance look like this · text “Ammunition”
+`C2-227` · rendered **64×14** · 1 instance look like this · text “Ammunition”
 
 ```html
 <em>Ammunition</em>
@@ -3112,7 +3172,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 
 #### look 6 of 7
 
-`C2-227` · rendered **51×14** · 1 instance look like this · text “Rear Grip”
+`C2-229` · rendered **51×14** · 1 instance look like this · text “Rear Grip”
 
 ```html
 <em>Rear Grip</em>
@@ -3140,7 +3200,7 @@ inside `.f-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-137` · rendered **569×92** · 1 instance look like this
+`C2-139` · rendered **569×92** · 1 instance look like this
 
 ```html
 <div class="f-row f-rank f-mrow"><div class="f-lab"><span class="f-rl">Rank Mode</span></div><div class="f-bdgs f-mds" role="group" aria-label="Rank Mode"><button type="button" class="f-bt wg-cb" role="checkbox" aria-checked="false" aria-label="HP"><span class="cb" aria-hidden="true"></span><span class="b3-bdgs" style="--ph: 0.030;"><span class="b3-bdg" data-k="mode" data-m="HP" aria-label="Rank mode HP" style="--mi:
@@ -3150,12 +3210,12 @@ inside `.f-sec` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `flex` | `flex` | .b4 .f-sec > .f-row.f-rank · b4/classes.css:417 |
 | grid-template-columns | `var(--f-lw) minmax(0,1fr)` | `96px minmax(0px, 1fr)` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
-| gap | `8px` | `` | .b4 .f-rank · b4/form.css:112 |
+| gap | `8px` | `` | .b4 .f-rank · b4/form.css:116 |
 | column-gap | `14px` | `14px` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
 | row-gap | `8px` | `8px` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:407 |
 | flex-wrap | `wrap` | `wrap` | .b4 .f-sec > .f-row.f-rank · b4/classes.css:417 |
 | align-items | `flex-start` | `flex-start` | .b4 .f-sec > .f-row.f-rank:has(> .f-mds) · b4/classes.css:678 |
-| min-width | `0px` | `0px` | .b4 .f-rank · b4/form.css:112 |
+| min-width | `0px` | `0px` | .b4 .f-rank · b4/form.css:116 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -3171,7 +3231,7 @@ inside `.f-row` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-140` · rendered **459×92** · 1 instance look like this · aria-label="Rank Mode" role="group"
+`C2-142` · rendered **459×92** · 1 instance look like this · aria-label="Rank Mode" role="group"
 
 ```html
 <div class="f-bdgs f-mds" role="group" aria-label="Rank Mode"><button type="button" class="f-bt wg-cb" role="checkbox" aria-checked="false" aria-label="HP"><span class="cb" aria-hidden="true"></span><span class="b3-bdgs" style="--ph: 0.030;"><span class="b3-bdg" data-k="mode" data-m="HP" aria-label="Rank mode HP" style="--mi: 0;"><i class="b3-mdi" aria-hidden="true">⟨svg.ic⟩</i><span class="b3-mdw">HP</span></span></
@@ -3179,13 +3239,13 @@ inside `.f-row` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| gap | `8px` | `` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| column-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| row-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
+| display | `flex` | `flex` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
+| gap | `8px` | `` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
+| column-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
+| row-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
 | flex | `1 1 0` | `` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:677 |
-| flex-wrap | `wrap` | `wrap` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| align-items | `center` | `center` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
+| flex-wrap | `wrap` | `wrap` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
+| align-items | `center` | `center` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:118 |
 | justify-self | `start` | `start` | .b4 .f-bdgs, .b4 .f-tgrp · b4/classes.css:413 |
 | min-width | `0px` | `0px` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:677 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
@@ -3203,7 +3263,7 @@ inside `.f-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-187` · rendered **569×173** · 1 instance look like this
+`C2-189` · rendered **569×173** · 1 instance look like this
 
 ```html
 <div class="f-media"><div class="f-shotbox"><div class="f-shot" role="img" aria-label="No image chosen yet" style="--ar: 4/3;"><span class="f-empty">⟨svg.ic⟩<span>No image yet</span></span></div></div><div class="f-mcol"><div class="f-src" role="radiogroup" aria-label="Where the image comes from"><button type="button" role="radio" aria-checked="true">⟨svg.ic⟩Upload</button><button type="button" role="radio" aria-chec
@@ -3211,23 +3271,23 @@ inside `.f-sec` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b4 .f-media · b4/form.css:148 |
+| display | `grid` | `grid` | .b4 .f-media · b4/form.css:152 |
 | grid-template-columns | `minmax(128px, 176px) minmax(min-content, 1fr)` | `176px 349px` | .b4 .f-media · b4/classes.css:179 |
-| gap | `16px` | `` | .b4 .f-media · b4/form.css:148 |
-| column-gap | `16px` | `16px` | .b4 .f-media · b4/form.css:148 |
-| row-gap | `16px` | `16px` | .b4 .f-media · b4/form.css:148 |
+| gap | `16px` | `` | .b4 .f-media · b4/form.css:152 |
+| column-gap | `16px` | `16px` | .b4 .f-media · b4/form.css:152 |
+| row-gap | `16px` | `16px` | .b4 .f-media · b4/form.css:152 |
 | align-items | `start` | `start` | .b4 .f-media · b4/classes.css:439 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| padding | `14px` | `` | .b4 .f-media · b4/form.css:148 |
-| padding-top | `14px` | `14px` | .b4 .f-media · b4/form.css:148 |
-| padding-right | `14px` | `14px` | .b4 .f-media · b4/form.css:148 |
-| padding-bottom | `14px` | `14px` | .b4 .f-media · b4/form.css:148 |
-| padding-left | `14px` | `14px` | .b4 .f-media · b4/form.css:148 |
-| border-radius | `var(--rad-3)` | `` | .b4 .f-media · b4/form.css:148 |
-| background | `color-mix(in srgb,var(--sunk) 55%,transparent)` | `` | .b4 .f-media · b4/form.css:148 |
-| background-color | `` | `color(srgb 0.0431373 0.0588235 0.0705882 / 0.55)` | .b4 .f-media · b4/form.css:148 |
-| background-image | `` | `none` | .b4 .f-media · b4/form.css:148 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 9%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.09) 0px 0px 0px 1px inset` | .b4 .f-media · b4/form.css:148 |
+| padding | `14px` | `` | .b4 .f-media · b4/form.css:152 |
+| padding-top | `14px` | `14px` | .b4 .f-media · b4/form.css:152 |
+| padding-right | `14px` | `14px` | .b4 .f-media · b4/form.css:152 |
+| padding-bottom | `14px` | `14px` | .b4 .f-media · b4/form.css:152 |
+| padding-left | `14px` | `14px` | .b4 .f-media · b4/form.css:152 |
+| border-radius | `var(--rad-3)` | `` | .b4 .f-media · b4/form.css:152 |
+| background | `color-mix(in srgb,var(--sunk) 55%,transparent)` | `` | .b4 .f-media · b4/form.css:152 |
+| background-color | `` | `color(srgb 0.0431373 0.0588235 0.0705882 / 0.55)` | .b4 .f-media · b4/form.css:152 |
+| background-image | `` | `none` | .b4 .f-media · b4/form.css:152 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 9%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.09) 0px 0px 0px 1px inset` | .b4 .f-media · b4/form.css:152 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -3242,7 +3302,7 @@ inside `.f-media` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-188` · rendered **176×145** · 1 instance look like this
+`C2-190` · rendered **176×145** · 1 instance look like this
 
 ```html
 <div class="f-shotbox"><div class="f-shot" role="img" aria-label="No image chosen yet" style="--ar: 4/3;"><span class="f-empty">⟨svg.ic⟩<span>No image yet</span></span></div></div>
@@ -3270,7 +3330,7 @@ inside `.f-shotbox` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-189` · rendered **176×132** · 1 instance look like this · aria-label="No image chosen yet" role="img"
+`C2-191` · rendered **176×132** · 1 instance look like this · aria-label="No image chosen yet" role="img"
 
 ```html
 <div class="f-shot" role="img" aria-label="No image chosen yet" style="--ar: 4/3;"><span class="f-empty">⟨svg.ic⟩<span>No image yet</span></span></div>
@@ -3278,29 +3338,29 @@ inside `.f-shotbox` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b4 .f-shot · b4/form.css:150 |
-| position | `relative` | `relative` | .b4 .f-shot · b4/form.css:150 |
-| align-items | `center` | `center` | .b4 .f-shot · b4/form.css:150 |
+| display | `grid` | `grid` | .b4 .f-shot · b4/form.css:154 |
+| position | `relative` | `relative` | .b4 .f-shot · b4/form.css:154 |
+| align-items | `center` | `center` | .b4 .f-shot · b4/form.css:154 |
 | align-self | `center` | `center` | .b4 .f-shot · b4/classes.css:442 |
-| place-items | `center` | `` | .b4 .f-shot · b4/form.css:150 |
+| place-items | `center` | `` | .b4 .f-shot · b4/form.css:154 |
 | width | `min(100cqi, calc(100cqi * (var(--ar))))` | `176px` | .b4 .f-shot · b4/classes.css:442 |
 | min-height | `0px !important !important` | `0px` | .b4 .f-shot · b4/classes.css:442 |
 | max-height | `100cqi` | `176px` | .b4 .f-shot · b4/classes.css:442 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| border-radius | `var(--rad-2)` | `` | .b4 .f-shot · b4/form.css:150 |
-| background | `radial-gradient(120% 90% at 30% 0,color-mix(in srgb,var(--f-hue,var(--ink3)) 10%,transparent),transparent 70%),color-mix(in srgb,#04070A 60%,var(--sunk))` | `` | .b4 .f-shot · b4/form.css:150 |
-| background-color | `` | `color(srgb 0.0266667 0.04 0.0517647)` | .b4 .f-shot · b4/form.css:150 |
-| background-image | `` | `radial-gradient(120% 90% at 30% 0px, color(srgb 1 0.231373 0.360784 / 0.1), rgba(0, 0, 0, 0) 70%), none` | .b4 .f-shot · b4/form.css:150 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 .f-shot · b4/form.css:150 |
+| border-radius | `var(--rad-2)` | `` | .b4 .f-shot · b4/form.css:154 |
+| background | `radial-gradient(120% 90% at 30% 0,color-mix(in srgb,var(--f-hue,var(--ink3)) 10%,transparent),transparent 70%),color-mix(in srgb,#04070A 60%,var(--sunk))` | `` | .b4 .f-shot · b4/form.css:154 |
+| background-color | `` | `color(srgb 0.0266667 0.04 0.0517647)` | .b4 .f-shot · b4/form.css:154 |
+| background-image | `` | `radial-gradient(120% 90% at 30% 0px, color(srgb 1 0.231373 0.360784 / 0.1), rgba(0, 0, 0, 0) 70%), none` | .b4 .f-shot · b4/form.css:154 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 .f-shot · b4/form.css:154 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:617 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b4 .f-shot · b4/form.css:150 |
-| overflow-x | `hidden` | `hidden` | .b4 .f-shot · b4/form.css:150 |
-| overflow-y | `hidden` | `hidden` | .b4 .f-shot · b4/form.css:150 |
+| overflow | `hidden` | `` | .b4 .f-shot · b4/form.css:154 |
+| overflow-x | `hidden` | `hidden` | .b4 .f-shot · b4/form.css:154 |
+| overflow-y | `hidden` | `hidden` | .b4 .f-shot · b4/form.css:154 |
 | transition | `width .32s cubic-bezier(.32,.72,0,1),aspect-ratio .32s cubic-bezier(.32,.72,0,1)` | `` | .b4 .f-shot · b4/classes.css:442 |
 
 
@@ -3310,7 +3370,7 @@ inside `.f-shot` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-190` · rendered **73×44** · 1 instance look like this
+`C2-192` · rendered **73×44** · 1 instance look like this
 
 ```html
 <span class="f-empty">⟨svg.ic⟩<span>No image yet</span></span>
@@ -3318,20 +3378,20 @@ inside `.f-shot` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b4 .f-empty · b4/form.css:158 |
-| gap | `7px` | `` | .b4 .f-empty · b4/form.css:158 |
-| column-gap | `7px` | `7px` | .b4 .f-empty · b4/form.css:158 |
-| row-gap | `7px` | `7px` | .b4 .f-empty · b4/form.css:158 |
+| display | `grid` | `grid` | .b4 .f-empty · b4/form.css:162 |
+| gap | `7px` | `` | .b4 .f-empty · b4/form.css:162 |
+| column-gap | `7px` | `7px` | .b4 .f-empty · b4/form.css:162 |
+| row-gap | `7px` | `7px` | .b4 .f-empty · b4/form.css:162 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| font | `500 11.5px/1.3 var(--ui)` | `` | .b4 .f-empty · b4/form.css:158 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-empty · b4/form.css:158 |
-| font-size | `` | `11.5px` | .b4 .f-empty · b4/form.css:158 |
-| font-weight | `` | `500` | .b4 .f-empty · b4/form.css:158 |
+| font | `500 11.5px/1.3 var(--ui)` | `` | .b4 .f-empty · b4/form.css:162 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-empty · b4/form.css:162 |
+| font-size | `` | `11.5px` | .b4 .f-empty · b4/form.css:162 |
+| font-weight | `` | `500` | .b4 .f-empty · b4/form.css:162 |
 | font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
-| font-variant-numeric | `` | `normal` | .b4 .f-empty · b4/form.css:158 |
-| line-height | `` | `14.95px` | .b4 .f-empty · b4/form.css:158 |
+| font-variant-numeric | `` | `normal` | .b4 .f-empty · b4/form.css:162 |
+| line-height | `` | `14.95px` | .b4 .f-empty · b4/form.css:162 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-empty · b4/form.css:158 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-empty · b4/form.css:162 |
 
 
 ### `div.f-mcol`
@@ -3340,7 +3400,7 @@ inside `.f-media` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-193` · rendered **349×145** · 1 instance look like this
+`C2-195` · rendered **349×145** · 1 instance look like this
 
 ```html
 <div class="f-mcol"><div class="f-src" role="radiogroup" aria-label="Where the image comes from"><button type="button" role="radio" aria-checked="true">⟨svg.ic⟩Upload</button><button type="button" role="radio" aria-checked="false">⟨svg.ic⟩Link</button><button type="button" role="radio" aria-checked="false">⟨svg.ic⟩Stored image</button></div><label class="f-drop">⟨svg.ic⟩<span class="f-dl">Drop a screenshot, or <u>cho
@@ -3348,12 +3408,12 @@ inside `.f-media` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b4 .f-mcol · b4/form.css:160 |
-| gap | `10px` | `` | .b4 .f-mcol · b4/form.css:160 |
-| column-gap | `10px` | `10px` | .b4 .f-mcol · b4/form.css:160 |
-| row-gap | `10px` | `10px` | .b4 .f-mcol · b4/form.css:160 |
+| display | `grid` | `grid` | .b4 .f-mcol · b4/form.css:164 |
+| gap | `10px` | `` | .b4 .f-mcol · b4/form.css:164 |
+| column-gap | `10px` | `10px` | .b4 .f-mcol · b4/form.css:164 |
+| row-gap | `10px` | `10px` | .b4 .f-mcol · b4/form.css:164 |
 | align-self | `start` | `start` | .b4 .f-mcol · b4/classes.css:440 |
-| min-width | `0px` | `0px` | .b4 .f-mcol · b4/form.css:160 |
+| min-width | `0px` | `0px` | .b4 .f-mcol · b4/form.css:164 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -3369,7 +3429,7 @@ inside `.f-mcol` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-194` · rendered **349×36** · 1 instance look like this · aria-label="Where the image comes from" role="radiogroup"
+`C2-196` · rendered **349×36** · 1 instance look like this · aria-label="Where the image comes from" role="radiogroup"
 
 ```html
 <div class="f-src" role="radiogroup" aria-label="Where the image comes from"><button type="button" role="radio" aria-checked="true">⟨svg.ic⟩Upload</button><button type="button" role="radio" aria-checked="false">⟨svg.ic⟩Link</button><button type="button" role="radio" aria-checked="false">⟨svg.ic⟩Stored image</button></div>
@@ -3377,22 +3437,22 @@ inside `.f-mcol` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-src · b4/form.css:161 |
-| gap | `2px` | `` | .b4 .f-src · b4/form.css:161 |
-| column-gap | `2px` | `2px` | .b4 .f-src · b4/form.css:161 |
-| row-gap | `2px` | `2px` | .b4 .f-src · b4/form.css:161 |
-| justify-self | `stretch` | `stretch` | .b4 .f-src · b4/form.css:161 |
+| display | `flex` | `flex` | .b4 .f-src · b4/form.css:165 |
+| gap | `2px` | `` | .b4 .f-src · b4/form.css:165 |
+| column-gap | `2px` | `2px` | .b4 .f-src · b4/form.css:165 |
+| row-gap | `2px` | `2px` | .b4 .f-src · b4/form.css:165 |
+| justify-self | `stretch` | `stretch` | .b4 .f-src · b4/form.css:165 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| padding | `3px` | `` | .b4 .f-src · b4/form.css:161 |
-| padding-top | `3px` | `3px` | .b4 .f-src · b4/form.css:161 |
-| padding-right | `3px` | `3px` | .b4 .f-src · b4/form.css:161 |
-| padding-bottom | `3px` | `3px` | .b4 .f-src · b4/form.css:161 |
-| padding-left | `3px` | `3px` | .b4 .f-src · b4/form.css:161 |
-| border-radius | `var(--fld-rad)` | `` | .b4 .f-src · b4/form.css:161 |
-| background | `color-mix(in srgb,#04070A 55%,var(--sunk))` | `` | .b4 .f-src · b4/form.css:161 |
-| background-color | `` | `color(srgb 0.0280392 0.0415686 0.0533333)` | .b4 .f-src · b4/form.css:161 |
-| background-image | `` | `none` | .b4 .f-src · b4/form.css:161 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 .f-src · b4/form.css:161 |
+| padding | `3px` | `` | .b4 .f-src · b4/form.css:165 |
+| padding-top | `3px` | `3px` | .b4 .f-src · b4/form.css:165 |
+| padding-right | `3px` | `3px` | .b4 .f-src · b4/form.css:165 |
+| padding-bottom | `3px` | `3px` | .b4 .f-src · b4/form.css:165 |
+| padding-left | `3px` | `3px` | .b4 .f-src · b4/form.css:165 |
+| border-radius | `var(--fld-rad)` | `` | .b4 .f-src · b4/form.css:165 |
+| background | `color-mix(in srgb,#04070A 55%,var(--sunk))` | `` | .b4 .f-src · b4/form.css:165 |
+| background-color | `` | `color(srgb 0.0280392 0.0415686 0.0533333)` | .b4 .f-src · b4/form.css:165 |
+| background-image | `` | `none` | .b4 .f-src · b4/form.css:165 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)` | `color(srgb 0.909804 0.929412 0.945098 / 0.1) 0px 0px 0px 1px inset` | .b4 .f-src · b4/form.css:165 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -3407,7 +3467,7 @@ inside `.f-mcol` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-198` · rendered **349×42** · 1 instance look like this
+`C2-200` · rendered **349×42** · 1 instance look like this
 
 ```html
 <label class="f-drop">⟨svg.ic⟩<span class="f-dl">Drop a screenshot, or <u>choose a file</u></span><span class="f-ds">Drop, or <u>choose a file</u></span><input type="file" accept="image/png,image/jpeg,image/webp" hidden=""></label>
@@ -3415,32 +3475,32 @@ inside `.f-mcol` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-drop · b4/form.css:170 |
-| gap | `10px` | `` | .b4 .f-drop · b4/form.css:170 |
-| column-gap | `10px` | `10px` | .b4 .f-drop · b4/form.css:170 |
-| row-gap | `10px` | `10px` | .b4 .f-drop · b4/form.css:170 |
-| align-items | `center` | `center` | .b4 .f-drop · b4/form.css:170 |
-| height | `42px` | `42px` | .b4 .f-drop · b4/form.css:170 |
-| box-sizing | `border-box` | `border-box` | .b4 .f-drop · b4/form.css:170 |
-| padding | `0 14px` | `` | .b4 .f-drop · b4/form.css:170 |
-| padding-top | `0px` | `0px` | .b4 .f-drop · b4/form.css:170 |
-| padding-right | `14px` | `14px` | .b4 .f-drop · b4/form.css:170 |
-| padding-bottom | `0px` | `0px` | .b4 .f-drop · b4/form.css:170 |
-| padding-left | `14px` | `14px` | .b4 .f-drop · b4/form.css:170 |
+| display | `flex` | `flex` | .b4 .f-drop · b4/form.css:174 |
+| gap | `10px` | `` | .b4 .f-drop · b4/form.css:174 |
+| column-gap | `10px` | `10px` | .b4 .f-drop · b4/form.css:174 |
+| row-gap | `10px` | `10px` | .b4 .f-drop · b4/form.css:174 |
+| align-items | `center` | `center` | .b4 .f-drop · b4/form.css:174 |
+| height | `42px` | `42px` | .b4 .f-drop · b4/form.css:174 |
+| box-sizing | `border-box` | `border-box` | .b4 .f-drop · b4/form.css:174 |
+| padding | `0 14px` | `` | .b4 .f-drop · b4/form.css:174 |
+| padding-top | `0px` | `0px` | .b4 .f-drop · b4/form.css:174 |
+| padding-right | `14px` | `14px` | .b4 .f-drop · b4/form.css:174 |
+| padding-bottom | `0px` | `0px` | .b4 .f-drop · b4/form.css:174 |
+| padding-left | `14px` | `14px` | .b4 .f-drop · b4/form.css:174 |
 | margin-bottom | `5px` | `5px` | label · app.css:672 |
-| border | `1px dashed color-mix(in srgb,var(--ink) 20%,transparent)` | `` | .b4 .f-drop · b4/form.css:170 |
-| border-radius | `var(--fld-rad)` | `` | .b4 .f-drop · b4/form.css:170 |
-| font | `500 13px/1 var(--ui)` | `` | .b4 .f-drop · b4/form.css:170 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-drop · b4/form.css:170 |
-| font-size | `` | `13px` | .b4 .f-drop · b4/form.css:170 |
-| font-weight | `` | `500` | .b4 .f-drop · b4/form.css:170 |
+| border | `1px dashed color-mix(in srgb,var(--ink) 20%,transparent)` | `` | .b4 .f-drop · b4/form.css:174 |
+| border-radius | `var(--fld-rad)` | `` | .b4 .f-drop · b4/form.css:174 |
+| font | `500 13px/1 var(--ui)` | `` | .b4 .f-drop · b4/form.css:174 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-drop · b4/form.css:174 |
+| font-size | `` | `13px` | .b4 .f-drop · b4/form.css:174 |
+| font-weight | `` | `500` | .b4 .f-drop · b4/form.css:174 |
 | font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
-| font-variant-numeric | `` | `normal` | .b4 .f-drop · b4/form.css:170 |
-| line-height | `` | `13px` | .b4 .f-drop · b4/form.css:170 |
+| font-variant-numeric | `` | `normal` | .b4 .f-drop · b4/form.css:174 |
+| line-height | `` | `13px` | .b4 .f-drop · b4/form.css:174 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-drop · b4/form.css:170 |
-| transition | `border-color .15s,color .15s,background-color .15s` | `` | .b4 .f-drop · b4/form.css:170 |
-| cursor | `pointer` | `pointer` | .b4 .f-drop · b4/form.css:170 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-drop · b4/form.css:174 |
+| transition | `border-color .15s,color .15s,background-color .15s` | `` | .b4 .f-drop · b4/form.css:174 |
+| cursor | `pointer` | `pointer` | .b4 .f-drop · b4/form.css:174 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -3490,7 +3550,7 @@ inside `.f-drop` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-200` · rendered **218×13** · 1 instance look like this
+`C2-202` · rendered **218×13** · 1 instance look like this
 
 ```html
 <span class="f-dl">Drop a screenshot, or <u>choose a file</u></span>
@@ -3501,21 +3561,21 @@ inside `.f-drop` · 1 on screen · **1 look**
 | display | — | `block` | initial |
 | min-width | `0px` | `0px` | .b4 .f-drop > span · b4/classes.css:307 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| font | ↑ `500 13px/1 var(--ui)` | `` | inherited · .b4 .f-drop · b4/form.css:170 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-drop · b4/form.css:170 |
-| font-size | ↑ `` | `13px` | inherited · .b4 .f-drop · b4/form.css:170 |
-| font-weight | ↑ `` | `500` | inherited · .b4 .f-drop · b4/form.css:170 |
+| font | ↑ `500 13px/1 var(--ui)` | `` | inherited · .b4 .f-drop · b4/form.css:174 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-drop · b4/form.css:174 |
+| font-size | ↑ `` | `13px` | inherited · .b4 .f-drop · b4/form.css:174 |
+| font-weight | ↑ `` | `500` | inherited · .b4 .f-drop · b4/form.css:174 |
 | font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-drop · b4/form.css:170 |
-| line-height | ↑ `` | `13px` | inherited · .b4 .f-drop · b4/form.css:170 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-drop · b4/form.css:174 |
+| line-height | ↑ `` | `13px` | inherited · .b4 .f-drop · b4/form.css:174 |
 | letter-spacing | — | `normal` | initial |
 | text-overflow | `ellipsis` | `ellipsis` | .b4 .f-drop > span · b4/classes.css:307 |
 | white-space | `nowrap` | `` | .b4 .f-drop > span · b4/classes.css:307 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .f-drop · b4/form.css:170 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .f-drop · b4/form.css:174 |
 | overflow | `hidden` | `` | .b4 .f-drop > span · b4/classes.css:307 |
 | overflow-x | `hidden` | `hidden` | .b4 .f-drop > span · b4/classes.css:307 |
 | overflow-y | `hidden` | `hidden` | .b4 .f-drop > span · b4/classes.css:307 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-drop · b4/form.css:170 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 .f-drop · b4/form.css:174 |
 
 
 ### `div.f-keyl`
@@ -3524,7 +3584,7 @@ inside `.f-mcol` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-201` · rendered **349×42** · 1 instance look like this
+`C2-203` · rendered **349×42** · 1 instance look like this
 
 ```html
 <div class="f-keyl"><span class="f-kl">Key</span><div class="f-fld f-key"><input data-bare="true" class="f-in mono" placeholder="Set from the weapon" spellcheck="true" autocomplete="off" aria-label="Image key"></div></div>
@@ -3532,12 +3592,12 @@ inside `.f-mcol` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b4 .f-keyl · b4/form.css:178 |
-| grid-template-columns | `auto minmax(0px, 1fr)` | `22.5px 316.5px` | .b4 .f-keyl · b4/form.css:178 |
-| gap | `10px` | `` | .b4 .f-keyl · b4/form.css:178 |
-| column-gap | `10px` | `10px` | .b4 .f-keyl · b4/form.css:178 |
-| row-gap | `10px` | `10px` | .b4 .f-keyl · b4/form.css:178 |
-| align-items | `center` | `center` | .b4 .f-keyl · b4/form.css:178 |
+| display | `grid` | `grid` | .b4 .f-keyl · b4/form.css:182 |
+| grid-template-columns | `auto minmax(0px, 1fr)` | `22.5px 316.5px` | .b4 .f-keyl · b4/form.css:182 |
+| gap | `10px` | `` | .b4 .f-keyl · b4/form.css:182 |
+| column-gap | `10px` | `10px` | .b4 .f-keyl · b4/form.css:182 |
+| row-gap | `10px` | `10px` | .b4 .f-keyl · b4/form.css:182 |
+| align-items | `center` | `center` | .b4 .f-keyl · b4/form.css:182 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:617 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -3553,7 +3613,7 @@ inside `.f-keyl` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-202` · rendered **23×13** · 1 instance look like this · text “Key”
+`C2-204` · rendered **23×13** · 1 instance look like this · text “Key”
 
 ```html
 <span class="f-kl">Key</span>
@@ -3563,15 +3623,15 @@ inside `.f-keyl` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
-| font | `500 12.5px/1 var(--ui)` | `` | .b4 .f-kl · b4/form.css:179 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-kl · b4/form.css:179 |
-| font-size | `` | `12.5px` | .b4 .f-kl · b4/form.css:179 |
-| font-weight | `` | `500` | .b4 .f-kl · b4/form.css:179 |
+| font | `500 12.5px/1 var(--ui)` | `` | .b4 .f-kl · b4/form.css:183 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-kl · b4/form.css:183 |
+| font-size | `` | `12.5px` | .b4 .f-kl · b4/form.css:183 |
+| font-weight | `` | `500` | .b4 .f-kl · b4/form.css:183 |
 | font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:416 |
-| font-variant-numeric | `` | `normal` | .b4 .f-kl · b4/form.css:179 |
-| line-height | `` | `12.5px` | .b4 .f-kl · b4/form.css:179 |
+| font-variant-numeric | `` | `normal` | .b4 .f-kl · b4/form.css:183 |
+| line-height | `` | `12.5px` | .b4 .f-kl · b4/form.css:183 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-kl · b4/form.css:179 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-kl · b4/form.css:183 |
 
 
 ### `div.f-fld.f-key`
@@ -3580,7 +3640,7 @@ inside `.f-keyl` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-203` · rendered **317×42** · 1 instance look like this
+`C2-205` · rendered **317×42** · 1 instance look like this
 
 ```html
 <div class="f-fld f-key"><input data-bare="true" class="f-in mono" placeholder="Set from the weapon" spellcheck="true" autocomplete="off" aria-label="Image key"></div>
@@ -3619,7 +3679,7 @@ inside `.f-form` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-205` · rendered **569×52** · 1 instance look like this · type="button"
+`C2-207` · rendered **569×52** · 1 instance look like this · type="button"
 
 ```html
 <button type="button" class="f-more">⟨svg.ic⟩<span>Add another build</span><em>Stage several at once</em></button>
@@ -3627,13 +3687,13 @@ inside `.f-form` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-more · b4/form.css:194 |
-| gap | `10px` | `` | .b4 .f-more · b4/form.css:194 |
-| column-gap | `10px` | `10px` | .b4 .f-more · b4/form.css:194 |
-| row-gap | `10px` | `10px` | .b4 .f-more · b4/form.css:194 |
-| align-items | `center` | `center` | .b4 .f-more · b4/form.css:194 |
-| justify-content | `center` | `center` | .b4 .f-more · b4/form.css:194 |
-| height | `52px` | `52px` | .b4 .f-more · b4/form.css:194 |
+| display | `flex` | `flex` | .b4 .f-more · b4/form.css:198 |
+| gap | `10px` | `` | .b4 .f-more · b4/form.css:198 |
+| column-gap | `10px` | `10px` | .b4 .f-more · b4/form.css:198 |
+| row-gap | `10px` | `10px` | .b4 .f-more · b4/form.css:198 |
+| align-items | `center` | `center` | .b4 .f-more · b4/form.css:198 |
+| justify-content | `center` | `center` | .b4 .f-more · b4/form.css:198 |
+| height | `52px` | `52px` | .b4 .f-more · b4/form.css:198 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:391 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
 | padding | `var(--ctl-pad, 7px 10px)` | `` | input, select, textarea, button · app.css:391 |
@@ -3641,23 +3701,23 @@ inside `.f-form` · 1 on screen · **1 look**
 | padding-right | `` | `6px` | input, select, textarea, button · app.css:391 |
 | padding-bottom | `` | `1px` | input, select, textarea, button · app.css:391 |
 | padding-left | `` | `6px` | input, select, textarea, button · app.css:391 |
-| border | `1px dashed color-mix(in srgb,var(--ink) 18%,transparent)` | `` | .b4 .f-more · b4/form.css:194 |
-| border-radius | `12px` | `` | .b4 .f-more · b4/form.css:194 |
-| background | `none` | `` | .b4 .f-more · b4/form.css:194 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-more · b4/form.css:194 |
-| background-image | `none` | `none` | .b4 .f-more · b4/form.css:194 |
-| font | `600 13.5px/1 var(--ui)` | `` | .b4 .f-more · b4/form.css:194 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-more · b4/form.css:194 |
-| font-size | `` | `13.5px` | .b4 .f-more · b4/form.css:194 |
-| font-weight | `` | `600` | .b4 .f-more · b4/form.css:194 |
-| font-style | `` | `normal` | .b4 .f-more · b4/form.css:194 |
-| font-variant-numeric | `` | `normal` | .b4 .f-more · b4/form.css:194 |
-| line-height | `` | `13.5px` | .b4 .f-more · b4/form.css:194 |
+| border | `1px dashed color-mix(in srgb,var(--ink) 18%,transparent)` | `` | .b4 .f-more · b4/form.css:198 |
+| border-radius | `12px` | `` | .b4 .f-more · b4/form.css:198 |
+| background | `none` | `` | .b4 .f-more · b4/form.css:198 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b4 .f-more · b4/form.css:198 |
+| background-image | `none` | `none` | .b4 .f-more · b4/form.css:198 |
+| font | `600 13.5px/1 var(--ui)` | `` | .b4 .f-more · b4/form.css:198 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-more · b4/form.css:198 |
+| font-size | `` | `13.5px` | .b4 .f-more · b4/form.css:198 |
+| font-weight | `` | `600` | .b4 .f-more · b4/form.css:198 |
+| font-style | `` | `normal` | .b4 .f-more · b4/form.css:198 |
+| font-variant-numeric | `` | `normal` | .b4 .f-more · b4/form.css:198 |
+| line-height | `` | `13.5px` | .b4 .f-more · b4/form.css:198 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b4 .f-more · b4/form.css:194 |
-| transition | `color .15s,border-color .15s,background-color .15s` | `` | .b4 .f-more · b4/form.css:194 |
-| cursor | `pointer` | `pointer` | .b4 .f-more · b4/form.css:194 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b4 .f-more · b4/form.css:198 |
+| transition | `color .15s,border-color .15s,background-color .15s` | `` | .b4 .f-more · b4/form.css:198 |
+| cursor | `pointer` | `pointer` | .b4 .f-more · b4/form.css:198 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
 
 **:hover** — changes; parts inside it respond (table below)
@@ -3707,7 +3767,7 @@ inside `.f-add` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-209` · rendered **333×596** · 1 instance look like this
+`C2-211` · rendered **333×596** · 1 instance look like this
 
 ```html
 <aside class="f-side"><div class="f-prev"><h5>In Discord</h5><div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="b4-ghostwrap"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unkn
@@ -3741,7 +3801,7 @@ inside `.f-side` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-210` · rendered **333×439** · 1 instance look like this
+`C2-212` · rendered **333×439** · 1 instance look like this
 
 ```html
 <div class="f-prev"><h5>In Discord</h5><div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="b4-ghostwrap"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolith
@@ -3770,7 +3830,7 @@ inside `.f-prev` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-211` · rendered **333×417** · 1 instance look like this
+`C2-213` · rendered **333×417** · 1 instance look like this
 
 ```html
 <div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="b4-ghostwrap"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li
@@ -3799,7 +3859,7 @@ inside `.f-prevsc` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-212` · rendered **333×499** · 1 instance look like this
+`C2-214` · rendered **333×499** · 1 instance look like this
 
 ```html
 <div class="b4-ghostwrap"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li><li style="--sl: var(--sl-barrel, var(--sl-unknown));"><code>MIP Extend
@@ -3824,7 +3884,7 @@ inside `.b4-ghostwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-213` · rendered **333×499** · 1 instance look like this · aria-hidden="true"
+`C2-215` · rendered **333×499** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li><li style="--sl: var(--sl-barrel, var(--sl-unknown));"><code>MIP Extended Light Barrel</code><em>
@@ -3851,7 +3911,7 @@ inside `.b4-ghostcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-214` · rendered **333×499** · 1 instance look like this
+`C2-216` · rendered **333×499** · 1 instance look like this
 
 ```html
 <div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li><li style="--sl: var(--sl-barrel, var(--sl-unknown));"><code>MIP Extended Light Barrel</code><em>Barrel</em></li><li style="--sl: var(--sl-sto
@@ -3887,7 +3947,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-215` · rendered **303×1** · 1 instance look like this
+`C2-217` · rendered **303×1** · 1 instance look like this
 
 ```html
 <div class="lc-rule"></div>
@@ -3920,7 +3980,7 @@ inside `.dcard` · 2 on screen · **1 look**
 
 #### the one look
 
-`C2-216` · rendered **303×12** · 2 instances look like this · text “Attachments”
+`C2-218` · rendered **303×12** · 2 instances look like this · text “Attachments”
 
 ```html
 <div class="lc-h">Attachments</div>
@@ -3952,7 +4012,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-217` · rendered **303×111** · 1 instance look like this
+`C2-219` · rendered **303×111** · 1 instance look like this
 
 ```html
 <ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li><li style="--sl: var(--sl-barrel, var(--sl-unknown));"><code>MIP Extended Light Barrel</code><em>Barrel</em></li><li style="--sl: var(--sl-stock, var(--sl-unknown));"><code>No Stock</code><em>Stock</em></li><li style="--sl: var(--sl-ammunition, var(--sl-unknown));"><code>48 Round Extended Ma
@@ -3990,7 +4050,7 @@ inside `.lc-att` · 6 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C2-218` · rendered **303×20** · 5 instances look like this
+`C2-220` · rendered **303×20** · 5 instances look like this
 
 ```html
 <li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li>
@@ -4020,7 +4080,7 @@ inside `.lc-att` · 6 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C2-237` · rendered **309×56** · 1 instance look like this
+`C2-239` · rendered **309×56** · 1 instance look like this
 
 ```html
 <li><button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span><span class="f-stw">Needs a weapon and an attachment</span></button></li>
@@ -4044,7 +4104,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-229` · rendered **303×32** · 1 instance look like this · text “1C2B4A8B9A”
+`C2-231` · rendered **303×32** · 1 instance look like this · text “1C2B4A8B9A”
 
 ```html
 <div class="lc-code">1C2B4A8B9A</div>
@@ -4077,7 +4137,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-230` · rendered **303×212** · 1 instance look like this
+`C2-232` · rendered **303×212** · 1 instance look like this
 
 ```html
 <div class="lc-img"><img src="https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/AK117-1.png" alt="AK117 Build 1" loading="lazy"><span class="lc-imgfail">Cloudinary did not return this image — <code>AK117-1.png</code></span></div>
@@ -4114,7 +4174,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-231` · rendered **303×14** · 1 instance look like this · text “AR • Build 1 of 1 • Updated 2026-04-08”
+`C2-233` · rendered **303×14** · 1 instance look like this · text “AR • Build 1 of 1 • Updated 2026-04-08”
 
 ```html
 <div class="lc-foot">AR • Build 1 of 1 • Updated 2026-04-08</div>
@@ -4139,7 +4199,7 @@ inside `.b4-ghostwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-232` · rendered **305×60** · 1 instance look like this · text “Pick a weapon and its card builds itself here.”
+`C2-234` · rendered **305×60** · 1 instance look like this · text “Pick a weapon and its card builds itself here.”
 
 ```html
 <p class="f-pe b4-overline">Pick a weapon and its card builds itself…</p>
@@ -4187,7 +4247,7 @@ inside `.f-side` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-233` · rendered **333×101** · 1 instance look like this · role="status"
+`C2-235` · rendered **333×101** · 1 instance look like this · role="status"
 
 ```html
 <div class="f-stage" id="b4-stage-st" role="status" aria-live="polite"><h5><span>Before staging</span><button type="button" class="b3-x f-stmin" aria-label="Minimise Before staging" data-tip="Minimise">⟨svg.ic⟩</button></h5><ul><li><button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span 
@@ -4227,7 +4287,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-235` · rendered **24×24** · 1 instance look like this · aria-label="Minimise Before staging" type="button"
+`C2-237` · rendered **24×24** · 1 instance look like this · aria-label="Minimise Before staging" type="button"
 
 ```html
 <button type="button" class="b3-x f-stmin" aria-label="Minimise Before staging" data-tip="Minimise">⟨svg.ic⟩</button>
@@ -4316,7 +4376,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-238` · rendered **309×56** · 1 instance look like this · aria-label="New build, build 1: needs a weapon and a" type="button"
+`C2-240` · rendered **309×56** · 1 instance look like this · aria-label="New build, build 1: needs a weapon and a" type="button"
 
 ```html
 <button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span><span class="f-stw">Needs a weapon and an attachment</span></button>
@@ -4383,7 +4443,7 @@ inside `.f-st` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-239` · rendered **20×20** · 1 instance look like this
+`C2-241` · rendered **20×20** · 1 instance look like this
 
 ```html
 <span class="f-stm" data-tone="warn">⟨svg.ic⟩</span>
@@ -4422,7 +4482,7 @@ inside `.f-st` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-241` · rendered **259×20** · 1 instance look like this
+`C2-243` · rendered **259×20** · 1 instance look like this
 
 ```html
 <span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span>
@@ -4458,7 +4518,7 @@ inside `.f-stn` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-244` · rendered **28×18** · 1 instance look like this · text “MP”
+`C2-246` · rendered **28×18** · 1 instance look like this · text “MP”
 
 ```html
 <span class="b3-xt-pm" data-arm="MP">MP</span>
@@ -4504,7 +4564,7 @@ inside `.f-st` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-245` · rendered **259×16** · 1 instance look like this · text “Needs a weapon and an attachment”
+`C2-247` · rendered **259×16** · 1 instance look like this · text “Needs a weapon and an attachment”
 
 ```html
 <span class="f-stw">Needs a weapon and an attachment</span>
@@ -4535,7 +4595,7 @@ inside `.drawer` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-246` · rendered **224×40** · 1 instance look like this
+`C2-248` · rendered **224×40** · 1 instance look like this
 
 ```html
 <footer class="dw-f"><button class="b3-btn2">Cancel</button><button class="b3-btn2 go" aria-disabled="true" aria-describedby="b4-stage-st">Stage this MP build</button></footer>
@@ -4581,7 +4641,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-247` · rendered **71×40** · 1 instance look like this · text “Cancel”
+`C2-249` · rendered **71×40** · 1 instance look like this · text “Cancel”
 
 ```html
 <button class="b3-btn2">Cancel</button>
@@ -4663,7 +4723,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-248` · rendered **144×40** · 1 instance look like this · text “Stage this MP build”
+`C2-250` · rendered **144×40** · 1 instance look like this · text “Stage this MP build”
 
 ```html
 <button class="b3-btn2 go" aria-disabled="true" aria-describedby="b4-stage-st">Stage this MP build</button>

@@ -86,7 +86,7 @@ status: live
 | `StateSeg` | `gates4/surfaces.js:34` | 2 | `gates4/main.js (2)` |
 | `AccentBlock` | `b3/broadcast.js:304` | 1 | `ui/broadcast.js (1)` |
 | `ArmoryKey` | `ui/armory.js:1366` | 1 | `ui/armory.js (1)` |
-| `B4AddForm` | `b4/form.js:428` | 1 | `b3/drawer.js (1)` |
+| `B4AddForm` | `b4/form.js:432` | 1 | `b3/drawer.js (1)` |
 | `B4BulkForm` | `b4/bulk.js:127` | 1 | `b3/drawer.js (1)` |
 | `B4Compare` | `b4/compare.js:135` | 1 | `gates4/surfaces.js (1)` |
 | `BulkBadgesPanel` | `ui/armory.js:617` | 1 | `ui/armory.js (1)` |

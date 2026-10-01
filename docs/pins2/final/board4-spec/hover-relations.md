@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — hover relations
 
-*Generated 2026-09-30T23:48:01.769Z by `hover-relations.cjs` from the kit's stylesheets. 194 rules in which one element's hover, focus or press restyles another element — the relations the value files cannot show, because they force states on each element alone. A port that copies only per-element values loses every one of these. JS-driven hovers (Compare's lighting, the badge pop) are in HANDOFF.md and measured with a real mouse in relations.cjs.*
+*Generated 2026-10-01T15:55:23.897Z by `hover-relations.cjs` from the kit's stylesheets. 194 rules in which one element's hover, focus or press restyles another element — the relations the value files cannot show, because they force states on each element alone. A port that copies only per-element values loses every one of these. JS-driven hovers (Compare's lighting, the badge pop) are in HANDOFF.md and measured with a real mouse in relations.cjs.*
 
 ## `app.css` — 60
 
@@ -236,9 +236,9 @@ status: live
 
 | Line | Selector | Declarations |
 |---|---|---|
-| 74 | `.b4 .f-fld:hover .f-caret` | color:var(--ink2) |
-| 133 | `.b4 .f-bt:not([aria-checked=true]):hover .b3-bdgs` | opacity:1 |
-| 139 | `.b4 .f-tier:not([aria-checked=true]):hover .b3-bdgs` | opacity:1 |
+| 78 | `.b4 .f-fld:hover .f-caret` | color:var(--ink2) |
+| 137 | `.b4 .f-bt:not([aria-checked=true]):hover .b3-bdgs` | opacity:1 |
+| 143 | `.b4 .f-tier:not([aria-checked=true]):hover .b3-bdgs` | opacity:1 |
 
 ## `b4/bulk.css` — 1
 

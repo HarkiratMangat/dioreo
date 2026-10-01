@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the exact changes to PORTAL code
 
-*Generated 2026-10-01T01:16:09.788Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `4180d65 (the kit's own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 14 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
+*Generated 2026-10-01T15:44:09.563Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `cb7d0e4 (the kit's own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 14 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
 
 ## `app.css` → `portal/public/app.css`
 

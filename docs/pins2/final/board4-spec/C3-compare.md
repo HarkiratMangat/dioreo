@@ -4125,11 +4125,11 @@ inside `.b3-bdg` · 6 on screen · **1 look**
 
 ### `span.b3-mdw`
 
-inside `.b3-bdg` · 3 on screen · **1 look**
+inside `.b3-bdg` · 3 on screen · **3 looks**
 
-#### the one look
+#### look 1 of 3
 
-`C3-273` · rendered **11×10** · 3 instances look like this · text “HP”
+`C3-273` · rendered **11×10** · 1 instance look like this · text “HP”
 
 ```html
 <span class="b3-mdw">HP</span>
@@ -4152,6 +4152,62 @@ inside `.b3-bdg` · 3 on screen · **1 look**
 | white-space | ↑ `nowrap` | `` | inherited · .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:957 |
 | color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:626 |
 | opacity | `0.72` | `0.72` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
+| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
+| visibility | ↑ `hidden` | `hidden` | inherited · .b4 .b3-bdgs.bare .b3-bpop · b4/classes.css:948 |
+
+#### look 2 of 3
+
+`C3-282` · rendered **17×10** · 1 instance look like this · text “S&D”
+
+```html
+<span class="b3-mdw">S&amp;D</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:625 |
+| text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
+| white-space | ↑ `nowrap` | `` | inherited · .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:957 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:626 |
+| opacity | ⚠️ `0.72` | `0.803913` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
+| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
+| visibility | ↑ `hidden` | `hidden` | inherited · .b4 .b3-bdgs.bare .b3-bpop · b4/classes.css:948 |
+
+#### look 3 of 3
+
+`C3-291` · rendered **40×10** · 1 instance look like this · text “Control”
+
+```html
+<span class="b3-mdw">Control</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:615 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *):not(.b3-pc *) · b4/compare.css:101 |
+| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:625 |
+| text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:33 |
+| white-space | ↑ `nowrap` | `` | inherited · .b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_) · b4/classes.css:957 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:626 |
+| opacity | ⚠️ `0.72` | `0.999987` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 · **a later rule wins — port the computed value and find that rule** |
 | animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:662 |
 | visibility | ↑ `hidden` | `hidden` | inherited · .b4 .b3-bdgs.bare .b3-bpop · b4/classes.css:948 |
 

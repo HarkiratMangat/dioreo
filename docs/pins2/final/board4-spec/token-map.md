@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the custom properties the portal does not have
 
-*Generated 2026-10-01T01:16:09.788Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `4180d65 (the kit's own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree`. 196 of the 282 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
+*Generated 2026-10-01T15:44:09.563Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `cb7d0e4 (the kit's own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree`. 196 of the 282 custom properties this folder's spec reads are defined nowhere in the portal (`portal/ui/tokens.css`, `app.css`, `v2card.css`). A declaration that reads one ports as `var()` of nothing — silently. Session 4 maps each onto a portal token or defines it.*
 
 | Token | Defined in the kit | The definition |
 |---|---|---|
@@ -50,7 +50,7 @@ status: live
 | `--dp-c` | `b3/board.css:1460` (set by script) | `every accent below reads --dp-c, which defaults to the realm's --realm-c — a date field in Season or Access re-colours with no rule of its o` |
 | `--eio` | `b4/classes.css:830` | `.b4 .acx{--pad:14px;--pw:200px;--svh:138px;--cg:16px;--rg:16px;--bgap:16px;--hueh:12px;--huer:44px;--fh:44px;--frad:9px;--lg:10px;--swg:6px;` |
 | `--f-bg` | `b4/form.css:44` | `.b4 .f-fld{--f-bg:color-mix(in srgb,#04070A 52%,var(--sunk));--f-edge:color-mix(in srgb,var(--ink) 12%,transparent);` |
-| `--f-ch` | `b4/form.js:481` | `<section class=${'f-card' + (multi && i === ci ? ' on' : '')} key=${c.id} data-arm=${c.f.mode} style=${`--f-ch:${hueOfCard(c)}`} onFocusIn=$` |
+| `--f-ch` | `b4/form.js:485` | `<section class=${'f-card' + (multi && i === ci ? ' on' : '')} key=${c.id} data-arm=${c.f.mode} style=${`--f-ch:${hueOfCard(c)}`} onFocusIn=$` |
 | `--f-edge` | `b4/classes.css:143` | `.b4 .f-fld:focus-within, .b4 .f-pick.open .f-fld{--f-edge:var(--staged)!important;box-shadow:inset 0 0 0 1px var(--staged),0 0 0 5px color-m` |
 | `--f-hue` | `b4/form.js:320` | `<div class="f-card-b" style=${`--f-hue:${hue}`}>` |
 | `--f-lw` | `b4/classes.css:404` | `.b4 .f-card-b{--f-lw:96px;container:f-card / inline-size}` |
