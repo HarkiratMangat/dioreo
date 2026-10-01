@@ -28,6 +28,7 @@ Never delete or act on a `.claude/worktrees/*` without checking first: run `git 
 - Central scratchpad `docs/ideas/diors-notes.md` — read it, mark items in-file the same session — `project_central_notes_file` memory.
 - Canonical Diors memory path is THIS repo's slug — never the old `-Applications-Diors-Builds` backup — `project_memory_slug_migration` memory.
 - Before filing a new doc, read the folder taxonomy in CLAUDE.md's 🗺️ nav map or `docs/README.md`.
+- A new test is a line in `scripts/testManifest.mjs`, never `package.json`; CI's one required check is `syntax-check`, the aggregate of six jobs — CLAUDE.md § 🧪 and `docs/reference/scripts-catalogue.md` § How to add to the suite.
 
 ## Conditional reads
 - Touching a version number or changelog → skim `project_dior_builds_changelog_system` memory first.
