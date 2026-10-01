@@ -60,6 +60,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 - **The board's code stays on his Mac** (his call, 2026-09-30 21:03 EDT): `docs/pins2/kit/` is gitignored with its own local history, and this branch carries none of it.
 - **The port contract is written down:** `docs/pins2/final/board4-spec/` holds the per-gate handoff, the kit's changes to portal files as diffs, every resolved value, state, token, motion and string, the class and token maps, and the measured relations. The batch's working set lives under `docs/pins2/`.
 - **A readiness audit read it as Sessions 4 and 5 will** (2026-09-30 → 2026-10-01): 156 findings from read-only workers and his comment threads, the confirmed ones fixed in the handoff set, his calls folded in.
+- **Security:** undici 6.28.0 → 6.29.0, lockfile only and inside discord.js's range, for three advisories published 2026-09-28 (GHSA-3wwx-pv8p-q78v, GHSA-r53p-7pc4-xj5r, GHSA-rfgv-xxqx-mfg5) that turned CI's blocking production audit red.
 - **Session 3's close:** the audit's 142 unjudged rows were triaged and 85 verified fixes folded in; `docs-audit`'s `devlog-orphan` now accepts a branch's Proposed heading while its version is unminted; `cites-check.cjs` joins the close procedure.
 
 ## Pre-Release v3.84.0 — 2026-09-14 16:42 EDT (#191 · `8c5e8a90`) — portal pins batch 2: design board 2 answers G1–G4, G6 and G11 for Session 2
