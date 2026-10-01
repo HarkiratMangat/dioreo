@@ -5,6 +5,14 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## 🧪 `ctx-index-refresh.test.sh` made hermetic — closed 2026-10-01 19:21 EDT `[DONE · 2026-10-01 19:21 EDT]`
+
+*Closed on `ci/test-queue-rebuild` (`d59f2831`), filed 2026-09-14 21:00 EDT as `[P3 · S]`. Its own Verify condition was run as written.*
+
+- **What it was.** The one live exception to hook-test rule 4: it copied the user's REAL `~/.claude/context-mode/.dioreo-prose-stamp-*` aside, deleted it, ran the real hook, which re-indexed `docs/`, the rules, memory and the vendor docs into the REAL store, and restored the stamp. It took about 9 s while `docs/` was small and **47 s** once pins batch 2 added about 180k lines of it, which made it the longest entry in `npm test` and put the hooks entry at 138 s inside the pool on a quiet machine.
+- **What it is now.** The real hook and the real context-mode CLI (linked in from the real plugin cache) run in a scratch git repo under a scratch `HOME`, so the stamp, the store and every corpus are the scratch ones. The proof is unchanged: a cold run indexes, a warm run does nothing. **1.3 s, 26 checks.**
+- **Verify, as written:** the test passes with `HOME` set to an empty temp directory (it takes the no-CLI branch) · the user's `.dioreo-prose-stamp-*` files are identical before and after a run (size and mtime). **Shown able to fail:** against a copy of the hook with a planted early exit it fails with the v1 message, `cold run wrote no stamp — the hook is a NO-OP`. The store's `.db` files are live under any running session, so byte-identity of the whole directory is not a usable check.
+
 ## ⏱️ The CI and test-queue rebuild closed four flake entries `[DONE · 2026-09-14 19:44 EDT]`
 
 *Closed on `ci/test-queue-rebuild`, not yet pushed or merged, by `docs/superpowers/plans/2026-09-14-ci-test-queue-rebuild.md`. Every entry's own Verify condition was run as written. The P1 entry about the walk failing in CI stays open in the deferred list until CI itself has run the fix.*
