@@ -5,7 +5,7 @@ status: live
 
 # The Project's brief — the whole arc of pins batch 2
 
-*Written 2026-09-30 22:22 EDT; **split by reader 2026-09-30 22:26 EDT**, at his note (22:25 EDT) that Project instructions are "like a CLAUDE.md: instructions and rules you write that every new thread reads and follows", while the Goal is "the outcome you want the coordinator to work toward". So the **Goal** carries everything the coordinator does — the phases, their entry and exit, the gates, the signals — and the **instructions** carry only what a thread needs, by role. **This file is the versioned original of both boxes**: change it here first, then paste. Project: "board 4 prep finalization" (its threads run in this checkout). Goal 4,941 / 8,000 characters · instructions 4,057 / 16,000.*
+*Written 2026-09-30 22:22 EDT; **split by reader 2026-09-30 22:26 EDT**, at his note (22:25 EDT) that Project instructions are "like a CLAUDE.md: instructions and rules you write that every new thread reads and follows", while the Goal is "the outcome you want the coordinator to work toward". So the **Goal** carries everything the coordinator does — the phases, their entry and exit, the gates, the signals — and the **instructions** carry only what a thread needs, by role. **This file is the versioned original of both boxes**: change it here first, then paste. Project: "board 4 prep finalization" (its threads run in this checkout). Goal 4,941 / 8,000 characters · instructions 4,428 / 16,000.*
 
 ## Goal — for the coordinator
 
@@ -50,6 +50,7 @@ HOW EVERY THREAD WORKS (Harkirat's corrections of 2026-09-30)
 - sequential-thinking before each unit: harsh, wide questions, never a plan dressed as a pass.
 - Fix a gap you find; don't ask about it. A design fork is shown to Harkirat before it is asked.
 - Never push, open a PR, merge, deploy or change the kit without Harkirat's word, restated at the moment (who · to what · when).
+- Asking Harkirat: put the question in your reply, never in an AskUserQuestion popup (each popup wakes the coordinator and burns its tokens; this overrides the working agreement's popup rule inside this Project). Write @Harkirat in plain text on its own line, never inside a quote block — an @ in a quote block does not reach him. A reply without it does not notify him.
 - A thread has no /rename and no model switch: skip the self-check hook's rename-string and model-recommendation gate, and skip each §11 block's first two lines (/rename, Premise … ->). The coordinator set your model.
 ```
 
@@ -73,3 +74,5 @@ Begin phase 1. I approve P, the seven slice workers, the three comment workers K
 *2026-09-30 23:14 EDT — pre-flight edits at his word (E1, E2 without the .remember reads, E4–E8, E11–E13, plus the continuation rule); E3 and E10 held for his answers. Goal and instructions boxes need re-pasting.*
 
 *2026-09-30 23:50 EDT — the transcript workers T1…Tn became the comment workers K1, K2, K3 (his call); only the first message to the Project changed, the two boxes did not.*
+
+*2026-09-30 23:59 EDT — a rule for how threads ask him (reply, plain-text @Harkirat, no popups), at his word of 2026-09-30 23:59 EDT; the instructions box needs one more bullet.*
