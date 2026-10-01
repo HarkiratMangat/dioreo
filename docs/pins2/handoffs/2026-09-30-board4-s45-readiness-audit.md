@@ -43,7 +43,7 @@ Session 2 shipped boards 1 and 2 at ~95% because details lived where the port di
 - `docs/reference/portal-decision-ledger.md` lines 658–787 (every pins-batch-2 section) · `docs/db-deferred-list.md` entries 129, 141, 147, 155, 161, 194, 200, 206, 212, 1136
 - **His words** — `docs/pins2/handoffs/2026-09-21-board4-intake.md` — are the AUTHORITY for rulings. **Authority order** (HANDOFF's own): the kit at Version 81 → his words → `HANDOFF.md` → the plan. A later dated ruling supersedes an earlier one.
 
-**Known supersessions — never findings:** his 2026-09-29 23:41 EDT Compare name row (reversed by BN, V47) · the 10px pop-up gap (CI: 4px) · D1 the yellow (`--patch` → `--staged`, `--meshGold`) and D2 the delete hover · the kit "tracked" / "may it go on GitHub" (decided 2026-09-30 21:03 EDT: this Mac only) · Board 3-E as an input (superseded by Board 4, 2026-09-28 23:27 EDT) · TOP 4 · per-component pop-up timings (now `b3/poptime.js`) · any "Version N" below 81 inside a dated record.
+**Known supersessions — never findings:** his 2026-09-29 23:41 EDT Compare name row (reversed by BN, V47) · the 10px pop-up gap (CI: 4px) · D1 the yellow (`--patch` → `--staged`, `--meshGold`) and D2 the delete hover · the kit "tracked" / "may it go on GitHub" (decided 2026-09-30 21:03 EDT: this Mac only) · Board 3-E as an input (superseded by Board 4, 2026-09-28 23:27 EDT) · TOP 4 · per-component pop-up timings (now `docs/pins2/kit/b3/poptime.js`) · any "Version N" below 81 inside a dated record.
 
 ## 4 · Step 0 — the main session, before any agent (ONE message)
 
@@ -470,10 +470,10 @@ The integration thread verifies each out file itself (`## DONE`, the model line,
 
 1. **Integration:** Step 0, including the worker prompt files (Step 0.7) and the T-slice count. It replies with the list in `local/pins2/audit/prompts/INDEX.md`.
 2. **Worker P** — first message: "Read and follow local/pins2/audit/prompts/P.md".
-3. **Integration:** reads `P-critique.md`, fixes what it confirms (the plan, and the prompt files), logs it in § Log, replies "ready".
+3. **Integration:** reads `local/pins2/audit/P-critique.md`, fixes what it confirms (the plan, and the prompt files), logs it in § Log, replies "ready".
 4. **Workers A, A2, B, C1, C2a, C2b, D, T1…Tn — all at once**, each on its own prompt file.
 5. **Integration:** § 7 steps 1–5 when every worker has replied (a worker that never replies, or whose file lacks `## DONE`, is re-run split in two — the integration thread writes the two new prompt files).
-6. **Worker E** on `prompts/E.md`.
+6. **Worker E** on `local/pins2/audit/prompts/E.md`.
 7. **Integration:** § 7 steps 6–7 — E's questions folded in, the gates, the commit, the re-index, the report. The coordinator relays the report to Harkirat.
 
 **Rules every thread keeps** (also in the Project instructions): this checkout, never a worktree or a cloud clone · read-only unless it is the integration thread · no push, PR or merge, and no kit change, without Harkirat's word restated · silent mode · his routing corrections of 2026-09-30.
