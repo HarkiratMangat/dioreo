@@ -174,6 +174,8 @@ Harkirat, 2026-10-01 17:56 EDT: *"update into the plan for phase 3 if 6 is still
 
 **Before any GitHub run (2026-10-01 18:39 EDT), what the merged tree predicts.** F1, F2 and F3 stay open: a local proxy on a loaded Mac is not a runner. Each job's commands at CI's 4 slots, one job after another: tests **75 s**, browser walks **48 s**, records and site **28 s**, hooks **28 s**, timed after the hook-test fix (before it: 114, 64, 28 and 68). The last GitHub run, on the pre-merge tree, took tests 73 s, browser 70 s, records 38 s, hooks on macOS 37 s. #194's single job ran 26% longer than #191's (364 s against 288 s), and applying that to the pre-merge jobs gives about 92, 88 and 48 s. **Prediction: the slowest job finishes near 90 s, well inside 180 s, so six stays.** It is a prediction until the merged tree's run reports each job's wall time.
 
+**Further cuts: measured, deliberately not taken (2026-10-01 19:55 EDT).** The next 15 s per CI run (the hooks suite and `portalStates`, together) is not worth the extra hassle for now, Harkirat's call. The ceilings, the realistic cuts, the repeatable commands and the conditions to revisit are filed in `docs/db-deferred-list.md` under Someday / tech-debt: `CI speed: the next 15 s per run, measured and deliberately not taken`.
+
 ## Audit log
 
 Falsification pass, 2026-09-14 before this plan was written: `sequentialthinking`, five thoughts, on the question *"where is this plan WRONG?"* Every finding below changed the plan.
