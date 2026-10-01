@@ -124,6 +124,20 @@ The `SessionStart` hook injects a **LAST HANDOFF** block from `.remember`. It is
 
 ⚠️ **And check the always-loaded surfaces for a description that is now WRONG rather than merely missing.** The same pass found `CLAUDE.md`'s portal row still describing the superseded method in full confident detail — worse than a gap, because it is authoritative and arrives in every session.
 
+## 🔴 THE PROMOTION TRIGGER — `local/` IS NOT A DECISION, IT IS A DEFAULT (added 2026-09-16 00:00 EDT)
+
+§71 and §123 below already say that work bigger than the session needs a tracked home. **Both were right and neither ever fired: `local/` reached 253 markdown files** — two real plans, a failure inventory, measured baselines, a 115KB spec variant, and the portal pin log that the batch-2 plan cited *by path*, unresolvable in a fresh clone. A rule with no moment is not a rule.
+
+`npm run handoff` now lists every `local/` document written in the window and marks the ones a tracked file cites. It **shows and does not judge**, on purpose.
+
+**The test, and both halves are required:** promote when losing it would cost real work to re-derive **and** someone outside this session needs it. Short-lived working notes, agent stdout, probe dumps and captures stay in `local/` — that is what it is for.
+
+🔴 **BEING CITED IS NOT A PROMOTION ORDER.** Harkirat, 2026-09-16 00:00 EDT: *"a local/ file can be referenced while still practically being left in local/. It doesn't always mean that it should be moved out into a tracked folder. Sometimes the content is honestly short lived or not worth being tracked."* A `docs-audit` `xref` warning therefore has **two valid fixes — promote the file, or delete the citation.** Choose by the test, never by the warning; otherwise the trigger becomes a ratchet that promotes scratch and the tracked tree becomes the new dumping ground.
+
+**Where promoted things go:** `docs/claude/` for the write-ups a session produces (lessons, audits, critiques, post-mortems, baselines), `docs/portal/` for portal records with no other home. Both take sub-folders freely; both have an `archive/`; both are declared in `FM_RULE` in `scripts/docs-audit.mjs` **and** CLAUDE.md's taxonomy table, and a folder missing from either is refused by `doc-frontmatter`.
+
+---
+
 ## ✅ VERIFY THE CARRIERS; DO NOT ASSERT THEM (added 2026-08-28)
 
 A handoff that says "everything is written down" is a claim like any other. The 2026-08-28 pass made exactly that claim and a falsification run found **six** gaps in it, two of them hazards. What actually settled them was four greps and a `git log`, not recollection:
@@ -281,7 +295,7 @@ I added four steps here on 2026-09-10 and removed them the same hour: **every on
 **The one genuinely new thing is mechanical** — §3b #5 is arithmetic now. Declare what a handoff summarises and `npm run handoff` names anything dropped, and it also requires an `## Audit log`:
 
 ```
-<!-- coverage: local/portal-sync-notes.md · · (pmt\w+) · -->
+<!-- coverage: docs/portal/portal-sync-notes.md · · (pmt\w+) · -->
 ```
 
 ---

@@ -4,6 +4,8 @@ status: live
 paths:
   - "docs/superpowers/plans/**"
   - "docs/superpowers/specs/**"
+  - "docs/pins2/plan/**"
+  - "docs/pins2/spec/**"
 ---
 
 # Drafting a plan — the falsification pass

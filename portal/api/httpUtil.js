@@ -1,11 +1,22 @@
 // portal/api/httpUtil.js
 //
-// Tiny shared helpers every portal/api/*.js route uses. No framework — this project's node:http server has no body parser or path-param extraction, so these exist once here instead of five times.
-function readJsonBody(req) {
+// Tiny shared helpers every portal/api/*.js route uses. No framework — this project's node:http server has no body parser or path-param extraction, so these exist once here instead of five times. `maxBytes` stops reading once the body passes the limit and rejects with code 'too-large'. The portal has no server-wide body cap, so a route that accepts large bodies must pass one.
+function readJsonBody(req, { maxBytes = 0 } = {}) {
     return new Promise((resolve, reject) => {
         let raw = '';
-        req.on('data', (c) => { raw += c; });
+        let over = false;
+        req.on('data', (c) => {
+            if (over) return;
+            raw += c;
+            if (maxBytes && raw.length > maxBytes) {
+                over = true; raw = '';
+                const e = new Error('body too large'); e.code = 'too-large';
+                if (typeof req.destroy === 'function') req.destroy();
+                reject(e);
+            }
+        });
         req.on('end', () => {
+            if (over) return;
             if (!raw) return resolve({});
             try { resolve(JSON.parse(raw)); } catch (e) { reject(e); }
         });

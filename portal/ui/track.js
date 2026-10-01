@@ -129,6 +129,7 @@ function Ruler({ view, onPickDay }) {
     });
     return html`
         <div class="ruler" ref=${ref}>
+            <i class="rend l" aria-hidden="true">${TL.fmt(view.from)}</i><i class="rend r" aria-hidden="true">${TL.fmt(view.to)}</i>
             ${TL.ticks(view, tickStep(view.span(), w)).map((t) => html`
                 <!-- 🔴 EVERY TICK CARRIES ITS REAL DATE AND ANSWERS "what runs on this day". The design binds
                      click and Enter on each one; here they were inert text, so the only route into the day

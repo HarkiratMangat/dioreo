@@ -6,10 +6,11 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, Masthead, MastheadNew } from './shell.js';
 import { DiscordCard } from './v2Render.js';
-import { Manifest, StatePill } from './manifest.js';
+import { Manifest } from './manifest.js';
+import { Icon, Fold } from './icons.js';
 import { fetchJson } from './httpClient.js';
 import { downloadText } from './download.js';
-import { useAsync, RealmShell } from './async.js';
+import { useAsync, RealmShell, reportFailure } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useOverlay, Drawer } from './overlay.js';
 import { SmartDate } from './composer.js';
@@ -19,44 +20,36 @@ const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim().replace(/ 0
 
 // ⚠️ THE CONTENT LIFECYCLE, NAMED. An inline object literal inside a render closure is a vocabulary nothing else can see, and this column carries TWO of them — the staging state (StatePill) and this. Kept apart on purpose: `LIVE NOW` is not `SAVED`, and a reader who cannot tell a written-and-over post from a staged-and-not-yet-real one has been told half the answer.
 const LIFECYCLE_WORD = { live: 'LIVE NOW', scheduled: 'UPCOMING', expired: 'ENDED' };
-// ⚠️ HOISTED ABOVE ITS READER 2026-09-11 18:49 EDT. `BROADCAST_COLUMNS`'s state renderer reads this four lines before it was declared -- a temporal dead zone `node --check` cannot see, which is the whole reason `scripts/tdzRatchet.mjs` exists. It does not throw TODAY only because the read happens inside a render closure that runs long after the module finishes evaluating; make that renderer eager, or hoist the array, and it becomes a crash. The ratchet counted it as one of two NEW findings against a baseline of 27.
+// ⚠️ HOISTED ABOVE ITS READER 2026-09-11 18:49 EDT. `BROADCAST_COLUMNS`'s state renderer reads this four lines before it was declared -- a temporal dead zone `node --check` cannot see, which is the whole reason `scripts/tdzRatchet.mjs` exists. It does not throw TODAY only because the read happens inside a render closure that runs long after the module finishes evaluating; make that renderer eager, or hoist the array, and it becomes a crash. The ratchet counted it as one of two NEW findings against a baseline of 27. 🔴 THE MANIFEST AS DESIGN BOARD 2 DRAWS IT (plan pins batch 2 §10.4 G11 rows 1–3, 2026-09-15 00:07 EDT). The name column gives the text the room and draws the announcement's own colour as a 4px embed-style bar at the row's edge; the three date columns and the state column take the board's widths through their col classes. Posted carries its age under the date, a blank Starts reads On posting (upright, never italic), and no end reads No end in amber with an infinity mark. The State column is one TAB: the lifecycle word and its icon, a 3px bar in the state colour and a 9% wash — and a staged row's tab is a dashed outline, which is the shape-carries-state rule in one control. This replaces StatePill beside a lifecycle word (2026-09-10, pin pmtvqq1xg), because two chips for two axes were the "poorly implemented" labels, and the board answered it with one.
+const LIFECYCLE = { live: { word: 'Live now', icon: 'radio', c: 'var(--ok)' }, scheduled: { word: 'Upcoming', icon: 'calendar', c: 'var(--sched)' }, expired: { word: 'Ended', icon: 'circle-check', c: 'var(--ink3)' } };
+function lifecycleOf(r) {
+    if (LIFECYCLE[r.state]) return r.state;
+    const now = Date.now();
+    if (r.expiresAt && new Date(r.expiresAt).getTime() <= now) return 'expired';
+    return r.startsAt && new Date(r.startsAt).getTime() > now ? 'scheduled' : 'live';
+}
+const agoText = (v) => { const d = daysBetween(v, Date.now()); return d <= 0 ? 'today' : `${d} day${d === 1 ? '' : 's'} ago`; };
 const BROADCAST_COLUMNS = [
-    // ⚠️ THE MARK RIDES INSIDE THE NAME CELL. Built first as a column of its own, which gave the table a headerless 38px strip of mostly-empty dots — and the mockup puts it in the name cell, beside the thing it qualifies, for the same reason Season's outlives-the-season mark rides beside the state. ownDot: this column draws `.sev` itself — the design's ONE swatch, which is a severity mark rather than a topic dot. Without the flag the row carried both, and the extra 17px wrapped a 46-character title onto a second line on every long row.
-    { key: 'text', label: 'Announcement', editable: true,
-      // ⚠️ NO `.warn` MODIFIER. `.sev.warn{background:var(--warn)}` exists in both stylesheets and could never win here: `dotStyle` sets `background` INLINE on the same element and an inline declaration beats a class rule, so the orange it promised had never rendered once. The never-expires finding is carried where it is actually visible -- the warn-coloured `never` in the Ends column, and HeadsUp naming the announcement in words underneath.
-      dotClass: () => 'sev',
-      dotStyle: (r) => `background:${accentOf(r)}`,
-      // The design truncates at 46 and puts the age under the title as row meta. Left whole, a long announcement wrapped to three lines and made its row 23px taller than the design's — four rows of that is the last of the height difference between the two pages.
-      render: (r) => html`<b>${String(r.text || '').replace(/^#{1,3}\s+/, '').slice(0, 46)}</b>`,
-      meta: (r) => `up ${daysBetween(r.createdAt, Date.now())}d` },
-    // ⚠️ `col` AND `dataKind` ARE TWO DIFFERENT DECISIONS and the colgroup only reads the first. dataKind names
-// the CELL (tabular figures here); col names the COLUMN WIDTH. Switching these to nums for the cell silently dropped them out of the c-win width class, and Posted went from the design's 100px to 284 — every date in the table then sat under a different heading than the design's. 🔴 `nums`, NOT `date`. broadcast.html writes `td.nums.drop-sm` here, and `td.d` is a DIFFERENT cell:
-    // `td.d` paints --ink3 (5.89:1) where `.mtable .nums` paints --ink2 (7.80:1), so declaring the date kind for its `drop-sm` side effect dimmed every Posted date one ink tier below the design's. `dropSm` now carries the responsive drop on its own, so cell kind and drop behaviour stay separable.
-    { key: 'createdAt', label: 'Posted', col: 'c-type', dataKind: 'nums', dropSm: true, render: (r) => fmtDay(r.createdAt) },
-    // startsAt has been schema-declared and settable since 2026-08-21 and no surface has ever shown it. Without this column a scheduled announcement is indistinguishable from a live one in the table, which is exactly the confusion the field was added to remove.
-    { key: 'startsAt', label: 'Starts', col: 'c-win', dataKind: 'nums', render: (r) => (r.startsAt ? fmtDay(r.startsAt) : html`<span class="none">immediately</span>`) },
-    // "never" is the finding, not a neutral value: 05-door-broadcast-ops.html's own callout is about an announcement that has been up 19 days because nobody set an end date. It is coloured as the warning it is, and the callout below states it in words for anyone who cannot see the colour.
-    { key: 'expiresAt', label: 'Ends', dataKind: 'nums', render: (r) => (r.expiresAt ? fmtDay(r.expiresAt) : html`<b style="color:var(--warn)">never</b>`) },
-    // TWO AXES, as the design draws them: the STAGING state is the chip (saved / staged) and the CONTENT lifecycle is the meta beside it. One word in one cell answered only half the question — a reader could not tell an announcement that is written-and-over from one that is staged-and-not-yet-real.
-    { key: 'state', label: 'State', dataKind: 'right',
-      // 🔴 THE CHIP IS `StatePill`, NOT A SECOND COPY OF IT (2026-09-10 17:24 EDT). This rendered its own
-      //    `<span class="stt …">` with its own STAGED/SAVED words — a hand-rolled duplicate of the component
-      //    that `manifest.js` exports for exactly this reason, and the reason it is exported at all is that
-      //    Season did the same thing and lost the pill entirely. Two copies of one vocabulary is how
-      //    `.stt.stag` / `.stt.sched` / `.stt.exp` came to be emitted against classes no stylesheet defines.
-      //    Harkirat, pin pmtvqq1xg: *"the state column's labels are so poorly implemented"* — and his own
-      //    standing rule, *fix the class, not just the instance*. The SECOND axis stays, because it is a
-      //    different fact: the chip is the STAGING state, the meta is the CONTENT lifecycle.
-      render: (r) => html`<${StatePill} state=${r.state === 'staged' ? 'staged' : 'saved'} accent=${accentOf(r)} />
-          <span class="rowmeta" style="margin-left:6px">${LIFECYCLE_WORD[r.state] || String(r.state || '').toUpperCase()}</span>` },
+    { key: 'text', label: 'Announcement', editable: true, col: 'c-bc-text',
+      dotClass: () => 'bcbar', dotStyle: (r) => `--c:${accentOf(r)}`,
+      render: (r) => { const t = String(r.text || '').replace(/^#{1,3}\s+/, ''); return html`<b title=${t}>${t}</b>`; } },
+    { key: 'createdAt', label: 'Posted', col: 'c-bc-date', dataKind: 'nums', render: (r) => html`<span class="bcdt">${fmtDay(r.createdAt)}<small>${agoText(r.createdAt)}</small></span>` },
+    { key: 'startsAt', label: 'Starts', col: 'c-bc-date', dataKind: 'nums', render: (r) => (r.startsAt ? html`<span class="bcdt">${fmtDay(r.startsAt)}</span>` : html`<span class="bcdt dim">On posting</span>`) },
+    { key: 'expiresAt', label: 'Ends', col: 'c-bc-date', dataKind: 'nums', render: (r) => (r.expiresAt ? html`<span class="bcdt">${fmtDay(r.expiresAt)}</span>` : html`<span class="bcdt never"><${Icon} name="infinity" />No end</span>`) },
+    { key: 'state', label: 'State', col: 'c-bc-state',
+      render: (r) => { const l = LIFECYCLE[lifecycleOf(r)]; return html`<span class=${'btab' + (r.state === 'staged' ? ' staged' : '')} style=${`--lc:${l.c}`}><${Icon} name=${l.icon} />${l.word}</span>`; } },
 ];
 
 
-const BROADCAST_FILTERS = [
-    { key: 'state', label: 'State', options: [
-        { value: 'live', label: 'live' }, { value: 'scheduled', label: 'scheduled' }, { value: 'expired', label: 'expired' },
-    ] },
-];
+// The State chips keep the portal's chip with its colour dot (board 2 popup, 13:06 EDT) and carry their counts (§10.4 C1). The words match the Tab in the column, so the filter and the thing it filters say the same thing.
+function broadcastFilters(all) {
+    const n = (s) => all.filter((a) => lifecycleOf(a) === s).length;
+    return [{ key: 'state', label: 'State', topic: true, options: [
+        { value: 'live', label: 'Live now', hex: 'var(--ok)', count: n('live') },
+        { value: 'scheduled', label: 'Upcoming', hex: 'var(--sched)', count: n('scheduled') },
+        { value: 'expired', label: 'Ended', hex: 'var(--ink3)', count: n('expired') },
+    ] }];
+}
 
 // The topic accent for an announcement is its OWN stored colour (models/Announcement.js's `color`, generated once at creation and never regenerated on edit), so the portal's dot matches the embed Discord actually renders rather than inventing a second palette. ⚠️ NEVER RETURNS NULL. models/Announcement.js makes `color` required, but a document written before that field existed -- or any future partial -- would leave --topic-accent unset, and the rules that consume it pair a fill with #000 ink. --patch is the safe floor (12.53:1 under #000).
 const accentOf = (a) => (typeof a.color === 'number' ? '#' + a.color.toString(16).padStart(6, '0') : 'var(--patch)');
@@ -82,68 +75,98 @@ const relDay = (iso) => {
     return d <= 0 ? 'today' : `${d} day${d === 1 ? '' : 's'} ago`;
 };
 
-function DeliveryPreview({ live, cap }) {
-    const shown = cap ? live.slice(0, cap) : live;
+// 🔴 CHANGES AHEAD REPLACES "WHAT ONE PLAYER GETS" (plan pins batch 2 §10.4 G3 row 5, popup 2026-09-14 10:33 EDT). The composer now shows the Discord card itself, so this column answers the question the queue cannot: what is about to change. Every future start and every future end, soonest first, as a date tile and the announcement clamped to two lines.
+function ChangesAhead({ all }) {
+    const now = Date.now();
+    const events = [];
+    for (const a of all) {
+        const s = a.startsAt ? new Date(a.startsAt).getTime() : null;
+        const e = a.expiresAt ? new Date(a.expiresAt).getTime() : null;
+        if (s && s > now) events.push({ at: s, a, verb: 'Starts showing', c: 'var(--ok)' });
+        if (e && e > now) events.push({ at: e, a, verb: 'Stops showing', c: 'var(--ink3)' });
+    }
+    events.sort((x, y) => x.at - y.at);
     return html`
-        <div class="nprev" aria-label="What one player gets" role="group">
-            <h5>What one player gets</h5>
-            <!-- The cards live in ONE slot, as the design has them: two siblings of the note rather than two
-                 siblings of each other, so the column is a heading, a stack, and a caption about the stack. -->
-            <div>
-            ${shown.length ? shown.map((a, i) => html`
-                <${DiscordCard} key=${a._id} accent=${accentOf(a)} title=${firstHeading(a.text) || bodyOf(a.text)}
-                                sub=${firstHeading(a.text) ? bodyOf(a.text) : ''}
-                                rows=${[['Posted', relDay(a.createdAt)], ['Ends', a.expiresAt ? fmtDay(a.expiresAt) : 'never']]} />`)
-            : html`<div class="idop"><b>nothing attached</b></div>`}
-            </div>
-            <p class="pnote">Delivered as an <b>ephemeral follow-up</b> after any top-level slash command,
-                every unseen announcement as its own embed in ONE message. Each carries its own stored
-                accent — that colour is the only thing telling two of them apart.</p>
+        <div class="bchg" role="group" aria-label="Changes ahead">
+            <h5>Changes ahead</h5>
+            ${events.length ? events.slice(0, 6).map((ev, i) => { const d = new Date(ev.at); return html`
+                <div class="bchg-i" key=${i} style=${`--gc:${ev.c}`}>
+                    <time datetime=${d.toISOString()}><small>${d.toLocaleDateString(undefined, { month: 'short' })}</small>${d.getDate()}</time>
+                    <span><b>${String(ev.a.text || '').replace(/^#{1,3}\s+/gm, '')}</b><em>${ev.verb}</em></span>
+                </div>`; })
+            : html`<p class="bchg-none">Nothing starts or stops on a date ahead.</p>`}
         </div>`;
 }
 
-// 🔴 NO PANEL OF ITS OWN. This opened its own div.panel with its own header row INSIDE the Shell's view panel — a panel nested in a panel, carrying the realm name a second time and a 42px band the design does not draw, which pushed everything below it down by 42px and rendered in the overlay as one page-sized region. The design puts this content directly in the view panel and its summary line at the RIGHT OF THE SWITCHER ROW, which the Shell already exposes as `tools`. The caller passes it there.
-function NowShowing({ live, counts, cap }) {
+// 🔴 NO PANEL OF ITS OWN. This opened its own div.panel with its own header row INSIDE the Shell's view panel — a panel nested in a panel, carrying the realm name a second time and a 42px band the design does not draw, which pushed everything below it down by 42px and rendered in the overlay as one page-sized region. The design puts this content directly in the view panel and its summary line at the RIGHT OF THE SWITCHER ROW, which the Shell already exposes as `tools`. The caller passes it there. 🔴 THE ANNOUNCEMENT CARD AS DESIGN BOARD 2 DRAWS IT (plan pins batch 2 §10.4 G3 rows 1–4, 2026-09-15 00:28 EDT). The position number is the delivery order, large, in the card's own colour; the text sits in an enclosure clamped to two lines with Show all; the lifespan is one bar between two equal end boxes, the same length on every card so their windows compare at a glance; the meta and the actions share the last row with the actions bottom right. The explanatory sentence under the stack became the heading "Delivery order" (G1), and a card past the cap still says it waits.
+function queueWindow(live) {
+    const now = Date.now();
+    let lo = now, hi = now + 7 * 86400000;
+    for (const a of live) {
+        const s = new Date(a.startsAt || a.createdAt).getTime();
+        if (s < lo) lo = s;
+        if (a.expiresAt) hi = Math.max(hi, new Date(a.expiresAt).getTime());
+    }
+    return { lo, hi: Math.max(hi, lo + 86400000), now };
+}
+function NowShowing({ live, cap, onEdit, onEditDates, onRemove }) {
+    const [openText, setOpenText] = useState(new Set());
+    const win = queueWindow(live);
+    const pct = (t) => Math.max(0, Math.min(100, ((t - win.lo) / (win.hi - win.lo)) * 100));
+    const toggleText = (id) => setOpenText((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
     return html`
-            <div class="nowwrap">
-            <div>
-            ${live.length === 0
-                ? html`<div class="nstack"><div class="nsempty">Nothing is showing right now. Players get no announcement
-                    message at all. Anything scheduled for later is in Airtime.</div></div>`
-                : html`<div class="nstack" role="list" aria-label="Announcements in delivery order">
+        <div class="bqueue">
+            <div class="bqcol">
+                <div class="bqhead">Delivery order</div>
+                ${live.length === 0
+                    ? html`<div class="nsempty">Nothing is showing right now. Players get no announcement message at all. Anything scheduled for later is in Airtime.</div>`
+                    : html`<div class="bqlist" role="list" aria-label="Announcements in delivery order">
                     ${live.map((a, i) => {
+                        const waiting = cap && i >= cap;
+                        const id = String(a._id);
+                        const open = openText.has(id);
+                        const text = String(a.text || '').replace(/^#{1,3}\s+/gm, '');
+                        const start = new Date(a.startsAt || a.createdAt).getTime();
+                        const end = a.expiresAt ? new Date(a.expiresAt).getTime() : null;
+                        const left = pct(start);
                         const days = daysBetween(a.createdAt, Date.now());
-                        const waiting = cap ? i >= cap : false;
+                        const showings = a.repeatCount && a.repeatCount > 1 ? a.repeatCount : 1;
                         return html`
-                            <div class=${'nscard' + (i === 0 ? ' p0' : '') + (waiting ? ' over' : '')}
-                                 key=${a._id} role="listitem" style=${`--c:${accentOf(a)}`}
-                                 aria-label=${`Delivery position ${i + 1}${waiting ? `, beyond the ${cap}-message cap` : ''}`}>
-                                <span class="np">${i + 1}</span>
-                                <span class="nsb">
-                                    <span class="nt">${a.text}</span>
-                                    <span class="nd">up ${days}d</span>
-                                </span>
-                                <span class="nsmeta">
-                                    ${a.expiresAt
-                                        ? html`<span class="nschan">ends ${fmtDay(a.expiresAt)}</span>`
-                                        : html`<span class="nspin warn">never ends</span>`}
-                                    ${waiting ? html`<span class="nspin warn">waits</span>` : null}
-                                </span>
-                            </div>`;
+                        <div class=${'qcard' + (waiting ? ' over' : '')} key=${id} role="listitem" style=${`--c:${accentOf(a)}`}
+                             aria-label=${`Delivery position ${i + 1}${waiting ? `, waiting beyond the ${cap}-message cap` : ''}`}>
+                            <span class="bnum">${i + 1}</span>
+                            <div class="bbody">
+                                <div class=${'benc' + (open ? ' open' : '')} onClick=${() => toggleText(id)}>
+                                    <p>${text}</p>
+                                    <div class="bencf"><span>${text.length.toLocaleString()} characters</span>${waiting ? html`<span class="bwait">Waits for a free slot</span>` : null}
+                                        <button type="button" class="bexp" aria-expanded=${open ? 'true' : 'false'} onClick=${(e) => { e.stopPropagation(); toggleText(id); }}><${Fold} open=${open} />${open ? 'Show less' : 'Show all'}</button></div>
+                                </div>
+                                <div class="btl">
+                                    <span class="bend"><${Icon} name="calendar-days" />${fmtDay(a.startsAt || a.createdAt)}</span>
+                                    <span class="qbar" aria-hidden="true">
+                                        <span class="btrack"></span>
+                                        <span class=${'bspan' + (end ? '' : ' open')} style=${end ? `left:${left}%;width:${Math.max(1, pct(end) - left)}%` : `left:${left}%`}></span>
+                                        <span class="bnow" style=${`left:${pct(win.now)}%`}></span>
+                                    </span>
+                                    ${end ? html`<span class="bend"><${Icon} name="clock" />${fmtDay(a.expiresAt)}</span>` : html`<span class="bend nev"><${Icon} name="infinity" />No end</span>`}
+                                </div>
+                                <div class="bmeta">
+                                    <span class="bpill">up ${days}d</span>
+                                    <span class="bpill">${showings} showing${showings === 1 ? '' : 's'}</span>
+                                    <span class="bacts">
+                                        <button type="button" class="wg-ib" aria-label="Edit announcement" data-tip="Edit" onClick=${() => onEdit(a)}><${Icon} name="square-pen" /></button>
+                                        <button type="button" class="wg-ib" aria-label="Dates and repeats" data-tip="Dates and repeats" onClick=${() => onEditDates(a)}><${Icon} name="calendar-days" /></button>
+                                        <i class="wg-vr" aria-hidden="true"></i>
+                                        <button type="button" class="wg-ib wg-del" aria-label="Remove announcement" data-tip="Remove" onClick=${() => onRemove(a)}><${Icon} name="trash-2" /></button>
+                                    </span>
+                                </div>
+                            </div>
+                            ${a.bannerImageUrl ? html`<img class="bban" src=${a.bannerImageUrl} alt="" loading="lazy" />` : html`<span></span>`}
+                        </div>`;
                     })}
-                </div>
-                <!-- The design states the ORDERING RULE unconditionally and appends the over-cap warning only
-                     when there is one. The portal printed nothing at all under the cap, so the one fact a
-                     reader most needs here — that position is delivery order and cannot be changed — appeared
-                     only in the failure case. -->
-                <p class="chint" style="margin-top:var(--s3)">
-                    Position is <b>delivery order</b> — oldest first, and nothing else. There is no way
-                    to reorder announcements.${cap && live.length > cap ? html`${' '}<b style="color:var(--warn)">${live.length - cap} of these will not
-                    be shown</b> until something above ${live.length - cap === 1 ? 'it' : 'them'} ends.` : null}
-                </p>`}
+                </div>`}
             </div>
-            <${DeliveryPreview} live=${live} cap=${cap} />
-            
+            <${ChangesAhead} all=${live} />
         </div>
     `;
 }
@@ -227,12 +250,11 @@ function Airtime({ all }) {
                 <div class="ov"><div class="now" style=${`left:${pct(today)}%`}></div></div>
             </div>
         </div></div>
-        <p class="racknote">A bar begins at <code>startsAt</code> when one is set, otherwise at <code>createdAt</code>. A bar with <b>no right edge</b> has <b>no end date at all</b> and runs until somebody deletes it. Nothing expires it and nothing reminds you.</p>
     `;
 }
 
 // The proactive data-quality callout from 05-door-broadcast-ops.html. It names the specific announcement and the specific number rather than warning in the abstract -- an "announcements can stay up forever" notice teaches nothing, "this one has been up 19 days" is actionable.
-function HeadsUp({ all }) {
+function HeadsUp({ all, onSetEnd }) {
     const forever = all.filter((a) => a.state === 'live' && !a.expiresAt)
         .map((a) => ({ ...a, days: daysBetween(a.createdAt, Date.now()) }))
         .sort((a, b) => b.days - a.days);
@@ -247,70 +269,154 @@ function HeadsUp({ all }) {
              reason. The design wraps it in a plain div for exactly this, so the callout stays raised and
              the Manifest's adjacency is to the view panel it is subordinate to. Margins collapse through
              a div with no border or padding, so it costs no space. -->
-        <div class="panel" style="margin-top:var(--s4)"><div class="callout">
-            <b>Heads up:</b>${' '}“${worst.text.slice(0, 62)}${worst.text.length > 62 ? '…' : ''}”
-            has no expiry and has been showing for <b>${worst.days} day${worst.days === 1 ? '' : 's'}</b>.${' '}
-            ${forever.length > 1 ? `${forever.length - 1} other${forever.length === 2 ? '' : 's'} also never end. ` : ''}${' '}
-            A blank expiry field means the 60-day default; <code>never</code> means this.
+        <div class="panel" style="margin-top:var(--s4)"><div class="callout hucall">
+            <${Icon} name="triangle-alert" /><span><b>Heads up:</b>${' '}“${worst.text.slice(0, 62)}${worst.text.length > 62 ? '…' : ''}” has no end date and has been showing for <b>${worst.days} day${worst.days === 1 ? '' : 's'}</b>.${forever.length > 1 ? ` ${forever.length - 1} other${forever.length === 2 ? '' : 's'} also never end.` : ''}</span>${onSetEnd ? html`<button type="button" class="chip" onClick=${() => onSetEnd(worst)}>Set an end date</button>` : null}
         </div></div>
         </div>
     `;
 }
 
-// Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt (new field, this task -- core/ops/announcements.js's own header explains why it's a real admin date, unlike expiry which is a day-count). A blank expiry means the server's own 60-day default; a blank start means "shows immediately" -- both sent as null rather than guessed at client-side. ⚠️ A BLANK FIELD HERE IS A REAL VALUE, TWICE OVER, and neither said so on screen: a blank expiry takes the server's 60-day default rather than never expiring, and a blank start means the announcement is live the moment it commits. Both facts were in this file's own header comment, which nobody using the form can read.
-function PostForm({ onSubmit, onCancel }) {
-    const [text, setText] = useState('');
+// The shared 6,000-character embed budget every live post competes for (Discord's real limit on total embed content in one message, measured 2026-09-13; §10.3 row 10). Excludes whatever announcement is currently open in the composer, so editing one doesn't count its own old text against its new length.
+const EMBED_BUDGET = 6000;
+function otherLiveLength(all, excludeId) {
+    return (all || [])
+        .filter((a) => a.state === 'live' && String(a.id || a._id) !== String(excludeId || ''))
+        .reduce((sum, a) => sum + (a.text || '').length, 0);
+}
+
+// The Show-each-player stepper's card glyphs (§10.3 row 3) — one small raised tile per showing.
+function RepeatGlyphs({ n }) {
+    const count = Math.max(1, Number(n) || 1);
+    return html`
+        <div class="rp-glyphs" aria-hidden="true">
+            ${Array.from({ length: Math.min(count, 8) }, (_, i) => html`<i class="rp-glyph" key=${i}></i>`)}
+            ${count > 8 ? html`<span class="rp-more">+${count - 8}</span>` : null}
+        </div>`;
+}
+
+// Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt, a banner image and a repeat count (pins batch 2, spec §7/§10.3). The Discord-side fields stay authoritative for what the server accepts; this drawer is the richer web equivalent, built per the pins-2 design board (G8).
+//
+// ⚠️ EDIT AND POST SHARE ONE FORM. `initial` is the announcement object when opened from Broadcast's "Edit"/"Dates and repeats" buttons or HeadsUp's "Set an end date" (null when opened from "+ Post announcement") — pre-fills every field and switches submit() to an announcement.edit op that carries bannerImageUrl and repeatCount (row 8: an edit that omits them would silently wipe them, see core/ops/announcements.js's apply()).
+function PostForm({ initial, allAnnouncements, onSubmit, onCancel }) {
+    const editing = Boolean(initial);
+    const [text, setText] = useState(initial?.text || '');
     const [startsAt, setStartsAt] = useState('');
+    const [startsIso, setStartsIso] = useState(initial?.startsAt ? String(initial.startsAt).slice(0, 10) : null);
     const [expiresAt, setExpiresAt] = useState('');
-    // 🔴 THE RESOLVED INSTANT IS STATE, NOT A CLIENT-SIDE PARSE AT SUBMIT TIME. This used to send
-    //    `new Date(startsAt).toISOString()`, which is the browser's parser reading a value the BOT will
-    //    later read with chrono-node — two implementations behind one promise, which is the exact
-    //    argument composer.js's own header makes for asking the server. The iso here is what
-    //    /api/parse-date returned, so what the preview says and what the record holds cannot differ.
-    const [startsIso, setStartsIso] = useState(null);
-    const [expiresIso, setExpiresIso] = useState(null);
-    // ⚠️ TEXT WITHOUT A RESOLUTION MUST BLOCK, NOT SILENTLY SEND NULL. A field reading "next tuseday"
-    //    resolves to nothing; submitting it would post an announcement that starts immediately and say
-    //    nothing about why. The `why` line below names which field, in the drawer footer's own voice.
-    const unresolved = [startsAt.trim() && !startsIso ? 'the start' : '', expiresAt.trim() && !expiresIso ? 'the end' : ''].filter(Boolean);
-    const ready = text.trim() && !unresolved.length;
+    const [expiresIso, setExpiresIso] = useState(initial?.expiresAt ? String(initial.expiresAt).slice(0, 10) : null);
+    // "Never ends" is its own switch (row 1, G8) rather than inferred from a blank field, because blank and never are two different real values now (see broadcast.logic.js's buildBroadcastComposerOp).
+    const [neverEnds, setNeverEnds] = useState(Boolean(editing && initial && !initial.expiresAt));
+    const [bannerLink, setBannerLink] = useState(initial?.bannerImageUrl || '');
+    const [bannerBroken, setBannerBroken] = useState(false);
+    const [bannerDims, setBannerDims] = useState(null);
+    const [repeatCount, setRepeatCount] = useState(initial?.repeatCount || 1);
+    const [busy, setBusy] = useState(false);
+
+    useEffect(() => { setBannerBroken(false); setBannerDims(null); }, [bannerLink]);
+
+    const unresolved = [startsAt.trim() && !startsIso ? 'the start' : '', (!neverEnds && expiresAt.trim() && !expiresIso) ? 'the end' : ''].filter(Boolean);
+    const ready = text.trim() && !unresolved.length && !busy;
+
+    const otherLen = otherLiveLength(allAnnouncements, initial?.id || initial?._id);
+    const thisLen = text.length;
+    const totalLen = otherLen + thisLen;
+    const overBudget = totalLen > EMBED_BUDGET;
 
     function submit() {
-        onSubmit(buildBroadcastAddOp({
+        setBusy(true);
+        const fields = {
             text,
             startsAt: startsIso || null,
-            expiresAt: expiresIso || null,
-        }));
+            bannerImageUrl: bannerLink.trim() || null,
+            repeatCount,
+            // undefined (blank, omit the key) | null (Never ends) | an ISO string (a resolved date).
+            expiresAt: neverEnds ? null : (expiresIso || undefined),
+        };
+        const op = buildBroadcastComposerOp(fields, initial);
+        Promise.resolve(onSubmit(op)).then((ok) => { if (ok === false) setBusy(false); });
     }
 
-    // 🔴 A DRAWER, NOT AN INLINE PANEL. `broadcast.html:415` opens this through `S.drawer` — scrim, `dw-h` header with the `announcement.post · tier 1` eyebrow, `dwbody`, and a `dw-f` footer — and the portal pushed the whole page down with a `div.panel` above the view instead. Measured 2026-09-01 with `portal:audit --open "+ Post announcement"`: every drawer element read ONLY IN MOCKUP and the view panel came out 291px taller. The machinery was already imported for the bulk-delete confirmation. ⚠️ THE COPY IS THE PORTAL'S AND STAYS. The design labels these `Text` / `Starts (blank = immediately)` / `Expires in` and carries its guidance in `p.dw-p`; this form's own note records why the two deciding facts — a blank start means live on commit, a blank expiry means SIXTY DAYS rather than never — have to be on screen. So: the design's container and its `dw-p` placement, this file's sentences inside them. ⚠️ `Expires in` is a TEXT field in the design ("blank, days, or never") and a date input here. That is a payload-shape question for `core/ops/announcements.js`, which §0.6b puts out of this pass — filed, not silently kept: a date input cannot express "never", which is the state this whole realm is about.
     return html`
-        <${Drawer} eyebrow="announcement.post · tier 1" title="Post an announcement" onClose=${onCancel}
+        <${Drawer} eyebrow=${editing ? 'announcement.edit · tier 1' : 'announcement.post · tier 1'}
+                   title=${editing ? 'Edit announcement' : 'Post an announcement'} wide onClose=${onCancel}
                    actions=${html`
-                       <span role="status" class=${'why' + (ready ? '' : ' blocked')}>${ready ? 'Stages one operation. Nothing reaches a player until you commit it on Review.' : 'Write the announcement first.'}</span>
+                       <span role="status" class=${'why' + (text.trim() ? '' : ' blocked')}>${!text.trim() ? 'Write the announcement first.'
+                           : ready ? 'Stages one operation. Nothing reaches a player until you commit it on Review.'
+                           : unresolved.length ? `${unresolved.join(' and ')} ${unresolved.length > 1 ? 'are' : 'is'} not a date yet` : ''}</span>
                        <button class="btn" onClick=${onCancel}>Cancel</button>
-                       ${unresolved.length ? html`<span class="why blocked">${unresolved.join(' and ')} ${unresolved.length > 1 ? 'are' : 'is'} not a date yet</span>` : null}
-                       <button class="btn go" disabled=${!ready} onClick=${submit}>Stage post</button>`}>
-            <div class="dwbody">
-                <div class="dwfield"><label for="post-text">Text</label>
-                    <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
-                              value=${text} onInput=${(e) => setText(e.target.value)}></textarea></div>
-                <div class="dw-grid2">
-                        ${''/* 🔴 PIN pmtvp9ur7 ASKED FOR A DATE PICKER AND THE ANSWER WAS ALREADY BUILT. A native date input cannot take "in 3 days", cannot take a paste out of a patch note, and renders a different widget in every browser. SmartDate asks the bot's own chrono-node through /api/parse-date and echoes what it resolved, which is what /manage has understood since it was built. */}
-                    <${SmartDate} chrome="drawer" id="post-starts" label="Starts"
-                                  placeholder="blank = the moment you commit, or “in 3 days”, or Sep 21"
-                                  value=${startsAt} iso=${startsIso}
-                                  onChange=${(v, i) => { setStartsAt(v); setStartsIso(i); }} />
-                    <${SmartDate} chrome="drawer" id="post-expires" label="Ends"
-                                  placeholder="blank = the server’s 60-day default, not never"
-                                  value=${expiresAt} iso=${expiresIso}
-                                  onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }} />
+                       <button class="btn go" disabled=${!ready} onClick=${submit}>${busy ? 'Staging…' : (editing ? 'Stage this edit' : 'Stage post')}</button>`}>
+            <div class="dwbody bcast-composer">
+                <div class="bed-main">
+                    <div class="dwfield"><label for="post-text">Text</label>
+                        <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
+                                  value=${text} onInput=${(e) => setText(e.target.value)}></textarea>
+                        <div class=${'cmeter bcast' + (overBudget ? ' bad' : '')}>
+                            <i style=${`width:${Math.min(100, (otherLen / EMBED_BUDGET) * 100)}%;opacity:.38`}></i>
+                            <i style=${`width:${Math.min(100 - Math.min(100, (otherLen / EMBED_BUDGET) * 100), (thisLen / EMBED_BUDGET) * 100)}%;margin-left:${Math.min(100, (otherLen / EMBED_BUDGET) * 100)}%`}></i>
+                        </div>
+                        <span class=${'meter-note' + (overBudget ? ' bad' : '')}>${Math.max(0, EMBED_BUDGET - totalLen)} of ${EMBED_BUDGET} left</span>
+                    </div>
+
+                    <div class="dwfield"><label for="post-banner">Banner</label>
+                        <div class="banner-row">
+                            <input id="post-banner" value=${bannerLink} placeholder="https://…" autocomplete="off" spellcheck="false"
+                                   onInput=${(e) => setBannerLink(e.target.value)} />
+                            ${bannerLink.trim() ? html`
+                                <div class=${'banner-thumb' + (bannerBroken ? ' bad' : '')}>
+                                    <img src=${bannerLink.trim()} alt=""
+                                         onLoad=${(e) => setBannerDims({ w: e.target.naturalWidth, h: e.target.naturalHeight })}
+                                         onError=${() => setBannerBroken(true)} />
+                                </div>` : null}
+                        </div>
+                        ${bannerLink.trim() ? html`
+                            <span class=${'banner-echo' + (bannerBroken ? ' bad' : '')}>${bannerBroken ? "didn't load" : (bannerDims ? `✓ ${bannerDims.w} × ${bannerDims.h}` : '')}</span>` : null}
+                    </div>
+
+                    <div class="dw-grid2 bcast-dates">
+                        <${SmartDate} chrome="drawer" id="post-starts" label="Starts"
+                                      placeholder="in 3 days, or Sep 21"
+                                      value=${startsAt} iso=${startsIso}
+                                      onChange=${(v, i) => { setStartsAt(v); setStartsIso(i); }} />
+                        <div class="dwfield ends-field">
+                            <label for="post-expires"><span>Ends</span>${' '}
+                                <label class="seg-sw-inline">
+                                    <input type="checkbox" checked=${neverEnds} onChange=${(e) => setNeverEnds(e.target.checked)} />
+                                    <span>Never ends</span>
+                                </label>
+                            </label>
+                            ${neverEnds
+                                ? html`<div class="never-ends-field"><span>Stays up until you remove it</span></div>`
+                                : html`<${SmartDate} chrome="drawer" id="post-expires" label=""
+                                                     placeholder="Sep 21"
+                                                     value=${expiresAt} iso=${expiresIso}
+                                                     onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }} />`}
+                        </div>
+                    </div>
+
+                    <div class="dwfield"><label>Show each player</label>
+                        <div class="repeat-row">
+                            <div class="stepper">
+                                <button type="button" class="step-btn" disabled=${repeatCount <= 1}
+                                        onClick=${() => setRepeatCount(Math.max(1, repeatCount - 1))}>−</button>
+                                <span class="step-val">${repeatCount}</span>
+                                <button type="button" class="step-btn" onClick=${() => setRepeatCount(repeatCount + 1)}>+</button>
+                            </div>
+                            <${RepeatGlyphs} n=${repeatCount} />
+                            <span class="clock-tag"><${Icon} name="clock" cls="sm" />1 a day max</span>
+                        </div>
+                    </div>
                 </div>
-                <p class="dw-p">A blank start shows it the moment you commit. A blank end takes the server's
-                    60-day default, not never.</p>
-                <p class="dw-p">Every live announcement is attached to the bot's next reply to a player, in the
-                    order it was written — so this is not a broadcast to a channel, it is a note added to whatever
-                    they were already doing.</p>
+                <aside class="bed-side">
+                    <div class="bed-sec">
+                        <h5>In Discord</h5>
+                        ${text.trim() ? html`
+                            <div class="post-prev">
+                                ${bannerLink.trim() && !bannerBroken ? html`<img class="post-prev-banner" src=${bannerLink.trim()} alt="" />` : null}
+                                <p class="post-prev-text">${text.length > 240 ? `${text.slice(0, 240)}…` : text}</p>
+                                <span class="post-prev-when">${startsIso ? `Posts ${startsIso}` : 'Posts now'}</span>
+                            </div>` : html`<p class="empty">Type the announcement and the card builds itself here.</p>`}
+                    </div>
+                </aside>
             </div>
         <//>
     `;
@@ -363,11 +469,20 @@ export function BroadcastRealm({ session }) {
         forever: data.all.filter((a) => a.state === 'live' && !a.expiresAt).length,
     };
 
+    // Edit and Dates and repeats open the composer on the announcement itself (G3 row 4); the composer reads `initial` and stages an edit rather than a post.
+    const [editingAnn, setEditingAnn] = useState(null);
+    const openEdit = (a) => { setEditingAnn(a); setShowAdd(true); };
+
+    // 🔴 `harden` (pins batch 2, §10.3 row 9) — a 403, a CSRF refusal or the op's own validation error (the banner's "needs a full https:// URL" refusal arrives only through this path) resolves to a failure OBJECT, never a throw. The old version never looked, so the drawer closed and said "staged" while nothing had staged and the draft was gone.
     async function handleAdd(op) {
-        await stageOps('broadcast', [op], session.csrfToken);
+        const res = await stageOps('broadcast', [op], session.csrfToken);
+        if (await reportFailure(overlay, res, 'The announcement could not be staged')) return false;
+        if (!res.changesetId) { overlay.say(res.error || 'The server refused this announcement.'); return false; }
         setShowAdd(false);
+        setEditingAnn(null);
         overlay.say('Announcement staged. Nothing reaches a player until you commit it.', 'Review', () => { location.hash = '#/review'; });
         refresh();
+        return true;
     }
 
     // No bulk-delete op exists for announcements (unlike loadouts' loadout.bulkDelete) -- one announcement.delete per selected id, in a single changeset, which is exactly what a multi-op changeset is for.
@@ -414,7 +529,7 @@ export function BroadcastRealm({ session }) {
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
                   stagedOps=${data.stagedUnknown ? null : data.stagedOps}
-                  overlaySlot=${html`${overlay.render()}${showAdd ? html`<${PostForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}`}
+                  overlaySlot=${html`${overlay.render()}${showAdd ? html`<${PostForm} initial=${editingAnn} allAnnouncements=${data.all} onSubmit=${handleAdd} onCancel=${() => { setShowAdd(false); setEditingAnn(null); }} />` : null}`}
                   commands=${[
                       { label: 'Post an announcement', group: 'broadcast', local: true, accent: 'var(--r-broadcast)',
                         keywords: ['new', 'write', 'say', 'announce'], run: () => setShowAdd(true) },
@@ -431,17 +546,15 @@ export function BroadcastRealm({ session }) {
                                                                               onClick=${() => setShowAdd(true)} />`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
-                      ${view === 'Delivery queue' ? html`<${NowShowing} live=${data.live} counts=${counts} cap=${data.maxPerMessage} />` : html`<${Airtime} all=${data.all} />`}
+                      ${view === 'Delivery queue' ? html`<${NowShowing} live=${data.live} cap=${data.maxPerMessage} onEdit=${openEdit} onEditDates=${openEdit} onRemove=${(a) => confirmBulkDelete([a._id])} />` : html`<${Airtime} all=${data.all} />`}
                   `}
                   
                   stateKey=${false}
                   tools=${html`<span class="key" aria-label="What the marks mean"><span class="l"><i></i>saved</span><span class="s"><i></i>staged</span></span>`}
-                  meta=${view === 'Delivery queue'
-                      ? `${Math.min(counts.live, data.maxPerMessage)} in one message, oldest first · cap ${data.maxPerMessage}${counts.live > data.maxPerMessage ? ` · ${counts.live - data.maxPerMessage} wait for the next` : ''}`
-                      : `${data.all.length} announcement${data.all.length === 1 ? '' : 's'} on the axis`}
-                  noticeSlot=${html`<${HeadsUp} all=${data.all} />`}
+                  meta=${view === 'Delivery queue' ? html`<span class="bqcount"><span class="bqm" aria-hidden="true"><i style=${`width:${Math.min(100, (Math.min(counts.live, data.maxPerMessage) / data.maxPerMessage) * 100)}%`}></i></span><b>${Math.min(counts.live, data.maxPerMessage)}</b> of ${data.maxPerMessage} slots used</span>` : null}
+                  noticeSlot=${html`<${HeadsUp} all=${data.all} onSetEnd=${openEdit} />`}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${BROADCAST_COLUMNS} searchableFields=${['text']}
-                                                    label="Manifest" selectable=${false} searchPlaceholder="Search the text…" addLabel="+ Post announcement" filterGroups=${BROADCAST_FILTERS}
+                                                    label="Manifest" selectable=${false} searchPlaceholder="Search the text…" addLabel="+ Post announcement" filterGroups=${broadcastFilters(data.all)}
                                                     bulkNote="Reversible — a staged deletion is discarded, never undone"
                                                     bulkTier=${2} rowNoun=${['announcement', 'announcements']}
                                                     onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Remove"

@@ -228,6 +228,16 @@
   --rad-3:10px;       /* large containers: drawers, modals, the ⌘K palette */
   --rad-round:50%;    /* circles — avatars, dots, status beads */
   --rad-pill:999px;   /* pills — a radius that always exceeds half the height */
+  /* Pins batch 2, design board 2 (plan §10.4 rule ②), added 2026-09-14 23:59 EDT. The board's literal radii — 5px (search count, empty tags), 6px (attachment tags, end boxes, pills), 7px (code field, popover) — are each within 1px of --rad-2, so they port onto it and no radius token is added. The nine slot hues are one lightness and chroma with the hue carrying the slot, so a tag's wash reads as identity without competing with a category or state colour. */
+  --sl-muzzle:oklch(76% .055 25); --sl-barrel:oklch(76% .055 65); --sl-stock:oklch(76% .055 105);
+  --sl-underbarrel:oklch(76% .055 150); --sl-optic:oklch(76% .055 190); --sl-laser:oklch(76% .055 225);
+  --sl-rear-grip:oklch(76% .055 260); --sl-perk:oklch(76% .055 300); --sl-ammunition:oklch(76% .055 340);
+  /* A boxed icon button draws its visible box this far inside its 44px target, so one at a container's edge hangs its target out by exactly this much and lands its VISIBLE edge on the padding line (contract C4). Was --pb-inset on the board. */
+  --box-inset:5px;
+  /* The boxed icon button's own radius: 8px on the board, 2px from --rad-2 and 2px from --rad-3, so it is its own step rather than a rounding. */
+  --rad-box:8px;
+  /* The Best tier's legendary gold (plan §10.1 row 18): the hex .t-legendary already uses. The same hex as --patch, but a different meaning, so it is its own name and a later retune of one never moves the other. */
+  --tier-best:#F2C230;
   --tap:44px;                        /* minimum touch target */
 
 
@@ -258,7 +268,7 @@
   --win-18:rgba(31,138,94,.18); --win-20:rgba(31,138,94,.20); --win-45:rgba(31,138,94,.45);
 
   --row-selected:#20303B;    /* the Manifest's tbody tr.on, one step past --hi */
-  --on-staged:#1A2000;       /* ink ON --staged's lime fill (13.4:1), re-derived 2026-09-13 17:32 EDT when --staged left cyan */
+  --on-staged:#1A2000;       /* ink ON --staged's fill, the staged yellow #D8F24A (13.4:1), re-derived 2026-09-13 17:32 EDT when --staged left cyan */
   --on-ok:#07130A;           /* ink ON --ok's green fill (11.0:1) — confirm buttons fill with --ok since 2026-09-13 17:32 EDT */
 
   /* the scrim behind the preview drawer and the command palette — a colder base than --scrim-* */

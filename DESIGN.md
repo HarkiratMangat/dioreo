@@ -136,6 +136,30 @@ Structure is carried by **borders** (`--rule`, `--rule2`) — but "no shadows" i
 
 **Five radii, named by size rather than by component:** `--rad-1:3px` (chips, ticks, tags — boxes under ~24px) · `--rad-2:6px` (**the default**: buttons, inputs, cards, panels) · `--rad-3:10px` (drawers, modals, the ⌘K palette) · `--rad-round:50%` (avatars, dots, beads) · `--rad-pill:999px` (a radius that always exceeds half the height). A workbench control reads as machined, not soft.
 
+**Slot hues, the box inset and the Best tier — added 2026-09-14 23:59 EDT (pins batch 2, design board 2).** Nine `--sl-<slot>` tokens, `oklch(76% .055 H)` with H muzzle 25 · barrel 65 · stock 105 · underbarrel 150 · optic 190 · laser 225 · rear grip 260 · perk 300 · ammunition 340, used only as a faint wash and outline on an attachment tag, never as ink. `--box-inset:5px` is how far a boxed icon button draws its visible box inside its 44px target. `--tier-best` is the legendary gold of the Best tier. The board's 5px and 7px radii port onto `--rad-2`. One step was added: `--rad-box:8px`, the visible box of a boxed icon button, which is 2px from either neighbour.
+
+## Overflow fades, it never cuts — added 2026-09-19 21:23 EDT
+
+*Recorded because the device had been reached for independently in five places before anyone wrote it down, and each one solved it slightly differently.*
+
+**Where a run of content is longer than its box, the box fades it out rather than clipping it or ellipsing it.** A hard edge says "this is the end"; an ellipsis says "there is more, and you cannot have it"; a fade says "there is more, keep going" — which is true, because in every one of these cases the content is reachable by scrolling, hovering or opening.
+
+| Surface | What runs over |
+|---|---|
+| Selection bar's weapon chips | two rows of chips that swipe sideways |
+| Export drawer's category bays | one row of bays that swipes, and follows the scrollspy |
+| Export tile's weapon name | a long name slides under its own build count on hover |
+| Export file body | the text block under its footer |
+| Delivery card's lifespan bar | a run with no end date fades off its right edge |
+
+**The rules.**
+
+1. **The mask goes on the BOX, not on the content.** A mask on the text itself is sized to the text, so its fade zone always lands on real ink and every short string loses its last characters. On the container, a short string stops before the fade and is untouched — no conditional, no measurement, no JavaScript. *(This was got wrong first, on the Export tile's names: every weapon in the bay read `AK11`, `DR-`, `LK2`.)*
+2. **A fade that can be scrolled past fades on BOTH edges, driven by scroll position.** A right-only mask keeps promising more content after the reader has reached the end. Each edge fades only while there is something beyond it.
+3. **The fade is 18–28px** — wide enough to read as a fade rather than a blur on the final glyph, narrow enough not to eat a whole word.
+4. **If the run can also move on its own** (a name that scrolls on hover, a row that follows a selection), the travel is exactly the overflow and clamps at zero, so content that already fits never moves. `100cqw - 100%` inside a container query does this with no measurement; `prefers-reduced-motion` keeps the fade and drops the travel.
+5. **It never replaces a control.** A faded edge tells you there is more; it does not tell you how to get there. Anything that must be reachable by keyboard still needs its own affordance.
+
 ## Components
 
 *Added 2026-09-06 00:27 EDT, from `impeccable doctor`'s only finding: nothing here told a screen generator what a control looks like, so the live design panel drew generic approximations in their place.*
@@ -182,9 +206,40 @@ The package carries **91 `transition` declarations**; `portal/ui/app.css` carrie
 
 `--s1 4 · --s2 8 · --s3 12 · --s4 16 · --s5 24 · --s6 32` (`portal/ui/tokens.css`, build-out decision D6, `layout`). Structural gaps use s4–s6 — the masthead's padding, `.mh-stats` above the figures, `.panel + .panel` (the view layer and the Manifest sat flush), the record panel's margin, the identity panel's foot; inside a control s1–s3. A literal stays legal where it is optical (a hairline, an 11px diamond); a NEW structural gap on a literal is a defect. Pin 14 ("no breathing room in this entire design") is the finding it answers.
 
+🔴 **EVERY AUTHORED LENGTH IS A WHOLE PIXEL, OR A HALF AT THE FINEST — Harkirat, 2026-09-19 21:23 EDT.** *"can we not do .xx numbers for pixels? at mostttt 0.5 is okay but otherwise try to keep them whole numbers like 1, 2, 3."*
+
+This is about what gets WRITTEN, not about what gets measured. Measuring on the ink produces values like `67.84px` or `-3.57px`, and shipping those makes a stylesheet that nobody can read, reason about or re-derive — a number with two decimal places looks like a constant when it is really one render's residue. **Measure precisely, then round before it lands in a file**, and round in the code that computes it rather than afterwards, so a value that is recomputed at runtime cannot reintroduce the noise.
+
+⚠️ **The one thing this rule must not do is falsify the record.** A sweep that rounds `px` literals will also hit the numbers inside comments — the measurements that explain why a value is what it is — and rounding *those* turns an observation into a fiction. Values the browser reads get rounded; values the reader reads stay exactly as they were measured.
+
 **Before 2026-09-06 01:24 EDT there was no spacing scale, in either the mockups or the portal, and none was invented.** Measured across the six mockups 2026-08-30: **28 CSS custom properties, zero of them spacing**, and 19 distinct off-4px-grid values in padding/margin/gap — `9px` used 41 times, `11px` 31 times, plus 13/15/17/22/26/34/90px.
 
 Recording an invented scale would have been the wrong move twice over: it would make an arbitrary set of numbers look decided, and snapping the portal onto a grid would move pixels and **raise** the conformance diff. Per Harkirat's decision 2026-08-30 11:46 EDT: **no action now; revisit once the portal is conformed to the mockups, since that is when redesign work resumes anyway.** That revisit is the 2026-09-06 01:24 EDT scale above; the mockups keep their off-grid values because they are the approved design, not a live sheet.
+
+## The manifest row — five rules design board 3 settled, added 2026-09-20 14:16 EDT
+
+*This section is a MERGE, not a regeneration: `impeccable document`'s own reference says never to overwrite an existing DESIGN.md, and this file's header says it describes the mockups rather than `portal/ui/`. Everything below is read out of the board's own files — `docs/pins2/kit/b3/board.css` (rounds 6B · 9A · 9B · 10A · 10J · 10K · 11 · 11B · 11C · 12–12G), `b3/history.js`, `gates/history.js`'s `notes` (Harkirat's pins 51–57), and the package README's v62–v67 sections. It is recorded as SYSTEM rather than as one gate's styling because the same vocabulary draws the Armory manifest, the Season Repairs list and the History river; every rule below was reached on one of them and then found to be true of the others.*
+
+**The Mesh Rule.** A manifest row's hover and open ground is a FIELD, not a band. Three radial gradients plus a white 8% linear wash, composited `screen, screen, screen, normal`, so the layers mix like light and the ground stays dark: `70% 220% at -6% 120%` of `--c` at 14%, `62% 200% at 34% -24%` of `--warn` at 10%, `66% 210% at 104% 128%` of `--c` at 9%, then `linear-gradient(180deg,#ffffff08 0,transparent 30%)`. **Only `--c` changes** — it is the row's own topic hue. A band stops where its element stops, which is why a flat wash kept reading as a partial highlight; a field belongs to the whole row including its action cell. Swapping any other layer produces a glow that is *nearly* the manifest's, which is the same as not being it.
+
+**The Demotion Rule.** A column whose value is identical on every SHOWN row demotes — kind to a mark, who to the avatar alone — and never disappears. It is measured on the rows on screen rather than on the whole dataset, so it answers a filter. The column keeps its track and keeps telling the truth about being uniform; a column that vanishes tells the reader nothing about why.
+
+**The Story Rule.** Consecutive rows in one day naming the same thing by the same actor are drawn as ONE story: their left rails join into a single unbroken bar and the hairline between them goes. **Nothing merges and nothing hides** — every row stays present and countable, because a log's whole value is that it is complete. An event with no entity is identified by what it SAYS, so a run of repeated alerts binds exactly as a change pair does, and a genuinely different event inside a storm breaks the rail visibly.
+
+**The Neutral Chip Rule.** A chip's fallback hue is a neutral declared per surface (`--fc`), never a STATE colour. Reaching for `--patch` as "the default accent" tinted every unstated chip staging-yellow and said *staged* about things that were not.
+
+**The One Inset Rule.** A panel declares its content inset ONCE and every member uses it — rows, column head, day header, toolbar, foot. Three right insets and two left insets inside one panel is the defect class Harkirat finds by eye every time, and it is invisible in the CSS because each rule looks correct on its own.
+
+### The scrolling manifest — added with round 12
+
+**A long manifest scrolls its LIST, not its panel.** The toolbar and the column head are the frame; the rows are the thing that moves. The head sticks at the top of its own scrollport carrying an `inset 0 -1px 0` ring rather than a border, and day headers stack beneath it. Measured on H1 before the change: the day header had been written `position:sticky` since round 9A and had never once stuck, because its nearest scrollport was a panel that does not scroll — and the toolbar, 26% of the panel's height, left on the first scroll of a 4802px list.
+
+### Four don'ts the board paid for, added 2026-09-20 14:16 EDT
+
+- **Don't put `border-radius` on an `<svg>`.** An svg's overflow is hidden and the clip follows the radius, so `border-radius:50%` on an icon turns it into an ellipse and eats the corner strokes of its own glyph. Round the BOX around it.
+- **Don't let a child redraw its container's edge.** A panel draws a 1px border at `--rad-2`; a child sitting exactly 1px inside it with a full `inset 0 0 0 1px` ring of its own puts two 1px lines on the same three edges at two different radii. Measured at 175 against 174 and 1265 against 1266 — read as "why are there 2 different borders overlapped on the panels".
+- **Don't write `all:unset` on a `<button>` and stop there.** It strips the UA sheet's `user-select:none` as well, so the label becomes selectable and a stray drag leaves a highlight behind the text that reads as a rendering bug. Restore it explicitly.
+- **Don't trust source order over specificity.** `button:hover:not(:disabled)` is (0,2,1) and outranks every `.control:hover` at (0,2,0); an attribute-scoped `html[data-x] .mt-r2` beats a plain class. When a rule you wrote has no visible effect, ask the PAGE which rules match the element instead of re-reading the file — five separate rules were found setting `grid-template-columns` on one element that way.
 
 ## Known divergences — the build-out's deliberate ones
 

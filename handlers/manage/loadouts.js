@@ -13,6 +13,9 @@ const { commitSet } = require('../../core/changeset');
 const { extractCommitError } = require('./shared');
 const { failWithRetry } = require('./retry');
 
+// The build name's own cap (plan pins batch 2 §10.4 G6 row 2, 2026-09-15 00:28 EDT): 32 characters, what the portal's plate shows in two lines with the widest letters. The modal field is capped at 47 as a whole; this refuses a longer NAME part with a message naming the limit, and never truncates it silently.
+const BUILD_NAME_MAX = 32;
+
 // --- IMAGE FIELD: Public ID *or* a pasted URL --- (2026-08-22, deferred item "MP/DMZ Loadout: no way to provide an image by URL") Every other image-bearing entity (draws/calendar/patch-notes) already accepts a raw URL and re-hosts it to Cloudinary; loadouts alone required the admin to have uploaded the file and to know the exact Public ID convention BEFORE opening the modal -- the one field in that modal depending on a step outside the bot. This closes that gap without spending a 6th modal slot (Discord's hard cap is 5 and the modal already uses all 5): the SAME field takes either form, told apart by the URL scheme.
 //
 // `existingKey` is what makes Edit safe. Harkirat's ask was to replace the picture while KEEPING the same public_id so nothing referencing the key breaks -- uploadLoadoutImage passes `overwrite: true, invalidate: true`, so re-uploading at the existing key is exactly that, and the stored imageKey never changes.
@@ -75,6 +78,9 @@ async function editLoadout(interaction) {
     const buildRaw = interaction.fields.getTextInputValue('build');
     const buildPipeIndex = buildRaw.indexOf('|');
     const buildName = (buildPipeIndex === -1 ? buildRaw : buildRaw.slice(0, buildPipeIndex)).trim();
+    if (buildName.length > BUILD_NAME_MAX) {
+        return await failWithRetry(interaction, `A build name can be at most ${BUILD_NAME_MAX} characters — this one is ${buildName.length}. Shorten it and submit again.`);
+    }
     const hasShareCodeSegment = buildPipeIndex !== -1;
     const shareCodeInput = hasShareCodeSegment ? buildRaw.slice(buildPipeIndex + 1).trim() : null;
     const image = await resolveImageInput({
@@ -139,6 +145,9 @@ async function addLoadout(interaction) {
     const buildRaw = interaction.fields.getTextInputValue('build');
     const buildPipeIndex = buildRaw.indexOf('|');
     const buildName = (buildPipeIndex === -1 ? buildRaw : buildRaw.slice(0, buildPipeIndex)).trim();
+    if (buildName.length > BUILD_NAME_MAX) {
+        return await failWithRetry(interaction, `A build name can be at most ${BUILD_NAME_MAX} characters — this one is ${buildName.length}. Shorten it and submit again.`);
+    }
     const hasShareCodeSegment = buildPipeIndex !== -1;
     const shareCodeInput = hasShareCodeSegment ? buildRaw.slice(buildPipeIndex + 1).trim() : null;
     const image = await resolveImageInput({

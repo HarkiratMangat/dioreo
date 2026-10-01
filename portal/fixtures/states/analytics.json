@@ -13,7 +13,7 @@
           }
         }
       ],
-      "expect": "#manifest .chipset button[aria-pressed=\"true\"]",
+      "expect": "#manifest .mt-grp button[aria-pressed=\"true\"]",
       "note": "Since 2026-09-13 18:04 EDT the river lives in History (batch-2 spec §4): the level row hands its filter over and navigates, so the pressed chip this expects is on the History page the state lands on."
     },
     {

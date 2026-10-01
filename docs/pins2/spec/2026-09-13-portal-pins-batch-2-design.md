@@ -5,7 +5,7 @@ status: frozen
 
 # Portal pins, batch 2 — what was decided
 
-*Written 2026-09-13 11:31 EDT. The decisions behind `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`. Settled with Harkirat across four rounds of a shown fork board (https://claude.ai/code/artifact/dd0656fb-ab13-4358-8077-c0dd9089b24f) on 2026-09-12 and 2026-09-13, after he pinned 29 notes on the dev portal between 2026-09-11 22:46 EDT and 2026-09-12 12:31 EDT. The pins live in `local/portal-sync-notes.md`, which is gitignored — so §10 reproduces them verbatim, because nothing tracked could otherwise reach them.*
+*Written 2026-09-13 11:31 EDT. The decisions behind `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`. Settled with Harkirat across four rounds of a shown fork board (https://claude.ai/code/artifact/dd0656fb-ab13-4358-8077-c0dd9089b24f) on 2026-09-12 and 2026-09-13, after he pinned 29 notes on the dev portal between 2026-09-11 22:46 EDT and 2026-09-12 12:31 EDT. The pins live in `local/portal-sync-notes.md`, which is gitignored — so §10 reproduces them verbatim, because nothing tracked could otherwise reach them.*
 
 **Frozen.** If a later decision changes one of these, supersede this file with a new dated spec rather than editing it.
 

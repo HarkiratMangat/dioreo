@@ -73,6 +73,8 @@ function register(route) {
                     // ⚠️ THE REASON WAS THROWN AWAY AT THIS SEAM. `validateSet` reports a failure as `{ index, errors: [...] }` and this read `failure.reason`, which no validator sets — so the screen said "This change no longer validates" while the system was holding the exact sentence: "Unknown banner page: drawsBannerUrl". A reader cannot act on the generic form, and the portal's own error rule (async.js) is that a message names WHAT failed, what it MEANS and ONE action.
                     blocked: failure ? (failure.reason || (Array.isArray(failure.errors) && failure.errors.length ? failure.errors.join('; ') : null) || 'This change no longer validates.') : null,
                     confirmText: String(doc._id).slice(-8).toUpperCase(),
+                    // The rows this op would change, so a realm can draw them in the staged voice. Without it the Armory's dashed staged row could never appear: its rows are live documents, and nothing else in this payload names which ones a staged deletion or edit points at.
+                    targetIds: [op.target && op.target.id, ...((op.payload && Array.isArray(op.payload.ids)) ? op.payload.ids : [])].filter(Boolean).map(String),
                 });
             });
         }

@@ -430,7 +430,7 @@ function StateKey({ states }) {
     `;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, contextSlot, manifestSlot, noticeSlot, footSlot, traySlot, overlaySlot, masthead, badges = {}, stagedOps = null, onDiscardAll = null, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null, meta = null }) {
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, contextSlot, manifestSlot, noticeSlot, footSlot, traySlot, overlaySlot, masthead, viewCounts = null, badges = {}, stagedOps = null, onDiscardAll = null, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null, meta = null }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     // 🔴 THE STAGED TRAY IS SHELL-OWNED, MOUNTED 2026-09-04 21:10 EDT, FOR THE SAME REASON THE RAIL IS. The design floats it on every page; the portal had it on no page. Its predecessor was a per-realm `traySlot` that ONE realm passed and nothing ever filled — a shared surface wired realm by realm is a shared surface five realms forget, which is the `badges` defect in another file. `stagedOps` is the ops array every realm already holds; a realm that passes none renders no tray, which is the correct empty state. 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent. ⚠️ THE DISCARD LIVES HERE, NOT IN SIX REALMS. The tray is shared chrome and its one destructive verb has one meaning everywhere, so a per-realm handler would be six chances to get it slightly different — which is the defect the tray itself is being fixed for. A realm that needs its own may still pass `onDiscardAll`. 🔴 IT DISCARDS CHANGESETS, NOT OPS, because that is what the endpoint takes; the ids are de-duplicated so a five-op changeset is one request rather than five. A refusal is surfaced rather than swallowed — a discard that silently does nothing is worse than one that fails out loud. 🔴 THE PAGE RESERVES ROOM FOR THE TRAY, because the tray is `position:fixed` and would otherwise sit ON TOP of whatever is at the foot of the realm — measured in the design's own comment as covering Broadcast's "+ Post announcement". The design reserves `tray height + 34`; without it the portal measured 49px shorter than the design on every realm, which is that padding exactly. ⚠️ AN OBSERVER, NOT A ONE-SHOT. The design's own note: the tray's height depends on webfont metrics and on its own collapsed state, both of which settle AFTER the frame that renders it, so a single rAF measures the wrong box often enough to leave the overlap live.
     useEffect(() => {
@@ -551,6 +551,8 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                      the view layer with the Manifest and the Manifest stays recessive. Anything put here
                      must earn a permanent place above the realm's subject; if it is only sometimes present,
                      it belongs inside the view. -->
+                <!-- A notice sits at the TOP of the realm, directly under the masthead (plan pins batch 2 section 5.2 Step 9, board 2, 2026-09-15 00:07 EDT). It used to sit between the view layer and the Manifest; Broadcast is the only realm that passes one, so the move changes nothing anywhere else, and a wrapper div keeps it out of the adjacent-panel chain. -->
+                ${noticeSlot || null}
                 ${contextSlot || null}
                 <!-- 🔴 NO WRAPPER DIV AROUND EITHER PANEL. the adjacent-sibling rule in app.css (panel plus panel) is what makes the
                      Manifest RECESSIVE — transparent ground, quieter header — which is COMPANION §10.4's whole
@@ -590,7 +592,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                             ${viewOptions.length > 1 ? html`
                                 <div class="seg" role="tablist" aria-label="View">
                                     ${viewOptions.map((v) => html`
-                                        <button role="tab" aria-selected=${v === view ? 'true' : 'false'} onClick=${() => onSetView(v)}>${v}</button>`)}
+                                        <button role="tab" aria-selected=${v === view ? 'true' : 'false'} onClick=${() => onSetView(v)}>${v}${viewCounts && viewCounts[v] != null ? html`${' '}<em class="segn">${viewCounts[v]}</em>` : null}</button>`)}
                                 </div>` : null}
                             <!-- ⚠️ ORDER IS THE DESIGN'S, AND IT WAS WRONG. The bar reads title · views · the
                                  view's own controls · what the marks mean · where you are — so the Track's zoom
@@ -611,10 +613,6 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                         ${viewSlot}
                     </section>`
                 : viewSlot}
-                <!-- A notice sits BETWEEN the view layer and the Manifest, which is where the design draws it:
-                     it is a consequence of what the view just showed, and putting it INSIDE the view panel made
-                     the panel 45px taller than the design's and pushed the Manifest down by the same amount. -->
-                ${noticeSlot || null}
                 ${manifestSlot}
                 <!-- 🔴 THE FOOT IS AFTER THE MANIFEST, AND ON SEASON THAT IS WHERE TIER 3 BELONGS. The one-way
                      strip was rendered inside viewSlot, which put seven irreversible operations at y=1694 on a

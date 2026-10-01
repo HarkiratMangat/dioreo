@@ -40,12 +40,16 @@ ok('a plan named twice (a FIRST ACTION line and its amendment) is one plan, not 
 assert.deepStrictEqual(plansNamedIn('docs/superpowers/plans/a.md'), plansNamedIn('docs/superpowers/plans/a.md'));
 ok('two identical calls agree — no lastIndex carried between them');
 
+// The batch-2 plan lives in docs/pins2/plan/ since 2026-09-28 23:12 EDT; a resolver that knows only docs/superpowers/plans/ reports .remember as naming no plan.
+assert.deepStrictEqual(plansNamedIn('read docs/pins2/plan/2026-09-13-x.md then docs/superpowers/plans/b.md'), ['docs/pins2/plan/2026-09-13-x.md', 'docs/superpowers/plans/b.md']);
+ok('a plan under docs/pins2/plan/ is named like one under docs/superpowers/plans/');
+
 // ── the real files, which is what the defect was actually about ⚠️ CORRECTED 2026-09-08 18:17 EDT: this read ONLY docs/SESSION-START.md and asserted it names >=1 plan. That assumption died the same day it was last "corrected" (12:11 EDT, PR #186) -- WP3 of the context-carriers plan rewrote SESSION-START to deliberately carry NO plan pointer at all, moving that job to `.remember/remember.md`'s auto-injected LAST HANDOFF block (a 2026-09-07 design decision this test predates). `handoffCheck.mjs`'s own `livePlans()` now reads BOTH files concatenated; this test must exercise the same union or it certifies behavior the real check no longer has.
 const start = fs.readFileSync(path.join(ROOT, 'docs/SESSION-START.md'), 'utf8');
 const rememberPath = path.join(ROOT, '.remember/remember.md');
 const remember = fs.existsSync(rememberPath) ? fs.readFileSync(rememberPath, 'utf8') : '';
 const real = plansNamedIn(start + '\n' + remember);
-const PLAN_RE = /(~\/\.claude\/plans\/[A-Za-z0-9._-]+\.md|docs\/superpowers\/plans\/[A-Za-z0-9._-]+\.md)/g;
+const PLAN_RE = /(~\/\.claude\/plans\/[A-Za-z0-9._-]+\.md|docs\/(?:superpowers\/plans|pins2\/plan)\/[A-Za-z0-9._-]+\.md)/g;
 const independent = [...new Set((start + '\n' + remember).match(PLAN_RE) || [])];
 // 🔴 THE COMPLETENESS ASSERTION ONLY HOLDS WHEN .remember EXISTS — added 2026-09-09, found by CI itself failing on a fresh checkout. `.remember/` is gitignored and never committed, so a fresh clone (CI included) has no `.remember/remember.md` at all — and since WP3 made SESSION-START.md deliberately carry no plan pointer, "the pointer chain must resolve to a plan" is a LOCAL, session-handoff invariant (a session forgot to leave one), not something a fresh checkout can ever satisfy. `handoffCheck.mjs` itself already treats a missing `.remember` as its own failure mode (see its `rem === null` check) but this suite deliberately does not assert its exit code — only this test's OWN independent completeness check was still unconditional, which is what broke.
 if (fs.existsSync(rememberPath)) {
