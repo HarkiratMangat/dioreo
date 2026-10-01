@@ -50,4 +50,4 @@ status: live
 | Motion declarations · component timers · @keyframes | 535 · 51 · 46 (`motion-timing.md`, `motion.md`) |
 | Colour tokens · literals · `color-mix` recipes | 181 · 292 · 685 (`colours.md`) |
 | Components exported | 143 (`components.md`) |
-| Board classes the portal lacks · custom properties the portal lacks | 61 · 196 (`class-map.md`, `token-map.md`) |
+| Board classes the portal lacks · custom properties the portal lacks | 574 in 61 prefixes · 196 (`class-map.md`, `token-map.md`) |

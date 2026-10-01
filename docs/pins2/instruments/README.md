@@ -40,6 +40,10 @@ Throwaway-shaped but load-bearing for Board 4: each was used to measure a claim 
 | `board4-poptiming.cjs` (`ONLY=<regex>`) | per pop-up: hover or click to first frame, fade-in, grow, fade-out, removal — against `docs/pins2/kit/b3/poptime.js`. Added 2026-09-30 19:51 EDT |
 | `board4-quirks.cjs` | the board as served (quirks mode, no doctype) against the same board in standards mode: every visible element's box, per state → `../handoffs/2026-09-30-board4-quirks.md`. Added 2026-09-30 19:51 EDT |
 | `paths-resolve.cjs [doc …]` | every path the live docs name, against the disk and the tracked tree — exit 1 on a dead one, `UNTRACKED` listed. The instrument `docs-audit`'s skip of `plan/`, `spec/` and `final/` made necessary |
+| `board4-menu-fit.cjs` | every build-drawer dropdown opens fully inside the drawer (H=700) |
+| `board4-readiness.cjs` | opens every HANDOFF row never opened, at 2x (Version 45) |
+| `board4-unchecked.cjs` | the ten not-exercised items, driven through the real interaction and measured |
+| `slot-lookup.cjs` | read-only: resolves the unplaceable attachment names from other builds' Cloudinary metadata |
 
 The spec generators — `switches.cjs`, `overrides.cjs`, `extract-spec.cjs`, `split-spec.cjs`, `maps.cjs` — live beside their outputs in [`../final/board4-spec/`](../final/board4-spec/README.md); the command is in [`../README.md`](../README.md).
 

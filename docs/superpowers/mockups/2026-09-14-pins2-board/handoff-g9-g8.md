@@ -167,4 +167,4 @@ node scripts/portalProbe.mjs --realm armory \
 
 ## Tokens
 
-Both gates draw from `portal/public/app.css`, which board 1 links directly (`../../../../portal/public/app.css`) — so board and portal already share the token layer, and any value difference is a rule difference, never a token one.
+Both gates draw from `portal/public/app.css`, which board 1 links directly (`../../../../portal/public/app.css`) — so board and portal already share the token layer, and any value difference is a rule difference, never a token one. *(Amended 2026-10-01 14:43 EDT, Session 3's close: board 1 froze on its own `app.css` on 2026-09-21 10:30 EDT — board 1 `index.html:7–10` — so it no longer shares the portal's token layer; `docs/pins2/final/FINAL.md` § Boards 1 and 2.)*
