@@ -42,7 +42,7 @@ status: live
 | Board 3-E | superseded by Board 4 (2026-09-28 23:27 EDT); `3e/` in board 3's package is history |
 | The kit — **on this Mac only** | his option (c), 2026-09-30 21:03 EDT: `docs/pins2/kit/` is gitignored and carries its own local git repo (its 11 commits since 2026-09-29); this branch's history was rewritten without it at 21:13 EDT (backup ref `refs/backup/pins2-before-kit-local`), so no push carries it. Sessions 4 and 5 read it from this checkout; in a worktree, first `ln -s "/Applications/Claude Code/Diors-Builds/docs/pins2/kit" docs/pins2/kit` |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
-| Next | Session 3's close (plan §13) — push, PR and merge each on his word, restated — then Session 4 (plan §11's prompt) |
+| Next | the readiness audit in his Project "board 4 prep finalization" (`handoffs/2026-09-30-board4-s45-readiness-audit.md` § 13), then Session 3's close (plan §13) — push, PR and merge each on his word, restated — then Session 4 (plan §11's prompt) |
 
 ## Where new things go
 

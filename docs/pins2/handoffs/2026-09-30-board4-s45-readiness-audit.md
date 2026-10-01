@@ -5,6 +5,8 @@ status: live
 
 # Sessions 4 and 5 — the readiness audit, planned before the compact
 
+> 🔴 **IT RUNS AS A PROJECT — § 13 IS AUTHORITATIVE (2026-09-30 22:18 EDT).** Wherever §§ 4–7 say "the main session", read **the integration thread**; wherever they say "agent", read **a worker thread that the COORDINATOR starts**. **The integration thread never launches agents with the `Agent` tool** — it writes the worker prompt files and signals the coordinator (§ 13's protocol). The `Agent` wording in §§ 5–7 is the single-session fallback only.
+
 *Written 2026-09-30 21:20 EDT; **rewritten 2026-09-30 21:30 EDT after a falsification pass of the first version** (§ 12 lists the eighteen defects it found and how each is closed). The post-compact session deploys it cold: **execute it as written; a deviation goes in § Log with its reason.** His request is § 1, verbatim. The canaries that test the agents are NOT in this file — they are in `local/pins2/audit/canaries.md` (gitignored, outside every slice), so no agent can read them.*
 
 ## 1 · His requests, verbatim
@@ -56,7 +58,7 @@ Session 2 shipped boards 1 and 2 at ~95% because details lived where the port di
 
 ## 5 · The agents — seven Sonnet 5.5 in ONE message, then one cold reader
 
-**In a Project, see § 13** — the agents below are worker threads and the main session is the integration thread. **Authorization:** his 21:17 EDT ask is for "a sonnet5.5 subagent"; **seven plus a cold reader is this plan's scoping and needs his yes** (the closing question of the message that delivered this plan). Each: `Agent` with `model: "sonnet"`, `subagent_type: "general-purpose"`, `run_in_background: true`, the prompt of § 6 with its slice filled in. Its only write is its findings file.
+**In a Project, see § 13** — the agents below are worker threads and the main session is the integration thread. **Authorization:** his 21:17 EDT ask is for "a sonnet5.5 subagent"; **seven plus a cold reader is this plan's scoping and needs his yes** (the closing question of the message that delivered this plan). *(Single-session fallback only — in the Project, § 13: the coordinator starts each worker as a thread.)* Each: `Agent` with `model: "sonnet"`, `subagent_type: "general-purpose"`, `run_in_background: true`, the prompt of § 6 with its slice filled in. Its only write is its findings file.
 
 | Agent | Slice | Read in full | Navigate only (search, don't read whole) | Out |
 |---|---|---|---|---|
@@ -124,7 +126,7 @@ The "## DONE" line is the LAST thing you write; a file without it is treated as 
 
 ## 7 · After the agents — the main session
 
-0. **P first:** deploy P alone; fix what its critique confirms; log it; only then Step 0's last checks and the seven + T agents in ONE message.
+0. **P first:** the integration thread signals `NEXT: start worker P` (§ 13); the coordinator starts P; when P has replied, the integration thread fixes what its critique confirms, logs it, and signals `NEXT: start workers …` for the seven slice workers and T1…Tn together.
 1. **Completion and integrity:** every out file ends in `## DONE` and names its model (a missing DONE = cut off → re-run that slice split in two); `git status` and the kit's status equal `local/pins2/audit/step0-status.txt` (an agent that wrote outside its file is a P0 against the audit itself).
 2. **Canaries** (`local/pins2/audit/canaries.md`): an agent that missed one has its whole report treated as unread → re-run that slice, smaller.
 3. **Aggregate and verify mechanically — ONE `ctx_execute`:** parse every findings table; dedupe by (handoff-set location, normalized quote); for each finding confirm the quote occurs at its cited `path:line` (±3 lines) → **QUOTE-OK / QUOTE-MISSING** (missing = the agent invented or misplaced it → dropped unless re-found); write `local/pins2/audit/merged.md`; print only counts and the P0/P1 rows.
@@ -448,6 +450,22 @@ He made a Project, **"board 4 prep finalization"**, whose threads run in this ch
 | **Integration thread** (one, kept for the whole run) | the plan's "main session": Step 0, P's fixes, § 7 | **Opus 5.5, High or above** | everything, including `local/pins2/audit/canaries.md` (the only thread that may) | the handoff set, the instruments, the commits — **the only thread that commits** |
 | **Worker threads** | P, A, A2, B, C1, C2a, C2b, D, T1…Tn, E | **Sonnet 5.5**, High | their prompt file and their slice; never `canaries.md`, never another worker's file | only their own findings file under `local/pins2/audit/` |
 
+**The hand-off protocol** — every stage ends with ONE signal line as the LAST line of the integration thread's reply, and the coordinator acts on nothing else:
+
+| Signal (integration → coordinator) | The coordinator then |
+|---|---|
+| `NEXT: start worker P` · `NEXT: start workers A, A2, B, C1, C2a, C2b, D, T1…Tn` · `NEXT: start worker E` | starts each named worker as a NEW thread on Sonnet 5.5 (High), first message exactly "Read and follow local/pins2/audit/prompts/<id>.md" — all named workers at once |
+| `NEXT: rerun <id> as <id>a, <id>b` | starts the split workers the same way (the integration thread has written their prompt files) |
+| `REPORT READY` | relays the integration thread's report to Harkirat and stops |
+| `BLOCKED: <question>` | asks Harkirat and relays his answer verbatim into the integration thread |
+
+| Message (coordinator → the running integration thread) | When |
+|---|---|
+| `WORKERS DONE: <ids> — out files under local/pins2/audit/` | every worker started by the last NEXT has sent its final reply |
+| `STALLED: <id> — <what it last said>` | a worker has stopped without a final reply, or reports an error |
+
+The integration thread verifies each out file itself (`## DONE`, the model line, the canaries); the coordinator's "done" is only that the worker replied.
+
 **Order** — each step starts only when the one before it has reported:
 
 1. **Integration:** Step 0, including the worker prompt files (Step 0.7) and the T-slice count. It replies with the list in `local/pins2/audit/prompts/INDEX.md`.
@@ -462,6 +480,22 @@ He made a Project, **"board 4 prep finalization"**, whose threads run in this ch
 
 **Models per thread — confirmed by the coordinator (2026-09-30 22:13 EDT, relayed by Harkirat):** the project setting is only the default; the coordinator starts any new thread on the model and effort it is asked for ("start this on Opus 5.5, high effort"). So the integration thread is started on Opus 5.5 (High) and every worker on Sonnet 5.5 (High), whatever the default. A running thread can likely switch its own model (the coordinator's inference, not confirmed) — not relied on here.
 
+## 14 · After the audit — Session 3's close, then Sessions 4 and 5
+
+**The coordinator knows only what its Goal, its instructions and these files say.** It does not carry the batch-2 plan in its head; each phase gets its Goal and instructions replaced, and the text for each is below.
+
+1. **The audit ends** with `REPORT READY`; Harkirat reads the report and settles its HIS-CALL items.
+2. **Session 3's close** (plan §13, `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`): push, PR into `v3-pre-release`, merge — **each step on his word, restated** (who · to what · when). The kit is gitignored and this branch's history carries none of it, so the push cannot publish it. It can run as one thread of the same Project (Opus 5.5, High) or in an ordinary session. **Until it is merged, Session 4's Step 1 stops by design** (it reads `origin/v3-pre-release`).
+3. **Session 4** and then **Session 5** each run as **ONE thread** — never a fan-out of workers: the plan's §11 prompts say "You write no portal code and dispatch no agents" (Session 4) and "You dispatch no agents" (Session 5), and §5d records why (Agent D's drawer "never matched its board"). The Project adds only the coordinator around that one thread; the thread's first message is the plan's §11 prompt for that session, verbatim.
+4. **One session in the checkout at a time.** Session 4 works on its own branch (`docs/portal-pins2-standardize`, from `v3-pre-release`) and Session 5 on `feat/portal-pins2-build`. Switching branches in `/Applications/Claude Code/Diors-Builds` keeps the gitignored kit, `local/` and the indexes in place, but two threads on two branches in one checkout would trample each other: the coordinator starts the next session only after the last one has closed (§13).
+5. **Per phase, Harkirat replaces the Project's Goal and instructions** with:
+
+| Phase | Goal | Instructions — what changes from the audit's |
+|---|---|---|
+| Session 3's close | "Close Session 3 of pins batch 2 by plan §13: records, the push, the PR into v3-pre-release, the merge — each on Harkirat's word, restated." | one thread, Opus 5.5 High; branch `feat/portal-pins2-manifests`; no workers |
+| Session 4 | "Run Session 4 of docs/pins2/plan/2026-09-13-portal-pins-batch-2.md (§5c) to its close: the element system standardized across the portal and Board 4: Final drawn, each design fork shown to Harkirat before it is asked." | one thread, **Opus 5.5 Max** (§5c's model); its branch from `v3-pre-release`; the first message is §11's Session 4 prompt; no workers; the routing and silent-mode lines stay |
+| Session 5 | "Run Session 5 of the same plan (§5d): port Board 4: Final into portal/ui, every surface closed on a side-by-side against its board." | one thread, **Opus 5.5 High** (§5d's model); `feat/portal-pins2-build` from `v3-pre-release`; the first message is §11's Session 5 prompt; no workers |
+
 ## Log
 
 - 2026-09-30 21:20 EDT — first version written.
@@ -471,3 +505,4 @@ He made a Project, **"board 4 prep finalization"**, whose threads run in this ch
 - 2026-09-30 21:30 EDT — rewritten after its falsification pass (§ 12); not deployed (his suggestion: plan now, deploy after the compact). Seven agents + a cold reader await his yes.
 - 2026-09-30 22:09 EDT — his 22:08 EDT question mapped the plan onto the Project (§ 13): coordinator sequences, one Opus integration thread, Sonnet worker threads started on prompt files the integration thread writes (Step 0.7).
 - 2026-09-30 22:13 EDT — the coordinator confirmed per-thread model and effort (relayed by Harkirat); § 13's fallback paragraph replaced.
+- 2026-09-30 22:18 EDT — his 22:16 EDT check: the pivot had lived only in § 13 while §§ 5 and 7 still told the integration thread to launch `Agent` sub-agents, and no hand-off protocol existed. Now: the banner makes § 13 authoritative, §§ 5/7 point to it, § 13 carries the NEXT / WORKERS DONE / STALLED protocol, and § 14 covers Session 3's close and Sessions 4 and 5 (each ONE thread, Goal and instructions replaced per phase).
