@@ -482,19 +482,7 @@ The integration thread verifies each out file itself (`## DONE`, the model line,
 
 ## 14 · After the audit — Session 3's close, then Sessions 4 and 5
 
-**The coordinator knows only what its Goal, its instructions and these files say.** It does not carry the batch-2 plan in its head; each phase gets its Goal and instructions replaced, and the text for each is below.
-
-1. **The audit ends** with `REPORT READY`; Harkirat reads the report and settles its HIS-CALL items.
-2. **Session 3's close** (plan §13, `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`): push, PR into `v3-pre-release`, merge — **each step on his word, restated** (who · to what · when). The kit is gitignored and this branch's history carries none of it, so the push cannot publish it. It can run as one thread of the same Project (Opus 5.5, High) or in an ordinary session. **Until it is merged, Session 4's Step 1 stops by design** (it reads `origin/v3-pre-release`).
-3. **Session 4** and then **Session 5** each run as **ONE thread** — never a fan-out of workers: the plan's §11 prompts say "You write no portal code and dispatch no agents" (Session 4) and "You dispatch no agents" (Session 5), and §5d records why (Agent D's drawer "never matched its board"). The Project adds only the coordinator around that one thread; the thread's first message is the plan's §11 prompt for that session, verbatim.
-4. **One session in the checkout at a time.** Session 4 works on its own branch (`docs/portal-pins2-standardize`, from `v3-pre-release`) and Session 5 on `feat/portal-pins2-build`. Switching branches in `/Applications/Claude Code/Diors-Builds` keeps the gitignored kit, `local/` and the indexes in place, but two threads on two branches in one checkout would trample each other: the coordinator starts the next session only after the last one has closed (§13).
-5. **Per phase, Harkirat replaces the Project's Goal and instructions** with:
-
-| Phase | Goal | Instructions — what changes from the audit's |
-|---|---|---|
-| Session 3's close | "Close Session 3 of pins batch 2 by plan §13: records, the push, the PR into v3-pre-release, the merge — each on Harkirat's word, restated." | one thread, Opus 5.5 High; branch `feat/portal-pins2-manifests`; no workers |
-| Session 4 | "Run Session 4 of docs/pins2/plan/2026-09-13-portal-pins-batch-2.md (§5c) to its close: the element system standardized across the portal and Board 4: Final drawn, each design fork shown to Harkirat before it is asked." | one thread, **Opus 5.5 Max** (§5c's model); its branch from `v3-pre-release`; the first message is §11's Session 4 prompt; no workers; the routing and silent-mode lines stay |
-| Session 5 | "Run Session 5 of the same plan (§5d): port Board 4: Final into portal/ui, every surface closed on a side-by-side against its board." | one thread, **Opus 5.5 High** (§5d's model); `feat/portal-pins2-build` from `v3-pre-release`; the first message is §11's Session 5 prompt; no workers |
+**The coordinator holds the whole arc** (his 22:21 EDT question; 2026-09-30 22:22 EDT): its Goal and instructions — versioned in `docs/pins2/handoffs/2026-09-30-project-coordinator-brief.md` — name all four phases (this audit, Session 3's close, Session 4, Session 5), each phase's thread, model and branch, each exit, and the gates that stay his: **every phase after this audit starts only on his go, and every push, PR and merge only on his word, restated.** Sessions 4 and 5 are ONE thread each (the plan's §11: "dispatch no agents"); workers exist only in this audit; one session in the checkout at a time. Nothing is swapped between phases.
 
 ## Log
 
@@ -506,3 +494,4 @@ The integration thread verifies each out file itself (`## DONE`, the model line,
 - 2026-09-30 22:09 EDT — his 22:08 EDT question mapped the plan onto the Project (§ 13): coordinator sequences, one Opus integration thread, Sonnet worker threads started on prompt files the integration thread writes (Step 0.7).
 - 2026-09-30 22:13 EDT — the coordinator confirmed per-thread model and effort (relayed by Harkirat); § 13's fallback paragraph replaced.
 - 2026-09-30 22:18 EDT — his 22:16 EDT check: the pivot had lived only in § 13 while §§ 5 and 7 still told the integration thread to launch `Agent` sub-agents, and no hand-off protocol existed. Now: the banner makes § 13 authoritative, §§ 5/7 point to it, § 13 carries the NEXT / WORKERS DONE / STALLED protocol, and § 14 covers Session 3's close and Sessions 4 and 5 (each ONE thread, Goal and instructions replaced per phase).
+- 2026-09-30 22:22 EDT — § 14 rewritten: the coordinator holds the whole arc (the brief file), instead of having its Goal swapped per phase.
