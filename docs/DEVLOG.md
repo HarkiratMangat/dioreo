@@ -262,6 +262,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-29 21:00 EDT — Board 4 Version 42 intake built in the kit, classes AI–AS (v3.85.0-pre)
 - 2026-09-29 21:39 EDT — Board 4 Versions 43 and 44 published; compact prep 20 (v3.85.0-pre)
 - 2026-09-29 22:55 EDT — Board 4 Version 44 intake logged and built in the kit, classes AT–BB (v3.85.0-pre)
+- 2026-10-01 15:24 EDT — portal pins batch 2 — Board 4 signed off at Version 81, the readiness audit, and Session 3's close (v3.85.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4529,6 +4530,19 @@ Routing: the kit is excluded from the product's codebase-memory graph because it
 **What was underneath:** three of the nine were a class he had already named. The hover break was a CSS class collision — V42's lit-band class `cx-bl` was also an old dead rule's `display:flex` — the second collision in two rounds after History's `.dk`. The abrupt hide was board 3's thread c9604d47 again: a `display:none` pop can only animate in. And the two budget chips were two hand-written texts, one muted on purpose. Each is now fixed at its class: the hover is measured by real mouse hovers in `relations.cjs` (37 of 37 hold), the pop unfurls from the compact badge's width and folds back, and one readout carries every count.
 
 **His notes during the build:** "2 sequential-thinking calls?" — the pass had stopped at two thoughts before an evidence batch; it resumed to eighteen. And "i don't like the 'name not set' chip. its too intrusive" — the dashed empty plate became a quiet dim line.
+
+## 2026-10-01 15:24 EDT — portal pins batch 2 — Board 4 signed off at Version 81, the readiness audit, and Session 3's close (v3.85.0-pre)
+
+**What happened:** Board 4: Collective was signed off at Version 81 (his 2026-09-30 19:31 EDT: "approved, run the held checks. board is done."), and on his option (c) the kit stayed on this Mac: `docs/pins2/kit/` is gitignored with its own local history and the branch carries none of it. A readiness audit then read the handoff set the way Sessions 4 and 5 will, in his Project "board 4 prep finalization": 156 findings from read-only workers and his comment threads, the confirmed ones fixed, his calls folded. Session 3's close took the audit's leftovers: the `devlog-orphan` check now lets a branch's Proposed heading stand while its version is unminted, and the 142 rows nobody had judged were triaged and 85 verified fixes folded in. Most were line-number citations gone stale; `cites-check.cjs` then failed on 11 citations the fold itself had just added.
+
+**What went wrong:**
+- **I asked for six worker threads without his yes.** The Project's instructions describe the signal, and I read that as permission. His words: "workers are basically like subagents and that should have gone through my approval first". A Project instruction describing a mechanism is not his approval to use it.
+- **The release note was two weeks short and I nearly asked to push it.** Step 8 said the CHANGELOG entry "cannot be written until the PR exists", and I read that as nothing to do until then. Only the heading waits for the PR number; the content never did. The Proposed entry stopped at 2026-09-17, so Board 4, the sign-off, the audit and this close were missing. His "are you sure?" found it, and he called it a pretty big gap in work that was this phase's own.
+- **I reported `npm test` green on a commit it never ran on,** because I kept committing while the suite ran. It was re-run untouched on the final commit.
+
+**Lessons:**
+- A record whose final form waits on a number still has content due now. At every close, read the whole Unreleased entry against every DEVLOG heading stamped with its version, and write what is missing before asking to push.
+- A test result belongs to the commit it ran on. Don't commit while the suite runs.
 
 # Part B — Lessons Ledger (thematic)
 
