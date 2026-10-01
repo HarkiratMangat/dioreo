@@ -460,7 +460,7 @@ He made a Project, **"board 4 prep finalization"**, whose threads run in this ch
 
 **Rules every thread keeps** (also in the Project instructions): this checkout, never a worktree or a cloud clone · read-only unless it is the integration thread · no push, PR or merge, and no kit change, without Harkirat's word restated · silent mode · his routing corrections of 2026-09-30.
 
-**If the coordinator cannot pick a model per thread:** set the project's thread default to Sonnet 5.5 for the workers and start the integration thread with an explicit request for Opus 5.5 (or run the integration thread as this repo's ordinary Opus session in the same checkout, with the workers in the Project).
+**Models per thread — confirmed by the coordinator (2026-09-30 22:13 EDT, relayed by Harkirat):** the project setting is only the default; the coordinator starts any new thread on the model and effort it is asked for ("start this on Opus 5.5, high effort"). So the integration thread is started on Opus 5.5 (High) and every worker on Sonnet 5.5 (High), whatever the default. A running thread can likely switch its own model (the coordinator's inference, not confirmed) — not relied on here.
 
 ## Log
 
@@ -470,3 +470,4 @@ He made a Project, **"board 4 prep finalization"**, whose threads run in this ch
 - 2026-09-30 21:35 EDT — his "be honest": rows 19–21 of § 12 found and closed (T, P, D's conformance list). **Residuals no step closes:** how good the agents' work is (bounded by the canaries, the quote check, the 20% sample, P and E); what his screenshots alone carry (excluded, as he asked); and whether Sessions 4 and 5 follow what they are handed.
 - 2026-09-30 21:30 EDT — rewritten after its falsification pass (§ 12); not deployed (his suggestion: plan now, deploy after the compact). Seven agents + a cold reader await his yes.
 - 2026-09-30 22:09 EDT — his 22:08 EDT question mapped the plan onto the Project (§ 13): coordinator sequences, one Opus integration thread, Sonnet worker threads started on prompt files the integration thread writes (Step 0.7).
+- 2026-09-30 22:13 EDT — the coordinator confirmed per-thread model and effort (relayed by Harkirat); § 13's fallback paragraph replaced.
