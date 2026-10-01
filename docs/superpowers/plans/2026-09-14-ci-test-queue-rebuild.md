@@ -149,6 +149,18 @@ Built on `ci/test-queue-rebuild` in the session that wrote the plan. Measured on
 | D2: `syntax-check` fails unless hooks-macos succeeded or was skipped | **hooks-macos is advisory** (a warning and a summary line) until it has been green on real macOS runs; it had never run on a macOS image, and a first-run mismatch must not block every hooks PR. Promotion is filed. `.claude/settings.json` also counts as a hook change |
 | (not planned) | `self-check.test.sh` stopped piping into `grep -q` under pipefail (a SIGPIPE false FAIL under load); two missing-rg cases stopped hiding git; the runner self-test compares parallel against serial instead of against wall-clock constants, which would have flaked on a loaded CI runner; `handoffCheck.mjs` stopped describing `npm test` as an `&&` chain |
 
+## §7 — After pins batch 2 merges: re-size the jobs (added 2026-10-01 17:57 EDT, Session 3's close, at Harkirat's ask)
+
+Harkirat, 2026-10-01 17:56 EDT: *"update into the plan for phase 3 if 6 is still the right call or if more are needed, due to the new repo size and new tests"*.
+
+**Measured before the merge.** On PR #194 (pins batch 2, 584 commits into `v3-pre-release`) the single CI job ran **364 s**, `npm test` **289 s**. On #191 (2026-09-14) it was 288 s and 230 s, and this plan's baseline (§2) is 267 s and 215 s. Batch 2 adds two test files (`armorySlotFill`, `manifestSelection`), 32 changed test and fixture files for the portal walks, `app.css` +404 lines and about 180k lines of docs that `docs-audit` and the reflow checks read.
+
+**The six jobs are split by kind of work, not by count,** and the `tests` and `browser` lanes already run in parallel inside their job. So the question is not how many jobs but whether the slowest one is still too long.
+
+- [ ] **F1 — measure.** After merging `origin/v3-pre-release` (the brief's own first step) and registering batch 2's tests in `scripts/testManifest.mjs` with weights, run CI and record each job's wall time plus the runner's durations report for `tests` and `browser`. A timing taken before the new tests are registered measures an incomplete suite.
+- [ ] **F2 — decide, with the numbers written into §6.** Six stays if the slowest job finishes within **180 s** of its own start (half the 364 s single job; *a default, Harkirat may set another*). If `tests` or `browser` is over, split **that lane** across two or more jobs by the manifest's weights (a matrix shard index on the runner's lane) rather than adding unrelated jobs; `records`, `changes` and `hooks-macos` are candidates only if they are the slowest.
+- [ ] **F3 — verify the split.** Every manifest entry runs in exactly one shard (count both ways against the manifest), and the aggregate `syntax-check` waits for every shard.
+
 ## Audit log
 
 Falsification pass, 2026-09-14 before this plan was written: `sequentialthinking`, five thoughts, on the question *"where is this plan WRONG?"* Every finding below changed the plan.
