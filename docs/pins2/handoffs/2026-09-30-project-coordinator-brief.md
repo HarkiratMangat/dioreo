@@ -20,7 +20,7 @@ FOUR PHASES, in order. You sequence threads and relay; you never judge findings,
 
 YOUR RULES
 - Never start a phase without its entry condition and Harkirat's go, quoted back to him. One session in the checkout at a time.
-- Sessions 4 and 5 run as their lead thread alone: the plan's §11 says "dispatch no agents". Start extra threads for them only if Harkirat amends the plan to allow it.
+- Sessions 4 and 5: start extra threads ONLY when their lead thread asks — READ-ONLY workers (Sonnet 5.5, High) in parallel, and in Session 5 BUILDER threads (Opus 5.5, High) one at a time — each with the first message the lead gives. Never two writing threads at once; only the lead commits.
 - Phase 1 signals, read from the LAST line of the integration thread's reply: "NEXT: start worker(s) <ids>" → start each as a NEW thread on Sonnet 5.5 (High) with exactly "Read and follow local/pins2/audit/prompts/<id>.md", all at once; when all of them have sent a final reply, message the integration thread "WORKERS DONE: <ids> — out files under local/pins2/audit/"; if one stops without one, "STALLED: <id> — <its last words>". "BLOCKED: <question>" → ask Harkirat and relay his answer verbatim. "REPORT READY" → relay the report.
 - A thread asking for something outside its phase → ask Harkirat.
 - Tell Harkirat in one short message when each phase starts and ends.
@@ -36,7 +36,8 @@ WHERE: /Applications/Claude Code/Diors-Builds — never a worktree, never a clou
 BY ROLE
 - WORKER: read-only. Write only your own findings file under local/pins2/audit/. Never open local/pins2/audit/canaries.md, another worker's file, or docs/pins2/handoffs/2026-09-30-board4-s45-readiness-audit.md. Your prompt file says everything else.
 - INTEGRATION: the readiness audit's "main session" (its §13 is authoritative). Never launch agents with the Agent tool — write the worker prompt files and end the stage with one signal line, last: NEXT: … / REPORT READY / BLOCKED: …. The coordinator answers with WORKERS DONE or STALLED. You are the only phase-1 thread that edits the handoff set and the only one that commits.
-- SESSION thread: follow the plan's prompt for your session; you are the only thread of your session, and you dispatch no agents unless Harkirat amends the plan.
+- SESSION LEAD (Session 3's close, 4, 5): follow the plan's prompt for your session; you alone commit. No Agent sub-agents; ask the coordinator for READ-ONLY workers (parallel) or, in Session 5, BUILDER threads (one at a time).
+- SESSION WORKER: read-only; write only your own report under local/. SESSION BUILDER (Session 5): you are the only writing thread while you run; build AND measure your one stage against its board, then hand it to the lead — never commit.
 
 HOW EVERY THREAD WORKS (Harkirat's corrections of 2026-09-30)
 - mcp__linksee__read_smart for any file you will not change with a direct Edit, first read included; ctx_execute_file for a line range or a question about a file; codebase-memory for code (the kit is its own project: Applications-Claude-Code-Diors-Builds-docs-pins2-kit); ctx_search / ctx_batch_execute for prose — batched, never one question per call; rg only for an exact literal.
@@ -60,6 +61,6 @@ HOW EVERY THREAD WORKS (Harkirat's corrections of 2026-09-30)
 Begin phase 1. I approve P, the seven slice workers, T1…Tn and E as Sonnet 5.5 worker threads.
 ```
 
-*Pending his answer (22:23 EDT): whether Sessions 4 and 5 may split into read-only parallel workers and one-at-a-time builder threads. Until he amends the plan, both briefs keep each session to its lead thread.*
+*2026-09-30 22:30 EDT — Sessions 4 and 5 may split (his yes, 2026-09-30 22:30 EDT: "yeah you can"): read-only workers in parallel, Session 5's builders one at a time, the lead alone commits (plan §5c, §5d, §11).*
 
 *2026-09-30 22:26 EDT — Session 4's effort is Extra high, not Max (his: "not max, extra high is enough").*

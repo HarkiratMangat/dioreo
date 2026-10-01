@@ -548,6 +548,8 @@ status: live
 
 **Fixed points.** Every §10, §10.4 and §10.5 answer is an input. Session 4 applies a Board 4 design; it never redraws one. A tweak to a Board 4 design is shown on the portal — a capture before and after — and asked in a popup, never applied silently.
 
+> 🔨 **Threads (his yes, 2026-09-30 22:30 EDT: "yeah you can"):** the LEAD thread decides, draws, talks with him and alone writes and commits; it may ask the Project's coordinator for READ-ONLY Sonnet 5.5 worker threads in parallel (one per realm for the element inventories, capture workers for the before/after shots), each writing only its own report under `local/`. Never a second writing thread.
+
 ### 5c.0 · Evidence
 
 > ⟦ONE MESSAGE⟧ Step 1.
@@ -623,7 +625,7 @@ status: live
 
 *Added 2026-09-15 14:48 EDT. Harkirat, pin `pmu2xd88t`: "THEN a follow-up session is what will actually take everything and write it into the code — ACCCURATELY AND CORRECTLY, i don't want to have to go through another pin phase!"*
 
-**When:** after Session 4 merges. **Model:** Premise Med · Delib Very high → Opus5-High. **Branch:** `feat/portal-pins2-build` from `v3-pre-release`. **Agents:** none. Agent D's drawer was merged from a checkpoint (`b9e4ffe6`) and never matched its board; the main thread builds and measures every surface itself.
+**When:** after Session 4 merges. **Model:** Premise Med · Delib Very high → Opus5-High. **Branch:** `feat/portal-pins2-build` from `v3-pre-release`. **Agents:** none *(amended (his yes, 2026-09-30 22:30 EDT: "yeah you can"): BUILDER threads one at a time — each takes the next stage of the order below, builds it AND measures it against its board, and hands it to the lead, who reviews and commits; READ-ONLY verifier threads in parallel (the pop-up, arc, timing and relations instruments against the portal, the side-by-side and pin-walk pages). Never two writers at once, no worktrees, no merges — that is the Agent D failure below.)* Agent D's drawer was merged from a checkpoint (`b9e4ffe6`) and never matched its board; the main thread builds and measures every surface itself.
 
 **The order — tokens first, so nothing after them hardcodes a value:**
 
@@ -1072,7 +1074,7 @@ Route every call as he corrected Session 3 on 2026-09-30: linksee read_smart for
 You own three things board 3 routed to you: the three portal defects (§5c.3b Step 4c), portal names for the board-only classes and tokens in board4-spec/class-map.md and token-map.md (Step 4d), and the two unasked behaviours (Step 4d). And you keep Board 4's spec TRUE (Step 4e): every decision that changes what Board 4 shows is a row in §10.6 and, if it changes the kit, a regenerated spec (the command in docs/pins2/README.md). Session 5 builds from board4-spec/ plus §10.6.
 Step 1 is §5c Step 1 as ONE message. If npm run index:health exits 4, stop and tell me.
 Board 3's designs are fixed points: you decide the rewrites, where each design applies and the exemptions, and a tweak to a board-3 design is shown on the portal and asked.
-You write no portal code and dispatch no agents; impeccable extract, audit and clarify run in-line. docs/ideas/diors-notes.md is out of scope.
+You write no portal code and dispatch no Agent sub-agents; in the Project you may ask the coordinator for READ-ONLY worker threads (per-realm inventories, captures) — you alone write and commit; impeccable extract, audit and clarify run in-line. docs/ideas/diors-notes.md is out of scope.
 Close by §13; push, PR and merge each need my approval restated.
 ```
 
@@ -1087,7 +1089,7 @@ Port each component once (board4-spec/components.md) and carry b3/poptime.js, th
 Never port a board declaration verbatim: the kit's declarations read --b3-* and --h1-* tokens the portal does not have (board4-spec/token-map.md). Close every element row with scripts/portalProbe.mjs pointed at the board (--mockup docs/pins2/kit --mk-page board4.html, or the page FINAL.md names for Final). The design code is read from docs/pins2/kit/ — on this Mac only (gitignored, its own local git repo; in a worktree link it first: ln -s "/Applications/Claude Code/Diors-Builds/docs/pins2/kit" docs/pins2/kit); its README.md says how to serve it.
 Step 1 is §5d Step 1 as ONE message. If npm run index:health exits 4, stop and tell me.
 Build in §5d's order, tokens first. Every surface closes on a side-by-side against its board with its values read from the page, then the pin walk (§5d Step 9): I look at that page before I walk the portal.
-You dispatch no agents. docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge each need my approval restated.
+You dispatch no Agent sub-agents; in the Project you may ask the coordinator for BUILDER threads one at a time (each builds and measures its stage of §5d's order; you review and commit) and READ-ONLY verifier threads in parallel. docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge each need my approval restated.
 ```
 
 ## 12 · Closing this planning branch — `docs/portal-pins-batch-2-plan`
