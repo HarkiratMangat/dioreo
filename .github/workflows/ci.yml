@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      # fetch-depth: 0 because scripts/testRunner.test.mjs reads the pre-rebuild package.json from history (`git show 8c5e8a90:package.json`) to prove no test was dropped, and several docs checks read tags.
+      # fetch-depth: 0 because scripts/testRunner.test.mjs reads the pre-rebuild package.json from history (`git show 8c5e8a90:package.json` and `ec4f581f:package.json`) to prove no test was dropped, and several docs checks read tags.
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0

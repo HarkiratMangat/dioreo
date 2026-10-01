@@ -34,13 +34,18 @@ try {
         assert.strictEqual(pkg.scripts.test, 'node scripts/testRunner.mjs');
     });
 
-    await check('the manifest still runs every command the pre-rebuild && chain ran', () => {
-        const before = JSON.parse(execFileSync('git', ['show', '8c5e8a90:package.json'], { cwd: ROOT, encoding: 'utf8' })).scripts.test.split(' && ');
+    await check('the manifest still runs every command the pre-rebuild && chain ran, at every commit it was re-based onto', () => {
+        // 8c5e8a90 is the chain this suite was generated from; ec4f581f is pins batch 2's (#194), two tests longer. Add a commit here each time the branch merges a v3-pre-release that changed the chain.
+        const ANCHORS = ['8c5e8a90', 'ec4f581f'];
         // A command deliberately retired from the suite goes here, with the date and the reason. Empty on purpose.
         const RETIRED = [];
         const cmds = new Set(TESTS.map((t) => t.cmd));
-        const missing = before.filter((c) => !RETIRED.includes(c) && !cmds.has(c));
-        assert.deepStrictEqual(missing, [], `the old chain ran these and the manifest does not: ${missing.join(' · ')}`);
+        for (const ref of ANCHORS) {
+            const before = JSON.parse(execFileSync('git', ['show', `${ref}:package.json`], { cwd: ROOT, encoding: 'utf8' })).scripts.test.split(' && ');
+            assert.ok(before.length > 100, `the chain at ${ref} has only ${before.length} commands — the read itself is broken`);
+            const missing = before.filter((c) => !RETIRED.includes(c) && !cmds.has(c));
+            assert.deepStrictEqual(missing, [], `the chain at ${ref} ran these and the manifest does not: ${missing.join(' · ')}`);
+        }
     });
 
     await check('every `npm run` entry names a script that exists', () => {
@@ -57,6 +62,23 @@ try {
         assert.ok(files.length > 100, `found only ${files.length} test files — the walk itself is broken`);
         const missing = files.filter((f) => !text.includes(f) && !UNWIRED_OK.includes(f));
         assert.deepStrictEqual(missing, [], `no manifest entry runs: ${missing.join(', ')}`);
+    });
+
+    await check('every test-shaped package.json script is run by the manifest or named here with where it runs, and the check can fail', () => {
+        // A script whose name says test, check or audit that `npm test` never reaches is a test somebody believes is running. Each exception states where it does run, or why it cannot here.
+        const RUN_ELSEWHERE = {
+            'docs:audit': 'CI job `records` runs it, and ci-wiring pins that',
+            'portal:audit': 'an editing tool that needs --realm <r>, not a gate',
+            'portal:census:check': 'reads local/census, which only exists on the Mac that ran the census, so CI cannot run it',
+        };
+        const shaped = (name) => /(^|:)(test|check|audit)(:|$)/.test(name);
+        const unreached = (scripts, text, cmds) => Object.keys(scripts).filter((n) => n !== 'test' && shaped(n) && !text.includes(scripts[n]) && !cmds.has(`npm run ${n}`) && !(n in RUN_ELSEWHERE));
+        const text = TESTS.map((t) => expandCmd(t.cmd)).join(' ');
+        const cmds = new Set(TESTS.map((t) => t.cmd));
+        assert.deepStrictEqual(unreached(pkg.scripts, text, cmds), [], 'a test-shaped package.json script no manifest entry runs — add it to scripts/testManifest.mjs, or to RUN_ELSEWHERE with where it does run');
+        assert.deepStrictEqual(unreached({ ...pkg.scripts, 'invented:test': 'node scripts/doesNotExist.test.js' }, text, cmds), ['invented:test'], 'the script check did not catch a test-shaped script nothing runs — it is a vacuous pass');
+        const stale = Object.keys(RUN_ELSEWHERE).filter((n) => !(n in pkg.scripts));
+        assert.deepStrictEqual(stale, [], 'RUN_ELSEWHERE names scripts package.json no longer has');
     });
 
     await check('an entry whose own script starts a browser is in the browser lane, and the check can fail', () => {

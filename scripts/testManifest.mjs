@@ -1,6 +1,8 @@
 // scripts/testManifest.mjs — every entry `npm test` runs. The runner is scripts/testRunner.mjs.
 //
-// Generated 2026-09-14 18:52 EDT from the 132-command `&&` chain it replaced (package.json at 8c5e8a90), in the same order, and hand-maintained from then on. scripts/testRunner.test.mjs fails if a command that chain ran is missing here, and if any *.test.* file in the tree is reached by no entry.
+// Generated 2026-09-14 18:52 EDT from the 132-command `&&` chain it replaced (package.json at 8c5e8a90), in the same order, and hand-maintained from then on. Re-based onto v3-pre-release 2026-10-01 18:07 EDT: pins batch 2 (#194, ec4f581f) took the chain to 134 commands, and its two additions are registered below. scripts/testRunner.test.mjs fails if a command that chain ran is missing here, and if any *.test.* file in the tree is reached by no entry.
+//
+// ORDER IS THE SCHEDULE. The pool takes entries in this order and starts the first one that fits, so the eight longest sit first and the rest keep the old chain's order. Measured 2026-10-01 18:31 EDT on a loaded Mac, one full uncached run each: 145 s in the chain's order, 110 s longest first. The figure is rough, and a quiet machine or CI's slot count will move it. Put a new long entry near the top.
 //
 // FIELDS
 //   cmd        the shell command, run from the repo root
@@ -13,7 +15,14 @@
 //
 // ⚠️ ADDING A TEST: add its line here. Adding it to package.json does nothing — `npm test` is the runner now.
 export const TESTS = [
+    {"cmd": "npm run test:hooks", "lane": "hooks", "weight": 4, "declared": [".claude/hooks", "scripts/hookOutputCap.test.sh", "scripts/testCache.mjs", ".claude/settings.json"]},
     {"cmd": "npm run check", "lane": "unit", "weight": 4, "declared": [{"gitFiles": "*.js"}], "lock": "tree:read"},
+    {"cmd": "node scripts/portalStates.mjs --ci", "lane": "browser", "weight": 4, "timeoutMs": 600000},
+    {"cmd": "npm run docs:audit:test", "lane": "docs", "weight": 4},
+    {"cmd": "node scripts/portalGeometry.mjs --all --check", "lane": "browser", "weight": 4, "timeoutMs": 300000},
+    {"cmd": "node scripts/handoffCheck.test.mjs", "lane": "docs"},
+    {"cmd": "node scripts/testRunner.test.mjs", "lane": "unit"},
+    {"cmd": "node scripts/portalContrastRendered.test.js", "lane": "browser", "weight": 1, "timeoutMs": 300000},
     {"cmd": "npm run tdz", "lane": "unit"},
     {"cmd": "node scripts/testCache.test.mjs", "lane": "unit"},
     {"cmd": "node scripts/devlog-add.test.mjs", "lane": "docs"},
@@ -21,7 +30,6 @@ export const TESTS = [
     {"cmd": "node scripts/portalComposeClient.test.js", "lane": "unit"},
     {"cmd": "node scripts/portalStatus.test.mjs", "lane": "unit"},
     {"cmd": "node scripts/seasonPatchNoteGuard.test.js", "lane": "unit"},
-    {"cmd": "npm run docs:audit:test", "lane": "docs", "weight": 4},
     {"cmd": "node scripts/calendarDedup.test.js", "lane": "unit"},
     {"cmd": "node scripts/alertExplain.test.js", "lane": "unit"},
     {"cmd": "node scripts/gatewayRecovery.test.js", "lane": "unit"},
@@ -70,6 +78,8 @@ export const TESTS = [
     {"cmd": "node scripts/analyticsHealth.test.js", "lane": "unit"},
     {"cmd": "node scripts/homeDaysLeft.test.js", "lane": "unit"},
     {"cmd": "node scripts/armoryRealm.test.js", "lane": "unit"},
+    {"cmd": "node scripts/armorySlotFill.test.js", "lane": "unit"},
+    {"cmd": "node scripts/manifestSelection.test.js", "lane": "unit"},
     {"cmd": "node scripts/portalSession.test.js", "lane": "unit"},
     {"cmd": "node scripts/seasonHandlerSnapshot.test.js", "lane": "unit"},
     {"cmd": "node scripts/announcementOps.test.js", "lane": "unit"},
@@ -109,7 +119,6 @@ export const TESTS = [
     {"cmd": "node scripts/portalAnalytics.test.js", "lane": "unit"},
     {"cmd": "node scripts/portalRender.test.js", "lane": "unit", "lock": "tree:write"},
     {"cmd": "node scripts/portalPinOverlay.test.js", "lane": "unit"},
-    {"cmd": "node scripts/portalContrastRendered.test.js", "lane": "browser", "weight": 1, "timeoutMs": 300000},
     {"cmd": "node scripts/portalRealms.test.js", "lane": "unit"},
     {"cmd": "node scripts/portalReview.test.js", "lane": "unit"},
     {"cmd": "node scripts/portalOpWords.test.js", "lane": "unit"},
@@ -124,12 +133,9 @@ export const TESTS = [
     {"cmd": "npm run portal:realwalk:test", "lane": "unit"},
     {"cmd": "npm run portal:geometry:test", "lane": "unit"},
     {"cmd": "npm run portal:states:test", "lane": "unit"},
-    {"cmd": "node scripts/portalStates.mjs --ci", "lane": "browser", "weight": 4, "timeoutMs": 600000},
-    {"cmd": "node scripts/portalGeometry.mjs --all --check", "lane": "browser", "weight": 4, "timeoutMs": 300000},
     {"cmd": "node scripts/portalHarness.test.js", "lane": "unit"},
     {"cmd": "node scripts/portalHarnessRender.test.js", "lane": "unit", "lock": "tree:write"},
     {"cmd": "node scripts/portalRoutes.test.js", "lane": "unit"},
-    {"cmd": "node scripts/handoffCheck.test.mjs", "lane": "docs"},
     {"cmd": "node scripts/agreementSize.test.mjs", "lane": "docs"},
     {"cmd": "node scripts/silentContract.test.mjs", "lane": "docs"},
     {"cmd": "npm run docs:reflow:test", "lane": "docs"},
@@ -143,9 +149,7 @@ export const TESTS = [
     {"cmd": "npm run portal:coverage:test", "lane": "unit"},
     {"cmd": "npm run test:tz", "lane": "unit"},
     {"cmd": "npm run autofix:safety", "lane": "unit"},
-    {"cmd": "npm run test:hooks", "lane": "hooks", "weight": 4, "declared": [".claude/hooks", "scripts/hookOutputCap.test.sh", "scripts/testCache.mjs", ".claude/settings.json"]},
     {"cmd": "node --no-warnings scripts/indexHealth.test.mjs", "lane": "unit"},
     {"cmd": "node scripts/hookTestLint.test.mjs", "lane": "unit"},
     {"cmd": "node scripts/buildPortalInputs.test.mjs", "lane": "unit"},
-    {"cmd": "node scripts/testRunner.test.mjs", "lane": "unit"},
 ];
