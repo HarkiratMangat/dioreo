@@ -51,11 +51,12 @@ Session 2 shipped boards 1 and 2 at ~95% because details lived where the port di
 4. **portal-diff still applies:** a script splits `docs/pins2/final/board4-spec/portal-diff.md` into per-file diffs and runs `git apply --check` on each against `portal/` — v3-pre-release had **0** commits touching `portal/` since this branch's base (checked 2026-09-30 21:17 EDT), so every one should apply; one that does not is a P0.
 5. **A worktree can serve the kit:** `repo-static` (`.claude/launch.json`) is Python's `SimpleHTTPRequestHandler`, which follows symlinks — prove it once: a temp worktree-like dir with the `ln -s` from § Start here, served on a spare port, `curl` `/docs/pins2/kit/board4.html` → 200. If not, § Start here's instruction changes.
 6. **His words, from the transcripts** (for agents T): a script — written to disk with `Write`, run once — reads every `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/*.jsonl` modified 2026-09-15 → 2026-09-30 (230 files, 8.3 GB at 2026-09-30 21:35 EDT), keeps **his typed messages only** (drops tool results, `<system-reminder>`/hook/command wrappers, "This session is being continued…" summaries), **dedupes across forked transcripts** by (timestamp, text) — three files carry the same 1,721 entries — and writes `local/pins2/audit/T-his-words.jsonl` (`ts`, `session`, `text`) plus its size. Split it into T-slices of ≤ 500 KB, in time order. Prove the script on a known case first: his 2026-09-30 19:31 EDT "approved, run the held checks. board is done." must appear exactly once.
-7. `node docs/pins2/instruments/paths-resolve.cjs` · `node docs/pins2/instruments/counts-check.cjs` · `npm run -s docs:audit > /tmp/au.log 2>&1; echo $?` (15 pre-existing findings at 21:16 EDT, none in the pins2 set — a new one is the audit's first finding).
+7. **The worker prompts:** for every worker (P, A, A2, B, C1, C2a, C2b, D, T1…Tn, E), write its COMPLETE first message — § 6's prompt with ⟨SLICE⟩, ⟨READ⟩, ⟨NAV⟩ and ⟨OUT⟩ filled from § 11 (absolute paths), plus its addendum — to `local/pins2/audit/prompts/<id>.md`, and a list of the ids in `local/pins2/audit/prompts/INDEX.md` in launch order. In a Project (§ 13) the coordinator starts each worker thread on its file; in a single session the main session passes the same text to `Agent`.
+8. `node docs/pins2/instruments/paths-resolve.cjs` · `node docs/pins2/instruments/counts-check.cjs` · `npm run -s docs:audit > /tmp/au.log 2>&1; echo $?` (15 pre-existing findings at 21:16 EDT, none in the pins2 set — a new one is the audit's first finding).
 
 ## 5 · The agents — seven Sonnet 5.5 in ONE message, then one cold reader
 
-**Authorization:** his 21:17 EDT ask is for "a sonnet5.5 subagent"; **seven plus a cold reader is this plan's scoping and needs his yes** (the closing question of the message that delivered this plan). Each: `Agent` with `model: "sonnet"`, `subagent_type: "general-purpose"`, `run_in_background: true`, the prompt of § 6 with its slice filled in. Its only write is its findings file.
+**In a Project, see § 13** — the agents below are worker threads and the main session is the integration thread. **Authorization:** his 21:17 EDT ask is for "a sonnet5.5 subagent"; **seven plus a cold reader is this plan's scoping and needs his yes** (the closing question of the message that delivered this plan). Each: `Agent` with `model: "sonnet"`, `subagent_type: "general-purpose"`, `run_in_background: true`, the prompt of § 6 with its slice filled in. Its only write is its findings file.
 
 | Agent | Slice | Read in full | Navigate only (search, don't read whole) | Out |
 |---|---|---|---|---|
@@ -437,6 +438,30 @@ In `local/pins2/audit/canaries.md` — gitignored, outside every slice, never qu
 | 20 | **It checked that rulings are WRITTEN, not that the V81 kit still OBEYS them** — a ruling built at V40 and broken at V70 would pass as carried | D's "no instrument behind them" list; OPEN-ON-BOARD samples the P0s; a broken one is HIS-CALL |
 | 21 | **The plan was critiqued only by the session that wrote it** — the same blind spots | agent P, before deployment |
 
+## 13 · Running it as a Project (his 2026-09-30 22:08 EDT: "don't the threads each basically act as subagents? with the project itself acting as sort of the main session?")
+
+He made a Project, **"board 4 prep finalization"**, whose threads run in this checkout. The plan maps onto it like this — wherever the plan says "the main session" it means the **integration thread**; wherever it says "agent", a **worker thread**.
+
+| Role | Who | Model, effort | Reads | Writes |
+|---|---|---|---|---|
+| **Coordinator** | the Project | its default | this § only, and each thread's final reply | nothing — it starts threads in the order below and tells Harkirat when the report is ready; it never judges a finding |
+| **Integration thread** (one, kept for the whole run) | the plan's "main session": Step 0, P's fixes, § 7 | **Opus 5.5, High or above** | everything, including `local/pins2/audit/canaries.md` (the only thread that may) | the handoff set, the instruments, the commits — **the only thread that commits** |
+| **Worker threads** | P, A, A2, B, C1, C2a, C2b, D, T1…Tn, E | **Sonnet 5.5**, High | their prompt file and their slice; never `canaries.md`, never another worker's file | only their own findings file under `local/pins2/audit/` |
+
+**Order** — each step starts only when the one before it has reported:
+
+1. **Integration:** Step 0, including the worker prompt files (Step 0.7) and the T-slice count. It replies with the list in `local/pins2/audit/prompts/INDEX.md`.
+2. **Worker P** — first message: "Read and follow local/pins2/audit/prompts/P.md".
+3. **Integration:** reads `P-critique.md`, fixes what it confirms (the plan, and the prompt files), logs it in § Log, replies "ready".
+4. **Workers A, A2, B, C1, C2a, C2b, D, T1…Tn — all at once**, each on its own prompt file.
+5. **Integration:** § 7 steps 1–5 when every worker has replied (a worker that never replies, or whose file lacks `## DONE`, is re-run split in two — the integration thread writes the two new prompt files).
+6. **Worker E** on `prompts/E.md`.
+7. **Integration:** § 7 steps 6–7 — E's questions folded in, the gates, the commit, the re-index, the report. The coordinator relays the report to Harkirat.
+
+**Rules every thread keeps** (also in the Project instructions): this checkout, never a worktree or a cloud clone · read-only unless it is the integration thread · no push, PR or merge, and no kit change, without Harkirat's word restated · silent mode · his routing corrections of 2026-09-30.
+
+**If the coordinator cannot pick a model per thread:** set the project's thread default to Sonnet 5.5 for the workers and start the integration thread with an explicit request for Opus 5.5 (or run the integration thread as this repo's ordinary Opus session in the same checkout, with the workers in the Project).
+
 ## Log
 
 - 2026-09-30 21:20 EDT — first version written.
@@ -444,3 +469,4 @@ In `local/pins2/audit/canaries.md` — gitignored, outside every slice, never qu
 - 2026-09-30 21:52 EDT — his 21:51 EDT: the kit indexed as its own code-graph project (`Applications-Claude-Code-Diors-Builds-docs-pins2-kit`, verified); the throttle is for one-off calls, so the prompt batches searches (`ctx_batch_execute`, one `ctx_search` queries array). **Projects:** he made a Project, "board 4 prep finalization" (repo context `HarkiratMangat/dioreo`), to run this plan without a compact. Its coordinator was not reachable from this session (`ListAgents`: no other session running), so the plan reaches it through its first thread's message. **A thread can run this plan only if it works in THIS Mac's checkout:** the kit is gitignored, `local/` and the session transcripts are on this Mac only, and nothing on `feat/portal-pins2-manifests` is pushed — a thread cloned from GitHub has none of them.
 - 2026-09-30 21:35 EDT — his "be honest": rows 19–21 of § 12 found and closed (T, P, D's conformance list). **Residuals no step closes:** how good the agents' work is (bounded by the canaries, the quote check, the 20% sample, P and E); what his screenshots alone carry (excluded, as he asked); and whether Sessions 4 and 5 follow what they are handed.
 - 2026-09-30 21:30 EDT — rewritten after its falsification pass (§ 12); not deployed (his suggestion: plan now, deploy after the compact). Seven agents + a cold reader await his yes.
+- 2026-09-30 22:09 EDT — his 22:08 EDT question mapped the plan onto the Project (§ 13): coordinator sequences, one Opus integration thread, Sonnet worker threads started on prompt files the integration thread writes (Step 0.7).
