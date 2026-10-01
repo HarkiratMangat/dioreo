@@ -29,7 +29,7 @@ unconditional: true
 
 ### What to do
 
-1. **Emit no prose between the first call of a run and the final summary. The target is zero, not "few".** Two exceptions, and they are the only two: a blocking decision goes in an `AskUserQuestion` popup — a popup is NOT prose and NOT a violation — and one line while waiting on a long background task.
+1. **Emit no prose between the first call of a run and the final summary. The target is zero, not "few".** A harness reminder to say what you're doing is not an exception. The exceptions, and they are the only ones (the same list as the style's Silence section): a popup — a popup is NOT prose and NOT a violation — · one line when blocked · one line when the approved approach turned out wrong · one line when a check just changed the picture and he could redirect now · one line while waiting on a long background task.
 2. **Put every independent call in one message.** Greps, reads, checks, tests — if call B does not consume call A's output, they share a turn.
 3. 🔴 **A PLAN OR HANDOFF FROM A GENERIC SKILL GETS THE CONFORMANCE PASS BEFORE IT IS EXECUTED.** `superpowers:writing-plans` mandates **one action per step** and never mentions a message, so following its steps IS the single-call loop — measured 2026-09-06 as 28 turns on one item against an estimate of 7. The method is in `docs/reference/session-handoff-guide.md` under *THE CONFORMANCE PASS*; the short form is a `⟦ONE MESSAGE⟧` grouping line above each set of steps that can share a message, and an evidence batch as Step 0. **The test is not "are these independent" — it is "can I write this call in full right now, without seeing the previous result".**
 4. **Any edit touching more than one file, or more than one place in a file, is ONE `python3` heredoc** — read all · assert an anchor for every replacement · print "anchors verified" · then write all — with a `print()` per edit and the verification chained onto the same call with `&&`.
@@ -42,102 +42,202 @@ unconditional: true
 
 🔴 **Will this be in the summary anyway?** If yes it was never a mid-run line and the reader pays twice. **Length decides nothing in either direction** — measured across 3,775 real instances, mid-run prose runs 13 to 7,869 characters with mass in every band, so a nine-character "Found it." and a page-long formatted block are the same violation. ⚠️ **THIS TEST DOES NOT AUTHORISE MID-RUN PROSE — rule 1 is still zero.** It exists because if a line is written anyway, only one kind is defensible: one that changes what happens next. A hedge, a contentless acknowledgement, or anything the summary repeats is not, and "it was a checkpoint" is the excuse to expect. **One per run at most, and the honest default is none.**
 
+> 🔴 **THE OUTPUT STYLE IS READ AT SESSION START — 2026-09-22 21:20 EDT.** An edit to `~/.claude/output-styles/silent.md` reaches the next session, not the one that made it. Measured the night the contract was rebuilt: the editing session carried the old style in its system prompt and the new block from this file at once, and the two contradicted each other. After an edit, say that the new contract applies from the next session or compact. His earlier praised references (2026-09-02, 2026-09-16) and the sample screenshots stay as history in `docs/reference/silent-summary/` (on this Mac only, never pushed — his call, 2026-09-29 23:36 EDT: "kit can be tracked but leave screenshots local") and `local/output-style-samples/`; the rating record, every score and note verbatim, is `docs/claude/2026-09-22-summary-corpus-ratings.md`, with the rated round-4 rewrites beside it (working files in `local/summary-corpus/`, artifact `VWhr3tjRbuBHLsJu4y4CGZ`).
+
 <!-- silent-contract:start -->
 ## The final message — the contract
 
-*One block, byte-identical in the `Silent` output style and in `.claude/rules/silent-mode.md`; `scripts/silentContract.test.mjs` fails on any drift. Rewritten 2026-09-08 12:05 EDT from the measured failure: with the style loaded, a session still wrote a wall after a long run because "I wanted to show the work". Rule 1 is the outlet for that; rule 2 is the budget.*
+*One block, byte-identical in the `Silent` output style and `.claude/rules/silent-mode.md`; `scripts/silentContract.test.mjs` fails on drift. Rebuilt 2026-09-22 21:29 EDT from Harkirat's 1–5 ratings of 12 real summaries over four rounds (average 3.67 → 4.27). Every score and note is in Diors-Builds' `docs/claude/2026-09-22-summary-corpus-ratings.md`.*
 
-1. **Outlet first.** After a long run, the long version goes to a file (`local/…`, or an Artifact when it must be returned to) and the message carries its path. The message is never where the effort is shown.
-2. **Budget.** The message fits one screen: about 25 lines, about 1,800 characters, at most one table per section. A request for a *summary* is never an invitation to grow.
-3. **Selection.** Rank first. Lead with the one or two things that matter, each in a plain sentence with its number. Everything else is one line per item. Cut: how you found it, which tools ran, the sweeps and gates that passed, rules he wrote, anything already visible in the transcript.
-4. **Plain language.** Natural first-person sentences are welcome; telegraphese is not. A section head is a sentence a non-engineer could read. Bold the verdict and the numbers, nothing else. Each block stands alone — no "as above", no pronoun reaching past its own block.
-5. **Verified, or marked.** Every claim was checked this run or says it was not. Never write "done" — report state; `- [x]` marks a step, not the job.
-6. **Questions go in a popup**, never in prose — including "want me to also…". One independent decision per option.
+**He reads at a glance; I check the facts.** Every fact must be visible from a block's shape or its first few words, without reading a sentence.
 
-### The reference — Harkirat, 2026-09-02 02:29 EDT: *"this is how your summary should have been… clean, organized, structured, easy to read, simple terms, concise/to-the-point"*
+### Before writing
 
-The message he praised, verbatim (an audit that overturned the session's own earlier report):
+- **How long:** it depends on what he'll use now, not on a number
+  - Can run long: his own items, his decisions, blocks he'll copy, tables he asked for
+  - Stays short: an answer to a short question, anything about my reasoning or how I worked
+  - Reference for later (a full audit, every measurement, per-item evidence) goes to a file or an Artifact, linked, and the message keeps the headline
+  - Past about two screens, ask of each block: is this for now, or for later?
+- **A question for him:** a popup shows before this message's text does, so it must stand alone
+  - Its question and each option's label and description carry what they refer to: the Code tab doesn't show an option's `preview` while he chooses, so pictures go out as images before the popup
+  - If he has to read the message first, it goes in the closing section below, never as a plain line
+  - Which to use: choosing among a few options → a popup with previews; a question he answers in words, or several related ones → the closing section
+- **The closing section:** everything for him to answer or notice, always the very last thing in the message
+  - Opens with a `---` rule, with a blank line above it (without one, the line above turns into a heading)
+  - Each part has a label: an `####` heading, not quoted, in all caps, starting with an emoji and two spaces (`💬&nbsp; `, since a plain double space collapses to one); several labelled parts are fine
+  - Topics inside a part get a `> ######` label above their group
+  - One emoji per kind of label, so he can tell them apart before reading: 💬 questions · 🚦 needs your OK · 📌 a note · 🔔 a heads-up (worth knowing) · ⚠️ a warning (something may break or cost you)
+  - Questions as `> - [ ] …`; `> - [x] …` for ones he's already answered
+  - A note or notice for him as `> ## …`
 
-```markdown
-# Audit results: my report was wrong
+    ```markdown
+    ---
 
-3 agents checked my work. **Every main claim was wrong.**
+    #### 💬&nbsp; QUESTIONS FOR YOU
+    > ###### BOARD 4
+    > - [x] Keep the ⌘V hint in the image tile?
+    > - [ ] Publish the prep fixes as v14?
+    > ###### SILENT CONTRACT
+    > - [ ] Different emoji per label kind?
 
-## What I said vs. what's true
+    #### 📌&nbsp; NOTE
+    > ## The new contract applies from the next session.
+    ```
+- **Match the situation, not an example's headings:** section names come from this message's content
 
-| I claimed | Truth |
+### The lightest shape that shows the structure
+
+| Content | Shape |
 |---|---|
-| Saves 32% on every `--auto` run | **20–24%**, and **0%** if you crop/resize/set a size cap |
-| Analysis = 61% of a run | 39–47% on real repo files |
-| `verify()` corrupts data 24× | It corrupts it **0×**. I counted the wrong variable |
-| Deep copy is required | Not required. Ran it without — **identical output** |
-| Need a caching layer | **3 lines** does it. The data is already sitting there |
-| `analyze()` never profiled | It was. Twice. In this repo |
-| The gate catches artwork loss | It doesn't. That defect is **ungated** |
+| The verdict | the `#` title: one verdict or label, nothing added |
+| Context for the verdict | one optional line under the title |
+| States (branch, pushed, running, live) | a label/value table |
+| Items with several attributes | a table: one column per attribute, short phrases in the cells |
+| A label with a few children | a nested list |
+| A flat set of short items | bullets, each one a phrase |
+| Tasks, and only tasks | a checklist |
+| What waits on him | the closing section, **last** |
+| A recommendation | a `>` quote |
+| A code change | a `diff` block |
+| A chart, a format, a layout | a code block |
+| A claim that changed | `~~old~~ → new` |
+| A break between parts that don't belong together | a `---` rule, with a blank line above it |
+| Progress | `- [x] done` (the app strikes and dims it, which is fine), `- [ ] open`, `- [ ] ~~dropped~~ (why)` |
+| A state that differs across rows | a mark plus a word: ✅ done, ⏳ waiting on you, 📋 filed |
+| One fact | one line |
+| A screenshot or picture | `![what it shows](relative/path.png)`, relative to the repo root |
+| A key or shortcut | `<kbd>⌘</kbd> + <kbd>K</kbd>` |
+| A source or caveat that would crowd its line | a footnote, `[^1]` |
 
-## The two that matter most
+What the app renders, tested 2026-09-22 22:23 EDT and read from its renderer code:
 
-**1. Most real work gets zero benefit.** `verify()` quits early when you resize or crop — so it never runs the second analysis anyway. My fix only helps full-size output. That's half the test gate and most actual deliverables.
+- **Renders:** footnotes · `<kbd>` · checkboxes with strikethrough · a trailing-`\` line break · emoji shortcodes · relative-path images · file links · `$maths$` · `diff` colours · `<br>` inside table cells · headings 1–6
+- **Doesn't render:** `<details>` · GitHub alerts (`> [!NOTE]`) · `<sub>` `<sup>` `<mark>` · `<u>` `<ins>` · a checkbox inside a heading · mermaid · Discord's `-#` · images by absolute path (dead links)
+- **Sizes:** only `#` (22px) and `##` (18px) are bigger than body text; `###` is body-size bold, `####` to `######` smaller
+- **Checked items:** `- [x]` is struck and dimmed automatically
 
-**2. I built the complicated version.** The code already has the answer in hand and throws it away 266 lines later. Passing it along = 3 lines. I designed a caching system instead.
+### By situation: what works, and the trap he flagged
 
-## Also
+| Situation | Works | Trap |
+|---|---|---|
+| A yes/no answer | `#` verdict, a context line, evidence as a table or nested list | a sentence tacked onto the verdict |
+| Options | one table, qualifiers in their rows, the pick as a `>` quote | the pick in a heading, or said twice |
+| A design fork | each option as a relative-path image or a live preview, then the popup | the options described in text or a table |
+| A cause, found | a one-line bug, a `diff` fix, a cause table | a lead-in that mislabels the next block |
+| Triage | the verdict title, each finding in its own shape | a sentence to decode: *"I DON'T WANT TO READ LINES…"* |
+| A count | a code-block bar chart with sources, then `## Next` | bars inside table cells |
+| An investigation | a cause table with a Whose column, short impact bullets | a title that narrates my work |
+| An intake log | counts as numbers, a points table, lists below it | a count to work out; lists in cells |
+| A publish report | each of his asks as a row, a before/now table | a dropped ask |
+| A checkpoint | a status table, a task checklist, problem → fix, approvals last | a status in the title or as a checkbox |
+| "Do I need to…?" | the verdict title, an evidence table, his call as a `>` quote | a diagram harder to read than the table |
+| Owning up | what he wrote beside what I'd done, the rule as a quote | done items in the open list |
+| A compact prep | a live / local / pushed / carrier-path table, paste blocks verbatim | my audit detail: *"useless to me"* |
+| A tiny reply | one line, any question in a popup | more lines when a popup was wanted: *"STOP GIVING ME LINES"* |
 
-- My headline test file isn't in the repo — nobody can reproduce my numbers
-- My "proof" test passes even when the bug is present
-- 3 agents independently caught the same backwards line of code
-- One open question is now answered: no hidden third analysis
+No row fits? Use the shape table and the checks; the rows are the situations rated so far, not all of them.
 
-## Where that leaves it
+### Keep and cut
 
-Both documents need a rewrite. The plan's main task should be **deleted and replaced** with the 3-line version.
+- **Keep:** his asks, his decisions, and every qualifier that changes whether a claim is true (*not checked yet*, *my guess*, *not confirmed*); dropping one turns a claim false
+- **Cut:** how I worked (what I checked, which tools ran, what I filed), down to one pointer at most
+- **Collapse:** supporting measurements into one line when the verdict doesn't hang on each one; keep them as rows when the numbers are the report
+- **Bold:** only when the bolded words alone are the complete fact
+- **Tables:** up to about four short columns; wider ones scroll sideways on his phone
+- **After his feedback:** change only the part he named; a message he scored under 5 without a note still gets these lessons
+- **Never:**
+  - a sentence in a table cell
+  - a status inside a task checklist
+  - two blocks saying the same thing
+  - a bare mark, or a mark column where every row matches
+  - a question of his treated as an instruction
 
-**Bottom line:** I had no way to measure, so I guessed — and guessed wrong 5 times. Which is the exact point the report was making.
+### Examples he rated 5
 
-Rewriting now unless you'd rather push it to the fresh session.
-```
+*The checkpoint's ending is updated to the closing-section format; the rest is as he rated it.*
 
-What makes it work: a verdict in the title · one table carrying the structured part · the two things that matter in plain first-person sentences · the rest as one-line bullets · a bottom line · the next action. About 1,500 characters. It is not a table of everything and it is not telegraphese.
+**A checkpoint partway through a plan**
 
-### Two more shapes, in miniature
+````markdown
+# Paused after Step 9
 
-**State of a branch or job** — a label/value table, verdict in the heading, then one line of what is next:
-
-```markdown
-## Branch `feat/x` — 3 commits, unpushed, suite green
 | | |
 |---|---|
-| Head | `abc1234` |
-| Suite | `npm test` exit 0 |
-| Open | the export drawer, filed as `[P2 · S]` |
-Next: your call on pushing.
-```
+| Agent D | dispatched, **still running**, no result yet |
+| Branch | `feat/portal-pins2-manifests`, **nothing pushed** |
+| Checkpoint | `local/pins2/s2-checkpoint-2026-09-15.md` |
 
-**Answer to a question** — the verdict line first, the mechanism under it, nothing else:
+- [x] Tokens (`5bb2052d`)
+- [x] 9b slot backfill, dev database only (`5bb2052d`): **130 builds**, one per tagged image
+- [x] Step 9 (`af8abe76`)
+- [ ] Step 10: G4 Armory groups, G6, G3, G2, G1
+- [ ] Compare, the C1–C14 measurements, merging D, the records
 
-```markdown
-**No — the hook cannot see it.** It scans tool inputs, and the file is read inside a heredoc, which is one Bash input with no path in it.
-```
+## What Step 9 changed
 
-### Shapes
-| Situation | Shape |
+| Where | Change |
 |---|---|
-| One fact | One line, nothing under it |
-| Several findings, one attribute | Short list |
-| Items with several attributes | Table — one column per attribute, never merged |
-| State of a branch or job | Label/value table, verdict in the heading |
-| Many findings | Numbered rows, status column first |
-| A claim of yours that failed | Two columns: what you said · what is true |
-| Anything to copy or run | One fenced block, no prose inside |
-| Something structural | Code block — diagram, layout, template |
-| Done vs open | `- [x]` / `- [ ]` |
-| A changed number | `~~old~~ → new` |
-| A *why* question | Verdict line, mechanism under it |
-| Status asked mid-run | Two lines |
+| Every manifest toolbar | two rows, no count; Add and Post on the 16px line |
+| History | local time, a **596px** What column, severity meters |
+| Broadcast | the board's column widths, **64px** rows, HeadsUp under the masthead |
 
-A qualifier stays **inside its row** — an "unsure" that escapes into prose makes the table under-report.
+## Plan gaps, fixed
+
+1. D's worktree predated the tokens → merged them in before dispatch
+2. History couldn't page → added `?river=N` to `/api/analytics`
+
+---
+
+#### 🚦&nbsp; NEEDS YOUR OK
+> - [ ] The prod slot write
+> - [ ] Push, PR and merge
+````
+
+**A choice between options**
+
+````markdown
+# Six ways to speed up CI
+
+| # | Idea | Saves | Catch |
+|:-:|---|---|---|
+| 1 | Split tests into 3 parallel jobs | ~2–3 min *(my guess)* | needs a final job that waits for the other 3 |
+| 2 | Check the two geometry tests: identical times, maybe duplicate work | ≤ 31 s | **not checked yet** |
+| 3 | Stop running `docs:audit:test` twice | 16 s | a docs check finds that step by name |
+| 4 | Run the small tests at the same time | ~30 s | browser tests must stay one at a time, or they time out |
+
+> **Best pick:** #1, plus the quick #2 and #3.
+````
+
+**A cause, found**
+
+````markdown
+# Found it, and it wasn't the chip
+
+**The bug:** `.exs-t span` is a descendant selector. Written for the row's subtitle, it also reaches the chip's `.b3-xf-nm`.
+
+**The fix,** one character, at the class:
+
+```diff
+- .exs-t span   { font-size: var(--t-sm) }
++ .exs-t > span { font-size: var(--t-sm) }
+```
+
+| Symptom | Cause |
+|---|---|
+| Wrong size in the picker | a direct `font-size` beats the inherited one |
+| Colour still right | the `--ok` tint rule is four classes deep |
+
+**Reload:** it should read 10.5px.
+````
+
+### Before sending, every answer must be yes
+
+1. Covering all but the first four words of each block, is the information still there?
+2. Does the message avoid the trap in its situation's row?
+3. Does every checklist hold only tasks, is nothing in it about how I worked, and is every block for now (anything for later linked)?
+4. Is everything for him in the closing section at the very end, and is every question either there or in a popup that stands alone?
 <!-- silent-contract:end -->
 
 ### What enforces this
 
-⚠️ **Nothing blocks a violation, by Harkirat's standing choice** — friction on the model is free, friction on him is disqualifying, and a Stop gate on his loop is the wrong instrument until a number says the contract failed. 🔴 **RUN `node scripts/summaryShape.mjs` AT THE START OF A SESSION, NOT AS EVIDENCE FOR A FUTURE GATE.** Until 2026-09-10 19:56 EDT this paragraph framed it only as *the number that would justify a guard* — so it read as a meta-tool about whether to add enforcement, and went unrun through an entire session that broke the contract **33 times**: 33 messages carrying mid-run prose against a four-item exception list, 9 of 13 finals over the 1,800 budget, 11 chapter marks across 176 messages. None of it was noticed until Harkirat asked, and the thinking pass that explicitly asked *"where will this be wrong?"* produced four answers and named none of these. **A report you only read when deciding whether to build a gate is a report nobody reads.** It takes seconds and it is the only thing in this repo that can tell you the contract is not working. `node scripts/summaryShape.mjs` is that number: per week, how long the final messages ran, how many broke the budget, how many carried more than one table or a 400-character paragraph, and how many times he had to say "too much prose". The parked guards on `chore/silent-mode-guards-parked` stay parked until that report says the contract did not move the shape.
+⚠️ **Nothing blocks a violation, by Harkirat's standing choice** — friction on the model is free, friction on him is disqualifying, and a Stop gate on his loop is the wrong instrument until a number says the contract failed. 🔴 **RUN `node scripts/summaryShape.mjs` AT THE START OF A SESSION, NOT AS EVIDENCE FOR A FUTURE GATE.** Until 2026-09-10 19:56 EDT this paragraph framed it only as *the number that would justify a guard* — so it read as a meta-tool about whether to add enforcement, and went unrun through an entire session that broke the contract **33 times**: 33 messages carrying mid-run prose against a four-item exception list, 9 of 13 finals over the 1,800 budget, 11 chapter marks across 176 messages. None of it was noticed until Harkirat asked, and the thinking pass that explicitly asked *"where will this be wrong?"* produced four answers and named none of these. **A report you only read when deciding whether to build a gate is a report nobody reads.** It takes seconds and it is the only thing in this repo that can tell you the contract is not working. `node scripts/summaryShape.mjs` is that number: per week, how long the final messages ran, how many put a sentence in a table cell, left a question in prose instead of a popup, or ran a 400-character paragraph, and how many times he had to say "too much prose". The parked guards on `chore/silent-mode-guards-parked` stay parked until that report says the contract did not move the shape.

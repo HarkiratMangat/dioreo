@@ -6,6 +6,12 @@
 //                                     [--props fontSize,width,zIndex] [--chain]
 //   --sel     the element to interrogate, on both sides
 //   --chain   walk to <html>, reporting which ancestor first DECLARES each property
+//   --mockup  the design package to compare against (default: the 2026-08-23 conformance package)
+//   --mk-page the page inside it, when the package is one page of gates rather than one page per realm
+//   --mk-sel  the mockup-side selector, when the two sides do not share class names
+// A pins-2 board, for example:
+//   node scripts/portalProbe.mjs --realm armory --mockup docs/superpowers/mockups/2026-09-14-pins2-board-2 \
+//        --mk-page index.html --mk-sel '#g4man .pb-fold' --sel '.wg-fold' --chain
 import path from 'node:path';
 import { SEED_REALMS } from './lib/portalSeedRealms.mjs';
 import { fileURLToPath } from 'node:url';
@@ -26,7 +32,12 @@ const PROPS = String(flag('--props', 'width,height,fontSize,lineHeight,display,p
     .split(',').map((s) => s.trim()).filter(Boolean);
 if (!sel) { console.error('portal:probe needs --sel "<css selector>"'); process.exit(2); }
 
-const PKG = 'docs/superpowers/mockups/2026-08-23-portal-interactive';
+// 🔴 THE PACKAGE IS A FLAG NOW, NOT A CONSTANT — added 2026-09-15 22:42 EDT. Every instrument in this family hardcoded `2026-08-23-portal-interactive` while the LIVE APPROVED designs moved to the pins-2 boards (board 1 and 2, 2026-09-14; board 3, 2026-09-15). So nothing compared the portal to the board that actually decides it, and each divergence surfaced weeks later as a pin: 13 of Harkirat's 57 review pins of 2026-09-15 are port failures against boards 1 and 2 — "this looks NOTHING like the Design Board render" (pin 2), "WTF IS THIS HALF-ASSED PORT OVER FROM THE DESIGN BOARD??" (pin 32). The tool was never re-pointed when the design moved. Two more overrides are needed for a board, because a board is not shaped like the conformance package:
+//   --mk-page   a board is ONE page of gates, not one page per realm (`#g4man …` scopes to the gate instead)
+//   --mk-sel    a board's classes are `pb-*` where the portal's are `wg-*`, so one selector cannot address both sides
+const PKG = flag('--mockup', 'docs/superpowers/mockups/2026-08-23-portal-interactive');
+const MK_PAGE = flag('--mk-page', null);
+const MK_SEL = flag('--mk-sel', null) || sel;
 
 // 🔴 REVIEW REFUSES WITHOUT A SEED — see portalDiff for the full reasoning. Its staged-ops store is sessionStorage and every load here clears it, so an unseeded run measures an EMPTY mockup against a POPULATED portal and returns a confident wrong number. ⚠️ THIS TOOL WAS MISSED when the refusal shipped to diff/audit/converge on 2026-09-03; the reader test found it, and this one is quoted in the plan's §L row 6a, so the reading recorded there was taken unseeded. Re-take it. 2026-09-03 09:03 EDT
 const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
@@ -38,7 +49,7 @@ if (SEED_REALMS.includes(realm) && !/demo=1/.test(MK_QUERY) && !process.argv.inc
         + '  or    --no-seed             to measure the empty state deliberately');
     process.exit(2);
 }
-const MOCKUP = withQuery(`http://localhost:8900/${PKG}/${realm === 'home' ? 'index' : realm}.html`);
+const MOCKUP = withQuery(`http://localhost:8900/${PKG}/${MK_PAGE || `${realm === 'home' ? 'index' : realm}.html`}`);
 const HARNESS = selfTest ? MOCKUP : `http://localhost:8901/harness.html?fresh=1&b=${Date.now()}#/${realm}`;
 // Same instant as every other instrument here, for the same reason: an unfrozen clock moves the countdown between two captures taken seconds apart.
 const FROZEN = Date.parse('2026-08-24T18:41:00Z');
@@ -76,7 +87,7 @@ const READ = (selector, props, walkUp) => {
     const { findChrome } = require('./lib/chromePath.cjs');
     const puppeteer = require('puppeteer-core');
     const browser = await puppeteer.launch({ executablePath: findChrome(), args: ['--no-sandbox'] });
-    const grab = async (url, side) => {
+    const grab = async (url, side, selector) => {
         const p = await browser.newPage();
         await p.setViewport({ width: 1282, height: 888, deviceScaleFactor: 1 });
         await p.evaluateOnNewDocument((t) => {
@@ -93,15 +104,16 @@ const READ = (selector, props, walkUp) => {
             if (!hit) throw new Error(`portal:probe refuses: no control reading "${txt}" (${label}) on the ${side} side.`);
             await p.evaluate(() => new Promise((r) => setTimeout(r, 1400)));
         }
-        const data = await p.evaluate(READ, sel, PROPS, chain);
+        const data = await p.evaluate(READ, selector, PROPS, chain);
         await p.close();
         return data;
     };
     try {
-        const mk = await grab(MOCKUP, 'MOCKUP');
-        const pt = await grab(HARNESS, 'PORTAL');
+        const mk = await grab(MOCKUP, 'MOCKUP', MK_SEL);
+        const pt = await grab(HARNESS, 'PORTAL', sel);
         const fmtBox = (b) => `w=${b.w} h=${b.h} x=${b.x} y=${b.y}`;
-        console.log(`\nportal:probe — ${realm}${view ? ' · ' + view : ''}${openText ? ' · open "' + openText + '"' : ''}    ${sel}\n`);
+        console.log(`\nportal:probe — ${realm}${view ? ' · ' + view : ''}${openText ? ' · open "' + openText + '"' : ''}`
+            + `\n  mk sel  ${MK_SEL}\n  pt sel  ${sel}\n`);
         if (mk.missing || pt.missing) {
             console.log(`  ${mk.missing ? 'MISSING ON THE MOCKUP' : 'present on the mockup'} · ${pt.missing ? 'MISSING ON THE PORTAL' : 'present on the portal'}`);
             if (mk.missing && pt.missing) return;

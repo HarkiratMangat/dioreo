@@ -80,7 +80,8 @@ if [ "$REPO_FRESH" = 1 ] && [ "$EXT_FRESH" = 1 ]; then [ -n "$WARN" ] && emit "$
 
 err=$(cd "$ROOT" && {
   if [ "$REPO_FRESH" = 0 ]; then
-    node "$CLI" index docs           --source project:dioreo-docs     --project "$ROOT" 2>&1 >/dev/null
+    # 2026-09-29 00:30 EDT: docs/ holds 203 indexable files without the Board 4 kit and 281 with it, and the CLI's default cap is 200 — so the walk was silently dropping the tail (docs/reference, docs/superpowers) once pins2 grew. The cap is raised, and the kit's code (`docs/pins2/kit/`, 78 .js files that are copies of portal/ui) stays out of the prose index; its README and every other doc still go in.
+    node "$CLI" index docs           --source project:dioreo-docs     --project "$ROOT" --max-files 400 --exclude 'pins2/kit/**/*.js' --exclude 'pins2/kit/**/*.py' 2>&1 >/dev/null
     node "$CLI" index .claude/rules  --source project:dioreo-rules    --project "$ROOT" 2>&1 >/dev/null
     node "$CLI" index CLAUDE.md      --source project:dioreo-claudemd --project "$ROOT" 2>&1 >/dev/null
   fi

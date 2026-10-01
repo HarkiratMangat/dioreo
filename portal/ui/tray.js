@@ -42,12 +42,9 @@ export function StagedTray({ ops, onDiscardAll, busy = false, inert = false }) {
                            aria-label=${`Review ${o.name || 'this change'} on the commit screen`}>Review</a>
                     </div>`)}
             </div>
-            ${blocked ? html`
-                <p class="hint">${blocked} tier-3 change${blocked === 1 ? '' : 's'}${' '}
-                    ${blocked === 1 ? 'needs' : 'need'} an export before ${blocked === 1 ? 'it' : 'they'} will commit.</p>` : null}
             <div class="tray-f">
                 <button class="btn no" disabled=${busy} onClick=${onDiscardAll}>Discard all</button>
-                <a class="btn go" href="#/review">Review & commit</a>
+                <a class="btn go" href="#/review">Review & commit${blocked ? html`${' '}<span class="tbad" data-tip="A tier-3 change needs its export first">${blocked} blocked</span>` : null}</a>
             </div>
         </div>
     `;

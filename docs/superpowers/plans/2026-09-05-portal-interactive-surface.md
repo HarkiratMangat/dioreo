@@ -6,7 +6,7 @@ scope: The portal's INTERACTIVE surface — what happens when a control is click
 
 # PLAN — the interactive surface, from 21 pins
 
-*Written 2026-09-05 23:58 EDT. Source: `local/portal-sync-notes.md`, twenty-one pins Harkirat placed with `npm run portal:sync` on 2026-09-05 between 23:26 and 23:47 EDT, after signing into `dev-portal.dioreo.app` for the first time.*
+*Written 2026-09-05 23:58 EDT. Source: `docs/portal/portal-sync-notes.md`, twenty-one pins Harkirat placed with `npm run portal:sync` on 2026-09-05 between 23:26 and 23:47 EDT, after signing into `dev-portal.dioreo.app` for the first time.*
 
 ## 🔴 THE FINDING THAT REORDERS EVERYTHING, AND IT IS NOT ANY SINGLE PIN
 

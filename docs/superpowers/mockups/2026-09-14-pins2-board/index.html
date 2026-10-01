@@ -4,9 +4,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Big+Shoulders+Display:wght@600;700&display=swap">
+<!-- 🔴 FROZEN 2026-09-21 10:30 EDT: this board linked ../../../../portal/public/app.css, the LIVE portal build, so it re-rendered with every portal change — including the port it is the spec for. It now links the stylesheet it was APPROVED on, fetched from its published artifact (8yyYV3qdNX1BW259gdmSNh; both boards carry the identical file). Measured before freezing: 0 computed-property differences against the live build on every element (862 and 1881), so nothing moved yet — Session 4/5 editing app.css is what would have moved it. -->
 <!-- Tracked copy of the pins-2 design board (plan 2026-09-13-portal-pins-batch-2 §10). It links the portal's own built stylesheet, portal/public/app.css, which is gitignored build output: run node -e "require('./scripts/buildPortal').build()" first in a fresh clone. The portal's own built stylesheet (portal/public/app.css, v3.82.0-pre). Real portal classes below are used as-is.
      Every class this board adds is prefixed pb- so nothing collides with the ~2,000 rules in that file. -->
-<link rel="stylesheet" href="../../../../portal/public/app.css">
+<link rel="stylesheet" href="app.css">
 <style>
 /* ═══ Board scaffolding ═══ */
 html,body{height:auto}

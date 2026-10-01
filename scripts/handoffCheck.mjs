@@ -169,6 +169,40 @@ for (const hp of handoffPaths) {
     }
 }
 
+// ── 3e. WHAT THIS SESSION LEFT IN `local/`, SHOWN RATHER THAN JUDGED. Added 2026-09-16 00:00 EDT.
+//    🔴 WHY. `local/` reached **253 markdown files** — plans, audits, a failure inventory, measured
+//    baselines, a 115KB spec variant, and the portal pin log the batch-2 plan cited BY PATH — because
+//    nothing else existed. The promotion rule was already written (this guide, §71 and §123: "if the
+//    pivot is bigger than the session, it does not belong only in a handoff"), and it had never once
+//    fired. 253 files is what a rule with no trigger produces.
+//    ⚠️ AND IT DELIBERATELY DOES NOT JUDGE, because Harkirat corrected the first version of this idea:
+//    *"a local/ file can be referenced while still practically being left in local/. It doesn't always
+//    mean that it should be moved out into a tracked folder. Sometimes the content is honestly short
+//    lived or not worth being tracked."* So this prints the candidates and the test; you decide. The
+//    same shape as 3c, for the same reason — a gate here would promote scratch and bury the signal.
+//    ⚠️ `touched` above is `git diff --name-only`, which is TRACKED-ONLY and therefore structurally
+//    blind to `local/`. That blindness is exactly how this went unnoticed, so this uses mtime instead.
+{
+    const baseISO = sh(`git log -1 --format=%cI ${base}`);
+    const cutoff = baseISO ? new Date(baseISO).getTime() : 0;
+    const localDocs = sh("find local -name '*.md' -not -path '*/.*' 2>/dev/null").split('\n').filter(Boolean);
+    const fresh = localDocs.filter((f) => { try { return fs.statSync(path.join(ROOT, f)).mtimeMs > cutoff; } catch { return false; } });
+    if (!fresh.length) ok('no local/ documents written in this window');
+    else {
+        // A tracked doc citing an untracked path is the one case with a REAL defect: a fresh clone cannot resolve it. Even then the fix is two-way, which is the whole of his correction.
+        const cited = fresh.filter((f) => sh(`git grep -l -F -- "${f}" -- docs CLAUDE.md scripts 2>/dev/null`).length > 0);
+        console.log(`\n  ℹ️  ${fresh.length} local/ document(s) written this window — promote to docs/claude/ or docs/portal/, or leave:`);
+        for (const f of fresh.slice(0, 12)) console.log(`        ${cited.includes(f) ? '📌 cited' : '·       '} ${f}`);
+        if (fresh.length > 12) console.log(`        … and ${fresh.length - 12} more`);
+        console.log('     → PROMOTE only when BOTH hold: losing it would cost real work to re-derive, AND');
+        console.log('       someone outside this session needs it. Short-lived working notes stay in local/.');
+        if (cited.length) soft(`${cited.length} of them are CITED by a tracked file while living in local/`,
+            'a tracked doc pointing at an untracked path is unresolvable in a fresh clone — and it has TWO valid fixes.\n'
+            + '       Promote the file, OR delete the citation. Pick by the test above, never by the warning itself.');
+        else ok('none of them is cited by a tracked file');
+    }
+}
+
 // ── 3c. THE RECORD LAYERS, SHOWN RATHER THAN JUDGED. Not every session earns a DEVLOG entry and a gate
 //    that demanded one would only produce filler — so this PRINTS the row and lets you decide, which is
 //    the difference between a layer you skipped and a layer you never thought about. Three were skipped

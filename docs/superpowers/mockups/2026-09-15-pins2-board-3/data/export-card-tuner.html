@@ -1,0 +1,395 @@
+<title>Export Card Tuner</title>
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@500;600;700&display=swap">
+<style>
+/* The portal's own tokens, read off Board 3-E v30 (2026-09-19 14:37 EDT). The card below is drawn with the same values the board uses,
+   so every slider starts where the portal is today. The page is dark on purpose: the card only exists on the portal's dark ground. */
+:root{
+  --sunk:#0B0F12;--paper:#171E24;--raised:#1F272E;--hi:#232C34;--rule:#2A343D;--rule2:#3A4752;--rule3:#1C242A;
+  --ink:#E8EDF1;--ink2:#9DAAB4;--ink3:#85939F;--ink4:#5C6A75;--warn:#FF7A45;--warn-ink:#FF9E72;--ok:#7BDB63;--patch:#F2C230;--focus:#5FD4E8;
+  --ui:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --data:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --display:"Big Shoulders Display","Space Grotesk",system-ui,sans-serif;
+  --page:#0F1418;--drawer:#1F272E;--m:#FF3B5C;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--page);color:var(--ink);font:400 14px/1.5 var(--ui);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* ── the app frame: preview and controls side by side on a wide screen, stacked on a phone ── */
+.app{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);min-height:100%}
+.stage{position:sticky;top:0;height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);background:radial-gradient(900px 500px at 30% 0,#1a2229,transparent 70%),var(--page);border-right:1px solid var(--rule3)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--rule3)}
+.bar h1{margin:0 auto 0 0;font:600 15px/1.2 var(--ui);letter-spacing:-.01em}
+.bar h1 small{display:block;font:500 11px/1.4 var(--data);color:var(--ink4);letter-spacing:.02em}
+.view{overflow:auto;overscroll-behavior:contain;padding:24px 16px 40px}
+.drawer{width:max-content;margin:0 auto;padding:16px;border-radius:14px;background:var(--drawer);box-shadow:inset 0 0 0 1px var(--rule)}
+.files{display:flex;flex-direction:column;gap:12px}
+.app.fit .drawer{zoom:var(--fit,1)}
+
+.seg{display:inline-flex;padding:3px;gap:2px;border-radius:9px;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2)}
+.seg button{min-height:34px;padding:0 11px;border:0;border-radius:7px;background:none;color:var(--ink3);font:600 12px/1 var(--ui);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--hi);color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule2)}
+
+.panel{display:flex;flex-direction:column;min-width:0;background:var(--paper)}
+.groups{flex:1;padding:8px 0 16px}
+details{border-bottom:1px solid var(--rule3)}
+summary{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 16px;cursor:pointer;list-style:none;font:600 13px/1 var(--ui)}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid var(--ink3);border-bottom:2px solid var(--ink3);transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+details[open] summary::after{transform:rotate(-135deg) translateY(-2px)}
+summary .n{font:500 11px/1 var(--data);color:var(--warn-ink)}
+.ctl{display:grid;grid-template-columns:minmax(0,1fr) 72px 36px;align-items:center;column-gap:8px;row-gap:2px;padding:6px 16px 10px}
+.ctl label{grid-column:1 / 4;display:flex;justify-content:space-between;font:500 12px/1.3 var(--ui);color:var(--ink2)}
+.ctl label i{font-style:normal;font:500 11px/1.3 var(--data);color:var(--ink4)}
+.ctl.changed label{color:var(--ink)}
+.ctl.changed label i{color:var(--warn-ink)}
+.ctl input[type=range]{grid-column:1;width:100%;height:36px;margin:0;accent-color:var(--m);background:none}
+.ctl input[type=number]{width:72px;height:36px;padding:0 8px;border:0;border-radius:8px;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);font:500 13px/1 var(--data);color:var(--ink);text-align:right;-moz-appearance:textfield}
+.ctl input[type=number]::-webkit-inner-spin-button{display:none}
+.rst{width:36px;height:36px;border:0;border-radius:8px;background:none;color:var(--ink4);cursor:pointer;display:grid;place-items:center}
+.rst:disabled{opacity:.25;cursor:default}
+.rst:not(:disabled):hover{background:var(--hi);color:var(--ink)}
+.rst svg{width:15px;height:15px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px 4px}
+.chips button{min-height:36px;padding:0 12px;border:0;border-radius:8px;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);color:var(--ink2);font:600 12px/1 var(--ui);cursor:pointer}
+.chips button:hover{color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink4)}
+.out{position:sticky;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--rule)}
+.out pre{max-height:128px;margin:0 0 10px;overflow:auto;padding:10px 12px;border-radius:8px;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);font:500 11.5px/1.55 var(--data);color:var(--ink2);white-space:pre-wrap}
+.acts{display:flex;gap:8px;align-items:center}
+.acts button{min-height:40px;padding:0 14px;border:0;border-radius:8px;font:600 13px/1 var(--ui);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.acts .q{background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);color:var(--ink)}
+.acts .go{background:var(--ok);color:#07130A}
+.acts .go[hidden]{display:none}
+.acts span{margin-left:auto;font:500 11px/1.3 var(--data);color:var(--ink4);text-align:right}
+
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  .stage{position:sticky;top:0;z-index:2;height:auto;max-height:56dvh;border-right:0;border-bottom:1px solid var(--rule)}
+  .view{padding:12px 16px 16px}
+  .drawer{margin:0;padding:12px}
+  /* on a phone the switches sit on one line that scrolls sideways, so the card and the sliders keep the height */
+  .stage{max-height:50dvh}
+  .bar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top,0px))}
+  .bar::-webkit-scrollbar{display:none}
+  .bar h1{flex:none;margin-right:4px;font-size:13px}
+  .bar h1 small{display:none}
+  .seg{flex:none}
+  .seg button{min-height:34px;padding:0 10px}
+  .out{padding-top:8px}
+  .out pre{max-height:58px;margin-bottom:8px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ═══ THE EXPORT FILE CARD — the portal's rules with every spacing lifted into a variable ═══ */
+.xf{width:var(--card-w);display:flex;flex-direction:column;border-radius:var(--card-r);overflow:clip;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--m) 6%,var(--sunk)),var(--sunk) 64px);
+  box-shadow:inset 0 0 0 1px var(--rule2),inset 0 1px 0 color-mix(in srgb,var(--m) 35%,transparent)}
+.xh{display:grid;grid-template-columns:var(--num-col) minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:var(--col-gap);row-gap:var(--row-gap);align-items:start;
+  padding:var(--pad-t) var(--pad-x) var(--pad-b);background:var(--paper)}
+.xn{grid-row:1 / 3;grid-column:1;align-self:start;justify-self:start;font:600 var(--num-size)/.72 var(--display);color:var(--m);font-variant-numeric:tabular-nums;
+  margin-top:var(--num-top);margin-left:var(--num-left)}
+.fn{grid-row:1;grid-column:2;justify-self:start;align-self:start;display:inline-flex;align-items:center;min-width:0;max-width:100%;height:var(--fn-h);padding:0 var(--fn-px);margin-left:calc(1.04px + var(--fn-x));
+  border:0;border-radius:6px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2);font:500 var(--fn-font)/1 var(--data);color:var(--ink2);cursor:text;white-space:nowrap;transform:translateY(var(--fn-y))}
+.fn .nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.fn .ext{color:var(--ink4)}
+.fn svg{width:var(--fn-ic);height:var(--fn-ic);margin-left:var(--fn-gap);color:var(--ink4);flex:none}
+.fn:hover{color:var(--ink);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--ink4)}
+.cc{grid-row:1;grid-column:3;justify-self:end;align-self:start;display:inline-flex;align-items:center;gap:var(--cc-gap);height:var(--cc-h);padding:0 var(--cc-px);border-radius:6px;
+  background:var(--sunk);border:1px solid var(--rule2);box-shadow:inset 0 0 0 1px var(--rule2);font:500 var(--cc-font)/1 var(--data);color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap;transform:translateY(var(--cc-y))}
+.cc svg{width:var(--cc-ic);height:var(--cc-ic);flex:none}
+.cc.warn{color:var(--warn-ink);border-color:color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 10%,var(--sunk))}
+.cc.warn svg{color:var(--warn)}
+.xt{grid-row:2;grid-column:2;align-self:center;margin:0;font:var(--t-w) var(--t-size)/1.1 var(--ui);color:var(--ink);white-space:nowrap;transform:translate(var(--t-x),var(--t-y))}
+/* the manifest HEADER row's fold (Collapse all / Expand all): its mark and its word, always shown, in a 34px box */
+.fx{grid-row:2;grid-column:3;justify-self:end;align-self:center;position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:var(--fx-gap);
+  min-height:44px;padding:0 var(--fx-px);margin:-5px var(--fx-r) -5px 0;border:0;background:none;color:var(--ink2);font:600 var(--fx-font)/1 var(--ui);cursor:pointer;transform:translateY(var(--fx-y))}
+.fx::before{content:"";position:absolute;inset:5px 0;z-index:-1;border-radius:8px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2);transition:background .12s,box-shadow .12s}
+.fx svg{width:var(--fx-ic);height:var(--fx-ic);flex:none}
+.fx:hover,.fx:focus-visible{color:var(--ink)}
+.fx:hover::before,.fx:focus-visible::before{background:var(--hi);box-shadow:inset 0 0 0 1px var(--ink4)}
+.xb{height:var(--body-h);overflow:auto;padding:var(--body-pt) 0 24px;scrollbar-width:none}
+.xb[hidden]{display:none}
+.blk{position:relative}
+.blk::before{content:"";position:absolute;left:46px;top:3px;bottom:3px;width:2px;border-radius:1px;background:color-mix(in srgb,var(--c) 75%,transparent)}
+.ln{display:grid;grid-template-columns:36px minmax(0,1fr);min-height:var(--ln-h)}
+.ln .no{text-align:right;font:500 11px/var(--ln-h) var(--data);color:var(--ink3);font-variant-numeric:tabular-nums}
+.ln .tx{padding:0 40px 0 22px;font:500 var(--ln-font)/var(--ln-h) var(--data);color:var(--ink2);white-space:pre-wrap}
+.ln .tx b{font-weight:600;color:color-mix(in srgb,var(--c) 42%,white)}
+.ln .tx i{font-style:normal;color:var(--ink4)}
+.ln .tx em{font-style:normal;color:var(--ink3)}
+.ln.at .tx{color:var(--ink)}
+.xft{display:flex;align-items:center;gap:var(--ft-gap);padding:var(--ft-py) var(--ft-px);border-top:1px dashed var(--rule2)}
+.xft .sp{flex:1}
+.btn{display:inline-flex;align-items:center;gap:7px;height:var(--btn-h);padding:0 12px 0 10px;border:0;border-radius:var(--btn-r);background:color-mix(in srgb,var(--sunk) 85%,transparent);
+  box-shadow:inset 0 0 0 1px var(--rule2);color:var(--ink2);font:600 var(--btn-font)/1 var(--ui);cursor:pointer}
+.btn svg{width:14px;height:14px}
+.btn:hover{color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink4)}
+.btn.go{background:var(--ok);color:#07130A;box-shadow:none}
+.btn.go:hover{background:color-mix(in srgb,var(--ok) 88%,white)}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12H3"/><path d="M17 18H3"/><path d="M21 6H3"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+  <symbol id="i-fold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-6M12 8V2M4 12H2M10 12H8M16 12h-2M22 12h-2m-5 7-3-3-3 3m6-14-3 3-3-3"/></symbol>
+  <symbol id="i-unfold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-6M12 8V2M4 12H2M10 12H8M16 12h-2M22 12h-2m-5 7-3 3-3-3m6-14-3-3-3 3"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"/></symbol>
+</svg>
+
+<div class="app" id="app">
+  <section class="stage" aria-label="Preview">
+    <div class="bar">
+      <h1>Export Card Tuner<small>the file card at the portal's own size</small></h1>
+      <div class="seg" role="group" aria-label="Card state" id="seg-state">
+        <button type="button" data-v="shut" aria-pressed="true">Shut</button>
+        <button type="button" data-v="open" aria-pressed="false">Open</button>
+      </div>
+      <div class="seg" role="group" aria-label="Character count" id="seg-warn">
+        <button type="button" data-v="warn" aria-pressed="true">Near limit</button>
+        <button type="button" data-v="ok" aria-pressed="false">Under</button>
+      </div>
+      <div class="seg" role="group" aria-label="Preview size" id="seg-fit">
+        <button type="button" data-v="real" aria-pressed="true">Real size</button>
+        <button type="button" data-v="fit" aria-pressed="false">Fit</button>
+      </div>
+    </div>
+    <div class="view" id="view">
+      <div class="drawer" id="drawer"><div class="files" id="files"></div></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Controls">
+    <div class="chips" id="presets"></div>
+    <div class="groups" id="groups"></div>
+    <div class="out">
+      <pre id="prompt" aria-live="polite"></pre>
+      <div class="acts">
+        <button type="button" class="q" id="copy"><svg width="15" height="15"><use href="#i-copy"/></svg><span>Copy</span></button>
+        <button type="button" class="go" id="send" hidden><svg width="15" height="15"><use href="#i-check"/></svg><span>Save for Claude</span></button>
+        <span id="note"></span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  // Every control starts at the value Board 3-E v30 draws today (measured off the rendered card, 2026-09-19 15:18 EDT; the fold is the manifest header row's since v33; your header numbers refined in v34).
+  const CONTROLS = [
+    ['Card', [
+      ['card-w', 'Card width', 320, 560, 1, 440],
+      ['card-r', 'Corner radius', 0, 20, 1, 12],
+    ]],
+    ['Header box', [
+      ['pad-t', 'Top padding', 0, 32, 0.25, 12],
+      ['pad-b', 'Bottom padding', 0, 32, 0.25, 12],
+      ['pad-x', 'Side padding', 0, 32, 0.25, 16],
+      ['row-gap', 'Gap between the two rows', 0, 24, 0.25, 8],
+      ['col-gap', 'Gap between columns', 0, 32, 0.25, 12],
+    ]],
+    ['Count (the big number)', [
+      ['num-size', 'Size', 24, 90, 0.1, 79.24],
+      ['num-top', 'Down from the top', -10, 30, 0.02, 4.98],
+      ['num-left', 'Left nudge', -10, 10, 0.01, -3.57],
+      ['num-col', 'Its column width (moves the title and the name)', 16, 80, 0.02, 52.96],
+    ]],
+    ['Title (MP builds)', [
+      ['t-size', 'Size', 10, 32, 0.5, 24],
+      ['t-w', 'Weight', 400, 700, 100, 600],
+      ['t-x', 'Left / right nudge', -40, 40, 0.05, -0.63],
+      ['t-y', 'Up / down nudge', -20, 20, 0.05, 9.2],
+    ]],
+    ['File name chip', [
+      ['fn-h', 'Height', 16, 36, 0.5, 22],
+      ['fn-px', 'Inner side padding', 0, 16, 0.5, 6],
+      ['fn-font', 'Text size', 8, 14, 0.5, 10.5],
+      ['fn-gap', 'Gap before the pencil', 0, 16, 0.5, 7],
+      ['fn-ic', 'Pencil size', 8, 18, 0.5, 12],
+      ['fn-x', 'Left / right nudge', -20, 20, 0.25, 0],
+      ['fn-y', 'Up / down nudge', -20, 20, 0.25, 0],
+    ]],
+    ['Character chip', [
+      ['cc-h', 'Height', 16, 36, 0.5, 22],
+      ['cc-px', 'Inner side padding', 0, 16, 0.5, 9],
+      ['cc-gap', 'Gap after the icon', 0, 16, 0.5, 7],
+      ['cc-font', 'Text size', 8, 14, 0.5, 10.5],
+      ['cc-ic', 'Icon size', 8, 18, 0.5, 12],
+      ['cc-y', 'Up / down nudge', -20, 20, 0.25, 0],
+    ]],
+    ['Expand / Collapse (the manifest header row\u2019s)', [
+      ['fx-font', 'Text size', 9, 16, 0.5, 12],
+      ['fx-gap', 'Gap after the icon', 0, 16, 0.5, 8],
+      ['fx-ic', 'Icon size', 10, 22, 0.5, 14],
+      ['fx-px', 'Inner side padding', 0, 20, 0.5, 12],
+      ['fx-r', 'Right edge (negative pulls it right)', -20, 10, 0.25, 0],
+      ['fx-y', 'Up / down nudge', -20, 20, 0.25, 0],
+    ]],
+    ['Open file text', [
+      ['body-h', 'Preview height', 120, 520, 1, 300],
+      ['body-pt', 'Top padding', 0, 32, 0.5, 12],
+      ['ln-h', 'Line height', 16, 32, 0.5, 22],
+      ['ln-font', 'Text size', 10, 16, 0.5, 12.5],
+    ]],
+    ['Footer', [
+      ['ft-py', 'Top / bottom padding', 0, 24, 0.5, 12],
+      ['ft-px', 'Side padding', 0, 32, 0.5, 16],
+      ['ft-gap', 'Gap between buttons', 0, 24, 0.5, 8],
+      ['btn-h', 'Button height', 24, 48, 0.5, 32],
+      ['btn-r', 'Button radius', 0, 16, 0.5, 8],
+      ['btn-font', 'Button text size', 10, 16, 0.5, 12],
+    ]],
+  ];
+  const DEF = {}; const META = {};
+  CONTROLS.forEach(([g, list]) => list.forEach(([k, l, mn, mx, st, d]) => { DEF[k] = d; META[k] = { g, l, mn, mx, st }; }));
+  const PRESETS = [
+    ['Portal today', {}],
+    ['Tighter header', { 'pad-t': 14, 'pad-b': 14, 'row-gap': 6, 'num-size': 53, 'num-top': 11 }],
+    ['Roomier header', { 'pad-t': 20, 'pad-b': 20, 'row-gap': 10, 'num-size': 60, 'num-top': 12.5 }],
+  ];
+  const KEY = 'export-card-tuner-v3';   // v2: the defaults moved to his refined header (v34), so a phone holding v1's sliders starts fresh
+  let v = { ...DEF };
+  let ui = { state: 'shut', warn: 'warn', fit: 'real' };
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) { Object.assign(v, s.v || {}); Object.assign(ui, s.ui || {}); } } catch (e) { /* no storage here: the defaults stand */ }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ v, ui })); } catch (e) { /* not kept, still applied */ } };
+
+  const $ = (s, el = document) => el.querySelector(s);
+  const app = $('#app'), files = $('#files');
+  const fmt = (n) => (Math.round(n * 100) / 100).toString();
+
+  const LINES = [
+    ['ICR-1', 'AR', ['Build: Build 1', 'Image: ICR-1-1.png', 'Code: 2C4A5A8D9A'], ['YKM Integral Suppressor Light', 'No Stock', 'MacroMag IFS', 'Granulated Grip Tape', 'FMJ'], '#FF5E6C'],
+    ['AK117', 'AR', ['Build: Build 1', 'Image: AK117-1.png', 'Code: 1C2B4A8B9A'], ['Monolithic Suppressor', 'MIP Extended Light Barrel', 'No Stock', '48 Round Extended Mag', 'Granulated Grip Tape'], '#FF5E6C'],
+  ];
+  const ico = (id) => `<svg aria-hidden="true"><use href="#i-${id}"/></svg>`;
+  function card(i) {
+    const shut = ui.state === 'shut';
+    const warn = ui.warn === 'warn';
+    const count = i === 0 ? 23 : 12;
+    const chars = i === 0 ? (warn ? 3965 : 2310) : 1955;
+    let n = 0;
+    const body = LINES.map(([w, c, kv, at, hue], bi) => {
+      const sep = bi ? `<div class="ln"><span class="no">${++n}</span><span class="tx"></span></div>` : '';
+      const rows = [`<div class="ln"><span class="no">${++n}</span><span class="tx"><b>${w}</b><i> | </i>${c}</span></div>`]
+        .concat(kv.map((t) => `<div class="ln"><span class="no">${++n}</span><span class="tx"><em>${t.slice(0, t.indexOf(':') + 1)}</em>${t.slice(t.indexOf(':') + 1)}</span></div>`))
+        .concat(at.map((t) => `<div class="ln at"><span class="no">${++n}</span><span class="tx"><i>- </i>${t}</span></div>`));
+      return sep + `<div class="blk" style="--c:${hue}">${rows.join('')}</div>`;
+    }).join('');
+    const open = i === 0 && !shut;
+    return `<section class="xf" aria-label="dioreo-mp-2026-09-19-${i + 1}.txt">
+      <header class="xh">
+        <b class="xn">${count}</b>
+        <button type="button" class="fn" title="Rename the file"><span class="nm">dioreo-mp-2026-09-19-${i + 1}</span><span class="ext">.txt</span>${ico('pencil')}</button>
+        <span class="cc${i === 0 && warn ? ' warn' : ''}">${ico('text')}${chars.toLocaleString()} characters</span>
+        <strong class="xt">MP builds</strong>
+        <button type="button" class="fx" data-i="${i}" aria-expanded="${open}">${ico(open ? 'fold' : 'unfold')}${open ? 'Collapse' : 'Expand'}</button>
+      </header>
+      <div class="xb"${open ? '' : ' hidden'}>${body}</div>
+      <footer class="xft">
+        <button type="button" class="btn">${ico('trash')}Clear</button><span class="sp"></span>
+        <button type="button" class="btn">${ico('copy')}Copy</button>
+        <button type="button" class="btn go">${ico('download')}Download</button>
+      </footer>
+    </section>`;
+  }
+  function renderCards() { files.innerHTML = card(0) + card(1); }
+  files.addEventListener('click', (e) => { const b = e.target.closest('.fx'); if (!b) return; ui.state = ui.state === 'shut' ? 'open' : 'shut'; syncSeg(); renderCards(); save(); });
+
+  function apply() {
+    const root = $('#drawer');
+    for (const k in v) root.style.setProperty('--' + k, k === 't-w' ? String(v[k]) : v[k] + 'px');
+    fit();
+    document.querySelectorAll('.ctl').forEach((row) => {
+      const k = row.dataset.k; const ch = v[k] !== DEF[k];
+      row.classList.toggle('changed', ch);
+      row.querySelector('i').textContent = ch ? `was ${fmt(DEF[k])}` : 'portal';
+      row.querySelector('.rst').disabled = !ch;
+      const r = row.querySelector('input[type=range]'), num = row.querySelector('input[type=number]');
+      if (+r.value !== v[k]) r.value = v[k];
+      if (document.activeElement !== num) num.value = fmt(v[k]);
+    });
+    document.querySelectorAll('details').forEach((d) => { const g = d.dataset.g; const c = Object.keys(v).filter((k) => META[k].g === g && v[k] !== DEF[k]).length; d.querySelector('.n').textContent = c ? `${c} changed` : ''; });
+    prompt();
+  }
+  function fit() {
+    const view = $('#view'); const card0 = $('.xf');
+    const avail = view.clientWidth - 32 - 32;
+    const want = (card0 ? card0.offsetWidth : v['card-w']);
+    app.style.setProperty('--fit', ui.fit === 'fit' ? Math.min(1, avail / want).toFixed(3) : 1);
+    app.classList.toggle('fit', ui.fit === 'fit');
+  }
+
+  function build() {
+    const groups = $('#groups');
+    groups.innerHTML = CONTROLS.map(([g, list], gi) => `<details data-g="${g}"${gi < 2 ? ' open' : ''}><summary>${g}<span class="n"></span></summary>
+      ${list.map(([k, l, mn, mx, st]) => `<div class="ctl" data-k="${k}">
+        <label for="r-${k}">${l}<i>portal</i></label>
+        <input type="range" id="r-${k}" min="${mn}" max="${mx}" step="${st}" value="${v[k]}">
+        <input type="number" id="n-${k}" min="${mn}" max="${mx}" step="${st}" value="${fmt(v[k])}" aria-label="${l}, exact value">
+        <button type="button" class="rst" aria-label="Reset ${l}">${ico('undo')}</button>
+      </div>`).join('')}</details>`).join('');
+    groups.addEventListener('input', (e) => {
+      const row = e.target.closest('.ctl'); if (!row) return;
+      const k = row.dataset.k; const x = parseFloat(e.target.value);
+      if (Number.isFinite(x)) { v[k] = x; apply(); save(); }
+    });
+    groups.addEventListener('click', (e) => { const b = e.target.closest('.rst'); if (!b) return; const k = b.closest('.ctl').dataset.k; v[k] = DEF[k]; apply(); save(); });
+    $('#presets').innerHTML = PRESETS.map(([n], i) => `<button type="button" data-p="${i}">${n}</button>`).join('');
+    $('#presets').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; v = { ...DEF, ...PRESETS[+b.dataset.p][1] }; apply(); save(); });
+  }
+
+  function syncSeg() {
+    for (const [id, key] of [['seg-state', 'state'], ['seg-warn', 'warn'], ['seg-fit', 'fit']]) {
+      document.querySelectorAll(`#${id} button`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === ui[key])));
+    }
+  }
+  for (const [id, key] of [['seg-state', 'state'], ['seg-warn', 'warn'], ['seg-fit', 'fit']]) {
+    $('#' + id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; ui[key] = b.dataset.v; syncSeg(); renderCards(); apply(); save(); });
+  }
+  window.addEventListener('resize', fit);
+
+  function changed() { return Object.keys(v).filter((k) => v[k] !== DEF[k]); }
+  function prompt() {
+    const ks = changed();
+    const text = ks.length
+      ? `Export file card (Board 3-E v34), set these on the portal card:\n` + ks.map((k) => `- ${META[k].g} · ${META[k].l}: ${fmt(DEF[k])} → ${fmt(v[k])}${k === 't-w' ? '' : 'px'}`).join('\n')
+      : 'Nothing changed yet: every value is what the portal draws today. Move a slider and the list of changes appears here.';
+    $('#prompt').textContent = text;
+    return text;
+  }
+  $('#copy').addEventListener('click', async () => {
+    const t = prompt();
+    try { await navigator.clipboard.writeText(t); $('#note').textContent = 'Copied'; }
+    catch (e) { const r = document.createRange(); r.selectNodeContents($('#prompt')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('#note').textContent = 'Selected: copy it from the menu'; }
+    setTimeout(() => { $('#note').textContent = ''; }, 1800);
+  });
+
+  // Save for Claude: the values land in this page's own store, where Claude reads them back — no copy and paste from a phone.
+  (async () => {
+    let db = null;
+    try { db = window.claude && typeof window.claude.use === 'function' ? await window.claude.use('db') : null; } catch (e) { db = null; }
+    if (!db) return;
+    const btn = $('#send'); btn.hidden = false;
+    btn.addEventListener('click', async () => {
+      const ks = changed(); const vals = {}; ks.forEach((k) => { vals[k] = v[k]; });
+      btn.disabled = true; $('#note').textContent = 'Saving…';
+      try { await db.doc('tweaks/latest').set({ values: vals, text: prompt(), state: ui.state, at: new Date().toISOString() }); $('#note').textContent = 'Saved — tell Claude'; }
+      catch (e) { $('#note').textContent = 'Could not save: copy instead'; }
+      finally { btn.disabled = false; }
+    });
+  })();
+
+  build(); syncSeg(); renderCards(); apply();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+</script>

@@ -57,7 +57,7 @@ function OpDetail({ op, resolved, onResolve }) {
                  this printed the raw key in lowercase on both the row and this line. realmLabelOf is the one
                  capitalisation map the rail, the crumb and the command palette already share — shell.js:353
                  records what a fourth inline copy of the rule cost. Measured 2026-09-02 23:28 EDT. -->
-            <span class="rvop-name">${op.op} · tier ${op.tier} · ${realmLabelOf(op.realm)}</span>
+            <span class="rvop-name">${op.op} · <span class="rvbadge" data-tip=${op.destroys ? 'No inverse — export first' : 'Reversible from History after it commits'}>tier ${op.tier}</span> · ${realmLabelOf(op.realm)}${!op.staleChecked ? html`${' '}<span class="rvbadge unk" data-tip="Staged before the portal recorded the record, so whether it has moved since is unknown">unknown</span>` : null}</span>
 
             ${op.blocked ? html`
                 <div class="rvcon">
@@ -73,9 +73,6 @@ function OpDetail({ op, resolved, onResolve }) {
                     <${Icon} name="triangle-alert" cls="lg" />
                     <div>
                         <b>This record changed after you staged the change</b>
-                        <p>Somebody edited <b>${op.name}</b> in Discord while it sat here, so the value you are about to
-                           overwrite is not the value you saw. The inverse captured for this op would restore the${' '}
-                           <em>old</em> value, which is not the value you want.</p>
                         <div class="rvcx">
                             <button class="chip go" onClick=${() => onResolve(op, 'keep')}>Keep mine, overwrite theirs</button>
                             <button class="chip" onClick=${() => onResolve(op, 'drop')}>Drop my change</button>
@@ -83,9 +80,6 @@ function OpDetail({ op, resolved, onResolve }) {
                     </div>
                 </div>` : null}
 
-            ${!op.staleChecked ? html`
-                <p class="chint">This change was staged before the portal started recording what a record looked like at
-                   staging time, so whether it has moved since is unknown rather than clear.</p>` : null}
 
             <div class="rvgrid">
                 <div class="rvhead"><span>Field</span><span>Was</span><span>Becomes</span></div>
@@ -100,24 +94,16 @@ function OpDetail({ op, resolved, onResolve }) {
             ${op.destroys ? html`
                 <div class=${'rvexp' + (op.exported ? ' done' : '')}>
                     ${op.exported ? html`
-                        <b><${Icon} name="check" cls="sm" /> Export saved</b>
-                        <p>You are holding a file that re-imports through the bot's own bulk parser, and the round trip is
-                           checked byte for byte against <code>adminParser.js</code> on every build. That is what turns
-                           this from irreversible into reversible-with-a-file.</p>`
+                        <b><${Icon} name="check" cls="sm" /> Export saved</b>`
                     : html`
                         <b>Export what this destroys, first</b>
-                        <p>This change cannot be undone by an inverse. The bot already serializes its own state into a
-                           format its bulk parsers re-ingest, so the export is nearly free — and it is the strongest
-                           safeguard available. The commit stays closed until you take it.</p>
                         <!-- 🔴 THE EXPORT DOES NOT HAPPEN HERE. The data and the format both live in the realm, and
                              Review holding its own copy of five export builders is exactly how the package ended up
                              with two disagreeing answers to "has this been exported?". This sends you to the one
                              implementation. -->
                         <a class="chip go" href=${'#/' + op.realm}>Export in ${op.realm} →</a>`}
                 </div>`
-            : html`
-                <p class="chint" style="margin-top:16px">Tier ${op.tier} — an exact inverse was captured when this was staged, so it can be
-                   reversed after it commits, from the event list in History.</p>`}
+            : null}
         </div>`;
 }
 
@@ -225,8 +211,7 @@ export function ReviewRealm({ session }) {
             <section class="panel">
                 <div class="ph">
                     <span class="t">Staged changes</span>
-                    <span class="sp">${ops.length} change${ops.length > 1 ? 's' : ''} · ${changesets.length === 1
-                        ? 'commits as one transaction' : `${changesets.length} transactions, committed in order`}</span>
+                    <span class="sp"><b>${ops.length}</b> change${ops.length > 1 ? 's' : ''} · ${changesets.length === 1 ? 'saved together' : `${changesets.length} saves, in order`}</span>
                 </div>
                 <div class="rvwrap">
                     <div class="rvlist" role="tablist" aria-label="Staged changes">

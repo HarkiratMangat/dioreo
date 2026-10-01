@@ -1,0 +1,7 @@
+# codebase-memory-mcp: keep the Board 4 kit and the generated spec tables out of the product's graph.
+# The kit's ui/ files are copies of portal/ui, so every portal symbol would answer twice (a duplicate-definition query becomes noise), and C*.md, states.md and portal-diff.md are generated tables with thousands of headings.
+# The kit has its own graph: index_repository --repo_path docs/pins2/kit.
+docs/pins2/kit/
+docs/pins2/final/board4-spec/C*.md
+docs/pins2/final/board4-spec/states.md
+docs/pins2/final/board4-spec/portal-diff.md

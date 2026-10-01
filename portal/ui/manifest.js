@@ -32,24 +32,19 @@ export function StatePill({ state, accent }) {
 function FilterChips({ groups, filters, onChange }) {
     // 🔴 ONE CHIP PER VALUE, NOT ONE CHIP PER GROUP THAT CYCLES. This rendered a single chip reading "Type: all" which advanced through its options on each click, cited to 03-three-surfaces.html. That citation is the 2026-08-20 package; the 2026-08-23 package supersedes it and draws every value as its own chip — `All · New draws · Returning · Draw windows · Events · Playlists · Patch notes` on Season, `All · live · scheduled · expired` on Broadcast — and on 2026-08-27 Harkirat wrote that the mockup IS the design. Same failure as the Board: a real quotation from a retired document, checked for existence and never for currency.
     //
-    // It is also the better control on its own merits, which is worth saying so nobody re-litigates it from taste: a cycling chip hides the vocabulary until you click it, gives no way to reach the third option except by passing through the second, and cannot show which values EXIST. A row of chips is the filter and the legend at once.
+    // It is also the better control on its own merits, which is worth saying so nobody re-litigates it from taste: a cycling chip hides the vocabulary until you click it, gives no way to reach the third option except by passing through the second, and cannot show which values EXIST. A row of chips is the filter and the legend at once. 🔴 EACH GROUP IS ITS OWN WRAPPER NOW (plan pins batch 2 §10.4 C5 C6, 2026-09-15 00:07 EDT). The label and its chips sit in one inline group, and a second group follows behind one divider with 16px either side — so a toolbar reads as sets, and the label-to-control gap is one number on every realm. The group's own name still reaches the reader (pin pmtvr01ji: two identical All chips with nothing saying what either governs). A topic chip carries its swatch; a severity chip carries a four-bar meter (board 2 G11 row 4) whose lit count is the option's `bars`, in the option's `sv` ink.
     return groups.map((g) => {
         const options = [{ value: 'all', label: 'All' }, ...g.options];
         const current = filters[g.key] || 'all';
-        // 🔴 THE GROUP'S OWN NAME, ACCEPTED BY THIS COMPONENT AND THROWN AWAY. Every group prepends its own "All", so two groups draw two identical All chips in one unbroken row with nothing saying what either governs. Harkirat, pin pmtvr01ji, 2026-09-10 12:35 EDT: "Why are there 2 'all' filter toggles... I'm just so confused how the analytic's manifest filtering toggles work." Both groups ALREADY declare a label (Kind, Level) and it reached nothing but a tooltip. Guarded on g.label so a realm passing an unlabelled group keeps today's shape instead of gaining an empty span.
-        return [g.label ? html`<span class="mlabel" key=${g.key + ':label'}><span>${g.label}</span></span>` : null,
-            ...options.map((o) => html`
-            <!-- ⚠️ A TOPIC FILTER IS NOT A STATE FILTER, and both used to render as the same neutral chip.
-                 Lane and category ARE the topic vocabulary the whole console colours by — the Track's bars,
-                 the row dots, the composer's chips — so a filter over them takes the topic chip and a filter
-                 over state does not. The realm declares which it is; a shared component cannot guess. -->
-            <button key=${g.key + ':' + o.value}
-                    ${'' /* The design carries the pressed state on aria-pressed alone; the extra on class is the portal's and shows up as a different element to anything comparing the two. */}
+        return html`<span class="mt-grp" key=${g.key} role="group" aria-label=${g.label || g.key}>
+            ${g.label ? html`<span class="mlabel"><span>${g.label}</span></span>` : null}
+            ${options.map((o) => html`<button key=${g.key + ':' + o.value}
                     aria-pressed=${o.value === current}
-                    class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '')}
-                    style=${o.hex ? `--c:${o.hex}` : null}
-                    title=${o.value === 'all' ? `All ${g.label.toLowerCase()}` : `Only ${o.label}`}
-                    onClick=${() => onChange({ ...filters, [g.key]: o.value })}><!-- The design's topic chip carries the topic's own swatch; without it the chip is a word in a box and the colour vocabulary the whole console is built on stops at the table's edge. The COUNT is its own em, which is armory.html's renderCatChips markup — folded into the label string it is the same words in a wider box, and eight of them wrapped the toolbar so the primary action dropped to a row of its own. -->${g.topic && o.value !== 'all' ? html`<i></i>` : null}${o.label}${o.count == null ? null : html` <em>${o.count}</em>`}</button>`)];
+                    class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '') + (o.bars ? ' lvchip' : '')}
+                    style=${o.hex ? `--c:${o.hex}` : (o.sv ? `--sv:${o.sv}` : null)}
+                    title=${o.value === 'all' ? `All ${String(g.label || '').toLowerCase()}` : `Only ${o.label}`}
+                    onClick=${() => onChange({ ...filters, [g.key]: o.value })}>${g.topic && o.value !== 'all' ? html`<i></i>` : null}${o.bars ? html`<span class="msev" data-n=${o.bars} aria-hidden="true"><i></i><i></i><i></i><i></i></span>` : null}${o.label}${o.count == null ? null : html` <em>${o.count}</em>`}</button>`)}
+        </span>`;
     });
 }
 
@@ -101,7 +96,9 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
     // 🔴 THE ROWS ARE A WINDOW AND EVERY NUMBER BESIDE THEM WAS NOT. Analytics' river is the newest 100 of each of three collections; `totalRows` is all of them, all time. So the count read "2 of 1,307" under a filter -- a numerator drawn from a population the denominator does not describe -- and at the cap it read "100 of 100", which is indistinguishable from "you are seeing everything" and is the precise lie `totalRows` was added to prevent. A realm that hands over a WINDOW says so, and the line states the window instead of implying its absence. A realm that hands over a WINDOW says so, and the line then states three separate quantities instead of implying they are one: how many you can see, how big the window is, and how big the collection is. Left null, nothing changes. ⚠️ AND IT ALWAYS SAYS IT, NOT ONLY AT THE CAP -- the first version triggered on `rows.length >= pageCap`, which is the same lie one state over: an eleven-row window out of 1,323 reads "11 of 1,323" and invites the reader to scroll for the rest. The shape it lands on, `N shown · newest M of T`, is the design's own ("12 shown · 1323 recorded").
     pageCap = null,
     // A line under the toolbar, which is where the design puts its own (armory.html's activeFilter sits in exactly this slot). A PROP rather than something a realm renders beside the Manifest, because any sibling element between the two panels breaks the .panel + .panel selector that gives the table its ground.
-    caption = null}) {
+    caption = null,
+    // 🔴 THE ONE OPTIONAL BODY PROP (plan pins batch 2 §10.4 Architecture, 2026-09-15 00:23 EDT). Armory's weapon groups cannot be column renderers, so a realm may render the body itself from the rows this component has already searched, filtered, sorted and marked selected. The Manifest keeps its tools row, search, chips, selection, bulk bar, sort persistence, empty states and SelectionBar; only Armory passes this, and every other realm renders exactly as before.
+    renderBody = null}) {
     const [query, setQuery] = useState('');
     const [filters, setFilters] = useState({});
     useEffect(() => { if (filterSignal && filterSignal.filters) setFilters(filterSignal.filters); }, [filterSignal && filterSignal.seq]);
@@ -166,56 +163,27 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                  realms that genuinely need a header row above the tools. -->
             ${title ? html`<div class="ph"><span class="t">${title}</span>${headerRight ? html`<span class="rt">${headerRight}</span>` : null}</div>` : null}
             <div class="mtools">
-                <!-- ⚠️ The chipset wrapper is display:contents, so it groups the chips for a screen reader and for the
-                     markup without adding a box that would break the toolbar's own flex row. -->
-                <!-- ⚠️ NO || title FALLBACK — removed 2026-09-04 22:06 EDT. The comment nine lines above records that these
-                 two props were deliberately SPLIT so a realm can have a header band and a toolbar word; a fallback
-                 from one to the other re-fuses them, and a realm passing title alone printed the identical
-                 string twice, 45px apart, in two type treatments. Analytics was the only realm doing it, and it
-                 had been on screen through every conformance gate. A prop that falls back to the prop it was
-                 split from is not a default; it is the split undone. -->
-            <span class="mlabel"><span>${label || 'Rows'}</span></span>
-                <span class="srch">
-                    <!-- app.css has styled the srch svg as a 14px magnifier at the field's left inset since the
-                         sheet was adopted, and nothing ever rendered one: the input carried a 32px left padding
-                         reserving space for an icon that did not exist. The icon comes FIRST, as the design
-                         writes it — the label between icon and field desynchronised the whole toolbar. -->
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-                    <label class="sr" for="manifest-search">${searchLabel || `Search ${(rowNoun[1] || 'rows').toLowerCase()}`}</label>
-                    <input id="manifest-search" value=${query} placeholder=${searchPlaceholder || 'Search…'} onInput=${(e) => setQuery(e.target.value)} /></span>
-                ${filterGroups.length ? html`<span class="chipset" role="group" aria-label="Filters"><${FilterChips} groups=${filterGroups} filters=${filters}
-                    onChange=${(f) => { setFilters(f); onFiltersChange?.(f); }} /></span>` : null}
-                <!-- 🔴 A REALM'S OWN FILTER CHIP, AND SEASON'S LIVED SOMEWHERE ELSE. The design draws
-                     "Staged only" here, beside the type chips, because it IS a filter over these rows;
-                     the portal put it inside the staged-changes panel, which meant it disappeared with
-                     that panel — so with nothing staged there was no way to learn the filter exists, and
-                     with something staged the control sat 700px from the table it filters. -->
-                ${extraChips || null}
-                <!-- The add control sits BEFORE the count, which is the design's order and the useful one: the
-                     count is a readout at the end of the row and the verb is a control among the other controls.
-                     Measured 256px apart when they were the other way round. -->
-                <!-- 🔴 A CREATION ACTION IS NOT A FILTER, and it was wearing a filter's clothes in a filter's
-                     row. Harkirat, pin pmtvqhfxh, 2026-09-10 12:26 EDT: "why is the add build button in line
-                     with them when it should be its own static component, it's not a filter, it's a creation
-                     action." The madd class pushes it to the end of the toolbar with an auto left margin, so
-                     the chips read as one set and the verb sits apart from them. A class rather than an inline
-                     style so portal:orphans can see it.
-                     ⚠️ NO BACKTICKS IN HERE. This comment lives inside a template literal, so one backtick ends
-                     the string and the build dies pointing at the markup — which is exactly what it just did
-                     to me, on the trap portal-editing.md names first. -->
-                ${onAdd ? html`<button class="chip go madd" onClick=${onAdd}>${addLabel}</button>` : null}
-                <!-- ⚠️ THE DENOMINATOR IS THE CATALOGUE, NOT THE ROWS HANDED IN. Armory pre-filters by armoury before
-                     the Manifest ever sees a row, so dividing by the handed-in rows read "125 of 125" over a
-                     133-build collection — a count that can never tell you something is being withheld. The design's
-                     own count element divides by the whole set ("125 of 133"). Defaults to the handed-in rows, so a
-                     realm that gives the Manifest everything is unchanged.
-                     (No backticks in this comment: an EVEN number of them inside an html template closes and reopens
-                      it, which parses as prose-turned-expressions — this exact comment did it twice.) -->
-                <span class="rt">${pageCap != null
-                    ? `${visible.length.toLocaleString()} shown · newest ${rows.length.toLocaleString()} of ${(totalRows == null ? rows.length : totalRows).toLocaleString()}`
-                    : `${visible.length} of ${(totalRows == null ? rows.length : totalRows).toLocaleString()}`}${countSuffix || ''}${selected.size ? ` · ${selected.size} selected` : ''}</span>
+                ${''/* 🔴 TWO ROWS, AND NO COUNT READOUT (plan pins batch 2 §10.4 C1 C2 C5 C6 and G4 row 11, 2026-09-15 00:07 EDT). Row one is the Manifest's name, its search and the create verb at the row's right end; row two holds the filter groups. The trailing count line is gone on every realm — counts ride on the chips, a typed search says how many matched inside its own field, and History's window moves to a Load older events button under its rows. The create verb is still its own control and never a filter (pin pmtvqhfxh); it no longer floats because the row it sits in has nothing else that wraps. */}
+                <div class="mt-r1">
+                    <span class="mlabel"><span>${label || 'Rows'}</span></span>
+                    <span class="srch">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                        <label class="sr" for="manifest-search">${searchLabel || `Search ${(rowNoun[1] || 'rows').toLowerCase()}`}</label>
+                        <input id="manifest-search" class=${query ? 'has-hits' : ''} value=${query} placeholder=${searchPlaceholder || 'Search…'} onInput=${(e) => setQuery(e.target.value)} />
+                        ${query ? html`<span class="mhits" aria-live="polite">${visible.length.toLocaleString()} ${visible.length === 1 ? 'match' : 'matches'}</span>` : null}
+                    </span>
+                    ${onAdd ? html`<button class="chip go madd" onClick=${onAdd}><${Icon} name="plus" />${String(addLabel).replace(/^\+\s*/, '')}</button>` : null}
+                </div>
+                ${filterGroups.length || extraChips ? html`<div class="mt-r2">
+                    ${filterGroups.length ? html`<${FilterChips} groups=${filterGroups} filters=${filters}
+                        onChange=${(f) => { setFilters(f); onFiltersChange?.(f); }} />` : null}
+                    ${extraChips ? html`<span class="mt-grp" role="group" aria-label="More filters">${extraChips}</span>` : null}
+                </div>` : null}
             </div>
             ${caption ? html`<p class="hint">${caption}</p>` : null}
+            ${renderBody ? renderBody({ visible, selected, sort, setSort, onRowClick, selectedRowId, onRemove, removeLabel, stateOf,
+                toggle: (id) => setSelected(toggleSelection(selected, id)),
+                setMany: (ids, on) => setSelected(setSelection(selected, ids, on)) }) : html`
             <div class="mscroll">
             <table class="mtable">
                 <!-- 🔴 table-layout:fixed NEEDS A COLGROUP OR EVERY COLUMN IS EQUAL. A realm supplies its
@@ -227,7 +195,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 <colgroup>
                     ${selectable ? html`<col class="c-cb" />` : null}
                     ${columns.map((c, i) => html`<col key=${c.key}
-                        class=${c.col || (i === 0 ? 'c-item' : c.key === 'state' ? 'c-state' : c.dataKind === 'date' ? 'c-win' : c.dataKind === 'code' ? 'c-code' : 'c-detail')} />`)}
+                        class=${c.col || (c.role === 'narrow' ? 'c-narrow' : c.role === 'detail' ? 'c-detail' : i === 0 ? 'c-item' : c.key === 'state' ? 'c-state' : c.dataKind === 'date' ? 'c-win' : c.dataKind === 'code' ? 'c-code' : 'c-detail')} />`)}
                     <!-- The remove column takes its width from the .mtable th.ra rule, which the adopted sheet already sets; a col class of its own would be a second authority over one number. (No backticks in this comment: it lives inside a template literal, and the build's parse gate caught the sixth occurrence of that within seconds of writing it.) -->
                     ${onRemove ? html`<col class="c-ra" />` : null}
                 </colgroup>
@@ -382,6 +350,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 </tbody>
             </table>
             </div>
+            `}
             ${''/* ⚠️ A NO-MATCH STATE THAT NAMES NEITHER THE ACTION NOR THE TOTAL. It read "No rows match this search or filter." on every realm -- true, and it leaves the reader to work out that a filter is still set somewhere above and that the collection is not empty. The UX-copy audit calls this out (E2) and names the design's own template: `season.html:2431` says "Nothing matches that. Clear the search or a filter -- N alerts, N changes and N deploys are recorded in total." The rewrite keeps that shape generically: what to do, then how much is behind the filter, using the realm's own row noun. ⚠️ The two states stay DISTINCT -- an empty collection is not a filtered-out one, and collapsing them tells a reader with no data that their search is wrong. */}
             ${''/* ⚠️ AND IT DIVIDES BY THE SAME TOTAL THE HEADER USES, or the panel contradicts itself. This branch's first version divided by `rows` while the count line at :169 divides by `totalRows`, so a filtered-to-nothing Analytics read "0 of 1,307 events" at the top and "100 events in total" in the body -- and the body's whole job is to say how much sits behind the filter. */}
             ${visible.length === 0 ? html`<p class="empty">${rows.length

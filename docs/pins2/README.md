@@ -1,0 +1,82 @@
+---
+kind: reference
+status: live
+---
+
+# Portal pins batch 2 — everything Sessions 4 and 5 read
+
+*Gathered here 2026-09-28 23:12 EDT at Harkirat's direction ("everything is scattered all over the place right now from the various boards, previous sessions, docs/claude/, local/, docs/superpowers/"). This file is the index. It states where things are and how they relate; the state table below is the only place it writes state, dated.*
+
+## Read in this order
+
+1. **This file.**
+2. **[The plan](plan/2026-09-13-portal-pins-batch-2.md)** — §0 first, then the session's prompt in **§11**, which names its own reading list — Session 4's is §0, §1, §2b, §9, §10.5 and §13, then **§5c**; Session 5's is in its prompt, then **§5d**. Where §0's default list and a prompt differ, the prompt wins (§0 item 1). The plan governs; [its spec](spec/2026-09-13-portal-pins-batch-2-design.md) is the frozen decision record it cites.
+3. **[FINAL.md](final/FINAL.md)** — which board owns each surface, and the rule for which value wins.
+4. **[The handoff, gate by gate](final/board4-spec/HANDOFF.md)** — every current ruling, what the data needs, what was never opened — then the generated values beside it ([`final/board4-spec/README.md`](final/board4-spec/README.md) says the order).
+5. **[His words](handoffs/2026-09-21-board4-intake.md)** — every intake round verbatim and dated, grouped by class, with what was built and measured after each. Where this file, the handoff or the plan paraphrase him, this log wins.
+6. **The ledger** — `docs/reference/portal-decision-ledger.md` (`ctx_search`, never `rg`): the portal's settled decisions, Board 4's included.
+7. **The board itself** — [`kit/`](kit/README.md): serve the repo with `repo-static` and open `/docs/pins2/kit/board4.html`.
+
+## What is where
+
+| Folder | Holds | Kind |
+|---|---|---|
+| [`plan/`](plan/) | the batch-2 plan — Sessions 1–5, their prompts, the gates, the close procedure | plan, live |
+| [`spec/`](spec/) | the batch-2 design spec (2026-09-13) — frozen; the plan records every place it is superseded | spec, frozen |
+| [`final/`](final/) | `FINAL.md` and `lineage.md` (how boards 1–3 became Board 4), and `board4-spec/` — the handoff, every value generated from the kit, and the scripts that generate them | reference |
+| [`handoffs/`](handoffs/) | Session 3's records: the intake log, the fix plans (v11, v15), the critiques, checkpoints, compact preps | record |
+| [`records/`](records/) | the Session 1–2 drafts and checkpoints, and History's constraint table and change inventory (read these only when touching History, C8) | record |
+| [`instruments/`](instruments/) | the Board 4 measuring scripts — [`README.md`](instruments/README.md) lists each and when to run it | reference |
+| [`kit/`](kit/) | the Board 4 kit — the design code itself, on this Mac only (gitignored, its own local git repo). [`README.md`](kit/README.md) says how to serve, open and publish it | reference |
+| [`data/`](data/) | source data the boards used — the CODM mode icons (the Modes badge family) and the weapons-and-attachments source | data |
+| `local/pins2/intake-shots/` (**this Mac only**, absolute path `/Applications/Claude Code/Diors-Builds/local/pins2/intake-shots/` — a worktree has no `local/`) | the screenshots his intake and the handoff cite, by round, and the readiness crops. **Not tracked, never pushed** (2026-09-29 23:35 EDT, his: "kit can be tracked but leave screenshots local"); every doc cites them at this path. **Every other image under `docs/`** — the portal pin crops (`docs/portal/portal-pins/`), board 3's `p1-portal.png`, `docs/pins2/data/`'s source capture, the summary captures — is likewise on this Mac only, untracked where it sits | images |
+
+## State — as of 2026-09-30 19:51 EDT
+
+| | |
+|---|---|
+| Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 81 — SIGNED OFF** 2026-09-30 19:31 EDT (*"approved, run the held checks. board is done."*). Versions 46–81 are `final/board4-spec/HANDOFF.md` § Since Version 45; his words, every round, in the intake log |
+| The kit | [`kit/`](kit/README.md), kept at `docs/pins2/kit/`, 131 files, on this Mac only (moved from the gitignored `local/pins2-board-3/redo/` on his call of 2026-09-28 23:27 EDT). Its history before the move: `git -C local/pins2-board-3 log --stat` |
+| The spec | `final/board4-spec/`, **regenerated 2026-09-30 19:51 EDT from the Version 81 kit**, with four new generated files: `motion-timing.md`, `colours.md`, `components.md`, `inventory.md` |
+| The held checks, at Version 81 | `final/board4-spec/HANDOFF.md` § Ready for Sessions 4 and 5 |
+| Board 3-E | superseded by Board 4 (2026-09-28 23:27 EDT); `3e/` in board 3's package is history |
+| The kit — **on this Mac only** | his option (c), 2026-09-30 21:03 EDT: `docs/pins2/kit/` is gitignored and carries its own local git repo (11 commits at the move; `git -C docs/pins2/kit log` for the rest); this branch's history was rewritten without it at 21:13 EDT (backup ref `refs/backup/pins2-before-kit-local`), so no push carries it. Sessions 4 and 5 read it from this checkout; in a worktree, first `ln -s "/Applications/Claude Code/Diors-Builds/docs/pins2/kit" docs/pins2/kit` |
+| Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
+| Next | his Project "board 4 prep finalization" runs the whole arc — the readiness audit (`handoffs/2026-09-30-board4-s45-readiness-audit.md` § 13), Session 3's close, Session 4, Session 5 — by `handoffs/2026-09-30-project-coordinator-brief.md`, each phase on his go; before that list, Session 3's close (plan §13) — push, PR and merge each on his word, restated — then Session 4 (plan §11's prompt) |
+
+## Where new things go
+
+| New thing | Home |
+|---|---|
+| his words in an intake round | the intake log, as a new dated section |
+| a screenshot he gives | `local/pins2/intake-shots/<round>/` (this Mac only; `.gitignore` refuses any image under `docs/pins2/` outside the kit), run through `pngquant`, cited by that path |
+| a handoff, compact prep or checkpoint | `handoffs/`, named `YYYY-MM-DD-board4-<topic>.md` |
+| a measuring script | `instruments/`, with a line in its README |
+| a change to the kit | [`kit/`](kit/README.md), then regenerate the spec (below) in the same run — and read the mtimes of what it wrote |
+
+**Regenerate the spec** after any kit change, with the board served (`preview_start` → `repo-static`):
+
+```bash
+O=docs/pins2/final/board4-spec
+node $O/switches.cjs && node $O/overrides.cjs
+BOARD=4 node $O/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $O/split-spec.cjs $TMPDIR/b4-spec.md
+node $O/maps.cjs
+node $O/motion.cjs && node $O/colours.cjs && node $O/components.cjs
+node $O/structure.cjs && node $O/relations.cjs && node $O/a11y.cjs && node $O/hover-relations.cjs
+node $O/copy.cjs        # every visible string → copy.md (static)
+node $O/inventory.cjs   # last: it reads the files above
+```
+
+**The extractor is not deterministic on Board 4** (measured 2026-09-29): three fresh runs of the same kit specced 1420, 1425 and 1428 looks and two runs differ in about 300 lines both ways, so a spec diff after a kit change carries that noise — judge a change against it, not against zero.
+
+**Prove the docs still point at things:** `node docs/pins2/instruments/paths-resolve.cjs` reads every path the live docs name and exits 1 on a dead one. `docs-audit`'s `xref` skips `plan/`, `spec/` and `final/`, so nothing else does. **Prove the board still works:** `node docs/pins2/instruments/r22.cjs` walks 35 flows with the kit on :8900.
+
+## Left in place, and why
+
+| Where | What | Why it stays |
+|---|---|---|
+| `docs/superpowers/mockups/2026-09-14-pins2-board/`, `…-pins2-board-2/`, `…2026-09-15-pins2-board-3/` | boards 1, 2 and 3 — their packages, resolved specs and Board 3-E's `handoff-3e.md` and `3e/` | dated design history; Board 4 carries their designs corrected. `handoff-3e.md` is also the inherited structure narrative `HANDOFF.md` cites, and `3e/measure.cjs` Board 3-E's relations (Board 4's are `final/board4-spec/relations.cjs`) |
+| `docs/portal/portal-sync-notes.md` and `docs/portal/portal-pins/` | the pin log and its crops (the 57 review pins began there) | the portal's own working records |
+| `docs/reference/portal-decision-ledger.md` | settled decisions, Board 4's included | a lookup doc for the whole portal |
+| `docs/db-deferred-list.md` | the Board 4 entries (search "Board 4") — ported work Session 5 carries, states never opened, the badge set | the project's one deferred list |
+| `local/pins2-board-3/` | the kit's old git history (`.git`), `board4-review/` (the review renders and the flow scripts' older copies) and `redo/shots/` (277 MB of screenshots) | gitignored working files; the kit itself is `kit/` |

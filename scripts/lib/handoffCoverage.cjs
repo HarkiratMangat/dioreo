@@ -16,7 +16,7 @@
 // ⚠️ EMPTY IS HONEST, in both. "no gaps found" must stay writable or the check only teaches people to
 // invent findings — the same carve-out plan-audit-log makes and for the same reason.
 
-// `<!-- coverage: local/portal-sync-notes.md · · (pmt\w+) · -->`
+// `<!-- coverage: docs/portal/portal-sync-notes.md · · (pmt\w+) · -->`
 // The source it summarises, and the pattern that pulls one id out of that source.
 function coverageDirective(text) {
     const m = /<!--\s*coverage:\s*(\S+)\s*·\s*(.+?)\s*-->/.exec(text || '');

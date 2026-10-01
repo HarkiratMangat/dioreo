@@ -25,6 +25,7 @@
             "label": "Build Name (optional) | Share Code (optional)",
             "style": 1,
             "placeholder": "Aggressive Flex | ABCD-1234-EFGH",
+            "max_length": 47,
             "required": true
           }
         ]
@@ -96,6 +97,7 @@
             "label": "Build Name (optional) | Share Code (optional)",
             "style": 1,
             "placeholder": "Aggressive Flex | ABCD-1234-EFGH",
+            "max_length": 47,
             "required": true
           }
         ]
@@ -165,6 +167,7 @@
             "custom_id": "build",
             "label": "Build Name (optional) | Share Code (optional)",
             "style": 1,
+            "max_length": 47,
             "value": "CQB"
           }
         ]

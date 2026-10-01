@@ -16,6 +16,24 @@
         "rule": "design-system-color",
         "value": "#000",
         "createdAt": "2026-09-06T05:41:42.678Z"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          "docs/pins2/kit/**"
+        ],
+        "createdAt": "2026-09-15T19:21:46.534Z",
+        "reason": "Claude, 2026-09-15: design board 3 deliberately proposes radius and colour values outside DESIGN.md for Harkirat to choose; the chosen ones go into DESIGN.md in Session 4 (plan 2026-09-13-portal-pins-batch-2 §5c)"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "*",
+        "files": [
+          "docs/pins2/kit/**"
+        ],
+        "createdAt": "2026-09-15T19:21:46.582Z",
+        "reason": "Claude, 2026-09-15: design board 3 deliberately proposes radius and colour values outside DESIGN.md for Harkirat to choose; the chosen ones go into DESIGN.md in Session 4 (plan 2026-09-13-portal-pins-batch-2 §5c)"
       }
     ]
   }

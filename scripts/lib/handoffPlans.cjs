@@ -8,7 +8,8 @@
 // saves outside the repo entirely, at `~/.claude/plans/<slug>.md` (this exact session was handed one).
 // The old pattern only matched the first, so a plan-mode plan named in `.remember` or SESSION-START
 // was invisible to this resolver -- not a hypothetical, this is how it was found.
-const RE = /(~\/\.claude\/plans\/[\w.-]+\.md|docs\/superpowers\/plans\/[\w.-]+\.md)/g;
+// 🔴 WIDENED 2026-09-29 00:23 EDT: the batch-2 plan moved to `docs/pins2/plan/` on 2026-09-28 23:12 EDT, and the pattern only knew the old folder, so `.remember` re-pointed at the plan's new path named no plan at all and `npm test` failed on the pointer-chain check the morning after.
+const RE = /(~\/\.claude\/plans\/[\w.-]+\.md|docs\/(?:superpowers\/plans|pins2\/plan)\/[\w.-]+\.md)/g;
 
 function plansNamedIn(text) {
     // A fresh regex per call: `RE` carries the `g` flag, and a shared lastIndex across calls is the

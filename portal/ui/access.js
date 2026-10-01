@@ -159,7 +159,7 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevokeNow, nameOf }) {
                        title=${editing ? `Save changes to ${label}?` : `Grant access to ${label}?`}
                        onClose=${() => setArmed(false)}
                        actions=${html`
-                           <button class="btn go cfmgo" onClick=${submit}>${editing ? 'Yes, save changes' : 'Yes, grant access'}</button>
+                           <button class="btn go cfmgo" onClick=${submit}>${editing ? 'Save and remove the others' : 'Grant now'}</button>
                            <button class="btn" onClick=${() => setArmed(false)}>Back</button>`}>
                 <div class="dwbody">
                     <p class="dw-lead">Written immediately. No review screen, no undo.</p>
@@ -171,7 +171,6 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevokeNow, nameOf }) {
                             ${chosen.length ? chosen.map((sc) => html`<span key=${sc.key} class="bchip" style=${`--c:${accentOf(sc)};--ed:var(--staged)`}><i></i>${sc.label || sc.key}</span>`)
                                 : html`<em>none</em>`}</span></div>
                     </div>
-                    ${editing ? html`<p class="dw-p">This is the whole list. Anything not above is revoked on their next action.</p>` : null}
                 </div>
             <//>
         `;
@@ -222,12 +221,11 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevokeNow, nameOf }) {
                 <div class="dwfield"><label for="grant-title">Title</label>
                     <input id="grant-title" placeholder="What they are here to do" value=${title}
                            aria-required="true" onInput=${(e) => setTitle(e.target.value)} />
-                    <span class="hint">Shown on the grid. Clipped past 22 characters.</span></div>
+                    <span class=${'fcount' + (title.length > 22 ? ' over' : '')} aria-live="polite">${title.length} / 22</span></div>
                 <div class="dwfield"><label for="grant-note">Note <i>optional</i></label>
                     <input id="grant-note" placeholder="A private reminder about them" value=${note}
                            onInput=${(e) => setNote(e.target.value)} />
-                    <span class="hint">Only ever visible here.</span></div>
-                <p class="dw-p"><b>Commits immediately</b> — nothing is staged, and it is live in the bot on their next click.</p>
+                    </div>
                 ${why ? html`<p class="why" role="status">${why}</p>` : null}
             </div>
         <//>
@@ -282,7 +280,6 @@ function Sessions({ sessions, onEnd, ttlHours, nameOf, who }) {
             <div class="ph">
                 <span class="t">Signed in right now</span>
                 <span class="rt">${sessionSummary(sessions, now)}</span>
-                <span class="sp">Revoking an admin in Discord does not end their browser session. This does.</span>
             </div>
             ${sessions.length ? html`
                 <div class="sesslist">
@@ -302,7 +299,6 @@ function Sessions({ sessions, onEnd, ttlHours, nameOf, who }) {
                     <span class="eicon" aria-hidden="true">◍</span>
                     <h4>Nobody is signed in to the portal</h4>
                     <p>Your own session should always be in this list, so an empty list means it failed to load rather than that nobody is here. Reload the page.</p>
-                    <p>A session is a <b>browser</b>, not a Discord account. Revoking someone in Discord leaves their tab working until it expires ${ttlHours} hours after sign-in — ending it here is the only thing that closes that window.</p>
                 </div>`}
         </section>
     `;
@@ -696,7 +692,7 @@ export function AccessRealm({ session }) {
             body: html`
                 <p class="dw-p">This signs the browser out. It does <b>not</b> revoke anything — whoever it belongs to
                     keeps every permission they hold and can sign in again immediately. To take the access away, revoke
-                    it in the grid above.</p>
+                    it in the grid above. And the other way round: revoking an admin in Discord does not end this session — this does.</p>
                 <ul class="dw-l">${chosen.slice(0, 6).map((s) => html`
                     <li key=${s.sessionHash}>${nameOf(s.discordId)} · last seen ${relTime(s.lastSeenAt)}</li>`)}
                     ${ids.length > 6 ? html`<li>…and ${ids.length - 6} more</li>` : null}</ul>`,
@@ -847,8 +843,8 @@ export function AccessRealm({ session }) {
     // The design's own stat: the number of permission TOKENS handed out, which is not the number of cells lit — a bare `manage` is one token covering eight pages. Counting cells would answer a different question and quietly disagree with what an export of the same data says.
     const permissionsGranted = (matrix.admins || []).reduce((n, a) => n + (a.permissions || []).length, 0);
     const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
-    const viewMeta = view === 'By admin'
-        ? `${plural(matrix.admins.length, 'admin')} × ${allScopes.length} permissions`
+    // G1 (plan pins batch 2 §10.4, 2026-09-15 00:33 EDT): By admin's "1 admin × 12 permissions" is gone — the masthead already states both numbers. By permission keeps its line until the panel bar's redesign (deferred with §6).
+    const viewMeta = view === 'By admin' ? null
         : `${plural(spofSet.size, 'single point')} · ${unheld.length} held by nobody but you`;
     // ⚠️ A REALM KEY NAMES ONLY MARKS THAT ARE ON SCREEN (the Shell's own rule beside `realmKey`), so the single-point entry appears only when there is one. The lock does not: the owner-only column is always drawn, so it is always named. 🔴 THE WHOLE KEY GOES WHEN THE GRID GOES. With zero AdminUser documents ByAdmin replaces the entire table with one paragraph, so direct, inherited and the lock are all off screen — and this named all three anyway, under its own comment stating the rule it was breaking. The dev database cannot reach that state, which is why the pass never rendered it. The lock is additionally gated on a scope actually carrying ownerOnly, because a legend entry is a promise that the mark is somewhere on the page.
     const anyGrid = (matrix.admins || []).length > 0;
