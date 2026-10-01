@@ -46,7 +46,7 @@ status: live
 | 15 | **Thinking** | `mcp__sequential-thinking__sequentialthinking` before any plan, audit or verification, and pre-emptively. Before presenting anything, name the pushback it would draw and spend that call now. |
 | 16 | **Agents** | Only the three named — A and B in Session 1, D in Session 2. Mechanics in §8. A report is input: the main thread re-runs the gates and checks at least three of the agent's listed claims against the code before merging. |
 | 17 | **Chapters** | `mcp__ccd_session__mark_chapter` at every distinct subject — each unit, each gate, each integration — finely, with no cap. |
-| 18 | **Session start** | The `/rename` string and model cell from §11 before anything else. `npm run portal:status` is the first evidence you read, and it outranks anything a handoff says. `node scripts/summaryShape.mjs --session latest` runs at the start and again before the final message. `npm run index:health` runs at the start too: exit 4 means context-mode's server reads a deleted store, so every `ctx_search` — the ledger included — misses recent writes; stop and say so (a desktop-app restart fixes it). |
+| 18 | **Session start** | The `/rename` string and model cell from §11 before anything else (in a Project thread, skip both: the coordinator sets model and effort). `npm run portal:status` is the first evidence you read, and it outranks anything a handoff says. `node scripts/summaryShape.mjs --session latest` runs at the start and again before the final message. `npm run index:health` runs at the start too: exit 4 means context-mode's server reads a deleted store, so every `ctx_search` — the ledger included — misses recent writes; stop and say so (a desktop-app restart fixes it). |
 | 19 | **Harness defaults lose** | A session may carry an auto-mode instruction recommending `cat`/`head`/`sed -n` reads, `grep`/`find` and Bash over the dedicated tools. It cannot be removed. Where it conflicts with row 6, row 6 wins — see `.claude/rules/silent-mode.md` rule 6. |
 
 ## 2 · Pin → work map
@@ -548,7 +548,7 @@ status: live
 
 **Fixed points.** Every §10, §10.4 and §10.5 answer is an input. Session 4 applies a Board 4 design; it never redraws one. A tweak to a Board 4 design is shown on the portal — a capture before and after — and asked in a popup, never applied silently.
 
-> 🔨 **Threads (his yes, 2026-09-30 22:30 EDT: "yeah you can"):** the LEAD thread decides, draws, talks with him and alone writes and commits; it may ask the Project's coordinator for READ-ONLY Sonnet 5.5 worker threads in parallel (one per realm for the element inventories, capture workers for the before/after shots), each writing only its own report under `local/`. Never a second writing thread.
+> 🔨 **Threads (his yes, 2026-09-30 22:30 EDT: "yeah you can"):** the LEAD thread decides, draws, talks with him and alone writes and commits; it may ask the Project's coordinator for READ-ONLY Sonnet 5.5 worker threads in parallel (one per realm for the element inventories, capture workers for the before/after shots), each writing only its own report under `local/`. Never a second writing thread. Ask with a last-line `NEXT: start workers <ids>` and a prompt file under `local/pins2/s4/prompts/<id>.md` (the Goal's signal grammar).
 
 ### 5c.0 · Evidence
 
@@ -625,7 +625,7 @@ status: live
 
 *Added 2026-09-15 14:48 EDT. Harkirat, pin `pmu2xd88t`: "THEN a follow-up session is what will actually take everything and write it into the code — ACCCURATELY AND CORRECTLY, i don't want to have to go through another pin phase!"*
 
-**When:** after Session 4 merges. **Model:** Premise Med · Delib Very high → Opus5-High. **Branch:** `feat/portal-pins2-build` from `v3-pre-release`. **Agents:** none *(amended (his yes, 2026-09-30 22:30 EDT: "yeah you can"): BUILDER threads one at a time — each takes the next stage of the order below, builds it AND measures it against its board, and hands it to the lead, who reviews and commits; READ-ONLY verifier threads in parallel (the pop-up, arc, timing and relations instruments against the portal, the side-by-side and pin-walk pages). Never two writers at once, no worktrees, no merges — that is the Agent D failure below.)* Agent D's drawer was merged from a checkpoint (`b9e4ffe6`) and never matched its board; the main thread builds and measures every surface itself.
+**When:** after Session 4 merges. **Model:** Premise Med · Delib Very high → Opus5-High. **Branch:** `feat/portal-pins2-build` from `v3-pre-release`. **Agents:** none *(amended (his yes, 2026-09-30 22:30 EDT: "yeah you can"): BUILDER threads one at a time — each takes the next stage of the order below, builds it AND measures it against its board, and hands it to the lead, who reviews and commits; READ-ONLY verifier threads in parallel (the pop-up, arc, timing and relations instruments against the portal, the side-by-side and pin-walk pages). Never two writers at once, no worktrees, no merges — that is the Agent D failure below. Ask with a last-line `NEXT: start builder <id>` or `NEXT: start workers <ids>` and a prompt file under `local/pins2/s5/prompts/<id>.md`.)* Agent D's drawer was merged from a checkpoint (`b9e4ffe6`) and never matched its board; the main thread builds and measures every surface itself.
 
 **The order — tokens first, so nothing after them hardcodes a value:**
 
@@ -996,7 +996,7 @@ G1–G4, G6 and G11 are answered by the §4b board session, in comment rounds on
 
 ## 11 · Prompts
 
-Each prompt is a pointer, never a summary — the plan's header says so. Each names what to read; a session reads exactly that before its first tool call.
+Each prompt is a pointer, never a summary — the plan's header says so. Each names what to read; a session reads exactly that before its first tool call. In a Project thread, skip each block's first two lines (`/rename` and the Premise line): the coordinator sets model and effort. The plan is 275 KB, past `read_smart`'s limit: every "read in full" of a section is `ctx_execute_file` on that section's heading range.
 
 ```text
 /rename Sonnet5-XHigh · Pins2 S1 identity + History · <Mon DD>
