@@ -63,6 +63,7 @@ BOARD=4 node $O/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $O/split-
 node $O/maps.cjs
 node $O/motion.cjs && node $O/colours.cjs && node $O/components.cjs
 node $O/structure.cjs && node $O/relations.cjs && node $O/a11y.cjs && node $O/hover-relations.cjs
+node $O/copy.cjs        # every visible string → copy.md (static)
 node $O/inventory.cjs   # last: it reads the files above
 ```
 

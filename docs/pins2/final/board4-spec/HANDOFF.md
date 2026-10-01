@@ -31,7 +31,7 @@ status: live
 | The numbers | [`inventory.md`](inventory.md) per gate · [`colours.md`](colours.md) (every token, literal and `color-mix` the kit writes — your naming input) · [`motion-timing.md`](motion-timing.md) · [`components.md`](components.md) · [`tokens.md`](tokens.md) | the same, plus `C1`–`C9`, `states.md`, `relations.md`, `a11y.md`, `hover-relations.md` |
 | Instruments | `docs/pins2/instruments/README.md` — the pop-up recorders (`board4-popups.cjs`, `board4-arc.cjs`, `board4-poptiming.cjs`) and the painted focus ring (`board4-rings-painted.cjs`), each able to point at a page with `B4_URL` | point the same instruments at the portal: a port that passes r22 and relations can still break every animation (V77–V80 did, on the board) |
 | Geometry you can trust | the board renders in **quirks mode** (no doctype); the portal in standards. Measured: 16 elements move 1px and 5 grow 1.5px (Export's file list), every other element identical — `docs/pins2/handoffs/2026-09-30-board4-quirks.md` | expect those, never "fix" portal code to match them |
-| Board-only, never ported | `thumbs/` and `data/thumbs.js` (the seven named builds' pictures), `gates*/` scaffolding, every `html[data-b3-…]` switch (`switches.md`) | same |
+| Board-only, never ported | `thumbs/` and `data/thumbs.js` (the seven named builds' pictures), `gates*/` scaffolding — **except** the design parts `file-map.md` marks MIXED (`gates.css`'s export and H1 rules, `gates/armory.js`'s `ExportPicker`, `gates/broadcast.js`'s `QCard`, `gates/lib.js`'s `CharCount` and `PanelHead`), which port to the file it names — every `html[data-b3-…]` switch (`switches.md`) | same |
 | Code questions about the kit | the kit is gitignored, so the repo's code graph skips it — it is **its own `codebase-memory` project, `Applications-Claude-Code-Diors-Builds-docs-pins2-kit`** (indexed 2026-09-30 21:52 EDT; `search_graph` with `project: "Applications-Claude-Code-Diors-Builds-docs-pins2-kit"` finds `PopBox`, `usePop`, `Hint`, `ProblemChip`, `Picker`). Re-index after a kit change: `~/.local/bin/codebase-memory-mcp cli index_repository --repo_path "/Applications/Claude Code/Diors-Builds/docs/pins2/kit"` | the same |
 | His screenshots | on this Mac only, at `/Applications/Claude Code/Diors-Builds/local/pins2/intake-shots/` — **absolute**: a worktree has no `local/` | same |
 
@@ -173,7 +173,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 
 | | |
 |---|---|
-| Kit → portal | `b3/drawer.js` (the drawer), `b4/form.js` (Form A, `MediaWell`), `b4/bulk.js` + `b4/bulkformat.js` (Bulk, the format reader and writer, tested in `b4/bulkformat.test.mjs`), `b4/*.css`, `b3/fady.js` → the build drawer in `portal/ui/armory.js` and a shared scroll-edge utility in `portal/ui/` |
+| Kit → portal | `b3/drawer.js` (the drawer), `b4/form.js` (Form A, `MediaWell`), `b4/bulk.js` + `b4/bulkformat.js` (Bulk, the format reader and writer, tested in `b4/bulkformat.test.mjs`), `b4/*.css` (→ `portal/public/app.css`), `b3/fady.js` → the build drawer in `portal/ui/armory.js` and a shared scroll-edge utility in `portal/ui/` |
 | Structure | `aside.drawer.wide` (dialog "New MP build"): header (eyebrow, title, Close); body `.b3-nb` = `.pb-bar` (the MP/DMZ radio group, the Add build/Bulk create switch) over `.pb-view` — Add: `.f-add` = `.f-form` (a `section.f-card` per build, then Add another) beside `aside.f-side` (`.f-prev` the Discord preview, `.f-stage` Before staging, a status region); Bulk: the format editor beside the Ledger/Embed cards; footer Cancel · Stage · evidence: [`structure.md`](structure.md) § C2 · lineage: [`handoff-g9-g8.md`](../../../superpowers/mockups/2026-09-14-pins2-board/handoff-g9-g8.md), frozen) as Board 4 rebuilt it; the rulings above govern where they differ |
 | States | Add build · Add · filled · Add · three · Bulk · empty / one / several / typing / warning / can't read / pasted / duplicate · DMZ · Edit 3 builds |
 | Keys | Enter, Escape, Tab, arrows in the pickers; ⌘/Ctrl+Enter stages, a blocked Stage jumps to its reason (checked in `b3/drawer.js`) |
@@ -212,7 +212,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 
 | | |
 |---|---|
-| Kit → portal | `b3/broadcast.js` → `portal/ui/broadcast.js` |
+| Kit → portal | `b3/broadcast.js` and the card, `QCard` (`gates/broadcast.js`), with `PanelHead` (`gates/lib.js`), `b3/layer.js` and `b3/poptime.js` → `portal/ui/broadcast.js` |
 | Structure | `section.panel.g-bpanel`: the head (`.ph`: realm, Delivery queue/Airtime tabs, three readouts `.g-status`: never ends, slots, budget), then `.pb-qafter.g-queue` = the cards (`.g-qcards`, a `QCard` per post: never-ending, dated, upcoming, staged) beside Changes ahead (`.pb-cg`) · evidence: [`structure.md`](structure.md) § C6 · lineage: [`handoff-3e.md`](../../../superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md) § B1 (frozen at v77), then the v36 intake (2026-09-27 22:08 EDT): the card is `QCard` (`docs/pins2/kit/gates/broadcast.js`) — its End, Start and showings chips open the pop-up family, its quote box folds only when the text runs past two lines, and the queue lists upcoming and staged posts after the live ones |
 | States | the queue as it stands on the board: a live post that never ends, a live post ending Dec 31 (354 characters, shown twice), an upcoming post (1,935 characters, Oct 31 → Nov 14) and a staged post (board data: `docs/pins2/kit/data/broadcast.js`, its `staged` list) |
 
@@ -262,7 +262,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 
 | Fact | Where it is written |
 |---|---|
-| The token is `--patch: #F2C230` — his #F3C231 is the same colour one step off per channel, and appears in the kit only inside a comment | `portal/ui/tokens.css:58`; `docs/pins2/kit/b4/classes.css:427` |
+| The token is `--patch: #F2C230` — his #F3C231 is the same colour one step off per channel, and appears in the kit only inside a comment | `portal/ui/tokens.css:58`; `docs/pins2/kit/b4/classes.css:428` |
 | The portal's own token file calls it **"the portal's global accent"**; it was Broadcast's realm colour until Broadcast moved to pink | `portal/ui/tokens.css:118` |
 | Two more names carry the same hex with a different meaning: `--pn` (patch notes) and `--tier-best` (the Best badge's gold, kept separate "so a later retune of one never moves the other") | `portal/ui/tokens.css:69`, `:239`–`:240` |
 | **Why this yellow was chosen: no record says.** It arrived with the portal as its accent | — |
@@ -279,7 +279,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | Rank | the Best tier's gold (by hex, `#F2C230`, and `--tier-best`) | `docs/pins2/kit/b3/board.css:167`, `:180`, `:190`; `docs/pins2/kit/b4/classes.css:129`, `:200` |
 | Pressed and fallback | some pressed toggles; the portal's fallback accent when a realm has none | `docs/pins2/kit/b4.css:115`; `portal/ui/tokens.css:475`–`:519` |
 
-**The decision:** whether one colour should carry selection, focus, "magic" and rank at once, or each role gets its own token (and which roles keep `--patch`). **Session 4 discusses it with him before changing anything** — his words.
+**The decision** *(settled — see SETTLED above; kept as the record)*: whether one colour should carry selection, focus, "magic" and rank at once, or each role gets its own token (and which roles keep `--patch`). **Session 4 discusses it with him before changing anything** — his words.
 
 ### D2 · The remove control — one hover, in a deletion accent
 
@@ -313,7 +313,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | The drawer's close × | none | brightens to ink, not red |
 | The selection bar's `.b3-x` | none measured | none measured — **his screenshot shows a red glyph, so the red is drawn where this read did not look (a child or an animation); re-measure** |
 
-**The decision:** one hover for every remove control — his proposal is the whole button tinted — in one named deletion token (`--del` or `--danger-ink`), and whether "close" (dismiss) stays neutral while "remove"/"delete" goes red. Compare's × does the whole-button version, but in its weapon's colour since Version 41, so a deletion token also decides whether a colour-coded remove stays; Before staging's − and the tile's × have no ring at rest since Version 40 A.
+**The decision** *(settled — see SETTLED above; kept as the record)*: one hover for every remove control — his proposal is the whole button tinted — in one named deletion token (`--del` or `--danger-ink`), and whether "close" (dismiss) stays neutral while "remove"/"delete" goes red. Compare's × does the whole-button version, but in its weapon's colour since Version 41, so a deletion token also decides whether a colour-coded remove stays; Before staging's − and the tile's × have no ring at rest since Version 40 A.
 
 ---
 
@@ -369,10 +369,66 @@ A design port that stops at CSS ships a Capable badge nobody can save. Every ite
 | **An accent that can be chosen and changed:** the post op already takes `color`; the EDIT op's apply writes only text, dates, banner and repeats (`set` in `core/ops/announcements.js`, checked 2026-09-27 22:08 EDT), so a changed accent is dropped today — add `color` to `set` and to the prior its inverse restores; the portal's drawer sends it | `core/ops/announcements.js`, the portal's post drawer | "An announcement's accent, chosen in the portal — the edit op must carry it" |
 | **The queue shows staged posts:** the card list reads the review's staged `announcement.post` ops after the live and upcoming posts (the board holds them in `data/broadcast.js`'s `staged`) | `portal/ui/broadcast.js` | the same entry |
 | The announcement limits: the op refuses text over 4,000; delivery splits into replies that fit and logs the real reason | `core/ops/announcements.js`, `utils/announcement.js` | "The announcement limits, hardened on the board — the bot and portal must match" |
+| Accent: Recent (2 rows of 9) and Saved (9 slots) persist **per admin** — the board keeps them in browser storage | the portal's per-admin preferences (model + API) | this row (readiness audit, 2026-10-01 10:35 EDT) |
+| Existing-key search lists **every stored image**: the keys builds use (thumbnail + which build) and uploaded images no build uses yet, marked unused (intake:326, Recommended, his pick) | the image store and its API | this row |
+| Secondaries `#3F6E8E` in the **data**, not only the token: every chip and bar reads `b.accent` from the API, which still answers `#023047` (board 2 `port-g4-g3-g11.md:21`; his thread `7a88f74f`, 3-A/B) | the category accent's source — the bot and the portal API | this row |
+| Compare's Ledger / Discord view is a toggle **kept per viewer** | per-admin preferences | this row |
+| Every Board 4 entry in `docs/db-deferred-list.md` (lines 129–217 and 1136): ported work, states never opened, the badge set | as each entry names | each entry |
 
 **Mongoose persists only declared fields** (CLAUDE.md): every new field lands in its schema in the same change as the code that writes it.
 
 ---
+
+## How to apply portal-diff.md — never verbatim (readiness audit, 2026-10-01 10:54 EDT)
+
+*`portal-diff.md` is the kit's code against the portal's, file by file. The kit is a switchboard, so each hunk is one of four kinds — the method Board 3-E's `3e/portal-diff.md` § How to apply wrote down, carried here because the Board 4 file has only its hunks.*
+
+| Kind | Where | What to do |
+|---|---|---|
+| **Chrome — skip** | a hunk that stubs a realm or swaps the network layer for fixtures | nothing |
+| **Switch plumbing** | every import of the kit's `docs/pins2/kit/b3/state.js`, every `useB3(…)` / `b3(…)` call, every `data-b3-*` attribute | delete; collapse each branch to the arm the board holds, per [`switches.md`](switches.md). `isoLocal` (`docs/pins2/kit/b3/state.js:75`) is NOT plumbing — it moves into portal code |
+| **A board component imported from the kit's b3 or b4 folders** | the gate files | port the component INTO the `portal/ui/` file [`file-map.md`](file-map.md) names; never keep a path into the kit |
+| **Design hunk** | everything else, and the live arm of every branch | apply |
+
+**`app.css` is the one hunk that does not apply where it says.** It is written against `portal/public/app.css`, the BUILT file (untracked; `buildPortal` overwrites it). Apply it to the sources by content: hunks 1–2 and 4–8 (the tokens and the bare `button` rules at its top) land on `portal/ui/tokens.css`, hunks 9–103 on `portal/ui/app.css` — `patch -p1 -F3` relocates all 102 (measured 2026-10-01 10:51 EDT) — and hunk 3 (`--on-staged`'s comment) is ported by hand. The other 13 files apply to `portal/ui/` as written (`git apply --check`, 2026-10-01 00:09 EDT).
+
+## Added by the readiness audit — 2026-10-01 (the kit wins where this and the kit differ)
+
+*Eleven read-only workers compared boards 1–3's packages, `local/pins2-board-3/`, the handoffs, the intake log and his artifact comment threads against this set; these are the confirmed gaps (`local/pins2/audit/verified.md`, on this Mac). Each row is something the kit already does that no document said, or a source the port needs.*
+
+| Gate | Rule | His words or the record | Kit |
+|---|---|---|---|
+| C1 | Select-all on a mixed selection clears the shown builds only — in the manifest head, every weapon header and the portal's `toggleAll`, which never replaces a selection made under another filter | board 3 README:1812 ("his pick") | `docs/pins2/kit/ui/manifest.js:141-147` |
+| C1 | The selection bar's bulk `Set badges…` goes; `Edit builds` takes its place | his thread 6e409d9d (3-A/B): "remove the \"set badge\" button entirely. Instead, change it to a \"Edit builds\" button." | `docs/pins2/kit/b3/armory-parts.js:847` |
+| C1 | A click anywhere in a weapon row's blank space folds it; the expand icon's reveal runs only when the icon itself is hovered | his thread 1b27b6cf (3-D) | `docs/pins2/kit/b3/board.css:2204-2205` |
+| C1 | Both list views ship — By weapon and One table — and the By-slot attachments view; Board 4 walked By weapon only (see *Not opened*) | his thread e27d2f14: "both views are good for their own situations so refine both of them" · `docs/superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md:241` | `docs/pins2/kit/b3/armory-parts.js:744-764` · `docs/pins2/kit/ui/armory.js:152-174` |
+| C1 | One grid per list, rows as subgrids: an even rhythm from the rail inward (rail → # → weapon), the triangle slot kept so images align | his threads d3120fb3, ae7b2bbb, 7e265e57 (3-E) | `docs/pins2/kit/b3/board.css:3307-3317` |
+| C2 | The discard confirm (his pick C): the drawer's own footer becomes the question, naming each weapon once with its count; Keep editing first and focused, Esc keeps editing; one filled Discard button; an Edit counts only changed builds; Bulk create asks whenever its editor holds text | the kit log's "the discard confirm is C … by his pick"; his nine points, `docs/pins2/handoffs/2026-09-23-board4-v15-plan.md` § 13 | `docs/pins2/kit/b3/drawer.js:424-434` |
+| C2 | A screenshot on the clipboard pastes into the build being edited from anywhere in the drawer; the well and the Discord preview show it | `docs/pins2/handoffs/2026-09-22-board4-v12-critique.md:73` | `docs/pins2/kit/b4/form.js:445-478` |
+| C5 | The picker's search normalises both sides and matches initials: `asv` finds AS VAL | his "I searched \"asv\", hoping to see \"as val\"… got no returns" (board 3 README:844) | `docs/pins2/kit/gates/armory.js:228-243` |
+| C5 | Files fill in pick order; a new file opens when the next whole build block would pass 4,000 characters, so a file never splits a build; MP and DMZ never share a file | board 3 README:1706-1707 | `docs/pins2/kit/gates/armory.js:451-471` |
+| C6 | The card is `QCard` in `docs/pins2/kit/gates/broadcast.js` — design code despite its folder | this file's C6 *Structure* row | `docs/pins2/kit/gates/broadcast.js:32` |
+| C7 | The date picker's keys: Left/Right a day, Up/Down a week, PageUp/PageDown 30 days, Enter picks; Sunday first | the kit log, DateGrid | `docs/pins2/kit/b3/broadcast.js:3, 21-22` |
+| C7 | Board 1's window state: cards that cannot fit before the end date are drawn differently, and a dead banner and a repeat count that cannot fit are both drawn and announced to a screen reader. Board 4 never drew it; build it from plan:852 and board 1's note | `docs/superpowers/mockups/2026-09-14-pins2-board/handoff-g9-g8.md:136-150` | no |
+| C8 | A "Bot online" alert in the same minute as a restart folds into the restart row with a Back online chip; the EVENTS label, no count line | `docs/pins2/records/2026-09-20-h1-constraint-table.md:128-129`; deferred list :2567, ruled 2026-09-21 16:12 EDT | `docs/pins2/kit/b3/history.js:53-57` |
+| C8 | A story — consecutive rows in a day on one entity by one person — is bound, never merged: one unbroken left rail, no hairline inside the pair. ⚠️ The rule is Claude's, and its two known limits were never shown to him: separate changes minutes apart bind, and a real pair split by an unrelated row does not | `docs/pins2/records/2026-09-20-h1-constraint-table.md:77` | `docs/pins2/kit/b3/history.js:155-171` |
+| C8 | Rows open by pointer; the keyboard path is the real button around the row's phrase, so the row stays pointer-only and no control nests inside a control | board 3 README:2284 | `docs/pins2/kit/b3/history.js:222-229` |
+| All | `data-kbd` is set on the root by the first keydown and lifts every focus-visible suppression keyed on its absence; the portal needs the same listener or keyboard focus never shows | `3e/portal-class-rules.md:266` | `docs/pins2/kit/gates4/main.js:114` |
+| All | A date a person reads is the local day: the kit's `isoLocal` moves into portal code (§ *How to apply portal-diff.md*'s Switch plumbing deletes every `docs/pins2/kit/b3/state.js` import), and the portal's other `toISOString().slice(0,10)` sites are triaged — a stored instant stays UTC | `docs/pins2/records/2026-09-20-h1-change-inventory.md:144` | `docs/pins2/kit/b3/state.js:75` |
+| All | Every portal confirm asks in place, like the discard confirm: bulk deletes, History's revert, Access, sign-out, Review, Season's discards | his popup of 2026-09-23 16:20 EDT, "Yes, all of them" (linksee anchor #53); deferred list :214 | — |
+| All | Two Web Animations calls `motion-timing.md` does not list: the queue fold's height, 260ms `cubic-bezier(.2,.8,.3,1)` (`docs/pins2/kit/b3/broadcast.js:235`), and Export's peek height, 240ms `cubic-bezier(.32,.72,0,1)` (`docs/pins2/kit/gates/armory.js:591`); reduced motion skips both | — | `docs/pins2/kit/b3/broadcast.js:235` · `docs/pins2/kit/gates/armory.js:591` |
+| All | Every `onKeyDown` in the design files is spec — Export's search (Escape clears, Enter picks the first), the Picker, the manifest — and ports with its component | — | `docs/pins2/kit/gates/armory.js:344, 516` · `docs/pins2/kit/b4/form.js:178` |
+| All | **The words:** [`copy.md`](copy.md) lists every string the design code renders, including the empty, error, rule and pop-up lines no walked state reaches | — | generated by `copy.cjs` |
+| All · Session 4 | Icons on every rail toggle, portal-wide | his thread 9ac5e9ae (3-E): "Add icons to the \"List / by slot\" toggles, as well as any other rail toggles in the portal/board" | `docs/pins2/kit/gates/lib.js:180-184` (`VIEW_ICON`, 11 views) |
+| P7 | Command search is not on Board 4 (his round 1, 2026-09-21 14:50 EDT, removed it; its ranking is its own session). Its look ships from board 3: `3e/resolved-spec/P7-command-search.md` and `handoff-3e.md` § 1 P7 ("Build it properly, and exactly as shown"); plan row 25 | `../FINAL.md:36, :75` · `docs/pins2/final/board4-spec/file-map.md:28` | `docs/pins2/kit/b3/palette.js` |
+
+**Kit → portal, completed** (each gate's row above names its main files; these are the rest it imports): C1 + `docs/pins2/kit/b3/poptime.js` · C2 + `docs/pins2/kit/b3/layer.js`, `docs/pins2/kit/b3/armory-parts.js`, and `docs/pins2/kit/b4/*.css` → `portal/public/app.css` · C4 + `docs/pins2/kit/b3/armory-parts.js` (`FaultHint`, `PASS_LINES`) · C5 + `docs/pins2/kit/b4/bulkformat.js` (Export writes the Bulk format byte for byte), `docs/pins2/kit/b3/poptime.js` · C6 + `docs/pins2/kit/gates/broadcast.js` (`QCard`), `docs/pins2/kit/gates/lib.js` (`PanelHead`), `docs/pins2/kit/b3/layer.js`, `docs/pins2/kit/b3/poptime.js` · C7 + `docs/pins2/kit/b3/layer.js`, `docs/pins2/kit/b3/poptime.js` · the MIXED stylesheets (`docs/pins2/kit/b3/board.css`, `b1.css`, `b2.css`, `gates.css`) → `portal/public/app.css` by `file-map.md`.
+
+**Measurement contracts no Board 4 instrument checks — Session 5 measures them on the portal:** `3e/measure.cjs`'s 13 relations (History, Export, the manifest; `relations.cjs` covers C2, C3, C6 and C7 only) · board 2's `measure.cjs` C1–C14 · the manifest's checkboxes on one left edge (his thread ad82e23b: "you seriously couldn't have aligned it with ALL of the other checkboxes positions?") · the build, Bulk and Edit drawers at 980 and the Post drawer at 910 (`relations.md` asserts Add only) · every field's 9px corner (one is asserted) · the × deselect's centre (plan:589) · words beside words on one baseline · `b4states.cjs`'s buckets · five instruments with no Version 81 run: `board4-v44-probe.cjs`, `board4-unchecked.cjs`, `board4-menu-fit.cjs`, `board4-readiness.cjs`, `b4states.cjs`.
+
+**Not opened on Board 4** (open each before Session 5 builds it): the One table and By-slot list views (C1) · the empty Export file (C5) · a queue card's quote box open, and the Hint with steps (C6) · disabled and over-limit looks (`.pb-step > button:disabled`, `.g-fact.b3-cc.over`, `.b3-xt-chips .chip:disabled`) · the pop-up family's roles under a screen reader · widths under 1100px for design classes (phone stays out of scope).
+
+**Open, his:** do the two Pickers' lists (the build drawer's weapon list, Compare's search list) take CI's 4px arc tip, or keep the 10px they render (`relations.md` rows 47–48)? · the Label field: §10.4's live `n / 32` counter, or the kit's 32 cap with no counter?
 
 ## The generator's numbers, read — 2026-09-29 19:57 EDT
 
@@ -414,7 +470,7 @@ The README's header counts are the extractor's. Read on the kit as it stands (re
 > | Check | Result |
 > |---|---|
 > | the regenerate command (`docs/pins2/README.md`) | 1,671 looks across 716 signatures, 0 page errors; switches 224 live / 292 dead; overrides 326 live / 94 dead / 11 Session 4's; structure 30 states |
-> | `relations.cjs` | **37 / 37** — the first run failed 6, all stale rulings, not the board: two asserted the Compare name row BN removed, four the 10px pop-up gap CI made 4px; the instrument now reads his later rulings |
+> | `relations.cjs` | **37 / 37** at that run; `relations.md` as it stands reads **35 ✓ · 2 ✗** — the two Pickers' lists render 10px where CI's 4px governs the PopBox family; which applies to them is his call (readiness audit, 2026-10-01 10:35 EDT) — the first run failed 6, all stale rulings, not the board: two asserted the Compare name row BN removed, four the 10px pop-up gap CI made 4px; the instrument now reads his later rulings |
 > | `a11y.cjs` | 39 walks, 0 errors (per-gate findings in `a11y.md` and `inventory.md`) |
 > | `hover-relations.cjs` | 194 rules (191 at Version 45) |
 > | `r22.cjs` | **PASS 35 · FAIL 0**, no page errors |

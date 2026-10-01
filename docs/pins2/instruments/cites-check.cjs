@@ -13,7 +13,10 @@ function planLive(text, lineNo) {
   for (let i = lineNo - 1; i >= 0; i--) if (/^#{2,3} /.test(L[i])) return PLAN_LIVE.test(L[i]);
   return false;
 }
-const tracked = cp.execSync('git ls-files -z', { maxBuffer: 1e9 }).toString().split('\0').filter(Boolean);
+// The kit is gitignored since 2026-09-30 21:13 EDT (his option c) with its own local git, so its files are added from that repo — before
+// this, every cite into docs/pins2/kit/ read "missing" (readiness audit, 2026-10-01 10:54 EDT).
+const kitFiles = (() => { try { return cp.execSync('git -C docs/pins2/kit ls-files -z', { maxBuffer: 1e9 }).toString().split('\0').filter(Boolean).map((f) => `docs/pins2/kit/${f}`); } catch { return []; } })();
+const tracked = cp.execSync('git ls-files -z', { maxBuffer: 1e9 }).toString().split('\0').filter(Boolean).concat(kitFiles);
 const cache = new Map();
 const lines = (f) => { if (!cache.has(f)) cache.set(f, fs.readFileSync(f, 'utf8').split('\n')); return cache.get(f); };
 const RE = /((?:\.\.?\/)*(?:[\w.@-]+\/)*[\w.@-]+\.(?:css|js|mjs|cjs|md|html|json)):(\d+)(?:\s*[-–]\s*(\d+))?/g;

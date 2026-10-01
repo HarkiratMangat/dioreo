@@ -19,7 +19,7 @@ const walk = (d, skip) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e)
 const files = walk(KIT, ['vendor', 'node_modules', 'shots']).sort();
 
 // ── file-map ──
-const prior = new Map(fs.readFileSync(MAP3E, 'utf8').split('\n').filter((l) => /^\| `/.test(l)).map((l) => { const c = l.split('|').map((x) => x.trim()); return [c[1].replace(/`/g, ''), c.slice(2, 5)]; }));
+const prior = new Map(fs.readFileSync(MAP3E, 'utf8').split('\n').filter((l) => /^\| `/.test(l)).map((l) => { const c = l.split('|').map((x) => x.trim()); return [c[1].replace(/`/g, ''), c.slice(2, 5).map((x) => x.replace('`portal-diff.md` § *How to apply*', '`HANDOFF.md` § *How to apply portal-diff.md*'))]; })); // Board 3-E's labels point at its own portal-diff's method; Board 4's file has none, so the method lives in HANDOFF.md (readiness audit, 2026-10-01 10:54 EDT)
 const portalTwin = (f) => { if (f === 'app.css') return 'portal/public/app.css'; const m = f.match(/^ui\/(.+)$/); return m && fs.existsSync(path.join(PORTAL, 'ui', m[1])) ? `portal/ui/${m[1]}` : null; };
 const differs = (f) => { const t = portalTwin(f); if (!t) return null; try { execFileSync('git', ['diff', '--no-index', '--quiet', path.join(ROOT, t), path.join(KIT, f)]); return false; } catch { return true; } };
 // 2026-09-30 19:42 EDT (the Session 4/5 prep): the files Versions 69–81 added, labelled so nothing new reads UNLABELLED
@@ -41,7 +41,7 @@ const fmRows = files.map((f) => {
   const r = RULES.find(([re]) => re.test(f)) || [null, '**UNLABELLED**', '—', 'no rule covers it: decide before porting'];
   return `| \`${f}\` | **${r[1].replace(/\*/g, '')}** | ${r[2]} | ${r[3]} · labelled by rule, not reviewed |`;
 });
-fs.writeFileSync(path.join(__dirname, 'file-map.md'), [...fm('every kit file, and what a port does with it', 'A file Board 3-E already labelled keeps Board 3-E\'s reviewed label (`../../2026-09-15-pins2-board-3/3e/file-map.md`, including its 2026-09-21 correction that `ui/app.js`, `ui/httpClient.js` and `ui/conform.js` are board chrome); a file new since then carries the rule that labelled it, marked "labelled by rule, not reviewed".'),
+fs.writeFileSync(path.join(__dirname, 'file-map.md'), [...fm('every kit file, and what a port does with it', 'A file Board 3-E already labelled keeps Board 3-E\'s reviewed label (`../../../superpowers/mockups/2026-09-15-pins2-board-3/3e/file-map.md`, including its 2026-09-21 correction that `ui/app.js`, `ui/httpClient.js` and `ui/conform.js` are board chrome); a file new since then carries the rule that labelled it, marked "labelled by rule, not reviewed".'),
   '| File | Label | Goes to | Note |', '|---|---|---|---|', ...fmRows, ''].join('\n'));
 
 // ── portal-diff ──

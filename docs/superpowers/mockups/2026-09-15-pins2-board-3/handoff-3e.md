@@ -422,7 +422,7 @@ A pins-2 answer is newer than board 2's spec. Board 2's port sheet already carri
 
 ---
 
-## 10 · After the board closed — amendments. SESSION 4 WRITES HERE
+## 10 · After the board closed — amendments. ~~SESSION 4 WRITES HERE~~ — superseded: Session 4 writes in plan §10.6 (readiness audit, 2026-10-01 10:54 EDT)
 
 🔴 **2026-09-21 13:39 EDT — Board 4: Collective changed the kit, and these changes are design, not chrome:** `b2.css` guards 35 board-2 selector parts off `.b1` and `.b3-nb` markup (the `pb-*` collision); `b1.css` carries board 1's stylesheet scoped `.b1`, board 3's button family on every board-1 drawer footer, and board 1's Compare empty state; `ui/armory.js` Compare is board 1's structure (stats and table under the bar, Same and Show cards inside `.pb-cmp`, Rank on one weapon and Category across two, the Code group on one weapon only); `ui/broadcast.js` PostForm is board 1's G8; `ui/manifest.js` rows carry their own `--c`, so the Broadcast manifest takes board 2's row hover. Its spec is `docs/pins2/final/board4-spec/README.md`.
 

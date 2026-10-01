@@ -31,13 +31,14 @@ status: live
 
 🔴 **Read [`HANDOFF.md`](HANDOFF.md) first — the authored half: per gate what it is, how it behaves and what he ruled. A `from` selector carrying `html[data-b3-…]` is SWITCHED:** read [`switches.md`](switches.md) (port a live one without the qualifier, never a dead one), then [`file-map.md`](file-map.md), [`portal-diff.md`](portal-diff.md), [`class-map.md`](class-map.md), [`token-map.md`](token-map.md) and [`portal-class-rules.md`](portal-class-rules.md) — all generated for Board 4 — before porting a single declaration.
 
-**Regenerate** after ANY change to the kit — including Session 4 changing a switch — with the kit served on :8900 (`.claude/launch.json` → `repo-static`):
+**Regenerate** after ANY change to the kit — including Session 4 changing a switch — with the kit served on :8900 (`.claude/launch.json` → `repo-static`). **The one full command is [`../../README.md`](../../README.md) § Regenerate the spec** (motion, colours, components, hover relations and the inventory too); the block below is its first half:
 
 ```bash
 O=docs/pins2/final/board4-spec
 node $O/switches.cjs && node $O/overrides.cjs
 BOARD=4 node $O/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $O/split-spec.cjs $TMPDIR/b4-spec.md
 node $O/maps.cjs
+node $O/copy.cjs   # every visible string → copy.md (static, no server)
 node $O/structure.cjs && node $O/relations.cjs && node $O/a11y.cjs
 ```
 
