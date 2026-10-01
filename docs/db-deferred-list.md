@@ -122,7 +122,7 @@ Found 2026-09-23 08:56 EDT. The manifest rows (Armory, Broadcast, History) now g
 
 ### The docs audit fails on a v3.85.0 DEVLOG entry with no CHANGELOG heading `[P1 · XS]`
 
-Found 2026-09-23 17:00 EDT in Session 3's compact prep 4, not caused by it: `npm run docs:audit` reports one ERROR, `[devlog-orphan] v3.85.0 has a DEVLOG entry but NO heading in CHANGELOG.md`, on `feat/portal-pins2-manifests`. It fails CI; the audit's own advice is to restore the heading, never to delete the DEVLOG entry.
+✅ **Fixed 2026-10-01 15:14 EDT at Session 3's close, checked:** the check itself was the gap — the branch's heading sits under Unreleased as `## Proposed Pre-Release v3.85.0`, exactly where the workflow puts it, and `devlog-orphan` read only minted headings. It now counts a Proposed heading while its version is ahead of `package.json` (`10066a0d`, with a firing case for one left behind after the merge). `npm run docs:audit` exits 0 with every v3.85.0 DEVLOG entry still present. Found 2026-09-23 17:00 EDT in Session 3's compact prep 4, not caused by it: `npm run docs:audit` reports one ERROR, `[devlog-orphan] v3.85.0 has a DEVLOG entry but NO heading in CHANGELOG.md`, on `feat/portal-pins2-manifests`. It fails CI; the audit's own advice is to restore the heading, never to delete the DEVLOG entry.
 
 **Verify condition:** `npm run docs:audit` exits 0 on the branch, with the v3.85.0 DEVLOG entry still present and a matching CHANGELOG heading.
 
