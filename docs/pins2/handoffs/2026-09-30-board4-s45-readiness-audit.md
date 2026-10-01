@@ -23,6 +23,10 @@ status: live
 
 **Where it stood when this was written:** not proven ready. The 19:31–21:16 EDT prep never opened board 3's package, boards 1 and 2's packages or `local/pins2-board-3/`, and took `FINAL.md`/`lineage.md`'s claim that Board 4 carries boards 1–3 "corrected" on trust. Indexes: `npm run index:health` exit 0, but context-mode's `docs/pins2` corpus predates the evening's new files, and the kit became gitignored at 21:13 EDT, so the code graph may have dropped it.
 
+**2026-09-30 21:34 EDT:**
+
+> be honest, genuinely truely honest with me, are you sure the plan is ready and covers everything and your thoughts/sequential-thinking covered everything; you don't have any doubts; you dont have any more questions; youve considered every angle; etc etc etc?
+
 ## 2 · What "port 100%, not 95%" means — the failure this hunts
 
 Session 2 shipped boards 1 and 2 at ~95% because details lived where the port did not read: a state never opened, a value only in a board's CSS, a ruling made in chat, a relation no spec carried, motion, copy, data the board faked. A detail is **lost** when it is (a) stated somewhere in the sources, (b) not carried — or carried differently — by the handoff set (§ 3), and (c) not superseded by a later ruling.
@@ -46,7 +50,8 @@ Session 2 shipped boards 1 and 2 at ~95% because details lived where the port di
 3. **The memory layer's decisions** (rulings that may live only there): `mcp__linksee__recall` with `query` "Board 4" and "pins2" (`layer: decision` / `caveat`, `mark_accessed: false`) and `mcp__perseus-vault__perseus_vault_recall` "Board 4 Collective" → written to `local/pins2/audit/C1-memory-decisions.md` for agent C1.
 4. **portal-diff still applies:** a script splits `docs/pins2/final/board4-spec/portal-diff.md` into per-file diffs and runs `git apply --check` on each against `portal/` — v3-pre-release had **0** commits touching `portal/` since this branch's base (checked 2026-09-30 21:17 EDT), so every one should apply; one that does not is a P0.
 5. **A worktree can serve the kit:** `repo-static` (`.claude/launch.json`) is Python's `SimpleHTTPRequestHandler`, which follows symlinks — prove it once: a temp worktree-like dir with the `ln -s` from § Start here, served on a spare port, `curl` `/docs/pins2/kit/board4.html` → 200. If not, § Start here's instruction changes.
-6. `node docs/pins2/instruments/paths-resolve.cjs` · `node docs/pins2/instruments/counts-check.cjs` · `npm run -s docs:audit > /tmp/au.log 2>&1; echo $?` (15 pre-existing findings at 21:16 EDT, none in the pins2 set — a new one is the audit's first finding).
+6. **His words, from the transcripts** (for agents T): a script — written to disk with `Write`, run once — reads every `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/*.jsonl` modified 2026-09-15 → 2026-09-30 (230 files, 8.3 GB at 2026-09-30 21:35 EDT), keeps **his typed messages only** (drops tool results, `<system-reminder>`/hook/command wrappers, "This session is being continued…" summaries), **dedupes across forked transcripts** by (timestamp, text) — three files carry the same 1,721 entries — and writes `local/pins2/audit/T-his-words.jsonl` (`ts`, `session`, `text`) plus its size. Split it into T-slices of ≤ 500 KB, in time order. Prove the script on a known case first: his 2026-09-30 19:31 EDT "approved, run the held checks. board is done." must appear exactly once.
+7. `node docs/pins2/instruments/paths-resolve.cjs` · `node docs/pins2/instruments/counts-check.cjs` · `npm run -s docs:audit > /tmp/au.log 2>&1; echo $?` (15 pre-existing findings at 21:16 EDT, none in the pins2 set — a new one is the audit's first finding).
 
 ## 5 · The agents — seven Sonnet 5.5 in ONE message, then one cold reader
 
@@ -61,6 +66,8 @@ Session 2 shipped boards 1 and 2 at ~95% because details lived where the port di
 | **C2a** | His words — the intake log: does **every** ruling in it reach the handoff set (or the kit, for a visual)? | 1 file, 280 KB | — | `local/pins2/audit/C2a-findings.md` |
 | **C2b** | Every other handoff, compact prep, fix plan, critique and record in `docs/pins2/handoffs/` and `records/` — **this plan excluded** | 28 files, 485 KB | — | `local/pins2/audit/C2b-findings.md` |
 | **D** | **The coverage grid** — every surface × every aspect → its source of truth, PARTIAL, or ABSENT (§ 6's D variant) | — | the generated spec (27), `HANDOFF.md`, the kit (120) | `local/pins2/audit/D-matrix.md` |
+| **T1…Tn** | **His words from the transcripts** (Step 0.6), one T-slice each: every message that states a ruling, a decision, a correction or a "never/always" — is it in the intake log, the board-3 package's threads and handoffs, or `HANDOFF.md`, **in his words**? F1 if absent; F2 if a doc paraphrases it into something different. Boards 3-A–3-E (2026-09-15 → 09-20) matter most: the intake log is verbatim only from 2026-09-21 | local/pins2/audit/T-slice-N.jsonl | the handoff set and the board-3 package (search) | `local/pins2/audit/T<N>-findings.md` |
+| **P** | **A fresh critique of THIS PLAN, before Step 1's agents deploy** — a Sonnet reads this file (never the canaries) and attacks it: what it cannot see, what an agent will misread, where the main session will stall. The main session fixes what it confirms, logs it in § Log, then deploys | this file | — | `local/pins2/audit/P-critique.md` |
 | **E** | **Cold reader, after the fixes (§ 7 step 6):** reads ONLY what Session 4 is told to read (plan §11's Session 4 prompt), then ONLY Session 5's, and lists every question it cannot answer from them | — | the handoff set only — never this plan, never the findings | `local/pins2/audit/E-coldread.md` |
 
 ## 6 · The agent prompt — verbatim (fill ⟨SLICE⟩, ⟨READ⟩, ⟨NAV⟩, ⟨OUT⟩)
@@ -103,18 +110,23 @@ The "## DONE" line is the LAST thing you write; a file without it is treated as 
 
 **D's variant** replaces "A FINDING is exactly one of …" with: *"Build the coverage grid. Rows: every surface — C1–C9; the build drawer's Add, Bulk, Edit and DMZ modes; the post drawer; every pop-up family (Hint, ProblemChip, PopBox, the Picker list, Export's peek); every other drawer. Columns: states (resting, hover, focus, pressed, open, pinned, empty, loading, error, over-limit, disabled, keyboard), visible copy, data source, motion, icons, relations, a11y, colours/tokens. Each cell: the handoff-set file that is its source of truth (path, and section or line) · PARTIAL (what is missing) · ABSENT. Then list every ABSENT and PARTIAL cell as an F3 finding in the findings table. Check in particular whether each surface's visible copy is recoverable from structure.md or the value files, and whether `HANDOFF.md`'s per-gate 'Kit → portal' rows name every kit file the gate needs (compare `file-map.md` and `components.md`)."*
 
+**T's addendum** (appended to the base prompt, which it otherwise follows): *"Your slice is a time-ordered file of Harkirat's own messages (ts, session, text). Ignore chit-chat, status questions and messages about tooling or process. For every message that rules on the design, the behaviour, the data, the copy or the process of Board 3 or Board 4, search the intake log, the board-3 package (docs/superpowers/mockups/2026-09-15-pins2-board-3/threads/ and its handoffs) and HANDOFF.md for it. Quote his message verbatim with its ts and session; F1 if no doc carries it, F2 if a doc carries it in different words that change its meaning. A later message of his that reverses it makes it SUPERSEDED — cite that message's ts."*
+
+**D's addendum:** *"Add a final section, 'Rulings with no instrument behind them': every ruling in HANDOFF.md § Since Version 45 and the rulings table that is a checkable relation, state or timing but that no tracked instrument (relations.cjs, the rings, board4-checks, board4-popups, board4-arc, board4-poptiming, r22, a11y) measures. These are the rulings a later change can break silently."*
+
 **C1's addendum** (appended to its prompt): *"Also check NAMING across the plan, HANDOFF and FINAL: 'board 4' (Session 4's own standardization artifact), 'Board 4: Final' and 'Board 4: Collective' — report every place a session could take one for another, and every place §5c/§5d Step 1's rg patterns would not match what §10.5 actually says."*
 
 **E's prompt** is separate: *"You are Session 4 of docs/pins2/plan/2026-09-13-portal-pins-batch-2.md, starting cold. Read exactly what the plan's §11 Session 4 prompt tells you to read, in its order, and nothing else. Do not do the work. Write to ⟨OUT⟩ every question you could not answer from those files, every instruction that is ambiguous, every path that does not resolve, and every place two of them disagree — with path:line. Then do the same as Session 5 (§11's Session 5 prompt), in a second section. Read-only; never open the audit plan or anything under local/pins2/audit/. End with ## DONE."*
 
 ## 7 · After the agents — the main session
 
+0. **P first:** deploy P alone; fix what its critique confirms; log it; only then Step 0's last checks and the seven + T agents in ONE message.
 1. **Completion and integrity:** every out file ends in `## DONE` and names its model (a missing DONE = cut off → re-run that slice split in two); `git status` and the kit's status equal `local/pins2/audit/step0-status.txt` (an agent that wrote outside its file is a P0 against the audit itself).
 2. **Canaries** (`local/pins2/audit/canaries.md`): an agent that missed one has its whole report treated as unread → re-run that slice, smaller.
 3. **Aggregate and verify mechanically — ONE `ctx_execute`:** parse every findings table; dedupe by (handoff-set location, normalized quote); for each finding confirm the quote occurs at its cited `path:line` (±3 lines) → **QUOTE-OK / QUOTE-MISSING** (missing = the agent invented or misplaced it → dropped unless re-found); write `local/pins2/audit/merged.md`; print only counts and the P0/P1 rows.
 4. **Judge** every P0/P1 and a random 20% of the P2s: open source and handoff-set location together (`ctx_execute_file`, ~10 findings per call), decide, record in `local/pins2/audit/verified.md`, and put each into ONE bucket:
    - **FIX-NOW** — a documentation gap → the handoff set
-   - **OPEN-ON-BOARD** — a state never opened → open it on the kit now with the instruments and record what it shows (Session 3's job; no design decision)
+   - **OPEN-ON-BOARD** — a state never opened, or a P0 ruling from D's 'no instrument behind them' list → open it on the kit now with the instruments and record what it shows (Session 3's job; no design decision). A ruling the V81 kit no longer obeys is HIS-CALL, never a quiet kit fix
    - **HIS-CALL** — two of his rulings disagree and no later one settles it, or the fix would change the kit → batched into ONE closing section, never a popup per item
    - **S4-TASK / S5-TASK** — a row in §10.6, in `HANDOFF.md`'s port rows, or in the deferred list
    - **NOT-A-FINDING** — superseded, mistaken, taste
@@ -122,7 +134,7 @@ The "## DONE" line is the LAST thing you write; a file without it is treated as 
 6. **Cold reader E**, after the fixes; fold its questions in the same way (step 4's buckets).
 7. Regenerate if a generator changed · `paths-resolve` · `counts-check` · `docs:reflow` · `docs:audit` (exit codes read) · commit on `feat/portal-pins2-manifests` · re-index (Step 0's commands) and verify by query · `.remember` line 1 · the report: findings by type and bucket, what was fixed, what is his.
 
-**Turns, honestly:** Step 0 1–2 · deploy 1 · collect 2–3 · aggregate 1 · judge 4–8 · open-on-board 1–3 · fix 2–4 · cold reader 1 + fold 1–2 · gates/commit/index/report 2–3 → **~20–30**.
+**Turns, honestly** (before T and P were added; add ~4–8 for them, more if the transcript corpus is large): Step 0 1–2 · deploy 1 · collect 2–3 · aggregate 1 · judge 4–8 · open-on-board 1–3 · fix 2–4 · cold reader 1 + fold 1–2 · gates/commit/index/report 2–3 → **~20–30**.
 
 ## 8 · How the post-compact session works (his corrections of 2026-09-30, restated where they reach)
 
@@ -418,8 +430,12 @@ In `local/pins2/audit/canaries.md` — gitignored, outside every slice, never qu
 | 16 | A kit fix could slip in as "fixing a finding" | § 7.5: never edit the kit; HIS-CALL |
 | 17 | Naming — "board 4" (Session 4's artifact), "Board 4: Final", "Board 4: Collective" — and §5c/§5d Step 1's rg patterns were unchecked | C1's addendum |
 | 18 | Whether a worktree can serve a symlinked kit was assumed | Step 0.5 proves it |
+| 19 | *(found 2026-09-30 21:35 EDT, his "be honest")* **The audit compared documents only:** a ruling said in chat and never logged — or logged as my paraphrase (a 2026-09-27 rewrite already caught paraphrases presented as his words) — was invisible to every agent. The intake log is verbatim only from 2026-09-21; boards 3-A–3-E predate it | Step 0.6 builds his words from the transcripts; agents T |
+| 20 | **It checked that rulings are WRITTEN, not that the V81 kit still OBEYS them** — a ruling built at V40 and broken at V70 would pass as carried | D's "no instrument behind them" list; OPEN-ON-BOARD samples the P0s; a broken one is HIS-CALL |
+| 21 | **The plan was critiqued only by the session that wrote it** — the same blind spots | agent P, before deployment |
 
 ## Log
 
 - 2026-09-30 21:20 EDT — first version written.
+- 2026-09-30 21:35 EDT — his "be honest": rows 19–21 of § 12 found and closed (T, P, D's conformance list). **Residuals no step closes:** how good the agents' work is (bounded by the canaries, the quote check, the 20% sample, P and E); what his screenshots alone carry (excluded, as he asked); and whether Sessions 4 and 5 follow what they are handed.
 - 2026-09-30 21:30 EDT — rewritten after its falsification pass (§ 12); not deployed (his suggestion: plan now, deploy after the compact). Seven agents + a cold reader await his yes.
