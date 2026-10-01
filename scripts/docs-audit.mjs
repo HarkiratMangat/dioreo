@@ -626,6 +626,17 @@ check(
     const headings = new Set(
       [...ch.matchAll(/^## (?:Pre-Release )?(v\d+\.\d+\.\d+)/gm)].map((m) => m[1])
     );
+    // A PROPOSED heading counts only while its version is still AHEAD of package.json. Found 2026-10-01 13:31 EDT: a long-lived branch (feat/portal-pins2-manifests) stamped its DEVLOG entries with the version it will mint, as the DEVLOG convention asks, and the Unreleased section held that version as "## Proposed Pre-Release v3.85.0" -- so the branch failed CI on a heading that was exactly where the workflow puts it. Accepting it unconditionally would let a Proposed heading left behind after the merge stand in for the real one; tying it to package.json closes that, because the pre-merge checkpoint bumps package.json to the minted version and the Proposed heading then stops counting.
+    const pkgRaw = read("package.json");
+    let pkgVer = null;
+    try { pkgVer = pkgRaw === null ? null : JSON.parse(pkgRaw).version.replace(/-.*$/, ""); } catch { pkgVer = null; }
+    const ahead = (v) => {
+      if (!pkgVer) return false;
+      const a = v.slice(1).split(".").map(Number), b = pkgVer.split(".").map(Number);
+      for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i];
+      return false;
+    };
+    for (const m of ch.matchAll(/^## Proposed (?:Pre-Release )?(v\d+\.\d+\.\d+)/gm)) if (ahead(m[1])) headings.add(m[1]);
     // Only DEVLOG *headings*, not prose -- the table of contents lists the same versions, and a substring test over the file would be satisfied by the TOC line alone while the body entry and the changelog heading were both gone.
     const claimed = [...dv.matchAll(/^## .*?\(v(\d+\.\d+\.\d+)(?:-pre)?\)\s*$/gm)].map((m) => "v" + m[1]);
 

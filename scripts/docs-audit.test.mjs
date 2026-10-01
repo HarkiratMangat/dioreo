@@ -466,6 +466,20 @@ proves("a PRE-RELEASE version in the DEVLOG with no CHANGELOG heading", "devlog-
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## Pre-Release v3.25.0 — 2026-08-15 13:37 EDT (#133) — later work\n\nbody of the entry that absorbed it\n");
 });
 
+provesSilent("a long branch's DEVLOG stamped with the version its PROPOSED heading still holds", "devlog-orphan", (root) => {
+  // The real shape, found 2026-10-01 13:31 EDT: feat/portal-pins2-manifests stamped DEVLOG entries (v3.85.0-pre) while package.json read 3.84.0-pre and CHANGELOG's Unreleased section held "## Proposed Pre-Release v3.85.0". The heading is exactly where the workflow puts it, so the check must stay silent.
+  write(root, "package.json", JSON.stringify({ name: "fixture", version: "3.24.0-pre" }, null, 2));
+  write(root, "docs/DEVLOG.md", "# DEVLOG\n\n## 2026-08-15 12:38 EDT — work on the branch (v3.25.0-pre)\n\nbody\n");
+  write(root, "docs/CHANGELOG.md", "# Changelog\n\n## Pre-Release v3.24.0 — 2026-08-14 10:00 EDT (#132) — earlier\n\nbody\n\n# Unreleased\n\n## Proposed Pre-Release v3.25.0 — the branch (2026-08-15 12:38 EDT)\n\nbody\n");
+});
+
+proves("a PROPOSED heading left behind after its version was minted", "devlog-orphan", (root) => {
+  // The failure the Proposed allowance must not open: package.json already reads the minted version, so the release needs its real heading, and a leftover Proposed one may not stand in for it.
+  write(root, "package.json", JSON.stringify({ name: "fixture", version: "3.25.0-pre" }, null, 2));
+  write(root, "docs/DEVLOG.md", "# DEVLOG\n\n## 2026-08-15 12:38 EDT — the release (v3.25.0-pre)\n\nbody\n");
+  write(root, "docs/CHANGELOG.md", "# Changelog\n\n## Pre-Release v3.24.0 — 2026-08-14 10:00 EDT (#132) — earlier\n\nbody\n\n# Unreleased\n\n## Proposed Pre-Release v3.25.0 — the branch (2026-08-15 12:38 EDT)\n\nbody\n");
+});
+
 proves("a released version whose CHANGELOG heading was deleted", "summary-orphan", (root) => {
   // The real shape of the v2.44.0 damage: the heading goes, the BODY stays and welds itself onto the entry above. A substring test on the version number would still fail here, which is why the body below deliberately does not name its own version -- exactly like the real one did not.
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.33.0 — 2026-07-01 (#2) — two\n\nbody of two\n\nthe absorbed body of the lost entry\n");
