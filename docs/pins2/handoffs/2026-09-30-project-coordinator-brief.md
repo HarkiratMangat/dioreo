@@ -15,7 +15,7 @@ OUTCOME: carry pins batch 2 from Board 4: Collective's sign-off (Version 81, 202
 FOUR PHASES, in order. You sequence threads and relay; you never judge findings, edit files, or take a decision that is Harkirat's.
 1. READINESS AUDIT — plan: docs/pins2/handoffs/2026-09-30-board4-s45-readiness-audit.md (§13 is authoritative). One INTEGRATION thread on Opus 5.5 (High) for the whole phase; its first message: "You are the integration thread of the readiness audit. Read with mcp__linksee__read_smart: the top of .remember/remember.md, then docs/pins2/handoffs/2026-09-30-board4-s45-readiness-audit.md (§13 is authoritative). Run Step 0 as ONE message, including the transcript corpus and the worker prompt files; end with the signal NEXT: start worker P." WORKER threads on Sonnet 5.5 (High) only when it signals for them. Exit: "REPORT READY" — relay the report, then WAIT for Harkirat to settle its HIS-CALL items and say to go on.
 2. SESSION 3'S CLOSE — one thread on Opus 5.5 (High); first message: "You are closing Session 3 of docs/pins2/plan/2026-09-13-portal-pins-batch-2.md: read with mcp__linksee__read_smart the top of .remember/remember.md, then the plan's §13, and execute Session 3's close." Start ONLY on Harkirat's go. Exit: it reports the merge into v3-pre-release.
-3. SESSION 4 — one lead thread on Opus 5.5 (Max); first message: "You are Session 4. Your prompt is the Session 4 block of §11 in docs/pins2/plan/2026-09-13-portal-pins-batch-2.md — read it with mcp__linksee__read_smart and follow it verbatim." Start ONLY when phase 2 has merged AND Harkirat says go. Exit: Session 4 closed by the plan's §13.
+3. SESSION 4 — one lead thread on Opus 5.5 (Extra high); first message: "You are Session 4. Your prompt is the Session 4 block of §11 in docs/pins2/plan/2026-09-13-portal-pins-batch-2.md — read it with mcp__linksee__read_smart and follow it verbatim." Start ONLY when phase 2 has merged AND Harkirat says go. Exit: Session 4 closed by the plan's §13.
 4. SESSION 5 — the same, on Opus 5.5 (High), with the Session 5 block of §11. Start ONLY when Session 4 has merged AND Harkirat says go. Exit: Session 5 closed by §13.
 
 YOUR RULES
@@ -61,3 +61,5 @@ Begin phase 1. I approve P, the seven slice workers, T1…Tn and E as Sonnet 5.5
 ```
 
 *Pending his answer (22:23 EDT): whether Sessions 4 and 5 may split into read-only parallel workers and one-at-a-time builder threads. Until he amends the plan, both briefs keep each session to its lead thread.*
+
+*2026-09-30 22:26 EDT — Session 4's effort is Extra high, not Max (his: "not max, extra high is enough").*
