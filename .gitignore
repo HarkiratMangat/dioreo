@@ -112,3 +112,6 @@ docs/**/*.jpg
 docs/**/*.jpeg
 docs/**/*.gif
 !docs/pins2/kit/**
+# 2026-09-30 21:16 EDT, his option (c): the Board 4 kit is on this Mac only — gitignored, with its own local git repo inside docs/pins2/kit/ (its 11 commits since
+# 2026-09-29 kept there); this branch's history was rewritten without it (backup: refs/backup/pins2-before-kit-local), so no push can carry it.
+docs/pins2/kit/

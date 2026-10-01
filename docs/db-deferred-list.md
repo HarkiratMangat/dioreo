@@ -140,6 +140,8 @@ Harkirat, on the Session 4/5 folder: *"why not just move the board to the new co
 
 ### Whether the Board 4 kit may go on the online GitHub — his call `[P0 · XS]`
 
+> ✅ **Decided 2026-09-30 21:03 EDT: his option (c)** — not on GitHub. `docs/pins2/kit/` is gitignored with its own local git repo; this branch's history was rewritten without it at 21:13 EDT (backup `refs/backup/pins2-before-kit-local`). The options and their costs: `docs/pins2/README.md` § State. Closed here rather than archived, because the entry's own text below is the record of why.
+
 Filed 2026-09-29 00:17 EDT. He said on 2026-09-20 21:33 EDT: *"set up a local git for the kit, i dont want it in the online github for the dioreo repo"* (`docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/KIT-GIT.md`); on 2026-09-28 23:27 EDT he had the kit moved into the tracked `docs/pins2/`. The record never sets the two side by side. Session 3's close (plan §13) merges these records into `v3-pre-release`, and Sessions 4 and 5 branch from it: a session that has no kit in git cannot run the board (`docs/pins2/kit/README.md`). His options: publish it with the rest (Sessions 4 and 5 work from a clean clone) · keep `docs/pins2/kit/` out of what merges (they run only on this Mac, as before) · move it somewhere private. Nothing is pushed. **His answer, by popup, 2026-09-29 00:45 EDT: "Decide at the push"** — so nothing changes until then: the approval sentence for the push names the kit and asks him. **Verify:** at the push, his answer is written here, in `docs/pins2/kit/README.md`, in plan §10.5 and §13 Step 1, and the approval sentence says so.
 
 ### Board 4 has no structure narrative or relations file of its own — `HANDOFF.md`'s *Structure* rows inherit earlier boards' handoffs `[P2 · L]`

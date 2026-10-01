@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the classes the portal does not have
 
-*Generated 2026-09-30T23:42:19.173Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `aa0528b7 plus the working tree`. 573 classes rendered in this folder's spec (`C*.md`, `states.md`) that no portal stylesheet (`portal/ui/app.css`, `v2card.css`, `tokens.css`) defines. Each is ported WITH its rules (the kit file:line is where its first rule sits), or renamed onto a portal class in Session 4's standardization — never shipped as a bare class that styles nothing. Short names such as `.in`, `.on`, `.pinned`, `.ghost`, `.quiet`, `.stage`, `.mesh` and `.noname` are STATE flags, styled only in compound with a component class (`.b3-bdgs.in`): port the compound rule, never the flag alone. A class marked "set by script, never styled" is a JS hook with no rule of its own.*
+*Generated 2026-10-01T01:16:09.788Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `4180d65 (the kit's own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree`. 573 classes rendered in this folder's spec (`C*.md`, `states.md`) that no portal stylesheet (`portal/ui/app.css`, `v2card.css`, `tokens.css`) defines. Each is ported WITH its rules (the kit file:line is where its first rule sits), or renamed onto a portal class in Session 4's standardization — never shipped as a bare class that styles nothing. Short names such as `.in`, `.on`, `.pinned`, `.ghost`, `.quiet`, `.stage`, `.mesh` and `.noname` are STATE flags, styled only in compound with a component class (`.b3-bdgs.in`): port the compound rule, never the flag alone. A class marked "set by script, never styled" is a JS hook with no rule of its own.*
 
 | Prefix | Count | Classes (first rule) |
 |---|---|---|

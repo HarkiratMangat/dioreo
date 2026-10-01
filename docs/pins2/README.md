@@ -27,7 +27,7 @@ status: live
 | [`handoffs/`](handoffs/) | Session 3's records: the intake log, the fix plans (v11, v15), the critiques, checkpoints, compact preps | record |
 | [`records/`](records/) | the Session 1–2 drafts and checkpoints, and History's constraint table and change inventory (read these only when touching History, C8) | record |
 | [`instruments/`](instruments/) | the Board 4 measuring scripts — [`README.md`](instruments/README.md) lists each and when to run it | reference |
-| [`kit/`](kit/) | the Board 4 kit — the design code itself, tracked. [`README.md`](kit/README.md) says how to serve, open and publish it | reference |
+| [`kit/`](kit/) | the Board 4 kit — the design code itself, on this Mac only (gitignored, its own local git repo). [`README.md`](kit/README.md) says how to serve, open and publish it | reference |
 | [`data/`](data/) | source data the boards used — the CODM mode icons (the Modes badge family) and the weapons-and-attachments source | data |
 | `local/pins2/intake-shots/` (**this Mac only**, absolute path `/Applications/Claude Code/Diors-Builds/local/pins2/intake-shots/` — a worktree has no `local/`) | the screenshots his intake and the handoff cite, by round, and the readiness crops. **Not tracked, never pushed** (2026-09-29 23:35 EDT, his: "kit can be tracked but leave screenshots local"); every doc cites them at this path. **Every other image under `docs/`** — the portal pin crops (`docs/portal/portal-pins/`), board 3's `p1-portal.png`, `docs/pins2/data/`'s source capture, the summary captures — is likewise on this Mac only, untracked where it sits | images |
 
@@ -36,13 +36,13 @@ status: live
 | | |
 |---|---|
 | Board 4: Collective | artifact `FCAFvDXrKQN28SotQLJhTh`, **Version 81 — SIGNED OFF** 2026-09-30 19:31 EDT (*"approved, run the held checks. board is done."*). Versions 46–81 are `final/board4-spec/HANDOFF.md` § Since Version 45; his words, every round, in the intake log |
-| The kit | [`kit/`](kit/README.md), tracked at `docs/pins2/kit/`, 131 files (moved from the gitignored `local/pins2-board-3/redo/` on his call of 2026-09-28 23:27 EDT). Its history before the move: `git -C local/pins2-board-3 log --stat` |
+| The kit | [`kit/`](kit/README.md), kept at `docs/pins2/kit/`, 131 files, on this Mac only (moved from the gitignored `local/pins2-board-3/redo/` on his call of 2026-09-28 23:27 EDT). Its history before the move: `git -C local/pins2-board-3 log --stat` |
 | The spec | `final/board4-spec/`, **regenerated 2026-09-30 19:51 EDT from the Version 81 kit**, with four new generated files: `motion-timing.md`, `colours.md`, `components.md`, `inventory.md` |
 | The held checks, at Version 81 | `final/board4-spec/HANDOFF.md` § Ready for Sessions 4 and 5 |
 | Board 3-E | superseded by Board 4 (2026-09-28 23:27 EDT); `3e/` in board 3's package is history |
-| 🔴 The kit on GitHub — **his call, undecided** | he said on 2026-09-20 21:33 EDT the kit was not to go on the online GitHub. Sessions 4 and 5 branch from `v3-pre-release` and their Step 1 stops without `docs/pins2/kit/board4.html`. The options: **(a)** push the kit with Session 3's close (it becomes public on GitHub) · **(b)** merge Session 3 without `kit/` and let Sessions 4 and 5 branch from `feat/portal-pins2-manifests` instead · **(c)** keep `kit/` out of git (gitignored again) and have each session read it from this Mac's checkout by absolute path · **(d)** a private home for it (a private repo or a submodule). Whichever he picks, the plan's §5c/§5d Step 1 and §13 Step 1 change to match |
+| The kit — **on this Mac only** | his option (c), 2026-09-30 21:03 EDT: `docs/pins2/kit/` is gitignored and carries its own local git repo (its 11 commits since 2026-09-29); this branch's history was rewritten without it at 21:13 EDT (backup ref `refs/backup/pins2-before-kit-local`), so no push carries it. Sessions 4 and 5 read it from this checkout; in a worktree, first `ln -s "/Applications/Claude Code/Diors-Builds/docs/pins2/kit" docs/pins2/kit` |
 | Branch | `feat/portal-pins2-manifests`, nothing pushed. Session 3 has not closed: its close (plan §13) merges Session 2's build and these records into `v3-pre-release`, each step on his word |
-| Next | his call on the kit (above), then Session 3's close (plan §13) — push, PR and merge each on his word, restated — then Session 4 (plan §11's prompt) |
+| Next | Session 3's close (plan §13) — push, PR and merge each on his word, restated — then Session 4 (plan §11's prompt) |
 
 ## Where new things go
 

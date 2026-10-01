@@ -7,7 +7,7 @@ const num = (s) => (s == null ? null : +String(s).replace(/,/g, ''));
 const grab = (f, re) => { const m = read(f).match(re); return m ? num(m[1]) : null; };
 const kitConst = (name) => grab('docs/pins2/kit/ui/broadcast.js', new RegExp('\\b' + name + '\\s*=\\s*(\\d+)'));
 const CLAIMS = [
-  { id: 'kit-files', doc: 'docs/pins2/README.md', re: /tracked at `docs\/pins2\/kit\/`, (\d+) files/,   /* 2026-09-30 19:52 EDT: prep-17 is a dated record, so its number is history; the claim moved to the live README */ truth: () => git('git ls-files docs/pins2/kit').split('\n').filter(Boolean).length, src: 'git ls-files docs/pins2/kit' },
+  { id: 'kit-files', doc: 'docs/pins2/README.md', re: /kept at `docs\/pins2\/kit\/`, (\d+) files/,   /* 2026-09-30 19:52 EDT: prep-17 is a dated record, so its number is history; the claim moved to the live README */ truth: () => git('git -C docs/pins2/kit ls-files').split('\n').filter(Boolean).length, src: 'git -C docs/pins2/kit ls-files (the kit\'s own local repo since 2026-09-30 21:16 EDT)' },
   { id: 'r22-flows-readme', doc: 'docs/pins2/README.md', re: /walks (\d+) flows/, truth: () => (read('docs/pins2/instruments/r22.cjs').match(/\bok\('/g) || []).length, src: "r22.cjs's ok('…') checks" },
   { id: 'r22-flows-instr', doc: 'docs/pins2/instruments/README.md', re: /(\d+) flows/, truth: () => (read('docs/pins2/instruments/r22.cjs').match(/\bok\('/g) || []).length, src: "r22.cjs's ok('…') checks" },
   { id: 'gates', doc: 'docs/pins2/final/board4-spec/HANDOFF.md', re: /### C(\d) · Admin traffic/, truth: () => fs.readdirSync('docs/pins2/final/board4-spec').filter((f) => /^C\d-.*\.md$/.test(f)).length, src: 'board4-spec/C*.md files (the last gate heading is C<N>)' },

@@ -2062,3 +2062,4 @@ Sweep: every family (problem, all-pass, image mark ×2, text hint, peek, three p
 
 **Board 4: Collective is signed off at Version 81.** What the prep added is `docs/pins2/plan/2026-09-13-portal-pins-batch-2.md`'s Sign-off amendment and `docs/pins2/final/board4-spec/HANDOFF.md` § Start here.
 
+*2026-09-30 21:16 EDT — his calls: "yes update the entry (also why even ask me? what does the user-agreement say about this stuff?), and go with c." · "yes, approved — run the history rewrite with the backup ref" (the auto-mode check refused it twice; he ran the `filter-branch` himself at 21:13 EDT). The Rank Mode entry was brought current; the kit is on this Mac only (option c).*
