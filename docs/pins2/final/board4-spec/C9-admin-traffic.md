@@ -134,12 +134,12 @@ inside `.incg` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .chip · app.css:1249 |
+| display | `inline-flex` | `flex` | .chip · app.css:1243 |
 | gap | `var(--s2)` | `` | .chip.incchip · app.css:1051 |
 | column-gap | `` | `8px` | .chip.incchip · app.css:1051 |
 | row-gap | `` | `8px` | .chip.incchip · app.css:1051 |
-| align-items | `center` | `center` | .chip · app.css:1249 |
-| justify-content | `center` | `center` | .chip · app.css:1249 |
+| align-items | `center` | `center` | .chip · app.css:1243 |
+| justify-content | `center` | `center` | .chip · app.css:1243 |
 | min-height | `var(--tap)` | `44px` | .chip.incchip · app.css:1051 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:391 |
 | padding | `0 var(--s4)` | `` | .chip.incchip · app.css:1051 |
@@ -147,25 +147,25 @@ inside `.incg` · 1 on screen · **1 look**
 | padding-right | `` | `16px` | .chip.incchip · app.css:1051 |
 | padding-bottom | `` | `0px` | .chip.incchip · app.css:1051 |
 | padding-left | `` | `16px` | .chip.incchip · app.css:1051 |
-| border | `1px solid var(--rule2)` | `` | .chip · app.css:1249 |
-| border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4772 |
-| background | `var(--sunk)` | `` | .chip · app.css:1249 |
-| background-color | `` | `rgb(11, 15, 18)` | .chip · app.css:1249 |
-| background-image | `` | `none` | .chip · app.css:1249 |
+| border | `1px solid var(--rule2)` | `` | .chip · app.css:1243 |
+| border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4766 |
+| background | `var(--sunk)` | `` | .chip · app.css:1243 |
+| background-color | `` | `rgb(11, 15, 18)` | .chip · app.css:1243 |
+| background-image | `` | `none` | .chip · app.css:1243 |
 | font | `inherit` | `` | button · app.css:624 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:624 |
-| font-size | `var(--t-sm)` | `12px` | .chip · app.css:1249 |
-| font-weight | `600` | `600` | .chip · app.css:1249 |
+| font-size | `var(--t-sm)` | `12px` | .chip · app.css:1243 |
+| font-weight | `600` | `600` | .chip · app.css:1243 |
 | font-style | `inherit` | `normal` | button · app.css:624 |
 | font-variant-numeric | `inherit` | `normal` | button · app.css:624 |
 | line-height | `inherit` | `18px` | button · app.css:624 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| text-decoration | `none` | `` | .chip · app.css:1249 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .chip · app.css:1249 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5559 |
+| text-decoration | `none` | `` | .chip · app.css:1243 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .chip · app.css:1243 |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5553 |
 | cursor | `pointer` | `pointer` | button · app.css:624 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5003 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4999 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -212,15 +212,15 @@ inside `.chip` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6467 |
+| display | `inline-block` | `block` | .ic · app.css:6461 |
 | flex | `none` | `` | .ic · b2.css:10 |
 | width | `15px` | `15px` | .chip.incchip .ic · b4.css:55 |
 | height | `15px` | `15px` | .chip.incchip .ic · b4.css:55 |
 | box-sizing | `border-box` | `border-box` | * · app.css:615 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:624 |
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:624 |
-| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1249 |
-| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1249 |
+| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1243 |
+| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1243 |
 | font-style | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:624 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:624 |
@@ -231,4 +231,4 @@ inside `.chip` · 1 on screen · **1 look**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:624 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6474 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6468 |

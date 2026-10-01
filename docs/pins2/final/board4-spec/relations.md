@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — relations, measured
 
-*Generated 2026-10-01T15:45:49.511Z by `relations.cjs` from the running kit at 1282×888. Each row is one of his rulings that is a RELATION (a size, a gap, a distance, a count), with where he ruled it; the value is read off the page. 37 of 37 hold. Page errors: 0. Session 5 reruns this against Board 4: Final and reads the same numbers off the portal.*
+*Generated 2026-10-01T16:35:29.630Z by `relations.cjs` from the running kit at 1282×888. Each row is one of his rulings that is a RELATION (a size, a gap, a distance, a count), with where he ruled it; the value is read off the page. 37 of 37 hold. Page errors: 0. Session 5 reruns this against Board 4: Final and reads the same numbers off the portal.*
 
 | Gate | State | Relation | Ruled | Expect | Measured | |
 |---|---|---|---|---|---|---|

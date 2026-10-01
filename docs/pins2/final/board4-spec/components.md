@@ -11,7 +11,7 @@ status: live
 
 | Component | Lives at | Renders (`<${…}>`) | Used by |
 |---|---|---|---|
-| `Icon` | `ui/icons.js:144` | 299 | `b3/armory-parts.js (26)`, `b3/broadcast.js (19)`, `b3/dock.js (7)`, `b3/drawer.js (20)`, `b3/history.js (15)`, `b3/palette.js (3)`, `b3/repairs.js (20)`, `b4/bulk.js (10)`, `b4/compare.js (16)`, `b4/form.js (23)`, `gates/armory.js (25)`, `gates/broadcast.js (21)`, `gates/history.js`, `gates/lib.js (5)`, `gates/main.js (1)`, `gates/picks.js (7)`, `gates/shared.js (3)`, `gates4/surfaces.js (1)`, `ui/access.js (4)`, `ui/analytics.js (10)`, `ui/armory.js (22)`, `ui/async.js`, `ui/broadcast.js (22)`, `ui/history.js (1)`, `ui/icons.js (1)`, `ui/manifest.js (4)`, `ui/overlay.js (2)`, `ui/palette.js (1)`, `ui/review.js (6)`, `ui/shell.js (3)`, `ui/track.js (1)` |
+| `Icon` | `ui/icons.js:144` | 296 | `b3/armory-parts.js (26)`, `b3/broadcast.js (19)`, `b3/dock.js (7)`, `b3/drawer.js (20)`, `b3/history.js (15)`, `b3/palette.js (3)`, `b3/repairs.js (20)`, `b4/bulk.js (10)`, `b4/compare.js (16)`, `b4/form.js (24)`, `gates/armory.js (23)`, `gates/broadcast.js (21)`, `gates/history.js`, `gates/lib.js (5)`, `gates/main.js (1)`, `gates/picks.js (7)`, `gates/shared.js (3)`, `gates4/surfaces.js (1)`, `ui/access.js (4)`, `ui/analytics.js (10)`, `ui/armory.js (20)`, `ui/async.js`, `ui/broadcast.js (22)`, `ui/history.js (1)`, `ui/icons.js (1)`, `ui/manifest.js (4)`, `ui/overlay.js (2)`, `ui/palette.js (1)`, `ui/review.js (6)`, `ui/shell.js (3)`, `ui/track.js (1)` |
 | `Drawer` | `ui/overlay.js:11` | 14 | `b3/drawer.js (1)`, `gates/armory.js (1)`, `ui/access.js (3)`, `ui/armory.js (2)`, `ui/broadcast.js (1)`, `ui/composer.js (1)`, `ui/exportPanel.js (1)`, `ui/history.js (1)`, `ui/overlay.js (1)`, `ui/season.js (2)` |
 | `Shell` | `ui/shell.js:436` | 10 | `ui/access.js (1)`, `ui/analytics.js (1)`, `ui/app.js (1)`, `ui/armory.js (1)`, `ui/async.js (1)`, `ui/broadcast.js (1)`, `ui/history.js (1)`, `ui/home.js (1)`, `ui/review.js (1)`, `ui/season.js (1)` |
 | `Fold` | `ui/icons.js:165` | 14 | `b3/armory-parts.js (1)`, `b3/broadcast.js (1)`, `b3/repairs.js (1)`, `b4/compare.js (1)`, `gates/armory.js (1)`, `gates/shared.js (3)`, `ui/armory.js (4)`, `ui/broadcast.js (1)`, `ui/track.js (1)` |
@@ -30,9 +30,9 @@ status: live
 | `SmartDate` | `ui/composer.js:21` | 4 | `ui/broadcast.js`, `ui/composer.js (3)`, `ui/season.js (1)` |
 | `Board` | `ui/board.js:128` | 3 | `gates/main.js (1)`, `gates4/main.js (1)`, `ui/season.js (1)` |
 | `CharCount` | `gates/lib.js:17` | 3 | `gates/armory.js (1)`, `gates/broadcast.js (1)`, `ui/broadcast.js (1)` |
-| `Coverage` | `ui/armory.js:374` | 3 | `gates/armory.js (1)`, `gates/main.js (1)`, `ui/armory.js (1)` |
+| `Coverage` | `ui/armory.js:368` | 3 | `gates/armory.js (1)`, `gates/main.js (1)`, `ui/armory.js (1)` |
 | `EndPicker` | `b3/broadcast.js:386` | 3 | `b3/broadcast.js (1)`, `gates/broadcast.js (1)`, `ui/broadcast.js (1)` |
-| `LoadoutCard` | `ui/armory.js:855` | 3 | `gates/armory.js`, `gates4/surfaces.js`, `ui/armory.js (3)` |
+| `LoadoutCard` | `ui/armory.js:849` | 3 | `gates/armory.js`, `gates4/surfaces.js`, `ui/armory.js (3)` |
 | `DiscordCard` | `ui/v2Render.js:47` | 2 | `ui/broadcast.js`, `ui/composer.js (1)`, `ui/season.js (1)` |
 | `Failure` | `ui/async.js:74` | 2 | `ui/app.js (1)`, `ui/async.js (1)`, `ui/review.js` |
 | `PostForm` | `ui/broadcast.js:327` | 2 | `gates/broadcast.js`, `gates4/surfaces.js (1)`, `ui/broadcast.js (1)` |
@@ -50,7 +50,7 @@ status: live
 | `ArmoryGroups` | `ui/armory.js:103` | 2 | `gates/armory.js (1)`, `ui/armory.js (1)` |
 | `B3History` | `b3/history.js:45` | 2 | `gates/history.js (1)`, `ui/history.js (1)` |
 | `BudgetReadout` | `b3/broadcast.js:266` | 2 | `gates/broadcast.js (1)`, `ui/broadcast.js (1)` |
-| `BuildEditor` | `ui/armory.js:679` | 2 | `gates/armory.js (1)`, `ui/armory.js (1)` |
+| `BuildEditor` | `ui/armory.js:673` | 2 | `gates/armory.js (1)`, `ui/armory.js (1)` |
 | `BuildImage` | `b3/armory-parts.js:322` | 2 | `b4/compare.js (1)`, `ui/armory.js (1)` |
 | `ClockFace` | `ui/season.js:279` | 2 | `ui/home.js (1)`, `ui/season.js (1)` |
 | `DateGrid` | `b3/broadcast.js:19` | 2 | `b3/broadcast.js (1)`, `ui/broadcast.js (1)` |
@@ -65,7 +65,7 @@ status: live
 | `MediaWell` | `b4/form.js:227` | 2 | `b4/form.js (1)`, `ui/broadcast.js (1)` |
 | `NetBanner` | `ui/async.js:108` | 2 | `ui/app.js (1)`, `ui/async.js (1)` |
 | `PopBox` | `b3/broadcast.js:131` | 2 | `b3/broadcast.js (1)`, `ui/broadcast.js (1)` |
-| `RackNote` | `ui/armory.js:220` | 2 | `gates/armory.js`, `gates/shared.js (2)` |
+| `RackNote` | `ui/armory.js:214` | 2 | `gates/armory.js`, `gates/shared.js (2)` |
 | `RepairsPanel` | `b3/repairs.js:54` | 2 | `gates/armory.js (1)`, `ui/armory.js (1)` |
 | `Skeleton` | `ui/async.js:57` | 2 | `ui/app.js (1)`, `ui/async.js (1)` |
 | `StageMinBtn` | `b4/form.js:201` | 2 | `b4/form.js (1)`, `ui/broadcast.js (1)` |
@@ -74,22 +74,22 @@ status: live
 | `Stepper` | `b3/broadcast.js:192` | 2 | `b3/broadcast.js (1)`, `ui/broadcast.js (1)` |
 | `B3CommandBar` | `b3/palette.js:92` | 1 | `gates/armory.js`, `ui/shell.js (1)` |
 | `CommandBar` | `ui/palette.js:26` | 1 | `gates/armory.js`, `ui/shell.js (1)` |
-| `Compare` | `ui/armory.js:952` | 1 | `gates4/surfaces.js`, `ui/armory.js (1)` |
-| `NewBuildDrawer` | `ui/armory.js:1238` | 1 | `gates/armory.js`, `ui/armory.js (1)` |
-| `ARMORY_SECTIONS` | `gates/armory.js:1309` | 0 | `gates/main.js`, `gates4/main.js` |
+| `Compare` | `ui/armory.js:946` | 1 | `gates4/surfaces.js`, `ui/armory.js (1)` |
+| `NewBuildDrawer` | `ui/armory.js:1232` | 1 | `gates/armory.js`, `ui/armory.js (1)` |
+| `ARMORY_SECTIONS` | `gates/armory.js:1308` | 0 | `gates/main.js`, `gates4/main.js` |
 | `BROADCAST_COLUMNS` | `ui/broadcast.js:39` | 0 | `gates/broadcast.js`, `gates4/surfaces.js` |
 | `BROADCAST_SECTIONS` | `gates/broadcast.js:237` | 0 | `gates/main.js`, `gates4/main.js` |
 | `HISTORY_SECTIONS` | `gates/history.js:70` | 0 | `gates/main.js`, `gates4/main.js` |
-| `VIEWS` | `ui/armory.js:1362` | 0 | `gates/armory.js`, `gates/shared.js` |
-| `VIEW_ORDER` | `ui/armory.js:1363` | 0 | `gates/armory.js`, `gates/shared.js` |
+| `VIEWS` | `ui/armory.js:1356` | 0 | `gates/armory.js`, `gates/shared.js` |
+| `VIEW_ORDER` | `ui/armory.js:1357` | 0 | `gates/armory.js`, `gates/shared.js` |
 | `Door` | `ui/shell.js:675` | 2 | `ui/app.js (2)` |
 | `StateSeg` | `gates4/surfaces.js:34` | 2 | `gates4/main.js (2)` |
 | `AccentBlock` | `b3/broadcast.js:304` | 1 | `ui/broadcast.js (1)` |
-| `ArmoryKey` | `ui/armory.js:1366` | 1 | `ui/armory.js (1)` |
-| `B4AddForm` | `b4/form.js:432` | 1 | `b3/drawer.js (1)` |
+| `ArmoryKey` | `ui/armory.js:1360` | 1 | `ui/armory.js (1)` |
+| `B4AddForm` | `b4/form.js:433` | 1 | `b3/drawer.js (1)` |
 | `B4BulkForm` | `b4/bulk.js:127` | 1 | `b3/drawer.js (1)` |
 | `B4Compare` | `b4/compare.js:135` | 1 | `gates4/surfaces.js (1)` |
-| `BulkBadgesPanel` | `ui/armory.js:617` | 1 | `ui/armory.js (1)` |
+| `BulkBadgesPanel` | `ui/armory.js:611` | 1 | `ui/armory.js (1)` |
 | `Caret` | `b4/form.js:63` | 1 | `b4/form.js (1)` |
 | `ChangesAhead` | `ui/broadcast.js:94` | 1 | `ui/broadcast.js (1)` |
 | `Composer` | `ui/composer.js:220` | 1 | `ui/season.js (1)` |
@@ -97,7 +97,7 @@ status: live
 | `Controls` | `gates/lib.js:57` | 1 | `gates/lib.js (1)` |
 | `Decide` | `gates/picks.js:330` | 1 | `gates/lib.js (1)` |
 | `ExportSurface` | `gates4/surfaces.js:161` | 1 | `gates4/main.js (1)` |
-| `FilterBar` | `ui/armory.js:1114` | 1 | `ui/armory.js (1)` |
+| `FilterBar` | `ui/armory.js:1108` | 1 | `ui/armory.js (1)` |
 | `Gate` | `gates/lib.js:73` | 1 | `gates/main.js (1)` |
 | `GateNote` | `gates/picks.js:347` | 1 | `gates/lib.js (1)` |
 | `H1Spacing` | `gates/picks.js:413` | 1 | `gates/history.js (1)` |
@@ -119,7 +119,7 @@ status: live
 | `ARMORY_COLUMNS` | `ui/armory.js:32` | 0 | `gates/armory.js` |
 | `ARMORY_FILTERS` | `ui/armory.js:70` | 0 | `gates/armory.js` |
 | `AdminBar` | `gates4/surfaces.js:147` | 0 | `gates4/main.js` |
-| `ArmoryRealm` | `ui/armory.js:1381` | 0 | `ui/app.js` |
+| `ArmoryRealm` | `ui/armory.js:1375` | 0 | `ui/app.js` |
 | `BroadcastRealm` | `ui/broadcast.js:530` | 0 | `ui/app.js` |
 | `BroadcastSurface` | `gates4/surfaces.js:119` | 0 | `gates4/main.js` |
 | `CAT_ORDER` | `b4/form.js:18` | 0 | `b4/compare.js` |
@@ -142,7 +142,7 @@ status: live
 | `UNUSED` | `b4/form.js:35` | 0 | `b3/drawer.js` |
 | `AccessRealm` | `ui/access.js:656` | 0 | — (its own file only) |
 | `AnalyticsRealm` | `ui/analytics.js:566` | 0 | — (its own file only) |
-| `COVERAGE_LABEL` | `ui/armory.js:196` | 0 | — (its own file only) |
+| `COVERAGE_LABEL` | `ui/armory.js:190` | 0 | — (its own file only) |
 | `FORKS_BY_GATE` | `gates/picks.js:221` | 0 | — (its own file only) |
 | `HomeRealm` | `ui/home.js:290` | 0 | — (its own file only) |
 | `ICON_NAMES` | `ui/icons.js:127` | 0 | — (its own file only) |
@@ -187,7 +187,7 @@ status: live
 | `layerHost` | `b3/layer.js:9` | 0 | `b3/broadcast.js`, `b4/form.js` |
 | `repairsStatus` | `b3/repairs.js:49` | 0 | `gates/armory.js`, `ui/armory.js` |
 | `showingsWord` | `b3/broadcast.js:200` | 0 | `gates/broadcast.js`, `ui/broadcast.js` |
-| `splitCoverage` | `ui/armory.js:214` | 0 | `gates/armory.js`, `ui/home.js` |
+| `splitCoverage` | `ui/armory.js:208` | 0 | `gates/armory.js`, `ui/home.js` |
 | `stagedEndOf` | `b3/broadcast.js:55` | 0 | `gates/broadcast.js`, `ui/broadcast.js` |
 | `useAvatarTint` | `ui/avatarTint.js:31` | 0 | `ui/access.js`, `ui/shell.js` |
 | `weaponsWith` | `gates/lib.js:146` | 0 | `gates/armory.js`, `gates/shared.js` |

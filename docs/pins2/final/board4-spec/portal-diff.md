@@ -5,13 +5,13 @@ status: live
 
 # Board 4: Collective — the exact changes to PORTAL code
 
-*Generated 2026-10-01T15:44:09.563Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `cb7d0e4 (the kit's own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 14 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
+*Generated 2026-10-01T16:33:49.480Z by `maps.cjs` from `docs/pins2/kit/` at repo commit `14d7594 (the kit's own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 14 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
 
 ## `app.css` → `portal/public/app.css`
 
 ```diff
 diff --git aportal/public/app.css bkit/app.css
-index 85107e32..32c1a4f9 100644
+index 85107e32..91579bed 100644
 --- aportal/public/app.css	
 +++ bkit/app.css	
 @@ -55,7 +55,9 @@
@@ -237,7 +237,19 @@ index 85107e32..32c1a4f9 100644
  .wg-r:hover .wg-at[style]{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sl) 48%,transparent),inset 0 1px 0 color-mix(in srgb,var(--sl) 20%,transparent)}
  .wg-at.gap{background:none;box-shadow:none;outline:1px dashed color-mix(in srgb,var(--warn) 55%,transparent);outline-offset:-1px;color:var(--warn-ink)}
  .wg-im{display:grid;place-items:center;width:28px;height:28px;color:color-mix(in srgb,var(--ok) 80%,var(--ink3))}
-@@ -1204,7 +1222,7 @@ main{overflow:auto;padding-bottom:140px}
+@@ -1184,11 +1202,6 @@ main{overflow:auto;padding-bottom:140px}
+ .wg-cnone .ic{width:14px;height:14px}
+ .wg-acts{display:flex;align-items:center;gap:var(--s3);justify-self:end;margin-right:calc(-1 * var(--box-inset))}
+ .wg-vr{flex:none;width:1px;height:24px;background:var(--rule2)}
+-.wg-strip{display:grid;grid-template-columns:32px 28px minmax(0,1fr) 28px 144px 113px;column-gap:var(--s3);align-items:center;min-height:26px;padding:0 var(--s4) 0 20px;background:var(--sunk);font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+-.wg-strip.dmz{grid-template-columns:32px 28px minmax(0,1fr) 28px 113px}
+-.wg-slots{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:10px;min-width:0}
+-.wg-sc{display:flex;align-items:center;min-width:0;min-height:32px;padding:4px 10px;border-radius:var(--rad-2);background:color-mix(in srgb,var(--sl,var(--ink4)) 8%,var(--sunk));box-shadow:inset 0 0 0 1px var(--rule),inset 0 -2px 0 color-mix(in srgb,var(--sl,var(--ink4)) 45%,transparent);font:500 var(--t-sm)/1.25 var(--ui);color:var(--ink)}
+-.wg-sc.empty{background:none;box-shadow:inset 0 0 0 1px var(--rule3);color:var(--ink3)}
+ /* C14 (plan pins batch 2 §10.4, 2026-09-15 08:56 EDT): at a phone's width nothing may clip a control, though a phone layout itself stays not a priority. Measured before this: at 390px the build row's delete button ended at 443 of a 390 viewport, on every row. The row keeps its first line (checkbox, number, content) and moves the image mark, the code and the actions onto a second line; the weapon header lets its tags wrap and drops the Fix chip under the name; the tools row lets its search shrink. */
+ @media (max-width:640px){
+   .mt-r1{flex-wrap:wrap}
+@@ -1204,12 +1217,11 @@ main{overflow:auto;padding-bottom:140px}
    .wg-fpr > span{white-space:normal}
    .wg-r,.wg-r.dmz{grid-template-columns:32px 22px minmax(0,1fr) auto;row-gap:4px;padding:6px var(--s3) 6px 14px}
    .wg-r > .wg-main{grid-column:3 / 5;grid-row:1}
@@ -246,7 +258,12 @@ index 85107e32..32c1a4f9 100644
    .wg-r > .wg-code,.wg-r > .wg-ig.none{grid-column:3;grid-row:2;max-width:144px}
    .wg-r > .wg-acts{grid-column:4;grid-row:2}
    .wg-main.named{grid-template-columns:minmax(0,1fr);row-gap:6px}
-@@ -1241,7 +1259,7 @@ th{text-align:left;font-size:var(--t-micro);letter-spacing:.12em;text-transform:
+   .wg-plate::after{display:none}
+-  .wg-strip{display:none}
+ }
+ .srch{position:relative;display:flex;align-items:center;flex:0 1 340px;max-width:340px}
+ .srch input{width:100%;--ctl-pl:40px}
+@@ -1241,7 +1253,7 @@ th{text-align:left;font-size:var(--t-micro);letter-spacing:.12em;text-transform:
  th.sortable{user-select:none;padding:0}
  th.sortable .sortbtn{all:unset;display:block;width:100%;box-sizing:border-box;cursor:pointer;
    padding:inherit;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
@@ -255,7 +272,7 @@ index 85107e32..32c1a4f9 100644
  /* 🔴 THE SORT INDICATOR WAS A TYPED CHARACTER, WHICH THIS REPO BANS BY NAME (2026-09-10 10:48 EDT).
     Harkirat, 2026-08-25: "NEVER USE TEXT GLYPHS FOR ICONS. ICONS ARE ICONS." A pseudo-element fed a
     double-headed arrow character, bumped 12px -> 16px by an earlier pass and reported not fixed
-@@ -1258,16 +1276,16 @@ th.sortable .sortbtn:hover .sortic{color:var(--ink2)}
+@@ -1258,16 +1270,16 @@ th.sortable .sortbtn:hover .sortic{color:var(--ink2)}
     original pin needed more than one token step. A literal 16px here, matching the header text's
     own size rather than a smaller data-scale token. */
  /* Was --t-xs -- "the sort icons are SOOO tiny, i could barely tell what they were" (Harkirat, pin pmtuwz0d6, 2026-09-09). */
@@ -276,7 +293,7 @@ index 85107e32..32c1a4f9 100644
  .cb.on::after{content:"";position:absolute;left:4.5px;top:1px;width:4px;height:9px;border:solid var(--on-accent);border-width:0 2px 2px 0;transform:rotate(42deg)}
  .dot{display:inline-block;width:9px;height:9px;border-radius:var(--rad-1);margin-right:8px;vertical-align:-1px;background:var(--c)}
  .stt{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.08em;padding:2px 7px;border-radius:var(--rad-1);font-weight:600;white-space:nowrap}
-@@ -1276,7 +1294,7 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
+@@ -1276,7 +1288,7 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
  .stt.conflict{border:1.5px dashed var(--warn);color:var(--warn);
    background-image:repeating-linear-gradient(45deg,transparent 0 3px,rgba(255,122,69,.5) 3px 4px)}
  .bulk{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--hi);border-top:1px solid var(--rule2);flex-wrap:wrap}
@@ -285,7 +302,7 @@ index 85107e32..32c1a4f9 100644
  .bulk button{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:var(--t-sm);font-weight:600;
    padding:7px 11px;border-radius:var(--rad-2);min-height:36px}
  .bulk button:hover{color:var(--ink);border-color:var(--ink3)}
-@@ -1396,7 +1414,7 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
+@@ -1396,7 +1408,7 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
  /* toast */
  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--raised);border:1px solid var(--rule2);
    border-radius:var(--rad-2);padding:10px 16px;font-size:var(--t-base);z-index:80;box-shadow:0 12px 32px -12px #000;display:flex;align-items:center;gap:12px}
@@ -294,7 +311,7 @@ index 85107e32..32c1a4f9 100644
  
  /* ═══ RESPONSIVE — two breakpoints, exactly ═══ */
  /* 🔴 The page-level horizontal overflow at 390px was the HEADER, not the table.
-@@ -1451,7 +1469,7 @@ header{min-width:0}
+@@ -1451,7 +1463,7 @@ header{min-width:0}
  /* logo is a control, not a wordmark */
  .mk{background:none;border:1px solid transparent;border-radius:var(--rad-2);padding:5px 8px;min-height:34px;display:flex;align-items:center;gap:7px}
  .mk:hover{border-color:var(--rule2);background:var(--sunk)}
@@ -303,7 +320,7 @@ index 85107e32..32c1a4f9 100644
  
  /* ═══ SEASON IDENTITY — the editor that was missing entirely ═══ */
  .identity{margin:0 22px var(--s5);border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);overflow:hidden}
-@@ -1467,7 +1485,7 @@ header{min-width:0}
+@@ -1467,7 +1479,7 @@ header{min-width:0}
  .scrub .mini{position:absolute;height:4px;min-width:3px;border-radius:var(--rad-1);background:var(--c);opacity:.72}
  .scrub .season-end{position:absolute;top:0;bottom:0;width:1px;background:var(--warn);opacity:.7}
  .scrub .winbox:active{cursor:grabbing}
@@ -312,7 +329,7 @@ index 85107e32..32c1a4f9 100644
  .scrub .wh:hover{opacity:1}
  .scrub .wh.l{left:-1px;border-radius:var(--rad-1) 0 0 var(--rad-1)} .scrub .wh.r{right:-1px;border-radius:0 var(--rad-1) var(--rad-1) 0}
  
-@@ -1477,7 +1495,7 @@ header{min-width:0}
+@@ -1477,7 +1489,7 @@ header{min-width:0}
  
  /* ═══ INTERACTIVE TRACK ELEMENTS ═══ */
  .bar{touch-action:none}
@@ -321,7 +338,7 @@ index 85107e32..32c1a4f9 100644
  .bar .gr{opacity:0;transition:opacity .1s}
  .bar:hover .gr,.bar:focus-visible .gr{opacity:1}
  .lane .tk{cursor:crosshair}
-@@ -1494,9 +1512,9 @@ header{min-width:0}
+@@ -1494,9 +1506,9 @@ header{min-width:0}
     window.frames, and now .ghost. ⚠️ `.pill.ghost` itself was REMOVED 2026-08-31: its only emitter was
     oneway.js's "Export first →" button, refused in the mode collapse because it gates on an export
     interlock this console does not have. */
@@ -334,7 +351,7 @@ index 85107e32..32c1a4f9 100644
  
  /* markers are draggable controls, not decoration */
  .now{touch-action:none}
-@@ -1511,7 +1529,7 @@ header{min-width:0}
+@@ -1511,7 +1523,7 @@ header{min-width:0}
  .tip{position:fixed;z-index:90;background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-2);
    padding:6px 10px;font-family:var(--data);font-size:var(--t-sm);color:var(--ink);pointer-events:none;white-space:nowrap;
    box-shadow:0 8px 24px -10px #000}
@@ -343,7 +360,7 @@ index 85107e32..32c1a4f9 100644
  .tip .sub{display:block;color:var(--ink3);font-size:var(--t-xs);margin-top:2px}
  
  /* ═══ BOARD v2 — content state, not pipeline state ═══ */
-@@ -1551,12 +1569,12 @@ header{min-width:0}
+@@ -1551,12 +1563,12 @@ header{min-width:0}
     choice rather than as one rule missing. Copied from the design's sheet, where it has always been. */
  .rephits button{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;
    background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer}
@@ -358,7 +375,7 @@ index 85107e32..32c1a4f9 100644
  
  
  /* ═══════════════════════════════════════════════════════════════════════════
-@@ -1573,7 +1591,7 @@ header{min-width:0}
+@@ -1573,7 +1585,7 @@ header{min-width:0}
  /* loading — the control keeps its width so the row does not reflow */
  .is-loading{position:relative;color:transparent!important;pointer-events:none}
  .is-loading::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;
@@ -367,7 +384,7 @@ index 85107e32..32c1a4f9 100644
  @keyframes spin{to{transform:rotate(360deg)}}
  @media (prefers-reduced-motion:reduce){.is-loading::after{animation:none;border-top-color:var(--ink2)}}
  
-@@ -1603,7 +1621,7 @@ td,.lane{border-bottom-color:var(--rule3)}
+@@ -1603,7 +1615,7 @@ td,.lane{border-bottom-color:var(--rule3)}
  
  /* ambient: one soft light source behind the masthead, nothing else glows */
  body::before{content:"";position:fixed;inset:0 0 auto;height:420px;pointer-events:none;z-index:0;
@@ -376,7 +393,7 @@ index 85107e32..32c1a4f9 100644
               radial-gradient(700px 260px at 78% -12%,rgba(95,212,232,.05),transparent 60%)}
  main{position:relative;z-index:1}
  /* Paired with overlay.js's applyInert: while a modal is open main must not be a stacking context, or
-@@ -1640,10 +1658,10 @@ main[data-modal]{z-index:auto}
+@@ -1640,10 +1652,10 @@ main[data-modal]{z-index:auto}
  .lanes{position:relative;display:flex;flex-direction:column;gap:7px;background-image:none}
  
  /* the NOW line is the instrument's needle — it glows and breathes */
@@ -390,7 +407,7 @@ index 85107e32..32c1a4f9 100644
  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.55);opacity:.55}}
  
  /* bars become objects: elevation, a light top edge, and a real lift on hover */
-@@ -1675,14 +1693,14 @@ main[data-modal]{z-index:auto}
+@@ -1675,14 +1687,14 @@ main[data-modal]{z-index:auto}
  }
  
  /* rail items get a considered active treatment rather than a bare bar */
@@ -408,7 +425,7 @@ index 85107e32..32c1a4f9 100644
  
  /* ═══ MARKER LABELS — measured collision fix ═══════════════════════════════
     At 1440px the NOW, BP END and 2XCP captions were rendering INTO the ruler
-@@ -1697,7 +1715,7 @@ main[data-modal]{z-index:auto}
+@@ -1697,7 +1709,7 @@ main[data-modal]{z-index:auto}
  .now::after{
    top:-2px;background:var(--sunk);border:1px solid currentColor;border-radius:var(--rad-1);
    padding:1px 5px;line-height:14px;z-index:4;letter-spacing:.09em}
@@ -417,7 +434,7 @@ index 85107e32..32c1a4f9 100644
  /* the BP END chip would clip off the right edge when the marker sits near 100% */
  .now::before{top:14px}
  
-@@ -1730,8 +1748,8 @@ main[data-modal]{z-index:auto}
+@@ -1730,8 +1742,8 @@ main[data-modal]{z-index:auto}
  .spark i.staged{background:transparent;box-shadow:inset 0 0 0 1.5px var(--c)}
  .spark i.conflict{background:repeating-linear-gradient(45deg,transparent 0 3px,var(--warn) 3px 4px);
    box-shadow:inset 0 0 0 1.5px var(--warn)}
@@ -428,7 +445,7 @@ index 85107e32..32c1a4f9 100644
  .spark .done{position:absolute;top:0;bottom:0;background:var(--inset-22);border-radius:var(--rad-1) 0 0 var(--rad-1)}
  
  /* 🗑 `td .wincell` deleted 2026-08-28 — a second name for the manifest's WINDOW cell. manifest.js
-@@ -1741,12 +1759,12 @@ main[data-modal]{z-index:auto}
+@@ -1741,12 +1753,12 @@ main[data-modal]{z-index:auto}
  /* ═══ MANIFEST depth ═══ */
  tbody tr{transition:background .12s,box-shadow .12s}
  tbody tr td:first-child{position:relative}
@@ -443,7 +460,7 @@ index 85107e32..32c1a4f9 100644
  .rowmeta{font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);letter-spacing:.06em}
  
  /* ═══ BOARD depth ═══ */
-@@ -1796,7 +1814,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -1796,7 +1808,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    color:var(--ink3);margin-bottom:5px;font-weight:600}
  .f-main input{width:100%;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);
    color:var(--ink);font:600 17px/1.3 var(--ui);padding:10px 12px;letter-spacing:-.01em}
@@ -452,7 +469,7 @@ index 85107e32..32c1a4f9 100644
  
  .dlines{display:flex;flex-direction:column;gap:7px;margin-top:12px}
  .dline{display:grid;grid-template-columns:106px minmax(140px,1fr) 148px 84px 104px;gap:12px;align-items:center;
-@@ -1931,7 +1949,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -1931,7 +1943,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    border:1px solid var(--rule);border-radius:var(--rad-2);padding:9px 11px;margin-bottom:9px;
    cursor:pointer;text-align:left;color:inherit;transition:border-color .14s,background .14s}
  .bcol-h:hover{border-color:var(--rule2);background:var(--hi)}
@@ -461,7 +478,7 @@ index 85107e32..32c1a4f9 100644
  .chev{width:0;height:0;flex:none;border:4px solid transparent;border-left-color:var(--ink4);
    margin-left:1px;transition:transform .2s}
  .bcol-h[aria-expanded=true] .chev{transform:rotate(90deg) translateX(-1px)}
-@@ -2005,7 +2023,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2005,7 +2017,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
     rules in this sheet, twelve substitute a border, a box-shadow or a background; `.cb-in` is compensated by
     `.cmdbar:focus-within` on its parent; this one had neither, and it is the input you land in when the command
     bar opens. Two reviewers argued about `.cb-in` and neither looked here. */
@@ -470,7 +487,7 @@ index 85107e32..32c1a4f9 100644
  .plist{max-height:min(52vh,420px);overflow:auto;padding:6px}
  .pitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rad-2);cursor:pointer;
    font-size:var(--t-base);color:var(--ink2)}
-@@ -2164,14 +2182,14 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2164,14 +2176,14 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  .smask{position:absolute;top:0;bottom:0;background:rgba(8,11,14,.72);pointer-events:none;z-index:3}
  .smask.l{left:0}
  .winbox{position:absolute;top:0;bottom:0;z-index:4;cursor:grab;
@@ -488,7 +505,7 @@ index 85107e32..32c1a4f9 100644
    box-shadow:0 0 0 1px var(--scrim-50)}
  .winbox .wh:hover::before,.winbox .wh:active::before{height:22px;background:#FFDF6B}
  .winbox .wh.l{left:-6px}
-@@ -2281,7 +2299,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2281,7 +2293,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  /* "Today" is context, not the subject — it was the single most dominant element on the
     track and washed out the bar it crossed. A thin line and a chip, no column of glow. */
  .now{box-shadow:none !important}
@@ -497,7 +514,7 @@ index 85107e32..32c1a4f9 100644
  
  /* ══════════ MANIFEST — the row is one line, and it carries what it knows ══════════
     The wrapper added to keep the <td> a table-cell was left as display:block, so the colour
-@@ -2353,8 +2371,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2353,8 +2365,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    box-shadow:0 6px 18px -8px var(--scrim-90);display:flex;align-items:baseline;gap:8px}
  .xd b{font-family:var(--data);font-size:var(--t-xs);color:var(--ink);font-weight:600;letter-spacing:.03em}
  .xd i{font-style:normal;font-size:var(--t-xs);color:var(--ink3)}
@@ -508,7 +525,7 @@ index 85107e32..32c1a4f9 100644
  .tk-wrap{position:relative}
  
  /* ══════════════════ ACCOUNT MENU ══════════════════
-@@ -2368,8 +2386,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2368,8 +2380,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  .uav{position:relative;width:38px;height:38px;border-radius:var(--rad-round);flex:none;display:grid;place-items:center;
    background:linear-gradient(140deg,var(--avatar-a),var(--sunk));
    box-shadow:inset 0 0 0 1px var(--inset-09)}
@@ -519,7 +536,7 @@ index 85107e32..32c1a4f9 100644
  .usec{padding:5px;border-top:1px solid var(--rule)}
  .usec.last{background:rgba(255,107,107,.03)}
  .umenu .mi{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:none;
-@@ -2392,10 +2410,10 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2392,10 +2404,10 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  /* 1. FOCUS. Every interactive element gets a visible ring. Not one had been checked all
        session, which means the page was unusable by keyboard and nobody would have known. */
  :where(button,a,input,select,[tabindex]):focus-visible{
@@ -534,7 +551,7 @@ index 85107e32..32c1a4f9 100644
  
  /* 2. NUMBERS. Dates and counts sit in columns, so they need tabular figures or the digits
        shimmy from row to row and the column stops reading as a column. */
-@@ -2411,8 +2429,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2411,8 +2423,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  /* 4. LINKED HOVER. The Track and the Manifest are two views of one dataset; hovering either
        lights the other, which is what makes them read as one instrument rather than two lists. */
  .mtable tbody tr.lit{background:var(--hi)}
@@ -545,7 +562,7 @@ index 85107e32..32c1a4f9 100644
  
  /* ══════════════════ ARMORY ══════════════════
     No dates, so no Track. Rack answers "what exists" by category in the bot's own
-@@ -2440,7 +2458,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2440,7 +2452,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  .rfoot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--data);font-size:var(--t-micro);
    color:var(--ink3);letter-spacing:.04em}
  .rfoot b{color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums}
@@ -554,7 +571,7 @@ index 85107e32..32c1a4f9 100644
  .rbad{color:var(--warn)}
  
  /* Was 14px bottom -- a deliberate breathing-room increase, not a bug fix (Harkirat, pin pmtuwu4fo,
-@@ -2491,7 +2509,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
+@@ -2491,7 +2503,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
     The audit caught it on the same run that proved the badge split worked. */
  .bc-age{font:700 var(--t-base)/1 var(--data);color:var(--ink3);padding:0 3px;cursor:default}
  /* A table row that IS the control needs a focus ring the eye can find across a full-width row. */
@@ -563,7 +580,7 @@ index 85107e32..32c1a4f9 100644
  .ccard[aria-pressed=true] .cmeter i{background:var(--warn)}
  .cfoot{font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);letter-spacing:.04em;
    font-variant-numeric:tabular-nums}
-@@ -2514,7 +2532,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2514,7 +2526,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .wname{font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .mtable .code{font-size:var(--t-sm);color:var(--ink3);letter-spacing:.03em}
  .mtable .none{color:var(--ink3);font-style:italic}
@@ -572,7 +589,7 @@ index 85107e32..32c1a4f9 100644
    font-size:var(--t-micro);letter-spacing:.08em}
  .health{font-family:var(--data);font-size:var(--t-xs);letter-spacing:.04em;padding:3px 8px;border-radius:var(--rad-1);
    white-space:nowrap}
-@@ -2533,7 +2551,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2533,7 +2545,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .dwfield label{font:600 var(--t-sm)/1.2 var(--ui);color:var(--ink3);letter-spacing:0;text-transform:none}
  .dwfield input{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);color:var(--ink);
    font:500 var(--t-base)/1 var(--ui);padding:9px 11px}
@@ -581,7 +598,7 @@ index 85107e32..32c1a4f9 100644
  .dwcheck{display:flex;align-items:flex-start;gap:9px;font-size:var(--t-base);color:var(--ink2);cursor:pointer}
  .bulkbar{display:flex;align-items:center;gap:9px;padding:10px 13px;border-top:1px solid var(--rule);
    background:var(--sunk);font-size:var(--t-base);color:var(--ink2)}
-@@ -2552,8 +2570,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2552,8 +2564,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .tbcat i{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none}
  .tbcat b{font-family:var(--data);font-size:var(--t-xs);color:var(--ink3);font-variant-numeric:tabular-nums}
  .tbcat:hover{color:var(--ink);border-color:var(--rule2)}
@@ -592,7 +609,7 @@ index 85107e32..32c1a4f9 100644
  .tbcat.on b{color:var(--ink2)}
  
  .trows{display:flex;flex-direction:column;gap:9px;padding:13px 16px}
-@@ -2565,7 +2583,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2565,7 +2577,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .trow-note{font-size:var(--t-sm);color:var(--ink3)}
  /* S reads as the top of a podium, not merely the first row of a list. */
  .t-S{background:linear-gradient(90deg,rgba(242,194,48,.09),transparent 42%)}
@@ -601,7 +618,7 @@ index 85107e32..32c1a4f9 100644
  .t-A .trow-k{color:#9BE8C0} .t-B .trow-k{color:var(--ink3)}
  .t-none{opacity:.86} .t-none .trow-k{color:var(--ink3);font-size:var(--t-sm);width:auto;letter-spacing:.1em}
  .trow-body{display:flex;flex-wrap:wrap;gap:8px;padding:11px 12px;min-height:58px;
-@@ -2574,8 +2592,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2574,8 +2586,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .trow-empty{margin:0;align-self:center;font-size:var(--t-sm);color:var(--ink3);font-style:italic}
  
  .bc-top{display:flex;align-items:center;gap:7px}
@@ -612,7 +629,7 @@ index 85107e32..32c1a4f9 100644
  .bc-dmz{color:#5FA8D8}
  .bc-bad{margin-left:auto;color:var(--warn);border:1px solid var(--danger-edge);border-radius:var(--rad-3);
    padding:1px 6px;font-variant-numeric:tabular-nums;cursor:help}
-@@ -2646,7 +2664,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2646,7 +2658,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
     NOT on the column it appears to define. Measured across six realms: title left edge 99–100, panel edge 98. */
  .masthead{padding:36px 22px 26px;max-width:none}
  .masthead .job{display:block;font-family:var(--data);font-size:var(--t-micro);
@@ -621,7 +638,7 @@ index 85107e32..32c1a4f9 100644
  /* A realm title is a LABEL, not a hero. It sits one step below the lead figure on purpose:
   * the figure is the realm's defining number and is the thing worth reading first. Uppercase
   * because a condensed grotesque is built for it and because the portal's own vernacular is a
-@@ -2730,7 +2748,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2730,7 +2742,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
     would be a regression dressed as feedback. */
  .is-refreshing{position:relative}
  .is-refreshing::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;
@@ -630,7 +647,7 @@ index 85107e32..32c1a4f9 100644
    animation:refl 1.1s var(--ease) infinite;pointer-events:none;z-index:6}
  @keyframes refl{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
  
-@@ -2766,7 +2784,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2766,7 +2778,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
     ellipse that grows as the bar fills. Translating a full-width child inside the `overflow:hidden`
     parent moves the SAME rounded leading edge across, so the pixels are the ones this rule already
     drew. `--p` is the percentage; at 0% the child sits entirely left of the clip. */
@@ -639,7 +656,7 @@ index 85107e32..32c1a4f9 100644
    transform:translateX(calc(var(--p,0%) - 100%));
    transition:transform var(--dur-2) var(--ease)}
  .prog.bad .prog-b i{background:var(--danger-ink)}
-@@ -2779,7 +2797,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2779,7 +2791,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .netbar{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:10px 22px;
    border-bottom:1px solid var(--rule2);background:var(--raised);font-size:var(--t-base)}
  .netbar.offline{background:color-mix(in srgb,var(--warn) 9%,var(--raised))}
@@ -648,7 +665,7 @@ index 85107e32..32c1a4f9 100644
  .net-k{font:700 var(--t-micro)/1 var(--data);letter-spacing:.16em;color:var(--ink2);
    border:1px solid var(--rule2);border-radius:var(--rad-1);padding:4px 6px}
  .netbar b{color:var(--ink)}
-@@ -2851,7 +2869,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2851,7 +2863,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  
  /* ── 10.3 MOTION: three choreographed moments, everything else stays a fade ── */
  @keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -657,7 +674,7 @@ index 85107e32..32c1a4f9 100644
  @keyframes stagePulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--staged) 55%,transparent)}100%{box-shadow:0 0 0 14px color-mix(in srgb,var(--staged) 0%,transparent)}}
  @keyframes countBump{0%{transform:scale(1)}40%{transform:scale(1.32)}100%{transform:scale(1)}}
  @keyframes settle{0%{transform:scale(1.06)}60%{transform:scale(.985)}100%{transform:scale(1)}}
-@@ -2955,9 +2973,9 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -2955,9 +2967,9 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    border-right:1px dashed var(--warn);pointer-events:none}
  .atgap b{position:absolute;top:4px;left:50%;transform:translateX(-50%);font:600 var(--t-micro)/1 var(--ui);
    letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--warn);white-space:nowrap}
@@ -669,7 +686,7 @@ index 85107e32..32c1a4f9 100644
  
  /* ── ACCESS · the scope matrix ─────────────────────────────────────────────
   * Access is the one ACHROMATIC realm on purpose: its subject is the other
-@@ -3063,7 +3081,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -3063,7 +3075,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .mh-mode button[data-arm="DMZ"][aria-checked="true"]{color:var(--ink);background:var(--hi);
    border-color:#3DA5F5;box-shadow:inset 0 -3px 0 0 #3DA5F5}
  .mh-mode button:hover:not([aria-checked="true"]){color:var(--ink2);border-color:var(--ink4)}
@@ -678,7 +695,7 @@ index 85107e32..32c1a4f9 100644
  .mxkey{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center;
    font-family:var(--data);font-size:var(--t-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
  .mxfoot{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--rule);
-@@ -3200,7 +3218,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -3200,7 +3212,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    cursor:pointer;transition:filter var(--dur-1) var(--ease)}
  .timb:hover{filter:brightness(1.3)}
  .timb:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
@@ -687,7 +704,7 @@ index 85107e32..32c1a4f9 100644
  .timax{display:flex;gap:3px;margin-top:7px}
  .timax span{flex:1;text-align:center;font:500 var(--t-micro)/1 var(--data);color:var(--ink3)}
  .timleg{display:flex;gap:16px;align-items:center;margin-top:13px;font-size:var(--t-sm);color:var(--ink3)}
-@@ -3219,7 +3237,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -3219,7 +3231,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  .home{max-width:1080px;margin:0 auto;padding:34px 24px 60px}
  .hmast{margin-bottom:28px}
  .hmast .job{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
@@ -696,7 +713,7 @@ index 85107e32..32c1a4f9 100644
  .hmast h1{font:700 var(--t-figure)/1 var(--display);letter-spacing:.055em;text-transform:uppercase;color:var(--ink);margin:0}
  .hmast p{font:400 var(--t-lg)/1.55 var(--ui);color:var(--ink3);margin:12px 0 0;max-width:56ch}
  /* Five cards into `auto-fit` leaves a hole at three-across. Six columns divide by both 2
-@@ -3340,7 +3358,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
+@@ -3340,7 +3352,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    border-radius:var(--rad-3);padding:36px 34px 30px;text-align:center}
  .doormk{display:inline-flex;align-items:center;gap:9px;font:700 var(--t-md)/1 var(--ui);
    letter-spacing:.13em;color:var(--ink2);text-transform:uppercase;margin-bottom:26px}
@@ -705,7 +722,7 @@ index 85107e32..32c1a4f9 100644
  .doormk b{color:var(--ink3);font-weight:400}
  .doorcard h1{font:700 var(--t-hero)/1.2 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0}
  .doorcard p{font:400 var(--t-md)/1.6 var(--ui);color:var(--ink3);margin:11px 0 26px}
-@@ -3462,7 +3480,7 @@ button.ub:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@@ -3462,7 +3474,7 @@ button.ub:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
     reason to keep dead CSS whose subject cannot occur. */
  /* 🔴 THE ROW WHOSE DETAILS PANEL IS OPEN, and it is the portal ahead of the design on purpose. The mockup marks nothing here; Harkirat chose this on 2026-09-09 14:59 EDT from three options RENDERED SIDE BY SIDE — no mark, this edge, or a full row tint — and took the edge because --c is already how this page says "this one", where a tint reads as the bulk-selection state. ⚠️ AN INSET SHADOW, NOT border-left: a real border on one <tr> shifts every cell in that row by its width and the table stops aligning with its own header. An inset shadow paints inside the box and moves nothing. */
  .mx tbody tr.preview-sel td:first-child,
@@ -714,7 +731,7 @@ index 85107e32..32c1a4f9 100644
  
  .mxlegend{display:inline-block;width:13px;height:13px;border-radius:var(--rad-2);border:1px solid var(--ink3);
    vertical-align:-2px;margin-right:5px;position:relative}
-@@ -3587,7 +3605,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -3587,7 +3599,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    background:var(--raised);transition:all var(--dur-1) var(--ease);min-height:32px}
  .bgt:hover{border-color:var(--ink3);color:var(--ink)}
  .bgt:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
@@ -723,7 +740,7 @@ index 85107e32..32c1a4f9 100644
  .bgt.tox.on{background:var(--del);border-color:var(--del)}
  .bgt.rank.on{background:var(--info);border-color:var(--info);color:var(--on-accent)}
  .bgnote{font-size:var(--t-sm);color:var(--ink2);line-height:1.6;background:var(--sunk);
-@@ -3621,8 +3639,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -3621,8 +3633,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    max-width:150px;overflow:hidden;text-overflow:ellipsis}
  .attpeek em.more{color:var(--ink3)}
  .bdg{display:inline-block;font-family:var(--data);font-size:var(--t-micro);letter-spacing:.06em;font-weight:700;border-radius:var(--rad-1);
@@ -734,7 +751,7 @@ index 85107e32..32c1a4f9 100644
  .bdg.rank{background:rgba(64,154,208,.14);color:var(--info);border-color:rgba(64,154,208,.4)}
  .bdg.dmz{background:rgba(51,123,166,.16);color:#6FB6DD;border-color:rgba(51,123,166,.45)}
  .bdg.toxic{background:rgba(255,107,107,.14);color:var(--danger-ink);border-color:var(--danger-edge)}
-@@ -3790,11 +3808,11 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -3790,11 +3802,11 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  .ackrow .at i,.durrow .dt2 i{display:block;height:100%;background:var(--ev);border-radius:var(--rad-1)}
  .ackrow.danger .at i{background:var(--del)}
  .durrow.slow .dt2 i{background:var(--warn)}
@@ -748,7 +765,7 @@ index 85107e32..32c1a4f9 100644
    margin-right:5px;border-radius:var(--rad-1)}
  
  /* Reach — donuts and install-type bars. */
-@@ -3953,7 +3971,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -3953,7 +3965,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  .modesw button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
  .chip.topic em{font-style:normal;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);
    margin-left:5px}
@@ -757,7 +774,7 @@ index 85107e32..32c1a4f9 100644
  .modetag{font-style:normal;font-family:var(--data);font-size:var(--t-xs);letter-spacing:.08em;
    color:var(--ink3);border:1px solid var(--rule2);border-radius:var(--rad-1);padding:2px 6px;margin-left:8px;
    vertical-align:2px}
-@@ -4429,7 +4447,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4429,7 +4441,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
     square diamond belonged: higher-specificity rules only win the properties they SET. Deleted
     rather than left to lose that argument again. */
  .ptc{cursor:zoom-in;z-index:4}
@@ -766,7 +783,7 @@ index 85107e32..32c1a4f9 100644
  
  /* Deadline flags: same-date flags MERGE, and a flag near an edge flips rather than clipping.
     🔴 THIS SELECTOR WAS `.dend .dflag.flip` AND MATCHED NOTHING, EVER — and `.dend` itself was removed with the mode collapse on 2026-08-31, when the design's day-notches replaced the portal's battle-pass marker. The flags live in
-@@ -4519,7 +4537,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4519,7 +4531,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    transition:border-color .14s,color .14s,background .14s,transform .14s}
  .pill:hover{border-color:var(--rule2);color:var(--ink);transform:translateY(-1px)}
  .pill:active{transform:none}
@@ -775,7 +792,7 @@ index 85107e32..32c1a4f9 100644
  .pill .dot{width:9px;height:9px;border-radius:var(--rad-1);background:var(--c,var(--ink4));flex:none}
  /* --ink3, not --ink4: this is 10px uppercase TEXT, and #5C6A75 scores 3.02:1 on --paper. It was declared
     TWICE — here and again in the orphaned stand-down block deleted above — so the failing value won on source
-@@ -4527,11 +4545,14 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4527,11 +4539,14 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  .pill .sub{font:400 var(--t-xs)/1 var(--data);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
  .pill kbd{font:500 var(--t-xs)/1 var(--ui);letter-spacing:.04em;color:var(--ink3);
    border:1px solid var(--rule2);border-radius:var(--rad-2);padding:3px 6px}
@@ -793,7 +810,7 @@ index 85107e32..32c1a4f9 100644
  /* 🔴 A BUTTON IS A HIT AREA, NOT A FONT SIZE. `.pill.sm` set padding and type and nothing else, so it
     rendered 24px tall against `.btn`'s var(--tap) -- measured on the one-way list at 131x24 (pin
     pmtvq210l, 2026-09-10 12:20 EDT). Harkirat: "SO many of the buttons across various surfaces of the
-@@ -4596,7 +4617,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4596,7 +4611,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    background:none;border:0;cursor:pointer;color:var(--ink3);text-align:left;
    font:700 var(--t-xs)/1.15 var(--data);letter-spacing:.1em;text-transform:uppercase}
  .lnh:hover{color:var(--ink2)}
@@ -802,7 +819,7 @@ index 85107e32..32c1a4f9 100644
  /* The lane disclosure is a drawn .pm now - see DISCLOSURE, DRAWN NOT TYPED. */
  .lnh .pm{color:var(--ink3);opacity:.75}
  .lnh:hover .pm{opacity:1;color:var(--ink2)}
-@@ -4670,13 +4691,13 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4670,13 +4685,13 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
     which turns the best idea in the design back into the mini-axis it replaced. */
  
  /* ── the ghost the composer draws on the REAL Track ── */
@@ -820,7 +837,7 @@ index 85107e32..32c1a4f9 100644
  
  @media (max-width:820px){
    :root{--gutter:96px}
-@@ -4692,11 +4713,11 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4692,11 +4707,11 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  /* Centred on the header, not between its neighbours (batch-2 spec §8, 2026-09-13 17:49 EDT). With the crumb gone the flex spacers put the bar halfway between the wordmark and the account cluster, which are different widths, so it sat off-centre. Out of flow only where the header is wide enough that the right cluster cannot reach it; below 1200px it stays a flex item. The header is sticky, so it is the containing block. */
  @media (min-width:1200px){header > .cmdbar{position:absolute;left:50%;transform:translateX(-50%);width:520px}}
  .cmdbar:hover{border-color:var(--rule2)}
@@ -834,7 +851,7 @@ index 85107e32..32c1a4f9 100644
  .cmdbar:focus-within .cb-mag{background:none}
  .cb-in{flex:1 1 auto;min-width:0;background:none;border:0;color:var(--ink);font:400 var(--t-base)/1 var(--ui)}
  .cb-in::placeholder{color:var(--ink3)}
-@@ -4753,7 +4774,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4753,7 +4768,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  .chip:hover,.seg button:hover{transform:translateY(-1px)}
  .chip:active,.seg button:active{transform:none}
  .chip:focus-visible,.seg button:focus-visible,.tbdsw button:focus-visible{
@@ -843,7 +860,7 @@ index 85107e32..32c1a4f9 100644
  .seg{border-radius:var(--rad-pill);padding:3px}
  .seg button{border-radius:var(--rad-pill);padding:6px 13px}
  .tbdsw{border-radius:var(--rad-pill)}
-@@ -4782,7 +4803,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -4782,7 +4797,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  .att-row.s-conflict{--sev:var(--warn)}
  .att-row.s-spof    {--sev:var(--del)}
  .att-row.s-error   {--sev:var(--del)}
@@ -852,7 +869,7 @@ index 85107e32..32c1a4f9 100644
  .att-row.s-forever {--sev:var(--ink4)}
  .att-row.s-conflict .att-i,.att-row.s-spof .att-i,.att-row.s-error .att-i{color:var(--ink3)}
  .att-row.clear{grid-template-columns:34px 3px 1fr}
-@@ -5111,7 +5132,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -5111,7 +5126,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
     and when a later rule removes that absence, the fallback has to move with it. */
  .stt.saved{color:var(--ci,var(--on-accent))}
  /* a filled state badge (Season passes --c) still takes the ink its fill can carry */
@@ -861,7 +878,7 @@ index 85107e32..32c1a4f9 100644
  
  
  /* ══════════════════════════════════════════════════════════════════════════════
-@@ -5151,7 +5172,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+@@ -5151,7 +5166,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  .selbar-x{background:none;border:none;color:var(--ink3);font:600 var(--t-sm)/1 var(--ui);
    padding:8px 6px;cursor:pointer;min-height:var(--tap);flex:none}
  .selbar-x:hover{color:var(--ink)}
@@ -870,7 +887,7 @@ index 85107e32..32c1a4f9 100644
  /* The tray is a persistent status object and the bar is a momentary action object; they
     share the bottom edge, so the tray steps up rather than either one hiding the other. */
  body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur-2) var(--ease)}
-@@ -5242,12 +5263,19 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
+@@ -5242,12 +5257,19 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
  .exs{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
  .exs-i{display:flex;align-items:center;gap:13px;padding:12px 13px;border:1px solid var(--rule);
    border-radius:var(--rad-2);background:var(--sunk);flex-wrap:wrap}
@@ -893,7 +910,7 @@ index 85107e32..32c1a4f9 100644
  .exs-c{font:500 var(--t-sm)/1 var(--data);color:var(--ink2);white-space:nowrap}
  .exs-c em{font-style:normal;color:var(--ink3);font-size:var(--t-xs);letter-spacing:.08em;text-transform:uppercase}
  
-@@ -5398,7 +5426,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
+@@ -5398,7 +5420,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
     the two facts (what this line is, what time it is) stack instead of colliding with the
     ruler's own dates. Tabular figures, or the minute changing shifts the whole string. */
  .nowt{position:absolute;top:-9px;left:6px;font:500 var(--t-micro)/1 var(--data);letter-spacing:.06em;
@@ -902,7 +919,7 @@ index 85107e32..32c1a4f9 100644
    pointer-events:none}
  
  /* A staged item ARRIVES. Without this it simply exists on the next frame, which is the one
-@@ -5442,7 +5470,7 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
+@@ -5442,7 +5464,7 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
    border-bottom:1px solid var(--rule)}
  /* 🔴 REQUIRED IS MARKED, AND THE MARK IS EXPLAINED IN THE SAME PANEL. An asterisk with no
     legend is a convention the reader has to already know; the legend costs one line. */
@@ -911,7 +928,7 @@ index 85107e32..32c1a4f9 100644
  .bf-sec{margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--rule3)}
  .bf-sec:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
  .bf-h{font:600 var(--t-sm)/1 var(--ui);color:var(--ink);margin:0 0 4px;display:flex;align-items:center;gap:9px}
-@@ -5494,7 +5522,7 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
+@@ -5494,7 +5516,7 @@ tr.rowin > td{background:color-mix(in srgb,var(--staged) 9%,transparent)}
     header keeps its count while closed, so collapsing hides the cards and never the fact. */
  .trow-h{cursor:pointer;user-select:none}
  .trow-h:hover .trow-t{color:var(--ink)}
@@ -920,7 +937,7 @@ index 85107e32..32c1a4f9 100644
  .trow .pm{grid-area:n;justify-self:end;align-self:center;margin-left:8px;color:var(--ink3)}
  .trow-h{grid-template-areas:"k t n" ". note note";grid-template-columns:18px 1fr auto}
  .trow-h .trow-n{margin-right:20px}
-@@ -5552,8 +5580,8 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
+@@ -5552,8 +5574,8 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
   * topic hover says "this is a control FOR THAT". One rule, because every filter, lane and
   * category chip in the portal already declares --c. */
  .tint{transition:background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
@@ -931,7 +948,7 @@ index 85107e32..32c1a4f9 100644
  
  /* ── 4 · CARDS LIFT — AND THE LIFTED STATE CARRIES COLOUR ──────────────────
   * ⚠️ Harkirat: "cards lift needs some kind of colour even on the lifted card." A coloured
-@@ -5568,9 +5596,9 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
+@@ -5568,9 +5590,9 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
    box-shadow var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease)}
  .lift:hover,.lift:focus-visible{
    transform:translateY(calc(var(--lift) * -1));
@@ -944,7 +961,7 @@ index 85107e32..32c1a4f9 100644
  
  /* ── 5 · FIGURES ROLL, AND SHOW THE DELTA ──────────────────────────────────
   * You see the number CHANGE rather than a re-render. The delta ghost is the half that
-@@ -5597,10 +5625,10 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
+@@ -5597,10 +5619,10 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
   * about to be. --c is set per item by Shell.mountRail from the realm accent tokens. */
  .realm{transition:color var(--dur-1) var(--ease),background var(--dur-2) var(--ease)}
  .realm:hover{color:var(--ink);background:linear-gradient(90deg,
@@ -959,7 +976,7 @@ index 85107e32..32c1a4f9 100644
  
  /* ── 7 · TOASTS SETTLE ─────────────────────────────────────────────────────
   * ⚠️ Harkirat: "toasts settle needs a MUCH smoother animation." The old one was
-@@ -5696,9 +5724,9 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
+@@ -5696,9 +5718,9 @@ button:active:not(:disabled),.pill:active,.chip:active,.btn:active,.mi:active{
  a.att-row{display:grid;grid-template-columns:34px 3px 1fr auto;align-items:center;gap:14px;
    padding:16px 20px;text-decoration:none;color:inherit;border:1px solid var(--rule);
    border-radius:var(--rad-2);background:var(--paper);margin-bottom:8px}
@@ -972,7 +989,7 @@ index 85107e32..32c1a4f9 100644
  a.att-row .att-b{background:var(--sev,var(--ink4));border-radius:var(--rad-1);align-self:stretch;margin:2px 0}
  a.att-row .att-go{display:inline-flex;align-items:center;gap:7px;font-family:var(--data);
    font-size:var(--t-micro);letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3)}
-@@ -5979,7 +6007,7 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
+@@ -5979,7 +6001,7 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
   * are enumerated once here. */
  .pill[style*="--c"]:not(.on):hover,.chip[style*="--c"]:not(.on):hover,
  .nw-chip:not(.on):hover,.lane .nm:hover,button[data-lane]:not(.on):hover{
@@ -981,7 +998,7 @@ index 85107e32..32c1a4f9 100644
  /* The card shapes, named once. Each already carries a topic colour or falls back to the
   * signal yellow, and the lifted state gets COLOUR — a tint in the plane and a hairline top
   * edge — not just a shadow underneath it. */
-@@ -5988,9 +6016,9 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
+@@ -5988,9 +6010,9 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
  .wcard:hover,.ccard:hover,.tile:hover,.dcard:hover,
  .wcard:focus-visible,.ccard:focus-visible{
    transform:translateY(calc(var(--lift) * -1));
@@ -994,7 +1011,7 @@ index 85107e32..32c1a4f9 100644
  /* 8 · SELECTION MOVES — the checkbox says "is this one ticked" one row at a time; the eye
   * wants the SHAPE of a selection down a 39-row table without reading any of it. */
  tbody tr:has(.cb.on){transform:translateX(3px);
-@@ -6174,7 +6202,7 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
+@@ -6174,7 +6196,7 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
  .sc-none{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)}
  
  /* ── the five tiers. Each REMOVES, it does not shout. ───────────────────── */
@@ -1003,7 +1020,7 @@ index 85107e32..32c1a4f9 100644
  .sclock[data-tier="closing"] .sc-u:first-child b{font-size:calc(var(--t-display) * 1.18)}
  .sclock[data-tier="final"] .sc-u:first-child b{color:var(--warn-ink);font-size:calc(var(--t-display) * 1.34)}
  .sclock[data-tier="final"] .sc-then{display:none}          /* later stops mattering */
-@@ -6528,7 +6556,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -6528,7 +6550,7 @@ button .ic,a .ic{pointer-events:none}
  .rec-n{font-size:var(--t-sm);color:var(--ink3)}
  .rec-cta{margin-left:auto;background:none;border:1px dashed var(--rule2);color:var(--ink3);border-radius:var(--rad-2);
    padding:0 12px;min-height:30px;display:inline-flex;align-items:center;gap:6px;font:500 var(--t-sm)/1 var(--ui);cursor:pointer}
@@ -1012,7 +1029,7 @@ index 85107e32..32c1a4f9 100644
  .rec-list{list-style:none;margin:0;padding:0;position:relative;--rec-x:10px}
  /* 🔴 THE SPINE AND THE MARKERS DID NOT SHARE AN X in the mockup's own first pass: the rail was drawn
     at a hardcoded left:5px while each marker sat centred in a 20px grid column, so the line entered
-@@ -6549,15 +6577,15 @@ button .ic,a .ic{pointer-events:none}
+@@ -6549,15 +6571,15 @@ button .ic,a .ic{pointer-events:none}
  /* justify-self:center (pin 9): the column is calc(--rec-x*2) and the spine runs at --rec-x, so an 11px marker
     left-aligned in it sat 4.5px off the line it was supposed to thread. Centring is the whole fix. */
  .rec-mk{width:11px;height:11px;border-radius:var(--rad-1);transform:rotate(45deg) scale(.82);justify-self:center;
@@ -1031,7 +1048,7 @@ index 85107e32..32c1a4f9 100644
  .rec-empty{list-style:none;font-size:var(--t-base);color:var(--ink3);padding:8px 0}
  @media (max-width:820px){.rec-row{grid-template-columns:20px 1fr auto}.rec-meta,.rec-d{display:none}}
  
-@@ -6618,7 +6646,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -6618,7 +6640,7 @@ button .ic,a .ic{pointer-events:none}
  /* 🗑 `.cbl` deleted 2026-08-29 00:5x EDT — it styled a label wrapping a visually-hidden checkbox, and
     the row control is the design's own `span[role=checkbox]` now, which needs neither. Its focus ring
     moved onto that element's own rule. */
@@ -1040,7 +1057,7 @@ index 85107e32..32c1a4f9 100644
  /* The door's one line of state, above the heading. It is deliberately quiet — a stranger is being
   * told a fact about the session, not warned about anything. */
  .doorstate{margin:0 0 4px;font:500 var(--t-sm)/1 var(--data);letter-spacing:.08em;color:var(--ink3);text-transform:uppercase}
-@@ -6689,7 +6717,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -6689,7 +6711,7 @@ button .ic,a .ic{pointer-events:none}
  .sc-when b{color:var(--ink);font-weight:500}
  .sc-then{gap:normal;align-items:normal;justify-content:normal;flex-wrap:nowrap;font-family:var(--data);font-size:var(--t-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);display:block}
  .sc-then b{color:var(--ink2);font-weight:500}
@@ -1049,7 +1066,7 @@ index 85107e32..32c1a4f9 100644
  .sclock[data-tier="final"] .sc-u:first-child b{color:var(--warn-ink);font-size:calc(var(--t-display) * 1.34)}
  .sclock[data-tier="final"] .sc-then{display:none}
  .sclock[data-tier="today"] .sc-u:first-child b{color:var(--del);font-size:calc(var(--t-display) * 1.34)}
-@@ -6794,7 +6822,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -6794,7 +6816,7 @@ button .ic,a .ic{pointer-events:none}
  .dwfield textarea,.dwfield select{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);
    color:var(--ink);padding:8px 10px;font:500 var(--t-base)/var(--lh-ui) var(--ui);min-height:36px}
  .dwfield textarea{min-height:88px;resize:vertical;font-family:var(--data);font-size:var(--t-sm);line-height:var(--lh-body)}
@@ -1058,7 +1075,7 @@ index 85107e32..32c1a4f9 100644
  .dwfield .hint{padding:0;font-size:var(--t-xs);color:var(--ink3);line-height:var(--lh-ui)}
  
  /* ══ THE GRANT / EDIT DRAWER — 2026-09-11 16:40 EDT ══════════════════════════════════════════════════ */
-@@ -6840,7 +6868,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -6840,7 +6862,7 @@ button .ic,a .ic{pointer-events:none}
  .dwfield .bf-hint{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;
    clip:rect(0 0 0 0);white-space:nowrap;border:0}
  .dwfield:focus-within .bf-hint{position:static;width:auto;height:auto;overflow:visible;clip:auto;
@@ -1067,7 +1084,7 @@ index 85107e32..32c1a4f9 100644
    border-radius:0 var(--rad-1) var(--rad-1) 0;padding:6px 9px;margin-top:var(--s1);
    font-family:var(--data);font-size:var(--t-micro);font-style:normal;color:var(--ink3);line-height:1.6}
  .dw-grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--s3)}
-@@ -7022,7 +7050,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -7022,7 +7044,7 @@ button .ic,a .ic{pointer-events:none}
  .wsrch-opt b{font:600 var(--t-base)/1.2 var(--ui);color:var(--ink)}
  .wsrch-opt span{font-size:var(--t-sm);color:var(--ink3)}
  .wsrch-opt.on{background:var(--hi)}
@@ -1076,7 +1093,7 @@ index 85107e32..32c1a4f9 100644
  .wsrch-none{margin:6px 0 0;font-size:var(--t-sm);color:var(--ink3)}
  /* The picked-weapon chips sit beside the field, so the bar has to align them to its bottom edge rather than centre
   * them against a two-line labelled input. */
-@@ -7196,7 +7224,7 @@ button .ic,a .ic{pointer-events:none}
+@@ -7196,7 +7218,7 @@ button .ic,a .ic{pointer-events:none}
     the whole rack — so this strips those and nothing else. `text-align:left` because a button
     centres by default and the header is a left-aligned grid area. */
  button.bgrp-w{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
@@ -1085,7 +1102,7 @@ index 85107e32..32c1a4f9 100644
  
  /* 🔴 COMPARE'S EMPTY STATE WAS THREE ALIGNMENTS IN ONE PANEL, and the useful control was stranded.
     Harkirat, pin pmtvqdnb3, 2026-09-10 12:21 EDT — "is the compare sub-panel correct? this looks broken
-@@ -7262,7 +7290,7 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
+@@ -7262,7 +7284,7 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
  .brow{display:flex;align-items:center;gap:7px;padding:7px 8px 7px 10px;border-top:1px solid var(--rule3);
    cursor:pointer;background:none;transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
  .brow:hover,.brow:focus-visible{background:var(--hi);box-shadow:inset 2px 0 0 var(--c,var(--ink3));outline:none}
@@ -1094,7 +1111,7 @@ index 85107e32..32c1a4f9 100644
  .brow-c{flex:1;min-width:0;font:400 var(--t-sm)/1 var(--data);color:var(--ink2);letter-spacing:.02em;
    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .brow-c.ok{color:var(--ok)}
-@@ -7325,8 +7353,8 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
+@@ -7325,8 +7347,8 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
  .code-field .chip{border:0;border-left:1px solid var(--rule2);border-radius:0;min-height:var(--tap)}
  
  /* A code-filled attachment row (row 15) — a small patch-coloured dot beside the slot label. */
@@ -1105,7 +1122,7 @@ index 85107e32..32c1a4f9 100644
    flex:none}
  
  /* The Image section's upload-or-link path (row 14). */
-@@ -7354,17 +7382,17 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
+@@ -7354,17 +7376,17 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
  .bulkrow{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:baseline;padding:7px 0;
    border-bottom:1px solid var(--rule);border-left:3px solid transparent;padding-left:8px}
  .bulkrow.new{border-left-color:var(--ok)}
@@ -1132,7 +1149,7 @@ index 85107e32..32c1a4f9 100644
 
 ```diff
 diff --git aportal/ui/armory.js bkit/ui/armory.js
-index fe9fc32d..2ff06834 100644
+index fe9fc32d..2109a50c 100644
 --- aportal/ui/armory.js	
 +++ bkit/ui/armory.js	
 @@ -14,8 +14,14 @@ import { renderV2 } from './v2Render.js';
@@ -1213,9 +1230,11 @@ index fe9fc32d..2ff06834 100644
                  <span><button type="button" class="wg-sort" aria-sort=${dir === 'asc' ? 'ascending' : 'descending'}
                                onClick=${() => setSort({ column: 'weaponName', direction: dir === 'asc' ? 'desc' : 'asc' })}>Weapon<${Icon} name=${dir === 'asc' ? 'chevron-up' : 'chevron-down'} /></button></span>
                  <button type="button" class="wg-fold" onClick=${() => onCollapseAll(allShut ? [] : groups.map((g) => g.name))}><${Fold} open=${!allShut} />${allShut ? 'Expand all' : 'Collapse all'}</button>
-@@ -127,12 +137,12 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+@@ -125,21 +135,19 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+                 const shut = collapsed.has(g.name);
+                 const faulty = g.builds.map((x) => ({ ...x, f: faultsOf(x.b) })).filter((x) => x.f.length);
                  const tags = weaponTags(first);
-                 const slotsHere = SLOT_ORDER.filter((s) => g.builds.some((x) => (x.b.attachmentSlots || []).includes(s)));
+-                const slotsHere = SLOT_ORDER.filter((s) => g.builds.some((x) => (x.b.attachmentSlots || []).includes(s)));
                  return html`
 -                <div class="wg" key=${g.name} style=${`--c:${first.accentHex || 'var(--ink3)'}`}>
 +                <div class="wg" key=${g.name} data-w=${g.name} style=${`--c:${first.accentHex || 'var(--ink3)'}`}>
@@ -1230,7 +1249,14 @@ index fe9fc32d..2ff06834 100644
                              <button type="button" class="wg-fsum" aria-expanded=${openFix === g.name ? 'true' : 'false'} onClick=${() => setOpenFix(openFix === g.name ? null : g.name)}><${Icon} name="triangle-alert" />${faulty.length === 1 ? 'Fix build' : 'Fix builds'}<span class="wg-fnos">${faulty.map((x) => html`<i key=${x.n}>${x.n}</i>`)}</span></button>
                              <span class="wg-fpop" role="tooltip">${faulty.map((x) => html`<span class="wg-fpr" key=${x.n}><i>${x.n}</i><span>${x.f.map((f) => html`<span key=${f}>${FAULT_TEXT[f](x.b)}</span>`)}</span></span>`)}</span>
                          </span>` : html`<span></span>`}
-@@ -148,6 +158,10 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+                         <button type="button" class="wg-ib wg-fbtn" aria-expanded=${shut ? 'false' : 'true'} aria-label=${`${shut ? 'Expand' : 'Collapse'} ${g.name}`}
+                                 onClick=${(e) => { e.stopPropagation(); onToggleGroup(g.name); }}><${Fold} open=${!shut} /></button>
+                     </div>
+-                    ${!shut && attView === 'slot' && slotsHere.length ? html`<div class=${'wg-strip' + (dmz ? ' dmz' : '')}><span></span><span></span><div class="wg-slots" style=${`--n:${slotsHere.length}`}>${slotsHere.map((s) => html`<span key=${s}>${s}</span>`)}</div><span></span>${dmz ? null : html`<span></span>`}<span></span></div>` : null}
+                     ${shut ? null : g.builds.map(({ b, n }) => {
+                         const f = faultsOf(b);
+                         const label = displayBuildLabel(b);
+@@ -148,6 +156,10 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
                          const atts = orderedAttachments(b);
                          const empties = (b.attachments || []).length <= 2 ? Math.max(0, 5 - atts.length) : 0;
                          const codeBad = (b.coverage || []).includes('code-length-mismatch');
@@ -1241,15 +1267,16 @@ index fe9fc32d..2ff06834 100644
                          return html`
                          <div key=${b.id} class=${'wg-r' + (f.length ? ' bad' : '') + (stateOf(b) === 'staged' ? ' staged' : '') + (sel ? ' sel' : '') + (open ? ' open' : '') + (dmz ? ' dmz' : '')}
                               tabIndex="0" onClick=${() => onRowClick(b)} onKeyDown=${keyAct(() => onRowClick(b))}>
-@@ -158,16 +172,16 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+@@ -156,18 +168,14 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+                             <span class="wg-ix" title=${f.includes('near-duplicate') ? FAULT_TEXT['near-duplicate']() : null}>${n}</span>
+                             <div class=${'wg-main' + (label ? ' named' : '')}>
                                  ${label ? html`<span class="wg-plate"><small>Build name</small><span>${label}</span></span>` : null}
-                                 ${attView === 'slot' && slotsHere.length
-                                     ? html`<div class="wg-slots" style=${`--n:${slotsHere.length}`}>${slotsHere.map((s) => { const at = (b.attachmentSlots || []).indexOf(s); return at >= 0
+-                                ${attView === 'slot' && slotsHere.length
+-                                    ? html`<div class="wg-slots" style=${`--n:${slotsHere.length}`}>${slotsHere.map((s) => { const at = (b.attachmentSlots || []).indexOf(s); return at >= 0
 -                                        ? html`<span class="wg-sc" key=${s} style=${`--sl:${slotVar(s)}`}>${b.attachments[at]}</span>`
-+                                        ? html`<span class=${'wg-sc' + (at >= pairs ? ' nocode' : '')} key=${s} title=${at >= pairs ? 'Not in the gunsmith code' : null} style=${`--sl:${slotVar(s)}`}>${b.attachments[at]}</span>`
-                                         : html`<span class="wg-sc empty" key=${s}>—</span>`; })}</div>`
+-                                        : html`<span class="wg-sc empty" key=${s}>—</span>`; })}</div>`
 -                                    : html`<div class="wg-rail">${atts.map((x) => html`<span class="wg-at" key=${x.i} title=${x.slot || null} style=${SLOT_ORDER.includes(x.slot) ? `--sl:${slotVar(x.slot)}` : null}>${x.name}</span>`)}${Array.from({ length: empties }, (_, i) => html`<span class="wg-at gap" key=${'e' + i}>Empty</span>`)}</div>`}
-+                                    : html`<div class="wg-rail b3-fadx" data-rows="2"><span class="wg-rl">${atts.map((x) => html`<span class=${'wg-at' + (x.i >= pairs ? ' nocode' : '')} key=${x.i} data-slot=${x.slot || null} title=${x.i >= pairs ? `${x.slot ? x.slot + ' — ' : ''}not in the gunsmith code` : x.slot || null} style=${`--sl:${slotVar(x.slot)}`}>${x.name}</span>`)}${Array.from({ length: ghosts }, (_, i) => html`<span class="wg-at nocode ghost" key=${'g' + i} data-slot=${ord(atts.length + i + 1) + ' slot'} title="In the gunsmith code, but not listed on this build">Not listed</span>`)}${Array.from({ length: Math.max(0, empties - ghosts) }, (_, i) => html`<span class="wg-at gap" key=${'e' + i}>Empty</span>`)}</span></div>`}
++                                ${html`<div class="wg-rail b3-fadx" data-rows="2"><span class="wg-rl">${atts.map((x) => html`<span class=${'wg-at' + (x.i >= pairs ? ' nocode' : '')} key=${x.i} data-slot=${x.slot || null} title=${x.i >= pairs ? `${x.slot ? x.slot + ' — ' : ''}not in the gunsmith code` : x.slot || null} style=${`--sl:${slotVar(x.slot)}`}>${x.name}</span>`)}${Array.from({ length: ghosts }, (_, i) => html`<span class="wg-at nocode ghost" key=${'g' + i} data-slot=${ord(atts.length + i + 1) + ' slot'} title="In the gunsmith code, but not listed on this build">Not listed</span>`)}${Array.from({ length: Math.max(0, empties - ghosts) }, (_, i) => html`<span class="wg-at gap" key=${'e' + i}>Empty</span>`)}</span></div>`}
                              </div>
 -                            <span class=${'wg-im' + (b.imageKey ? '' : ' no')} role="img" aria-label=${b.imageKey ? 'Image uploaded' : 'No image uploaded'} title=${b.imageKey ? 'Image uploaded' : 'No image uploaded'}><${Icon} name=${b.imageKey ? 'image' : 'image-off'} /></span>
 +                            <${Hint} pin cls="wg-imh" tone=${b.imageKey ? 'ok' : 'warn'} media=${html`<${BuildImage} b=${b} />`}><span class=${'wg-fwrap b3-fx b3-fx-sm cx-imx wg-imx' + (b.imageKey ? ' b3-okx' : '')}><button type="button" class="b3-fchip" aria-label=${b.imageKey ? `${b.weaponName}’s build image` : `${b.weaponName} has no build image`}><${Icon} name=${b.imageKey ? 'image' : 'image-off'} /></button></span></${Hint}>
@@ -1262,7 +1289,7 @@ index fe9fc32d..2ff06834 100644
                                  <i class="wg-vr" aria-hidden="true"></i>
                                  <button type="button" class="wg-ib wg-del" aria-label=${`Stage deletion of ${b.weaponName} build ${n}`} onClick=${() => onRemove(b)}><${Icon} name="trash-2" /></button>
                              </div>
-@@ -179,7 +193,7 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
+@@ -179,7 +187,7 @@ function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, on
  }
  
  // 🔴 'no-badges' and 'wrong-attachment-count' RETIRED 2026-09-13 17:36 EDT (pins batch 2, pin pmtylf7gz) -- see portal/api/armory.js's coverageFlags for why neither was a real defect. 'few-attachments' and 'code-length-mismatch' are their replacements, not renames: the flag KEYS changed, not just the label text.
@@ -1271,7 +1298,7 @@ index fe9fc32d..2ff06834 100644
      'missing-image': 'Missing image', 'few-attachments': '2 or fewer attachments',
      'stale-90d': 'Not updated in 90 days', 'near-duplicate': 'Near-duplicate code',
      'no-code': 'No gunsmith code', 'code-length-mismatch': 'Code length doesn’t match attachments',
-@@ -203,7 +217,7 @@ export function splitCoverage(b) {
+@@ -203,7 +211,7 @@ export function splitCoverage(b) {
  }
  
  // ⚠️ BOTH NOTES READ FROM THE SAME DERIVATION THE MASTHEAD DOES, so a panel and the figures above it cannot disagree -- the failure this realm has already had twice. Each says what its own view is for and nothing the masthead has already said.
@@ -1280,7 +1307,7 @@ index fe9fc32d..2ff06834 100644
      const ranked = builds.filter((b) => b.categoryRank || b.dmzRangeRank).length;
      return html`<span class="rt">${ranked} of ${builds.length} ranked</span>`;
  }
-@@ -289,6 +303,7 @@ function Rack({ builds, onPick, onAdd, onEdit }) {
+@@ -289,6 +297,7 @@ function Rack({ builds, onPick, onAdd, onEdit }) {
          setCOpen(next);
      };
      const openCount = cats.filter((c) => copen.has(c.category)).length;
@@ -1288,7 +1315,7 @@ index fe9fc32d..2ff06834 100644
  
      // An empty armory is not an error and it is not a table with no rows: it is a page whose only useful content is the way out of it, so it carries the button rather than describing one.
      if (!builds.length) {
-@@ -309,7 +324,7 @@ function Rack({ builds, onPick, onAdd, onEdit }) {
+@@ -309,7 +318,7 @@ function Rack({ builds, onPick, onAdd, onEdit }) {
              <div class="racktools">
                  <button class="chip" disabled=${openCount === cats.length} onClick=${() => setAll(true)}>Expand all</button>
                  <button class="chip" disabled=${openCount === 0} onClick=${() => setAll(false)}>Collapse all</button>
@@ -1297,7 +1324,7 @@ index fe9fc32d..2ff06834 100644
              </div>
              <div class="rack">
                  ${cats.map((c) => {
-@@ -356,7 +371,7 @@ const COVERAGE_WHY = {
+@@ -356,7 +365,7 @@ const COVERAGE_WHY = {
      'code-length-mismatch': 'A real code pairs two characters per attachment; this one’s length disagrees with its own build.',
  };
  
@@ -1306,7 +1333,7 @@ index fe9fc32d..2ff06834 100644
      const flags = Object.keys(COVERAGE_LABEL);
      const total = Math.max(1, builds.length);
      const hitsFor = (f) => builds.filter((b) => (b.coverage || []).includes(f));
-@@ -599,7 +614,7 @@ function AddBuildPanel({ f, setF, atts, setAtts, filledFromCode, builds, weaponN
+@@ -599,7 +608,7 @@ function AddBuildPanel({ f, setF, atts, setAtts, filledFromCode, builds, weaponN
          </div>`;
  }
  
@@ -1315,7 +1342,7 @@ index fe9fc32d..2ff06834 100644
      const [badges, setBadges] = useState('');
      return html`
          <div style="display:flex;gap:8px;align-items:center;padding:10px 14px;border-top:1px dashed var(--rule)">
-@@ -661,7 +676,7 @@ function BuildIssues({ build }) {
+@@ -661,7 +670,7 @@ function BuildIssues({ build }) {
          </div>`;
  }
  
@@ -1324,7 +1351,7 @@ index fe9fc32d..2ff06834 100644
      const [draft, setDraft] = useState({ ...build, attachments: [...(build.attachments || [])] });
      const [card, setCard] = useState(null);
      const [imgFailed, setImgFailed] = useState(false);
-@@ -828,16 +843,31 @@ const COMPARE_FIELDS = [
+@@ -828,16 +837,31 @@ const COMPARE_FIELDS = [
  // 🔴 `.cmpcards` EXPECTED `.dcard` CHILDREN AND GOT BARE DIVS, so the column layout, the dividers and every rule under `.dcard.lc` styled nothing — twelve classes with rules and no markup. The card is the RECORD, laid out so two of them line up field for field: the attachment list is the thing you actually compare, and reading it out of two Discord renders means reading two pictures.
  //
  // ⚠️ THE DISCORD RENDER MOVED OUT OF COMPARE, not away. It lives in the build editor's own side column under "What Discord sends", where it sits beside the fields that produce it. Here it cost one request per picked build to show two images you cannot align, while the table below already reports every field that differs.
@@ -1360,7 +1387,7 @@ index fe9fc32d..2ff06834 100644
      const [failed, setFailed] = useState(false);
      const atts = b.attachments || [];
      const slots = b.attachmentSlots || [];
-@@ -845,16 +875,17 @@ function LoadoutCard({ build, siblings }) {
+@@ -845,16 +869,17 @@ function LoadoutCard({ build, siblings }) {
      return html`
          <div class="dcard lc" style=${`--c:${b.accent || 'var(--r-armory)'}`}>
              <h6 role="heading" aria-level="3">${b.weaponName}</h6>
@@ -1381,7 +1408,7 @@ index fe9fc32d..2ff06834 100644
              ${b.imageKey && b.imageUrl
                  ? html`
                      <div class=${'lc-img' + (failed ? ' failed' : '')}>
-@@ -915,9 +946,14 @@ function WeaponSearch({ options, picked, roomLeft, onPick }) {
+@@ -915,9 +940,14 @@ function WeaponSearch({ options, picked, roomLeft, onPick }) {
  }
  
  // ⚠️ THE SAME ROWS ARE DRAWN WHETHER THEY MATCH OR NOT. Showing only the differences would be shorter and would answer a different question: "these two are identical apart from the image" is a conclusion you can only reach by seeing the fields that agree. `.cmptab tr.same` is the adopted sheet's own class for exactly that. 2026-09-11 09:15 EDT -- every build of both picked weapons used to auto-fill the columns; Harkirat, direct: "what if i only want to compare AK117 build 1 vs AS VAL build 2? why does it force load both AS VAL builds?" Picking a WEAPON and picking WHICH of its builds are two different acts, so a weapon with more than one build now gets its own row of toggle chips -- the same `.chip` control already used to remove a whole weapon, one level down. Unchecked means excluded, not deleted. 🔴 COMPARE AS THE DESIGN BOARD DRAWS IT (plan pins batch 2 §10.2, G10 answered 2026-09-14 01:18 EDT; built 2026-09-15 08:37 EDT). One row per attachment SLOT in Harkirat's display order, never one comma-joined cell — two builds that differ by one attachment could not be told apart. The first column is the baseline, tinted and headed so; a value that differs from it is raised with a --patch ring and carries a visually hidden "differs" (colour is never the only signal); a slot the baseline has and a build lacks is a dashed Not equipped cell; a slot neither uses is a dash. Fields identical on every shown build fold into one "Same on all N" row. The table comes first and the Discord cards wait behind Show cards, closed on every open (Harkirat, 2026-09-13 20:52 EDT). Two weapons split the six columns between them rather than the first filling them, and a build that did not fit says so on its own chip.
@@ -1397,7 +1424,7 @@ index fe9fc32d..2ff06834 100644
      const toggleBuild = (id) => setExcluded((prev) => {
          const next = new Set(prev);
          if (next.has(id)) next.delete(id); else next.add(id);
-@@ -952,7 +988,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
+@@ -952,7 +982,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
  
      if (!options.length) {
          return html`
@@ -1406,7 +1433,7 @@ index fe9fc32d..2ff06834 100644
                  <p class="empty"><b>Nothing to compare yet.</b>${' '}Add a build and its slots line up here.</p>
                  <div class="racktools"><button class="pill lead" onClick=${onAdd}>Add a build</button></div>
              </div>`;
-@@ -973,10 +1009,11 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
+@@ -973,10 +1003,11 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
              rows.push({ key: 'Attachments', vals: chosen.map((b) => ((b.attachmentSlots || []).some(Boolean) ? null : (b.attachments || []).join(', ') || null)), slot: false });
          }
          const fields = [
@@ -1422,7 +1449,7 @@ index fe9fc32d..2ff06834 100644
          ];
          for (const [k, read] of fields) {
              const vals = chosen.map(read);
-@@ -985,84 +1022,88 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
+@@ -985,84 +1016,88 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
          }
      }
      const codeVals = chosen.map((b) => (b.mode === 'DMZ' ? null : b.shareCode || null));
@@ -1563,7 +1590,7 @@ index fe9fc32d..2ff06834 100644
          </div>
      `;
  }
-@@ -1070,7 +1111,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
+@@ -1070,7 +1105,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
  // ── THE ACTIVE FILTER BAR ─────────────────────────────────────────────────────────────────────
  //
  // 🔴 THE FILTER WAS INVISIBLE FROM THE TABLE IT FILTERED. Clicking a Coverage card narrowed the Manifest and said so only in the Manifest's header-right corner, as a bare string with no way back — so a reader who scrolled past it saw a short table and no reason for it, which reads as missing data rather than as a filter. The bar states every active narrowing, in the words the control used, with the count it produced and one control that undoes all of it.
@@ -1572,7 +1599,7 @@ index fe9fc32d..2ff06834 100644
      if (!weapon && !flag) return null;
      return html`
          <div class="afbar">
-@@ -1194,7 +1235,7 @@ function BulkCreatePanel({ builds, mode, csrfToken, overlay, onStaged, busy, set
+@@ -1194,7 +1229,7 @@ function BulkCreatePanel({ builds, mode, csrfToken, overlay, onStaged, busy, set
  // ── THE DRAWER ITSELF ────────────────────────────────────────────────────────────────────────
  //
  // Row 2 (G9): the header holds only eyebrow/title/×; a toolbar under it carries the MP/DMZ switch (unchanged look), a rule, then Add build · Bulk create. Row 5: Esc/scrim on a dirty draft asks first. Row 11/12 (harden): handleAdd's stageOps() result is checked rather than assumed, and Stage shows a busy state so a double click cannot stage the same build twice.
@@ -1581,7 +1608,7 @@ index fe9fc32d..2ff06834 100644
      const [panel, setPanel] = useState(initialPanel);
      const [f, setF] = useState({
          weaponName: '', category: 'AR', mode, buildName: '', imageKey: '', imageSourceUrl: '', imageLinkText: '',
-@@ -1318,11 +1359,11 @@ function NewBuildDrawer({ builds, mode, onSubmit, onStaged, onCancel, csrfToken,
+@@ -1318,11 +1353,11 @@ function NewBuildDrawer({ builds, mode, onSubmit, onStaged, onCancel, csrfToken,
  
  
  // 🔴 THE VIEW NAMES LIVE IN ONE TABLE so the tab strip, the command palette and every branch below read the same strings. They were four bare literals in five places, which is how a rename becomes a silent dead branch: `view === 'Rack'` against a strip offering `Tier board` compiles, runs, and renders the fallback view forever.
@@ -1596,7 +1623,13 @@ index fe9fc32d..2ff06834 100644
      const bad = split.filter((c) => c.faults.length).length;
      const age = split.filter((c) => c.aged && !c.faults.length).length;
      const clean = split.length - bad - age;
-@@ -1360,6 +1401,18 @@ export function ArmoryRealm({ session }) {
+@@ -1356,10 +1391,23 @@ export function ArmoryRealm({ session }) {
+     const [editingId, setEditingId] = useState(null);
+     // The weapon groups' own view state (plan §10.4 G4): which groups are shut and List or By slot. In memory only — see ArmoryGroups' header.
+     const [collapsedWeapons, setCollapsedWeapons] = useState(new Set());
+-    const [attView, setAttView] = useState('list');
++    // The List / By slot toggle is retired (his call, 2026-10-01 12:24 EDT): docs/ideas/2026-10-01-armory-by-slot-view.md. List is the only view.
++    const attView = 'list';
      // 🔴 BOTH FORMS ARE MODAL DRAWERS NOW, so the view slot no longer has to make room for one. `wrapBed` used to wrap the whole view in the editor's `.bed` grid whenever something was being edited — which meant the rack, the repairs cards and the bulk panel all inherited a layout that exists for a form none of them contain. The drawer carries its own `.bed` internally and the page behind it is `inert`, so the view is only ever the view. 🔴 THE MODE IS A PROPERTY OF THE REALM, NOT OF ONE PANEL. It began as BulkView's private state, so the Rack, Repairs and Compare all showed MP and DMZ mixed together while a fourth view quietly filtered to one of them. MP and DMZ are two armories with different rules -- DMZ has no share code and ranks by combat range -- and every figure on this page is a count of one population or the other, so a masthead that totals both answers a question nobody asked.
      const [armMode, setArmMode] = useState('MP');
      const overlay = useOverlay();
@@ -1615,7 +1648,7 @@ index fe9fc32d..2ff06834 100644
  
      // ⚠️ `builds` DEFAULTED TO [] AND THE PAGE RENDERED IMMEDIATELY, so the first frame of every visit was a complete, confident, empty Armory — "0 builds · 0 weapons · 0 flagged" over an empty rack, which is a statement about the data rather than about the request. An empty state and an unanswered request must never look the same.
  // 🔴 TWO REALMS COULD STAGE WORK AND NEITHER COULD TELL YOU IT HAD ANY. Season and Home both read /api/review to say how much is waiting — that is what feeds the rail's badge and the masthead's staged figure — and Armory and Broadcast, which stage on every edit, said nothing anywhere. You staged four builds, navigated away, and the console had no memory of it outside the Review screen.
-@@ -1412,6 +1465,7 @@ export function ArmoryRealm({ session }) {
+@@ -1412,6 +1460,7 @@ export function ArmoryRealm({ session }) {
      const rows = inMode
          .filter((b) => !coverageFilter || (b.coverage || []).includes(coverageFilter.flag))
          .filter((b) => !weaponFilter || b.weaponName === weaponFilter)
@@ -1623,7 +1656,7 @@ index fe9fc32d..2ff06834 100644
          .map((b) => ({ ...b, id: b._id, topicVar: null, accentHex: b.accent, state: stagedTargets.has(String(b._id)) ? 'staged' : b.state }));
  
      // 🔴 A DRAWER OVER A ROW THAT NO LONGER EXISTS. The editor used to be handed `builds.find(...)` inline, so a staged bulk deletion followed by a refresh could hand it `undefined` and the first field read would throw inside a modal with the page behind it inert — a dead screen with no way out but Escape. Resolved once here, and the drawer is simply not rendered when the build it was opened for has gone.
-@@ -1486,7 +1540,7 @@ export function ArmoryRealm({ session }) {
+@@ -1486,7 +1535,7 @@ export function ArmoryRealm({ session }) {
      const rankedNow = inMode.filter((b) => b.categoryRank || b.dmzRangeRank).length;
      // G1 (§10.4, board row armory.js:1315): Tier board's and Repairs' counts moved onto their tabs (viewCounts below); Compare lost its "type a weapon name" instruction and names the weapons only once there are some.
      const failingChecks = Object.keys(COVERAGE_LABEL).filter((f) => inMode.some((b) => (b.coverage || []).includes(f))).length;
@@ -1632,7 +1665,7 @@ index fe9fc32d..2ff06834 100644
      const viewMeta = view === VIEWS.compare && comparedWeapons.length
              ? `${comparedWeapons.join(' · ')} — ${inMode.filter((b) => comparedWeapons.includes(b.weaponName)).length} builds`
          : view === VIEWS.bulk ? `${inMode.length} ${armMode} builds · pipe format, lossless round trip` : null;
-@@ -1532,7 +1586,7 @@ export function ArmoryRealm({ session }) {
+@@ -1532,7 +1581,7 @@ export function ArmoryRealm({ session }) {
                    stagedOps=${load.data.stagedUnknown ? null : load.data.stagedOps}
                    overlaySlot=${html`
                        ${overlay.render()}
@@ -1641,7 +1674,7 @@ index fe9fc32d..2ff06834 100644
                                                          onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)}
                                                          onStaged=${(s) => {
                                                              setShowAdd(false);
-@@ -1540,6 +1594,10 @@ export function ArmoryRealm({ session }) {
+@@ -1540,6 +1589,10 @@ export function ArmoryRealm({ session }) {
                                                                  'Review →', () => { location.hash = '#/review'; });
                                                              refresh();
                                                          }} />` : null}
@@ -1652,7 +1685,7 @@ index fe9fc32d..2ff06834 100644
                        ${editingBuild ? html`
                            <${BuildEditor} build=${editingBuild} csrfToken=${session.csrfToken}
                                            onStage=${async (op) => {
-@@ -1591,7 +1649,10 @@ export function ArmoryRealm({ session }) {
+@@ -1591,7 +1644,10 @@ export function ArmoryRealm({ session }) {
                                ? html`<${Compare} builds=${rows} weapons=${comparedWeapons} onSetWeapons=${setComparedWeapons}
                                                   onOpenRack=${(w) => { setWeaponFilter(w); setView(VIEWS.rack); }}
                                                   onAdd=${() => { setAddMode(armMode); setShowAdd(true); setAddPanel('add'); }} />`
@@ -1664,7 +1697,7 @@ index fe9fc32d..2ff06834 100644
                    `}
                    manifestSlot=${html`
                        <!-- 🔴 THE HINT USED TO RENDER HERE, AND IT COST THE WHOLE TABLE ITS DEPTH. Both stylesheets carry
-@@ -1601,9 +1662,9 @@ export function ArmoryRealm({ session }) {
+@@ -1601,9 +1657,9 @@ export function ArmoryRealm({ session }) {
                             instead: measured #171E24 against the design's #0F1418, on every row of a 125-row table, with
                             both stylesheets carrying the identical rule. The hint is a caption for the Manifest, so it
                             renders INSIDE it now. FilterBar returns null at rest and never broke anything. -->
@@ -1676,14 +1709,13 @@ index fe9fc32d..2ff06834 100644
                        <${Manifest} rows=${rows} columns=${ARMORY_COLUMNS} searchableFields=${['weaponName', 'buildName']}
                                     label="Manifest" filterGroups=${[...ARMORY_FILTERS, { key: 'category', label: 'Category', topic: true, options: categoryOptions }]}
                                     headerRight=${weaponFilter || (coverageFilter ? COVERAGE_LABEL[coverageFilter.flag] : '')}
-@@ -1617,11 +1678,15 @@ export function ArmoryRealm({ session }) {
+@@ -1616,12 +1672,13 @@ export function ArmoryRealm({ session }) {
+                                    onEditError=${(msg) => setNotice(msg)}
                                     onFiltersChange=${setManifestFilters}
                                     defaultSort="weaponName"
-                                    extraChips=${html`<span class="mlabel"><span>Attachments</span></span><span class="seg" role="tablist" aria-label="Attachments">
+-                                   extraChips=${html`<span class="mlabel"><span>Attachments</span></span><span class="seg" role="tablist" aria-label="Attachments">
 -                                       <button role="tab" aria-selected=${attView === 'list' ? 'true' : 'false'} onClick=${() => setAttView('list')}>List</button>
 -                                       <button role="tab" aria-selected=${attView === 'slot' ? 'true' : 'false'} onClick=${() => setAttView('slot')}>By slot</button></span>`}
-+                                       <button role="tab" aria-selected=${attView === 'list' ? 'true' : 'false'} onClick=${() => setAttView('list')}><${Icon} name="list" />List</button>
-+                                       <button role="tab" aria-selected=${attView === 'slot' ? 'true' : 'false'} onClick=${() => setAttView('slot')}><${Icon} name="columns-3" />By slot</button></span>`}
                                     renderBody=${(api) => html`<${ArmoryGroups} api=${api} builds=${builds} mode=${armMode} attView=${attView} collapsed=${collapsedWeapons}
                                         onToggleGroup=${(name) => setCollapsedWeapons((s) => { const n = new Set(s); if (n.has(name)) n.delete(name); else n.add(name); return n; })}
                                         onCollapseAll=${(names) => setCollapsedWeapons(new Set(names))} />`}

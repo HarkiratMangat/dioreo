@@ -107,19 +107,19 @@ Every `setTimeout`/`setInterval` whose delay is a number or a timing name, with 
 | `b4/bulk.js` | 254 | `drawLine` | Timeout | `0` |
 | `b4/bulk.js` | 266 | `drawLine` | Timeout | `0` |
 | `b4/compare.js` | 142 | `copy` | Timeout | `1200` |
-| `b4/form.js` | 352 | `tierOf` | Timeout | `1400` |
-| `gates/armory.js` | 177 | `OpenProblems` | Timeout | `320` |
-| `gates/armory.js` | 308 | `renameScope` | Timeout | `1100` |
-| `gates/armory.js` | 498 | `copyFile` | Timeout | `1300` |
-| `gates/armory.js` | 508 | `aim` | Timeout | `70` |
-| `gates/armory.js` | 508 | `aim` | Timeout | `POPT[2].openWait` |
-| `gates/armory.js` | 509 | `unaim` | Timeout | `POPT[2].closeWait` |
-| `gates/armory.js` | 527 | `jump` | Timeout | `900` |
-| `gates/armory.js` | 1178 | `openProblem` | Timeout | `320` |
-| `gates/armory.js` | 1251 | `ListLab` | Timeout | `250` |
-| `gates/armory.js` | 1259 | `ListLab` | Timeout | `0` |
-| `gates/armory.js` | 1261 | `copy` | Timeout | `1400` |
-| `gates/armory.js` | 1269 | `copy` | Timeout | `1800` |
+| `b4/form.js` | 353 | `tierOf` | Timeout | `1400` |
+| `gates/armory.js` | 176 | `OpenProblems` | Timeout | `320` |
+| `gates/armory.js` | 307 | `renameScope` | Timeout | `1100` |
+| `gates/armory.js` | 497 | `copyFile` | Timeout | `1300` |
+| `gates/armory.js` | 507 | `aim` | Timeout | `70` |
+| `gates/armory.js` | 507 | `aim` | Timeout | `POPT[2].openWait` |
+| `gates/armory.js` | 508 | `unaim` | Timeout | `POPT[2].closeWait` |
+| `gates/armory.js` | 526 | `jump` | Timeout | `900` |
+| `gates/armory.js` | 1177 | `openProblem` | Timeout | `320` |
+| `gates/armory.js` | 1250 | `ListLab` | Timeout | `250` |
+| `gates/armory.js` | 1258 | `ListLab` | Timeout | `0` |
+| `gates/armory.js` | 1260 | `copy` | Timeout | `1400` |
+| `gates/armory.js` | 1268 | `copy` | Timeout | `1800` |
 | `gates/picks.js` | 421 | `read` | Timeout | `1800` |
 | `gates/picks.js` | 423 | `copy` | Timeout | `1400` |
 | `gates4/surfaces.js` | 61 | `w` | Timeout | `ms` |
@@ -127,7 +127,7 @@ Every `setTimeout`/`setInterval` whose delay is a number or a timing name, with 
 | `ui/access.js` | 269 | `Sessions` | Interval | `30000` |
 | `ui/access.js` | 680 | `nameOf` | Timeout | `2400` |
 | `ui/armory.js` | 116 | `copy` | Timeout | `1200` |
-| `ui/armory.js` | 243 | `copy` | Timeout | `1500` |
+| `ui/armory.js` | 237 | `copy` | Timeout | `1500` |
 | `ui/async.js` | 26 | `useAsync` | Timeout | `asyncDefaults().slowAfterMs` |
 | `ui/home.js` | 170 | `HomeClock` | Interval | `1000` |
 | `ui/httpClient.js` | 137 | `fetchJson` | Timeout | `0` |
@@ -161,165 +161,165 @@ Every `setTimeout`/`setInterval` whose delay is a number or a timing name, with 
 | 1156 | `.wg-ib::before` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
 | 1164 | `.wg-r` | transition | `background .18s` |
 | 1166 | `.wg-r::before` | transition | `opacity .18s` |
-| 1272 | `th.sortable .sortbtn .sortic` | transition | `color var(--dur-1) var(--ease)` |
-| 1329 | `.round-u` | transition | `color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)` |
-| 1349 | `.btn` | transition | `background var(--dur-1) var(--ease),color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease)` |
-| 1361 | `.scrim` | transition | `opacity .16s` |
-| 1368 | `.drawer` | transition | `opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1)` |
-| 1499 | `.bar .gr` | transition | `opacity .1s` |
-| 1593 | `.is-loading::after` | animation | `spin .6s linear infinite` |
-| 1596 | `.is-loading::after` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
-| 1663 | `.now::before` | animation | `pulse 2.8s ease-in-out infinite` |
-| 1668 | `.bar` | transition | `transform .14s cubic-bezier(.2,.8,.3,1),box-shadow .14s,filter .12s` |
-| 1674 | `.bar.conflict` | animation | `conflictIn .34s cubic-bezier(.2,.8,.3,1)` |
-| 1676 | `.pt` | transition | `transform .14s` |
-| 1685 | `.rise` *(@media (prefers-reduced-motion:no-preference))* | animation | `rise .5s cubic-bezier(.2,.8,.3,1) backwards` |
-| 1687 | `.lane` *(@media (prefers-reduced-motion:no-preference))* | animation | `laneIn .42s cubic-bezier(.2,.8,.3,1) backwards` |
-| 1689 | `.tray` *(@media (prefers-reduced-motion:no-preference))* | animation | `trayIn .28s cubic-bezier(.2,.8,.3,1)` |
-| 1691 | `.toast` *(@media (prefers-reduced-motion:no-preference))* | animation | `trayIn .22s cubic-bezier(.2,.8,.3,1)` |
-| 1692 | `.flag` *(@media (prefers-reduced-motion:no-preference))* | animation | `rise .34s cubic-bezier(.2,.8,.3,1) backwards` |
-| 1698 | `.realm` | transition | `color .14s,background .14s` |
-| 1760 | `tbody tr` | transition | `background .12s,box-shadow .12s` |
-| 1776 | `.bcard::after` | transition | `opacity .16s` |
-| 1820 | `.dline` | transition | `border-color .15s,background .15s` |
-| 1841 | `.tbdsw button` | transition | `background .13s,color .13s` |
-| 1920 | `.zoomer button` | transition | `background .12s,color .12s` |
-| 1943 | `.bcol` | transition | `flex .26s cubic-bezier(.2,.8,.3,1)` |
-| 1948 | `.bcol-h` | transition | `border-color .14s,background .14s` |
-| 1953 | `.chev` | transition | `transform .2s` |
-| 1980 | `.whobtn` | transition | `background .13s,border-color .13s` |
-| 2008 | `.pal-retired` | transition | `color .13s,border-color .13s` |
-| 2089 | `.idclose` | transition | `color .13s,border-color .13s,background .13s` |
-| 2156 | `#__backtotop` | transition | `background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)` |
-| 2165 | `.mtable tbody tr` | transition | `background .12s` |
-| 2364 | `.xhair` | transition | `opacity .1s` |
-| 2425 | `*,*::before,*::after` *(@media (prefers-reduced-motion: reduce))* | animation-duration | `.001ms !important` |
-| 2425 | `*,*::before,*::after` *(@media (prefers-reduced-motion: reduce))* | animation-iteration-count | `1 !important` |
-| 2425 | `*,*::before,*::after` *(@media (prefers-reduced-motion: reduce))* | transition-duration | `.001ms !important` |
-| 2440 | `.rcard` | transition | `border-color .14s,background .14s` |
-| 2468 | `.ccard` | transition | `border-color .14s,background .14s` |
-| 2589 | `.trow-body` | transition | `background .14s,box-shadow .14s` |
-| 2604 | `.chip.go` | transition | `background .16s ease,color .16s ease` |
-| 2741 | `.skel-r i` | animation | `skel 1.4s var(--ease) infinite` |
-| 2741 | `.skel-r i` | animation-delay | `var(--d,0ms)` |
-| 2750 | `.is-refreshing::after` | animation | `refl 1.1s var(--ease) infinite` |
-| 2787 | `.prog-b i` | transition | `transform var(--dur-2) var(--ease)` |
-| 2809 | `.rb` | animation | `rb 900ms var(--ease) 1` |
-| 2832 | `.now::before` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
-| 2835 | `.bar.conflict` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
-| 2838 | `#viewTrack:not([hidden]),#viewBoard:not([hidden]),#viewRack:not([hidden]), #viewCoverage:not([hidden]),#viewCompare:not([hidden]), #viewBoard:not([hidden]) .bco` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
-| 2844 | `.skel-r i` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
-| 2845 | `.is-refreshing::after` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
-| 2846 | `.prog-b i` *(@media (prefers-reduced-motion: reduce))* | transition | `none` |
-| 2847 | `.rb` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
-| 2879 | `#viewTrack:not([hidden]),#viewBoard:not([hidden]), #viewRack:not([hidden]),#viewCoverage:not([hidden]),#viewCompare:not([hidden])` | animation | `viewIn var(--dur-2) var(--ease) backwards` |
-| 2882 | `#viewBoard:not([hidden]) .bcol` | animation | `viewIn var(--dur-2) var(--ease) backwards` |
-| 2883 | `#viewBoard:not([hidden]) .bcol:nth-child(2)` | animation-delay | `20ms` |
-| 2884 | `#viewBoard:not([hidden]) .bcol:nth-child(3)` | animation-delay | `40ms` |
-| 2885 | `#viewBoard:not([hidden]) .bcol:nth-child(4)` | animation-delay | `60ms` |
-| 2886 | `#viewRack:not([hidden]) .trow` | animation | `viewIn var(--dur-2) var(--ease) backwards` |
-| 2887 | `#viewRack:not([hidden]) .trow:nth-child(2)` | animation-delay | `20ms` |
-| 2888 | `#viewRack:not([hidden]) .trow:nth-child(3)` | animation-delay | `40ms` |
-| 2889 | `#viewRack:not([hidden]) .trow:nth-child(4)` | animation-delay | `60ms` |
-| 2892 | `.staged-pulse` | animation | `stagePulse var(--dur-3) var(--ease) 1` |
-| 2893 | `.count-bump` | animation | `countBump var(--dur-2) var(--ease) 1` |
-| 2894 | `.trow-body.flash` | transition | `box-shadow var(--dur-3)` |
-| 2908 | `#viewTrack,#viewBoard,#viewRack,#viewCoverage,#viewCompare, .bcols .bcol,.trows .trow,.staged-pulse,.count-bump` *(@media (prefers-reduced-motion: reduce))* | animation | `none !important` |
-| 2963 | `.atbar` | transition | `filter var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)` |
-| 3010 | `.mxcell` | transition | `all var(--dur-1) var(--ease)` |
-| 3070 | `.mh-mode button` | transition | `color .14s,border-color .14s,background .14s` |
-| 3138 | `.sess .sdot` | animation | `sess-ping 2.4s ease-out infinite` |
-| 3144 | `.sess .sdot::after` | animation | `sess-bloom 1.2s ease-in-out infinite` |
-| 3162 | `.sess.stale .sdot,.sess.stale .sdot::before,.sess.stale .sdot::after` | animation | `none` |
-| 3170 | `.sess .sdot,.sess .sdot::before,.sess .sdot::after` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
-| 3205 | `.ub .ubt i` | transition | `width var(--dur-3) var(--ease)` |
-| 3217 | `.timb` | transition | `filter var(--dur-1) var(--ease)` |
-| 3252 | `.hcard` | transition | `transform var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease), background var(--dur-2) var(--ease)` |
-| 3286 | `.rvop` | transition | `all var(--dur-1) var(--ease)` |
-| 3365 | `.dbtn` | transition | `filter var(--dur-1) var(--ease)` |
-| 3381 | `#viewAir:not([hidden]) .atrow,#viewMatrix:not([hidden]) .mx tbody tr,#viewHealth:not([hidden]) .tile` | animation | `viewIn var(--dur-2) var(--ease) backwards` |
-| 3382 | `#viewHealth:not([hidden]) .tile:nth-child(2)` | animation-delay | `30ms` |
-| 3383 | `#viewHealth:not([hidden]) .tile:nth-child(3)` | animation-delay | `60ms` |
-| 3384 | `#viewHealth:not([hidden]) .tile:nth-child(4)` | animation-delay | `90ms` |
-| 3386 | `#viewAir:not([hidden]) .atrow,#viewMatrix:not([hidden]) .mx tbody tr,#viewHealth:not([hidden]) .tile,.hcard,.atbar,.mxcell,.timb` *(@media (prefers-reduced-motion:reduce))* | animation | `none!important` |
-| 3386 | `#viewAir:not([hidden]) .atrow,#viewMatrix:not([hidden]) .mx tbody tr,#viewHealth:not([hidden]) .tile,.hcard,.atbar,.mxcell,.timb` *(@media (prefers-reduced-motion:reduce))* | transition | `none!important` |
-| 3411 | `.tray-h::after` | transition | `transform var(--dur-1) var(--ease)` |
-| 3425 | `button.tile` | transition | `transform var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease)` |
-| 3432 | `button.tile::after` | transition | `opacity var(--dur-1) var(--ease)` |
-| 3437 | `button.ub` | transition | `background var(--dur-1) var(--ease)` |
-| 3445 | `.evrow` | transition | `all var(--dur-1) var(--ease)` |
-| 3462 | `.mxrow` | transition | `opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease)` |
-| 3493 | `.rvdrop` | transition | `opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` |
-| 3593 | `.attx` | transition | `all var(--dur-1) var(--ease)` |
-| 3603 | `.bgt` | transition | `all var(--dur-1) var(--ease)` |
-| 3740 | `.lvlb` | transition | `background var(--dur-1) var(--ease)` |
-| 3775 | `.ub2` | transition | `background var(--dur-1) var(--ease)` |
-| 3959 | `.modesw button` | transition | `all var(--dur-1) var(--ease)` |
-| 4066 | `.pname b,.pname i` | transition | `color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
-| 4085 | `.pname b,.pname i` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 4265 | `.scope` | transition | `background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)` |
-| 4276 | `.scope .nm i` | transition | `box-shadow var(--dur-1) var(--ease)` |
-| 4287 | `.scope,.scope .nm i` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 4501 | `.nw-chip` | transition | `border-color .14s,color .14s,background .14s` |
-| 4534 | `.pill` | transition | `border-color .14s,color .14s,background .14s,transform .14s` |
-| 4589 | `.mark` | transition | `box-shadow .14s,transform .14s` |
-| 4710 | `.cmdbar` | transition | `border-color .15s,background .15s` |
-| 4754 | `.whobtn .cv` | transition | `transform .16s` |
-| 4772 | `.chip,.seg button,.tbdsw button` | transition | `border-color .14s,color .14s,background .14s,transform .14s` |
-| 4787 | `.att-row` | transition | `background .14s` |
-| 4842 | `.bgrp` | transition | `transform .13s,box-shadow .13s,border-color .13s` |
-| 5151 | `.selbar` | transition | `transform var(--dur-3) var(--ease)` |
-| 5178 | `body.has-selbar .tray` | transition | `transform var(--dur-2) var(--ease)` |
-| 5202 | `.rmv::before` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
-| 5229 | `.ow::before` *(@media (prefers-reduced-motion:no-preference))* | transition | `opacity var(--dur-2) var(--ease)` |
-| 5411 | `.tk-inner.animate .bar` | transition | `left var(--dur-3) var(--ease),width var(--dur-3) var(--ease), transform .14s cubic-bezier(.2,.8,.3,1),box-shadow .14s,filter .12s` |
-| 5414 | `.tk-inner.animate .pt` | transition | `left var(--dur-3) var(--ease),transform .14s` |
-| 5415 | `.tk-inner.animate .now,.tk-inner.animate .win` | transition | `left var(--dur-3) var(--ease),width var(--dur-3) var(--ease)` |
-| 5419 | `.tk-inner.animate .bar.dragging` | transition | `none` |
-| 5421 | `.tk-inner.animate .bar,.tk-inner.animate .pt, .tk-inner.animate .now,.tk-inner.animate .win` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 5444 | `.bar.arriving` | animation | `arrive var(--dur-3) var(--ease) both` |
-| 5445 | `.pt.arriving` | animation | `arrive-pt var(--dur-3) var(--ease) both` |
-| 5447 | `.bar.arriving,.pt.arriving` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
-| 5457 | `tr.rowin` | animation | `rowin var(--dur-3) var(--ease) both` |
-| 5459 | `tr.rowin` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
-| 5533 | `.trow .pm::after` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 5559 | `button,.pill,.chip,.btn,.mi,.realm,.hcard,.att-row` | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` |
-| 5576 | `.landed` | animation | `landed 1.5s var(--ease-soft)` |
-| 5582 | `.tint` | transition | `background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)` |
-| 5595 | `.lift` | transition | `transform var(--dur-2) var(--ease),background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease)` |
-| 5611 | `.mh-stats .v.rolling` | animation | `figRoll .42s var(--ease)` |
-| 5619 | `.fdelta` | animation | `fdrift 1.3s var(--ease-soft) forwards` |
-| 5626 | `.realm` | transition | `color var(--dur-1) var(--ease),background var(--dur-2) var(--ease)` |
-| 5649 | `.toast` | animation | `toastIn var(--dur-toast-in) var(--ease-soft) both` |
-| 5650 | `.toast.leaving` | animation | `toastOut var(--dur-toast-out) cubic-bezier(.4,0,1,1) both` |
-| 5656 | `.mrow.sel,tr[aria-selected="true"],.selrow` | transition | `transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` |
-| 5734 | `a.att-row .att-go .arw` | transition | `transform var(--dur-1) var(--ease)` |
-| 6014 | `.wcard,.ccard,.tile,.hlive .lp,.dcard` | transition | `transform var(--dur-2) var(--ease), background var(--dur-2) var(--ease),box-shadow var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease)` |
-| 6026 | `tbody tr` | transition | `transform var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease), background var(--dur-1) var(--ease)` |
-| 6078 | `.landed` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
-| 6079 | `.mh-stats .v.rolling` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
-| 6082 | `.fdelta` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
-| 6083 | `.toast.leaving` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
-| 6454 | `.pm::after` | transition | `transform .16s var(--ease-soft,ease)` |
-| 6457 | `.pm::after` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 6485 | `.ic-fold path` | transition | `d .34s cubic-bezier(.65,0,.35,1)` |
-| 6493 | `.ic-fold path` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 6808 | `.mh-stats .stat` *(@media (prefers-reduced-motion:no-preference))* | animation | `rise var(--dur-3) var(--ease) backwards` |
-| 6809 | `.mh-stats .stat:nth-child(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `60ms` |
-| 6810 | `.mh-stats .stat:nth-child(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `120ms` |
-| 6811 | `.mh-stats .stat:nth-child(4)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `180ms` |
-| 6812 | `.mh-stats .stat:nth-child(n+5)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `240ms` |
-| 6813 | `.rail .realm` *(@media (prefers-reduced-motion:no-preference))* | animation | `laneIn var(--dur-3) var(--ease) backwards` |
-| 6814 | `.rail .realm:nth-child(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `40ms` |
-| 6814 | `.rail .realm:nth-child(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `80ms` |
-| 6815 | `.rail .realm:nth-child(4)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `120ms` |
-| 6815 | `.rail .realm:nth-child(5)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `160ms` |
-| 6816 | `.rail .realm:nth-child(6)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `200ms` |
-| 6816 | `.rail .realm:nth-child(7)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `240ms` |
-| 7162 | `.idbar[data-mesh]` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 7163 | `.idbar` | transition | `background var(--dur-2) var(--ease)` |
-| 7180 | `.mx tbody tr.just-granted` | animation | `d-just-granted 2.2s ease-out` |
-| 7290 | `.brow` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
+| 1266 | `th.sortable .sortbtn .sortic` | transition | `color var(--dur-1) var(--ease)` |
+| 1323 | `.round-u` | transition | `color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)` |
+| 1343 | `.btn` | transition | `background var(--dur-1) var(--ease),color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease)` |
+| 1355 | `.scrim` | transition | `opacity .16s` |
+| 1362 | `.drawer` | transition | `opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1)` |
+| 1493 | `.bar .gr` | transition | `opacity .1s` |
+| 1587 | `.is-loading::after` | animation | `spin .6s linear infinite` |
+| 1590 | `.is-loading::after` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
+| 1657 | `.now::before` | animation | `pulse 2.8s ease-in-out infinite` |
+| 1662 | `.bar` | transition | `transform .14s cubic-bezier(.2,.8,.3,1),box-shadow .14s,filter .12s` |
+| 1668 | `.bar.conflict` | animation | `conflictIn .34s cubic-bezier(.2,.8,.3,1)` |
+| 1670 | `.pt` | transition | `transform .14s` |
+| 1679 | `.rise` *(@media (prefers-reduced-motion:no-preference))* | animation | `rise .5s cubic-bezier(.2,.8,.3,1) backwards` |
+| 1681 | `.lane` *(@media (prefers-reduced-motion:no-preference))* | animation | `laneIn .42s cubic-bezier(.2,.8,.3,1) backwards` |
+| 1683 | `.tray` *(@media (prefers-reduced-motion:no-preference))* | animation | `trayIn .28s cubic-bezier(.2,.8,.3,1)` |
+| 1685 | `.toast` *(@media (prefers-reduced-motion:no-preference))* | animation | `trayIn .22s cubic-bezier(.2,.8,.3,1)` |
+| 1686 | `.flag` *(@media (prefers-reduced-motion:no-preference))* | animation | `rise .34s cubic-bezier(.2,.8,.3,1) backwards` |
+| 1692 | `.realm` | transition | `color .14s,background .14s` |
+| 1754 | `tbody tr` | transition | `background .12s,box-shadow .12s` |
+| 1770 | `.bcard::after` | transition | `opacity .16s` |
+| 1814 | `.dline` | transition | `border-color .15s,background .15s` |
+| 1835 | `.tbdsw button` | transition | `background .13s,color .13s` |
+| 1914 | `.zoomer button` | transition | `background .12s,color .12s` |
+| 1937 | `.bcol` | transition | `flex .26s cubic-bezier(.2,.8,.3,1)` |
+| 1942 | `.bcol-h` | transition | `border-color .14s,background .14s` |
+| 1947 | `.chev` | transition | `transform .2s` |
+| 1974 | `.whobtn` | transition | `background .13s,border-color .13s` |
+| 2002 | `.pal-retired` | transition | `color .13s,border-color .13s` |
+| 2083 | `.idclose` | transition | `color .13s,border-color .13s,background .13s` |
+| 2150 | `#__backtotop` | transition | `background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)` |
+| 2159 | `.mtable tbody tr` | transition | `background .12s` |
+| 2358 | `.xhair` | transition | `opacity .1s` |
+| 2419 | `*,*::before,*::after` *(@media (prefers-reduced-motion: reduce))* | animation-duration | `.001ms !important` |
+| 2419 | `*,*::before,*::after` *(@media (prefers-reduced-motion: reduce))* | animation-iteration-count | `1 !important` |
+| 2419 | `*,*::before,*::after` *(@media (prefers-reduced-motion: reduce))* | transition-duration | `.001ms !important` |
+| 2434 | `.rcard` | transition | `border-color .14s,background .14s` |
+| 2462 | `.ccard` | transition | `border-color .14s,background .14s` |
+| 2583 | `.trow-body` | transition | `background .14s,box-shadow .14s` |
+| 2598 | `.chip.go` | transition | `background .16s ease,color .16s ease` |
+| 2735 | `.skel-r i` | animation | `skel 1.4s var(--ease) infinite` |
+| 2735 | `.skel-r i` | animation-delay | `var(--d,0ms)` |
+| 2744 | `.is-refreshing::after` | animation | `refl 1.1s var(--ease) infinite` |
+| 2781 | `.prog-b i` | transition | `transform var(--dur-2) var(--ease)` |
+| 2803 | `.rb` | animation | `rb 900ms var(--ease) 1` |
+| 2826 | `.now::before` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
+| 2829 | `.bar.conflict` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
+| 2832 | `#viewTrack:not([hidden]),#viewBoard:not([hidden]),#viewRack:not([hidden]), #viewCoverage:not([hidden]),#viewCompare:not([hidden]), #viewBoard:not([hidden]) .bco` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
+| 2838 | `.skel-r i` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
+| 2839 | `.is-refreshing::after` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
+| 2840 | `.prog-b i` *(@media (prefers-reduced-motion: reduce))* | transition | `none` |
+| 2841 | `.rb` *(@media (prefers-reduced-motion: reduce))* | animation | `none` |
+| 2873 | `#viewTrack:not([hidden]),#viewBoard:not([hidden]), #viewRack:not([hidden]),#viewCoverage:not([hidden]),#viewCompare:not([hidden])` | animation | `viewIn var(--dur-2) var(--ease) backwards` |
+| 2876 | `#viewBoard:not([hidden]) .bcol` | animation | `viewIn var(--dur-2) var(--ease) backwards` |
+| 2877 | `#viewBoard:not([hidden]) .bcol:nth-child(2)` | animation-delay | `20ms` |
+| 2878 | `#viewBoard:not([hidden]) .bcol:nth-child(3)` | animation-delay | `40ms` |
+| 2879 | `#viewBoard:not([hidden]) .bcol:nth-child(4)` | animation-delay | `60ms` |
+| 2880 | `#viewRack:not([hidden]) .trow` | animation | `viewIn var(--dur-2) var(--ease) backwards` |
+| 2881 | `#viewRack:not([hidden]) .trow:nth-child(2)` | animation-delay | `20ms` |
+| 2882 | `#viewRack:not([hidden]) .trow:nth-child(3)` | animation-delay | `40ms` |
+| 2883 | `#viewRack:not([hidden]) .trow:nth-child(4)` | animation-delay | `60ms` |
+| 2886 | `.staged-pulse` | animation | `stagePulse var(--dur-3) var(--ease) 1` |
+| 2887 | `.count-bump` | animation | `countBump var(--dur-2) var(--ease) 1` |
+| 2888 | `.trow-body.flash` | transition | `box-shadow var(--dur-3)` |
+| 2902 | `#viewTrack,#viewBoard,#viewRack,#viewCoverage,#viewCompare, .bcols .bcol,.trows .trow,.staged-pulse,.count-bump` *(@media (prefers-reduced-motion: reduce))* | animation | `none !important` |
+| 2957 | `.atbar` | transition | `filter var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)` |
+| 3004 | `.mxcell` | transition | `all var(--dur-1) var(--ease)` |
+| 3064 | `.mh-mode button` | transition | `color .14s,border-color .14s,background .14s` |
+| 3132 | `.sess .sdot` | animation | `sess-ping 2.4s ease-out infinite` |
+| 3138 | `.sess .sdot::after` | animation | `sess-bloom 1.2s ease-in-out infinite` |
+| 3156 | `.sess.stale .sdot,.sess.stale .sdot::before,.sess.stale .sdot::after` | animation | `none` |
+| 3164 | `.sess .sdot,.sess .sdot::before,.sess .sdot::after` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
+| 3199 | `.ub .ubt i` | transition | `width var(--dur-3) var(--ease)` |
+| 3211 | `.timb` | transition | `filter var(--dur-1) var(--ease)` |
+| 3246 | `.hcard` | transition | `transform var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease), background var(--dur-2) var(--ease)` |
+| 3280 | `.rvop` | transition | `all var(--dur-1) var(--ease)` |
+| 3359 | `.dbtn` | transition | `filter var(--dur-1) var(--ease)` |
+| 3375 | `#viewAir:not([hidden]) .atrow,#viewMatrix:not([hidden]) .mx tbody tr,#viewHealth:not([hidden]) .tile` | animation | `viewIn var(--dur-2) var(--ease) backwards` |
+| 3376 | `#viewHealth:not([hidden]) .tile:nth-child(2)` | animation-delay | `30ms` |
+| 3377 | `#viewHealth:not([hidden]) .tile:nth-child(3)` | animation-delay | `60ms` |
+| 3378 | `#viewHealth:not([hidden]) .tile:nth-child(4)` | animation-delay | `90ms` |
+| 3380 | `#viewAir:not([hidden]) .atrow,#viewMatrix:not([hidden]) .mx tbody tr,#viewHealth:not([hidden]) .tile,.hcard,.atbar,.mxcell,.timb` *(@media (prefers-reduced-motion:reduce))* | animation | `none!important` |
+| 3380 | `#viewAir:not([hidden]) .atrow,#viewMatrix:not([hidden]) .mx tbody tr,#viewHealth:not([hidden]) .tile,.hcard,.atbar,.mxcell,.timb` *(@media (prefers-reduced-motion:reduce))* | transition | `none!important` |
+| 3405 | `.tray-h::after` | transition | `transform var(--dur-1) var(--ease)` |
+| 3419 | `button.tile` | transition | `transform var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease)` |
+| 3426 | `button.tile::after` | transition | `opacity var(--dur-1) var(--ease)` |
+| 3431 | `button.ub` | transition | `background var(--dur-1) var(--ease)` |
+| 3439 | `.evrow` | transition | `all var(--dur-1) var(--ease)` |
+| 3456 | `.mxrow` | transition | `opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease)` |
+| 3487 | `.rvdrop` | transition | `opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` |
+| 3587 | `.attx` | transition | `all var(--dur-1) var(--ease)` |
+| 3597 | `.bgt` | transition | `all var(--dur-1) var(--ease)` |
+| 3734 | `.lvlb` | transition | `background var(--dur-1) var(--ease)` |
+| 3769 | `.ub2` | transition | `background var(--dur-1) var(--ease)` |
+| 3953 | `.modesw button` | transition | `all var(--dur-1) var(--ease)` |
+| 4060 | `.pname b,.pname i` | transition | `color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
+| 4079 | `.pname b,.pname i` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 4259 | `.scope` | transition | `background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)` |
+| 4270 | `.scope .nm i` | transition | `box-shadow var(--dur-1) var(--ease)` |
+| 4281 | `.scope,.scope .nm i` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 4495 | `.nw-chip` | transition | `border-color .14s,color .14s,background .14s` |
+| 4528 | `.pill` | transition | `border-color .14s,color .14s,background .14s,transform .14s` |
+| 4583 | `.mark` | transition | `box-shadow .14s,transform .14s` |
+| 4704 | `.cmdbar` | transition | `border-color .15s,background .15s` |
+| 4748 | `.whobtn .cv` | transition | `transform .16s` |
+| 4766 | `.chip,.seg button,.tbdsw button` | transition | `border-color .14s,color .14s,background .14s,transform .14s` |
+| 4781 | `.att-row` | transition | `background .14s` |
+| 4836 | `.bgrp` | transition | `transform .13s,box-shadow .13s,border-color .13s` |
+| 5145 | `.selbar` | transition | `transform var(--dur-3) var(--ease)` |
+| 5172 | `body.has-selbar .tray` | transition | `transform var(--dur-2) var(--ease)` |
+| 5196 | `.rmv::before` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
+| 5223 | `.ow::before` *(@media (prefers-reduced-motion:no-preference))* | transition | `opacity var(--dur-2) var(--ease)` |
+| 5405 | `.tk-inner.animate .bar` | transition | `left var(--dur-3) var(--ease),width var(--dur-3) var(--ease), transform .14s cubic-bezier(.2,.8,.3,1),box-shadow .14s,filter .12s` |
+| 5408 | `.tk-inner.animate .pt` | transition | `left var(--dur-3) var(--ease),transform .14s` |
+| 5409 | `.tk-inner.animate .now,.tk-inner.animate .win` | transition | `left var(--dur-3) var(--ease),width var(--dur-3) var(--ease)` |
+| 5413 | `.tk-inner.animate .bar.dragging` | transition | `none` |
+| 5415 | `.tk-inner.animate .bar,.tk-inner.animate .pt, .tk-inner.animate .now,.tk-inner.animate .win` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 5438 | `.bar.arriving` | animation | `arrive var(--dur-3) var(--ease) both` |
+| 5439 | `.pt.arriving` | animation | `arrive-pt var(--dur-3) var(--ease) both` |
+| 5441 | `.bar.arriving,.pt.arriving` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
+| 5451 | `tr.rowin` | animation | `rowin var(--dur-3) var(--ease) both` |
+| 5453 | `tr.rowin` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
+| 5527 | `.trow .pm::after` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 5553 | `button,.pill,.chip,.btn,.mi,.realm,.hcard,.att-row` | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` |
+| 5570 | `.landed` | animation | `landed 1.5s var(--ease-soft)` |
+| 5576 | `.tint` | transition | `background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)` |
+| 5589 | `.lift` | transition | `transform var(--dur-2) var(--ease),background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease)` |
+| 5605 | `.mh-stats .v.rolling` | animation | `figRoll .42s var(--ease)` |
+| 5613 | `.fdelta` | animation | `fdrift 1.3s var(--ease-soft) forwards` |
+| 5620 | `.realm` | transition | `color var(--dur-1) var(--ease),background var(--dur-2) var(--ease)` |
+| 5643 | `.toast` | animation | `toastIn var(--dur-toast-in) var(--ease-soft) both` |
+| 5644 | `.toast.leaving` | animation | `toastOut var(--dur-toast-out) cubic-bezier(.4,0,1,1) both` |
+| 5650 | `.mrow.sel,tr[aria-selected="true"],.selrow` | transition | `transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` |
+| 5728 | `a.att-row .att-go .arw` | transition | `transform var(--dur-1) var(--ease)` |
+| 6008 | `.wcard,.ccard,.tile,.hlive .lp,.dcard` | transition | `transform var(--dur-2) var(--ease), background var(--dur-2) var(--ease),box-shadow var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease)` |
+| 6020 | `tbody tr` | transition | `transform var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease), background var(--dur-1) var(--ease)` |
+| 6072 | `.landed` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
+| 6073 | `.mh-stats .v.rolling` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
+| 6076 | `.fdelta` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
+| 6077 | `.toast.leaving` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
+| 6448 | `.pm::after` | transition | `transform .16s var(--ease-soft,ease)` |
+| 6451 | `.pm::after` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 6479 | `.ic-fold path` | transition | `d .34s cubic-bezier(.65,0,.35,1)` |
+| 6487 | `.ic-fold path` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 6802 | `.mh-stats .stat` *(@media (prefers-reduced-motion:no-preference))* | animation | `rise var(--dur-3) var(--ease) backwards` |
+| 6803 | `.mh-stats .stat:nth-child(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `60ms` |
+| 6804 | `.mh-stats .stat:nth-child(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `120ms` |
+| 6805 | `.mh-stats .stat:nth-child(4)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `180ms` |
+| 6806 | `.mh-stats .stat:nth-child(n+5)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `240ms` |
+| 6807 | `.rail .realm` *(@media (prefers-reduced-motion:no-preference))* | animation | `laneIn var(--dur-3) var(--ease) backwards` |
+| 6808 | `.rail .realm:nth-child(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `40ms` |
+| 6808 | `.rail .realm:nth-child(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `80ms` |
+| 6809 | `.rail .realm:nth-child(4)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `120ms` |
+| 6809 | `.rail .realm:nth-child(5)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `160ms` |
+| 6810 | `.rail .realm:nth-child(6)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `200ms` |
+| 6810 | `.rail .realm:nth-child(7)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `240ms` |
+| 7156 | `.idbar[data-mesh]` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 7157 | `.idbar` | transition | `background var(--dur-2) var(--ease)` |
+| 7174 | `.mx tbody tr.just-granted` | animation | `d-just-granted 2.2s ease-out` |
+| 7284 | `.brow` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
 
 ### `b1.css` — 7
 
@@ -374,138 +374,138 @@ Every `setTimeout`/`setInterval` whose delay is a number or a timing name, with 
 | 296 | `html[data-b3-p4=a] .cb::after,html[data-b3-p4=b] .cb::after` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
 | 383 | `.g-lg label i` | transition | `box-shadow var(--b3-d1)` |
 | 405 | `html[data-b3-p2sty] .wg-r .wg-at[style],html[data-b3-p2sty] .b3-sd .wg-at[style],html[data-b3-p2sty] .g-pick .wg-at[style],html[data-b3-p2sty] .b3-wr-rail .wg-a` | transition | `box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` |
-| 568 | `.b3-fchip` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
-| 585 | `.b3-pc` | animation | `b3pop .3s cubic-bezier(.16,.84,.34,1) both` |
-| 588 | `.b3-pc[data-up=true]` | animation-name | `b3popup` |
-| 670 | `.b3-pc-open` | transition | `background var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` |
-| 683 | `.b3-pc-x` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` |
-| 711 | `html[data-b3-p4=a] .cb,html[data-b3-p4=b] .cb` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease)` |
-| 763 | `.b3-sd.mesh` *(@media (prefers-reduced-motion:no-preference))* | transition | `background-color var(--b3-d3) var(--ease)` |
-| 801 | `.b3-btn2` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` |
-| 892 | `.b3-sd-vt button` | transition | `background var(--b3-d1),color var(--b3-d1)` |
-| 1000 | `.b3-sd-atts` *(@supports (animation-timeline:scroll(self inline)))* | animation | `b3attsfade linear both` |
-| 1017 | `.b3-sd-code .ic` | transition | `color var(--b3-d1)` |
-| 1018 | `.b3-sd-code.as-btn` | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` |
-| 1074 | `.b3-nb .pb-thumb` | transition | `transform var(--b3-d2) cubic-bezier(.3,.7,.2,1),background var(--b3-d2)` |
-| 1134 | `.b3-nb .pb-tog i .ic` | transition | `opacity var(--b3-d1),transform var(--b3-d2) cubic-bezier(.22,1,.36,1)` |
-| 1214 | `.b3-nb .pb-in` | animation | `pbIn .2s ease both` |
-| 1229 | `.b3-fc` | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` |
-| 1258 | `.b3-rv` | transition | `background var(--b3-d1),box-shadow var(--b3-d1)` |
-| 1304 | `.b3-wr` | transition | `background var(--b3-d1)` |
-| 1364 | `.b3-wr-d` | animation | `b3rise .18s var(--ease) backwards` |
-| 1410 | `.b3-cmd` | animation | `b3pop .14s var(--ease) both` |
-| 1455 | `.b3-datepop` | animation | `b3popup .15s var(--ease) both` |
-| 1465 | `.b3-dp-nav` | transition | `background-color .12s var(--ease),color .12s var(--ease)` |
-| 1472 | `.b3-dp-d` | transition | `background-color .12s var(--ease),color .12s var(--ease),box-shadow .12s var(--ease)` |
-| 1537 | `.b3-hi-r` | transition | `background var(--b3-d1)` |
-| 1588 | `html[data-b3-e1=a] .pill.lead.mh-new,html[data-b3-e1=b] .pill.lead.mh-new` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
-| 1645 | `html[data-b3-a1=fixed] .wg-ib::before` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
-| 1660 | `html[data-b3-a1=fixed] .wg-ib.wg-fbtn` | transition | `grid-template-columns var(--b3-reveal) var(--b3-reveal-ease),column-gap var(--b3-reveal) var(--b3-reveal-ease)` |
-| 1665 | `html[data-b3-a1=fixed] .wg-ib.wg-fbtn::after` | transition | `opacity calc(var(--b3-reveal) * .55) var(--b3-reveal-ease)` |
-| 1670 | `html[data-b3-a1=fixed] .wg-ib.wg-fbtn:hover::after,html[data-b3-a1=fixed] .wg-ib.wg-fbtn:focus-visible::after` | transition | `opacity calc(var(--b3-reveal) * .7) var(--b3-reveal-ease) calc(var(--b3-reveal) * .2)` |
-| 1743 | `.b3-infocard` | animation | `b3pop .14s var(--ease) both` |
-| 1936 | `.b3-bdgs.in .b3-bdg[data-t=best]::after` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3shine 6.4s cubic-bezier(.45,0,.55,1) infinite` |
-| 1936 | `.b3-bdgs.in .b3-bdg[data-t=best]::after` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `calc(var(--ph,0) * -6.4s)` |
-| 2083 | `.b3-sd-note .b3-step` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3land .34s cubic-bezier(.16,1,.3,1) both` |
-| 2084 | `.b3-sd-note .b3-step:nth-of-type(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.12s` |
-| 2085 | `.b3-sd-note .b3-step:nth-of-type(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.24s` |
-| 2086 | `.b3-sd-note .b3-step-a` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3extend .2s cubic-bezier(.16,1,.3,1) both` |
-| 2086 | `.b3-sd-note .b3-step-a` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.08s` |
-| 2087 | `.b3-sd-note .b3-step-a:nth-of-type(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.2s` |
-| 2088 | `.b3-sd-note > b` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3rise .3s var(--ease) both` |
-| 2088 | `.b3-sd-note > b` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.3s` |
-| 2137 | `.b3-sd-list` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3unfold .34s cubic-bezier(.16,1,.3,1) backwards` |
-| 2138 | `.b3-sd-list .b3-sd-gh` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3head .3s cubic-bezier(.16,1,.3,1) backwards` |
-| 2139 | `.b3-sd-list .b3-sd-gh:nth-of-type(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.05s` |
-| 2140 | `.b3-sd-list .b3-sd-gh:nth-of-type(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.1s` |
-| 2141 | `.b3-sd-list .b3-sd-gh:nth-of-type(n+4)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.15s` |
-| 2142 | `.b3-sd-sum` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3hand .3s var(--ease) backwards` |
-| 2142 | `.b3-sd-sum` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.06s` |
-| 2145 | `.b3-sd-list` *(@media (prefers-reduced-motion:reduce))* | animation | `b3fade .2s linear backwards` |
-| 2186 | `.b3-wr-chev` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),color var(--b3-d1) var(--ease)` |
-| 2198 | `.b3-fold2` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),color var(--b3-d1) var(--ease),gap var(--b3-d2) var(--ease)` |
-| 2201 | `.b3-fold2 b` | transition | `max-width var(--b3-d2) var(--ease),opacity var(--b3-d1) var(--ease)` |
-| 2397 | `.b3-sc button` | transition | `background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
-| 2552 | `.b3-pc` | animation | `none` |
-| 2552 | `.b3-pc` | transition | `transform .18s cubic-bezier(.4,0,1,1),opacity .16s ease-in` |
-| 2559 | `.b3-pc.in,.b3-pc[data-up=true].in` | transition | `transform .6s cubic-bezier(.34,1.56,.64,1),opacity .24s ease-out` |
-| 2562 | `.b3-pc-edge path` | transition | `d .6s cubic-bezier(.34,1.56,.64,1)` |
-| 2572 | `.b3-pc,.b3-pc-edge path` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 2784 | `:is(.b3-sd-atts,.b3-fadx)` | animation | `none!important` |
-| 2792 | `.b3-sd-list.out` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3fold .24s cubic-bezier(.4,0,1,1) forwards` |
-| 2793 | `.b3-sd-list.out .b3-sd-gh` *(@media (prefers-reduced-motion:no-preference))* | animation | `none` |
-| 2795 | `.b3-sd-list.out` *(@media (prefers-reduced-motion:reduce))* | animation | `b3fadeout .16s linear forwards` |
-| 2838 | `.b3-corp-r` *(@media (prefers-reduced-motion:no-preference))* | transition | `opacity var(--b3-d1,160ms) var(--ease,ease)` |
-| 2893 | `.b3-sd-chips > .b3-sc` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3chipin .28s cubic-bezier(.16,1,.3,1) .1s backwards` |
-| 2894 | `.b3-sd-chips > .b3-sc:nth-child(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.13s` |
-| 2895 | `.b3-sd-chips > .b3-sc:nth-child(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.16s` |
-| 2896 | `.b3-sd-chips > .b3-sc:nth-child(n+4)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.19s` |
-| 3012 | `.b3-xt-w8` | transition | `max-width 240ms cubic-bezier(.22,1,.36,1),opacity 180ms ease-out,margin 240ms cubic-bezier(.22,1,.36,1)` |
-| 3016 | `.b3-xt-w` | transition | `border-color 160ms cubic-bezier(.23,1,.32,1),background 160ms cubic-bezier(.23,1,.32,1)` |
-| 3028 | `.b3-xt-c` | transition | `background 140ms ease-out,box-shadow 140ms ease-out` |
-| 3054 | `.b3-xf` | transition | `flex-grow 320ms cubic-bezier(.22,1,.36,1)` |
-| 3073 | `.b3-xf-cc` | transition | `color 200ms ease-out,border-color 200ms ease-out,background 200ms ease-out` |
-| 3076 | `.b3-xf-bw` | transition | `grid-template-rows 320ms cubic-bezier(.22,1,.36,1),opacity 220ms ease-out` |
-| 3079 | `.b3-xf-b` | transition | `padding 320ms cubic-bezier(.22,1,.36,1)` |
-| 3089 | `.b3-xf-fold` | transition | `color 140ms ease-out,background 140ms ease-out` |
-| 3094 | `.b3-xt-blk` | transition | `grid-template-rows 170ms cubic-bezier(.23,1,.32,1),opacity 150ms ease-out` |
-| 3096 | `.b3-xt-bin` | transition | `background 200ms ease-out` |
-| 3106 | `.b3-xt-rm` | transition | `opacity 140ms ease-out,color 140ms ease-out,background 140ms ease-out` |
-| 3115 | `.b3-xt-peek` | transition | `opacity 150ms cubic-bezier(.23,1,.32,1),transform 200ms cubic-bezier(.23,1,.32,1)` |
-| 3125 | `.b3-xt-blk:not(.out)` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3xtin 240ms cubic-bezier(.23,1,.32,1) backwards` |
-| 3126 | `.b3-xt-blk.fresh .b3-xt-bin` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3xtflash 1s cubic-bezier(.23,1,.32,1)` |
-| 3127 | `.b3-xf-n` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3xtroll 260ms cubic-bezier(.23,1,.32,1)` |
-| 3128 | `.b3-xf` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3xfin 360ms cubic-bezier(.22,1,.36,1) backwards` |
-| 3134 | `.b3-xt-blk,.b3-xt-peek,.b3-xt-c,.b3-xt-w8,.b3-xf,.b3-xf-bw` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 3240 | `.b3-bdgs.in .b3-bdg[data-t^=top] .b3-rim > i` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3rimr 5.4s linear infinite` |
-| 3240 | `.b3-bdgs.in .b3-bdg[data-t^=top] .b3-rim > i` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `calc(var(--ph,0) * -5.4s)` |
-| 3247 | `.b3-bdgs.in .b3-tox > i:nth-child(1)` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3toxb1 17s linear infinite` |
-| 3247 | `.b3-bdgs.in .b3-tox > i:nth-child(1)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `calc(var(--ph,0) * -17s)` |
-| 3248 | `.b3-bdgs.in .b3-tox > i:nth-child(2)` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3toxb2 17s linear infinite` |
-| 3248 | `.b3-bdgs.in .b3-tox > i:nth-child(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `calc(var(--ph,0) * -17s)` |
-| 3249 | `.b3-bdgs.in .b3-tox > i:nth-child(3)` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3toxb3 17s linear infinite` |
-| 3249 | `.b3-bdgs.in .b3-tox > i:nth-child(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `calc(var(--ph,0) * -17s)` |
-| 3282 | `.b3-hc` | transition | `transform .18s cubic-bezier(.4,0,1,1),opacity .16s ease-in` |
-| 3286 | `.b3-hc.in` | transition | `transform .6s cubic-bezier(.34,1.56,.64,1),opacity .24s ease-out` |
-| 3290 | `.b3-hc` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 3298 | `.chip.topic i` | transition | `box-shadow var(--b3-d1) var(--ease)` |
-| 3663 | `.g-fact.b3-cc` | transition | `color 200ms ease-out,border-color 200ms ease-out,background 200ms ease-out` |
-| 3672 | `.g-fact.b3-cc` | transition | `color 200ms ease-out,box-shadow 200ms ease-out,background 200ms ease-out` |
-| 3686 | `:is(.b3-xf,.exs-i) .b3-xf-fn` | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` |
-| 3690 | `.b3-xf-fn .ic` | transition | `opacity var(--b3-d1)` |
-| 3698 | `.b3-xt-w` | transition | `border-color var(--b3-d1),box-shadow var(--b3-d1),background var(--b3-d1)` |
-| 3741 | `.b3-xf-h > .b3-xf-fold b` | transition | `opacity 140ms ease-out` |
-| 3756 | `:is(.b3-xf,.exs-i) .b3-xf-fn:not(.editing)` | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` |
-| 3793 | `.b3-xf-h > .b3-xf-fold3` | transition | `color var(--b3-d1),background var(--b3-d1),box-shadow var(--b3-d1)` |
-| 3839 | `.b3-xf,.b3-xf.shut` | transition | `flex-grow var(--xf-dur) var(--xf-ease),min-height var(--xf-dur) var(--xf-ease)` |
-| 3841 | `.b3-xf-bw,.b3-xf.shut .b3-xf-bw` | transition | `none` |
-| 3843 | `.b3-xf-b` | transition | `opacity 240ms ease-out 90ms,transform 380ms var(--xf-ease) 40ms,visibility 0s` |
-| 3844 | `.b3-xf.shut .b3-xf-b` | transition | `opacity 140ms ease-in,transform 200ms ease-in,visibility 0s linear 200ms` |
-| 3845 | `.b3-xf,.b3-xf-b` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 3893 | `.b3-xr-r` | transition | `background var(--b3-d1),box-shadow var(--b3-d1)` |
-| 3906 | `.b3-xr-k` | transition | `background 140ms ease-out,box-shadow 140ms ease-out` |
-| 3951 | `.b3-xi-r` | transition | `background var(--b3-d1)` |
-| 3960 | `.b3-xi-k` | transition | `color 140ms ease-out,box-shadow 140ms ease-out,background 140ms ease-out` |
-| 3971 | `.b3-xc-w` | transition | `box-shadow var(--b3-d1),background var(--b3-d1)` |
-| 3976 | `.b3-xc-k` | transition | `background 140ms ease-out,box-shadow 140ms ease-out,color 140ms ease-out` |
-| 3994 | `.b3-xb-k` | transition | `background 140ms ease-out,box-shadow 140ms ease-out` |
-| 4012 | `.b3-xg-t` | transition | `background var(--b3-d1),box-shadow var(--b3-d1)` |
-| 4022 | `.b3-xg-k` | transition | `background 140ms ease-out,color 140ms ease-out` |
-| 4134 | `.b3-btn2.go` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` |
-| 4151 | `.b3-btn2.stage` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` |
-| 4161 | `.b3-btn2:is(.go,.stage)` *(@media (prefers-reduced-motion:reduce))* | transition | `background var(--b3-d1),box-shadow var(--b3-d1)` |
-| 4384 | `.b3-endwarn .b3-endbtn` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` |
-| 4434 | `.b3-xt-w:hover .b3-xt-wn b,.b3-xt-wn:focus-visible b` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3xtname 4.5s cubic-bezier(.4,0,.6,1) infinite alternate` |
-| 4499 | `.b3-xf-ib` | transition | `background var(--b3-d1),color var(--b3-d1)` |
-| 4526 | `.b3-xf,.b3-xf.shut` | transition | `flex-grow var(--xf-dur) var(--xf-ease)` |
-| 4566 | `.b3-xf,.b3-xf.shut` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
-| 4567 | `.b3-xf-b,.b3-xf.shut .b3-xf-b` *(@media (prefers-reduced-motion:reduce))* | transition | `opacity 120ms linear` |
-| 4655 | `.b3-endwrap.b3-endwarn .b3-endbtn` | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` |
-| 4944 | `.b3-hi-r` | transition | `background var(--b3-d1) var(--ease)` |
-| 5230 | `.b3-pc.cut,.b3-hc.cut` | transition | `none!important` |
-| 5256 | `.b3-pc.in,.b3-pc[data-up=true].in,.b3-hc.in` | transition | `transform .6s cubic-bezier(.34,1.56,.64,1),opacity .07s linear!important` |
-| 5257 | `.b3-pc:not(.in),.b3-hc:not(.in)` | transition | `transform .16s cubic-bezier(.4,0,1,1),opacity .11s linear` |
-| 5334 | `.bc-tt > .pb-pill.bc-rep` | transition | `background .15s,box-shadow .15s,color .15s` |
+| 564 | `.b3-fchip` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
+| 581 | `.b3-pc` | animation | `b3pop .3s cubic-bezier(.16,.84,.34,1) both` |
+| 584 | `.b3-pc[data-up=true]` | animation-name | `b3popup` |
+| 666 | `.b3-pc-open` | transition | `background var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` |
+| 679 | `.b3-pc-x` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` |
+| 707 | `html[data-b3-p4=a] .cb,html[data-b3-p4=b] .cb` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease)` |
+| 759 | `.b3-sd.mesh` *(@media (prefers-reduced-motion:no-preference))* | transition | `background-color var(--b3-d3) var(--ease)` |
+| 797 | `.b3-btn2` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` |
+| 888 | `.b3-sd-vt button` | transition | `background var(--b3-d1),color var(--b3-d1)` |
+| 996 | `.b3-sd-atts` *(@supports (animation-timeline:scroll(self inline)))* | animation | `b3attsfade linear both` |
+| 1013 | `.b3-sd-code .ic` | transition | `color var(--b3-d1)` |
+| 1014 | `.b3-sd-code.as-btn` | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` |
+| 1070 | `.b3-nb .pb-thumb` | transition | `transform var(--b3-d2) cubic-bezier(.3,.7,.2,1),background var(--b3-d2)` |
+| 1130 | `.b3-nb .pb-tog i .ic` | transition | `opacity var(--b3-d1),transform var(--b3-d2) cubic-bezier(.22,1,.36,1)` |
+| 1210 | `.b3-nb .pb-in` | animation | `pbIn .2s ease both` |
+| 1225 | `.b3-fc` | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` |
+| 1254 | `.b3-rv` | transition | `background var(--b3-d1),box-shadow var(--b3-d1)` |
+| 1300 | `.b3-wr` | transition | `background var(--b3-d1)` |
+| 1360 | `.b3-wr-d` | animation | `b3rise .18s var(--ease) backwards` |
+| 1406 | `.b3-cmd` | animation | `b3pop .14s var(--ease) both` |
+| 1451 | `.b3-datepop` | animation | `b3popup .15s var(--ease) both` |
+| 1461 | `.b3-dp-nav` | transition | `background-color .12s var(--ease),color .12s var(--ease)` |
+| 1468 | `.b3-dp-d` | transition | `background-color .12s var(--ease),color .12s var(--ease),box-shadow .12s var(--ease)` |
+| 1533 | `.b3-hi-r` | transition | `background var(--b3-d1)` |
+| 1584 | `html[data-b3-e1=a] .pill.lead.mh-new,html[data-b3-e1=b] .pill.lead.mh-new` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
+| 1641 | `html[data-b3-a1=fixed] .wg-ib::before` | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
+| 1656 | `html[data-b3-a1=fixed] .wg-ib.wg-fbtn` | transition | `grid-template-columns var(--b3-reveal) var(--b3-reveal-ease),column-gap var(--b3-reveal) var(--b3-reveal-ease)` |
+| 1661 | `html[data-b3-a1=fixed] .wg-ib.wg-fbtn::after` | transition | `opacity calc(var(--b3-reveal) * .55) var(--b3-reveal-ease)` |
+| 1666 | `html[data-b3-a1=fixed] .wg-ib.wg-fbtn:hover::after,html[data-b3-a1=fixed] .wg-ib.wg-fbtn:focus-visible::after` | transition | `opacity calc(var(--b3-reveal) * .7) var(--b3-reveal-ease) calc(var(--b3-reveal) * .2)` |
+| 1739 | `.b3-infocard` | animation | `b3pop .14s var(--ease) both` |
+| 1932 | `.b3-bdgs.in .b3-bdg[data-t=best]::after` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3shine 6.4s cubic-bezier(.45,0,.55,1) infinite` |
+| 1932 | `.b3-bdgs.in .b3-bdg[data-t=best]::after` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `calc(var(--ph,0) * -6.4s)` |
+| 2079 | `.b3-sd-note .b3-step` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3land .34s cubic-bezier(.16,1,.3,1) both` |
+| 2080 | `.b3-sd-note .b3-step:nth-of-type(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.12s` |
+| 2081 | `.b3-sd-note .b3-step:nth-of-type(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.24s` |
+| 2082 | `.b3-sd-note .b3-step-a` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3extend .2s cubic-bezier(.16,1,.3,1) both` |
+| 2082 | `.b3-sd-note .b3-step-a` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.08s` |
+| 2083 | `.b3-sd-note .b3-step-a:nth-of-type(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.2s` |
+| 2084 | `.b3-sd-note > b` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3rise .3s var(--ease) both` |
+| 2084 | `.b3-sd-note > b` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.3s` |
+| 2133 | `.b3-sd-list` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3unfold .34s cubic-bezier(.16,1,.3,1) backwards` |
+| 2134 | `.b3-sd-list .b3-sd-gh` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3head .3s cubic-bezier(.16,1,.3,1) backwards` |
+| 2135 | `.b3-sd-list .b3-sd-gh:nth-of-type(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.05s` |
+| 2136 | `.b3-sd-list .b3-sd-gh:nth-of-type(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.1s` |
+| 2137 | `.b3-sd-list .b3-sd-gh:nth-of-type(n+4)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.15s` |
+| 2138 | `.b3-sd-sum` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3hand .3s var(--ease) backwards` |
+| 2138 | `.b3-sd-sum` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.06s` |
+| 2141 | `.b3-sd-list` *(@media (prefers-reduced-motion:reduce))* | animation | `b3fade .2s linear backwards` |
+| 2182 | `.b3-wr-chev` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),color var(--b3-d1) var(--ease)` |
+| 2194 | `.b3-fold2` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),color var(--b3-d1) var(--ease),gap var(--b3-d2) var(--ease)` |
+| 2197 | `.b3-fold2 b` | transition | `max-width var(--b3-d2) var(--ease),opacity var(--b3-d1) var(--ease)` |
+| 2393 | `.b3-sc button` | transition | `background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` |
+| 2548 | `.b3-pc` | animation | `none` |
+| 2548 | `.b3-pc` | transition | `transform .18s cubic-bezier(.4,0,1,1),opacity .16s ease-in` |
+| 2555 | `.b3-pc.in,.b3-pc[data-up=true].in` | transition | `transform .6s cubic-bezier(.34,1.56,.64,1),opacity .24s ease-out` |
+| 2558 | `.b3-pc-edge path` | transition | `d .6s cubic-bezier(.34,1.56,.64,1)` |
+| 2568 | `.b3-pc,.b3-pc-edge path` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 2780 | `:is(.b3-sd-atts,.b3-fadx)` | animation | `none!important` |
+| 2788 | `.b3-sd-list.out` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3fold .24s cubic-bezier(.4,0,1,1) forwards` |
+| 2789 | `.b3-sd-list.out .b3-sd-gh` *(@media (prefers-reduced-motion:no-preference))* | animation | `none` |
+| 2791 | `.b3-sd-list.out` *(@media (prefers-reduced-motion:reduce))* | animation | `b3fadeout .16s linear forwards` |
+| 2834 | `.b3-corp-r` *(@media (prefers-reduced-motion:no-preference))* | transition | `opacity var(--b3-d1,160ms) var(--ease,ease)` |
+| 2889 | `.b3-sd-chips > .b3-sc` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3chipin .28s cubic-bezier(.16,1,.3,1) .1s backwards` |
+| 2890 | `.b3-sd-chips > .b3-sc:nth-child(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.13s` |
+| 2891 | `.b3-sd-chips > .b3-sc:nth-child(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.16s` |
+| 2892 | `.b3-sd-chips > .b3-sc:nth-child(n+4)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `.19s` |
+| 3008 | `.b3-xt-w8` | transition | `max-width 240ms cubic-bezier(.22,1,.36,1),opacity 180ms ease-out,margin 240ms cubic-bezier(.22,1,.36,1)` |
+| 3012 | `.b3-xt-w` | transition | `border-color 160ms cubic-bezier(.23,1,.32,1),background 160ms cubic-bezier(.23,1,.32,1)` |
+| 3024 | `.b3-xt-c` | transition | `background 140ms ease-out,box-shadow 140ms ease-out` |
+| 3050 | `.b3-xf` | transition | `flex-grow 320ms cubic-bezier(.22,1,.36,1)` |
+| 3069 | `.b3-xf-cc` | transition | `color 200ms ease-out,border-color 200ms ease-out,background 200ms ease-out` |
+| 3072 | `.b3-xf-bw` | transition | `grid-template-rows 320ms cubic-bezier(.22,1,.36,1),opacity 220ms ease-out` |
+| 3075 | `.b3-xf-b` | transition | `padding 320ms cubic-bezier(.22,1,.36,1)` |
+| 3085 | `.b3-xf-fold` | transition | `color 140ms ease-out,background 140ms ease-out` |
+| 3090 | `.b3-xt-blk` | transition | `grid-template-rows 170ms cubic-bezier(.23,1,.32,1),opacity 150ms ease-out` |
+| 3092 | `.b3-xt-bin` | transition | `background 200ms ease-out` |
+| 3102 | `.b3-xt-rm` | transition | `opacity 140ms ease-out,color 140ms ease-out,background 140ms ease-out` |
+| 3111 | `.b3-xt-peek` | transition | `opacity 150ms cubic-bezier(.23,1,.32,1),transform 200ms cubic-bezier(.23,1,.32,1)` |
+| 3121 | `.b3-xt-blk:not(.out)` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3xtin 240ms cubic-bezier(.23,1,.32,1) backwards` |
+| 3122 | `.b3-xt-blk.fresh .b3-xt-bin` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3xtflash 1s cubic-bezier(.23,1,.32,1)` |
+| 3123 | `.b3-xf-n` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3xtroll 260ms cubic-bezier(.23,1,.32,1)` |
+| 3124 | `.b3-xf` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3xfin 360ms cubic-bezier(.22,1,.36,1) backwards` |
+| 3130 | `.b3-xt-blk,.b3-xt-peek,.b3-xt-c,.b3-xt-w8,.b3-xf,.b3-xf-bw` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 3236 | `.b3-bdgs.in .b3-bdg[data-t^=top] .b3-rim > i` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3rimr 5.4s linear infinite` |
+| 3236 | `.b3-bdgs.in .b3-bdg[data-t^=top] .b3-rim > i` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `calc(var(--ph,0) * -5.4s)` |
+| 3243 | `.b3-bdgs.in .b3-tox > i:nth-child(1)` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3toxb1 17s linear infinite` |
+| 3243 | `.b3-bdgs.in .b3-tox > i:nth-child(1)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `calc(var(--ph,0) * -17s)` |
+| 3244 | `.b3-bdgs.in .b3-tox > i:nth-child(2)` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3toxb2 17s linear infinite` |
+| 3244 | `.b3-bdgs.in .b3-tox > i:nth-child(2)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `calc(var(--ph,0) * -17s)` |
+| 3245 | `.b3-bdgs.in .b3-tox > i:nth-child(3)` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3toxb3 17s linear infinite` |
+| 3245 | `.b3-bdgs.in .b3-tox > i:nth-child(3)` *(@media (prefers-reduced-motion:no-preference))* | animation-delay | `calc(var(--ph,0) * -17s)` |
+| 3278 | `.b3-hc` | transition | `transform .18s cubic-bezier(.4,0,1,1),opacity .16s ease-in` |
+| 3282 | `.b3-hc.in` | transition | `transform .6s cubic-bezier(.34,1.56,.64,1),opacity .24s ease-out` |
+| 3286 | `.b3-hc` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 3294 | `.chip.topic i` | transition | `box-shadow var(--b3-d1) var(--ease)` |
+| 3659 | `.g-fact.b3-cc` | transition | `color 200ms ease-out,border-color 200ms ease-out,background 200ms ease-out` |
+| 3668 | `.g-fact.b3-cc` | transition | `color 200ms ease-out,box-shadow 200ms ease-out,background 200ms ease-out` |
+| 3682 | `:is(.b3-xf,.exs-i) .b3-xf-fn` | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` |
+| 3686 | `.b3-xf-fn .ic` | transition | `opacity var(--b3-d1)` |
+| 3694 | `.b3-xt-w` | transition | `border-color var(--b3-d1),box-shadow var(--b3-d1),background var(--b3-d1)` |
+| 3737 | `.b3-xf-h > .b3-xf-fold b` | transition | `opacity 140ms ease-out` |
+| 3752 | `:is(.b3-xf,.exs-i) .b3-xf-fn:not(.editing)` | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` |
+| 3789 | `.b3-xf-h > .b3-xf-fold3` | transition | `color var(--b3-d1),background var(--b3-d1),box-shadow var(--b3-d1)` |
+| 3835 | `.b3-xf,.b3-xf.shut` | transition | `flex-grow var(--xf-dur) var(--xf-ease),min-height var(--xf-dur) var(--xf-ease)` |
+| 3837 | `.b3-xf-bw,.b3-xf.shut .b3-xf-bw` | transition | `none` |
+| 3839 | `.b3-xf-b` | transition | `opacity 240ms ease-out 90ms,transform 380ms var(--xf-ease) 40ms,visibility 0s` |
+| 3840 | `.b3-xf.shut .b3-xf-b` | transition | `opacity 140ms ease-in,transform 200ms ease-in,visibility 0s linear 200ms` |
+| 3841 | `.b3-xf,.b3-xf-b` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 3889 | `.b3-xr-r` | transition | `background var(--b3-d1),box-shadow var(--b3-d1)` |
+| 3902 | `.b3-xr-k` | transition | `background 140ms ease-out,box-shadow 140ms ease-out` |
+| 3947 | `.b3-xi-r` | transition | `background var(--b3-d1)` |
+| 3956 | `.b3-xi-k` | transition | `color 140ms ease-out,box-shadow 140ms ease-out,background 140ms ease-out` |
+| 3967 | `.b3-xc-w` | transition | `box-shadow var(--b3-d1),background var(--b3-d1)` |
+| 3972 | `.b3-xc-k` | transition | `background 140ms ease-out,box-shadow 140ms ease-out,color 140ms ease-out` |
+| 3990 | `.b3-xb-k` | transition | `background 140ms ease-out,box-shadow 140ms ease-out` |
+| 4008 | `.b3-xg-t` | transition | `background var(--b3-d1),box-shadow var(--b3-d1)` |
+| 4018 | `.b3-xg-k` | transition | `background 140ms ease-out,color 140ms ease-out` |
+| 4130 | `.b3-btn2.go` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` |
+| 4147 | `.b3-btn2.stage` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` |
+| 4157 | `.b3-btn2:is(.go,.stage)` *(@media (prefers-reduced-motion:reduce))* | transition | `background var(--b3-d1),box-shadow var(--b3-d1)` |
+| 4380 | `.b3-endwarn .b3-endbtn` | transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` |
+| 4430 | `.b3-xt-w:hover .b3-xt-wn b,.b3-xt-wn:focus-visible b` *(@media (prefers-reduced-motion:no-preference))* | animation | `b3xtname 4.5s cubic-bezier(.4,0,.6,1) infinite alternate` |
+| 4495 | `.b3-xf-ib` | transition | `background var(--b3-d1),color var(--b3-d1)` |
+| 4522 | `.b3-xf,.b3-xf.shut` | transition | `flex-grow var(--xf-dur) var(--xf-ease)` |
+| 4562 | `.b3-xf,.b3-xf.shut` *(@media (prefers-reduced-motion:reduce))* | transition | `none` |
+| 4563 | `.b3-xf-b,.b3-xf.shut .b3-xf-b` *(@media (prefers-reduced-motion:reduce))* | transition | `opacity 120ms linear` |
+| 4651 | `.b3-endwrap.b3-endwarn .b3-endbtn` | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` |
+| 4940 | `.b3-hi-r` | transition | `background var(--b3-d1) var(--ease)` |
+| 5226 | `.b3-pc.cut,.b3-hc.cut` | transition | `none!important` |
+| 5252 | `.b3-pc.in,.b3-pc[data-up=true].in,.b3-hc.in` | transition | `transform .6s cubic-bezier(.34,1.56,.64,1),opacity .07s linear!important` |
+| 5253 | `.b3-pc:not(.in),.b3-hc:not(.in)` | transition | `transform .16s cubic-bezier(.4,0,1,1),opacity .11s linear` |
+| 5330 | `.bc-tt > .pb-pill.bc-rep` | transition | `background .15s,box-shadow .15s,color .15s` |
 
 ### `b4.css` — 12
 
@@ -701,21 +701,21 @@ Every `setTimeout`/`setInterval` whose delay is a number or a timing name, with 
 |---|---|---|---|
 | 18 | `.b4 .f-card` | transition | `box-shadow .2s,background-color .2s` |
 | 44 | `.b4 .f-fld` | transition | `box-shadow .16s ease,background-color .16s ease` |
-| 69 | `.b4 .f-suf` | transition | `color .15s,background-color .15s` |
-| 77 | `.b4 .f-cr path` | transition | `d .24s cubic-bezier(.32,.72,0,1)` |
-| 85 | `.b4 .f-menu` | animation | `f-in .16s cubic-bezier(.23,1,.32,1)` |
-| 108 | `.b4 .f-att.auto .f-fld` | animation | `f-lit .6s cubic-bezier(.16,1,.3,1) backwards` |
-| 112 | `.b4 .f-att.auto:nth-child(2) .f-fld` | animation-delay | `50ms` |
-| 112 | `.b4 .f-att.auto:nth-child(3) .f-fld` | animation-delay | `100ms` |
-| 112 | `.b4 .f-att.auto:nth-child(4) .f-fld` | animation-delay | `150ms` |
-| 112 | `.b4 .f-att.auto:nth-child(5) .f-fld` | animation-delay | `200ms` |
-| 113 | `.b4 .f-att.auto .f-fld` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
-| 119 | `.b4 .f-bt` | transition | `box-shadow .15s,background-color .15s` |
-| 133 | `.b4 .f-bt .b3-bdgs,.b4 .f-tier .b3-bdgs` | transition | `filter .18s,opacity .18s` |
-| 139 | `.b4 .f-tier` | transition | `box-shadow .15s,background-color .15s` |
-| 167 | `.b4 .f-src button` | transition | `color .15s,background-color .15s` |
-| 174 | `.b4 .f-drop` | transition | `border-color .15s,color .15s,background-color .15s` |
-| 198 | `.b4 .f-more` | transition | `color .15s,border-color .15s,background-color .15s` |
+| 71 | `.b4 .f-suf` | transition | `color .15s,background-color .15s` |
+| 79 | `.b4 .f-cr path` | transition | `d .24s cubic-bezier(.32,.72,0,1)` |
+| 87 | `.b4 .f-menu` | animation | `f-in .16s cubic-bezier(.23,1,.32,1)` |
+| 110 | `.b4 .f-att.auto .f-fld` | animation | `f-lit .6s cubic-bezier(.16,1,.3,1) backwards` |
+| 114 | `.b4 .f-att.auto:nth-child(2) .f-fld` | animation-delay | `50ms` |
+| 114 | `.b4 .f-att.auto:nth-child(3) .f-fld` | animation-delay | `100ms` |
+| 114 | `.b4 .f-att.auto:nth-child(4) .f-fld` | animation-delay | `150ms` |
+| 114 | `.b4 .f-att.auto:nth-child(5) .f-fld` | animation-delay | `200ms` |
+| 115 | `.b4 .f-att.auto .f-fld` *(@media (prefers-reduced-motion:reduce))* | animation | `none` |
+| 121 | `.b4 .f-bt` | transition | `box-shadow .15s,background-color .15s` |
+| 135 | `.b4 .f-bt .b3-bdgs,.b4 .f-tier .b3-bdgs` | transition | `filter .18s,opacity .18s` |
+| 141 | `.b4 .f-tier` | transition | `box-shadow .15s,background-color .15s` |
+| 169 | `.b4 .f-src button` | transition | `color .15s,background-color .15s` |
+| 176 | `.b4 .f-drop` | transition | `border-color .15s,color .15s,background-color .15s` |
+| 200 | `.b4 .f-more` | transition | `color .15s,border-color .15s,background-color .15s` |
 
 ### `gates.css` — 7
 

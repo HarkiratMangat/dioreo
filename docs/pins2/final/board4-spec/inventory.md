@@ -11,13 +11,13 @@ status: live
 
 | Gate | Elements specced | Looks | States walked | Elements in the largest state | Tab stops (most) | a11y findings | Relations ✓ / ruled |
 |---|---|---|---|---|---|---|---|
-| C1 · The Armory manifest | 70 | 132 | 7 | 126 | 203 | 0 | 0 / 0 |
-| C2 · New build | 98 | 123 | 13 | 44 | 93 | 95 | 2 / 2 |
-| C3 · Compare | 103 | 158 | 4 | 116 | 52 | 88 | 23 / 23 |
+| C1 · The Armory manifest | 69 | 130 | 7 | 126 | 201 | 0 | 0 / 0 |
+| C2 · New build | 98 | 124 | 13 | 44 | 93 | 95 | 2 / 2 |
+| C3 · Compare | 103 | 156 | 4 | 116 | 50 | 88 | 23 / 23 |
 | C4 · Repairs | 75 | 137 | 2 | 75 | 15 | 0 | 0 / 0 |
 | C5 · Export | 26 | 34 | 3 | 38 | 221 | 136 | 0 / 0 |
 | C6 · The delivery queue | 60 | 82 | 1 | 138 | 20 | 2 | 7 / 7 |
-| C7 · The Broadcast manifest, and posting | 34 | 58 | 3 | 107 | 63 | 4 | 5 / 5 |
+| C7 · The Broadcast manifest, and posting | 32 | 56 | 3 | 107 | 63 | 4 | 5 / 5 |
 | C8 · History | 45 | 91 | 4 | 102 | 100 | 116 | 0 / 0 |
 | C9 · Admin traffic | 5 | 5 | 2 | 8 | 6 | 0 | 0 / 0 |
 
@@ -45,7 +45,7 @@ status: live
 
 | | |
 |---|---|
-| Looks specced / signatures | 1677 / 716 (`README.md`) |
+| Looks specced / signatures | 1670 / 715 (`README.md`) |
 | Hover relations (one element's hover restyles another) | 194 (`hover-relations.md`) |
 | Motion declarations · component timers · @keyframes | 535 · 51 · 46 (`motion-timing.md`, `motion.md`) |
 | Colour tokens · literals · `color-mix` recipes | 181 · 292 · 685 (`colours.md`) |

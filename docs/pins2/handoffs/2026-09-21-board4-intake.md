@@ -2075,6 +2075,24 @@ Sweep: every family (problem, all-pass, image mark ×2, text hint, peek, three p
 | Class | What he asked | Where it landed |
 |---|---|---|
 | **Dropdown or pop-up** | a list the field opens: 10px, no arc · a pop-up its button opens: arc, tip 4px | `HANDOFF.md` § Added by the readiness audit (a standard for every realm); `relations.cjs` judges each family by its own number |
-| **The Label count** | a live count inside the field | kit `b4/form.js` + `b4/form.css` (`.f-cnt`): `n/32` on the field's right, amber from 28 |
+| **The Label count** | a live count inside the field | kit `docs/pins2/kit/b4/form.js` + `docs/pins2/kit/b4/form.css` (`.f-cnt`): `n/32` on the field's right, amber from 28 |
 | **States never opened** | states 1–5; widths 800–1,100px; no screen reader, no mobile | opened and recorded in `HANDOFF.md` (the One table view would not open under the script — still not seen): two defects found (By slot misaligns a named build; drawers, Compare, Export and the selection bar clip below ~1,000px) |
+
+### His second round (2026-10-01 12:24 EDT)
+
+*Logged 2026-10-01 12:29 EDT. His words, verbatim:*
+
+> * the label counter: mostly fine but include the character counter icon beside it and wrap the entire thing in a tinted chip.
+> * one table view: it's fine that you didn't see it, i checked with my eyes and it looks fine. So as long as you have all of it's code, values, spec, then it's okay.
+> * design record: what about 'docs/reference/badge-motion.md'? Is that important and worth noting anywhere?
+> * by slot: this seems like an important design fork that i don't really want to work on at the moment. Let's do this, retire/remove it from the board (including it's view toggle buttons), document it thoroughly in a .md (including specs/screenshots/current state/etc everything) and place that doc in `docs/ideas` as something i might work on in the future but its removed from the design now. So also update all the notes/docs/spec/etc as part of it's removal from the board.
+> * below ~1000px: document and defer it for now as part of the phone responsiveness rework that still needs to happen since phone view isn't important at the moment. it's a future scoped design fork that'll need dedicated sessions in the future.
+
+| Class | What he asked | Where it landed |
+|---|---|---|
+| **The Label count** | the count icon, the whole in a tinted chip | `docs/pins2/kit/b4/form.js` + `docs/pins2/kit/b4/form.css`: a `.g-fact.b3-cc` chip with the `text` icon, inside the field |
+| **One table view** | fine by his eye; its code, values and spec must exist | code `docs/pins2/kit/b3/armory-parts.js:744-800`, strings in `copy.md`; `HANDOFF.md` C1 |
+| **Design records** | `docs/reference/badge-motion.md` | `HANDOFF.md` already names it the law (its *Badge motion* row); added to Session 4's Step 6 records |
+| **By slot** | retired from the board with its toggle; documented in `docs/ideas` | kit: removed from `docs/pins2/kit/ui/armory.js`, `docs/pins2/kit/gates/armory.js`, `docs/pins2/kit/app.css`, `docs/pins2/kit/b3/board.css`; `docs/ideas/2026-10-01-armory-by-slot-view.md`; `HANDOFF.md` (Session 5 removes it from the portal), plan §10.4, the ledger |
+| **Below ~1,000px** | deferred with the phone | `docs/db-deferred-list.md`, Queued; the ledger |
 

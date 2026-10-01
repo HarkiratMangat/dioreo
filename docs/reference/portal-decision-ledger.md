@@ -784,3 +784,14 @@ Ten instructions, given as a numbered list against two screenshots and the open 
 | Stepper | ✅ Stepper C | his pick, V73 (CM); pink in the Post drawer (CO) | — |
 | Grouped lists | ✅ a hairline where a group starts, weapons and attachments | V81 (DB) | a grouped list without it |
 
+## Decided 2026-10-01 — the readiness audit's calls on Board 4: Collective
+
+*Written 2026-10-01 12:29 EDT. His answers to the readiness audit, logged verbatim in `docs/pins2/handoffs/2026-09-21-board4-intake.md` § The readiness audit's three calls; the detail is `docs/pins2/final/board4-spec/HANDOFF.md` § Added by the readiness audit.*
+
+| Surface | Decision | Why | Reopens if |
+|---|---|---|---|
+| Every list a field opens, every pop-up | A list the field itself opens is a dropdown: 10px below the field, no arc. A pop-up opened only by its own button takes the arc, its tip 4px off | "if button only to open = pop-up @ 4px below field; with arc. if clicking field itself also opens = dropdown list @ 10px below field; no arc" (11:32 EDT) | a dropdown drawn with an arc, or a button-only pop-up without one |
+| The build drawer's Label field | A live `n/32` count inside the field on its right, as a tinted chip with the count's text icon, amber from 28 | "yes, show a character counter" (11:32 EDT) · "include the character counter icon beside it and wrap the entire thing in a tinted chip" (12:24 EDT) | the count leaves the field, or loses its chip or icon |
+| The Armory manifest's By slot view | Retired, with its List / By slot toggle; List is the only view | "retire/remove it from the board (including it's view toggle buttons)" (12:24 EDT); `docs/ideas/2026-10-01-armory-by-slot-view.md` | he takes the ideas doc up again |
+| Windows under ~1,000px wide | Deferred, with the phone, to one responsiveness rework | "a future scoped design fork that'll need dedicated sessions in the future" (12:24 EDT) | that rework is scheduled |
+

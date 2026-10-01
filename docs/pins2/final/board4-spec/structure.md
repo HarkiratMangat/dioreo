@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — structure, generated
 
-*Generated 2026-10-01T15:44:21.109Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
+*Generated 2026-10-01T16:34:01.335Z by `structure.cjs` from the running kit at 1282×888. Every gate's stage as an outline: each line is an element (tag, classes, role, accessible label), siblings with the same classes collapsed to ×N, a leaf's text after the dash. Resting at depth 8; each state or Try at depth 6, printed only where it differs from resting. Read HANDOFF.md's per-gate Structure rows first — they are written from this file.*
 
 ## C1 · The Armory manifest
 
@@ -23,7 +23,7 @@ status: live
       - `button.pill.lead.madd`
         - `svg.ic`
     - `div.mt-r2`
-      - `span.mt-grp[role=group] “Category”` ×2
+      - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
         - `button.chip`
@@ -128,7 +128,7 @@ status: live
       - `button.pill.lead.madd`
         - `svg.ic`
     - `div.mt-r2`
-      - `span.mt-grp[role=group] “Category”` ×2
+      - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
         - `button.chip`
@@ -228,7 +228,7 @@ status: live
       - `button.pill.lead.madd`
         - `svg.ic`
     - `div.mt-r2`
-      - `span.mt-grp[role=group] “Category”` ×2
+      - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
         - `button.chip`
@@ -327,7 +327,7 @@ status: live
       - `button.pill.lead.madd`
         - `svg.ic`
     - `div.mt-r2`
-      - `span.mt-grp[role=group] “Category”` ×2
+      - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
         - `button.chip`
@@ -456,7 +456,7 @@ status: live
       - `button.pill.lead.madd`
         - `svg.ic`
     - `div.mt-r2`
-      - `span.mt-grp[role=group] “Category”` ×2
+      - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
         - `button.chip`
@@ -585,7 +585,7 @@ status: live
       - `button.pill.lead.madd`
         - `svg.ic`
     - `div.mt-r2`
-      - `span.mt-grp[role=group] “Category”` ×2
+      - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
         - `button.chip`
@@ -714,7 +714,7 @@ status: live
       - `button.pill.lead.madd`
         - `svg.ic`
     - `div.mt-r2`
-      - `span.mt-grp[role=group] “Category”` ×2
+      - `span.mt-grp[role=group] “Category”`
         - `span.mlabel`
           - `span` — “Category”
         - `button.chip`
@@ -1500,7 +1500,7 @@ status: live
             - `button.cx-k “Build 1, Quickscope: Take Build 1 out of”`
     - `div.cx-tw`
       - `table.cx-t`
-        - `caption.sr` — “DL Q33, KOSHKA, slot by slot”
+        - `caption.sr` — “DL Q33, M21 EBR, slot by slo”
         - `colgroup`
           - `col.cx-c0`
           - `col`
@@ -1576,7 +1576,7 @@ status: live
             - `i`
             - `span` — “to set them side by side”
         - `div.cx-shelf`
-          - `div.cx-w.cx-wl[role=group] “USS 9, 3 builds”` ×16
+          - `div.cx-w.cx-wl[role=group] “CX-9, 3 builds”` ×16
             - `div.cx-wh`
             - `div.cx-keys`
 
