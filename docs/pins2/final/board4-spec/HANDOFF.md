@@ -32,6 +32,7 @@ status: live
 | Instruments | `docs/pins2/instruments/README.md` — the pop-up recorders (`board4-popups.cjs`, `board4-arc.cjs`, `board4-poptiming.cjs`) and the painted focus ring (`board4-rings-painted.cjs`), each able to point at a page with `B4_URL` | point the same instruments at the portal: a port that passes r22 and relations can still break every animation (V77–V80 did, on the board) |
 | Geometry you can trust | the board renders in **quirks mode** (no doctype); the portal in standards. Measured: 16 elements move 1px and 5 grow 1.5px (Export's file list), every other element identical — `docs/pins2/handoffs/2026-09-30-board4-quirks.md` | expect those, never "fix" portal code to match them |
 | Board-only, never ported | `thumbs/` and `data/thumbs.js` (the seven named builds' pictures), `gates*/` scaffolding, every `html[data-b3-…]` switch (`switches.md`) | same |
+| Code questions about the kit | the kit is **not in the code graph** (`codebase-memory` returns nothing for `PopBox`, checked 2026-09-30 21:40 EDT): search its code with `rg` or `ctx_execute_file` on `docs/pins2/kit/` | the same |
 | His screenshots | on this Mac only, at `/Applications/Claude Code/Diors-Builds/local/pins2/intake-shots/` — **absolute**: a worktree has no `local/` | same |
 
 ## Who reads this, and in what order
