@@ -263,6 +263,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-29 21:39 EDT — Board 4 Versions 43 and 44 published; compact prep 20 (v3.85.0-pre)
 - 2026-09-29 22:55 EDT — Board 4 Version 44 intake logged and built in the kit, classes AT–BB (v3.85.0-pre)
 - 2026-10-01 15:24 EDT — portal pins batch 2 — Board 4 signed off at Version 81, the readiness audit, and Session 3's close (v3.85.0-pre)
+- 2026-10-01 18:33 EDT — CI and the test queue, rebuilt from a measurement, then re-measured after the merge (v3.86.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4543,6 +4544,14 @@ Routing: the kit is excluded from the product's codebase-memory graph because it
 **Lessons:**
 - A record whose final form waits on a number still has content due now. At every close, read the whole Unreleased entry against every DEVLOG heading stamped with its version, and write what is missing before asking to push.
 - A test result belongs to the commit it ran on. Don't commit while the suite runs.
+
+## 2026-10-01 18:33 EDT — CI and the test queue, rebuilt from a measurement, then re-measured after the merge (v3.86.0-pre)
+
+The first answer to a slow, flaky CI was a list of tweaks. The measurement said something else: the suite was slow because tests WAITED (a duplicate walk, a real network probe, full-audit spawns, sleeps for clock granularity) and flaky because a click silently did nothing and states leaned on the state before them. Parallelism came last, after determinism, and the runner's own trace found the concurrency hazards (writers into the tree, a shared build) before they became flakes. The instruments found more than they were built for: a state that had proven nothing for eleven days, and a crosshair state that had never once shown its crosshair.
+
+The branch waited for portal pins batch 2, then merged it. Three conflicts, all mechanical (`package.json`'s `test` line, `.cbmignore`, the deferred list), and three fixture files that merged cleanly. The part worth recording is what a clean merge does not show. The runner's self-test compared the manifest to the chain as it stood at `8c5e8a90`, so batch 2's two new tests would have passed every check had nobody looked: the self-test now reads the chain at both commits the suite was re-based onto, and it also fails on a test-shaped package.json script that no entry runs.
+
+The headline number did not survive the merge. The 2026-09-14 comparison read 258.6 s against about 80 s on a quiet machine; on the merged tree, on a Mac that macOS's own background analysis daemons were loading, the replaced chain took 220.6 s and the runner 145 s, then 199 s on a worse minute. Two things were real and one was weather. Real: the pool schedules in manifest order, so the hooks suite, listed near the end, started last and ran alone at the tail; listing the eight longest entries first took the same run to 110 s. Real: the weights count slots, not the processes an entry starts, so the hooks suite's own 8-way parallelism stacked on the pool's and an entry that takes 14 s alone took 68 to 113 s inside it. Weather: the daemons, which is why the figures are written down as ceilings and the per-job times of the GitHub run are the ones that decide whether six jobs are still the right shape.
 
 # Part B — Lessons Ledger (thematic)
 
