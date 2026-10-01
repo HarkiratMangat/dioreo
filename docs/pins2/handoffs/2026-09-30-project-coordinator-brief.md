@@ -63,7 +63,7 @@ HOW EVERY THREAD WORKS (Harkirat's corrections of 2026-09-30)
 ## First message to the Project
 
 ```text
-Begin phase 1. I approve P, the seven slice workers, T1…Tn and E as Sonnet 5.5 worker threads.
+Begin phase 1. I approve P, the seven slice workers, the three comment workers K1, K2 and K3, and E as Sonnet 5.5 worker threads.
 ```
 
 *2026-09-30 22:30 EDT — Sessions 4 and 5 may split (his yes, 2026-09-30 22:30 EDT: "yeah you can"): read-only workers in parallel, Session 5's builders one at a time, the lead alone commits (plan §5c, §5d, §11).*
@@ -71,3 +71,5 @@ Begin phase 1. I approve P, the seven slice workers, T1…Tn and E as Sonnet 5.5
 *2026-09-30 22:26 EDT — Session 4's effort is Extra high, not Max (his: "not max, extra high is enough").*
 
 *2026-09-30 23:14 EDT — pre-flight edits at his word (E1, E2 without the .remember reads, E4–E8, E11–E13, plus the continuation rule); E3 and E10 held for his answers. Goal and instructions boxes need re-pasting.*
+
+*2026-09-30 23:50 EDT — the transcript workers T1…Tn became the comment workers K1, K2, K3 (his call); only the first message to the Project changed, the two boxes did not.*
