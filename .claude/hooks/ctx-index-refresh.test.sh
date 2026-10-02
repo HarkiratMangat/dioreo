@@ -8,33 +8,44 @@ yes(){ if [ -n "$2" ]; then echo "  PASS  $1"; pass=$((pass+1)); else echo "  FA
 run(){ printf '{"tool_name":"%s","tool_input":{}}' "$1" | bash "$HOOK" 2>/dev/null; }
 echo "ctx-index-refresh.sh — proofs"
 
+# 🔴 HERMETIC SINCE 2026-10-01 19:07 EDT. This test used to copy the user's REAL stamp aside, delete it and let the hook re-index docs/, the rules, memory and the vendor docs into the REAL context-mode store: about 9 s while docs/ was small, 47 s once pins batch 2 added about 180k lines of it, which made it the longest entry in `npm test`, and a crash between the move and the restore left the user's stamp missing. Now the hook runs in a scratch repo (a git repo holding one doc, one rule and a CLAUDE.md, with its own copy of scripts/indexHealth.mjs) under a scratch HOME, so the stamp, the store and every corpus are the scratch ones. The context-mode CLI is still the REAL one, linked in from the real plugin cache when it exists, so the proof is unchanged: a cold run indexes and a warm run does nothing.
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+SB="$(mktemp -d)"; trap 'rm -rf "$SB"' EXIT
+SBH="$SB/home"; FIX="$SB/repo"
+mkdir -p "$FIX/docs" "$FIX/.claude/rules" "$FIX/scripts" "$SBH/.claude/plugins/cache/context-mode/context-mode/9.9.9"
+printf '# Stamp fixture\n\nA sentence for the cold index.\n' > "$FIX/docs/fixture.md"
+printf '# Rule fixture\n\nA rule for the cold index.\n' > "$FIX/.claude/rules/fixture.md"
+printf '# CLAUDE fixture\n' > "$FIX/CLAUDE.md"
+cp "$REPO_ROOT/scripts/indexHealth.mjs" "$FIX/scripts/indexHealth.mjs"
+git -C "$FIX" init -q
+runfx(){ printf '{"tool_name":"%s","tool_input":{}}' "$1" | (cd "$FIX" && HOME="$SBH" bash "$HOOK" 2>/dev/null); }
+
 # ── gating: only ctx_search, and never noisy on the happy path.
 out="$(run Bash)";  ok "silent on Bash"  "${out:-EMPTY}" "EMPTY"
 out="$(run Read)";  ok "silent on Read"  "${out:-EMPTY}" "EMPTY"
 run Bash >/dev/null 2>&1; ok "exit 0 on a non-matching tool" "$?" "0"
 printf '{}' | bash "$HOOK" >/dev/null 2>&1; ok "exit 0 on empty payload" "$?" "0"
-run mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1; ok "exit 0 on ctx_search" "$?" "0"
+runfx mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1; ok "exit 0 on ctx_search" "$?" "0"
 
 # ── 🔴 IT MUST ACTUALLY INDEX. The v1 defect was a hook that exited 0 having done nothing. Prove the work happened by removing the stamp and checking the hook recreates it. Derive the stamp path the SAME way the hook does — keyed by repo root, so two clones cannot fight over one file. A test that hardcodes the path silently stops testing the moment the hook changes it (which is exactly what happened when the key was introduced).
-CDIR=$(git rev-parse --git-common-dir); case "$CDIR" in /*) ;; *) CDIR="$PWD/$CDIR";; esac
+CDIR=$(git -C "$FIX" rev-parse --git-common-dir); case "$CDIR" in /*) ;; *) CDIR="$FIX/$CDIR";; esac
 RT=$(cd "$(dirname "$CDIR")" && pwd)
-STAMP="$HOME/.claude/context-mode/.dioreo-prose-stamp-$(printf '%s' "$RT" | shasum | cut -c1-12)"
+STAMP="$SBH/.claude/context-mode/.dioreo-prose-stamp-$(printf '%s' "$RT" | shasum | cut -c1-12)"
 # 🔴 THE INDEXING PROOFS NEED THE CONTEXT-MODE CLI, WHICH ONLY EXISTS ON A DEV MACHINE. It is resolved from ~/.claude/plugins/cache/, and the hook itself exits 0 when it is absent (line 26, `[ -n "$CLI" ] && [ -f "$CLI" ] || exit 0`) — correct behaviour, since writing a stamp without indexing would claim a fresh index that does not exist. The test asserted the stamp UNCONDITIONALLY, so it passed here and failed in CI with "cold run wrote no stamp — the hook is a NO-OP", accusing the hook of the very bug it does not have. Found on the first push of feat/portal-redesign-session-b, 2026-08-31. ⚠️ THE SPLIT IS NOT A SKIP. Where the CLI exists the original proof runs unchanged and still catches the v1 no-op. Where it does not, the assertion becomes the one that IS checkable there — that the hook degrades silently instead of stamping — so neither branch is vacuous. A bare skip would have made this green everywhere and meaningless in CI, which is the failure mode this repo keeps paying for.
 CLI_PRESENT=$(ls -d "$HOME"/.claude/plugins/cache/context-mode/context-mode/*/cli.bundle.mjs 2>/dev/null | head -1)
-cp "$STAMP" "$STAMP.testbak" 2>/dev/null; rm -f "$STAMP"
-run mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1
+[ -n "$CLI_PRESENT" ] && ln -s "$CLI_PRESENT" "$SBH/.claude/plugins/cache/context-mode/context-mode/9.9.9/cli.bundle.mjs"
+runfx mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1
 if [ -n "$CLI_PRESENT" ]; then
   if [ -s "$STAMP" ]; then echo "  PASS  a cold run REALLY indexes (stamp written)"; pass=$((pass+1))
   else echo "  FAIL  cold run wrote no stamp — the hook is a NO-OP, which is the v1 bug"; fail=$((fail+1)); fi
   before="$(cat "$STAMP" 2>/dev/null)"
-  run mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1
+  runfx mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1
   ok "a warm run is a no-op (stamp unchanged)" "$(cat "$STAMP" 2>/dev/null)" "$before"
 else
   if [ ! -e "$STAMP" ]; then echo "  PASS  no context-mode CLI: the hook stamps nothing rather than claiming a fresh index"; pass=$((pass+1))
   else echo "  FAIL  no context-mode CLI, yet a stamp was written — that claims an index that does not exist"; fail=$((fail+1)); fi
   grep -q '\[ -n "\$CLI" \] && \[ -f "\$CLI" \] || exit 0' "$HOOK" && { echo "  PASS  the hook guards on the CLI being present"; pass=$((pass+1)); } || { echo "  FAIL  the hook has no CLI guard"; fail=$((fail+1)); }
 fi
-mv "$STAMP.testbak" "$STAMP" 2>/dev/null
 
 # ── 🔴 THE ROOT MUST BE THE MAIN WORKTREE, NOT CLAUDE_PROJECT_DIR. In a worktree those differ, and the content DB is keyed on the project root — getting this wrong silently splits retrieval across DBs.
 grep -q 'git rev-parse --git-common-dir' "$HOOK" && { echo "  PASS  root derived from git, not CLAUDE_PROJECT_DIR"; pass=$((pass+1)); } || { echo "  FAIL  root not derived from git"; fail=$((fail+1)); }

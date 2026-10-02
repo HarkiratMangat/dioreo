@@ -1,16 +1,16 @@
 {
   "surface": "shell",
-  "note": "The chrome every realm inherits: the rail, the command bar, the masthead, the account panel, the tray, and the six request states async.js owns. A realm registers its OWN states in its own file \u2014 this one is Part 0's, and it is the seed the catalogue grows from. `flags` are harness stub flags (stub.js reads fail/slow/offline/today/owner/realms/admin/category/destroy/draft/id/ids/mode/q/scope \u2014 there is no ?empty=; an empty state is reached by narrowing). \u26a0\ufe0f `refreshing` WAS UNREACHABLE FOR A WHILE, AND IS NOW REGISTERED BELOW (2026-09-07) \u2014 the fix was the harness `slow=` knob combined with a step sequence that lands past the first (slow) load, so useAsync's re-fetch has data already on screen to hold `is-refreshing` open long enough to photograph. `progress` is not one of useAsync's four `phase` values at all \u2014 it is Review's own sibling component, driven by a commit loop rather than a GET \u2014 and its working registration lives in portal/fixtures/states/review.json, using the same knob. See docs/db-deferred-list.md's 2026-09-07 00:27 EDT entry for the timing diagnosis this fix acts on.",
+  "note": "The chrome every realm inherits: the rail, the command bar, the masthead, the account panel, the tray, and the six request states async.js owns. A realm registers its OWN states in its own file — this one is Part 0's, and it is the seed the catalogue grows from. `flags` are harness stub flags (stub.js reads fail/slow/offline/today/owner/realms/admin/category/destroy/draft/id/ids/mode/q/scope — there is no ?empty=; an empty state is reached by narrowing). ⚠️ `refreshing` WAS UNREACHABLE FOR A WHILE, AND IS NOW REGISTERED BELOW (2026-09-07) — the fix was the harness `slow=` knob combined with a step sequence that lands past the first (slow) load, so useAsync's re-fetch has data already on screen to hold `is-refreshing` open long enough to photograph. `progress` is not one of useAsync's four `phase` values at all — it is Review's own sibling component, driven by a commit loop rather than a GET — and its working registration lives in portal/fixtures/states/review.json, using the same knob. See docs/db-deferred-list.md's 2026-09-07 00:27 EDT entry for the timing diagnosis this fix acts on.",
   "states": [
     {
-      "name": "default \u00b7 home",
+      "name": "default · home",
       "realm": "home",
       "flags": {},
       "known": [],
       "expect": "main h1"
     },
     {
-      "name": "default \u00b7 season",
+      "name": "default · season",
       "realm": "season",
       "flags": {},
       "known": [],
@@ -30,7 +30,7 @@
       "expect": ".cmdbar.on"
     },
     {
-      "name": "command bar \u00b7 typed query",
+      "name": "command bar · typed query",
       "realm": "season",
       "flags": {},
       "steps": [
@@ -58,7 +58,8 @@
         }
       ],
       "known": [],
-      "expect": ".who [role=menuitem]"
+      "expect": ".who .umenu:not([hidden]) [role=menuitem]",
+      "note": "Expect tightened 2026-09-14 19:24 EDT: the account menu is always in the DOM and hidden while closed (shell.js renders hidden=${!open}), so \".who [role=menuitem]\" matched before the click and would have passed had the click done nothing. Found by the walk's own report of states whose expect already matched before their steps ran."
     },
     {
       "name": "request failure (500)",
@@ -95,7 +96,7 @@
       },
       "known": [],
       "settleMs": 900,
-      "note": "walked WHILE the request is still out \u2014 the skeleton and the is-slow note are the state",
+      "note": "walked WHILE the request is still out — the skeleton and the is-slow note are the state",
       "expect": ".is-slow, .skeleton, [class*=skel], main"
     },
     {
@@ -108,14 +109,14 @@
       "expect": "main .panel"
     },
     {
-      "name": "review \u00b7 staged work",
+      "name": "review · staged work",
       "realm": "review",
       "flags": {},
       "known": [],
       "expect": ".rounds, .board, main .panel"
     },
     {
-      "name": "the door \u00b7 signed out",
+      "name": "the door · signed out",
       "realm": "home",
       "flags": {
         "fail": "expired"
@@ -125,13 +126,13 @@
       "expect": "main.door .dbtn"
     },
     {
-      "name": "the door \u00b7 not an admin",
+      "name": "the door · not an admin",
       "realm": "home",
       "flags": {
         "fail": "forbidden"
       },
       "known": [],
-      "note": "spec \u00a710 \u2014 a stranger, a never-granted account and a revoked admin all read identically; forbidden adds ONE line",
+      "note": "spec §10 — a stranger, a never-granted account and a revoked admin all read identically; forbidden adds ONE line",
       "expect": "main.door .dfail"
     },
     {
@@ -144,7 +145,7 @@
         }
       ],
       "known": [],
-      "note": "the masthead Export strip \u2014 each scope states its OWN shape, because only some of them re-import \u26a0\ufe0f THE STEP DELIBERATELY CARRIES NO `until`. One was added 2026-09-01 to fix a load race and became the race: `until` waits on its own 5000ms settle deadline while `expect` waits 45000ms for the SAME selector, so the redundant, tighter one failed first. A wait duplicated at two deadlines is worse than one wait, and the shorter number wins in exactly the conditions the longer one was raised for.",
+      "note": "the masthead Export strip — each scope states its OWN shape, because only some of them re-import ⚠️ THE STEP DELIBERATELY CARRIES NO `until`. One was added 2026-09-01 to fix a load race and became the race: `until` waits on its own 5000ms settle deadline while `expect` waits 45000ms for the SAME selector, so the redundant, tighter one failed first. A wait duplicated at two deadlines is worse than one wait, and the shorter number wins in exactly the conditions the longer one was raised for.",
       "expect": ".exs"
     },
     {
@@ -163,7 +164,7 @@
         }
       ],
       "known": [],
-      "note": "the toast layer, reached the way a reader reaches it \u2014 and the state that found Copy ID acknowledging nothing at all",
+      "note": "the toast layer, reached the way a reader reaches it — and the state that found Copy ID acknowledging nothing at all",
       "expect": ".toast"
     },
     {
@@ -176,11 +177,11 @@
         }
       ],
       "known": [],
-      "note": "selecting a row mounts .selbar and sets body.has-selbar \u2014 a shell surface a realm switches on",
+      "note": "selecting a row mounts .selbar and sets body.has-selbar — a shell surface a realm switches on",
       "expect": ".selbar.on"
     },
     {
-      "name": "one-way panel \u00b7 tier 3",
+      "name": "one-way panel · tier 3",
       "realm": "season",
       "flags": {
         "destroy": "1"
@@ -190,7 +191,7 @@
       "expect": ".ow"
     },
     {
-      "name": "refreshing \u00b7 a re-read keeps data on screen while it goes back for more",
+      "name": "refreshing · a re-read keeps data on screen while it goes back for more",
       "realm": "analytics",
       "flags": {
         "slow": "4000"
@@ -211,13 +212,13 @@
       "expect": "main.is-refreshing"
     },
     {
-      "name": "reduced motion \u00b7 season",
+      "name": "reduced motion · season",
       "realm": "season",
       "flags": {},
       "reduceMotion": true,
       "expect": ".mtable",
       "known": [],
-      "note": "PASS 5 \u2014 the media query is emulated and the page is made to confirm it applied, then what is still RUNNING is read. A source scan can see that app.css declares reduced-motion rules; only this can see whether the animation on screen is covered by them."
+      "note": "PASS 5 — the media query is emulated and the page is made to confirm it applied, then what is still RUNNING is read. A source scan can see that app.css declares reduced-motion rules; only this can see whether the animation on screen is covered by them."
     }
   ]
 }

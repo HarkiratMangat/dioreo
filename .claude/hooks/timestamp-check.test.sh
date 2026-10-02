@@ -17,14 +17,18 @@ HOOK="$(cd "$(dirname "$0")" && pwd)/timestamp-check.sh"
 pass=0; fail=0
 # ⚠️ DATE AND TIME MUST COME FROM THE SAME SHIFTED INSTANT — CI caught this, 2026-08-02 22:00 UTC. The first version took `$TODAY` from now and `$FUT` from now+3h *independently*. On the Mac (17:00 EDT) that is harmlessly same-day; on the UTC CI runner at 22:00 it produced "today 01:00" — a PAST timestamp — so every "future is denied" case silently asserted the wrong thing and failed. Seven tests, one root cause: two halves of a timestamp read from two different moments.
 #
-# `when()` shifts once and formats once, on either BSD or GNU date, so the pair can never disagree.
+# `when()` shifts once and formats once, on either BSD or GNU date, so the pair can never disagree. Every stamp below is derived from ONE pinned instant, TS_NOW_EPOCH, exported so the hook reads the same instant. Before 2026-09-14 18:22 EDT the test took the clock here and the hook took it again a moment later, so a stamp built 4 minutes ahead could be under 3 minutes ahead by the time the hook compared it — six CI failures on exactly these cases. Offsets are applied in epoch seconds, so the arithmetic is identical under GNU and BSD date.
+export TS_NOW_EPOCH="${TS_NOW_EPOCH:-$(date +%s)}"
+at() { date -d "@$1" "$2" 2>/dev/null || date -r "$1" "$2"; }
+# A DST change inside the stamps' window makes a zone-less local time ambiguous: on the fall-back day "01:34" names two instants an hour apart, and the tolerance cases compare exactly such a pair. Found by pinning TS_NOW_EPOCH to the repeated hour, which failed two cases (measured 2026-09-14 18:52 EDT). Step the instant six hours at a time until no zone change falls between three hours before it and four hours after; the hook logic under test is identical at any hour.
+while [ "$(at $((TS_NOW_EPOCH - 10800)) +%Z)" != "$(at $((TS_NOW_EPOCH + 14400)) +%Z)" ]; do TS_NOW_EPOCH=$((TS_NOW_EPOCH + 21600)); done
 when() { # $1 = offset like '+3H' / '-2H' / '+1d' / '+2M'  -> "YYYY-MM-DD HH:MM"
-  date -v"$1" '+%Y-%m-%d %H:%M' 2>/dev/null && return
-  local gnu="${1#+}"; gnu="${gnu/H/ hours}"; gnu="${gnu/d/ days}"; gnu="${gnu/M/ minutes}"
-  case "$1" in -*) date -d "${gnu#-} ago" '+%Y-%m-%d %H:%M';; *) date -d "$gnu" '+%Y-%m-%d %H:%M';; esac
+  local n="${1%[HdM]}" u="${1: -1}" s=60
+  case "$u" in H) s=3600;; d) s=86400;; esac
+  at $(( TS_NOW_EPOCH + n * s )) '+%Y-%m-%d %H:%M'
 }
-TODAY=$(date +%Y-%m-%d)
-LOCALTZ=$(date '+%Z')
+TODAY=$(at "$TS_NOW_EPOCH" +%Y-%m-%d)
+LOCALTZ=$(at "$TS_NOW_EPOCH" '+%Z')
 FUTSTAMP=$(when '+3H')            # a genuinely future date+time, whatever the zone or hour
 PASTSTAMP=$(when '-2H')           # genuinely past, same guarantee
 TOMORROWSTAMP="$(when '+1d' | cut -d' ' -f1) 09:00"
@@ -125,7 +129,7 @@ a "'HH:xx' placeholder fixed"       pre "allow:"       yes "root-caused live $TO
 a "'XX:XX' placeholder fixed"       pre "allow:"       yes "filed $TODAY XX:XX EDT for review"
 a "'??:??' placeholder fixed"       pre "allow:"       yes "queued $TODAY ??:?? EDT pending confirmation"
 # The value substituted is the REAL current time, not merely *a* time — without this the branch could write a constant and still pass every case above.
-a "substitution uses the clock"     pre "FIXED<root-caused live $TODAY $(date "+%H:%M") EDT the glitch>" yes "root-caused live $TODAY 18:xx EDT the glitch"
+a "substitution uses the clock"     pre "FIXED<root-caused live $TODAY $(at "$TS_NOW_EPOCH" '+%H:%M') EDT the glitch>" yes "root-caused live $TODAY 18:xx EDT the glitch"
 # 🔴 THE FALLBACK MUST STAY REACHABLE, and no CONTENT can reach it — the detector and the substitution share one pattern, so every placeholder that is found is one that can be repaired. My first attempt at this case used a second, weirder placeholder and it was simply fixed too. The deny path exists for the day `updatedInput` stops being honoured, so the seam that simulates that day is what the test drives. A branch no test can enter is a branch that rots.
 fb=$(printf '{"tool_input":{"content":%s}}' "$(printf 'shipped %s 18:xx EDT' "$TODAY" | jq -Rs .)" \
      | TS_NO_AUTOFIX=1 bash "$HOOK" pre | jq -r '.hookSpecificOutput.permissionDecision')
@@ -146,7 +150,7 @@ a "wrapped future stamp still denied" pre "deny:" yes "$(printf '# filed %s\n# %
 
 # ── the code review's repro: one line carrying BOTH ────────────────────────── Found 2026-09-02 18:23 EDT. The detector was scoped to today and the SUBSTITUTION was not, so a line with today's placeholder AND a correct historical stamp was auto-allowed with the HISTORICAL one rewritten to the current minute. Two descriptions of the same target, drifting apart.
 a "a historical stamp beside today's placeholder is untouched" pre "2026-08-03 18:12" yes "filed ${TODAY} 18:xx ${LOCALTZ} — see the 2026-08-03 18:12 ${LOCALTZ} incident"
-a "and today's placeholder in that same line IS fixed"         pre "FIXED<filed ${TODAY} $(date '+%H:%M')" yes "filed ${TODAY} 18:xx ${LOCALTZ} — see the 2026-08-03 18:12 ${LOCALTZ} incident"
+a "and today's placeholder in that same line IS fixed"         pre "FIXED<filed ${TODAY} $(at "$TS_NOW_EPOCH" '+%H:%M')" yes "filed ${TODAY} 18:xx ${LOCALTZ} — see the 2026-08-03 18:12 ${LOCALTZ} incident"
 # The character class [0-9xX?] matches real digits, so the pattern must also refuse a CORRECT stamp. 00:01, not 09:30 (2026-09-06 09:02 EDT): a fixed clock time on TODAY is in the FUTURE for anyone running the suite before it, and the hook then correctly DENIES it — this case failed at 09:01 while the hook was right. A minute past midnight is in the past on every run of the day.
 a "a correct stamp for TODAY is left alone"                    pre "SILENT" yes "filed ${TODAY} 00:01 ${LOCALTZ}"
 
@@ -155,7 +159,7 @@ YESTERDAY=$(when '-1d' | cut -d' ' -f1)
 a "a placeholder on a PAST date is left alone"  pre "SILENT" yes "filed ${YESTERDAY} 16:0x ${LOCALTZ}"
 a "a placeholder on TODAY is still corrected"   pre "allow:" yes "filed ${TODAY} 16:0x ${LOCALTZ}"
 # And the correction must still put a real minute in, or the branch above is passing for the wrong reason.
-a "the today correction carries a real minute"  pre "FIXED<filed ${TODAY} $(date '+%H:%M')" yes "filed ${TODAY} 16:0x ${LOCALTZ}"
+a "the today correction carries a real minute"  pre "FIXED<filed ${TODAY} $(at "$TS_NOW_EPOCH" '+%H:%M')" yes "filed ${TODAY} 16:0x ${LOCALTZ}"
 
 # ── the Bash / heredoc path ────────────────────────────────────────────────── The gap that leaked four placeholder stamps into a tracked plan on 2026-09-01: PostToolUse carried Bash and PreToolUse did not, so a heredoc write was DETECTED and never CORRECTED.
 HEREDOC="python3 - <<'EOF'
@@ -163,7 +167,7 @@ open('x.md','w').write('filed ${TODAY} 19:xx EDT')
 EOF"
 ac "heredoc placeholder is CORRECTED, not denied" pre "allow:"            yes "$HEREDOC"
 ac "heredoc correction carries updatedInput"      pre "FIXED<"            yes "$HEREDOC"
-ac "the substituted command holds the real minute" pre "${TODAY} $(date '+%H:%M')" yes "$HEREDOC"
+ac "the substituted command holds the real minute" pre "${TODAY} $(at "$TS_NOW_EPOCH" '+%H:%M')" yes "$HEREDOC"
 ac "the rest of the command survives intact"      pre "python3 - <<'EOF'" yes "$HEREDOC"
 # The deny tier must still reach a command — an impossible stamp is not autofixable and must stop. ⚠️ ITS OWN STAMP, TAKEN HERE AND FAR AHEAD (2026-09-13, PR #187). This case reused FARFUTSTAMP, taken at the top of the file only four minutes ahead; the hook's tolerance is three minutes, and a CI runner that needs more than a minute to reach this line turns "four minutes ahead" into "under three", so the deny stays silent and the suite fails on a hook that is working. Every local run passed because a Mac reaches this line in seconds. The just-outside-tolerance edge is still tested near the top, where it belongs; this case only needs a stamp that is unmistakably in the future.
 FARFUTCMD=$(when '+30M')

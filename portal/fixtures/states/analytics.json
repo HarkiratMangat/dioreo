@@ -23,11 +23,12 @@
         {
           "clickText": {
             "sel": ".tiles .tile",
-            "text": "RAM at last alert"
+            "text": "Memory"
           }
         }
       ],
-      "expect": ".seg button[aria-selected=\"true\"]"
+      "expect": ".seg button[aria-selected=\"true\"]::-p-text(Timing)",
+      "note": "Rewritten 2026-09-14 18:54 EDT. This state clicked a tile labelled \"RAM at last alert\", which pin 37 (2026-09-06) renamed to \"Memory\"; the old silent no-op click did nothing, and its expect — ANY selected view tab — was already true on the default Health view, so the state passed for eleven days while proving nothing. Found the first run after steps began waiting for their target. The expect now names the tab the tile navigates to, which is false before the click."
     }
   ]
 }

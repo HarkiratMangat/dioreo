@@ -118,7 +118,8 @@
         }
       ],
       "known": [],
-      "expect": ".tk-inner"
+      "expect": ".xhair.on",
+      "note": "Expect tightened 2026-09-14 19:24 EDT: it expected the hover TARGET, which is on the page before any hover. The crosshair is rendered always and gains \"on\" only while the pointer is over the plot (track.js), so \".xhair.on\" is what the hover produces. Found by the walk's own report of states whose expect already matched before their steps ran."
     },
     {
       "name": "composer · a new draw",

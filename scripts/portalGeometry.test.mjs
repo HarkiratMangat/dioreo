@@ -5,6 +5,8 @@
 // ⚠️ It deliberately does NOT assert the capture's numbers. Those are a property of the design at a moment in time; asserting them here would duplicate the fixture files and make a legitimate redesign fail two places instead of one.
 import assert from 'assert';
 import { execFileSync } from 'child_process';
+import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { compare } from './portalGeometry.mjs';
@@ -49,9 +51,14 @@ check('a view that disappeared, and one that appeared, are both reported', () =>
 
 // Part 0 builds this runner before any realm has closed. An empty fixture directory must read as "nothing recorded", never as a pass — and never as a failure either, or every run of the suite goes red for the whole of Part 0.
 check('with no fixtures recorded, --all --check says so plainly and exits 0', () => {
-    const out = execFileSync('node', [path.join(HERE, 'portalGeometry.mjs'), '--all', '--check'], { encoding: 'utf8' });
-    if (/no fixtures recorded yet/.test(out)) return;
-    assert.match(out, /examined\/near\/size|matches its fixture|no fixture yet/, 'once fixtures exist it must actually check them');
+    // ⚠️ AGAINST AN EMPTY DIRECTORY, NEVER THE REAL ONE. With real fixtures present this spawn ran the full browser walk — the same walk `portalGeometry.mjs --all --check` runs a few entries later in `npm test` — so every suite paid for it twice (46.9 s here, 24 s on CI, measured 2026-09-14 17:45 EDT). The real walk stays covered by that entry; this case owns only the empty-directory sentence, which is printed before any browser starts.
+    const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'geom-empty-'));
+    try {
+        const out = execFileSync('node', [path.join(HERE, 'portalGeometry.mjs'), '--all', '--check'], { encoding: 'utf8', env: { ...process.env, PORTAL_GEOMETRY_FIXTURES: empty } });
+        assert.match(out, /no fixtures recorded yet/, 'an empty fixture directory must be reported plainly, before any browser starts');
+    } finally {
+        fs.rmSync(empty, { recursive: true, force: true });
+    }
 });
 
 console.log(`\n✅ ${passed} cases — the comparison is proven able to report movement, identity change and a lost view.`);

@@ -48,15 +48,17 @@ const idsReported = (root, extraArgs) => {
   }
 };
 
-// 🔴 A CRASHED CHECK REPORTS ITS OWN ID, so `proves` cannot tell "correctly found the defect" from "threw a ReferenceError while looking". Measured 2026-08-23 11:36 EDT: `doc-frontmatter`'s superseded_by branch referenced three identifiers that do not exist in that module (`fs`, `path`, `ROOT`) and had NEVER once executed, because nothing in the repo carried a superseded_by field until that day -- and its self-test ("a superseded_by pointing at a file that does not exist") passed the whole time, against a check that could not run. The crash satisfied the only thing the test asked for. This makes that impossible for every check, not just that one: a proof is only a proof if the check reached a real conclusion.
-const crashedChecks = (root, extraArgs) => {
+// 🔴 A CRASHED CHECK REPORTS ITS OWN ID, so `proves` cannot tell "correctly found the defect" from "threw a ReferenceError while looking". Measured 2026-08-23 11:36 EDT: `doc-frontmatter`'s superseded_by branch referenced three identifiers that do not exist in that module (`fs`, `path`, `ROOT`) and had NEVER once executed, because nothing in the repo carried a superseded_by field until that day -- and its self-test ("a superseded_by pointing at a file that does not exist") passed the whole time, against a check that could not run. The crash satisfied the only thing the test asked for. This makes that impossible for every check, not just that one: a proof is only a proof if the check reached a real conclusion. ONE SPAWN, BOTH ANSWERS — added 2026-09-14 18:22 EDT. `proves()` used to spawn the audit three times per check (baseline, broken, crash scan) and every spawn ran ALL ~70 checks against the fixture: a full audit costs 4.79 s against 0.19 s for `--only <id>` (measured on the repo root). The broken-fixture spawn now yields the reported ids and the crashed ids together, and every targeted spawn passes `--only`.
+const auditReport = (root, extraArgs) => {
   const { out } = runAudit(root, extraArgs);
   try {
-    return new Set(JSON.parse(out).results
-      .filter((r) => /check crashed/.test(String(r.msg || "")))
-      .map((r) => r.id));
+    const results = JSON.parse(out).results;
+    return {
+      ids: new Set(results.map((r) => r.id)),
+      crashed: new Set(results.filter((r) => /check crashed/.test(String(r.msg || ""))).map((r) => r.id)),
+    };
   } catch {
-    return new Set();
+    return { ids: new Set(["<audit produced unparseable output>"]), crashed: new Set() };
   }
 };
 
@@ -212,7 +214,7 @@ const makeFixture = () => {
   write(
     root,
     ".github/workflows/ci.yml",
-    "name: CI\non:\n  push:\n    branches: [main, v3-pre-release]\n  pull_request:\n    branches: [main, v3-pre-release]\njobs:\n  x:\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - run: npm run docs:audit:test\n      - run: npm run docs:audit\n"
+    "name: CI\non:\n  push:\n    branches: [main, v3-pre-release]\n  pull_request:\n    branches: [main, v3-pre-release]\njobs:\n  x:\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - run: npm run docs:audit:test\n      - run: npm run docs:audit\n  syntax-check:\n    needs: [x]\n    if: always()\n    steps:\n      - run: echo ok\n"
   );
   // rule-globs: a path-scoped rule whose glob matches a real tracked file.
   write(root, ".claude/rules/example.md", "---\npaths:\n  - docs/*.md\n---\n\nA rule.\n");
@@ -274,20 +276,20 @@ const proves = (name, checkId, breakIt, args = []) => {
   const root = makeFixture();
   try {
     // 1. The baseline must be clean, or nothing below means anything.
-    const before = idsReported(root, args);
+    const before = idsReported(root, [...args, "--only", checkId]);
     if (before.has(checkId)) {
       failures.push(`${name}: baseline fixture ALREADY reports [${checkId}] — the check fires on valid input.`);
       return;
     }
     // 2. Break it; the check must now report.
     breakIt(root);
-    const after = idsReported(root, args);
-    if (!after.has(checkId)) {
+    const after = auditReport(root, [...args, "--only", checkId]);
+    if (!after.ids.has(checkId)) {
       failures.push(`${name}: broke the invariant but [${checkId}] stayed SILENT — the check is dead.`);
       return;
     }
     // Reporting is not the same as CONCLUDING -- see crashedChecks above.
-    if (crashedChecks(root, args).has(checkId)) {
+    if (after.crashed.has(checkId)) {
       failures.push(`${name}: [${checkId}] reported only because it CRASHED — the proof is vacuous, the check never ran.`);
       return;
     }
@@ -307,7 +309,7 @@ const provesSilent = (name, checkId, setup) => {
   const root = makeFixture();
   try {
     setup(root);
-    const after = idsReported(root, []);
+    const after = idsReported(root, ["--only", checkId]);
     if (after.has(checkId)) {
       failures.push(`${name}: [${checkId}] fired on VALID input — false positive.`);
       return;
@@ -664,6 +666,16 @@ proves("CI losing fetch-depth: 0", "ci-wiring", (root) => {
   write(root, ".github/workflows/ci.yml", ci);
 });
 
+proves("a CI job that syntax-check does not wait for", "ci-wiring", (root) => {
+  const ci = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").replace("needs: [x]", "needs: []");
+  write(root, ".github/workflows/ci.yml", ci);
+});
+
+proves("the required check given a name of its own", "ci-wiring", (root) => {
+  const ci = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").replace("  syntax-check:\n", "  syntax-check:\n    name: gate\n");
+  write(root, ".github/workflows/ci.yml", ci);
+});
+
 proves("a path-scoped rule whose glob matches nothing", "rule-globs", (root) => {
   write(root, ".claude/rules/example.md", "---\npaths:\n  - utils/deleted-subsystem/*.js\n---\n\nA rule nobody will ever load.\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
@@ -827,7 +839,7 @@ if (__mine()) {
     write(root, "docs/archive/graveyard.md", "# Graveyard\n\n- something completely unrelated was swept here instead today\n");
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "sweep the wrong thing"], { cwd: root });
-    const ids = idsReported(root, ["--diff", "HEAD~1"]);
+    const ids = idsReported(root, ["--diff", "HEAD~1", "--only", "archive-conservation"]);
     if (!ids.has("archive-conservation")) {
       failures.push("a deletion whose text never reached the archive: [archive-conservation] stayed SILENT — the content-tracing branch is dead.");
     } else {
@@ -849,7 +861,7 @@ if (__mine()) {
         "an open intake item long enough to count as substance, not reflow churn (edited in place)"));
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "edit in place"], { cwd: root });
-    const ids = idsReported(root, ["--diff", "HEAD~1"]);
+    const ids = idsReported(root, ["--diff", "HEAD~1", "--only", "archive-conservation"]);
     if (ids.has("archive-conservation")) {
       failures.push('an in-place edit of the notes file: [archive-conservation] fired on an EDIT, not a deletion.');
     } else {
@@ -876,7 +888,7 @@ if (__mine()) {
     write(root, "docs/ideas/diors-notes.md", readFileSync(p, "utf8").replace(OLD_H1, NEW_H1));
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "rename in the title"], { cwd: root });
-    const ids = idsReported(root, ["--diff", "HEAD~1"]);
+    const ids = idsReported(root, ["--diff", "HEAD~1", "--only", "archive-conservation"]);
     if (ids.has("archive-conservation")) {
       failures.push("a heading rename in the notes file: [archive-conservation] fired on a HEADING, which is structure and never an item.");
     } else {

@@ -1022,8 +1022,22 @@ check(
     if (triggers.length && !triggers.every((t) => t.includes("v3-pre-release"))) {
       out.push({ msg: "a CI trigger branch list omits `v3-pre-release`. Every v3 feature PR targets that branch, so it would run no CI at all — and the failure is silent." });
     }
-    // 4 assertions over ci.yml: audit step, self-test step, fetch-depth, branch triggers.
-    return { findings: out, examined: 4 };
+    // The aggregate: `syntax-check` is the one required status check, so every other job must be in its `needs` or it can fail while the PR stays green, and a `name:` on it would rename the check branch protection knows. Added 2026-10-01 with the CI rebuild (#192), because nothing else stops a seventh job from being added and forgotten.
+    const jobsAt = ci.indexOf("\njobs:\n");
+    if (jobsAt === -1) out.push({ msg: "ci.yml has no `jobs:` block." });
+    else {
+      const body = ci.slice(jobsAt + 7);
+      const ids = [...body.matchAll(/^ {2}([A-Za-z0-9_-]+):[ \t]*$/gm)].map((m) => m[1]);
+      const agg = body.match(/^ {2}syntax-check:[ \t]*\n((?: {4}.*\n|\n)*)/m);
+      if (!agg) out.push({ msg: "ci.yml has no `syntax-check` job. It is the one required status check, so branch protection would wait for a check that never reports." });
+      else {
+        if (/^ {4}name:/m.test(agg[1])) out.push({ msg: "the `syntax-check` job has a `name:`. Branch protection keys on the job's name, so the job id must stay the check's name and nothing may override it." });
+        const needs = ((agg[1].match(/^ {4}needs:\s*\[([^\]]*)\]/m) || [, ""])[1]).split(",").map((x) => x.trim()).filter(Boolean);
+        for (const id of ids) if (id !== "syntax-check" && !needs.includes(id)) out.push({ msg: `ci.yml job \`${id}\` is not in syntax-check's \`needs\`, so it can fail while the required check stays green. Add it there; only an advisory job may be allowed to skip, and that is decided in the case block at the foot of the job.` });
+      }
+    }
+    // 7 assertions over ci.yml: audit step, self-test step, fetch-depth, branch triggers, a jobs block, the aggregate's name, and its needs.
+    return { findings: out, examined: 7 };
   }
 );
 
