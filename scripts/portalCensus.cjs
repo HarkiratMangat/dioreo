@@ -96,6 +96,10 @@ async function runSteps(page, steps) {
   for (const st of steps || []) {
     if (st.click) await page.evaluate((s) => { const e = document.querySelector(s); if (e) e.click(); }, st.click);
     if (st.clickText) await page.evaluate((s) => { const e = [...document.querySelectorAll(s.sel)].find((x) => (x.textContent || '').includes(s.text)); if (e) e.click(); }, st.clickText);
+    // `key` and `hover` are the registry's other two step kinds (scripts/portalStates.mjs). Without them a state that opens the command
+    // bar or reveals a control on hover ran no step at all here and was counted as its realm's resting page (Session 4, 2026-10-02 09:37 EDT).
+    if (st.key) await page.evaluate((k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k.key, metaKey: !!k.meta, bubbles: true })), st);
+    if (st.hover) await page.hover(st.hover).catch(() => {});
     if (st.type) { const [sel, text] = Array.isArray(st.type) ? st.type : [st.type.sel, st.type.text];
       await page.evaluate((s, t) => { const e = document.querySelector(s); if (e) { e.focus(); e.value = t; e.dispatchEvent(new Event('input', { bubbles: true })); } }, sel, text); }
     await new Promise((r) => setTimeout(r, st.wait || 400));
@@ -108,7 +112,9 @@ async function runSteps(page, steps) {
   const page = await b.newPage(); await page.setViewport({ width: 1282, height: 888 });
   const c = await page.target().createCDPSession(); await c.send('DOM.enable'); await c.send('CSS.enable');
   const all = []; const passes = []; const hovered = new Set(); let planted = null;
-  const load = async (realm) => { await page.goto(`${BASE}?fresh=1&b=${Date.now()}#/${realm}`, { waitUntil: 'networkidle0' });
+  // A state's `flags` (fail, owner, realms, empty, slow …) go on the query string, as scripts/portalStates.mjs puts them: before
+  // 2026-10-02 09:37 EDT the census dropped them and walked every failure, empty and non-owner state as the realm's ordinary page.
+  const load = async (realm, flags) => { const q = new URLSearchParams({ fresh: '1', ...(flags || {}), b: String(Date.now()) }); await page.goto(`${BASE}?${q}#/${realm}`, { waitUntil: 'networkidle0' });
     await page.evaluate(() => document.fonts.ready); await new Promise((r) => setTimeout(r, 900)); };
   const census = async (label) => {
     const rows = await page.evaluate(censusInPage, label); all.push(...rows); passes.push([label, rows.length]);
@@ -140,9 +146,16 @@ async function runSteps(page, steps) {
       await census('armory · planted');
     }
     const regFile = path.join(REG, `${realm}.json`);
-    const reg = fs.existsSync(regFile) ? JSON.parse(fs.readFileSync(regFile, 'utf8')).states || [] : [];
-    for (const st of reg) { await load(realm); await runSteps(page, st.steps); await census(`${realm} · ${st.name}`); }
-    // Every view on the realm's own switch, which the registry does not always list.
+    // shell.json holds the chrome every realm shares (command bar, account panel, failures, the door), each state tagged with the
+    // realm it opens on. The census read only the eight realm files until 2026-10-02 09:37 EDT (worker AHS), so none of the shell was counted.
+    const shellFile = path.join(REG, 'shell.json');
+    const shell = fs.existsSync(shellFile) ? (JSON.parse(fs.readFileSync(shellFile, 'utf8')).states || []).filter((st) => (st.realm || 'home') === realm) : [];
+    const reg = [...(fs.existsSync(regFile) ? JSON.parse(fs.readFileSync(regFile, 'utf8')).states || [] : []), ...shell];
+    for (const st of reg) { await load(realm, st.flags); await runSteps(page, st.steps); await census(`${realm} · ${st.name}`); }
+    // Every view on the realm's own switch, which the registry does not always list. Read from a FRESH load: the last registry state
+    // can leave a failure, a non-owner or a drawer on the page, and then no tab is found and the realm's views go uncounted
+    // (measured 2026-10-02 09:42 EDT: Analytics' five views dropped out once shell.json's failure states ran last).
+    await load(realm);
     const tabs = await page.evaluate(() => [...document.querySelectorAll('main [role=tab]')].map((t) => t.textContent.trim()).filter(Boolean));
     for (const t of [...new Set(tabs)].slice(0, 8)) { await load(realm); await page.evaluate((w) => { const e = [...document.querySelectorAll('main [role=tab]')].find((x) => x.textContent.trim() === w); if (e) e.click(); }, t);
       await new Promise((r) => setTimeout(r, 500)); await census(`${realm} · view ${t}`); }

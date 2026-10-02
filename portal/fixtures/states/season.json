@@ -289,6 +289,106 @@
       "reduceMotion": true,
       "known": [],
       "expect": ".tk-inner"
+    },
+    {
+      "name": "Track · zoomed in",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".zoomer button",
+            "text": "+"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "span.offwin",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker S's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "export strip · opens from the masthead",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mh-take button"
+        }
+      ],
+      "known": [],
+      "expect": "aside.drawer.open ul.exs",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker S's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "composer · a returning draw",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".mh-t",
+            "text": "Returning"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "div.tghost",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker S's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "composer · a patch note",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": "button.rec-cta"
+        }
+      ],
+      "known": [],
+      "expect": "textarea.nw-ta",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker S's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "record drawer · a past season",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": "li.rec-row:not(.cur)"
+        }
+      ],
+      "known": [],
+      "expect": ".drawer.open .dcard",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker S's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "purge · the type-to-confirm drawer",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": "button.pill.sm.dang",
+            "text": "Purge"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "input.tc-in",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker S's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "manifest · Staged only, nothing staged",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": "button.chip.stagedchip"
+        }
+      ],
+      "known": [],
+      "expect": "p.empty",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker S's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
     }
   ]
 }
