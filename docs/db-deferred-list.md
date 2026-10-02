@@ -2612,7 +2612,7 @@ The "Can be undone" filter and the row's Undo control are both computed as `kind
 | what changed | 12 s | |
 | syntax-check | 3 s | |
 
-Before the rebuild the one job took 267 s. The slowest job now is `browser walks` at 99 s, under the 180 s line plan §7 set, so six jobs stay. The browser walks run one after another because each walk's weight of 4 takes every slot of a 4-vCPU runner. The tests job is a long tail with nothing worth cutting: its slowest entries are `handoffCheck.test.mjs` 13.0 s, the runner self-test 9.7 s, the hooks suite 8.2 s, `drawCalcBudget` 6.6 s and `docs:reflow` 5.7 s.
+**Three browser runs on the merged tree read 99 s, 102 s and 132 s** (the third a re-run of the same commit, 2026-10-01 20:07 EDT), so the spread between runs is about a third and the 120 s revisit line below was crossed once. All three were green and all are inside 180 s. Before the rebuild the one job took 267 s. The slowest job now is `browser walks` at 99 s, under the 180 s line plan §7 set, so six jobs stay. The browser walks run one after another because each walk's weight of 4 takes every slot of a 4-vCPU runner. The tests job is a long tail with nothing worth cutting: its slowest entries are `handoffCheck.test.mjs` 13.0 s, the runner self-test 9.7 s, the hooks suite 8.2 s, `drawCalcBudget` 6.6 s and `docs:reflow` 5.7 s.
 
 **Candidates, ranked by what they buy on GitHub** (estimates unless a figure is quoted from the run):
 1. **Split the browser job in two** — one job runs `--only portalStates`, the other `--exclude portalStates`, both in `syntax-check`'s `needs` (`docs:audit`'s `ci-wiring` checks that). The jobs come to about 71 s and about 31 s, and the CI wall goes from 99 s to about **72 s**, where `tests` becomes the longest: about **27 s, 27%**. Effort XS to S: a workflow change, no walk touched. It costs one more runner for about 30 s a run. This is the one worth doing first.
@@ -2626,7 +2626,7 @@ Before the rebuild the one job took 267 s. The slowest job now is `browser walks
 
 **How to read a run.** Each job's runner step prints `ran N · … · wall …` and a `slowest:` list at its end and writes the same into the job summary: `gh run view <run> --job <job id> --log`, and `gh run view <run> --json jobs` for each job's and step's start and end times.
 
-**Revisit when** the slowest job exceeds 180 s (plan §7's own line), or `browser walks` passes about 120 s as more states and realms are added, or a session finds itself waiting on CI. Related entries in the Active Bugs section: `The runner's slot weights do not count the processes an entry starts` and `portal:states still spends about 48 s of fixed waits`.
+**Revisit when** the slowest job exceeds 180 s (plan §7's own line), or `browser walks` stays above about 120 s (one re-run already read 132 s) as more states and realms are added, or a session finds itself waiting on CI. Related entries in the Active Bugs section: `The runner's slot weights do not count the processes an entry starts` and `portal:states still spends about 48 s of fixed waits`.
 
 **Verify condition:** after a cut, the next GitHub run's slowest job must drop by at least half of the estimate (13 s for the split alone), every job must be green, and `syntax-check`'s `needs` must list every job.
 
