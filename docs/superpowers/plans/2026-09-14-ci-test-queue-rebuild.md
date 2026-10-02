@@ -178,6 +178,8 @@ Harkirat, 2026-10-01 17:56 EDT: *"update into the plan for phase 3 if 6 is still
 
 **Further cuts: measured, deliberately not taken (2026-10-01 20:00 EDT).** Harkirat's call: the next seconds are not worth the extra hassle for now. The first GitHub run, the ranked candidates (splitting the browser job in two is worth about 27 s of the 99 s and is the first thing to do), the repeatable method and the conditions to revisit are filed in `docs/db-deferred-list.md` under Someday / tech-debt: `CI speed: where the next seconds are, measured on GitHub and deliberately not taken`.
 
+**Watch-for for the next sessions (2026-10-01 20:31 EDT).** The first PR that touches no hook is the first time `hooks on macOS` is skipped on GitHub, and `syntax-check` must stay green when it is. `CLAUDE.md` § 🧪 says so for every session, and the deferred list carries the reminder.
+
 ## Audit log
 
 Falsification pass, 2026-09-14 before this plan was written: `sequentialthinking`, five thoughts, on the question *"where is this plan WRONG?"* Every finding below changed the plan.
