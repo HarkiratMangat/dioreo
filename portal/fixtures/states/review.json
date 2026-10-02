@@ -5,11 +5,9 @@
     {
       "name": "changeset op · the row expands to its detail",
       "realm": "review",
-      "steps": [
-        { "click": "button.rvdrop" }
-      ],
+      "steps": [{"click": ".rvopwrap:nth-child(3) button.rvop"}],
       "known": [],
-      "expect": ".rvdet"
+      "expect": ".rvopwrap:nth-child(3).on"
     },
     {
       "name": "discard all · the tier-1 danger confirm opens",
