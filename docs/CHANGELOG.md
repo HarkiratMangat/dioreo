@@ -29,7 +29,10 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.86.0 — 2026-10-01 18:32 EDT (#192) — CI and the test queue rebuilt: a parallel runner, deterministic browser walks, CI split into jobs
+## Pre-Release v3.87.0 — 2026-10-01 20:33 EDT (#195) — the first hook-free PR is watched for, and two CI decisions are recorded
+**Documentation only; no runtime change.** `CLAUDE.md`'s CI block now tells every session what to expect from the first PR that touches no hook: `hooks on macOS` skipped and `syntax-check` still green, with where to fix it if it is red. This PR changes no hook, so its own CI is that first case, and the result is recorded in the deferred list and the resolved list. The deferred list also records Harkirat's two calls: the sync commit's missing test is accepted as is (`main` is paused until v3 merges), and the macOS job stays advisory for now. The CI plan's §7 points at the watch-for.
+
+## Pre-Release v3.86.0 — 2026-10-01 18:32 EDT (#192 · `37f42959`) — CI and the test queue rebuilt: a parallel runner, deterministic browser walks, CI split into jobs
 **`docs/superpowers/plans/2026-09-14-ci-test-queue-rebuild.md`.** Test infrastructure and CI only; no runtime change. It merged after portal pins batch 2, as decided 2026-09-14, so it carries that batch's two new tests.
 
 - **`npm test` is `scripts/testRunner.mjs`** — a weighted pool over `scripts/testManifest.mjs` (137 entries) that reports every failure rather than the first. Locally only, an entry whose traced inputs are unchanged is skipped (a warm run with nothing changed: under a second); CI runs everything, every time. Measured on one Mac the same afternoon, uncached, one run each: `v3-pre-release`'s own `&&` chain on its own tree **436.7 s**, the runner on this branch **93.6 s**. The eight longest entries are listed first, because the pool takes entries in manifest order.
