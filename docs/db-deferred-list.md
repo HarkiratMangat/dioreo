@@ -2597,45 +2597,38 @@ The "Can be undone" filter and the row's Undo control are both computed as `kind
 
 ## 🧹 Someday / tech-debt
 
-### `[P3 · S to M · Sonnet5-High]` CI speed: the next 15 s per run, measured and deliberately not taken — the path to check if a CI/tests improvement session starts
+### `[P3 · S · Sonnet5-High]` CI speed: where the next seconds are, measured on GitHub and deliberately not taken — the path to check if a CI/tests improvement session starts
 
-*Filed 2026-10-01 19:55 EDT at PR #192. Harkirat, 2026-10-01 19:55 EDT: the ~15 s per CI run is not worth the extra hassle for the time being, but it must be thoroughly documented as a path to check if a future CI/tests improvement session is started. So this is a decision to wait, not a rejection, and not a bug.*
+*Filed 2026-10-01 19:55 EDT at PR #192; rewritten 2026-10-01 20:00 EDT after the first GitHub run. Harkirat, 2026-10-01 19:53 EDT: the ~15 s per CI run is not worth the extra hassle for the time being, but it must be thoroughly documented as a path to check if a future CI/tests improvement session is started. So this is a decision to wait, not a rejection, and not a bug.* ⚠️ **The first version of this entry ranked the candidates from a local proxy that put the hooks suite and `npm run check` on the critical path. On GitHub they take 8.2 s and 3.3 s, so cutting them saves nothing. The ranking below is from the GitHub run.**
 
-**Where CI stood when this was written.** Six jobs (`tests`, `browser`, `records`, `changes`, `hooks-macos`, and the aggregate `syntax-check`). Each job's commands timed on one Mac at CI's 4 slots with `CI=true`, one after another: `tests` **72.6 s**, `browser` **62.8 s**, `records` **27.8 s**, hooks on macOS **27.8 s**. The last real GitHub run before the merge read 73 s, 70 s, 38 s and 37 s, so the proxy tracks CI within about 10%. Before the rebuild the one job took 267 s. **CI waits for the SLOWEST job and `tests` and `browser` run side by side, so a cut only shortens a run when it lowers the slowest one.**
+**The first GitHub run on the merged tree** (run 36943347930, commit `08fb2c7e`, all six jobs green). **CI waits for the SLOWEST job, and these run side by side:**
 
-**What each entry is worth, as an upper bound** (the entry excluded, so made free; one run each; the repeated baseline read 72.6 s then 73.7 s, so noise is about 1 s):
+| Job | Wall | What is in it |
+|---|---|---|
+| browser walks | **99 s** | checkout and `npm ci` 9 s, then the runner 85 s: `portalStates` 59.1 s, `portalGeometry` 21.7 s, `portalContrastRendered` 2.8 s, **one after another** |
+| tests (unit · docs · hooks) | 72 s | setup 27 s (checkout 8, setup-node 4, `npm ci` 5, `apt-get install ripgrep` 10), then the runner 41.1 s: 133 entries, 119.4 s of test time on 4 slots |
+| hooks on macOS | 63 s | `npm run test:hooks` 30 s on a real macOS image |
+| records and site | 38 s | |
+| what changed | 12 s | |
+| syntax-check | 3 s | |
 
-| Job | Entry made free | Job time | Saved |
-|---|---|---|---|
-| tests | none (baseline) | 72.6 s | none |
-| tests | `npm run test:hooks` | 47.6 s | 25.0 s |
-| tests | `npm run check` | 60.2 s | 12.4 s |
-| tests | both | 27.0 s | 45.6 s |
-| browser | none (baseline) | 62.8 s | none |
-| browser | `portalStates` | 17.8 s | 45.0 s |
-| browser | `portalGeometry` | 31.6 s | 31.2 s |
+Before the rebuild the one job took 267 s. The slowest job now is `browser walks` at 99 s, under the 180 s line plan §7 set, so six jobs stay. The browser walks run one after another because each walk's weight of 4 takes every slot of a 4-vCPU runner. The tests job is a long tail with nothing worth cutting: its slowest entries are `handoffCheck.test.mjs` 13.0 s, the runner self-test 9.7 s, the hooks suite 8.2 s, `drawCalcBudget` 6.6 s and `docs:reflow` 5.7 s.
 
-**What that does to a CI run** (the slowest job decides): hooks suite free alone → 62.8 s (saves 9.8 s, because `browser` is then the longest); `portalStates` free alone → 72.6 s (saves **nothing**); both free → 47.6 s (saves 25.0 s); all three free → about 28 s, where `records` becomes the longest. **To lower the wall, `tests` and `browser` both have to come down.**
+**Candidates, ranked by what they buy on GitHub** (estimates unless a figure is quoted from the run):
+1. **Split the browser job in two** — one job runs `--only portalStates`, the other `--exclude portalStates`, both in `syntax-check`'s `needs` (`docs:audit`'s `ci-wiring` checks that). The jobs come to about 71 s and about 31 s, and the CI wall goes from 99 s to about **72 s**, where `tests` becomes the longest: about **27 s, 27%**. Effort XS to S: a workflow change, no walk touched. It costs one more runner for about 30 s a run. This is the one worth doing first.
+2. **Remove fixed waits from `portalStates`** (about 48 s of them are filed as `portal:states still spends about 48 s of fixed waits`): about 10 to 15 s from that job, but it only moves the CI wall after (1), and then `tests` at 72 s caps it. ⚠️ This walk's whole history is flakes: remove waits one group at a time and run it ten times in a row after each.
+3. **The tests job's setup** (27 s of its 72 s): the `apt-get install ripgrep` step is 10 s and could be cached or avoided. Up to 10 s from `tests`, and again only useful once (1) is done.
+4. **Not worth cutting on GitHub:** the hooks suite (8.2 s), `npm run check` (3.3 s), and the long tail of small tests.
 
-**The realistic cuts, in order of value (estimates, not measurements):**
-1. **The hooks suite** (about 28 s alone) — the slowest tests left are `commit-completeness-sweep.test.sh` 9.5 s and `timestamp-check.test.sh` 4.3 s, then `stale-reference-sweep` 2.3 s and `overwrite-guard` 2.1 s (serial sum about 41 s). The first runs `rg` sweeps over the real repo and could be made hermetic the way `ctx-index-refresh.test.sh` was (`d59f2831`: a scratch repo under a scratch `HOME`, 47 s → 1.3 s). Realistic saving about 8 to 12 s from `tests`. Effort S.
-2. **`portalStates`** (30 to 47 s) — `docs/db-deferred-list.md` already files about 48 s of fixed waits in the walk (`portal:states still spends about 48 s of fixed waits`), most of which can become `until` conditions now that every step waits for its target. Realistic saving about 10 to 15 s from `browser`. Effort S to M. ⚠️ **Risk: this walk's whole history is flakes**; remove waits one group at a time and run it ten times in a row after each.
-3. **`npm run check`** — not recommended. The plan rejected a one-process syntax check (`A7`) because Node's module-syntax detection cannot be reproduced with `vm.Script`, so it would parse a different grammar than the one that runs. Pruning generated or mockup JS from its file list is a guess nobody has measured.
+**Doing 1 and 3 takes the CI wall from 99 s to about 62 to 65 s, about 35%.** The floor is set by the tests job's 41 s runner step plus its setup.
 
-**Doing 1 and 2 together takes the CI wall from about 73 s to about 58 s: about 15 s per run, 20%.** Banked already: 267 s → about 73 s.
+**The local proxy mispredicted, and that is the lesson.** The Mac timed the hooks suite at 28 s and `npm run check` at 31 s against 8.2 s and 3.3 s on GitHub, and the browser job at 63 s against 85 s there. A loaded Mac ranks the pool differently from 4 vCPUs. **Decide CI cuts from a GitHub run, never from the Mac.**
 
-**How to repeat the measurement** (any machine; each prints a wall time, so run the baseline in the same stretch as the variants):
+**How to read a run.** Each job's runner step prints `ran N · … · wall …` and a `slowest:` list at its end and writes the same into the job summary: `gh run view <run> --job <job id> --log`, and `gh run view <run> --json jobs` for each job's and step's start and end times.
 
-```
-CI=true node scripts/testRunner.mjs --exclude-lane browser --exclude "npm run docs:audit:test" --jobs 4
-CI=true node scripts/testRunner.mjs --exclude-lane browser --exclude "npm run docs:audit:test" --exclude "npm run test:hooks" --jobs 4
-CI=true node scripts/testRunner.mjs --lane browser --jobs 4
-CI=true node scripts/testRunner.mjs --lane browser --exclude portalStates --jobs 4
-```
+**Revisit when** the slowest job exceeds 180 s (plan §7's own line), or `browser walks` passes about 120 s as more states and realms are added, or a session finds itself waiting on CI. Related entries in the Active Bugs section: `The runner's slot weights do not count the processes an entry starts` and `portal:states still spends about 48 s of fixed waits`.
 
-**Revisit when** the GitHub run's slowest job exceeds 180 s (plan §7's own line), or `tests` AND `browser` both pass about 100 s, or a PR's wait on CI becomes the thing a session is sitting on. Related entries: `The runner's slot weights do not count the processes an entry starts` and `portal:states still spends about 48 s of fixed waits`, in the Active Bugs section.
-
-**Verify condition:** after any cut, run the four commands above again: the job's wall must drop by at least half of its estimated saving, `TEST_CACHE=0 npm test` must pass three times in a row, and for `portalStates` the walk must report 0 FLAKED over ten runs.
+**Verify condition:** after a cut, the next GitHub run's slowest job must drop by at least half of the estimate (13 s for the split alone), every job must be green, and `syntax-check`'s `needs` must list every job.
 
 ### `[P2 · M · Sonnet5-High]` A shadowed-CSS gate for `app.css` — measured 2026-09-10 13:20 EDT, and the measurement is why it is not built yet
 
