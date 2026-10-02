@@ -93,13 +93,9 @@
       "name": "Track · a lane collapsed to its summary",
       "realm": "season",
       "flags": {},
-      "steps": [
-        {
-          "click": ".lnh"
-        }
-      ],
+      "steps": [{"click": ".lanes > .lane:first-child .lnh"}],
       "known": [],
-      "expect": ".lane.lnc .lsum"
+      "expect": ".lanes > .lane:first-child.lnc"
     },
     {
       "name": "Track · a stemmed bar label",
