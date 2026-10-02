@@ -243,7 +243,7 @@ He listed them on 2026-09-16 15:20 EDT and said they had already been given in a
 - [ ] **Promote `hooks on macOS` from advisory to blocking** `[P2 · XS · Sonnet5-Medium]` (filed 2026-09-14 19:58 EDT)
   - ✅ **Decision (Harkirat, 2026-10-01 20:31 EDT): leave it advisory for now.** The `Do` line below is the exit if he later wants it blocking.
   - It is advisory by design: `syntax-check` turns its failure into a warning and a job-summary line, because it had never run on a macOS image when it was added, and a first-run environment mismatch must not block every PR that touches a hook. An advisory warning is also how a real BSD-vs-GNU bug gets read past, so advisory is a waiting state with an exit, not a resting one.
-  - **Do:** once it has passed on three real runs, change the `case "$HOOKS_MACOS"` block in `.github/workflows/ci.yml` to fail on anything but `success|skipped`, and update the header comment. ✅ **The condition is met (2026-10-01 20:16 EDT):** it passed on a real macOS image on three runs of the merged tree (36943347930, 36943840421, 36944383396) as well as the 2026-09-15 runs. Promoting it is Harkirat's call, because a macOS-image flake would then block every PR that touches a hook.
+  - **Do:** once it has passed on three real runs, change the `case "$HOOKS_MACOS"` block in `.github/workflows/ci.yml` to fail on anything but `success|skipped`, and update the header comment. ✅ **The skipped path was observed on PR #195 (run 36946454845): `hooks on macOS` skipped, `syntax-check` green.** ✅ **The condition is met (2026-10-01 20:16 EDT):** it passed on a real macOS image on three runs of the merged tree (36943347930, 36943840421, 36944383396) as well as the 2026-09-15 runs. Promoting it is Harkirat's call, because a macOS-image flake would then block every PR that touches a hook.
   - **Verify:** a PR whose macOS hook run fails shows `syntax-check` red.
 
 - [ ] **Three `portal:states` entries still prove nothing about their steps** `[P2 · S · Sonnet5-High]` (filed 2026-09-14 19:44 EDT)
@@ -684,12 +684,6 @@ COMPANION §15 states the seeding rule ("seeded on request, never automatically"
 Home held its own copy of Armory's fault predicate; the copy happened to AGREE, which is the version of that bug that survives longest. Nobody has looked for the others. **Do.** Compare every `.filter(` over a realm collection against the realm that owns it. **Verify by:** each surviving copy either importing the owner's derivation or carrying a comment saying why it must differ.
 
 ## 🔔 Reminders / watch-for
-
-### `[P2 · XS]` The first PR that does not touch a hook: confirm `hooks on macOS` is skipped and `syntax-check` stays green
-
-Filed 2026-10-01 20:17 EDT in the pre-merge pass of PR #192. Every run of the rebuilt CI so far touched the hooks, so `hooks on macOS` has always run. When a PR changes no file under `.claude/hooks/`, no `.claude/settings.json` and no `scripts/hookOutputCap*`, the `what changed` job reports `hooks=false`, the macOS job is **skipped**, and `syntax-check` must still pass. The aggregator's shell logic was run locally for every combination of job results (a skipped `hooks-macos` passes; a skipped, failed or cancelled `browser`, `records`, `tests` or `changes` fails), but GitHub's handling of a skipped dependency under `needs` plus `if: always()` was never observed. Sessions 4 and 5 are portal work, so their first PR that leaves the hooks alone is the first sighting. If `syntax-check` goes red or skips there, every portal PR is blocked: fix the `case` block or the `if:` in `.github/workflows/ci.yml` at once.
-
-**Verify condition:** a PR with no hook change shows `hooks on macOS` skipped and `syntax-check` green.
 
 
 ### `[P2 · S]` Morphing marks draw through the CSS `d` property — check the portal's browsers before Session 5 ports them

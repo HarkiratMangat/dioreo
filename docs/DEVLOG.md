@@ -4560,7 +4560,7 @@ The pre-merge pass found one more premise that was false, in the plan, the PR an
 
 The CI rebuild left one check nobody had seen: a PR that touches no hook, so the macOS job is skipped and the aggregate has to pass anyway. The pre-merge pass of the rebuild filed it as a reminder, in the deferred list. Harkirat's question afterwards was the right one: would Session 4 or 5 ever open that list? They would not. The plan said only that the skip was allowed, and `CLAUDE.md`, which every session reads, did not mention it. So the note went into `CLAUDE.md`'s CI block, with where to fix it if it is red.
 
-His second point was sharper than the plan. A docs-only PR touches no hook, so this very PR is the first one on which GitHub skips the macOS job. The reminder did not have to wait for a portal session to stumble onto it: this PR's own CI is the observation, and the result is written down before it merges. The same PR records his two calls on the other open CI items, that the sync commit's missing test is fine because `main` is paused until v3 merges, and that the macOS job stays advisory for now.
+His second point was sharper than the plan. A docs-only PR touches no hook, so this very PR is the first one on which GitHub skips the macOS job. The reminder did not have to wait for a portal session to stumble onto it: this PR's own CI is the observation, and the result is written down before it merges. It did what it should: the macOS job was skipped and the aggregate stayed green (run 36946454845). The same PR records his two calls on the other open CI items, that the sync commit's missing test is fine because `main` is paused until v3 merges, and that the macOS job stays advisory for now.
 
 # Part B — Lessons Ledger (thematic)
 
