@@ -18,7 +18,7 @@ on:
     branches: [main, v3-pre-release]
   pull_request:
     branches: [main, v3-pre-release]
-  # Called by sync-v3-pre-release.yml with the merge commit it just pushed. That push is made with GITHUB_TOKEN, which never triggers a workflow, so until 2026-09-14 19:03 EDT the commit that brings `main` into `v3-pre-release` was the one commit on the branch CI never tested.
+  # Called by sync-v3-pre-release.yml with the merge commit it just pushed. That push is made with GITHUB_TOKEN, which never triggers a workflow, so until 2026-09-14 19:03 EDT the commit that brings `main` into `v3-pre-release` was the one commit on the branch CI never tested. ⚠️ **It does not run yet.** A push to `main` runs `main`'s copy of `sync-v3-pre-release.yml`, and this change reaches only `v3-pre-release`, so `test-synced` takes effect once `main` carries these workflow files, and the sync retires with `v3-pre-release` at the v3.0.0 launch merge. Do not copy the sync workflow to `main` alone: its `uses: ./.github/workflows/ci.yml` would call `main`'s old ci.yml, which has no `workflow_call`, and the sync would stop. Found in the pre-merge pass of PR #192, 2026-10-01 20:16 EDT.
   workflow_call:
     inputs:
       ref:

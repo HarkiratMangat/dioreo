@@ -5,6 +5,15 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ The rebuilt CI ran on GitHub, green — closed 2026-10-01 20:16 EDT `[DONE · 2026-10-01 20:16 EDT]`
+
+*The CI half of `The rebuilt CI has never run on GitHub` (filed 2026-09-14 19:44 EDT). Its own Verify condition was run as written, on PR #192. The sync half stays open in the deferred list, re-scoped.*
+
+- **All six checks appear and `syntax-check` is green:** runs 36943347930, 36943840421 and 36944383396 on the merged tree, and 34926308525 before the merge.
+- **`hooks on macOS` ran for real and its result was read:** `npm run test:hooks` on a macOS image under bash 3.2.57, 39 passed and 52 passed, 0 failed, 1 skipped; 63 s, 54 s and 47 s.
+- **`browser walks` green on three consecutive runs:** 99 s, 102 s and a re-run at 132 s on the merged tree (a fourth, 92 s, followed); 6 of 6 before the merge.
+- **Per-job times, plan §7's rule applied:** browser walks 99 s (the slowest), tests 72 s, hooks on macOS 63 s, records 38 s, what changed 12 s, syntax-check 3 s, against 267 s for the one job before. Under 180 s, so six jobs stay.
+
 ## 🧪 `ctx-index-refresh.test.sh` made hermetic — closed 2026-10-01 19:21 EDT `[DONE · 2026-10-01 19:21 EDT]`
 
 *Closed on `ci/test-queue-rebuild` (`d59f2831`), filed 2026-09-14 21:00 EDT as `[P3 · S]`. Its own Verify condition was run as written.*
