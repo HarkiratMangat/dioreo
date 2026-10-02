@@ -5,6 +5,13 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ The first hook-free PR: `hooks on macOS` skipped and `syntax-check` green — closed 2026-10-01 20:34 EDT `[DONE · 2026-10-01 20:34 EDT]`
+
+*The reminder filed in the pre-merge pass of PR #192, `The first PR that does not touch a hook`. Its Verify condition was run as written, and it did not need a portal session: the docs PR that recorded the watch-for changed no hook, so it was the first case.*
+
+- **Observed on PR #195, run 36946454845 (commit `5c07b90e`):** `tests`, `browser walks`, `records and site` and `what changed` succeeded, **`hooks on macOS` was skipped**, and **`syntax-check` succeeded**. The aggregator's shell logic had been run locally for every combination of results; this is GitHub's own handling of a skipped dependency under `needs` plus `if: always()`.
+- **Where it lives now:** `CLAUDE.md`'s CI block carries the note as an observation, with where to fix it if a later change breaks it.
+
 ## ✅ The rebuilt CI ran on GitHub, green — closed 2026-10-01 20:16 EDT `[DONE · 2026-10-01 20:16 EDT]`
 
 *The CI half of `The rebuilt CI has never run on GitHub` (filed 2026-09-14 19:44 EDT). Its own Verify condition was run as written, on PR #192. The sync half stays open in the deferred list, re-scoped.*

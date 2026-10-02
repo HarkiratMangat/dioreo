@@ -229,6 +229,7 @@ He listed them on 2026-09-16 15:20 EDT and said they had already been given in a
 **Verify condition:** a build on the R9-0 renders its Smoothbore attachment under a Smoothbore label with its own colour, and the board's palette fork offers one colour per real slot rather than per display slot.
 
 - [ ] **The sync commit is still untested: `test-synced` is wired but dormant until `main` carries the workflow files** `[P3 · S · Opus5-Medium]` (filed 2026-09-14 19:44 EDT as `The rebuilt CI has never run on GitHub`; the CI half closed at the merge of #192; re-scoped 2026-10-01 20:16 EDT after a pre-merge pass found its premise false)
+  - ✅ **Decision (Harkirat, 2026-10-01 20:31 EDT): accept it and leave it as is.** `main` is paused on fixes and updates until v3 merges into it, so the exposure is small. Nothing further is planned.
   - **What is true.** `sync-v3-pre-release.yml` runs `on: push: branches: [main]`, and a push-triggered workflow runs the copy of the file in the pushed commit, which is `main`'s. PR #192 reaches only `v3-pre-release`, so the `sha` output and the `test-synced` job (it calls `ci.yml` through `workflow_call` on the commit the sync pushes) sit in a copy no event runs. A manual `workflow_dispatch` of `v3-pre-release`'s copy finds `v3-pre-release` already holding `main` and exits before it outputs a sha, so `test-synced` is skipped. **This entry's first version said the next push to `main` would run `sync` then `test-synced`, and the PR, the CHANGELOG and two workflow comments said the sync commit is now tested. All of that was wrong and is corrected.**
   - **What it costs.** Nothing new: the sync commit was untested before and still is. The exposure is bounded. `main` rarely moves, `v3-pre-release` holds all of it today (0 commits behind, read 2026-10-01 20:16 EDT), and the next PR into `v3-pre-release` runs CI on a tree that includes any sync commit before it merges. The sync workflow's header says it retires after the v3.0.0 launch merge, so unless the files reach `main` first this never runs.
   - ⚠️ **Do not copy the sync file to `main` alone.** It calls `./.github/workflows/ci.yml`, and `main`'s ci.yml is the old single job with no `workflow_call`, so the sync workflow would become invalid and the sync would stop.
@@ -240,8 +241,9 @@ He listed them on 2026-09-16 15:20 EDT and said they had already been given in a
   - **Verify:** on a quiet machine, `TEST_CACHE=0 npm test` three times in the manifest's order and with `HOOK_TEST_JOBS=2` set; close this entry if the wall differs by under 10 s, otherwise lower the hooks suite's parallelism inside the pool.
 
 - [ ] **Promote `hooks on macOS` from advisory to blocking** `[P2 · XS · Sonnet5-Medium]` (filed 2026-09-14 19:58 EDT)
+  - ✅ **Decision (Harkirat, 2026-10-01 20:31 EDT): leave it advisory for now.** The `Do` line below is the exit if he later wants it blocking.
   - It is advisory by design: `syntax-check` turns its failure into a warning and a job-summary line, because it had never run on a macOS image when it was added, and a first-run environment mismatch must not block every PR that touches a hook. An advisory warning is also how a real BSD-vs-GNU bug gets read past, so advisory is a waiting state with an exit, not a resting one.
-  - **Do:** once it has passed on three real runs, change the `case "$HOOKS_MACOS"` block in `.github/workflows/ci.yml` to fail on anything but `success|skipped`, and update the header comment. ✅ **The condition is met (2026-10-01 20:16 EDT):** it passed on a real macOS image on three runs of the merged tree (36943347930, 36943840421, 36944383396) as well as the 2026-09-15 runs. Promoting it is Harkirat's call, because a macOS-image flake would then block every PR that touches a hook.
+  - **Do:** once it has passed on three real runs, change the `case "$HOOKS_MACOS"` block in `.github/workflows/ci.yml` to fail on anything but `success|skipped`, and update the header comment. ✅ **The skipped path was observed on PR #195 (run 36946454845): `hooks on macOS` skipped, `syntax-check` green.** ✅ **The condition is met (2026-10-01 20:16 EDT):** it passed on a real macOS image on three runs of the merged tree (36943347930, 36943840421, 36944383396) as well as the 2026-09-15 runs. Promoting it is Harkirat's call, because a macOS-image flake would then block every PR that touches a hook.
   - **Verify:** a PR whose macOS hook run fails shows `syntax-check` red.
 
 - [ ] **Three `portal:states` entries still prove nothing about their steps** `[P2 · S · Sonnet5-High]` (filed 2026-09-14 19:44 EDT)
@@ -682,12 +684,6 @@ COMPANION §15 states the seeding rule ("seeded on request, never automatically"
 Home held its own copy of Armory's fault predicate; the copy happened to AGREE, which is the version of that bug that survives longest. Nobody has looked for the others. **Do.** Compare every `.filter(` over a realm collection against the realm that owns it. **Verify by:** each surviving copy either importing the owner's derivation or carrying a comment saying why it must differ.
 
 ## 🔔 Reminders / watch-for
-
-### `[P2 · XS]` The first PR that does not touch a hook: confirm `hooks on macOS` is skipped and `syntax-check` stays green
-
-Filed 2026-10-01 20:17 EDT in the pre-merge pass of PR #192. Every run of the rebuilt CI so far touched the hooks, so `hooks on macOS` has always run. When a PR changes no file under `.claude/hooks/`, no `.claude/settings.json` and no `scripts/hookOutputCap*`, the `what changed` job reports `hooks=false`, the macOS job is **skipped**, and `syntax-check` must still pass. The aggregator's shell logic was run locally for every combination of job results (a skipped `hooks-macos` passes; a skipped, failed or cancelled `browser`, `records`, `tests` or `changes` fails), but GitHub's handling of a skipped dependency under `needs` plus `if: always()` was never observed. Sessions 4 and 5 are portal work, so their first PR that leaves the hooks alone is the first sighting. If `syntax-check` goes red or skips there, every portal PR is blocked: fix the `case` block or the `if:` in `.github/workflows/ci.yml` at once.
-
-**Verify condition:** a PR with no hook change shows `hooks on macOS` skipped and `syntax-check` green.
 
 
 ### `[P2 · S]` Morphing marks draw through the CSS `d` property — check the portal's browsers before Session 5 ports them
