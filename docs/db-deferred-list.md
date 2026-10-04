@@ -685,6 +685,10 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 
 ## 🔔 Reminders / watch-for
 
+### `[P1 · XS]` Session 5's reference: Board 4: Collective or Board 4: Builder-2 — decide when Session 4 is near its close
+
+**Filed 2026-10-03 22:45 EDT, at Harkirat's word (22:44 EDT: "we can think about session 5 after session 4 is near completion. document it in the plan/project memory/deferred list for now").** Session 4 is rebuilding the Board 4 kit's structure on a clone, Board 4: Builder-2 (`local/pins2/s4/builder-2`, artifact `TrgpH44tv3Kk1Lvf9atbrc`), keeping Board 4: Collective (`docs/pins2/kit`, Version 81) untouched as the backup. A rebuilder thread restructures it with 0 pixels changed; an Adjuster thread then corrects Board 4's own misalignments, declared one by one; Harkirat then re-tunes everything with the builder. Plan: `local/pins2/s4/builder-2-plan.md`. **The open question:** the batch-2 plan's §13 and Session 5 port Board 4: Collective. If Session 5 keeps that reference, the rebuilt structure never reaches the portal, and every correction reads as a portal mismatch at Session 5's 1282 comparison. **Verify condition:** before Session 4's §13 close, Harkirat has ruled which board Session 5 ports, and plan §5d and §13 name it.
+
 
 ### `[P2 · S]` Morphing marks draw through the CSS `d` property — check the portal's browsers before Session 5 ports them
 
