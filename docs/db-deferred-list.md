@@ -90,6 +90,15 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 `scripts/testRunner.test.mjs:134` asserts that two read-locked entries finish faster together than a writer and a reader. Under a full `TEST_CACHE=0 npm test` on this Mac (8 slots, 139 entries) it failed twice on 2026-10-18 (12:24 EDT: readers 3,714 ms vs 2,980 ms; 15:18 EDT: 2,876 ms vs 3,413 ms, which is the right order and still failed its margin), and passed both times when run alone. The other 138 entries passed each time, so it reads as wall-clock contention, not a runner defect. **Do:** give the check headroom that load cannot erase (compare against a measured baseline in the same process, or move it to its own serial lane in `scripts/testManifest.mjs`). **Verify:** three consecutive full `TEST_CACHE=0 npm test` runs pass it.
 
+### The site build writes today's daylight-saving offsets into `/commands`, so `public/` goes stale with no source change `[P2 · S · Sonnet5-Medium]`
+
+*Filed 2026-10-05 03:43 EDT by Session 4's lead, when draft PR #196's "records and site" job failed on a branch that touched no site source.*
+
+- **What happened:** `public/commands.html` carries the `/timestamp` style options with their UTC offsets, computed when the page is built. Sydney moved to daylight time on 2026-10-04, so the same sources now build "(UTC+11:00) … (GMT+11)" where the committed page says "+10". CI's "public/ is up to date with its sources" step then fails on every branch, whatever it changed. It will happen again when Sydney leaves daylight time in April, and for any other listed zone that changes.
+- **Done for now:** `public/commands.html` rebuilt and committed on #196, so CI is green again until the next change of offset.
+- **The fix still owed:** build the page with offsets that don't depend on the build date: a fixed reference date, or labels that leave the offset out and let the page compute it in the browser. Check first how the bot's own `/timestamp` options get the same labels: if they are also computed at load, the bot's list changes with the seasons too, which may be wanted there and not on a static page.
+- **Verify:** building the site with the system clock set to a January date and to a July date gives the same `public/commands.html`.
+
 ### Escape in any portal drawer discards the draft without asking `[P1 · XS]`
 
 Found 2026-09-22 15:40 EDT by a flow test on Board 4 (Session 3 of pins batch 2), which writes no portal code, so it is filed for Session 5. `portal/ui/overlay.js` `Drawer` adds its keydown listener once (`useEffect(..., [])`), so the Escape branch calls the `onClose` from the drawer's FIRST render — when every draft is still empty. A filled build, post or edit is thrown away with no "Discard this draft?", while the Close button, which reads the current `onClose`, asks. The board's copy (`docs/pins2/kit/ui/overlay.js`) is fixed with a ref that always holds the current `onClose`; the portal needs the same three lines.
