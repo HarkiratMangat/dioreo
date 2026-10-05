@@ -1,9 +1,10 @@
 // Shared by the Board 4 generators (structure.cjs, a11y.cjs, relations.cjs, and extract-spec.cjs's pop-up pass): one way to open the
 // board, find each gate's stage, drive its state switch and Try buttons, and open the pop-ups a resting walk never sees.
 // Written 2026-09-29 19:13 EDT, when the handoff still listed four things the spec "does not have yet" and all four needed the same walk.
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const path = require('path'); const fs = require('fs'); const os = require('os');
 const puppeteer = require(path.resolve(__dirname, '../../../../node_modules/puppeteer-core'));
-const URL_ = process.env.B4_URL || 'http://127.0.0.1:8900/docs/pins2/kit/board4.html';
+const URL_ = KITC.URL;
 const GATES = [['C1', 'c-manifest', 'The Armory manifest'], ['C2', 'c-new-build', 'New build'], ['C3', 'c-compare', 'Compare'], ['C4', 'c-repairs', 'Repairs'],
   ['C5', 'c-export', 'Export'], ['C6', 'c-queue', 'The delivery queue'], ['C7', 'c-broadcast', 'The Broadcast manifest, and posting'], ['C8', 'c-history', 'History'],
   ['C9', 'c-admin', 'Admin traffic']];

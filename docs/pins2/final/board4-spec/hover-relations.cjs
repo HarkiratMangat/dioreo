@@ -4,8 +4,9 @@
 // Static: every rule in the kit's stylesheets whose :hover / :focus-visible / :focus-within / :active sits on a compound that is NOT the rule's subject.
 // (JS-driven hovers — Compare's lighting through `hc`, the badge pop's state — are in HANDOFF.md, and relations.cjs measures them with a real mouse.)
 // Usage: node hover-relations.cjs → writes hover-relations.md beside it
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const fs = require('fs'); const path = require('path');
-const KIT = path.resolve(__dirname, '../../kit');
+const KIT = KITC.DIR;
 const FILES = ['app.css', 'gates.css', 'b4.css', 'b1.css', 'b2.css', 'b3/board.css', 'b4/classes.css', 'b4/compare.css', 'b4/form.css', 'b4/bulk.css'];
 const STATE = /:(hover|focus-visible|focus-within|active)\b/;
 const rows = [];
@@ -26,7 +27,7 @@ for (const f of FILES) {
   }
 }
 const byFile = {}; rows.forEach((r) => { (byFile[r.f] = byFile[r.f] || []).push(r); });
-const out = ['---', 'kind: reference', 'status: live', '---', '', '# Board 4: Collective — hover relations', '',
+const out = ['---', 'kind: reference', 'status: live', '---', '', '# ' + KITC.TITLE + ' — hover relations', '',
   `*Generated ${new Date().toISOString()} by \`hover-relations.cjs\` from the kit's stylesheets. ${rows.length} rules in which one element's hover, focus or press restyles another element — the relations the value files cannot show, because they force states on each element alone. A port that copies only per-element values loses every one of these. JS-driven hovers (Compare's lighting, the badge pop) are in HANDOFF.md and measured with a real mouse in relations.cjs.*`, ''];
 for (const [f, rs] of Object.entries(byFile)) { out.push(`## \`${f}\` — ${rs.length}`, '', '| Line | Selector | Declarations |', '|---|---|---|'); rs.forEach((r) => out.push(`| ${r.line} | \`${r.sel.replace(/\|/g, '\\|')}\` | ${r.decl.replace(/\|/g, '\\|')} |`)); out.push(''); }
 fs.writeFileSync(path.join(__dirname, 'hover-relations.md'), out.join('\n'));
