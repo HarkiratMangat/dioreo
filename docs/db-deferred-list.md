@@ -691,6 +691,13 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 - the first version framed this as "does Session 5 port Board 4: Collective or Builder-2". His answer (22:46 EDT): "session 5 was never going to port 'board 4: collective' anyway. it was supposed to port 'board 4: final' … builder-2 is honestly a step towards 'board 4: final'."
 - **What Builder-2 is:** Session 4 is rebuilding the Board 4 kit's structure on a clone, Board 4: Builder-2 (`local/pins2/s4/builder-2`, artifact `TrgpH44tv3Kk1Lvf9atbrc`), with 0 pixels changed. An Adjuster then corrects Board 4's misalignments, one declared correction at a time, and Harkirat re-tunes everything with the builder. Plan: `local/pins2/s4/builder-2-plan.md`.
 - **Verify condition:** at Session 4's close, Board 4: Final is built on Builder-2's structure and corrections, not on Board 4: Collective's, and plan §5d and §13 say so. When Session 4 nears its close, ask Harkirat how Builder-2 becomes Board 4: Final.
+- **His rulings on Builder-2, 2026-10-04 (amended 2026-10-04 22:12 EDT), which Board 4: Final and Session 5's port must carry.** Each was given in the Session 4 thread; they live in the gitignored Adjuster prompt, so they are restated here:
+  - **Whole pixels only** (01:12 EDT): "take partial pixels out of the scenario and keep things clean with whole numbers".
+  - **The spacing scale** (01:58 and 02:01 EDT): every set size and space steps by 2 up to 20, then by 4 (24, 28, 32…). Font sizes, 1px hairlines, radii and shared-out widths are outside it.
+  - **No transform nudges** (01:15 EDT). Text is centred by its capitals with `text-box: trim-both cap alphabetic`, applied where it actually takes effect, and sizes are chosen by capital height (approved 01:56 EDT).
+  - **The type scale and box size** (21:09–21:37 EDT): micro 9, xs 11, md 14, lg 17; a 32px visible box inside the 44px touch target, with `--box-size` as the setting.
+  - **Every setting is the quantity a person sees** (21:34 EDT): a visible size derived from an invisible one is a structural defect.
+  - **Board chrome is out of scope** (20:54 EDT). Colours, corner radii and button styles are his tuning pass in Builder-2, after the Adjuster.
 
 ### `[P2 · S]` Morphing marks draw through the CSS `d` property — check the portal's browsers before Session 5 ports them
 
