@@ -2614,6 +2614,16 @@ The "Can be undone" filter and the row's Undo control are both computed as `kind
 
 ## 🧹 Someday / tech-debt
 
+### `[P3 · XS · Sonnet5-Medium]` The docs index holds every file twice: 194 entries under an old label beside the 437 the refresh hook keeps
+
+*Filed 2026-10-05 00:15 EDT at Harkirat's word, 00:12 EDT: "leave it deferred list for now then. i'd rather you didn't waste 194 tool calls/turns."*
+
+- **What:** this repo's context-mode store (`~/.claude/context-mode/content/aaac23ea4901ab62.db`) holds 194 sources labelled `project:Diors-Builds docs/:<path>` beside 437 labelled `project:dioreo-docs…` (counted read-only 2026-10-05 00:06 EDT). A search returns the same docs section once under each, seen on `tool-capability-tests.md`. context-mode 1.0.169 re-indexes both labels when a file changes, so neither ages out.
+- **Why not `ctx_purge`:** it takes only `scope` (`session`|`project`) and `sessionId`; `scope: "project"` wipes this repo's whole store, 1,300+ sources and every session's history. The `project:` in a label is a naming convention, not a scope.
+- **Ways, cheapest first:** (1) one Bash call looping the CLI: read the labels with `sqlite3 "file:<db>?mode=ro" "select label from sources where label like 'project:Diors-Builds docs/%'"`, then for each `node <cli.bundle.mjs> index <an empty .md> --source "<label>" --project "<repo root>"`. The CLI has no purge command; its `index` replaces a label as `ctx_index` does. Untested, and each emptied label then records that empty file as its path. Labels contain spaces: read them with `while IFS= read -r`. (2) 194 `ctx_index({content: " ", source: "<label>"})` calls: tested on 13 labels 2026-10-05 00:05 EDT, and the turn cost he declined. (3) one SQL delete mirroring the plugin's own replace statements: one command, but it bypasses the plugin on a store other sessions are using.
+- **Verify:** `select count(*) from sources where label like 'project:Diors-Builds docs/%' and chunk_count > 0` returns 0, and a `ctx_search` for a docs heading returns one copy.
+- **Cause, not yet traced:** `.claude/hooks/ctx-index-refresh.sh` writes only `project:dioreo-docs`, so some session indexed `docs/` by hand under the old label. The labelling convention is in `~/.claude/TOOLING.md` §3, context-mode gotchas.
+
 ### `[P3 · S · Sonnet5-High]` CI speed: where the next seconds are, measured on GitHub and deliberately not taken — the path to check if a CI/tests improvement session starts
 
 *Filed 2026-10-01 19:55 EDT at PR #192; rewritten 2026-10-01 20:00 EDT after the first GitHub run. Harkirat, 2026-10-01 19:53 EDT: the ~15 s per CI run is not worth the extra hassle for the time being, but it must be thoroughly documented as a path to check if a future CI/tests improvement session is started. So this is a decision to wait, not a rejection, and not a bug.* ⚠️ **The first version of this entry ranked the candidates from a local proxy that put the hooks suite and `npm run check` on the critical path. On GitHub they take 8.2 s and 3.3 s, so cutting them saves nothing. The ranking below is from the GitHub run.**
