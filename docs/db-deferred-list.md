@@ -698,6 +698,9 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
   - **The type scale and box size** (21:09–21:37 EDT): micro 9, xs 11, md 14, lg 17; a 32px visible box inside the 44px touch target, with `--box-size` as the setting.
   - **Every setting is the quantity a person sees** (21:34 EDT): a visible size derived from an invisible one is a structural defect.
   - **Board chrome is out of scope** (20:54 EDT). Colours, corner radii and button styles are his tuning pass in Builder-2, after the Adjuster.
+  - **One-element text sizes follow similar text** (2026-10-05 02:28 EDT): among the sizes that centre, the one similar text elsewhere already uses ("pick values we use for similar text elsewhere too"). Compare's attachment names stay 14px, wrapping to two lines.
+- **Where it stands (2026-10-05 03:38 EDT):** Builder-2 is republished (artifact Version 2) with the rebuild and every correction, reviewed by V2 in five passes; its local git (`local/pins2/s4/builder-2`, HEAD `84f3da9`) holds one commit per correction class. His saved variants were cleared on his word (02:27 EDT) and the builder's controls now step in whole pixels on his scale. The Adjuster's report is `local/pins2/s4/rebuild/A-REPORT.md` (what Session 5 ports is its last section); his tuning to-do is `local/pins2/s4/tuning-todo.md`. Still open: `--t-sm` (12px) and `--t-base` (13px), which he picks in his tuning pass, then Board 4: Final.
+- **A lesson for Session 5's own data steps:** Builder-2's data tool measured Board 4: Collective (the walk's default page) for every Adjuster round until the lead diffed it on 2026-10-05; `bd-tools/build-data.cjs` now refuses any page but Builder-2's. A tool that defaults to a reference page reports success on the wrong board.
 
 ### `[P2 · S]` Morphing marks draw through the CSS `d` property — check the portal's browsers before Session 5 ports them
 
