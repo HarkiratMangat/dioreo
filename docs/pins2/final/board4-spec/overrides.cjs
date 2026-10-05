@@ -6,8 +6,9 @@
 // (.wg-*, .mt-*, .chip, .stt …). portal-diff.md cannot see them (it diffs ui/*.js and app.css), class-map.md skips them (it lists
 // board-only classes), and resolved-spec/ scatters them across 1.4 MB as `from: b3/board.css:NNNN`. This lists every one, live or
 // dead under switches.md, so each is a line Session 5 moves into portal/ui/app.css.
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const fs = require('fs'); const path = require('path');
-const ROOT = path.resolve(__dirname, '../../../..'); const KIT = path.join(ROOT, 'docs/pins2/kit');
+const ROOT = path.resolve(__dirname, '../../../..'); const KIT = KITC.DIR;
 const src = fs.readFileSync(path.join(KIT, 'b3/state.js'), 'utf8');
 const D = eval('(' + src.match(/DEFAULTS\s*=\s*(\{[\s\S]*?\n\});/)[1] + ')');
 const BOARD = /^(b3|pb|g|exs|gn|dk|lab|gate|l1|mk)-/;
@@ -35,5 +36,5 @@ const out = ['---', 'kind: reference', 'status: live', '---', '', '# Board 3-E �
   '⚠️ Board 3 applied these ON TOP of the portal\'s cascade, so a row can win only because the board stylesheet loads last. When moving it into `app.css`, replace the portal\'s own declaration rather than appending a second rule, and re-probe.', '',
   '| Kit source | Selector | Declarations | Switch |', '|---|---|---|---|', ...rows, ''];
 // OUT_DIR (2026-09-27 02:43 EDT): Board 4 writes beside its own spec (docs/pins2/final/board4-spec/), so Board 3-E's record is not overwritten.
-fs.writeFileSync(path.join(process.env.OUT_DIR || __dirname, 'portal-class-rules.md'), out.join('\n').replace(/^# Board 3-E/m, '# Board 4: Collective (the kit Board 3-E shares)'));
+fs.writeFileSync(path.join(process.env.OUT_DIR || __dirname, 'portal-class-rules.md'), out.join('\n').replace(/^# Board 3-E/m, '# ' + KITC.TITLE + ' (the kit Board 3-E shares)'));
 console.log(JSON.stringify({ live, dead, open }));

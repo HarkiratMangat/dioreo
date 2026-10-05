@@ -67,6 +67,8 @@ node $O/copy.cjs        # every visible string → copy.md (static)
 node $O/inventory.cjs   # last: it reads the files above
 ```
 
+**From Board 4: Final** (2026-10-05 15:29 EDT): every generator reads which board it describes from `final/board4-spec/kit.cjs` — the kit at `docs/pins2/kit` by default. After a bake (`local/pins2/s4/builder-2/bd-tools/bake.cjs`), run the same command with `export B4_KIT=local/pins2/s4/board4-final` first; the folder, its URL on :8900 and the title in every generated heading follow. Before this, eleven generators named the kit and "Board 4: Collective" each on their own, so the spec could not come from Final (`final/FINAL.md` §3 step 2).
+
 **The extractor is not deterministic on Board 4** (measured 2026-09-29): three fresh runs of the same kit specced 1420, 1425 and 1428 looks and two runs differ in about 300 lines both ways, so a spec diff after a kit change carries that noise — judge a change against it, not against zero.
 
 **Prove the docs still point at things:** `node docs/pins2/instruments/paths-resolve.cjs` reads every path the live docs name and exits 1 on a dead one. `docs-audit`'s `xref` skips `plan/`, `spec/` and `final/`, so nothing else does. **Prove the board still works:** `node docs/pins2/instruments/r22.cjs` walks 35 flows with the kit on :8900.
