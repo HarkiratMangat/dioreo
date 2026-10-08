@@ -92,7 +92,7 @@ No prose between the first tool call and the final message. A step is ticked in 
 - [ ] A section: each style drawn at its measured values with real strings from the board, its count and gates, its small-text role from `small-text-draft.md`, an off-scale size marked against C5.
 
 - [x] *(data, 2026-10-08 17:38 EDT)* `local/pins2/s4/builder-2/spec-img/text-census.json`: 261 family · size · weight · case · tracking · line · ink combinations inside the gates and drawers, grouped into 109 styles (inks folded in).
-- [ ] The section: frontend-design's wireframe sent to him first (the census hung on the Text sizes ladder, off-scale sizes on hatched rungs); drawn only after his pick.
+- [x] *(section, 2026-10-08 17:54 EDT)* The census hung on the Text sizes ladder (his "huh?" at 17:44: the layout was mine to decide): every style at its decided size (his 17:44 moves), drawn in the board's own words, aligned columns — weight · runs · inks · "was N" — where-used in the row's tooltip, the long tail folded. Published as spec board v22.
 
 **For him (pictures):** Q2 and the grammar for non-label text. **Publish v21** (Steps 0–3).
 
