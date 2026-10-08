@@ -17,8 +17,8 @@ Derive every value from these before asking Harkirat anything, and cite the rule
 - **C4 · Pills** take the size table with round ends; filter chips keep their click area to the chip, 6 apart (2026-10-07 22:07 EDT).
 
 ## Type, icons, gaps
-- **C5 · Text scale** xs 9 · s 11 · m 13 · l 15 · xl 21 · xxl 30 · giant 44 · jumbo 58; off-scale sizes moved by his calls (17→15, 19/20/22→21). A control's words follow C1.
-- **C6 · Icons** follow C1 (16 · 14 · 12 · 12), size = the Lucide box; a gap to an icon measures to its ink. A dot counts as an icon in names (2026-10-08 11:04 EDT) but is drawn 8 in chips (2026-10-07 01:12 EDT).
+- **C5 · Text scale** xs 9 · s 11 · m 13 · l 15 · xl 21 · xxl 30 · giant 44 · jumbo 58; off-scale sizes move by his calls (2026-10-08 17:44 EDT): 12 → 11 · 14 → 13 · 10 → 9 for a label, 11 for words · 12.5 → 11 for a secondary line, 13 for content · 16 → 15 · 17 → 15 · 19 · 20 · 22 → 21 · 60 → 58. A control's words follow C1.
+- **C6 · Icons** follow C1 (16 · 14 · 12 · 12), size = the Lucide box; a gap to an icon measures to its ink. A dot counts as an icon in names (2026-10-08 11:04 EDT) but is drawn 8 in chips (2026-10-07 01:12 EDT); in a field it sits centred in the L icon's 16 slot, words 10 after the slot (2026-10-08 17:45 EDT).
 - **C7 · Gaps** 6 · 10 · 14 · 20 · 26 · 32.
 - **C8 · Line height and letter spacing are mine** (shown as measurements on the Text section, never asked).
 

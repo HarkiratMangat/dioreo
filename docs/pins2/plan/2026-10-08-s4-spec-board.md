@@ -125,8 +125,8 @@ Each group is one phase, never one family per cycle:
 
 | # | Question | Why no rule decides it | Status |
 |:-:|---|---|---|
-| Q1 | The category dot's slot in a field: 8 + 10 (words at 32) or the 16 icon slot (words at 40, in line with the weapon field) | C6 covers chips, not fields | open (Step 1) |
-| Q2 | Off-scale text: 12 · 14 · 10 · 12.5 · 60 | C5 has none of them; only 17 → 15 and 19 · 20 · 22 → 21 are ruled | open (Step 3) |
+| Q1 | The category dot's slot in a field: 8 + 10 (words at 32) or the 16 icon slot (words at 40, in line with the weapon field) | C6 covers chips, not fields | settled 17:45 EDT: B, the 16 icon slot |
+| Q2 | Off-scale text: 12 · 14 · 10 · 12.5 · 60 | C5 has none of them; only 17 → 15 and 19 · 20 · 22 → 21 were ruled | settled 17:44 EDT: 12 → 11 · 14 → 13 · 10 → 9 or 11 by use · 12.5 → 11 or 13 by use · 16 → 15 · 60 → 58 |
 | Q3 | The free-standing 28-tall controls' size row | his 2026-10-07 table dropped the old 28 row; nested ones follow C3 | open (Step 4) |
 | Q4 | Names for the new types: switch, stepper, date picker, colour picker, pop-up, drawer, toast, table, card, tag, meter, tabs, segmented | C11 needs a type word | open (Step 4) |
 | Q5 | Paint's definition | parked by him | parked |
