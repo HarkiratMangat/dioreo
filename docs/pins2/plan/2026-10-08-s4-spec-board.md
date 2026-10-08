@@ -117,6 +117,7 @@ Each group is one phase, never one family per cycle:
 **Order:** Buttons → Chips and tags → Segmented and switches → Inputs → Overlays → Data display. **Publish** after every two groups (v22, v23, v24).
 
 - [x] *(group 1, Buttons, 2026-10-08 18:42 EDT)* The probe (`board-dom.cjs`: rest, two Try states, three drawers; the drawn box, inks at rest and on hover, the builder's geometry rules) · the section in `spec-buttons.js` · `relations.cjs --family buttons` and `spec-check.cjs` clean · a ledger row for every miss. States: each clone is live (hover and press work on the page) and its look is its style's, drawn once under Styles, so no per-member state pictures (sameness drawn once). Used in: a one-word board place beside each name.
+- [x] *(group 2, Chips and tags, 2026-10-08 19:02 EDT)* `chip-sweep.cjs` (every small drawn box with words inside the gates and drawers, six states) → `board-dom.cjs chips` (32 families; a typed search for the count box) · `spec-chips.js` on the shared engine (`makeOnBoard` in `spec-buttons.js`) · `relations.cjs --family chips` (the sweep tied to the section) and `spec-check.cjs` clean · Q7 and Q8 queued; tag misses held by one row until Q8. Published as spec board v23.
 
 ### Step 5 · records, every phase
 
@@ -133,6 +134,8 @@ Each group is one phase, never one family per cycle:
 | Q4 | Names for the new types: switch, stepper, date picker, colour picker, pop-up, drawer, toast, table, card, tag, meter, tabs, segmented | C11 needs a type word | open (Step 4) |
 | Q5 | Paint's definition | parked by him | parked |
 | Q6 | The count box, designed as a chip | his: "once we work on all the chips" | Step 4, Chips and tags |
+| Q7 | The badge's box height: 24 on the Manifest (`b3-bdg`, 9px), 20 in Compare (10px) | R11 names the label, not its box | open (Step 4, 2026-10-08 18:55 EDT) |
+| Q8 | Whether tags and chips that are not controls follow the control size rows (C0–C2) | C0 names controls; C4 covers pills and filter chips only | open (Step 4, 2026-10-08 18:55 EDT) |
 
 ## Cost
 
