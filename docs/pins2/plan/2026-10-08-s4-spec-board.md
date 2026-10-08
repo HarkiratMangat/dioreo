@@ -116,6 +116,8 @@ Each group is one phase, never one family per cycle:
 
 **Order:** Buttons → Chips and tags → Segmented and switches → Inputs → Overlays → Data display. **Publish** after every two groups (v22, v23, v24).
 
+- [x] *(group 1, Buttons, 2026-10-08 18:42 EDT)* The probe (`board-dom.cjs`: rest, two Try states, three drawers; the drawn box, inks at rest and on hover, the builder's geometry rules) · the section in `spec-buttons.js` · `relations.cjs --family buttons` and `spec-check.cjs` clean · a ledger row for every miss. States: each clone is live (hover and press work on the page) and its look is its style's, drawn once under Styles, so no per-member state pictures (sameness drawn once). Used in: a one-word board place beside each name.
+
 ### Step 5 · records, every phase
 
 - [ ] In the same write as the work: the handoff's CURRENT STATE, `button-system.md` (his rulings), `conventions.md` (a ruling that sets a rule), the ledger, `2026-10-08-s4-standardization-ledger.md`, this plan's ticks.
