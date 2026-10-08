@@ -1,0 +1,1694 @@
+{
+ "realm": "home",
+ "census": "2026-10-02T00:55:41.825Z",
+ "families": [
+  {
+   "id": "F2b545a7",
+   "kind": "box",
+   "n": 1143,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--play)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.ld ‹ .lrow",
+     "n": 12,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Feb16b0e",
+   "kind": "box",
+   "n": 940,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.glyph ‹ .mk",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1bafc82",
+   "kind": "box",
+   "n": 529,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--ev)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "i.ld ‹ .lrow",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F3ea72d7",
+   "kind": "link",
+   "n": 424,
+   "fp": {
+    "kind": "link",
+    "h": 63,
+    "rad": 0,
+    "pad": "12 4 12 4",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "1.26px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "color: rgb(232, 237, 241) · border-top-color: rgb(232, 237, 241) · outline-color: rgb(232, 237, 241)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.realm ‹ .rail",
+     "n": 397,
+     "text": "Season"
+    }
+   ]
+  },
+  {
+   "id": "Fac5c30f",
+   "kind": "text",
+   "n": 414,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span ‹ .hres",
+     "n": 3,
+     "text": "across Season, Armory — nothing is live "
+    }
+   ]
+  },
+  {
+   "id": "Fa5656c9",
+   "kind": "text",
+   "n": 333,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.arw ‹ .att-go",
+     "n": 15,
+     "text": "→"
+    },
+    {
+     "sel": "span.lw ‹ .lrow",
+     "n": 3,
+     "text": "never ends"
+    }
+   ]
+  },
+  {
+   "id": "F9f6f176",
+   "kind": "box",
+   "n": 208,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--patch|--pn)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.att-b ‹ .att-row",
+     "n": 6,
+     "text": ""
+    },
+    {
+     "sel": "i.ld ‹ .lrow",
+     "n": 6,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F9ea89f1",
+   "kind": "text",
+   "n": 140,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.k ‹ .stat",
+     "n": 140,
+     "text": "announcements live"
+    }
+   ]
+  },
+  {
+   "id": "F137074d",
+   "kind": "text",
+   "n": 101,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.lt ‹ .lrow",
+     "n": 21,
+     "text": "RC Car Racing MP Mode"
+    }
+   ]
+  },
+  {
+   "id": "F3b9591c",
+   "kind": "box",
+   "n": 95,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--rule)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rail-rule ‹ .rail",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Ff760777",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 16 0 16",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--paper)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "header ‹ .app",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F4d083c5",
+   "kind": "button",
+   "n": 77,
+   "fp": {
+    "kind": "button",
+    "h": 34,
+    "rad": 6,
+    "pad": "5 8 5 8",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "1.92px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.mk",
+     "n": 77,
+     "text": "DIOREO/PORTAL"
+    }
+   ]
+  },
+  {
+   "id": "F1471b74",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "1.92px",
+    "tt": "none",
+    "col": "var(--patch|--pn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .mk",
+     "n": 77,
+     "text": "/"
+    }
+   ]
+  },
+  {
+   "id": "F59a9ddb",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 10,
+    "pad": "0 11 0 11",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.cmdbar",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F53c5ac5",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 50,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--ink4)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cb-mag ‹ .cmdbar",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fa099d01",
+   "kind": "field:text",
+   "n": 77,
+   "fp": {
+    "kind": "field:text",
+    "h": 17,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input.cb-in ‹ .cmdbar",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1b4153e",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 6 4 6",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "0.48px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "kbd ‹ .cmdbar",
+     "n": 77,
+     "text": "⌘/"
+    }
+   ]
+  },
+  {
+   "id": "F82c1c99",
+   "kind": "button",
+   "n": 77,
+   "fp": {
+    "kind": "button",
+    "h": 34,
+    "rad": 6,
+    "pad": "4 8 4 5",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.whobtn ‹ .who",
+     "n": 77,
+     "text": "DDior"
+    }
+   ]
+  },
+  {
+   "id": "F27134f6",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 50,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image",
+    "fs": 10.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": "normal",
+    "ls": "normal",
+    "tt": "uppercase",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.av ‹ .whobtn",
+     "n": 77,
+     "text": "D"
+    }
+   ]
+  },
+  {
+   "id": "Fa2279f1",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.id ‹ .whobtn",
+     "n": 77,
+     "text": "Dior"
+    }
+   ]
+  },
+  {
+   "id": "Fedfea79",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cv ‹ .whobtn",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1919cf8",
+   "kind": "button",
+   "n": 77,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(255, 107, 107) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(255, 107, 107)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(255, 107, 107)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.hdr-out",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fbf371a3",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "nav.rail ‹ .app",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F36686b1",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 22,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.job ‹ .mh-id",
+     "n": 77,
+     "text": "Dioreo admin"
+    }
+   ]
+  },
+  {
+   "id": "F5341929",
+   "kind": "heading",
+   "n": 77,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 34,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 34,
+    "ls": "1.87px",
+    "tt": "uppercase",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h1 ‹ .mh-id",
+     "n": 77,
+     "text": "What needs you"
+    }
+   ]
+  },
+  {
+   "id": "F80737e7",
+   "kind": "text",
+   "n": 76,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 22,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 22,
+    "ls": "-0.33px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.v ‹ .stat",
+     "n": 76,
+     "text": "2"
+    }
+   ]
+  },
+  {
+   "id": "F70f9f91",
+   "kind": "link",
+   "n": 50,
+   "fp": {
+    "kind": "link",
+    "h": 30,
+    "rad": 999,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "color(srgb 0.506275 0.580196 0.307451)",
+    "ring": "none",
+    "bg": "color(srgb 0.847059 0.94902 0.290196 / 0.12)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: color(srgb 0.847059 0.94902 0.290196 / 0.2)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.hdr-commit",
+     "n": 50,
+     "text": "4 staged · review"
+    }
+   ]
+  },
+  {
+   "id": "Ff6fc99f",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 0.847059 0.94902 0.290196 / 0.14)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 13,
+    "ls": "0.052px",
+    "tt": "none",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .hdr-commit",
+     "n": 50,
+     "text": "4"
+    }
+   ]
+  },
+  {
+   "id": "Fa5a252c",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 12 0 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "0.26px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span ‹ .hdr-commit",
+     "n": 50,
+     "text": "staged · review"
+    }
+   ]
+  },
+  {
+   "id": "F63fa87f",
+   "kind": "link",
+   "n": 50,
+   "fp": {
+    "kind": "link",
+    "h": 63,
+    "rad": 0,
+    "pad": "12 4 12 4",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "1.26px",
+    "tt": "uppercase",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.realm.out.has ‹ .rail",
+     "n": 50,
+     "text": "Review4"
+    }
+   ]
+  },
+  {
+   "id": "Fa481ee0",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "1.26px",
+    "tt": "uppercase",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cnt ‹ .realm",
+     "n": 50,
+     "text": "4"
+    }
+   ]
+  },
+  {
+   "id": "Fad934ef",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.k ‹ .stat",
+     "n": 50,
+     "text": "needs you"
+    }
+   ]
+  },
+  {
+   "id": "Fe17f7e0",
+   "kind": "text",
+   "n": 39,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.sc-none ‹ .hclock",
+     "n": 3,
+     "text": "This season has ended. Start the next on"
+    }
+   ]
+  },
+  {
+   "id": "F827e87c",
+   "kind": "box",
+   "n": 33,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 0 8 0",
+    "bw": 1,
+    "bc": "var(--rule3)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.lrow ‹ .lp",
+     "n": 15,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F45a9298",
+   "kind": "text",
+   "n": 18,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--warn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.lw.hot ‹ .lrow",
+     "n": 18,
+     "text": "2 days left"
+    }
+   ]
+  },
+  {
+   "id": "Faeb7c25",
+   "kind": "text",
+   "n": 15,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "0.72px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.att-i ‹ .att-row",
+     "n": 15,
+     "text": "01"
+    }
+   ]
+  },
+  {
+   "id": "Fed424f6",
+   "kind": "text",
+   "n": 15,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 22.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .att-x",
+     "n": 15,
+     "text": "7 permissions held by exactly one person"
+    }
+   ]
+  },
+  {
+   "id": "Fba5dea0",
+   "kind": "text",
+   "n": 15,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "500",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "em ‹ .att-x",
+     "n": 15,
+     "text": "Access · the matrix"
+    }
+   ]
+  },
+  {
+   "id": "F61a9505",
+   "kind": "text",
+   "n": 15,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.att-sev ‹ .att-go",
+     "n": 15,
+     "text": "7 of 12"
+    }
+   ]
+  },
+  {
+   "id": "Fdd4932a",
+   "kind": "link",
+   "n": 9,
+   "fp": {
+    "kind": "link",
+    "h": 72,
+    "rad": 6,
+    "pad": "16 20 16 20",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--paper)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: color(srgb 0.137137 0.177647 0.160235) · border-top-color: color(srgb 0.381176 0.480784 0.334118)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.994, 0, 0, 0.994, 0, 0)"
+   },
+   "where": [
+    {
+     "sel": "a.att-row.s-error ‹ .att-list",
+     "n": 3,
+     "text": "0223 errors pinged Analytics · Health 23"
+    },
+    {
+     "sel": "a.att-row.s-repair ‹ .att-list",
+     "n": 6,
+     "text": "0316 season items to repair Season · Rep"
+    }
+   ]
+  },
+  {
+   "id": "F8454e7a",
+   "kind": "box",
+   "n": 8,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--del)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.att-b ‹ .att-row",
+     "n": 6,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Ff03e05b",
+   "kind": "box",
+   "n": 6,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--ink4)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.att-b ‹ .att-row",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fc4fe1b5",
+   "kind": "box",
+   "n": 6,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "16 18 16 18",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--paper)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.lp ‹ .hlive",
+     "n": 6,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F0505fa0",
+   "kind": "heading",
+   "n": 6,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "1.2px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h2 ‹ .lp",
+     "n": 6,
+     "text": "Running right now"
+    }
+   ]
+  },
+  {
+   "id": "F3d653aa",
+   "kind": "box",
+   "n": 3,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "30 24 18 24",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.masthead ‹ .home",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fca8738a",
+   "kind": "text",
+   "n": 3,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 44,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 44,
+    "ls": "-1.232px",
+    "tt": "none",
+    "col": "var(--warn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.v ‹ .stat",
+     "n": 3,
+     "text": "5"
+    }
+   ]
+  },
+  {
+   "id": "Fd5afe96",
+   "kind": "box",
+   "n": 3,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "14 17 14 17",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--paper)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.hres ‹ .home",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F014b95f",
+   "kind": "text",
+   "n": 3,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .hres",
+     "n": 3,
+     "text": "4 staged changes"
+    }
+   ]
+  },
+  {
+   "id": "F9124ce4",
+   "kind": "link",
+   "n": 3,
+   "fp": {
+    "kind": "link",
+    "h": 32,
+    "rad": 999,
+    "pad": "6 11 6 11",
+    "bw": 1,
+    "bc": "var(--staged|--r-review)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(216, 242, 74) · color: rgb(7, 9, 10) · outline-color: rgb(7, 9, 10) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "a.chip.go ‹ .hres",
+     "n": 3,
+     "text": "Review & commit"
+    }
+   ]
+  },
+  {
+   "id": "F885739c",
+   "kind": "box",
+   "n": 3,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 10,
+    "pad": "22 24 22 24",
+    "bw": 1,
+    "bc": "var(--hi)",
+    "ring": "none",
+    "bg": "var(--paper)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "section.hclock ‹ .home",
+     "n": 3,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fc84d96e",
+   "kind": "link",
+   "n": 3,
+   "fp": {
+    "kind": "link",
+    "h": 16,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a ‹ .sc-none",
+     "n": 3,
+     "text": "Start the next one in Season"
+    }
+   ]
+  },
+  {
+   "id": "F3e95340",
+   "kind": "heading",
+   "n": 3,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 25,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 37,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h2.sr ‹ .home",
+     "n": 3,
+     "text": "What needs you"
+    }
+   ]
+  },
+  {
+   "id": "F95f923c",
+   "kind": "link",
+   "n": 3,
+   "fp": {
+    "kind": "link",
+    "h": 73,
+    "rad": 10,
+    "pad": "16 20 16 20",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--paper)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: color(srgb 0.120196 0.155765 0.215647) · border-top-color: color(srgb 0.305882 0.383529 0.580392)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.994, 0, 0, 0.994, 0, 0)"
+   },
+   "where": [
+    {
+     "sel": "a.att-row.s-spof ‹ .att-list",
+     "n": 3,
+     "text": "017 permissions held by exactly one pers"
+    }
+   ]
+  },
+  {
+   "id": "Fdb409aa",
+   "kind": "link",
+   "n": 3,
+   "fp": {
+    "kind": "link",
+    "h": 72,
+    "rad": 3,
+    "pad": "16 20 16 20",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--paper)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: color(srgb 0.165373 0.132471 0.182471) · border-top-color: color(srgb 0.506667 0.28 0.432941)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.994, 0, 0, 0.994, 0, 0)"
+   },
+   "where": [
+    {
+     "sel": "a.att-row.s-forever ‹ .att-list",
+     "n": 3,
+     "text": "051 announcement never ends — oldest up "
+    }
+   ]
+  },
+  {
+   "id": "F1793c85",
+   "kind": "link",
+   "n": 3,
+   "fp": {
+    "kind": "link",
+    "h": 32,
+    "rad": 999,
+    "pad": "6 11 6 11",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "color: rgb(232, 237, 241) · outline-color: rgb(232, 237, 241) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "a.chip.lmorechip ‹ .lp",
+     "n": 3,
+     "text": "+6 more"
+    }
+   ]
+  },
+  {
+   "id": "Fdb80f2a",
+   "kind": "link",
+   "n": 3,
+   "fp": {
+    "kind": "link",
+    "h": 16,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "1.2px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "color: rgb(232, 237, 241) · border-top-color: rgb(232, 237, 241) · outline-color: rgb(232, 237, 241)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.hlink",
+     "n": 3,
+     "text": "Showing to players"
+    }
+   ]
+  }
+ ]
+}

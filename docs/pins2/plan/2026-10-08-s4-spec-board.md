@@ -34,21 +34,21 @@ No prose between the first tool call and the final message. A step is ticked in 
 ## Not in this plan
 
 - Editing Builder-2: every difference goes in the ledger `builder-2/spec-img/board-changes.json`, applied in one collective update at the end (his 16:22).
-- Season, Access, Analytics, Home, Review and the rest of the portal: after Builder-2 settles (his 16:22). Their census is `local/pins2/s4/census/*.json` (2026-10-02).
-- The parent plan's §10.6: written when he closes the standardization board (§10.6's own note). Until then the decisions draft `docs/claude/2026-10-08-s4-standardization-ledger.md` holds each settled element as a §10.6-shaped row (element · value · surfaces · exemptions · his words), updated in the same write as each ruling. The deferred list is not the ledger.
+- Season, Access, Analytics, Home, Review and the rest of the portal: after Builder-2 settles (his 16:22). Their census is `docs/claude/s4/2026-10-02-s4-realm-census/*.json` (2026-10-02).
+- The parent plan's §10.6: written when he closes the standardization board (§10.6's own note). Until then the decisions draft `docs/claude/s4/2026-10-08-s4-standardization-ledger.md` holds each settled element as a §10.6-shaped row (element · value · surfaces · exemptions · his words), updated in the same write as each ruling. The deferred list is not the ledger.
 - Push, PR, merge: each needs his word restated at the moment.
 
 ## Inputs — read, never re-derived
 
 | What | Where |
 |---|---|
-| The rules C0–C12 | `local/pins2/s4/work/lead/conventions.md` |
-| His rulings, verbatim and dated | `local/pins2/s4/work/lead/button-system.md` |
+| The rules C0–C12 | `docs/claude/s4/2026-10-08-s4-conventions.md` |
+| His rulings, verbatim and dated | `docs/claude/s4/2026-10-07-s4-button-system.md` |
 | Every control and text style Builder-2 draws, counted 2026-10-08 | `work/lead/inventory.json` (`inventory.cjs`) |
 | Every reachable state, resolved values | `docs/pins2/final/board4-spec/states.md` |
 | Components and who renders them | `docs/pins2/final/board4-spec/components.md` |
-| Hover recipes, 523 controls (2026-10-02, before V25–V28) | `work/lead/kit-hover.md` — re-measured for each family drawn, never copied |
-| Every string on the eight realms, with roles | `local/pins2/s4/small-text-draft.md` |
+| Hover recipes, 523 controls (2026-10-02, before V25–V28) | `docs/claude/s4/2026-10-02-board4-kit-hover.md` — re-measured for each family drawn, never copied |
+| Every string on the eight realms, with roles | `docs/claude/s4/2026-10-02-s4-small-text-draft.md` |
 | The fields, measured 2026-10-08 | `work/lead/field-inks-off.json`, `field-inks-armory.json` |
 
 ## Steps
@@ -60,6 +60,7 @@ No prose between the first tool call and the final message. A step is ticked in 
 - [x] This file; `docs/pins2/README.md`'s plan row names it; the handoff's RESUME HERE points at the first unticked step; the deferred list's spec-board entry names this file.
 - [x] Rename: `spec.html` `<title>` and the page's h1 "C1 Button Spec" → "spec-board".
 - [x] `2026-10-08-s4-standardization-ledger.md` seeded with every element settled so far (sizes, nesting, styles, Still, flags, icon sizes, pills and filter chips, rails, the BAL-27 chip, labels, fields, text scale, gaps, names), each with his words and date.
+- [x] *(his 16:33 EDT: "local/ is for throwaway stuff")* Session 4's records moved to `docs/claude/s4/`: the handoff (a stub stays at `local/pins2/s4/handoff.md`), the conventions, his rulings, the ledger, the small-text draft, the realm census, the kit measurements. Probes, snapshots, screenshots and Builder-2 stay in `local/`.
 
 **Check:** `npm run docs:audit` exits 0. **Done:** the handoff and the deferred list name this file; the draft has a row per settled element.
 
@@ -67,18 +68,18 @@ No prose between the first tool call and the final message. A step is ticked in 
 
 > ⟦ONE MESSAGE⟧ the spec.css and spec.js edits, then the probe and the check chained.
 
-- [ ] Every field's leading content sits 14 from its edge (C0, C1 L padding 14): the glass, the category dot, a bare placeholder; words 10 after an icon (C1).
-- [ ] search.filter: glass 16 and centred (the kit's `margin-top: -6px` was written for 12); fill, outline and hover the other fields' (fill `#04070A 52%` on `--sunk`, outline `--ink` 12% → 24% on hover); the hover lights from anywhere over the field, its × and count box included.
-- [ ] The attachment row: its label and a field that shows "Search attachments" whole.
-- [ ] The field gauge: the button-to-edge 6 sits under the field beside the 32; expected values drawn (14 · 16 · 10 · 6) so a miss shows red; a centre check on the leading icon; a clipped placeholder flagged.
-- [ ] Inks per field, measured and drawn as swatches: outline, fill, glass, placeholder, words, in-field icon, count box; the outline on hover.
-- [ ] Ledger rows for what Builder-2 still draws differently: field padding 12 (13.5 on the search) → 14; search.filter fill, outline and hover → the field look; the hover from the × and the count.
+- [x] Every field's leading content sits 14 from its edge (C0, C1 L padding 14): the glass, the category dot, a bare placeholder; words 10 after an icon (C1).
+- [x] search.filter: glass 16 and centred (the kit's `margin-top: -6px` was written for 12); fill, outline and hover the other fields' (fill `#04070A 52%` on `--sunk`, outline `--ink` 12% → 24% on hover); the hover lights from anywhere over the field, its × and count box included.
+- [x] The attachment row: its label and a field that shows "Search attachments" whole.
+- [x] The field gauge: the button-to-edge 6 sits under the field beside the 32; expected values drawn (14 · 16 · 10 · 6) so a miss shows red; a centre check on the leading icon; a clipped placeholder flagged.
+- [x] Inks per field, measured and drawn as swatches: outline, fill, glass, placeholder, words, in-field icon, count box; the outline on hover.
+- [x] Ledger rows for what Builder-2 still draws differently: field padding 12 (13.5 on the search) → 14; search.filter fill, outline and hover → the field look; the hover from the × and the count.
 
 **Check:** `field-inks.cjs` on spec and board: every field agrees on fill, outline and hover (words, ×, count, chevron), inset 14, glass 16 centred within 0.5; `spec-check.cjs` fields section; I look at `spec-check/sec-fields.png`. **For him (a picture):** Q1.
 
 ### Step 2 · inks named, and the family check
 
-- [ ] One namer: an exact token (rgb within 1) · "token N%" for a translucent token · a two-colour mix solved only over the kit's tokens and literals · else the hex with "≈". Proven first on known cases: the field fill reads "#04070A 52% on sunk", its outline "ink 12%", the × hover fill with armory "r-armory 14%", the count box with the accent off "ink3 14%".
+- [x] *(landed in Step 1, 2026-10-08 16:59 EDT: the field inks needed it)* One namer: an exact token (rgb within 1) · "token N%" for a translucent token · a two-colour mix solved only over the kit's tokens and literals · else the hex with "≈". Proven first on known cases: the field fill reads "#04070A 52% on sunk", its outline "ink 12%", the × hover fill with armory "r-armory 14%", the count box with the accent off "ink3 14%".
 - [ ] Styles' recipes, Labels and every section speak token names (the grammar's value names), not "grey / white".
 - [ ] `relations.cjs`: given a family's members on the spec page, compares height, corner, icon box and centre, insets, gaps and inks at rest and under a real mouse. Trusted only after it reports v20's field faults on Builder-2 `2e22d20`.
 
