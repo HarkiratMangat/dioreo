@@ -1,0 +1,2215 @@
+{
+ "realm": "review",
+ "census": "2026-10-02T00:55:41.825Z",
+ "families": [
+  {
+   "id": "F2367594",
+   "kind": "text",
+   "n": 1054,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span ‹ .rvn",
+     "n": 36,
+     "text": "2 fields changed · Season"
+    }
+   ]
+  },
+  {
+   "id": "Feb16b0e",
+   "kind": "box",
+   "n": 940,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.glyph ‹ .mk",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F3ea72d7",
+   "kind": "link",
+   "n": 424,
+   "fp": {
+    "kind": "link",
+    "h": 63,
+    "rad": 0,
+    "pad": "12 4 12 4",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "1.26px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "color: rgb(232, 237, 241) · border-top-color: rgb(232, 237, 241) · outline-color: rgb(232, 237, 241)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.realm ‹ .rail",
+     "n": 397,
+     "text": "Season"
+    }
+   ]
+  },
+  {
+   "id": "F9e48812",
+   "kind": "button",
+   "n": 353,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 999,
+    "pad": "6 11 6 11",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "background-color: color(srgb 0.682353 0.447059 0.878431 / 0.09) · color: rgb(232, 237, 241) · border-top-color: rgb(174, 114, 224) · outline-color: rgb(232, 237, 241) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.chip ‹ .rvcx",
+     "n": 1,
+     "text": "Drop my change"
+    }
+   ]
+  },
+  {
+   "id": "F6ce7721",
+   "kind": "text",
+   "n": 174,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 16,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.sp ‹ .ph",
+     "n": 11,
+     "text": "BAL-27 · FFAR 1 — 8 builds"
+    }
+   ]
+  },
+  {
+   "id": "F9ea89f1",
+   "kind": "text",
+   "n": 140,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.k ‹ .stat",
+     "n": 140,
+     "text": "announcements live"
+    }
+   ]
+  },
+  {
+   "id": "Fb8e9458",
+   "kind": "box",
+   "n": 133,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "var(--paper)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "section.panel",
+     "n": 47,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F137074d",
+   "kind": "text",
+   "n": 101,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span ‹ .toast",
+     "n": 1,
+     "text": "4 changes committed. Players see them no"
+    }
+   ]
+  },
+  {
+   "id": "F3b9591c",
+   "kind": "box",
+   "n": 95,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--rule)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rail-rule ‹ .rail",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fc16fde4",
+   "kind": "text",
+   "n": 88,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 14.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.t ‹ .ph",
+     "n": 88,
+     "text": "Season"
+    }
+   ]
+  },
+  {
+   "id": "Fd1d9ad5",
+   "kind": "text",
+   "n": 86,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .rvn",
+     "n": 36,
+     "text": "Season identity"
+    }
+   ]
+  },
+  {
+   "id": "Fb11cbd9",
+   "kind": "box",
+   "n": 81,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "10 14 10 14",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--raised)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.ph ‹ .panel",
+     "n": 81,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Ff760777",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 16 0 16",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--paper)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "header ‹ .app",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F4d083c5",
+   "kind": "button",
+   "n": 77,
+   "fp": {
+    "kind": "button",
+    "h": 34,
+    "rad": 6,
+    "pad": "5 8 5 8",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "1.92px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.mk",
+     "n": 77,
+     "text": "DIOREO/PORTAL"
+    }
+   ]
+  },
+  {
+   "id": "F1471b74",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 18,
+    "ls": "1.92px",
+    "tt": "none",
+    "col": "var(--patch|--pn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .mk",
+     "n": 77,
+     "text": "/"
+    }
+   ]
+  },
+  {
+   "id": "F59a9ddb",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 10,
+    "pad": "0 11 0 11",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.cmdbar",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F53c5ac5",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 50,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--ink4)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cb-mag ‹ .cmdbar",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fa099d01",
+   "kind": "field:text",
+   "n": 77,
+   "fp": {
+    "kind": "field:text",
+    "h": 17,
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 13,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "input.cb-in ‹ .cmdbar",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1b4153e",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 6,
+    "pad": "4 6 4 6",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "0.48px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "kbd ‹ .cmdbar",
+     "n": 77,
+     "text": "⌘/"
+    }
+   ]
+  },
+  {
+   "id": "F82c1c99",
+   "kind": "button",
+   "n": 77,
+   "fp": {
+    "kind": "button",
+    "h": 34,
+    "rad": 6,
+    "pad": "4 8 4 5",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.whobtn ‹ .who",
+     "n": 77,
+     "text": "DDior"
+    }
+   ]
+  },
+  {
+   "id": "F27134f6",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 50,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image",
+    "fs": 10.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": "normal",
+    "ls": "normal",
+    "tt": "uppercase",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.av ‹ .whobtn",
+     "n": 77,
+     "text": "D"
+    }
+   ]
+  },
+  {
+   "id": "Fa2279f1",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.id ‹ .whobtn",
+     "n": 77,
+     "text": "Dior"
+    }
+   ]
+  },
+  {
+   "id": "Fedfea79",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cv ‹ .whobtn",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F1919cf8",
+   "kind": "button",
+   "n": 77,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(255, 107, 107) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(255, 107, 107)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(255, 107, 107)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.hdr-out",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fbf371a3",
+   "kind": "box",
+   "n": 77,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "8 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "nav.rail ‹ .app",
+     "n": 77,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F36686b1",
+   "kind": "text",
+   "n": 77,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 22,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.job ‹ .mh-id",
+     "n": 77,
+     "text": "Dioreo admin"
+    }
+   ]
+  },
+  {
+   "id": "F5341929",
+   "kind": "heading",
+   "n": 77,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 34,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 34,
+    "ls": "1.87px",
+    "tt": "uppercase",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h1 ‹ .mh-id",
+     "n": 77,
+     "text": "What needs you"
+    }
+   ]
+  },
+  {
+   "id": "F80737e7",
+   "kind": "text",
+   "n": 76,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 22,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 22,
+    "ls": "-0.33px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.v ‹ .stat",
+     "n": 76,
+     "text": "2"
+    }
+   ]
+  },
+  {
+   "id": "Fd79712e",
+   "kind": "box",
+   "n": 74,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "30 23 20 23",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.masthead",
+     "n": 47,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F70f9f91",
+   "kind": "link",
+   "n": 50,
+   "fp": {
+    "kind": "link",
+    "h": 30,
+    "rad": 999,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "color(srgb 0.506275 0.580196 0.307451)",
+    "ring": "none",
+    "bg": "color(srgb 0.847059 0.94902 0.290196 / 0.12)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: color(srgb 0.847059 0.94902 0.290196 / 0.2)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.hdr-commit",
+     "n": 50,
+     "text": "4 staged · review"
+    }
+   ]
+  },
+  {
+   "id": "Ff6fc99f",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 10 0 10",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "color(srgb 0.847059 0.94902 0.290196 / 0.14)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 13,
+    "ls": "0.052px",
+    "tt": "none",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .hdr-commit",
+     "n": 50,
+     "text": "4"
+    }
+   ]
+  },
+  {
+   "id": "Fa5a252c",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 12 0 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "0.26px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span ‹ .hdr-commit",
+     "n": 50,
+     "text": "staged · review"
+    }
+   ]
+  },
+  {
+   "id": "F63fa87f",
+   "kind": "link",
+   "n": 50,
+   "fp": {
+    "kind": "link",
+    "h": 63,
+    "rad": 0,
+    "pad": "12 4 12 4",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "1.26px",
+    "tt": "uppercase",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "—",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "—"
+   },
+   "where": [
+    {
+     "sel": "a.realm.out.has ‹ .rail",
+     "n": 50,
+     "text": "Review4"
+    }
+   ]
+  },
+  {
+   "id": "Fa481ee0",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "1.26px",
+    "tt": "uppercase",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.cnt ‹ .realm",
+     "n": 50,
+     "text": "4"
+    }
+   ]
+  },
+  {
+   "id": "Fad934ef",
+   "kind": "text",
+   "n": 50,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.k ‹ .stat",
+     "n": 50,
+     "text": "needs you"
+    }
+   ]
+  },
+  {
+   "id": "F750e288",
+   "kind": "button",
+   "n": 47,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 6,
+    "pad": "9 9 9 9",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(157, 170, 180) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(157, 170, 180)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.btn.no ‹ .rvfoot",
+     "n": 9,
+     "text": "Discard all"
+    }
+   ]
+  },
+  {
+   "id": "Fc2f6b15",
+   "kind": "text",
+   "n": 43,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 22,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 22,
+    "ls": "-0.33px",
+    "tt": "none",
+    "col": "var(--warn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.v ‹ .stat",
+     "n": 42,
+     "text": "10"
+    },
+    {
+     "sel": "span.v.rolling ‹ .stat",
+     "n": 1,
+     "text": "1"
+    }
+   ]
+  },
+  {
+   "id": "F562a18d",
+   "kind": "text",
+   "n": 38,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "11 12 11 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 22,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rvk ‹ .rvr",
+     "n": 19,
+     "text": "Season title"
+    },
+    {
+     "sel": "span.rvwas ‹ .rvr",
+     "n": 19,
+     "text": "Season 7 — Terminated"
+    }
+   ]
+  },
+  {
+   "id": "F541413b",
+   "kind": "text",
+   "n": 36,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "3 5 3 5",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "0.38px",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rvt ‹ .rvop",
+     "n": 36,
+     "text": "T1"
+    }
+   ]
+  },
+  {
+   "id": "F99dd6c0",
+   "kind": "button",
+   "n": 36,
+   "fp": {
+    "kind": "button",
+    "h": 22,
+    "rad": 6,
+    "pad": "1 6 1 6",
+    "bw": 1,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(255, 138, 133) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(255, 138, 133)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232) · opacity: 1",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.rvdrop ‹ .rvopwrap",
+     "n": 36,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F284c4fd",
+   "kind": "text",
+   "n": 27,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "9 12 9 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 9.5,
+    "ls": "0.95px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span ‹ .rvhead",
+     "n": 27,
+     "text": "Field"
+    }
+   ]
+  },
+  {
+   "id": "F005236e",
+   "kind": "box",
+   "n": 26,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule3)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.rvr ‹ .rvgrid",
+     "n": 19,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F644884f",
+   "kind": "button",
+   "n": 21,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 6,
+    "pad": "9 9 9 9",
+    "bw": 1,
+    "bc": "var(--ok)",
+    "ring": "none",
+    "bg": "var(--ok)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--on-ok)"
+   },
+   "forced": {
+    "hover": "color: rgb(157, 170, 180) · border-top-color: rgb(58, 71, 82) · outline-color: rgb(157, 170, 180)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.btn.go ‹ .rvfoot",
+     "n": 9,
+     "text": "Commit 4 changes"
+    }
+   ]
+  },
+  {
+   "id": "F2487fd1",
+   "kind": "button",
+   "n": 19,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 6,
+    "pad": "9 9 9 9",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "none",
+    "bg": "var(--raised)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "700",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · color: rgb(232, 237, 241) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(232, 237, 241)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.btn ‹ .dw-f",
+     "n": 19,
+     "text": "Cancel"
+    }
+   ]
+  },
+  {
+   "id": "F2a8a4a4",
+   "kind": "button",
+   "n": 19,
+   "fp": {
+    "kind": "button",
+    "h": 60.5,
+    "rad": 6,
+    "pad": "11 12 11 12",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--raised)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.rvop ‹ .rvopwrap",
+     "n": 19,
+     "text": "T1 AK117 — Meta Build rank assigned · Ar"
+    }
+   ]
+  },
+  {
+   "id": "F1baf116",
+   "kind": "text",
+   "n": 19,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "11 12 11 12",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 22,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ok)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rvnow ‹ .rvr",
+     "n": 19,
+     "text": "Season 7 — Terminated (Extended)"
+    }
+   ]
+  },
+  {
+   "id": "Fabe8348",
+   "kind": "box",
+   "n": 17,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--overlay-66)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.scrim.on ‹ .app",
+     "n": 17,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fbbe2ee2",
+   "kind": "box",
+   "n": 17,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 10,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "var(--raised)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "aside.drawer.open ‹ .app",
+     "n": 10,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fe5e2e2d",
+   "kind": "box",
+   "n": 17,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "16 24 12 24",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "image"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "header.dw-h ‹ .drawer",
+     "n": 17,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F01c6388",
+   "kind": "text",
+   "n": 17,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "400",
+    "ff": "JetBrains Mono",
+    "lh": 14.5,
+    "ls": "0.855px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.dw-eye ‹ .dw-ttl",
+     "n": 17,
+     "text": "draw.add · tier 1"
+    }
+   ]
+  },
+  {
+   "id": "Fb3aa911",
+   "kind": "heading",
+   "n": 17,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 22,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 27.5,
+    "ls": "-0.33px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h2 ‹ .dw-ttl",
+     "n": 17,
+     "text": "Add to the season"
+    }
+   ]
+  },
+  {
+   "id": "F9bde0a1",
+   "kind": "box",
+   "n": 17,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "12 24 12 24",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "footer.dw-f ‹ .drawer",
+     "n": 17,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F7254a54",
+   "kind": "text",
+   "n": 16,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rvop-name ‹ .rvdet",
+     "n": 9,
+     "text": "season.setTitlesDeadlines · tier 1 · Sea"
+    }
+   ]
+  },
+  {
+   "id": "Fc6df779",
+   "kind": "button",
+   "n": 14,
+   "fp": {
+    "kind": "button",
+    "h": 28,
+    "rad": 6,
+    "pad": "1 6 1 6",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(35, 44, 52) · color: rgb(232, 237, 241) · border-top-color: rgb(92, 106, 117)",
+    "focus-visible": "—",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.x ‹ .dw-h",
+     "n": 14,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fde562ee",
+   "kind": "text",
+   "n": 12,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 10.5,
+    "fw": "700",
+    "ff": "JetBrains Mono",
+    "lh": 16,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b ‹ .sp",
+     "n": 9,
+     "text": "4"
+    }
+   ]
+  },
+  {
+   "id": "F6805f64",
+   "kind": "box",
+   "n": 12,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "0 0 0 0",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.rvgrid ‹ .rvdet",
+     "n": 9,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F25cd150",
+   "kind": "text",
+   "n": 9,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 44,
+    "fw": "700",
+    "ff": "Big Shoulders Display",
+    "lh": 44,
+    "ls": "-1.232px",
+    "tt": "none",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.v ‹ .stat",
+     "n": 9,
+     "text": "4"
+    }
+   ]
+  },
+  {
+   "id": "F37db76d",
+   "kind": "text",
+   "n": 9,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 16,
+    "ls": "1.2px",
+    "tt": "uppercase",
+    "col": "var(--ink3)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rvw ‹ .rvn",
+     "n": 9,
+     "text": "needs attention"
+    }
+   ]
+  },
+  {
+   "id": "F4d098c9",
+   "kind": "heading",
+   "n": 9,
+   "fp": {
+    "kind": "heading",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 19,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 23,
+    "ls": "-0.285px",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "h4 ‹ .rvdet",
+     "n": 9,
+     "text": "Season identity"
+    }
+   ]
+  },
+  {
+   "id": "Fc798210",
+   "kind": "text",
+   "n": 9,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 3,
+    "pad": "0 6 0 6",
+    "bw": 0,
+    "bc": "none",
+    "ring": "shadow",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "500",
+    "ff": "JetBrains Mono",
+    "lh": 12,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rvbadge ‹ .rvop-name",
+     "n": 9,
+     "text": "tier 1"
+    }
+   ]
+  },
+  {
+   "id": "Fe2cf171",
+   "kind": "box",
+   "n": 9,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.rvhead ‹ .rvgrid",
+     "n": 9,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F71a17dc",
+   "kind": "box",
+   "n": 9,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 0,
+    "pad": "14 18 14 18",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.rvfoot ‹ .panel",
+     "n": 9,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F2abe632",
+   "kind": "text",
+   "n": 9,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--warn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.rvgate ‹ .rvgates",
+     "n": 9,
+     "text": "1 change was staged against a record tha"
+    }
+   ]
+  },
+  {
+   "id": "Fd0de322",
+   "kind": "button",
+   "n": 8,
+   "fp": {
+    "kind": "button",
+    "h": 60.5,
+    "rad": 6,
+    "pad": "11 12 11 12",
+    "bw": 1,
+    "bc": "var(--staged|--r-review)",
+    "ring": "shadow",
+    "bg": "var(--hi)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.rvop ‹ .rvopwrap",
+     "n": 8,
+     "text": "T1 Season identity 2 fields changed · Se"
+    }
+   ]
+  },
+  {
+   "id": "Fd5cd9b3",
+   "kind": "button",
+   "n": 8,
+   "fp": {
+    "kind": "button",
+    "h": 78.5,
+    "rad": 6,
+    "pad": "11 12 11 12",
+    "bw": 1,
+    "bc": "var(--rule)",
+    "ring": "none",
+    "bg": "var(--raised)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.rvop ‹ .rvopwrap",
+     "n": 8,
+     "text": "T1 The Widow's Bite Draw release date ch"
+    }
+   ]
+  },
+  {
+   "id": "F34b41e8",
+   "kind": "text",
+   "n": 4,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 21,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink2|--r-home)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "p.dw-p ‹ .dwbody",
+     "n": 3,
+     "text": "Nothing changes yet — this stages the de"
+    }
+   ]
+  },
+  {
+   "id": "Fa6e5d56",
+   "kind": "button",
+   "n": 2,
+   "fp": {
+    "kind": "button",
+    "h": 44,
+    "rad": 6,
+    "pad": "9 9 9 9",
+    "bw": 1,
+    "bc": "var(--del)",
+    "ring": "none",
+    "bg": "var(--del)",
+    "bgi": "none",
+    "fs": 13,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--on-accent)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.btn.dang ‹ .dw-f",
+     "n": 2,
+     "text": "Stage deletion"
+    }
+   ]
+  },
+  {
+   "id": "Fa7724f8",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 9.5,
+    "fw": "600",
+    "ff": "JetBrains Mono",
+    "lh": 9.5,
+    "ls": "0.95px",
+    "tt": "none",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "span.fdelta.up ‹ .stat",
+     "n": 1,
+     "text": "+1"
+    }
+   ]
+  },
+  {
+   "id": "F67e4a21",
+   "kind": "box",
+   "n": 1,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "10 16 10 16",
+    "bw": 1,
+    "bc": "var(--rule2)",
+    "ring": "shadow",
+    "bg": "var(--raised)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.toast ‹ .app",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "F219bc37",
+   "kind": "button",
+   "n": 1,
+   "fp": {
+    "kind": "button",
+    "h": 78.5,
+    "rad": 6,
+    "pad": "11 12 11 12",
+    "bw": 1,
+    "bc": "var(--staged|--r-review)",
+    "ring": "shadow",
+    "bg": "var(--hi)",
+    "bgi": "none",
+    "fs": 16.5,
+    "fw": "400",
+    "ff": "Space Grotesk",
+    "lh": 25,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--ink)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(42, 52, 61) · border-top-color: rgb(133, 147, 159)",
+    "focus-visible": "outline-style: solid · outline-color: rgb(95, 212, 232)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.rvop ‹ .rvopwrap",
+     "n": 1,
+     "text": "T1 The Widow's Bite Draw release date ch"
+    }
+   ]
+  },
+  {
+   "id": "Fec22bda",
+   "kind": "box",
+   "n": 1,
+   "fp": {
+    "kind": "box",
+    "h": "-",
+    "rad": 6,
+    "pad": "12 14 12 14",
+    "bw": 1,
+    "bc": "rgb(92, 64, 48)",
+    "ring": "none",
+    "bg": "rgba(255, 122, 69, 0.08)",
+    "bgi": "none"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "div.rvcon ‹ .rvdet",
+     "n": 1,
+     "text": ""
+    }
+   ]
+  },
+  {
+   "id": "Fc52b112",
+   "kind": "text",
+   "n": 1,
+   "fp": {
+    "kind": "text",
+    "h": "-",
+    "rad": 0,
+    "pad": "0 0 0 0",
+    "bw": 0,
+    "bc": "none",
+    "ring": "none",
+    "bg": "none",
+    "bgi": "none",
+    "fs": 14.5,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 19.5,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--warn)"
+   },
+   "forced": null,
+   "where": [
+    {
+     "sel": "b",
+     "n": 1,
+     "text": "This record changed after you staged the"
+    }
+   ]
+  },
+  {
+   "id": "F4e88b88",
+   "kind": "button",
+   "n": 1,
+   "fp": {
+    "kind": "button",
+    "h": 32,
+    "rad": 999,
+    "pad": "6 11 6 11",
+    "bw": 1,
+    "bc": "var(--staged|--r-review)",
+    "ring": "none",
+    "bg": "var(--sunk)",
+    "bgi": "none",
+    "fs": 12,
+    "fw": "600",
+    "ff": "Space Grotesk",
+    "lh": 18,
+    "ls": "normal",
+    "tt": "none",
+    "col": "var(--staged|--r-review)"
+   },
+   "forced": {
+    "hover": "background-color: rgb(216, 242, 74) · color: rgb(7, 9, 10) · border-top-color: rgb(133, 147, 159) · outline-color: rgb(7, 9, 10) · transform: matrix(1, 0, 0, 1, 0, -1)",
+    "focus-visible": "box-shadow: rgba(242, 194, 48, 0.16) 0px 0px 0px 5px · outline-style: solid · outline-color: rgb(242, 194, 48)",
+    "active": "transform: matrix(0.985, 0, 0, 0.985, 0, 1)"
+   },
+   "where": [
+    {
+     "sel": "button.chip.go ‹ .rvcx",
+     "n": 1,
+     "text": "Keep mine, overwrite theirs"
+    }
+   ]
+  }
+ ]
+}
