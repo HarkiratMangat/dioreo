@@ -15,7 +15,7 @@ Each part of this file is under 1,500 characters, so `ctx_search` returns any pa
 
 1. The platform's compaction summary covers the stretch since the last compact, plus whatever the previous summary carried. Each compact summarises a summary, so detail decays.
 2. The transcript JSONL is the only complete record of the session.
-3. `~/.claude/haiku/strip-transcript.sh` drops about half of what the person said: every mid-turn message and every popup answer. A tested patch is below.
+3. `~/.claude/haiku/strip-transcript.sh` dropped about half of what the person said: every mid-turn message and every popup answer. Patched 2026-10-08 14:33 EDT; details below.
 4. context-mode's own resume recipe fails on a long session: user prompts are evicted at its 1,000-event cap, `sort: "timeline"` returns the oldest matches, and auto-memory ignores `source:`.
 5. context-mode searches are throttled: 3 full calls per 60 seconds, then 1 result per query, refused after 8.
 6. A SessionStart hook's output over the cap reaches the model as a ~2KB preview.
@@ -118,7 +118,7 @@ Path: `~/.claude/projects/<slug>/<session-id>.jsonl`; the summary prints it. Thi
 
 ## strip-transcript.sh: what it keeps and drops
 
-The Haiku guide's compact-prep recipe starts with `bash ~/.claude/haiku/strip-transcript.sh <transcript.jsonl> <out.txt>`. On this session it made 3,325 lines and 250KB from 91.7MB.
+**Patched 2026-10-08 14:33 EDT; this part describes the script before the patch.** The Haiku guide's compact-prep recipe starts with `bash ~/.claude/haiku/strip-transcript.sh <transcript.jsonl> <out.txt>`. On this session it made 3,325 lines and 250KB from 91.7MB.
 
 - **Keeps:** typed user messages, Claude's text, thread replies, tool errors, compaction summaries.
 - **Confirmed:** its header assumes `isCompactSummary` exists on a compacted transcript; it does.
@@ -148,7 +148,7 @@ elif .type == "user" and ((.toolUseResult | type) == "object")
 
 For an array prompt, map each block: text to its text, an image to `[image]`. Also prefix `ts` on the `COMPACT:` and string `USER:` lines.
 
-Tested on this session: 49 USER_MIDTURN (6 with `[image]`), 3 USER_ANSWER, 4 COMPACT, the 13:17 message found; 3,446 lines and 264KB, only 14KB more than the original. I did not edit the real script, because the slash-command session may own it.
+Tested on this session: 49 USER_MIDTURN (6 with `[image]`), 3 USER_ANSWER, 4 COMPACT, the 13:17 message found; 3,446 lines and 264KB, only 14KB more than the original. Applied to `~/.claude/haiku/strip-transcript.sh` at Harkirat's word (2026-10-08 14:33 EDT): its output matches the tested version on every overlapping line, shellcheck is clean, and the guide's step 1 now says what it keeps.
 
 ## context-mode: the two sort modes
 
