@@ -73,6 +73,7 @@ No prose between the first tool call and the final message. A step is ticked in 
 - [x] The attachment row: its label and a field that shows "Search attachments" whole.
 - [x] The field gauge: the button-to-edge 6 sits under the field beside the 32; expected values drawn (14 · 16 · 10 · 6) so a miss shows red; a centre check on the leading icon; a clipped placeholder flagged.
 - [x] Inks per field, measured and drawn as swatches: outline, fill, glass, placeholder, words, in-field icon, count box; the outline on hover.
+- [x] *(presentation, 2026-10-08 17:38 EDT)* Three designs for the inks and states rejected; his fallback accepted (17:35 EDT): each field measured once plus ONE ink row for the class in the Styles rows' shape. Published as spec board v21.
 - [x] Ledger rows for what Builder-2 still draws differently: field padding 12 (13.5 on the search) → 14; search.filter fill, outline and hover → the field look; the hover from the × and the count.
 
 **Check:** `field-inks.cjs` on spec and board: every field agrees on fill, outline and hover (words, ×, count, chevron), inset 14, glass 16 centred within 0.5; `spec-check.cjs` fields section; I look at `spec-check/sec-fields.png`. **For him (a picture):** Q1.
@@ -89,6 +90,9 @@ No prose between the first tool call and the final message. A step is ticked in 
 
 - [ ] From `inventory.json`, the text inside Builder-2's gates and drawers only (never the builder's own panels: `sx-*`, `bd-*`, the C1 table): grouped by family · size · weight · case · tracking · line height · ink token; count, gates, samples.
 - [ ] A section: each style drawn at its measured values with real strings from the board, its count and gates, its small-text role from `small-text-draft.md`, an off-scale size marked against C5.
+
+- [x] *(data, 2026-10-08 17:38 EDT)* `local/pins2/s4/builder-2/spec-img/text-census.json`: 261 family · size · weight · case · tracking · line · ink combinations inside the gates and drawers, grouped into 109 styles (inks folded in).
+- [ ] The section: frontend-design's wireframe sent to him first (the census hung on the Text sizes ladder, off-scale sizes on hatched rungs); drawn only after his pick.
 
 **For him (pictures):** Q2 and the grammar for non-label text. **Publish v21** (Steps 0–3).
 
