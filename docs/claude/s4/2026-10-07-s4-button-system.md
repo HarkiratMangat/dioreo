@@ -178,5 +178,7 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 
 ## His 19:57 EDT answers, written 2026-10-08 19:58 EDT
 - **The selection bar (19:57), verbatim:** "32." → the code, the status chip and the × go to M 32; Q3 is settled with no exception.
-- **Filled at rest (19:57), verbatim:** "show me both of them on our wash and tint style?" → read as: Set end date, Pick and the export file name, each drawn in our wash and in our tint (the Styles section's recipes, in each button's own accent), beside today's look.
+- **Filled at rest (19:57), verbatim:** "show me both of them on our wash and tint style?" → first read as the three filled-at-rest buttons (wrong); **his correction (21:39 EDT), verbatim:** "by both of them i mean the 'never' chip and the 'set end date' chip." → section **Set end date and Never**: the two Queue buttons today, in our wash, in our tint (2026-10-08 21:39 EDT).
+- **His question (21:39 EDT), verbatim:** "also what about this chip? what's it's style? does it use one of ours or something else?" (his screenshot: New build's **Weapon required** hint, `span.b4-hint[data-tone=warn]`) → answered (2026-10-08 21:40 EDT): neither of ours. Rest = hover: fill `warn 12%` (translucent), a 1px ring of `warn 40%`, words `warn-ink`, 24 tall, corner 6, padding 8, icon 12, gap 6, words 12 · 600. Closest to wash (a translucent accent fill) but wash is `warn 14%` with a solid 1px `warn` border and ink words, and it changes on hover; this is a status tag with no hover, so it waits on Q8 with the other tags.
+- **Spec board v26** published 2026-10-08 21:40 EDT: section **Set end date and Never** as he meant.
 
