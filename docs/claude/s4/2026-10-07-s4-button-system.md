@@ -193,4 +193,5 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 ## His 23:31 EDT replies, written 2026-10-08 23:46 EDT
 - **(model), verbatim:** "keeping you on opus5.5. set to high." → rename string `Opus5.5-H · S4 spec board: Inputs · Oct 08`.
 - **(the post-compact model check), verbatim:** "huh? how come?" → measured: `.claude/hooks/self-check.sh` is registered on UserPromptSubmit with `"timeout": 5` in `.claude/settings.json`; run by hand on this session's 130 MB transcript it takes 11 s, so every prompt kills it at 5 s (110 cancellations of it in this session's transcript since 2026-10-06 21:52 EDT). It greps the whole transcript JSONL for the last compact and the last derivation.
+- **(group 6, 2026-10-09 00:03 EDT), verbatim:** "start" → Step 4 group 6 (Data display) built and published as v33 (2026-10-09 00:15 EDT).
 - **(group 4), verbatim:** "continue it. i'll check the open questions afterwards since im still busy. if a group 5 exists, continue with it after group 4" → Step 4 group 4 (Inputs) built; group 5 (Overlays) next.
