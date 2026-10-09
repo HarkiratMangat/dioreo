@@ -118,6 +118,7 @@ Each group is one phase, never one family per cycle:
 
 - [x] *(group 1, Buttons, 2026-10-08 18:42 EDT)* The probe (`board-dom.cjs`: rest, two Try states, three drawers; the drawn box, inks at rest and on hover, the builder's geometry rules) · the section in `spec-buttons.js` · `relations.cjs --family buttons` and `spec-check.cjs` clean · a ledger row for every miss. States: each clone is live (hover and press work on the page) and its look is its style's, drawn once under Styles, so no per-member state pictures (sameness drawn once). Used in: a one-word board place beside each name.
 - [x] *(group 2, Chips and tags, 2026-10-08 19:02 EDT)* `chip-sweep.cjs` (every small drawn box with words inside the gates and drawers, six states) → `board-dom.cjs chips` (32 families; a typed search for the count box) · `spec-chips.js` on the shared engine (`makeOnBoard` in `spec-buttons.js`) · `relations.cjs --family chips` (the sweep tied to the section) and `spec-check.cjs` clean · Q7 and Q8 queued; tag misses held by one row until Q8. Published as spec board v23.
+- [x] *(group 3, Segmented and switches, 2026-10-08 22:26 EDT)* `seg-sweep.cjs` → `board-dom.cjs segs` (13 families; the gate scenario picker set aside as board chrome) · `spec-segs.js` with a rail gauge (C3: a rail's row is one size up from its selected segment, inset 6 · 4 · 2) · `relations.cjs --family segs` 0 faults · ledger rows for every miss. Published as spec board v30.
 
 ### Step 5 · records, every phase
 
