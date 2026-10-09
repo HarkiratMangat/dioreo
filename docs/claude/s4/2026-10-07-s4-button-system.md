@@ -232,3 +232,8 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 > and nearly all of the open questions are drawn as just their current state... draw the corrected proposed state?? like wtf are you doing??
 >
 > also you're at 860k context so make sure your handoff/compact prep is all in order for when the auto-compact hits soon.
+
+## His 12:06 EDT replies, verbatim, written 2026-10-09 12:09 EDT
+- **(warn-ink):** "but is it just concretely set? or can warn-ink be derived from warn by a % value? such as \"warn + 20% white\",etc like youve done with other shades" → set concretely in `app.css` (`--warn-ink:#FF9E72`); not an exact mix: per channel it is warn plus 27% and 24% white; the nearest single mix, warn + 26% white, gives #FF9C75 (2–3 off). Asked whether to make it a derived token.
+- **(hover no change):** "but you've stated it even for ones that do change." → right: a measuring fault (handoff Next step 0).
+- **(shuffle):** "that's still not correct tho? because doesn't paint have it's outline/icon same color on rest?" → right: at rest its outline is neutral and its icon broadcast, so it is neither paint (all neutral) nor tint (an accent outline); none of the four styles fits. Asked: a rule for it, or a board change to paint (grey icon) or tint (accent outline).
