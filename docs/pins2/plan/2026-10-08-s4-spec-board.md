@@ -123,6 +123,10 @@ Each group is one phase, never one family per cycle:
 - [x] *(group 5, Overlays, 2026-10-09 00:01 EDT)* `overlay-sweep.cjs` (every floating surface in the board's states, a tooltip state included) → `board-dom.cjs overlays` · `spec-overlays.js`: the drawers' frames measured in a table (a drawer is too large for a card), their header strips, the problem pop-up and the toast drawn whole with their parts measured · tooltips are off across the portal (his 2026-09-11 14:20 EDT) and no Builder-2 state opens Confirm, so neither is drawn · `relations.cjs --family overlays` 0 faults (inputs, segs, chips, buttons, fields 0) · Q11 queued. Published as spec board v32.
 - [x] *(group 6, Data display, 2026-10-09 00:15 EDT)* `data-sweep.cjs` → `board-dom.cjs data` (the two tables' rows and cells read as parts) · `spec-data.js`: the Broadcast manifest and Compare tables measured in a table; History's rows, the meters, the colour bar, the four announcement cards, the loadout card and the Discord preview drawn whole with their parts measured · `relations.cjs --family data` 0 faults (all seven families 0) · ledger row `hirow` · the page now declares utf-8 (its stylesheets' bullets read as mojibake without it) · Q12 queued. Published as spec board v33. **Step 4 is complete.**
 
+### Step 4b · his 2026-10-09 review (written 2026-10-09 12:29 EDT)
+
+- [ ] His 11:49 EDT review, items 0–9 as the handoff's Next step orders them: the hover re-measure · every board copy and open question drawn corrected beside today's · the regrouping · segmented controls in every state · the pop-ups · reveal left and right · Text sizes decluttered · ~~gap tokens~~ (v37) · ~~the shuffle button~~ (v38) · the Colours section and one lighter-accent ratio.
+
 ### Step 5 · records, every phase
 
 - [ ] In the same write as the work: the handoff's CURRENT STATE, `button-system.md` (his rulings), `conventions.md` (a ruling that sets a rule), the ledger, `2026-10-08-s4-standardization-ledger.md`, this plan's ticks.
