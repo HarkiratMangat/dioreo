@@ -11,7 +11,7 @@ Derive every value from these before asking Harkirat anything, and cite the rule
 - **C0 · A control follows its size row.** Its height, click area, corner, icon, words, padding, icon → words gap, neighbour gap and the buttons nested in it all come from its size (C1–C3). A field is a control (44 = L). (His 2026-10-08 12:45 and 13:00 EDT: "what size text/icon do 44px buttons use?" · "how much outer gap does a 32px button have inside a 44px rail? 6".)
 
 ## Sizes
-- **C1 · Size table** (2026-10-07): L 44 · click 44 · corner 11 · icon 16 · words 13·600 · padding 14 · icon→words 10 · neighbours any | M 32 · 44 · 8 · 14 · 11·600 · 10 · 6 · 14 | S 24 · 32 · 6 · 12 · 11·600 · 10 · 6 · 10 | XS 20 · 24 · 5 · 12 · 11·600 · 6 · 6 · 6. Free-standing 28s go to M 32 and the 40 to L 44 (his Q3, 2026-10-08 19:43 EDT); the selection bar's code waits on its own section (24 or 32).
+- **C1 · Size table** (2026-10-07): L 44 · click 44 · corner 11 · icon 16 · words 13·600 · padding 14 · icon→words 10 · neighbours any | M 32 · 44 · 8 · 14 · 11·600 · 10 · 6 · 14 | S 24 · 32 · 6 · 12 · 11·600 · 10 · 6 · 10 | XS 20 · 24 · 5 · 12 · 11·600 · 6 · 6 · 6. Free-standing 28s go to M 32 and the 40 to L 44 (his Q3, 2026-10-08 19:43 EDT); the selection bar's code, status chip and × go to M 32 too (his "32.", 2026-10-08 19:58 EDT).
 - **C2 · Corner = height × 0.25** (2026-10-05 12:07 EDT): 11 · 8 · 6 · 5.
 - **C3 · Nesting:** a button inside a container is one size down with half the step around it: L→M 6 · M→S 4 · S→XS 2 (rails 2026-10-07 12:26 EDT; generalised 2026-10-08 13:00 EDT). Covers rails, in-field buttons (× and ⌄), the chip's ×.
 - **C4 · Pills** take the size table with round ends; filter chips keep their click area to the chip, 6 apart (2026-10-07 22:07 EDT).

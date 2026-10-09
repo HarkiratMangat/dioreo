@@ -176,3 +176,7 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - **Q8 (19:43), verbatim:** "unsure right now because i want to redesign some of them a bit." → open; he redesigns some tags first.
 - **His question (19:43), verbatim:** "i notice that 'set end date' and 'never' both use `button-?-box.tint-warn` but their color/style differs? so im confused? what's the difference in their style?" → answered: same warn outline and words colour, but Set end date carries a warm fill at rest (`warn 9% on sunk`) where tint is plain at rest (`sunk`, as Never is); also face (Space Grotesk 600 vs JetBrains Mono 500), icon 14 vs 12, padding 8 / 12 vs 10, gap 8 vs 6. The name reader could not tell a fill tinted at rest from a plain one; such cards now carry **filled at rest** (Set end date, Pick, the export file name, and any tag like them) until he decides whether that look gets a name or goes.
 
+## His 19:57 EDT answers, written 2026-10-08 19:58 EDT
+- **The selection bar (19:57), verbatim:** "32." → the code, the status chip and the × go to M 32; Q3 is settled with no exception.
+- **Filled at rest (19:57), verbatim:** "show me both of them on our wash and tint style?" → read as: Set end date, Pick and the export file name, each drawn in our wash and in our tint (the Styles section's recipes, in each button's own accent), beside today's look.
+
