@@ -205,3 +205,30 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - **(10:50), verbatim:** "nothing even changed on the texts??" (his screenshots: both toggles off, the Text sizes' "on the board" rows still shown) → *Hide board copies* now hides those rows too (they are the board's own text, copied), and the rail drops groups left empty.
 - **(10:50, on the gate codes), verbatim:** "yeah... it's literally just board chrome" → every text run in a gate's head (`.pb-head`: its code C1–C9, title, description and scenario buttons) is out of the census (`local/pins2/s4/work/lead/census-chrome.cjs`); ledger row `t60` removed and `t21` no longer names the gate titles; the xl row's use reads "big numbers". Written 2026-10-09 11:05 EDT.
 - **(10:51), verbatim:** "also clicking \"hide board copies\" is very glitchy/laggy" → measured: a 0.9 s long task on hide and 2.1 s on show (every click re-rendered and re-measured every section). The toggles now flip one class on the page root; gauges are never measured while hidden, and skip a re-measure at an unchanged size once settled.
+
+## His 2026-10-09 11:49 EDT review, verbatim, written 2026-10-09 11:51 EDT
+(with four screenshots: Text sizes with both toggles off; On the board L 44; Segmented and switches; the problem pop-up)
+
+> # Gaps
+> - Let's token them?
+> - s1 6px / s2 10px / s3 14px / s4 20px / s5 26px / s6 32px
+> - For near neighbor elements, such as gaps
+>
+> # Set End Date / Never / Weapon required
+> - What exactly is 'warn-ink' and how does it differ from 'warn'?
+> - What's the difference between outline: 'warn 30% on sunk' vs just 'warn 40%'?
+> - Also wdym "Hover no change"?
+>
+> - What even does "hide notes" do? I dont see it changing anything when I have the board copies hidden.
+> - Better organize the texts please, they're so cluttered.
+> - Selection bar buttons still have the issue where some buttons are larger on the "today 28" version? Did you ever explain that to me??
+> - refine and fix the reveal right/left animation: (two screen recordings, copied to `local/pins2/s4/intake/reveal-1-2026-10-09-1134.gif` and `reveal-2-2026-10-09-1135.gif`)
+> - also confused why you're showing me this "on the board" section with the errors and not even drawing the corrected version for me to approve... like what do i care about the incorrect version being shown to me??
+> - and is `button-L-icon.paint` really correct for the shuffle button? it uses a grey outline but a colored icon.
+> - whats the point of showing me the segments/switches if i can't even see them in their active/selected states? interacting with them does nearly nothing.
+> - why are "labels" and "fields" grouped together? meanwhile "inputs" is it's own section? wouldn't "labels" group and move near the "texts" sections and fields/inputs be grouped together since the fields are literally inputs?? overall, the entire grouping of sections needs refining.
+> - problem pop-up is broken. also you didn't draw the all-pass, no-image, image didn't load, build image, staged deletion pop-ups?
+>
+> and nearly all of the open questions are drawn as just their current state... draw the corrected proposed state?? like wtf are you doing??
+>
+> also you're at 860k context so make sure your handoff/compact prep is all in order for when the auto-compact hits soon.
