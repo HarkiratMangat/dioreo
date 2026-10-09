@@ -133,4 +133,4 @@ I paired this session's earlier `/compact` focus texts with the summaries they p
 
 - Transcript `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/844943ce-c876-4d3b-8d49-49821d96c923.jsonl`: compact pairs at rows 7252/7254 and 10569/10571.
 - The run's output and the handoff log entry dated 2026-10-08 22:32 EDT in `docs/claude/s4/2026-10-02-s4-handoff.md`.
-- Plugin scripts: `scripts/context.mjs` (the caps on lines 103–127) and `scripts/measure-parts.mjs`.
+- Plugin scripts: the plugin's `context.mjs` (the caps on lines 103–127) and the plugin's `measure-parts.mjs`.
