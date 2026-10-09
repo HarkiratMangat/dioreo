@@ -130,7 +130,7 @@ Each group is one phase, never one family per cycle:
 |:-:|---|---|---|
 | Q1 | The category dot's slot in a field: 8 + 10 (words at 32) or the 16 icon slot (words at 40, in line with the weapon field) | C6 covers chips, not fields | settled 17:45 EDT: B, the 16 icon slot |
 | Q2 | Off-scale text: 12 · 14 · 10 · 12.5 · 60 | C5 has none of them; only 17 → 15 and 19 · 20 · 22 → 21 were ruled | settled 17:44 EDT: 12 → 11 · 14 → 13 · 10 → 9 or 11 by use · 12.5 → 11 or 13 by use · 16 → 15 · 60 → 58 |
-| Q3 | The free-standing 28-tall controls' size row | his 2026-10-07 table dropped the old 28 row; nested ones follow C3 | settled 2026-10-08 19:43 EDT: 28 → M 32, 40 → L 44; the selection bar's code at 24 or 32 waits on its section |
+| Q3 | The free-standing 28-tall controls' size row | his 2026-10-07 table dropped the old 28 row; nested ones follow C3 | settled 2026-10-08 19:43 EDT: 28 → M 32, 40 → L 44; the selection bar's code, status chip and × → M 32 (2026-10-08 19:58 EDT) |
 | Q4 | Names for the new types: switch, stepper, date picker, colour picker, pop-up, drawer, toast, table, card, tag, meter, tabs, segmented | C11 needs a type word | open (Step 4) |
 | Q5 | Paint's definition | parked by him | parked |
 | Q6 | The count box, designed as a chip | his: "once we work on all the chips" | Step 4, Chips and tags |
