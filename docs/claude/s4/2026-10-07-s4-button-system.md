@@ -246,4 +246,5 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 ## His 2026-10-09 afternoon words, verbatim, written 2026-10-09 16:03 EDT
 - **(15:10):** "work autonomously, im busy" → steps 2–6 and 9 built (spec board v42–v46).
 - **(15:56):** "keep working autonomously. also add the /artifact-capabilities db into the spec-board so i can just choose inside of it instead of having to write it up in chat." → the Your calls section (v46): each choice is the db document `calls/<id>`, read back with ArtifactData.
+- **(19:29, with a screenshot):** "why is this pop-up just randomly here? and why do i have to scroll and find the \"your call\" sections in the actual board? why wouldn't you just put them beside their sections? or at the very least provide a way to jump to them? this is such lazy shit design from you!" · **(19:30):** "ask better sequential-thinking because these are large failures!" → v49, written 2026-10-09 19:43 EDT.
 
