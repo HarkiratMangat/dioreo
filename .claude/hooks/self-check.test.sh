@@ -202,6 +202,35 @@ fi
 
 
 # ===========================================================================
+# SPEED ON A LONG SESSION (added 2026-10-09 00:33 EDT). The hook is registered with a 5 s timeout, and a hook past it is CANCELLED with its context discarded. Three whole-file greps took ~11 s on a real 135 MB transcript, so every prompt of that session lost the block (110 cancellations), and nothing reported it. These fixtures are large on purpose and must finish inside the registered timeout, read from settings.json so the two cannot drift. The whole-file version fails the first one; the boundary-from-the-end version passes all of them with the same output as before.
+# ===========================================================================
+LIMIT="$(jq -r '[.hooks.UserPromptSubmit[]?.hooks[]? | select(.command | test("self-check.sh")) | .timeout][0] // 5' "$SETTINGS" 2>/dev/null)"
+now_s() { perl -MTime::HiRes=time -e 'printf "%.3f", time'; }
+big_run() { local t0 t1; t0="$(now_s)"; OUT="$(printf '{"transcript_path":"%s"}' "$1" | bash "$HOOK" 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext')"; t1="$(now_s)"; SECS="$(perl -e 'printf "%.2f", $ARGV[1] - $ARGV[0]' "$t0" "$t1")"; }
+in_time() { if awk -v s="$SECS" -v l="$LIMIT" 'BEGIN { exit !(s < l) }'; then ok "$1 (${SECS}s of ${LIMIT}s)"; else bad "$1" "took ${SECS}s; the hook is registered with ${LIMIT}s, so the harness would cancel it"; fi; }
+# ~1 KB a line, dense with the middle dot the rename pattern scans for
+PAD="$(printf '{"type":"assistant","message":{"content":"%s"}}' "$(printf 'padding · words · between the dots · %.0s' $(seq 1 28))")"
+EARLY='{"type":"assistant","text":"Sonnet5-H · Some task · Aug 20. Premise Low · Delib High → Sonnet5-High"}'   # MG-EXAMPLE
+BOUND='{"type":"system","subtype":"compact_boundary"}'
+BIG="$TMP/big.jsonl"
+{ printf '%s\n' "$EARLY"; yes "$PAD" | head -n 60000; printf '%s\n' "$BOUND" "$EARLY"; } > "$BIG"
+big_run "$BIG"
+check   'speed: a derivation after the compact on a ~60 MB transcript is on record' 'Derivation on record'
+in_time 'speed: ...and the hook finishes inside its registered timeout'
+{ printf '%s\n' "$EARLY"; yes "$PAD" | head -n 60000; printf '%s\n' "$BOUND"; } > "$BIG"
+big_run "$BIG"
+check   'speed: the compact after the only derivation still forces a re-derive on ~60 MB' 'A /compact ran after the last derivation'
+in_time 'speed: ...inside the registered timeout too'
+# The boundary more than one 4 MB window from the end: the search has to widen, and must land on the right line either way.
+{ printf '%s\n' "$EARLY"; yes "$PAD" | head -n 20000; printf '%s\n' "$BOUND" "$EARLY"; yes "$PAD" | head -n 6000; } > "$BIG"
+big_run "$BIG"
+check  'window: a boundary ~6 MB from the end still finds the derivation after it' 'Derivation on record'
+{ printf '%s\n' "$EARLY"; yes "$PAD" | head -n 20000; printf '%s\n' "$BOUND"; yes "$PAD" | head -n 6000; } > "$BIG"
+big_run "$BIG"
+check  'window: a boundary ~6 MB from the end still marks the earlier derivation stale' 'A /compact ran after the last derivation'
+rm -f "$BIG"
+
+# ===========================================================================
 # WORKING-AGREEMENT STALENESS (added 2026-09-08 13:05 EDT, WP3/WP7 context-carriers plan). The plan decided this check and it was never built until now -- pin both directions with fixtures so it cannot silently stop firing.
 # ===========================================================================
 STALE_FIXTURE="$TMP/stale-agreement.md"
