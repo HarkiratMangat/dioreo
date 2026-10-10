@@ -24,10 +24,11 @@ Derive every value from these before asking Harkirat anything, and cite the rule
 
 ## Look and behaviour
 - **C9 · Styles** wash · tint · fill · paint (paint's definition parked). **Flags:** `--ghost` no fill, tint and paint only · `--borderless` no outline ever, fill no glow · `--quiet` bare until hover · `--reveal-right/-left`. **Read off a board button's inks** (Step 4, 2026-10-08 18:42 EDT): fill = a solid accent token · wash = a translucent accent fill with an accent outline · tint = an accent outline on a dark fill · paint = neutral; `--ghost` no fill at rest or on hover, `--borderless` no outline at rest or on hover, `--quiet` bare at rest and drawn on hover, `--reveal-*` opens wider on hover.
+- **C14 · One lighter variant:** a colour's lighter shade (the words on hover) is that colour 80% on white; warn-ink and danger-ink are derived the same way (his calls, 2026-10-09 19:28 and 19:32 EDT; written 2026-10-10 19:21 EDT).
 - **C10 · Still** hover changes colour only · press drops 1px and 98.5% · fill keeps its glow · outlines 1px · disabled 40%.
 
 ## Names
-- **C11 · Grammar** `type-size-shape.style-value--flag`: `-` picks one value (a colour or a data source), `--` adds a part that is there or not. A colour value goes on the element that takes the colour (a realm token on the in-field buttons, measured 2026-10-08 12:38 EDT). The value names the colour's family: `del` (the danger fill) reads `danger`, `danger-ink` reads `danger` (2026-10-08 18:42 EDT).
+- **C11 · Grammar** `type-size-shape.style-value--flag`: `-` picks one value (a colour or a data source), `--` adds a part that is there or not. A colour value goes on the element that takes the colour (a realm token on the in-field buttons, measured 2026-10-08 12:38 EDT). The value names the colour's family: `del` (the danger fill) reads `danger`, `danger-ink` reads `danger` (2026-10-08 18:42 EDT). A realm-coloured value reads `-realm`, never the realm's own name, as `-cat` stands for any category (his Q6 note, 2026-10-09 22:30 EDT: "instead of `-armory`, let's do `-realm`"; written 2026-10-10 19:21 EDT).
 
 ## The spec board
 - **C12 · A decided element is drawn to these rules;** what Builder-2 still draws wrong goes in `local/pins2/s4/builder-2/spec-img/board-changes.json` (2026-10-08 12:35 EDT).
