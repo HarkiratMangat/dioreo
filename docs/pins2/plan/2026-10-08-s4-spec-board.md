@@ -26,7 +26,7 @@ status: live
 1. Which step am I on, and is my next call part of it?
 2. Are all independent calls in one message? Is every edit one `python3` heredoc (assert per anchor, a print per edit, the gate on `&&`)?
 3. Routing: `read_smart` for any file I won't change with a direct Edit (first read too) · `ctx_execute_file` for a question or a line range · codebase-memory for code · `ctx_search` for prose · `rg` only for a literal no index covers. A linksee routing warning is a stop, not a note.
-4. What will he find that I didn't check: every state, every member of the family against the others, the relations, 390 px?
+4. What will he find that I didn't check: every state, every member of the family against the others, the relations, at 1282 (his viewport; never a phone, his 2026-10-02 10:55 EDT)?
 5. Am I about to draw a design no rule covers? Then it goes in the decision queue as a picture; drawing it is not deciding it.
 
 No prose between the first tool call and the final message. A step is ticked in the same write as its work.
@@ -111,7 +111,7 @@ Each group is one phase, never one family per cycle:
 
 - [ ] ⟦ONE MESSAGE⟧ the probe grows by the whole group: each family's chain, rest and real-mouse hover and press, and every state the board reaches (from `states.md`: today, selected, out of month · on, off · warn, none · staged, upcoming, never).
 - [ ] ⟦ONE MESSAGE⟧ one write: the group's section in its own module (`spec-<group>.js`, imported by `spec.js`; the nav and spec-check's section ids grow with it). Each family drawn with its board component in its board chain, gauged against its size row (C0–C3), with its inks, its states, a proposed name (C11, marked proposed) and "used in" from the inventory. A pop-up the page can't hold in place is shown pinned in a stage; if that fails, a labelled crop of the board — never redrawn by hand.
-- [ ] Check: `relations.cjs` over the group; `spec-check.cjs`; I look at every section picture in every state, and at 390 px.
+- [ ] Check: `relations.cjs` over the group; `spec-check.cjs`; I look at every section picture in every state, and at 1282 px.
 - [ ] Ledger rows for what Builder-2 draws off the rules; the decision queue for what no rule decides; `2026-10-08-s4-standardization-ledger.md` rows once he settles a family.
 
 **Order:** Buttons → Chips and tags → Segmented and switches → Inputs → Overlays → Data display. **Publish** after every two groups (v22, v23, v24).
