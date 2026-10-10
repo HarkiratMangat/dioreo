@@ -1,0 +1,205 @@
+/* BOARD 4 · v11 — the build drawer's add panel (2026-09-22 13:37 EDT). One field shell, one picker, one hint chip; the three options he asked to
+   see as forks (his answer of 13:01 EDT) are html[data-b3-f2=a|b|c]. Loaded after b4.css. Every class here is new (f-*), so nothing in
+   app.css, board.css or b1.css was written for these elements and none of it reaches them except inherited type and the tokens. */
+
+/* ══ THE HINT CHIP — the Broadcast card's "∞ Never" (b2.css .pb-end.pb-nev), the board's one shape for a status or a count ══════════
+   His items 18 and 45: a status chip is this rectangle, never a new pill. Tones: warn · ok · neutral (the default). */
+.b4 .b4-hint{display:inline-flex;align-items:center;gap:6px;flex:none;height:24px;box-sizing:border-box;padding:0 8px;border-radius:6px;
+  font:600 12px/1 var(--ui);letter-spacing:0;text-transform:none;font-style:normal;white-space:nowrap;
+  color:var(--ink2);background:color-mix(in srgb,var(--ink) 5%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 16%,transparent)}
+.b4 .b4-hint .ic{width:12px;height:12px;flex:none}
+.b4 .b4-hint[data-tone=warn]{color:var(--warn-ink);background:color-mix(in srgb,var(--warn) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 40%,transparent)}
+.b4 .b4-hint[data-tone=ok]{color:color-mix(in srgb,var(--ok) 82%,white);background:color-mix(in srgb,var(--ok) 11%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 38%,transparent)}
+.b4 .b4-hint[data-tone=neutral]{color:var(--ink3);background:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 14%,transparent)}
+
+/* ══ THE LAYOUT — the form column and the preview column ══════════════════════════════════════════════════════════════════════ */
+.b4 .f-add{display:grid;grid-template-columns:minmax(0,1fr) var(--f-sidew,300px);gap:28px;align-items:start;min-width:0}
+.b4 .f-form{display:grid;gap:16px;min-width:0}
+.b4 .f-card{display:grid;min-width:0;transition:box-shadow .2s,background-color .2s}
+.b4 .f-card-b{display:grid;gap:32px;min-width:0}
+.b4 .f-side{position:sticky;top:0;min-width:0;padding-bottom:96px}
+.b4 .f-prev h5{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;font:600 11px/var(--lh-1) var(--data);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.b4 .f-prev h5 em{font:500 12px/1 var(--ui);letter-spacing:0;text-transform:none;font-style:normal;color:var(--ink3)}
+/* v12 critique (2026-09-22 16:14 EDT): the empty preview's line sat 80px under its ghost card, alone in dead space. It now sits ON the ghost, the way
+   Compare's empty landing puts its search on the faded table. */
+.b4 .f-prev{position:relative}
+/* the line itself is the shared .b4-overline (classes.css), which Bulk's empty results use too */
+.b4 .f-pe{margin:0;text-align:center;font:500 13px/1.45 var(--ui);color:var(--ink3)}
+
+/* Sections: a heading, its state chip, and one hairline to the column's edge */
+.b4 .f-sec{display:grid;gap:14px;min-width:0}
+.b4 .f-h{display:flex;align-items:center;gap:10px;margin:0;font:600 15px/1 var(--ui);color:var(--ink)}
+.b4 .f-h::after{content:"";flex:1;height:1px;margin-left:4px;background:color-mix(in srgb,var(--rule2) 80%,transparent);order:9}
+.b4 .f-g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.b4 .f-row{display:grid;gap:8px;min-width:0}
+.b4 .f-lab{display:flex;align-items:center;gap:8px;min-height:24px}
+.b4 .f-lab label{font:500 12.5px/1 var(--ui);color:var(--ink3)}
+
+/* ══ THE FIELD — one shell owns the box. Its children never draw one. ══════════════════════════════════════════════════════════
+   Focus is the board's own --focus (every keyboard ring on the board uses it), drawn by the SHELL as an outside ring, so no prefix,
+   tile or sibling can clip it (item 16) and every field has the same one (item 10). */
+/* 2026-09-25 00:20 EDT (his "the tier badge's container has a much more defined soft corners than the grade badge's container… apply that to all the fields in the form, as well as the various search fields"):
+   one field corner, the Tier track's 9px, on every field, grade tile, tier track, source switch, drop zone and search box. */
+.b4{--fld-rad:9px}
+.b4 .f-fld{--f-bg:color-mix(in srgb,#04070A 52%,var(--sunk));--f-edge:color-mix(in srgb,var(--ink) 12%,transparent);
+  position:relative;display:flex;align-items:center;min-width:0;height:44px;padding:0 4px 0 0;box-sizing:border-box;border-radius:var(--fld-rad);
+  background:var(--f-bg);box-shadow:inset 0 0 0 1px var(--f-edge);transition:box-shadow .16s ease,background-color .16s ease}
+.b4 .f-fld:hover{--f-edge:color-mix(in srgb,var(--ink) 24%,transparent)}
+.b4 .f-fld:focus-within,.b4 .f-pick.open .f-fld{--f-edge:color-mix(in srgb,var(--focus) 80%,transparent);box-shadow:inset 0 0 0 1px var(--f-edge),0 0 0 3px color-mix(in srgb,var(--focus) 18%,transparent)}
+.b4 .f-fld.closed,.b4 .f-fld.closed .f-in{cursor:pointer}
+.b4 .f-fld .f-in,.b4 .drawer .f-fld .f-in{flex:1;min-width:0;height:100%;margin:0;padding:0 12px;box-sizing:border-box;border:0;border-radius:0;background:none;box-shadow:none;outline:0;
+  color:var(--ink);font:500 14px/42px var(--ui);letter-spacing:0;caret-color:var(--focus);-webkit-appearance:none;appearance:none}
+.b4 .f-fld .f-in::placeholder{color:var(--ink4);opacity:1;font-style:normal}
+.b4 .f-fld .f-in.mono{font:500 14px/42px var(--data);letter-spacing:.04em}
+.b4 .f-fld .f-in::selection{background:color-mix(in srgb,var(--focus) 32%,transparent)}
+.b4 .f-pre{flex:none;display:flex;align-items:center;gap:8px;align-self:stretch;padding:0 13px;color:var(--ink3)}
+.b4 .f-pre.f-ic{padding:0 0 0 12px}
+.b4 .f-pre.f-ic + .f-in{padding-left:10px}
+/* The Label field's live count (his calls, 2026-10-01 11:32 and 12:24 EDT): a tinted chip of the count family (.g-fact.b3-cc) with its text icon, inside the field on its right; amber from 28. */
+.b4 .f-fld > .f-cnt{flex:none;align-self:center;height:24px;margin-right:8px;padding:0 8px;gap:6px;border-radius:6px;background:color-mix(in srgb,var(--ink) 7%,var(--sunk));font:500 11px/var(--lh-1) var(--data);letter-spacing:.04em;color:var(--ink3)}
+.b4 .f-fld > .f-cnt > :is(b, span){text-box:trim-both cap alphabetic} .b4 .f-fld > .f-cnt b{font-weight:600;color:var(--ink2)}
+.b4 .f-fld > .f-cnt .ic{width:12px;height:12px;color:var(--ink4)}
+.b4 .f-fld > .f-cnt.warn{color:var(--warn-ink);background:color-mix(in srgb,var(--warn) 12%,var(--sunk))}
+.b4 .f-drop :is(.f-dl, .f-ds){text-box:trim-both cap alphabetic;padding-block:4px;margin-block:-4px} .b4 .f-fld > .f-cnt.warn b,.b4 .f-fld > .f-cnt.warn .ic{color:var(--warn-ink)}
+.b4 .f-pre .ic{width:16px;height:16px}
+.b4 .f-dot{display:block;flex:none;width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)}
+/* The build number is the label field's own first part — one well, divided by a hairline — never a tile beside it (item 12) */
+.b4 .f-bno{border-right:1px solid color-mix(in srgb,var(--ink) 10%,transparent);padding:0 14px 0 13px}
+.b4 .f-bno small{font:600 10px/1 var(--data);letter-spacing:.16em;color:var(--ink3)}
+.b4 .f-bno b{font:600 16px/1 var(--data);color:var(--f-hue,var(--ink));font-variant-numeric:tabular-nums}
+/* A suffix is a control that lives INSIDE the field: copy, clear, the list caret */
+.b4 .f-suf{flex:none;display:grid;place-items:center;width:32px;height:32px;margin:0;padding:0;border:0;border-radius:5px;background:none;color:var(--ink3);cursor:pointer;
+  transition:color .15s,background-color .15s}
+.b4 .f-suf:hover:not(:disabled){color:var(--ink);background:color-mix(in srgb,var(--ink) 9%,transparent)}
+.b4 .f-suf:active:not(:disabled){transform:translateY(1px)}
+.b4 .f-suf:disabled{opacity:.35;cursor:default}
+.b4 .f-suf:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.b4 .f-suf .ic{width:16px;height:16px}
+.b4 .f-clr:hover:not(:disabled){color:var(--danger-ink);background:color-mix(in srgb,var(--danger-ink) 13%,transparent)}
+.b4 .f-cr path{transition:d .24s cubic-bezier(.32,.72,0,1)}
+.b4 .f-fld:hover .f-caret{color:var(--ink2)}
+
+/* ══ THE PICKER'S LIST ═════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+.b4 .f-pick{position:relative;min-width:0}
+.b4 .f-pick.up .f-menu{top:auto;bottom:calc(100% + 6px)}
+/* (2026-09-22 15:20 EDT) his catch: the list was the field's width, so a 240px weapon field cut “.50 GS” and “3-LINE RIFLE” to an ellipsis. The list sizes
+   to its longest row and is never narrower than its field; the name never shrinks; the meta keeps one column so the rows line up. */
+.b4 .f-menu{position:absolute;z-index:60;left:0;right:auto;min-width:100%;width:max-content;max-width:min(480px,calc(100vw - 32px));top:calc(100% + 6px);max-height:296px;overflow:auto;margin:0;padding:6px;list-style:none;box-sizing:border-box;
+  border-radius:var(--rad-3);background:color-mix(in srgb,var(--raised) 94%,#000);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 13%,transparent),0 22px 44px -14px rgba(0,0,0,.75),0 6px 14px -6px rgba(0,0,0,.5);
+  scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 20%,transparent) transparent;animation:f-in .16s cubic-bezier(.23,1,.32,1)}
+@keyframes f-in{from{opacity:0;transform:translateY(-4px)}}
+.b4 .f-menu li{display:flex;align-items:center;gap:10px;min-height:38px;padding:0 8px 0 11px;border-radius:var(--rad-2);color:var(--ink2);font:500 13.5px/1.2 var(--ui);cursor:pointer}
+.b4 .f-menu li.on{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
+.b4 .f-menu li[aria-selected=true]{color:var(--ink)}
+.b4 .f-ol{flex:1 0 auto;white-space:nowrap}
+.b4 .f-ol mark{background:none;color:var(--focus);font-weight:600}
+/* the count keeps one width, so the meta column before it starts at the same x on every row ("1 build" is narrower than "2 builds") */
+.b4 .f-tick{flex:none;display:grid;place-items:center;width:16px}
+.b4 .f-tick .ic{width:16px;height:16px;color:var(--ok)}
+.b4 .f-thumb{flex:none;display:grid;place-items:center;width:40px;height:24px;border-radius:4px;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);color:var(--ink4)}
+.b4 .f-thumb .ic{width:13px;height:13px}
+.b4 .f-none{color:var(--ink3);cursor:default;font-size:13px}
+
+/* ══ ATTACHMENTS — one row design for MP and DMZ (item 20): the slot's NAME, the field, the clear inside it ═════════════════════ */
+.b4 .f-atts{display:grid;gap:8px}
+.b4 .f-att{display:grid;grid-template-columns:118px minmax(0,1fr);align-items:center;gap:14px}
+.b4 .f-slot{display:flex;align-items:center;gap:7px;min-width:0;font:500 13px/1 var(--ui);color:var(--ink2);white-space:nowrap}
+.b4 .f-slot.q{color:var(--ink3)}
+.b4 .f-from{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:4px;font:600 9.5px/1 var(--data);letter-spacing:.1em;text-transform:uppercase;font-style:normal;
+  color:color-mix(in srgb,var(--ok) 80%,white);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.b4 .f-att.auto .f-fld{--f-edge:color-mix(in srgb,var(--ok) 34%,transparent);animation:f-lit .6s cubic-bezier(.16,1,.3,1) backwards}
+/* v12 critique (2026-09-22 16:14 EDT), animate: pasting a code visibly assembles the build — each slot the code fills lights in slot order, once,
+   the moment it is filled. The one authored moment on the form; reduced motion keeps the resting green edge only. */
+@keyframes f-lit{0%{box-shadow:inset 0 0 0 1px var(--ok),0 0 0 3px color-mix(in srgb,var(--ok) 30%,transparent);background-color:color-mix(in srgb,var(--ok) 16%,var(--sunk))}}
+.b4 .f-att.auto:nth-child(2) .f-fld{animation-delay:50ms}.b4 .f-att.auto:nth-child(3) .f-fld{animation-delay:100ms}.b4 .f-att.auto:nth-child(4) .f-fld{animation-delay:150ms}.b4 .f-att.auto:nth-child(5) .f-fld{animation-delay:200ms}
+@media (prefers-reduced-motion:reduce){.b4 .f-att.auto .f-fld{animation:none}}
+
+/* ══ BADGES AND TIER — the standard checkbox and the REAL badges (items 5, 6); the tier as its own badges in their colours (7, 15) ══ */
+.b4 .f-rank{display:grid;gap:8px;min-width:0}
+.b4 .f-rl{font:500 13px/1.2 var(--ui);color:var(--ink2)}
+.b4 .f-bdgs,.b4 .f-tiers{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.b4 .f-bt{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 8px;border:0;border-radius:var(--fld-rad);background:color-mix(in srgb,#04070A 40%,var(--sunk));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent);cursor:pointer;transition:box-shadow .15s,background-color .15s}
+.b4 .f-bt .cb{flex:none}  /* 2026-09-26 11:38 EDT (his: the tile and the Tier rail are "essentially the same element"): every inner space 8, the rail's own track + button inset. 2026-10-04 02:06 EDT (Session 4, R1): that 8 was the tile's 4px padding plus a 4px margin on the box; the tile's padding says 8 now */
+/* (2026-09-22 15:20 EDT) his catch: hovering the badge half of the chip never lit the checkbox. The chip carries .wg-cb, the class board 3's checkbox
+   hover keys on, so the whole chip previews the tick; .wg-cb's own 44px square is undone here (its -12px pull is gone since 2026-10-04 01:48 EDT: the row owns that inset now, so margin:0 below only guards), and gates.css's
+   "no hover fill on .wg-cb" rule would have blanked a ticked chip's ground under the pointer, so that is restated too. */
+/* place-items is a shorthand that also resets align-items: it had dropped the checkbox to the chip's top edge (measured on the render) */
+.b4 .f-bt.wg-cb{display:inline-flex;align-items:center;width:auto;height:44px;margin:0}
+.b4 .f-bt.wg-cb:hover{background:color-mix(in srgb,#04070A 40%,var(--sunk))}
+.b4 .f-bt.wg-cb[aria-checked=true]:hover{background:color-mix(in srgb,var(--ink) 8%,var(--sunk))}
+.b4 .f-bt:hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 26%,transparent)}
+.b4 .f-bt[aria-checked=true]{background:color-mix(in srgb,var(--ink) 6%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 30%,transparent)}
+.b4 .f-bt:active{transform:translateY(1px)}
+.b4 .f-bt:focus-visible,.b4 .f-tier:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.b4 .f-bt .b3-bdgs,.b4 .f-tier .b3-bdgs{transition:filter .18s,opacity .18s}
+/* 2026-09-26 17:45 EDT (his: 42% read as disabled — "actually maybe let's do somewhere around 60%?"): an unchecked chip rests at 60% and comes to full on hover;
+   a disabled one stays at 18% (b4/classes.css), so available and blocked stay apart */
+.b4 .f-bt:not([aria-checked=true]) .b3-bdgs{opacity:.6}
+.b4 .f-bt:not([aria-checked=true]):hover .b3-bdgs{opacity:1}
+.b4 .f-tiers{flex-wrap:nowrap;justify-self:start;gap:2px;padding:4px;border-radius:9px;background:color-mix(in srgb,#04070A 45%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)}
+.b4 .f-tier{display:inline-flex;align-items:center;height:32px;padding:0 7px;border:0;border-radius:6px;background:none;box-shadow:inset 0 0 0 1px transparent;cursor:pointer;transition:box-shadow .15s,background-color .15s}
+.b4 .f-tier:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.b4 .f-tier[aria-checked=true]{background:color-mix(in srgb,var(--ink) 7%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 26%,transparent)}
+.b4 .f-tier:not([aria-checked=true]) .b3-bdgs{opacity:.6}
+.b4 .f-tier:not([aria-checked=true]):hover .b3-bdgs{opacity:1}
+/* .b3-bdgs opens with a group rule and inset for when it follows a weapon name; inside a control it is the control's whole content */
+.b4 .f-bt .b3-bdgs,.b4 .f-tier .b3-bdgs{padding-left:0;margin-left:0;box-shadow:none}
+.b4 .f-tier.none{white-space:nowrap;padding:0 12px;font:600 12px/var(--lh-1) var(--ui);color:var(--ink3)}
+.b4 .f-tier.none[aria-checked=true]{color:var(--ink)}
+.b4 .f-tier[aria-checked=true]:hover{background:color-mix(in srgb,var(--ink) 11%,var(--sunk))}
+.b4 .f-tier:active{transform:translateY(1px)}
+
+/* ══ THE MEDIA WELL (items 1–4) ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+.b4 .f-media{display:grid;grid-template-columns:176px minmax(0,1fr);gap:16px;align-items:stretch;padding:14px;border-radius:var(--rad-3);
+  background:color-mix(in srgb,var(--sunk) 55%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 9%,transparent)}
+.b4 .f-shot{position:relative;display:grid;place-items:center;aspect-ratio:16/10;border-radius:var(--rad-2);overflow:hidden;
+  background:radial-gradient(120% 90% at 30% 0,color-mix(in srgb,var(--f-hue,var(--ink3)) 10%,transparent),transparent 70%),color-mix(in srgb,#04070A 60%,var(--sunk));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)}
+.b4 .f-shot img{width:100%;height:100%;object-fit:cover}
+/* v14 (2026-09-23 00:24 EDT) — the tile was a fixed 16:10 (110px) beside a column of 150–207px, so its bottom stopped 35–97px short of the key
+   field's. It fills the well's height now, never under its old 110. */
+.b4 .f-shot{aspect-ratio:auto;min-height:110px}
+.b4 .f-keyl .f-kst{grid-column:2;justify-self:start}  /* the key's own hint starts under the key field, not under the word "Key" */
+.b4 .f-empty{display:grid;justify-items:center;gap:8px;font:500 11px/round(1.3em, 2px) var(--ui);color:var(--ink3)}
+.b4 .f-empty .ic{width:24px;height:24px;color:var(--ink4)}
+.b4 .f-mcol{display:grid;gap:10px;min-width:0;align-content:start}
+.b4 .f-src{display:flex;justify-self:stretch;gap:2px;padding:4px;border-radius:var(--fld-rad);background:color-mix(in srgb,#04070A 55%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)}
+/* the source switch spans its column (its edges meet the drop zone and the key field) and a label never wraps: "Stored image" broke in two in B */
+.b4 .f-src button{display:inline-flex;flex:1 1 auto;justify-content:center;white-space:nowrap;align-items:center;gap:6px;height:32px;padding:0 8px;border:0;border-radius:6px;background:none;color:var(--ink3);font:600 12px/var(--lh-1) var(--ui);cursor:pointer;transition:color .15s,background-color .15s}
+.b4 .f-src button .ic{width:12px;height:12px}
+.b4 .f-src button:hover{color:var(--ink);background:color-mix(in srgb,var(--realm-c,var(--ink3)) 10%,transparent)}
+.b4 .f-src button[aria-checked=true]{color:color-mix(in srgb,var(--realm-c,var(--ink)) 32%,white);background:color-mix(in srgb,var(--realm-c,var(--ink3)) 22%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 62%,transparent)}
+.b4 .f-src button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+/* v13 prep (2026-09-22 17:39 EDT) — the DMZ range switch is .f-src too; the stretch made for the image source switch spread its three words across the column */
+/* the paste hint lives in the empty image tile, where there is room: beside the drop text it wrapped "choose a file" onto two lines */
+.b4 .f-drop{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;box-sizing:border-box;border-radius:var(--fld-rad);border:1px dashed color-mix(in srgb,var(--ink) 20%,transparent);
+  color:var(--ink3);font:500 14px/var(--lh-1) var(--ui);cursor:pointer;transition:border-color .15s,color .15s,background-color .15s}
+.b4 .f-drop .ic{width:16px;height:16px}
+.b4 .f-drop u{text-decoration:none;color:var(--ink);font-weight:600}
+.b4 .f-drop:hover{color:var(--ink2);border-color:color-mix(in srgb,var(--ink) 36%,transparent);background:color-mix(in srgb,var(--ink) 3%,transparent)}
+.b4 .f-file .f-fname{display:block;line-height:42px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b4 .f-fsz{flex:none;padding:0 10px;font:500 12px/1 var(--data);color:var(--ink3);white-space:nowrap}
+.b4 .f-rep{width:auto;padding:0 11px;font:600 12.5px/1 var(--ui);color:var(--ink2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 16%,transparent)}
+.b4 .f-keyl{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px}
+.b4 .f-kl{font:500 12px/var(--lh-1) var(--ui);color:var(--ink3)}
+.b4 .f-kst{justify-self:start}
+
+/* ══ SEVERAL BUILDS (item 17) — each build is a card in the Export picker's file language, the edited one lit ══════════════════ */
+.b4 .f-add.multi .f-card{gap:18px;padding:16px 16px 24px;border-radius:12px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--f-ch,var(--ink3)) 6%,var(--sunk)),var(--sunk) 140px);box-shadow:inset 0 0 0 1px var(--rule2)}
+/* 2026-09-24 22:33 EDT (his "why does the badges fall into stacked lines when multiple builds are being worked on?"): a card's sides take its top's 16px,
+   so at 980 its body is 537px and Grade and Tier (96 + 14 + 425 = 535) stay beside their label as they do for one build. */
+.b4 .f-add.multi .f-card.on{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--f-ch) 48%,var(--rule2)),inset 0 1px 0 color-mix(in srgb,var(--f-ch) 40%,transparent),0 16px 36px -22px color-mix(in srgb,var(--f-ch) 55%,transparent)}
+.b4 .f-card-h{display:flex;align-items:center;gap:10px;min-width:0}
+.b4 .f-card-h .b3-xt-pm{margin:0}
+.b4 .f-card-h b{font:600 15px/var(--lh-1) var(--ui);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b4 .f-card-h em{min-width:0;font:500 14px/var(--lh-1) var(--ui);font-style:normal;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-box:trim-both cap alphabetic;padding-block:4px;margin-block:-4px}
+.b4 .f-card-h .sp{flex:1}
+.b4 .f-cx:hover{color:var(--danger-ink);background:color-mix(in srgb,var(--danger-ink) 13%,transparent)}
+.b4 .f-more{display:flex;align-items:center;justify-content:center;gap:10px;height:52px;border:1px dashed color-mix(in srgb,var(--ink) 18%,transparent);border-radius:12px;background:none;
+  color:var(--ink2);font:600 14px/1 var(--ui);cursor:pointer;transition:color .15s,border-color .15s,background-color .15s}
+.b4 .f-more .ic{width:16px;height:16px}
+.b4 .f-more em{font:500 12px/var(--lh-1) var(--ui);font-style:normal;color:var(--ink3)}
+.b4 .f-more:hover{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 34%,transparent);background:color-mix(in srgb,var(--ink) 3%,transparent)}
+.b4 .f-more:focus-visible{outline:2px solid var(--focus);outline-offset:2px}

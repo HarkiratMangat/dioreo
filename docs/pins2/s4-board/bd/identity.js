@@ -1,0 +1,56 @@
+// Board 4: Builder · the identity table (Session 4). Which element each thing on the board IS, row by row, reviewed against the kit's own
+// record rather than inferred: his rulings quoted in the kit's code, the apply map's rules where they read the kit correctly, and my review
+// where neither speaks (each says so). bd/roles.js reads this first and falls back to the apply map's rule list only for what no row names.
+// First match wins. [selector, role, the apply map's bucket (so Session 5 can carry it), source]
+// Generated from local/pins2/s4/identity.md (tools/identity.cjs), reviewed 2026-10-03 21:20 EDT by Session 4.
+window.BD_IDENTITY = [
+  // ── controls ──
+  ['.ph button.b3-rv, .seg > button, .mh-mode > button, .f-src > button, .f-rng > button, .f-tiers > button.f-tier', 'Toggle rail', 'View switch',
+    "his, 2026-09-20 11:17 EDT: \"icons on all toggle switcher rails … a portal wide thing\"; 2026-09-26: \"the rail kind of implies 'pick 1 only'\"; Repairs is the view lifted out of its rail (kit gates/lib.js PanelHead rightView, his 2026-09-16 12:39 EDT)"],
+  ['button.chip.go, button.madd, button.pill.lead', 'New button', 'New button', 'apply map new rule; the mockup COMPANION: .chip.go is the toolbar\'s primary action'],
+  ['button.b3-fc, .mt-chips > button.chip, .incg > button.chip', 'Filter chip', 'Filter chip',
+    "his, 2026-09-17 18:26 EDT: \"the same element is designed separately even tho it's exactly the same thing\" — LABEL (icon? Text count?); his, 2026-10-03 20:54 EDT: C4's and C8's chips are literally the same as C1's"],
+  ['.f-bdgs > button.f-bt', 'Checkbox tile', 'Fields', "his, 2026-09-26 11:26 EDT: \"make the build drawer toggle for it into the checkbox version\" (pick any)"],
+  ['.cx-keys > button.cx-k', 'Build toggle', 'Filter chip', 'my review: puts one build in or out of the Compare table (b4/compare.js Tile)'],
+  ['button.b3-fchip', 'Problem chip', 'Neutral button', "my review: a build's problem, opens it (b3/armory-parts.js ProblemChip)"],
+  ['button.g-chipbtn', 'Picker chip', 'Neutral button', 'my review: opens a date or repeat picker on a queue card (gates/broadcast.js QCard ChipPop)'],
+  ['button.wg-code, button.cx-code', 'Code (copies)', 'Action: share, copy, export', "his, 2026-09-16 13:56 EDT: \"the gunsmith code should copy when it's click, no separate button\""],
+  ['.b3-hi-r > button.b3-hi-open, .wg > div.wg-r, tbody > tr, button.f-st', 'Row', 'Row', 'apply map row rule; my review: the History event, the queue row and a Before-staging check each open or jump as a row'],
+  ['.wg > div.wg-h', 'Group head', 'Row', 'my review: the weapon row that folds its builds'],
+  ['button.b3-undo', 'Undo', 'Neutral button', 'my review'],
+  ['button.wg-fbtn, button.wg-fold, button.b4-fold, button.cx-dcb', 'Fold', 'Neutral button', 'my review: opens or closes a group'],
+  ['button.f-suf', 'Field button', 'Fields', 'my review: a button inside a field (its list, its copy)'],
+  ['button.b3-btn2.dang', 'Danger button', 'Action: delete', 'apply map delete rule'],
+  ['button.b3-btn2.go, button.b3-btn2.stage', 'Primary button', 'Go button', 'apply map go rule'],
+  ['button.b3-btn2, button.b3-endbtn', 'Button', 'Neutral button', 'my review: a plain worded button'],
+  ['button.f-more', 'Add another', 'New button', 'my review: adds a build to the form'],
+  ['button.wg-del, button.rmv, button.pb-del', 'Delete', 'Action: delete', 'apply map delete rule'],
+  ['button.wg-share', 'Share', 'Action: share, copy, export', 'apply map share rule'],
+  ['button.wg-edit, button.g-edit', 'Edit', 'Action: edit', 'apply map edit rule'],
+  ['.dw-nav > button.x', 'Close', 'Close and back', 'apply map close rule'],
+  ['button.b3-x', 'Deselect ×', 'Deselect ×', 'apply map deselect rule'],
+  ['button.sortbtn, button.wg-sort', 'Column head', 'Column heads', 'apply map th rule'],
+  ['.wg-cb', 'Checkbox', 'Fields', 'my review'],
+  ['.srch > input', 'Search field', 'Fields', 'my review'],
+  ['input, textarea, select', 'Field', 'Fields', 'apply map field rule'],
+  // ── boxes that hold a set (a variant of one must not reach the row actions or every flex row on the board) ──
+  ['.mtools', 'Toolbar', 'Layout boxes', "his, 2026-10-03 15:07 EDT: History's toolbar is the Armory's \"with a filter row added… overall the same\""],
+  ['.mt-r1, .mt-r2', 'Toolbar row', 'Layout boxes', 'my review: one row of a manifest toolbar'],
+  ['.mt-grp, .b3-fg, .incg', 'Chip group', 'Layout boxes', 'my review: a filter label and its set of chips'],
+  ['.mt-chips, .b3-fgc, .b3-rp-f', 'Chip set', 'Layout boxes', 'the chips alone, in their own box (Builder-2 structure, his 2026-10-03 21:39 EDT)'],
+  ['.wg-acts, .pb-cacts', 'Row actions', 'Layout boxes', "my review: a row's own action buttons"],
+  ['.b3-fh-cells', 'Cell row', 'Layout boxes', "Session 4 lead, 2026-10-04 17:11 EDT (V1 M2 #4): one row's slot cells in a Repairs comparison, Code / Build / Slots, beside its label (b3/armory-parts.js:256, R1's C4 box)"],
+  ['.bk-say', 'Empty-state words', 'Layout boxes', "Session 4 lead, 2026-10-04 17:11 EDT (V1 M2 #4): the empty bulk editor's title and line, centred (b4/bulk.js:265, R1's C2 box)"],
+  ['.bk-acts', 'Empty-state actions', 'Layout boxes', "Session 4 lead, 2026-10-04 17:11 EDT (V1 M2 #4): the empty bulk editor's buttons, Insert an example and its neighbours (b4/bulk.js:266, R1's C2 box); not Row actions, which belong to a row"],
+  ['.b3-tk-oks', 'Pass group', 'Layout boxes', "Session 4 lead, 2026-10-04 17:11 EDT (V1 M2 #4): Repairs' pass heading with its card, shape c only (b3/repairs.js:234, R1's C4 box)"],
+  // ── words ──
+  ['span.mlabel, .mlabel > span, .incg > span:not([class]), span.b3-fgl, .ph > span.t', 'Key label', 'Key labels',
+    "his, 2026-10-03 20:38 EDT: Broadcast \"is more or less the same element/purpose\" as MANIFEST, typed differently; the filter groups' KIND, LEVEL… sit where CATEGORY sits"],
+  ['.wg-plate > small, .b3-dt > em, .b3-fh-cmp > em, .f-pre > small, span.dw-eye', 'Key label', 'Key labels', 'my review: a caps label naming the value beside or below it'],
+  ['.b3-hi-h > span, th', 'Column head', 'Column heads', "apply map th rule; my review: History's list head"],
+  ['.wg-line > small, .b3-tk-id > small', 'Category word', 'Category word', "apply map catword rule; my review: a Repairs ticket's category"],
+  ['.b3-tk-sh > b, .pb-cg > h5, .f-prev > h5, h4.f-h > span:not(.b4-hint), .f-stage h5 > span', 'Group heading', 'Group headings', 'my review: the heading over a group'],
+  ['em.wg-nb, span.b3-sd-gn', 'Build chip', 'Small text (Step 3)', "kit classes.css item 47: the manifest's \"N builds\" is the selection bar's build chip"],
+  ['.b3-tk-sh > em', 'Hint chip', 'Small text (Step 3)', "kit classes.css items 18, 45: the hint chip beside a heading, the Never chip's shape"],
+  ['.b3-bdg > span.b3-mdw, .b3-bdg > em', 'Badge word', 'Small text (Step 3)', 'my review: the words inside a mode or category badge'],
+];

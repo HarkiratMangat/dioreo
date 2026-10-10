@@ -1073,6 +1073,7 @@ const FM_RULE = [
   ["docs/pins2/final/", "reference"],
   ["docs/pins2/instruments/", "reference"],
   ["docs/pins2/kit/", "reference"],
+  ["docs/pins2/s4-board/", "reference"],   // Builder-2 and the spec board, tracked 2026-10-10 19:37 EDT for a cloud session
   ["docs/pins2/handoffs/", "record"],
   ["docs/pins2/records/", "record"],
   ["docs/claude/archive/", "archive"],

@@ -1,0 +1,3057 @@
+{
+ "from": "work/lead/inventory.json (builder.html, his state, rest + New build + Post + date picker), text inside the gates and drawers only",
+ "styles": [
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "700",
+   "case": "caps",
+   "track": 0.11,
+   "line": "9",
+   "n": 147,
+   "inks": [
+    [
+     "rgb(255, 112, 87)",
+     28
+    ],
+    [
+     "rgb(255, 154, 60)",
+     26
+    ],
+    [
+     "rgb(175, 148, 255)",
+     24
+    ],
+    [
+     "rgb(255, 42, 85)",
+     22
+    ],
+    [
+     "rgb(243, 209, 63)",
+     22
+    ],
+    [
+     "rgb(0, 246, 155)",
+     11
+    ],
+    [
+     "rgb(255, 143, 208)",
+     7
+    ],
+    [
+     "rgb(76, 142, 255)",
+     5
+    ],
+    [
+     "color(srgb 0.904314 0.498039 0.341176)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "c-manifest"
+   ],
+   "samples": [
+    "Muzzle",
+    "Laser",
+    "Rear Grip",
+    "Ammunition"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "700",
+   "case": "caps",
+   "track": 0.11,
+   "line": "10",
+   "n": 44,
+   "inks": [
+    [
+     "rgb(246, 249, 252)",
+     20
+    ],
+    [
+     "color(srgb 0.313255 0.85851 0.948235)",
+     6
+    ],
+    [
+     "rgb(26, 20, 0)",
+     6
+    ],
+    [
+     "color(srgb 0.337412 0.85851 0.744627)",
+     3
+    ],
+    [
+     "color(srgb 0.654902 0.899922 0.327059)",
+     3
+    ],
+    [
+     "color(srgb 0.434039 0.654902 1)",
+     2
+    ],
+    [
+     "color(srgb 0.703216 0.599686 1)",
+     2
+    ],
+    [
+     "color(srgb 0.782588 0.596235 0.413333)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-manifest",
+    "dialog"
+   ],
+   "samples": [
+    "TOP",
+    "META",
+    "BEST",
+    "CAPABLE"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.14,
+   "line": "10",
+   "n": 25,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     17
+    ],
+    [
+     "rgb(92, 106, 117)",
+     8
+    ]
+   ],
+   "gates": [
+    "c-history",
+    "c-queue",
+    "c-repairs",
+    "dialog"
+   ],
+   "samples": [
+    "Slots",
+    "Code",
+    "Build",
+    "OCT"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.16,
+   "line": "10",
+   "n": 21,
+   "inks": [
+    [
+     "color(srgb 0.884706 0.361961 0.464314)",
+     6
+    ],
+    [
+     "rgb(63, 110, 142)",
+     2
+    ],
+    [
+     "rgb(255, 59, 92)",
+     2
+    ],
+    [
+     "rgb(255, 210, 63)",
+     2
+    ],
+    [
+     "rgb(133, 147, 159)",
+     2
+    ],
+    [
+     "color(srgb 0.357647 0.501961 0.601569)",
+     1
+    ],
+    [
+     "rgb(132, 94, 194)",
+     1
+    ],
+    [
+     "color(srgb 0.547059 0.458039 0.744314)",
+     1
+    ],
+    [
+     "rgb(246, 169, 59)",
+     1
+    ],
+    [
+     "rgb(67, 97, 238)",
+     1
+    ],
+    [
+     "color(srgb 0.884706 0.776471 0.384706)",
+     1
+    ],
+    [
+     "rgb(61, 220, 151)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-admin",
+    "c-compare",
+    "c-manifest",
+    "c-queue"
+   ],
+   "samples": [
+    "Secondaries",
+    "Build name",
+    "Assault",
+    "LMG"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "500",
+   "case": "caps",
+   "track": 0.14,
+   "line": "12",
+   "n": 13,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     13
+    ]
+   ],
+   "gates": [
+    "c-broadcast",
+    "c-history",
+    "c-manifest"
+   ],
+   "samples": [
+    "Manifest",
+    "Category",
+    "State",
+    "Events"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.11,
+   "line": "10",
+   "n": 13,
+   "inks": [
+    [
+     "rgb(26, 20, 0)",
+     6
+    ],
+    [
+     "color(srgb 1 0.862353 0.412706)",
+     2
+    ],
+    [
+     "rgb(255, 158, 114)",
+     1
+    ],
+    [
+     "color(srgb 0.412706 0.556471 0.654353)",
+     1
+    ],
+    [
+     "color(srgb 0.972471 0.736941 0.400471)",
+     1
+    ],
+    [
+     "color(srgb 1 0.400471 0.501412)",
+     1
+    ],
+    [
+     "rgb(216, 242, 74)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-manifest",
+    "c-queue",
+    "c-repairs",
+    "dialog"
+   ],
+   "samples": [
+    "ASSAULT",
+    "SNIPER",
+    "SECONDARIES",
+    "need work"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.12,
+   "line": "10",
+   "n": 6,
+   "inks": [
+    [
+     "rgb(255, 112, 87)",
+     1
+    ],
+    [
+     "rgb(255, 154, 60)",
+     1
+    ],
+    [
+     "rgb(243, 209, 63)",
+     1
+    ],
+    [
+     "rgb(0, 246, 155)",
+     1
+    ],
+    [
+     "rgb(175, 148, 255)",
+     1
+    ],
+    [
+     "rgb(255, 42, 85)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "Muzzle",
+    "Barrel",
+    "Stock",
+    "Laser"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "700",
+   "case": "case",
+   "track": 0.11,
+   "line": "10",
+   "n": 5,
+   "inks": [
+    [
+     "color(srgb 0.337412 0.85851 0.744627)",
+     3
+    ],
+    [
+     "color(srgb 0.703216 0.599686 1)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-manifest",
+    "dialog"
+   ],
+   "samples": []
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.14,
+   "line": "9",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(92, 106, 117)",
+     2
+    ],
+    [
+     "rgb(133, 147, 159)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-broadcast",
+    "c-history",
+    "c-manifest"
+   ],
+   "samples": [
+    "Try",
+    "Remove"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     3
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "Same on all",
+    "Shared"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "10",
+   "n": 2,
+   "inks": [
+    [
+     "rgb(255, 59, 92)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "Assault"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.12,
+   "line": "16",
+   "n": 2,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "Gunsmith",
+    "code"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 9,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.16,
+   "line": "9",
+   "n": 1,
+   "inks": [
+    [
+     "color(srgb 0.736863 0.421176 0.505294)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "Build"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 9,
+   "weight": "400",
+   "case": "case",
+   "track": 0.04,
+   "line": "14",
+   "n": 30,
+   "inks": [
+    [
+     "rgb(148, 155, 164)",
+     30
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "dialog"
+   ],
+   "samples": [
+    "• Build",
+    "of",
+    "• Updated 2026-04-08"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 9,
+   "weight": "400",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 25,
+   "inks": [
+    [
+     "rgb(255, 112, 87)",
+     5
+    ],
+    [
+     "rgb(255, 154, 60)",
+     5
+    ],
+    [
+     "rgb(255, 42, 85)",
+     5
+    ],
+    [
+     "rgb(243, 209, 63)",
+     4
+    ],
+    [
+     "rgb(175, 148, 255)",
+     4
+    ],
+    [
+     "rgb(0, 246, 155)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "Muzzle",
+    "Barrel",
+    "Stock",
+    "Ammunition"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 9,
+   "weight": "400",
+   "case": "caps",
+   "track": 0.04,
+   "line": "14",
+   "n": 6,
+   "inks": [
+    [
+     "rgb(148, 155, 164)",
+     6
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "dialog"
+   ],
+   "samples": [
+    "AR"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 9,
+   "weight": "400",
+   "case": "caps",
+   "track": 0.06,
+   "line": "14",
+   "n": 5,
+   "inks": [
+    [
+     "rgb(255, 112, 87)",
+     1
+    ],
+    [
+     "rgb(255, 154, 60)",
+     1
+    ],
+    [
+     "rgb(243, 209, 63)",
+     1
+    ],
+    [
+     "rgb(255, 42, 85)",
+     1
+    ],
+    [
+     "rgb(175, 148, 255)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "Muzzle",
+    "Barrel",
+    "Stock",
+    "Ammunition"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 9,
+   "weight": "700",
+   "case": "caps",
+   "track": 0.1,
+   "line": "14",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     3
+    ]
+   ],
+   "gates": [
+    "c-admin",
+    "c-queue",
+    "c-repairs"
+   ],
+   "samples": [
+    "Armory",
+    "Broadcast",
+    "Analytics"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 9,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "10",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-history"
+   ],
+   "samples": []
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 10,
+   "weight": "700",
+   "case": "caps",
+   "track": 0,
+   "line": "10",
+   "n": 10,
+   "inks": [
+    [
+     "color(srgb 0.438118 0.884235 0.957647)",
+     5
+    ],
+    [
+     "rgb(26, 20, 0)",
+     5
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "META",
+    "BEST AR"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 10,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "10",
+   "n": 27,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     27
+    ]
+   ],
+   "gates": [
+    "c-history"
+   ],
+   "samples": []
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "600",
+   "case": "case",
+   "track": 0.06,
+   "line": "12",
+   "n": 51,
+   "inks": [
+    [
+     "color(srgb 0.962118 0.524549 0.606196)",
+     28
+    ],
+    [
+     "color(srgb 0.962118 0.868 0.540235)",
+     7
+    ],
+    [
+     "color(srgb 0.525412 0.640549 0.719922)",
+     5
+    ],
+    [
+     "color(srgb 0.682353 0.604157 0.838196)",
+     3
+    ],
+    [
+     "color(srgb 0.53451 0.61098 0.938275)",
+     3
+    ],
+    [
+     "color(srgb 0.520863 0.890745 0.740392)",
+     3
+    ],
+    [
+     "color(srgb 0.941647 0.774745 0.531137)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "c-manifest"
+   ],
+   "samples": [
+    "build"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "11",
+   "n": 43,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     8
+    ],
+    [
+     "color(srgb 0.983686 0.809333 0.809333)",
+     3
+    ],
+    [
+     "oklch(0.76 0.228671 17.4759)",
+     3
+    ],
+    [
+     "oklch(0.878915 0.161739 90.9295)",
+     3
+    ],
+    [
+     "oklch(0.76 0.151655 299.054)",
+     3
+    ],
+    [
+     "oklch(0.796842 0.163562 159.681)",
+     3
+    ],
+    [
+     "oklch(0.76 0.214095 269.022)",
+     3
+    ],
+    [
+     "oklch(0.791606 0.149517 71.4177)",
+     3
+    ],
+    [
+     "oklch(0.820986 0.141636 190.206)",
+     3
+    ],
+    [
+     "oklch(0.76 0.176783 295.668)",
+     2
+    ],
+    [
+     "oklch(0.76 0.0240867 244.026)",
+     2
+    ],
+    [
+     "oklch(0.76 0.0723196 239.953)",
+     1
+    ],
+    [
+     "color(srgb 0.980627 0.813412 0.896)",
+     1
+    ],
+    [
+     "oklch(0.805967 0.182064 139.657)",
+     1
+    ],
+    [
+     "oklch(0.76 0.116869 238.656)",
+     1
+    ],
+    [
+     "oklch(0.76 0.175748 41.2014)",
+     1
+    ],
+    [
+     "oklch(0.806439 0.140511 79.0076)",
+     1
+    ],
+    [
+     "oklch(0.768612 0.164552 70.0302)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-broadcast",
+    "c-history",
+    "c-manifest"
+   ],
+   "samples": [
+    "24",
+    "125",
+    "35",
+    "26"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 35,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     26
+    ],
+    [
+     "rgb(232, 237, 241)",
+     4
+    ],
+    [
+     "color(srgb 0.59349 0.877176 0.53302)",
+     2
+    ],
+    [
+     "color(srgb 0.505098 0.695059 0.524706)",
+     2
+    ],
+    [
+     "rgb(157, 170, 180)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "c-history",
+    "c-queue",
+    "dialog"
+   ],
+   "samples": [
+    "of",
+    "builds",
+    "info",
+    "dioreo-mp-builds-2026-10"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "400",
+   "case": "case",
+   "track": 0,
+   "line": "16",
+   "n": 29,
+   "inks": [
+    [
+     "rgb(219, 222, 225)",
+     29
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "dialog"
+   ],
+   "samples": [
+    "Monolithic Suppressor",
+    "MIP Extended Light Barre",
+    "No Stock",
+    "48 Round Extended Mag"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "600",
+   "case": "case",
+   "track": 0.08,
+   "line": "12",
+   "n": 25,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     22
+    ],
+    [
+     "rgb(255, 158, 114)",
+     3
+    ]
+   ],
+   "gates": [
+    "c-manifest"
+   ],
+   "samples": [
+    "1C6C7A8A9A",
+    "1C2B6B9A",
+    "1C2A7A8A9A",
+    "1I2C4A8A9D"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "600",
+   "case": "case",
+   "track": 0.02,
+   "line": "12",
+   "n": 13,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     13
+    ]
+   ],
+   "gates": [
+    "c-repairs",
+    "dialog"
+   ],
+   "samples": [
+    "1C",
+    "6C",
+    "7A",
+    "8A"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 10,
+   "inks": [
+    [
+     "color(srgb 1 0.615686 0.680392)",
+     7
+    ],
+    [
+     "rgb(255, 158, 114)",
+     2
+    ],
+    [
+     "rgb(232, 237, 241)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "c-repairs"
+   ],
+   "samples": [
+    "1C2B4A8B9A"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "16",
+   "n": 10,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     4
+    ],
+    [
+     "rgb(157, 170, 180)",
+     4
+    ],
+    [
+     "rgb(255, 158, 114)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-queue"
+   ],
+   "samples": [
+    "never",
+    "ends",
+    "of",
+    "10"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 7,
+   "inks": [
+    [
+     "oklch(0.76 0.175748 41.2014)",
+     5
+    ],
+    [
+     "rgb(255, 158, 114)",
+     1
+    ],
+    [
+     "oklch(0.8 0.175748 41.2014)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-repairs"
+   ],
+   "samples": []
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "16",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     3
+    ]
+   ],
+   "gates": [
+    "c-queue"
+   ],
+   "samples": [
+    "5,478"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.12,
+   "line": "12",
+   "n": 2,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     2
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "In Discord",
+    "Before staging"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.1,
+   "line": "12",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "Create a loadout"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "600",
+   "case": "case",
+   "track": 0.04,
+   "line": "12",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": []
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "500",
+   "case": "case",
+   "track": 0.04,
+   "line": "12",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "/32"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.08,
+   "line": "12",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(255, 59, 92)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "MP"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 11,
+   "weight": "400",
+   "case": "caps",
+   "track": 0,
+   "line": "16",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(219, 222, 225)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "SZ 1MW PEQ"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 11,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 61,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     32
+    ],
+    [
+     "rgb(157, 170, 180)",
+     22
+    ],
+    [
+     "color(srgb 0.983686 0.809333 0.809333)",
+     3
+    ],
+    [
+     "rgb(255, 158, 114)",
+     2
+    ],
+    [
+     "rgb(123, 219, 99)",
+     1
+    ],
+    [
+     "color(srgb 0.980627 0.813412 0.896)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-broadcast",
+    "c-history",
+    "c-manifest",
+    "c-queue",
+    "c-repairs"
+   ],
+   "samples": [
+    "All",
+    "Assault",
+    "Marksman",
+    "Sniper"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 11,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "11",
+   "n": 55,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     19
+    ],
+    [
+     "rgb(255, 158, 114)",
+     15
+    ],
+    [
+     "rgb(133, 147, 159)",
+     14
+    ],
+    [
+     "rgb(232, 237, 241)",
+     7
+    ]
+   ],
+   "gates": [
+    "c-history",
+    "c-manifest"
+   ],
+   "samples": [
+    "Collapse all",
+    "Changes",
+    "Alerts",
+    "Restarts"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 11,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 9,
+   "inks": [
+    [
+     "color(srgb 0.856471 0.606667 0.5)",
+     6
+    ],
+    [
+     "rgb(133, 147, 159)",
+     1
+    ],
+    [
+     "rgb(157, 170, 180)",
+     1
+    ],
+    [
+     "rgb(255, 158, 114)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-repairs",
+    "dialog"
+   ],
+   "samples": [
+    "on the card",
+    "from the",
+    "build",
+    "code"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 11,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 8,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     6
+    ],
+    [
+     "rgb(255, 158, 114)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-repairs",
+    "dialog"
+   ],
+   "samples": [
+    "of 5 empty",
+    "missing"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 11,
+   "weight": "600",
+   "case": "caps",
+   "track": 0,
+   "line": "12",
+   "n": 6,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     6
+    ]
+   ],
+   "gates": [
+    "c-manifest"
+   ],
+   "samples": [
+    "SMG",
+    "LMG"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 11,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "16",
+   "n": 6,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     6
+    ]
+   ],
+   "gates": [
+    "c-repairs"
+   ],
+   "samples": [
+    "All",
+    "Missing image",
+    "2 or fewer attachments",
+    "Near-duplicate"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 11,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "11",
+   "n": 6,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     6
+    ]
+   ],
+   "gates": [
+    "c-broadcast"
+   ],
+   "samples": [
+    "85 days ago",
+    "64 days ago",
+    "25 days ago",
+    "54 days ago"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 11,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "No image yet"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 11,
+   "weight": "400",
+   "case": "case",
+   "track": 0,
+   "line": "16",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(148, 155, 164)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "Posted now"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 12,
+   "weight": "500",
+   "case": "caps",
+   "track": 0,
+   "line": "12",
+   "n": 74,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     74
+    ]
+   ],
+   "gates": [
+    "c-history"
+   ],
+   "samples": [
+    "3:25 PM",
+    "3:22 PM",
+    "9:36 AM",
+    "8:11 PM"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 12,
+   "weight": "500",
+   "case": "case",
+   "track": 0.01,
+   "line": "12",
+   "n": 27,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     27
+    ]
+   ],
+   "gates": [
+    "c-history"
+   ],
+   "samples": [
+    "Test Draw For Portal Wri",
+    "Realwalk Probe 2026-09-0"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 12,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 21,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     20
+    ],
+    [
+     "rgb(255, 158, 114)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-broadcast",
+    "c-queue"
+   ],
+   "samples": [
+    "Aug 4",
+    "Sep 12",
+    "Dec 31",
+    "Oct 31"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 12,
+   "weight": "400",
+   "case": "case",
+   "track": 0.06,
+   "line": "18",
+   "n": 6,
+   "inks": [
+    [
+     "rgb(219, 222, 225)",
+     6
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "dialog"
+   ],
+   "samples": [
+    "1C2B4A8B9A",
+    "1I2C4A8A9D",
+    "1C2C4A6A8A",
+    "1M2C4A8A9D"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 12,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 6,
+   "inks": [
+    [
+     "color(srgb 0.404157 0.630275 0.769569)",
+     4
+    ],
+    [
+     "color(srgb 0.838588 0.55749 0.453412)",
+     1
+    ],
+    [
+     "color(srgb 0.636157 0.571137 0.867373)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-history"
+   ],
+   "samples": [
+    "10",
+    "21",
+    "26"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 12,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 2,
+   "inks": [
+    [
+     "rgb(255, 158, 114)",
+     1
+    ],
+    [
+     "rgb(157, 170, 180)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-broadcast",
+    "dialog"
+   ],
+   "samples": [
+    "No end",
+    "1 a day max"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 12,
+   "weight": "400",
+   "case": "case",
+   "track": 0,
+   "line": "20",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(219, 222, 225)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "/draw prices"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 254,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     78
+    ],
+    [
+     "rgb(232, 237, 241)",
+     35
+    ],
+    [
+     "color(srgb 0.404157 0.630275 0.769569)",
+     35
+    ],
+    [
+     "rgb(157, 170, 180)",
+     28
+    ],
+    [
+     "color(srgb 0.636157 0.571137 0.867373)",
+     28
+    ],
+    [
+     "color(srgb 0.538353 0.778118 0.521647)",
+     26
+    ],
+    [
+     "color(srgb 0.838588 0.55749 0.453412)",
+     23
+    ],
+    [
+     "rgb(7, 19, 10)",
+     8
+    ],
+    [
+     "color(srgb 0.983686 0.809333 0.809333)",
+     6
+    ],
+    [
+     "rgb(255, 158, 114)",
+     6
+    ],
+    [
+     "color(srgb 0.575529 0.884235 0.498353)",
+     3
+    ],
+    [
+     "rgb(123, 219, 99)",
+     2
+    ],
+    [
+     "color(srgb 0.980627 0.813412 0.896)",
+     1
+    ],
+    [
+     "rgb(166, 128, 251)",
+     1
+    ],
+    [
+     "color(srgb 0.899059 0.943922 0.831765)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-admin",
+    "c-broadcast",
+    "c-compare",
+    "c-export",
+    "c-history",
+    "c-manifest",
+    "c-new-build",
+    "c-queue",
+    "c-repairs",
+    "dialog"
+   ],
+   "samples": [
+    "Open a problem",
+    "Open another",
+    "Pick one build",
+    "Pick three"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "400",
+   "case": "case",
+   "track": 0,
+   "line": "18",
+   "n": 43,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     12
+    ],
+    [
+     "rgb(255, 112, 87)",
+     6
+    ],
+    [
+     "rgb(255, 154, 60)",
+     6
+    ],
+    [
+     "rgb(255, 42, 85)",
+     6
+    ],
+    [
+     "rgb(243, 209, 63)",
+     5
+    ],
+    [
+     "rgb(175, 148, 255)",
+     5
+    ],
+    [
+     "rgb(0, 246, 155)",
+     2
+    ],
+    [
+     "rgb(133, 147, 159)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-broadcast",
+    "c-compare",
+    "c-export",
+    "c-history",
+    "c-manifest",
+    "c-new-build",
+    "c-queue",
+    "c-repairs",
+    "dialog"
+   ],
+   "samples": [
+    "Board 2 · G4, then board",
+    "Board sample, to show th",
+    "Rank modes (2026-09-25 2",
+    "Board 1 · G9, in board 3"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 40,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     31
+    ],
+    [
+     "rgb(133, 147, 159)",
+     9
+    ]
+   ],
+   "gates": [
+    "c-broadcast",
+    "c-compare",
+    "c-queue",
+    "c-repairs",
+    "dialog"
+   ],
+   "samples": [
+    "Key",
+    "Stage several at once",
+    "Build",
+    "Last edit:"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "18",
+   "n": 26,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     9
+    ],
+    [
+     "rgb(133, 147, 159)",
+     7
+    ],
+    [
+     "rgb(157, 170, 180)",
+     5
+    ],
+    [
+     "rgb(255, 158, 114)",
+     3
+    ],
+    [
+     "color(srgb 0.980627 0.813412 0.896)",
+     1
+    ],
+    [
+     "color(srgb 0.899059 0.943922 0.831765)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-admin",
+    "c-broadcast",
+    "c-compare",
+    "c-export",
+    "c-history",
+    "c-manifest",
+    "c-new-build",
+    "c-queue",
+    "c-repairs"
+   ],
+   "samples": [
+    "Search builds",
+    "Search announcements",
+    "Search events",
+    "Load older events"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "16",
+   "n": 18,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     12
+    ],
+    [
+     "rgb(133, 147, 159)",
+     4
+    ],
+    [
+     "rgb(246, 249, 252)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "c-queue",
+    "c-repairs"
+   ],
+   "samples": [
+    "Long range",
+    "Recommended Rank Mode:",
+    "No gunsmith code",
+    "Attachments missing"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "12",
+   "n": 12,
+   "inks": [
+    [
+     "rgb(242, 243, 245)",
+     12
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "dialog"
+   ],
+   "samples": [
+    "Attachments",
+    "Gunsmith Code"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "16",
+   "n": 6,
+   "inks": [
+    [
+     "rgb(255, 158, 114)",
+     2
+    ],
+    [
+     "rgb(92, 106, 117)",
+     2
+    ],
+    [
+     "rgb(133, 147, 159)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "dialog"
+   ],
+   "samples": [
+    "Needs",
+    "a weapon and an attachme",
+    "Readable",
+    "Fits in one message with"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 5,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     5
+    ]
+   ],
+   "gates": [
+    "c-repairs"
+   ],
+   "samples": [
+    "Has an image",
+    "3 or more attachments",
+    "A code of its own",
+    "Has a gunsmith code"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "600",
+   "case": "caps",
+   "track": 0,
+   "line": "12",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-new-build"
+   ],
+   "samples": [
+    "DMZ"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "Long range"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "600",
+   "case": "caps",
+   "track": 0,
+   "line": "16",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(246, 249, 252)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "HP"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12,
+   "weight": "600",
+   "case": "caps",
+   "track": 0,
+   "line": "14",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "JAK-12"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12.5,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "15",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     3
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "Weapon",
+    "Slot",
+    "Actions"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 12.5,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "12.5",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "60 Round Reload"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 13,
+   "weight": "900",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 5,
+   "inks": [
+    [
+     "color(srgb 1 0.784784 0.82102)",
+     5
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": []
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 13,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.15,
+   "line": "14",
+   "n": 5,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     5
+    ]
+   ],
+   "gates": [
+    "c-broadcast"
+   ],
+   "samples": [
+    "Announcement",
+    "Posted",
+    "Starts",
+    "Ends"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 13,
+   "weight": "700",
+   "case": "caps",
+   "track": 0.15,
+   "line": "14",
+   "n": 2,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     2
+    ]
+   ],
+   "gates": [
+    "c-manifest"
+   ],
+   "samples": [
+    "Weapon"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 13,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(92, 106, 117)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": []
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 13,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "13",
+   "n": 119,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     113
+    ],
+    [
+     "rgb(255, 158, 114)",
+     5
+    ],
+    [
+     "color(srgb 0.784706 0.522549 0.429412)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "c-manifest"
+   ],
+   "samples": [
+    "Monolithic Suppressor",
+    "OWC Laser - Tactical",
+    "Granulated Grip Tape",
+    "Extended Mag A"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 13,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 24,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     11
+    ],
+    [
+     "rgb(232, 237, 241)",
+     6
+    ],
+    [
+     "rgb(133, 147, 159)",
+     4
+    ],
+    [
+     "rgb(255, 158, 114)",
+     1
+    ],
+    [
+     "rgb(7, 19, 10)",
+     1
+    ],
+    [
+     "rgb(201, 205, 255)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-broadcast",
+    "c-compare",
+    "c-manifest",
+    "dialog"
+   ],
+   "samples": [
+    "No code",
+    "Cancel",
+    "List",
+    "Hide list"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 13,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "13",
+   "n": 7,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     7
+    ]
+   ],
+   "gates": [
+    "c-broadcast",
+    "c-manifest"
+   ],
+   "samples": [
+    "New build",
+    "Sidearm",
+    "Long range",
+    "Anchor"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 13,
+   "weight": "500",
+   "case": "caps",
+   "track": 0,
+   "line": "13",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     3
+    ]
+   ],
+   "gates": [
+    "c-manifest"
+   ],
+   "samples": [
+    "SZ 1MW PEQ",
+    "FMJ"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 13,
+   "weight": "400",
+   "case": "case",
+   "track": 0,
+   "line": "19.5",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     2
+    ],
+    [
+     "rgb(232, 237, 241)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-manifest",
+    "c-new-build"
+   ],
+   "samples": [
+    "Board only · New build l",
+    "Closed. Nothing was stag",
+    "28 buttons, each drawn a"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 13,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "18",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(157, 170, 180)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "Pick a weapon and its ca"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 13,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "16",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "Code disagrees with the "
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 14,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     3
+    ]
+   ],
+   "gates": [
+    "c-queue"
+   ],
+   "samples": [
+    "31",
+    "14"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 14,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(255, 59, 92)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": []
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "18",
+   "n": 74,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     74
+    ]
+   ],
+   "gates": [
+    "c-history"
+   ],
+   "samples": [
+    "Deleted",
+    "Added new",
+    "restarted — automatic",
+    "Bot online"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 44,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     30
+    ],
+    [
+     "rgb(157, 170, 180)",
+     6
+    ],
+    [
+     "rgb(133, 147, 159)",
+     4
+    ],
+    [
+     "rgb(92, 106, 117)",
+     4
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "Weapon",
+    "Category",
+    "Label",
+    "Grade"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "18",
+   "n": 40,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     33
+    ],
+    [
+     "color(srgb 1 0.692549 0.744314)",
+     4
+    ],
+    [
+     "rgb(92, 106, 117)",
+     3
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "Gauge-9 Mono",
+    "differs from the other b",
+    "Polarfire-S",
+    "VT-7 Spiritfire Suppress"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "700",
+   "case": "caps",
+   "track": 0,
+   "line": "20",
+   "n": 6,
+   "inks": [
+    [
+     "rgb(242, 243, 245)",
+     6
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "dialog"
+   ],
+   "samples": [
+    "AK117",
+    "BAL-27"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "400",
+   "case": "case",
+   "track": 0,
+   "line": "normal",
+   "n": 6,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     6
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    ", slot by slot. A tinted",
+    "1I2C4A8A9D",
+    "1C2C4A6A8A",
+    "1M2C4A8A9D"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "500",
+   "case": "case",
+   "track": 0,
+   "line": "20",
+   "n": 5,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     5
+    ]
+   ],
+   "gates": [
+    "c-queue",
+    "dialog"
+   ],
+   "samples": [
+    "Download a copy of what’",
+    "Season 7 is live — Recko",
+    "Ranked Series 8 rewards ",
+    "Undead Siege is back for"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 4,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     2
+    ],
+    [
+     "rgb(157, 170, 180)",
+     1
+    ],
+    [
+     "color(srgb 0.980627 0.813412 0.896)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "choose a file",
+    "New build",
+    "Add another build"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "900",
+   "case": "case",
+   "track": 0,
+   "line": "14",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     3
+    ]
+   ],
+   "gates": [
+    "c-repairs"
+   ],
+   "samples": [
+    "Blocks sharing",
+    "Below standard",
+    "Pass every check"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "400",
+   "case": "case",
+   "track": 0,
+   "line": "20",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(219, 222, 225)",
+     2
+    ],
+    [
+     "rgb(133, 147, 159)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "Everything under it is t",
+    "shows as a command.",
+    "Type the announcement an"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "600",
+   "case": "caps",
+   "track": 0,
+   "line": "14",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "BAL-27"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "400",
+   "case": "caps",
+   "track": 0,
+   "line": "normal",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "BAL-27"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 14,
+   "weight": "500",
+   "case": "caps",
+   "track": 0,
+   "line": "18",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "SZ 1MW PEQ"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 15,
+   "weight": "600",
+   "case": "caps",
+   "track": 0.01,
+   "line": "15",
+   "n": 10,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     10
+    ]
+   ],
+   "gates": [
+    "c-manifest"
+   ],
+   "samples": [
+    ".50 GS",
+    "BAL-27",
+    "HOLGER 26",
+    "JAK-12"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 15,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "15",
+   "n": 7,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     7
+    ]
+   ],
+   "gates": [
+    "c-compare",
+    "c-repairs",
+    "dialog"
+   ],
+   "samples": [
+    "Build",
+    "Gunsmith code",
+    "Attachments",
+    "Badges"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 15,
+   "weight": "600",
+   "case": "caps",
+   "track": 0,
+   "line": "15",
+   "n": 5,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     5
+    ]
+   ],
+   "gates": [
+    "c-repairs"
+   ],
+   "samples": [
+    "PHARO",
+    ".50 GS",
+    "JAK-12",
+    "KILO 141"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 15,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "16",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     3
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "Text",
+    "Accent",
+    "Banner"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 16,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "20",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(242, 243, 245)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "The first line becomes t"
+   ]
+  },
+  {
+   "family": "JetBrains Mono",
+   "size": 17,
+   "weight": "700",
+   "case": "caps",
+   "track": 0.12,
+   "line": "24",
+   "n": 2,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     1
+    ],
+    [
+     "rgb(133, 147, 159)",
+     1
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "MP",
+    "DMZ"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 17,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "18",
+   "n": 7,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     7
+    ]
+   ],
+   "gates": [
+    "c-repairs"
+   ],
+   "samples": [
+    "of",
+    "125",
+    "build"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 17,
+   "weight": "600",
+   "case": "case",
+   "track": 0,
+   "line": "24",
+   "n": 3,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     3
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "MP builds",
+    "DMZ builds",
+    "Pick builds…"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 17,
+   "weight": "600",
+   "case": "case",
+   "track": -0.01,
+   "line": "18",
+   "n": 2,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     2
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "Build"
+   ]
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 17,
+   "weight": "600",
+   "case": "caps",
+   "track": 0,
+   "line": "17",
+   "n": 1,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-compare"
+   ],
+   "samples": [
+    "BAL-27"
+   ]
+  },
+  {
+   "family": "Big Shoulders Display",
+   "size": 19,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "20",
+   "n": 2,
+   "inks": [
+    [
+     "rgb(7, 9, 10)",
+     2
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "125"
+   ]
+  },
+  {
+   "family": "Big Shoulders Display",
+   "size": 20,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "20",
+   "n": 24,
+   "inks": [
+    [
+     "rgb(133, 147, 159)",
+     24
+    ]
+   ],
+   "gates": [
+    "c-manifest"
+   ],
+   "samples": []
+  },
+  {
+   "family": "Space Grotesk",
+   "size": 22,
+   "weight": "600",
+   "case": "case",
+   "track": -0.01,
+   "line": "28",
+   "n": 2,
+   "inks": [
+    [
+     "rgb(232, 237, 241)",
+     2
+    ]
+   ],
+   "gates": [
+    "dialog"
+   ],
+   "samples": [
+    "New MP build",
+    "Export"
+   ]
+  },
+  {
+   "family": "Big Shoulders Display",
+   "size": 58,
+   "weight": "700",
+   "case": "case",
+   "track": 0,
+   "line": "48",
+   "n": 2,
+   "inks": [
+    [
+     "rgb(242, 194, 48)",
+     1
+    ],
+    [
+     "rgb(63, 167, 214)",
+     1
+    ]
+   ],
+   "gates": [
+    "c-queue"
+   ],
+   "samples": [
+    "1",
+    "2"
+   ],
+   "where": "Queue's announcement cards, their number (span.pb-numr), read off the board 2026-10-09 10:24 EDT"
+  }
+ ],
+ "chrome": "each gate's head (.pb-head: code, title, description, scenario buttons) left out, read off the board 2026-10-09T14:55:01.516Z"
+}

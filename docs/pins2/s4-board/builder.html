@@ -1,0 +1,56 @@
+<meta charset="utf-8">
+<title>Board 4: Builder-2</title>
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Big+Shoulders+Display:wght@500;600;700&display=swap">
+<!-- BOARD 4: BUILDER-2 (Session 4, Harkirat 2026-10-03 21:47–21:49 EDT): the builder laid over a CLONE of the kit, so the kit's own structure can be corrected here while Board 4: Collective stays untouched as the backup. Earlier: BOARD 4: BUILDER (Session 4, 2026-10-03 14:26 EDT). Board 4: Collective's own page (kit/board4.html, the kit linked in as kit/), with the builder laid
+     over it: sizes, spaces and lines shown in place, things grouped by eye into named variants and layouts, and knobs that change every copy
+     on every gate at once. The kit is never copied out of the page and never edited here; the builder's decisions live in one generated
+     stylesheet driven by named values, kept in the artifact's database. Plan: local/pins2/s4/builder-plan.md (v3). -->
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="b2.css">
+<link rel="stylesheet" href="b3/board.css">
+<link rel="stylesheet" href="gates.css">
+<link rel="stylesheet" href="b1.css">
+<link rel="stylesheet" href="b4.css">
+<link rel="stylesheet" href="b4/form.css">
+<link rel="stylesheet" href="b4/bulk.css">
+<link rel="stylesheet" href="b4/compare.css">
+<link rel="stylesheet" href="b4/classes.css">
+<link rel="stylesheet" href="b4/components.css">
+<script>
+// Board 4's open drawers move focus to their close button as they first render, and a focus scrolls the page to it (kit/ui/overlay.js:42;
+// measured 2026-10-03 16:39 EDT: a reload opened on C5, and Collective's own board4.html does the same). Until the builder is ready, focus moves without
+// scrolling and a reload starts at the top; the kit itself is untouched.
+(function () { try { history.scrollRestoration = 'manual'; } catch (e) {} const f = HTMLElement.prototype.focus; HTMLElement.prototype.focus = function (o) { return f.call(this, Object.assign({}, o, { preventScroll: true })); }; window.__bdFocusRestore = function () { HTMLElement.prototype.focus = f; }; })();
+</script>
+<script src="ui/armory.logic.js"></script>
+<script src="ui/async.logic.js"></script>
+<script src="ui/broadcast.logic.js"></script>
+<script src="ui/composer.logic.js"></script>
+<script src="ui/exportPanel.logic.js"></script>
+<script src="ui/manifest.logic.js"></script>
+<script src="ui/overlay.logic.js"></script>
+<script src="ui/palette.logic.js"></script>
+<script src="ui/timeline.logic.js"></script>
+<script src="ui/tips.logic.js"></script>
+<script src="ui/track.logic.js"></script>
+<script src="ui/v2Render.logic.js"></script>
+<main class="pb" id="board"></main>
+<script type="module" src="gates4/main.js"></script>
+<script src="b4/c1-states.js"></script>
+<script type="module" src="b4/specimen.js"></script>
+<script src="bd/rules.js"></script>
+<script src="bd/walk.js"></script>
+<script src="bd/identity.js"></script>
+<script src="bd/roles.js"></script>
+<script src="bd/measure.js"></script>
+<script src="bd/why.js"></script>
+<script src="bd/looks.js"></script>
+<script src="bd/std.js"></script>
+<script src="bd/check.js"></script>
+<script src="bd/guides.js"></script>
+<script src="bd/ui.js"></script>

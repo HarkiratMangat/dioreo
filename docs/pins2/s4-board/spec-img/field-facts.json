@@ -1,0 +1,186 @@
+{
+ "measured": "2026-10-08T21:30:50.074Z",
+ "facts": {
+  "filter": {
+   "rest": {
+    "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.12) 0px 0px 0px 1px inset",
+    "border": "rgb(232, 237, 241)",
+    "borderW": "0px",
+    "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+   },
+   "hover": {
+    "words": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "clear": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "count": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "edge": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    }
+   },
+   "focus": {
+    "ring": "rgb(216, 242, 74) 0px 0px 0px 2px inset, color(srgb 0.847059 0.94902 0.290196 / 0.16) 0px 0px 0px 5px",
+    "border": "rgb(232, 237, 241)",
+    "borderW": "0px",
+    "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+   },
+   "xHoverBg": "color(srgb 0.521569 0.576471 0.623529 / 0.14)"
+  },
+  "wep": {
+   "rest": {
+    "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.12) 0px 0px 0px 1px inset",
+    "border": "rgb(232, 237, 241)",
+    "borderW": "0px",
+    "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+   },
+   "hover": {
+    "words": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "chevron": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "edge": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    }
+   },
+   "focus": {
+    "ring": "rgb(216, 242, 74) 0px 0px 0px 2px inset, color(srgb 0.847059 0.94902 0.290196 / 0.16) 0px 0px 0px 5px",
+    "border": "rgb(232, 237, 241)",
+    "borderW": "0px",
+    "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+   },
+   "xHoverBg": null
+  },
+  "cat": {
+   "rest": {
+    "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.12) 0px 0px 0px 1px inset",
+    "border": "rgb(232, 237, 241)",
+    "borderW": "0px",
+    "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+   },
+   "hover": {
+    "words": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "chevron": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "edge": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    }
+   },
+   "focus": {
+    "ring": "rgb(216, 242, 74) 0px 0px 0px 2px inset, color(srgb 0.847059 0.94902 0.290196 / 0.16) 0px 0px 0px 5px",
+    "border": "rgb(232, 237, 241)",
+    "borderW": "0px",
+    "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+   },
+   "xHoverBg": null
+  },
+  "att": {
+   "rest": {
+    "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.12) 0px 0px 0px 1px inset",
+    "border": "rgb(232, 237, 241)",
+    "borderW": "0px",
+    "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+   },
+   "hover": {
+    "words": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "chevron": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "edge": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    }
+   },
+   "focus": {
+    "ring": "rgb(216, 242, 74) 0px 0px 0px 2px inset, color(srgb 0.847059 0.94902 0.290196 / 0.16) 0px 0px 0px 5px",
+    "border": "rgb(232, 237, 241)",
+    "borderW": "0px",
+    "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+   },
+   "xHoverBg": null
+  },
+  "cmp": {
+   "rest": {
+    "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.12) 0px 0px 0px 1px inset",
+    "border": "rgb(232, 237, 241)",
+    "borderW": "0px",
+    "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+   },
+   "hover": {
+    "words": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "chevron": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    },
+    "edge": {
+     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset",
+     "border": "rgb(232, 237, 241)",
+     "borderW": "0px",
+     "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+    }
+   },
+   "focus": {
+    "ring": "rgb(216, 242, 74) 0px 0px 0px 2px inset, color(srgb 0.847059 0.94902 0.290196 / 0.16) 0px 0px 0px 5px",
+    "border": "rgb(232, 237, 241)",
+    "borderW": "0px",
+    "bg": "color(srgb 0.0288627 0.0425098 0.0542745)"
+   },
+   "xHoverBg": null
+  }
+ }
+}

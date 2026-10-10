@@ -1,0 +1,31 @@
+// Pictures for his decisions (2026-10-08): Q3 (the 28 and 40 tall buttons, drawn today, at M and at S, from the spec page's own clones with each
+// row's geometry laid on), Q8 (the 24 tall tags today and on the S row) and Q7 (the badge box on the Manifest and in Compare, clipped off the board).
+// The row versions are previews of a board change, not the board: a ::before skin takes the corner by inheritance. Usage: node q-preview.cjs → q/*.png
+const path = require('path'), fs = require('fs'), os = require('os'); const ROOT = path.resolve(__dirname, '../../../..'); const puppeteer = require(path.join(ROOT, 'node_modules/puppeteer-core'));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms)); const OUT = path.join(__dirname, 'q'); fs.mkdirSync(OUT, { recursive: true }); const BASE = 'http://127.0.0.1:8900/docs/pins2/s4-board/';
+const ROW = { L: { h: 44, p: 14, r: 11, i: 16, w: 13 }, M: { h: 32, p: 10, r: 8, i: 14, w: 11 }, S: { h: 24, p: 10, r: 6, i: 12, w: 11 }, XS: { h: 20, p: 6, r: 5, i: 12, w: 11 } };
+(async () => {
+  const b = await puppeteer.launch({ executablePath: (process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'), headless: 'new', protocolTimeout: 240000, userDataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'qp-')) });
+  const p = await b.newPage(); await p.setViewport({ width: 1282, height: 1400, deviceScaleFactor: 1 });
+  await p.goto(BASE + 'spec.html', { waitUntil: 'networkidle0', timeout: 90000 }); await p.waitForFunction(() => window.__specReady, { timeout: 30000 }); await p.evaluate(() => document.fonts.ready); await sleep(2500);
+  await p.addStyleTag({ content: '.spec .sbar { position: static !important; } [data-qv]::before, [data-qv]::after { border-radius: inherit !important; }' });
+  // the blocks: a section's header (its height label) and the cards under it
+  const blocks = (sec, hs) => p.evaluate((sec, hs) => { const out = []; document.querySelectorAll(`#${sec} .bsub`).forEach((h, i) => { const t = h.querySelector('b').textContent.trim(); if (!hs.includes(t)) return; const g = h.nextElementSibling; g.dataset.qb = sec + '-' + t; out.push(sec + '-' + t); }); return out; }, sec, hs);
+  const lay = (sel, rowOf) => p.evaluate((sel, ROW, rowOf) => { for (const w of document.querySelectorAll(`${sel} [data-bsel]`)) { const e = window.__rootOf(w); if (!e) continue; e.removeAttribute('style'); e.dataset.qv = '1'; const k = rowOf[String(Math.round(e.getBoundingClientRect().height))] || rowOf['*']; if (!k) continue; const R = ROW[k]; const words = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) || [...e.querySelectorAll('*')].some((x) => !x.closest('svg') && x.textContent.trim() && getComputedStyle(x).opacity !== '0');
+      e.style.cssText = `height:${R.h}px !important;min-height:${R.h}px !important;max-height:${R.h}px !important;border-radius:${R.r}px !important;font-size:${R.w}px !important;box-sizing:border-box !important;` + (words ? `padding-left:${R.p}px !important;padding-right:${R.p}px !important;` : `width:${R.h}px !important;min-width:${R.h}px !important;padding:0 !important;`);
+      e.querySelectorAll('svg').forEach((s) => { s.style.cssText = `width:${R.i}px !important;height:${R.i}px !important;`; }); } }, sel, ROW, rowOf);
+  const shotBlocks = async (keys, file) => { const r = await p.evaluate((keys) => { let t = 1e9, bt = 0, l = 1e9, rt = 0; for (const k of keys) { const g = document.querySelector(`[data-qb="${k}"]`); const h = g.previousElementSibling; for (const x of [h, g]) { const q = x.getBoundingClientRect(); t = Math.min(t, q.top + scrollY); bt = Math.max(bt, q.bottom + scrollY); l = Math.min(l, q.left); rt = Math.max(rt, q.right); } } return { x: l, y: t, width: rt - l, height: bt - t }; }, keys); await sleep(900); await p.screenshot({ path: path.join(OUT, file), clip: r }); };
+  const ONLY = process.argv[2]; if (ONLY !== 'q7') {
+  const k3 = await blocks('onboard', ['40', '28']); await p.evaluate(() => document.querySelector('[data-qb="onboard-40"]').scrollIntoView()); await sleep(600);
+  await shotBlocks(k3, 'q3-today.png');
+  for (const [file, rowOf] of [['q3-M.png', { 28: 'M', 40: 'L' }], ['q3-S.png', { 28: 'S', 40: 'M' }]]) { await lay('[data-qb^="onboard-"]', rowOf); await shotBlocks(k3, file); }
+  const k8 = await blocks('chips', ['S']); await p.evaluate(() => document.querySelector('[data-qb="chips-S"]').scrollIntoView()); await sleep(600);
+  await shotBlocks(k8, 'q8-today.png'); await lay('[data-qb="chips-S"]', { 24: 'S' }); await shotBlocks(k8, 'q8-rows.png');
+  }
+  // Q7: the badge box on the board itself
+  const q = await b.newPage(); await q.setViewport({ width: 1500, height: 1500, deviceScaleFactor: 2 }); await q.evaluateOnNewDocument((s) => { try { localStorage.setItem('bd-state', s); localStorage.setItem('bd-check', '0'); } catch (e) {} }, fs.readFileSync(path.join(__dirname, 'state4/fetch-2026-10-06-1714/builder/state.json'), 'utf8'));
+  await q.goto(BASE + 'builder.html', { waitUntil: 'networkidle0', timeout: 120000 }); await q.waitForFunction(() => window.__sxReady, { timeout: 60000 }); await sleep(1500); await q.evaluate(() => { window.__bd.ui.setInspect(false); const h = document.getElementById('bd-host'); if (h) h.style.display = 'none'; });
+  for (const [file, find] of [['q7-manifest.png', "[...document.querySelectorAll('#c-manifest span.b3-bdg')].find((x) => x.getClientRects().length && /META/.test(x.textContent))"], ['q7-compare.png', "[...document.querySelectorAll('#c-compare span')].find((x) => x.getClientRects().length && x.textContent.trim() === 'META')"]]) {
+    const r = await q.evaluate((f) => { const e = eval(f); if (!e) return null; e.scrollIntoView({ block: 'center' }); const row = e.parentElement; const q2 = row.getBoundingClientRect(); const q3 = e.getBoundingClientRect(); return { x: Math.max(0, q3.left - 16 + scrollX), y: q3.top - 16 + scrollY, width: q3.width + 32, height: q3.height + 32 }; }, find);   /* page coordinates, the badge itself with room around it */ if (r) { await sleep(400); await q.screenshot({ path: path.join(OUT, file), clip: r }); } else console.log('Q7: not found', file); }
+  console.log('wrote', fs.readdirSync(OUT).join(' ')); await b.close();
+})().catch((e) => { console.error('q-preview FAIL', e.message); process.exit(1); });

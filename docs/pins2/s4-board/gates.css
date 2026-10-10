@@ -1,0 +1,1077 @@
+/* Board 3 — the board's own chrome, the fixes whose values are already in your pins, and the second option each open
+   fork needs. Loaded after app.css (the portal), b2.css (board 2) and b3/board.css (the proposals), so everything here
+   is a delta on one of those three. Nothing here is scoped to a gate: a fix is a fix everywhere it appears. */
+
+[hidden] { display: none !important }
+body { margin: 0; background: var(--desk); color: var(--ink) }
+
+/* ── the board ─────────────────────────────────────────────────────────────────────────────────────────────────── */
+.g-nav { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 26px; padding: 10px 12px;
+  border-radius: var(--rad-3); background: color-mix(in srgb, var(--desk) 88%, transparent); backdrop-filter: blur(9px);
+  box-shadow: inset 0 0 0 1px var(--rule) }
+.g-nav a { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 11px; border-radius: var(--rad-pill);
+  background: var(--paper); box-shadow: var(--b3-ring); font: 500 var(--t-sm)/1 var(--ui); color: var(--ink2); text-decoration: none }
+.g-nav a b { font: 700 var(--t-xs)/1 var(--data); color: var(--ink3) }
+.g-nav a:hover { color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink4) }
+
+.g-settled { margin: 0 0 22px; padding: 18px 20px; border-radius: var(--rad-3); background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule) }
+.g-settled h2 { margin: 0 0 12px; font: 600 var(--t-lg)/1 var(--ui); color: var(--ink) }
+.g-settled table { width: 100%; border-collapse: collapse }
+.g-settled tr + tr th, .g-settled tr + tr td { border-top: 1px solid var(--rule3) }
+/* 🔴 FOUND BY THE FULL-SCREEN SWEEP, 2026-09-16 18:13 EDT — nobody had pointed at it. The portal's element-level
+   `th` rule (app.css) is written for a COLUMN header in a thead: it sets `background: var(--sunk)`, a bottom border,
+   uppercase, and `position: sticky; top: 0`. These two tables use `th` as a ROW header inside tbody, so every pin
+   cell was painting a pale box the row striping knows nothing about — AND every one of them was sticky, so they
+   would pile up at the top of the viewport on scroll. The board's own rule overrode padding, font and colour and
+   left the three that actually mattered. A rule written for one role, inherited by another. */
+.g-settled th { width: 62px; padding: 9px 12px 9px 0; text-align: left; vertical-align: top;
+  position: static; background: none; border-bottom: 0; text-transform: none;
+  font: 700 var(--t-xs)/1.5 var(--data); letter-spacing: .08em; color: var(--ink3) }
+.g-settled td { vertical-align: top; padding: 9px 0; font: 500 var(--t-sm)/1.5 var(--ui); color: var(--ink3) }
+.g-settled td:first-of-type { width: 38%; padding-right: 18px }
+.g-settled td b { font-weight: 600; color: var(--ink) }
+.g-ported { background: color-mix(in srgb, var(--paper) 88%, var(--r-armory) 12%) }
+/* The History panel carried id="manifest" so it would pick up app.css:2841's top margin — but the shared portal Manifest
+   at the top of the board carries that id too, and a duplicate id resolves to the FIRST match. So every comment Harkirat
+   placed on the History manifest re-anchored to the Armory manifest and jumped to the top of the page (his note, 2026-09-16 11:32 EDT).
+   The id is history-manifest now and the margin is restored here rather than borrowed from a name something else owns. */
+/* ROUND 9A (2026-09-20 01:51 EDT): the 32px top margin was the portal's `#manifest` rule, which makes room for a realm header that does
+   not exist inside a stage — here it was 60px of dead band above the panel, 28 below, 4 at the sides. The panel now
+   fills its stage's 28px padding box on every side, like the queue's. ⚠️ The Armory manifest carries the same rule
+   (app.css:2841) and the same band; it is an accepted gate, so it is filed, not moved. */
+#history-manifest { margin: 0; width: 100%; min-width: 0; justify-self: stretch }
+/* ⚠️ `width:auto` was not enough: the stage is a grid with `justify-items:center`, so an auto-width item is max-content
+   wide, and this panel's max-content was its filter block — 1,135px in a 1,092px track, overflowing 21.6px each side.
+   The panel had been sized by its own chips. 100% and stretch, like `.g-bpanel`. */
+.g-ported > p { margin: -4px 0 14px; max-width: 76ch; font: 500 var(--t-sm)/1.55 var(--ui); color: var(--ink3) }
+.g-ported th { width: 96px; white-space: nowrap }
+.g-ported td:first-of-type { width: 28% }
+.g-ported td code { font: 500 var(--t-xs)/1.5 var(--data); color: var(--ink2) }
+
+.pidx { margin: 0 0 22px; border-radius: var(--rad-3); background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); overflow: hidden }
+.pidx-h { display: flex; align-items: baseline; gap: 14px; padding: 18px 20px 12px }
+.pidx-h h2 { margin: 0; font: 600 var(--t-lg)/1 var(--ui); color: var(--ink) }
+.pidx-h p { margin: 0; font: 500 var(--t-sm)/1 var(--data); color: var(--ink3) }
+.pidx-l { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 1px; margin: 0; padding: 0 12px 14px; list-style: none }
+/* ⚠️ THE NUMBERS THAT USED TO BE IN THIS COMMENT WERE AN INSTRUMENT ARTEFACT, and leaving them here would have been a
+   wrong reason sitting next to a right rule. The checker measured a WRAPPER by the union of its children's ink, which
+   is a bottom edge belonging to neither, so it reported this row as 3.94px out and as 4.44px out after a fix; measuring
+   the first text node instead reports it as aligned either way. The row stays centred on its own merits: it is a label
+   at one end and a STATUS at the other, and a status is a chip — it carries an icon once a pick is recorded and reads
+   "open" until then, so its box is the thing that should line up. Words beside words share a baseline; this is words
+   beside a slot, and a slot keeps the centre. (2026-09-16 21:49 EDT) */
+.pidx-l li { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 8px; border-radius: 8px }
+.pidx-l li:hover { background: color-mix(in srgb, var(--ink) 4%, transparent) }
+.pidx-l a { display: flex; align-items: center; gap: 9px; min-width: 0; flex: 1; font: 500 var(--t-sm)/1 var(--ui); color: var(--ink); text-decoration: none }
+.pidx-l a .g { display: grid; place-items: center; width: 30px; height: 22px; border-radius: 5px; background: var(--sunk);
+  box-shadow: var(--b3-ring); font: 700 var(--t-micro)/1 var(--data); color: var(--ink3) }
+.pidx-l a em { font: 500 var(--t-xs)/1 var(--ui); font-style: normal; color: var(--ink3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.pidx-l .v { display: inline-flex; align-items: center; gap: 6px; font: 600 var(--t-xs)/1 var(--data); color: var(--ink4) }
+.pidx-l li.on .v { color: var(--ok) }
+.pidx-l .v .ic { width: 13px; height: 13px }
+
+.g-missing { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; padding: 12px 16px; border-radius: var(--rad-2);
+  background: color-mix(in srgb, var(--danger-ink) 12%, var(--paper)); box-shadow: inset 0 0 0 1px var(--danger-edge);
+  font: 600 var(--t-sm)/1.4 var(--ui); color: var(--danger-ink) }
+.g-foot { margin: 34px 0 60px; text-align: center; font: 500 var(--t-xs)/1 var(--data); color: var(--ink4) }
+
+/* ── a gate ────────────────────────────────────────────────────────────────────────────────────────────────────── */
+.g-gate { scroll-margin-top: 62px }
+.g-pins { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -6px 0 14px }
+.g-pins span { font: 600 var(--t-micro)/1 var(--data); letter-spacing: .14em; text-transform: uppercase; color: var(--ink4) }
+.g-pins b { display: inline-grid; place-items: center; min-width: 24px; height: 20px; padding: 0 6px; border-radius: 5px;
+  background: var(--sunk); box-shadow: var(--b3-ring); font: 600 var(--t-xs)/1 var(--data); color: var(--ink3) }
+
+/* 🔴 `transform: translateZ(0)` WAS HERE AS A COMPOSITING HINT AND IT BROKE EVERY position:fixed DESCENDANT.
+   A transformed ancestor becomes the containing block for a fixed child, so the list's problem card — clamped to a
+   correct `top: 12px`, computed as 12px — had a rect top of -3400, because it was being positioned against this
+   stage rather than the viewport. The hint bought a paint layer the stage's own `overflow:hidden` and radius already
+   earn on modern Chrome; it cost the one thing `position: fixed` exists for. (2026-09-16 18:31 EDT) */
+.g-stage { position: relative; border-radius: var(--rad-3); background: var(--desk);
+  box-shadow: inset 0 0 0 1px var(--rule) }
+
+/* A section has ONE stage and its topics read underneath it, so the stage stays put while you work down them. */
+.g-sticky { position: sticky; top: 56px; z-index: 6; box-shadow: inset 0 0 0 1px var(--rule), 0 24px 40px -28px #000 }
+/* Every switch for a surface sits in one strip above its stage, so the surface is one block rather than a stack. */
+.g-ctls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 0 0 14px; padding: 12px 14px;
+  border-radius: var(--rad-3); background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule) }
+.g-ctl { display: inline-flex; align-items: center; gap: 9px }
+/* A switch option is ONE line (2026-09-17 22:04 EDT). When the switches began reading the fork's own words ("Yours, regularised",
+   "A consequence") the segments wrapped onto two lines and squeezed the swatch panel beside them until its last swatch
+   was clipped — a regression of the label fix, caught on the re-sweep. The option stays whole; the side panel wraps
+   under its switch when the row cannot hold both. */
+.g-ctl .seg > * { white-space: nowrap }
+.g-ctl:has(> .b3-pal, > .b3-corp) { flex-wrap: wrap; row-gap: 10px }
+.g-ctl-l { font: 600 var(--t-micro)/1 var(--data); letter-spacing: .14em; text-transform: uppercase; color: var(--ink3) }
+.g-ctl-tries { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; padding-top: 4px; border-top: 1px solid var(--rule3) }
+.g-ctl-tries .g-tries { margin: 0 }
+
+/* The decisions for a surface, at the foot of the same block: a row per fork, look then tick. */
+.dk:where(:not(.diff-r>*)) { margin: 14px 0 0; border-radius: var(--rad-3); background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); overflow: hidden }
+.dk-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; padding: 13px 16px; background: var(--sunk) }
+.dk-k { display: inline-grid; place-items: center; flex: none; width: max-content; height: 20px; padding: 0 9px;
+  border-radius: 5px; background: var(--staged);
+  font: 700 var(--t-micro)/1 var(--data); letter-spacing: .14em; text-transform: uppercase; color: var(--on-accent) }
+.dk-h b { font: 600 var(--t-sm)/1 var(--data); color: var(--ink) }
+.dk-hint { flex: 1; min-width: 220px; font: 500 var(--t-xs)/1.4 var(--ui); color: var(--ink3) }
+.dk-row { display: grid; grid-template-columns: minmax(200px, 300px) minmax(0, 1fr) 132px; align-items: center; gap: 12px 16px;
+  padding: 12px 16px; border-top: 1px solid var(--rule3) }
+.dk-q b { display: block; font: 600 var(--t-base)/1.2 var(--ui); color: var(--ink) }
+.dk-q span { display: block; margin-top: 3px; font: 500 var(--t-xs)/1.4 var(--ui); color: var(--ink3) }
+.dk-os { display: flex; flex-wrap: wrap; gap: 8px }
+.dk-o { display: inline-flex; align-items: stretch; border-radius: var(--rad-pill); background: var(--sunk);
+  box-shadow: var(--b3-ring); overflow: hidden }
+.dk-o.shown { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--staged) 60%, transparent) }
+.dk-o.picked { background: color-mix(in srgb, var(--ok) 10%, var(--sunk)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 50%, transparent) }
+.dk-see { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; background: none;
+  font: 600 var(--t-sm)/1 var(--ui); color: var(--ink2); cursor: pointer }
+.dk-o.shown .dk-see { color: var(--ink) }
+.dk-mine { font-style: normal; color: var(--smg) }
+.dk-take { display: grid; place-items: center; width: 32px; border: 0; background: color-mix(in srgb, var(--ink) 5%, transparent);
+  box-shadow: inset 1px 0 0 var(--rule2); color: var(--ink3); cursor: pointer }
+.dk-take .ic { width: 14px; height: 14px }
+.dk-take:hover:not(:disabled) { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent) }
+.dk-take:disabled { opacity: .35; cursor: default }
+/* THE CLASS he named, fourth axis: a square END welded to a pill, so the control has one round end and one cut one.
+   31 instances, every Decide row on the board. And `.dk-see` was the only control in its own group with no edge —
+   the same shape as the popover close button he called "cheaply stuck in there". (2026-09-16 17:41 EDT) */
+.dk-take { border-radius: 0 var(--rad-pill) var(--rad-pill) 0 }
+.dk-see { box-shadow: inset -1px 0 0 var(--rule2) }
+.dk-o.picked .dk-take { color: var(--ok) }
+.dk-st { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; font: 600 var(--t-xs)/1.3 var(--data); color: var(--ink4) }
+.dk-row.done .dk-st { color: var(--ok) }
+.dk-st .ic { width: 13px; height: 13px }
+.g-spec-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px }
+.g-stage.g-fixed { height: var(--stage-h); overflow: hidden }
+/* ⚠️ I first blamed an animation fill here and it was wrong — the stage's transform was declared outright, above.
+   Kept as a note because "the settled animation" was a plausible cause that a measurement disproved in one run. */
+.g-stage.g-fixed > .panel, .g-stage.g-fixed > section.panel { max-height: 100%; overflow: auto; scrollbar-width: thin }
+/* 🔴 A REGRESSION MY OWN FIX INTRODUCED, caught by falsifying it rather than by declaring it done (2026-09-16 18:37 EDT).
+   Removing the stage's `translateZ(0)` was right — it was capturing three `position: fixed` descendants. But that
+   transform had ALSO been acting as a fence: the portal's selection bar is `position: fixed; bottom: 0` because on
+   the real portal it is a GLOBAL action bar, and with the fence gone it followed the reader through every surface on
+   the board — measured at rect 936-1000 while its own stage sat at -2400. On a board each stage shows ONE surface,
+   so the bar belongs to its stage: absolute inside it, still pinned to the bottom of the thing it acts on.
+   ⚠️ The bug was doing two jobs and only one of them was a bug. */
+.g-stage .selbar { position: absolute; left: 0; right: 0; bottom: 0; top: auto; width: auto }
+/* 🔴 AND THE SELBAR WAS ONE OF THREE. Removing that transform freed every `position:fixed` descendant of the stage,
+   and the portal's own modal chrome — `.scrim` (inset:0) and `.drawer` (centred on the viewport) — had been relying
+   on the capture to sit INSIDE the stage that draws them. Freed, the Export drawer rendered over the hero the moment
+   the board loaded and followed the reader down all 10,534px of it. A board stage draws a drawer as a SPECIMEN, so
+   inside a stage the scrim and the drawer are absolute; everywhere else they stay fixed, which is what a real modal
+   needs. Found by reading the twelve-screen sweep, not by any gate: `fixedCaptured` looks for a fixed element that IS
+   captured, so an escapee is invisible to it. (2026-09-16 20:58 EDT) */
+.g-stage .scrim { position: absolute }
+.g-stage .drawer { position: absolute }
+.g-stage.g-scroll { overflow: hidden }
+.g-stage.g-pad { display: grid; gap: 14px; padding: 18px }
+.g-wait, .g-else { margin: 0; padding: 40px 20px; text-align: center; font: 500 var(--t-sm)/1 var(--ui); color: var(--ink3) }
+.g-tries { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px }
+.g-tries > span { font: 600 var(--t-micro)/1 var(--data); letter-spacing: .14em; text-transform: uppercase; color: var(--ink4) }
+.g-tries button { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px 0 10px; border: 0;
+  border-radius: var(--rad-pill); background: var(--paper); box-shadow: var(--b3-ring);
+  font: 600 var(--t-sm)/1 var(--ui); color: var(--ink2); cursor: pointer }
+.g-tries button .ic { width: 13px; height: 13px; color: var(--ink3) }
+.g-tries button:hover { color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink4) }
+.g-frame { width: 100%; height: 100%; border: 0; border-radius: var(--rad-3); background: var(--desk) }
+.g-legend { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px }
+.g-lg { display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 10px; border-radius: var(--rad-pill);
+  background: var(--sunk); box-shadow: var(--b3-ring); font: 500 var(--t-xs)/1 var(--ui); color: var(--ink2) }
+.g-lg i { width: 10px; height: 10px; border-radius: 50%; background: var(--sl) }
+.g-spec { display: grid; gap: 8px; padding: 14px 16px; border-radius: var(--rad-2); background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule) }
+.g-spec-l { font: 600 var(--t-micro)/1 var(--data); letter-spacing: .14em; text-transform: uppercase; color: var(--ink3) }
+.g-spec-b { display: flex; flex-wrap: wrap; align-items: center; gap: 12px }
+.g-spec.wide .g-spec-b { display: block }
+.g-mh { padding: 10px 0; background: none; box-shadow: none }
+.g-dwf { position: static; border-radius: var(--rad-2) }
+.g-rack { padding: 4px 0 }
+.g-hiph { border-radius: var(--rad-2) }
+.g-cmdwrap { display: flex; justify-content: center; padding: 22px 18px 0 }
+.g-cmdwrap > * { width: min(720px, 100%) }
+.g-e2card, .g-e4panel, .g-bman-panel, .g-bpanel { margin: 0 }
+.g-e4subs { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 16px 18px }
+.g-h5 { margin: 0; font: 600 var(--t-md)/1 var(--ui); color: var(--ink) }
+.g-e6card { max-width: 760px }
+
+/* ── the picks ─────────────────────────────────────────────────────────────────────────────────────────────────── */
+.pk { margin: 16px 0 0; padding: 16px 18px 18px; border-radius: var(--rad-3); background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule) }
+.pk-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; margin-bottom: 14px }
+.pk-k { display: inline-grid; place-items: center; height: 22px; padding: 0 9px; border-radius: 5px; background: var(--staged);
+  font: 700 var(--t-micro)/1 var(--data); letter-spacing: .14em; text-transform: uppercase; color: var(--on-accent) }
+.pk-h b { font: 600 var(--t-md)/1 var(--ui); color: var(--ink) }
+.pk-ask { flex: 1; min-width: 220px; font: 500 var(--t-sm)/1.45 var(--ui); color: var(--ink3) }
+.pk-st { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: var(--rad-pill);
+  background: var(--sunk); box-shadow: var(--b3-ring); font: 600 var(--t-xs)/1 var(--data); color: var(--ink3); white-space: nowrap }
+.pk-st .ic { width: 13px; height: 13px }
+.pk-st em { font-style: normal; color: var(--ink4) }
+.pk-st.on { color: var(--ok); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 45%, transparent) }
+.pk-os { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px }
+.pk-o { display: grid; grid-template-rows: 1fr auto; border-radius: var(--rad-2); background: var(--sunk); box-shadow: var(--b3-ring); overflow: hidden }
+.pk-o.shown { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--staged) 55%, transparent) }
+.pk-o.picked { background: color-mix(in srgb, var(--ok) 7%, var(--sunk)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 45%, transparent) }
+.pk-ob { display: grid; gap: 7px; padding: 13px 14px 12px; border: 0; background: none; text-align: left; cursor: pointer }
+.pk-ol { font: 600 var(--t-base)/1.1 var(--ui); color: var(--ink) }
+.pk-ow { font: 500 var(--t-sm)/1.45 var(--ui); color: var(--ink3) }
+.pk-osee { font: 600 var(--t-micro)/1 var(--data); letter-spacing: .12em; text-transform: uppercase; color: var(--ink4) }
+.pk-o.shown .pk-osee { color: var(--staged) }
+.pk-of { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 12px 12px }
+.pk-mine { display: inline-flex; align-items: center; gap: 6px; font: 600 var(--t-xs)/1 var(--data); color: var(--smg) }
+.pk-mine .ic { width: 12px; height: 12px }
+.pk-take { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 14px; border: 0; border-radius: var(--rad-pill);
+  background: var(--raised); box-shadow: var(--b3-ring); font: 600 var(--t-sm)/1 var(--ui); color: var(--ink2); cursor: pointer }
+.pk-take .ic { width: 13px; height: 13px }
+.pk-take:hover:not(:disabled) { color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink4) }
+.pk-take:disabled { opacity: .4; cursor: default }
+.pk-take.on { background: var(--ok); color: var(--on-ok); box-shadow: none }
+.pk-bad { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font: 600 var(--t-sm)/1 var(--ui); color: var(--danger-ink) }
+
+.gn { display: grid; gap: 6px; margin: 12px 0 0 }
+.gn-l { font: 600 var(--t-micro)/1 var(--data); letter-spacing: .14em; text-transform: uppercase; color: var(--ink4) }
+.gn-t { width: 100%; padding: 10px 12px; border: 0; border-radius: var(--rad-2); background: var(--sunk);
+  box-shadow: var(--b3-ring); font: 500 var(--t-sm)/1.5 var(--ui); color: var(--ink); resize: vertical }
+.gn-t:focus { outline: 2px solid var(--focus); outline-offset: 1px }
+.gn-s { min-height: 14px; font: 500 var(--t-xs)/1 var(--data); color: var(--ink4) }
+
+/* ── A1 · the fixes whose values are already in your pins ──────────────────────────────────────────────────────── */
+html[data-b3-a1=fixed] { --sec: #3F6E8E }                                            /* pin 6 */
+html[data-b3-a1=fixed] .mtools { --mt-lab-w: 64px; --mt-lab-after: var(--s3) }                             /* pin 3 — 20px of it */
+html[data-b3-a1=fixed] .mt-r2 {justify-content: start;}                         /* pin 3 — two groups, one centre line */
+html[data-b3-a1=fixed] .mt-r2 > .mt-grp:first-child {--chip-gap: 6px; --mt-lab-gap: 10px; min-width: 0 }
+html[data-b3-a1=fixed] .mt-r2 > .mt-grp:first-child > .mt-chips { flex: 1 1 auto }
+/* The row has to fit the categories the data actually has — eight chips needed 802px of a 772px column, so the chips
+   carry the tighter metrics that close the 30px rather than letting one category orphan onto a second line. */
+
+
+html[data-b3-a1=fixed] .mt-r2 > .mt-grp:first-child { --chip-gap: 5px; --mt-lab-gap: 9px }   /* both lose to b3/board.css's html[data-b3-a1] rule, one class higher: cascade debt (R1) */
+html[data-b3-a1=fixed] .mt-r2 > .mt-grp + .mt-grp { position: relative; display: inline-flex; align-items: center; margin: 0;
+  padding-left: 16px }                                                                /* 16px before the divider, 16px after it */
+html[data-b3-a1=fixed] .mt-r2 > .mt-grp + .mt-grp::before { content: ""; position: absolute; left: 0; top: 50%; width: 1px;
+  height: 26px; margin-top: -13px; background: var(--rule2) }
+html[data-b3-a1=fixed] .mt-r2 > .mt-grp + .mt-grp .mlabel { min-width: 0 }
+@media (max-width: 900px) {
+  html[data-b3-a1=fixed] .mt-r2 { grid-template-columns: minmax(0, 1fr) }
+  html[data-b3-a1=fixed] .mt-r2 > .mt-grp + .mt-grp { padding-left: 0; box-shadow: none }
+}
+html[data-b3-a1=fixed] .wg-heads { min-height: 48px; padding: 0 var(--s4) 0 8px; font: 700 var(--t-xs)/var(--lh-1) var(--data); letter-spacing: .12em; color: var(--ink2) }
+html[data-b3-a1=fixed] .wg-sort { min-height: 48px; font: inherit; letter-spacing: inherit }   /* pin 14 */
+html[data-b3-a1=fixed] .wg-r { min-height: 56px }                                     /* pin 15 */
+html[data-b3-a1=fixed] .wg-h::before { top: 10px; bottom: 10px; width: 4px; border-radius: 0 3px 3px 0 }   /* pin 19 */
+html[data-b3-a1=fixed] .wg-r::before { top: 12px; bottom: 12px; width: 3px; border-radius: 0 2px 2px 0 }
+
+/* ── the hover box · ONE rule, six controls ────────────────────────────────────────────────────────────────────
+   `app.css:442` is a bare, unscoped `button:hover:not(:disabled) { background: var(--rule) }`. An element selector
+   carrying two pseudo-classes sits at (0,2,1), which outranks every `.class { background: none }` in the portal — so
+   any control that draws its own box with a ::before gets a SECOND, larger, borderless slab behind it on hover.
+   That single line is your pin 9 ("the entire background box highlights? It should just be the button itself") and
+   your pin 47 ("same outside border highlight issue with these buttons as well").
+   The previous round killed it for `.wg-r .wg-ib` ALONE — which is exactly why Collapse all, the sort head, the code
+   field and the fold button were all still doing it. This list is measured, not guessed: `sweep.cjs` hovers every
+   control on the manifest surface and reports each one whose hover paints a layer that was transparent at rest.
+   THE RULE: a hover highlight paints only the shape the pointer is on, and that shape is visible at rest. */
+html[data-b3-a1=fixed] :is(.wg-ib, .wg-fold, .wg-sort, .wg-code, .wg-cb, .wg-igb):hover:not(:disabled),
+html[data-b3-a1=fixed] :is(.wg-ib, .wg-fold, .wg-sort, .wg-code, .wg-cb, .wg-igb):focus-visible,
+html[data-b3-a1=fixed] :is(.wg-ib, .wg-fold, .wg-sort, .wg-code, .wg-cb, .wg-igb):active { background: none }
+/* The board's own furniture is never part of a fork, so the Decide button is fixed with no switch in front of it. */
+.dk-see:hover:not(:disabled), .dk-see:active { background: none; color: var(--ink) }
+
+/* An icon button's box is what lights, and it is the same box you could already see at rest. */
+html[data-b3-a1=fixed] :is(.wg-ib, .wg-fold):hover::before,
+html[data-b3-a1=fixed] :is(.wg-ib, .wg-fold):focus-visible::before { background: var(--hi); box-shadow: inset 0 0 0 1px var(--ink4) }
+/* 2026-09-30 14:47 EDT (his: "why the button looks different in the broadcast cards vs the armory manifest/compare table"): ONE delete hover, the queue's
+   (b2.css .pb-ib.pb-del) — its ring shows, as every other lit icon box's does; this one's ring was --danger-edge, all but invisible. */
+html[data-b3-a1=fixed] .wg-ib.wg-del:hover::before { background: color-mix(in srgb, var(--danger-ink) 14%, var(--raised));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger-ink) 45%, transparent) }
+
+/* ── the gunsmith field ────────────────────────────────────────────────────────────────────────────────────────
+   The tint was keyed on `.wg-code:hover` — the WRAPPER — so pointing anywhere at the code lit the copy button.
+   Measured before this change: hovering the field and hovering the button returned byte-identical computed styles,
+   which is your "the gunsmith button still highlighting it's div wrapper". The copy segment is a span inside the
+   button and so can never be hovered by a keyboard; :focus-visible on the field lights it instead. */
+html[data-b3-a1=fixed] .wg-code .wg-igb { transition: background var(--dur-1) var(--ease),
+  box-shadow var(--dur-1) var(--ease), color var(--dur-1) var(--ease) }
+html[data-b3-a1=fixed] .wg-code:hover .wg-igb { background: var(--raised); color: var(--ink2); box-shadow: none }
+html[data-b3-a1=fixed] .wg-code .wg-igb:hover, html[data-b3-a1=fixed] .wg-code:focus-visible .wg-igb {
+  background: color-mix(in srgb, var(--c) 16%, var(--raised)); color: color-mix(in srgb, var(--c) 72%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 50%, transparent) }
+
+/* ── the reveal's speed ────────────────────────────────────────────────────────────────────────────────────────
+   The fold control itself now lives with the E2 design in b3/board.css, because a widened button is a design you
+   picked, not a fix — it has to look right with this switch off as well as on. What stays here is its timing.
+   You asked for "a smooth animation" and gave no number, so the number is a pick rather than my assumption. The
+   ease is deliberately NOT the portal's --ease: cubic-bezier(.2,.8,.3,1) is so front-loaded that it spends the
+   visible travel in the first tenth of its own duration, which is half of why the old reveal read as a snap. */
+:root { --b3-reveal: 260ms; --b3-reveal-ease: cubic-bezier(.22, .61, .36, 1) }
+html[data-b3-e2spd=quick] { --b3-reveal: 160ms }
+html[data-b3-e2spd=smooth] { --b3-reveal: 260ms }
+html[data-b3-e2spd=slow] { --b3-reveal: 380ms }
+
+/* ── the warn chip's right edge ────────────────────────────────────────────────────────────────────────────────
+   It sat 2px inside the Share button's box edge directly below it. A near-miss reads worse than either alignment,
+   and it cannot take the row's true control edge — the fold button is on that line, on the same row — so it takes
+   the strongest line beneath it. verify.cjs asserts the two edges are EQUAL, so the alignment stops being free.
+   NO RULE IS NEEDED HERE, and that is the finding: the chip never moved. The fold button beside it was 46px wide
+   instead of 44 — the 8px gap between its icon and a zero-width word — and those 2px of overhang pushed the chip
+   2px left of the Share button's edge below. Defect 4 was defect 1 seen from the other side, so centring the icon
+   put the chip on the line by itself. Tuning the margin here would have hidden that, and then drifted when the
+   button changed. app.css's own 18px is correct once the button is the width it says it is. */
+
+/* The weapon line sits on one axis: the dot between the category and the build count no longer nudges its baseline. */
+html[data-b3-a1=fixed] .wg-line small { display: block }
+html[data-b3-a1=fixed] .wg-nb { display: inline-flex; align-items: center }
+html[data-b3-a1=fixed] .wg-nb::before { margin: 0 9px }
+
+html[data-b3-a1=fixed] .wg-ig { position: relative; box-shadow: none }                /* pin 8 — one ring, drawn above its children */
+html[data-b3-a1=fixed] .wg-ig::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: var(--b3-ring) }
+html[data-b3-a1=fixed] .wg-igf { box-shadow: inset 0 3px 4px -2px rgba(0, 0, 0, .45) }
+html[data-b3-a1=fixed] .wg-igb { box-shadow: none; border-left: 1px solid var(--rule2) }
+html[data-b3-a1=fixed] .wg-code { cursor: pointer }                                   /* pin 10 */
+html[data-b3-a1=fixed] .wg-code:hover .wg-ig { box-shadow: none }                     /* pin 9 — the field stops lighting */
+html[data-b3-a1=fixed] .wg-code:hover .wg-ig::after { box-shadow: var(--b3-ring) }
+
+/* P3 option B (the spine) was ruled out on 2026-09-17 — the card is direction A — and its 23 lines went with it (2026-09-18 11:00 EDT). */
+
+/* ── P5 · option: the list as one table, and the hint as a line inside the bar ─────────────────────────────────── */
+.b3-sd-tbl { padding: 0 10px 10px }
+/* The one-table rules that lived here were a stale copy of b3/board.css's. This file loads LAST, so the copy silently
+   beat every fix written there since (padding, gap, the name's baseline). Deleted, not overridden. (2026-09-18 10:23 EDT) */
+.b3-sd-chips.noted .b3-sc { display: none }
+.b3-sd-note { display: inline-flex; align-items: center; gap: 8px; font: 500 var(--t-sm)/1.3 var(--ui); color: var(--warn-ink) }
+.b3-sd-note .ic { width: 14px; height: 14px }
+
+/* ── P6 · option B: a block per check, with the builds that fail it ────────────────────────────────────────────── */
+.b3-byp { display: grid; gap: 12px }
+.b3-byp-g { border-radius: var(--rad-3); background: var(--paper); box-shadow: var(--b3-ring); overflow: hidden }
+.b3-byp-g header { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 16px; background: var(--sunk) }
+.b3-byp-g header i { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; color: var(--warn-ink);
+  background: color-mix(in srgb, var(--warn) 12%, transparent) }
+.b3-byp-g header i .ic { width: 14px; height: 14px }
+.b3-byp-g header b { font: 600 var(--t-base)/1 var(--ui); color: var(--ink) }
+.b3-byp-g header em { margin-left: auto; font: 500 var(--t-xs)/1 var(--data); font-style: normal; color: var(--ink3) }
+.b3-byp-l { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; padding: 12px 14px 14px }
+.b3-byp-c { position: relative; display: grid; gap: 8px; padding: 12px 14px 12px 16px; border-radius: var(--rad-2); background: var(--sunk);
+  box-shadow: var(--b3-ring) }
+.b3-byp-c::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 0 2px 2px 0; background: var(--c) }
+.b3-byp-c > b { font: 600 var(--t-base)/1 var(--ui); color: var(--ink) }
+.b3-byp-c > b i { margin: 0 6px; font-style: normal; color: var(--ink4) }
+.b3-byp-c > small { display: flex; align-items: center; gap: 8px; font: 600 var(--t-micro)/1 var(--data); letter-spacing: .14em;
+  text-transform: uppercase; color: var(--c) }
+.b3-byp-c > small span { font: 500 var(--t-xs)/1 var(--ui); letter-spacing: 0; text-transform: none; color: var(--ink3) }
+.b3-byp-v { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font: 500 var(--t-sm)/1.3 var(--ui); color: var(--ink2) }
+.b3-byp-v .ic { width: 14px; height: 14px; color: var(--warn-ink) }
+.b3-byp-a { display: flex; align-items: center; justify-content: space-between; gap: 10px }
+.b3-byp-a em { font: 500 var(--t-xs)/1 var(--ui); font-style: normal; color: var(--ink4) }
+
+/* ── B1 · board 2's card, with this round's fixes ──────────────────────────────────────────────────────────────── */
+.g-queue { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; padding: var(--s4) }
+.g-qcards { display: grid; gap: 12px; align-content: start }
+.g-card .pb-numr { color: var(--c) }                                                  /* pin 36 */
+.g-card .pb-enc p { padding: 14px 18px 12px }                                          /* pin 39 */
+.g-card .pb-encf { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 0 8px 0 18px;
+  border-top: 1px dashed var(--rule2) }                                                /* pin 40 */
+.g-card .pb-exp:hover { background: none; color: var(--ink) }                          /* pin 43 */
+/* (2026-09-19 21:11 EDT) REMOVED: "show all has a yellow accent meanwhile it's never used anywhere else for that fold
+   icon." It was this rule and only this rule - a hover tint on the mark, in a colour no other fold on the board uses.
+   The button's own hover (its box lighting, ROUND 6G) is the state; the mark does not need a second one. */
+.g-fact { display: inline-flex; align-items: center; gap: 8px; height: 24px; padding: 0 9px; border-radius: 6px; background: var(--sunk);
+  box-shadow: var(--b3-ring); font: 500 var(--t-xs)/1 var(--data); color: var(--ink3) }
+.g-fact .ic { width: 12px; height: 12px; color: var(--ink4) }
+.g-card .pb-bar { position: relative; flex: 1; height: 20px }
+.g-card .pb-span.g-run { background: linear-gradient(90deg, var(--c) 0, var(--c) calc(100% - 96px), color-mix(in srgb, var(--c) 0%, transparent)) }
+.g-card .g-tail { position: absolute; right: 0; top: 7px; width: 92px; height: 6px; border-radius: 0 3px 3px 0;
+  background: repeating-linear-gradient(-45deg, var(--warn) 0 3px, transparent 3px 6px);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 60%); mask: linear-gradient(90deg, transparent, #000 60%) }
+.g-card .pb-track { -webkit-mask: linear-gradient(90deg, #000 70%, transparent); mask: linear-gradient(90deg, #000 70%, transparent) }  /* pin 37 */
+.g-card:not(.g-never) .pb-track { -webkit-mask: none; mask: none }
+.g-noend { color: var(--warn-ink) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 40%, transparent) }
+.g-stagedend { outline: 1.5px dashed var(--staged); outline-offset: -1.5px; color: var(--staged) }
+.g-stagedspan { background: none; outline: 1.5px dashed var(--staged); outline-offset: -1.5px }
+.g-warn { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin: 10px 0 0; padding: 10px 12px; border-radius: var(--rad-2);
+  background: color-mix(in srgb, var(--warn) 7%, var(--sunk)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 30%, transparent) }
+.g-warn-k { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; color: var(--warn-ink);
+  background: color-mix(in srgb, var(--warn) 14%, transparent) }
+.g-warn-k .ic { width: 15px; height: 15px }
+.g-warn-t { display: grid; gap: 4px; flex: 1; min-width: 150px }
+.g-warn-t b { font: 600 var(--t-base)/1 var(--ui); color: var(--ink) }
+.g-warn-t em { font: 500 var(--t-xs)/1 var(--data); font-style: normal; color: var(--ink3) }
+.g-card .pb-cacts .g-edit { width: auto; gap: 8px; padding: 0 12px 0 10px; font: 600 var(--t-sm)/1 var(--ui); color: var(--ink2) }  /* pin 49 */
+/* 2026-09-30 14:47 EDT: Edit lights --staged, as Edit does in the manifest and Compare (b4/classes.css .wg-ib.wg-edit) */
+.g-card .pb-cacts .g-edit:hover { color: var(--staged) }
+.g-card .pb-cacts .g-edit:hover::before { background: color-mix(in srgb, var(--staged) 12%, var(--raised)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--staged) 42%, transparent) }
+.g-card .pb-cacts .pb-ib:hover { background: none }                                    /* pin 47 */
+/* 45bbb9ee · the divider sat 12px from Edit's box and 17px from the delete box, because the delete button draws its box
+   5px inside its target. The divider gives that inset back, so it sits centred between the two boxes. (2026-09-18 10:23 EDT) */
+.g-card .pb-cacts .pb-vr { margin-right: calc(-1 * var(--pb-inset, 5px)) }
+.g-status { display: inline-flex; align-items: center; gap: 8px; height: 26px; padding: 0 10px; border-radius: var(--rad-pill);
+  background: var(--sunk); box-shadow: var(--b3-ring); font: 500 var(--t-xs)/1 var(--data); color: var(--ink3) }
+.g-status b { color: var(--ink); font-weight: 600 }
+.g-status .ic { width: 12px; height: 12px }
+.g-status.warn { color: var(--warn-ink); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 40%, transparent) }
+.g-status.warn b { color: var(--ink) }
+.g-status .cmeter { width: 44px }
+.g-fixedhead > .ph { background: #161E24; border-bottom: 2px solid var(--rule2) }      /* pin 46 */
+
+/* ── B2 · board 2's broadcast rows ─────────────────────────────────────────────────────────────────────────────── */
+.g-bman .pb-heads.pb-bc, .g-bman .pb-br { grid-template-columns: minmax(0, 1fr) 104px 104px 104px 124px 44px; column-gap: 16px; padding: 0 16px 0 22px }  /* pin 50 */
+.g-bman .pb-br:hover { background: radial-gradient(420px 90px at 12% 50%, color-mix(in srgb, var(--c) 14%, transparent), transparent 70%) }  /* pin 45 */
+
+/* ── the export picker ─────────────────────────────────────────────────────────────────────────────────────────── */
+/* "drastically redesign the look and feel of the export drawer. it looks so basic." It was a flat field and a flat
+   stack of boxes on the drawer's own ground, so nothing read as a surface you work IN. The picker is a well now — the
+   list is sunk below the drawer with its own inner edge, the search sits above it on the drawer's ground, and the
+   group headers stick to the top of the well as you scroll, so the weapon you are inside is always named. (2026-09-16 17:37 EDT) */
+.g-pick { display: grid; gap: 10px; margin-top: 4px }
+.g-pick-h { display: flex; flex-wrap: wrap; align-items: center; gap: 10px }
+.g-pick-q { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; height: 40px; padding: 0 14px;
+  border-radius: var(--rad-2); background: var(--sunk); box-shadow: var(--b3-ring) }
+.g-pick-q .ic { width: 15px; height: 15px; color: var(--ink3) }
+/* "search bar inside of a search bar" — measured: the field is a 38px pill and the input inside it computed 44px
+   tall with its own `rgb(11,15,18)` ground and a `1px solid rgb(58,71,82)` border, because the portal's own global
+   input styling beat a bare `.g-pick-q input`. So the pill held a second, taller box. The reset is specific enough to
+   win now and strips every box property rather than just the two it used to. (2026-09-16 17:33 EDT) */
+/* ⚠️ MY FIRST FIX HERE WAS TO RAISE SPECIFICITY, AND app.css DOCUMENTS THAT AS THE WRONG ANSWER three lines above
+   the rule it loses to: "an opt-out cannot lose an argument it is not having". The global rule is
+   `input:not(...):not([data-bare])`, so the input carries `data-bare` now and never matches it. This block only
+   supplies the field's own look. (2026-09-16 17:34 EDT) */
+.g-pick-q > input, .g-pick .g-pick-q input { flex: 1; width: 100%; min-width: 0; height: auto; min-height: 0; margin: 0; padding: 0;
+  border: 0; border-radius: 0; background: none; box-shadow: none; outline: 0; color: var(--ink); font: 500 var(--t-sm)/1 var(--ui) }
+.g-pick-q:focus-within { box-shadow: inset 0 0 0 1px var(--focus) }
+.g-pick-n { font: 500 var(--t-sm)/1 var(--data); color: var(--ink3) }
+.g-pick-n b { color: var(--ink); font-weight: 600 }
+/* 🔴 EVERY GROUP MEASURED 0px TALL while its own header measured 40 and its rows 38 — the list rendered as ~35
+   coloured hairlines, which is the "seems it's still bugged" of 2026-09-16 17:33 EDT. A grid whose content is taller than its box
+   has NEGATIVE free space, and `align-content` defaults to `stretch`, so the auto rows were crushed to nothing and
+   each group's `overflow:hidden` clipped its own children. 68 groups in a 360px box is exactly that case.
+   A column flex box cannot do this: items keep their content height and the box scrolls. */
+/* ══ THE EXPORT DRAWER — ONE CONTAINER, AND IT IS THE DRAWER — 2026-09-17 09:52 EDT ══════════════════════════════════════
+   "the actual container with the list of weapons needs drastic visual improvement. like now it looks like an alien
+   component slapped into a drawer and forced to fit. The design doesn't feel naturally, fluidly integrated and part
+   of the drawer." · "the main export drawer landing also needs a drastic redesign and improvement. and remember,
+   this export drawer should be a class, not an instance fix."
+   He is right and the cause is countable: this 560px drawer held THREE container languages at once — rounded scope
+   cards with a yellow left bar and a big filled button; a long capsule search; and then a SUNKEN WELL holding more
+   rounded cards with their own left bars, scrolling inside the drawer's own scroll. Two nested scroll regions, two
+   unrelated meanings for a left accent bar 300px apart, and three filled primary buttons competing with the real
+   one at the foot.
+   ONE IDEA REPLACES ALL OF IT: the drawer is the container, and nothing inside it is. Every list here — the scopes
+   and the builds — is full-bleed rows on the drawer's own ground, divided by hairlines, scrolling with the drawer.
+   A weapon's colour becomes the rule UNDER its header rather than a bar on a card, so it reads as a section break.
+   The only filled button in the drawer is the one in the footer. Written on `.exs` and `.g-pick-*`, which is what
+   every export drawer in the portal mounts, so this is the class. */
+.g-pick-l { padding: 0; border-radius: 0; background: none; box-shadow: none; display: flex; flex-direction: column; gap: 0; max-height: none; overflow: visible; padding-right: 4px }
+.g-pick-l > * { flex: none }
+.g-pick-g { border-radius: 0; background: none; box-shadow: none; overflow: visible }
+.g-pick-gh, .g-pick-r { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; text-align: left; cursor: pointer }
+/* The header sticks to the DRAWER's scroll, not a well's, so the weapon you are ticking is always named. Its own
+   colour is a rule under it — a section break — instead of a bar down the side of a card. */
+.g-pick-gh { position: sticky; top: -1px; z-index: 2; padding: 14px 4px 10px; background: var(--raised);
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--c) 46%, transparent) }
+/* The group tick is the quieter of the two: it acts on a whole weapon, so it reads as the parent of the ticks under
+   it rather than as another peer at the same weight. */
+.g-pick-gh > .cb { transform: scale(.88); opacity: .92 }
+/* Same square accent chip he had removed from the selection list, still here — the group already carries its weapon
+   colour on its own left edge, so one fact was being drawn twice. Fixed as the class this time. (2026-09-16 17:37 EDT) */
+.g-pick-g { position: relative }
+.g-pick-r { padding-left: 4px }
+.g-pick-gh b { font: 600 var(--t-sm)/1 var(--ui); color: var(--ink) }
+.g-pick-gh small { font: 600 var(--t-micro)/1 var(--data); letter-spacing: .12em; text-transform: uppercase; color: var(--c) }
+.g-pick-gh em { margin-left: auto; font: 500 var(--t-xs)/1 var(--data); font-style: normal; color: var(--ink3) }
+/* TWO LINES, because a build's five attachment names are what you are choosing between and they do not fit beside
+   a name and a code in 560px. Line one names the build and carries its code; line two is the attachments, wrapping.
+   Nothing truncates, and the row finally reads as a build rather than as a table cell. */
+.g-pick-r { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; grid-template-areas: "cb n c" ". a a";
+  align-items: center; gap: 4px 10px; padding: 11px 4px; border-top: 1px solid var(--rule3); border-radius: 6px }
+.g-pick-r > .cb { grid-area: cb }
+.g-pick-r .n { grid-area: n }
+.g-pick-r .c { grid-area: c }
+.g-pick-r .a { grid-area: a; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px }
+/* (the grey `em` chips are gone: the picker lists attachments as the one tag component, 2026-09-18 11:10 EDT) */
+.g-pick-r[aria-pressed=true] .a em { color: var(--ink2) }
+.g-pick-r:hover, .g-pick-gh:hover { background: color-mix(in srgb, var(--ink) 5%, transparent) }
+.g-pick-r .n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 600 var(--t-sm)/1 var(--ui); color: var(--ink) }
+
+.g-pick-r .c { font: 600 var(--t-xs)/1 var(--data); letter-spacing: .06em; color: var(--ink2) }
+/* HARDEN 2026-09-16 22:14 EDT: the empty state was one sentence naming the problem and nothing else. An error that
+   does not carry its own recovery makes the reader hunt for the control that caused it. */
+.g-pick-none { display: grid; justify-items: center; gap: 9px; margin: 0; padding: 30px 20px; text-align: center }
+.g-pick-none b { font: 600 var(--t-md)/1.2 var(--ui); color: var(--ink2) }
+.g-pick-none span { max-width: 44ch; font: 500 var(--t-sm)/1.5 var(--ui); color: var(--ink3) }
+/* the search's own clear, and the count of what a row could not fit */
+.g-pick-qx { display: grid; place-items: center; width: 24px; height: 24px; flex: none; padding: 0; border: 0; border-radius: 50%;
+  background: none; color: var(--ink3); cursor: pointer; transition: background var(--b3-d1) var(--ease), color var(--b3-d1) var(--ease) }
+.g-pick-qx:hover { background: var(--hi); color: var(--ink) }
+.g-pick-qx .ic { width: 13px; height: 13px }
+.g-pick-r .a-more { flex: none; margin-left: 7px; font: 600 var(--t-micro)/1 var(--data); font-style: normal;
+  letter-spacing: var(--b3-tr-tight); color: var(--ink4) }
+.g-pick-r .c-none { font-style: normal; color: var(--ink4) }
+.exs-c, .g-pick-n b { font-variant-numeric: tabular-nums }
+/* "fix this button size." `.pill.sm` carries `min-height: var(--tap)` — the 44px touch floor — so the action in a
+   13px-type, 12px-padded row towered over its own row. The row is the hit area on a pointer surface: the button is
+   36px and the ROW keeps a 44px minimum, so the target never shrinks below the floor while the control stops
+   out-weighing the thing it acts on. It also gains the drawer's lead treatment so the primary action reads as one.
+   (2026-09-16 17:38 EDT) */
+/* ROUND 10B (2026-09-20 11:20 EDT): the row reads count -> set -> action, left to right, because the count is the
+   thing you are choosing between and the set name is how you name that choice. The count is the hero (tabular, 600,
+   ink) with its unit under it in the data face, so two rows of wildly different size are comparable at a glance; the
+   filename sits where the duplicated sentence used to, and is the only per-row line that differs. */
+.exs { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none }
+/* The drawer's lead, as marks rather than a paragraph (2026-09-20 23:36 EDT). Two facts, one line, each one a
+   complete thought that survives being read alone - which is the test a chip has to pass and a clause in
+   the middle of a sentence cannot. Labels were tried and dropped: every candidate was either a system
+   word (FORMAT, TIMING) or a different grammatical person from its neighbour. These are two facts, not
+   two fields.
+   ⚠️ A THIRD REASON WAS LISTED HERE AND IT WAS FALSE (2026-09-20 23:37 EDT): that a RESTORABLE label would repeat the
+   drawer's `export · reversible` eyebrow. That eyebrow is `ui/exportPanel.js`'s, the PORTAL's drawer - the
+   board's export drawer has no eyebrow, it was removed during this board's own process. I read a fact off
+   one file and asserted it about a different surface. It changes nothing in the output, but a comment
+   carrying a false premise is the thing a later session reasons from, so it is corrected rather than
+   quietly dropped.
+   The second wears `--warn-ink` and the board's own cautionary pairing from `.b3-sd-note` - an inline
+   note in a muted warn ink, never a fill - because a readout is neutral and the one-way advice is the
+   only line here with a tone to keep. No new accent is introduced. */
+/* `.dw-lead`'s own bottom margin is --s4, written for a confirm screen where the lead is the only thing
+   above a spec block. Here two marks follow it and then the rows, so it closes up; the type, weight and
+   colour are the component's and are not touched. */
+.exs-lead { margin-bottom: 8px }
+.exs-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; padding: 0; list-style: none }
+.exs-facts > li { display: inline-flex; align-items: center; gap: 8px; height: 24px; padding: 0 12px 0 8px;
+  border-radius: var(--rad-2); background: var(--sunk); box-shadow: var(--b3-ring);
+  font: 500 var(--t-xs)/var(--lh-1) var(--ui); color: var(--ink2) }
+.exs-facts .ic { width: 12px; height: 12px; flex: none; color: var(--ink4) }
+.exs-facts > li.exs-fact-w, .exs-facts > li.exs-fact-w .ic { color: var(--warn-ink) }
+.exs-i { display: grid; min-height: 56px; grid-template-columns: 64px minmax(0, 1fr) max-content; align-items: center; column-gap: 16px;
+  padding: 12px 18px 14px 6px; border-radius: 10px; background: var(--sunk); box-shadow: var(--b3-ring) }
+/* 2026-09-20 23:01 EDT - his three nudges are ONE relation, because the row is a grid and its padding is what the
+   tracks are measured from. Column one is a fixed 64 and the gap is fixed, so taking 12 off the left
+   inset carries BOTH the count square and the text column left by exactly 12 - the square, the Pick
+   icon, the titles and the rename chip, which is his first and third asks in one number. The button
+   column is max-content against the right inset, so it does not feel the left edge at all; 4 more on
+   the right moves the two Downloads and Pick by 4 and nothing else. Three separate offsets would have
+   been three authorities over positions the grid already owns. 18/14 -> 6/18. */
+.exs-n { display: grid; justify-items: center; gap: 2px; align-content: center }
+.exs-n > b { font: 600 var(--t-xl)/1 var(--data); color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -.02em }
+.exs-n > em { font: 500 var(--t-micro)/1 var(--data); font-style: normal; letter-spacing: var(--b3-tr-wide);
+  text-transform: uppercase; color: var(--ink4) }
+/* 2026-09-20 23:29 EDT - the Pick row's mark takes --staged, so the row reads as one thing: the mark, the button's
+   edge and its wash are all the same hue, the way MP's square and DMZ's square carry their own. This
+   selector reaches ONLY that row - the other two put `.b3-xf-sq` in this cell, not an icon. */
+.exs-n > .ic { width: 20px; height: 20px; color: var(--staged) }
+.exs-f { font-family: var(--data); color: var(--ink4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.exs-t > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+/* ── STEP 1B (2026-09-20 22:33 EDT) — THE CHIP'S TWO STATES ARE ONE BOX ──────────────────────────────
+   His: "when the chip is clicked, its width resizes and becomes smaller. and it auto increases
+   the height of the black tile." Both come from the same place, and it is a borrowed component
+   meeting a container it was not fitted to. In the export CARD the editing label lives in a grid
+   footer, where `justify-self:stretch` gives it the whole track - so its width never had to come
+   from its own content. `.b3-xf-fid` here is a flex COLUMN, where justify-self means nothing, so
+   the label collapsed to the bare <input>'s default width and the name scrolled out of view.
+   The wrapper carries the width now, sized once to whichever state is widest, and both children
+   fill it; `field-sizing:content` makes the field measure the name it is holding rather than a
+   default column count, so the two states resolve to the same number. The wrapper also owns the
+   height, so opening the field cannot move the row's floor. Scoped to `.exs-i` - the card's own
+   footer keeps the grid behaviour it was written for. */
+.exs-i .b3-xf-fid { width: max-content; max-width: 100%; height: 24px; justify-content: center }
+/* The title sits 3px high of where it fell, on the two rows that carry a file chip - his eye, not a
+   measurement of mine. `position:relative` rather than a margin, because a margin would take the chip
+   up with it and the chip is where he wants it; this moves the painted word and nothing else.
+   `:has(.b3-xf-fid)` is what makes it MP and DMZ only - Pick builds has no file and keeps its own
+   relationship to the line under it. (2026-09-20 22:44 EDT) */
+.exs-t:has(.b3-xf-fid) b { position: relative; top: -4px }
+
+/* 2026-09-20 22:38 EDT - `height` ALONE DOES NOT HOLD A FLEX ITEM. Measured on the page: both states carry
+   the same winning `height:24px` from this very rule, and the editing label still computed 19px,
+   because a flex item's height is a starting size its parent may shrink - the button resisted it
+   and the label, whose content is a 22px field rather than text, did not. A declared height is a
+   REQUEST; min-height plus flex:none is the instruction. */
+.exs-i .b3-xf-fn:not(.editing), .exs-i .b3-xf-fn.editing { box-sizing: border-box; width: 100%; max-width: 100%;
+  flex: 0 0 auto; height: 24px; min-height: 24px }
+.exs-i .b3-xf-fn.editing input:not(#_) { field-sizing: content; min-width: 0; max-width: 100% }
+/* ⚠️ SCOPED TO `.exs-i` WHEN IT WAS FIRST WRITTEN, WHICH WAS WRONG (2026-09-20 23:04 EDT). His: "you didn't give
+   the export list's version of the file rename chip the same glow treatment?" No, and the reason I gave
+   myself was that the card is a settled surface - which is the instance-over-class move by its own name.
+   It is ONE chip: same box, same tint, same pencil, same field, and as of tonight the same count square
+   beside it. A focus state that exists on one caller and not the other is a second behaviour, not a
+   narrower fix. `:is(.b3-xf,.exs-i)` is the ancestor every other rule for this chip already carries.
+   The open field carries the board's own focus glow rather than a new one: `.b3-btn2.go` has drawn
+   `0 0 0 3px` of its own fill at 26% since round 5, and the pulse that marks staged work fades a
+   colour outward from the same origin. Both layers are --ok because --ok is already this chip's
+   colour - the tint, the name's ink and the pencil all read from it - so the glow says the chip is
+   live, not that a second accent has arrived. The inset edge is untouched: it is --focus, the same
+   1px the field has always drawn, and the two are additive rather than a replacement.
+   (2026-09-20 22:41 EDT) */
+:is(.b3-xf,.exs-i) .b3-xf-fid .b3-xf-fn.editing,
+:is(.b3-xf,.exs-i) .b3-xf-fid .b3-xf-fn:not(.editing):focus-visible {
+  box-shadow: inset 0 0 0 1px var(--focus),
+              0 0 0 3px color-mix(in srgb, var(--ok) 26%, transparent),
+              0 0 16px -2px color-mix(in srgb, var(--ok) 40%, transparent);
+  transition: box-shadow var(--b3-d1) var(--ease), background var(--b3-d1) var(--ease) }
+@media (prefers-reduced-motion: reduce) { :is(.b3-xf,.exs-i) .b3-xf-fid .b3-xf-fn.editing { transition: none } }
+.exs-i .pill.sm { min-height: 36px; height: 36px; padding: 0 12px 0 14px }
+.exs-i .pill.sm .ic { width: 14px; height: 14px }
+/* ROUND 10A (2026-09-20 11:17 EDT): "Why are the download buttons yellow here but a green color in Pick Builds
+   sub-panel? Doesn't this shade of yellow mean staged?" and "why don't the download buttons have icons here?"
+   Both true, and one fault: the landing drew its action as `.pill.lead` - a --patch fill, no mark - while the
+   panel one step in used `.b3-btn2.go` with a download icon. ONE action, ONE control: taking a file is `.go`
+   everywhere, and Pick, which takes no file, stops wearing the primary treatment at all.
+   WARNING: this is NOT the 2026-09-17 restyle he rejected below - that one repainted the ROWS. Rows untouched. */
+/* 2026-09-20 23:11 EDT - THE SAME BUTTON AS THE ONE IN THE EXPORT LIST, INSIDE AND OUT. It had been 36px tall on
+   13/11 padding while the panel's Download is `.b3-btn2.sm`'s own 32px on 12/10 with a 7px gap - two
+   sizes of one control, one step apart in the same drawer. The 36 was borrowed reasoning: the note above
+   is about `.pill.sm`, which carries the 44px `--tap` floor and did tower over this row. `.b3-btn2.sm`
+   never had that floor. The values are restated rather than deleted only because a global control rule
+   sets a min-height, and an unstated min-height is how 32 would quietly become 44. */
+.exs-i .b3-btn2.sm { min-height: 32px; height: 32px; padding: 0 12px 0 10px; gap: 8px }
+.exs-i .b3-btn2.sm .ic { width: 14px; height: 14px }
+/* and one WIDTH, not a floor: `min-width` leaves each button free to outgrow it, so the three read as
+   staggered the moment one label is longer than another. Download and Pick both sit under 118 at these
+   metrics, so the floor happened to hold - which is a coincidence, not a rule. */
+/* 2026-09-20 23:21 EDT - and SYMMETRIC insets, because a fixed-width centred button has no use for an optical
+   lead. `.b3-btn2.sm` is 10 left / 12 right: the smaller left inset pays for a LEADING icon's own
+   white space, which is right for Download and wrong for Pick, whose chevron trails. With
+   `justify-content:center` the content is centred in the CONTENT box, so an asymmetric inset moves
+   the ink off the button's centre - measured 2.0px left on both, and it reads on Pick because its
+   label is 45px inside a 118px box. 12/12 puts the content box's centre on the button's. */
+/* 2026-09-20 23:23 EDT - and the WIDTH was the half he actually meant. 118px was a number this landing invented;
+   the panel's Download is `.b3-btn2.sm` at its own size. Same classes, same label, same icon, same gap,
+   so its natural width is the landing's natural width - measured 100.1px at 10/12, 102.1 with the
+   symmetric inset above. So the Downloads take their own size (no `width` at all, exactly as the panel
+   draws them) and Pick, whose label is 45px shorter, is floored to the same 102 so the column does not
+   stagger. If the label or the face ever changes, this rots VISIBLY - a 1px step in a column of three -
+   which is the failure mode to prefer. */
+.g-exs .exs-i > .b3-btn2:last-child { min-width: 104px; justify-content: center; padding-inline: 12px }
+/* 2026-09-20 23:27 EDT - AND THE CENTRING IS OPTICAL, NOT GEOMETRIC. I measured the element boxes and read 28.4
+   either side; he measured the INK and read 28 left, 33 right. Both are correct - the chevron's box is
+   14px and its drawn stroke does not reach the right edge of it, so ~5px of the box is transparent and
+   the glyph's optical centre is 2.5px left of the button's. This is anchor #30 by its own words: an
+   alignment claim is measured on the drawn ink, never on element boxes, and I have now made that
+   mistake on this exact button twice in one round.
+   The slack is taken off the icon, which is where it lives, so `justify-content:center` redistributes
+   it and the pair lands on 30.5 either side. Download's icon LEADS and his rulers read 13/13 on it, so
+   it is untouched - a trailing mark is the only one whose bearing falls outside the centred group. */
+.exs-i .b3-btn2 > .ic:last-child { margin-right: -4px }
+/* and the format rows stop being three identical bordered boxes: the one you can act on carries a left rail in the
+   accent, the others stay quiet. */
+/* 🔴 REVERTED — 2026-09-17 18:24 EDT. The whole restyle of the Export scope list that sat here is gone:
+   "i outright reject your design improvement. This shit is ugly." It repainted `.exs-i` — borders off, a 6px radius,
+   the lead pill turned into an outlined ghost, the title rescaled — under both option values, so picking either
+   branch of the picker question also served him a redesign he had refused. The picker itself is what the fork is
+   about, and it stays; the list around it goes back to the portal's own. Do not reinstate any part of this on the
+   argument that a single rule of it was fine. */
+/* The search and the picked chips ride together at the top of the list and stay there while it scrolls, so what you
+   have picked is never something you have to scroll back up to find. */
+html[data-b3-exp=a] .g-pick-h, html[data-b3-exp=a] .g-pick-sel, html[data-b3-exp=b] .g-pick-h, html[data-b3-exp=b] .g-pick-sel { position: sticky; z-index: 3; background: var(--raised) }
+.g-pick-h { top: 0; padding: 10px 0 8px }
+.g-pick-sel { top: 58px }
+
+/* ── P9 · option B: a time rail down the left ──────────────────────────────────────────────────────────────────── */
+/* ROUND 9A (2026-09-20 01:51 EDT): the rail's grid is shared by the head, the rows and the day, as option A's is — the head had kept A's
+   columns under B's 44px inset (KIND's label 12px off its tabs, WHO 26px off), and the action column was still the 44px
+   of the old icon while version 39's Undo pill is 84, so the pill overflowed and clipped at the panel's edge. */
+html[data-b3-p9=b] .b3-hi-h, html[data-b3-p9=b] .b3-hi-r, html[data-b3-p9=b] .b3-hi-day { grid-template-columns: 88px 118px minmax(0, 1fr) 190px 84px; padding-left: 44px }
+html[data-b3-p9=b] .b3-hi.uk .b3-hi-h, html[data-b3-p9=b] .b3-hi.uk .b3-hi-r, html[data-b3-p9=b] .b3-hi.uk .b3-hi-day { grid-template-columns: 88px 28px minmax(0, 1fr) 190px 84px }
+html[data-b3-p9=b] .b3-hi.uw .b3-hi-h, html[data-b3-p9=b] .b3-hi.uw .b3-hi-r, html[data-b3-p9=b] .b3-hi.uw .b3-hi-day { grid-template-columns: 88px 118px minmax(0, 1fr) 28px 84px }
+html[data-b3-p9=b] .b3-hi.uk.uw .b3-hi-h, html[data-b3-p9=b] .b3-hi.uk.uw .b3-hi-r, html[data-b3-p9=b] .b3-hi.uk.uw .b3-hi-day { grid-template-columns: 88px 28px minmax(0, 1fr) 28px 84px }
+html[data-b3-p9=b] .b3-hi-r { min-height: 76px }
+html[data-b3-p9=b] .b3-hi-r::before { left: 21px; top: 50%; width: 11px; height: 11px; margin-top: -5px; border-radius: 50%;
+  background: var(--c); box-shadow: 0 0 0 3px var(--desk), 0 0 0 4px color-mix(in srgb, var(--c) 45%, transparent) }
+html[data-b3-p9=b] .b3-hi-r::after { content: ""; position: absolute; left: 26px; top: 0; bottom: 0; width: 1px; background: var(--rule2); z-index: -1 }
+html[data-b3-p9=b] .b3-hi-day { min-height: 52px }
+html[data-b3-p9=b] .b3-hi-day::before { content: ""; position: absolute; left: 21px; top: 50%; width: 11px; height: 11px; margin-top: -5px;
+  border-radius: 50%; background: var(--rule2); box-shadow: 0 0 0 3px var(--desk) }
+html[data-b3-p9=b] .b3-hi-r .what { padding: 16px 0; gap: 8px 12px }
+html[data-b3-p9=b] .b3-hi-r .what .s { font-size: var(--t-md) }
+
+/* ── phone ─────────────────────────────────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 760px) {
+  .g-queue { grid-template-columns: minmax(0, 1fr) }
+  .pk-os { grid-template-columns: 1fr }
+  .pidx-l { grid-template-columns: 1fr }
+  .g-stage.g-fixed { height: auto; max-height: var(--stage-h) }
+  .g-nav { position: static }
+  .b3-sd-th { display: none }
+  .b3-sd-tr { grid-template-columns: 26px minmax(0, 1fr) auto 28px }
+  .b3-sd-tr .b3-sd-name, .b3-sd-tr .b3-sd-atts, .b3-sd-tr .b3-sd-code { display: none }
+}
+
+/* ── What a full-screen sweep showed that clipped shots never could — 2026-09-16 16:20 EDT ───────────────────── */
+/* Board 2's sheet sets a 96px row gap on `.pb`, which is right for a board of nineteen SMALL gates. Board 3 has five
+   tall surfaces, so the same gap is three screens of dead air between blocks he has to scroll past. Seen in the
+   sweep's screens 02 and 05 as a ~120px empty band above every heading, and invisible to every clipped shot I took. */
+.pb { gap: 52px }
+/* The legend column was as tall as the specimen beside it and left its own dead space underneath: the strip's items
+   stretch by default, so a short item inherits a tall row. */
+.g-ctls { align-items: center }
+.g-ctl:has(.g-spec) { flex: 1 1 100%; align-self: stretch }
+.g-ctl-tries { margin-top: 2px }
+
+/* Words beside words share a baseline; the checkbox is a box and keeps the centre line. The rows lost `min-height`
+   in the same change — a baseline group inside a taller box hugs its top, so the height comes from padding now.
+   (2026-09-16 21:36 EDT) */
+/* 🔴 REVERTED TO THE ROW TYPES CONTRACT — 2026-09-17 09:38 EDT. "the checkboxes are still misaligned. they should all be in the
+   same line." They were: a previous round put `align-items:baseline` on the ROW, which is the right rule at the wrong
+   SCOPE. This row is a CHECKBOX beside words at three different sizes — the build name at t-sm, the attachment list
+   at t-xs, the code at t-xs mono — so baseline-aligning the row hangs the box off whichever text sits highest and
+   every row lands somewhere slightly different. The contract at the head of board.css says it in one line: a BOX
+   beside words shares a CENTRE line, and only words beside words share a baseline, which is `.b3-nw`'s whole job.
+   The `align-self:center` patch underneath was an instance fix for a class mistake, and it goes with it. */
+.g-pick-gh, .g-pick-r { align-items: center }
+
+/* DELIGHT 2026-09-16 22:18 EDT — the board's whole job is to collect decisions, so the moment that deserves a
+   response is a SURFACE being finished, not an individual tick. It gets certainty rather than celebration: the
+   panel's key goes from an instruction to a fact, in the same --ok the rows already use when they are recorded.
+   Nothing expands, nothing bounces, and the hundredth time reads the same as the first. */
+/* A RULED FORK — a decision you already made, shown as a record. It deliberately has no buttons: the whole defect
+   it fixes is that answering a question here did not stop the board asking it. (2026-09-17 18:24 EDT) */
+.dk-row.ruled .dk-q span { color: var(--ink2) }
+.dk-ruled { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 13px; border-radius: var(--rad-pill);
+  font: 600 var(--t-sm)/1 var(--ui); color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 42%, transparent) }
+.dk-ruled .ic { width: 14px; height: 14px }
+.dk-row.ruled .dk-st { color: var(--ink4) }
+.dk:where(:not(.diff-r>*)).settled { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 34%, transparent) }
+.dk:where(:not(.diff-r>*)).settled .dk-k { grid-auto-flow: column; gap: 6px; color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 36%, transparent) }
+.dk:where(:not(.diff-r>*)).settled .dk-k .ic { width: 12px; height: 12px }
+.dk:where(:not(.diff-r>*)).settled .dk-h b { color: var(--ok) }
+
+/* POLISH — the surfaces the design did not draw. A board that themes its chips and leaves the caret, the text
+   selection and the scrollbar at the browser's defaults reads as assembled rather than built, and those three are
+   on screen the entire time someone is typing into the notes box or scrolling a 10,500px page. */
+::selection { background: color-mix(in srgb, var(--staged) 30%, transparent); color: var(--ink) }
+.pb input, .pb textarea { caret-color: var(--staged) }
+.pb, .g-stage, .b3-sd-list, .dk:where(:not(.diff-r>*)), .pidx-l { scrollbar-color: var(--rule2) transparent; scrollbar-width: thin }
+.g-h2, .g-sub, .dk-h b { text-wrap: balance }
+
+/* The picked strip: the same chip the selection bar uses, so a build looks the same wherever it is selected. It
+   wraps to at most two rows and scrolls past that, rather than growing the header. (2026-09-17 00:22 EDT) */
+/* The picked strip sat on its own sunken plate, which is the exact thing the rest of this drawer just stopped
+   doing. It rides the drawer's ground with one hairline under it. (2026-09-17 09:54 EDT) */
+/* No cap and no nested scroll: the strip shows eight and the ninth chip is a control that says how many are left.
+   (2026-09-17 10:51 EDT) */
+.g-pick-sel { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
+  padding: 2px 0 10px; background: none; box-shadow: inset 0 -1px 0 var(--rule3) }
+.g-pick-sel.open { max-height: 40vh; overflow-y: auto }
+.g-pick-sel .b3-sc { height: 28px }
+
+/* A colour value in a note shows the colour it names, not the realm's accent (2026-09-17 22:00 EDT): "#3F6E8E" printed in red. */
+.pb-new li code.g-hex { color: var(--ink2) }
+.g-hex::before { content: ""; display: inline-block; width: .8em; height: .8em; margin-right: .4ch; border-radius: 3px;
+  vertical-align: -.08em; background: var(--sw); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 22%, transparent) }
+
+/* ── Export, polished (2026-09-18 10:54 EDT) — the drawer shell is the portal's and he rejected restyling it, so these touch only
+   what was broken or disagreed with itself on the rendered page, desktop and phone. */
+/* The "Pick builds…" title was the only title in the list painted in the accent: three rows, two voices. The row's
+   button already says it is a different kind of row. */
+/* A weapon with some of its builds picked showed an EMPTY box — the same state as none picked. The middle state is a
+   bar, as the manifest's checkboxes draw it. */
+html .g-pick .cb.some{background:var(--staged);border-color:var(--staged);box-shadow:none}
+/* It draws the manifest's own middle mark — the checkbox proposal (p4) masks and clips `::after`, so the bar opts out of both. */
+html .g-pick .cb.some::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:2px;translate:-50% -50%;border:0;border-radius:1px;transform:none;
+  clip-path:none;-webkit-mask:none;mask:none;background:var(--on-accent)}
+/* The search field is 40px and "Clear" beside it was taller — two heights on one row. */
+.g-pick-h .pill.sm{height:40px;min-height:40px}
+/* The counts column wandered 13px because each row's button was as wide as its own word ("Download" 85px, "Pick" 71px).
+   One button width, so the counts line up down the list. */
+.g-exs .exs-i > .pill:last-child{min-width:92px;justify-content:center}
+/* "‹ Back": the chevron rode above the word, because a drawer-footer .btn is not a flex row. Every footer button that
+   carries an icon centres it now (breadth: the drawer footers on this board; only Back carries one today). */
+.dw-f .btn:has(> .ic){display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.dw-f .btn{padding-inline:18px}
+.dw-f .btn > .ic{width:14px;height:14px;flex:none}
+/* a leading icon's viewBox padding sat the label 2px right of centre (measured 45px vs 41px) — pull it back optically */
+.dw-f .btn > .ic:first-child{margin-left:-4px}
+
+/* ── The board on a phone (2026-09-18 10:56 EDT). Board 2's sheet gives every stage a 1148px floor so the portal is shown at its desktop
+   width, and the gate scrolls sideways to reach it. But the gate's grid track sized itself to that floor, so the TITLE,
+   the switches, the notes and the decisions were laid out 1148px wide too and cut off at 390 — the words he reads from
+   his phone were the part that did not fit. The track is the phone's width now: every block of text wraps to the screen,
+   and only the stage — the portal itself — pans sideways. */
+@media (max-width: 760px) {
+  .pb-gate.g-gate { grid-template-columns: minmax(0, 1fr) }
+  .pb-gate.g-gate > :not(.pb-stage) { min-width: 0; max-width: 100% }
+  .g-ctls, .g-ctl { flex-wrap: wrap }
+  /* A switch with eight options is wider than the phone: it scrolls inside its own pill instead of running off the box. */
+  .g-ctl { max-width: 100%; min-width: 0 }
+  .g-ctl .seg { min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain }
+  /* The small-text corpus is a three-column table on a desk; on a phone each string reads down: where, what, verdict. */
+  .b3-corp, .b3-corp-r { grid-template-columns: minmax(0, 1fr) }
+  /* The decision rows: the question, its options wrapping under it, then the status — one column. */
+  .dk-row { grid-template-columns: minmax(0, 1fr) }
+  .dk-st { justify-content: flex-start }
+  .dk-o { max-width: 100% }
+  .g-ctl .seg::-webkit-scrollbar { display: none }
+}
+
+/* See gates/main.js: no keyboard ring on a drawer's close button until a key has been pressed on the board. */
+html:not([data-kbd]) .drawer .x:focus-visible { outline: none; box-shadow: none }
+/* The search field and Clear shared a row at two offsets (185 vs 187px): one centre line. */
+.g-pick-h > .pill.sm { align-self: center; margin: 0 }
+
+/* ══ ROUND 5A — THE DRAWER'S BACK AND CLOSE (board 3-D, 2026-09-18 16:17 EDT) ═════════════════════════════════════════════════════
+   One pair of icon buttons at the drawer's top right. Each says its word on hover or keyboard focus, the manifest fold's
+   pattern; the cluster is right-anchored, so the word grows into the title's air and nothing beside it moves. Every drawer's
+   Close takes this; Back renders only for a drawer with a step to return to (Drawer's onBack). */
+.dw-nav{margin-left:auto;flex:none;display:flex;align-items:center;gap:6px}
+.dw-h .dw-nav .x{margin-left:0;width:auto;min-width:28px;display:inline-flex;align-items:center;justify-content:center;gap:0;padding:0 6px;
+  transition:gap 360ms cubic-bezier(.4,0,.2,1),padding 360ms cubic-bezier(.4,0,.2,1),color 200ms ease,background 200ms ease,border-color 200ms ease}
+.dw-h .dw-nav .x > b{display:inline-block;max-width:0;overflow:hidden;opacity:0;white-space:nowrap;font:600 12px/1 var(--ui);
+  transform:translateX(-3px);transition:max-width 360ms cubic-bezier(.4,0,.2,1),opacity 240ms ease 60ms,transform 360ms cubic-bezier(.4,0,.2,1)}
+.dw-h .dw-nav .x:hover,.dw-h .dw-nav .x:focus-visible{gap:6px;padding:0 10px 0 8px}
+.dw-h .dw-nav .x:hover > b,.dw-h .dw-nav .x:focus-visible > b{max-width:round(3.4em, 2px);opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.dw-h .dw-nav .x,.dw-h .dw-nav .x > b{transition:none}}
+
+/* 2026-09-19 09:48 EDT: the Try buttons join the board's one button shape (board.css, round 5L). */
+.g-tries button { border-radius: var(--rad-box) }
+
+/* ROUND 6A (2026-09-19 19:09 EDT) — the dock's edge, drawn above its own rows. `.dk-row` carries a border-top across the
+   full border box, so the dock's inset ring was notched at every row; the rule and its reasoning are in board.css. The
+   override lives here because gates.css is the last sheet the board loads. */
+.dk{--b3-edge:var(--rule);box-shadow:none;outline:1px solid var(--b3-edge);outline-offset:-1px}
+
+/* ROUND 6G — the quote box's footer had an 8px right inset here, which a borderless Show all could sit on because its
+   INK landed on the card's 18px line. Bordered, the BOX is what lands, so the inset matches the left one and the fold's
+   right edge draws the same line the character chip's left edge does. This override lives in gates.css because the 8px
+   is set here, after board.css. */
+.g-card .pb-enc .pb-encf { padding-right: 18px }
+
+/* ================= ROUND 15 — the intake round of 2026-09-20 17:41 EDT =================
+   Seven items, sorted by CAUSE rather than by symptom. Three roots, not one:
+   (1) PROVENANCE - a component already existed and H1/Export drew its own version instead
+       (the hover mesh, the accent rail, the kind tab, the day chip, the tile-owned hover);
+   (2) EDGE OWNERSHIP - a boundary drawn by something that does not own it (a child rule over a
+       container's ring; a filter grid drawing the toolbar's bottom edge);
+   (3) A MISSING SYSTEM - H1 had 58 hard-coded spacing declarations and no scale. */
+
+/* ---- 15A - THE EDGE RULE, and why the last one did not hold -------------------------------
+   board.css:4032 already carries this mechanism: `outline:1px solid var(--b3-edge)` with
+   `outline-offset:-1px`, because an OUTLINE paints above descendants while an inset box-shadow
+   paints beneath them - so a full-bleed child rule cuts an inset ring and leaves the gaps he
+   reported on 2026-09-19 17:56 EDT. It was applied to FOUR selectors and every container added
+   since had to be remembered, which is four instance fixes sharing a declaration, not a class
+   fix. `.dk` got the outline in gates.css:735 but `.dk.settled` kept its own green inset ring at
+   gates.css:641 at higher specificity, which is the green border with gaps in his screenshot.
+   The rule now: a container draws its edge by setting --b3-edge, never by an inset ring.
+   Measured 153 crossings over 24 distinct child|parent pairs before this change. */
+/* 🔴 CORRECTED 2026-09-20 18:47 EDT — AN OUTLINE DOES NOT WIN, AND I SHIPPED THE CLAIM THAT IT DOES.
+   CSS paints outlines last WITHIN a stacking context, so the rule held only while every child
+   stayed in the container's own context. `.b3-tk .b3-tk-h` carries `z-index:40` and `.b3-tk` is
+   `position:static`, so that header joined an ANCESTOR's stacking context and painted above the
+   card's outline — which is why the repair tickets still showed a cut ring after 15A. Paint order
+   is the wrong thing to depend on. The edge is an OVERLAY now: a pseudo-element pinned to the
+   container, inheriting its radius, at the top of a stacking context the container establishes
+   itself. Nothing inside can reach it, whatever z-index it declares. */
+/* THIRD MECHANISM, AND THE FIRST STRUCTURAL ONE - 2026-09-20 19:45 EDT. He rejected the first two
+   on the ink. An outline loses to a descendant in another stacking context; an overlay only covers
+   the containers I remember to list, and codebase-memory says this kit carries 361 `inset 0 0 0 1px`
+   declarations, so a list was never going to be the class.
+   THE REASON `.panel` HAS NEVER APPEARED IN ONE OF HIS SCREENSHOTS IS THAT IT USES A REAL BORDER.
+   A border sits OUTSIDE the padding box, so a full-bleed child's box starts inside it and cannot
+   reach it - no paint order, no z-index, nothing to remember. `box-sizing:border-box` is already
+   global here, so the outer size does not move. */
+.dk:where(:not(.diff-r>*)),.exs-i,.exs-pick,.b3-tk,.b3-xf,.pb-enc,.b3-sd{
+    border:1px solid var(--b3-edge,var(--rule2));outline:0;box-shadow:none;position:relative}
+.b3-sd{box-shadow:0 1px 0 #ffffff08 inset,0 26px 52px -18px #000}
+.pb-enc{box-shadow:inset 0 1px 0 color-mix(in srgb,var(--c) 30%,transparent)}
+.b3-xf{box-shadow:inset 0 1px 0 color-mix(in srgb,var(--m) 35%,transparent)}
+.dk{--b3-edge:var(--rule)}
+.dk:where(:not(.diff-r>*)).settled{--b3-edge:color-mix(in srgb,var(--ok) 34%,transparent);box-shadow:none}
+
+/* ---- 15B - the toolbar owns its own bottom edge --------------------------------------------
+   `.b3-hi-f` is a max-content grid, so its `border-bottom` was 1052px inside a 1092px panel and
+   read as a hairline floating in the header - his sixth item. The boundary belongs to the
+   toolbar, which spans the panel; the column head keeps its own inset edge below itself. */
+.b3-hi .b3-hi-f{border-bottom:0}
+.b3-hi .b3-hi-tools{box-shadow:inset 0 -1px 0 var(--rule)}
+
+/* ---- 15D - the row's hover ground ----------------------------------------------------------
+   The mesh WAS already ported layer for layer - byte-identical to `.b3-wr:hover` - and that is
+   exactly why it looked wrong. The recipe's middle radial is hard-coded to --warn, which reads
+   as warmth beside Armory's warm weapon accent and screens to grey beside H1's cool state hue
+   (change = --info, #409AD0). A literal port of a parameterised recipe is not a port. The second
+   radial is now derived from --c, so the mesh lifts in the row's own hue on every kind. */
+/* 🔴 I WAS BENCHMARKING AGAINST THE WRONG ELEMENT FOR THREE ROUNDS - 2026-09-20 20:22 EDT.
+   He said "the H1's row glow IS NOT the same style as the armory manifest row's glow" and I ported
+   `.b3-wr:hover`, because its name matched the words. `.b3-wr` is the weapon GROUP header: five of
+   them exist on this board and every one measures ZERO PIXELS HIGH - it is collapsed and has never
+   been on screen. The row he is looking at is `.wg-r`, twenty-two of them, and its hover is a
+   different recipe entirely (app.css:1160):
+     - THREE FIXED-PIXEL ELLIPSES PLACED INSIDE THE ROW (360x80 at 14% 40%), not percentage-of-box
+       ellipses anchored outside the corners, so the light pools where the eye is rather than
+       washing the whole band;
+     - all three in the row's own hue, the third in --realm-c, and NOT a --warn layer;
+     - no blend modes at all - plain stacking over the row's ground.
+   That is why two attempts at "the same mesh" both came back looking unchanged: the mesh was never
+   what he was comparing it to. The lift stays because H1's --c is a state hue near L .58 where
+   Armory's weapon accents sit near .85, and the board's own idiom for that is oklch max(l,...). */
+.b3-hi-r:hover,.b3-hi-r.open{
+    --glo:oklch(from var(--c) max(l,.72) c h);
+    background:
+        radial-gradient(360px 80px at 14% 40%,color-mix(in srgb,var(--glo) 16%,transparent),transparent 72%),
+        radial-gradient(420px 100px at 76% 70%,color-mix(in srgb,var(--glo) 7%,transparent),transparent 70%),
+        radial-gradient(260px 70px at 46% 0,color-mix(in srgb,var(--r-history,var(--glo)) 6%,transparent),transparent 70%);
+    background-blend-mode:normal}
+
+/* ---- 15E - the time rail loses its circles and gains the manifest's accent border ----------
+   His instruction. The circles were a second kind signal competing with the row's own rail, and
+   the 1px rail line behind them carried `z-index:-1`, which paints it BEHIND the row's own
+   background - so the variant named "Time rail" had never once drawn a rail. Both go; the rows'
+   left accent borders ARE the rail, coloured by kind, broken between rows and joined across a
+   bound story. Weight and opacity are the Armory manifest's (3px, --c at 42%). */
+/* 42% was Armory's number, tuned for a SATURATED weapon accent. H1's --c is a state hue and the
+   board's own rails (.b3-sd-gh::before at full, .b3-sd-tr::before at .85) carry it at strength.
+   A borrowed constant is not part of the borrowed component. */
+.b3-hi-r::before{background:var(--c)}
+html[data-b3-p9=b] .b3-hi-r::before{
+    left:0;top:8px;bottom:8px;width:3px;height:auto;margin-top:0;
+    border-radius:0 2px 2px 0;background:var(--c);box-shadow:none}
+html[data-b3-p9=b] .b3-hi-r.st-a::before{bottom:0;border-bottom-right-radius:0}
+html[data-b3-p9=b] .b3-hi-r.st-m::before{top:0;bottom:0;border-radius:0}
+html[data-b3-p9=b] .b3-hi-r.st-z::before{top:0;border-top-right-radius:0}
+html[data-b3-p9=b] .b3-hi-r::after{content:none}
+html[data-b3-p9=b] .b3-hi-day::before{content:none}
+
+/* ---- 15F - the kind tab is a side bar again, which is pin 53's own shape -------------------
+   `.b3-htab` has carried `box-shadow:inset 3px 0 0 var(--c)` since it was built - the state tab
+   "carried on its left edge". board.css:4786 replaced it with a 1px ring while lowering the
+   saturation the design review asked for, so a saturation change silently took the shape with
+   it. The constraint table's own row says shape, hue and position are pin 53's and untouched. */
+.b3-hi-r .b3-htab:not(.quiet){
+    color:color-mix(in srgb,var(--c) 58%,var(--ink2));
+    background:color-mix(in srgb,var(--c) 8%,transparent);
+    box-shadow:inset 3px 0 0 var(--c)}
+
+/* ---- 15G - the day row states its mix in the same chip as every other kind ------------------
+   `.b3-hi-dk` was bare text with a bare icon sitting beside rows whose kind wore a tab. One
+   object names a kind on this surface, and the day row uses it. */
+.b3-hi-day .b3-hi-dm{gap:8px}
+.b3-hi-day .b3-hi-dk{
+    height:22px;padding:0 9px 0 8px;border-radius:5px;gap:6px;
+    font:600 var(--t-xs)/1 var(--ui);
+    color:color-mix(in srgb,var(--c) 58%,var(--ink2));
+    background:color-mix(in srgb,var(--c) 8%,transparent);
+    box-shadow:inset 3px 0 0 var(--c)}
+/* The day row's cells DO line up with the rows beneath them - measured, dd at 118 against the time
+   at 118, the mix at 218 against the kind tab at 218. What is off is INSIDE the chip: `.b3-hi-dk`
+   inherits `align-items:baseline` from the bare-text era (board.css:4647), and a baseline-aligned
+   flex inside a fixed-height chip drops its icon and its count off the chip's own centre line. A
+   chip is a box; a box centres. */
+.b3-hi-day .b3-hi-dm,.b3-hi-day .b3-hi-dk{align-items:center}
+.b3-hi-day .b3-hi-dk em{color:inherit;font-weight:700;margin-right:1px}
+.b3-hi-day .b3-hi-dk .ic{width:12px;height:12px;color:color-mix(in srgb,var(--c) 78%,var(--ink3))}
+
+/* ---- 15H - the tile owns its hover, not the name inside it ----------------------------------
+   `.b3-xt-wn:hover b` tinted the weapon name only when the cursor was on the name, while the
+   tile's own hover already drove the build chips (board.css:3676) AND the name's marquee
+   (board.css:4371). Two rules about one element, one bound to the tile and one to the part. */
+.b3-xt-w:hover .b3-xt-wn b,.b3-xt-wn:focus-visible b{color:color-mix(in srgb,var(--c) 40%,white)}
+
+/* ---- 15I - H1's spacing scale, and the knobs that drive it ---------------------------------
+   58 hard-coded spacing declarations across 20 rules, four of them setting the same row's
+   padding. Every gap H1 can show is now one of thirteen named relationships; b3/state.js stamps
+   each as a custom property on :root, so the playground sliders write these and nothing else. */
+
+/* The toolbar wrapper already owns the gate's inset, so the filter grid adding its own put every
+   filter label 22px right of EVENTS, KIND's chips out of line with the search field, and the
+   whole second column 22px off the rows beneath it. One band, one inset, declared once. */
+/* ---- 18A - THE TWO DEAD KNOBS, AND THE SPECIFICITY THAT KILLED THEM (2026-09-20 21:59 EDT) -------
+   His: "they either dont work at all or their spacing rules are incorrect." Row -> row and
+   First column -> second did NOTHING, and not because the property was wrong. The toolbar div
+   is `class="mt-r2 b3-hi-f"`, and gates.css:238 sets `column-gap:16px; row-gap:var(--s2)` on
+   `html[data-b3-a1=fixed] .mt-r2` - (0,2,1) - which outranks `.b3-hi .b3-hi-f` at (0,2,0). So the
+   lab read 10 and 36 while the page rendered 16 and --s2, and no amount of sliding moved it.
+   This is the same class the H1 toolbar has already paid for twice. The gaps move onto the rule
+   that ALREADY beats it - the attribute-scoped one below at (0,3,1) - rather than a fourth
+   competitor; this rule keeps only the padding, which nothing contests. */
+
+
+
+/* 18B - THE LABELS ARE RIGHT-ALIGNED, AND THAT SPLITS ONE KNOB IN TWO. His second line. Until now
+   `Label -> chips` was wired to the label BOX WIDTH, not to a distance: the labels sat left-aligned
+   in an 88px box, so the gap you actually saw was 88 minus the word - 54px after KIND, 40px after
+   REALM - and the knob named a relation it did not control. Right-aligning them makes every label
+   END on one x, which is the point, and it also means the box width and the label-to-chips gap are
+   now two different numbers. Both are knobs: --h1-labw is the column, --h1-lab is the distance.
+   The flex `gap` already puts --h1-chip between the label and the first chip, so the margin carries
+   only the remainder and the number in the lab is the distance you measure on screen. */
+  /* 2026-10-03 21:49 EDT (Session 4): the label space is the group's own gap now (--h1-lab); the chips have their own box and gap (--h1-chip) */
+/* Found by driving the knobs to their ends rather than by reading the rule: the filter grid's
+   first column was pinned at a magic 440px (board.css:4819) while --h1-lab set the label width
+   inside it, so widening a label squeezed its own chips until Restarts wrapped onto a line of its
+   own. Two numbers describing one column. The column sizes to its content now, and the gap
+   between the two columns is the knob. */
+
+/* ---- 18C - ROW ONE JOINS THE COLUMN ROW TWO IS BUILT FROM (2026-09-20 22:06 EDT) ----------------
+   His: "the events label isn't aligned with the other labels", and measured he is righter than
+   the screenshot shows. EVENTS is `.mlabel`, not `.b3-fgl`, and board.css:5047 deliberately
+   LEFT-aligns it in a --hi-gut track - correct when the group labels were left-aligned too, wrong
+   the moment 18B turned them around. Worse, that rule never even applied: gates.css:237's
+   `html[data-b3-a1=fixed] .mtools .mlabel{min-width:64px}` is (0,3,1) and beat it at (0,3,0), so
+   the gutter was 94px of stale --hi-gut while the label box was 64. Measured on the page: EVENTS
+   drawn from 118, group labels ending on 174, the search starting on 212 and the chips on 190.
+   ONE column now feeds both rows - the label is --h1-labw wide, right-aligned, --h1-lab from what
+   follows it - so EVENTS ends where KIND ends and the field starts where the chips start. Written
+   at (0,4,1) so it out-specifies the pin-3 rule rather than racing it. */
+
+
+/* 18D - the search field had no knob of its own: not its height, not its width, not either gap
+   around it. Four now, and the defaults are what the page measured tonight (44px tall, 956px wide
+   filling its track, 12px to the filter rows, 16px from the toolbar's top edge) so nothing moves
+   until he moves it. */
+
+
+
+.b3-hi .b3-hi-list{column-gap:var(--h1-cell,16px)}
+.b3-hi .b3-hi-list > .b3-hi-h,.b3-hi .b3-hi-list > .b3-hi-dg,.b3-hi .b3-hi-dg > .b3-hi-day,.b3-hi .b3-hi-dg > .b3-hi-r,.b3-hi .b3-hi-dg > .b3-hi-burst{column-gap:var(--h1-cell,16px)}
+.b3-hi .b3-hi-list > .b3-hi-h,.b3-hi .b3-hi-dg > .b3-hi-r,.b3-hi .b3-hi-dg > .b3-hi-day,.b3-hi .b3-hi-dg > .b3-hi-burst{padding:0 var(--h1-r,18px) 0 var(--h1-l,24px)}
+html[data-b3-p9=b] .b3-hi-h,html[data-b3-p9=b] .b3-hi-r,html[data-b3-p9=b] .b3-hi-day{
+    grid-template-columns:84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px);
+    padding-left:var(--h1-l,22px)}
+html[data-b3-p9=b] .b3-hi.uk .b3-hi-h,html[data-b3-p9=b] .b3-hi.uk .b3-hi-r,html[data-b3-p9=b] .b3-hi.uk .b3-hi-day{
+    grid-template-columns:84px 28px minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)}
+html[data-b3-p9=b] .b3-hi.uw .b3-hi-h,html[data-b3-p9=b] .b3-hi.uw .b3-hi-r,html[data-b3-p9=b] .b3-hi.uw .b3-hi-day{
+    grid-template-columns:84px var(--h1-kind,110px) minmax(0,1fr) 28px var(--h1-undo,92px)}
+html[data-b3-p9=b] .b3-hi.uk.uw .b3-hi-h,html[data-b3-p9=b] .b3-hi.uk.uw .b3-hi-r,html[data-b3-p9=b] .b3-hi.uk.uw .b3-hi-day{
+    grid-template-columns:84px 28px minmax(0,1fr) 28px var(--h1-undo,92px)}
+html[data-b3-p9=b] .b3-hi-r{min-height:var(--h1-rowh,56px)}
+html[data-b3-p9=b] .b3-hi-r .what{padding:var(--h1-rowp,12px) 0;gap:8px 12px}
+html[data-b3-p9=b] .b3-hi-day{min-height:var(--h1-day,40px)}
+/* The date and the times start on one line: a rail reads down its own left edge, and a
+   right-aligned time in an 84px track put them 50px apart for no reason. */
+.b3-hi-r .when{justify-self:start;text-align:left}
+.b3-hi-day .b3-hi-dd{justify-self:start;text-align:left}
+
+/* ---- 15J - the spacing lab is the board's own, not a second one ----------------------------
+   He put my thirteen sliders beside L1, the selection-list spacing lab on this same board, and he
+   was right: that one groups by region, names every row as a RELATION in plain words, gives a
+   typed box and a per-row default, and has Save for Claude so the numbers reach me. Mine had
+   abbreviations, no grouping, no typed entry, and wrote localStorage - so even had it looked right
+   it could not do its job. H1 uses the same rows; `.h1kn*` is deleted. */
+.lab-c.h1lab{grid-template-columns:repeat(3,minmax(260px,1fr));padding:12px 14px;width:100%}
+/* L1's values are all under 48, so its 48px box never had to hold three digits; H1's column widths
+   are 110 and 150 and the browser's spinner reserve ate the third one. Same shape of defect as the
+   ellipsis above: a measurement that was right for the first caller's data. */
+/* 18E - THE NUDGE ARROWS ARE BACK (2026-09-20 22:08 EDT). His: "where's the up/down nudge arrows in the
+   text box for the knobs?" I had removed them - `-moz-appearance:textfield` plus both
+   ::-webkit-spin-button pseudos - while widening the box to 58px, and L1, the board's own lab
+   four gates up, has always shown them (board.css:3474 sets no appearance at all). Same class
+   as the lab itself: I restyled a shared component after borrowing it instead of taking what it
+   does. The box goes to 70px because the new Search width knob reaches four digits and a spinner
+   now shares that width; L1's 48 was sized for two. */
+.lab-c.h1lab .lab-r{grid-template-columns:minmax(0,1fr) 96px 70px 30px}
+.lab-c.h1lab .lab-r input[type=number]{width:70px}
+.lab-c.h1lab .lab-pre{grid-column:1 / -1}
+/* I narrowed L1's row to fit three columns and the number box stopped holding three digits: 150
+   rendered as "15". Re-tuning a borrowed component's own measurements is the same mistake as
+   borrowing its constants — the row keeps L1's proportions and the lab gets the width instead. */
+
+/* ---- 15K - what the build itself introduced, caught by looking rather than by measuring -----
+   (a) The column head right-aligned TIME while the value under it is left-aligned from 15I, so
+       the label sat 70px from its own column. A head label belongs over its column's ink.
+   (b) Each export tile is its own grid, so the numeral block sized to its own digits and
+       "DMZ builds" started 5px left of "MP builds". The list shares one column set now, which
+       is what makes two tiles read as one object rather than two similar ones. */
+.b3-hi .b3-hi-list > .b3-hi-h > span:first-child{justify-self:start;text-align:left}
+
+
+/* 2026-09-29 19:35 EDT — the dock's bare `.dk` selectors are fenced off the portal's `.diff-r .dk`. Board 3's decision dock and the portal's diff key cell share the class, so History's event drawer drew every key (Kind, Page, Action…) as a dock: a boxed, rounded, 14px-dropped label beside its value. `:where()` adds no specificity, so the dock itself is unchanged. */

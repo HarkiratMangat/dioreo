@@ -1,0 +1,201 @@
+{
+ "measured": "2026-10-08T02:38:10.923Z",
+ "facts": {
+  "stmin": {
+   "rest": {
+    "opacity": "1",
+    "outline": "none 3px rgb(133, 147, 159)",
+    "icon": 12,
+    "w": 24,
+    "h": 24,
+    "sw": null,
+    "sh": null,
+    "border": "0px none rgb(133, 147, 159)",
+    "ring": "none",
+    "bg": "rgba(0, 0, 0, 0)",
+    "color": "rgb(133, 147, 159)",
+    "radius": "7px",
+    "transform": "none",
+    "words": false
+   },
+   "hover": {
+    "opacity": "1",
+    "outline": "none 3px rgb(232, 237, 241)",
+    "icon": 12,
+    "w": 24,
+    "h": 24,
+    "sw": 24,
+    "sh": 24,
+    "border": "0px none rgb(232, 237, 241)",
+    "ring": "rgb(133, 147, 159) 0px 0px 0px 1px inset",
+    "bg": "rgba(0, 0, 0, 0)",
+    "color": "rgb(232, 237, 241)",
+    "radius": "7px",
+    "transform": "none",
+    "words": false
+   }
+  },
+  "sort": {
+   "rest": {
+    "opacity": "1",
+    "outline": "none 3px rgb(232, 237, 241)",
+    "icon": 12,
+    "w": 76.8,
+    "h": 13,
+    "sw": null,
+    "sh": null,
+    "border": "0px none rgb(232, 237, 241)",
+    "ring": "none",
+    "bg": "rgba(0, 0, 0, 0)",
+    "color": "rgb(232, 237, 241)",
+    "radius": "1px",
+    "transform": "none",
+    "words": true
+   },
+   "hover": {
+    "opacity": "1",
+    "outline": "none 3px color(srgb 0.981176 0.78 0.78)",
+    "icon": 12,
+    "w": 76.8,
+    "h": 13,
+    "sw": null,
+    "sh": null,
+    "border": "0px none color(srgb 0.981176 0.78 0.78)",
+    "ring": "color(srgb 0.937255 0.266667 0.266667 / 0.14) 0px 0px 0px 4px, color(srgb 0.937255 0.266667 0.266667 / 0.45) 0px 0px 0px 5px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "color": "color(srgb 0.981176 0.78 0.78)",
+    "radius": "1px",
+    "transform": "none",
+    "words": true
+   }
+  },
+  "collapse": {
+   "rest": {
+    "opacity": "1",
+    "outline": "none 3px rgb(133, 147, 159)",
+    "icon": 14,
+    "w": 44,
+    "h": 44,
+    "sw": 32,
+    "sh": 32,
+    "border": "0px none rgb(133, 147, 159)",
+    "ring": "rgb(58, 71, 82) 0px 0px 0px 1px inset",
+    "bg": "rgb(31, 39, 46)",
+    "color": "rgb(133, 147, 159)",
+    "radius": "8px",
+    "transform": "none",
+    "words": false
+   },
+   "hover": {
+    "opacity": "1",
+    "outline": "none 3px rgb(232, 237, 241)",
+    "icon": 14,
+    "w": 97.1,
+    "h": 44,
+    "sw": 85.1,
+    "sh": 32,
+    "border": "0px none rgb(232, 237, 241)",
+    "ring": "rgb(92, 106, 117) 0px 0px 0px 1px inset",
+    "bg": "rgba(0, 0, 0, 0)",
+    "color": "rgb(232, 237, 241)",
+    "radius": "8px",
+    "transform": "none",
+    "words": true
+   }
+  },
+  "caret": {
+   "rest": {
+    "opacity": "1",
+    "outline": "none 3px color(srgb 0.708627 0.437059 0.462941)",
+    "icon": 14,
+    "w": 32,
+    "h": 32,
+    "sw": null,
+    "sh": null,
+    "border": "0px none color(srgb 0.708627 0.437059 0.462941)",
+    "ring": "none",
+    "bg": "rgba(0, 0, 0, 0)",
+    "color": "color(srgb 0.708627 0.437059 0.462941)",
+    "radius": "8px",
+    "transform": "none",
+    "words": false
+   },
+   "hover": {
+    "opacity": "1",
+    "outline": "none 3px color(srgb 0.981176 0.78 0.78)",
+    "icon": 14,
+    "w": 32,
+    "h": 32,
+    "sw": 32,
+    "sh": 32,
+    "border": "0px none color(srgb 0.981176 0.78 0.78)",
+    "ring": "color(srgb 0.937255 0.266667 0.266667 / 0.45) 0px 0px 0px 1px inset",
+    "bg": "color(srgb 0.937255 0.266667 0.266667 / 0.14)",
+    "color": "color(srgb 0.981176 0.78 0.78)",
+    "radius": "8px",
+    "transform": "none",
+    "words": false
+   }
+  }
+ },
+ "search": {
+  "srch": [
+   340,
+   44
+  ],
+  "input": [
+   0,
+   44
+  ],
+  "x": {
+   "top": 6,
+   "right": 6,
+   "w": 32,
+   "h": 32,
+   "r": "8px",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "hits": {
+   "top": 6,
+   "h": 32,
+   "w": 79.421875,
+   "gapToX": 6,
+   "bg": "color(srgb 0.937255 0.266667 0.266667 / 0.14)",
+   "color": "rgb(232, 237, 241)",
+   "font": "600 11px / 11px \"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, monospace"
+  },
+  "realm": "#EF4444",
+  "pad": {
+   "inputPadRight": "130px",
+   "suffixWidth": 117.421875
+  },
+  "xHover": {
+   "opacity": "1",
+   "outline": "none 3px color(srgb 0.981176 0.78 0.78)",
+   "icon": 14,
+   "w": 32,
+   "h": 32,
+   "sw": 32,
+   "sh": 32,
+   "border": "0px none color(srgb 0.981176 0.78 0.78)",
+   "ring": "color(srgb 0.937255 0.266667 0.266667 / 0.45) 0px 0px 0px 1px inset",
+   "bg": "color(srgb 0.937255 0.266667 0.266667 / 0.14)",
+   "color": "color(srgb 0.981176 0.78 0.78)",
+   "radius": "8px",
+   "transform": "none",
+   "words": false
+  }
+ },
+ "chains": {
+  "search": "main#board.pb > div.b4 > section#c-manifest.pb-gate.pb-realm.app.b4g[data-realm=armory] > div.pb-stage.g-stage.g-fixed.g-sticky[style=--stage-h: 820px;] > section#manifest.panel > div.mtools > div.mt-r1",
+  "weapon": "main#board.pb > div.b4 > section#c-new-build.pb-gate.pb-realm.app.b4g[data-realm=armory][data-st=add] > div.pb-stage.g-stage.g-fixed.b4-stage[style=--stage-h: 900px;] > aside.drawer.open.wide[style=--m1: #ff3b5c; --m2: #ff3b5c; --m3: #ff3b5c; --m4: var(--r-armory);] > div.dw-b > div.b3-nb[data-arm=MP][data-panel=add] > div.pb-view.pb-in > div.f-add > div.f-form.b3-fady[style=--fo: 0px; --ft: 0px; --fb: 28px;] > section.f-card[data-arm=MP][style=--f-ch: var(--ink3);] > div.f-card-b[style=--f-hue: #ff3b5c;] > section.f-sec[data-s=build] > div.f-g2 > div.f-row",
+  "category": "main#board.pb > div.b4 > section#c-new-build.pb-gate.pb-realm.app.b4g[data-realm=armory][data-st=add] > div.pb-stage.g-stage.g-fixed.b4-stage[style=--stage-h: 900px;] > aside.drawer.open.wide[style=--m1: #ff3b5c; --m2: #ff3b5c; --m3: #ff3b5c; --m4: var(--r-armory);] > div.dw-b > div.b3-nb[data-arm=MP][data-panel=add] > div.pb-view.pb-in > div.f-add > div.f-form.b3-fady[style=--fo: 0px; --ft: 0px; --fb: 28px;] > section.f-card[data-arm=MP][style=--f-ch: var(--ink3);] > div.f-card-b[style=--f-hue: #ff3b5c;] > section.f-sec[data-s=build] > div.f-g2 > div.f-row",
+  "attachment": "main#board.pb > div.b4 > section#c-new-build.pb-gate.pb-realm.app.b4g[data-realm=armory][data-st=add] > div.pb-stage.g-stage.g-fixed.b4-stage[style=--stage-h: 900px;] > aside.drawer.open.wide[style=--m1: #ff3b5c; --m2: #ff3b5c; --m3: #ff3b5c; --m4: var(--r-armory);] > div.dw-b > div.b3-nb[data-arm=MP][data-panel=add] > div.pb-view.pb-in > div.f-add > div.f-form.b3-fady[style=--fo: 0px; --ft: 0px; --fb: 28px;] > section.f-card[data-arm=MP][style=--f-ch: var(--ink3);] > div.f-card-b[style=--f-hue: #ff3b5c;] > section.f-sec[data-s=atts] > div.f-atts > div.f-att",
+  "compare": "main#board.pb > div.b4 > section#c-compare.pb-gate.pb-realm.app.b4g[data-realm=armory][data-st=one] > div.b1.b4-cmp.cx-host > section.pb-panel > div#compare.cx[data-f=a][data-st=table] > div.cx-top",
+  "stmin": "main#board.pb > div.b4 > section#c-new-build.pb-gate.pb-realm.app.b4g[data-realm=armory][data-st=add] > div.pb-stage.g-stage.g-fixed.b4-stage[style=--stage-h: 900px;] > aside.drawer.open.wide[style=--m1: #ff3b5c; --m2: #ff3b5c; --m3: #ff3b5c; --m4: var(--r-armory);] > div.dw-b > div.b3-nb[data-arm=MP][data-panel=add] > div.pb-view.pb-in > div.f-add > aside.f-side > div#b4-stage-st.f-stage > h5",
+  "sort": "main#board.pb > div.b4 > section#c-manifest.pb-gate.pb-realm.app.b4g[data-realm=armory] > div.pb-stage.g-stage.g-fixed.g-sticky[style=--stage-h: 820px;] > section#manifest.panel > div.wg-wrap > div.wg-heads > span",
+  "collapse": "main#board.pb > div.b4 > section#c-manifest.pb-gate.pb-realm.app.b4g[data-realm=armory] > div.pb-stage.g-stage.g-fixed.g-sticky[style=--stage-h: 820px;] > section#manifest.panel > div.wg-wrap > div.wg[data-w=BAL-27][style=--c: #ff3b5c;] > div.wg-h",
+  "caret": "main#board.pb > div.b4 > section#c-new-build.pb-gate.pb-realm.app.b4g[data-realm=armory][data-st=add] > div.pb-stage.g-stage.g-fixed.b4-stage[style=--stage-h: 900px;] > aside.drawer.open.wide[style=--m1: #ff3b5c; --m2: #ff3b5c; --m3: #ff3b5c; --m4: var(--r-armory);] > div.dw-b > div.b3-nb[data-arm=MP][data-panel=add] > div.pb-view.pb-in > div.f-add > div.f-form.b3-fady[style=--fo: 0px; --ft: 28px; --fb: 28px;] > section.f-card[data-arm=MP][style=--f-ch: var(--ink3);] > div.f-card-b[style=--f-hue: #ff3b5c;] > section.f-sec[data-s=build] > div.f-g2 > div.f-row > div.f-pick > div.f-fld",
+  "chips": "main#board.pb > div.b4 > section#c-manifest.pb-gate.pb-realm.app.b4g[data-realm=armory] > div.pb-stage.g-stage.g-fixed.g-sticky[style=--stage-h: 820px;] > section#manifest.panel > div.mtools > div.mt-r2"
+ }
+}

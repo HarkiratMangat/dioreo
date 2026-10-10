@@ -1,0 +1,34 @@
+// Step 4 group 2 (chips and tags): every element inside Builder-2's gates and drawers that DRAWS a small box with words (or a dot) and is not itself a
+// button or a field: a chip, a tag, a badge, a count, a status. Swept in the board's states, grouped by class signature, each marked when the spec page
+// already draws that signature. Usage: node chip-sweep.cjs → chip-sweep.json and a table
+const path = require('path'), fs = require('fs'), os = require('os'); const ROOT = path.resolve(__dirname, '../../../..'); const puppeteer = require(path.join(ROOT, 'node_modules/puppeteer-core'));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms)); const STATE = path.join(__dirname, 'state4/fetch-2026-10-06-1714/builder/state.json'); const BASE = 'http://127.0.0.1:8900/docs/pins2/s4-board/';
+const SWEEP = () => { const STATE_CLS = /^(on|off|open|is-|has-|sel|active|hot|cur|picked|checked|busy|done|pending|in|out|mine|lg)$/; const A = (c) => { const m = /\(([^)]*)\)/.exec(c || ''); if (!m) return 1; const q = m[1].replace(/^srgb\s+/, '').split(/[\s,/]+/).filter(Boolean); return q.length > 3 ? parseFloat(q[3]) : 1; };
+  const box = (el) => { for (const ps of [null, '::before']) { const k = getComputedStyle(el, ps); if (ps && (k.content === 'none' || k.content === 'normal')) continue; if ((parseFloat(k.borderTopWidth) > 0 && k.borderTopStyle !== 'none' && A(k.borderTopColor) > 0.01) || (/inset/.test(k.boxShadow) && !/0px 0px 0px 0px/.test(k.boxShadow)) || A(k.backgroundColor) > 0.01) return { r: k.borderTopLeftRadius, ps: ps || 'self' }; } return null; };
+  const roots = [...document.querySelectorAll('[id^=c-], aside.drawer.open, [role=dialog], .b3-pc, .b4-pop, .b3-datepop')].filter((x) => x.getClientRects().length && !x.closest('#bd-host, [class*="sx-"]')); const out = []; const seen = new Set();
+  for (const R of roots) for (const e of R.querySelectorAll('span, em, b, i, div, li, a, mark, small, strong, dt, dd, time, label, output')) {
+    if (seen.has(e) || e.closest('button, .b4-try, #bd-host, [class*="sx-"], input, select, textarea')) continue; seen.add(e); if (!e.getClientRects().length) continue; const r = e.getBoundingClientRect(); if (r.height < 10 || r.height > 36 || r.width < 6 || r.width > 260) continue;
+    const c = getComputedStyle(e); if (c.visibility === 'hidden' || +c.opacity < 0.05) continue; const k = box(e); if (!k) continue;
+    const words = (e.innerText || '').replace(/\s+/g, ' ').trim(); if (words.length > 34) continue; if (e.querySelector('input, textarea, select')) continue;
+    const cls = [...e.classList].filter((q) => !STATE_CLS.test(q)).sort(); const sig = e.tagName.toLowerCase() + (cls.length ? '.' + cls.join('.') : '');
+    out.push({ sig, h: +r.height.toFixed(1), w: +r.width.toFixed(1), r: k.r, at: k.ps, text: words.slice(0, 24), btn: Boolean(e.querySelector('button')), gate: R.id || [...R.classList][0], fs: c.fontSize, fw: c.fontWeight }); }
+  return out; };
+(async () => {
+  const b = await puppeteer.launch({ executablePath: (process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'), headless: 'new', protocolTimeout: 240000, userDataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'cs-')) });
+  const p = await b.newPage(); await p.setViewport({ width: 1500, height: 1500 }); await p.evaluateOnNewDocument((s) => { try { localStorage.setItem('bd-state', s); localStorage.setItem('bd-check', '0'); } catch (e) {} }, fs.readFileSync(STATE, 'utf8'));
+  await p.goto(BASE + 'builder.html', { waitUntil: 'networkidle0', timeout: 120000 }); await p.waitForFunction(() => window.__sxReady, { timeout: 60000 }); await sleep(1500);
+  await p.evaluate(() => { window.__bd.ui.setInspect(false); const h = document.getElementById('bd-host'); if (h) h.style.display = 'none'; });
+  const tryBtn = (label, ms) => async () => { await p.evaluate((label) => { const g = document.getElementById('c-manifest'); const t = g && [...g.querySelectorAll('.b4-try button')].find((x) => x.textContent.trim() === label); if (t) t.click(); }, label); await sleep(ms); };
+  const steps = [['rest', async () => {}], ['pick one', tryBtn('Pick one build', 1000)], ['problem', tryBtn('Open a problem', 1600)],
+    ['new build', async () => { await p.evaluate(() => { const t = document.querySelector('#c-manifest .madd'); if (t) { t.scrollIntoView({ block: 'center' }); t.click(); } }); await sleep(1500); }],
+    ['post', async () => { await p.evaluate(() => { const c = [...document.querySelectorAll('.drawer button')].find((x) => /cancel/i.test(x.textContent) && x.getClientRects().length); if (c) c.click(); }); await sleep(800); await p.evaluate(() => { const t = [...document.querySelectorAll('#c-broadcast button')].find((x) => /Post announcement/.test(x.textContent)); if (t) { t.scrollIntoView({ block: 'center' }); t.click(); } }); await sleep(1500); }],
+    ['date', async () => { await p.evaluate(() => { const u = [...document.querySelectorAll('use[href^="#i-calendar"]')].map((x) => x.closest('button')).find((x) => x && x.getClientRects().length); if (u) { u.scrollIntoView({ block: 'center' }); u.click(); } }); await sleep(1200); }]];
+  const G = new Map();
+  for (const [st, go] of steps) { await go(); for (const x of await p.evaluate(SWEEP)) { let g = G.get(x.sig); if (!g) G.set(x.sig, (g = { sig: x.sig, n: 0, states: new Set(), sizes: new Set(), r: new Set(), text: [], gates: new Set(), btn: false, type: new Set() })); g.n++; g.states.add(st); g.sizes.add(`${x.w}×${x.h}`); g.r.add(x.r); g.gates.add(x.gate); g.btn = g.btn || x.btn; g.type.add(`${x.fs} ${x.fw}`); if (x.text && g.text.length < 4 && !g.text.includes(x.text)) g.text.push(x.text); } }
+  const q = await b.newPage(); await q.setViewport({ width: 1282, height: 1400 }); await q.goto(BASE + 'spec.html', { waitUntil: 'networkidle0', timeout: 90000 }); await q.waitForFunction(() => window.__specReady, { timeout: 30000 }); await sleep(2000);
+  const list = [...G.values()].map((g) => ({ ...g, states: [...g.states], sizes: [...g.sizes].slice(0, 5), r: [...g.r], gates: [...g.gates], type: [...g.type] }));
+  const onPage = await q.evaluate((sigs) => sigs.map((s) => { try { return [...document.querySelectorAll(s)].filter((e) => !e.closest('#onboard')).length; } catch (x) { return -1; } }), list.map((g) => g.sig)); list.forEach((g, i) => { g.onPage = onPage[i]; });
+  list.sort((a, z) => z.n - a.n); fs.writeFileSync(path.join(__dirname, 'chip-sweep.json'), JSON.stringify(list, null, 1));
+  for (const g of list) console.log(`${g.onPage ? 'ON PAGE ' : '        '}${g.sig.slice(0, 46).padEnd(46)} ×${String(g.n).padEnd(3)} ${g.sizes.slice(0, 3).join(' ')} r${g.r.join('/')} ${g.type.join('/')} ${g.btn ? '[has ×]' : ''} @${g.gates.join(',')} «${g.text.join(' | ')}»`);
+  await b.close();
+})().catch((e) => { console.error('chip-sweep FAIL', e.message); process.exit(1); });

@@ -1,0 +1,199 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Meta Badge Tuner</title>
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<!-- The META badge, with its knobs exposed. Harkirat, 2026-09-17 15:38 EDT: "Think you could make this an interactive
+     artifact where i could scale, transform, rotate the lightning inside of the frame to tweak it to my preference?"
+     Twelve attempts of mine were me guessing at numbers he can set in two seconds. Every value here is saved to the
+     artifact's db, so it survives a reload AND I can read the exact settings back and build them into board 3-D
+     rather than eyeballing them from a screenshot.
+     The lightning is HIS Lightning VFX.svg, unedited: the file is fetched once, its fill swapped for the chosen
+     colour, and handed to every badge as a blob URL — which is what keeps the SMIL running while still letting the
+     colour be anything. (A masked or background SVG does not animate; an <img> does.) -->
+<style>
+:root{
+  --bg:#0B0F12; --row:#141A1F; --row2:#11161A; --rule:#222C34; --sunk:#0E1418;
+  --ink:#E6EDF3; --ink2:#AFBECB; --ink3:#7D8D9B; --ink4:#5C6B78;
+  --ui:'Space Grotesk',system-ui,sans-serif; --data:'JetBrains Mono',ui-monospace,monospace;
+  --tc:#38D6F0; --best:#F2C230;
+  --scale:1; --px:50%; --py:40%; --rot:0deg; --glow:1; --amb:1; --speed:1; --bolt:#e8fbff;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--ui)}
+body{padding:26px 16px 80px;padding-top:calc(26px + env(safe-area-inset-top,0px))}
+.wrap{max-width:860px;margin:0 auto}
+h1{margin:0 0 6px;font:700 clamp(25px,5vw,36px)/1.05 var(--ui);letter-spacing:-.02em;text-wrap:balance}
+.lede{margin:0 0 20px;max-width:64ch;color:var(--ink2);font-size:14.5px}
+.lede b{color:var(--ink);font-weight:600}
+.stage{border-radius:14px;background:var(--row2);box-shadow:inset 0 0 0 1px var(--rule);overflow:hidden;margin-bottom:20px}
+.rows{padding:4px 0}
+.r{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--row);border-bottom:1px solid var(--sunk)}
+.r:last-child{border-bottom:0}
+.r .w{width:104px;flex:none;font:600 12.5px/1 var(--data);color:var(--ink2)}
+.r .sep{width:1px;height:16px;background:var(--rule)}
+.big{display:flex;align-items:center;gap:20px;padding:30px 16px 34px;background:var(--sunk);flex-wrap:wrap}
+.bigin{transform:scale(4);transform-origin:left center;margin-right:calc(58px*3 + 10px)}
+.bignote{flex:1 1 210px;color:var(--ink4);font-size:12.5px}
+
+/* the badge, exactly as board 3 builds it */
+.bdg{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:.12;
+  position:relative;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px 0 7px;border-radius:6px;
+  white-space:nowrap;font:700 10.5px/1 var(--data);letter-spacing:.11em;color:color-mix(in srgb,var(--tc) 88%,white);
+  background:linear-gradient(100deg,color-mix(in srgb,var(--tc) 13%,transparent) 0 100%)}
+.bdg:not(.best){box-shadow:inset 0 0 0 1px var(--ring),inset 0 1px 0 color-mix(in srgb,#fff 14%,transparent),
+  0 0 calc((10px + 26px*var(--lit))*var(--amb)) calc(-6px + 4px*var(--lit)) color-mix(in srgb,var(--tc) calc((28% + 52%*var(--lit))*var(--amb)),transparent)}
+.bdg > svg{width:11px;height:11px;flex:none;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.bdg.best{--tc:var(--best);color:#1A1400;background:linear-gradient(100deg,var(--best) 0 100%);box-shadow:none}
+.bdg.best > svg{stroke:#1A1400}
+/* the halo has to live OUTSIDE the clip, so the artwork gets a clipping box of its own */
+.bdg:not(.best)::before{content:"";position:absolute;inset:-14px -18px;z-index:-1;pointer-events:none;border-radius:20px;
+  background:radial-gradient(60% 120% at 50% 50%,color-mix(in srgb,var(--tc) 46%,transparent) 0%,
+    color-mix(in srgb,var(--tc) 16%,transparent) 42%,transparent 72%);
+  opacity:calc(var(--lit)*var(--amb))}
+.clip{position:absolute;inset:0;overflow:hidden;border-radius:inherit;z-index:2;pointer-events:none}
+.clip img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  object-position:var(--px) var(--py);transform:rotate(var(--rot)) scale(var(--scale));
+  filter:drop-shadow(0 0 calc(1.2px*var(--glow)) #d8f4ff)
+         drop-shadow(0 0 calc(4px*var(--glow)) color-mix(in srgb,var(--tc) 88%,white))
+         drop-shadow(0 0 calc(11px*var(--glow)) color-mix(in srgb,var(--tc) 62%,transparent))}
+@property --lit{syntax:"<number>";inherits:true;initial-value:0.12}
+@property --ring{syntax:"<color>";inherits:true;initial-value:#38D6F080}
+
+/* controls */
+.panel{border-radius:14px;background:var(--row2);box-shadow:inset 0 0 0 1px var(--rule);padding:14px 16px 18px}
+.panel h2{margin:0 0 2px;font:700 15px/1.3 var(--ui)}
+.panel .sub{margin:0 0 14px;color:var(--ink4);font-size:12.5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:13px 22px}
+.f{display:grid;gap:5px}
+.f label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  font:600 10.5px/1 var(--data);letter-spacing:.09em;text-transform:uppercase;color:var(--ink4)}
+.f label b{font:600 12px/1 var(--data);letter-spacing:0;color:var(--ink2)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:none;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:99px;background:#1E2830}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;margin-top:-5.5px;border-radius:50%;
+  background:var(--tc);box-shadow:0 0 0 3px color-mix(in srgb,var(--tc) 22%,transparent)}
+input[type=range]:focus-visible{outline:2px solid var(--tc);outline-offset:3px}
+input[type=color]{width:100%;height:30px;padding:2px;border:0;border-radius:7px;background:#1B2429;cursor:pointer}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
+button{height:30px;padding:0 13px;border:0;border-radius:99px;background:#1B2429;color:var(--ink2);
+  font:600 12px/1 var(--ui);cursor:pointer}
+button:hover{color:var(--ink)}
+button.go{background:var(--tc);color:#04222A}
+.status{font:500 12px/1.4 var(--ui);color:var(--ink4)}
+.out{margin-top:14px;padding:11px 13px;border-radius:9px;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule);
+  font:500 12px/1.65 var(--data);color:var(--ink3);white-space:pre-wrap;word-break:break-word}
+</style>
+<div class="wrap">
+  <h1>Meta Badge Tuner</h1>
+  <p class="lede">Your <b>Lightning VFX.svg</b>, unedited, inside the real badge — with the knobs exposed. Everything you set is <b>saved to this artifact</b>, so it survives a reload and I can read the exact numbers back and build them into the board instead of guessing at them.</p>
+
+  <div class="stage">
+    <div class="rows">
+      <div class="r"><span class="w">BAL-27</span><span class="sep"></span>
+        <span class="bdg" data-b><svg viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>META<span class="clip"><img alt=""></span></span>
+        <span class="bdg best"><svg viewBox="0 0 24 24"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>BEST</span></div>
+      <div class="r"><span class="w">HOLGER 26</span><span class="sep"></span>
+        <span class="bdg" data-b><svg viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>META<span class="clip"><img alt=""></span></span></div>
+      <div class="r"><span class="w">FENNEC 45</span><span class="sep"></span>
+        <span class="bdg" data-b><svg viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>META<span class="clip"><img alt=""></span></span></div>
+    </div>
+    <div class="big">
+      <span class="bdg bigin" data-b><svg viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>META<span class="clip"><img alt=""></span></span>
+      <span class="bignote">Four times size. Everything above is the badge at the size it actually ships.</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The knobs</h2>
+    <p class="sub">Saved as you move them. <span class="status" id="st">connecting…</span></p>
+    <div class="grid" id="grid"></div>
+    <div class="acts">
+      <button class="go" id="reset">Reset to current</button>
+      <button id="copy">Copy values</button>
+      <button id="pause">Pause</button>
+    </div>
+    <div class="out" id="out"></div>
+  </div>
+</div>
+<script type="module">
+const DEF = { scale:1, px:50, py:40, rot:0, glow:1, amb:1, speed:1, bolt:'#e8fbff', hue:'#38D6F0' };
+const FIELDS = [
+  ['scale','Scale',0.4,8,0.02,'x'], ['px','Offset X',-120,220,1,'%'], ['py','Offset Y',-120,220,1,'%'],
+  ['rot','Rotation',-180,180,1,'deg'], ['glow','Glow',0,4,0.05,'x'], ['amb','Ambiance',0,2.5,0.05,'x'],
+  ['speed','Speed',0.3,3,0.05,'x'],
+];
+let S = {...DEF}, db = null, doc = null, raw = '', imgs = [...document.querySelectorAll('.clip img')];
+const root = document.documentElement, out = document.getElementById('out'), st = document.getElementById('st');
+
+const grid = document.getElementById('grid');
+for (const [k,label,min,max,step,unit] of FIELDS) {
+  const f = document.createElement('div'); f.className = 'f';
+  f.innerHTML = `<label for="i-${k}">${label}<b id="v-${k}"></b></label><input id="i-${k}" type="range" min="${min}" max="${max}" step="${step}">`;
+  grid.appendChild(f);
+  f.querySelector('input').addEventListener('input', e => { S[k] = +e.target.value; apply(); save(); });
+}
+for (const [k,label] of [['bolt','Lightning colour'],['hue','Badge hue']]) {
+  const f = document.createElement('div'); f.className = 'f';
+  f.innerHTML = `<label for="i-${k}">${label}<b id="v-${k}"></b></label><input id="i-${k}" type="color">`;
+  grid.appendChild(f);
+  f.querySelector('input').addEventListener('input', e => { S[k] = e.target.value; apply(); save(); if (k==='bolt') paint(); });
+}
+
+function apply() {
+  root.style.setProperty('--scale', S.scale);
+  root.style.setProperty('--px', S.px + '%');
+  root.style.setProperty('--py', S.py + '%');
+  root.style.setProperty('--rot', S.rot + 'deg');
+  root.style.setProperty('--glow', S.glow);
+  root.style.setProperty('--amb', S.amb);
+  root.style.setProperty('--tc', S.hue);
+  for (const [k,,,,,unit] of FIELDS) {
+    const i = document.getElementById('i-'+k), v = document.getElementById('v-'+k);
+    if (i) i.value = S[k]; if (v) v.textContent = (unit==='deg'||unit==='%') ? Math.round(S[k])+unit : (+S[k]).toFixed(2)+unit;
+  }
+  for (const k of ['bolt','hue']) { const i = document.getElementById('i-'+k); if (i) i.value = S[k];
+    const v = document.getElementById('v-'+k); if (v) v.textContent = S[k].toUpperCase(); }
+  out.textContent = JSON.stringify(S, null, 1);
+}
+// recolour by rewriting the file and handing back a blob — the only way to keep the SMIL running AND pick any colour
+async function paint() {
+  if (!raw) return;
+  const url = URL.createObjectURL(new Blob([raw.replaceAll('#e8fbff', S.bolt).replaceAll('#ffffff', S.bolt)], {type:'image/svg+xml'}));
+  for (const im of imgs) im.src = url;
+  document.querySelectorAll('.bdg[data-b]').forEach((b,i) => {
+    b.style.animation = `amb${['A','B','C'][i%3]} ${[5.5,6.4,7.3][i%3]/S.speed}s linear infinite`;
+  });
+}
+let t = 0;
+function save() { clearTimeout(t); t = setTimeout(async () => { if (doc) { try { await doc.set({...S, at: Date.now()}); st.textContent = 'saved'; } catch(e) { st.textContent = 'not saved'; } } }, 350); }
+
+document.getElementById('reset').onclick = () => { S = {...DEF}; apply(); paint(); save(); };
+document.getElementById('copy').onclick = () => { navigator.clipboard?.writeText(JSON.stringify(S)); st.textContent = 'copied'; };
+document.getElementById('pause').onclick = e => {
+  const off = root.getAttribute('data-run') !== 'off';
+  root.setAttribute('data-run', off ? 'off' : 'on'); e.target.textContent = off ? 'Play' : 'Pause';
+  imgs.forEach(im => { try { im.getSVGDocument?.(); } catch(_){} });
+  document.querySelectorAll('.bdg[data-b]').forEach(b => b.style.animationPlayState = off ? 'paused' : 'running');
+};
+
+(async () => {
+  raw = await fetch('b3/bolt.svg').then(r => r.text()).catch(() => '');
+  apply(); paint();
+  db = await window.claude?.use?.('db').catch(() => null);
+  if (!db) { st.textContent = 'not saving — open the published artifact to store your settings'; return; }
+  doc = db.doc('tune/meta-badge');
+  doc.onSnapshot(s => { if (s.exists) { const d = s.data(); delete d.at; S = {...DEF, ...d}; apply(); paint(); } });
+  st.textContent = 'saving to this artifact';
+})();
+</script>
+<style>
+@keyframes ambA{0%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:.12}0%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}0%{--ring:color-mix(in srgb,var(--tc) 100%,white);--lit:0.300}6.545%{--ring:color-mix(in srgb,var(--tc) 74%,white);--lit:0.186}16.36%{--ring:color-mix(in srgb,var(--tc) 58%,white);--lit:0.090}20.86%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}33.6%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}34%{--ring:color-mix(in srgb,var(--tc) 100%,white);--lit:0.220}38.12%{--ring:color-mix(in srgb,var(--tc) 74%,white);--lit:0.136}44.3%{--ring:color-mix(in srgb,var(--tc) 58%,white);--lit:0.066}48.8%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}67.6%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}68%{--ring:color-mix(in srgb,var(--tc) 100%,white);--lit:0.340}72.85%{--ring:color-mix(in srgb,var(--tc) 74%,white);--lit:0.211}80.12%{--ring:color-mix(in srgb,var(--tc) 58%,white);--lit:0.102}84.62%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}100%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:.12}}
+@keyframes ambB{0%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:.12}5.6%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}6%{--ring:color-mix(in srgb,var(--tc) 100%,white);--lit:0.300}11.62%{--ring:color-mix(in srgb,var(--tc) 74%,white);--lit:0.186}20.06%{--ring:color-mix(in srgb,var(--tc) 58%,white);--lit:0.090}24.56%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}41.6%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}42%{--ring:color-mix(in srgb,var(--tc) 100%,white);--lit:0.220}45.54%{--ring:color-mix(in srgb,var(--tc) 74%,white);--lit:0.136}50.85%{--ring:color-mix(in srgb,var(--tc) 58%,white);--lit:0.066}55.35%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}73.6%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}74%{--ring:color-mix(in srgb,var(--tc) 100%,white);--lit:0.340}78.17%{--ring:color-mix(in srgb,var(--tc) 74%,white);--lit:0.211}84.42%{--ring:color-mix(in srgb,var(--tc) 58%,white);--lit:0.102}88.92%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}100%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:.12}}
+@keyframes ambC{0%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:.12}2.6%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}3%{--ring:color-mix(in srgb,var(--tc) 100%,white);--lit:0.300}7.931%{--ring:color-mix(in srgb,var(--tc) 74%,white);--lit:0.186}15.33%{--ring:color-mix(in srgb,var(--tc) 58%,white);--lit:0.090}19.83%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}29.6%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}30%{--ring:color-mix(in srgb,var(--tc) 100%,white);--lit:0.220}33.1%{--ring:color-mix(in srgb,var(--tc) 74%,white);--lit:0.136}37.76%{--ring:color-mix(in srgb,var(--tc) 58%,white);--lit:0.066}42.26%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}69.6%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}70%{--ring:color-mix(in srgb,var(--tc) 100%,white);--lit:0.340}73.65%{--ring:color-mix(in srgb,var(--tc) 74%,white);--lit:0.211}79.13%{--ring:color-mix(in srgb,var(--tc) 58%,white);--lit:0.102}83.63%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:0.120}100%{--ring:color-mix(in srgb,var(--tc) 50%,transparent);--lit:.12}}
+html[data-run=off] .bdg{animation-play-state:paused!important}
+</style>
