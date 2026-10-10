@@ -107,6 +107,9 @@ shots/
 # (docs/reference/silent-summary/) and every other image under docs/ stay where they are, untracked. These lines refuse an image anywhere
 # under docs/ except the kit's own design assets, so a future session cannot re-track one by accident.
 docs/**/*.png
+# the spec board draws these pictures itself (field states, styles); they are board content, not his screenshots (tracked 2026-10-10 19:53 EDT for a cloud session)
+!docs/pins2/s4-board/spec-img/*.png
+!docs/pins2/s4-board/thumbs/*.webp
 docs/**/*.webp
 docs/**/*.jpg
 docs/**/*.jpeg
