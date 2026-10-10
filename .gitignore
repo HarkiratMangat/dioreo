@@ -109,8 +109,8 @@ shots/
 docs/**/*.png
 # the spec board draws these pictures itself (field states, styles); they are board content, not his screenshots (tracked 2026-10-10 19:53 EDT for a cloud session)
 !docs/pins2/s4-board/spec-img/*.png
-!docs/pins2/s4-board/thumbs/*.webp
 docs/**/*.webp
+!docs/pins2/s4-board/thumbs/*.webp
 docs/**/*.jpg
 docs/**/*.jpeg
 docs/**/*.gif
