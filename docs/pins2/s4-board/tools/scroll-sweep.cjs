@@ -1,0 +1,20 @@
+// His 2026-10-08 22:00–22:01 EDT: "why does this and so many other cards scroll?? … vertically". Every element on the spec page that scrolls — its
+// overflow on each axis and by how much — at 1282 and at 390; plus the selection bar's icon sizes per switch position, the gate scenario picker's chain
+// and the tier picker's children (group 3 open items). Usage: node scroll-sweep.cjs
+const path = require('path'), fs = require('fs'), os = require('os'); const ROOT = path.resolve(__dirname, '../../../..'); const puppeteer = require(path.join(ROOT, 'node_modules/puppeteer-core'));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+(async () => {
+  const b = await puppeteer.launch({ executablePath: (process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'), headless: 'new', userDataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'sc-')) });
+  const p = await b.newPage();
+  for (const w of [1000, 1282, 390]) {
+    await p.setViewport({ width: w, height: 1400 }); await p.goto('http://127.0.0.1:8900/docs/pins2/s4-board/spec.html', { waitUntil: 'networkidle0', timeout: 90000 }); await p.waitForFunction(() => window.__specReady, { timeout: 30000 }); await sleep(2500);
+    const rows = await p.evaluate(() => { const out = []; for (const e of document.querySelectorAll('.spec *')) { const c = getComputedStyle(e); const sx = /auto|scroll/.test(c.overflowX) && e.scrollWidth > e.clientWidth + 1; const sy = /auto|scroll/.test(c.overflowY) && e.scrollHeight > e.clientHeight + 1; if (!sx && !sy) continue;
+      const sec = (e.closest('section[id]') || {}).id; let tall = null; if (sy) { /* what reaches past the bottom (or top) */ const r = e.getBoundingClientRect(); let worst = null; for (const k of e.querySelectorAll('*')) { const q = k.getBoundingClientRect(); const over = Math.max(q.bottom - r.bottom, r.top - q.top); if (over > 1 && (!worst || over > worst.over)) worst = { over: +over.toFixed(1), what: k.tagName.toLowerCase() + (k.getAttribute('class') ? '.' + String(k.getAttribute('class')).split(' ').slice(0, 2).join('.') : '') }; } tall = worst; }
+      out.push(`${sec || '?'} · ${e.tagName.toLowerCase()}.${String(e.className).split(' ').slice(0, 3).join('.')} · overflow ${c.overflowX}/${c.overflowY} · ${sx ? `x ${e.scrollWidth}>${e.clientWidth}` : ''} ${sy ? `y ${e.scrollHeight}>${e.clientHeight}` : ''}${tall ? ` · past the edge: ${tall.what} by ${tall.over}` : ''}`); } return out; });
+    console.log(`\n== ${w}: ${rows.length} scrolling boxes`); const seen = {}; for (const r of rows) { const k = r.replace(/\d+>\d+/g, '#').replace(/by [\d.]+/, ''); seen[k] = seen[k] || { r, n: 0 }; seen[k].n++; } for (const v of Object.values(seen)) console.log(`  ×${v.n} ${v.r}`); }
+  await p.setViewport({ width: 1282, height: 1400 }); await p.goto('http://127.0.0.1:8900/docs/pins2/s4-board/spec.html', { waitUntil: 'networkidle0', timeout: 90000 }); await p.waitForFunction(() => window.__specReady, { timeout: 30000 }); await sleep(2500);
+  for (const label of ['today · 28', '24', '32']) { await p.evaluate((label) => { [...document.querySelectorAll('#selbar .accsw button')].find((x) => x.textContent.trim() === label).click(); }, label); await sleep(500);
+    console.log(`selbar ${label.padEnd(10)} ` + await p.evaluate(() => { const bar = document.querySelector('#selbar .b3-sd'); const row = [...bar.querySelectorAll('.b3-sd-code')][0].closest('tr, li, div'); return ['.b3-sd-code', '.b3-fchip', '.b3-x'].map((s) => { const e = bar.querySelector(s); const r = e.getBoundingClientRect(); const ic = e.querySelector('svg'); const q = ic && ic.getBoundingClientRect(); return `${s} box ${Math.round(r.width)}×${Math.round(r.height)} icon ${q ? Math.round(q.width) + '×' + Math.round(q.height) : '—'}`; }).join(' · '); })); }
+  const D = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs/pins2/s4-board/spec-img/board-dom.json'), 'utf8')).segs; void D;
+  await b.close();
+})().catch((e) => { console.error('scroll-sweep FAIL', e.message); process.exit(1); });

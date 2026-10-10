@@ -1,0 +1,838 @@
+/* C1 Button Spec: page chrome + the spec's geometry. Colour, hover and press come from the kit's own stylesheets. */
+:root { --pg: #0F1418; --pg-ink: #E8EDF1; --pg-ink2: #9DAAB4; --pg-ink3: #85939F; --pg-rule: #2A343D; --pg-measure: #5FD4E8; --pg-miss: #FF7A45; --pg-mine: #D8F24A; --pg-card: #141A1F;
+  --f-body: "Space Grotesk", -apple-system, system-ui, sans-serif; --f-num: "JetBrains Mono", ui-monospace, Menlo, monospace; --f-display: "Big Shoulders Display", "Space Grotesk", sans-serif; color-scheme: dark; }
+/* layout: one reading column; a difference is a Yours | Mine pair, a sameness renders once */
+html, body { background: var(--pg); color: var(--pg-ink); }
+body { font-family: var(--f-body); margin: 0; }
+#spec { max-width: 1120px; margin: 0 auto; padding-inline: 24px; padding-block: 32px 96px; }
+.ctx { display: contents !important; }
+.ctx::before, .ctx::after { content: none !important; }
+.spec .top { display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; margin-bottom: 18px; }
+.spec h1 { font-family: var(--f-display); font-weight: 700; font-size: 56px; line-height: .95; letter-spacing: .01em; margin: 0 0 10px; text-transform: uppercase; }
+.spec .top p { margin: 0; color: var(--pg-ink2); font-size: 15px; line-height: 1.5; max-width: 60ch; }
+.spec .jump { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; padding: 12px 0 28px; border-bottom: 1px solid var(--pg-rule); margin-bottom: 8px; font-size: 13px; }
+.spec .jump span { color: var(--pg-ink3); }
+.spec .jump a { color: var(--pg-ink); text-decoration: none; border-bottom: 1px solid var(--pg-rule); }
+.spec .jump a:hover { border-color: var(--pg-mine); }
+.spec section { padding-block: 40px 8px; border-bottom: 1px solid var(--pg-rule); scroll-margin-top: 16px; }
+.spec section > .hd { display: flex; align-items: baseline; gap: 14px; margin-bottom: 22px; }
+.spec h2 { font-family: var(--f-display); font-weight: 600; font-size: 34px; line-height: 1; margin: 0; letter-spacing: .01em; }
+.spec h3 { font-size: 13px; font-weight: 600; color: var(--pg-ink2); margin: 0 0 14px; }
+.spec .col.mine h3 { color: var(--pg-mine); }
+.spec .same, .spec .diff { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--pg-rule); color: var(--pg-ink2); }
+.spec .diff { border-color: color-mix(in srgb, var(--pg-mine) 45%, transparent); color: var(--pg-mine); }
+.spec .hint, .spec .note, .spec .cap, .spec figcaption { color: var(--pg-ink3); font-size: 13px; line-height: 1.45; }
+.spec .hint { margin: -10px 0 22px; }
+.spec .note { margin: 18px 0 24px; }
+.spec .cap { margin-top: 10px; max-width: 42ch; }
+
+/* gauges: the specimen plus room for its lines */
+.spec .gauge { position: relative; display: inline-block; padding: 44px 64px 18px 40px; }
+.spec .ov { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+.spec.nomeasure .ov { display: none; }
+.spec .dim line, .spec .dim .arc { stroke: var(--pg-measure); stroke-width: 1; fill: none; }
+.spec .dim text, .spec .guide text { fill: var(--pg-measure); font: 500 10.5px/1 var(--f-num); }
+.spec .dim.bad line, .spec .dim.bad .arc { stroke: var(--pg-miss); }
+.spec .dim.bad text { fill: var(--pg-miss); }
+.spec .hit { fill: none; stroke: var(--pg-measure); stroke-width: 1; stroke-dasharray: 3 3; opacity: .7; }
+.spec .guide line { stroke: var(--pg-measure); stroke-width: 1; stroke-dasharray: 2 4; opacity: .8; }
+.spec .guide.bad line { stroke: var(--pg-miss); opacity: 1; }
+.spec .hatch { stroke: var(--pg-miss); stroke-width: 1.5; }
+
+/* size ladder */
+.spec .ladder { display: grid; gap: 4px; }
+.spec .rung { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 4px 0; border-top: 1px solid color-mix(in srgb, var(--pg-rule) 60%, transparent); }
+.spec .rung:first-child { border-top: 0; }
+.spec .big { font-family: var(--f-display); font-weight: 700; font-size: 44px; line-height: 1; color: var(--pg-ink); }
+.spec .facts { display: flex; gap: 20px; margin: 0; }
+.spec .facts div { display: grid; gap: 4px; }
+.spec .facts dt { font-size: 11px; color: var(--pg-ink3); }
+.spec .facts dd { margin: 0; font: 500 14px/1 var(--f-num); color: var(--pg-ink); display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.spec .dash { width: 14px; height: 10px; border: 1px dashed var(--pg-measure); border-radius: 3px; opacity: .7; }
+.spec .ask { margin: 26px 0 18px; padding: 18px 20px; border: 1px solid color-mix(in srgb, var(--pg-mine) 35%, transparent); border-radius: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; }
+.spec .ask .q { font: 500 14px/1.3 var(--f-num); width: 100%; }
+.spec .ask .pair { display: flex; flex-wrap: wrap; gap: 8px 32px; }
+.spec .ask figure, .spec .adds figure { margin: 0; display: grid; justify-items: start; }
+.spec .call { font-size: 12px; color: var(--pg-mine); margin-left: auto; }
+
+/* styles */
+.spec .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.spec .sw { background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 20px 18px 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.spec .sw .stage { min-height: 52px; display: flex; align-items: center; }
+.spec .sw-k { font-family: var(--f-display); font-size: 24px; font-weight: 600; line-height: 1; }
+.spec .sw-w { font-size: 13px; color: var(--pg-ink3); }
+.spec .names { display: grid; gap: 4px; margin-top: 6px; }
+.spec .nm { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.spec .nm i { font-style: normal; font-size: 11px; color: var(--pg-ink3); width: 34px; flex: none; }
+.spec .nm.mine i { color: var(--pg-mine); }
+.spec .nm code { font: 500 12px/1.4 var(--f-num); color: var(--pg-ink2); overflow-wrap: anywhere; }
+.spec .nm.mine code { color: var(--pg-ink); }
+.spec .nm b { color: var(--pg-mine); font-weight: 600; }
+.spec .labelrow { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(0, 2fr); gap: 14px; margin: 14px 0 32px; }
+.spec .labelrow .stage { min-height: 52px; }
+.spec .labelrow .srch { max-width: 340px; width: 100%; }
+
+/* pairs */
+.spec .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.spec .vs.three { grid-template-columns: 1fr 1fr 1fr; }
+.spec .col { background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 18px 20px 20px; min-width: 0; overflow-x: auto; }
+.spec .col.mine { border-color: color-mix(in srgb, var(--pg-mine) 35%, var(--pg-rule)); }
+.spec .col.today { opacity: .85; }
+.spec .col.empty .none { color: var(--pg-ink3); font-size: 13px; padding: 30px 0; }
+.spec .railrow, .spec .chipbox, .spec .pairbox { position: relative; display: flex; align-items: center; gap: 14px; padding: 40px 120px 34px 4px; flex-wrap: nowrap; }
+.spec .railrow { flex-wrap: wrap; padding-bottom: 6px; }
+.spec .railrow .cap { width: 100%; }
+.spec .row { display: flex; align-items: center; }
+.spec .adds { display: flex; flex-wrap: wrap; gap: 18px 32px; align-items: end; }
+.spec #chip .names { margin-top: 16px; }
+.spec .tog { flex: none; }
+@media (max-width: 760px) { .spec .vs, .spec .vs.three, .spec .labelrow { grid-template-columns: 1fr; } .spec h1 { font-size: 42px; } .spec .rung { grid-template-columns: 48px minmax(0, 1fr); } .spec .rung .facts { grid-column: 2; } .spec .big { font-size: 34px; } }
+
+/* ---- the spec's geometry (yours = mine for everything here) ---- */
+.spec .sz button { line-height: 1 !important; box-sizing: border-box !important; font-weight: 600 !important; display: inline-flex !important; align-items: center !important; min-width: 0 !important; }
+.spec .sz button svg { margin: 0 !important; padding: 0 !important; flex: none !important; }
+.spec .sz-L button { height: 44px !important; min-height: 44px !important; padding: 0 14px !important; border-radius: 11px !important; font-size: 13px !important; gap: 10px !important; column-gap: 10px !important; }
+.spec .sz-L button svg { width: 16px !important; height: 16px !important; }
+.spec .sz-M button { height: 32px !important; min-height: 32px !important; padding: 0 10px !important; border-radius: 8px !important; font-size: 11px !important; gap: 6px !important; column-gap: 6px !important; }
+.spec .sz-M button svg { width: 14px !important; height: 14px !important; }
+.spec .sz-S button { height: 24px !important; min-height: 24px !important; padding: 0 10px !important; border-radius: 6px !important; font-size: 11px !important; gap: 6px !important; column-gap: 6px !important; }
+.spec .sz-S button svg { width: 12px !important; height: 12px !important; }
+.spec .sz-XS button { height: 20px !important; min-height: 20px !important; padding: 0 6px !important; border-radius: 5px !important; font-size: 11px !important; gap: 6px !important; column-gap: 6px !important; }
+.spec .sz-XS button svg { width: 12px !important; height: 12px !important; }
+.spec .sz.sq button { padding: 0 !important; justify-content: center !important; }
+.spec .sz-L.sq button { width: 44px !important; } .spec .sz-M.sq button { width: 32px !important; } .spec .sz-S.sq button { width: 24px !important; } .spec .sz-XS.sq button { width: 20px !important; }
+.spec .sz button:disabled { opacity: .4 !important; }
+
+/* rails: 3px around, pill segments */
+.spec .railwrap .b3-sd-vt { display: inline-flex !important; gap: 0 !important; border-radius: 999px !important; height: auto !important; box-sizing: border-box !important; }
+.spec .railwrap .b3-sd-vt button { border-radius: 999px !important; }
+
+/* the BAL-27 chip (decided 2026-10-07): 32 tall · pad 10 · dot 8 · gaps 6 / 10 / 6 · names 13 and 11 · an S (24) × with 4 all round */
+.spec .chip-spec .b3-sc { animation: none !important; display: inline-flex !important; align-items: center !important; height: 32px !important; box-sizing: border-box !important; padding: 0 4px 0 10px !important; gap: 0 !important; border-radius: 999px !important; }
+.spec .chip-spec .b3-sc > i { width: 8px !important; height: 8px !important; flex: none !important; margin: 0 6px 0 0 !important; border-radius: 50% !important; }
+.spec .chip-spec .b3-sc .b3-nw { display: inline-flex !important; align-items: baseline !important; gap: 0 !important; font-size: 13px !important; margin: 0 !important; }
+.spec .chip-spec .b3-sc .b3-nw em { font-size: 11px !important; margin-left: 10px !important; }
+.spec .chip-spec .b3-sc > button { width: 24px !important; height: 24px !important; margin: 0 0 0 6px !important; padding: 0 !important; border-radius: 50% !important; display: inline-grid !important; place-items: center !important; flex: none !important; }
+.spec .chip-spec .b3-sc > button svg { width: 12px !important; height: 12px !important; }
+
+/* rails: the space around the segments is half the step */
+.spec .around-6 .b3-sd-vt { padding: 6px !important; } .spec .around-4 .b3-sd-vt { padding: 4px !important; } .spec .around-2 .b3-sd-vt { padding: 2px !important; }
+
+/* real click areas: an ::after reaching the spec's click size takes hover and click for its button */
+.spec .hz { display: contents; }
+.spec .hz button { position: relative !important; }
+.spec .hz-M button::after { content: "" !important; position: absolute !important; inset: -6px !important; }
+.spec .hz-S button::after { content: "" !important; position: absolute !important; inset: -4px !important; }
+.spec .hz-XS button::after { content: "" !important; position: absolute !important; inset: -2px !important; }
+
+/* measurement colours, one per kind */
+.spec { --k-h: #FFD23F; --k-pad: #8CCBFF; --k-gap: #7BDB63; --k-icon: #B79CFF; --k-r: #FF8A3D; --k-hit: #5C6A75; --k-miss: #FF4D6A; }
+.spec .ov line, .spec .ov .arc { stroke-width: 1; fill: none; }
+.spec .ov text { font: 600 10.5px/1 var(--f-num); }
+.spec .k-h line, .spec .k-h .arc { stroke: var(--k-h); } .spec .k-h text { fill: var(--k-h); }
+.spec .k-pad line { stroke: var(--k-pad); } .spec .k-pad text { fill: var(--k-pad); }
+.spec .k-gap line { stroke: var(--k-gap); } .spec .k-gap text { fill: var(--k-gap); }
+.spec .k-icon line { stroke: var(--k-icon); } .spec .k-icon text { fill: var(--k-icon); }
+.spec .k-r .arc, .spec .k-r line { stroke: var(--k-r); } .spec .k-r text { fill: var(--k-r); }
+.spec .k-hit .hit { fill: none; stroke: var(--k-hit); stroke-dasharray: 3 3; }
+.spec .k-dim line { stroke: var(--k-hit); stroke-dasharray: 2 4; }
+.spec .k-dim.miss line { stroke: var(--k-miss); }
+.spec .miss .pill { fill: var(--k-miss); } .spec .miss text { fill: #fff; }
+.spec .k-hit-t { color: #8B98A3 !important; }
+.spec .dash { border-color: var(--k-hit) !important; opacity: 1 !important; }
+
+/* the sticky bar: the switch and the colour key, always in reach */
+.spec .sbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding: 10px 0; margin-bottom: 4px; background: color-mix(in srgb, var(--pg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--pg-rule); }
+.spec .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; list-style: none; margin: 0; padding: 0; font-size: 12px; color: var(--pg-ink2); }
+.spec .legend li { display: flex; align-items: center; gap: 6px; }
+.spec .legend i { width: 14px; height: 3px; border-radius: 2px; background: currentColor; }
+.spec .legend .k-h-t i { background: var(--k-h); } .spec .legend .k-pad-t i { background: var(--k-pad); } .spec .legend .k-gap-t i { background: var(--k-gap); } .spec .legend .k-icon-t i { background: var(--k-icon); } .spec .legend .k-r-t i { background: var(--k-r); }
+.spec .legend .k-hit-t i { height: 8px; width: 14px; background: none; border: 1px dashed var(--k-hit); }
+.spec .legend .miss-t i { width: 18px; height: 10px; border-radius: 5px; background: var(--k-miss); }
+.spec .top { display: block; margin-bottom: 10px; }
+.spec .top .jump { border: 0; padding: 14px 0 6px; margin: 0; }
+.spec .tag { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--pg-rule); color: var(--pg-ink2); }
+.spec .tag.diff { border-color: color-mix(in srgb, var(--pg-mine) 45%, transparent); color: var(--pg-mine); }
+.spec .tag.ok { border-color: color-mix(in srgb, #7BDB63 45%, transparent); color: #7BDB63; }
+.spec .note code, .spec .fieldnames code { font: 500 12px/1.4 var(--f-num); color: var(--pg-ink); }
+
+/* 9px labels, pictured from the board */
+.spec .labels { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.spec .lb { margin: 0; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.spec .lb-img { min-height: 52px; display: flex; align-items: center; overflow: hidden; }
+.spec .lb-img img { width: auto; max-width: 100%; height: auto; }
+.spec .lb code { font: 600 12px/1.3 var(--f-num); color: var(--pg-ink); }
+.spec .lb figcaption { display: grid; gap: 2px; font-size: 12px; }
+.spec .lb-look { color: var(--pg-ink3); }
+
+/* fields */
+.spec .fieldsw { max-width: 520px; }
+.spec .fieldsw .srch { width: 100%; max-width: 340px; flex: 0 1 340px; }
+.spec .fieldnames { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 18px 0 30px; font-size: 13px; color: var(--pg-ink3); align-items: baseline; }
+@media (max-width: 760px) { .spec .fieldnames { grid-template-columns: 1fr; } }
+
+/* rails stacked, chip */
+.spec .col.one { display: grid; gap: 0; }
+.spec .railrow .rlab { font-family: var(--f-display); font-size: 26px; font-weight: 700; width: 24px; flex: none; }
+.spec .railrow { padding: 18px 150px 18px 4px; flex-wrap: nowrap; }
+.spec .chiprow { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 40px; }
+.spec .chipbox { padding: 34px 60px 40px 46px; }
+
+.spec .adds figcaption { margin-top: 10px; }
+.spec .adds .gauge { padding-bottom: 30px; }
+
+/* v4: the board grows into a design system: group headings, text scale, the XS fork, hover/press schemes, labels today vs spec */
+.spec .gh { font: 600 12px/1 var(--f-body); color: var(--pg-ink3); letter-spacing: .14em; text-transform: uppercase; margin: 56px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--pg-rule); }
+.spec .gh + section { border-top: 0; }
+.spec .jump { gap: 8px 22px; }
+.spec .jg { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.spec .jg i { font-style: normal; font-size: 11px; color: var(--pg-ink3); }
+.spec .tok { font: 500 12px/1.4 var(--f-num); color: var(--pg-ink); overflow-wrap: normal; }
+.spec tk-s { white-space: nowrap; }   /* a name breaks only between its parts (tokSegs in spec.js) */
+.spec .tok b { color: var(--pg-mine); font-weight: 600; }
+.spec .tscale { display: grid; gap: 2px; }
+.spec .ts { display: grid; grid-template-columns: 70px 44px minmax(0, 1fr) minmax(0, 1fr); align-items: baseline; gap: 16px; padding: 12px 0; border-top: 1px solid color-mix(in srgb, var(--pg-rule) 60%, transparent); }
+.spec .ts:first-child { border-top: 0; }
+.spec .ts-k { font-family: var(--f-display); font-size: 26px; font-weight: 700; line-height: 1; }
+.spec .ts-px { font: 600 13px/1 var(--f-num); color: #FFD23F; }
+.spec .ts-s { font-family: var(--f-body); font-weight: 500; color: var(--pg-ink); }
+.spec .ts-m { font-family: var(--f-num); font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #FF7057; }
+.spec .ts.open .ts-q { grid-column: 3 / -1; color: var(--pg-ink3); font-size: 13px; }
+.spec .fork { margin: 26px 0 18px; padding: 18px 20px; border: 1px solid color-mix(in srgb, var(--pg-mine) 35%, transparent); border-radius: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; }
+.spec .fork .q { font: 500 14px/1.3 var(--f-num); width: 100%; }
+.spec .fork .pair { display: flex; flex-wrap: wrap; gap: 16px 40px; align-items: end; }
+.spec .fork figure { margin: 0; display: grid; gap: 10px; justify-items: start; }
+.spec .sz-XS.t9 button { font-size: 9px !important; }
+.spec .sz-XS.t9m button { font-size: 9px !important; font-family: var(--f-num) !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: .12em !important; }
+.spec .schemes { display: grid; gap: 12px; }
+.spec .scheme { background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 16px 20px 20px; display: grid; gap: 14px; }
+.spec .sch-h { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.spec .sch-h b { font-family: var(--f-display); font-size: 24px; font-weight: 600; }
+.spec .sch-h span { font-size: 13px; color: var(--pg-ink); }
+.spec .sch-h i { font-style: normal; font-size: 12px; color: var(--pg-ink3); }
+.spec .scheme .row { gap: 14px; flex-wrap: wrap; }
+.spec .scheme button { transition: background-color .13s ease-out, color .13s ease-out, box-shadow .13s ease-out, border-color .13s ease-out, transform .13s ease-out !important; }
+.spec .sch-a button:hover { transform: none !important; } .spec .sch-a button:active { transform: translateY(1px) scale(.985) !important; }
+.spec .sch-b button:hover { transform: translateY(-1px) !important; } .spec .sch-b button:active { transform: translateY(1px) scale(.985) !important; }
+.spec .sch-c button:hover { transform: none !important; } .spec .sch-c button:active { transform: scale(.985) !important; }
+.spec button:disabled, .spec button:disabled:hover, .spec button:disabled:active { transform: none !important; cursor: not-allowed; }
+.spec .swatches.tight { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.spec .sw-k.sm { font-size: 18px; }
+.spec .lb-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: center; min-height: 64px; }
+.spec .lb-img img { zoom: 1; }
+.spec .lb-spec { display: flex; align-items: center; min-height: 52px; padding: 8px 10px; border-radius: 8px; background: #0B0F12; }
+.spec .lb-spec.right { justify-content: flex-end; }
+.spec .lxs { font-family: var(--f-num); font-size: 9px; line-height: 12px; letter-spacing: .12em; text-transform: uppercase; zoom: 2; }
+
+/* v5: Still on every button of the page (his pick), the icon-only special cases, the search fields, the proposed large sizes */
+.spec button:not(:disabled):hover { transform: none !important; }
+.spec button:not(:disabled):active { transform: translateY(1px) scale(.985) !important; }
+.spec .subh { margin: 30px 0 14px; font-size: 13px; color: var(--pg-ink2); font-weight: 600; }
+.spec .cases { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.spec .cases figure { margin: 0; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.spec .cases .case { min-height: 56px; display: flex; align-items: center; }
+.spec .cases .fieldcase .srch { width: 100%; max-width: 300px; flex: 1 1 auto; }
+.spec .cases figcaption { font-size: 12px; color: var(--pg-ink3); }
+.spec .fields { display: grid; gap: 10px; margin-bottom: 30px; }
+.spec .fl { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 520px) minmax(0, 1fr); gap: 10px 20px; align-items: center; padding: 14px 18px; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; }
+.spec .fl .stage.wide { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.spec .fl .srch { width: 100%; max-width: 360px; flex: 1 1 auto; }
+.spec .fl .f-pick, .spec .fl .wsrch { width: 100%; max-width: 360px; }
+.spec .fl-w { font-size: 13px; color: var(--pg-ink3); }
+@media (max-width: 860px) { .spec .fl { grid-template-columns: 1fr; } }
+.spec .ts.prop .ts-k { color: var(--pg-ink2); }
+.spec .ts-d { font-family: var(--f-display); font-weight: 700; color: var(--pg-ink); line-height: 1; }
+.spec .ts.prop { align-items: center; }
+.spec .lb-img { flex-direction: column; align-items: flex-start; gap: 6px; }
+
+/* v6 (2026-10-07): decided sections become design-system entries; the icon grid; what a button does is printed from measurements */
+.spec .ts { grid-template-columns: 70px 44px minmax(0, 1fr) minmax(0, 1fr) 190px; }
+@media (max-width: 760px) { .spec .ts { grid-template-columns: 52px 36px minmax(0, 1fr); } .spec .ts > :nth-child(n+4) { grid-column: 3; } .spec .ts > span { min-width: 0; overflow: hidden; } }   /* the text scale was 2px wider than a phone (390): its fourth and fifth columns now stack under the specimen */
+.spec .ts-u { font-size: 12px; color: var(--pg-ink3); }
+.spec .ts.big { align-items: center; }
+.spec .entry { display: grid; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; overflow: hidden; }
+.spec .en-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 6px 20px; border-top: 1px solid var(--pg-rule); }
+.spec .en-row:first-child { border-top: 0; }
+.spec .en-row.two { grid-template-columns: 200px minmax(0, 1fr); padding-block: 14px; }
+.spec .en-k { display: grid; gap: 6px; }
+.spec .en-k b { font-family: var(--f-display); font-size: 26px; font-weight: 600; line-height: 1; }
+.spec .entry .pairbox { padding: 18px 40px 40px 14px; }
+.spec .fx { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); align-items: center; gap: 18px; }
+.spec .fx-s { display: flex; align-items: center; min-height: 52px; }
+.spec .fx-l { margin: 0; display: grid; gap: 7px; font-size: 13px; line-height: 1.35; }
+.spec .fx-l > div { display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.spec .fx-l dt { font: 600 10px/1 var(--f-num); letter-spacing: .1em; text-transform: uppercase; color: var(--pg-ink3); }
+.spec .fx-l dd { margin: 0; color: var(--pg-ink); }
+.spec .fx-miss { display: block; color: var(--k-miss); font-size: 12px; margin-top: 3px; }
+.spec .fx-wait { color: var(--pg-ink3); }
+.spec .cases .fx { grid-template-columns: 1fr; gap: 12px; }
+.spec .cases .case .srch { width: 100%; max-width: 300px; flex: 1 1 auto; }
+.spec .cases figcaption b { color: var(--pg-ink); font-weight: 600; }
+.spec .igrid { overflow-x: auto; display: grid; grid-template-columns: 170px repeat(4, minmax(120px, 1fr)); background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 4px 16px 6px; }
+.spec .ig-hd { font-family: var(--f-display); font-size: 22px; font-weight: 700; text-align: center; padding: 12px 0 4px; }
+.spec .ig-k, .spec .ig-c { border-top: 1px solid color-mix(in srgb, var(--pg-rule) 60%, transparent); display: flex; align-items: center; }
+.spec .ig-c { justify-content: center; }
+.spec .ig-k b { font-family: var(--f-display); font-size: 22px; font-weight: 600; display: grid; gap: 4px; }
+.spec .ig-k b i { font: 500 11px/1 var(--f-num); font-style: normal; color: var(--pg-mine); }
+.spec .gauge.lite { padding: 24px 38px 30px 34px; }
+.spec .sz.ionly button { font-size: 0 !important; gap: 0 !important; letter-spacing: 0 !important; }
+/* 2026-10-07 19:07 EDT (his: "--borderless is also not applying on the ghost button"): the kit's hover ring is !important at (0,8,0) — `.b4 :is(.b3-btn2:not(.go):not(.dang)…):hover` in b4.css — and beat these at (0,3,1). Two :not(#_) lift the flags above any kit rule, the board's own trick */
+.spec .sz.bl button:not(#_):not(#_) { border-color: transparent !important; box-shadow: none !important; }   /* --borderless: no outline, ever; on fill the hover glow counts as its outline (his 2026-10-07 19:03 EDT), so fill--borderless never glows */
+.spec .fl .cx-pick { width: 100%; max-width: 360px; }
+.spec .fl .f-att { flex: 1 1 auto; min-width: 0; max-width: 460px; }
+.spec .sch-d { display: flex; align-items: center; gap: 14px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, var(--pg-rule) 60%, transparent); font-size: 13px; color: var(--pg-ink3); }   /* disabled sits inside its card (his 18:21 EDT: it fell out) */
+.spec .ig-c { flex-direction: column; justify-content: center; gap: 0; padding-bottom: 12px; }
+.spec .ig-tok { font: 500 10.5px/1.3 var(--f-num); color: var(--pg-ink2); text-align: center; overflow-wrap: anywhere; }
+.spec .q button:not(#_):not(#_):not(:hover):not(:active):not(:focus-visible) { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }   /* --quiet: clear at rest, the style on hover */
+.spec .q.st-fill button:not(#_):not(#_):not(:hover):not(:active) { color: var(--ok) !important; }
+.spec .ghf button:not(#_):not(#_) { background: transparent !important; }   /* --ghost (proposed 2026-10-07 19:50 EDT): no fill at rest or on hover; the outline stays */
+.spec .neutral { --staged: var(--ink); }   /* a paint with no colour value: its hover colour is the page's white */
+.spec .vc-w { font-style: normal; font-size: 11px; line-height: 1.3; color: var(--k-miss); text-align: center; }
+.spec .cmpg { grid-template-columns: repeat(2, minmax(0, 300px)); }   /* a quiet fill's icon takes the fill's colour, or it vanishes on the page */
+/* the variant table (his 19:00 EDT: "fix/improve the spacing and stuff of this grid/text"): every cell is a 56px specimen band, so a row's icons share
+   one centre line, then its name on two lines, the base and then the flags, so no name wraps and every row's names start level; the style's name
+   sits on the band; the names are s (11) */
+.spec .vgrid { grid-template-columns: 96px repeat(5, minmax(150px, 1fr)); column-gap: 8px; padding: 0 20px 6px; overflow-x: auto; }
+.spec .vgrid .ig-hd.sm { font: 600 11px/1.4 var(--f-num); color: var(--pg-mine); padding: 18px 0 12px; text-align: center; }
+.spec .vgrid .vk, .spec .vgrid .vc { display: grid; grid-template-rows: 56px auto; align-content: start; row-gap: 10px; padding: 16px 0 18px; min-height: 0; }
+.spec .vgrid .vk { justify-items: start; } .spec .vgrid .vk b { align-self: center; }
+.spec .vgrid .vc { justify-items: center; }
+.spec .vgrid .vc-s { display: flex; align-items: center; justify-content: center; height: 56px; }
+.spec .vc-n { display: grid; justify-items: center; font: 500 11px/1.45 var(--f-num); color: var(--pg-ink2); white-space: nowrap; }
+.spec .vc-n b { color: var(--pg-mine); font-weight: 500; min-height: 1.45em; }
+/* one trial colour: every variable a style reads for its colour points at --warn; the tint's dark edge is the same 30% mix of its colour over the page's
+   dark that the real --danger-edge (#54322F) is of --danger-ink (#FF8A85) */
+.spec .warnwrap { --staged: var(--warn); --ok: var(--warn); --danger-ink: var(--warn); --danger-edge: color-mix(in srgb, var(--warn) 30%, #0B0F12); }
+.spec .sw-states { display: grid; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; overflow-x: auto; }
+.spec .ss-row { display: grid; grid-template-columns: 150px repeat(4, minmax(180px, 1fr)); align-items: start; gap: 14px; padding: 16px 20px; border-top: 1px solid var(--pg-rule); min-width: 1000px; }
+.spec .ss-row:first-child { border-top: 0; }
+.spec .ss-k { display: grid; gap: 4px; } .spec .ss-k b { font-family: var(--f-display); font-size: 24px; font-weight: 600; line-height: 1; } .spec .ss-k span { font-size: 12px; color: var(--pg-ink3); }
+.spec .ss-live { display: flex; align-items: center; height: 52px; }
+.spec .ss-c { margin: 0; display: grid; gap: 6px; align-content: start; }
+.spec .ss-c figcaption { font: 600 10px/1 var(--f-num); letter-spacing: .1em; text-transform: uppercase; color: var(--pg-ink3); }
+.spec .ss-c img { width: auto; max-width: 100%; height: 52px; object-fit: contain; object-position: left center; }
+.spec .rc { margin: 0; display: grid; gap: 5px; }
+.spec .rc > div { display: grid; grid-template-columns: 50px minmax(0, 1fr); gap: 6px; align-items: center; }
+.spec .rc dt { font: 600 10px/1 var(--f-num); letter-spacing: .08em; text-transform: uppercase; color: var(--pg-ink3); }
+.spec .rc dd { margin: 0; display: flex; align-items: center; gap: 6px; font: 500 12px/1.3 var(--f-body); color: var(--pg-ink); }
+.spec .rc .rc-sw { width: 10px; height: 10px; border-radius: 3px; flex: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }   /* not .sw: that is the Styles section's card, and it drew these as 40px boxes */
+.spec .rc-x { grid-template-columns: 1fr !important; } .spec .rc-x dd { color: var(--pg-ink2); }
+.spec .rc-wait { font-size: 12px; color: var(--pg-ink3); }
+.spec .ss-sum { font-style: normal; font-size: 12px; line-height: 1.35; color: var(--pg-mine); }
+.spec .case-nm { display: grid; gap: 4px; } .spec .case-nm span { font-size: 12px; color: var(--pg-ink3); }   /* the attachment row is its label and its field: it takes the stage's width as the card's column gives it on the board */
+/* 2026-10-07 20:55 EDT, his 19:59 EDT decision: --ghost goes on tint and paint only; on wash and fill the cell stays, drawn faint, with its measured reason */
+.spec .vgrid .vc.na .vc-s { opacity: .35; }
+.spec .vc-na { font: 600 10px/1.2 var(--f-num); letter-spacing: .08em; text-transform: uppercase; color: var(--pg-ink3); font-style: normal; text-align: center; }
+.spec .cmpg { grid-template-columns: minmax(0, 260px) minmax(0, 260px) minmax(0, 440px); }   /* today · paint--ghost · where they differ */
+@media (max-width: 860px) { .spec .cmpg { grid-template-columns: minmax(0, 1fr); } }
+/* a div grid, not a table: the kit's table rules emptied the row labels and moved the head under the rows */
+.spec .cd-g { display: grid; grid-template-columns: max-content minmax(0, 1fr) minmax(0, 1fr); column-gap: 14px; }
+.spec .cd-g i { font-style: normal; padding: 7px 0; border-top: 1px solid color-mix(in srgb, var(--pg-rule) 60%, transparent); }
+.spec .cd-g i:nth-child(-n+3) { border-top: 0; padding-top: 0; }
+.spec .cd-h, .spec .cd-k { font: 600 10px/1.35 var(--f-num); letter-spacing: .08em; text-transform: uppercase; color: var(--pg-ink3); }
+.spec .cd-v { font: 500 12px/1.35 var(--f-body); color: var(--pg-ink); }
+/* 2026-10-07 22:37 EDT cleanup (his 22:18 EDT): a size and its click areas in one row; the rules once above the styles; flags defined; labels grouped by name; filter chips; the board-change ledger */
+.spec .szrow { grid-template-columns: 110px auto minmax(0, 1fr) auto; padding-block: 4px; }
+.spec .entry .szrow .pairbox { padding: 30px 24px 40px 14px; }
+@media (max-width: 960px) { .spec .szrow { grid-template-columns: minmax(0, 1fr); } }
+.spec .rules, .spec .flagdefs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 0 0 14px; }
+.spec .rules > div, .spec .flagdefs > div { background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; }
+.spec .rules dt { font-family: var(--f-display); font-size: 20px; font-weight: 600; line-height: 1; }
+.spec .rules dd, .spec .flagdefs dd { margin: 0; font-size: 13px; line-height: 1.4; color: var(--pg-ink2); display: grid; gap: 2px; }
+.spec .flagdefs dd i { font-style: normal; font-size: 12px; color: var(--pg-mine); }
+.spec .ss-k .tok { font-size: 11px; color: var(--pg-ink2); }
+.spec .pend { font-size: 12px; color: var(--pg-mine); }
+.spec .lbn { gap: 12px; }
+.spec .lbn-uses { display: grid; gap: 8px; }
+.spec .lbn .lb-spec { justify-content: space-between; gap: 12px; }
+.spec .lbn .lb-spec.right { flex-direction: row-reverse; }
+.spec .lbn .lb-spec i { font-style: normal; font-size: 12px; color: var(--pg-ink3); }
+.spec .chiprowbox { padding: 30px 24px 40px 46px; flex-wrap: wrap; }
+.spec .bchg-w { background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; overflow-x: auto; }
+.spec .bchg { display: grid; grid-template-columns: 150px minmax(180px, 1fr) minmax(220px, 1.3fr) 170px; min-width: 760px; }
+.spec .bchg i { font-style: normal; padding: 10px 14px; border-top: 1px solid color-mix(in srgb, var(--pg-rule) 60%, transparent); font-size: 13px; line-height: 1.4; color: var(--pg-ink2); }
+.spec .bchg .bc-h { border-top: 0; font: 600 10px/1.3 var(--f-num); letter-spacing: .08em; text-transform: uppercase; color: var(--pg-ink3); }
+.spec .bchg .bc-k, .spec .bchg .bc-to { color: var(--pg-ink); }
+.spec .bchg .bc-k { font-weight: 600; }
+.spec .bchg .bc-w { font-size: 12px; color: var(--pg-ink3); }
+.spec .case.wide .srch { width: 100%; max-width: 300px; flex: 1 1 auto; }
+/* 2026-10-08 11:51 EDT his 11:38 EDT round: text specs, gaps, aligned sizes, rule pictures, the flags matrix, the accent switch, field and chip measurements */
+.spec .tscale2 { display: grid; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; overflow-x: auto; }
+.spec .tsr { display: grid; grid-template-columns: 64px 40px minmax(0, 1fr) 210px; align-items: center; gap: 16px; padding: 14px 20px; border-top: 1px solid color-mix(in srgb, var(--pg-rule) 60%, transparent); min-width: 760px; }
+.spec .tsr:first-child { border-top: 0; }
+.spec .tsr-s { display: flex; flex-wrap: wrap; gap: 14px 44px; align-items: end; }
+.spec .tsm { margin: 0; display: grid; gap: 6px; }
+.spec .tsm figcaption { display: flex; gap: 8px; font: 500 11px/1.3 var(--f-num); color: var(--pg-mine); }
+.spec .tsm figcaption b { color: var(--pg-ink3); font-weight: 600; }
+.spec .tx { color: var(--pg-ink); white-space: nowrap; }
+.spec .tf-label { font-family: var(--f-num); font-weight: 700; text-transform: uppercase; }
+.spec .tf-body { font-family: var(--f-body); font-weight: 500; }
+.spec .tf-display { font-family: var(--f-display); font-weight: 700; }
+.spec .tf-label.tz-xs { font-size: 9px; line-height: 12px; letter-spacing: .12em; }
+.spec .tf-label.tz-s { font-size: 11px; line-height: 14px; letter-spacing: .10em; }
+.spec .tf-label.tz-m { font-size: 13px; line-height: 16px; letter-spacing: .08em; }
+.spec .tf-label.tz-l { font-size: 15px; line-height: 18px; letter-spacing: .06em; }
+.spec .tf-body.tz-s { font-size: 11px; line-height: 16px; letter-spacing: 0; }
+.spec .tf-body.tz-m { font-size: 13px; line-height: 18px; letter-spacing: 0; }
+.spec .tf-body.tz-l { font-size: 15px; line-height: 20px; letter-spacing: 0; }
+.spec .tf-body.tz-xl { font-size: 21px; line-height: 26px; letter-spacing: -.01em; }
+.spec .tf-body.tz-xxl { font-size: 30px; line-height: 36px; letter-spacing: -.01em; }
+.spec .tf-body.tz-giant { font-size: 44px; line-height: 48px; letter-spacing: -.02em; }
+.spec .tf-body.tz-jumbo { font-size: 58px; line-height: 62px; letter-spacing: -.02em; }
+.spec .tf-display.tz-xl { font-size: 21px; line-height: 21px; letter-spacing: 0; }
+.spec .tf-display.tz-xxl { font-size: 30px; line-height: 30px; letter-spacing: 0; }
+.spec .tf-display.tz-giant { font-size: 44px; line-height: 44px; letter-spacing: 0; }
+.spec .tf-display.tz-jumbo { font-size: 58px; line-height: 58px; letter-spacing: 0; }
+.spec .gaps { display: flex; flex-wrap: wrap; gap: 12px; }
+.spec .gp { margin: 0; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 16px 18px 14px; display: grid; gap: 10px; min-width: 150px; flex: 1 1 150px; }
+.spec .gp-s { height: 36px; display: flex; align-items: center; }
+.spec .gp-s i { display: block; height: 24px; background: currentColor; opacity: .45; border-radius: 2px; }
+.spec .gp figcaption { display: grid; gap: 2px; } .spec .gp figcaption b { font: 600 18px/1 var(--f-num); } .spec .gp figcaption span { font-size: 12px; line-height: 1.35; color: var(--pg-ink3); }
+.spec .szrow { grid-template-columns: 110px 220px 330px minmax(0, 1fr); }
+.spec .szrow .gauge { padding: 38px 40px 38px 44px; }
+.spec .entry .szrow .pairbox { padding: 38px 24px 38px 14px; }
+.spec .szrow > .stage, .spec .szrow > .pairbox { align-self: center; }
+.spec .rules { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin: 0 0 14px; }
+@media (max-width: 760px) { .spec .rules { grid-template-columns: 1fr; } }
+.spec .rule { margin: 0; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; align-content: start; }
+.spec .rule-s { display: flex; align-items: center; gap: 10px; min-height: 52px; flex-wrap: wrap; }
+.spec .rule-s img { height: 44px; width: auto; }
+.spec .rule-s > svg, .spec .fc-pair > svg { width: 14px; height: 14px; color: var(--pg-ink3); flex: none; }
+.spec .rule figcaption { display: flex; align-items: baseline; gap: 10px; }
+.spec .rule figcaption b, .spec .fcard figcaption b { font-family: var(--f-display); font-size: 20px; font-weight: 600; color: var(--pg-ink); }
+.spec .rule figcaption span { font: 500 12px/1.3 var(--f-num); color: var(--pg-mine); }
+.spec .flagdefs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 0 0 16px; }
+.spec .fcard { margin: 0; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; align-content: start; }
+.spec .fc-pair { display: flex; align-items: center; gap: 14px; min-height: 52px; }
+.spec .fcard figcaption { font-size: 12px; color: var(--pg-ink2); display: flex; gap: 8px; flex-wrap: wrap; } .spec .fcard figcaption i { font-style: normal; color: var(--pg-mine); }
+.spec .vgrid { grid-template-columns: 96px repeat(8, minmax(112px, 1fr)); }
+.spec .vc-n, .spec .vc-n b, .spec .vgrid .ig-hd.sm { white-space: normal; text-align: center; }
+.spec .vgrid .vc.na { background: repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--pg-rule) 40%, transparent) 7px 8px); }
+.spec .na-mark { width: 22px; height: 22px; border: 1.5px solid var(--pg-ink3); border-radius: 50%; position: relative; display: block; }
+.spec .na-mark::after { content: ''; position: absolute; left: 50%; top: 2px; bottom: 2px; width: 1.5px; background: var(--pg-ink3); transform: translateX(-50%) rotate(45deg); }
+.spec .rvs { grid-template-columns: repeat(2, minmax(0, 320px)); }
+/* 2026-10-09 15:41 EDT: the reveal refined from his two recordings (2026-10-09 11:34 and 11:35 EDT, local/pins2/s4/intake/reveal-*.gif): the icon jumped sideways as the box
+   opened, the words were cut mid-letter by a hard edge, and on the left reveal they hung outside the box while it grew and shrank. Now, on both sides: the icon
+   never moves (it is held at its rest place, 15 from the hit box's edge, centred in the 32 ring); the words stay inside the box (it clips) with a soft trailing
+   edge instead of a cut; opening, the box moves first and the words fade in once it is mostly open; closing, the words fade out first and the box follows. */
+.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_){position:relative!important;overflow:clip!important;column-gap:0!important;grid-template-columns:auto!important;width:fit-content!important;transition:padding 240ms cubic-bezier(.4,0,.2,1) 80ms!important}
+.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_) > svg{position:absolute!important;top:50%!important;margin:0!important;translate:0 -50%!important;transition:none!important}
+/* the word's own width opens (max-width, a length both ends of the move can share; 0fr → 1fr jumped in one frame here, measured) */
+.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_)::after{grid-column:1;grid-row:1;min-width:0!important;max-width:0!important;padding:0!important;overflow:hidden!important;white-space:nowrap!important;margin:0!important;opacity:0!important;transform:none!important;transition:max-width 240ms cubic-bezier(.4,0,.2,1) 80ms,padding 240ms cubic-bezier(.4,0,.2,1) 80ms,opacity 90ms linear,translate 90ms linear!important}
+.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_):is(:hover,:focus-visible){transition:padding 260ms cubic-bezier(.22,.61,.36,1)!important}
+.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_):is(:hover,:focus-visible)::after{max-width:60px!important;opacity:1!important;translate:0 0!important;transition:max-width 260ms cubic-bezier(.22,.61,.36,1),padding 260ms cubic-bezier(.22,.61,.36,1),opacity 170ms ease-out 110ms,translate 220ms cubic-bezier(.22,.61,.36,1) 60ms!important}
+/* right: the icon held on the left, the words open to its right */
+.spec .rv-right .wg-ib.wg-fbtn:not(#_):not(#_){padding:0 15px 0 calc(15px + 14px)!important}
+.spec .rv-right .wg-ib.wg-fbtn:not(#_):not(#_) > svg{left:15px!important;right:auto!important}
+.spec .rv-right .wg-ib.wg-fbtn:not(#_):not(#_)::after{justify-self:start;translate:-6px 0;mask-image:linear-gradient(to right,#000 calc(100% - 10px),transparent)}   /* the soft edge sits in 10px of its own, so the open word is whole */
+.spec .rv-right .wg-ib.wg-fbtn:not(#_):not(#_):is(:hover,:focus-visible){padding:0 6px 0 calc(15px + 14px + 6px)!important}
+.spec .rv-right .wg-ib.wg-fbtn:not(#_):not(#_):is(:hover,:focus-visible)::after{padding:0 10px 0 0!important}
+/* left: the icon held on the right, the words open to its left; it sits at the end of its row on the board, so it grows leftward and is anchored there here too */
+.spec .rv-left .wg-ib.wg-fbtn:not(#_):not(#_){margin-left:auto!important;padding:0 calc(15px + 14px) 0 15px!important}
+.spec .rv-left .wg-ib.wg-fbtn:not(#_):not(#_) > svg{right:15px!important;left:auto!important}
+.spec .rv-left .wg-ib.wg-fbtn:not(#_):not(#_)::after{justify-self:end;translate:6px 0;mask-image:linear-gradient(to left,#000 calc(100% - 10px),transparent)}
+.spec .rv-left .wg-ib.wg-fbtn:not(#_):not(#_):is(:hover,:focus-visible){padding:0 calc(15px + 14px + 6px) 0 6px!important}
+.spec .rv-left .wg-ib.wg-fbtn:not(#_):not(#_):is(:hover,:focus-visible)::after{padding:0 0 0 10px!important}
+.spec .railrow .rn { width: 120px; flex: none; font-size: 11px; color: var(--pg-ink2); }
+.spec .chip-facts { margin-top: 6px; }
+.spec .hd { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; }
+.spec .accsw { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; }
+.spec .acc { height: 24px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--pg-rule); background: transparent; color: var(--pg-ink3); font: 500 11px/1 var(--f-num); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.spec .acc i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.spec .acc.on { color: var(--pg-ink); border-color: color-mix(in srgb, var(--pg-mine) 55%, transparent); }
+.spec .fg { position: relative; padding: 32px 48px 36px 40px; }
+.spec .fg-fs { display: block; margin-top: 8px; font: 500 11px/1.3 var(--f-num); color: var(--pg-ink3); }
+.spec .fg-fs.miss-t { color: var(--k-miss); }
+.spec .oqs { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 12px; }
+.spec .oq { margin: 0; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
+.spec .oq figcaption b { color: var(--pg-ink); font-weight: 600; font-size: 13px; }
+.spec .oq-v { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px 12px; align-items: center; }
+.spec .oq-v > span { font: 600 13px/1 var(--f-num); color: var(--pg-mine); }
+.spec .fo13 .f-pick input:not(#_):not(#_) { font-size: 13px !important; }
+.spec .fo15 .f-pick input:not(#_):not(#_) { font-size: 15px !important; }
+.spec .fi12 .f-pick svg:not(button svg):not(#_) { width: 12px !important; height: 12px !important; }
+/* the round's fixes after looking: fields keep their width inside the gauge; the words line clears the button tick; flag names break only between parts; gap bars in the gap colour; nothing wider than a phone */
+.spec .fl .stage.wide > .fg { flex: 1 1 auto; min-width: 0; }
+.spec .fg-fs { margin-top: 26px; }
+.spec .vgrid .vc-n { font-size: 10px; }
+.spec .vgrid .vc-n > span { white-space: nowrap; }
+.spec .gp { color: var(--k-gap); }
+.spec .gp figcaption span { color: var(--pg-ink3); }
+.spec .oqs { grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); }
+@media (max-width: 640px) { .spec .fg { padding: 32px 12px 36px 30px; } .spec .fl .stage.wide { overflow-x: auto; max-width: 100%; } .spec .oq-v .stage { overflow-x: auto; max-width: 100%; } }
+/* the flags matrix fits its card at 1282: a narrower label column and tighter gaps (its last column was cut) */
+.spec .vgrid { grid-template-columns: 64px repeat(8, minmax(112px, 1fr)); column-gap: 4px; padding: 0 12px 6px; }
+/* 2026-10-08 12:40 EDT his 12:35 EDT rule: a decided element on the spec board is drawn to the set conventions; the board-change list carries the fix to Builder-2 */
+.spec #fields .f-fld:not(#_) { border-radius: 11px !important; }   /* corner = height 44 × 0.25 (the board draws 9) */
+.spec #fields .f-fld:not(#_) { padding-right: 6px !important; }   /* the chevron sits 6 inside the field, as the search × does (the board: 4) */
+.spec #fields .f-pick:not(.f-catpick) input:not(#_), .spec #fields .cx-pick input:not(#_) { font-size: 13px !important; }   /* the fields' words take the search field's 13 (the board: 14) */
+.spec .fl-n { display: grid; gap: 8px; align-content: center; }
+.spec .fl-b { display: flex; align-items: center; gap: 6px; }
+.spec .fl-b > svg { width: 12px; height: 12px; color: var(--pg-ink3); flex: none; }
+.spec .fl-b .tok { font-size: 11px; color: var(--pg-ink2); }
+.spec .fc11 .f-pick input:not(#_) { font-size: 11px !important; }
+.spec .fc13 .f-pick input:not(#_) { font-size: 13px !important; }
+/* 2026-10-08 12:45 EDT his answers by the L size ("what size text / icon do 44px buttons use?"): every field's words 13 (the category's caps too) and its magnifier 16, 12 from the edge, 10 to the words */
+.spec #fields .f-catpick input:not(#_) { font-size: 13px !important; }
+.spec #fields .srch > svg:not(#_) { width: 16px !important; height: 16px !important; left: 14px !important; margin-top: -8px !important; }   /* 16 (C1 L icon), 14 from the edge (C1 L padding), centred: the kit's -6 was for its 12 */
+.spec #fields .srch > input:not(#_) { padding-left: 40px !important; border: 0 !important; background: color-mix(in srgb, #04070A 52%, var(--sunk)) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent) !important; transition: box-shadow .16s ease, background-color .16s ease; }   /* the field look every other field draws (b4/form.css .f-fld): 14 + 16 + 10 to the words */
+.spec #fields .srch:hover > input:not(#_):not(#_) { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 24%, transparent) !important; }   /* lit from anywhere over the field, its × and count box included (his 2026-10-08 15:27 EDT) */
+
+/* 2026-10-08 16:32 EDT, his 15:27 EDT field asks: every field's leading content 14 from its edge (C1 L padding), its words 10 after an icon */
+/* the field's focus, as every other field draws it (b4/classes.css: a 2px staged ring inside, a 5px staged halo at 16%) */
+.spec #fields .srch > input:focus:not(#_):not(#_) { box-shadow: inset 0 0 0 2px var(--staged), 0 0 0 5px color-mix(in srgb, var(--staged) 16%, transparent) !important; }
+.spec #fields .f-pre.f-ic:not(#_) { padding-left: 14px !important; }
+.spec #fields .f-fld > .f-in:not(.f-pre + .f-in):not(#_) { padding-left: 14px !important; }
+.spec #fields .f-catpick .f-pre.f-ic:not(#_):not(#_) { padding-left: 18px !important; }   /* his 2026-10-08 17:45 EDT pick: the dot centred in the 16 icon slot (14 + 4) */
+.spec #fields .f-catpick .f-pre.f-ic + .f-in:not(#_):not(#_) { padding-left: 14px !important; }   /* 10 after the slot (4 + 10), so the words start at 40 like every icon field's */
+.spec .fg .ov .cwarn { fill: var(--k-miss); font: 600 10px/1 var(--f-num); }
+.spec .inks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 0; font: 500 11px/1.5 var(--f-num); }
+.spec .inks > div { display: flex; align-items: center; gap: 6px; }
+.spec .inks dt { color: var(--pg-ink3); }
+.spec .inks dd { margin: 0; color: var(--pg-ink); display: flex; align-items: center; gap: 5px; }
+.spec .inks dd i { width: 10px; height: 10px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); flex: none; }
+.spec .inks .miss { color: var(--k-miss); font-weight: 600; }
+
+/* 2026-10-08 17:12 EDT, his 17:05 EDT "SHOW THROUGH DESIGN": the class once (anatomy · sizes · states), the members as a gallery */
+.spec .fsec { display: grid; gap: 14px; }
+.spec .fblk { padding: 16px 18px 18px; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; min-width: 0; }
+.spec .fblk > .subh { margin: 0 0 6px; }
+.spec .anat-box { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 36px; padding: 96px 24px 104px; overflow: hidden; }
+.spec .anat .ink-n circle { fill: var(--pg-ink); }
+.spec .anat .ink-n text { fill: var(--pg-card); font: 700 10px/1 var(--f-num); }
+.spec .anat-box.narrow { padding: 24px 8px 16px; gap: 28px; }
+.spec .anat-key { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 16px; font: 500 11px/1.4 var(--f-num); color: var(--pg-ink); }
+.spec .anat-key li { display: flex; align-items: center; gap: 6px; }
+.spec .anat-key b { width: 16px; height: 16px; border-radius: 50%; background: var(--pg-ink); color: var(--pg-card); display: grid; place-items: center; font-size: 10px; }
+.spec .anat-key i { width: 10px; height: 10px; border-radius: 2.5px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28); }
+.spec .anat-key .ik-l { color: var(--pg-ink3); }
+.spec .anat-box [data-anat] { zoom: 1.5; width: 330px; }
+.spec .anat-box [data-anat] .srch, .spec .anat-box [data-anat] .f-pick { width: 100%; max-width: none; }
+.spec svg.anat { position: absolute; inset: 0; pointer-events: none; }
+.spec .anat .ink-c path { fill: none; stroke: var(--pg-ink3); stroke-width: 1; opacity: .8; }
+.spec .anat .ink-c circle { fill: var(--pg-ink); stroke: var(--pg-card); stroke-width: 1.5; }
+.spec .anat .ink-c text { fill: var(--pg-ink); font: 500 11px/1 var(--f-num); }
+.spec .anat .ink-c .ik-l { fill: var(--pg-ink3); }
+.spec .anat .ink-c rect.sw { stroke: rgba(255, 255, 255, .28); stroke-width: 1; }
+.spec .fsz .srch { max-width: 360px; }
+.spec .fg .ov .tsz { fill: var(--pg-ink3); font: 500 10.5px/1 var(--f-num); }
+.spec .fstates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 22px; }
+.spec .fstates figure { margin: 0; display: grid; gap: 8px; align-content: start; }
+.spec .fstates img { width: 100%; border-radius: 8px; display: block; }
+.spec .fstates figcaption { display: grid; gap: 4px; font: 500 11px/1.35 var(--f-num); color: var(--pg-ink3); }
+.spec .fstates figcaption b { color: var(--pg-ink); font-weight: 600; }
+.spec .fs-c { display: flex; align-items: center; gap: 6px; color: var(--pg-ink); }
+.spec .fs-c i, .spec .fm-same i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .24); }
+.spec .fmembers { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; }
+.spec .fm { display: grid; gap: 12px; padding: 14px; border: 1px solid var(--pg-rule); border-radius: 10px; min-width: 0; }
+.spec .fm-h { display: grid; gap: 6px; }
+.spec .fm .stage.wide { min-width: 0; }
+.spec .fm .srch, .spec .fm .f-pick, .spec .fm .cx-pick { width: 100%; max-width: none; }
+.spec .fm .f-att { max-width: none; }
+.spec .fm-f { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.spec .fm-use { font: 500 11px/1.3 var(--f-num); color: var(--pg-ink3); }
+.spec .fm-same { display: flex; gap: 10px; font: 500 10.5px/1 var(--f-num); color: var(--pg-ink3); }
+.spec .fm-same > span { display: flex; align-items: center; gap: 4px; }
+.spec .fm-same .miss { color: var(--k-miss); }
+@media (max-width: 860px) { .spec .fstates { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .spec .anat-box [data-anat] { zoom: 1; width: 100%; } .spec .anat-box { padding: 84px 8px 96px; } .spec .fstates { grid-template-columns: 1fr; } .spec .fmembers { grid-template-columns: 1fr; } }
+
+@media (max-width: 640px) { .spec .fsz { max-width: 100%; } .spec .fsz .fg { padding: 32px 56px 36px 12px; } .spec .fsz .srch { max-width: 100%; min-width: 0; } }
+
+/* 2026-10-08 17:29 EDT, after "cluttered … prose … not at a glance": v1's rules (his "yo nice artifact design!", 2026-10-07 01:46 EDT) — the element drawn
+   once with its numbers on it, its inks as the parts themselves, only what changes shown as states */
+.spec .fhero { display: grid; grid-template-columns: minmax(0, 470px) minmax(0, 1fr); gap: 20px 32px; align-items: start; padding: 18px; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; }
+.spec .fh-side { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.spec .fh-side > .subh, .spec .fsec > .subh { margin: 0; }
+.spec .pstrip { display: flex; flex-wrap: wrap; gap: 14px; }
+.spec .pitem { margin: 0; display: grid; gap: 6px; justify-items: start; align-content: start; min-width: 76px; max-width: 128px; }
+.spec .pcrop { display: block; border-radius: 8px; background-repeat: no-repeat; box-shadow: 0 0 0 1px var(--pg-rule); }
+.spec .ink { display: flex; align-items: flex-start; gap: 6px; font: 500 10.5px/1.3 var(--f-num); color: var(--pg-ink); }
+.spec .ink-t { width: 12px; height: 12px; border-radius: 3px; flex: none; margin-top: 1px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2); overflow: hidden; display: block; }
+.spec .ink-t > i { width: 100%; height: 100%; display: block; }
+.spec .plab { font: 600 10.5px/1 var(--f-num); color: var(--pg-ink); }
+.spec .pname { font-size: 9.5px; line-height: 1.3; color: var(--pg-ink3); word-break: break-all; }
+.spec .ink-h { font: 500 10px/1.3 var(--f-num); color: var(--pg-ink3); }
+.spec .fmembers .fm { gap: 10px; }
+@media (max-width: 1100px) { .spec .fhero { grid-template-columns: 1fr; } }
+
+/* 2026-10-08 17:33 EDT: back to the layout he accepted (each field drawn once, measured) with ONE ink row for the class in the Styles rows' shape */
+.spec .rc.rc-row { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 0; padding: 14px 18px; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 12px; }
+.spec .rc.rc-row > div { display: flex; align-items: center; gap: 8px; }
+.spec .fmembers { grid-template-columns: 1fr; }
+.spec .fmembers .fm { grid-template-columns: minmax(0, 300px) minmax(0, 560px); align-items: center; gap: 10px 20px; padding: 6px 18px; background: var(--pg-card); }
+/* 2026-10-09 12:51 EDT: the corrected twin leads each card (his 11:49 EDT "draw the corrected proposed state"); today's sits after it, dimmed; a card that already matches shows today alone */
+.spec .bm .stage.wide { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }   /* proposed above, today under it: one column fits every card width */
+.spec .fx, .spec .fx-was { position: relative; display: block; min-width: 0; max-width: 100%; }
+.spec .fx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; min-width: 0; }
+.spec .fx-cap { position: absolute; top: 8px; left: 0; z-index: 1; font: 600 10px/1 var(--f-num); text-transform: uppercase; letter-spacing: .08em; color: var(--pg-ink3); }
+.spec .fx > .fx-cap { color: var(--ok); }
+.spec .fx-note { margin: 26px 0 0; max-width: 520px; font: 500 11px/1.4 var(--f-num); color: var(--pg-ink2, var(--pg-ink3)); }
+.spec .bgauge.whole + .bparts, .spec .fx .bparts { margin-top: 6px; }
+.spec .ftab .fx-th, .spec .ftab .fx-td { color: var(--ok); }
+.spec .fm:not(.fx-on) .fx, .spec .fm:not(.fx-on) .fx-was > .fx-cap { display: none; }
+.spec .fm.fx-on .fx-was .fx-row > .bgauge, .spec .fm.fx-on .fx-was .bsib { opacity: .55; }
+.spec .fx .bmiss dd b { color: var(--k-miss); }
+/* C10 on the twin: hover changes colour only, press drops 1px at 98.5% */
+.spec [data-fxroot]:hover { transform: none !important; }
+.spec [data-fxroot]:active { transform: translateY(1px) scale(.985) !important; }
+@media (max-width: 860px) { .spec .fmembers .fm { grid-template-columns: 1fr; } }
+
+/* 2026-10-08 17:50 EDT, the census on the Text sizes ladder: the rule above, the board's own text under it */
+.spec .tsr .tcen { grid-column: 1 / -1; flex: 1 0 100%; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px 14px; margin-top: 8px; padding-top: 10px; border-top: 1px dashed var(--pg-rule); }
+.spec .tc-h { font: 500 10px/1.4 var(--f-num); color: var(--pg-ink3); padding-top: 6px; }
+.spec .tc-l { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; min-width: 0; }
+.spec .tc { display: inline-flex; align-items: baseline; gap: 7px; padding: 6px 10px; border-radius: 8px; background: rgba(255, 255, 255, .025); box-shadow: inset 0 0 0 1px var(--pg-rule); max-width: 100%; }
+.spec .tc-s { white-space: nowrap; max-width: 240px; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+.spec .tc-m, .spec .tc-g { font: 500 10px/1 var(--f-num); color: var(--pg-ink3); white-space: nowrap; }
+.spec .tc-g { opacity: .8; }
+.spec .tc-w { font: 600 10px/1 var(--f-num); color: var(--pg-mine); white-space: nowrap; }
+.spec .tc-i { display: inline-flex; gap: 3px; align-self: center; }
+.spec .tc-i i { width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+.spec .tc-more { font: 600 10.5px/1 var(--f-num); color: var(--pg-ink2); background: none; border: 1px solid var(--pg-rule); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+@media (max-width: 640px) { .spec .tsr .tcen { grid-template-columns: 1fr; } .spec .tc { flex-wrap: wrap; } }
+
+/* the census as aligned columns (sample · weight · runs · inks · was): numbers line up down a rung; where it's used is the row's tooltip */
+.spec .tc-l { display: grid; grid-template-columns: minmax(0, 300px) 96px 34px 46px 52px minmax(0, 1fr); gap: 7px 14px; align-items: baseline; }   /* the font's own column (2026-10-09 10:27 EDT) */
+.spec .tc { display: contents; }
+.spec .tc-s { max-width: 300px; }
+.spec .tc-more { grid-column: 1 / 2; justify-self: start; margin-top: 2px; }
+@media (max-width: 640px) { .spec .tc-l { grid-template-columns: minmax(0, 1fr) 84px 30px 40px 44px; } .spec .tc-w { display: none; } }
+
+.spec .tsr .tcen { grid-template-columns: 118px minmax(0, 1fr); }
+.spec .tc-h { white-space: nowrap; }
+
+/* 2026-10-08 18:25 EDT, plan Step 4 group 1: the board's buttons, cloned into their own chains and measured on the box they draw */
+.spec .bsec { display: grid; gap: 10px; }
+.spec .bsub { display: flex; align-items: baseline; gap: 8px; margin: 22px 0 4px; }
+.spec .bsub b { font: 600 15px/1 var(--f-num); color: var(--pg-ink); }
+.spec .bsub span { font: 500 12px/1 var(--f-num); color: var(--pg-ink3); }
+.spec .bgauge { position: relative; display: inline-block; padding: 62px 44px 40px 40px; }
+.spec .bgauge.rail { padding-right: 64px; }   /* the segment's height mark sits right of the rail */
+.spec .bm .stage.wide { align-items: center; gap: 14px; }
+.spec .bsib { display: inline-flex; align-items: center; padding: 6px; }
+.spec .bgauge .tsz { font: 500 10.5px var(--f-num); fill: var(--pg-ink3); }
+.spec .bgauge .cwarn { font: 500 10.5px var(--f-num); fill: var(--k-miss); }
+.spec :is(#onboard, #chips, #segs) .fmembers { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+.spec :is(#onboard, #chips, #segs) .fmembers .fm { grid-template-columns: minmax(0, 1fr); align-content: start; padding: 12px 14px 6px; }
+.spec :is(#onboard, #chips, #segs) .fm-h { justify-items: start; }
+.spec :is(#onboard, #chips, #segs) .bm .stage.wide { justify-content: flex-start; overflow-x: auto; }
+.spec :is(#onboard, #chips, #segs) .bgauge { margin-left: 0; }   /* the gauge's left room holds only the height mark: its box lines up with the name */
+.spec .bmiss { margin: 0; display: grid; gap: 5px; align-self: center; font: 500 11px/1.2 var(--f-num); min-width: 132px; }
+.spec .bmiss > div { display: grid; grid-template-columns: 104px auto; align-items: center; gap: 8px; }
+.spec .bmiss dt { white-space: nowrap; }
+.spec .bmiss dt { display: flex; align-items: center; gap: 6px; color: var(--pg-ink3); }
+.spec .bmiss dt i { width: 10px; height: 2px; border-radius: 1px; background: currentColor; flex: none; }
+.spec .bmiss dd { margin: 0; display: flex; align-items: center; gap: 5px; color: var(--pg-ink); }
+.spec .bmiss dd b { color: var(--k-miss); font-weight: 600; }
+.spec .bmiss dd svg { width: 11px; height: 11px; color: var(--pg-ink3); }
+.spec .bmiss .k-h dt i { color: var(--k-h); } .spec .bmiss .k-pad dt i { color: var(--k-pad); } .spec .bmiss .k-gap dt i { color: var(--k-gap); }
+.spec .bmiss .k-icon dt i { color: var(--k-icon); } .spec .bmiss .k-r dt i { color: var(--k-r); } .spec .bmiss .k-hit dt i, .spec .bmiss .k-dim dt i { color: var(--pg-ink3); }
+.spec :is(#onboard, #chips, #segs) .fm-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+/* 2026-10-08 19:48 EDT: the selection bar, cloned whole; it keeps its board width and scrolls inside the section on a phone */
+.spec #selbar .sb-host { overflow-x: auto; max-width: 100%; padding: 4px 0 8px; }
+/* 2026-10-08 19:59 EDT: Filled at rest — the board's three buttons today, then in our wash and our tint, each with its own accent (--A) */
+.spec #filled .fgrid { display: grid; grid-template-columns: 170px repeat(3, minmax(180px, 1fr)); gap: 10px 14px; align-items: center; overflow-x: auto; }
+.spec #filled .fg-h { font: 600 11px/1 var(--f-num); color: var(--pg-ink3); text-transform: uppercase; letter-spacing: .08em; }
+.spec #filled .fg-k { display: grid; gap: 4px; } .spec #filled .fg-k span { font: 600 13px/1.2 var(--f-ui, inherit); color: var(--pg-ink); } .spec #filled .fg-k em { font: 500 11px/1 var(--f-num); font-style: normal; color: var(--pg-ink3); }
+.spec #filled .fg-c { min-height: 56px; display: flex; align-items: center; padding: 8px 12px; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 10px; }
+.spec #filled .fv-wash .ctx > * { background: color-mix(in srgb, var(--A) 14%, transparent) !important; border: 1px solid var(--A) !important; box-shadow: none !important; color: var(--ink) !important; }
+/* 2026-10-09 12:41 EDT: was `> *:hover`, which never matched: spec.html has no doctype, so the page runs in quirks mode, where a compound of only * and :hover matches links alone (the 12:06 EDT "Hover no change" fault). [class] keeps it a real compound. */
+.spec #filled .fv-wash .ctx > [class]:hover { background: color-mix(in srgb, var(--A) 24%, transparent) !important; }
+.spec #filled .fv-tint .ctx > * { background: color-mix(in srgb, var(--sunk) 85%, transparent) !important; border: 0 !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 30%, #0B0F12) !important; color: var(--A) !important; }
+.spec #filled .fv-tint .ctx > [class]:hover { background: color-mix(in srgb, var(--A) 12%, var(--sunk)) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 60%, transparent) !important; color: color-mix(in srgb, var(--A) 80%, white) !important; }
+@media (max-width: 860px) { .spec #filled .fgrid { grid-template-columns: 120px repeat(3, 200px); } }
+/* 2026-10-08 21:43 EDT: each cell keeps its button on top and the Styles section's Rest and Hover cards under it */
+.spec #filled .fgrid { align-items: start; }
+.spec #filled .fg-cell { display: grid; gap: 8px; min-width: 0; }
+.spec #filled .fg-r { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.spec #filled .fg-r dd { white-space: nowrap; }   /* Rest above Hover, so a value like "warn 9% on sunk" stays on one line */
+.spec #filled .fg-r figure { margin: 0; display: grid; gap: 4px; align-content: start; }
+.spec #filled .fg-r figcaption { font: 600 10px/1 var(--f-num); color: var(--pg-ink3); text-transform: uppercase; letter-spacing: .08em; }
+.spec #filled .fg-sz { grid-column: 1 / -1; font: 500 11px/1 var(--f-num); color: var(--pg-ink3); }
+/* 2026-10-08 21:52 EDT, his 21:51 EDT "your icon is literally the wrong color": the Lucide glass strokes currentColor, so the search's glass takes the dropdowns' ink3 as its colour (the kit's own drawing had it as a stroke) */
+.spec #fields .srch > svg.ic { color: var(--ink3) !important; }
+/* 2026-10-08 22:06 EDT, his 22:00–22:01 EDT "why does this and so many other cards scroll?? … vertically": a box with overflow-x: auto also scrolls vertically
+   (overflow-y computes to auto), and a classic scrollbar's own height then overflows it. At desktop nothing scrolls: the content fits (gauge room trimmed,
+   the comparison grid's columns shrink). A board width that cannot fit (the selection bar's 1056) scrolls sideways only; a phone scrolls sideways, never up. */
+@media (min-width: 861px) { .spec .fm .stage.wide, .spec .fl .stage.wide, .spec .bm .stage.wide, .spec #filled .fgrid { overflow: visible !important; max-width: none; } }
+@media (max-width: 860px) { .spec .stage.wide, .spec #filled .fgrid { overflow-x: auto !important; overflow-y: hidden !important; } }
+.spec #selbar .sb-host { overflow-x: auto; overflow-y: hidden; }
+.spec #filled .fgrid { grid-template-columns: minmax(96px, 150px) repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1180px) { .spec #filled .fg-r dd { white-space: normal; } }
+/* 2026-10-08 22:14 EDT: the older grids that scroll sideways on a narrow window or a phone (Text sizes, Styles, Flags, Icon-only, Pills, Board changes) never scroll up and down */
+.spec .tscale2, .spec .sw-states, .spec .igrid, .spec .col.one, .spec .bchg-w { overflow-y: hidden !important; }
+
+/* Inputs (Step 4 group 4, 2026-10-08 23:40 EDT): a picker drawn whole sits in the stage's flow, not where the board places it (the date picker is fixed there) */
+.spec #inputs .b3-datepop { position: relative !important; inset: auto !important; left: auto !important; top: auto !important; right: auto !important; bottom: auto !important; margin: 0; }
+.spec .bgauge.whole { padding: 12px; }
+.spec dl.bparts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin: 10px 0 0; font: 500 11px/1.4 var(--mono); }
+.spec dl.bparts div { display: contents; } .spec dl.bparts dt { color: var(--ink3); } .spec dl.bparts dd { margin: 0; color: var(--ink2); } .spec dl.bparts b { color: var(--ink); font-weight: 600; }
+/* Q10, the day's row: today 36, M 32 (words 11 · 600), L 44 (words 13 · 600); the month arrows an M icon button either way */
+.spec #inputs .dpz { display: grid; gap: 10px; justify-items: start; }
+.spec #inputs .dpz-32 .b3-dp-grid { grid-template-columns: repeat(7, 32px); } .spec #inputs .dpz-32 .b3-dp-d { height: 32px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+.spec #inputs .dpz-32 .b3-dp-ch { grid-template-columns: 32px minmax(0, 1fr) 32px; } .spec #inputs .dpz-32 .b3-datepop { width: 242px !important; }
+.spec #inputs .dpz-44 .b3-dp-grid { grid-template-columns: repeat(7, 44px); } .spec #inputs .dpz-44 .b3-dp-d { height: 44px; border-radius: 11px; font-size: 13px; font-weight: 600; }
+.spec #inputs .dpz-44 .b3-dp-ch { grid-template-columns: 44px minmax(0, 1fr) 44px; } .spec #inputs .dpz-44 .b3-datepop { width: 326px !important; }
+.spec #inputs :is(.dpz-32, .dpz-44) .b3-dp-nav { width: 32px; height: 32px; justify-self: center; }
+
+/* Overlays (Step 4 group 5, 2026-10-08 23:51 EDT): the problem pop-up and the toast sit in the stage's flow, not fixed where the board places them */
+.spec #overlays :is(.b3-pc, .toast) { position: relative !important; inset: auto !important; left: auto !important; top: auto !important; right: auto !important; bottom: auto !important; transform: none !important; margin: 0; }
+.spec #overlays .bgauge.whole { min-width: min(560px, 100%); }
+.spec table.ftab { width: 100%; border-collapse: collapse; margin: 0 0 18px; font: 500 11px/1.4 var(--mono); }
+.spec table.ftab th { position: static; text-align: left; font-weight: 600; color: var(--ink3); padding: 6px 10px; border-bottom: 1px solid var(--rule2); }
+.spec table.ftab td { padding: 6px 10px; color: var(--ink2); border-bottom: 1px solid var(--rule); } .spec table.ftab td:first-child { color: var(--ink); }
+
+/* Data display (Step 4 group 6, 2026-10-09 00:05 EDT): a member wider than the stage (the announcement cards, Repairs' track) takes the card's full width, its label above */
+.spec .fmembers .fm.full { grid-template-columns: minmax(0, 1fr); }
+.spec #data .fm.full .stage.wide > .bgauge.whole { width: 100%; }
+.spec table.ftab tr.fpart td { padding-top: 0; color: var(--ink3); } .spec table.ftab tr.fpart span { margin-right: 16px; white-space: nowrap; display: inline-block; } .spec table.ftab tr.fpart i { font-style: normal; color: var(--ink3); margin-right: 4px; }
+.spec table.ftab tr:has(+ tr.fpart) td { border-bottom: 0; }
+
+/* The section rail (2026-10-09 10:14 EDT, his "a scrollspy nav or something on the side"): fixed beside the reading column from 1100 px, the column moved right to make room
+   (centred again once the window is wide enough for both); the lit link is the section at the reading line. Narrower, a menu in the sticky bar instead. */
+.spec .spy { display: none; }
+.spec .spy-sel { display: inline-flex; }
+.spec .spy-sel select { font: 500 12px/1 var(--f-body); color: var(--pg-ink); background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 8px; height: 32px; padding: 0 10px; }
+.spec .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.spec section { scroll-margin-top: 72px; }
+@media (min-width: 1100px) {
+  /* his 10:17 EDT: "just push the entire board towards the right by ~80px to kill the empty gap on the right side": the board keeps its width and moves right (no right gap at 1282), centring again only on a wide window; the rail sits in the gap that opens on the left */
+  :root { --spec-ml: clamp(170px, calc(100vw - 1120px), calc((100vw - 1120px) / 2 + 120px)); }
+  #spec { margin-left: var(--spec-ml); margin-right: 0; }
+  .spec .spy { display: block; position: fixed; z-index: 40; top: 24px; left: calc(var(--spec-ml) - 162px); width: 150px; max-height: calc(100vh - 48px); overflow-y: auto; padding: 4px 0 12px; scrollbar-width: thin; }
+  .spec .spy-g { display: grid; margin-bottom: 14px; }
+  .spec .spy-g b { font: 600 10.5px/1 var(--f-body); letter-spacing: .14em; text-transform: uppercase; color: var(--pg-ink3); padding: 0 12px 6px; }
+  .spec .spy a { display: block; font: 500 13px/1.25 var(--f-body); color: var(--pg-ink2); text-decoration: none; padding: 5px 12px; border-left: 2px solid var(--pg-rule); }
+  .spec .spy a:hover { color: var(--pg-ink); border-left-color: var(--pg-ink3); }
+  .spec .spy a.on { color: var(--pg-ink); border-left-color: var(--pg-mine); background: color-mix(in srgb, var(--pg-mine) 8%, transparent); }
+  .spec .spy a:focus-visible { outline: 2px solid var(--pg-mine); outline-offset: -2px; }
+  .spec .spy-sel { display: none; }
+  .spec .top .jump { display: none; }
+}
+
+/* The two toggles (2026-10-09 10:21 EDT): notes off hides the list under each element, its board place and its measured parts; board copies off hides the sections copied from Builder-2 and their group headings */
+.spec.nonotes :is(dl.bmiss, .fm-use, dl.bparts) { display: none !important; }
+.spec.nocopies :is(.gh.copy, .tcen, .spy a[data-copy], .spy-g[data-allcopy]) { display: none !important; }
+/* the copied sections fold to no height but keep their layout (2026-10-09 11:07 EDT): with display:none, showing them again re-measured every gauge at once (a 2 s freeze), and nothing inside them changes size this way */
+.spec.nocopies :is(#onboard, #chips, #segs, #inputs, #overlays, #data) { height: 0 !important; overflow: hidden !important; visibility: hidden !important; padding: 0 !important; margin: 0 !important; border: 0 !important; }   /* and the "on the board" rows under each text size (2026-10-09 10:50 EDT, his "nothing even changed on the texts??": they are the board's own text, copied) */
+
+/* The font named beside each size (2026-10-09 10:24 EDT, his "the font sizes don't even mention the specific font??") */
+.spec .tsm figcaption .tfont { color: var(--pg-ink); }
+.spec .tc .tc-f { color: var(--pg-ink2); white-space: nowrap; }
+
+/* 2026-10-09 15:13 EDT: Colours (Next step 9): label column, then rest and five hover ratios; a contrast under 4.5 reads as a miss */
+.spec .cl-grid { display: grid; grid-template-columns: 112px 44px repeat(6, minmax(0, 1fr)); gap: 8px 10px; align-items: center; }
+.spec .cl-grid > i { grid-column: span 2; }
+.spec .cl-h { font: 600 10px/1.3 var(--f-num); text-transform: uppercase; letter-spacing: .06em; color: var(--pg-ink3); }
+.spec .cl-h.today { color: var(--pg-ink); } .spec .cl-h em { display: block; font-style: normal; color: var(--ok); }
+.spec .cl-k { grid-row: span 2; grid-column: 1; display: grid; grid-template-columns: 14px 1fr; gap: 2px 8px; align-items: center; padding-top: 4px; border-top: 1px solid var(--pg-rule); align-self: stretch; align-content: center; }
+.spec .cl-k i { width: 14px; height: 14px; border-radius: 4px; grid-row: span 2; }
+.spec .cl-k span { font: 600 13px/1.2 var(--f-ui, inherit); color: var(--pg-ink); } .spec .cl-k em { font: 500 10.5px/1 var(--f-num); font-style: normal; color: var(--pg-ink3); }
+.spec .cl-s { grid-column: 2; font: 600 10px/1 var(--f-num); color: var(--pg-ink3); text-transform: uppercase; letter-spacing: .06em; }
+.spec .cl-c { display: grid; gap: 4px; justify-items: start; min-width: 0; }
+.spec .cl-b { display: inline-flex; max-width: 100%; } .spec .cl-b > * { max-width: 100%; }
+.spec .cl-n { font: 500 10.5px/1 var(--f-num); color: var(--pg-ink3); white-space: nowrap; } .spec .cl-n b { color: var(--pg-ink); font-weight: 600; } .spec .cl-n.lo b { color: var(--k-miss); }
+.spec .cl-verdict { margin: 0 0 18px; display: grid; gap: 8px; }
+.spec .cl-t { width: 100%; table-layout: fixed; } .spec .cl-t td, .spec .cl-t th { overflow-wrap: anywhere; }
+/* narrower screens drop the outer ratios (86, 68); a phone keeps today's 80 and the proposed 74 side by side, the colour's name on its own line */
+@media (max-width: 1180px) { .spec .cl-grid { grid-template-columns: 96px 40px repeat(4, minmax(0, 1fr)); } .spec .cl-grid .r86, .spec .cl-grid .r68, .spec .cl-c[data-cl$="|86"], .spec .cl-c[data-cl$="|68"] { display: none; } }
+@media (max-width: 600px) { .spec .cl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .spec .cl-grid > i, .spec .cl-grid .rrest, .spec .cl-grid .r100, .spec .cl-c[data-cl="live"], .spec .cl-c[data-cl$="|100"] { display: none; }
+  .spec .cl-k { grid-column: 1 / -1; grid-row: auto; grid-template-columns: 14px auto 1fr; } .spec .cl-k i { grid-row: auto; } .spec .cl-s { grid-column: 1 / -1; } .spec .cl-b { overflow: hidden; } }
+.spec .cl-rec { margin: 0; font: 500 14px/1.4 var(--f-ui, inherit); color: var(--pg-ink); } .spec .cl-rec b { color: var(--ok); }
+.spec .cl-t { border-collapse: collapse; font: 500 11px/1.3 var(--f-num); color: var(--pg-ink3); max-width: 760px; }
+.spec .cl-t th { text-align: left; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; font-size: 10px; padding: 4px 14px 4px 0; } .spec .cl-t td { padding: 5px 14px 5px 0; border-top: 1px solid var(--pg-rule); }
+.spec .cl-t tr.pick td { color: var(--pg-ink); } .spec .cl-t tr.pick td:first-child { color: var(--ok); }
+.spec .cl-why { margin: 0; max-width: 760px; font: 500 12px/1.5 var(--f-ui, inherit); color: var(--pg-ink3); }
+.spec #colours { overflow-x: clip; }   /* an invisible part of a copied button (no element box) reached past 390; nothing drawn is cut */
+/* 2026-10-09 15:22 EDT: the states strip under a segmented control or a switch */
+.spec .st-strip { display: flex; flex-wrap: wrap; gap: 10px 22px; padding: 8px 0 4px; }
+.spec .st-c { margin: 0; display: grid; gap: 6px; justify-items: start; }
+.spec .st-c figcaption { font: 600 10px/1 var(--f-num); text-transform: uppercase; letter-spacing: .06em; color: var(--pg-ink3); }
+/* 2026-10-09 15:30 EDT: Pop-ups — each cell holds the board's own pop-up, opened, then kept; the card hangs below its trigger as on the board */
+.spec .pv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 18px 24px; }
+.spec .pv-c { margin: 0; display: grid; gap: 10px; align-content: start; padding: 14px; border: 1px solid var(--pg-rule); border-radius: 10px; background: var(--pg-card); min-width: 0; }
+.spec .pv-c figcaption { display: grid; gap: 3px; } .spec .pv-c figcaption b { font: 600 13px/1.2 var(--f-ui, inherit); color: var(--pg-ink); } .spec .pv-c figcaption span { font: 500 11px/1.3 var(--f-num); color: var(--pg-ink3); }
+.spec .pv-cell { position: relative; min-height: 120px; display: flex; justify-content: center; align-items: flex-start; }
+.spec .pv-cell.pv-hover { padding-top: 270px; }
+.spec .pv-cell.pv-click { justify-content: flex-end; padding-right: 24px; }   /* the problem card opens leftward from its chip */   /* a hint opens above its trigger: room for it inside the cell */
+.spec .pv-k, .spec .pv-live { position: relative; }
+.spec .pv-k .b3-pc-x { pointer-events: none; }
+@media (max-width: 600px) { .spec .pv-grid { grid-template-columns: 1fr; } .spec .pv-cell { overflow-x: clip; } }
+/* 2026-10-09 15:54 EDT: Text sizes as one table: size · px · body · mono caps · numbers · used for (his 11:49 EDT "they're so cluttered") */
+.spec .tscale3 { display: grid; border: 1px solid var(--pg-rule); border-radius: 10px; background: var(--pg-card); }
+.spec .tsr3 { display: grid; grid-template-columns: 64px 40px minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, .8fr) 150px; gap: 0 18px; align-items: end; padding: 14px 18px; border-top: 1px solid var(--pg-rule); }
+.spec .tsr3.tsh { border-top: 0; padding-block: 10px; align-items: center; font: 500 10.5px/1.3 var(--f-num); color: var(--pg-ink3); } .spec .tsr3.tsh b { display: block; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--pg-ink2, var(--pg-ink3)); }
+.spec .tsr3 .ts-k { align-self: center; } .spec .tsr3 .ts-px { align-self: center; } .spec .tsr3 .ts-u { align-self: center; font: 500 11px/1.3 var(--f-num); color: var(--pg-ink3); }
+.spec .tsr3 .ts-c { min-width: 0; } .spec .tsr3 .tsm { margin: 0; display: grid; gap: 6px; } .spec .tsr3 .tsm figcaption { display: flex; gap: 8px; font: 500 10.5px/1 var(--f-num); color: var(--pg-ink3); white-space: nowrap; }
+.spec .tsr3 .tsm .tfont { display: none; }
+.spec .tsr3 .ts-none { display: block; width: 14px; height: 1px; background: var(--pg-rule); margin-bottom: 8px; }
+.spec .tsr3 > .tcen { grid-column: 1 / -1; margin-top: 10px; }
+@media (max-width: 860px) { .spec .tsr3 { grid-template-columns: 52px minmax(0, 1fr); gap: 8px 12px; } .spec .tsr3.tsh { display: none; } .spec .tsr3 .ts-px { grid-column: 1; }
+  .spec .tsr3 .ts-c, .spec .tsr3 .ts-u { grid-column: 2; } .spec .tsr3 .ts-c:has(.ts-none) { display: none; } .spec .tsr3 .ts-c::before { content: attr(data-fam); display: block; font: 600 9px/1 var(--f-num); text-transform: uppercase; letter-spacing: .06em; color: var(--pg-ink3); margin-bottom: 4px; } .spec .tsr3 .tsm .tfont { display: inline; } .spec .tsr3 .tx { white-space: normal; overflow-wrap: anywhere; } .spec .tsr3 .tsm figcaption { flex-wrap: wrap; white-space: normal; } }
+/* 2026-10-09 15:58 EDT: Your calls — a card per open decision, its options as buttons, my pick marked, a note */
+.spec .calls { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 12px; align-items: stretch; }
+.spec .call { min-width: 0; width: 100%; max-width: none; box-sizing: border-box; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; align-content: start; padding: 14px; border: 1px solid var(--pg-rule); border-radius: 10px; background: var(--pg-card); }
+.spec .call.chosen { border-color: color-mix(in srgb, var(--ok) 40%, var(--pg-rule)); }
+.spec .call-h { display: flex; justify-content: space-between; gap: 10px; font: 600 10px/1 var(--f-num); text-transform: uppercase; letter-spacing: .06em; color: var(--pg-ink3); } .spec .call-at { text-transform: none; letter-spacing: 0; color: var(--ok); }
+.spec .call-q { margin: 0; font: 500 13px/1.4 var(--f-ui, inherit); color: var(--pg-ink); }
+.spec .call-o { display: flex; flex-wrap: wrap; gap: 6px; }
+.spec .call-b { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--pg-rule); background: transparent; color: var(--pg-ink2, var(--pg-ink)); font: 600 11px/1 var(--f-ui, inherit); cursor: pointer; }
+.spec .call-b:hover:not(:disabled) { border-color: var(--pg-ink3); color: var(--pg-ink); } .spec .call-b.on { background: color-mix(in srgb, var(--ok) 16%, transparent); border-color: var(--ok); color: var(--pg-ink); }
+.spec .call-b:disabled { cursor: default; opacity: .7; } .spec .call-b em { font: 600 9px/1 var(--f-num); font-style: normal; text-transform: uppercase; letter-spacing: .06em; color: var(--ok); }
+.spec .call-n { width: 100%; box-sizing: border-box; resize: vertical; min-height: 32px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--pg-rule); background: #04070A; color: var(--pg-ink); font: 500 12px/1.4 var(--f-ui, inherit); }
+.spec .cl-err { margin: 0 0 10px; color: var(--k-miss); font: 500 12px/1.4 var(--f-num); }
+/* 2026-10-09 16:31 EDT: Q7 — today's badges and the proposal on the XS row (20, corner 5, padding 6; icon-only a 20 square, icon 12) */
+.spec .q7 { display: grid; gap: 14px; } .spec .q7-r { display: grid; grid-template-columns: 150px repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; padding: 14px; border: 1px solid var(--pg-rule); border-radius: 10px; background: var(--pg-card); }
+.spec .q7-r > b { font: 600 10px/1.3 var(--f-num); text-transform: uppercase; letter-spacing: .06em; color: var(--pg-ink3); } .spec .q7p > b { color: var(--ok); }
+.spec .q7-c { margin: 0; display: grid; gap: 8px; min-width: 0; } .spec .q7-c figcaption { font: 500 11px/1 var(--f-num); color: var(--pg-ink3); } .spec .q7-m { font: 500 10.5px/1.3 var(--f-num); color: var(--pg-ink2, var(--pg-ink3)); }
+.spec .q7-s { min-height: 32px; display: flex; align-items: center; }
+.spec .q7p .b3-bdg:not(#_):not(#_) { height: 20px !important; border-radius: 5px !important; padding-inline: 6px !important; font-size: 9px !important; }
+.spec .q7p .b3-bdgs.bare .b3-bdg:not(#_):not(#_) { width: 20px !important; padding-inline: 0 !important; } .spec .q7p .b3-bdg .ic { width: 12px !important; height: 12px !important; }
+@media (max-width: 860px) { .spec .q7-r { grid-template-columns: 1fr; } }
+/* 2026-10-09 19:37 EDT: calls beside what they decide — a row at a section's head, or inside the card; the top section is an index with jumps */
+.spec .callrow { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 12px; margin: 0 0 18px; }
+.spec .fm > .callrow.in-card { grid-column: 1 / -1; margin: 4px 0 0; }
+.spec .callc { min-width: 0; box-sizing: border-box; display: grid; gap: 10px; align-content: start; padding: 14px; border: 1px solid color-mix(in srgb, var(--staged, #D8F24A) 30%, var(--pg-rule)); border-radius: 10px; background: color-mix(in srgb, var(--staged, #D8F24A) 4%, var(--pg-card)); scroll-margin-top: 84px; }
+.spec .callc.chosen { border-color: color-mix(in srgb, var(--ok) 45%, var(--pg-rule)); background: color-mix(in srgb, var(--ok) 4%, var(--pg-card)); }
+.spec .callc.flash { animation: callflash 1.6s ease-out; } @keyframes callflash { 0%, 30% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--staged, #D8F24A) 55%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.spec .call-y { color: var(--staged, #D8F24A); } .spec .callc.chosen .call-y { color: var(--ok); }
+.spec .callx { list-style: none; margin: 0 0 14px; padding: 0; display: grid; border: 1px solid var(--pg-rule); border-radius: 10px; background: var(--pg-card); }
+.spec .callx li { display: grid; grid-template-columns: 190px minmax(0, 1fr) 190px 64px; gap: 14px; align-items: center; padding: 9px 14px; border-top: 1px solid var(--pg-rule); font: 500 12px/1.35 var(--f-ui, inherit); } .spec .callx li:first-child { border-top: 0; }
+.spec .callx .cx-w { font: 600 10px/1.3 var(--f-num); text-transform: uppercase; letter-spacing: .06em; color: var(--pg-ink3); } .spec .callx .cx-q { color: var(--pg-ink); }
+.spec .callx .cx-p { font: 500 11px/1.3 var(--f-num); color: var(--pg-ink3); } .spec .callx li.chosen .cx-p { color: var(--ok); }
+.spec .callx .cx-j { justify-self: end; min-height: 28px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--pg-rule); background: transparent; color: var(--pg-ink); font: 600 11px/1 var(--f-ui, inherit); cursor: pointer; } .spec .callx .cx-j:hover { border-color: var(--pg-ink3); }
+.spec .callx-own { max-width: 560px; }
+.spec .spy-n { margin-left: 6px; font: 600 9px/1 var(--f-num); font-style: normal; color: var(--staged, #D8F24A); }
+@media (max-width: 860px) { .spec .callx li { grid-template-columns: 1fr auto; } .spec .callx .cx-w, .spec .callx .cx-q { grid-column: 1 / -1; } }
+
+/* 2026-10-10 19:07 EDT: the × close's twin, --reveal-left (his twins note): held at its 32 square at rest, the icon fixed where it sits, the words opening on its left inside
+   the box with a soft 10px edge, the Flags section's refined reveal; sizes from the M row (spec-buttons.js sets --rv-h, --rv-i, --rv-p, --rv-g) */
+.spec [data-rvx]:not(#_):not(#_) { position: relative !important; overflow: clip !important; width: auto !important; min-width: var(--rv-h) !important; justify-content: flex-start !important; column-gap: 0 !important; padding: 0 calc((var(--rv-h) - var(--rv-i)) / 2) !important; transition: padding 240ms cubic-bezier(.4,0,.2,1) 80ms !important; }
+.spec [data-rvx]:not(#_):not(#_) > svg { position: absolute !important; top: 50% !important; translate: 0 -50% !important; margin: 0 !important; transition: none !important; }
+.spec [data-rvx="left"]:not(#_):not(#_) > svg { right: calc((var(--rv-h) - var(--rv-i)) / 2) !important; left: auto !important; }
+.spec [data-rvx]:not(#_):not(#_) > :not(svg) { display: block !important; position: static !important; max-width: 0 !important; overflow: hidden !important; white-space: nowrap !important; opacity: 0 !important; margin: 0 !important; padding: 0 !important; transition: max-width 240ms cubic-bezier(.4,0,.2,1) 80ms, opacity 90ms linear !important; }
+.spec [data-rvx="left"]:not(#_):not(#_) > :not(svg) { mask-image: linear-gradient(to left, #000 calc(100% - 10px), transparent); }
+.spec [data-rvx="left"]:not(#_):not(#_):is(:hover, :focus-visible) { padding: 0 calc((var(--rv-h) - var(--rv-i)) / 2 + var(--rv-i) + var(--rv-g)) 0 0 !important; transition: padding 260ms cubic-bezier(.22,.61,.36,1) !important; }
+.spec [data-rvx="left"]:not(#_):not(#_):is(:hover, :focus-visible) > :not(svg) { padding-left: var(--rv-p) !important; }   /* the soft edge fades only this padding, so the open word is whole */
+.spec [data-rvx]:not(#_):not(#_):is(:hover, :focus-visible) > :not(svg) { max-width: 80px !important; opacity: 1 !important; transition: max-width 260ms cubic-bezier(.22,.61,.36,1), opacity 170ms ease-out 110ms !important; }
+/* 2026-10-10 19:07 EDT: 700 tried on the L buttons (his twins note), each drawn at L: 44, corner 11, padding 14, icon 16, icon → words 10, words 13 */
+.spec .w7 { display: grid; gap: 10px; margin: 0 0 14px; padding: 14px; border: 1px solid var(--pg-rule); border-radius: 10px; background: var(--pg-card); }
+.spec .w7-n { margin: 0; font: 500 12px/1.4 var(--f-ui, inherit); color: var(--pg-ink3); }
+.spec .w7-r { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: center; }
+.spec .w7-r > b { font: 600 10px/1.3 var(--f-num); text-transform: uppercase; letter-spacing: .06em; color: var(--pg-ink3); }
+.spec .w7-s { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; min-width: 0; }
+.spec .w7-c :is(button, [role=button]):not(#_):not(#_) { box-sizing: border-box !important; height: 44px !important; min-height: 44px !important; max-height: 44px !important; border-radius: 11px !important; padding: 0 14px !important; column-gap: 10px !important; font-size: 13px !important; width: auto !important; min-width: 0 !important; }
+.spec .w7-c :is(button, [role=button]):not(#_):not(#_) svg { width: 16px !important; height: 16px !important; margin: 0 !important; flex: none !important; }
+.spec .w600 :is(button, button *):not(svg, svg *) { font-weight: 600 !important; } .spec .w700 :is(button, button *):not(svg, svg *) { font-weight: 700 !important; }
+@media (max-width: 860px) { .spec .w7-r { grid-template-columns: 1fr; } }
+/* 2026-10-10 19:07 EDT: his three tries on the filled buttons (calls/filled note) */
+.spec #filled .fg-try { margin-top: 20px; }
+.spec #filled .fv-t80 .ctx > * { background: color-mix(in srgb, var(--sunk) 85%, transparent) !important; border: 0 !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 30%, #0B0F12) !important; color: color-mix(in srgb, var(--A) 80%, white) !important; }
+.spec #filled .fv-t80 .ctx > [class]:hover { background: color-mix(in srgb, var(--A) 12%, var(--sunk)) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 60%, transparent) !important; color: color-mix(in srgb, var(--A) 80%, white) !important; }
+.spec #filled .fv-t50 .ctx > * { background: color-mix(in srgb, var(--sunk) 85%, transparent) !important; border: 0 !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 55%, #0B0F12) !important; color: var(--A) !important; }
+.spec #filled .fv-t50 .ctx > [class]:hover { background: color-mix(in srgb, var(--A) 12%, var(--sunk)) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 75%, transparent) !important; color: color-mix(in srgb, var(--A) 80%, white) !important; }
+.spec #filled .fv-his .ctx > * { background: color-mix(in srgb, var(--A) 9%, var(--sunk)) !important; border: 0 !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 40%, transparent) !important; color: color-mix(in srgb, var(--A) 80%, white) !important; }
+.spec #filled .fv-his .ctx > [class]:hover { background: color-mix(in srgb, var(--A) 15%, var(--sunk)) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 62%, transparent) !important; color: color-mix(in srgb, var(--A) 80%, white) !important; }
+/* 2026-10-10 19:19 EDT: the reveal-left twin opens toward the left, its right edge held, as it does at the right end of the drawer header */
+.spec [data-bfix] .dw-nav:has([data-rvx="left"]) { display: flex !important; justify-content: flex-end !important; width: 96px !important; }

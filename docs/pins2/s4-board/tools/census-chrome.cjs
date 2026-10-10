@@ -1,0 +1,16 @@
+// The board's chrome out of the text census (his 2026-10-09 10:50 EDT: the gate codes are "literally just board chrome"): every text run inside a gate's
+// head (.pb-head: its code, title, description and scenario buttons) is read off the board, its style's count is reduced by it and its words leave the
+// samples. A style left with nothing is dropped. Usage: node census-chrome.cjs → builder-2/spec-img/text-census.json rewritten, a table of what changed
+const path = require('path'), fs = require('fs'), os = require('os'); const ROOT = path.resolve(__dirname, '../../../..'); const puppeteer = require(path.join(ROOT, 'node_modules/puppeteer-core'));
+const CEN = path.join(ROOT, 'docs/pins2/s4-board/spec-img/text-census.json');
+(async () => {
+  const b = await puppeteer.launch({ executablePath: (process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'), headless: 'new', userDataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'cc-')) }); const p = await b.newPage(); await p.setViewport({ width: 1500, height: 1500 });
+  await p.evaluateOnNewDocument((s) => { try { localStorage.setItem('bd-state', s); localStorage.setItem('bd-check', '0'); } catch (e) {} }, fs.readFileSync(path.join(__dirname, 'state4/fetch-2026-10-06-1714/builder/state.json'), 'utf8'));
+  await p.goto('http://127.0.0.1:8900/docs/pins2/s4-board/builder.html', { waitUntil: 'networkidle0', timeout: 120000 }); await p.waitForFunction(() => window.__sxReady, { timeout: 60000 }); await new Promise((r) => setTimeout(r, 1500));
+  const runs = await p.evaluate(() => { const out = []; for (const h of document.querySelectorAll('[id^=c-] .pb-head')) { const w = document.createTreeWalker(h, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (n.textContent.trim() ? 1 : 2) }); let n; while ((n = w.nextNode())) { const e = n.parentElement; if (!e.getClientRects().length) continue; const c = getComputedStyle(e); out.push({ family: c.fontFamily.split(',')[0].replace(/"/g, '').trim(), size: parseFloat(c.fontSize), weight: c.fontWeight, case: c.textTransform === 'uppercase' ? 'caps' : 'case', line: String(parseFloat(c.lineHeight)), text: n.textContent.trim().slice(0, 24) }); } } return out; });
+  await b.close();
+  const j = JSON.parse(fs.readFileSync(CEN, 'utf8')); const by = new Map(); for (const r of runs) { const k = [r.family, r.size, r.weight, r.case, r.line].join('|');   /* line height too: the drawer titles share the gate titles' size, weight and family, not their line */ const g = by.get(k) || { n: 0, texts: new Set() }; g.n++; g.texts.add(r.text); by.set(k, g); }
+  const kept = []; for (const s of j.styles) { const g = by.get([s.family, s.size, s.weight, s.case, String(s.line)].join('|')); if (!g) { kept.push(s); continue; } const was = s.n; s.n = Math.max(0, s.n - g.n); s.samples = s.samples.filter((x) => !g.texts.has(x.trim().slice(0, 24))); delete s.chrome;
+    console.log(`${s.family} ${s.size} ${s.weight} ${s.case}: ${was} → ${s.n}${s.n ? '' : ' (dropped)'} · chrome ${[...g.texts].slice(0, 3).join(' / ')}`); if (s.n) kept.push(s); }
+  j.styles = kept; j.chrome = `each gate's head (.pb-head: code, title, description, scenario buttons) left out, read off the board ${new Date().toISOString()}`; fs.writeFileSync(CEN, JSON.stringify(j, null, 1));
+})().catch((e) => { console.error('census-chrome FAIL', e.message); process.exit(1); });

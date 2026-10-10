@@ -1,0 +1,522 @@
+/* BOARD 4 · v11 — Compare (2026-09-22 14:01 EDT). cx-* only. f3 options on .cx[data-f] / .cx-t[data-f]; f3e options on .cx[data-fe]. */
+.b4 .cx{display:grid;gap:0;min-width:0}
+
+/* ── THE WEAPON BAR: each picked weapon, its build keys ON or OFF (item 31) ──────────────────────────────────────────────── */
+.b4 .cx-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 16px}
+.b4 .cx-w{display:grid;gap:8px;padding:10px 10px 10px 12px;border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--c) 9%,var(--sunk)),var(--sunk) 44px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)}
+.b4 .cx-wh{display:flex;align-items:center;gap:8px;min-height:26px}
+.b4 .cx-wh b{font:600 14px/1 var(--ui);color:var(--ink)}
+.b4 .cx-wh em{font:500 12.5px/1 var(--ui);font-style:normal;color:var(--ink3);margin-right:auto}
+.b4 .cx-wx:hover{color:var(--danger-ink);background:color-mix(in srgb,var(--danger-ink) 13%,transparent)}
+.b4 .cx-keys{display:flex;flex-wrap:wrap;gap:5px}
+.b4 .cx-k{position:relative;display:grid;place-items:center;width:32px;height:32px;margin:0;padding:0;border:0;border-radius:7px;font:600 13px/var(--lh-1) var(--data);cursor:pointer;
+  transition:background-color .15s,color .15s,box-shadow .15s,transform .1s}.b4 .cx-k > b{text-box:trim-both cap alphabetic}
+.b4 .cx-k[aria-pressed=true]{background:color-mix(in srgb,var(--c) 26%,var(--sunk));color:color-mix(in srgb,var(--c) 28%,white);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 72%,transparent)}
+.b4 .cx-k[aria-pressed=true]:hover{background:color-mix(in srgb,var(--c) 36%,var(--sunk))}
+.b4 .cx-k[aria-pressed=false]{background:transparent;color:var(--ink4);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 14%,transparent)}
+.b4 .cx-k[aria-pressed=false]:hover{color:var(--ink2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
+.b4 .cx-k:active{transform:translateY(1px)}
+.b4 .cx-k:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.b4 .cx-pick{width:240px}
+.b4 .cx-pick.big{width:min(460px,100%)}
+.b4 .cx-pick.big .f-fld{height:52px;border-radius:10px}
+.b4 .cx-pick.big .f-fld .f-in{font-size:15.5px;line-height:52px}
+
+/* ── THE FIGURES ────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+
+/* ── THE TABLE — shared shape ───────────────────────────────────────────────────────────────────────────────────────────── */
+.b4 .cx-scroll{overflow-x:auto;min-width:0;padding-bottom:4px}
+.b4 .cx-t{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0}
+.b4 .cx-t th.cx-k0{width:118px;padding:0 12px 0 0;text-align:left;vertical-align:middle;font:500 12.5px/1.2 var(--ui);color:var(--ink3);transition:color .12s}
+.b4 .cx-t thead th.cx-k0{vertical-align:bottom}
+.b4 .cx-t tr.hr th.cx-k0{color:var(--ink)}
+.b4 .cx-t th.cx-h{padding:12px 12px 10px;text-align:left;vertical-align:bottom;font-weight:inherit}
+.b4 .cx-hn{display:flex;align-items:center;gap:8px;font:600 15px/1.1 var(--ui);color:var(--ink)}
+.b4 .cx-hn small:not(.b3-pc *):not(.wg-plate > small){height:18px;padding:0 6px;display:inline-flex;align-items:center;border-radius:4px;font:600 10.5px/1 var(--ui);color:var(--ink2);background:color-mix(in srgb,var(--ink) 7%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 14%,transparent)}
+.b4 .cx-hl{display:block;margin-top:4px;font:500 12.5px/1.2 var(--ui);color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b4 .cx-hl em{font-style:normal;color:var(--ink4)}
+.b4 .cx-hb{display:flex;margin-top:9px;min-height:22px}
+.b4 .cx-hb .b3-bdgs{padding-left:0;margin-left:0;box-shadow:none;flex-wrap:wrap}
+.b4 .cx-hb .b3-bdgs .sep{display:none}  /* v14 (2026-09-22 23:41 EDT): a column head is too narrow for badges and tier on one line, and the wrapped dot hung at the first line's end (Table A, BAL-27) */
+.b4 .cx-nob{font:500 12px/22px var(--ui);color:var(--ink4)}
+.b4 .cx-t td.cx-c{padding:4px 6px;vertical-align:middle}
+.b4 .cx-v{display:flex;align-items:center;min-height:34px;box-sizing:border-box;padding:7px 10px;border-radius:7px;font:500 14px/round(1.3em, 2px) var(--ui);color:var(--ink);overflow-wrap:anywhere;
+  background:color-mix(in srgb,var(--ink) 4%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 8%,transparent);transition:background-color .12s,box-shadow .12s}
+.b4 .cx-v.mono{font:500 11px/round(1.3em, 2px) var(--data);letter-spacing:.04em}
+/* same as its weapon's first build → quieter; different → in the BUILD's own hue, so a cell says whose change it is (item 32) */
+.b4 .s-eq .cx-v{color:var(--ink2);background:transparent}
+.b4 .s-d .cx-v{background:color-mix(in srgb,var(--c) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 62%,transparent)}
+.b4 .cx-v.x{justify-content:center;color:var(--ink4);background:none;box-shadow:none}
+.b4 .cx-v.rm{color:var(--ink3);background:none;box-shadow:none;outline:1px dashed color-mix(in srgb,var(--ink) 24%,transparent);outline-offset:-1px}
+/* hover lights the row AND the column, so a value can be read against both at once */
+.b4 .cx-t tr.hr .cx-v:not(.x),.b4 .cx-t td.hc .cx-v:not(.x){background:color-mix(in srgb,var(--c) 9%,color-mix(in srgb,var(--ink) 4%,transparent))}
+.b4 .cx-t tr.hr td.hc .cx-v:not(.x){box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 80%,transparent)}
+.b4 .cx-t th.cx-h.hc .cx-hn{color:color-mix(in srgb,var(--c) 45%,white)}
+.b4 .cx-t .wstart{padding-left:16px!important;box-shadow:inset 1px 0 0 color-mix(in srgb,var(--ink) 12%,transparent)}
+
+/* A · COLUMN CARDS: every build a column with its own head, washed in its weapon's hue */
+.b4 .cx-t[data-f=a]{border-spacing:8px 0}
+.b4 .cx-t[data-f=a] th.cx-h{border-radius:12px 12px 0 0;background:linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--c) 40%,transparent)}
+.b4 .cx-t[data-f=a] td.cx-c{background:var(--sunk)}
+/* a column card reads from its top: bottom-aligned heads put FFAR 1's name 14px under BAL-27's because only BAL-27 had badges */
+.b4 #compare.cx .cx-t[data-f=a] th.cx-h{vertical-align:top}  /* id scope: the CENTRE reset below sets middle at (1,x,x) */
+/* the column card's closing air is split evenly above and below the last cell: 4px over 10px had put the Code row's ink 3.5px high (b4states) */
+.b4 .cx-t[data-f=a] tbody tr:last-child td.cx-c{border-radius:0 0 12px 12px;padding-top:7px;padding-bottom:7px}
+.b4 .cx-t[data-f=a] .wstart{box-shadow:none;padding-left:6px!important}
+.b4 .cx-t[data-f=a] thead .wstart{padding-left:16px!important}
+
+
+/* C · SLOT LANES: each slot a lane; a value several builds share is ONE wide chip across them */
+.b4 .cx-span{position:absolute;right:18px;top:50%;transform:translateY(-50%);font:500 11px/1 var(--data);color:var(--ink3)}
+
+/* ── BELOW THE TABLE ───────────────────────────────────────────────────────────────────────────────────────────────────── */
+.b4 .cx-same{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:16px}
+.b4 .cx-same > span:first-child{margin-right:4px;font:500 12.5px/1 var(--ui);color:var(--ink3)}
+.b4 .cx-sv{display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 9px;border-radius:6px;font:500 12.5px/1 var(--ui);color:var(--ink);background:color-mix(in srgb,var(--ink) 4%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent)}
+.b4 .cx-sv em{font-style:normal;color:var(--ink3)}
+.b4 .cx-cc{display:grid;grid-template-rows:auto 1fr;gap:6px;margin:0;min-width:0}
+.b4 .cx-cc figcaption{font:500 12.5px/1.2 var(--ui);color:var(--ink2)}
+.b4 .cx-cc > .lc{height:100%;box-sizing:border-box}
+/* the image tile is a picture of the build, never the tallest thing on the card: capped, and a missing one is a short tile (K12) */
+.b4 .cx-cc .lc-img{max-height:192px;overflow:hidden}
+.b4 .cx-cc .lc-img img{max-height:192px;object-fit:cover}
+.b4 .cx-cc .lc-img.failed{aspect-ratio:auto;height:104px;min-height:0}
+
+/* ── NOTHING PICKED (f3e) — the ghost stays in all three (item 34) ─────────────────────────────────────────────────────── */
+.b4 .cx-land{position:relative;display:grid;place-items:center;min-height:440px;padding:36px 0 24px}
+/* the ghost stays (item 34), with a clearing where the words and the search sit, so no faded cell ever runs through a sentence */
+.b4 .cx-over{position:relative;display:grid;justify-items:center;gap:14px;max-width:640px;text-align:center}
+.b4 .cx-over h3,.b4 .cx-rival h3{margin:0;font:600 20px/1.2 var(--ui);color:var(--ink);letter-spacing:-.01em}
+.b4 .cx-over > p,.b4 .cx-rival > p{margin:0;max-width:46ch;font:500 14px/1.5 var(--ui);color:var(--ink2)}
+.b4 .cx-shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:min(760px,100%)}
+.b4 .cx-shelf.sm{grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+
+.b4 .cx-offmsg{margin:18px 0;font:500 13.5px/1.4 var(--ui);color:var(--ink3)}
+
+/* THE INHERITED VOICE, measured on the render: the section sits inside board 1's .b1 panel, whose th/b/h3 rules set the display face, capitals
+   and tracking. Compare speaks the portal's UI voice, so the reset is scoped by the id, which outranks those class rules and nothing else. */
+/* 2026-09-26 17:47 EDT: the reset stops at a badge — a badge's word keeps its own case (the mode family's capitals) */
+/* 2026-09-27 02:18 EDT: his pick, "tighter" — Compare keeps the reset's tracking on the badge root (Version 34's look), so a run stays short; only the word
+   span inside a Rank Mode badge is spared, which keeps CONTROL in capitals. A run past two lines scrolls sideways (.cx-run below). */
+.b4 #compare.cx :is(th,td,b,h3,span,small,em):not(.b3-bdg *):not(.b3-pc *){text-transform:none;letter-spacing:normal}
+.b4 #compare.cx :is(.cx-hn,.cx-hl,.cx-hw,.cx-wh b,.cx-sug b,.cx-tile b,.cx-rank b,h3,th.cx-k0,.cx-v:not(.mono),.cx-col dt,.cx-col dd:not(.mono)){font-family:var(--ui)}
+.b4 #compare.cx th{background:none}
+.b4 #compare.cx .cx-t[data-f=a] th.cx-h{background:linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk))}
+
+/* b4states CENTRE: every cell's ink sat 1.5px above its row's centre — Space Grotesk's line box is taller above the caps than below.
+   Trimming the text box to cap height and baseline centres the ink itself, whichever face the cell uses. */
+.b4 #compare.cx :is(.cx-v, th.cx-k0){text-box:trim-both cap alphabetic}
+/* the trim acts on a BLOCK's lines, not on a flex container's anonymous item — so a cell is a block, its height set by even padding
+   around the cap-trimmed line (34px with one line, growing with a wrapped name), and the dash centres by text-align */
+.b4 #compare.cx .cx-v{display:block;min-height:0;padding:12px 10px}
+.b4 #compare.cx .cx-v.x{text-align:center}
+/* (2026-09-22 15:17 EDT) the Code row measured 48px tall while its cells were 33px and sat at the top (CENTRE -3.5px): a board-1 table rule reaches
+   the row through .b1, so the cell's own middle alignment is restated at id scope, where it wins */
+.b4 #compare.cx .cx-t :is(td,th){vertical-align:middle}
+/* 2026-09-25 01:39 EDT — Compare, nitpicked (his "harshly nitpick and sweep … the compare panels"). Measured on Two weapons in A, B and C:
+   · a column head's name did not start on its cells' words: A's head text sat 4px left of them, C's 8px, and every weapon's first column
+     (.wstart) was off again (B's by 12px). Each head now takes its column's cell inset: A 6 + 10, B 0 + 12, C 6 + 14, and 16 more at a weapon's start.
+   · A's 8px border-spacing inset the whole table 8px inside the weapon bar and the figures, on both sides; the scroller now spends it outside.
+   · a wrapped suggestion ("Same class", "Try") fell back under its label; the chips wrap as one group beside it.
+   · the shelf's 152px tiles pressed "Marksman" against "4 builds"; the shelf is 760px wide, as its four columns need. */
+.b4 .cx-t[data-f=a] th.cx-h{padding-left:16px}
+.b4 .cx-scroll:has(> .cx-t[data-f=a]){margin:0 -8px}
+.b4 .cx-over:has(> .cx-shelf){max-width:760px}  /* the words above keep their 46ch; only the shelf needed the room (it was held to 640 by .cx-over) */
+.b4 .cx-over > .cx-shelf{width:760px;max-width:100%}  /* a fixed width: a percentage resolved against the shrink-to-fit column it sizes */
+/* 2026-09-25 01:50 EDT: with badges in B and C too, their heads read from the top as A's do — bottom-aligned, FFAR 1's names sat 16px under BAL-27's */
+.b4 #compare.cx .cx-t thead th.cx-h{vertical-align:top}
+/* 2026-09-27 02:18 EDT — his: "overflow should be max 2 lines on the tighter version. any extra goes to the sideways fade scroll." The run is the
+   board's .b3-fadx with data-rows=2 (b3/fady.js fitRows, the Bulk ledger's chip runs). min-width:0 and max-width:100% keep a table cell from
+   growing to the widened run instead of letting it scroll. */
+.b4 #compare.cx .cx-run{display:block;min-width:0;max-width:100%}
+
+/* ══ 2026-09-28 14:11 EDT — HIS C3 ROUND (classes Q–AC and the nitpick pass). Overrides above are restated at the id scope where the earlier rule sat there. ══ */
+/* X · the bar: the search first, always there, at the build drawer's dropdown width; the weapon tiles after it; the limit and the VIEW toggle top-right */
+.b4 .cx-bar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:12px 24px;margin:0 0 16px}
+.b4 .cx-pick{width:308px}
+.b4 .cx-tools{display:flex;align-items:center;gap:10px;height:44px}
+.b4 .cx-tools .b3-sd-vl{margin-left:6px}
+.b4 .cx-cap{flex:none}
+.b4 .cx-cap .cmeter{width:48px}
+.b4 .cx-cap .cmeter i{background:var(--ink2);transition:width .26s var(--ease)}
+.b4 .cx-cap.full .cmeter i{background:var(--ink)}
+.b4 .cx-cap[data-deny]{animation:cxdeny .7s var(--ease) both}
+@keyframes cxdeny{0%,100%{box-shadow:inset 0 0 0 1px var(--rule2)}20%,55%{box-shadow:inset 0 0 0 1px var(--warn),0 0 0 4px color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn-ink)}}
+/* W · the weapon tile: no dot; the category in its colour, capitals, the Picker's category word; the chips say what a click does */
+.b4 .cx-w{align-content:start;min-width:0;transition:background .18s var(--ease),box-shadow .18s var(--ease)}
+.b4 .cx-wh{display:flex;align-items:center;gap:9px;min-height:26px}
+.b4 .cx-wh b{white-space:nowrap}
+.b4 .cx-wx{margin:0 0 0 auto}
+.b4 .cx-keys{gap:6px}
+.b4 .cx-k[aria-pressed=false],.b4 .cx-wl .cx-k{background:transparent;color:var(--ink3);box-shadow:none;outline:1px dashed color-mix(in srgb,var(--c) 55%,transparent);outline-offset:-1px}
+.b4 .cx-k[aria-pressed=false]:hover,.b4 .cx-wl .cx-k:hover{color:var(--ink);background:color-mix(in srgb,var(--c) 12%,var(--sunk));outline-color:color-mix(in srgb,var(--c) 85%,transparent)}
+.b4 .cx-k.cx-kfull,.b4 .cx-k.cx-kfull:hover{cursor:not-allowed;color:var(--ink4);background:transparent;outline-color:color-mix(in srgb,var(--ink) 18%,transparent)}
+.b4 .cx-kb{position:absolute;top:-6px;right:-6px;display:grid;place-items:center;width:16px;height:16px;border-radius:50%;opacity:0;transform:scale(.6);pointer-events:none;
+  background:color-mix(in srgb,var(--c) 60%,var(--sunk));color:#fff;box-shadow:0 0 0 2px var(--sunk);transition:opacity .16s var(--ease),transform .2s var(--ease)}
+.b4 .cx-kb .ic{width:10px;height:10px;stroke-width:3}
+.b4 .cx-k[aria-pressed=true] .cx-kb{background:var(--danger-ink)}
+.b4 .cx-k:hover .cx-kb,.b4 .cx-k:focus-visible .cx-kb{opacity:1;transform:none}
+.b4 .cx-k.cx-kfull .cx-kb{display:none}
+.b4 .cx-k[aria-pressed=true]:hover{background:color-mix(in srgb,var(--danger-ink) 16%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger-ink) 60%,transparent);color:#fff}
+/* the landing tile: its name is the button that opens every build; the + beside it appears on hover */
+.b4 .cx-wl{padding:12px}
+.b4 .cx-wadd{width:100%;margin:0;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer}
+.b4 .cx-wadd > .ic{width:14px;height:14px;margin-left:auto;color:var(--c);opacity:0;transform:translateX(-4px);transition:opacity .16s var(--ease),transform .2s var(--ease)}
+.b4 .cx-wl:has(.cx-wadd:hover){background:linear-gradient(180deg,color-mix(in srgb,var(--c) 16%,var(--sunk)),var(--sunk) 52px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 50%,transparent)}
+.b4 .cx-wadd:hover > .ic,.b4 .cx-wadd:focus-visible > .ic{opacity:1;transform:none}
+.b4 .cx-wadd:focus-visible{outline:2px solid var(--focus);outline-offset:4px;border-radius:4px}
+/* Q · the landing: the search over twelve tiles, a fresh twelve each time */
+.b4 .cx-land{min-height:0;padding:32px 0 28px}
+.b4 .cx-over:has(> .cx-shelf){max-width:1060px;width:100%}
+.b4 .cx-over > .cx-shelf{width:100%;max-width:1060px;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:6px}
+.b4 .cx-shelf.sm{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+/* Z · the heads: the weapon once, large, over its builds; each build as its coloured chip; badges without words; no line for what no build has */
+.b4 #compare.cx .cx-t .cx-gr th{padding-top:4px;padding-bottom:10px;vertical-align:bottom;text-align:left}
+.b4 #compare.cx .cx-g{white-space:normal;line-height:1.5}  /* a one-build group is one column wide: a long name and its category wrap inside it rather than run into the next group */
+.b4 #compare.cx .cx-t th.cx-h.hc .cx-hn{color:inherit}
+.b4 .cx-hn{gap:7px}
+.b4 .cx-hb{margin-top:8px;min-height:24px}
+.b4 #compare.cx .cx-t[data-f=a] .cx-gr .cx-g{padding-left:16px;padding-bottom:10px;background:none}
+/* wordless badges: the plate holds the mark alone, square to the row */
+.b4 .b3-bdgs.bare{gap:4px}
+.b4 .b3-bdgs.bare .b3-bdg{gap:0;padding-inline:0;width:24px;justify-content:center}
+/* AB · a cell's fill runs the whole height of its row, however tall a neighbour wraps */
+.b4 #compare.cx .cx-t td.cx-c{height:1px}
+.b4 #compare.cx .cx-t .cx-v{display:flex;flex-direction:column;justify-content:center;align-items:stretch;height:100%;box-sizing:border-box;position:relative;text-box:normal}
+.b4 #compare.cx .cx-t .cx-v.x{align-items:center}
+.b4 #compare.cx .cx-vt{display:block;text-box:trim-both cap alphabetic}
+/* U + T · Embed: each build as Discord draws it, captioned with the table's own head; a grid by count, never 4 + 2 */
+.b4 .cx-emb{display:grid;gap:16px 14px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.b4 .cx-emb[data-n="1"]{grid-template-columns:minmax(0,520px)}
+.b4 .cx-emb[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.b4 .cx-emb[data-n="4"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+.b4 .cx-emb .cx-cc{grid-template-rows:auto 1fr;gap:10px}
+.b4 #compare.cx .cx-eh{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.b4 #compare.cx .cx-eh .cx-hl{margin:0;color:var(--ink3)}
+@media (prefers-reduced-motion:reduce){.b4 .cx-cap[data-deny]{animation:none}.b4 .cx-kb,.b4 .cx-wadd > .ic{transition:none}}
+/* ══ 2026-09-28 14:49 EDT — his corrections to the first build ══ */
+/* the weapon's name and its category are the Armory manifest's pair, value for value (.wg-line: 600 14.5px name, 600 9.5px mono capitals at .16em, both cap-trimmed and
+   ink-centred) — restated at the id scope because Compare's voice reset (1,3,1) strips capitals and tracking. The manifest's +.5 / −.25px nudges do NOT carry
+   over: measured here with board4-ink-centre.cjs at 2x and 4x they left the category ~0.8px above the name, and without them the two inks sit within 0.25px */
+.b4 #compare.cx .wg-line{display:flex;align-items:center;gap:10px;min-width:0}
+.b4 #compare.cx .cx-w .wg-line > b,.b4 #compare.cx .cx-t .wg-line > b,.b4 #compare.cx :is(.cx-ch,.cx-eh) .wg-line > b{font:600 14px/14px var(--ui);letter-spacing:.005em;color:var(--ink);white-space:nowrap;text-box:trim-both cap alphabetic}
+.b4 #compare.cx .cx-w .wg-line > small,.b4 #compare.cx .cx-t .wg-line > small,.b4 #compare.cx .cx-ch .wg-line > small{font:600 9.5px/9.5px var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--c);white-space:nowrap;text-box:trim-both cap alphabetic}
+.b4 #compare.cx :is(.cx-t .cx-gline,.cx-ch .wg-line) > b{font-size:17px;line-height:17px}
+.b4 #compare.cx .b3-sd-gn:not(#_){letter-spacing:var(--b3-tr-tight)}
+.b4 #compare.cx .cx-t th.cx-h.hc .b3-sd-gn{background:color-mix(in srgb,var(--c) 16%,transparent);box-shadow:inset 0 0 0 1px var(--c)}   /* a lit column's build chip takes the board's on-state (classes.css, the toggle family) */
+.b4 #compare.cx .cx-t .cx-g{white-space:normal}
+/* a cell's words start where its box starts, in every view and whatever wraps */
+.b4 #compare.cx .cx-t .cx-v:not(.x) .cx-vt{text-align:left}
+/* the row names sit against their row: right-aligned beside the first cell, over the row's own divider */
+.b4 #compare.cx .cx-t tbody th.cx-k0{text-align:right;padding-right:16px}
+/* a cell of a weapon shown with one build, or the common value in a row that disagrees, is plain */
+.b4 .s-n .cx-v{color:var(--ink)}
+
+/* ══ 2026-09-29 13:20 EDT — HIS VERSION 40 INTAKE (classes G–S; docs/pins2/handoffs/2026-09-21-board4-intake.md § "Version 40 intake round"). Grid is gone, so its
+   points live in Cards and Lanes; the one-build panel is gone (one build is the table with a suggested column); the slot-usage marks are gone. ══ */
+/* O · the top is search and VIEW, nothing else */
+.b4 #compare .cx-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 14px}
+.b4 #compare .cx-top .cx-pick{width:308px}
+.b4 #compare .cx-tools{height:auto}
+/* N · the tiles: two rows at most, then the board's sideways fade (b3/fady.js fits the run to two lines and scrolls the rest) */
+.b4 #compare .cx-tiles{margin:0 0 14px}
+.b4 #compare .cx-tl{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+.b4 :is(#compare, .b3-xt) .cx-w{box-sizing:border-box;width:max-content;min-width:120px;max-width:260px;display:grid;align-content:start;gap:12px;padding:10px;border-radius:10px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 13%,var(--sunk)),var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)}   /* the colour of a Cards column head (his: "the tiles have a much fainter glow than the table columns"). 2026-09-29 15:31 EDT, his: "i only asked for the tile's to get the more prominant color, i didn't ask for them to get the upper border treatment" - the top-edge highlight is gone, the tile's own radius and ring are back */
+.b4 :is(#compare, .b3-xt) .cx-wh{display:flex;align-items:flex-start;gap:12px;min-height:0}
+.b4 :is(#compare, .b3-xt) .cx-wn{display:grid;justify-items:start;gap:8px;min-width:0;margin-right:auto}
+.b4 :is(#compare.cx, .b3-xt) .cx-wn > b{font:600 14px/14px var(--ui);letter-spacing:.005em;color:var(--ink);white-space:nowrap;text-box:trim-both cap alphabetic;height:10px}
+.b4 :is(#compare.cx, .b3-xt) .cx-wn > small{font:600 9px/var(--lh-1) var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--c);white-space:nowrap;text-box:trim-both cap alphabetic;height:7px}
+.b4 :is(#compare, .b3-xt) .cx-keys{display:flex;flex-wrap:wrap;gap:6px}
+/* A · the tile's × is a close control in a card, not the selection bar's: no ring at rest, its ring and ground on hover, sized to the head it sits in */
+.b4 #compare .cx-wx:not(#_){width:24px;height:24px;margin:-6px -4px -6px 0;border-radius:8px;box-shadow:none;background:transparent;color:var(--ink3)}
+.b4 #compare .cx-wx:not(#_):hover{background:color-mix(in srgb,var(--danger-ink) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger-ink) 45%,transparent);color:var(--danger-ink)}
+/* C · the corner mark: a solid disk in the build's colour (red when it takes a build out) and a near-black glyph, so the sign reads at 16px */
+.b4 #compare .cx-kb{top:-8px;right:-8px;width:18px;height:18px;background:color-mix(in srgb,var(--c) 88%,white);color:#0A0D12;box-shadow:0 0 0 2px var(--sunk)}
+.b4 #compare .cx-kb .ic{width:11px;height:11px;stroke-width:3.4}
+.b4 #compare .cx-k[aria-pressed=true] .cx-kb{background:color-mix(in srgb,var(--danger-ink) 92%,white);color:#0A0D12}
+/* S · the landing: the faded table behind it, the search, the line as two readouts, the tiles flowing from the centre */
+.b4 #compare .cx-land{position:relative;display:grid;justify-items:center;min-height:0;padding:28px 0 32px;overflow:hidden}
+.b4 #compare .cx-ghost{position:absolute;inset:0 0 auto 0;pointer-events:none;opacity:.14;filter:saturate(.7);
+  -webkit-mask-image:linear-gradient(180deg,#000 0,rgba(0,0,0,.6) 30%,transparent 72%);mask-image:linear-gradient(180deg,#000 0,rgba(0,0,0,.6) 30%,transparent 72%)}
+.b4 #compare .cx-over{position:relative;z-index:1;display:grid;justify-items:center;gap:16px;width:100%;max-width:none;text-align:initial}
+.b4 #compare .cx-over > .cx-pick.big{width:min(560px,100%)}
+.b4 #compare .cx-lead{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin:0}
+.b4 #compare .cx-lead > .ic{width:14px;height:14px;color:var(--ink4)}
+.b4 #compare .cx-over > p.cx-lead{max-width:none}   /* the landing's old 46ch rule for its sentence (.cx-over > p) had wrapped the second readout and stranded the step mark on its own line */
+.b4 #compare .cx-shelf{display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:10px;width:900px;max-width:100%;margin-top:6px}
+.b4 :is(#compare, .b3-xt) .cx-wl{cursor:pointer;transition:background .18s var(--ease),box-shadow .18s var(--ease)}
+.b4 :is(#compare, .b3-xt) .cx-wadd{display:flex;align-items:flex-start;gap:12px;width:100%;margin:0;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer}
+.b4 :is(#compare, .b3-xt) .cx-wadd:focus-visible{outline:2px solid var(--focus);outline-offset:4px;border-radius:4px}
+/* the + is always there, in the place the bar's × takes: the tile says it adds before it is touched. 2026-09-29 15:25 EDT, his pick of four rendered (forks/plus-options.png): the
+   bare glyph in the weapon's colour — no box, no ring (the tinted box was "not a fan"); on a tile hover it turns white and grows a step */
+.b4 :is(#compare, .b3-xt) .cx-wplus{display:grid;place-items:center;flex:none;width:24px;height:24px;margin:-4px -4px -8px 0;border-radius:8px;color:color-mix(in srgb,var(--c) 80%,white);background:transparent;box-shadow:inset 0 0 0 1px transparent;
+  transition:background-color .16s var(--ease),box-shadow .16s var(--ease),color .16s var(--ease)}
+.b4 :is(#compare, .b3-xt) .cx-wplus .ic{width:16px;height:16px;stroke-width:2.4}
+.b4 :is(#compare, .b3-xt) .cx-wadd > .ic{display:none}
+/* a hover anywhere on the tile is a hover of every build it opens; a hover on one chip is that chip alone */
+.b4 :is(#compare, .b3-xt) .cx-wl:hover{background:linear-gradient(180deg,color-mix(in srgb,var(--c) 20%,var(--sunk)),var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 50%,transparent)}
+.b4 :is(#compare, .b3-xt) .cx-wl:hover .cx-wplus{color:color-mix(in srgb,var(--c) 70%,white);background:color-mix(in srgb,var(--c) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 42%,transparent)}   /* 2026-09-29 15:31 EDT, his: "when hovered, show #1's resting box" - the bare glyph at rest, option 1's box on a hover */
+.b4 :is(#compare, .b3-xt) :is(.cx-wl:hover:not(:has(.cx-k:hover)) .cx-k, .cx-wl .cx-k:hover){background:color-mix(in srgb,var(--c) 26%,var(--sunk));color:color-mix(in srgb,var(--c) 28%,white);outline-color:transparent;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 72%,transparent)}
+.b4 #compare .cx-wl .cx-kb{display:none}
+/* O · the band between the tiles and the table: the seats, then what every build agrees on */
+.b4 #compare .cx-band{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:0 0 16px}
+.b4 #compare .cx-seats{display:inline-flex;align-items:center;gap:10px;height:30px;box-sizing:border-box;padding:0 11px 0 10px;border-radius:8px;
+  background:color-mix(in srgb,#04070A 42%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 11%,transparent);font:500 11px/var(--lh-1) var(--data);color:var(--ink3);white-space:nowrap}
+.b4 #compare .cx-sts{display:flex;gap:3px}
+.b4 #compare .cx-sts i{width:9px;height:14px;border-radius:3px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 22%,transparent);transition:background-color .2s var(--ease),box-shadow .2s var(--ease)}
+.b4 #compare .cx-sts i.on{background:var(--c);box-shadow:none}
+.b4 #compare .cx-stt b{margin-right:4px;font-weight:600;color:var(--ink)}
+.b4 #compare .cx-stt{text-box:trim-both cap alphabetic} .b4 #compare .cx-seats.full .cx-stt{color:var(--ink2)}
+.b4 #compare .cx-seats[data-deny]{animation:cxdeny .7s var(--ease) both}
+.b4 #compare .cx-band .cx-same{margin:0;padding-left:16px;box-shadow:inset 1px 0 0 color-mix(in srgb,var(--ink) 12%,transparent)}
+/* G · the table fits its panel: fixed columns, no sideways scroll */
+.b4 #compare .cx-tw{min-width:0}
+.b4 #compare .cx-t{width:100%;table-layout:fixed}
+.b4 #compare .cx-t col.cx-c0{width:96px}
+.b4 #compare .cx-t col.cx-gc{width:4px}
+.b4 #compare .cx-t[data-f=a]{border-spacing:6px 0}
+.b4 #compare .cx-tw:has(> .cx-t[data-f=a]){margin:0 -6px}
+.b4 #compare .cx-t :is(td,th).cx-gut{padding:0!important;background:linear-gradient(90deg,transparent calc(50% - .5px),color-mix(in srgb,var(--ink) 13%,transparent) calc(50% - .5px) calc(50% + .5px),transparent calc(50% + .5px))!important;box-shadow:none!important}   /* H · between two weapons: one hairline, head to last row */
+/* H · the weapon's head is a band over its builds: its name, its category under it (as the tile), the weapon's tint; nothing ruled under it */
+.b4 #compare .cx-t .cx-gr th.cx-g{padding:12px 14px!important;vertical-align:top;text-align:left;border-radius:12px 12px 0 0;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--c) 45%,transparent)!important;background:color-mix(in srgb,var(--c) 10%,var(--sunk))!important}
+.b4 #compare .cx-gh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0}
+.b4 #compare .cx-gn{display:grid;justify-items:start;gap:8px;min-width:0}
+.b4 #compare.cx .cx-gn > b{font:600 17px/17px var(--ui);letter-spacing:.005em;color:var(--ink);overflow-wrap:anywhere;text-box:trim-both cap alphabetic;height:12px}
+.b4 #compare.cx .cx-gn > small{font:600 9px/var(--lh-1) var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--c);white-space:nowrap;text-box:trim-both cap alphabetic;height:7px}
+.b4 #compare .cx-t[data-f=a] th.cx-h{border-radius:0;background:linear-gradient(180deg,color-mix(in srgb,var(--c) 10%,var(--sunk)),var(--sunk))!important;box-shadow:none}
+.b4 #compare .cx-t th.cx-h{padding:12px 12px 12px 12px!important}
+.b4 #compare .cx-t thead th.cx-k0{box-shadow:none;border:0}
+.b4 #compare.cx .cx-t :is(th,td){border-bottom:0}   /* board 1's table rule gave every cell a 1px foot: it drew a line under each weapon's band (his "no dividers at the foot of the weapon names") and broke the gutter's hairline at every row; the rows' own hairlines are the box-shadows above */
+/* P · every build head names its label, or says it has none */
+.b4 #compare .cx-hl{display:block;margin-top:8px;font:500 12px/round(1.2em, 2px) var(--ui);color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b4 #compare .cx-hl.none{color:var(--ink4)}
+/* I · every body row is pre-set to two lines' height; a hairline divides the rows, the boxes the cells */
+.b4 #compare .cx-t tbody :is(td.cx-c,th.cx-k0){height:64px;box-sizing:border-box}
+.b4 #compare .cx-t[data-f=a] tbody td.cx-c{padding:4px 6px}
+.b4 #compare .cx-t tbody tr:not(:last-child) :is(td.cx-c,th.cx-k0){box-shadow:inset 0 -1px 0 color-mix(in srgb,var(--ink) 7%,transparent)}
+/* J · the row name is the slot's own label: capitals, in the slot's colour; the code's is the quiet one */
+.b4 #compare.cx .cx-t tbody th.cx-k0{text-align:right;padding:0 14px 0 0;font:600 10px/var(--lh-1) var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--sl,var(--ink3));text-box:trim-both cap alphabetic}
+/* K · one empty — the dash; a missing part is an odd one out, tinted as the others are; agreement merges and counts its builds */
+.b4 #compare .cx-t .s-rm .cx-v{color:color-mix(in srgb,var(--c) 40%,white);background:color-mix(in srgb,var(--c) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 62%,transparent)}
+.b4 #compare .cx-t .s-eq .cx-v{color:var(--ink);background:color-mix(in srgb,var(--ink) 4%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 8%,transparent)}
+.b4 #compare .cx-t td.merged .cx-v{padding-right:80px}
+.b4 #compare .cx-t td.merged .cx-span{position:absolute;right:14px;top:50%;transform:translateY(-50%);font:500 11px/1 var(--data);color:var(--ink3)}
+/* Q · the suggested column: dashed, its values quiet, its head saying so and offering to add it */
+.b4 #compare .cx-t th.cx-g.sg{background:none!important;box-shadow:none!important;outline:1px dashed color-mix(in srgb,var(--c) 45%,transparent);outline-offset:-1px}
+.b4 #compare .cx-t th.cx-h.sg{background:none!important;outline:1px dashed color-mix(in srgb,var(--ink) 18%,transparent);outline-offset:-1px}
+.b4 #compare .cx-t td.s-sg{background:none}
+.b4 #compare .cx-t td.s-sg .cx-v{color:var(--ink3);background:none;box-shadow:none;outline:1px dashed color-mix(in srgb,var(--ink) 18%,transparent);outline-offset:-1px}
+.b4 #compare .cx-sgw{display:flex;align-items:center;gap:8px;margin:-6px -4px -6px 0}
+.b4 #compare .cx-sgadd:not(#_){height:28px;padding:0 10px;gap:6px;font-size:12px}
+.b4 #compare .cx-sgadd .ic{width:12px;height:12px}
+/* Q + R · the Discord cards open from a bar under the table */
+.b4 #compare .cx-dc{margin-top:18px;border-radius:12px;background:color-mix(in srgb,var(--ink) 3%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 9%,transparent)}
+.b4 #compare .cx-dcb{display:flex;align-items:center;gap:12px;width:100%;height:52px;margin:0;padding:0 16px 0 11px;border:0;border-radius:12px;background:none;color:var(--ink2);cursor:pointer;font:500 13.5px/1 var(--ui);text-align:left;transition:background-color .15s,color .15s}
+.b4 #compare .cx-dcb:hover{background:color-mix(in srgb,var(--ink) 4%,transparent);color:var(--ink)}
+.b4 #compare .cx-dcb:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.b4 #compare .cx-dci{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:8px;color:#A5ACFF;background:color-mix(in srgb,#5865F2 18%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,#5865F2 45%,transparent)}   /* Discord's own blurple: this bar is the one place the page shows what Discord draws */
+.b4 #compare .cx-dci .ic{width:16px;height:16px}
+.b4 #compare .cx-dcn{margin-left:auto;font:500 11.5px/1 var(--data);color:var(--ink3)}
+.b4 #compare .cx-dcb .f-cr{flex:none;width:16px;height:16px;color:var(--ink3)}
+.b4 #compare .cx-dcw{display:grid;grid-template-rows:0fr;transition:grid-template-rows 420ms cubic-bezier(.32,.72,0,1)}
+.b4 #compare .cx-dc.open .cx-dcw{grid-template-rows:1fr}
+.b4 #compare .cx-dcin{min-height:0;overflow:hidden}
+.b4 #compare .cx-dcin > .cx-emb{margin:4px 16px 16px}
+.b4 #compare .cx-emb{align-items:start}   /* R · a card is as tall as its own content; a row no longer stretches the short ones to the tallest */
+.b4 #compare .cx-cc > .lc{height:auto}
+.b4 #compare .cx-cc .lc-img.failed{height:auto;max-height:none;aspect-ratio:auto;padding:4px 0}   /* R · the image's name chip sits inside its tile, never cut by the tile's edge */
+@media (prefers-reduced-motion:reduce){.b4 #compare .cx-wplus{transition:none}.b4 #compare .cx-dcw{transition:none}.b4 #compare .cx-seats[data-deny]{animation:none}}
+.b4 #compare.cx .cx-t tbody th.cx-k0.code{line-height:1.8}   /* "GUNSMITH CODE" is wider than the name column: it takes two lines, right-aligned, spaced as a pair */
+
+/* ══ 2026-09-29 17:57 EDT — HIS VERSION 41 INTAKE (classes V–AH; the intake log § "Version 41 intake round"). Lanes is gone; Compare is Cards alone. ══ */
+/* AE · the top-right: Clear builds, Remove all weapons — the board's secondary buttons; AF · the search as wide as the landing's */
+.b4 #compare .cx-top .cx-pick{width:560px;max-width:100%}
+.b4 #compare .cx-tools{display:flex;align-items:center;gap:8px}
+.b4 #compare .cx-tb:not(#_){height:36px;gap:7px;padding:0 13px;font-size:13px}
+.b4 #compare .cx-tb .ic{width:14px;height:14px}
+/* AF · the list: category heads, then each weapon's build numbers — the tile's chips at the list's size; a number already in the table reads ON */
+.b4 #compare .f-menu li.f-grp{min-height:0;padding:12px 10px 6px;font:600 9.5px/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--c,var(--ink3));pointer-events:none;background:none;box-shadow:none}
+.b4 #compare .f-menu li.f-grp:first-child{padding-top:6px}
+.b4 #compare .f-menu .cx-mk{display:flex;gap:4px;margin-left:auto;flex:none}
+.b4 #compare .f-menu .cx-mk .cx-k{width:24px;height:24px;border-radius:6px;font-size:12px}
+.b4 #compare .f-menu .cx-mk .cx-k .cx-kb{display:none}
+/* AG · the division: no line — each weapon's columns carry a wash of its colour, and the gap between two weapons is 4px wider than between builds */
+.b4 #compare .cx-t :is(td,th).cx-gut{background:none!important}
+/* 2026-09-30 (the Session 3 accessibility sweep): the portal's bare `tbody tr{cursor:pointer}` (app.css) reached this table, whose rows do nothing on a click — a hand over a
+   row that never answers (a11y.md, C3). The table owns its rows' cursor; scoped to the component, not to #compare, so any host of the table gets it. */
+.b4 .cx-t tbody tr{cursor:auto}
+.b4 #compare .cx-t[data-f=a] td.cx-c,.b4 #compare .cx-t[data-f=a] td.cx-fa{background:color-mix(in srgb,var(--c) 6%,var(--sunk))}
+/* Y · the code row's label: two lines, in white */
+.b4 #compare.cx .cx-t tbody th.cx-k0.code{color:var(--ink);line-height:round(1.7em, 2px)}
+/* Z · the corner mark: the build's colour for − and + alike (it was red for every ON chip), a heavier glyph, and the chip's hover in the same colour */
+.b4 #compare .cx-k[aria-pressed=true] .cx-kb{background:color-mix(in srgb,var(--c) 88%,white);color:#0A0D12}
+.b4 #compare .cx-kb .ic{stroke-width:4}
+.b4 #compare .cx-k[aria-pressed=true]:hover{background:color-mix(in srgb,var(--c) 38%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 92%,transparent);color:#fff}
+/* AA · the tile's ×: its weapon's colour on hover, past the board's neutral button rule (b4.css, !important) */
+.b4 #compare .cx-wx:not(#_):hover{background:color-mix(in srgb,var(--c) 16%,transparent)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 58%,transparent)!important;color:color-mix(in srgb,var(--c) 30%,white)!important}
+/* V · hover, ranked by strength: the hovered cell (hx) is the strongest thing on the table; its row and its column a faint lift */
+.b4 #compare .cx-t tr.hr td.cx-c .cx-v:not(.x),.b4 #compare .cx-t td.hc .cx-v:not(.x){background:color-mix(in srgb,var(--c) 8%,color-mix(in srgb,var(--ink) 5%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 30%,transparent)}
+.b4 #compare .cx-t tr.hr td.cx-c.s-d .cx-v,.b4 #compare .cx-t td.hc.s-d .cx-v,.b4 #compare .cx-t tr.hr td.cx-c.s-rm .cx-v,.b4 #compare .cx-t td.hc.s-rm .cx-v{background:color-mix(in srgb,var(--c) 20%,transparent)}
+.b4 #compare .cx-t td.hx .cx-v:not(.x),.b4 #compare .cx-t td.hx.s-rm .cx-v{background:color-mix(in srgb,var(--c) 22%,var(--sunk));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 90%,transparent),0 6px 16px -8px color-mix(in srgb,var(--c) 60%,transparent);color:#fff}
+.b4 #compare .cx-t td.hx .cx-v.x{color:var(--ink2)}
+.b4 #compare .cx-t .cx-v{transition:background-color .12s var(--ease),box-shadow .12s var(--ease),color .12s var(--ease)}
+.b4 #compare.cx .cx-t tbody tr.hr th.cx-k0{color:color-mix(in srgb,var(--sl,var(--ink3)) 55%,white)}
+.b4 #compare.cx .cx-t tbody th.cx-k0{cursor:default;transition:color .12s var(--ease)}
+.b4 #compare .cx-t .cx-gr th.cx-g{transition:background-color .15s var(--ease),box-shadow .15s var(--ease)}
+.b4 #compare .cx-t .cx-gr th.cx-g.hg{background:color-mix(in srgb,var(--c) 18%,var(--sunk))!important;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--c) 70%,transparent)!important}
+/* V47 BD (his: "when hovering a build, it shows a hard corners since we rounded off the middle gap, so correct it and refine it"): the lit head repainted its
+   whole box, a rectangle, while the gap beside it ends in a round cap in the resting fill — so a lit head met the cap as a square notch. The head keeps its
+   resting fill; the light is a tile inside it with the gap's rounding, so the cap, the band and the tile never disagree about a corner. */
+.b4 #compare .cx-t th.cx-h{isolation:isolate}
+.b4 #compare .cx-t th.cx-h.hc::before{content:"";position:absolute;inset:0 1px;z-index:-1;border-radius:10px 10px 0 0;background:linear-gradient(180deg,color-mix(in srgb,var(--c) 16%,transparent),color-mix(in srgb,var(--c) 4%,transparent) 70%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--c) 45%,transparent);pointer-events:none}
+.b4 #compare .cx-t td.cx-fa.hc{background:color-mix(in srgb,var(--c) 12%,var(--sunk))}
+/* AC · the image mark, right-aligned beside the Build chip (the manifest's .wg-im) */
+.b4 #compare .cx-hn{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.b4 #compare .cx-im{width:22px;height:22px;margin:-3px -3px -3px 0}
+.b4 #compare .cx-im .ic{width:15px;height:15px}
+/* W · a bare badge's pop: its own ground (an outlined badge showed the bare one through it), and a hovered head above its neighbours */
+.b4 #compare .cx-t th.cx-h{position:relative}
+.b4 #compare .cx-t th.cx-h:hover{z-index:6}
+/* AB · the code copies from anywhere in its cell: the copy mark appears on hover and turns to ok for a moment */
+.b4 #compare .cx-code{width:100%;margin:0;border:0;font:inherit;text-align:left;cursor:pointer;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:8px}
+.b4 #compare .cx-code .cx-cpi{display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:6px;color:var(--ink3);opacity:0;transition:opacity .14s var(--ease),color .14s var(--ease)}
+.b4 #compare .cx-code .cx-cpi .ic{width:14px;height:14px}
+.b4 #compare .cx-code:is(:hover,:focus-visible,.done) .cx-cpi{opacity:1}
+.b4 #compare .cx-code:hover .cx-cpi{color:var(--ink)}
+.b4 #compare .cx-code.done .cx-cpi{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.b4 #compare .cx-code:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+/* AB · a column's actions, under its last cell: the manifest row's share · edit | delete, its boxes and tints */
+.b4 #compare .cx-t td.cx-fa{padding:8px 6px 10px;border-radius:0 0 12px 12px}
+.b4 #compare .cx-t[data-f=a] tbody tr:last-child td.cx-c{border-radius:0}
+.b4 #compare .cx-acts{display:flex;align-items:center;justify-content:center;gap:2px}
+.b4 #compare .cx-acts .wg-vr{width:1px;height:18px;margin:0 4px;background:color-mix(in srgb,var(--ink) 14%,transparent)}
+.b4 #compare .cx-t td.cx-fa.sg{background:none}
+/* AD · a value some builds share is a chip in the band: the slot in its colour, the value, the builds as numbers in the weapon's colour */
+.b4 #compare .cx-band .cx-shr{margin:0;padding-left:16px;box-shadow:inset 1px 0 0 color-mix(in srgb,var(--ink) 12%,transparent)}
+.b4 #compare .cx-sh{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 5px 0 10px;border-radius:7px;font:500 12.5px/1 var(--ui);color:var(--ink);background:color-mix(in srgb,var(--ink) 4%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent);cursor:default;transition:box-shadow .14s var(--ease),background-color .14s var(--ease)}
+.b4 #compare .cx-sh:hover{background:color-mix(in srgb,var(--c) 10%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 60%,transparent)}
+.b4 #compare.cx .cx-sh em{font:600 9.5px/1 var(--data);font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:var(--sl)}
+.b4 #compare .cx-shb{display:flex;gap:3px}
+.b4 #compare .cx-shb i{display:grid;place-items:center;width:18px;height:18px;border-radius:5px;font:600 11px/var(--lh-1) var(--data);font-style:normal;color:color-mix(in srgb,var(--c) 30%,white);background:color-mix(in srgb,var(--c) 24%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 62%,transparent)}
+/* AH · the Discord bar: a fan of the cards in miniature, each edged in its build's colour; a title; a Show / Hide pill */
+.b4 #compare .cx-dc{margin-top:20px;border-radius:14px;background:linear-gradient(90deg,color-mix(in srgb,#5865F2 9%,var(--sunk)),var(--sunk) 55%);box-shadow:inset 0 0 0 1px color-mix(in srgb,#5865F2 22%,color-mix(in srgb,var(--ink) 8%,transparent))}
+.b4 #compare .cx-dcb{height:72px;gap:18px;padding:0 16px 0 24px;border-radius:14px}
+.b4 #compare .cx-dcb:hover{background:color-mix(in srgb,#5865F2 7%,transparent)}
+.b4 #compare .cx-dcf{position:relative;display:flex;align-items:center;flex:none;height:44px;padding-right:10px}
+.b4 #compare .cx-dcf > i{position:relative;display:grid;align-content:center;gap:4px;box-sizing:border-box;width:40px;height:30px;margin-left:-24px;padding:0 6px 0 8px;border-radius:5px;background:#2B2D31;
+  box-shadow:inset 3px 0 0 var(--c),0 4px 10px -4px rgba(0,0,0,.7);transform:rotate(calc((var(--k) - var(--m)) * 5deg)) translateY(calc((var(--k) - var(--m)) * (var(--k) - var(--m)) * .6px));transition:transform .28s var(--ease),margin .28s var(--ease)}
+.b4 #compare .cx-dcf > i:first-child{margin-left:0}
+.b4 #compare .cx-dcf > i b{display:block;height:3px;border-radius:2px;background:color-mix(in srgb,#DBDEE1 30%,transparent)}
+.b4 #compare .cx-dcf > i b:first-child{width:70%;background:color-mix(in srgb,#DBDEE1 55%,transparent)}
+.b4 #compare .cx-dcf > i b:nth-child(3){width:50%}
+.b4 #compare .cx-dcb:hover .cx-dcf > i{margin-left:-12px;transform:rotate(calc((var(--k) - var(--m)) * 3deg))}
+.b4 #compare .cx-dcb:hover .cx-dcf > i:first-child{margin-left:0}
+.b4 #compare .cx-dc.open .cx-dcf > i{margin-left:-30px;transform:none}
+.b4 #compare .cx-dc.open .cx-dcf > i:first-child{margin-left:0}
+.b4 #compare .cx-dct{display:grid;gap:8px;min-width:0}
+.b4 #compare.cx .cx-dct b{font:600 15px/1 var(--ui);color:var(--ink);text-box:trim-both cap alphabetic}
+.b4 #compare.cx .cx-dct small{font:500 12px/var(--lh-1) var(--ui);color:var(--ink3);text-box:trim-both cap alphabetic}
+.b4 #compare .cx-dcp{display:inline-flex;align-items:center;gap:6px;height:32px;margin-left:auto;padding:0 10px 0 14px;border-radius:9px;font:600 13px/var(--lh-1) var(--ui);color:#C9CDFF;background:color-mix(in srgb,#5865F2 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,#5865F2 50%,transparent);transition:background-color .15s,box-shadow .15s}
+.b4 #compare .cx-dcb:hover .cx-dcp{background:color-mix(in srgb,#5865F2 30%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,#5865F2 80%,transparent);color:#fff}
+.b4 #compare .cx-dcp .f-cr{width:15px;height:15px;color:currentColor}
+.b4 #compare .cx-dcb > .cx-dci,.b4 #compare .cx-dcb > .cx-dcn{display:none}
+.b4 #compare .cx-dcin > .cx-emb{margin:6px 18px 18px}
+/* the edit drawer opens over the panel */
+.b4 .cx-host{position:relative}
+.b4 .cx-editlay{position:absolute;inset:0;z-index:30;display:grid;align-items:start;padding:12px;background:color-mix(in srgb,#04070A 55%,transparent);border-radius:inherit}
+@media (prefers-reduced-motion:reduce){.b4 #compare :is(.cx-dcf > i,.cx-v,.cx-sh,.cx-code .cx-cpi){transition:none}}
+.b4 #compare .cx-pick .f-menu li .cx-mk ~ .f-tick{margin-left:0}   /* V44 BA: the list ticks what the panel holds; the chips carry the row's auto margin, the tick follows them */
+.b4 #compare.cx .cx-t tbody th.cx-k0{font-size:9px;letter-spacing:.12em}   /* the name column is 16px narrower (his V41 Y): UNDERBARREL, the longest name, fits it at 9.5px and .12em */
+
+/* ══ 2026-09-29 20:15 EDT — HIS VERSION 42 INTAKE (classes AI–AS, docs/pins2/handoffs/2026-09-21-board4-intake.md § "Version 42 intake round") ══════════════════ */
+/* AP · one top row: the search, the seats at its height, the tools at its height on the right */
+.b4 #compare .cx-top{justify-content:flex-start;gap:10px}
+.b4 #compare .cx-top .cx-pick{width:480px}
+.b4 #compare .cx-over > .cx-pick.big{width:min(480px,100%)}
+.b4 #compare .cx-top .cx-tools{margin-left:auto}
+.b4 #compare .cx-top .cx-seats{height:44px;gap:12px;padding:0 16px 0 14px;border-radius:9px}
+.b4 #compare .cx-top .cx-sts{gap:4px}
+.b4 #compare .cx-top .cx-sts i{width:10px;height:18px}
+.b4 #compare .cx-tb:not(#_){height:44px;padding:0 16px;gap:8px}
+/* AI · the list: a row's hover says what its click does — an unpicked weapon previews all its builds going in (the landing tile's hover), a picked one
+   previews its builds coming out; a number previews only itself. The same on the keyboard's highlighted row. */
+.b4 #compare .f-menu .cx-mk .cx-k .cx-kb{display:grid;top:-4px;right:-4px;width:14px;height:14px}
+.b4 #compare .f-menu li:is(:hover,.on):not(:has(.cx-k:hover)) .cx-k .cx-kb{opacity:1;transform:none}
+.b4 #compare .f-menu li:is(:hover,.on):not(:has(.cx-k:hover)):has(.cx-mk:not([data-picked])) .cx-k{background:color-mix(in srgb,var(--c) 26%,var(--sunk));color:color-mix(in srgb,var(--c) 28%,white);outline-color:transparent;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 72%,transparent)}
+.b4 #compare .f-menu li:is(:hover,.on):not(:has(.cx-k:hover)):has(.cx-mk[data-picked]) .cx-k[aria-pressed=true]{background:transparent;color:var(--ink3);box-shadow:none;outline:1px dashed color-mix(in srgb,var(--c) 60%,transparent);outline-offset:-1px}
+/* AR · the corner mark: drawn inline (compare.js `mark`), so its weight is this rule's — 2.4 of 16 units at 10px, 1.5px of ink (the sprite's was ~0.9px) */
+.b4 #compare .cx-kb .cx-kg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}   /* beats V41's `.cx-kb .ic{stroke-width:4}`, which only ever reached this inline mark */
+.b4 #compare .f-menu .cx-kb .cx-kg{width:8px;height:8px}
+/* AK · the verdict chip in a build's head: the selection list's mark (board.css composes it) on a square at rest, as he asked */
+.b4 #compare .cx-vd{display:inline-flex;flex-direction:column;align-items:center;gap:8px;margin:0}   /* V47 BJ: the verdict, the image mark under it */
+.b4 #compare .cx-hn .b3-fx-sm .b3-fchip{width:24px;height:24px;margin:0;border-radius:7px;background:color-mix(in srgb,var(--warn) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 36%,transparent)}
+.b4 :is(#compare .cx-hn, .wg-r) .b3-fx.b3-okx .b3-fchip{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 34%,transparent)}
+.b4 #compare .cx-hn .b3-fx-sm .b3-fchip:is(:hover,[aria-expanded=true]){background:color-mix(in srgb,var(--warn) 22%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 62%,transparent)}
+.b4 :is(#compare .cx-hn, .wg-r) .b3-fx.b3-okx .b3-fchip:is(:hover,[aria-expanded=true]){background:color-mix(in srgb,var(--ok) 22%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 62%,transparent)}
+.b4 #compare .cx-hn .b3-fx-sm .b3-fchip .ic{width:14px;height:14px}   /* the build chip's height (22px), so the two share a line */
+/* AL · the column's actions sit at its right, the last button's plate as far from the column's edge as from its foot */
+.b4 #compare .cx-acts{justify-content:flex-end}
+.b4 #compare .cx-t td.cx-fa{padding-right:calc(16px - var(--box-inset))}   /* the last button's plate sits 15px from the edge, the same as under it; the padding is measured to its hit box, which draws the plate --box-inset inside (.wg-acts, 2026-10-04: it used to pull itself 5px out instead) */
+/* AM · the Discord bar's disclosure is the board's fold mark */
+.b4 #compare .cx-dcp .ic-fold{width:16px;height:16px}
+/* AN · AQ · the band: a two-row key aligned to the table (the names in the row-name column's face and width, the chips where the builds start) */
+.b4 #compare .cx-band{display:grid;grid-template-columns:96px minmax(0,1fr);column-gap:6px;row-gap:10px;align-items:start;margin:0 0 16px;padding-left:0}
+.b4 #compare.cx .cx-band > .cx-bn{grid-column:1;display:flex;align-items:center;min-height:28px;font:600 9px/round(1.25em, 2px) var(--data);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.b4 #compare .cx-band > .cx-bv{grid-column:2;min-width:0}
+.b4 #compare .cx-band .cx-same{margin:0;padding:0;box-shadow:none}
+.b4 #compare .cx-bvl{display:flex;flex-wrap:wrap;gap:8px}
+.b4 #compare .cx-bvl > .wg-at{flex:none;cursor:default}
+.b4 #compare .cx-shc .cx-shb{display:inline-flex;align-items:center;gap:8px;margin-left:10px;padding-left:10px;box-shadow:inset 1px 0 0 color-mix(in srgb,var(--ink) 16%,transparent);font:600 11.5px/1 var(--data);color:color-mix(in srgb,var(--c) 50%,white)}
+.b4 #compare .cx-shc .cx-shb i{display:inline;width:auto;height:auto;font-style:normal;background:none;box-shadow:none;color:inherit}
+/* AS · the round cap where a gap between two builds meets the weapon's band: the band's own colour, cut by a half circle the gap's width */
+.b4 #compare .cx-t th.cx-h.cx-hj::after{content:"";position:absolute;top:0;right:-6px;width:6px;height:3px;pointer-events:none;background:radial-gradient(circle at 50% 100%,transparent 2.6px,color-mix(in srgb,var(--c) 10%,var(--sunk)) 3px)}
+/* V47 BD, his correction 10:14 EDT ("when all builds are highlighted, it looks odd. better integrate that"): a lit BAND is one light — the band, the caps between its
+   builds and its heads' tops share one tone, and a head under a lit band is a square continuation of it, never a rounded tile of its own. A single lit
+   build (its head, or a cell below it) keeps the rounded tile. */
+.b4 #compare .cx-t th.cx-h.cx-hj.cx-hbl::after{background:radial-gradient(circle at 50% 100%,transparent 2.6px,color-mix(in srgb,var(--c) 18%,var(--sunk)) 3px)}
+.b4 #compare .cx-t th.cx-h.hc.cx-hbl::before{inset:0;border-radius:0;background:linear-gradient(180deg,color-mix(in srgb,var(--c) 9%,transparent),transparent 85%);box-shadow:none}
+/* a cell that only lights on hover is not a control: no pointer (the a11y walk of 2026-09-29 20:16 EDT) */
+.b4 #compare .cx-t td.cx-c{cursor:default}
+/* with weapons and no build: the landing's faded table and readout, under the tiles */
+.b4 #compare .cx-off{padding:22px 0 30px}
+/* AI · the category beside each weapon is the tiles' own label: capitals, the data face, the category's colour */
+.b4 #compare.cx .f-menu li .f-om{font:600 9px/var(--lh-1) var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--c,var(--ink3))}
+/* a picked weapon's row previews only its going out: the + on its unpicked numbers would say the opposite */
+.b4 #compare .f-menu li:is(:hover,.on):not(:has(.cx-k:hover)):has(.cx-mk[data-picked]) .cx-k[aria-pressed=false] .cx-kb{opacity:0}
+/* the board's buttons lead with their icon: the Discord pill's fold mark goes first (his: "icons are on the left side in a button") */
+.b4 #compare .cx-dcp{padding:0 14px 0 12px}
+/* the verdict chip sits at the head's right padding: the list's wrapper carries an 18px margin meant for the manifest's code field (.wg-fwrap) */
+.b4 #compare .cx-hn .wg-fwrap{margin:0}
+/* the card a verdict chip opens is the list's own (ProblemChip): Compare's rules for the head's old label chip (.cx-hn small) and its voice reset stop at it, or its title drew as a chip (his: "why did you handcraft it?") */
+/* the band's names sit right, against their chips, as the table's row names sit against their row (th.cx-k0: right-aligned, 12px from the column's edge) */
+.b4 #compare.cx .cx-band > .cx-bn{justify-content:flex-end;text-align:right;padding-right:14px}   /* measured: the row names' ink ends 14px from their column's edge */
+
+/* ══ 2026-09-29 22:33 EDT — his Version 44 intake ══ */
+/* AX, redone 2026-09-29 23:42 EDT (his: the name as its own row, the cell in the build-name chip's design, the caption moved to the row names as BUILD NAME,
+   and "Not set" slightly dimmed): the cell IS the manifest's plate (.wg-plate, app.css — its tint and ring, one rule composed there), sized as every
+   other cell; the manifest's divider after the plate stays in the manifest */
+/* V47 BG (his: "can you confirm if it's exactly the same as the manifest (excluding the 'build name' label)?" — it was not: 13px against the plate's 12px, 12/10
+   padding against 7/12/8, 56px tall and cell-wide against the plate hugging its name). The cell keeps only what the table needs; size, padding and type
+   are the shared recipe's (app.css, `.wg-plate`). */
+/* 2026-09-29 23:48 EDT (his: "text is clipping. where's the 'g'?"): the plate's name is a 2-line clamp (overflow hidden, app.css .wg-plate span) and Compare trims every
+   cell's text box to cap height and the alphabetic baseline, so the clamp cut every descender. The trimmed box gets its descenders back as padding, taken
+   back as margin — the Picker's own fix for the same pair (classes.css, .f-menu .f-om) */
+
+/* ══ V48 BN (his, 2026-09-30 11:14 EDT): the build head — plate, Build chip, badges down the left; verdict and image mark down the right; 10px everywhere ══ */
+.b4 #compare .cx-t th.cx-h{padding:10px!important}
+.b4 #compare .cx-hn{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;justify-content:stretch;column-gap:10px}
+.b4 #compare .cx-hs{display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0}
+.b4 #compare .cx-hs .cx-pl{width:140px;max-width:100%;box-sizing:border-box;margin:0;align-self:flex-start}
+.b4 #compare .cx-hs .cx-pl::after{display:none}
+.b4 #compare .cx-pl.unset > span{color:var(--ink3);font-weight:500}
+.b4 #compare.cx .cx-hn .cx-pl > small{font:600 var(--t-micro)/var(--lh-1) var(--data);letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb,var(--c) 70%,var(--ink2))}   /* the plate's own caption: Compare's head voice reset reached it */
+.b4 #compare.cx .cx-hn .cx-pl > span{font:600 var(--t-sm)/round(1.25em, 2px) var(--ui)}
+.b4 #compare .cx-hs .cx-hb{margin:0}
+.b4 #compare .cx-vd{display:flex;flex-direction:column;align-items:center;gap:10px}
+.b4 #compare .cx-vd > .b3-hint{display:block;line-height:0}
+/* his 11:52 EDT ("the control badge is past the 10px padding … it should have triggered the fadding"): the run is a full-width row of the head, bounded by its
+   content box, so a run longer than the column overflows into the sideways fade instead of running into the padding */
+.b4 #compare .cx-hn{row-gap:10px}
+.b4 #compare .cx-hn > .cx-hb{grid-column:1 / -1;min-width:0;margin:0}
+.b4 #compare .cx-hn > .cx-hb > .cx-run{width:100%;min-width:0}

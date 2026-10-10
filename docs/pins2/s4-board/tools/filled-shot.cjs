@@ -1,0 +1,21 @@
+// Filled at rest: each of the nine cells measured at rest and under a real mouse (fill · edge · words, named), today's against the board, and in warn the
+// recipes against the Styles section's own wash and tint (the falsifier: our wash on Set end date must read as the Styles wash does). Pictures at rest.
+// Usage: node filled-shot.cjs → spec-check/sec-filled.png
+const path = require('path'), fs = require('fs'), os = require('os'); const ROOT = path.resolve(__dirname, '../../../..'); const puppeteer = require(path.join(ROOT, 'node_modules/puppeteer-core'));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms)); const OUT = path.join(__dirname, 'spec-check');
+(async () => {
+  const b = await puppeteer.launch({ executablePath: (process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'), headless: 'new', userDataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'fs-')) });
+  const p = await b.newPage(); await p.setViewport({ width: 1282, height: 1400 }); await p.goto('http://127.0.0.1:8900/docs/pins2/s4-board/spec.html', { waitUntil: 'networkidle0', timeout: 90000 }); await p.waitForFunction(() => window.__specReady, { timeout: 30000 }); await sleep(2500);
+  await p.addStyleTag({ content: '.spec .sbar { position: static !important; }' });
+  const facts = {}; const raw = (sel, fv) => p.evaluate((sel, fv) => { const c0 = [...document.querySelectorAll(`#filled .fv-${fv}`)].find((x) => x.dataset.fv === sel); const e = window.__rootOf(c0); const c = getComputedStyle(e); const r = e.getBoundingClientRect(); return { bg: c.backgroundColor, border: `${c.borderTopWidth} ${c.borderTopStyle} ${c.borderTopColor}`, ring: c.boxShadow, color: c.color, w: r.width, h: r.height, r: parseFloat(c.borderTopLeftRadius) }; }, sel, fv);
+  const read = (sel, fv) => p.evaluate((sel, fv) => { const c0 = [...document.querySelectorAll(`#filled .fv-${fv}`)].find((x) => x.dataset.fv === sel); const e = window.__rootOf(c0); const N = window.__inkName; const c = getComputedStyle(e); const ring = (c.boxShadow.match(/(rgba?\([^)]*\)|color\([^)]*\))[^,]*inset/) || [''])[0]; return `fill ${N(c.backgroundColor)} · border ${parseFloat(c.borderTopWidth) ? N(c.borderTopColor) : '—'} · ring ${ring ? N(ring.match(/(rgba?\([^)]*\)|color\([^)]*\))/)[0]) : '—'} · words ${N(c.color)} · ${Math.round(e.getBoundingClientRect().width)}×${Math.round(e.getBoundingClientRect().height)}`; }, sel, fv);
+  for (const sel of ['button.b3-endbtn', 'button.g-chipbtn', 'span.b4-hint']) for (const fv of ['today', 'wash', 'tint', 't80', 't50', 'his']) {
+    await p.mouse.move(2, 2); await sleep(250); const rest = await read(sel, fv); const rRaw = await raw(sel, fv);
+    const xy = await p.evaluate((sel, fv) => { const c0 = [...document.querySelectorAll(`#filled .fv-${fv}`)].find((x) => x.dataset.fv === sel); const e = window.__rootOf(c0); e.scrollIntoView({ block: 'center' }); const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel, fv);
+    await p.mouse.move(xy.x, xy.y); await sleep(450); const hov = await read(sel, fv); facts[sel + '|' + fv] = { rest: rRaw, hover: await raw(sel, fv) }; console.log(`${sel.replace('button.', '').padEnd(18)} ${fv.padEnd(5)} REST ${rest}\n${' '.repeat(25)}HOVER ${hov}`); }
+  /* the measured facts, which the section's cards print (then the page is reloaded so the picture shows them) */
+  fs.writeFileSync(path.join(ROOT, 'docs/pins2/s4-board/spec-img/filled-facts.json'), JSON.stringify({ measured: new Date().toISOString(), facts }, null, 1));
+  await p.setCacheEnabled(false);   /* 2026-10-09 12:44 EDT: the reload served the old facts from the HTTP cache (the server sends no cache headers), so the picture kept "no change" */
+  await p.reload({ waitUntil: 'networkidle0' }); await p.waitForFunction(() => window.__specReady, { timeout: 30000 }); await sleep(2500); await p.addStyleTag({ content: '.spec .sbar { position: static !important; }' });
+  await p.mouse.move(2, 2); await sleep(300); const el = await p.$('#filled'); await el.screenshot({ path: path.join(OUT, 'sec-filled.png') }); await b.close();
+})().catch((e) => { console.error('filled-shot FAIL', e.message); process.exit(1); });

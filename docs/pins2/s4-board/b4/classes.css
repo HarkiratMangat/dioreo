@@ -1,0 +1,1123 @@
+/* BOARD 4 · v11 — the board-wide classes (his v10 items 14, 35–47 and D13), 2026-09-22 14:06 EDT. Loaded last; each block is one class, applied wherever it reaches. */
+
+/* ── THE TOGGLE, from the realm's own hue (items 14, 41–44) ─────────────────────────────────────────────────────────────────
+   Resting: quiet ink. Hover: the ink lifts and the realm washes in. Chosen: the realm at a strength that reads AS the realm — Broadcast's
+   pink is pink, Armory's red is red — with its ring, never the grey --hi or the 15% tint that turned the pink mauve. MP/DMZ keep their
+   mode hues; this is every other segmented or view toggle, and the manifests' All chip. */
+/* (the expressions are written out in each rule: a custom property holding var(--realm-c) resolves where it is declared, and declared
+   on .b4 it resolved to the grey fallback on every gate — measured on the render, the All chip stayed grey) */
+.b4 :is(.b3-nb, .panel, .b4-vb, .b1, .pb-gate) .seg .pb-thumb, .b4 .drawer .seg .pb-thumb{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 24%,var(--sunk))!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 66%,transparent)!important}
+.b4 :is(.b3-nb, .panel, .b4-vb, .b1, .pb-gate) .seg button:is([aria-pressed=true],[aria-selected=true]), .b4 .drawer .seg button[aria-pressed=true]{color:color-mix(in srgb,var(--realm-c,var(--ink)) 26%,white)!important}
+.b4 :is(.b3-nb, .panel, .b4-vb, .b1, .pb-gate) .seg button:not([aria-pressed=true]):not([aria-selected=true]):hover, .b4 .drawer .seg button:not([aria-pressed=true]):hover{color:var(--ink)!important;background:color-mix(in srgb,var(--realm-c,var(--ink3)) 11%,transparent)!important}
+.b4 .ph .seg button:is([aria-selected=true],[aria-pressed=true]){background:color-mix(in srgb,var(--realm-c,var(--ink3)) 24%,var(--sunk))!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 66%,transparent)!important;color:color-mix(in srgb,var(--realm-c,var(--ink)) 26%,white)!important}
+.b4 .ph .seg button:not([aria-selected=true]):not([aria-pressed=true]):hover{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 11%,transparent)!important;color:var(--ink)!important}
+.b4 .mt-grp .chip:not(.topic)[aria-pressed=true]{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 24%,var(--sunk));border-color:color-mix(in srgb,var(--realm-c,var(--ink3)) 66%,transparent);color:color-mix(in srgb,var(--realm-c,var(--ink)) 26%,white)}
+.b4 .mt-grp .chip:not(.topic)[aria-pressed=true] em{color:color-mix(in srgb,var(--realm-c,var(--ink)) 26%,white)}
+.b4 .mt-grp .chip:not(.topic)[aria-pressed=true]:hover{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 32%,var(--sunk));border-color:color-mix(in srgb,var(--realm-c,var(--ink3)) 66%,transparent)}
+.b4 .mt-grp .chip:not(.topic):not([aria-pressed=true]):hover{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 11%,transparent);border-color:color-mix(in srgb,var(--realm-c,var(--ink3)) 45%,transparent);color:var(--ink)}
+/* item 14 — Add build / Bulk create: one 40px track, the thumb inset 3px on every side so it never touches the track's edge (two rings read
+   as a stacked border), and the buttons exactly the thumb's height so label and thumb share a centre line */
+.b4 .drawer .pb-bar .pb-seg.seg{height:40px;box-sizing:border-box;padding:4px;border:0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 14%,transparent)}
+.b4 .drawer .pb-bar .pb-seg.seg button{height:32px;min-height:32px;box-sizing:border-box}
+.b4 .drawer .pb-bar .pb-seg .pb-thumb{top:4px;bottom:4px}
+
+/* ── THE HINT CHIP beside a heading (items 18, 45) — the Never chip's shape ─────────────────────────────────────────────── */
+.b4 .b3-tk-sh > em{height:24px;padding:0 8px;border-radius:6px;font:600 12px/1 var(--ui)}
+.b4 .b3-tk-sh[data-sev=ok] > i{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 30%,transparent)}
+.b4 .b3-tk-sh[data-sev=ok] > em{color:color-mix(in srgb,var(--ok) 82%,white);background:color-mix(in srgb,var(--ok) 11%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 38%,transparent)}
+/* item 35 — the pass tile is a section like the two above it: the same head, the same distance from what precedes it */
+/* it sits outside a .b3-tk-sec, so it carries the section head's own layout rather than inheriting it (measured: it had stacked) */
+.b4 h4.b3-tk-okh{display:flex;align-items:center;gap:10px;margin:0 0 12px;font:600 var(--t-md)/1 var(--ui);letter-spacing:0;text-transform:none;color:var(--ink)}
+
+/* ── item 47 — the manifest's "N builds" is the selection bar's build chip: no bullet, no tracking, the weapon's hue ─────── */
+.b4 .wg-nb.b3-sd-gn{margin-left:10px;text-transform:none;letter-spacing:var(--b3-tr-tight,.01em);vertical-align:1px}
+.b4 .wg-nb.b3-sd-gn::before{display:none}
+
+/* ── item 46 — the problem card's header: the weapon in the reading face, the build number the headline ────────────────── */
+.b4 .b3-pc-w{gap:6px}
+.b4 .b3-pc-w small{font:600 12px/round(1.1em, 2px) var(--ui);letter-spacing:0;text-transform:none;color:var(--ink2)}
+.b4 .b3-pc-w b{font:600 17px/round(1.1em, 2px) var(--ui);letter-spacing:-.01em;color:var(--ink)}
+
+/* ── item 36 — the name chip while editing: cancel and keep live inside the chip, after a hairline ─────────────────────── */
+
+/* ── item 37 — Pick all answers hover in its category's hue (it had the pressed ring only) ──────────────────────────────── */
+.b4 .chip.b3-xt-all:not(:disabled):hover{background:color-mix(in srgb,var(--c) 10%,var(--sunk));border-color:color-mix(in srgb,var(--c) 55%,transparent);color:var(--ink)}
+.b4 .chip.b3-xt-all:is([aria-pressed=true],[aria-pressed=mixed]):hover{background:color-mix(in srgb,var(--c) 16%,var(--sunk));border-color:color-mix(in srgb,var(--c) 75%,transparent)}
+
+/* ── item 38b — with three files or more, the open one was given flex:1 1 0 and no floor, so its share of the column could be less than
+   its own header and footer, and its body drew at 0 while its toggle said Collapse. The open file keeps a floor; the column scrolls. */
+.b4 .b3-xt-files:has(> .b3-xf:nth-child(3)) > .b3-xf:not(.shut){min-height:320px}
+/* ── item 39 — the file list fades where it scrolls under the column's edges; the fade sits in padding, so nothing is faded at rest */
+.b4 .b3-xt-files{padding-block:12px;margin-block:-12px}
+.b4 :is(.b3-xt-files,.b3-xt-list){--fdy:48px}  /* v17 (his item 19): the fade starts lower and eases over 48px; a static 12px mask here had overridden fady's own */
+
+/* ── item 40 — the file row's ×: a real target, centred on the build's first line, on its own ground ─────────────────────── */
+.b4 .b3-xt-rm{top:-3px;right:8px;width:28px;height:28px;border-radius:7px;background:color-mix(in srgb,var(--raised) 92%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 14%,transparent);color:var(--ink3)}
+.b4 .b3-xt-rm .ic{width:14px;height:14px}
+.b4 .b3-xt-rm:hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger-ink) 45%,transparent)}
+
+/* ── D13 — the post drawer's fields are the build form's field (b4/form.css .f-fld): one fill, one edge, one focus ring ─── */
+.b4 .drawer.b1 .dwfield :is(input:not([type=checkbox]):not([type=radio]):not([data-bare]),textarea){background:color-mix(in srgb,#04070A 52%,var(--sunk));border:0;border-radius:var(--rad-2);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent);font:500 14px/1.4 var(--ui);color:var(--ink);transition:box-shadow .16s ease}
+.b4 .drawer.b1 .dwfield input:not([type=checkbox]):not([type=radio]):not([data-bare]){height:42px;padding:0 12px}
+.b4 .drawer.b1 .dwfield textarea{padding:11px 12px}
+.b4 .drawer.b1 .dwfield :is(input:not([type=checkbox]):not([type=radio]):not([data-bare]),textarea):not(:focus):hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 24%,transparent)}  /* 2026-09-27 18:56 EDT (his "where tf are the hover events???"): this hover never showed — the resting rule above is (0,6,1) through its :is(input:not()…) and this was (0,4,1), so the rest won on every hover. Same selector as the rest now, plus :hover. */
+.b4 .drawer.b1 .dwfield :is(input:not([type=checkbox]):not([type=radio]):not([data-bare]),textarea):focus{outline:0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--focus) 80%,transparent),0 0 0 3px color-mix(in srgb,var(--focus) 18%,transparent)}
+.b4 .drawer.b1 :is(.dwfield > label, .pb-lrow > label){font:500 14px/var(--lh-1) var(--ui);letter-spacing:0;text-transform:none;color:var(--ink2)}  /* 2026-09-27 16:06 EDT: the build drawer's field label (.f-lab label: 13px, 500, --ink2) — his "the section labels in this don't match the style of the build drawer" */
+
+/* ── found by b4states after the build (the instrument, not the eye): three answers that were missing ──────────────────── */
+/* the manifest's List / By slot toggle (retired 2026-10-01) was a toggle too: it rested on the grey --hi (GREY) */
+.b4 .mt-grp .seg button:is([aria-pressed=true],[aria-selected=true]){background:color-mix(in srgb,var(--realm-c,var(--ink3)) 24%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 66%,transparent);color:color-mix(in srgb,var(--realm-c,var(--ink)) 26%,white)}
+.b4 .mt-grp .seg button:is([aria-pressed=true],[aria-selected=true]):hover{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 32%,var(--sunk))}
+.b4 .mt-grp .seg button:not([aria-pressed=true]):not([aria-selected=true]):hover{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 11%,transparent);color:var(--ink)}
+/* the drawer's Add / Bulk track had no pressed answer (board 3 pins its buttons with transform:none!important) */
+.b4 .drawer .pb-bar .pb-seg.seg button:active{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 16%,transparent)!important}
+
+/* (2026-09-22 15:17 EDT) b4states, second pass — the three states still missing on the surfaces this pass touched */
+.b4 :is(.b3-xf,.exs-i) .b3-xf-fn:not(.editing):active{transform:translateY(1px);background:color-mix(in srgb,var(--ink) 8%,var(--sunk))}
+.b4 .drawer .pb-bar .pb-seg.seg button[aria-pressed=true]:active{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 14%,transparent)!important}
+
+
+/* ══ v13 (2026-09-22 16:31 EDT) — shared by the build form and Bulk ══════════════════════════════════════════════════════════════════════ */
+/* A line laid ON a faded example (the empty preview, the empty results): the board's one shape for "this is what will appear here" */
+.b4 .b4-overline{position:absolute;left:14px;right:14px;top:50%;margin:0;padding:12px 14px;border-radius:10px;transform:translateY(-50%);text-align:center;font:500 13px/round(1.45em, 2px) var(--ui);color:var(--ink2);
+  background:color-mix(in srgb,var(--raised) 88%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent),0 10px 24px -14px #000}
+/* v14 (2026-09-22 23:41 EDT) — seen in the v14 prep shots: the example's text ran half-cut above and below the line ("Gunsmith Code", "Air Assist Laser",
+   Bulk's attachment chips). The example now opens a clearing where the line sits, as Compare's empty landing does over its faded table.
+   The line centres on the example itself (the wrap), no longer on the preview column with its heading. */
+.b4 .b4-ghostwrap{position:relative;--band:38px;--clear:linear-gradient(180deg,#000 calc(50% - var(--band) - 24px),transparent calc(50% - var(--band)),transparent calc(50% + var(--band)),#000 calc(50% + var(--band) + 24px))}
+/* the form's line can run to three lines ("ki" isn't in the Armory yet…, 79px) and its ghost has a section heading 11px above a two-line line; Bulk's short example keeps 38 */
+.b4 .f-prev .b4-ghostwrap{--band:48px}
+.b4 .b4-ghostwrap > .b4-ghostcard{-webkit-mask-image:var(--clear),linear-gradient(180deg,#000 35%,transparent 92%);mask-image:var(--clear),linear-gradient(180deg,#000 35%,transparent 92%);-webkit-mask-composite:source-in;mask-composite:intersect}
+.b4 .b4-ghostwrap > .bk-ghostres{-webkit-mask-image:var(--clear),linear-gradient(180deg,#000 55%,transparent);mask-image:var(--clear),linear-gradient(180deg,#000 55%,transparent);-webkit-mask-composite:source-in;mask-composite:intersect}
+/* A keyboard hint inside the control it triggers */
+.b4 .b3-btn2:is(:disabled,[aria-disabled=true]) .b4-kbd{display:none}  /* a shortcut for a button that cannot fire is noise */
+/* The Stage reason: a hint chip that is a button, on its own row above Cancel and Stage */
+/* the field a reason jumped to answers once */
+.b4 .f-fld.b4-pulse{animation:b4-pulse 1s cubic-bezier(.16,1,.3,1)}
+@keyframes b4-pulse{0%,35%{box-shadow:inset 0 0 0 1px var(--warn),0 0 0 4px color-mix(in srgb,var(--warn) 28%,transparent)}}
+@media (prefers-reduced-motion:reduce){.b4 .f-fld.b4-pulse{animation:none;box-shadow:inset 0 0 0 1px var(--warn)}}
+/* v13 (2026-09-22 16:33 EDT) — a gate whose state switch is long (C2 has 13 states) puts it on its own row under the title: in one row the title's
+   column was 0px wide and its sentence ran down the page one word per line */
+.b4 .pb-head:has(.pb-ctl button:nth-of-type(8)){grid-template-columns:auto minmax(0,1fr)}
+.b4 .pb-head:has(.pb-ctl button:nth-of-type(8)) > .pb-ctl{grid-column:1/-1;justify-self:start;margin-top:14px}
+.b4 .pb-head:has(.pb-ctl button:nth-of-type(8)) .pb-ctl button{padding-inline:8px}
+.b4 .pb-head .pb-ctl button{white-space:nowrap}  /* the switch's sliding thumb assumes one row, so it never wraps: it takes the gate's full width instead */
+
+/* ══ v16 · his v15 intake (2026-09-23 14:38 EDT) — each class corrected board-wide from the class sweep (the plan's §4b), not only where he pointed ══ */
+
+/* K3 · CHIPS — one recipe for every free-standing toggle chip: the category chips' own ("the ones matching assault/smg"). Resting hover washes
+   the hue at 9% with its full ring; pressed is the hue at 16% with its full ring; pressed + hover 24%. All takes it in the realm's hue, and so do
+   Admin traffic, Export's pick-all chips (whose hover went transparent) and Bulk's filters. */
+.b4 .mt-grp .chip:not(.topic), .b4 .bk-fl button{--c:var(--realm-c,var(--ink3))}
+.b4 .chip.incchip{--c:var(--r-analytics)}
+.b4 .bk-fl button{border:1px solid transparent}
+.b4 .bk-fl button[aria-checked=true]{border-color:var(--c)!important}
+.b4 .mt-grp .chip:not(.topic)[aria-pressed=true] em{color:inherit}
+
+/* K3 · SEGMENTS — pressed is the hue 24% into the ground with a 66% ring and ink 26% into white; pressed + hover 32%; resting hover an 11% wash.
+   The drawer's Add / Bulk switch had borrowed the board chrome's pressed ring (.pb-seg), a grey border stacked inside the thumb's; Broadcast's and
+   Analytics' pressed segments answered hover with nothing (an !important fill above held them). */
+.b4 .drawer .pb-seg.seg > button[aria-pressed=true]{box-shadow:none!important;background:transparent!important}
+.b4 :is(.b3-nb,.panel,.b4-vb,.b1,.drawer) .seg:has(> button[aria-pressed=true]:hover) > .pb-thumb{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 32%,var(--sunk))!important}
+.b4 :is(.ph,.panel,.b4-vb,.b1,.b3-nb) .seg:not(:has(> .pb-thumb)) > button:is([aria-pressed=true],[aria-selected=true]):hover{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 32%,var(--sunk))!important}
+.b4 .f-src button[aria-checked=true]{color:color-mix(in srgb,var(--realm-c,var(--ink)) 26%,white);background:color-mix(in srgb,var(--realm-c,var(--ink3)) 24%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 66%,transparent)}
+.b4 .f-src button[aria-checked=true]:hover{background:color-mix(in srgb,var(--realm-c,var(--ink3)) 32%,var(--sunk))}
+.b4 .f-src button:not([aria-checked=true]):hover{color:var(--ink);background:color-mix(in srgb,var(--realm-c,var(--ink3)) 11%,transparent)}
+
+/* K3 · TIERS — a pressed tier takes its tier's colour (his 2026-09-22 ruling), never the neutral grey */
+.b4 .f-tier:has(.b3-bdg[data-t=best]){--tc:#F2C230}
+html[data-b3-p1=a] .b4 .f-tier:has(.b3-bdg[data-t=top3]){--tc:#3FD6B5}
+html[data-b3-p1=a] .b4 .f-tier:has(.b3-bdg[data-t=top4]){--tc:#5B9BFF}
+html[data-b3-p1=a] .b4 .f-tier:has(.b3-bdg[data-t=top5]){--tc:#A98BFF}
+html[data-b3-p1=b] .b4 .f-tier:has(.b3-bdg[data-t=top3]){--tc:#CAD5DF}
+html[data-b3-p1=b] .b4 .f-tier:has(.b3-bdg[data-t=top4]){--tc:#D69763}
+html[data-b3-p1=b] .b4 .f-tier:has(.b3-bdg[data-t=top5]){--tc:#8499AD}
+html[data-b3-p1=c] .b4 .f-tier:has(.b3-bdg[data-t^=top]){--tc:#F2C230}
+.b4 .f-tier:not(.none)[aria-checked=true]{background:color-mix(in srgb,var(--tc,var(--ink3)) 16%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc,var(--ink3)) 66%,transparent)}
+.b4 .f-tier:not(.none)[aria-checked=true]:hover{background:color-mix(in srgb,var(--tc,var(--ink3)) 24%,var(--sunk))}
+.b4 .f-tier:not(.none):not([aria-checked=true]):hover{background:color-mix(in srgb,var(--tc,var(--ink3)) 9%,transparent)}
+
+/* K4 · ONE FOCUS for every field on the board — the design's own (app.css :focus-visible: the gold --patch edge and its 5px halo), which his
+   reference, the manifest search, already wears. Form C keeps its underline, in the same gold. */
+.b4 .f-fld:focus-within, .b4 .f-pick.open .f-fld{--f-edge:var(--staged)!important;box-shadow:inset 0 0 0 1px var(--staged),0 0 0 5px color-mix(in srgb,var(--staged) 16%,transparent)!important}
+html[data-b3-f2=c] .b4 .f-fld:focus-within, html[data-b3-f2=c] .b4 .f-pick.open .f-fld{box-shadow:none!important}
+html[data-b3-f2=c] .b4 .f-fld::after{background:var(--staged)}
+.b4 :is(.f-fld .f-in, .drawer .f-fld .f-in, .b3-nb .pb-ta, .drawer.b1 .dwfield :is(input,textarea)){caret-color:var(--staged)!important}
+.b4 .f-fld .f-in::selection{background:color-mix(in srgb,var(--staged) 30%,transparent)}
+.b4 .drawer.b1 .dwfield :is(input:not([type=checkbox]):not([type=radio]):not([data-bare]),textarea):focus{box-shadow:inset 0 0 0 1px var(--staged),0 0 0 5px color-mix(in srgb,var(--staged) 16%,transparent)}
+.b4 .b3-nb .pb-edwrap:focus-within{box-shadow:inset 0 0 0 1px var(--staged),0 0 0 5px color-mix(in srgb,var(--staged) 16%,transparent)}
+.b4 .f-form.b3-fady{padding:6px 6px 12px;margin:-6px -6px 0}  /* the 5px halo needs 6px of room inside the scroller */
+
+/* K1 · THE PICKER LIST — Compare's ranked list (Empty C, his shot 4): dot, name, the category in its own colour, the count as plain figures;
+   hover and the keyboard's row are the same hue wash and ring. The list may widen to its column (--mw, set as it opens) and a row ellipsizes
+   rather than the list scrolling sideways (v15 had held it to the field's width, which cut the counts and hid the stored images' keys). */
+.b4 .f-menu li{gap:10px;min-height:42px;padding:0 10px;border-radius:8px;color:var(--ink);font:600 13.5px/1.2 var(--ui)}
+.b4 .f-menu li.on{background:color-mix(in srgb,var(--c,var(--ink3)) 9%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c,var(--ink3)) 60%,transparent);color:var(--ink)}
+.b4 .f-menu li .f-dot{width:8px;height:8px}
+.b4 .f-ol{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}  /* a stored key can be a whole link: it ellipsizes, it never widens the list */
+.b4 .f-tick{margin-left:auto}
+.b4 .f-oc + .f-tick{margin-left:0}
+.b4 .f-ol mark{color:var(--staged)}
+
+/* K2 · SCROLL EDGES — every drawer scroller ends 21px above the drawer's floor, as Export's tile list does, with the board fade */
+.b4 .drawer .dw-b:is(:has(.f-add), :has(.bk-wrap)){padding-bottom:20px!important}
+.b4 .drawer .bk-rescol{height:auto!important;max-height:none!important;align-self:stretch!important}
+.b4 .b3-xt-files.b3-fady{margin-bottom:0}
+/* S7 — the hover card keeps its place and clears the file card's footer rule (it crossed it by 8px) */
+/* (v19: the pinned bottom is gone — it fixed the hover card's height; gates/armory.js keeps one edge and the content sets the height) */
+/* S10 — with several files, an open one takes real room; the column scrolls under the fade */
+.b4 .b3-xt-files:has(> .b3-xf ~ .b3-xf) > .b3-xf:not(.shut){min-height:min(540px, 70vh)}
+
+/* K5 · REMOVE AND COPY — the card's remove × wears the red tile like every other remove; copy confirms, as Export's file card does */
+.b4 .f-cx:hover:not(:disabled){color:var(--danger-ink);background:color-mix(in srgb,var(--danger-ink) 13%,transparent)}
+.b4 .f-suf.f-cp:hover:not(:disabled){color:var(--ink);background:color-mix(in srgb,var(--ink) 11%,transparent)}
+.b4 .f-suf.f-cp.done, .b4 .f-suf.f-cp.done:hover{display:inline-flex;gap:6px;width:auto;padding:0 10px 0 9px;color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}
+.b4 .f-cpd{font:600 12px/1 var(--ui)}
+
+/* K6 · THE IMAGE BLOCK — the tile yields first, so the switch, the drop line and the key never run out of a narrow card */
+.b4 .f-media{grid-template-columns:minmax(128px,176px) minmax(min-content,1fr)}
+.b4 .f-fld > .f-in{width:0}  /* 2026-09-25 00:33 EDT: an input's intrinsic ~190px counted toward the well's min-content, so a link with its size chip pushed the post drawer's form past its column; flex:1 still fills the field */
+.b4 .f-drop u{white-space:nowrap}
+.b4 .f-keyl .f-kst{white-space:normal;max-width:100%;height:auto;min-height:24px;padding-block:4px;line-height:round(1.35em, 2px)}
+
+/* K7 · the manifest row: a little more air between the category and its build chip */
+.b4 .wg-nb.b3-sd-gn{margin-left:4px}  /* v17: a sibling of the tag now, so the row's 10px gap plus this is the 14px K7 asked for */
+/* M1-3 — measured on the drawn ink at 3×: the mono caps sat 1.3px below the name's caps and the chips' centre; the label rises, its chip stays on the badges' line */
+/* Repairs: Pass every check sits as close to its panel as the other heads to their lists */
+/* the heading and its card are one box now (b3/repairs.js, 2026-10-04 02:24 EDT): the box's top margin is the space after the worklist, the heading's own 12px the space to its card */
+.b4 .b3-tk-oks{margin-top:18px}  /* the box carries the 18px the heading had above it; inside the box there is no grid gap, so the heading's own 12px margin-bottom is the space to its card (the reference's -4 + the panel grid's 16) */
+/* R1, 2026-10-04 17:01 EDT (V1 M2 #2): in Repairs shapes a and b the heading still sits directly in the panel grid, with no box, so it keeps the reference's
+   own margins there: 18 above, -4 below (the grid's 16 makes the 12 to what follows) */
+.b4 .b3-rp > h4.b3-tk-okh{margin:18px 0 -4px}
+.b4 .b3-tk-oks:not(.bare) > .b3-tk-pass{margin-top:0}
+/* R1, 2026-10-04 12:26 EDT: the box is rendered whether or not the heading is, so the pass card keeps its parent and Preact never remounts it when
+   the fault count crosses 0 (the reference kept it mounted; the first wrapper swapped article for section and dropped focus). Without
+   the heading it is display:contents: the card is the panel grid's item, as before, with its own margin; main section{min-width:0} is
+   undone below, since the heading and card were each a min-width:auto item before they shared a box */
+.b4 .b3-tk-oks.bare{display:contents}
+/* R1, 2026-10-04 13:19 EDT: the reference's .b3-rp > .b3-tk-pass:first-child{margin-top:0} (b3/board.css:3808) zeroes the card when it is the panel's
+   first child (a clean day, nothing above it). Through the box that combinator cannot reach the card, so the same condition is stated here;
+   caught by the final shot set (C4 'A clean day', the card 12px low) */
+.b3-rp > .b3-tk-oks.bare:first-child > .b3-tk-pass{margin-top:0}
+.b4 .b3-tk-oks{min-width:auto}
+
+/* K8 · the empty preview: Compare's soft clearing around the sentence, never a band that cuts the example in half */
+.b4 .b4-ghostwrap{--clear:radial-gradient(ellipse 60% calc(var(--band) * 1.9) at 50% 50%,transparent 40%,#000 100%)}
+/* S3 · the Stage reason is a quiet line in warn ink, not a boxed chip beside the buttons */
+
+/* S17 · the Discord preview, portal-only (his answer): badges in their own colours, and each slot label in the board's slot colour */
+.b4 .lc-badges{gap:6px}
+.b4 .lc-badges span{--tc:var(--ink3);display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:5px;font:700 10px/1 var(--data);letter-spacing:.06em;color:color-mix(in srgb,var(--tc) 72%,white);background:color-mix(in srgb,var(--tc) 13%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 42%,transparent)}
+.b4 .lc-badges span[data-k=meta]{--tc:#38D6F0}
+.b4 .lc-badges span[data-k=toxic]{--tc:#9BE23C}
+.b4 .lc-badges span[data-k=best]{--tc:#F2C230;color:#1A1400;background:#F2C230;box-shadow:none}
+.b4 .lc-badges span[data-k=top3]{--tc:#3FD6B5}
+.b4 .lc-badges span[data-k=top4]{--tc:#5B9BFF}
+.b4 .lc-badges span[data-k=top5]{--tc:#A98BFF}
+.b4 .lc-att li em{color:var(--sl,var(--dc-dim))}
+.b4 .lc-att li::before{color:var(--sl,var(--dc-dim))}
+/* the Bulk / Edit editor scrolls in its own column with the board fade (filed 2026-09-23 08:56 EDT: "the fix needs the frame on an unmasked
+   wrapper"): the frame's fill, ring and focus live on .bk-frame, outside the mask, so all four edges stay at every scroll position */
+.b4 .bk-frame{position:relative;display:flex;flex-direction:column;min-height:0;border-radius:var(--rad-3);background:var(--sunk)}
+.b4 .bk-frame::after{content:"";position:absolute;inset:0;z-index:3;border-radius:inherit;box-shadow:inset 0 0 0 1px var(--rule2);pointer-events:none}
+.b4 .bk-frame > .pb-edwrap{background:transparent;box-shadow:none!important;border-radius:inherit}
+.b4 .bk-frame:focus-within{box-shadow:0 0 0 5px color-mix(in srgb,var(--staged) 16%,transparent)}
+.b4 .bk-frame:focus-within::after{box-shadow:inset 0 0 0 1px var(--staged)}
+
+/* K3 · the other chip families the class sweep listed — History's and Repairs' filters, Repairs' view pills, Compare's build keys, Export's
+   build numbers — take the same numbers (resting hover 9% and the full ring, pressed 16%, pressed + hover 24%); each keeps its own ink */
+.b4 .b3-rv.warn{--c:var(--warn)}
+.b4 .b3-rv.ok{--c:var(--ok)}
+.b4 :is(.b3-fc:not(.none), .b3-rv, .cx-k, .b3-xt-c):not([aria-pressed=true]):not([aria-checked=true]):not(.on):not(:disabled):hover{background:color-mix(in srgb,var(--c) 9%,transparent)!important;box-shadow:inset 0 0 0 1px var(--c)!important}
+.b4 :is(.b3-fc, .b3-rv, .cx-k, .b3-xt-c):is([aria-pressed=true],[aria-checked=true],.on){background:color-mix(in srgb,var(--c) 16%,transparent)!important;box-shadow:inset 0 0 0 1px var(--c)!important}
+.b4 :is(.b3-fc, .b3-rv, .cx-k, .b3-xt-c):is([aria-pressed=true],[aria-checked=true],.on):hover{background:color-mix(in srgb,var(--c) 24%,transparent)!important}
+/* the post drawer's body scrolls with the board fade (b3/fady.js attaches it) */
+.b4 .drawer.b1 .dw-b{-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%);mask-image:linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)}
+
+/* 2026-09-23 18:33 EDT · the discard question, from his nine points: nothing hand-made. Its ground is the drawer's own mesh (b4.css, the drawer rule's selector list)
+   and its lift the selection bar's shadow (b4.css, the same selector list); the weapons are the edit header's .b3-sc chips; Keep editing is Cancel's
+   .b3-btn2 with an icon; Discard is the board's fill button (.b3-btn2.go) with the delete hue in its --b3-fill. No reason line, no key hints, no edge bar. */
+@keyframes b4-cf-in{from{opacity:0;transform:translateY(6px) scale(.98)}}
+.b4 .drawer .dw-f:has(.b4-ask){left:var(--s5);grid-template-columns:1fr}
+.b4 .drawer .dw-f:has(> .b4-ask){display:block!important}  /* Bulk and Edit's footer grid has two auto columns packed to the end, which left the question 64px short */
+.b4 .b4-ask{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-rows:auto auto;align-items:center;gap:9px 10px;padding:14px 14px 14px 18px;border-radius:14px;animation:b4-cf-in 220ms cubic-bezier(.32,.72,0,1) both}
+@media (prefers-reduced-motion:reduce){.b4 .b4-ask{animation:none}}
+.b4 .b4-ask-t{display:contents}  /* the title, the chips and both buttons share one grid, so the chip row can run under Keep editing */
+.b4 .b4-ask-t > b{grid-area:1/1/2/2;min-width:0;font:600 15px/1.2 var(--ui);color:var(--ink)}
+.b4 .b4-ask > .b3-btn2{grid-row:1/3;align-self:center}
+.b4 .b4-ask > .b4-ask-keep{grid-column:2;position:relative;z-index:1}
+.b4 .b4-ask > .b3-btn2.go{grid-column:3}
+.b4 .b4-ask-cs{grid-area:2/1/3/3;display:flex;gap:6px;min-width:0;overflow:hidden}  /* spans Keep editing's column, underneath it */
+/* the board's own eased fade (fady's .3 / .78 stops), 128px deep (72px left a solid last chip and a stray sliver), reaching nothing at Keep editing's edge: the button's ground is 85% opaque, so a chip
+   must be gone before it passes under it, or it ghosts through */
+.b4 .b4-ask-cs[data-over="1"]{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - var(--kw,0px) - 128px),rgb(0 0 0/.78) calc(100% - var(--kw,0px) - 102.4px),rgb(0 0 0/.3) calc(100% - var(--kw,0px) - 57.6px),rgb(0 0 0/0) calc(100% - var(--kw,0px)));mask-image:linear-gradient(90deg,#000 calc(100% - var(--kw,0px) - 128px),rgb(0 0 0/.78) calc(100% - var(--kw,0px) - 102.4px),rgb(0 0 0/.3) calc(100% - var(--kw,0px) - 57.6px),rgb(0 0 0/0) calc(100% - var(--kw,0px)))}
+.b4 .b4-ask-cs .b3-sc{height:28px;padding:0 12px 0 11px}  /* the chip's right padding makes room for its ×, which has nothing to remove here */
+.b4 .b3-btn2.go.dang{--b3-fill:var(--del);color:var(--on-ok);background:var(--b3-fill);box-shadow:none}
+.b4 .b4-ask .b3-btn2 .ic{width:14px;height:14px}
+.b4 .drawer:has(.b4-ask) .dw-b{opacity:.5;pointer-events:none;transition:opacity .2s}
+
+/* v16 fix (his catch, 2026-09-23 16:22 EDT: "the buttons are overlapping onto the form"): the Stage reason spans the footer grid, and a longer reason
+   ("Card 2 needs an attachment · Card 3 needs a weapon") widened both button columns until Cancel sat over the form column. The reason now adds
+   nothing to the grid's width (width:0, min-width:100%) and wraps inside it, so the footer never widens past its column. */
+
+/* ══ v17: his intake of 2026-09-23 20:15–23:13 EDT (intake log § "v17 intake round"), by class. Written 2026-09-24 10:05 EDT. ═════════════════════════════ */
+/* A · ink alignment: a label or heading beside a chip centres by its trimmed cap ink, never a pixel nudge (items 1, 2) */
+.b4 .f-lab label,.b4 .f-h > span:first-child,.b4 .f-rl{text-box:trim-both cap alphabetic}
+.b4 .f-lab label{margin:0}  /* the portal's global `label{margin-bottom:5px}` pushed every form label 2.5px above its chip's centre (measured) */
+.b4 .f-h{align-items:center}
+/* the Label field's build number: a cell in the field's own ground, tinted in the category's hue, no floating divider (item 4) */
+.b4 .f-bno{align-self:stretch;display:flex;align-items:center;gap:8px;margin:1px 0 1px 1px;padding:0 14px 0 12px;border-right:0;border-radius:calc(var(--fld-rad) - 1px) 0 0 calc(var(--fld-rad) - 1px);background:color-mix(in srgb,var(--f-hue,var(--ink3)) 10%,transparent);box-shadow:inset -1px 0 0 color-mix(in srgb,var(--f-hue,var(--ink3)) 22%,transparent)}
+.b4 .f-bno small{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb,var(--f-hue,var(--ink3)) 45%,var(--ink3));text-box:trim-both cap alphabetic}
+.b4 .f-bno b{font:600 14px/var(--lh-1) var(--data);color:var(--f-hue,var(--ink));text-box:trim-both cap alphabetic}
+html[data-b3-f2=c] .b4 .f-bno{margin-bottom:3px}
+/* B · every picker list: Compare's empty-state ground, no dots, the manifest's tag and count chip (items 8–11, 13) */
+/* his 10:15 EDT ask: breathing room between the field and its list. The field's focus glow is 5px, so the list opens 5px past it, never on it */
+.b4 .f-menu{top:calc(100% + 10px)}
+.b4 .f-pick .f-menu{position:fixed}   /* placed by the Picker from its field (b4/form.js), so no scrolling column can clip it */
+.b4 .f-pick.up .f-menu{top:auto;bottom:calc(100% + 10px)}
+.b4 .f-menu{border-radius:12px;background:color-mix(in srgb,#04070A 40%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent),0 22px 44px -14px rgba(0,0,0,.75),0 6px 14px -6px rgba(0,0,0,.5)}
+.b4 .f-menu li{min-height:44px;gap:10px;padding:0 10px;border-radius:8px;font:600 14px/1 var(--ui);color:var(--ink)}
+.b4 .f-menu :is(.f-ol,.f-om){text-box:trim-both cap alphabetic}
+.b4 .f-menu :is(.f-ol,.f-om){padding-block:4px;margin-block:-4px}  /* a trimmed box clips what overshoots its cap height once it hides overflow: descenders ('Agency') and figures ('.50 GS') alike */  /* the name ellipsizes (overflow:hidden), so its trimmed box needs room for descenders: 'Agency', 'Gauge' lost their tails */
+.b4 .f-menu .f-om{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--c,var(--ink3))}
+.b4 .f-menu li{text-align:left}   /* 2026-09-29 13:20 EDT (his V40 class F): a list owns its alignment. The landing centred its words, the list inherited it, and every category floated mid-row */
+.b4 .f-menu .f-oc{flex:none;margin-left:auto;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c,var(--ink3)) 34%,transparent)}
+.b4 .f-menu .f-ol.f-tag{font:600 12px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
+/* a stored image's row carries three names (the key, its weapon, its build): two lines, the key over the weapon and the build chip, so none is cut */
+.b4 .f-menu li:has(.f-thumb){display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;grid-template-areas:'th k tk' 'th m tk';column-gap:12px;row-gap:4px;min-height:52px;padding-block:9px}  /* his 10:24 EDT: the key sits a little closer to its weapon and build */
+.b4 .f-menu li:has(.f-thumb) .f-thumb{grid-area:th;align-self:center;height:34px;width:48px}
+.b4 .f-menu li:has(.f-thumb) .f-ol{grid-area:k;align-self:end}
+.b4 .f-menu li:has(.f-thumb) .f-om{grid-area:m;align-self:center;justify-self:start}
+.b4 .f-menu li:has(.f-thumb) .f-oc{grid-area:m;justify-self:end;align-self:center;margin-left:0}
+.b4 .f-menu li:has(.f-thumb) .f-tick{grid-area:tk;align-self:center}
+.b4 .f-catpick .f-in{font:600 12px/42px var(--data)!important;letter-spacing:.14em;text-transform:uppercase;color:var(--c)!important}
+/* C · one recipe for every pressed toggle, segment or chip: the hue at 24% into the ground, a 66% ring, the ink 26% into white; 32% under the
+   pointer; a resting hover washes 11% (item 15). A chip's hue is its own --c: the realm's, a category's, a mode's (item 17). */
+.b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed=true],[aria-pressed=mixed]), .b4 .bk-fl button[aria-checked=true]{background:color-mix(in srgb,var(--c) 24%,var(--sunk))!important;border-color:color-mix(in srgb,var(--c) 66%,transparent)!important;box-shadow:none!important;color:color-mix(in srgb,var(--c) 26%,white)!important}
+.b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed=true],[aria-pressed=mixed]):hover, .b4 .bk-fl button[aria-checked=true]:hover{background:color-mix(in srgb,var(--c) 32%,var(--sunk))!important}
+.b4 :is(.mt-grp .chip, .chip.incchip, .bk-fl button, .b3-xt-all, .chip.topic):not([aria-pressed=true]):not([aria-pressed=mixed]):not([aria-checked=true]):not(:disabled):hover{background:color-mix(in srgb,var(--c) 11%,transparent)!important;border-color:color-mix(in srgb,var(--c) 40%,transparent)!important;color:var(--ink)!important;box-shadow:none!important}
+/* D · Compare's shared attachment is the manifest's slot chip: its slot name in the slot's colour (item 14) */
+.b4 .cx-same .cx-sv.wg-at{height:28px;gap:8px;padding:0 10px;color:var(--ink)}  /* v20 (2026-09-24 16:39 EDT): the manifest chip's 28px and 12px, not Compare's own 26 / 12.5 */
+/* E · DMZ: the range is the tier's second row, in the picked tier's colour (item 6) */
+.b4 .f-tgrp{display:grid;justify-self:start;border-radius:var(--fld-rad);background:color-mix(in srgb,#04070A 45%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)}
+.b4 .f-tgrp > .f-tiers{background:none;box-shadow:none}
+.b4 .f-trng{display:flex;align-items:center;gap:6px;padding:4px 4px 4px 12px;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ink) 8%,transparent)}
+.b4 .f-tat{margin-right:4px;font:500 12px/1 var(--ui);color:var(--ink3)}
+.b4 .f-rng{display:flex;gap:2px}
+.b4 .f-rng button{height:30px;padding:0 12px;border:0;border-radius:6px;background:none;font:600 12.5px/1 var(--ui);color:var(--ink3);cursor:pointer;transition:background-color .15s,box-shadow .15s,color .15s}
+.b4 .f-rng button:hover{color:var(--ink);background:color-mix(in srgb,var(--tc,var(--ink3)) 9%,transparent)}
+.b4 .f-rng button[aria-checked=true]{color:var(--ink);background:color-mix(in srgb,var(--tc,var(--ink3)) 16%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc,var(--ink3)) 66%,transparent)}
+.b4 .f-rng button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.b4 .f-tgrp:has(.f-tier[aria-checked=true] .b3-bdg[data-t=best]){--tc:#F2C230}
+html[data-b3-p1=a] .b4 .f-tgrp:has(.f-tier[aria-checked=true] .b3-bdg[data-t=top3]){--tc:#3FD6B5}
+html[data-b3-p1=a] .b4 .f-tgrp:has(.f-tier[aria-checked=true] .b3-bdg[data-t=top5]){--tc:#A98BFF}
+html[data-b3-p1=b] .b4 .f-tgrp:has(.f-tier[aria-checked=true] .b3-bdg[data-t=top3]){--tc:#CAD5DF}
+html[data-b3-p1=b] .b4 .f-tgrp:has(.f-tier[aria-checked=true] .b3-bdg[data-t=top5]){--tc:#8499AD}
+html[data-b3-p1=c] .b4 .f-tgrp:has(.f-tier[aria-checked=true] .b3-bdg[data-t^=top]){--tc:#F2C230}
+/* the image well: the empty tile wears the manifest's no-image mark in its warn ink; the drop line never wraps, and says less when narrow (item 7) */
+.b4 .f-shot:not(.has) .f-empty .ic{color:var(--warn-ink)}
+.b4 .f-drop{container:f-drop / inline-size}
+.b4 .f-drop > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.b4 .f-drop .f-ds{display:none}
+@container f-drop (max-width:242px){.b4 .f-drop .f-dl{display:none}.b4 .f-drop .f-ds{display:inline}}
+/* F · the Stage blocker (his item 3; 10:48 EDT "why create a brand new container"): the board's hint container (.b3-hc, its outline, arc and
+   reveal) in the Never chip's warn colours, with its glow in the same tint */
+.b3-hc.t-warn{--pcbg:color-mix(in srgb,var(--warn) 12%,var(--desk));--pcb:color-mix(in srgb,var(--warn) 45%,var(--desk))}
+.b3-hc.t-warn b{color:var(--warn-ink)}
+.b3-hc.t-warn .b3-pc-edge path.glow{stroke:color-mix(in srgb,var(--warn) 16%,transparent)}
+/* G · the rename field (his items 18, 10:20 and 10:29 EDT; his pick at 10:34 EDT: A · ghost icons). While editing, the chip is a typing field like every
+   other: the board's focus glow (a 1px edge and a 5px halo at 16%), in its own --ok hue. Its × and ✓ are plain glyphs inside the field's right end,
+   16px targets (3px of air to the field's edge on every side of a 22px chip) with no fill at rest: × grey, ✓ green; a soft fill in their own colour under the pointer. */
+.b4 :is(.b3-xf,.exs-i) .b3-xf-fn.editing{padding-right:3px!important;color:var(--ink);background:color-mix(in srgb,var(--ok) 11%,var(--sunk))!important;box-shadow:inset 0 0 0 1px var(--ok),0 0 0 5px color-mix(in srgb,var(--ok) 16%,transparent)!important}
+.b4 :is(.b3-xf,.exs-i) .b3-xf-fn.editing input:not(#_){flex:1 1 auto;min-width:0;caret-color:var(--ok)}
+.b4 :is(.b3-xf,.exs-i) .b3-xf-fn.editing :is(.b3-xf-ext,.b3-xf-fnb){flex:none}
+.b4 .b3-xf-fnb{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:0;box-shadow:none}
+.b4 .b3-xf-fnb button{all:unset;box-sizing:border-box;display:grid;place-items:center;width:16px;height:16px;border-radius:4px;cursor:pointer;transition:background-color .15s,color .15s}
+.b4 :is(.b3-xf,.exs-i) .b3-xf-fn.editing .b3-xf-fnb .ic{width:12px;height:12px;margin:0;display:block;color:inherit!important;stroke:currentColor;stroke-width:2.4}  /* board.css gives every .ic in the chip the pencil's 7px left margin and an --ok tint: both pushed and recoloured these glyphs */
+.b4 .b3-xf-fnb .b3-xf-no{color:var(--ink3)}
+.b4 .b3-xf-fnb .b3-xf-no:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.b4 .b3-xf-fnb .b3-xf-ok{color:var(--ok)}
+.b4 .b3-xf-fnb .b3-xf-ok:hover{color:color-mix(in srgb,var(--ok) 70%,white);background:color-mix(in srgb,var(--ok) 18%,transparent)}
+.b4 .b3-xf-fnb button:active{transform:scale(.92)}
+.b4 .exs-i .b3-xf-fnb button{width:18px;height:18px}  /* the landing's chip is 24px: the same 3px of air */
+.b4 .b3-xf-fnb button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.b4 :is(.b3-xf,.exs-i) .b3-xf-fn.editing input::selection{background:color-mix(in srgb,var(--ok) 30%,transparent)}
+/* the file text's × sits on its line, never above it (item 16) */
+.b4 .b3-xt-rm{top:0;height:24px;width:28px}  /* exactly its 22px line */
+/* H · ONE focus for every typing field (his 10:19 EDT "work the class"): the swept outliers were the bare search inputs (manifest, Export, queue,
+   Broadcast), which drew only the halo. Every text input and textarea that draws its own edge now takes the gold edge and its 5px halo;
+   inputs inside a shell that draws the focus (.f-fld's data-bare, the rename chip, the Bulk editor) are left to their shell. */
+.b4 :is(input:not([type]),input[type=text],input[type=search],input[type=url],textarea):not([data-bare]):not(.b3-xf-fn input):not(.pb-edwrap textarea):not(.bk-frame textarea):focus{outline:0!important;border-color:var(--staged)!important;box-shadow:inset 0 0 0 1px var(--staged),0 0 0 5px color-mix(in srgb,var(--staged) 16%,transparent)!important}
+
+/* ══ v19: his intake of 2026-09-24 11:46–13:43 EDT (intake log § "v19 intake round"), by class. Written 2026-09-24 14:00 EDT. ══════════════════════ */
+/* 1 · THE BADGE RUN (items 5, 6): no dot between badges; a run that meets its box's edge wraps whole badges, a row apart by the same 6px */
+.b3-bdgs{flex-wrap:wrap;row-gap:6px}
+.b3-bdgs .sep{display:none}
+/* 2 · CAPABLE (item 8) — TOP 4's design, colours and rim light, its mark a thumbs-up; TOP 4 itself is retired (item 7) */
+html[data-b3-p1=a] .b3-bdg[data-t=capable]{--tc:#5B9BFF}
+html[data-b3-p1=b] .b3-bdg[data-t=capable]{--tc:#D69763}
+html[data-b3-p1=c] .b3-bdg[data-t=capable]{--tc:#F2C230;color:#E9CF79;background:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,#F2C230 60%,transparent)}
+html[data-b3-p1=a] .b4 .f-tier:has(.b3-bdg[data-t=capable]){--tc:#5B9BFF}
+html[data-b3-p1=b] .b4 .f-tier:has(.b3-bdg[data-t=capable]){--tc:#D69763}
+html[data-b3-p1=a] .b4 .f-tgrp:has(.f-tier[aria-checked=true] .b3-bdg[data-t=capable]){--tc:#5B9BFF}
+html[data-b3-p1=b] .b4 .f-tgrp:has(.f-tier[aria-checked=true] .b3-bdg[data-t=capable]){--tc:#D69763}
+.b4 .lc-badges span[data-k=capable]{--tc:#5B9BFF}
+.bgrp.t-capable{--bc-dim:.86}
+.wg-tag[data-t=capable]{--tc:color-mix(in srgb,var(--info) 78%,var(--ink2))}
+/* its rim light, copied from the placing badges' rule (board.css) so CAPABLE moves as TOP 4 did */
+@media (prefers-reduced-motion:no-preference){.b3-bdgs.in .b3-bdg[data-t=capable]::after{display:none;content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;padding:1.6px;
+    background:conic-gradient(from var(--b3-ang),transparent 0 38%,color-mix(in srgb,var(--tc) 34%,transparent) 48%,color-mix(in srgb,#fff 72%,var(--tc)) 56%,color-mix(in srgb,var(--tc) 34%,transparent) 64%,transparent 74%,color-mix(in srgb,var(--tc) 26%,transparent) 88%,transparent 96%);
+    -webkit-mask-image:linear-gradient(#000 0 0),linear-gradient(#000 0 0);mask-image:linear-gradient(#000 0 0),linear-gradient(#000 0 0);
+    -webkit-mask-clip:content-box,border-box;mask-clip:content-box,border-box;
+    -webkit-mask-composite:xor;mask-composite:exclude;}}
+@media (prefers-reduced-motion:no-preference){.b3-bdgs.in .b3-bdg[data-t=capable] .b3-rim{display:block;position:absolute;inset:0;border-radius:inherit;pointer-events:none;padding:1.6px;
+    -webkit-mask-image:linear-gradient(#000 0 0),linear-gradient(#000 0 0);mask-image:linear-gradient(#000 0 0),linear-gradient(#000 0 0);
+    -webkit-mask-clip:content-box,border-box;mask-clip:content-box,border-box;-webkit-mask-composite:xor;mask-composite:exclude}}
+@media (prefers-reduced-motion:no-preference){.b3-bdgs.in .b3-bdg[data-t=capable] .b3-rim > i{position:absolute;left:50%;top:50%;width:300%;aspect-ratio:1;will-change:transform;
+    background:conic-gradient(transparent 0 38%,color-mix(in srgb,var(--tc) 34%,transparent) 48%,color-mix(in srgb,#fff 72%,var(--tc)) 56%,color-mix(in srgb,var(--tc) 34%,transparent) 64%,transparent 74%,color-mix(in srgb,var(--tc) 26%,transparent) 88%,transparent 96%);
+    animation:b3rimr 5.4s linear infinite;animation-delay:calc(var(--ph,0) * -5.4s)}}
+/* 3 · ASS (item 9) — the third grade: umber, between BEST's gold and the warn orange and clear of both, its mark drawn on Lucide's grid. His pick (2026-09-24 22:33 EDT):
+   A · stink lines; it runs only while the badge is on screen (.in) and never under reduced motion. */
+.b3-bdg[data-k=ass]{--tc:#C08A55;position:relative}
+.b4 .lc-badges span[data-k=ass]{--tc:#C08A55}
+.b3-ass{display:none}
+/* v20 (2026-09-24 15:21 EDT, his item 35 — "there's no 'ambiance' to the design"): ASS takes the grade family's STACK, not only its motion. META
+   and TOXIC each carry a resting light (a lit top edge and a glow in their own hue, board.css) and a layer that lives in the plate (META's
+   strike ring, TOXIC's mesh). ASS gets the same in umber: the resting light below, on every option; then per option a haze in the
+   plate, air round the mark and a glow on the moving parts. `isolation` lets the haze sit between the plate's tint and its word. */
+.b3-bdg[data-k=ass]{isolation:isolate;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 50%,transparent),inset 0 1px 0 color-mix(in srgb,#fff 12%,transparent),
+  0 0 14px -6px color-mix(in srgb,var(--tc) 60%,transparent)}
+.b3-bdg[data-k=ass]::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;opacity:0}
+@media (prefers-reduced-motion:no-preference){
+  /* A · stink lines: three wavy strokes rise off the mark and fade, staggered a third of the loop apart, on the badge's own phase */
+  .b3-bdgs.in .b3-ass{display:block;position:absolute;left:5px;top:-6px;width:15px;height:12px;pointer-events:none}
+  .b3-ass > i{position:absolute;bottom:0;width:4px;height:10px;opacity:0;background:color-mix(in srgb,var(--tc) 70%,white);
+    -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat;
+            mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat;
+    animation:b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite;animation-delay:calc(var(--ph,0) * -2.7s + var(--d,0s))}
+  .b3-ass > i:nth-child(1){left:1px;--d:0s}
+  .b3-ass > i:nth-child(2){left:5.5px;--d:-.9s;height:11px}
+  .b3-ass > i:nth-child(3){left:10px;--d:-1.8s}
+  /* A · the fug: a warm haze rises from the mark's foot inside the plate, a cloud drifts up above the lines, and the lines glow */
+  .b3-bdgs.in .b3-bdg[data-k=ass]::before{opacity:1;background:radial-gradient(70% 120% at 30% 115%,color-mix(in srgb,var(--tc) 42%,transparent),transparent 72%);
+    animation:b3-fug 2.7s cubic-bezier(.45,0,.55,1) infinite;animation-delay:calc(var(--ph,0) * -2.7s)}
+  .b3-bdgs.in .b3-ass{filter:drop-shadow(0 0 1.5px color-mix(in srgb,var(--tc) 80%,transparent)) drop-shadow(0 0 4px color-mix(in srgb,var(--tc) 45%,transparent))}
+  .b3-bdgs.in .b3-ass::before{content:"";position:absolute;left:-6px;top:-7px;width:27px;height:15px;border-radius:50%;pointer-events:none;
+    background:radial-gradient(closest-side,color-mix(in srgb,var(--tc) 34%,transparent),transparent);opacity:0;
+    animation:b3-fume 2.7s cubic-bezier(.45,0,.55,1) infinite;animation-delay:calc(var(--ph,0) * -2.7s - .45s)}
+  @keyframes b3-fug{0%,100%{opacity:.45;transform:translateY(2px)}50%{opacity:1;transform:translateY(-1px)}}
+  @keyframes b3-fume{0%{opacity:0;transform:translateY(5px) scale(.7)}40%{opacity:.8}100%{opacity:0;transform:translateY(-4px) scale(1.2)}}
+  @keyframes b3-stink{0%{opacity:0;transform:translateY(6px) scaleY(.55)}28%{opacity:.9}72%{opacity:.45}100%{opacity:0;transform:translateY(-4px) scaleY(1.08)}}
+}
+
+/* v20 (his 15:48 EDT): "revert the inline label to its original format" — only Grade and Tier (and the attachment slots) take the label column;
+   every other row is v18's label-over-field again */
+/* 4 · ONE ROW GRAMMAR for the build form (items 11, 12, 22): every field's label in one label column, the control beside it; a row drops its
+   label above only when its control cannot fit the column (a container query, so a narrow card degrades instead of overflowing) */
+.b4 .f-card-b{--f-lw:96px;container:f-card / inline-size}
+.b4 .f-sec{gap:10px}
+.b4 .f-sec > .f-h{margin-bottom:4px}
+.b4 .f-sec > .f-row.f-rank, .b4 .f-att{display:grid;grid-template-columns:var(--f-lw) minmax(0,1fr);align-items:center;column-gap:14px;row-gap:8px}
+.b4 .f-atts{gap:10px}
+.b4 .f-lab{display:flex;align-items:center;gap:8px;min-height:24px;min-width:0}
+.b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot{font:500 14px/var(--lh-1) var(--ui);color:var(--ink2);text-box:trim-both cap alphabetic;white-space:nowrap}
+.b4 .f-slot{display:flex;align-items:center;gap:8px;min-width:0}
+.b4 .f-slot[style]{color:color-mix(in srgb,var(--sl) 88%,white)}  /* his item 20: the slot's name in its own colour */
+.b4 .f-bdgs, .b4 .f-tgrp{justify-self:start}
+/* v20 (his 21:29 EDT: "you have enough space in the 940px width drawer to make the badges inline with the label"): Grade and Tier sit beside their label
+   whenever their controls fit and drop under it only when they do not — a wrapping row decided by the controls' own width, not a guessed card width
+   (the 560px container query stacked them at 940 with room to spare once the label column fit its widest label) */
+.b4 .f-sec > .f-row.f-rank{display:flex;flex-wrap:wrap;align-items:center}
+.b4 .f-sec > .f-row.f-rank > .f-lab{flex:0 0 var(--f-lw)}
+.b4 .f-sec > .f-row.f-rank > :last-child{flex:0 1 auto;min-width:0}
+/* Grade and Tier share one layout: when the card is too narrow for the tier track beside the label (96 + 14 + 425px, measured on BEST ASSAULT), both
+   stack together — one inline and one stacked in the same section read as a mistake. A longer category word still wraps only Tier (the flex fallback). */
+@container f-card (max-width:534.98px){ .b4 .f-sec > .f-row.f-rank{display:grid;grid-template-columns:minmax(0,1fr)} }
+/* the check beside a filled required field: the ok tint, an 18px tile, the tick at 11px (his item 22) */
+.b4 .f-okm{flex:none;display:grid;place-items:center;width:18px;height:18px;border-radius:5px;color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 30%,transparent);
+  animation:f-okin .28s cubic-bezier(.2,.9,.3,1.3) both}
+.b4 .f-okm .ic{width:12px;height:12px;stroke-width:2.6}
+@keyframes f-okin{from{opacity:0;transform:scale(.6)}}
+/* 5 · THE CHIP'S FOURTH TONE (item 17): magic — the system did this for you. The board's yellow (--patch, #F2C230; his #F3C231 is one unit from it) */
+.b4 .b4-hint[data-tone=magic]{color:color-mix(in srgb,var(--staged) 82%,white);background:color-mix(in srgb,var(--staged) 11%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--staged) 42%,transparent)}
+.b4 .b4-hint .ic{stroke-width:2.2}
+/* a slot the code filled: the wand alone, in the same yellow (item 18); its field is a plain field again (item 21) */
+.b4 .f-wand{display:grid;place-items:center;flex:none;color:var(--staged);animation:f-okin .32s cubic-bezier(.2,.9,.3,1.3) both}
+.b4 .f-wand .ic{width:12px;height:12px}
+.b4 .f-att.auto .f-fld{--f-edge:color-mix(in srgb,var(--ink) 12%,transparent);animation:none}
+.b4 .f-att.auto:nth-child(2) .f-wand{animation-delay:50ms}.b4 .f-att.auto:nth-child(3) .f-wand{animation-delay:100ms}.b4 .f-att.auto:nth-child(4) .f-wand{animation-delay:150ms}.b4 .f-att.auto:nth-child(5) .f-wand{animation-delay:200ms}
+@media (prefers-reduced-motion:reduce){.b4 :is(.f-okm,.f-wand){animation:none}}
+/* 6 · THE IMAGE WELL (items 14–16): the tile takes the closest set shape to its image, inside a fixed cell so nothing beside it moves; the key's
+   state sits inside the key field at its right end; every source can be cleared with the field's own × */
+.b4 .f-media{align-items:start}
+.b4 .f-mcol{align-self:start}  /* the controls never move: a tall (portrait) tile grows the well below them, never pushes them down */
+.b4 .f-shotbox{align-self:stretch;display:grid;place-items:center;min-height:0;container:f-shot / inline-size}
+.b4 .f-shot{--ar:4/3;width:min(100cqi, calc(100cqi * (var(--ar))));max-height:100cqi;aspect-ratio:var(--ar);min-height:0!important;align-self:center;
+  transition:width .32s cubic-bezier(.32,.72,0,1),aspect-ratio .32s cubic-bezier(.32,.72,0,1)}
+.b4 .f-shot img{width:100%;height:100%;object-fit:cover;animation:f-okin .3s ease both}
+.b4 .f-kst{flex:none;display:inline-flex;align-items:center;gap:4px;height:26px;margin-right:4px;padding:0 8px;border-radius:5px;font:600 11px/1 var(--ui);white-space:nowrap;
+  color:var(--ink3);background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.b4 .f-kst .ic{width:12px;height:12px;stroke-width:2.4}
+.b4 .f-kst[data-tone=ok]{color:color-mix(in srgb,var(--ok) 82%,white);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.b4 .f-kst[data-tone=warn]{color:var(--warn-ink);background:color-mix(in srgb,var(--warn) 13%,transparent)}
+.b4 .f-key.t-warn{--f-edge:color-mix(in srgb,var(--warn) 45%,transparent)}
+.b4 .f-key .f-in{min-width:0}
+.b4 .f-file .f-clr{margin-left:2px}
+/* 3b · v20 (his item 37): ASS and META / every tier rule each other out, both ways (TOXIC is its own axis). The control that cannot be
+   picked dims past the unpicked look, keeps its tile, and says why on hover. */
+.b4 :is(.f-bt,.f-tier):disabled{cursor:not-allowed}
+.b4 :is(.f-bt,.f-tier):disabled .b3-bdgs, .b4 :is(.f-bt,.f-tier):disabled:hover .b3-bdgs{opacity:.18;filter:grayscale(.6)}
+.b4 .f-bt:disabled .cb{opacity:.3}
+.b4 .f-bt:disabled:hover{box-shadow:none;background:color-mix(in srgb,#04070A 40%,var(--sunk))}
+.b4 .f-tier:disabled:hover{background:none}
+.b4 :is(.f-bt,.f-tier):disabled:active{transform:none}
+/* 4b · v20 (2026-09-24 15:30 EDT): the span form of a row label (.f-rl — Grade and Tier; the others are <label>) drew its ink 0.5px low at 2x and 4x with
+   an identical computed style, an identical box, no scroll and no compositing difference (all measured). Cause unexplained; corrected on the
+   word by transform, the board's rule for a word, and measured 0.00 after. */
+.b4 .f-lab .f-rl{transform:none}
+/* v20 (2026-09-24 15:52 EDT, his "correct the spacing between badges and grade, matching build and weapon"): a heading with a chip was 24px tall and one
+   without was 10.5, so the gap to the first label ran 21.5 under Build and 30 under Badges. Every heading holds the chip's height. */
+.b4 .f-h{min-height:24px}
+/* No tier's word sat 1px above its button's centre, beside chips whose words are centred (row-by-row ink at 4x): trim its box to cap and baseline */
+/* No tier: a <button> already centres its own content, so a padding-top of half the leftover space centred the words a second time and
+   sat them 12px low (Harkirat 2026-10-05 19:27 EDT: "that button is literally broken"). The trimmed words centre on the button alone. */
+.b4 .f-tiers .f-tier.none{display:inline-block;height:32px;box-sizing:border-box;padding-top:0;padding-bottom:0;text-box:trim-both cap alphabetic}
+/* the Optional chip: neutral, on every optional field while it is empty — the counterpart of the warn "required" chips */
+.b4 .f-lab .b4-hint{margin-left:2px}
+/* v20: an empty category word (a DMZ tier: "BEST" has no "ASSAULT") still took the badge's 5px gap, so the chip's right inset ran 6px past its left.
+   Measured in the DMZ tier track; it is the badge's rule, so it holds wherever a badge prints no word. */
+.b3-bdg em:empty{display:none}
+/* v20: Compare's first column carries a Baseline tag on its name line; the tag stood 1px taller than the line, so that column's badges sat 1.5px under
+   the other four. Every name line now holds the tag's height. */
+.b4 .cx-h .cx-hn{min-height:18px}
+/* 7 · BEFORE STAGING (items 23–25): under the preview, one line per build and what it needs; each line jumps to the field that blocks it */
+/* ANCHOR (v20, his item 34 — "literally floating in the middle of no where"): the side column's FOOT, the line above Cancel and Stage, in
+   every state. The column is a flex scroller: a short preview leaves the panel on the foot (margin-top:auto); a long one scrolls under it
+   while it holds the same line (sticky at 0: Chrome insets a sticky box from the scroller's CONTENT box, so --f-foot already holds it — a
+   78px inset on top of 78px padding is what left it 120px over the buttons). --f-foot is 52 = the 36px the scroller runs past the top of
+   Cancel and Stage + a 16px gap to them. */
+.b4 .f-stage{position:sticky;bottom:0;z-index:2;margin-top:auto;padding:12px;border-radius:12px;background:color-mix(in srgb,#04070A 42%,var(--sunk));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent),0 -18px 30px -18px rgba(0,0,0,.7)}
+.b4 .f-stage h5{margin:0 0 10px;font:600 11px/var(--lh-1) var(--data);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.b4 .f-stage ul{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.b4 .f-st{display:grid;grid-template-columns:20px minmax(0,1fr);align-items:center;column-gap:10px;row-gap:4px;width:100%;min-height:40px;padding:8px 10px;border:0;border-radius:9px;background:color-mix(in srgb,#04070A 30%,var(--sunk));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 9%,transparent);cursor:pointer;text-align:left;transition:box-shadow .15s,background-color .15s}
+.b4 .f-st:hover{background:color-mix(in srgb,var(--f-ch,var(--ink3)) 8%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--f-ch,var(--ink3)) 40%,transparent)}
+.b4 .f-st.on{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--f-ch,var(--ink3)) 55%,transparent)}
+.b4 .f-st:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.b4 .f-st .b3-xt-pm{margin:0}
+/* v20 (2026-09-24 15:42 EDT, his "you're wasting so much horizontal space"): the mark leads as a checklist column; mode, weapon and build read as one line
+   beside it, and the need sits under that line on the same edge, so no row keeps a lone icon column at its far right. */
+.b4 .f-stn{display:flex;align-items:center;gap:8px;min-width:0;height:20px}
+.b4 .f-stn b{font:600 14px/var(--lh-1) var(--ui);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b4 .f-stn em{font:500 12px/1 var(--ui);font-style:normal;color:var(--ink3);white-space:nowrap}
+.b4 .f-stm{display:grid;place-items:center;width:20px;height:20px;border-radius:6px}
+.b4 .f-stm .ic{width:12px;height:12px;stroke-width:2.5}
+.b4 .f-stm[data-tone=ok]{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 30%,transparent)}
+.b4 .f-stm[data-tone=warn]{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 32%,transparent)}
+.b4 .f-stw{grid-column:2;font:500 12px/round(1.3em, 2px) var(--ui);color:var(--warn-ink)}
+/* 2026-09-27 18:52 EDT — THE SIDE COLUMN'S CLASS, shared by the build drawer and the post drawer (his: "build drawer's side columns... why didn't you check?"): the
+   PREVIEW scrolls (.f-prevsc, behind the board's fade, no native bar), never the column. With the column scrolling and the panel sticky, a tall preview
+   ran on under Before staging and behind Cancel / Stage — measured in Add · three (656px column, 689px of content). The panel sits under the preview,
+   56px off the column's foot (16px over the buttons). */
+.b4 .dw-b .f-add > .f-side{align-self:stretch;position:static;display:flex;flex-direction:column;min-height:0;overflow:hidden;padding-bottom:56px}
+.b4 .f-side .f-prev{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;margin-bottom:20px}
+.b4 .f-side > .f-stage{flex:none;position:static}
+.b4 :is(.f-prev) > h5{flex:none}
+.b4 .f-prevsc.b3-fady{flex:0 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none}
+.b4 .f-prevsc.b3-fady::-webkit-scrollbar{display:none}
+.b4 .f-side .f-prev:has(.b4-ghostwrap){margin-bottom:0}  /* the empty preview's ghost card fades to nothing at its foot, which is the gap; with 20px more it overran the column by 19px */
+
+/* v20: a line longer than the editor (a pasted image link) ran under the frame's edge, cut mid-character. It wraps now, in the typed layer
+   and the painted layer alike, at the same column — checked by painting the typed layer red over the painted one — and the number stays on the first row. */
+.b4 div.bk .pb-ta, .b4 div.bk .pb-ed{white-space:pre-wrap;overflow-wrap:anywhere}  /* the typed layer's right inset is set where its geometry lives, b4.css .pb-edwrap textarea.pb-ta */
+.b4 div.bk .pb-ed .b3-xt-tx{white-space:pre-wrap;overflow-wrap:anywhere}
+.b4 div.bk .pb-ed .b3-xt-ln{height:auto;min-height:24px}  /* a painted line grows with its wrapped rows, so the lines after it move down as the typed ones do */
+/* 8 · BULK CREATE AND EDIT (items 26–32) ─────────────────────────────────────────────────────────────────────────────────────── */
+/* the editor fills its column and scrolls inside its own frame: nothing it holds can run out under the drawer's floor (item 29) */
+.b4 .bk-edcol{position:relative;display:grid;grid-template-rows:auto minmax(0,1fr);min-height:0;height:100%}
+.b4 div.bk{height:100%;min-height:0;align-items:stretch}
+.b4 .bk-frame{min-height:0;overflow:hidden}
+.b4 .b3-nb .bk-frame > .pb-edwrap{flex:1;min-height:0!important;height:auto}
+.b4 .b3-nb .bk-frame .pb-ta{min-height:100%}
+/* the mode in the editor is the product's mode chip (item 28): its hue as the ink, a 16% fill and a ring, drawn round the typed glyphs without moving them */
+.b4 .bk-md,.b4 .bk-inf{--mc:#FF3B5C;color:var(--mc);font-weight:700;background:none;box-shadow:none;border-radius:0}  /* v20 (his "wtf are those shit mp/dmz chips"): the mode in the editor is a coloured word, like the weapon name beside it — no box drawn round typed text */
+.b4 :is(.bk-md,.bk-inf)[data-arm=DMZ]{--mc:#3DA5F5}
+/* one quiet hint (item 27): the next line you would type, as ghost text in the editor's own face — no box, no dashes */
+.b4 .bk-gh{display:inline;padding:0;outline:0;font:inherit;color:color-mix(in srgb,var(--ink4) 80%,transparent);font-style:normal}
+.b4 .bk-ghost .x-ghost:first-child .bk-gh{color:color-mix(in srgb,var(--ink4) 80%,transparent);outline:0}
+.b4 .bk-ghost .b3-xt-no{opacity:.5}
+/* the empty editor asks you to act (onboard): two ways in, centred in the frame */
+/* 2026-10-04 02:06 EDT (Session 4, R1): the words and the buttons are two boxes. One 6px gap used to space the title, the line under it and the buttons,
+   and a 10px margin on the buttons made their 16. The overlay keeps its top:50% and translateY(-50%): centring it by layout moved the words by a fraction
+   of a pixel (measured, C2 Bulk empty, 6,938px a shot), and a restructure that moves ink by a fraction is the wrong one (the lead, 2026-10-04 01:15 EDT) */
+.b4 .bk-start{position:absolute;left:0;right:0;top:50%;z-index:2;display:grid;justify-items:center;gap:16px;padding:0 24px;transform:translateY(-50%);text-align:center;pointer-events:none}
+.b4 .bk-say{display:grid;justify-items:center;gap:6px}
+.b4 .bk-start b{font:600 14px/round(1.3em, 2px) var(--ui);color:var(--ink)}
+.b4 .bk-say > span{font:500 12px/round(1.4em, 2px) var(--ui);color:var(--ink3)}
+.b4 .bk-start > .bk-acts{display:flex;gap:8px;pointer-events:auto}
+.b4 .bk-start .ic{width:14px;height:14px}
+/* THE FORMAT (item 26): the example itself, in the editor's line model, over the editor; the selection bar's lift, the lists' ground */
+.b4 .bk-fmt{position:absolute;top:44px;left:0;right:0;z-index:30;display:grid;gap:12px;padding:14px 14px 12px;border-radius:12px;
+  background:color-mix(in srgb,#04070A 40%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent),0 22px 44px -16px rgba(0,0,0,.75),0 6px 16px -6px rgba(0,0,0,.55);
+  animation:bk-fmt-in .2s cubic-bezier(.32,.72,0,1) both;transform-origin:top right}
+@keyframes bk-fmt-in{from{opacity:0;transform:translateY(-4px) scale(.985)}}
+@media (prefers-reduced-motion:reduce){.b4 .bk-fmt{animation:none}}
+.b4 .bk-fmt-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.b4 .bk-fmt-h b{font:600 13.5px/1.2 var(--ui);color:var(--ink)}
+.b4 .bk-fmt-h span{font:500 12px/1.3 var(--ui);color:var(--ink3)}
+.b4 .bk-fmt-l{display:grid;margin:0;padding:6px 0;list-style:none;border-radius:8px;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b4 .bk-fmt-l li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;column-gap:12px;height:24px;padding-right:12px}
+.b4 .bk-fmt-n{text-align:right;font:500 11px/1 var(--data);color:var(--ink4)}
+.b4 .bk-fmt-l code{min-width:0;padding:0;background:none;font:500 12px/24px var(--data);color:var(--ink);white-space:pre;overflow:hidden;text-overflow:ellipsis}
+.b4 .bk-fmt-l code b{font-weight:600}
+.b4 .bk-fmt-l code i{font-style:normal;color:var(--ink4)}
+.b4 .bk-fmt-l code em{font-style:normal;color:var(--ink3)}
+.b4 .bk-fmt-l em{font:500 11.5px/1 var(--ui);font-style:normal;color:var(--ink3);white-space:nowrap;text-align:right}
+.b4 .bk-fmt-l li[data-k=hd] > em{color:var(--ink2)}
+.b4 .bk-fmt-l li[data-k=blank] > em{color:var(--ink3);font-style:italic}
+.b4 .bk-fmt-f{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.b4 .bk-fmt-f > span{display:flex;align-items:center;gap:7px;min-width:0;font:500 12px/1.35 var(--ui);color:var(--ink3)}
+.b4 .bk-fmt-f .ic{width:13px;height:13px;flex:none}
+/* the results' head: the filters, and at its end the Ledger / Discord view toggle (item 32) */
+.b4 .bk-rh{display:flex;align-items:center;gap:8px;min-height:32px}
+.b4 .bk-rh .bk-fl{flex:1;min-width:0}
+/* 2026-09-26 16:34 EDT: Bulk's view toggle is the selection bar list's (.b3-sd-vl + .b3-sd-vt) at Bulk's own size — his "everything except the sizing" */
+.b4 .bk-rh > .b3-sd-vl{padding-right:0;margin-right:2px}   /* + the row's 8px gap = the list head's 10.5px label → toggle */
+.b4 .bk-view.b3-sd-vt{flex:none;padding:4px}   /* the old 40px outline: 3px padding + the .seg's 1px border */
+.b4 .bk-view.b3-sd-vt button{height:32px;padding:0 12px;font-size:12px}
+/* the result card: the mode chip first, as everywhere else; no dot beside it (the gutter already carries the build's colour) */
+.b4 .bk-card .bk-ch .b3-xt-pm{margin:0}
+.b4 .bk-card .bk-gut{box-shadow:inset -1px 0 0 color-mix(in srgb,var(--ink) 8%,transparent),inset 3px 0 0 var(--c)}  /* v20: the result card's accent is the editor block's bar — 3px, the category hue at full strength */
+.b4 .bk-msg[data-tone=info] .ic{color:var(--ink3)}
+.b4 .bk-msg[data-tone=info]{color:var(--ink3);font-size:12px}
+.b4 .bk-card .bk-atts .wg-at.bk-unk{outline:1px dashed color-mix(in srgb,var(--warn) 70%,transparent);outline-offset:-1px}
+/* a card's message: its icon beside its first line, the text wrapping under itself, an example below the text (the icon had wrapped alone above a long note) */
+.b4 .bk-msg{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;column-gap:8px;row-gap:6px}
+.b4 .bk-msg .ic{margin-top:2px}
+.b4 .bk-msg code{grid-column:2;justify-self:start}
+/* the Discord view takes the Ledger's column split: at 336px its filters and the view toggle broke onto two rows (item 32) */
+.b4 div.bk[data-f=c]{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
+/* 9 · THE EXPORT HOVER CARD (items 1–4): it floats above the files with the selection bar's lift; it arrives by rising a little and fading in, its
+   content crossfades when the pointer moves to another build, and its height and edge travel together on the drawer's curve */
+.b4 .b3-xt-peek{top:auto;bottom:auto;height:auto;overflow:hidden;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c,var(--rule2)) 45%,transparent),0 22px 44px -16px rgba(0,0,0,.75),0 6px 16px -6px rgba(0,0,0,.55);
+  transform:translateY(6px) scale(.985);transform-origin:bottom center;
+  transition:opacity 160ms cubic-bezier(.23,1,.32,1),transform 240ms cubic-bezier(.2,.9,.3,1),top 240ms cubic-bezier(.32,.72,0,1),bottom 240ms cubic-bezier(.32,.72,0,1)}
+.b4 .b3-xt-peek.on{transform:none}
+.b4 .b3-xt-peek.on > *{animation:b4-pk-x 180ms ease-out both}
+@keyframes b4-pk-x{from{opacity:0}}
+.b4 .b3-xt-pk{flex-wrap:wrap;row-gap:6px}
+.b4 .b3-xt-pk .b3-bdgs{margin-left:auto;justify-content:flex-end}
+@media (prefers-reduced-motion:reduce){.b4 .b3-xt-peek{transition:opacity 120ms linear;transform:none}.b4 .b3-xt-peek.on > *{animation:none}}
+/* the tier track fits a build card's field column too (three cards: it ran 15px past its row) — each option's inset 7 → 5px, No tier's 12 → 10px */
+.b4 .f-tier{padding:0 4px}
+.b4 .f-tier.none{padding:0 6px}
+/* 2026-09-25 00:20 EDT: the board's search boxes (manifest, Broadcast, History, Export) take the field corner too */
+.b4 :is(input,textarea,select){--rad-2:var(--fld-rad)}
+.b4 :is(.pb-step,.pb-th,.pb-num){--rad-2:var(--fld-rad)}  /* the Post drawer's count stepper, and the banner swatch that pairs with its link field */  /* every text field and search box on the board, the Post drawer's included: app.css's input rule (0,4,1 from its :not()s) sets border-radius:var(--rad-2), so re-pointing the token on the field wins without out-weighing it */
+/* 2026-09-25 00:32 EDT: the post drawer's field and label rules above are the drawer's OWN fields — the banner well nests its own (data-bare) inputs and
+   <label> drop zone inside a .dwfield, and the descendant rules drew a second box round its link input and widened the form past its column */
+/* 2026-09-25 01:18 EDT: No tier's side inset 9 → 6. BEST MARKSMAN, the longest tier word, made the track 432px; beside a 96px label and its 14px gap that needs
+   542px of card, and a card among several builds has 537 — so a marksman build's Tier fell under its label. At 6 the track is 426 and fits. */
+/* 2026-09-25 01:20 EDT: the two new claims' mark colours, beside board.css's meta / best / top / toxic — Capable's blue and ASS's umber, the badges' own */
+[data-k=capable]{--mk:#5B9BFF}[data-k=ass]:not(.b3-bdg){--mk:#C08A55}
+.b3-xi-k[data-k=capable] em{color:#5B9BFF}.b3-xc-k[data-k=capable]{--mk:#5B9BFF}.b3-xg-k[data-k=capable]{--mk:#5B9BFF}.b3-xg-k[data-k=ass]{--mk:#C08A55}
+/* 2026-09-25 01:33 EDT — the Bulk / Edit drawer, nitpicked (his "harshly nitpick and sweep the bulk create drawer"). Measured on Bulk · several and Edit 3 builds:
+   the editor's head row was 30px tall and the list's 40, so the two heads sat 5px off one centre line and the editor began 10px above the list;
+   Cancel and Stage sat 4px below both columns' foot (in Add build too); the list ran 35px under Cancel and Stage, so Edit's third card showed
+   through them; and a build with no label kept an empty label box, so its mode chip sat twice as far from the weapon. */
+.b4 div.bk .bk-eh{height:40px;flex:none;align-items:center}  /* flex:none — in Edit the frame's grow shrank it to 36.7 */
+.b4 .drawer.wide:has(.b3-nb) .dw-f{bottom:20px}
+.b4 div.bk .bk-rescol{padding-bottom:56px}
+.b4 .bk-lab:empty{display:none}
+/* 2026-09-25 01:57 EDT (compact-prep sweep): with a DMZ tier picked, the Tier track grows a second row (the range) and the row centred "Tier" on both —
+   19px under the tier options it names. Beside its label (not stacked), the label sits on the track's first row. */
+@container f-card (min-width:535px){ .b4 .f-sec > .f-row.f-rank:has(> .f-tgrp.rng){align-items:flex-start} .b4 .f-sec > .f-row.f-rank:has(> .f-tgrp.rng) > .f-lab{margin-top:9px} }
+/* 2026-09-25 23:19 EDT (his 23:12 EDT, the Modes family) — MODES, the third badge family: HP · S&D · DOM · TDM · FTL · Control. One colour and trim for all six; only the mark differs, and
+   his own SVG marks replace the placeholders (MODE_ICON, b3/armory-parts.js). White, the one hue no other badge wears: META is cyan, TOXIC lime,
+   the tiers gold / teal / violet / blue, ASS umber. The resting light is the grade family's (a lit top edge, a ring, a glow in the hue); the
+   ambiance is the one ASS option B carried and his pick A left unused, ~~centred on the mark~~ → ~~moved onto the word~~ → ~~the capture ping~~ → **the signal, contained (2026-09-26 14:01 EDT, below)**: nothing on the badge moves; a faint ring arrives at the trim from inside. Never under reduced motion.
+   No extra gap before the family: a wrapped run began its second line 4px in (Compare's Build 5 head), and the white already separates it. */
+/* 2026-09-26 17:46 EDT (his: "'Control' isn't in uppercase"): every badge word reads in capitals (META, BEST); the mode family's name is stored as his
+   spec spells it (Control) and set in capitals where it is drawn as a badge */
+.b3-bdg[data-k=mode] .b3-mdw{text-transform:uppercase}
+.b3-bdg[data-k=mode]{--tc:#E4ECF4;position:relative;isolation:isolate;gap:4px;padding:0 8px 0 4px;color:#F6F9FC;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--tc) 9%,transparent),color-mix(in srgb,var(--tc) 4%,transparent));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 40%,transparent),inset 0 1px 0 color-mix(in srgb,#fff 24%,transparent),0 0 14px -6px color-mix(in srgb,var(--tc) 55%,transparent)}
+.b3-bdg[data-k=mode] .b3-mdi{position:relative;display:inline-flex}
+.b3-bdg[data-k=mode] .b3-mdi .ic{width:20px;height:20px}  /* 2026-09-25 23:56 EDT: no glint filter on his marks — a blur on a detailed emblem smears every edge. Nothing on the badge moves; the signal passes behind it */
+.b3-bdg[data-k=mode]::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;opacity:0}
+@media (prefers-reduced-motion:no-preference){
+  /* 2026-09-26 14:01 EDT — THE SIGNAL, CONTAINED. His verdict on the ping that left the plate: the signal-and-radial direction "was a good idea but your
+     execution of it is bad… too prominent and expansive, giving these badges more importance and attention than they require. keep the animation
+     contained inside or near the badge's container/trim/plate". The law is docs/reference/badge-motion.md (laws 1–5, the family table). A Rank
+     Mode claims WHERE the build belongs, and the HUD marks an objective with a signal; so a faint ring grows from the plate's centre BEHIND the
+     mark and the word (z-index -1 in the plate's own stacking context) and ARRIVES at the trim, which brightens for a moment. It is invisible
+     through the centre and seen only in the last pixels before the edge; the base clip (overflow:hidden) stays, so nothing leaves the plate.
+     The quietest family: a 6s cycle, about 0.6s visible, the chips scattered by index x 2.3s; only transform and opacity loop. */
+  .b3-bdgs.in .b3-bdg[data-k=mode]::before{border-radius:inherit;will-change:transform,opacity;
+    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 65%,transparent),inset 0 0 3px color-mix(in srgb,var(--tc) 25%,transparent);
+    animation:b3-mdsig calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite;animation-delay:calc(var(--ph,0) * -7.5s + var(--mi,0) * -2.9s)}
+  /* 2026-09-26 14:15 EDT (his "slightly increase the delay between echos and make the actual echo slightly longer with an almost ease-style echo timing"): a 7.5s
+     cycle (was 6s), the echo growing over ~1.1s (was ~0.66s) on the CSS ease curve, arriving at the trim at 15%; the glow keeps the same clock. */
+  @keyframes b3-mdsig{0%{opacity:0;transform:scale(.4,.3);animation-timing-function:cubic-bezier(.25,.1,.25,1)}8%{opacity:0}13%{opacity:.55}
+    15%{transform:none}22%,100%{opacity:0;transform:none}}
+  /* 2026-09-26 14:13 EDT (his: "keep the glow contained inside the badge's trim, and leaning towards the right side (kind of like a backwards C). and make the glow
+     pulse smoothly with the echo and then go back to sitting as a static glow until the next echo"): a glow round the plate's inner edges, masked into
+     a ')' — the right edge lit, the top and bottom edges lit on their right halves, gone before the mark. It rests at a static .45 and swells to 1
+     as the echo lands on the trim (15% of the cycle), easing back by 32%: the SAME 7.5s clock and delay as the echo. Inside the trim; opacity only. */
+  .b3-bdgs.in .b3-bdg[data-k=mode]::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:.45;will-change:opacity;
+    box-shadow:inset 0 0 5px 0 color-mix(in srgb,var(--tc) 45%,transparent),inset -1px 0 0 0 color-mix(in srgb,var(--tc) 30%,transparent);
+    -webkit-mask-image:linear-gradient(90deg,transparent 45%,#000 88%);mask-image:linear-gradient(90deg,transparent 45%,#000 88%);
+    animation:b3-mdglow calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite;animation-delay:calc(var(--ph,0) * -7.5s + var(--mi,0) * -2.9s)}
+  @keyframes b3-mdglow{0%,10%{opacity:.45;animation-timing-function:cubic-bezier(.45,0,.35,1)}15.5%{opacity:1;animation-timing-function:cubic-bezier(.45,0,.55,1)}32%,100%{opacity:.45}}
+  /* 2026-09-26 14:33 EDT — C · SIGNAL + THE WORD (his "nah that text looks terrible. you don't need to explicitly due a glint... i just want the text to also be
+     including into the ambiance/animation in someway so it feels *slightly* more noticable when the animation happens. Right now it just looks like it
+     got bolder with a glow around it"). The glint was a second copy of the word over the first — doubled antialiasing reads as bolder, the bloom as a
+     halo; any overlay of the word does that, so there is none. C is A's layers exactly, and the word ITSELF (its own span, .b3-mdw) rests a touch
+     under full (0.86) and rises to full with the glow — same 7.5s clock, same keyframe shape, peak 15.5% — then settles. No wash behind the letters
+     (a lighter ground lowers white text's contrast); no colour animation (a repaint); opacity only. */
+  .b3-bdgs.in .b3-bdg[data-k=mode] .b3-mdw{opacity:.72;will-change:opacity;
+    animation:b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite;animation-delay:calc(var(--ph,0) * -7.5s + var(--mi,0) * -2.9s)}
+  /* 2026-09-26 14:55 EDT (his "i literally see no difference between A/C"): 0.86 → 1 was below a glance. The word rests at 0.72 and holds full brightness briefly
+     (15.5% → 19%) before settling by 36% — it rises and peaks exactly with the glow; only the hold is longer, so the lift reads as a state, not a blink. */
+  /* 2026-09-26 15:00 EDT — HIS PICK: C ("C is good now. but give it the 'random timing' effect so the animation *feels* like it's playing at different
+     times"). Every chip's echo, glow and word share ONE period, calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) — so the three layers of a badge never drift apart —
+     but each chip's period differs by its place and its build's phase (about 6.7s to 10.6s, near the 7.5s he set on average), so the pulses drift
+     against each other and the row never settles into one beat. The keyframes are percentages, so the choreography scales with each period. */
+  @keyframes b3-mdword{0%,10%{opacity:.72;animation-timing-function:cubic-bezier(.45,0,.35,1)}15.5%,19%{opacity:1;animation-timing-function:cubic-bezier(.45,0,.55,1)}36%,100%{opacity:.72}}
+}
+[data-k=mode]:not(.b3-bdg){--mk:#E4ECF4}
+/* 2026-09-26 11:31 EDT — the build drawer's Rank Mode row is the Grade row's checkbox tiles, unchanged: each tile wraps its badge at the badge's own width
+   (his: "literally right above it, you have the correct implemented method"; a 3-column grid of equal tiles was a new style and is gone). The fault
+   was the ROW: a badge group wider than the column after the label wrapped whole under the label. A badge group now takes the rest of the row and
+   its tiles wrap inside it (Grade's three fit, so Grade is unchanged); the label sits on the first line, as the DMZ range row does. */
+.b4 .f-sec > .f-row.f-rank > .f-bdgs{flex:1 1 0;min-width:0}
+@container f-card (min-width:535px){ .b4 .f-sec > .f-row.f-rank:has(> .f-mds){align-items:flex-start} .b4 .f-sec > .f-row.f-rank:has(> .f-mds) > .f-lab{margin-top:8px} }
+/* the Discord card's own line, as the bot prints it: "Recommended Rank Mode: HP | S&D" */
+.dcard .lc-modes{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:8px 0 2px;font:500 12px/round(1.35em, 2px) var(--ui);color:var(--ink2)}
+.dcard .lc-modes > b{font-weight:600;color:var(--ink)}
+.dcard .lc-modes > span{display:inline-flex;align-items:center;gap:4px;font-weight:600;color:#F6F9FC}
+.dcard .lc-modes > span .ic{width:20px;height:20px}  /* V42 AM: Discord's inline custom emoji in an embed (1.375em of its 14px text); 22px read large */
+.dcard .lc-modes > i{font-style:normal;color:var(--ink4)}
+
+/* the Bulk result card's key column: a row whose value is a run of badges (Badges, Rank Mode) holds its key on the FIRST line of chips, so a run that wraps
+   (six rank modes) keeps its key beside its first chip instead of centred between two lines; on one line it is where centring put it (22px chip, 12px key) */
+.b4 .bk-kv div:has(> dd > .b3-bdgs) dt{align-self:start;margin-top:5px}
+/* Export's hover card: a badge run too long for the title line drops under it and wraps from the LEFT; its second line had sat flush right (six rank modes) */
+.b4 .b3-xt-pk .b3-bdgs{flex-wrap:wrap;justify-content:flex-start;row-gap:6px}
+/* 2026-09-26 11:43 EDT — his pick: the marks at 20px in the 22px plate, 1px from its top and foot (16px closed their inner lines; 24px needed a taller plate),
+   his expanded outlines as drawn. The Discord line draws them at 22px, a custom emoji's inline size. */
+
+/* ════ 2026-09-27 21:44 EDT — HIS v36 INTAKE, BY CLASS (docs/pins2/handoffs/2026-09-21-board4-intake.md, the round grouped by class) ════ */
+
+/* A · E — THE POP-UP FAMILY. Every pop-up a chip or field opens (a date, the showings, the accent) is .b3-datepop.b4-pop.fixed on the dropdowns'
+   ground (b3/board.css); its trigger sits in .b4-popw. In the queue card the trigger takes the chip's grid cell. */
+.b4-popw{position:relative;display:inline-flex;min-width:0}
+.b3-dt > .b4-popw{grid-area:2/1;justify-self:start}
+.b3-dt-e > .b4-popw{grid-area:2/3;justify-self:end}
+.b4-reph{display:flex;align-items:center;gap:14px;padding:4px 2px 2px}
+.b4-repw{display:grid;gap:5px}
+/* 2026-09-30 16:43 EDT, his: "why is the repeat picker in staged color? use whatever design/color it has in the drawer" — the showings pop-up's stepper IS the Post
+   drawer's (.pb-step, below): its own smaller size and its ring and count in the post's accent are gone. */
+.b4-repw b{font:600 14px/1 var(--ui);color:var(--ink)}
+.b4-repw span{font:500 12px/1.2 var(--ui);color:var(--ink3)}
+
+/* E — A CHIP THAT IS A FIELD is a button in the chip's own look, with the board's chip hover, and its warn or staged tone kept */
+.g-chipbtn{margin:0;border:0;cursor:pointer;transition:background-color .12s ease,box-shadow .12s ease,color .12s ease}
+.g-chipbtn:hover,.g-chipbtn[aria-expanded=true]{box-shadow:inset 0 0 0 1px var(--ink3);color:var(--ink)}   /* the neutral family's hover (b4.css GREY WASH): the ring lifts, the words brighten, no fill */
+.g-chipbtn.g-noend:hover,.g-chipbtn.g-noend[aria-expanded=true]{background:color-mix(in srgb,var(--warn) 15%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 60%,transparent)}
+.g-chipbtn.g-stagedend:hover,.g-chipbtn.g-stagedend[aria-expanded=true]{background:color-mix(in srgb,var(--staged) 12%,var(--sunk));box-shadow:none}
+.g-chipbtn:hover .ic{color:inherit}
+.g-chipbtn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* I — THE QUEUE'S UPCOMING AND STAGED CARDS: a mark in the number's place (an upcoming post has no place in the delivery order yet), a staged one drawn dashed */
+.g-card .pb-numr.g-numi{display:grid;place-items:start center;padding-top:10px}
+.g-card .pb-numr.g-numi .ic{width:36px;height:36px;stroke-width:1.5;color:var(--c)}
+.g-card.g-k-staged{outline:1.5px dashed color-mix(in srgb,var(--staged) 70%,transparent);outline-offset:-1.5px}
+.g-card.g-k-staged .pb-numr.g-numi .ic{color:var(--staged)}
+.pb-pill.g-soon .ic{color:var(--sched)}
+.pb-dates > .b3-staged{height:28px;padding:0 10px;border-radius:6px}   /* the row's chip height and corner */
+.g-card .pb-span{min-width:12px}   /* a two-day run in a five-month window was a 3px dashed speck */
+.g-card.g-k-staged .pb-span.g-stagedspan{background:color-mix(in srgb,var(--staged) 22%,transparent)}
+
+/* F — ONE FOLD CONTROL: Export's Pick builds button (.b3-xf-ib) wherever a text box folds; the whole quote box still toggles it, and lights it */
+.pb-enc.g-fits{cursor:default}
+.g-card .pb-enc:not(.g-fits):hover .b4-fold{background:var(--hi);color:var(--ink)}
+
+/* G — CHIPS ARE RECTANGLES (his: "the rectangle shape we use everywhere else for chips"): the queue head's readouts and the drawer's "1 a day max" */
+.g-status.g-status{height:28px;border-radius:6px}
+.b4 .drawer.b1 .pb-gapday.pb-gapday{border-radius:6px}
+.g-status.g-status .cmeter{width:56px}   /* the slots and the budget meters, one width */
+.pb-cgi[data-g=st] em{color:var(--staged)}
+/* D — THE SHARED 6,000 AS SEGMENTS, one per post in its accent, meeting on a straight division */
+.cmeter.b4-segs{display:flex;overflow:hidden}
+.cmeter.b4-segs > i{flex:none;height:100%;border-radius:0}
+.cmeter.b4-segs > i + i{box-shadow:inset 1px 0 0 color-mix(in srgb,#04070A 85%,transparent)}
+
+/* B — THE TEXT FIELD IS THE CARD'S QUOTE BOX (.pb-enc). Folded it wears the post's accent as the card does; open (Expand, or typing in it) it is
+   the fields' black with the focus glow round the whole box. `:not(#_)` lifts the textarea past the drawer's field rule, (0,7,1) through its :is(). */
+.b4 .drawer.b1 .b4-tb{position:relative;display:block;cursor:text;border-radius:var(--rad-2);transition:background-color .16s ease,box-shadow .16s ease,outline-color .16s ease}
+.b4 .drawer.b1 .b4-tb:not(.b4-tbx):focus-within{box-shadow:inset 0 0 0 1px var(--ink3),inset 0 1px 0 color-mix(in srgb,var(--c) 30%,transparent)}   /* folded but holding the caret (the drawer focuses it on open): a ring says so */
+.b4 .drawer.b1 .b4-tb > textarea.b4-tbm:not(#_){position:absolute;left:0;top:0;height:0;min-height:0;visibility:hidden;pointer-events:none;transition:none}   /* the measuring twin: same width and type, height 0, so its scrollHeight is the text's */
+.b4 .drawer.b1 .b4-tb > textarea:not(#_):not(.b4-tbm){transition:height .22s var(--ease)}
+@media (prefers-reduced-motion:reduce){.b4 .drawer.b1 .b4-tb > textarea:not(#_):not(.b4-tbm){transition:none}}
+.b4 .drawer.b1 .b4-tb:not(.b4-tbx):hover{box-shadow:inset 0 0 0 1px var(--ink4),inset 0 1px 0 color-mix(in srgb,var(--c) 30%,transparent)}
+.b4 .drawer.b1 .b4-tb > textarea:not(#_){display:block;width:100%;box-sizing:border-box;height:calc(3.1em + 26px);min-height:0;margin:0;padding:14px 18px 12px;border:0;border-radius:0;background:transparent;box-shadow:none;outline:0;resize:none;overflow:hidden;font:500 var(--t-md)/1.55 var(--ui);color:var(--ink)}
+.b4 .drawer.b1 .b4-tb.b4-tbclip > textarea:not(#_){-webkit-mask:linear-gradient(180deg,#000 calc(100% - 26px),transparent calc(100% - 8px));mask:linear-gradient(180deg,#000 calc(100% - 26px),transparent calc(100% - 8px))}
+.b4 .drawer.b1 .b4-tb.b4-tbx{background:color-mix(in srgb,#04070A 52%,var(--sunk));outline-color:transparent;box-shadow:inset 0 0 0 1px var(--staged),0 0 0 5px color-mix(in srgb,var(--staged) 16%,transparent)}
+.b4 .drawer.b1 .b4-tb.pb-enc{overflow:visible}   /* 2026-09-27 22:58 EDT: a 4,000-character post open ran its footer (the counter, the budget, Collapse) a screen below the caret; it now rides the column's bottom edge */
+.b4 .drawer.b1 .b4-tb.b4-tbx .pb-encf{position:sticky;bottom:0;z-index:1;background:color-mix(in srgb,#04070A 52%,var(--sunk));border-radius:0 0 var(--rad-2) var(--rad-2)}
+.b4 .drawer.b1 .b4-tb .pb-encf{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:10px 14px;border-top:1px dashed var(--rule2);cursor:default}
+.b4 .drawer.b1 .b4-tbc{display:grid;gap:6px;flex:1;min-width:0}
+.b4 .drawer.b1 .b4-tbc > *{justify-self:start;margin:0}   /* each chip its own width: stretched, the counter was a long box with nothing on its right */
+.b4 .drawer.b1 .b4-tbc > .b3-cc{height:28px;box-sizing:border-box}
+.b4 .drawer.b1:has(.pb-bnf) .b4-tbc > .pb-meter2{display:flex;align-self:auto}
+.b4 .drawer.b1:has(.pb-bnf) .b4-tbc > .pb-meter2 .cmeter{flex:none;width:140px}
+
+/* B — THE LINE UNDER A DATE IS A READOUT: its mark, the value in ink, a hairline, then what it means (his: "i want the *design* of Start/End's hints to be improved") */
+.b4 .drawer.b1:has(.pb-bnf) .dwfield .pb-echo.b4-echo{display:flex;align-items:center;gap:7px;min-height:14px;margin-top:9px;font:500 12.5px/1 var(--ui);letter-spacing:0;color:var(--ink3)}
+.b4 .drawer.b1 .pb-echo.b4-echo .ic{flex:none;width:13px;height:13px;color:var(--ink3)}
+.b4 .drawer.b1 .pb-echo.b4-echo b{font-weight:600;color:var(--ink)}
+.b4 .drawer.b1 .pb-echo.b4-echo i{flex:none;width:1px;height:11px;background:color-mix(in srgb,var(--ink) 18%,transparent)}
+.b4 .drawer.b1 .pb-echo.b4-echo[data-tone=ok] .ic{color:var(--ok)}
+.b4 .drawer.b1 .pb-echo.b4-echo[data-tone=warn] .ic,.b4 .drawer.b1 .pb-echo.b4-echo[data-tone=warn] b{color:var(--warn-ink)}
+/* B — THE LABEL ROW CARRIES THE FIELD'S STATE, as the build form's: Required / Over / Can't read in warn, Optional or Auto in neutral, ✓ when it is filled */
+.b4 .drawer.b1:has(.pb-bnf) .pb-lrow .f-okm{margin:-3px auto -3px 8px}
+.b4 .drawer.b1:has(.pb-bnf) .pb-lrow .b4-hint + .b4-hint{margin-left:6px}
+
+/* B — ONE STEPPER, the post drawer's and the showings pop-up's, on the fields' ground. Its hover is the neutral family's (b4.css: the ring lifts, no fill), and
+   the end buttons take the container's corners, so that ring bends with the box instead of being cut square by it (his: "the repeat picker's hover is clipping at the corners") */
+.b4 .pb-step.pb-step{display:inline-flex;align-items:center;height:var(--tap,44px);border-radius:var(--fld-rad,10px);overflow:hidden;background:color-mix(in srgb,#04070A 52%,var(--sunk));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ink) 12%,transparent)}
+.b4 .pb-step.pb-step > button{display:grid;place-items:center;width:40px;height:100%;margin:0;padding:0;border:0;background:none;color:var(--ink2);cursor:pointer;transition:background-color .12s ease,color .12s ease}
+.b4 .pb-step.pb-step > button:first-child{border-radius:var(--fld-rad,10px) 0 0 var(--fld-rad,10px)}
+.b4 .pb-step.pb-step > button:last-child{border-radius:0 var(--fld-rad,10px) var(--fld-rad,10px) 0}
+.b4 .pb-step.pb-step > button:disabled{opacity:.35;cursor:default}
+.b4 .pb-step.pb-step > button:focus-visible{outline:2px solid var(--focus);outline-offset:-3px}
+.b4 .pb-step.pb-step > output{display:grid;place-items:center;min-width:52px;height:100%;font:700 var(--t-md)/1 var(--data);color:var(--ink);box-shadow:inset 2px 0 0 color-mix(in srgb,var(--ink) 12%,transparent),inset -2px 0 0 color-mix(in srgb,var(--ink) 12%,transparent)}
+.b4 .pb-step.pb-step .ic{width:13px;height:13px}
+
+/* D — THE ACCENT FIELD: a field on the fields' ground (swatch, hex, chevron) that opens the family's pop-up: sixteen hues at the bot's own saturation and
+   lightness, a hex for a colour of his own, and New colour for another roll of the bot's generator */
+
+/* H — SHARE TAKES --ok (his: "give `share` button the --ok accent since it's the same logic as 'confirm', 'export', etc."): gates.css's delete hover (the plate
+   warmed, its edge drawn) with --ok for the danger ink, and b4.css's plate-killer now spares it; the copied tick keeps the colour for its 1.1s. */
+html[data-b3-a1=fixed] .wg-ib.wg-share:hover::before{background:color-mix(in srgb,var(--ok) 12%,var(--raised));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 42%,transparent)}
+html[data-b3-a1=fixed] .wg-ib.wg-share:hover,.b4 .wg-ib.wg-share.is-done{color:var(--ok)}
+/* (2026-09-27 21:47 EDT, found by the new examples) A clamped card text drew its THIRD line into its own bottom padding: the clamp clips at the padding box, and the
+   padding sat inside it. The space below moves outside the box. The text keeps its line breaks, so a '# heading' reads as the first line. */
+.g-card.g-card .pb-enc > p{padding-bottom:0;margin-bottom:12px;white-space:pre-line}
+/* The line under a date never wraps: its value holds, what it means ends in an ellipsis */
+.b4 .drawer.b1 .pb-echo.b4-echo > span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-block:4px;margin-block:-4px;text-box:trim-both cap alphabetic}
+.b4 .drawer.b1 .pb-echo.b4-echo > b{white-space:nowrap;text-box:trim-both cap alphabetic}
+.b4 .drawer.b1 .pb-lrow .pb-sw{white-space:nowrap}
+/* D — the showings glyphs wear the post's accent, not the realm's pink */
+
+/* ── 2026-09-28 13:53 EDT · HIS C3 ROUND, THE NON-C3 CLASSES (J · K · M · O · P) ─────────────────────────────────────────────────────────────── */
+/* K — a pop-up enters from its trigger's side: down it drops from above, up it rises from below (usePop stamps data-up) */
+.b3-datepop.fixed[data-up=false]{animation-name:b3pop;transform-origin:50% 0}
+.b3-datepop.fixed[data-up=true]{animation-name:b3popup;transform-origin:50% 100%}
+/* K — a list or a pop-up open in a drawer column is never under the column's scroll fade: the fade eases out while it is open (the board's answer
+   for the popover card, board.css .b3-fady:has(.b3-pc), made gradual — --ft/--fb are registered lengths, so they ease) */
+.b4 :is(.f-form.b3-fady,.pb-col.b3-fady,.drawer.b1 .dw-b){transition:--ft .18s var(--ease),--fb .18s var(--ease)}
+/* 2026-09-30 17:13 EDT: the rule that switched a column's fade OFF while a list or pop-up was open is gone — those render outside the column now (b3/layer.js). */   /* a mask hides a fixed list too: it goes once the fade has eased to nothing, and returns at once on close, under a fade already at zero */
+.b4 .f-menu{scroll-padding-block:6px}
+/* P — a field whose pop-up is open wears the typing fields' glow (the build drawer's lists already do: .f-pick.open .f-fld) */
+/* 2026-09-30 17:38 EDT, his: "when a date picker is open, the field goes back to the 1 px glow" — this rule painted a 1px inset on the input once focus moved into the
+   pop-up. The open field now wears the same ring as a typing field: see ONE FOCUS GLOW below (.pb-dfld with its button expanded). */
+/* J — the budget chip reads longer than the slots chip: 6,000 characters on a 56px bar was a sliver per post */
+.g-status.g-status.g-budget .cmeter{width:112px}
+/* M — the showings pop-up: the stepper centred, its count in the post's accent, one glyph per showing under it */
+.b4-reph.b4-reph{flex-direction:column;justify-content:center;gap:12px;padding:8px 2px 4px}
+/* O — the drawer footer is a grid of two auto columns (b4.css): the chip takes a third, so Cancel and Stage never wrap under it */
+.b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f:has(> .f-stmini){grid-template-columns:auto auto auto}
+/* O — Before staging minimises to an info chip left of Cancel; the card eases out toward the footer, the chip eases in */
+.b4 .f-stage h5{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.b4 .f-stmin{margin:-9px 0}   /* the − is the board's .b3-x (the selection bar's ×): only its place in the heading is set here */
+.b4 .f-stage{transition:opacity .2s var(--ease),transform .26s var(--ease),visibility 0s linear 0s}
+.b4 .f-stage.min{opacity:0;transform:translateY(12px) scale(.97);visibility:hidden;pointer-events:none;transition:opacity .16s var(--ease),transform .22s var(--ease),visibility 0s linear .22s}
+.b4 .f-stmini{display:grid;place-items:center;flex:none;width:40px;height:40px;margin:0;padding:0;border:0;border-radius:10px;cursor:pointer;animation:b3popup .22s var(--ease) both;transition:background-color .15s,box-shadow .15s}
+.b4 .f-stmini .ic{width:16px;height:16px;stroke-width:2}   /* its tone is the card's own mark (.f-stm, classes.css) at the footer buttons' 40px */
+.b4 .f-stmini[data-tone=ok]:hover{background:color-mix(in srgb,var(--ok) 22%,transparent)}
+.b4 .f-stmini[data-tone=warn]:hover{background:color-mix(in srgb,var(--warn) 22%,transparent)}
+.b4 .f-stmini:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.b4 .f-stage,.b4 .f-stage.min{transition:none}.b4 .f-stmini{animation:none}}
+
+/* N — THE ACCENT BLOCK (his C3 round, 2026-09-28 13:57 EDT; his values, layout "split"). Ground = the image block's (.f-media). Every rule is scoped .b4 .acx .x
+   (0,3,0) so the reset on its buttons (0,2,1) and app.css's bare button:hover (0,2,1) cannot reach the class rules. */
+.b4 .acx{--pad:14px;--pw:200px;--svh:138px;--cg:16px;--rg:16px;--bgap:16px;--hueh:12px;--huet:14px;--huer:44px;--fh:44px;--frad:9px;--lg:10px;--swg:6px;--swr:6px;--cols:9;--gw:2;--pop:1px;--d3:.24s;--dc:.24s;--eio:cubic-bezier(.65,0,.35,1);
+  display:grid;grid-template-columns:var(--pw) minmax(0,1fr);grid-template-rows:auto 1fr auto;grid-template-areas:"sv rec" "sv sav" "hue hex";column-gap:var(--cg);row-gap:0;
+  padding:var(--pad);border-radius:var(--rad-3,10px);background:color-mix(in srgb,var(--sunk) 55%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 9%,transparent)}
+.b4 .acx button{appearance:none;margin:0;border:0;border-radius:0;font:inherit;color:inherit;background:none;padding:0;box-shadow:none;transform:none;min-height:0}
+.b4 .acx .acx-sv{grid-area:sv;position:relative;height:var(--svh);align-self:start;border-radius:8px;cursor:crosshair;touch-action:none}
+.b4 .acx :is(.acx-sv,.acx-hue):focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.b4 .acx :is(.acx-sv,.acx-hue) i{position:absolute;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.5)}
+.b4 .acx .acx-sv i{width:12px;height:12px}
+.b4 .acx .acx-huew{grid-area:hue;display:flex;align-items:center;height:var(--huer);margin-top:var(--bgap)}
+.b4 .acx .acx-hue{position:relative;flex:1;height:var(--hueh);border-radius:calc(var(--hueh) / 2);cursor:pointer;touch-action:none;background:linear-gradient(90deg,#f00 0%,#ff0 16.67%,#0f0 33.33%,#0ff 50%,#00f 66.67%,#f0f 83.33%,#f00 100%)}
+.b4 .acx .acx-hue i{top:50%;width:var(--huet);height:var(--huet)}
+.b4 .acx .acx-row1{grid-area:hex;display:flex;gap:8px;min-width:0;margin-top:var(--bgap)}
+.b4 .acx .acx-hex{flex:1;display:flex;align-items:center;gap:6px;min-width:0;height:var(--fh);padding:0 6px 0 10px;border-radius:var(--frad);background:color-mix(in srgb,#04070A 52%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent);cursor:text;transition:box-shadow .15s var(--ease)}
+.b4 .acx .acx-hex:hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 24%,transparent)}
+.b4 .acx .acx-hex:focus-within{box-shadow:inset 0 0 0 1px var(--staged),0 0 0 5px color-mix(in srgb,var(--staged) 16%,transparent)}
+.b4 .acx .acx-hex > s{flex:none;width:24px;height:24px;border-radius:6px;background:var(--cur);transition:background-color .22s var(--ease)}
+.b4 .acx .acx-hex em{flex:none;margin-left:2px;font:600 13px/var(--lh-1) var(--data);font-style:normal;color:var(--ink4)}
+.b4 .acx .acx-hex input:not(#_){flex:1;min-width:0;height:100%;margin:0;padding:0;border:0;border-radius:0;background:none;outline:0;box-shadow:none;font:600 13px/1 var(--data);letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+.b4 .acx .acx-ib{flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;color:var(--ink3);cursor:pointer;transition:background-color .15s var(--ease),color .15s var(--ease)}
+.b4 .acx .acx-ib:hover{background:var(--hi);color:var(--ink)}
+.b4 .acx .acx-ib.acx-ok,.b4 .acx .acx-ib.acx-ok:hover{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.b4 .acx .acx-ib .ic{width:14px;height:14px}
+.b4 .acx .acx-new{flex:none;display:inline-flex;align-items:center;justify-content:center;width:var(--fh);height:var(--fh);border-radius:var(--frad);background:var(--raised);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink2);cursor:pointer;transition:background-color .15s var(--ease),color .15s var(--ease)}
+.b4 .acx .acx-new:hover{background:var(--hi);color:var(--ink)}
+.b4 .acx .acx-new .ic{width:16px;height:16px}
+.b4 .acx :is(.acx-ib,.acx-new,.acx-s,.acx-hb):focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.b4 .acx .acx-g{display:grid;align-content:start;align-self:start;gap:var(--lg);min-width:0}
+.b4 .acx .acx-rg{grid-area:rec;margin-bottom:var(--rg)}
+.b4 .acx .acx-g:not(.acx-rg){grid-area:sav}
+.b4 .acx .acx-gl{display:flex;align-items:center;gap:8px;height:12px;font:500 12px/1 var(--ui);color:var(--ink3)}
+.b4 .acx .acx-gl > .ic{width:12px;height:12px}
+.b4 .acx .acx-hint{display:inline-flex;align-items:center;gap:6px;margin-left:4px;min-width:0}
+.b4 .acx .acx-hc{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px 0 6px;border-radius:6px;font:600 12px/1 var(--data);letter-spacing:.04em;color:var(--hc,var(--ink3));box-shadow:inset 0 0 0 1px var(--hc,var(--ink3));white-space:nowrap;opacity:0;transform:translateX(-4px);pointer-events:none;transition:opacity .22s var(--ease),transform .22s var(--ease),color .22s var(--ease),box-shadow .22s var(--ease)}
+.b4 .acx .acx-hc.acx-on{opacity:1;transform:none}
+.b4 .acx .acx-hc + .acx-hc{transition-delay:.04s}
+.b4 .acx .acx-hc .ic{width:12px;height:12px;stroke-width:2.4}
+.b4 .acx .acx-hc b{font:inherit}
+.b4 .acx .acx-sw{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:var(--swg)}
+.b4 .acx .acx-s{position:relative;display:grid;place-items:center;aspect-ratio:1;border-radius:var(--swr);background-color:var(--sw);color:var(--ink4);cursor:pointer;box-shadow:0 0 0 0 transparent,0 0 0 0 transparent;transition:transform .22s var(--ease),box-shadow .22s var(--ease),background-color .22s var(--ease),color .22s var(--ease)}
+.b4 .acx .acx-rec .acx-s:hover{transform:scale(1.08)}
+.b4 .acx .acx-s[aria-pressed=true]{box-shadow:0 0 0 2px #15171B,0 0 0 4px var(--sw)}
+.b4 .acx .acx-s.acx-none{cursor:default;background-color:color-mix(in srgb,var(--ink) 3.5%,transparent);box-shadow:none}
+.b4 .acx .acx-s > .ic{width:12px;height:12px;opacity:0;transition:opacity .22s var(--ease)}
+.b4 .acx .acx-s.acx-empty{background-color:color-mix(in srgb,var(--ink) 5%,transparent);box-shadow:none}
+.b4 .acx .acx-s.acx-empty > .ic{opacity:1}
+.b4 .acx .acx-s.acx-empty:hover,.b4 .acx .acx-s.acx-empty:focus-visible{transform:translateY(-2px);color:var(--on-cur);background-color:var(--cur);box-shadow:0 6px 14px -6px rgba(0,0,0,.7)}
+.b4 .acx .acx-sav .acx-s{z-index:1;transition:transform .22s var(--ease),box-shadow .22s var(--ease) calc(var(--dc) * .55),background-color .22s var(--ease),color .22s var(--ease)}
+.b4 .acx .acx-sav .acx-s.acx-full.acx-open{z-index:4;transition-delay:0s}
+.b4 .acx .acx-sav .acx-s.acx-full.acx-closing{z-index:3}
+.b4 .acx .acx-sav:has(.acx-open) .acx-s[aria-pressed=true]{box-shadow:0 0 0 2px transparent,0 0 0 4px transparent;transition:transform .22s var(--ease),box-shadow 120ms var(--ease) 0s,background-color .22s var(--ease),color .22s var(--ease)}
+.b4 .acx .acx-s.acx-full{--W:var(--sww,100%);--UW:var(--sww,100%);--RL:0px;--RWb:var(--sww,100%);--ox:0px;--oy:0px;--or:var(--swr);--ir:var(--swr);--pu:0px;--pr:0px;--pp:var(--pop)}
+.b4 .acx .acx-s.acx-full.acx-open{--W:calc(var(--gw) * var(--sww,25px) + (var(--gw) - 1) * var(--swg) + 4px);--UW:calc(var(--W) / 2);--RL:calc(var(--W) / 2);--RWb:calc(var(--W) / 2);--ox:-2px;--oy:-4px;--or:calc(var(--swr) + 1px);--ir:0px}
+.b4 .acx .acx-s.acx-full.acx-open:has(.acx-h[data-hv=use]){--pu:var(--pp)}
+.b4 .acx .acx-s.acx-full.acx-open:has(.acx-h[data-hv=rep]){--pr:var(--pp)}
+.b4 .acx .acx-ov{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 60ms linear var(--dc)}
+.b4 .acx .acx-s.acx-full .acx-ov{opacity:1;transition:none}
+.b4 .acx .acx-s.acx-full.acx-open .acx-ov{opacity:1;transition:opacity 90ms var(--ease) 0s}
+.b4 .acx :is(.acx-h,.acx-pu,.acx-pr,.acx-sh,.acx-dv){position:absolute;pointer-events:none}
+.b4 .acx .acx-h{z-index:3;top:var(--oy);bottom:0;left:var(--ox);width:var(--UW);transition:top var(--dc) var(--eio),bottom var(--dc) var(--eio),left var(--dc) var(--eio),right var(--dc) var(--eio),width var(--dc) var(--eio)}
+.b4 .acx .acx-s.acx-full .acx-h{pointer-events:auto}
+.b4 .acx .acx-s.acx-full.acx-open .acx-h{transition:top var(--d3) var(--ease),bottom var(--d3) var(--ease),left var(--d3) var(--ease),right var(--d3) var(--ease),width var(--d3) var(--ease)}
+.b4 .acx .acx-hb{position:absolute;top:0;bottom:0;display:grid;place-items:center;overflow:hidden;cursor:pointer}
+.b4 .acx .acx-hb:first-child{z-index:1;left:0;width:100%;background-color:var(--sw);color:var(--on-sw);border-radius:var(--or) var(--ir) var(--ir) var(--or);transition:border-top-left-radius var(--dc) var(--eio),border-bottom-left-radius var(--dc) var(--eio),border-top-right-radius calc(var(--dc) * .35) var(--eio),border-bottom-right-radius calc(var(--dc) * .35) var(--eio),background-color .22s var(--ease),color .22s var(--ease)}
+.b4 .acx .acx-hb + .acx-hb{z-index:0;left:var(--RL);width:var(--RWb);background-color:var(--cur);color:var(--on-cur);border-radius:var(--ir) var(--or) var(--or) var(--ir);transition:left var(--dc) var(--eio),width var(--dc) var(--eio),border-top-right-radius var(--dc) var(--eio),border-bottom-right-radius var(--dc) var(--eio),border-top-left-radius calc(var(--dc) * .35) var(--eio),border-bottom-left-radius calc(var(--dc) * .35) var(--eio),color .22s var(--ease)}
+.b4 .acx .acx-s.acx-full.acx-open .acx-hb{transition:left var(--d3) var(--ease),width var(--d3) var(--ease),border-radius var(--d3) var(--ease),background-color .22s var(--ease),color .22s var(--ease)}
+.b4 .acx .acx-sh{z-index:1;top:calc(var(--oy) - max(var(--pu),var(--pr)));bottom:calc(0px - max(var(--pu),var(--pr)));left:calc(var(--ox) - var(--pu));width:calc(var(--RL) + var(--RWb) + var(--pu) + var(--pr));border-radius:var(--or);box-shadow:0 0 0 0 transparent,0 0 0 0 transparent;transition:top var(--dc) var(--eio),bottom var(--dc) var(--eio),left var(--dc) var(--eio),right var(--dc) var(--eio),width var(--dc) var(--eio),box-shadow var(--dc) var(--eio)}
+.b4 .acx .acx-s.acx-full.acx-open .acx-sh{box-shadow:0 10px 20px -6px rgba(0,0,0,.75),0 3px 8px -2px rgba(0,0,0,.55);transition:top var(--d3) var(--ease),bottom var(--d3) var(--ease),left var(--d3) var(--ease),right var(--d3) var(--ease),width var(--d3) var(--ease),box-shadow var(--d3) var(--ease)}
+.b4 .acx .acx-pu{z-index:2;top:calc(var(--oy) - var(--pu));bottom:calc(0px - var(--pu));left:calc(var(--ox) - var(--pu));width:calc(var(--UW) + var(--pu));background-color:var(--sw);border-radius:var(--or) var(--ir) var(--ir) var(--or);transition:top var(--dc) var(--eio),bottom var(--dc) var(--eio),left var(--dc) var(--eio),right var(--dc) var(--eio),width var(--dc) var(--eio),border-radius calc(var(--dc) * .35) var(--eio),background-color .22s var(--ease)}
+.b4 .acx .acx-pr{z-index:2;top:calc(var(--oy) - var(--pr));bottom:calc(0px - var(--pr));left:calc(var(--ox) + var(--RL));width:calc(var(--RWb) + var(--pr));background-color:var(--cur);border-radius:var(--ir) var(--or) var(--or) var(--ir);transition:top var(--dc) var(--eio),bottom var(--dc) var(--eio),left var(--dc) var(--eio),right var(--dc) var(--eio),width var(--dc) var(--eio),border-radius calc(var(--dc) * .35) var(--eio)}
+.b4 .acx .acx-s.acx-full.acx-open :is(.acx-pu,.acx-pr){transition:top var(--d3) var(--ease),bottom var(--d3) var(--ease),left var(--d3) var(--ease),right var(--d3) var(--ease),width var(--d3) var(--ease),border-radius var(--d3) var(--ease),background-color .22s var(--ease)}
+.b4 .acx .acx-dv{z-index:4;top:calc(var(--oy) - max(var(--pu),var(--pr)));bottom:calc(0px - max(var(--pu),var(--pr)));left:calc(var(--ox) + var(--RL));width:1px;background-color:#15171B;opacity:0;transition:top var(--dc) var(--eio),bottom var(--dc) var(--eio),left var(--dc) var(--eio),right var(--dc) var(--eio),width var(--dc) var(--eio),opacity calc(var(--dc) * .35) var(--eio)}
+.b4 .acx .acx-s.acx-full.acx-open .acx-dv{opacity:1;transition:top var(--d3) var(--ease),bottom var(--d3) var(--ease),left var(--d3) var(--ease),right var(--d3) var(--ease),width var(--d3) var(--ease),opacity calc(var(--d3) * .4) var(--ease) calc(var(--d3) * .6)}
+.b4 .acx .acx-s.acx-full[data-dir=l] :is(.acx-h,.acx-pu,.acx-pr,.acx-sh,.acx-dv){left:auto}
+.b4 .acx .acx-s.acx-full[data-dir=l] .acx-h{right:calc(var(--ox) + var(--RL))}
+.b4 .acx .acx-s.acx-full[data-dir=l] .acx-pu{right:calc(var(--ox) + var(--RL))}
+.b4 .acx .acx-s.acx-full[data-dir=l] .acx-pr{right:calc(var(--ox) - var(--pr))}
+.b4 .acx .acx-s.acx-full[data-dir=l] .acx-sh{right:calc(var(--ox) - var(--pr))}
+.b4 .acx .acx-s.acx-full[data-dir=l] .acx-dv{right:calc(var(--ox) + var(--RWb) - 1px)}
+.b4 .acx .acx-hb .ic{width:12px;height:12px;stroke-width:2.4;opacity:0;transform:scale(.7);transition:opacity .12s cubic-bezier(.4,0,.6,1),transform .12s cubic-bezier(.4,0,.6,1)}
+.b4 .acx .acx-s.acx-full.acx-open .acx-hb .ic{opacity:1;transform:none;transition:opacity .22s var(--ease) .08s,transform .22s var(--ease) .08s}
+.b4 .acx.acx-notr .acx-sav *{transition:none!important}
+@media (prefers-reduced-motion:reduce){.b4 .acx *,.b4 .acx *::before{transition-duration:.01ms!important;transition-delay:0s!important}}
+
+/* ══ 2026-09-29 13:23 EDT — HIS VERSION 40 INTAKE, the classes outside Compare ══ */
+/* A · a close or minimise control inside a card is not the selection bar's ×: no ring at rest, sized to the heading it sits in, its ground on hover */
+.b4 .f-stage h5 .f-stmin:not(#_){width:24px;height:24px;margin:-8px -4px -8px 0;border-radius:7px;box-shadow:none;background:transparent;color:var(--ink3)}
+.b4 .f-stage h5 .f-stmin:not(#_):hover{background:color-mix(in srgb,var(--ink) 9%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 18%,transparent);color:var(--ink)}
+.b4 .f-stage h5 .f-stmin .ic{width:12px;height:12px}
+/* E · the post form's in-field buttons: the fields' own dark fill, Broadcast's accent in their tint and their hover */
+.b4 .acx .acx-new{background:color-mix(in srgb,#04070A 52%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent);color:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 45%,var(--ink3))}
+.b4 .acx .acx-new:hover{background:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 14%,color-mix(in srgb,#04070A 52%,var(--sunk)));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 55%,transparent);color:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 30%,white)}
+.b4 :is(.acx .acx-ib, .drawer.b1 .pb-dbtn){color:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 45%,var(--ink3))}
+.b4 :is(.acx .acx-ib, .drawer.b1 .pb-dbtn):hover{background:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 45%,transparent);color:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 30%,white)}
+.b4 .drawer.b1 .pb-dbtn:not([aria-expanded=true]):hover{background:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 14%,transparent)}
+/* T · the post form's sections, headed as the build drawer's (.f-h, b4/form.css): the label is the heading, its chip beside it, the rule after */
+.b4 .drawer.b1 .dwfield > .f-h.pb-sech{margin:0 0 4px;font:600 15px/var(--lh-1) var(--ui);letter-spacing:0;text-transform:none;color:var(--ink)}
+.b4 .drawer.b1 .dwfield > .f-h.pb-sech label{font:inherit;color:inherit;letter-spacing:inherit;text-transform:none;margin:0}
+.b4 .drawer.b1 .dwfield > .f-h.pb-sech .b4-hint{margin:0}
+/* U · a readout is a hint chip. 2026-09-29 15:31 EDT, his "improve the design of these chips" (the landing's two; the dates' readouts are the same class):
+   a solid ground the landing's faded table cannot show through, the mark in the board's tinted square (.f-stm, the Before staging card's) in the
+   readout's tone, the value in ink, a hairline, then what it means */
+.b4 .b4-echo:not(#_){display:inline-flex;align-items:center;gap:8px;height:32px;max-width:100%;box-sizing:border-box;padding:0 12px 0 4px;border-radius:9px;font:500 12px/1 var(--ui);letter-spacing:0;color:var(--ink3);white-space:nowrap;
+  background:color-mix(in srgb,#04070A 45%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent)}
+.b4 .b4-echo:not(#_) > .ic{flex:none;box-sizing:border-box;width:24px;height:24px;padding:4px;border-radius:6px;color:var(--ink2);background:color-mix(in srgb,var(--ink) 7%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent)}
+.b4 .b4-echo:not(#_) b{font-weight:600;color:var(--ink);white-space:nowrap}
+.b4 .b4-echo:not(#_) i{flex:none;width:1px;height:12px;background:color-mix(in srgb,var(--ink) 16%,transparent)}
+.b4 .b4-echo:not(#_) > span{min-width:0;overflow:hidden;text-overflow:ellipsis;padding-block:4px;margin-block:-4px}
+.b4 .b4-echo[data-tone=ok]:not(#_) > .ic{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 30%,transparent)}
+.b4 .b4-echo[data-tone=warn]:not(#_) > .ic{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 32%,transparent)}
+.b4 .b4-echo[data-tone=warn]:not(#_) b{color:var(--warn-ink)}
+.b4 .drawer.b1 .dwfield .pb-echo.b4-echo:not(#_){margin-top:-2px;align-self:flex-start}   /* the field column is a grid with an 8px gap: −2px leaves the chip 6px under its field, attached to it */
+/* M · a compact badge opens, in place, into its full badge */
+.b4 .b3-bdgs.bare .b3-bw{position:relative;display:inline-flex}
+/* V44 AW (2026-09-29 22:33 EDT, his: "Its so abrupt. i want the animation to be smoother to reveal/hide them"; board 3's c9604d47 said the same of the hide): the pop
+   UNFURLS out of its compact badge and folds back into it. At rest it is drawn at the compact badge's own width (100% of .b3-bw) and hidden, so it never
+   widens the run; hovered, its width eases to max-content (interpolate-size) while the full badge's words come out of its clip; left, it folds back and
+   only then hides. It stays opaque throughout: the compact badge is hidden the moment the pop covers it and shown again only once the pop has folded,
+   so the two are never both on screen (the V42 AJ double edge). A display:none pop could only animate IN — the hide was a cut */
+.b4 .b3-bdgs.bare .b3-bpop{position:absolute;left:0;top:0;z-index:5;display:flex;visibility:hidden;width:max-content;overflow:visible;margin:0;padding:0;box-shadow:none;pointer-events:none;interpolate-size:allow-keywords;
+  filter:drop-shadow(0 4px 10px rgb(0 0 0 / 0));transition:filter .2s var(--ease),visibility 0s linear .2s}
+.b4 .b3-bdgs.bare .b3-bpop{background:var(--sunk);border-radius:var(--rad-1)}
+/* V47 BI: NOT only while hovered. A mask clips everything outside its box, and `:has(:hover)` let it back the instant the pointer left, while the pop was
+   still folding — its outer part vanished mid-word and its edge with it (his recording, frames 36–41). A run that fits has nothing to fade, so it never
+   carries the mask; a run that overflows (.over) keeps its fade. */
+.b4 .b3-fadx:not(.over):has(.b3-bw){-webkit-mask-image:none;mask-image:none}   /* measured: the run's edge fade is a MASK, and a mask hides everything outside its box — it cut the pop at the run's right edge ("BE…"); a run that fits has nothing to fade, so its mask drops while a badge is hovered */   /* 2026-09-29 17:57 EDT (his V41 class W, "hovering the badges is broken"): the pop had no ground, so an outlined badge (META) showed the bare one through it */
+/* (V42) never opacity 0 at FULL width at rest: an absolute child still widens its run's scroll box, so the run read as overflowing, took the sideways fade, and the fade's mask cut the pop-up — V44 keeps it at the compact badge's width instead */
+.b4 .b3-bdgs.bare .b3-bw:hover .b3-bpop{visibility:visible;filter:drop-shadow(0 4px 10px rgb(0 0 0 / .5));transition:filter .24s var(--ease),visibility 0s}
+.b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_){width:26px;overflow:hidden;interpolate-size:allow-keywords;gap:5px;padding-inline:7.5px 8px;justify-content:flex-start;white-space:nowrap;transition:width .2s cubic-bezier(.45,0,.55,1)}
+/* V47 BI (his, 2026-09-30 10:08 EDT, with a recording: the hide "stops in the middle of 'A', then begins to build back the right side border, then finishes closing";
+   and the badge "moves over towards the left when hovering onto them"). Two causes. The WRAPPER was the thing that narrowed, clipping a full-width badge,
+   so the badge's right edge was cut away for the whole fold and came back only when the compact badge reappeared; and the fold rode the open's ease-out,
+   whose last 100ms crawl the final 5px, so it read as a stop. Now the badge itself narrows (its own edge travels with it; the wrapper only shrink-wraps
+   it), the fold eases in and out and lands exactly as the compact badge returns, and the icon sits 7.5px in, where the compact badge centres it. */
+.b4 .b3-bdgs.bare .b3-bw:hover .b3-bpop .b3-bdg:not(#_){width:max-content;transition:width .24s var(--ease)}   /* the full badge's own box (measured on the manifest's: gap 5px, padding 7px / 8px); the bare rule would squeeze it to 26px */
+@media (prefers-reduced-motion:reduce){.b4 .b3-bdgs.bare :is(.b3-bpop,.b3-bw,.b3-bw > .b3-bdg){transition:none!important}}
+
+/* ══ 2026-09-29 20:15 EDT — his Version 42 intake ══ */
+/* AJ · a popped badge replaces its compact self rather than sitting on it: the compact badge's 3px corners showed at the pop's 7px ones as a second edge */
+.b4 .b3-bdgs.bare .b3-bw > .b3-bdg{transition:visibility 0s linear .2s}   /* V44 AW: back only once the pop has folded */
+.b4 .b3-bdgs.bare .b3-bw:hover > .b3-bdg{visibility:hidden;transition-delay:0s}
+/* and the compact badges after it step back while it is open: the pop runs over them, and the edge of the next one showed past its end as a second edge on the right */
+.b4 .b3-bdgs.bare .b3-bw ~ .b3-bw{transition:opacity .18s var(--ease)}   /* V44 AW: the transition sits on the rest rule, so they come back as smoothly as they went */
+.b4 .b3-bdgs.bare .b3-bw:hover ~ .b3-bw{opacity:0}
+/* AL · edit takes --staged, the manifest's plate recipe (share takes --ok, delete the danger ink) */
+html[data-b3-a1=fixed] .wg-ib.wg-edit:hover::before{background:color-mix(in srgb,var(--staged) 12%,var(--raised));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--staged) 42%,transparent)}
+html[data-b3-a1=fixed] .wg-ib.wg-edit:hover{color:var(--staged)}
+
+/* ══ 2026-09-29 22:33 EDT — his Version 44 intake: the Picker's own rules ══ */
+/* AT · a grouped list marks where a category starts with a hairline — every grouped Picker, not only Compare's (it was scoped to #compare) */
+.b4 .f-menu li.f-g0{position:relative;margin-top:8px}
+.b4 .f-menu li.f-g0::before{content:"";position:absolute;left:10px;right:10px;top:-4px;height:1px;background:color-mix(in srgb,var(--ink) 9%,transparent);pointer-events:none}
+/* BA · BB · the end tick, drawn inline so it can MORPH (the board's icon rule: a mark morphs, never swaps or rotates): on a list that picks several, a
+   hovered ticked row whose click takes it out turns its ✓ into the delete ×, in the delete ink (--danger-ink, as Clear table's and Reset's hover). A
+   hover on a button inside the row (Compare's build chips) acts on that button, so the tick stays a ✓ */
+.b4 .f-tick .f-tk{overflow:visible;transition:color .18s var(--ease)}
+.b4 .f-tk path{d:path("M5 12.5L9.5 17M9.5 17L19 7.5");transition:d .2s var(--ease)}
+.b4 .f-menu li:is(:hover,.on):not(:has(button:hover)) .f-tick[data-drop] .ic{color:var(--danger-ink)}
+.b4 .f-menu li:is(:hover,.on):not(:has(button:hover)) .f-tick[data-drop] path{d:path("M6.5 6.5L17.5 17.5M17.5 6.5L6.5 17.5")}
+@media (prefers-reduced-motion:reduce){.b4 .f-tick .f-tk,.b4 .f-tk path{transition:none}}
+
+/* his 11:48 EDT: a pop that has no room to its right opens LEFT (badgeDir, b3/armory-parts.js). It anchors on the badge's right edge, its mark moves to the
+   end so the mark stays where the compact badge draws it and the word unfurls to its left, and the badges BEFORE it step back instead of the ones after */
+.b4 .b3-bdgs.bare .b3-bw[data-dir=l] .b3-bpop{left:auto;right:0}
+.b4 .b3-bdgs.bare .b3-bw[data-dir=l] .b3-bpop .b3-bdg:not(#_){padding-inline:8px 7.5px;justify-content:flex-end}   /* 2026-09-30 15:21 EDT, his "control still clips on the right": a left-opening badge grows from its right edge, so its contents sit against that edge — laid from the left they overran it and cut the emblem for the ~200ms of the unfold (measured 52/80 → 76/80 → 80/80) */
+.b4 .b3-bdgs.bare .b3-bw[data-dir=l] .b3-bpop .b3-bdg > :is(svg,.ic,.b3-mdi){order:9}
+.b4 .b3-bdgs.bare .b3-bw[data-dir=l]:hover ~ .b3-bw{opacity:1}
+.b4 .b3-bdgs.bare .b3-bw:has(~ .b3-bw[data-dir=l]:hover){opacity:0}
+
+/* ══ 2026-09-30 13:23 EDT — ONE FOCUS GLOW FOR EVERY FIELD (his: "the input field glow design is different in Export's Pick Builds Search bar vs every other input
+   field in the board … i actually like Pick Builds' search bar glow style better, so standardize that"). Measured: six different rings across 83 fields.
+   Pick builds' search draws a 2px staged ring (its 1px border plus a 1px inset) inside a 5px staged halo at 16%; a field whose ring lives on a wrapper,
+   or whose own border is 0, drew only 1px. Each is set to the same 2px + 5px here. */
+.b4 .f-fld:focus-within, .b4 .f-pick.open .f-fld{box-shadow:inset 0 0 0 2px var(--staged),0 0 0 5px color-mix(in srgb,var(--staged) 16%,transparent)!important}
+.b4 .bk-frame:focus-within::after{box-shadow:inset 0 0 0 2px var(--staged)}
+.b4 .drawer.b1 .dwfield :is(input:not([type=checkbox]):not([type=radio]):not([data-bare]),textarea):focus{box-shadow:inset 0 0 0 2px var(--staged),0 0 0 5px color-mix(in srgb,var(--staged) 16%,transparent)}
+/* ══ 2026-09-30 16:53 EDT — ONE FOCUS RING PER FIELD (his mini intake, 16:44–16:51 EDT: the Post drawer's hex field "a second lime frame … olive bands"; the text box's
+   ring "square inside the rounded field … stops at the text … dashed bottom … the count, the budget and Collapse outside it"). A COMPOSITE field — a box
+   holding a swatch, a prefix, a date button, a footer — lights as ONE shape: the box that draws the field's edge carries the ring, the input inside it
+   carries none. V64's attempt put a 2px ring on those inputs and lost to the generic rule's specificity, so they kept 1px and the box kept its own 1px
+   too. The ring is an inset outline (2px inside the edge, whatever border the box has, on its own radius) plus the 5px halo; it lights only while the
+   input or textarea has focus, so a button inside the box keeps its own focus ring. Measured by docs/pins2/instruments/board4-rings.cjs. */
+:is(#_, .pb-enc.b4-tb, .acx-hex, .pb-dfld):has(:is(input,textarea):focus),.pb-dfld:has(> .pb-dbtn[aria-expanded=true]){box-shadow:0 0 0 5px color-mix(in srgb,var(--staged) 16%,transparent)!important}
+/* 2026-09-30 17:03 EDT, his: "the 2px outline is only applying to the upper portion, bottom portion is still 1 px" — an outline paints beneath the box's own children,
+   so the footer (and the date field's input) covered half of it. The ring is a layer OVER the box's content now: the box's own shape, 2px, inset. */
+.acx-hex{position:relative}
+:is(#_, .pb-enc.b4-tb, .acx-hex, .pb-dfld):has(:is(input,textarea):focus)::after,.pb-dfld:has(> .pb-dbtn[aria-expanded=true])::after{content:"";position:absolute;inset:0;z-index:3;border-radius:inherit;box-shadow:inset 0 0 0 2px var(--staged);pointer-events:none}
+:is(#_, .pb-enc.b4-tb, .acx-hex, .pb-dfld) :is(input,textarea):focus{box-shadow:none!important;outline:0!important}
+.pb-dfld{border-radius:9px}   /* the ring follows the box: the date field's box had no radius of its own while its input is 9px round (measured) */
+/* 2026-09-30 15:23 EDT: a badge's pop starts at the bare badge's own box (26px, the glyph centred: 3px each side) and grows its padding with its width, so the
+   glyph never sits 1.5px past the edge on the first frames of the unfold (measured on every rank-mode badge). */
+.b4 .b3-bdgs.bare .b3-bw:not(:hover) .b3-bpop .b3-bdg:not(#_){padding-inline:3px}
+.b4 .b3-bdgs.bare .b3-bpop .b3-bdg:not(#_){transition:width .2s cubic-bezier(.45,0,.55,1),padding .2s cubic-bezier(.45,0,.55,1)}
+.b4 .b3-bdgs.bare .b3-bw:hover .b3-bpop .b3-bdg:not(#_){transition:width .24s var(--ease),padding .24s var(--ease)}
+
+/* ══ 2026-09-30 16:58 EDT — ARC · THE POP-UP FAMILY TAKES THE CARDS' CONTAINER (his: "give them the arc and smooth animation of the pop-up container used elsewhere.
+   including the outer glow and border color … the 'shown once' repeat picker … the broadcast's pink … the calendar … the 'set end date' chip. background
+   remains the black"). PopBox (b3/broadcast.js) draws the hint and problem cards' outline (pcPath) around the pop-up: the arc at the button that opened
+   it, the glow, the line over the content; the box keeps the pop-ups' black and enters and leaves as those cards do. The tone is the opening chip's. */
+.b4-arc{--hc-c:var(--ink3);--pcbg:color-mix(in srgb,#04070A 40%,var(--sunk));--pcb:color-mix(in srgb,var(--hc-c) 40%,var(--desk));
+  background:none!important;box-shadow:none!important;border-radius:0!important;animation:none!important;padding:20px 8px 8px;
+  filter:drop-shadow(0 18px 26px var(--scrim-90));opacity:0;pointer-events:none;transform-origin:var(--tx,44px) -14px;
+  transform:perspective(620px) rotateX(-8deg) scale(.94) translateY(4px);transition:transform .18s cubic-bezier(.4,0,1,1),opacity .16s ease-in}
+.b4-arc[data-up=true]{padding:9px 9px 19px;transform-origin:var(--tx,44px) calc(100% + 14px);transform:perspective(620px) rotateX(8deg) scale(.94) translateY(-4px)}
+.b4-arc.in{opacity:1;pointer-events:auto;transform:perspective(620px) rotateX(0) scale(1) translateY(0);transition:transform .6s cubic-bezier(.34,1.56,.64,1),opacity .24s ease-out}
+.b4-arc.t-pink{--hc-c:var(--r-broadcast)}
+.b4-arc.t-warn{--hc-c:var(--warn)}
+/* 2026-09-30 17:08 EDT, his: "don't forget to give these the proper pop-up/tint treatment too" (the start and end date chips' calendars): every pop-up's line is its
+   chip's own ring while the chip is open — neutral var(--ink3), the showings chip's pink at 60%, the warn chips' warn at 60% (b4/classes.css .g-chipbtn
+   [aria-expanded=true], and the pink rule in b3/board.css) — not a mix toward the desk. */
+.b4-arc{--pcb:var(--ink3)}
+.b4-arc.t-accent{--hc-c:var(--c,var(--r-broadcast))}   /* the announcement's accent, as its chip (his 17:16 EDT) */
+.b4-arc:is(.t-pink,.t-warn,.t-accent){--pcb:color-mix(in srgb,var(--hc-c) 60%,transparent)}
+.b4-arc > *:not(.b3-pc-edge){position:relative;z-index:1}
+.b4-arc .b3-pc-edge path.glow{fill:none;stroke:color-mix(in srgb,var(--hc-c) 13%,transparent);stroke-width:8}
+@media (prefers-reduced-motion:reduce){.b4-arc,.b4-arc.in{transition:none}}
+/* his, same note: "make the repeat picker toggle's lines 1 px thicker, i can barely see them" — the stepper's ring and its two dividers, 2px (the Post
+   drawer's stepper is the same one, so it thickens with it) */
+/* 2026-09-30 17:03 EDT, his: "the fields/glow are clipping on the right side … text is also clipping … you seemed to have messed up the middle gutter". Measured the
+   same in V62 and now, so older than today: the Post drawer's left column is 486px inside its padding, but the Starts/Ends row asked for 493px (211 + 16 +
+   266, its content's minimum), so the column's one track grew to 493 and everything in it ran 7px past the column's edge, where the column clips —
+   every field's right ring and halo, and the "s" of "Never ends". The track may shrink to the column; Starts gives up the 7px, Ends keeps its toggle. */
+.b4 .pb-col.b3-fady{grid-template-columns:minmax(0,1fr)}
+/* 2026-09-30 17:06 EDT, his answer: "then increase the overall width of the post drawer by ~30px. add 10px into the form side, and 20px into the discord preview side."
+   880 → 910: the form column 486 → 496 (the Starts/Ends row's 493 now fits, with room for the halo), the Discord preview 320 → 340. The track above may still
+   shrink, so a wider row can never push the column past its edge again. */
+.b4 .drawer.wide.b1:has(.pb-bnf){width:min(910px,calc(100vw - 40px))}
+.b4 .drawer.b1:has(.pb-bnf) .bed{grid-template-columns:minmax(0,1fr) 340px}
+
+/* ══ 2026-09-30 17:24 EDT — THE STEPPER, HIS PICK C (of three rendered: "C but make the plus/minus larger and give them proper tinted hover-events instead of grey").
+   One 2px ring; inside it, − and + are inset pills (4px in, the ring's radius less 4) around the count, with no dividers — nothing to double at a joint.
+   An enabled button carries a faint ground; a hover or keyboard focus tints it in the announcement's accent (--c: the card's, the drawer's post), the
+   staged yellow where there is none; a disabled one has no ground and a faded glyph. The glyphs are 17px (were 13). V71's grid of lines is gone. */
+.b4 :is(#_,.pb-step).pb-step{--step-bg:color-mix(in srgb,#04070A 52%,var(--sunk));--step-line:color-mix(in srgb,var(--ink) 22%,var(--step-bg));--step-r:var(--fld-rad,10px);--step-c:var(--c,var(--staged));
+  display:inline-grid;grid-template-columns:40px minmax(48px,auto) 40px;gap:4px;padding:4px;box-sizing:border-box;height:var(--tap,44px);align-items:stretch;
+  border-radius:var(--step-r);overflow:visible;background:var(--step-bg);box-shadow:inset 0 0 0 2px var(--step-line)}
+.b4 :is(#_,.pb-step).pb-step > :is(button,output){height:auto;width:auto;min-width:0;background:transparent!important;box-shadow:none!important;border:0;outline:0}
+.b4 :is(#_,.pb-step).pb-step > button{position:relative;border-radius:calc(var(--step-r) - 4px)!important;color:var(--ink2);transition:background-color .14s ease,color .14s ease,box-shadow .14s ease}
+.b4 :is(#_,.pb-step).pb-step > button:not(:disabled){background:color-mix(in srgb,var(--ink) 6%,var(--step-bg))!important}
+.b4 :is(#_,.pb-step).pb-step > button:not(:disabled):is(:hover,:focus-visible){color:color-mix(in srgb,var(--step-c) 50%,white);background:color-mix(in srgb,var(--step-c) 18%,var(--step-bg))!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--step-c) 55%,transparent)!important;outline:0}
+.b4 :is(#_,.pb-step).pb-step > button:not(:disabled):focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.b4 :is(#_,.pb-step).pb-step > button:disabled{opacity:1;cursor:default}
+.b4 :is(#_,.pb-step).pb-step > button:disabled .ic{opacity:.35}
+/* 2026-09-30 17:38 EDT, his: "why is the repeat-picker in staged yellow tint inside the post drawer? it should be using the pink broadcast tint" — the drawer sets no --c,
+   so the stepper fell back to the staged yellow. In the Post drawer it takes the broadcast pink; the cards' repeat pop keeps the announcement's accent. */
+.b4 .drawer.b1 :is(#_,.pb-step).pb-step{--step-c:var(--r-broadcast)}
+.b4 :is(#_,.pb-step).pb-step .ic{width:16px;height:16px;stroke-width:2.2}
+/* 2026-09-30 17:30 EDT, his: "opening the menu makes the entire bottom fade move up" — the layer carries `.f-form .f-pick` for the list's own styles, and `.b4 .f-form`
+   out-weighed this rule, so the layer sat in the column's parent grid as a new row: the column lost 28px (602 → 574) and its bottom fade rose with it.
+   The layer's own box wins now (an id's weight and !important): out of flow, no size, no mask, nothing that clips or scrolls. */
+:is(#_,.b4-layer).b4-layer{position:absolute!important;left:0!important;top:0!important;width:0!important;height:0!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;
+  overflow:visible!important;display:block!important;background:none!important;box-shadow:none!important;-webkit-mask-image:none!important;mask-image:none!important;transform:none!important;filter:none!important;contain:none!important;pointer-events:none;z-index:60}
+.b4-layer > *{pointer-events:auto}
+
+/* POP-UP TIMING SETS — 2026-09-30 18:18 EDT, his spec. The numbers live in b3/poptime.js (--pop<set>-<name>); these rules only say which property each drives.
+   1 · grow + fade in, shrink + fade out (the problem and all-pass cards, Stage deletion) · 2 · fade only (hints, the image mark, Export's peek) · 3 · fade only,
+   opened by a button (the pickers). A card cut by the handoff (.cut) still leaves at once. Reduced motion keeps the fades and drops the grow. */
+:is(#_,.pop-s1).pop-s1.in:not(.cut){transition:transform var(--pop1-grow,600ms) cubic-bezier(.34,1.56,.64,1),opacity var(--pop1-fadeIn,140ms) ease-out!important}   /* the steep curve reached 76% in one frame — a pop, not a fade (measured) */
+:is(#_,.pop-s1).pop-s1:not(.in):not(.cut){transition:transform var(--pop1-shrink,160ms) cubic-bezier(.4,0,1,1),opacity var(--pop1-fadeOut,180ms) ease-in!important}
+:is(#_,.pop-s2,.pop-s3):is(.pop-s2,.pop-s3){transform:none!important}
+:is(#_,.pop-s2).pop-s2.in:not(.cut){transition:opacity var(--pop2-fadeIn,160ms) ease-out!important}
+:is(#_,.pop-s2).pop-s2:not(.in):not(.cut){transition:opacity var(--pop2-fadeOut,110ms) ease-in!important}
+:is(#_,.pop-s3).pop-s3.in{transition:opacity var(--pop3-fadeIn,160ms) ease-out!important}
+:is(#_,.pop-s3).pop-s3:not(.in){transition:opacity var(--pop3-fadeOut,140ms) ease-in!important}
+/* the arc morphs out of the edge in every set, on the container's spring (2026-09-30 19:25 EDT, his: "none of the image mark animations morph their arc anymore") */
+.pop-s1 .b3-pc-edge path{transition:d var(--pop1-arc,600ms) cubic-bezier(.34,1.56,.64,1)!important}
+.pop-s2 .b3-pc-edge path{transition:d var(--pop2-arc,600ms) cubic-bezier(.34,1.56,.64,1)!important}
+.pop-s3 .b3-pc-edge path{transition:d var(--pop3-arc,600ms) cubic-bezier(.34,1.56,.64,1)!important}
+.b4 :is(#_,.b3-xt-peek).b3-xt-peek{transform:none!important;transition:opacity var(--pop2-fadeOut,110ms) ease-in,top 220ms cubic-bezier(.32,.72,0,1)!important}
+.b4 :is(#_,.b3-xt-peek).b3-xt-peek.on{transition:opacity var(--pop2-fadeIn,160ms) ease-out,top 220ms cubic-bezier(.32,.72,0,1)!important}
+@media (prefers-reduced-motion:reduce){:is(#_,.pop-s1).pop-s1{transform:none!important}}
+/* 2026-09-30 18:31 EDT, his: "if i hover over the problem pop-up and then move my mouse over it's container, it remains open. Can you implement the same thing for the image
+   mark pop-up?" — the image card takes the pointer while it is open, so the mouse can move onto it (its close wait bridges the gap to the mark). */
+/* 2026-09-30 19:01 EDT, his "yes" to every hint card doing the same: any open hint card takes the pointer, not only the image card */
+.b3-hc.in:not(.cut){pointer-events:auto}

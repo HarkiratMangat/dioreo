@@ -1,0 +1,1 @@
+export default {"csrfToken":"board-3-v2-no-session","discordId":"1139845545754632283","username":"","globalName":"","avatarHash":null,"isOwner":true,"canDestroy":true,"visibleRealms":["season","armory","broadcast","review","access","analytics","history"],"sessionExpiresAt":"2026-09-16T08:50:53.375Z"};
