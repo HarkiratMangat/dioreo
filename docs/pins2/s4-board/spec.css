@@ -847,3 +847,26 @@ body { font-family: var(--f-body); margin: 0; }
 
 /* 2026-10-10 21:27 EDT: the decided grid has two columns (today, tint) */
 .spec #filled .fgrid:not(.tags) { grid-template-columns: minmax(96px, 150px) repeat(2, minmax(0, 1fr)); }
+
+/* 2026-10-10 22:10 EDT: the style definitions (spec-defs.js). [data-lkon] paints a button from its recipe's variables: on itself, on its skin child, or on its ::before/::after skin */
+.spec [data-lkon]:not(#_):not(#_) { color: var(--lk-fg) !important; transition: background 160ms ease, box-shadow 160ms ease, color 160ms ease !important; }
+.spec [data-lkon]:not(#_):not(#_):is(:hover, .fxhov) { color: var(--lk-hfg) !important; }
+.spec [data-lkon="self"]:not(#_):not(#_) { background: var(--lk-bg) !important; box-shadow: inset 0 0 0 1px var(--lk-ring) !important; border-width: 0 !important; border-color: transparent !important; }
+.spec [data-lkon="self"]:not(#_):not(#_):is(:hover, .fxhov), .spec .dfb.dfh:not(#_):not(#_) { background: var(--lk-hbg) !important; box-shadow: inset 0 0 0 1px var(--lk-hring), var(--lk-glow) !important; color: var(--lk-hfg) !important; }
+.spec [data-lkon="child"]:not(#_):not(#_) [data-lkskin] { background: var(--lk-bg) !important; box-shadow: inset 0 0 0 1px var(--lk-ring) !important; border-color: transparent !important; }
+.spec [data-lkon="child"]:not(#_):not(#_):is(:hover, .fxhov) [data-lkskin] { background: var(--lk-hbg) !important; box-shadow: inset 0 0 0 1px var(--lk-hring), var(--lk-glow) !important; }
+.spec [data-lkon="before"]:not(#_):not(#_)::before, .spec [data-lkon="after"]:not(#_):not(#_)::after { background: var(--lk-bg) !important; box-shadow: inset 0 0 0 1px var(--lk-ring) !important; border-color: transparent !important; }
+.spec [data-lkon="before"]:not(#_):not(#_):is(:hover, .fxhov)::before, .spec [data-lkon="after"]:not(#_):not(#_):is(:hover, .fxhov)::after { background: var(--lk-hbg) !important; box-shadow: inset 0 0 0 1px var(--lk-hring), var(--lk-glow) !important; }
+.spec .defs { display: grid; gap: 14px; margin-bottom: 26px; }
+.spec .dfg { display: grid; grid-template-columns: 90px repeat(4, minmax(0, 1fr)); gap: 10px 14px; align-items: start; }
+.spec .dfg-h { font: 600 11px/1.3 var(--f-num); color: var(--pg-mine); display: grid; gap: 2px; } .spec .dfg-h em { font-style: normal; color: var(--pg-ink3); font-weight: 500; }
+.spec .dfg-k b { font-family: var(--f-display); font-size: 22px; font-weight: 600; }
+.spec .dfg-c { display: grid; gap: 10px; padding: 12px; background: var(--pg-card); border: 1px solid var(--pg-rule); border-radius: 10px; min-width: 0; }
+.spec .dfg-b { display: flex; gap: 14px; flex-wrap: wrap; } .spec .dfg-b figure { margin: 0; display: grid; gap: 6px; } .spec .dfg-b figcaption, .spec .dfv dt { font: 600 9px/1 var(--f-num); text-transform: uppercase; letter-spacing: .08em; color: var(--pg-ink3); }
+.spec .dfb { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border-radius: 8px; border: 0; font: 600 11px/1 var(--f-ui, 'Space Grotesk'); cursor: pointer; }
+.spec .dfb svg { width: 14px; height: 14px; flex: none; }
+.spec .dfg-v { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .spec .dfv { margin: 0; display: grid; gap: 3px; } .spec .dfv div { display: grid; grid-template-columns: 50px 1fr; gap: 6px; } .spec .dfv dd { margin: 0; font: 500 10.5px/1.3 var(--f-num); color: var(--pg-ink2, var(--pg-ink)); overflow-wrap: anywhere; }
+.spec .dff { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 20px; } .spec .dff div { display: grid; grid-template-columns: 150px 1fr; gap: 8px; } .spec .dff dt { font: 600 11px/1.3 var(--f-num); color: var(--pg-mine); } .spec .dff dd { margin: 0; font: 500 12px/1.4 var(--f-ui, inherit); color: var(--pg-ink2, var(--pg-ink)); }
+
+/* 2026-10-10 22:19 EDT: a value under its label, so a long name never breaks mid-word */
+.spec .dfv div { grid-template-columns: 1fr !important; gap: 1px !important; } .spec .dfv { gap: 6px !important; }

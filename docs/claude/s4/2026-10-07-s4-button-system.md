@@ -296,3 +296,9 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - Reveal: right and left share every timing (measured with `tools/reveal-timing.cjs`); now eased in and out (cubic-bezier(.45,0,.2,1)), opening after a 50ms wait, the word opened to its own width (max-content) so it no longer clips.
 - Still to do from this review: the style definitions table (default, -colour, rest, hover, flags), then the × close, Expand, Undo and Announcement looks drawn from it; Inputs, Pickers, Overlays and Pop-ups redrawn.
 
+### The style definitions (spec v52, written 2026-10-10 22:19 EDT)
+- Read off the board: the Styles section's measured buttons in warn (`docs/pins2/s4-board/spec-img/spec-facts.json`) and a census of every board button's inks (`docs/pins2/s4-board/tools/style-census.cjs`). The census showed paint-colour buttons agree on the rule (neutral at rest, the colour on hover) but not on numbers (outline 42 to 45%), and paint's own fill varies (none, sunk, raised).
+- Drawn as a table on the Styles section (`spec-defs.js`): paint, tint, wash, fill × no token, -realm (Armory), -warn, -realm (History), each at rest and on hover with its values, and the four flags. The same recipe now paints every corrected copy under On the board, read off its name; the per-button looks (fixCss) are gone.
+- Verified with `tools/look-probe.cjs` under a real mouse: the × close rests clear with a rule2 outline and its icon centred (0 off), hovers ink4 and ink; Expand rests sunk 85% and hovers hi; Undo hovers History's colour; the Announcement sort hovers Broadcast's; Set end date and Never are tint-warn. On the board: 56 of 56 buttons change on hover.
+- Calls on the board: "defs" (approve the table) and "defaults" (a tint, wash or fill with no token takes ink, or the realm it sits in; my pick ink).
+
