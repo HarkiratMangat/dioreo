@@ -8,7 +8,8 @@ const BAR = [['meter', ':scope'], ['segment', ':scope > *']];
 const DATA = { group: 'data', sec: 'data', title: 'Data display', type: 'button',
   wholeHead: ['Drawn whole', 'as the board draws them, their parts measured; no rule sizes data display yet (Q12)'],
   table: { note: 'too large for a card: measured on the board, their rows and cells read (Q12)', rows: [['Broadcast manifest', 'table.mtable'], ['Compare, slot by slot', 'table.cx-t']] },
-  exclude: { 'table.mtable': 'measured in the table above', 'table.cx-t': 'measured in the table above' },
+  // 2026-10-10 21:13 EDT: the announcement cards and the Discord previews are products made of many elements, not elements (his "this is a spec-board, not the full gate board … the broadcast cards are a collective product. Similarly the discord previews.")
+  exclude: { 'table.mtable': 'measured in the table above', 'table.cx-t': 'measured in the table above', ...Object.fromEntries(GC.map((s) => [s, 'an announcement card: a product of many elements (his 21:02 EDT)'])), 'div.dcard.lc': 'a loadout preview: a product of many elements (his 21:02 EDT)', 'div.dcard:not(.lc)': 'a Discord preview: a product of many elements (his 21:02 EDT)' },
   whole: { 'button.b3-hi-open.what': [['row', ':scope']], 'span.b3-meter': BAR, 'span.bcbar': [['bar', ':scope']], 'div.dcard.lc': [['card', ':scope']], 'div.dcard:not(.lc)': [['preview', ':scope']],
     'span.cmeter': BAR, 'div.b3-tk-bar': BAR, ...Object.fromEntries(GC.map((s) => [s, CARD])), 'div.pb-meter2': [['meter', ':scope'], ['bar', ':scope > *']] },
   width: { ...Object.fromEntries(GC.map((s) => [s, true])), 'button.b3-hi-open.what': true, 'div.dcard.lc': true, 'div.dcard:not(.lc)': true, 'span.cmeter': true, 'div.pb-meter2': true },

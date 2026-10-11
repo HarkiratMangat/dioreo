@@ -289,3 +289,10 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 > * pop-ups... literally every single one is drawn incorrectly or broken.
 > * Data display... why tf is the whole broadcast cards gate here?? this is a spec-board, not the full gate board. we're refining and standardizing the individual elements that collective make a whole product. the broadcast cards are a collective product. Similarly the discord previews.
 
+### What his 21:02 review changed (spec v51, written 2026-10-10 21:33 EDT)
+- Icon hovers: one cause. The hover-freeze copy turned every `:not(:hover)` into `:not(.fxhov)`, which matches a real hover too, so every --quiet rest rule stayed on while hovered. Fixed in `spec-buttons.js` hoverSheet; Flags 32 of 32 and On the board 51 of 51 buttons now change on hover (standards-mode probe, `tools/hover-probe.cjs`).
+- Tint's outline 55% / 75% everywhere styles are shown (C9) · Set end date and Never decided tint · L words 700 (C1) · Pick named wash-staged (the namer now calls any accent-mixed fill with an accent outline wash) · the selection bar's code paint--quiet · Undo paint-realm · disabled board buttons drawn enabled · one card per icon button name · announcement cards and Discord previews out of Data display.
+- Weapon required: measured against Ready, Filled 4 slots and "4 of 5". All four are one component (b4/form.js Chip, class b4-hint), told apart by tone only.
+- Reveal: right and left share every timing (measured with `tools/reveal-timing.cjs`); now eased in and out (cubic-bezier(.45,0,.2,1)), opening after a 50ms wait, the word opened to its own width (max-content) so it no longer clips.
+- Still to do from this review: the style definitions table (default, -colour, rest, hover, flags), then the × close, Expand, Undo and Announcement looks drawn from it; Inputs, Pickers, Overlays and Pop-ups redrawn.
+

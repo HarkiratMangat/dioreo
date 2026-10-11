@@ -236,8 +236,8 @@
       "id": "pick",
       "what": "The Export drawer's Pick",
       "now": "104 wide with its words and icon centred (30.9 and 26.9 in) · words → icon 8",
-      "to": "button-L-box.tint-staged: L 44, corner 11, padding 14, icon 16, icon → words 10, words 13",
-      "his": "2026-10-09 22:03 EDT (calls/twins): \"the 'button-M-box.tint-staged Export' \\\"pick\\\" button for the export drawer, let's make it L sized\"",
+      "to": "button-L-box.wash-staged: L 44, corner 11, padding 14, icon 16, icon → words 10, words 13",
+      "his": "2026-10-09 22:03 EDT (calls/twins): \"the 'button-M-box.tint-staged Export' \\\"pick\\\" button for the export drawer, let's make it L sized\"; 2026-10-10 21:02 EDT: \"isn't this .wash-staged?\" (a staged fill with a staged outline: wash, C9)",
       "from": "spec board, On the board (2026-10-08 18:32 EDT)",
       "covers": [
         "button.b3-btn2.sm.stage|gap",
@@ -626,6 +626,60 @@
         "button.b3-btn2.sm.go @^Repair|pad-r",
         "button.b3-btn2.sm.go @^Repair|hover-move"
       ]
+    },
+    {
+      "id": "l700",
+      "what": "Every L button's words",
+      "now": "13 · 600",
+      "to": "13 · 700 (C1)",
+      "his": "2026-10-10 21:02 EDT: \"L buttons, yeah let's use 700 weight.\"",
+      "from": "spec board, On the board (2026-10-10 21:22 EDT)",
+      "covers": [
+        "button.b3-btn2.quiet|weight",
+        "button.b3-btn2.dang.go|weight",
+        "button.b3-btn2.sm.stage|weight",
+        "button.b3-btn2.sm.go @^Download|weight",
+        "button.b3-btn2.go:not(.sm):not(.dang)|weight"
+      ]
+    },
+    {
+      "id": "tintedge",
+      "what": "tint's outline",
+      "now": "accent 30% on #0B0F12 at rest, 60% on hover",
+      "to": "accent 55% on #0B0F12 at rest, 75% on hover (C9)",
+      "his": "2026-10-10 21:02 EDT: \"i like the new outline on tint. let's use that for that style?\"",
+      "from": "spec board, Set end date and Never (2026-10-10 21:33 EDT)",
+      "covers": []
+    },
+    {
+      "id": "endnever",
+      "what": "Queue's Set end date and Never",
+      "now": "their own look: a warn fill at rest (Set end date), warn-ink words",
+      "to": "tint-warn: sunk 85% fill, warn 55% on #0B0F12 outline, warn words; on hover warn 12% on sunk, outline warn 75%, words warn 80% on white",
+      "his": "2026-10-10 21:02 EDT: \"move 'never' and 'set end date' -> tint\"",
+      "from": "spec board, Set end date and Never (2026-10-10 21:33 EDT)",
+      "covers": [
+        "button.b3-endbtn|look",
+        "button.g-chipbtn|look"
+      ]
+    },
+    {
+      "id": "sdcode",
+      "what": "The selection bar's gunsmith code",
+      "now": "named paint--ghost--borderless (the board capture read its hover as unchanged)",
+      "to": "button-M-box.paint--quiet: bare at rest, the paint fill and outline on hover",
+      "his": "2026-10-10 21:02 EDT: \"that style is clearly `paint--quiet`\"",
+      "from": "spec board, On the board (2026-10-10 21:33 EDT)",
+      "covers": []
+    },
+    {
+      "id": "undo",
+      "what": "History's Undo",
+      "now": "button-M-box.paint, neutral",
+      "to": "button-M-box.paint-realm, in History's colour",
+      "his": "2026-10-10 21:02 EDT: \"for the 'undo' button, give it `.paint-realm` for the history realm.\"",
+      "from": "spec board, On the board (2026-10-10 21:33 EDT)",
+      "covers": []
     }
   ]
 }
