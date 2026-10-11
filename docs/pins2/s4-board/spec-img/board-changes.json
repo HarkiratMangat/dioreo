@@ -685,7 +685,7 @@
       "id": "styles",
       "what": "Every button's look (wash, tint, fill, paint; with no token and with one; rest and hover; the flags)",
       "now": "each button carries its own inks; paint's fill is none, sunk or raised by button; paint-colour hovers disagree (outline 42 to 45%, fill or none)",
-      "to": "the style definitions on the Styles section (C9): paint sunk 85% / rule2 / ink2, on hover hi / ink4 / ink, and with a colour tint's hover; tint sunk 85% / colour 55% on #0B0F12 / colour, on hover colour 12% on sunk / 75% / 80% on white; wash colour 14% / colour / ink, 24% on hover; fill colour / none / on-colour, on hover 74% on white with a 3px 26% glow",
+      "to": "the style definitions on the Styles section (C9): paint sunk 85% / rule2 / ink2, on hover hi / ink4 / ink, and with a colour tint's hover; tint sunk 85% / colour 55% on #0B0F12 / colour, on hover colour 12% on sunk / 75% / 80% on white; wash colour 14% / colour / ink, 24% on hover; fill colour / none / on-colour, on hover 74% on white with a 3px 26% glow; wash, tint and fill always take a colour (with none it is paint); paint rests grey (raised) with no colour, dark (sunk 85%) with one (his popup, 2026-10-10 23:33: \"adopt for now\")",
       "his": "2026-10-10 21:02 EDT: \"we need to clear up the definition of each style, the exact rest/hover behavior/colors/etc of each style, and the default view of each style.\" (the table waits on his calls \"defs\" and \"defaults\")",
       "from": "spec board, Styles (2026-10-10 22:19 EDT)",
       "covers": []
@@ -698,6 +698,17 @@
       "his": "2026-10-10 23:20 EDT: \"let’s change broadcast’s ‘x of 10 slots left’ chip to match the design of compare’s ‘x of x builds’ chip design?\"",
       "from": "spec board, Chips and tags (2026-10-10 23:22 EDT)",
       "covers": []
+    },
+    {
+      "id": "statictag",
+      "what": "The informative tags (Weapon required, Ready, Filled n slots, n of n)",
+      "now": "one Chip component told apart by tone: fills 5–12%, outlines 16–42%, words warn-ink or colour 82% on white",
+      "to": "tag-S-box.static-<colour>: fill colour 12%, outline colour 40%, words colour 80% on white, no hover; no colour: sunk 85% / rule2 / ink2; 4 of 5 is static--ghost (clear fill). On the S row: 24, corner 6, padding 10, icon 12, words 11 · 600",
+      "his": "2026-10-10 23:20 EDT recipe; his popup \"Use it\"; the word (static or info) still his",
+      "from": "spec board, Set end date and Never (2026-10-10 23:33 EDT)",
+      "covers": [
+        "span.b4-hint|look"
+      ]
     }
   ]
 }

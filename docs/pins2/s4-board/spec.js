@@ -146,7 +146,7 @@ const tokSegs = (s) => String(Array.isArray(s) ? s.join('') : s).split(/(?=--)/)
 const Name = ({ children, lit }) => html`<code class="tok">${tokSegs(children)}${lit && html`<wbr /><b>${tokSegs(lit)}</b>`}</code>`;
 const Tag = ({ kind, children }) => html`<span class=${'tag ' + kind}>${children}</span>`;
 // 2026-10-09 19:37 EDT: a section's own calls sit at its head, before its drawings (his 19:29 EDT "why wouldn't you just put them beside their sections?"); CallCard is set once spec-calls.js is made
-let CallCard = null; const SECCALLS = { styles: ['defs', 'defaults'], colours: ['ratio', 'warnink'], filled: ['filled'], onboard: ['twins'], flags: ['reveal'], chips: ['q8'], badge: ['q7'], overlays: ['q11'], data: ['q12'] };
+let CallCard = null; const SECCALLS = { styles: ['defs'], colours: ['ratio', 'warnink'], filled: ['filled'], onboard: ['twins'], flags: ['reveal'], chips: ['q8'], badge: ['q7'], overlays: ['q11'], data: ['q12'] };
 const CallSlot = (p) => (CallCard ? html`<${CallCard} ...${p} />` : null);
 const Sec = ({ id, title, tag, kind = 'same', hint, aside, children }) => html`<section id=${id}><div class="hd"><h2>${title}</h2>${tag && html`<${Tag} kind=${kind}>${tag}<//>`}${aside || null}</div>${hint && html`<p class="hint">${hint}</p>`}${(SECCALLS[id] || []).length ? html`<div class="callrow">${SECCALLS[id].map((c) => html`<${CallSlot} id=${c} />`)}</div>` : null}${children}</section>`;
 
