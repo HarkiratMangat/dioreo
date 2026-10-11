@@ -336,5 +336,14 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - **(popup, before deciding the width):** "before i decide, can i also see static with outline at 75% instead of 55%? like show me that same screenshot again but add another row to it with static at 75% outline." → static-warn and static-ok added at 75% beside 55%, at all three widths (`local/pins2/s4/intake/outline-1-1.5-2px-static75-2026-10-11.png`, written 2026-10-11 16:04 EDT). Note: 75% is tint's and paint's hover ring.
 - **(popup):** width "1.5px for all (Recommended)"; static's outline "55% (Recommended)". → C10 now reads 1.5px for every style; spec.css `--lk-w` defaults to 1.5px; the tags grid keeps today and one decided column; ledger row `outline15` (2026-10-11 17:31 EDT). The style table's approval is asked next.
 - **(popup, after v56):** the style table "Approve (Recommended)" → C9a approved; the 'defs' call retired from the board (2026-10-11 17:51 EDT).
+- **(reply, 2026-10-11 17:58 EDT):** on the Builder-2 update go-ahead: "no, later."
+## His replies on the open calls, verbatim, written 2026-10-11 18:20 EDT
+- **list-plus:** "show me this?" → Stage build drawn with plus and list-plus, rest and hover (`local/pins2/s4/intake/stage-build-list-plus-2026-10-11.png`).
+- **Twins:** "they're incorrect tho..." → not re-asked. relations.cjs finds 0 faults on 29 copies, so it does not measure what he sees; the candidate shown: the 3 copies filled at rest today drawn as dark paint (`twins-filled-at-rest-2026-10-11.png`).
+- **Reveal:** "where tf even is that on the board? your board nav is so shit." → every call card and index row now has "show me", which scrolls to and flashes the thing it decides (not the card).
+- **Q9:** "wait until later to decide this." · **Q10:** "similarly, wait until later." → both parked, off the index and their cards.
+- **Q11:** "why corner 12? and how are you grouping the drawers and the problem pop-up as 1 question? they're literally entirely different components. the drawers are a whole panel surface. the problem pop-up is a collective element." → Q11 retired: no rule gave 12 (C2 covers controls only; the Overlays section itself says no rule sizes a float), it was my number. Each surface family gets its own drawn proposal.
+- **Q12:** "where tf so i even see this on the spec-board....???" · **Q4:** "again, where tf is this even on the spec-board??" → Q12's card heads Data display, now with show me; Q4 lives only in Your calls (no drawing).
+- **Pop-ups** carried a "Decided" tag no ruling backs; now "Today · being redrawn". Its copies are not today: Builder-2's real pass card has a mono eyebrow and no dead band (`popups-real-builder2-2026-10-11.png` beside `popups-spec-copies-2026-10-11.png`). Next: today = Builder-2 captures; corrected copies per surface family.
 
 
