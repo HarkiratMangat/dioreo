@@ -302,3 +302,28 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - Verified with `tools/look-probe.cjs` under a real mouse: the × close rests clear with a rule2 outline and its icon centred (0 off), hovers ink4 and ink; Expand rests sunk 85% and hovers hi; Undo hovers History's colour; the Announcement sort hovers Broadcast's; Set end date and Never are tint-warn. On the board: 56 of 56 buttons change on hover.
 - Calls on the board: "defs" (approve the table) and "defaults" (a tint, wash or fill with no token takes ink, or the realm it sits in; my pick ink).
 
+## His 2026-10-10 23:20 EDT notes, verbatim, written 2026-10-10 23:22 EDT
+> what exactly is this style table for?
+>
+> how would we standardize those weapon requires/ready/filled x slots/4 of 5 tags?
+> - tag-S-box.wash?
+>     - but currently our 'wash' uses different settings for its outline/fill/word. what other word could we use?
+>     - hue? static? i'm leaning 'static' because these have no hover event. or maybe 'info’? because they're basically just informative tags.
+> - for it's actual standardization, I'm thinking...
+>     - REST: Fill=color 12%. Outline=color 40% 1px. Word=color 80% on white.
+>     - No hover.
+>     - so...
+>         - Weapon required: `tag-S-box.info-warn`
+>         - Ready: `tag-S-box.info-ok`
+>         - Filled 4 slots: `tag-S-box.info-staged` (it says r-review, what is what? Isn’t that just the staged color?)
+>         - 4 of 5: `tag-S-box.info—-ghost` (it’s currently grey fill, but I want to make it transparent fill)
+>     - Default of it can be fill=sunk 85%, Outline=rule2 · 1px (side note: what even is rule2?), Words=ink2?
+> - From the chips/tags im seeing, i notice basically...
+>     - Colored static info tags
+>     - Neutral static info tags
+>     - Unique tags (attachment names + it’s ‘warn’ variant. And history's state tags. And the badges.)
+>     - Neutral + a colored element static status chips (such as Compare’s '5 of 6 builds’ and broadcast’s budget tag 'fill-bar of x of x left’). Side note, let’s change broadcast’s ‘x of 10 slots left’ chip to match the design of compare’s ‘x of x builds’ chip design?
+>     - *Nearly* everything else is mostly a type of button that’s been misclassified as a tag/chip or is just a unique element designed specifically for a specific component. -For the “default” of wash, fill, tint, paint, I’m thinking that wash, fill, tint should only be accompanied by an accent color. If no accent color, then we use paint, who’s base fill we said earlier as “neutral”. So to update it, we can say paint’s base fill is dark (sunk 85%) IF it has an accompanying accent it shows on hover. Otherwise the base fill is grey (idk the exact color), and the hover even is just whatever we were using for it before? Does that make sense? So basically if no accent = paint with grey fill. If accent = each style uses their styling as-is and paint’s fill is dark. Think about it with sequential-thinking.
+
+- Answered 2026-10-10 23:22 EDT: r-review and staged are the same colour (#D8F24A) and the chip's CSS uses var(--staged), so Filled is staged. rule2 is #3A4752, the board's standard 1px hairline grey (rule #2A343D, rule3 #1C242A). The grey paint fill is raised (#1F272E), its hover hi (#232C34). "info" collides with the --info colour token (C11), so I recommended "static". The tinted chips today draw 11–12% / 38–42% / 82% or warn-ink: his recipe is within 1–2 points. Board change filed: ledger row `slotschip`.
+

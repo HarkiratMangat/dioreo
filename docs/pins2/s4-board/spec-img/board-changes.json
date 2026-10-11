@@ -689,6 +689,15 @@
       "his": "2026-10-10 21:02 EDT: \"we need to clear up the definition of each style, the exact rest/hover behavior/colors/etc of each style, and the default view of each style.\" (the table waits on his calls \"defs\" and \"defaults\")",
       "from": "spec board, Styles (2026-10-10 22:19 EDT)",
       "covers": []
+    },
+    {
+      "id": "slotschip",
+      "what": "Broadcast's 'x of 10 slots left' chip",
+      "now": "its own budget-bar chip",
+      "to": "the same design as Compare's 'x of x builds' chip",
+      "his": "2026-10-10 23:20 EDT: \"let’s change broadcast’s ‘x of 10 slots left’ chip to match the design of compare’s ‘x of x builds’ chip design?\"",
+      "from": "spec board, Chips and tags (2026-10-10 23:22 EDT)",
+      "covers": []
     }
   ]
 }
