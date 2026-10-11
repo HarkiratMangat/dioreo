@@ -1,5 +1,5 @@
 {
- "measured": "2026-10-11T01:28:56.304Z",
+ "measured": "2026-10-11T03:27:54.075Z",
  "facts": {
   "button.b3-endbtn|today": {
    "rest": {
@@ -101,6 +101,26 @@
     "r": 6
    }
   },
+  "chip.warn|static": {
+   "rest": {
+    "bg": "color(srgb 1 0.478431 0.270588 / 0.12)",
+    "border": "0px none color(srgb 1 0.582745 0.416471)",
+    "ring": "color(srgb 1 0.478431 0.270588 / 0.4) 0px 0px 0px 1px inset",
+    "color": "color(srgb 1 0.582745 0.416471)",
+    "w": 128.515625,
+    "h": 24,
+    "r": 6
+   },
+   "hover": {
+    "bg": "color(srgb 1 0.478431 0.270588 / 0.12)",
+    "border": "0px none color(srgb 1 0.582745 0.416471)",
+    "ring": "color(srgb 1 0.478431 0.270588 / 0.4) 0px 0px 0px 1px inset",
+    "color": "color(srgb 1 0.582745 0.416471)",
+    "w": 128.515625,
+    "h": 24,
+    "r": 6
+   }
+  },
   "chip.ok|today": {
    "rest": {
     "bg": "color(srgb 0.482353 0.858823 0.388235 / 0.11)",
@@ -117,6 +137,26 @@
     "ring": "color(srgb 0.482353 0.858824 0.388235 / 0.38) 0px 0px 0px 1px inset",
     "color": "color(srgb 0.575529 0.884235 0.498353)",
     "w": 70.40625,
+    "h": 24,
+    "r": 6
+   }
+  },
+  "chip.ok|static": {
+   "rest": {
+    "bg": "color(srgb 0.482353 0.858824 0.388235 / 0.12)",
+    "border": "0px none color(srgb 0.585882 0.887059 0.510588)",
+    "ring": "color(srgb 0.482353 0.858824 0.388235 / 0.4) 0px 0px 0px 1px inset",
+    "color": "color(srgb 0.585882 0.887059 0.510588)",
+    "w": 71.375,
+    "h": 24,
+    "r": 6
+   },
+   "hover": {
+    "bg": "color(srgb 0.482353 0.858824 0.388235 / 0.12)",
+    "border": "0px none color(srgb 0.585882 0.887059 0.510588)",
+    "ring": "color(srgb 0.482353 0.858824 0.388235 / 0.4) 0px 0px 0px 1px inset",
+    "color": "color(srgb 0.585882 0.887059 0.510588)",
+    "w": 71.375,
     "h": 24,
     "r": 6
    }
@@ -141,6 +181,26 @@
     "r": 6
    }
   },
+  "chip.magic|static": {
+   "rest": {
+    "bg": "color(srgb 0.847059 0.94902 0.290196 / 0.12)",
+    "border": "0px none color(srgb 0.877647 0.959216 0.432157)",
+    "ring": "color(srgb 0.847059 0.94902 0.290196 / 0.4) 0px 0px 0px 1px inset",
+    "color": "color(srgb 0.877647 0.959216 0.432157)",
+    "w": 104.5,
+    "h": 24,
+    "r": 6
+   },
+   "hover": {
+    "bg": "color(srgb 0.847059 0.94902 0.290196 / 0.12)",
+    "border": "0px none color(srgb 0.877647 0.959216 0.432157)",
+    "ring": "color(srgb 0.847059 0.94902 0.290196 / 0.4) 0px 0px 0px 1px inset",
+    "color": "color(srgb 0.877647 0.959216 0.432157)",
+    "w": 104.5,
+    "h": 24,
+    "r": 6
+   }
+  },
   "chip.none|today": {
    "rest": {
     "bg": "color(srgb 0.909804 0.929412 0.945098 / 0.05)",
@@ -157,6 +217,26 @@
     "ring": "color(srgb 0.909804 0.929412 0.945098 / 0.16) 0px 0px 0px 1px inset",
     "color": "rgb(157, 170, 180)",
     "w": 49.328125,
+    "h": 24,
+    "r": 6
+   }
+  },
+  "chip.none|static": {
+   "rest": {
+    "bg": "rgba(0, 0, 0, 0)",
+    "border": "0px none rgb(157, 170, 180)",
+    "ring": "rgb(58, 71, 82) 0px 0px 0px 1px inset",
+    "color": "rgb(157, 170, 180)",
+    "w": 50.546875,
+    "h": 24,
+    "r": 6
+   },
+   "hover": {
+    "bg": "rgba(0, 0, 0, 0)",
+    "border": "0px none rgb(157, 170, 180)",
+    "ring": "rgb(58, 71, 82) 0px 0px 0px 1px inset",
+    "color": "rgb(157, 170, 180)",
+    "w": 50.546875,
     "h": 24,
     "r": 6
    }
