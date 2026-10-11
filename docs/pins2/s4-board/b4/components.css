@@ -1,0 +1,165 @@
+/* Board 4 · components — one definition for each standardized part (Builder-2, Session 4, 2026-10-06 15:21 EDT).
+   Harkirat's values of 15:05 EDT (C1's toolbar, filter chips, search, New build, Collapse all, weapon and build rows; History's toolbar), 15:08
+   (the label column is a fixed 64px: a future label wider than 64 raises it) and 15:19 (the build number sits in a column the width of the
+   widest digit, left-aligned with the weapon name; 26 before it, 32 after it).
+   Each of these values was set by three to six rules across app.css, b3/board.css, gates.css and b4/classes.css, the last of them winning by
+   specificity accident; bd-tools/consolidate.cjs removes those declarations, so the rules here are the only ones that set them.
+   Tokens are his sets: text 9 · 11 · 13 · 15, controls 32 · 44, gaps 6 · 10 · 14 · 20 · 26 · 32, corners 8 · 11.
+   A hit area larger than what it draws (a 44px checkbox around its 18px box, a 44px button around its 32px ring) overflows into the space
+   around it by negative margins, so every gap and padding written here is the distance the eye measures between drawn edges. */
+:root{--k-t9:9px;--k-t11:11px;--k-t13:13px;--k-t15:15px;--k-c32:32px;--k-c44:44px;--k-g6:6px;--k-g10:10px;--k-g14:14px;--k-g20:20px;--k-g26:26px;--k-g32:32px;--k-r8:8px;--k-r11:11px;--k-lab:64px;--k-cb:18px;--k-ix:9px;--k-hit:calc((var(--k-cb) - var(--tap)) / 2);--k-ring:calc(-1 * var(--box-inset))}
+
+/* ── toolbars: one grid; its label column a 64px track, then 14, then the controls. History splits in two, 32 apart. Labels are set right in
+   their column, so every label sits 14 from what it names whatever its length. */
+.mtools{display:grid;grid-template-columns:var(--k-lab) var(--k-g14) minmax(0,1fr) auto;gap:var(--k-g14) 0;padding:var(--k-g20)}
+.mtools.b3-hi-tools{grid-template-columns:var(--k-lab) var(--k-g14) minmax(0,1fr) var(--k-g32) var(--k-lab) var(--k-g14) minmax(0,1fr)}
+.mtools > .mt-r1,.mtools > .mt-r2{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-items:center;gap:var(--k-g10) 0;min-width:0;padding:0}
+.mtools .mlabel,.b3-fgl{grid-column:1;justify-self:stretch;width:auto;min-width:0;margin:0;font:500 var(--k-t9)/12px var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);text-align:right}
+.mt-r1 > .srch{grid-column:3;justify-self:start;width:340px;max-width:100%} /* the search keeps its 340 in the grid, where the kit's flex-basis no longer applies */
+.mt-r1 > .madd{grid-column:-2 / -1;justify-self:end}
+.mt-r2 > .mt-grp{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-items:center;gap:0;margin:0;padding:0;box-shadow:none}
+.mt-grp > .mt-chips{grid-column:3 / -1}
+.b3-hi-f > .b3-fg{grid-column:1 / span 3;display:grid;grid-template-columns:subgrid;align-items:center;gap:0}
+.b3-hi-f > .b3-fg:nth-child(even){grid-column:5 / span 3}
+.b3-fg > .b3-fgc{grid-column:3}
+.mt-chips,.b3-fgc{display:flex;flex-wrap:wrap;align-items:center;gap:var(--k-g10) var(--k-g6);min-width:0}
+
+/* ── filter chips: 32 tall, 10 inside, a dot 8 or an icon 12, 6 to the words and 6 to the count, words and count 11 */
+.mt-chips > .chip,.b3-fgc > .b3-fc,.b3-rp-f .b3-fc{display:inline-flex;align-items:center;height:var(--k-c32);min-height:0;padding:0 var(--k-g10);gap:var(--k-g6);border-width:1px;border-radius:999px;font:600 var(--k-t11)/1 var(--ui);color:var(--ink2)}
+.mt-chips > .chip > i,.b3-fgc > .b3-fc > .dot,.b3-rp-f .b3-fc > .dot{width:8px;height:8px}
+.mt-chips > .chip > .ic,.b3-fgc > .b3-fc > .ic,.b3-rp-f .b3-fc > .ic{width:12px;height:12px}
+.mt-chips > .chip > em,.b3-fgc > .b3-fc > em,.b3-rp-f .b3-fc > em{margin:0;font:600 var(--k-t11)/1 var(--data);font-style:normal}
+
+/* ── search: 44 tall, corners 11, its icon 14 from the edge and the words 10 after it (the icon's 16px box holds 12px of drawing) */
+.srch{height:var(--k-c44)}
+.srch > input{height:var(--k-c44);min-height:0;--ctl-pl:33px;padding-top:0;padding-bottom:0;padding-right:var(--k-g14);border-radius:var(--k-r11);font:500 var(--k-t13)/1 var(--ui);color:var(--ink1)}
+.srch > input::placeholder{color:var(--ink4)}
+.srch > svg{left:13.5px;width:12px;height:12px;margin-top:-6px} /* the glass's line sits 0.5 inside its 12px box */
+
+/* ── New build, Post announcement: 44 tall, corners 11, 14 · icon 12 · 10 · words 15 · 14 */
+.mtools .madd{height:var(--k-c44);min-height:0;padding:0 var(--k-g14) 0 12.5px;gap:8.5px;border-radius:var(--k-r11);font:600 var(--k-t15)/1 var(--ui);color:var(--ink1)}
+.mtools .madd > .ic{width:12px;height:12px} /* the plus draws 1.5 inside its box on each side, taken off the 14 before it and the 10 after it */
+
+/* ── Collapse all: 32 tall, corners 8, 10 · icon 14 · 6 · words 11 · 10 */
+.wg-fold{height:var(--k-c32);padding:0 11px;gap:var(--k-g6);font:600 var(--k-t11)/1 var(--ui)}
+.wg-fold > .ic{width:14px;height:14px}
+
+/* ── problem chips (his pick A, 15:53 EDT): like Collapse all beside them; 4px hatched edge, then 10 · icon 14 · 6 · words 11 · 6 | 6 · count 11 · 10 */
+.b3-fx:not(.b3-fx-sm) > .b3-fchip{height:var(--k-c32);border-radius:var(--k-r8);padding:0 var(--k-g10) 0 14px;gap:var(--k-g6);font:600 var(--k-t11)/1 var(--ui)}
+.b3-fx:not(.b3-fx-sm) > .b3-fchip > .ic{width:14px;height:14px}
+
+/* ── icon buttons in a ring (share, delete, a weapon's Collapse): icon 14; the Collapse opens to 10 · icon · 6 · words 11 · 10 */
+.wg-ib .ic{width:14px;height:14px}
+/* its padding is written on the 44px hit box, so it carries the ring's inset: at rest 9 + 6 around the 14px icon keeps the ring a 32 square; open,
+   10 + 6 from the ring and 6 from icon to word (his 15:05 spec; his 17:02 "similarly with the collapse/expand icon-reveal button": it drew 4 and 0).
+   The rest gap is declared here so the kit's own (html[data-b3-a1=fixed], a higher specificity) is removed by consolidate and this one wins open */
+.wg-ib.wg-fbtn{padding:0 calc((var(--k-c32) - 14px) / 2 + var(--box-inset));column-gap:0;transition:grid-template-columns var(--b3-reveal) var(--b3-reveal-ease),column-gap var(--b3-reveal) var(--b3-reveal-ease),padding var(--b3-reveal) var(--b3-reveal-ease)}
+.wg-ib.wg-fbtn:hover,.wg-ib.wg-fbtn:focus-visible{padding:0 calc(var(--k-g10) + var(--box-inset));column-gap:var(--k-g6)}
+.wg-ib::after{font:600 var(--k-t11)/1 var(--ui);text-box:trim-both cap alphabetic} /* the word centred by its capitals, as every label here */
+
+/* ── the manifest's rows: 20 from the edge to the checkbox's box, 26 to the name or the number, the number in a column as wide as the widest
+   digit; the weapon row's name 15 and its category 9, its problem chip 14 from its Collapse; the build row 32 from the number to the build,
+   14 from the build to its buttons, each 14 apart and 20 from the edge */
+.wg-h,.wg-r{column-gap:0;padding:0 var(--k-g20)}
+.wg-h{grid-template-columns:var(--k-cb) var(--k-g26) auto minmax(0,1fr) var(--k-g14) auto}
+.wg-r,.wg-r.dmz{grid-template-columns:var(--k-cb) var(--k-g26) var(--k-ix) var(--k-g32) minmax(0,1fr) var(--k-g14) auto}
+.wg-h > .wg-cb,.wg-r > .wg-cb{grid-column:1;margin-inline:var(--k-hit)}
+.wg-h > .wg-line{grid-column:3}
+.wg-h > .wg-fwrap{grid-column:4;margin-right:0}
+.wg-h > .wg-fbtn{grid-column:6;margin-inline:var(--k-ring)}
+.wg-r > .wg-ix{grid-column:3;justify-self:start}
+.wg-r > .wg-main{grid-column:5}
+.wg-r > .wg-end{grid-column:7}
+.wg-line > b{font:600 var(--k-t15)/1 var(--ui)}
+.wg-main{padding:var(--k-g10) 0;gap:var(--k-g6)}
+.wg-main.named{column-gap:21px}
+.wg-plate{padding:11px;gap:var(--k-g10);font:600 var(--k-t13)/1 var(--ui)}
+.wg-plate > small,.wg-plate > span{text-box:trim-both cap alphabetic}
+.wg-plate > small{margin-right:-0.16em} /* its letter spacing trails the last letter; taken back so the plate's 10 is measured to the label */ /* its 11 inside is 10 from the inset 1px ring it draws */
+.wg-plate::after{left:auto;right:-11px}
+.wg-at{font:500 var(--k-t13)/1 var(--ui)}
+.wg-end{column-gap:var(--k-g14)}
+/* the image chip: a 32 square on the row's centre line (his 17:01: it drew 28 × 32 and sat 2 low). Its 28px wrapper came from board.css's
+   `.b4 :is(#_, .wg-r) .wg-imx.b3-fx.b3-fx-sm`, whose #_ only raised specificity; the wrapper now takes the chip's size and consolidate removes that */
+.wg-end > .wg-imh{flex:none;width:auto;height:auto}
+.wg-end .wg-imx{width:auto;height:auto;margin:0}
+/* the code slot: one width in every row, a 10-character code with 10 each side and its copy button, so an 8-character code and No code line up
+   with the rest (his 16:55 "umm wtf": No code kept the kit's width:100% and filled the row's right side). ch and em are the code's own font */
+.wg-end > .wg-code,.wg-end > .wg-ig.none{flex:none;width:calc(2 * var(--k-g10) + 10ch + .72em + 36px);font:600 var(--k-t11)/1 var(--data)}
+.wg-end > .wg-acts{flex:none;margin-inline:var(--k-ring);column-gap:8px}
+.wg-end .wg-imx .b3-fchip{flex:none;width:var(--k-c32);height:var(--k-c32)}
+.wg-end .wg-imx .b3-fchip > .ic{width:14px;height:14px}
+.wg-code > .wg-ig{width:100%}
+.wg-ig.none{justify-content:center}
+.wg-ig{border-radius:var(--k-r8)}
+.wg-igf{flex:1;padding:0 var(--k-g10)} /* the code sits 10 from the slot's left; a shorter code leaves its spare space on the right */
+.wg-igf > .wg-ct{margin-right:-0.08em} /* the code's letter spacing trails its last character; taken back so the 10 after it is 10 */
+.wg-code .wg-igb > .ic{width:14px;height:14px}
+
+/* ── narrow screens: the rows keep the two-line layout the kit had (app.css's 640px block places the buttons on the second line) */
+@media (max-width:640px){
+  .wg-h{grid-template-columns:var(--k-cb) minmax(0,1fr) auto;column-gap:var(--k-g10);row-gap:var(--k-g6);padding:8px var(--k-g10) 8px var(--k-g14)}
+  .wg-h > .wg-line{grid-column:2}
+  .wg-h > .wg-fwrap{grid-column:2;grid-row:2;justify-self:start}
+  .wg-h > .wg-fbtn{grid-column:3;grid-row:1}
+  .wg-r,.wg-r.dmz{grid-template-columns:var(--k-cb) var(--k-ix) minmax(0,1fr) auto;column-gap:var(--k-g10);row-gap:4px;padding:6px var(--k-g10) 6px var(--k-g14)}
+  .wg-r > .wg-ix{grid-column:2}
+  .wg-r > .wg-main{grid-column:3 / 5;grid-row:1}
+  .mtools{grid-template-columns:minmax(0,1fr)}
+  .mtools > .mt-r1,.mtools > .mt-r2,.mt-r2 > .mt-grp,.b3-hi-f > .b3-fg{display:flex;flex-wrap:wrap;gap:var(--k-g10)}
+  .mtools .mlabel,.b3-fgl{text-align:left}
+  .mt-r1 > .srch{flex:1 1 180px;max-width:none}
+}
+@media (max-width:900px) and (min-width:641px){
+  .mtools.b3-hi-tools{grid-template-columns:var(--k-lab) var(--k-g14) minmax(0,1fr)}
+  .b3-hi-f > .b3-fg:nth-child(even){grid-column:1 / span 3}
+}
+
+/* the copy box (.wg-igb) is the right end of the code chip, so its tint and ring keep the chip's outer corners; it drew square ones on hover
+   inside the 8px chip (Harkirat 2026-10-06 20:47 EDT: "its corners are different than its resting state") */
+.wg-code .wg-igb{border-radius:0 calc(var(--k-c32) * .25) calc(var(--k-c32) * .25) 0}
+
+/* the copy box's tint is opaque, so the chip's outer ring (.wg-ig::after) is drawn above it: hovered, the copy box lost its outline
+   (Harkirat 2026-10-06 21:32 EDT: "it loses its border outline on hover") */
+.wg-code .wg-ig{position:relative}
+.wg-code .wg-ig::after{z-index:1;pointer-events:none}
+/* a ticked or mixed checkbox had no hover at all (his 21:32: "checkbox's - state … has no hover event"): its glow strengthens, as the empty box's ring does */
+html[data-b3-p4] .wg-cb[aria-checked=mixed]:hover .cb,html[data-b3-p4] .wg-cb[aria-checked=true]:hover .cb.on{box-shadow:0 0 0 3px color-mix(in srgb,var(--staged) 36%,transparent)}
+/* Hide list hovers like List: ring brighter, no fill (his 21:32: "when hovering 'hide list' its hover tint shows a grey fill") */
+/* Hide list's hover: b4.css's shared hover (transparent, --ink, a 1px --ink3 ring) skips [aria-expanded=true], meant for toggles whose ON look must hold;
+   the list toggle shows its state in its words, so open it hovers exactly as List does (his 21:32: "fine in list … hide list shows a grey fill") */
+.b4 .b3-sd .b3-btn2.b3-sd-tog[aria-expanded="true"]:hover{background:transparent!important;color:var(--ink)!important;box-shadow:inset 0 0 0 1px var(--ink3)!important}
+
+/* 2026-10-06 22:04 EDT, his "why are the slot name and the attachment name not middle aligned inside the chip": the name trims to its cap band
+   (text-box) and is centred, the label was a stretched line box, so its caps sat 1.4px above the name's (measured at 4x). Both now centre on ink,
+   and the selection list's 2px top nudge, which existed only to push the untrimmed pair down, goes. */
+html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before{display:block;align-self:center;text-box:trim-both cap alphabetic}
+.b3-sd-atts .wg-at.wg-at{padding-top:0}
+/* the manifest row's 13px name still read 0.5–0.75px under its 9px label at 2x across 20 chips (the list's 11px name: 0.25). Lifting the name
+   overshot to the other side (the 2x grid moved it 0.75–1px), and so did the label at 0.5px: a quarter pixel lands it on the name */
+html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-rl .wg-at[data-slot]::before{position:relative;top:0.25px}
+
+/* 2026-10-07 15:50 EDT (his): the search's clear button. An M icon button (32, corner 8, icon 14) inside the L field, 6 from its edge, the nested rule
+   the rails and the BAL-27 chip use. Paint: clear at rest, a neutral tint on hover, the Still press (drops 1px, 98.5%). The match count moves
+   left of it with the same 6. Neutral, not the drawer's red: clearing a search deletes nothing. */
+.srch > .srch-suf{position:absolute;right:6px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:6px}   /* 2026-10-07 17:10 EDT: the count and the x, one group: 6 from the field's edge, 6 apart */
+.srch-suf > .srch-x{position:static;width:32px;height:32px;margin:0;padding:0;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:var(--ink3);cursor:pointer;transition:background-color .13s ease-out,color .13s ease-out,transform .13s ease-out}
+.srch-suf > .srch-x .ic{width:14px;height:14px;stroke-width:2}
+.srch-suf > .srch-x:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.srch-suf > .srch-x:active{transform:translateY(1px) scale(.985)}
+.srch-suf > .srch-x:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+/* 2026-10-07 16:40 EDT (his: the "x matches" chip is incorrect): it was 28 tall beside a 32 x, so their tops and bottoms missed by 2px. Inside the L (44) field both are M: 32 tall, corner 8, 6 from the field's edge, 6 apart; its words on the text scale (s, 11) */
+.srch-suf > .mhits{position:static;transform:none;height:32px;padding:0 10px;border-radius:8px;font-size:11px}
+
+/* 2026-10-07 18:43 EDT (his 18:40 EDT: "switch it, along with the dropdown menu chevrons as well"): the search's clear x and every dropdown's chevron are
+   tint--quiet, the Post drawer's in-field buttons' own formula (b4/classes.css, `.acx .acx-ib` / `.drawer.b1 .pb-dbtn`): clear at rest with the realm's
+   colour in the icon; on hover a 14% realm tint, a 1px ring at 45% and a light icon. Both are M (32, corner 8, icon 14). Press stays Still. */
+.srch-suf > .srch-x, .b4 .f-suf.f-caret{color:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 45%,var(--ink3))}
+.srch-suf > .srch-x:hover, .b4 .f-suf.f-caret:hover{background:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 45%,transparent);color:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 30%,white)}
+.b4 .f-suf.f-caret{border-radius:8px}
+.b4 .f-suf.f-caret .ic{width:14px;height:14px}
+/* (his 18:40 EDT: "add a proper hover event to the Sort chevron") the Weapon head's Sort, tint--quiet too: its height is his builder variant (13), so the
+   hover draws OUTSIDE it — a 4px realm tint and a 1px ring as shadows, an XS-sized box (21) around the words and the chevron — and lights both */
+.wg-heads .wg-sort{border-radius:1px;transition:box-shadow .13s ease-out,color .13s ease-out}
+.wg-heads .wg-sort:hover{color:color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 30%,white);box-shadow:0 0 0 4px color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 14%,transparent),0 0 0 5px color-mix(in srgb,var(--realm-c,var(--r-broadcast)) 45%,transparent)}
+

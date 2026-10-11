@@ -1,0 +1,17 @@
+// The two toggles (2026-10-09 10:21 EDT): with each off, count what is still shown, a viewport shot of On the board with the notes hidden, and that the choice survives a reload.
+const path = require('path'), fs = require('fs'), os = require('os'); const ROOT = path.resolve(__dirname, '../../../..'); const puppeteer = require(path.join(ROOT, 'node_modules/puppeteer-core'));
+/* CLOSE_GUARD: a browser that will not close (seen 2026-10-09 11:19 EDT) must not hold the run: the results are already printed */
+setTimeout(() => process.exit(0), 240000).unref();
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+(async () => { const b = await puppeteer.launch({ executablePath: (process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'), headless: 'new', userDataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tg-')) });
+  const p = await b.newPage(); await p.setViewport({ width: 1282, height: 900 }); await p.goto('http://127.0.0.1:8900/docs/pins2/s4-board/spec.html', { waitUntil: 'networkidle0', timeout: 90000 }); await p.waitForFunction(() => window.__specReady, { timeout: 30000 }); await sleep(2500);
+  const count = () => p.evaluate(() => { const v = (q) => [...document.querySelectorAll(q)].filter((e) => e.getClientRects().length).length; return { notes: v('.spec dl.bmiss') + v('.spec .fm-use') + v('.spec dl.bparts'), copies: ['onboard', 'chips', 'segs', 'inputs', 'overlays', 'data'].filter((id) => { const e = document.getElementById(id); return e && e.offsetHeight > 0; }).length, rail: v('.spy a'), railGroups: v('.spy-g'), textRows: v('.spec .tcen'), height: document.documentElement.scrollHeight }; });
+  /* how long the page is busy after a click: the time until two frames have painted, plus any long task in the next second */
+  const click = async (t) => { const ms = await p.evaluate(async (t) => { const x = [...document.querySelectorAll('.sbar button')].find((b) => b.textContent.includes(t)); const t0 = performance.now(); x.click(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); const t1 = performance.now(); let long = 0; const po = new PerformanceObserver((l) => l.getEntries().forEach((e) => { long = Math.max(long, e.duration); })); po.observe({ type: 'longtask', buffered: false }); await new Promise((r) => setTimeout(r, 1000)); po.disconnect(); return [Math.round(t1 - t0), Math.round(long)]; }, t); console.log(`  click «${t}»: ${ms[0]} ms to paint, longest task after it ${ms[1]} ms`); };
+  console.log('both shown   ', JSON.stringify(await count()));
+  await click('notes'); await sleep(400); console.log('notes hidden ', JSON.stringify(await count()));
+  await p.evaluate(() => document.getElementById('onboard').scrollIntoView()); await sleep(600); await p.screenshot({ path: path.join(__dirname, 'spec-check', 'toggle-notes.png') });
+  await click('board copies'); await sleep(400); console.log('both hidden  ', JSON.stringify(await count()));
+  await p.reload({ waitUntil: 'networkidle0' }); await sleep(2000); console.log('after reload ', JSON.stringify(await count()));
+  await click('notes'); await click('board copies'); await sleep(400); console.log('both back    ', JSON.stringify(await count())); await sleep(3000); console.log('both back +3s', JSON.stringify(await count()));
+  await b.close(); })().catch((e) => { console.error('toggle-shot FAIL', e.message); process.exit(1); });

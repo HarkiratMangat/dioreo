@@ -29,6 +29,7 @@ Never delete or act on a `.claude/worktrees/*` without checking first: run `git 
 - Canonical Diors memory path is THIS repo's slug — never the old `-Applications-Diors-Builds` backup — `project_memory_slug_migration` memory.
 - Before filing a new doc, read the folder taxonomy in CLAUDE.md's 🗺️ nav map or `docs/README.md`.
 - A new test is a line in `scripts/testManifest.mjs`, never `package.json`; CI's one required check is `syntax-check`, the aggregate of six jobs — CLAUDE.md § 🧪 and `docs/reference/scripts-catalogue.md` § How to add to the suite.
+- Subagents: **Haiku 5.5 sidekicks need no approval** (narrow read-only work; read `~/.claude/haiku/haiku-5-5-sidekick-guide.md` first); every other subagent and every new thread still needs Harkirat's explicit approval — global `~/.claude/CLAUDE.md` § Context & Turn Discipline, memory `feedback_token_conscious_tool_routing`.
 
 ## Conditional reads
 - Touching a version number or changelog → skim `project_dior_builds_changelog_system` memory first.

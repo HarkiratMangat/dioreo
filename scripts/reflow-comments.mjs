@@ -512,7 +512,7 @@ function main() {
       .filter(Boolean)
       .filter((f) => !f.includes("node_modules"))
       // docs/pins2/kit/ is the Board 4 design kit, not the product: its ui/ files are copies of portal/ui kept byte-comparable with the originals, and the generated spec cites its lines, so its comments are never reflowed.
-      .filter((f) => !f.startsWith("docs/pins2/kit/"));
+      .filter((f) => !f.startsWith("docs/pins2/kit/") && !f.startsWith("docs/pins2/s4-board/"));   // the spec board copies the kit too (tracked 2026-10-10 19:37 EDT for a cloud session)
   }
 
   if (!files.length) {

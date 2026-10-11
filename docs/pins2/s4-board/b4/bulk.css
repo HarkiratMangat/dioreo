@@ -1,0 +1,155 @@
+/* BOARD 4 · v11 — Bulk create and Edit (2026-09-22 13:55 EDT). The editor overlay keeps board 3's line model (.pb-ed / .pb-ta / .b3-xt-ln), which is
+   what keeps the caret on the glyph it draws; everything new is a bk-* class. Options A · B · C are html[data-b3-f2b] via .bk[data-f]. */
+
+.b4 .b4-hint[data-tone=info]{color:color-mix(in srgb,var(--focus) 70%,white);background:color-mix(in srgb,var(--focus) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--focus) 40%,transparent)}
+.b4 .b4-hint[data-tone=bad]{color:var(--danger-ink);background:color-mix(in srgb,var(--danger-ink) 11%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger-ink) 40%,transparent)}
+
+.b4 div.bk{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:start;min-width:0}
+.b4 div.bk[data-f=c]{grid-template-columns:minmax(0,1fr) 336px}
+.b4 div.bk[data-f=b]{grid-template-columns:minmax(0,1fr)}
+.b4 .bk-edcol{display:grid;gap:12px;min-width:0}
+.b4 .bk-eh{display:flex;align-items:center;gap:10px;min-height:32px}
+.b4 .bk-eh label{font:600 15px/var(--lh-1) var(--ui);color:var(--ink)}
+.b4 .bk-eh .sp{flex:1}
+.b4 .bk-gt{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border:0;border-radius:var(--rad-2);background:none;color:var(--ink2);font:600 12px/var(--lh-1) var(--ui);cursor:pointer;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 16%,transparent);transition:color .15s,box-shadow .15s,background-color .15s}
+.b4 .bk-gt .ic{width:14px;height:14px}
+.b4 .bk-gt:hover{color:var(--ink);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 30%,transparent)}
+.b4 .bk-gt[aria-expanded=true]{color:color-mix(in srgb,var(--realm-c,var(--ink)) 30%,white);background:color-mix(in srgb,var(--realm-c,var(--ink3)) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 50%,transparent)}
+.b4 .bk-gt:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* THE FORMAT KEY (item 22) — the format as four real lines, each beside what it means, not a sentence of code tokens */
+.b4 .bk-guide{padding:14px 16px;border-radius:10px;background:color-mix(in srgb,#04070A 38%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 9%,transparent)}
+/* each row is the line as you type it, and under it what it means: the example is never truncated to make room for the sentence */
+.b4 .bk-guide ol{display:grid;gap:11px;margin:0;padding:0;list-style:none}
+.b4 .bk-guide li{display:grid;gap:3px;min-width:0}
+.b4 .bk-ex{display:block;min-width:0;padding:0;background:none;font:500 12px/round(1.45em, 2px) var(--data);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b4 .bk-ex b{font-weight:600}
+.b4 .bk-ex i{font-style:normal;color:var(--ink4)}
+.b4 .bk-ex s{color:var(--ink4)}
+.b4 .bk-guide li > span{font:500 12px/1.4 var(--ui);color:var(--ink3)}
+.b4 .bk-guide p{display:flex;align-items:center;gap:8px;margin:12px 0 0;padding-top:11px;border-top:1px solid color-mix(in srgb,var(--ink) 8%,transparent);font:500 12.5px/1.4 var(--ui);color:var(--ink3)}
+.b4 .bk-guide p .ic{width:14px;height:14px;color:var(--ink3)}
+
+/* THE MODE CHIP IN THE EDITOR (item 27). A fill and a spread ring on the typed glyphs — never padding, which would move the caret. */
+.b4 .bk-md,.b4 .bk-inf{--mc:#FF3B5C;border-radius:3px;background:color-mix(in srgb,var(--mc) 20%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--mc) 20%,transparent);color:color-mix(in srgb,var(--mc) 40%,white)}
+.b4 :is(.bk-md,.bk-inf)[data-arm=DMZ]{--mc:#3DA5F5}
+.b4 .bk-inf{margin-left:1.2ch;opacity:.55}
+.b4 .bk-after{display:inline-flex;vertical-align:middle;margin-left:14px}
+.b4 .bk-after .b4-hint{height:18px;padding:0 6px;gap:5px;font-size:11px;border-radius:4px}
+.b4 .bk-after .b4-hint .ic{width:11px;height:11px}
+/* A HINT LINE IS VISIBLY A HINT (item 25): another face, a dashed frame, never the typed text's ink */
+.b4 .b3-nb .pb-ed .bk-ghost .b3-xt-tx{color:inherit}
+.b4 .bk-gh{display:inline-block;padding:0 7px;border-radius:4px;outline:1px dashed color-mix(in srgb,var(--ink) 18%,transparent);outline-offset:-1px;font:500 11.5px/18px var(--ui);color:var(--ink4)}
+.b4 .bk-ghost .x-ghost:first-child .bk-gh{color:var(--ink3);outline-color:color-mix(in srgb,var(--ink) 28%,transparent)}
+/* The block the caret is in is lit: its rail at full hue and a breath of its colour, so line and card read as one object (item 23) */
+.b4 .bk-wrap .pb-blk::before{background:var(--c)!important;transition:background-color .15s}  /* v20 (his "why are the left accent lines so dull?"): every block's bar is its weapon category hue at full strength, like the manifest row accent; the block at the caret keeps its wash */
+.b4 .bk-wrap .pb-blk.on{background:color-mix(in srgb,var(--c) 6%,transparent)}
+.b4 .bk-wrap .pb-blk.on::before{background:var(--c)!important}
+
+/* ── THE RESULTS ─────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+.b4 .bk-rescol{position:sticky;top:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:12px;min-width:0;max-height:640px}  /* measured: at 690 the list ran 16px under the drawer's buttons; the stage is a fixed 900, so a fixed height is the honest one */
+.b4 .bk-rh{display:grid;gap:8px}
+.b4 .bk-fl{display:flex;flex-wrap:wrap;gap:6px}
+.b4 .bk-fl button{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 10px;border:0;border-radius:var(--rad-2);background:color-mix(in srgb,#04070A 35%,var(--sunk));color:var(--ink2);
+  font:600 12px/var(--lh-1) var(--ui);cursor:pointer;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent);transition:color .15s,box-shadow .15s,background-color .15s}
+.b4 .bk-fl button b{font:600 11px/var(--lh-1) var(--data);color:var(--ink3)}
+.b4 .bk-fl button i{width:8px;height:8px;border-radius:50%;background:var(--oc,var(--ink3))}
+.b4 .bk-fl [data-o=new]{--oc:var(--ok)}.b4 .bk-fl [data-o=upd]{--oc:var(--focus)}.b4 .bk-fl :is([data-o=warn],[data-o=dup]){--oc:var(--warn)}.b4 .bk-fl [data-o=bad]{--oc:var(--danger-ink)}
+.b4 .bk-fl button:hover{color:var(--ink);background:color-mix(in srgb,var(--realm-c,var(--ink3)) 9%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 38%,transparent)}
+.b4 .bk-fl button[aria-checked=true]{color:color-mix(in srgb,var(--realm-c,var(--ink)) 30%,white);background:color-mix(in srgb,var(--realm-c,var(--ink3)) 18%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 60%,transparent)}
+.b4 .bk-fl button[aria-checked=true] b{color:inherit}
+.b4 .bk-fl button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.b4 .bk-legend{display:flex;align-items:center;gap:8px;margin:0;font:500 12px/1.4 var(--ui);color:var(--ink3)}
+.b4 .bk-list{display:grid;grid-auto-rows:max-content;gap:10px;align-content:start;min-height:0;margin:0;padding:10px 2px 120px;overflow:auto;overscroll-behavior:contain;list-style:none;
+  --fdb:110px}  /* 2026-09-23 08:34 EDT: the board fade (.b3-fady) replaced an always-on mask that dimmed the first and last card even when the list fit; its bottom stays 110px deep because Cancel and Stage float over the list.
+     2026-09-26 15:14 EDT (his "why is there a scrollbar in the ledger card's scroll? when none of the other drawer areas have scrollbars"): a thin scrollbar here overrode the
+     board fade's own scrollbar-width:none — every other drawer scroller shows its overflow by the fade alone. */
+.b4 .bk-empty{padding:34px 12px;text-align:center;font:500 13px/1.45 var(--ui);color:var(--ink3)}
+
+/* One card: the editor's own gutter carries the line range (never a green "new" border), then weapon · mode · label · outcome */
+.b4 .bk-card{position:relative;display:grid;grid-template-columns:34px minmax(0,1fr);min-width:0;border-radius:10px;overflow:hidden;background:var(--sunk);transition:box-shadow .2s,background-color .2s}
+/* 2026-09-26 15:14 EDT (his "the line number part is slightly larger than the remaining ledger card"): the card's 1px ring was an inset box-shadow, painted UNDER its children,
+   so the gutter's opaque ground covered it on three sides while the body showed it — the gutter read 1px proud of the card. The ring is drawn over both. */
+.b4 .bk-card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 10%,transparent);transition:box-shadow .2s}
+.b4 .bk-card.on{background:color-mix(in srgb,var(--c) 5%,var(--sunk));box-shadow:0 14px 30px -20px color-mix(in srgb,var(--c) 70%,transparent)}
+.b4 .bk-card.on::after{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 58%,transparent)}
+.b4 .bk-card[data-o=bad]{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--danger-ink) 5%,transparent) 0 7px,transparent 7px 14px),var(--sunk)}
+.b4 .bk-gut{display:flex;flex-direction:column;align-items:center;justify-content:space-between;margin:0;padding:12px 0;border:0;border-radius:0;
+  background:color-mix(in srgb,#04070A 40%,var(--sunk));box-shadow:inset -1px 0 0 color-mix(in srgb,var(--ink) 8%,transparent);font:500 11px/var(--lh-1) var(--data);color:var(--ink4);cursor:pointer;transition:color .15s}
+.b4 .bk-gut i{flex:1;width:1px;min-height:8px;margin:4px 0;background:currentColor;opacity:.45}
+.b4 .bk-gut:hover,.b4 .bk-card.on .bk-gut{color:color-mix(in srgb,var(--c) 55%,white)}
+.b4 .bk-gut:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+/* 2026-09-26 16:43 EDT: the whole card jumps to its lines (his yes); a hover ring in the card's own hue, lighter than the lit card's 58% */
+.b4 :is(.bk-card,.bk-prev){cursor:pointer}
+.b4 .bk-card:not(.on):hover::after{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 32%,transparent)}
+.b4 .bk-card:hover .bk-gut{color:color-mix(in srgb,var(--c) 55%,white)}
+.b4 .bk-prev:not(.on):hover{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 32%,transparent)}
+.b4 .bk-ghostres :is(.bk-card,.bk-prev){cursor:default}
+.b4 .bk-body{display:grid;gap:10px;min-width:0;padding:12px 14px 12px}
+.b4 .bk-ch{display:flex;align-items:center;gap:8px;min-width:0}
+.b4 .bk-ch .sp{flex:1}
+.b4 .bk-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--c)}
+.b4 .bk-w{font:600 14px/1 var(--ui);color:var(--ink);white-space:nowrap}
+.b4 .bk-ch .b3-xt-pm{margin:0}
+.b4 .bk-lab{min-width:0;font:500 14px/var(--lh-1) var(--ui);color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-box:trim-both cap alphabetic;padding-block:4px;margin-block:-4px}
+/* v12 critique (2026-09-22 16:14 EDT): a card is never squashed and an attachment is never cut. Auto rows in the fixed-height results list shrank each
+   card to fit (its body clipped by overflow:hidden), and a no-wrap chip row cut the third name mid-word. Rows take their content; chips wrap. */
+.b4 .bk-atts{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.b4 .bk-atts .wg-at{flex:none;max-width:100%}
+/* 2026-09-26 15:38 EDT: a card's chip runs wrap to two lines, then scroll sideways behind the fade (.b3-fadx, b3/fady.js) */
+.b4 .bk-run{min-width:0;max-width:100%}
+.b4 .bk-kv dd > .bk-run{flex:0 1 auto}
+.b4 .bk-legend .wg-at{flex:none}
+/* a line longer than the editor fades at its edge instead of stopping at a hard cut */
+.b4 .bk-wrap > .pb-ed{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+.b4 .bk-unk{outline:1px dashed color-mix(in srgb,var(--warn) 75%,transparent);outline-offset:-1px;color:var(--warn-ink)!important}
+.b4 .bk-kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 14px;margin:0;align-items:center}
+.b4 .bk-kv > div{display:contents}   /* the row wrappers only: a chip run inside a value (.bk-run) is a real box */
+.b4 .bk-kv dt{font:500 12px/1 var(--ui);color:var(--ink3)}
+.b4 .bk-kv dd{display:flex;align-items:center;gap:8px;min-width:0;margin:0}
+.b4 .bk-kv code{font:500 11px/var(--lh-1) var(--data);color:var(--ink);letter-spacing:.03em;background:none;padding:0;text-box:trim-both cap alphabetic}
+.b4 .bk-kv .b3-bdgs{padding-left:0;margin-left:0;box-shadow:none}
+.b4 .bk-none{font:500 12px/var(--lh-1) var(--ui);color:var(--ink4)}
+.b4 .bk-img{height:24px}
+.b4 .bk-msg{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0;font:500 13px/round(1.4em, 2px) var(--ui);color:var(--ink2)}
+.b4 .bk-msg .ic{width:16px;height:16px;flex:none;color:var(--warn)}
+.b4 .bk-msg[data-tone=bad] .ic{color:var(--danger-ink)}
+.b4 .bk-msg code{padding:4px 8px;border-radius:5px;background:color-mix(in srgb,var(--ink) 7%,transparent);font:500 12px/1 var(--data);color:var(--ink)}
+.b4 .bk-diff{display:grid;gap:6px;margin:0;padding:10px 0 0;border-top:1px solid color-mix(in srgb,var(--ink) 8%,transparent);list-style:none}
+.b4 .bk-diff li{display:flex;align-items:center;gap:7px;min-width:0;font:500 12.5px/1.3 var(--ui);color:var(--ink2)}
+.b4 .bk-diff .ic{width:13px;height:13px;flex:none;color:var(--ink4)}
+.b4 .bk-dk{flex:none;min-width:82px;color:var(--ink3)}
+.b4 .bk-diff s{color:var(--ink4);text-decoration-color:color-mix(in srgb,var(--ink) 30%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b4 .bk-diff b{font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b4 .bk-more{color:var(--ink3)!important}
+
+/* ── C · preview stack: the card it becomes, under what staging does to it ───────────────────────────────────────────────── */
+.b4 .bk-prev{display:grid;gap:8px;padding:10px;border-radius:12px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 9%,transparent);transition:box-shadow .2s}
+.b4 .bk-prev.on{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 55%,transparent)}
+.b4 .bk-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0}
+.b4 .bk-gut.h{flex-direction:row;height:24px;padding:0 8px;border-radius:6px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 12%,transparent)}
+.b4 .bk-sm{flex-basis:100%;min-width:0;font:500 12.5px/1.35 var(--ui);color:var(--ink3)}  /* a warning is read whole, never cut (the sweep's CUT probe) */
+.b4 .bk-list > .bk-slot{display:block}
+/* v13 (2026-09-22 16:31 EDT) — a result ARRIVES when its block first reads: a 240ms rise (animate: a state change the typing caused). */
+.b4 .bk-card,.b4 .bk-prev{animation:bk-in .24s cubic-bezier(.16,1,.3,1) backwards}
+@keyframes bk-in{from{opacity:0;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){.b4 .bk-card,.b4 .bk-prev{animation:none}}
+/* the empty results column: the guide's example as a faded card, the line on it — the form's empty preview, one class */
+.b4 .bk-ghostwrap{position:relative;padding-top:2px}
+.b4 .bk-ghostres{opacity:.38;filter:saturate(.5);pointer-events:none;-webkit-mask-image:linear-gradient(180deg,#000 55%,transparent);mask-image:linear-gradient(180deg,#000 55%,transparent)}
+.b4 .bk-ghostres :is(.bk-card,.bk-prev){animation:none}
+/* 2026-09-26 15:14 EDT (his "the bulk create/edit list still doesn't scroll"): a real wheel over the editor scrolled nothing — the textarea (overflow:hidden, sized
+   to its content, laid over the drawn lines) is still a scroll container, and Chrome latches the wheel on it instead of chaining to the editor's scroller
+   (measured with Puppeteer: 0px; with pointer-events off it scrolled 200px). overflow:clip is not a scroll container, so the wheel reaches the editor. */
+/* 2026-09-26 15:21 EDT (prep sweep): narrowed to the Bulk editor — `.pb-edwrap > .pb-ta` also reached b3/drawer.js's pb-bulk editor, whose textarea is wrap="off" and scrolls
+   SIDEWAYS inside itself; clip would have stopped that. The Bulk textarea wraps soft, so clip costs it nothing. */
+.b4 .bk-wrap > .pb-ta{overflow:clip}
+/* 2026-09-26 15:34 EDT: the Code row carries the selection bar's own CodeCell (b3/armory-parts.js), sized to this ledger on his word ("adjust it's size to
+   better fit into the ledger and it's spacing"): the ledger's 22px plate and its chip's 8px/6px spacing and 13px icon (the Image row's .bk-img),
+   the ledger's mono value size (the Image row's code, 12.5px, 0.375px tracking); pulled left by its padding so the code's ink sits on the value
+   column, as the selection bar places it. Colour, weight, hover and the Copied state stay the chip's own.
+   The plate shows only on hover, so at rest the row is a text row: -4.75px above and below leave it the 12.5px of its code, and the ledger's
+   rows keep one 24.25px rhythm (measured: 29 with the full 22px row). */
+.b4 .bk-kv .b3-sd-code{height:24px;padding:0 8px;gap:6px;margin:-4px 0 -4px -8px;font-size:12px;line-height:var(--lh-1);letter-spacing:.375px}
+.b4 .bk-kv .b3-sd-code .ic{width:12px;height:12px}

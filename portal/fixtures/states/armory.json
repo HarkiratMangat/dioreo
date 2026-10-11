@@ -112,6 +112,188 @@
       ],
       "known": [],
       "expect": ".cmpt .cv.d"
+    },
+    {
+      "name": "DMZ · the rack",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": "button",
+            "text": "DMZ"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "div.dmz",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "manifest · attachments by slot",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": "button",
+            "text": "By slot"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "div.wg-slots",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "manifest · a Fix build popover",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": "button",
+            "text": "Fix build"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".wg-fsum[aria-expanded=\"true\"]",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "manifest · a search that matches nothing",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "type": {
+            "sel": ".srch input",
+            "text": "zzzz"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "p.empty",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "selection · one build row ticked",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".wg-r .wg-cb"
+        }
+      ],
+      "known": [],
+      "expect": ".selbar.on",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "selection · a whole weapon ticked from its header",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".wg-h .wg-cb"
+        }
+      ],
+      "known": [],
+      "expect": ".selbar.on",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "selection · the Stage deletion confirm",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".wg-r .wg-cb"
+        },
+        {
+          "clickText": {
+            "sel": ".selbar button",
+            "text": "Stage deletion"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "aside.drawer.open",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "row · the trash confirm",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".wg-del"
+        }
+      ],
+      "known": [],
+      "expect": "aside.drawer.open .dw-l",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "build editor · a build row opens it",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".wg-r"
+        }
+      ],
+      "known": [
+        "6:label.dwfield"
+      ],
+      "expect": ".drawer.open .bed-sec",
+      "note": "KNOWN DEFECT, recorded by Session 4 (2026-10-02 09:48 EDT), which writes no portal code: the Gunsmith code field's label takes its accessible name from its contents and runs two words together at one seam (alternating⁞Copy), so a screen reader announces \"…digit and letter alternatingCopy\". The walk's own fix is to end that line with ${' '} (the htm whitespace trap, .claude/rules/portal-editing.md). Session 5 fixes it and removes this entry. Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "export strip · opens from the masthead",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mh-take button"
+        }
+      ],
+      "known": [],
+      "expect": "aside.drawer.open ul.exs",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "add drawer · Bulk create",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mh-new"
+        },
+        {
+          "clickText": {
+            "sel": ".drawer.open button",
+            "text": "Bulk create"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".drawer.open .nb-toolbar",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "staged tray · expanded",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".tray-h"
+        }
+      ],
+      "known": [],
+      "expect": ".tray:not(.collapsed) .rounds",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker A's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
     }
   ]
 }

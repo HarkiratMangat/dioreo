@@ -7,13 +7,14 @@
 //   portal-diff.md the kit's copies of portal files, as unified diffs against the portal (the exact change, not a description of it)
 //   class-map.md   every class the Board 4 spec renders that no portal stylesheet defines, with the kit file:line that does
 //   token-map.md   every custom property the Board 4 spec reads that the portal does not define, with the kit's definition
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const fs = require('fs'); const path = require('path'); const { execFileSync } = require('child_process');
 // docs/pins2/final/board4-spec since 2026-09-28 23:16 EDT (it was one level deeper under docs/superpowers/mockups/) const KIT = path.join(ROOT, 'docs/pins2/kit'); const PORTAL = path.join(ROOT, 'portal');
-const ROOT = path.resolve(__dirname, '../../../..'); const KIT = path.join(ROOT, 'docs/pins2/kit'); const PORTAL = path.join(ROOT, 'portal');
+const ROOT = path.resolve(__dirname, '../../../..'); const KIT = KITC.DIR; const PORTAL = path.join(ROOT, 'portal');
 const MAP3E = path.join(ROOT, 'docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/file-map.md');
 const STAMP = new Date().toISOString();
-const kitHead = (() => { try { return require('child_process').execSync('git rev-parse --short HEAD', { cwd: path.join(ROOT, 'docs/pins2/kit') }).toString().trim() + ' (the kit\'s own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree'; } catch (e) { return 'unknown'; } })();
-const fm = (title, lead) => ['---', 'kind: reference', 'status: live', '---', '', `# Board 4: Collective — ${title}`, '', `*Generated ${STAMP} by \`maps.cjs\` from \`docs/pins2/kit/\` at repo commit \`${kitHead}\`. ${lead}*`, ''];
+const kitHead = (() => { try { return require('child_process').execSync('git rev-parse --short HEAD', { cwd: KIT }).toString().trim() + ' (the kit\'s own local repo, on this Mac only since 2026-09-30 21:16 EDT) plus its working tree'; } catch (e) { return 'unknown'; } })();
+const fm = (title, lead) => ['---', 'kind: reference', 'status: live', '---', '', `# ${KITC.TITLE} — ${title}`, '', `*Generated ${STAMP} by \`maps.cjs\` from \`${KITC.REL}/\` at repo commit \`${kitHead}\`. ${lead}*`, ''];
 const walk = (d, skip) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => { const p = path.join(d, e.name); const r = path.relative(KIT, p);
   if (e.name.startsWith('.') || skip.some((s) => r === s || r.startsWith(s + '/'))) return []; return e.isDirectory() ? walk(p, skip) : [r]; });
 const files = walk(KIT, ['vendor', 'node_modules', 'shots']).sort();

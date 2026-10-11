@@ -1,0 +1,8 @@
+/* the builder's geometry layer for the elements the spec page copies (board-probe.cjs, 2026-10-08T02:38:10.921Z): 7 rules */
+:root { --bd-b-13-height: 13px; --bd-b-13-fs: 13px; --bd-b-13-cls: 2px; --bd-b-13-clh: 14px; --bd-b-13-icon: 12px; --bd-b-13-gap3: 10px; }
+:is(button.wg-sort, button.sortbtn):not(#bd-0):not(#bd-1):not(#bd-2) { height: var(--bd-b-13-height) !important; min-height: 0px !important; max-height: none !important; box-sizing: border-box !important; }
+:is(button.wg-sort > span.tx-cap):not(#bd-0):not(#bd-1):not(#bd-2) { font-size: var(--bd-b-13-fs) !important; }
+:is(button.wg-sort > span.tx-cap):not(#bd-0):not(#bd-1):not(#bd-2) { letter-spacing: var(--bd-b-13-cls) !important; }
+:is(button.wg-sort > span.tx-cap):not(#bd-0):not(#bd-1):not(#bd-2) { line-height: var(--bd-b-13-clh) !important; }
+:is(button.wg-sort > svg.ic:has(> use[href="#i-chevron-up"])):not(#bd-0):not(#bd-1):not(#bd-2) { width: calc((var(--bd-b-13-icon) + 0px) * 1) !important; height: calc((var(--bd-b-13-icon) + 0px) * 1) !important; flex-basis: calc((var(--bd-b-13-icon) + 0px) * 1) !important; min-width: calc((var(--bd-b-13-icon) + 0px) * 1) !important; min-height: calc((var(--bd-b-13-icon) + 0px) * 1) !important; max-width: none !important; max-height: none !important; }
+:is(button.wg-sort > svg.ic):not(#bd-0):not(#bd-1):not(#bd-2) { margin-left: calc(var(--bd-b-13-gap3) - 7.99px) !important; }

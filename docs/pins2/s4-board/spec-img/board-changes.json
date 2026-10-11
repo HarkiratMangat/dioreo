@@ -1,0 +1,714 @@
+{
+  "note": "Board changes decided on the spec board, not on Builder-2 yet; done in one update after the spec board (his 2026-10-07 22:18 EDT). Written 2026-10-07 22:37 EDT. Row t60 (the gate codes, 60 → 58) removed 2026-10-09 10:55 EDT: his \"it's literally just board chrome\" (2026-10-09 10:50 EDT).",
+  "items": [
+    {
+      "id": "still",
+      "what": "Still on every button",
+      "now": "New build and the category chips lift on hover; the four L selection-bar buttons drop without shrinking; Compare's Reset lifts 1px on hover",
+      "to": "hover changes colour only; every press drops 1px and shrinks to 98.5%",
+      "his": "16:19 EDT: wait until the spec board is more or less decided",
+      "covers": [
+        "button.b3-btn2.dang.go|hover-move"
+      ]
+    },
+    {
+      "id": "t15",
+      "what": "Text 17",
+      "now": "17 (card titles)",
+      "to": "l 15",
+      "his": "16:19 EDT: 17 becomes 15"
+    },
+    {
+      "id": "t21",
+      "what": "Text 19, 20, 22",
+      "now": "19 and 20 (big numbers)",
+      "to": "xl 21",
+      "his": "18:21 EDT: 21",
+      "note": "the gate titles (22) left out as the board's chrome, his 2026-10-09 10:50 EDT; written 2026-10-09 10:55 EDT"
+    },
+    {
+      "id": "labels",
+      "what": "Labels",
+      "now": "MANIFEST 500 · category 600 · BUILD NAME its own colour · Compare row heads 600 · ARMORY in the body face",
+      "to": "MANIFEST 600 · category 700 · BUILD NAME the plain category colour · Compare row heads 700 · ARMORY in mono",
+      "his": "13:39 EDT: label names"
+    },
+    {
+      "id": "post",
+      "what": "Post drawer field buttons",
+      "now": "copy 28 · calendar icon 16 · shuffle corner 9 · stepper − and + 40×36",
+      "to": "copy and calendar M 32, icon 14, tint--quiet · shuffle L, corner 11, paint · stepper M 32, icon 14, paint--borderless · the Never-ends switch is switch-S-pill.fill",
+      "his": "22:18 EDT: update them after the spec board is done",
+      "covers": [
+        "button.acx-ib|h",
+        "button.acx-ib|hit",
+        "button.acx-ib|icon",
+        "button.acx-ib|r",
+        "button.acx-ib|w",
+        "button.acx-new|r",
+        "button.pb-dbtn|icon",
+        "button.pb-sw|*"
+      ]
+    },
+    {
+      "id": "sort",
+      "what": "Sort chevron",
+      "now": "13 tall; on hover a red tinted box and a thick ring around the whole head (V28, wrong)",
+      "to": "button-S-icon.paint-realm--ghost--borderless: S 24, click area 32, no fill and no outline at rest or on hover; hover changes the icon colour only. Broadcast's Announcement sort takes the same treatment",
+      "his": "22:18 EDT name; 2026-10-08 11:38 EDT \"give it a proper hover state\"; 2026-10-09 22:03 EDT (calls/twins): \"give it literally the same treatment as the \\\"Weapon\\\" sort button\"; -realm his Q6 note 22:30 EDT",
+      "covers": [
+        "button.wg-sort|gap",
+        "button.wg-sort|h",
+        "button.wg-sort|icon",
+        "button.wg-sort|pad-l",
+        "button.wg-sort|pad-r",
+        "button.wg-sort|r",
+        "button.wg-sort|w",
+        "button.wg-sort|weight",
+        "button.wg-sort|words",
+        "button.sortbtn|*"
+      ]
+    },
+    {
+      "id": "fieldr",
+      "what": "Dropdown field corners",
+      "now": "9 (weapon, category, attachment, Compare, and New build's code, image key and build name; drawn on .f-fld)",
+      "to": "11 (height 44 × 0.25), as the search field already is",
+      "his": "2026-10-08 11:38 EDT: \"they're 44px tall so they should have 11px corner radius\"",
+      "covers": [
+        "*|fr=9"
+      ]
+    },
+    {
+      "id": "chev",
+      "what": "Dropdown chevrons inset",
+      "now": "4 from the field edge (weapon, category, attachment, Compare)",
+      "to": "6: an M 32 button inside an L 44 field sits half the step in, (44 − 32) / 2, the rails' nesting rule",
+      "his": "2026-10-07 12:26 EDT rails rule (one size down, half the step around: 6 · 4 · 2); his 2026-10-08 13:01 EDT correction"
+    },
+    {
+      "id": "fwords",
+      "what": "Field words",
+      "now": "14 (weapon, attachment, Compare) · 12 (category)",
+      "to": "13 on every field, the category's caps too (an L control's words)",
+      "his": "2026-10-08 12:35 EDT conventions rule; 12:45 EDT \"what size text do 44px buttons use?\"",
+      "covers": [
+        "*|fwords=14"
+      ]
+    },
+    {
+      "id": "glass",
+      "what": "Manifest search magnifier",
+      "now": "12, 13.5 from the edge, 7.5 to the words · its own drawing (circle r7, a short handle), not the Lucide search",
+      "to": "16 (an L control's icon), 14 from the edge, 10 to the words, centred (its margin -6 becomes -8) · the Lucide search icon the dropdowns use (circle r8), his 2026-10-08 21:44 EDT: \"the icons are still different, despite your measurement stating 16px\"",
+      "his": "2026-10-08 12:45 EDT: \"what size icon do 44px buttons use?\" · 15:27 EDT: \"shouldn't it be 14 px as per the 44px sizing?\""
+    },
+    {
+      "id": "fpad",
+      "what": "Field padding",
+      "now": "12 before the glass, the dot and a bare placeholder (13.5 on the Manifest search)",
+      "to": "14 on every field (an L control's padding, C1); words 10 after an icon",
+      "his": "2026-10-08 15:27 EDT: \"why is the padding to the left of the magnifying glass 12px? shouldn't it be 14 px as per the 44px sizing?\"",
+      "covers": [
+        "*|fpad=12"
+      ]
+    },
+    {
+      "id": "flook",
+      "what": "Manifest search look",
+      "now": "fill sunk; a rule2 border that turns ink3 on hover, only over the words (the × and the count sit on the input, so they never light it)",
+      "to": "the field look: fill #04070A 52% on sunk, outline ink 12% → 24% on hover, lit from anywhere over the field; focus the fields' staged ring (2px inside, a 5px halo at 16%)",
+      "his": "2026-10-08 15:27 EDT: \"the search.filter light-up when hovered is not the same as the other fields … hovering the x icon or the 'x matches' doesn't active the field's own hover state … the inner dark color is also different\""
+    },
+    {
+      "id": "t12",
+      "what": "Text 12",
+      "now": "12 (572 runs: Open a problem, times like 3:25 PM, Board 2 notes, Key …)",
+      "to": "11",
+      "his": "2026-10-08 17:44 EDT: \"12 -> 11.\"",
+      "covers": [
+        "*|words=12"
+      ]
+    },
+    {
+      "id": "t14",
+      "what": "Text 14",
+      "now": "14 (192 runs: Deleted, Weapon, Gauge-9 Mono, AK117 …)",
+      "to": "13",
+      "his": "2026-10-08 17:44 EDT: \"14 -> 13.\""
+    },
+    {
+      "id": "t10",
+      "what": "Text 10",
+      "now": "10 (Compare's badges META and BEST AR; History's avatar initial)",
+      "to": "9 for the badges (labels); the avatar initial decided when its family is measured",
+      "his": "2026-10-08 17:44 EDT: \"10-> either 9 or 11, depends on where it's used.\""
+    },
+    {
+      "id": "t125",
+      "what": "Text 12.5",
+      "now": "12.5 (Compare's column heads Weapon, Slot, Actions; a cell value)",
+      "to": "11 for the column heads, 13 for the cell value",
+      "his": "2026-10-08 17:44 EDT: \"12.5 -> 11 or 13, depends where its used.\""
+    },
+    {
+      "id": "t16",
+      "what": "Text 16",
+      "now": "16 (the Discord preview's first line)",
+      "to": "15",
+      "his": "2026-10-08 17:44 EDT: \"16 -> 15.\""
+    },
+    {
+      "id": "catdot",
+      "what": "Category field's dot",
+      "now": "8, 12 from the edge, words 10 after it (at 30)",
+      "to": "centred in the L icon's 16 slot: 18 from the edge, words 10 after the slot (at 40)",
+      "his": "2026-10-08 17:45 EDT: \"i pick B. it makes sense being in the 16 icon slot.\""
+    },
+    {
+      "id": "clear",
+      "what": "Compare's Clear table",
+      "now": "padding 12.5 / 15 · icon 14 · icon → words 7.5",
+      "to": "button-L-box.paint--ghost: padding 14 · icon 16 · icon → words 10",
+      "his": "C1, the L row (his 2026-10-07); C2 corner = height × 0.25",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.b3-btn2.quiet|pad-l",
+        "button.b3-btn2.quiet|pad-r",
+        "button.b3-btn2.quiet|icon",
+        "button.b3-btn2.quiet|gap"
+      ]
+    },
+    {
+      "id": "reset",
+      "what": "Compare's Reset",
+      "now": "corner 8 · padding 16 · icon 14 · icon → words 8",
+      "to": "button-L-box.fill-danger: corner 11 · padding 14 · icon 16 · icon → words 10",
+      "his": "C1, the L row (his 2026-10-07); C2 corner = height × 0.25",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.b3-btn2.dang.go|r",
+        "button.b3-btn2.dang.go|pad-l",
+        "button.b3-btn2.dang.go|pad-r",
+        "button.b3-btn2.dang.go|icon",
+        "button.b3-btn2.dang.go|gap"
+      ]
+    },
+    {
+      "id": "code",
+      "what": "The manifest row's code",
+      "now": "its copy icon 20.6 after the code",
+      "to": "DEFERRED: \"it's not really a single button, it's more like a component. so it needs a different kind of proposal\" (his 2026-10-09 22:03 EDT); was: button-M-box.paint--borderless: 6 after it",
+      "his": "C1, the M row (his 2026-10-07); C2 corner = height × 0.25",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.wg-code|gap",
+        "button.wg-code|pad-l",
+        "button.wg-code|pad-r"
+      ]
+    },
+    {
+      "id": "fold",
+      "what": "Collapse all",
+      "now": "padding 11",
+      "to": "button-M-box.paint: padding 10",
+      "his": "C1, the M row (his 2026-10-07); C2 corner = height × 0.25",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.wg-fold|pad-l",
+        "button.wg-fold|pad-r"
+      ]
+    },
+    {
+      "id": "showthem",
+      "what": "Repairs' Show them",
+      "now": "padding 10 / 12 · icon → words 8",
+      "to": "button-M-box.paint--ghost: padding 10 · icon → words 6",
+      "his": "C1, the M row (his 2026-10-07); C2 corner = height × 0.25",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.b3-btn2.ghost.sm|pad-l",
+        "button.b3-btn2.ghost.sm|pad-r",
+        "button.b3-btn2.ghost.sm|gap"
+      ]
+    },
+    {
+      "id": "pick",
+      "what": "The Export drawer's Pick",
+      "now": "104 wide with its words and icon centred (30.9 and 26.9 in) · words → icon 8",
+      "to": "button-L-box.wash-staged: L 44, corner 11, padding 14, icon 16, icon → words 10, words 13",
+      "his": "2026-10-09 22:03 EDT (calls/twins): \"the 'button-M-box.tint-staged Export' \\\"pick\\\" button for the export drawer, let's make it L sized\"; 2026-10-10 21:02 EDT: \"isn't this .wash-staged?\" (a staged fill with a staged outline: wash, C9)",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.b3-btn2.sm.stage|gap",
+        "button.b3-btn2.sm.stage|h",
+        "button.b3-btn2.sm.stage|icon",
+        "button.b3-btn2.sm.stage|pad-l",
+        "button.b3-btn2.sm.stage|pad-r",
+        "button.b3-btn2.sm.stage|r"
+      ]
+    },
+    {
+      "id": "pcopen",
+      "what": "The problem pop-up's Open build",
+      "now": "padding 12 / 10 · icon 12",
+      "to": "button-M-box.paint: padding 10 · icon 14",
+      "his": "C1, the M row (his 2026-10-07); C2 corner = height × 0.25",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.b3-pc-open|pad-l",
+        "button.b3-pc-open|pad-r",
+        "button.b3-pc-open|icon",
+        "button.b3-pc-open|gap"
+      ]
+    },
+    {
+      "id": "pcx",
+      "what": "The problem pop-up's close",
+      "now": "corner 6 · icon 12",
+      "to": "button-M-icon.paint--ghost: corner 8 · icon 14",
+      "his": "C1, the M row (his 2026-10-07); C2 corner = height × 0.25",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.b3-pc-x|r",
+        "button.b3-pc-x|icon"
+      ]
+    },
+    {
+      "id": "copycode",
+      "what": "New build's copy the code",
+      "now": "corner 5 · icon 16 · nothing changes on hover or press",
+      "to": "button-M-icon.paint--ghost--borderless: corner 8 · icon 14 · Still (hover colours the icon, press drops 1px at 98.5%)",
+      "his": "C1, the M row (his 2026-10-07); C2; C10 Still (2026-10-07 15:46)",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.f-cp|icon",
+        "button.f-cp|press",
+        "button.f-cp|r"
+      ]
+    },
+    {
+      "id": "rename",
+      "what": "The Export drawer's file name",
+      "now": "padding 8 · words → icon 8 · words 500",
+      "to": "button-S-box.tint-ok: padding 10 · gap 6 · words 600",
+      "his": "C1, the S row (his 2026-10-07); C2 corner = height × 0.25",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.b3-xf-fn|pad-l",
+        "button.b3-xf-fn|pad-r",
+        "button.b3-xf-fn|gap",
+        "button.b3-xf-fn|weight"
+      ]
+    },
+    {
+      "id": "stmin",
+      "what": "Before staging's minimise",
+      "now": "corner 7",
+      "to": "button-S-icon.paint--ghost--quiet: corner 6",
+      "his": "C1, the S row (his 2026-10-07); C2 corner = height × 0.25",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.b3-x.f-stmin|r"
+      ]
+    },
+    {
+      "id": "q3",
+      "what": "The 28 and 40 tall buttons",
+      "now": "28: the drawer's ×, Undo, the queue card's Edit and remove, Set end date, Never · 40: Stage this MP build",
+      "to": "28 → M 32 (corner 8, icon 14, padding 10, words 11) · 40 → L 44 (corner 11, icon 16, padding 14, words 13); the selection bar's code waits on its own section (24 or 32)",
+      "his": "2026-10-08 19:43 EDT: \"28->32. 40->44. except the selection bar's gunsmith code\"",
+      "from": "spec board, On the board (2026-10-08 18:32 EDT)",
+      "covers": [
+        "button.x|*",
+        "button.b3-undo|*",
+        "button.g-edit|*",
+        "button.pb-del|*",
+        "button.b3-endbtn|*",
+        "button.g-chipbtn|*",
+        "button.b3-btn2.go:not(.sm):not(.dang)|*"
+      ]
+    },
+    {
+      "id": "q8tags",
+      "what": "Tags and chips that are not controls",
+      "now": "24 tall with padding 8 · 20 tall with padding 8 · 32 tall with corner 5 · the 28 tall ones (Q3) · words 12 and 13",
+      "to": "Q8: whether they follow the control rows (C0–C2): S 24 padding 10 corner 6 · XS 20 padding 6 corner 5 · M 32 corner 8; words by C5 either way",
+      "his": "open: Q8",
+      "covers": [
+        "group:chips"
+      ],
+      "from": "spec board, Chips and tags (2026-10-08 18:55 EDT)"
+    },
+    {
+      "id": "rvpill",
+      "what": "Repairs' launcher",
+      "now": "a 32 pill with padding 14.7 / 12 (its count leads)",
+      "to": "button-M-pill.wash-warn: padding 10 (C1 M), the count a nested S (C3: 4 around)",
+      "his": "C1 · C3 · C4 (his 2026-10-07)",
+      "covers": [
+        "button.b3-rv|pad-l",
+        "button.b3-rv|pad-r",
+        "button.b3-rv|press"
+      ],
+      "from": "spec board, Chips and tags (2026-10-08 18:55 EDT)"
+    },
+    {
+      "id": "selbar32",
+      "what": "The selection bar's code, status chip and ×",
+      "now": "code 28 · status chip 22 · × 28",
+      "to": "M 32: corner 8, icon 14, padding 10, words 11 (the status chip and × square)",
+      "his": "2026-10-08 19:58 EDT: \"32.\"",
+      "from": "spec board, The selection bar",
+      "covers": [
+        "button.as-btn.b3-sd-code|*"
+      ]
+    },
+    {
+      "id": "tabsrail",
+      "what": "The realm sub-tabs (Repairs, Queue, Admin)",
+      "now": "42 tall, segments 32, inset 5",
+      "to": "button-L-rail: 44, M 32 segments, inset 6 (C3, R9)",
+      "his": "C1, the L row; C2; C3 (his 2026-10-07)",
+      "from": "spec board, Segmented and switches (2026-10-08 22:06 EDT)",
+      "covers": [
+        "div.seg:not(.pb-seg)|*"
+      ]
+    },
+    {
+      "id": "srcrail",
+      "what": "The image source picker (New build, Post)",
+      "now": "40 tall, corner 9, inset 4, segment corner 6",
+      "to": "button-L-rail: 44, corner 11, inset 6, M segments corner 8",
+      "his": "C1, the L row; C2; C3 (his 2026-10-07)",
+      "from": "spec board, Segmented and switches (2026-10-08 22:06 EDT)",
+      "covers": [
+        "div.f-src|*"
+      ]
+    },
+    {
+      "id": "tiers",
+      "what": "New build's tier picker",
+      "now": "segments 32, corner 6, words 12",
+      "to": "its segments on the M row: corner 8, padding 10, words 11",
+      "his": "C1, the M row; C2; C3 (his 2026-10-07)",
+      "from": "spec board, Segmented and switches (2026-10-08 22:06 EDT)",
+      "covers": [
+        ".f-tiers > [aria-checked=true]|*"
+      ]
+    },
+    {
+      "id": "mode",
+      "what": "New build's MP / DMZ switch",
+      "now": "40 tall, corner 6, padding 25, words 17 · 700",
+      "to": "L 44 (his Q3: 40 → 44): corner 11, padding 14, words 13 · 600",
+      "his": "his 2026-10-08 19:43 EDT Q3; C1, the L row",
+      "from": "spec board, Segmented and switches (2026-10-08 22:06 EDT)",
+      "covers": [
+        ".b3-xt-mode.mh-mode > *|*"
+      ]
+    },
+    {
+      "id": "incchip",
+      "what": "Admin's traffic toggle",
+      "now": "padding 17, gap 8, words 12, lifts 1px on hover",
+      "to": "button-L-pill: padding 14, gap 10, words 13, Still (hover changes colour only)",
+      "his": "C1, the L row; C2; C3 (his 2026-10-07); C10",
+      "from": "spec board, Segmented and switches (2026-10-08 22:06 EDT)",
+      "covers": [
+        "button.chip.incchip|*"
+      ]
+    },
+    {
+      "id": "tagtoggle",
+      "what": "New build's tag toggles (META, TOXIC…)",
+      "now": "corner 9, a checkbox and a badge inside, icon 12, gap 4",
+      "to": "button-L-box: corner 11, icon 16, padding 14, gap 10; the badge keeps its label style (R11)",
+      "his": "C1, the L row; C2; C3 (his 2026-10-07)",
+      "from": "spec board, Segmented and switches (2026-10-08 22:06 EDT)",
+      "covers": [
+        "button.f-bt.wg-cb|*"
+      ]
+    },
+    {
+      "id": "keys",
+      "what": "Compare's build keys",
+      "now": "corner 7, a number in 13 · 900 mono",
+      "to": "corner 8 (C2); the number keeps its value style until he says otherwise",
+      "his": "C1, the M row; C2; C3 (his 2026-10-07)",
+      "from": "spec board, Segmented and switches (2026-10-08 22:06 EDT)",
+      "covers": [
+        "button.cx-k|*"
+      ]
+    },
+    {
+      "id": "fcnone",
+      "what": "History's empty filter chips",
+      "now": "a count leads (padding 32), nothing on press",
+      "to": "C4 filter chip: padding 10, the count nested (C3), Still on press",
+      "his": "C3 · C4 · C10",
+      "from": "spec board, Segmented and switches (2026-10-08 22:06 EDT)",
+      "covers": [
+        "button.b3-fc.none|*"
+      ]
+    },
+    {
+      "id": "fcwarn",
+      "what": "Repairs' warning filter chips",
+      "now": "icon 16",
+      "to": "icon 14 (M)",
+      "his": "C1, the M row; C2; C3 (his 2026-10-07)",
+      "from": "spec board, Segmented and switches (2026-10-08 22:06 EDT)",
+      "covers": [
+        "button.b3-fc.warn|*"
+      ]
+    },
+    {
+      "id": "txarea",
+      "what": "Post's body field",
+      "now": "corner 6 · words 18 from its edge",
+      "to": "corner 11 · 14 from its edge (an L field, C1 and C13); its words 13 under fwords",
+      "his": "C1, the L row; C2; C13 (his 2026-10-08 15:27 EDT)",
+      "from": "spec board, Inputs (2026-10-08 23:42 EDT)",
+      "covers": [
+        "div.dwfield.pb-txf|fr",
+        "div.dwfield.pb-txf|fpad"
+      ]
+    },
+    {
+      "id": "srchgap",
+      "what": "Broadcast's search",
+      "now": "8.5 from the glass to the words",
+      "to": "10 (C1 L icon → words), as History's search already is",
+      "his": "C1, the L row (2026-10-07)",
+      "from": "spec board, Inputs (2026-10-08 23:42 EDT)",
+      "covers": [
+        "#c-broadcast :has(> input[placeholder^=Search])|fgap"
+      ]
+    },
+    {
+      "id": "step",
+      "what": "the stepper (Post · showings)",
+      "now": "corner 9 · its − and + 36 tall, corner 5, 4 in from the edge",
+      "to": "corner 11 · M 32 buttons, corner 8, 6 in (a box on the field ground is L 44; its buttons one size down, C3)",
+      "his": "C1; C2; C3 (his 2026-10-07 12:26 EDT, generalised 2026-10-08 13:00 EDT)",
+      "from": "spec board, Inputs (2026-10-08 23:42 EDT)",
+      "covers": [
+        "div.pb-step|*"
+      ]
+    },
+    {
+      "id": "dpnav",
+      "what": "the date picker's month arrows",
+      "now": "36 × 32 · icon 16 · press does nothing",
+      "to": "an M icon button: 32 × 32, icon 14 (C1, C6); press drops 1px at 98.5% (C10)",
+      "his": "C1; C6; C10 (2026-10-07)",
+      "from": "spec board, Inputs (2026-10-08 23:42 EDT)",
+      "covers": [
+        "button.b3-dp-nav:not(:disabled)|*"
+      ]
+    },
+    {
+      "id": "dpday",
+      "what": "the date picker's days",
+      "now": "press does nothing · 36 tall, off the size table, words 14",
+      "to": "press drops 1px at 98.5% (C10); the day's row waits on Q10 (today 36 · M 32 · L 44, drawn on the switch)",
+      "his": "C10 (2026-10-07); Q10 his",
+      "from": "spec board, Inputs (2026-10-08 23:42 EDT)",
+      "covers": [
+        "button.b3-dp-d:not(.today):not(.out):not(.on)|*",
+        "button.b3-dp-d.today|*",
+        "button.b3-dp-d.out|*",
+        "button.b3-dp-d.on|*"
+      ]
+    },
+    {
+      "id": "bnprefix",
+      "what": "New build's build name field: its \"Build 1\" prefix",
+      "now": "a tinted box flush with the field edge (1 in) · 12 from it to the words",
+      "to": "any leading content sits 14 from the edge with the words 10 after it (C13, C1); the prefix's own box waits on Q8 (tags that are not controls)",
+      "his": "C1; C13 (his 2026-10-08 15:27 EDT); Q8 his",
+      "from": "spec board, Inputs (2026-10-08 23:44 EDT)",
+      "covers": [
+        "div.f-fld:has(> input[placeholder^=Like])|fpad",
+        "div.f-fld:has(> input[placeholder^=Like])|fgap"
+      ]
+    },
+    {
+      "id": "hirow",
+      "what": "History's rows (open an event)",
+      "now": "press does nothing",
+      "to": "press drops 1px at 98.5% (C10, as every button)",
+      "his": "C10 (2026-10-07)",
+      "from": "spec board, Data display (2026-10-09 00:07 EDT)",
+      "covers": [
+        "button.b3-hi-open.what|press"
+      ]
+    },
+    {
+      "id": "shuffle",
+      "what": "Post's colour picker: the new-colour (shuffle) button",
+      "now": "a neutral outline (ink 12%) with its icon in the realm colour (broadcast)",
+      "to": "tint: the outline in the realm colour too (C9: an accent outline on a dark fill); name button-L-icon.tint-realm",
+      "his": "2026-10-09 12:14 EDT: \"tint.\"; -realm, his Q6 note (2026-10-09 22:30 EDT)",
+      "from": "spec board, On the board (2026-10-09 12:14 EDT)",
+      "covers": [
+        "button.acx-new|*"
+      ]
+    },
+    {
+      "id": "imgcard",
+      "what": "The image card for a missing or failed image",
+      "now": "cuts its own words: \"No Image or K…\", \"Cloudinary hosted imag…\", \"Image is set but faile…\" (the card keeps the width of an image that is not there)",
+      "to": "the card is as wide as its words when there is no image",
+      "his": "2026-10-09 11:49 EDT: \"you didn't draw the ... no-image, image didn't load ... pop-ups?\"",
+      "from": "spec board, Pop-ups (2026-10-09 15:37 EDT)"
+    },
+    {
+      "id": "reveal",
+      "what": "The reveal (Collapse in the manifest rows; --reveal-right and --reveal-left)",
+      "now": "the icon moves sideways as the box opens; the words are cut mid-letter by a hard edge; on the left reveal they show outside the box while it grows and shrinks",
+      "to": "the icon held at its rest place; the words clipped inside the box with a 10px soft edge; opening, the box moves first and the words fade in at 110ms; closing, the words fade out first (90ms) and the box follows at 80ms",
+      "his": "2026-10-09 11:49 EDT: \"refine and fix the reveal right/left animation\" (two recordings)",
+      "from": "spec board, Flags (2026-10-09 15:41 EDT)"
+    },
+    {
+      "id": "download",
+      "what": "The Export drawer's two Download buttons",
+      "now": "M 32 · padding 12 · icon → words 4 · words 12",
+      "to": "button-L-box.fill-ok: L 44, corner 11, padding 14, icon 16, icon → words 10, words 13",
+      "his": "2026-10-09 22:03 EDT (calls/twins): \"Similarly for the 2 \\\"Download\\\" buttons that sit above it in the drawer as well.\"",
+      "covers": [
+        "button.b3-btn2.sm.go @^Download|*"
+      ],
+      "from": "spec board, On the board (2026-10-10 19:21 EDT)"
+    },
+    {
+      "id": "stagebtn",
+      "what": "New build's Stage this MP build",
+      "now": "\"Stage this MP build\", no icon · 40 tall",
+      "to": "\"Stage build\" with a plus icon, button-L-box.fill-ok (L 44, icon 16, icon → words 10)",
+      "his": "2026-10-09 22:03 EDT (calls/twins): \"reword \\\"stage this mp build\\\" to \\\"Stage build\\\" and add an icon to it?\"",
+      "covers": [
+        "button.b3-btn2.go:not(.sm):not(.dang)|words"
+      ],
+      "from": "spec board, On the board (2026-10-10 19:21 EDT)"
+    },
+    {
+      "id": "ncx",
+      "what": "The drawers' close ×",
+      "now": "28 square, icon 10, its words open on the right (--reveal-right)",
+      "to": "button-M-icon.paint--ghost--reveal-left: a 32 square at rest (corner 8, icon 14); on hover its words open on the left, the icon held, the right edge held",
+      "his": "2026-10-09 22:03 EDT (calls/twins): \"the 'button-M-icon.paint--ghost--reveal-right' x close button is bugged. also it should reveal-left.\"",
+      "covers": [
+        "button.x|*"
+      ],
+      "from": "spec board, On the board (2026-10-10 19:21 EDT)"
+    },
+    {
+      "id": "ratio",
+      "what": "Every colour's lighter variant (words on hover)",
+      "now": "about 40 different mixes from 26% to 94%; warn-ink #FF9E72 and danger-ink #FF8A85 fixed",
+      "to": "one ratio: colour 80% on white; warn-ink derived as warn 80% (#FF956A), danger-ink as danger 80% (#FF8989)",
+      "his": "calls/ratio \"80\" (2026-10-09 19:28 EDT) and calls/warnink \"derived\" (19:32 EDT); danger-ink follows from the one ratio",
+      "covers": [],
+      "from": "spec board, Colours (2026-10-10 19:21 EDT)"
+    },
+    {
+      "id": "repair",
+      "what": "Repairs' Repair build",
+      "now": "M 32 · words → icon 8 · padding 10 / 12 · hover lifts it 1px",
+      "to": "button-M-box.fill-ok: padding 10 · icon → words 6 · Still (hover changes colour only)",
+      "his": "C1, the M row (his 2026-10-07); C10 Still (2026-10-07 15:46 EDT)",
+      "from": "spec board, On the board (2026-10-10 19:32 EDT): never read until his twins note sent me to the Export Downloads",
+      "covers": [
+        "button.b3-btn2.sm.go @^Repair|gap",
+        "button.b3-btn2.sm.go @^Repair|pad-r",
+        "button.b3-btn2.sm.go @^Repair|hover-move"
+      ]
+    },
+    {
+      "id": "l700",
+      "what": "Every L button's words",
+      "now": "13 · 600",
+      "to": "13 · 700 (C1)",
+      "his": "2026-10-10 21:02 EDT: \"L buttons, yeah let's use 700 weight.\"",
+      "from": "spec board, On the board (2026-10-10 21:22 EDT)",
+      "covers": [
+        "button.b3-btn2.quiet|weight",
+        "button.b3-btn2.dang.go|weight",
+        "button.b3-btn2.sm.stage|weight",
+        "button.b3-btn2.sm.go @^Download|weight",
+        "button.b3-btn2.go:not(.sm):not(.dang)|weight"
+      ]
+    },
+    {
+      "id": "tintedge",
+      "what": "tint's outline",
+      "now": "accent 30% on #0B0F12 at rest, 60% on hover",
+      "to": "accent 55% on #0B0F12 at rest, 75% on hover (C9)",
+      "his": "2026-10-10 21:02 EDT: \"i like the new outline on tint. let's use that for that style?\"",
+      "from": "spec board, Set end date and Never (2026-10-10 21:33 EDT)",
+      "covers": []
+    },
+    {
+      "id": "endnever",
+      "what": "Queue's Set end date and Never",
+      "now": "their own look: a warn fill at rest (Set end date), warn-ink words",
+      "to": "tint-warn: sunk 85% fill, warn 55% on #0B0F12 outline, warn words; on hover warn 12% on sunk, outline warn 75%, words warn 80% on white",
+      "his": "2026-10-10 21:02 EDT: \"move 'never' and 'set end date' -> tint\"",
+      "from": "spec board, Set end date and Never (2026-10-10 21:33 EDT)",
+      "covers": [
+        "button.b3-endbtn|look",
+        "button.g-chipbtn|look"
+      ]
+    },
+    {
+      "id": "sdcode",
+      "what": "The selection bar's gunsmith code",
+      "now": "named paint--ghost--borderless (the board capture read its hover as unchanged)",
+      "to": "button-M-box.paint--quiet: bare at rest, the paint fill and outline on hover",
+      "his": "2026-10-10 21:02 EDT: \"that style is clearly `paint--quiet`\"",
+      "from": "spec board, On the board (2026-10-10 21:33 EDT)",
+      "covers": []
+    },
+    {
+      "id": "undo",
+      "what": "History's Undo",
+      "now": "button-M-box.paint, neutral",
+      "to": "button-M-box.paint-realm, in History's colour",
+      "his": "2026-10-10 21:02 EDT: \"for the 'undo' button, give it `.paint-realm` for the history realm.\"",
+      "from": "spec board, On the board (2026-10-10 21:33 EDT)",
+      "covers": []
+    },
+    {
+      "id": "styles",
+      "what": "Every button's look (wash, tint, fill, paint; with no token and with one; rest and hover; the flags)",
+      "now": "each button carries its own inks; paint's fill is none, sunk or raised by button; paint-colour hovers disagree (outline 42 to 45%, fill or none)",
+      "to": "the style definitions on the Styles section (C9): paint sunk 85% / rule2 / ink2, on hover hi / ink4 / ink, and with a colour tint's hover; tint sunk 85% / colour 55% on #0B0F12 / colour, on hover colour 12% on sunk / 75% / 80% on white; wash colour 14% / colour / ink, 24% on hover; fill colour / none / on-colour, on hover 74% on white with a 3px 26% glow; wash, tint and fill always take a colour (with none it is paint); paint rests grey (raised) with no colour, dark (sunk 85%) with one (his popup, 2026-10-10 23:33: \"adopt for now\")",
+      "his": "2026-10-10 21:02 EDT: \"we need to clear up the definition of each style, the exact rest/hover behavior/colors/etc of each style, and the default view of each style.\" (the table waits on his calls \"defs\" and \"defaults\")",
+      "from": "spec board, Styles (2026-10-10 22:19 EDT)",
+      "covers": []
+    },
+    {
+      "id": "slotschip",
+      "what": "Broadcast's 'x of 10 slots left' chip",
+      "now": "its own budget-bar chip",
+      "to": "the same design as Compare's 'x of x builds' chip",
+      "his": "2026-10-10 23:20 EDT: \"let’s change broadcast’s ‘x of 10 slots left’ chip to match the design of compare’s ‘x of x builds’ chip design?\"",
+      "from": "spec board, Chips and tags (2026-10-10 23:22 EDT)",
+      "covers": []
+    },
+    {
+      "id": "statictag",
+      "what": "The informative tags (Weapon required, Ready, Filled n slots, n of n)",
+      "now": "one Chip component told apart by tone: fills 5–12%, outlines 16–42%, words warn-ink or colour 82% on white",
+      "to": "tag-S-box.static-<colour>: fill colour 12%, outline colour 40%, words colour 80% on white, no hover; no colour: sunk 85% / rule2 / ink2; 4 of 5 is static--ghost (clear fill). On the S row: 24, corner 6, padding 10, icon 12, words 11 · 600",
+      "his": "2026-10-10 23:20 EDT recipe; his popup \"Use it\"; the word (static or info) still his",
+      "from": "spec board, Set end date and Never (2026-10-10 23:33 EDT)",
+      "covers": [
+        "span.b4-hint|look"
+      ]
+    }
+  ]
+}

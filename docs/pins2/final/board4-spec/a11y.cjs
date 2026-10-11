@@ -2,6 +2,7 @@
 // visible focus mark appears), the controls with no accessible name, and the elements a pointer can use but a keyboard cannot reach.
 // Written 2026-09-29 19:13 EDT: HANDOFF.md said "focus order, ARIA roles and screen-reader announcements were never walked on Board 4".
 // Usage (the kit served on :8900): node a11y.cjs  → writes a11y.md beside it; exit 0 always (it reports, it does not gate).
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const fs = require('fs'); const path = require('path');
 const { GATES, STAGE, sleep, open, actions, act } = require('./board4-walk.cjs');
 const cell = (v) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|');
@@ -63,7 +64,7 @@ async function audit(p, id) {
     }
     const first = (await actions(p, id)).find(([k, i]) => k === 'state' && i === 0); if (first) await act(p, id, 'state', 0);
   }
-  const head = ['---', 'kind: reference', 'status: live', '---', '', '# Board 4: Collective — accessibility, walked', '',
+  const head = ['---', 'kind: reference', 'status: live', '---', '', '# ' + KITC.TITLE + ' — accessibility, walked', '',
     `*Generated ${new Date().toISOString()} by \`a11y.cjs\` from the running kit at 1282×888 (Chrome's accessibility tree for roles and names; the platform's sequential focus order, computed, since a drawer on the board traps real Tab presses). A focus mark is an outline, or a shadow, fill or edge that differs from the element's look once focus has moved on. Page errors: ${errs.length}. HANDOFF.md § Accessibility reads these numbers.*`, '',
     '| Gate | Walked | Tab stops | No name | No focus mark | Unnamed controls | Pointer-only |', '|---|---|---|---|---|---|---|', ...sum, ''];
   fs.writeFileSync(path.join(__dirname, 'a11y.md'), head.concat(out).join('\n') + '\n');

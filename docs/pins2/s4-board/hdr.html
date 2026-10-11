@@ -1,0 +1,158 @@
+<meta charset="utf-8">
+<title>Export file header — three directions</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Big+Shoulders+Display:wght@500;600;700&display=swap">
+<!-- A scratch page, not a gate: the three header directions rendered on the portal's own stylesheet so the
+     palette, the faces and the control heights are the real ones rather than a sketch of them. The CURRENT
+     header is deliberately not reproduced here — a hand copy of it would misrepresent it, and the real one is
+     in shots/B-full125.png. Delete once Harkirat has picked. Written 2026-09-19 23:27 EDT. -->
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="b2.css">
+<link rel="stylesheet" href="b3/board.css">
+<link rel="stylesheet" href="gates.css">
+<style>
+body{margin:0;background:var(--desk);color:var(--ink);font:400 13px/1.5 var(--ui);-webkit-font-smoothing:antialiased}
+.pg{padding:36px 40px;display:flex;gap:36px;align-items:flex-start}
+.col{width:440px}
+.lab{font:500 11px/1 var(--data);letter-spacing:.08em;color:var(--ink4);text-transform:uppercase;margin:0 0 9px}
+.lab b{color:var(--patch);font-weight:500}
+.sub{font:400 12px/1.55 var(--ui);color:var(--ink3);margin:0 0 18px;min-height:56px}
+.stack{display:flex;flex-direction:column;gap:10px}
+
+.dh{background:var(--paper);border-radius:10px;outline:1px solid var(--rule2);outline-offset:-1px;overflow:hidden;position:relative}
+.dh .body{height:76px;background:var(--sunk);
+  font:400 11.5px/1.7 var(--data);color:var(--ink4);padding:7px 16px;white-space:pre;
+  mask-image:linear-gradient(180deg,#000 55%,transparent)}
+.dh.shut .body{display:none}
+.mrail{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--m);z-index:2}
+
+/* ============ A · SLIP — one line ============ */
+.hA{height:44px;display:grid;grid-template-columns:max-content minmax(0,1fr) max-content max-content;
+  align-items:center;column-gap:10px;padding:0 10px 0 16px;position:relative}
+.hA .ord{font:500 11px/1 var(--data);color:var(--ink4);font-variant-numeric:tabular-nums}
+.hA .nm{font:600 13px/1 var(--ui);color:var(--ink);letter-spacing:-.01em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.hA .ext{color:var(--ink4);font-weight:500}
+.hA .met{font:500 11px/1 var(--data);color:var(--ink4);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hA .met b{color:var(--ink2);font-weight:500}
+.hA.warn .met b{color:var(--warn-ink)}
+.hA .rail{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--rule)}
+.hA .rail i{display:block;height:2px;background:var(--patch)}
+.hA.warn .rail i{background:var(--warn)}
+
+/* ============ B · SEAM — two lines, the cap drawn as the header's own edge ============ */
+.hB{height:60px;display:grid;grid-template-columns:minmax(0,1fr) max-content;
+  grid-template-rows:20px 14px;align-content:center;row-gap:6px;column-gap:12px;
+  padding:0 10px 0 16px;position:relative}
+.hB .nm{grid-column:1;grid-row:1;font:600 15px/20px var(--ui);color:var(--ink);letter-spacing:-.012em;
+  display:flex;align-items:baseline;min-width:0;background:none;border:0;padding:0;cursor:text}
+.hB .nm > span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hB .ext{color:var(--ink4);font-weight:500;flex:0 0 auto}
+.hB .pen{color:var(--ink4);margin-left:7px;opacity:0;transition:opacity 160ms;flex:0 0 auto;align-self:center}
+.hB:hover .pen{opacity:1}
+.hB .meta{grid-column:1;grid-row:2;font:500 11px/14px var(--data);color:var(--ink4);
+  font-variant-numeric:tabular-nums;display:flex;gap:7px;align-items:center;white-space:nowrap}
+.hB .meta em{font-style:normal;color:var(--ink3)}
+.hB .dot{width:2px;height:2px;border-radius:1px;background:var(--ink4);flex:0 0 auto}
+.hB .cap{grid-column:2;grid-row:2;justify-self:end;align-self:center;
+  font:500 11px/14px var(--data);color:var(--ink4);font-variant-numeric:tabular-nums}
+.hB .cap b{color:var(--ink2);font-weight:500}
+.hB.warn .cap b{color:var(--warn-ink)}
+.hB .fold{grid-column:2;grid-row:1;justify-self:end;align-self:center}
+.hB .seam{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--rule)}
+.hB .seam i{display:block;height:2px;background:var(--patch);transition:width 260ms cubic-bezier(.23,1,.32,1)}
+.hB.warn .seam i{background:var(--warn)}
+.hB.none .seam i{width:0}
+.hB.none .meta em{color:var(--ink4)}
+
+/* ============ C · GAUGE — the cap as an object on the left ============ */
+.hC{height:64px;display:grid;grid-template-columns:38px minmax(0,1fr) max-content;
+  align-items:center;column-gap:12px;padding:0 10px 0 16px}
+.hC .gg{width:38px;height:38px;border-radius:8px;background:var(--sunk);
+  outline:1px solid var(--rule2);outline-offset:-1px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center}
+.hC .gg i{position:absolute;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--patch) 22%,transparent);
+  border-top:1px solid var(--patch)}
+.hC.warn .gg i{background:color-mix(in srgb,var(--warn) 20%,transparent);border-top-color:var(--warn)}
+.hC .gg u{position:relative;font:600 12px/1 var(--data);color:var(--ink2);text-decoration:none;
+  font-variant-numeric:tabular-nums}
+.hC.warn .gg u{color:var(--warn-ink)}
+.hC .nm{font:600 14px/1.2 var(--ui);color:var(--ink);letter-spacing:-.01em;display:block;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hC .ext{color:var(--ink4);font-weight:500}
+.hC .meta{font:500 11px/1 var(--data);color:var(--ink4);font-variant-numeric:tabular-nums;
+  margin-top:6px;display:block}
+
+.fld{height:28px;border-radius:6px;background:var(--raised);
+  outline:1px solid var(--rule2);outline-offset:-1px;color:var(--ink2);
+  font:500 11.5px/1 var(--ui);display:inline-flex;align-items:center;gap:6px;padding:0 10px;cursor:pointer;border:0}
+.fld:hover{background:var(--hi);color:var(--ink)}
+.fld svg{width:13px;height:13px}
+.ic{width:28px;padding:0;justify-content:center}
+</style>
+<div class="pg">
+  <div class="col">
+    <p class="lab">A · Slip — 44px</p>
+    <p class="sub">The file as one list row: ordinal, name, fill, fold. The cap is a hairline along the bottom edge. Half the height of today, but the name has to truncate and there is nowhere for a second fact to go.</p>
+    <div class="stack" id="a"></div>
+  </div>
+  <div class="col">
+    <p class="lab"><b>B · Seam — 60px · recommended</b></p>
+    <p class="sub">The name leads, because it is the only thing that differs card to card and the only thing you edit. The cap becomes the header’s own bottom edge — a rule that was already drawn, now carrying the one fact that explains why there are six files.</p>
+    <div class="stack" id="b"></div>
+  </div>
+  <div class="col">
+    <p class="lab">C · Gauge — 64px</p>
+    <p class="sub">The cap becomes an object on the left, standing on the line the drop numeral used to hold. Keeps a strong left anchor down the stack, but spends 38px of width on one number.</p>
+    <div class="stack" id="c"></div>
+  </div>
+</div>
+<script>
+const FILES=[
+  {n:'dioreo-mp-2026-09-20',c:3980,b:23,i:1},
+  {n:'dioreo-mp-2026-09-20-2',c:3838,b:23,i:2},
+  {n:'dioreo-mp-2026-09-20-3',c:1944,b:11,i:3}
+];
+const TOTAL=3, CAP=4000, WARN=3600, MODE='#FF3B6B';
+const BODY='1  AK117 | AR\n2  Build: Build 1\n3  Image: AK117-1.png\n4  Code: 2A4B5A8C9C';
+const foldBtn=(open,ic)=>`<button class="fld${ic?' ic':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${open?'<polyline points="7 15 12 20 17 15"></polyline><polyline points="7 9 12 4 17 9"></polyline>':'<polyline points="7 20 12 15 17 20"></polyline><polyline points="7 4 12 9 17 4"></polyline>'}</svg>${ic?'':(open?'Collapse':'Expand')}</button>`;
+const pencil='<svg class="pen" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+const fmt=(n)=>n.toLocaleString('en-US');
+const pct=(c)=>Math.min(100,Math.round(c/CAP*1000)/10);
+const shell=(inner,shut)=>`<div class="dh${shut?' shut':''}"><div class="mrail" style="--m:${MODE}"></div>${inner}<div class="body">${BODY}</div></div>`;
+
+document.getElementById('a').innerHTML=FILES.map(f=>shell(`
+  <header class="hA${f.c>=WARN?' warn':''}">
+    <span class="ord">${f.i}/${TOTAL}</span>
+    <span class="nm">${f.n}<span class="ext">.txt</span></span>
+    <span class="met"><b>${fmt(f.c)}</b>/${fmt(CAP)}</span>
+    ${foldBtn(true,true)}
+    <span class="rail"><i style="width:${pct(f.c)}%"></i></span>
+  </header>`)).join('');
+
+document.getElementById('b').innerHTML=FILES.map((f,k)=>shell(`
+  <header class="hB${f.c>=WARN?' warn':''}">
+    <button class="nm" type="button"><span>${f.n}</span><span class="ext">.txt</span>${pencil}</button>
+    <span class="fold">${foldBtn(k!==2)}</span>
+    <span class="meta"><em>${f.i} of ${TOTAL}</em><span class="dot"></span>${f.b} builds</span>
+    <span class="cap"><b>${fmt(f.c)}</b> / ${fmt(CAP)}</span>
+    <span class="seam"><i style="width:${pct(f.c)}%"></i></span>
+  </header>`, k===2)).join('')
+  + shell(`
+  <header class="hB none">
+    <button class="nm" type="button"><span>dioreo-mp-2026-09-20-4</span><span class="ext">.txt</span>${pencil}</button>
+    <span class="fold">${foldBtn(true)}</span>
+    <span class="meta"><em>4 of 4</em><span class="dot"></span>nothing picked yet</span>
+    <span class="cap"><b>0</b> / ${fmt(CAP)}</span>
+    <span class="seam"><i></i></span>
+  </header>`);
+
+document.getElementById('c').innerHTML=FILES.map(f=>shell(`
+  <header class="hC${f.c>=WARN?' warn':''}">
+    <span class="gg"><i style="height:${pct(f.c)}%"></i><u>${Math.round(f.c/CAP*100)}</u></span>
+    <span><span class="nm">${f.n}<span class="ext">.txt</span></span><span class="meta">${f.i} of ${TOTAL} · ${f.b} builds · ${fmt(f.c)} chars</span></span>
+    ${foldBtn(true,true)}
+  </header>`)).join('');
+</script>

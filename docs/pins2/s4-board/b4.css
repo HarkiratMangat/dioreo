@@ -1,0 +1,550 @@
+/* BOARD 4: COLLECTIVE — the board's own presentation and the fixes from his first review (2026-09-21 14:39 EDT).
+   Loaded LAST, after b1.css; every rule here names why it exists. */
+
+/* ── Board 2's presentation ("the way board 2 presented it's gates was GORGEOUS"), copied from board 2's own page, scoped .b4 ── */
+/* The page root (#board) is already board 2's .pb — 1148 wide, 32 in; this is only its grid of gates. */
+.b4{display:grid;gap:96px;min-width:0}
+.b4 .pb-mast{display:grid;gap:10px;max-width:640px}
+.b4 .pb-mast h1{margin:0;font:700 52px/round(.92em, 4px) var(--display);letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+.b4 .pb-mast p{margin:0;font-size:var(--t-md);line-height:round(1.55em, 4px);color:var(--ink2)}
+.b4 .pb-gate.pb-realm.app{display:grid;gap:20px;height:auto;grid-template-columns:minmax(0,1fr);grid-template-rows:none;width:100%;max-width:none;min-width:0;margin:0;padding:0;background:none;border:0;box-shadow:none;overflow:visible}
+.b4 .pb-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:end;column-gap:18px;padding-bottom:4px}
+.b4 .pb-gid{font:700 60px/.8 var(--display);color:var(--realm-c)}
+.b4 .pb-head h2{margin:0 0 6px;font:600 var(--t-h1)/round(1.1em, 4px) var(--ui);color:var(--ink);letter-spacing:var(--tr-h1)}
+.b4 .pb-head p{margin:0;font-size:var(--t-base);line-height:round(1.45em, 2px);color:var(--ink3)}
+.b4 .pb-ctl{display:flex;align-items:center;gap:8px}
+.b4 .pb-ctl .seg button{text-transform:none;letter-spacing:0;font:600 var(--t-sm)/1 var(--ui)}
+.b4 .pb-new{display:grid;grid-template-columns:1fr 1fr;column-gap:40px;margin:4px 0 0;padding:0;list-style:none}
+.b4 .pb-new li{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--rule3);font-size:var(--t-sm);line-height:round(1.45em, 2px);color:var(--ink2)}
+.b4 .pb-new li b{color:var(--ink);font-weight:600;white-space:nowrap}
+.b4 .pb-new li.b4-open b{color:var(--warn-ink)}
+.b4 .b4-try:empty{display:none}
+/* The one surface, in its own container: the manifest panel, the view bar strip, a stage for a drawer */
+/* The Manifest draws its own panel; the wrapper only holds it (a second ring here drew a frame inside a frame). */
+.b4 .b4-panel{display:block}
+.b4 .g-stage.b4-bare{padding:0;background:none;border:0;box-shadow:none;min-height:0;overflow:visible}
+.b4 .g-stage.b4-stage{padding:28px;border-radius:var(--rad-3);background:radial-gradient(900px 320px at 30% 0,color-mix(in srgb,var(--realm-c) 7%,transparent),transparent 70%),var(--sunk)}
+.b4 .b4-closed{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;color:var(--ink3)}
+.b4 .b4-closed p{margin:0}
+.b4 .b4-vb{display:flex;align-items:center;gap:16px;min-height:64px;padding:10px 20px;box-sizing:border-box;border-radius:var(--rad-3);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b4 .b4-vb .ph{padding:0;margin:0;border:0;background:none;box-shadow:none;min-height:0;flex:none}
+.b4 .b4-cmp .pb-panel{padding:16px;border-radius:var(--rad-3);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2)}
+
+/* ── Every drawer's ground is the Export picker's mesh (his ruling for drawers, drawn until now only on the picker's) ── */
+html:is([data-b3-xbg=mesh],[data-b3-xbg=ground]) :is(.drawer:has(.b3-nb), .drawer.b1, .drawer .b4-ask){ --m1:#ff3b5c;--m2:#f6a93b;
+  background:
+    radial-gradient(78% 210% at -8% 118%,color-mix(in srgb,var(--m1) 15%,transparent) 0,transparent 68%),
+    radial-gradient(66% 190% at 26% -22%,color-mix(in srgb,var(--m3,var(--meshGold)) 13%,transparent) 0,transparent 66%),
+    radial-gradient(72% 200% at 68% 132%,color-mix(in srgb,var(--m2) 12%,transparent) 0,transparent 70%),
+    radial-gradient(60% 180% at 112% -16%,color-mix(in srgb,var(--m4,var(--r-armory)) 11%,transparent) 0,transparent 68%),
+    radial-gradient(120% 120% at 50% 50%,transparent 38%,#00000055 100%),
+    linear-gradient(180deg,#ffffff0a 0,transparent 26%),
+    color-mix(in srgb,#0B0F12 42%,var(--raised));
+  background-blend-mode:screen,screen,screen,screen,normal,normal,normal }
+
+/* ── "Category toggle's `all` chip hover events/tint isn't working" (C1, C7): the topic chips answer hover in their hue; All had
+   only a text colour, so a pressed All under the pointer did nothing. It answers in the neutral. ── */
+.mt-grp .chip:not(.topic):hover{border-color:var(--ink3);color:var(--ink)}
+.mt-grp .chip:not(.topic)[aria-pressed=true]:hover{background:color-mix(in srgb,var(--ink) 10%,var(--hi));border-color:var(--ink3)}
+
+/* ── "The toggle buttons lack hover events" (C2): board 3's drawer segments are transparent buttons over a moving thumb, and a
+   background:none!important kept every hover from showing. The unpressed one tints under the pointer; the pressed one is the thumb. ── */
+/* (the round-1 grey-wash segment hover that lived here is replaced by the hued contract below) */
+
+/* ── C9 Admin traffic: board 2 · G2 draws the shield 15px in the Analytics hue at rest; the port drew it 14px in grey ── */
+.chip.incchip .ic{width:16px;height:16px;color:var(--r-analytics)}
+
+/* ── The bulk editor's lines are the Export file's lines (b3-xt-ln), under a textarea whose glyphs must land on them exactly ── */
+.b3-nb .pb-edwrap{position:relative;min-height:376px;border-radius:var(--rad-3);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);overflow:auto}
+.b3-nb .pb-ed{position:relative;display:block;padding:12px 0;margin:0;pointer-events:none;background:none;box-shadow:none;border:0}
+.b3-nb .pb-ed .pb-blk{position:relative;display:block;margin:0;padding:0;border:0;background:none}
+.b3-nb .pb-ed .pb-blk::before{content:"";position:absolute;left:48px;top:4px;bottom:4px;width:2px;border-radius:1px;background:color-mix(in srgb,var(--c) 75%,transparent)}
+.b3-nb .pb-ed .b3-xt-ln{display:grid;grid-template-columns:36px minmax(0,1fr);height:22px;min-height:22px;margin:0;padding:0}
+.b3-nb .pb-ed .b3-xt-no{padding:0 10px 0 0;text-align:right;font:500 11px/24px var(--data);color:var(--ink4)}
+.b3-nb .pb-ed .b3-xt-tx,.b3-nb .pb-ta{font:500 12px/24px var(--data);letter-spacing:0;word-spacing:0;white-space:pre;font-variant-ligatures:none;tab-size:4}
+.b3-nb .pb-ed .b3-xt-tx *{font:inherit;letter-spacing:inherit;font-style:normal}
+.b3-nb .pb-ed .b3-xt-tx{padding:0 40px 0 24px;overflow:visible}
+.b3-nb .pb-ed .pb-hit .b3-xt-tx{background:color-mix(in srgb,var(--staged) 12%,transparent)}
+.b3-nb .pb-ed .pb-err .b3-xt-tx{text-decoration:underline wavy color-mix(in srgb,var(--danger-ink) 80%,transparent) 1px;text-underline-offset:5px}
+.b3-nb .pb-ta{position:absolute;inset:0;box-sizing:border-box;width:100%;min-height:100%;margin:0;padding:12px 12px 12px 36px;border:0;border-radius:0;background:transparent;color:transparent;caret-color:var(--ink);-webkit-text-fill-color:transparent;resize:none;overflow:hidden;box-shadow:none;outline:none;min-width:0}
+.b3-nb .pb-ta::placeholder{color:var(--ink4);-webkit-text-fill-color:var(--ink4)}
+.b3-nb .pb-edwrap:focus-within{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 26%,transparent)}
+
+/* ── C7: "The manifest rows lack the row highlighting that's used in the armory manifest." One manifest, one hover: the Armory row's
+   (app.css .wg-r:hover), read from the row's own --c — the rows carry it now (ui/manifest.js). This replaces the board-2 wash
+   put on these rows earlier today, so the Broadcast rows have exactly one hover rule. ── */
+/* 2026-09-21 15:47 EDT — board 2 · G11's own row glow, value for value (.pb-br:hover in its index.html). The round-1 rule copied the Armory
+   row's numbers instead, and app.css's `tbody tr:hover td` painted every cell solid over it, so no glow ever showed. */
+.app[data-realm="broadcast"] .mtable tbody tr:hover { background:radial-gradient(380px 90px at 12% 40%,color-mix(in srgb,var(--glo) 16%,transparent),transparent 72%),radial-gradient(420px 110px at 70% 80%,color-mix(in srgb,var(--glo) 7%,transparent),transparent 70%),radial-gradient(260px 80px at 40% 0,color-mix(in srgb,var(--realm-c) 6%,transparent),transparent 70%),var(--paper) }
+.app[data-realm="broadcast"] .mtable tbody tr:hover td { background:transparent }
+/* v14 (2026-09-23 00:14 EDT) — his "you messed up the colors for the row's highlight glow". Board 4 rewrote History's and Broadcast's row glow from
+   raw --c, dropping board 3's round-15D lift (gates.css): their row hues sit near L .6 (History's change blue #409AD0, Broadcast's
+   purple #8a6bd1), and at 16% and 7% over the dark ground they read grey, where the Armory's accents near L .85 glow. One class now:
+   every manifest row glows in its hue lifted to at least L .72 — the Armory's own rows included, so a low-L weapon accent lifts too. */
+.b4 :is(.wg-r, .b3-hi-r, .app[data-realm="broadcast"] .mtable tbody tr) { --glo:oklch(from var(--c) max(l,.72) c h) }
+.b4 .wg-r:hover { background:radial-gradient(360px 80px at 14% 40%,color-mix(in srgb,var(--glo) 16%,transparent),transparent 72%),radial-gradient(420px 100px at 76% 70%,color-mix(in srgb,var(--glo) 7%,transparent),transparent 70%),radial-gradient(260px 70px at 46% 0,color-mix(in srgb,var(--realm-c) 6%,transparent),transparent 70%),var(--paper) }
+
+/* The textarea and the lines under it must share every metric, and the portal's drawer rules set textarea font and padding at a
+   higher specificity (measured 14:41 EDT: 13px against 12.5px, 8px further right, 2px lower — the caret drift in his recording). */
+.drawer .b3-nb .pb-edwrap textarea.pb-ta{font:500 12px/24px var(--data)!important;letter-spacing:0!important;padding:12px 40px 12px 60px!important;border:0!important;margin:0!important;text-indent:0!important}
+.drawer .b3-nb .pb-edwrap .pb-ed{padding:12px 0!important;margin:0!important;border:0!important}
+
+/* C1: "It won't close/cancel." A dirty draft's Cancel asks "Discard this draft?" — and that confirm is rendered BEFORE the drawer that
+   asked, so inside one stage it painted underneath it and Cancel appeared to do nothing. A confirm always sits above the drawer it
+   interrupts. */
+.drawer.cfm{z-index:90!important}
+
+/* Board 2 set each surface flush to the gate's width with no frame around it (G11's panel IS the gate's width). Board 3's stages drew
+   a second, framed box around every surface; here only a drawer's stage keeps a ground, because a drawer needs a room to open in. */
+.b4 .g-stage:not(.b4-stage){padding:0;background:none;border:0;box-shadow:none}
+.b4 #c-export .g-stage{padding:28px;border-radius:var(--rad-3);background:radial-gradient(900px 320px at 30% 0,color-mix(in srgb,var(--realm-c) 7%,transparent),transparent 70%),var(--sunk)}
+
+/* A realm's .panel sits 22px in from main's edge (app.css); on a gate the panel IS the gate's width, as board 2 drew G11. */
+.b4 .g-stage > .panel,.b4 .b4-panel .panel,.b4 .g-stage .mfst.panel{margin-left:0;margin-right:0}
+
+/* Compare on a gate spans it, as every other surface does (board 1 drew it inside its own narrower page). */
+.b4 .b4-cmp .pb-panel{margin:0;max-width:none;width:auto}
+
+/* ── Nitpick pass, 2026-09-21 15:18 EDT ─────────────────────────────────────────────────────────────────────────────── */
+/* The post drawer's fields took app.css's .dwfield margin-bottom (16px) that board 1 never had: Starts/Ends sat 16px lower and the
+   whole column ran 38px taller than G8 (b4parity g8). Board 1 spaces them by the column's own gap. */
+.drawer.b1 .dwfield { margin-bottom:0 }
+/* META / TOXIC had no hover at all — his round-1 "the toggle buttons lack hover events". The rest step is the board's segment hover;
+   a pressed toggle deepens its own hue rather than greying. */
+.b3-nb .pb-tog:not([aria-pressed=true]):hover { background:color-mix(in srgb,var(--hi) 75%,transparent);color:var(--ink) }
+.b3-nb .pb-tog[aria-pressed=true]:hover { background:color-mix(in srgb,var(--b,var(--staged)) 18%,var(--sunk)) }
+/* Export's landing is a 396px drawer; the stage stays at the picker's 900 only while the picker is open. */
+/* 2026-09-21 17:29 EDT — sized by what the stage HOLDS, never by the head switch: the switch said "landing" while a click on Pick had
+   already opened the 840px picker inside a 560px stage, which is the cut-off drawer he found. Only the landing (no .wide) is short. */
+#c-export .g-stage:not(:has(.drawer.wide)) { height:560px !important;min-height:0 !important }
+
+/* 2026-09-21 15:50 EDT — History's row glow, made the Armory manifest's (app.css .wg-r:hover), which he asked for by name. gates.css's H1 rule
+   lifted --c to l .72 and dropped the var(--paper) base, so the same recipe read brighter and thinner than Armory's. Scoped to Board 4
+   so Board 3-E stays on the stylesheet he approved it on. */
+.b4 .b3-hi-r:hover, .b4 .b3-hi-r.open { background:radial-gradient(360px 80px at 14% 40%,color-mix(in srgb,var(--glo) 16%,transparent),transparent 72%),radial-gradient(420px 100px at 76% 70%,color-mix(in srgb,var(--glo) 7%,transparent),transparent 70%),radial-gradient(260px 70px at 46% 0,color-mix(in srgb,var(--realm-c) 6%,transparent),transparent 70%),var(--paper);background-blend-mode:normal }
+
+/* 2026-09-21 16:03 EDT — his ruling on C2: the build drawer is board 1's 880px, not board 3's 980 (board.css .drawer.wide:has(.b3-nb)). */
+.b4 .drawer.wide:has(.b3-nb) { width:min(980px, 100vw - 40px) }  /* v19 (2026-09-24 14:08 EDT): 980, board 3's width again — his inline Grade and Tier (item 11) need a 440px field column; at 880 it was 334. His 2026-09-21 16:03 EDT ruling set 880, so this is put to him. */
+/* v20 (2026-09-24 15:42 EDT, his 15:39 EDT): the C2 Drawer fork — 880 (his 2026-09-21 width), 940 and 980. Past 880 a third of the added width goes to the
+   Discord preview and two thirds to the form: 940 = preview 300 + 20, form + 40; 980 = preview 300 + 33, form + 67. */
+/* 2026-09-24 22:33 EDT: his pick is 980 — preview 333, form 581. */
+.b4 .drawer.wide:has(.b3-nb) { width:min(980px, 100vw - 40px); --f-sidew:333px }
+
+/* 2026-09-21 16:10 EDT — his ruling on 7e: the day row's "N changes" chip is the rows' kind chip, not a smaller cousin of it. Its size and type
+   are .b3-htab's (board.css 1529); its colours were already the row chip's (board.css 4846) and stay as they are. gates.css 15G
+   had drawn it 22px tall in t-xs with a 12px icon. */
+.b4 .b3-hi-day .b3-hi-dk { height:24px;padding:0 8px 0 10px;gap:6px;border-radius:5px;font:600 var(--t-sm)/1 var(--ui) }
+.b4 .b3-hi-day .b3-hi-dk .ic { width:12px;height:12px }
+.b4 .b3-hi-day .b3-hi-dk em { font-weight:700;margin-right:1px }
+/* The folded restart's outcome sits after the phrase at the same gap the row uses between its own cells. */
+.b4 .b3-hi-r .b3-online { margin-left:var(--h1-cell,16px) }
+
+/* 2026-09-21 17:29 EDT — "every gate has their corners clipping". A stage clips its content (overflow:hidden, so its panels can scroll) with a
+   10px radius, while the panel inside it is drawn at 6px and sits flush to the stage's edge: the stage's larger curve cut every
+   panel's corner and its 1px edge. A flush stage now takes its panel's radius, so the clip follows the panel's own outline. */
+.b4 .g-stage:not(.b4-stage) { border-radius:6px }
+/* Compare's cards (Show cards): app.css spaced them only under .cmpfold, which this panel's fold is not, so the first row sat
+   flush against the toggle; and a wrapping flex let the orphan card stretch to 360px beside 262px ones. One grid of equal
+   columns, the toggle's own gap above it, and one screenshot proportion so a row's cards end on the same line. */
+.b4 #compare .pb-fold .cmpcards { display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:14px;align-items:stretch }
+.b4 #compare .cmpcards .dcard { max-width:none;min-width:0 }
+.b4 #compare .cmpcards .dcard img { width:100%;aspect-ratio:16/9;height:auto;object-fit:contain;background:var(--sunk);border-radius:4px }
+
+/* ══ INTAKE PASS · K1 — THE CONTROL-STATE CONTRACT (2026-09-21 19:22 EDT) ══════════════════════════════════════════════════════════
+   His C2/C5/C9 notes name one fault three times: hover missing, or a GREY wash where the control has a hue. The rule: a
+   control that carries a hue hovers and presses IN that hue, on the pattern Stage deletion already uses (.b3-btn2.dang: 12%
+   over sunk, ink lifted toward white, a 60% ring). Neutral controls keep their neutral lift. The section heads' switches are
+   board chrome and are not touched. Verified by docs/pins2/instruments/b4states.cjs, every instance, every section. */
+
+/* Selection bar — Edit hovers --staged, Export hovers --ok; resting stays neutral (his ruling: hover only). */
+.b4 .b3-sd-acts .b3-sd-edit:hover { background:color-mix(in srgb,var(--staged) 12%,var(--sunk));color:color-mix(in srgb,var(--staged) 80%,white);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--staged) 60%,transparent) }
+.b4 .b3-sd-acts .b3-sd-exp:hover { background:color-mix(in srgb,var(--ok) 12%,var(--sunk));color:color-mix(in srgb,var(--ok) 80%,white);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ok) 60%,transparent) }
+.b4 .b3-sd-acts .b3-btn2:active { transform:translateY(1px) }
+
+/* MP / DMZ — ONE rule for every .mh-mode on the board (the build drawer and the Export picker share it, C5-1). The chosen tile
+   rested on the portal's grey --hi; it rests in its own mode's hue now, and the other tile hovers in ITS hue. */
+.b4 .mh-mode button[data-arm="MP"] { --mc:#FF3B5C }
+.b4 .mh-mode button[data-arm="DMZ"] { --mc:#3DA5F5 }
+.b4 .mh-mode button[aria-checked="true"] { background:color-mix(in srgb,var(--mc) 13%,var(--sunk)) }
+.b4 .mh-mode button[aria-checked="true"]:hover { background:color-mix(in srgb,var(--mc) 19%,var(--sunk)) }
+.b4 .mh-mode button:not([aria-checked="true"]):not(:disabled):hover { color:color-mix(in srgb,var(--mc) 72%,white);border-color:color-mix(in srgb,var(--mc) 55%,transparent);background:color-mix(in srgb,var(--mc) 8%,transparent) }
+.b4 .mh-mode button:not(:disabled):active { transform:translateY(1px) }
+.b4 .mh-mode button:disabled { opacity:.38;cursor:not-allowed }
+.b4 .mh-mode button { transition:color .16s var(--ease),border-color .16s var(--ease),background .16s var(--ease),transform .08s }
+
+/* Segmented controls INSIDE the design (not the head switches): hover lifts the ink and washes the surface's hue; the pressed
+   segment rests on that hue instead of grey. --realm-c is set by each gate (armory red, broadcast pink, analytics lime). */
+.b4 :is(.b3-nb, .panel, .b4-vb, .b1) .seg button:not([aria-pressed="true"]):not([aria-selected="true"]):hover,
+.b4 .drawer .seg button:not([aria-pressed="true"]):not([aria-selected="true"]):hover { color:var(--ink);background:color-mix(in srgb,var(--realm-c,var(--ink3)) 10%,var(--hi)) !important }
+.b4 :is(.b3-nb, .panel, .b4-vb, .b1) .seg .pb-thumb, .b4 .drawer .seg .pb-thumb { background:color-mix(in srgb,var(--realm-c,var(--ink3)) 15%,var(--raised)) !important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 42%,transparent) !important }
+.b4 :is(.panel, .b4-vb) .ph .seg button[aria-selected="true"] { background:color-mix(in srgb,var(--realm-c,var(--ink3)) 15%,var(--raised));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 42%,transparent);color:var(--ink) }
+.b4 .seg button:active { transform:translateY(1px) }
+
+/* C9's include chip hovers in Analytics' hue, resting and pressed. */
+.b4 .chip.incchip:not([aria-pressed="true"]):hover { color:var(--ink);border-color:color-mix(in srgb,var(--r-analytics) 45%,transparent);background:color-mix(in srgb,var(--r-analytics) 7%,transparent) }
+.b4 .chip.incchip[aria-pressed="true"]:hover { background:color-mix(in srgb,var(--r-analytics) 20%,transparent);border-color:color-mix(in srgb,var(--r-analytics) 60%,transparent) }
+
+/* Icon controls with no hover of their own: the drawers' close and the code field's copy. */
+.b4 .drawer :is(.dw-nav .x, button.x):hover { color:var(--ink);background:var(--hi);box-shadow:inset 0 0 0 1px var(--ink4) }
+.b4 .pb-copy:not(:disabled):hover { color:var(--ink);background:var(--hi) }
+
+/* ══ C7 · the Broadcast manifest (K9) ══════════════════════════════════════════════════════════════════════════════════════
+   Every cell centred on its CAP HEIGHT. Measured by cap centre against row centre (2026-09-21 19:24 EDT, method corrected: an earlier probe
+   was blockified inside flex tabs and reported −4.4px that was not there): the spread was −0.6 to +1.8px, "No end" lowest. After:
+   ±0.7px, the 0.7 being the two-line date block's own centre. History measured within 1.2px and is left as it is. */
+/* First cut trimmed the <td>, which moved nothing (2026-09-21 19:23 EDT, measured): a cell's text sat on the line box's STRUT, so a 13px
+   mono date shared a baseline with the 16px title and its caps landed 3.6px low. Each cell's content is taken out of the line
+   box (block-level), and every text box is trimmed to cap-top..baseline, so the cell's vertical centring centres the caps. */
+.b4 [data-realm="broadcast"] .mtable tbody td > :is(b, .bcdt) { display:block;text-box:trim-both cap alphabetic }
+.b4 [data-realm="broadcast"] .mtable tbody td > .bcdt > small { display:block;text-box:trim-both cap alphabetic;margin-top:4px }
+.b4 [data-realm="broadcast"] .mtable tbody td > .bcdt.never { display:flex;align-items:center;gap:6px }
+.b4 [data-realm="broadcast"] .mtable tbody td > .btab { display:flex;width:max-content }
+.b4 .btab > .w, .b4 .bcdt.never > .w, .b4 .b3-htab > .w { text-box:trim-both cap alphabetic }
+/* The active sort reads as active: its label brightens to --ink, as board 2 drew it; the others lift on hover. */
+.b4 th.sortable .sortbtn:hover { color:var(--ink2) }
+.b4 th.sorted-asc .sortbtn, .b4 th.sorted-desc .sortbtn { color:var(--ink) }
+/* The state tab takes board 2's rounder corner (his side-by-side, C7-3). */
+.b4 [data-realm="broadcast"] .btab { border-radius:6px }
+/* A staged row's tab: the solid left bar stays, top/right/bottom go dashed, all in --staged. */
+.b4 [data-realm="broadcast"] .btab.staged { border:1px dashed color-mix(in srgb,var(--staged) 70%,transparent);border-left:0;box-shadow:inset 3px 0 0 var(--staged);background:color-mix(in srgb,var(--staged) 9%,transparent);color:color-mix(in srgb,var(--staged) 85%,white);outline:0 }
+/* The filter chips carry the state's icon in its hue, where the dot was. */
+.b4 [data-realm="broadcast"] .mfilters .chip.topic .ic, .b4 [data-realm="broadcast"] .chip.topic > .ic {color:var(--c) }
+/* A clickable row says so. */
+.b4 [data-realm="broadcast"] .mtable tbody tr { cursor:pointer }
+
+/* ══ C7 · the post drawer (K11) — a long word no longer escapes the preview, and seven repeats wrap instead of pushing the
+   form's column under it. */
+.b4 .drawer.b1 :is(.bed-side, .dcard) { min-width:0 }
+.b4 .drawer.b1 .dcard * { overflow-wrap:anywhere }
+/* The side column keeps board 1's fixed 320px: `auto` let a long word size the preview and overlay the form (2026-09-21 19:27 EDT). */
+.b4 .drawer.b1 .bed { grid-template-columns:minmax(0,1fr) 320px }
+.b4 .drawer.b1 .pb-col { min-width:0 }
+.b4 .drawer.b1 .pb-rep { flex-wrap:wrap;row-gap:8px }
+
+/* ══ C1 · the selection bar (K10) — it floats, and its list folds on the Export file's curve ══════════════════════════════ */
+.b4 .b3-selbar .b3-sd, .b4 .drawer .b4-ask { box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 22px 44px -16px rgba(0,0,0,.75), 0 6px 16px -6px rgba(0,0,0,.55) }
+.b4 .b3-sd-fold { display:grid;grid-template-rows:0fr;transition:grid-template-rows .42s cubic-bezier(.32,.72,0,1) }
+.b4 .b3-sd-fold.open { grid-template-rows:1fr }
+.b4 .b3-sd-fold > .b3-sd-list { min-height:0;overflow:hidden;animation:none !important;opacity:0;transition:opacity .28s cubic-bezier(.32,.72,0,1) }
+.b4 .b3-sd-fold.open > .b3-sd-list { opacity:1;transition-delay:.06s }
+.b4 .b3-sd-fold > .b3-sd-list .b3-sd-gh { animation:none !important }
+.b4 .b3-sd-fold:not(.open) > .b3-sd-list { border-bottom-color:transparent }
+@media (prefers-reduced-motion:reduce) { .b4 .b3-sd-fold, .b4 .b3-sd-fold > .b3-sd-list { transition:none } }
+
+
+/* K1, second sweep (2026-09-21 19:25 EDT, from b4states): a pressed segment answered hover with nothing, the manifest's own button-backed
+   segments (List · By slot) still rested on grey, and the Armory's Weapon sort had no hover at all. */
+.b4 :is(.b3-nb, .panel, .b4-vb, .b1, .drawer) .seg:has(> button[aria-pressed="true"]:hover) > .pb-thumb { background:color-mix(in srgb,var(--realm-c,var(--ink3)) 21%,var(--raised)) !important }
+.b4 :is(.panel, .b1, .drawer) .seg:not(:has(> .pb-thumb)) > button[aria-pressed="true"] { background:color-mix(in srgb,var(--realm-c,var(--ink3)) 15%,var(--raised));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--realm-c,var(--ink3)) 42%,transparent);color:var(--ink) }
+.b4 :is(.panel, .b1, .drawer, .b4-vb) .seg > button:is([aria-pressed="true"], [aria-selected="true"]):hover { color:var(--ink) }
+.b4 .seg:not(:has(> .pb-thumb)) > button:is([aria-pressed="true"], [aria-selected="true"]):hover { background:color-mix(in srgb,var(--realm-c,var(--ink3)) 21%,var(--raised)) }
+.b4 .wg-sort:hover { color:var(--ink) }
+
+/* ── K2 · the drawer shell, RULED 2026-09-21 20:28 EDT (his popup). HEADER = option C: on a build drawer the controls ARE the title — the MP/DMZ
+   tiles and the Add/Bulk segment sit in the title row, centred on the close's line — then a hairline divider and air before the form.
+   Every drawer takes the divider and the 84px head. FOOTER: A, B and C were rejected ("making the bar invisible wastes the same space");
+   D is the proposal (?k2f=d): the actions move into the foot of the preview column, where the space was already empty, so the form column
+   runs the drawer's full height. The reason a build cannot stage sits beside its field (.pb-need), not in a footer. */
+.b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-h { align-items:center; height:84px; padding-top:0; padding-bottom:0; border-bottom:1px solid color-mix(in srgb,var(--rule2) 60%,transparent) !important; box-shadow:none !important; background:none !important }
+.b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-b { padding-top:var(--s5) }
+.b4 .b3-nb .pb-bar { background:none !important; box-shadow:none !important; border:0 !important }
+.b4 .b3-nb .pb-bar::before, .b4 .b3-nb .pb-bar::after { display:none !important }
+/* 20:29 EDT, his addition: an eyebrow above the controls names the drawer ("Create a loadout"); the h2 stays for screen readers only.
+   The eyebrow owns the head's first line, the controls and the close share the second, centred on one line (62px). */
+.b4 .drawer:has(.b3-nb):not(.cfm) .dw-h { height:104px; align-items:flex-start }  /* equal specificity to the scoped 84px rule above, and later, so the eyebrow row wins */
+.b4 .drawer:has(.b3-nb) .dw-ttl { padding-top:18px }
+.b4 .drawer:has(.b3-nb) .dw-ttl h2 { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%) }
+.b4 .drawer:has(.b3-nb) .dw-eye { display:block; margin:0; font:600 11px/1 var(--ui); letter-spacing:.08em; text-transform:uppercase; color:var(--ink3) }
+.b4 .drawer:has(.b3-nb) .dw-nav { margin-top:48px }
+.b4 .drawer:has(.b3-nb) .b3-nb .pb-bar { position:absolute; top:64px; left:var(--s5); transform:translateY(-50%); margin:0 !important; padding:0 !important; width:auto; z-index:41 }
+/* (2026-09-21 23:07 EDT) THE CONTROLS WERE DEAD: .dw-h is sticky at z-index 40, the lifted bar sat at the bar's old z 6 under it, and the header took every click (hit-tested: MP, DMZ, Add build and Bulk create all landed on header.dw-h). The bar paints above the header now; the close is not under it. */
+.b4 .drawer:has(.b3-nb) .b3-nb .pb-bar .mh-mode { margin-top:0 }
+/* FOOTER — RULED 2026-09-21 20:43 EDT: D2, "but drastically improve that switch and hint into a nicely designed chip. same with the "Nothing has changed
+   yet"". No bar: the actions sit in the preview column's foot at their natural width, right-aligned, and the form runs the drawer's full height.
+   Rows: the reason chip, then "Add another after this" as a pressable chip (Armory hue when on), then Cancel · Stage. The pressed chip takes --ok, the Stage button's own hue, because it changes what Stage does (Armory's red read as an error). */
+.b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f { position:absolute; right:var(--s5); bottom:var(--s4); display:grid; grid-template-columns:auto auto; justify-content:end; align-items:center; gap:10px 8px;
+  padding:0; border:0 !important; background:none !important; box-shadow:none !important; z-index:3 }
+.b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f :is(.b3-btn2,.btn) { min-width:0; min-height:40px; padding-inline:16px; justify-content:center }
+.b4 .drawer .bed-side { padding-bottom:140px }
+
+/* ── K8 — the Export peek names the build's armory (2026-09-21 21:23 EDT); positioning is in gates/armory.js. */
+.b3-xt-pm { display:none }
+.b4 .b3-xt-pk { align-items:center }
+.b4 .b3-xt-pm { display:inline-flex; align-items:center; height:18px; padding:0 8px; margin-right:8px; border-radius:999px; font:700 10px/1 var(--ui); letter-spacing:.04em }
+.b4 .b3-xt-pm[data-arm="MP"] { color:#FF3B5C; background:color-mix(in srgb,#FF3B5C 15%,transparent) }
+.b4 .b3-xt-pm[data-arm="DMZ"] { color:#3DA5F5; background:color-mix(in srgb,#3DA5F5 15%,transparent) }
+
+/* ── K7 — Compare (C3), Board 4. Toggles take the picker tile's rounded-square shape (one shape); the cards lay out deterministically
+   1→1, 2→2, 3→3, 4→4, 5→3+2, 6→3+3; the landing is redesigned; hover on every surface; type to the board-3 roles. */
+.b4 #compare .cmpbrow { gap:6px }
+.b4 #compare .cmpbrow .chip { min-width:30px; height:30px; padding:0 8px; border-radius:8px; justify-content:center; font:600 12px/var(--lh-1) var(--data); font-variant-numeric:tabular-nums; color:var(--ink2); background:color-mix(in srgb,var(--sunk) 80%,transparent); box-shadow:inset 0 0 0 1px var(--rule2); transition:color .15s, background-color .15s, box-shadow .15s }
+.b4 #compare .cmpbrow .chip:hover { color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink4) }
+.b4 #compare .cmpbrow .chip[aria-pressed="true"] { color:var(--ink); background:color-mix(in srgb,var(--r-armory) 15%,transparent); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r-armory) 55%,transparent) }
+.b4 #compare .cmpbrow .chip.pb-cut { color:var(--ink3); text-decoration:line-through }
+.b4 #compare .cmppick .chip.on { height:30px; border-radius:8px; padding:0 10px; gap:6px; background:color-mix(in srgb,var(--r-armory) 15%,transparent); color:var(--ink); border-color:transparent; box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r-armory) 50%,transparent) }
+.b4 #compare .cmppick .chip.on:hover { background:color-mix(in srgb,var(--r-armory) 22%,transparent) }
+.b4 #compare .pb-fold .cmpcards { display:grid; gap:12px; align-items:stretch; margin-top:14px; grid-template-columns:repeat(2,minmax(0,1fr)) }
+.b4 #compare .cmpcards[data-cards="1"] { grid-template-columns:minmax(0,420px) }
+.b4 #compare .cmpcards[data-cards="3"] { grid-template-columns:repeat(3,minmax(0,1fr)) }
+.b4 #compare .cmpcards[data-cards="4"] { grid-template-columns:repeat(4,minmax(0,1fr)) }
+.b4 #compare .cmpcards[data-cards="5"], .b4 #compare .cmpcards[data-cards="6"] { grid-template-columns:repeat(3,minmax(0,1fr)) }
+.b4 #compare .cmpcards .dcard { max-width:none; min-width:0 }
+.b4 #compare .cmpcards .dcard img { width:100%; aspect-ratio:16/9; height:auto; object-fit:contain; background:var(--sunk); border-radius:4px }
+.b4 #compare .cmpt thead th { font:600 var(--t-base)/1.2 var(--ui) }
+.b4 #compare .pb-fold > .chip:hover, .b4 #compare .pb-sugg .pill:hover { color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink4) }
+.b4 #compare.b1 .empty { position:relative; max-width:none; padding:40px 22px 34px; border:1px dashed color-mix(in srgb,var(--rule2) 70%,transparent); border-radius:14px; background:color-mix(in srgb,var(--sunk) 40%,transparent) }
+.b4 #compare.b1 .empty::before { content:""; display:block; width:44px; height:34px; margin:0 auto 16px; border:2px solid var(--ink4); border-radius:6px; background:linear-gradient(135deg,transparent 46%,var(--ink4) 46%,var(--ink4) 54%,transparent 54%) }
+.b4 #compare.b1 .empty b { font:600 var(--t-xl)/1.25 var(--ui); letter-spacing:-.01em; color:var(--ink) }
+.b4 #compare.b1 .empty .pb-sugg { margin-top:18px; gap:8px }
+.b4 #compare.b1 .empty .pb-sugg .pill { height:36px; border-radius:10px; background:color-mix(in srgb,var(--sunk) 80%,transparent); box-shadow:inset 0 0 0 1px var(--rule2) }
+.b4 #compare.b1 .empty .pb-sugg .pill:hover { color:var(--ink); box-shadow:inset 0 0 0 1px var(--r-armory) }
+
+/* ── K12 — a designed fallback tile when Cloudinary is unreachable, at the image's proportion (Board 4). The glyph is a broken-image
+   mark drawn in CSS so nothing is imported and 3-E is untouched. Covers Compare's card image and the New-build preview box. */
+.b4 .lc-img.failed { aspect-ratio:16/9; display:grid; place-items:center; background:color-mix(in srgb,var(--sunk) 70%,transparent); border:1px dashed color-mix(in srgb,var(--rule2) 60%,transparent); border-radius:6px }
+.b4 .lc-img.failed .lc-imgfail { display:grid; justify-items:center; gap:8px; padding:16px; font:500 12px/1.4 var(--ui); color:var(--ink3); text-align:center }
+.b4 .lc-imgfail code { font-family:var(--data); font-size:11px; color:var(--ink2) }
+.b4 .imgbox.failed, .b4 .imgbox.none { aspect-ratio:16/9; min-height:0 }
+.b4 .imgbox.failed .imgfail, .b4 .imgbox.none .imgnone { display:grid; justify-items:center; gap:8px; padding:14px; font:500 12px/1.45 var(--ui) }
+.b4 .lc-img.failed .lc-imgfail::before, .b4 .imgbox.failed .imgfail::before, .b4 .imgbox.none .imgnone::before {
+  content:""; width:30px; height:24px; border:2px solid var(--ink4); border-radius:5px;
+  background:radial-gradient(circle at 68% 32%,var(--ink4) 0 3px,transparent 3.5px), linear-gradient(135deg,transparent 58%,var(--ink4) 58% 68%,transparent 68%) }
+
+/* ── K6 — the "Editing X" weapon chips wrap. */
+.b4 .pb-edchips { display:flex; flex-wrap:wrap; gap:8px; align-items:center }
+
+/* ── K3 — the C2 form surfaces (2026-09-21 21:39 EDT), his C2-4/C2-7. The native Category <select> is given the combobox's own chevron and
+   loses the OS arrow, so it reads as one field family with the Weapon combobox; placeholders lose their italic; the "BUILD n" label prefix
+   stayed board 1 G9's realm-tinted block (4.8 made it a quiet chip; reverted in v8, G9 is the authority); the bulk editor carries a standing grammar line so the shape survives the first keypress. */
+.b4 .b3-nb .dwfield select { -webkit-appearance:none; appearance:none; padding-right:40px;
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='18'%20height='18'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%238a94a0'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M6%209l6%206%206-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center }
+.b4 .drawer :is(input, textarea, .pb-link)::placeholder { font-style:normal; color:var(--ink4); opacity:1 }
+
+/* ── K3b — the image preview box (2026-09-21 21:58 EDT), his C2-7 "empty skeleton image box". On Board 4 Cloudinary is unreachable, so the
+   .pb-shot skeleton is always empty and reads as broken; it becomes a designed placeholder in the K12 fallback language — a dashed tile
+   with the broken-image glyph — and shows the real picture the moment one loads. */
+.b4 .b3-nb .pb-shot { position:relative; aspect-ratio:4/3; min-height:0; display:grid; place-items:center; overflow:hidden; border:1px dashed color-mix(in srgb,var(--rule2) 60%,transparent); border-radius:var(--rad-2); background:color-mix(in srgb,var(--sunk) 70%,transparent) }
+.b4 .b3-nb .pb-shot img { width:100%; height:100%; object-fit:cover }
+.b4 .b3-nb .pb-shot-ui { display:grid; place-items:center; width:100%; height:100%; background:none; animation:none }
+.b4 .b3-nb .pb-shot-ui::before { content:""; width:34px; height:26px; border:2px solid var(--ink4); border-radius:5px;
+  background:radial-gradient(circle at 68% 32%,var(--ink4) 0 3px,transparent 3.5px), linear-gradient(135deg,transparent 58%,var(--ink4) 58% 68%,transparent 68%) }
+
+/* ── Pass 2, finished by class (2026-09-21 22:40 EDT, Opus 5 over 4.8's first cut). One family per job, reused, never a lookalike:
+   · WEAPON CHIP = .b3-sc (the selection bar's dot · name · count · ×) — Compare's picked weapons and the edit drawer's chips.
+   · BUILD KEY   = .b3-xr-k (the Export picker's key) — Compare's build toggles.
+   · EMPTY STATE = the thing itself, faded (.b3-xt-ghost's recipe) — Compare's landing shows a real weapon's builds slot by slot.
+   · IMAGE OFF   = one glyph (Lucide image-off as a mask) + the key chip — every failed image on the board. */
+.b4 { --b4-imgoff:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.75%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cline%20x1%3D%222%22%20x2%3D%2222%22%20y1%3D%222%22%20y2%3D%2222%22%2F%3E%3Cpath%20d%3D%22M10.41%2010.41a2%202%200%201%201-2.83-2.83%22%2F%3E%3Cline%20x1%3D%2213.5%22%20x2%3D%226%22%20y1%3D%2213.5%22%20y2%3D%2221%22%2F%3E%3Cline%20x1%3D%2218%22%20x2%3D%2221%22%20y1%3D%2212%22%20y2%3D%2215%22%2F%3E%3Cpath%20d%3D%22M3.59%203.59A1.99%201.99%200%200%200%203%205v14a2%202%200%200%200%202%202h14c.55%200%201.052-.22%201.41-.59%22%2F%3E%3Cpath%20d%3D%22M21%2015V5a2%202%200%200%200-2-2H9%22%2F%3E%3C%2Fsvg%3E") }
+.b4 .pb-edchips { display:flex; flex-wrap:wrap; gap:6px }
+.b4 #compare .cmppick { display:inline-flex; align-items:center; gap:8px }
+.b4 :is(#compare, .pb-edchips) .b3-sc button:hover { background:color-mix(in srgb,var(--danger-ink) 16%,transparent); color:var(--danger-ink) }
+.b4 #compare .cmpbrow { display:inline-flex; gap:6px }
+.b4 #compare .cmpbrow .b3-xr-k { min-width:36px }
+.b4 #compare .cmpbrow .b3-xr-k[data-cut] b { text-decoration:line-through; text-decoration-thickness:1.5px }
+.b4 #compare .cmpbrow .b3-xr-k[data-cut] { outline:1px dashed color-mix(in srgb,var(--c) 70%,transparent); outline-offset:-1px }
+.b4 #compare .b4-cc { margin:0; min-width:0; display:grid; gap:8px; align-content:start }
+.b4 #compare .b4-cc figcaption { display:flex; align-items:baseline; gap:8px; min-width:0; font:600 13px/1.2 var(--ui); color:var(--ink) }
+.b4 #compare .b4-cc figcaption span { font-weight:500; color:var(--ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+.b4 #compare.b1 .empty { border:0; border-radius:0; background:none; padding:4px 0 30px; text-align:center }
+.b4 #compare.b1 .empty::before { display:none }
+.b4 #compare.b1 .empty > b { display:block; margin:0 0 6px; font:600 15px/1.25 var(--ui); color:var(--ink) }
+.b4 #compare .b4-cmp-ghost { margin:0 0 20px; text-align:left; opacity:.4; pointer-events:none;
+  -webkit-mask-image:linear-gradient(180deg,#000 30%,transparent 95%); mask-image:linear-gradient(180deg,#000 30%,transparent 95%) }
+.b4 #compare .b4-cmp-ghost .cmpt td { height:36px; padding:0 12px }
+.b4 #compare.b1 .empty .pb-sugg { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:18px }
+.b4 #compare.b1 .empty .pb-sugg .b4-sg { height:32px; padding:0 14px; border-radius:var(--rad-pill); font:500 12.5px/1 var(--ui); color:var(--ink2); cursor:pointer;
+  background:color-mix(in srgb,var(--sunk) 80%,transparent); box-shadow:inset 0 0 0 1px var(--rule2); transition:color .15s, box-shadow .15s }
+.b4 #compare.b1 .empty .pb-sugg .b4-sg:hover { color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink4) }
+.b4 #compare.b1 .empty .pb-sugg .b4-sg:focus-visible { outline:2px solid var(--focus); outline-offset:2px }
+.b4 .b3-xt-pm { border-radius:4px; font:600 11px/var(--lh-1) var(--data); letter-spacing:.08em; display:inline-block; height:18px; box-sizing:border-box; padding-top:round(up, (18px - 1cap) / 2, 1px); padding-bottom:0; text-box:trim-both cap alphabetic }
+.b4 .b3-xt-peek { transition:opacity 150ms cubic-bezier(.23,1,.32,1), transform 200ms cubic-bezier(.23,1,.32,1), top 220ms cubic-bezier(.32,.72,0,1) }
+.b4 :is(.lc-img.failed .lc-imgfail, .imgbox.failed .imgfail, .imgbox.none .imgnone)::before { width:28px; height:28px; border:0; border-radius:0; background:var(--ink4);
+  -webkit-mask:var(--b4-imgoff) center / contain no-repeat; mask:var(--b4-imgoff) center / contain no-repeat }
+.b4 .lc-img.failed .lc-imgfail { font-size:0; gap:10px }
+.b4 .lc-img.failed .lc-imgfail::after { content:"Image not loaded"; order:1; font:500 12px/1.3 var(--ui); color:var(--ink3) }
+.b4 .lc-img.failed .lc-imgfail code { order:2; padding:4px 7px; border-radius:5px; font:500 11px/1 var(--data); color:var(--ink2); background:color-mix(in srgb,var(--ink) 6%,transparent); box-shadow:inset 0 0 0 1px var(--rule2) }
+.b4 .b3-nb .bf-h { flex-wrap:wrap; row-gap:6px }
+.b4 .b3-nb .bf-h > span:last-child:not(.bf-n):not(.pb-need) { order:2; flex-basis:100%; font:500 12.5px/1.4 var(--ui); color:var(--ink3); letter-spacing:0; text-transform:none }
+/* K1 contract, found by b4states (2026-09-21 22:43 EDT): pressed+hover answers on every key (the picker's and Compare's are one class), and the code field's copy button has a hover. */
+.b4 .b3-xr-k[aria-pressed=true]:hover { background:color-mix(in srgb,var(--c) 36%,var(--sunk)); box-shadow:inset 0 0 0 1px var(--c) }
+.b4 .b3-nb .pb-copy:hover { color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink4) }
+
+/* ── v8 · the open list, by class (2026-09-21 23:22 EDT) ─────────────────────────────────────────────────────────────────────────────
+   REPEATS (C7-8/9): b1.css draws .pb-rep as a grid of auto + 1fr, and a 1fr track's minimum is the unwrapped row of card glyphs, so
+   every repeat widened the column until it ran under the preview (measured 505px in a 492px column at 9). Both levels wrap now. */
+.b4 .drawer.b1 .pb-rep { display:flex; flex-wrap:wrap; align-items:center; gap:12px 20px; min-width:0 }
+/* MESH (C2-5/9): the Post drawer's ground is the Broadcast hue (it was a hard-coded pair), the build drawer's follows the Category select. */
+html:is([data-b3-xbg=mesh],[data-b3-xbg=ground]) .b4 .drawer.b1 { --m1:var(--r-broadcast); --m2:var(--r-broadcast) }
+/* HEADER C (C2-1): one 40px height for every control in the title row; the eyebrow is board 1 G9's mono label. */
+.b4 .drawer:has(.b3-nb) .pb-bar { align-items:center; gap:12px }
+.b4 .drawer:has(.b3-nb) .pb-bar .mh-mode button { height:40px; min-height:40px; padding-block:0; box-sizing:border-box }
+.b4 .drawer:has(.b3-nb) .pb-bar > :is(.seg, .pb-seg, [role=tablist], [role=radiogroup]):not(.mh-mode) { height:40px; box-sizing:border-box }
+.b4 .drawer:has(.b3-nb) .dw-eye { font:600 11px/var(--lh-1) var(--data) !important; letter-spacing:.1em !important }
+/* THE FORM EDGE (C2-6): the scroller ends on air rather than flush on its last row, and the dock sits on a soft ground of its own. */
+.b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-b { padding-bottom:40px }  /* no mask here: a mask on the scroller also clips the header controls it carries (they vanished in the v8 render) */
+/* v14 (2026-09-23 00:24 EDT) — found by opening every state of the build drawer, not reported yet:
+   (1) its height followed its content, 860px for a form and 588px for Bulk while typing, so switching Add build ↔ Bulk create and
+       typing a second block resized and re-centred the whole drawer under the pointer. It keeps the drawer's own ceiling now.
+   (2) the form scrolled under the header's rule with a hard cut. His ruling (2026-09-23 08:34 EDT): keep the correction, drop the header lift
+       I first drew, and use the board's own edge fade (b3/fady.js, the Export picker's tile list). A mask on .dw-b would clip the
+       header controls it carries, so the FORM COLUMN is the scroller now and carries .b3-fady; the preview column scrolls on its own
+       the same way if a card outgrows it. .dw-b no longer scrolls for the build form.
+   (3) a wheel at the end of a drawer's scroll chained on to the board behind it. */
+.b4 .drawer:has(.b3-nb):not(.cfm) { height:min(84vh, 860px) }
+.b4 .drawer :is(.dw-b, textarea) { overscroll-behavior:contain }
+.b4 .drawer .dw-b:has(.f-add) { overflow:hidden }
+.b4 .dw-b .b3-nb:has(.f-add), .b4 .dw-b .pb-view:has(> .f-add), .b4 .f-add { height:100% }
+.b4 .dw-b .f-add { grid-template-rows:minmax(0,1fr) }
+.b4 .dw-b .f-add > .b3-fady { align-self:stretch }
+.b4 .f-form.b3-fady { overflow-x:hidden }
+.b4 .f-form .f-menu { max-width:var(--mw, 100%) }
+/* 2026-09-23 08:51 EDT — the same class in Bulk and Edit: 30 lines of Edit grew the editor to its content and the drawer body scrolled 36px with a
+   hard cut. In A and C the editor column is the scroller now, with the board fade. B stays as it was: its margin notes are placed beside
+   their lines, so its editor cannot scroll on its own. */
+.b4 .drawer .dw-b:has(div.bk:not([data-f=b])) { overflow:hidden }
+.b4 .dw-b .b3-nb:has(div.bk:not([data-f=b])), .b4 .dw-b .pb-view:has(> div.bk:not([data-f=b])), .b4 .dw-b div.bk:not([data-f=b]) { height:100% }
+.b4 .dw-b div.bk:not([data-f=b]) { grid-template-rows:minmax(0,1fr) }
+.b4 .dw-b div.bk:not([data-f=b]) .bk-edcol { display:flex; flex-direction:column; min-height:0; align-self:stretch }
+.b4 .dw-b div.bk:not([data-f=b]) .bk-edcol > .bk-frame, .b4 .dw-b div.bk:not([data-f=b]) .bk-frame > .bk-wrap { flex:1 1 auto; min-height:0 }
+.b4 .f-form.b3-fady { min-height:0 }
+.b4 .f-form.b3-fady { padding:4px 4px 12px; margin:-4px -4px 0 }  /* a field's 3px focus ring would be cut by the scroller's edge */
+/* THE EMPTY PREVIEW (C2-4): a real build's card, faded — one empty-state class with Compare's landing — and the sentence over its fade. */
+.b4 .b4-ghostcard { opacity:.34; pointer-events:none; -webkit-mask-image:linear-gradient(180deg,#000 35%,transparent 92%); mask-image:linear-gradient(180deg,#000 35%,transparent 92%) }
+.b4 .b4-ghostcard + .empty { position:relative; margin-top:-72px; text-align:center }
+.b4 .drawer.b1 .b4-ghostcard + .empty { margin-top:14px }  /* the post's sample card is short: its sentence sits under it, never over its text */
+/* THE FORM (C2-4/7): no italic anywhere in a drawer; a heading's hint stays inline (G9) and wraps below only when a need chip crowds it. */
+.b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is(input, textarea)::placeholder { font-style:normal }
+.b4 .b3-nb .bf-h > span:last-child:not(.bf-n):not(.pb-need) { order:0; flex-basis:auto }
+.b4 .b3-nb .bf-h:has(.pb-need) > span:last-child:not(.bf-n):not(.pb-need) { order:2; flex-basis:100% }
+/* HINTS (C7-10): every echo and hint in the drawers takes the ruled p10 "state" treatment — the data face at 600, ink2 — so a hint reads as
+   the field's state, not as skippable grey prose. Copy is Session 4's; this is the treatment. */
+.b4 .drawer .pb-echo, .b4 .drawer .b3-nb .bf-h > span:last-child:not(.bf-n):not(.pb-need) { font:600 12px/1.4 var(--data); letter-spacing:var(--b3-tr-tight, .01em); color:var(--ink2) }
+.b4 .drawer .pb-echo { display:inline-flex; align-items:center; gap:6px }
+/* GREY WASH (C2-2/3, C9-1, board-wide): the neutral control family hovered on a solid --hi fill. Its own hue is ink: the text brightens and
+   the ring lifts, no fill. Rows (the ruled row-hover family) and every hued control (go, dang, Edit, Export) are untouched. */
+.b4 :is(.b3-btn2:not(.go):not(.dang):not(.stage):not(.b3-sd-edit):not(.b3-sd-exp), .btn:not(.go):not(.dang), .dw-h .x, .b3-x, .pb-step button, .b3-pc-x, .b3-pc-open, .idclose, .zoomer button:not(:disabled)):not([aria-pressed=true]):not([aria-expanded=true]):hover {
+  background:transparent !important; color:var(--ink) !important; box-shadow:inset 0 0 0 1px var(--ink3) !important }
+.b4 .wg-ib:not(.wg-del):not(.wg-share):not(.wg-edit):hover::before { background:transparent !important }
+
+/* ── v9 · the bulk list (2026-09-21 23:50 EDT) — side by side with the Export file (his 109) and the list he got lost in (110).
+   The Export file's line roles: the key in ink3, its value in ink2, an attachment in ink with its dash in ink4, the block's rail solid.
+   The ghost is the rest of the current block's grammar after the last line; the next line is the brightest because it's the one you type now. */
+.b4 .b3-nb .pb-ed .pb-blk::before { width:3px; background:color-mix(in srgb,var(--c) 88%,transparent) }
+.b4 .b3-nb .pb-ed .x-kv .b3-xt-tx { color:var(--ink2) }
+.b4 .b3-nb .pb-ed .x-kv .b3-xt-tx em { color:var(--ink3) }
+.b4 .b3-nb .pb-ed .x-at .b3-xt-tx i, .b4 .b3-nb .pb-ed .x-hd .b3-xt-tx i { color:var(--ink4) }
+.b4 .b3-nb .pb-ed .pb-ghost { pointer-events:none }
+.b4 .b3-nb .pb-ed .pb-ghost.x-over { margin-top:-22px }
+.b4 .b3-nb .pb-ed .x-ghost .b3-xt-no { color:color-mix(in srgb,var(--ink4) 55%,transparent) }
+.b4 .b3-nb .pb-ed .x-ghost .b3-xt-tx { color:color-mix(in srgb,var(--ink3) 55%,transparent) }
+.b4 .b3-nb .pb-ed .x-ghost:first-child .b3-xt-tx { color:var(--ink3) }
+.b4 .b3-nb .pb-ed .x-ghost:first-child .b3-xt-no { color:var(--ink4) }
+.b4 .b3-nb .pb-ed .pb-unk .b3-xt-tx { text-decoration:underline dotted color-mix(in srgb,var(--warn) 85%,transparent) 1px; text-underline-offset:5px }
+/* (2026-09-22 08:51 EDT) Compact-prep audit: the drawer-shell rules above were written as `.b4 .drawer …` and so reached EVERY drawer — the confirm
+   dialog's buttons sat over its own sentence and History's event drawer (C8, "fine") took the floating footer. They now apply only to the
+   four drawers the ruling named (build, bulk, edit: .b3-nb; post: .b1), never a confirm. The neutral hover skips pressed/open toggles
+   (their own pressed rule answers) and lifts its ring to ink3, because a ghost button already rests on an ink4 ring. */
+
+/* ── v11 (2026-09-22 13:37 EDT) · items 17–19 removed the footer's reason chip, "Add another after this" and the dock's faded ground: the
+   reason a build cannot stage sits on its own field, adding a build is a card in the form, and the actions sit on the drawer's own ground. */
+.b4 .b4-forks{display:grid;gap:8px;margin-top:-6px}
+.b4 .b4-fork{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.b4 .b4-fork-k{font:600 10.5px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--realm-c)}
+.b4 .b4-fork p{margin:0;font:500 var(--t-sm)/1.45 var(--ui);color:var(--ink2)}
+.b4 .b4-fork .seg button{text-transform:none;letter-spacing:0;font:600 var(--t-sm)/1 var(--ui)}
+
+/* 2026-09-25 00:27 EDT — the announcement form, nitpicked (his "please nitpick and correct the spacing of elements in this announcement form. also can you enclose
+   the word count fill-ball in a pill container?"). One rhythm: a label sits 13px over its field, a helper line (the count, the default date) 8px under
+   it, a section 22px under the last; one 16px gutter between side-by-side parts; the preview's heading on the form's first label; the footer's buttons
+   centred on the last row, both 24px off the drawer's foot. Measured: Starts/Ends sat 24px over their fields (the 32px switch set the label row), the
+   count 18px and the default date 14px under theirs, the banner gutter 12 against the dates' 16, In Discord 14px low (its sticky top), the buttons 16px
+   off the foot and the last row 40. */
+.b4 .drawer.b1:has(.pb-bnf) .pb-col { gap:24px }
+.b4 .drawer.b1:has(.pb-bnf) .pb-lrow { height:12px; min-height:0; margin-bottom:4px }
+.b4 .drawer.b1:has(.pb-bnf) .pb-lrow .pb-sw { height:22px; margin:-4px 0 }
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2 { margin-top:0 }
+.b4 .drawer.b1:has(.pb-bnf) .pb-echo { margin-top:0 }
+.b4 .drawer.b1:has(.pb-bnf) .pb-rep { column-gap:16px }
+.b4 .drawer.b1:has(.pb-bnf) .pb-gapday { margin-left:0 }
+.b4 .drawer.b1:has(.pb-bnf) .bed-side { top:1.5px }
+.b4 .drawer.b1:has(.pb-bnf) .dw-b { padding-bottom:24px }
+.b4 .drawer.b1:has(.pb-bnf) .dw-f { bottom:24px }  /* the buttons' foot on the banner well's foot, both 24px off the drawer's */
+/* 2026-09-25 00:30 EDT: the banner well has no key row, so the drop zone takes the column down to the preview's foot — one tall target instead of 42px and dead space */
+.b4 .drawer.b1:has(.pb-bnf) .pb-bnf .f-mcol { display:flex; flex-direction:column; align-self:stretch }
+.b4 .drawer.b1:has(.pb-bnf) .pb-bnf .f-drop { flex:1 1 auto; height:auto; min-height:44px; margin:0 }  /* app.css's .dwfield label margin reached the <label> drop zone and left it 5px short of the preview's foot */
+.b4 .drawer.b1:has(.pb-bnf) .pb-bnf .f-dl { display:inline }
+.b4 .drawer.b1:has(.pb-bnf) .pb-bnf .f-ds { display:none }  /* the well's column fits the full sentence, as the build drawer's does */
+/* 2026-09-25 01:08 EDT (his "SHIT, INCONSISTENT SPACING!"): the rhythm was measured on BOXES; the eye reads ink and holes. Three fixes: the helper lines set
+   at line-height 1 so a box is its ink (the default date's 1.4 left 2.4px of air either side); Starts carries its own helper ("default · now") so
+   the date row ends on a helper in BOTH columns — the left had a 48px hole where every other break is 22; and the form and the preview sit the
+   drawer's own 24px apart (18). */
+.b4 .drawer.b1:has(.pb-bnf) .dwfield .pb-echo { line-height:1; min-height:12px }  /* (0,6,0): b4.css's shared .pb-echo font rule is (0,5,1) through its :is() */
+.b4 .drawer.b1:has(.pb-bnf) .bed { column-gap:24px }
+/* (his "the entire character counter+fill-bar to be in a pill-shaped chip"): the bar and the figure are ONE chip, the "1 a day max" pill's
+   own fill, ring, height and mono, sitting where a helper sits — 8px under the field, on its left edge */
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2 { display:inline-flex; align-self:flex-start; align-items:center; height:28px; box-sizing:border-box }
+/* 2026-09-26 18:24 EDT (his: "both squared but also match the border and their text size and stuff. make the budget chip use counter's border and text style"):
+   the budget chip now carries the counter's own classes (.g-fact.b3-cc), so its corner, border, fill, padding and type are the counter's; the pill
+   look below stays only for a meter that is not one */
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2:not(.g-fact) { gap:10px; padding:0 12px 0 11px; border-radius:999px; background:#0B0F12; box-shadow:inset 0 0 0 1px rgb(42 52 61); font:600 12px/1 var(--data); color:rgb(157 170 180) }
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2 > span:last-child { font:inherit; line-height:var(--lh-1); color:inherit; white-space:nowrap }
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2:not(.g-fact) > span:last-child b { color:var(--ink) }
+/* V44 AZ: the numeral is the ink numeral every count readout carries (board.css, .g-fact.b3-cc .b3-nw > b); the 2026-09-26 18:24 EDT mute, which read
+   "the counter's text style" as its colour too, is gone */
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2.g-fact { gap:8px }   /* the counter's gap (b1.css gives .pb-meter2 14px) */   /* one type, as the counter's "83 characters" */
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2 .cmeter { flex:none; width:96px; height:6px; padding:0; border-radius:999px; background:color-mix(in srgb,var(--ink) 12%,transparent); box-shadow:none; overflow:hidden }
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2 .cmeter > i { height:100%; border-radius:0 }   /* 2026-09-26 19:52 EDT (his: "it's literally 2 bars beside each other… the division between them should have been a vertical line"): the segments are square, so they meet on a straight line; the track's own clip (999px, overflow hidden) rounds the bar's two ends */
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2 .cmeter > i:first-child { min-width:6px }
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2 .cmeter > i:last-child { border-radius:0 999px 999px 0 }   /* the fill's leading end stays round, as board 1's own meter (b1.css): one bar, a straight division, a round end */
+/* 2026-09-26 18:17 EDT: the count row under the text — the board's character chip, then the budget chip across the rest of the field (it hugged its
+   96px bar and read as narrow); both at the form's 28px chip height; the budget carries the character chip's mark. The field is 1.5x (100 → 150px). */
+.b4 .drawer.b1:has(.pb-bnf) .pb-chars { display:flex; align-items:center; gap:8px; min-width:0 }
+.b4 .drawer.b1:has(.pb-bnf) .pb-chars > .b3-cc { flex:none; height:28px }   /* .pb-cnt was taken (b2.css: a counter set in capitals with tracking) */
+.b4 .drawer.b1:has(.pb-bnf) .pb-chars > .pb-meter2 { flex:1; min-width:0; align-self:auto }
+.b4 .drawer.b1:has(.pb-bnf) .pb-chars > .pb-meter2 .cmeter { flex:1; width:auto; min-width:48px }
+.b4 .drawer.b1:has(.pb-bnf) .pb-meter2 > .ic { flex:none }   /* size and ink come from .g-fact .ic, as the counter's */
+/* (2026-09-27 21:47 EDT) the 150px text field is the quote box's OPEN height now, set by PostForm; folded it is two lines, as the card's */
+/* 2026-09-26 20:05 EDT (harden): the post drawer's Before staging panel sits as the build drawer's does — at the side column's foot, clear of the floating
+   Cancel / Stage (the build drawer's f-side reserves 56px; here the buttons sit 24px up and are 40px tall, so 76px). Its rows speak in their own tone:
+   a passing check in quiet ink, a warning (the shared budget, which does not block) in warn ink, a block in the build drawer's warn. */
+.b4 .drawer.b1:has(.pb-bnf) .pb-ready { bottom:0; margin-top:auto }
+/* 2026-09-27 16:06 EDT — harden (his: "notice how it escapes when the message is long? … the 'ready to stage' isn't anchored to the 'cancel/stage' buttons? … the
+   scroll bar?"): the post drawer takes the BUILD drawer's frame. The drawer keeps one height (the build drawer's), its body never scrolls; the form
+   column and the side column each scroll on their own behind the board's fade (b3/fady.js), with no native bar; the Before staging panel is sticky at
+   the side column's foot, 16px over Cancel / Stage (the buttons sit 24px up and are 40px tall: 56px reserved, the build drawer's --f-foot), so a long
+   preview scrolls under it instead of the column running out of the drawer; the preview's label is the build drawer's (.f-prev h5). */
+.b4 .drawer.b1:has(.pb-bnf):not(.cfm) { height:min(84vh, 860px) }
+.b4 .drawer.b1:has(.pb-bnf) .dw-b { overflow:hidden }
+.b4 .drawer.b1:has(.pb-bnf) .bed { height:100%; grid-template-rows:minmax(0,1fr); align-items:stretch }
+.b4 .drawer.b1:has(.pb-bnf) .pb-col.b3-fady { min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; scrollbar-width:none }
+.b4 .drawer.b1:has(.pb-bnf) .pb-col.b3-fady::-webkit-scrollbar { display:none }
+.b4 .drawer.b1:has(.pb-bnf) .pb-col.b3-fady { padding:6px 6px 12px; margin:-6px -6px 0; align-content:start }   /* room for a field's 5px focus halo inside the scroller */
+.b4 .drawer.b1:has(.pb-bnf) .bed-side.pb-card { position:static; top:auto; align-self:stretch; display:flex; flex-direction:column; min-height:0; height:auto; overflow:hidden; padding:0 0 56px }   /* app.css's .bed-side{align-self:start} sized the column to its content, so it outgrew the drawer and nothing anchored */
+/* the PREVIEW is the scroller, not the column: with the column scrolling, a long card ran on under the panel and behind Cancel / Stage (seen in the
+   first render). Now the label stays put, the card scrolls in the space it has, and the panel and the buttons never have anything under them. */
+.b4 .drawer.b1:has(.pb-bnf) .bed-side .f-prev { display:flex; flex-direction:column; flex:1 1 auto; min-height:0; margin:0 0 20px }   /* the build drawer's 20px from preview to panel */
+.b4 .drawer.b1:has(.pb-bnf) .bed-side .pb-ready { flex:none; position:static }
+.b4 .drawer.b1:has(.pb-bnf) .pb-lrow .b4-hint { margin:-6px auto -6px 8px }   /* right after its label, as the build drawer's Optional sits after its title; Ends' switch keeps the right edge */   /* the build drawer's Optional chip on a 12.5px label row, as the Never ends switch sits on it */
+.b4 .drawer.b1:has(.pb-bnf) .pb-ready .f-stw[data-tone=ok] { color:var(--ink3) }
+.b4 .drawer.b1:has(.pb-bnf) .pb-ready .f-stw[data-tone=caution] { color:var(--warn-ink) }
+.b4 .drawer.b1:has(.pb-bnf) .pb-ready .f-stm[data-tone=caution] { color:var(--warn); background:transparent; box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 45%,transparent) }
+/* the Discord card's footer (the timestamp) sits under the banner, as Discord draws an embed's footer */
+.b4 .drawer.b1:has(.pb-bnf) .dcard .pb-img2 + .pb-ts { margin-top:10px }
+.b4 .drawer.b1:has(.pb-bnf) .pb-lrow .pb-sw { padding-right:0 }  /* "Never ends" ends on the Ends field's right edge (it sat 2px in) */
+.b4 .drawer.b1:has(.pb-bnf) .pb-bnf .f-media { grid-template-columns:136px minmax(0,1fr) }  /* the post drawer's column is narrower than the build card's: a 136px tile leaves a picked file's name room to read (it cut to "doubl…" at 176) */
+/* 2026-09-27 18:52 EDT — THE POST FORM'S FIELDS, on the build drawer's field recipe (his: "where tf are the hover events??? … you didn't bother to put them in the
+   announcement drawer"): the text, Starts and Ends take .f-fld's ring (ink 12%) and its hover (ink 24%); focus keeps the board's one glow. The Never
+   ends switch and the date button answer a hover as the board's toggles do. The date line under a field speaks in the build drawer's hint voice
+   (12.5px sans, as Before staging's rows), not a third mono voice. */
+/* (the text, Starts and Ends already carry the build field's ring and hover: b4/classes.css `.drawer.b1 .dwfield :is(input,textarea)` 12% → 24%) */
+.b4 .drawer.b1 .pb-sw:hover { color:var(--ink) }
+.b4 .drawer.b1 .pb-sw:hover .pb-swt { box-shadow:inset 0 0 0 1px var(--ink4) }
+.b4 .drawer.b1 .pb-sw[aria-checked=true]:hover .pb-swt { background:color-mix(in srgb,var(--r-broadcast) 82%,#fff) }
+.b4 .drawer.b1 .pb-dfld { position:relative }
+.b4 .drawer.b1 .pb-dfld > input { width:100%; padding-right:46px }
+.b4 .drawer.b1 .pb-dbtn { position:absolute; top:50%; right:8px; transform:translateY(-50%); display:grid; place-items:center; width:32px; height:32px; padding:0; border:0; border-radius:8px; background:none; color:var(--ink3); cursor:pointer; transition:background-color .15s,color .15s }
+.b4 .drawer.b1 .pb-dbtn:hover { background:var(--hi); color:var(--ink) }
+.b4 .drawer.b1 .pb-dbtn[aria-expanded=true], .b4 .drawer.b1 .pb-dbtn[aria-expanded=true]:hover { background:color-mix(in srgb,var(--dp-c,var(--realm-c,var(--ink3))) 11%,transparent); color:color-mix(in srgb,var(--dp-c,var(--realm-c,var(--ink3))) 26%,white) }   /* 2026-09-27 19:16 EDT: open = the realm's hover tint, as its picker */
+.b4 .drawer.b1 .pb-dbtn:focus-visible { outline:2px solid var(--focus); outline-offset:1px }
+.b4 .drawer.b1 .pb-dbtn .ic { width:16px; height:16px }
+.b4 .drawer.b1:has(.pb-bnf) .dwfield .pb-echo { font:500 12.5px/1 var(--ui); letter-spacing:0 }
