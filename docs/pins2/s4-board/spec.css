@@ -415,12 +415,12 @@ body { font-family: var(--f-body); margin: 0; }
    opened, the words were cut mid-letter by a hard edge, and on the left reveal they hung outside the box while it grew and shrank. Now, on both sides: the icon
    never moves (it is held at its rest place, 15 from the hit box's edge, centred in the 32 ring); the words stay inside the box (it clips) with a soft trailing
    edge instead of a cut; opening, the box moves first and the words fade in once it is mostly open; closing, the words fade out first and the box follows. */
-.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_){position:relative!important;overflow:clip!important;column-gap:0!important;grid-template-columns:auto!important;width:fit-content!important;transition:padding 240ms cubic-bezier(.4,0,.2,1) 80ms!important}
+.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_){position:relative!important;overflow:clip!important;column-gap:0!important;grid-template-columns:auto!important;width:fit-content!important;transition:padding 280ms cubic-bezier(.4,0,.2,1) 60ms!important}
 .spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_) > svg{position:absolute!important;top:50%!important;margin:0!important;translate:0 -50%!important;transition:none!important}
 /* the word's own width opens (max-width, a length both ends of the move can share; 0fr → 1fr jumped in one frame here, measured) */
-.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_)::after{grid-column:1;grid-row:1;min-width:0!important;max-width:0!important;padding:0!important;overflow:hidden!important;white-space:nowrap!important;margin:0!important;opacity:0!important;transform:none!important;transition:max-width 240ms cubic-bezier(.4,0,.2,1) 80ms,padding 240ms cubic-bezier(.4,0,.2,1) 80ms,opacity 90ms linear,translate 90ms linear!important}
-.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_):is(:hover,:focus-visible){transition:padding 260ms cubic-bezier(.22,.61,.36,1)!important}
-.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_):is(:hover,:focus-visible)::after{max-width:60px!important;opacity:1!important;translate:0 0!important;transition:max-width 260ms cubic-bezier(.22,.61,.36,1),padding 260ms cubic-bezier(.22,.61,.36,1),opacity 170ms ease-out 110ms,translate 220ms cubic-bezier(.22,.61,.36,1) 60ms!important}
+.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_)::after{grid-column:1;grid-row:1;min-width:0!important;max-width:0!important;interpolate-size:allow-keywords;padding:0!important;overflow:hidden!important;white-space:nowrap!important;margin:0!important;opacity:0!important;transform:none!important;transition:max-width 280ms cubic-bezier(.4,0,.2,1) 60ms,padding 280ms cubic-bezier(.4,0,.2,1) 60ms,opacity 110ms linear,translate 110ms linear!important}
+.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_):is(:hover,:focus-visible){transition:padding 420ms cubic-bezier(.45,0,.2,1) 50ms!important}
+.spec .rvs .wg-ib.wg-fbtn:not(#_):not(#_):is(:hover,:focus-visible)::after{max-width:max-content!important;opacity:1!important;translate:0 0!important;transition:max-width 420ms cubic-bezier(.45,0,.2,1) 50ms,padding 420ms cubic-bezier(.45,0,.2,1) 50ms,opacity 220ms ease-out 170ms,translate 360ms cubic-bezier(.45,0,.2,1) 110ms!important}
 /* right: the icon held on the left, the words open to its right */
 .spec .rv-right .wg-ib.wg-fbtn:not(#_):not(#_){padding:0 15px 0 calc(15px + 14px)!important}
 .spec .rv-right .wg-ib.wg-fbtn:not(#_):not(#_) > svg{left:15px!important;right:auto!important}
@@ -639,8 +639,8 @@ body { font-family: var(--f-body); margin: 0; }
 .spec #filled .fv-wash .ctx > * { background: color-mix(in srgb, var(--A) 14%, transparent) !important; border: 1px solid var(--A) !important; box-shadow: none !important; color: var(--ink) !important; }
 /* 2026-10-09 12:41 EDT: was `> *:hover`, which never matched: spec.html has no doctype, so the page runs in quirks mode, where a compound of only * and :hover matches links alone (the 12:06 EDT "Hover no change" fault). [class] keeps it a real compound. */
 .spec #filled .fv-wash .ctx > [class]:hover { background: color-mix(in srgb, var(--A) 24%, transparent) !important; }
-.spec #filled .fv-tint .ctx > * { background: color-mix(in srgb, var(--sunk) 85%, transparent) !important; border: 0 !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 30%, #0B0F12) !important; color: var(--A) !important; }
-.spec #filled .fv-tint .ctx > [class]:hover { background: color-mix(in srgb, var(--A) 12%, var(--sunk)) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 60%, transparent) !important; color: color-mix(in srgb, var(--A) 80%, white) !important; }
+.spec #filled .fv-tint .ctx > * { background: color-mix(in srgb, var(--sunk) 85%, transparent) !important; border: 0 !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 55%, #0B0F12) !important; color: var(--A) !important; }
+.spec #filled .fv-tint .ctx > [class]:hover { background: color-mix(in srgb, var(--A) 12%, var(--sunk)) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 75%, transparent) !important; color: color-mix(in srgb, var(--A) 80%, white) !important; }
 @media (max-width: 860px) { .spec #filled .fgrid { grid-template-columns: 120px repeat(3, 200px); } }
 /* 2026-10-08 21:43 EDT: each cell keeps its button on top and the Styles section's Rest and Hover cards under it */
 .spec #filled .fgrid { align-items: start; }
@@ -808,14 +808,14 @@ body { font-family: var(--f-body); margin: 0; }
 
 /* 2026-10-10 19:07 EDT: the × close's twin, --reveal-left (his twins note): held at its 32 square at rest, the icon fixed where it sits, the words opening on its left inside
    the box with a soft 10px edge, the Flags section's refined reveal; sizes from the M row (spec-buttons.js sets --rv-h, --rv-i, --rv-p, --rv-g) */
-.spec [data-rvx]:not(#_):not(#_) { position: relative !important; overflow: clip !important; width: auto !important; min-width: var(--rv-h) !important; justify-content: flex-start !important; column-gap: 0 !important; padding: 0 calc((var(--rv-h) - var(--rv-i)) / 2) !important; transition: padding 240ms cubic-bezier(.4,0,.2,1) 80ms !important; }
+.spec [data-rvx]:not(#_):not(#_) { position: relative !important; overflow: clip !important; width: auto !important; min-width: var(--rv-h) !important; justify-content: flex-start !important; column-gap: 0 !important; padding: 0 calc((var(--rv-h) - var(--rv-i)) / 2) !important; transition: padding 280ms cubic-bezier(.4,0,.2,1) 60ms !important; }
 .spec [data-rvx]:not(#_):not(#_) > svg { position: absolute !important; top: 50% !important; translate: 0 -50% !important; margin: 0 !important; transition: none !important; }
 .spec [data-rvx="left"]:not(#_):not(#_) > svg { right: calc((var(--rv-h) - var(--rv-i)) / 2) !important; left: auto !important; }
-.spec [data-rvx]:not(#_):not(#_) > :not(svg) { display: block !important; position: static !important; max-width: 0 !important; overflow: hidden !important; white-space: nowrap !important; opacity: 0 !important; margin: 0 !important; padding: 0 !important; transition: max-width 240ms cubic-bezier(.4,0,.2,1) 80ms, opacity 90ms linear !important; }
+.spec [data-rvx]:not(#_):not(#_) > :not(svg) { display: block !important; position: static !important; max-width: 0 !important; overflow: hidden !important; white-space: nowrap !important; opacity: 0 !important; margin: 0 !important; padding: 0 !important; transition: max-width 280ms cubic-bezier(.4,0,.2,1) 60ms, opacity 110ms linear !important; interpolate-size: allow-keywords; }
 .spec [data-rvx="left"]:not(#_):not(#_) > :not(svg) { mask-image: linear-gradient(to left, #000 calc(100% - 10px), transparent); }
-.spec [data-rvx="left"]:not(#_):not(#_):is(:hover, :focus-visible) { padding: 0 calc((var(--rv-h) - var(--rv-i)) / 2 + var(--rv-i) + var(--rv-g)) 0 0 !important; transition: padding 260ms cubic-bezier(.22,.61,.36,1) !important; }
+.spec [data-rvx="left"]:not(#_):not(#_):is(:hover, :focus-visible) { padding: 0 calc((var(--rv-h) - var(--rv-i)) / 2 + var(--rv-i) + var(--rv-g)) 0 0 !important; transition: padding 420ms cubic-bezier(.45,0,.2,1) 50ms !important; }
 .spec [data-rvx="left"]:not(#_):not(#_):is(:hover, :focus-visible) > :not(svg) { padding-left: var(--rv-p) !important; }   /* the soft edge fades only this padding, so the open word is whole */
-.spec [data-rvx]:not(#_):not(#_):is(:hover, :focus-visible) > :not(svg) { max-width: 80px !important; opacity: 1 !important; transition: max-width 260ms cubic-bezier(.22,.61,.36,1), opacity 170ms ease-out 110ms !important; }
+.spec [data-rvx]:not(#_):not(#_):is(:hover, :focus-visible) > :not(svg) { max-width: max-content !important; opacity: 1 !important; transition: max-width 420ms cubic-bezier(.45,0,.2,1) 50ms, opacity 220ms ease-out 170ms !important; }
 /* 2026-10-10 19:07 EDT: 700 tried on the L buttons (his twins note), each drawn at L: 44, corner 11, padding 14, icon 16, icon → words 10, words 13 */
 .spec .w7 { display: grid; gap: 10px; margin: 0 0 14px; padding: 14px; border: 1px solid var(--pg-rule); border-radius: 10px; background: var(--pg-card); }
 .spec .w7-n { margin: 0; font: 500 12px/1.4 var(--f-ui, inherit); color: var(--pg-ink3); }
@@ -836,3 +836,14 @@ body { font-family: var(--f-body); margin: 0; }
 .spec #filled .fv-his .ctx > [class]:hover { background: color-mix(in srgb, var(--A) 15%, var(--sunk)) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--A) 62%, transparent) !important; color: color-mix(in srgb, var(--A) 80%, white) !important; }
 /* 2026-10-10 19:19 EDT: the reveal-left twin opens toward the left, its right edge held, as it does at the right end of the drawer header */
 .spec [data-bfix] .dw-nav:has([data-rvx="left"]) { display: flex !important; justify-content: flex-end !important; width: 96px !important; }
+
+/* 2026-10-10 21:13 EDT: tint's outline, his 21:02 "i like the new outline on tint. let's use that for that style": accent 55% on #0B0F12 at rest, 75% on hover, wherever the styles are shown.
+   :where() keeps it under the flag rules (--borderless, --quiet), which must still win */
+.spec :where(#styles, #icons, #flags, #pills) { --danger-edge: color-mix(in srgb, var(--danger-ink) 55%, #0B0F12); }
+.spec :where(#styles, #icons, #flags, #pills) .b3-btn2.dang:hover { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger-ink) 75%, transparent) !important; }
+/* the informative chips: no hover (his 21:02 EDT) */
+.spec #filled .tags .ctx > [class]:hover { filter: none !important; }
+.spec #filled .fgrid.tags { grid-template-columns: minmax(96px, 150px) minmax(0, 1fr); }
+
+/* 2026-10-10 21:27 EDT: the decided grid has two columns (today, tint) */
+.spec #filled .fgrid:not(.tags) { grid-template-columns: minmax(96px, 150px) repeat(2, minmax(0, 1fr)); }

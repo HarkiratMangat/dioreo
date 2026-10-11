@@ -10,7 +10,8 @@ export function makeFilled(L) {
   const { html, useState, useEffect, getJson, Sec, Name, Clone, scopeRule, Recipe } = L;
   const FF = { f: {} }; const factsReady = getJson('spec-img/filled-facts.json').then((j) => { FF.f = (j && j.facts) || {}; });
   const ROWS = [['button.b3-endbtn', 'Set end date', 'warn', 'Queue', 'buttons'], ['button.g-chipbtn', 'Never', 'warn', 'Queue', 'buttons'], ['span.b4-hint', 'Weapon required', 'warn', 'New build', 'chips']];   /* Weapon required: his 22:00 EDT "add the 'weapon required' variant to this … comparison table" */
-  const COLS = [['today', 'today'], ['wash', 'wash'], ['tint', 'tint']];
+  // 2026-10-10 21:13 EDT: decided, his 21:02 "i like the new outline on tint. let's use that for that style?" and "move 'never' and 'set end date' -> tint": two columns, today and tint
+  const COLS = [['today', 'today'], ['tint', 'tint · decided']];
   // 2026-10-10 19:07 EDT: his three tries (calls/filled note, 2026-10-09 22:27 EDT): tint with its words at rest 80% on white · tint with more of the accent in its outline (rest
   // 55% on #0B0F12, hover 75%: my values for "a bit more of the accent color") · his own style, rest fill 9% on sunk, outline 40%, words 80% on white; hover 15%, 62%, words the same
   const TRY = [['t80', 'tint · words 80% at rest'], ['t50', 'tint · outline 55%'], ['his', 'your style · 9 / 40 / 80']];
@@ -20,11 +21,14 @@ export function makeFilled(L) {
   function Filled() {
     const [, set] = useState(0); useEffect(() => { Promise.all([ready, factsReady]).then(() => set(1)); }, []);
     if (!S.g) return html`<${Sec} id="filled" title="Set end date and Never" tag="Yours to call" kind="diff"><span class="rc-wait">measuring…</span><//>`;
-    const grid = (cols) => html`<div class="fgrid"><i></i>${cols.map(([k, t]) => html`<b class="fg-h">${t}</b>`)}
-        ${ROWS.map(([sel, what, acc, where, grp]) => { const v = (S.g[grp] || {})[sel]; return html`<div class="fg-k"><span>${what}</span><em>${where} · ${acc}</em></div>${cols.map(([k]) => { const f = FF.f[sel + '|' + k]; return html`<div class="fg-cell"><div class=${'fg-c fv-' + k} style=${`--A: var(--${acc})`} data-fv=${sel}><${Clone} path=${v.path} markup=${v.html} /></div>${f ? html`<div class="fg-r"><figure><figcaption>Rest</figcaption><${Recipe} f=${f} k="rest" /></figure><figure><figcaption>Hover</figcaption><${Recipe} f=${f} k="hover" /></figure><span class="fg-sz">${Math.round(f.rest.w)} × ${Math.round(f.rest.h)} · corner ${f.rest.r}</span></div>` : html`<span class="rc-wait">not measured yet</span>`}</div>`; })}`; })}
+    const grid = (cols, rows = ROWS) => html`<div class="fgrid"><i></i>${cols.map(([k, t]) => html`<b class="fg-h">${t}</b>`)}
+        ${rows.map(([sel, what, acc, where, grp]) => { const v = (S.g[grp] || {})[sel]; return html`<div class="fg-k"><span>${what}</span><em>${where} · ${acc}</em></div>${cols.map(([k]) => { const f = FF.f[sel + '|' + k]; return html`<div class="fg-cell"><div class=${'fg-c fv-' + k} style=${`--A: var(--${acc})`} data-fv=${sel}><${Clone} path=${v.path} markup=${v.html} /></div>${f ? html`<div class="fg-r"><figure><figcaption>Rest</figcaption><${Recipe} f=${f} k="rest" /></figure><figure><figcaption>Hover</figcaption><${Recipe} f=${f} k="hover" /></figure><span class="fg-sz">${Math.round(f.rest.w)} × ${Math.round(f.rest.h)} · corner ${f.rest.r}</span></div>` : html`<span class="rc-wait">not measured yet</span>`}</div>`; })}`; })}
       </div>`;
-    return html`<${Sec} id="filled" title="Set end date and Never" tag="Yours to call" kind="diff">${grid(COLS)}
-      <h3 class="subh bsub fg-try"><b>Your three tries</b><span>“what if we changed tint's rest text to color 80% on white … tweaks tint's outline to show a bit more of the accent … REST fill=color 9% on sunk. outline=color 40% 1px … HOVER fill=color 15% on sunk. outline=color 62% 1px”</span></h3>${grid(TRY)}<//>`;
+    const W = (S.g.chips || {})['span.b4-hint']; const chip = (tone, ic, t) => W ? W.html.replace(/data-tone="[^"]*"/, `data-tone="${tone}"`).replace(/#i-[a-z-]+/, '#i-' + ic).replace(/Weapon required/, t) : '';
+    const TAGS = [['chip.warn', 'Weapon required', 'today', W && W.html], ['chip.ok', 'Ready', 'the same chip, tone ok', chip('ok', 'check', 'Ready')], ['chip.magic', 'Filled 4 slots', 'the same chip, tone magic', chip('magic', 'wand-sparkles', 'Filled 4 slots')], ['chip.none', '4 of 5', 'the same chip, no tone', W && W.html.replace(/\sdata-tone="[^"]*"/, '').replace(/<svg[\s\S]*?<\/svg>/, '').replace(/Weapon required/, '4 of 5')]];
+    return html`<${Sec} id="filled" title="Set end date and Never" tag="Decided: tint" kind="ok">${grid(COLS, ROWS.slice(0, 2))}
+      <h3 class="subh bsub fg-try"><b>Weapon required · and the chips beside it</b><span>an informative chip: no hover (your 21:02 EDT). The four are one component, b4/form.js's Chip, told apart only by its tone; their inks, measured</span></h3>
+      <div class="fgrid tags"><i></i><b class="fg-h">as the board draws it</b>${TAGS.map(([k, what, how, mk]) => { const f = FF.f[k + '|today']; return html`<div class="fg-k"><span>${what}</span><em>${how}</em></div><div class="fg-cell"><div class="fg-c fv-today" data-fv=${k}>${W && mk ? html`<${Clone} path=${W.path} markup=${mk} />` : null}</div>${f ? html`<div class="fg-r"><figure><figcaption>Rest</figcaption><${Recipe} f=${f} k="rest" /></figure><span class="fg-sz">${Math.round(f.rest.w)} × ${Math.round(f.rest.h)} · corner ${f.rest.r}</span></div>` : html`<span class="rc-wait">not measured yet</span>`}</div>`; })}</div><//>`;
   }
   return { Filled };
 }

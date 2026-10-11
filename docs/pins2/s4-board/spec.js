@@ -41,7 +41,7 @@ const factsReady = Promise.all([getJson('spec-img/board-facts.json'), getJson('s
 function useFacts() { const [, set] = useState(0); useEffect(() => { factsReady.then(() => set(1)); }, []); return BOARD; }
 
 // his table: S 24 (12:13 EDT), XS click 24 (12:36 EDT), neighbour gaps on his scale (12:38 EDT)
-const SIZES = { L: { h: 44, hit: 44, r: 11, icon: 16, text: '13 · 600', pad: 14, gap: 10 }, M: { h: 32, hit: 44, r: 8, icon: 14, text: '11 · 600', pad: 10, gap: 6 }, S: { h: 24, hit: 32, r: 6, icon: 12, text: '11 · 600', pad: 10, gap: 6 }, XS: { h: 20, hit: 24, r: 5, icon: 12, text: '11 · 600', pad: 6, gap: 6 } };
+const SIZES = { L: { h: 44, hit: 44, r: 11, icon: 16, text: '13 · 700', pad: 14, gap: 10 }, M: { h: 32, hit: 44, r: 8, icon: 14, text: '11 · 600', pad: 10, gap: 6 }, S: { h: 24, hit: 32, r: 6, icon: 12, text: '11 · 600', pad: 10, gap: 6 }, XS: { h: 20, hit: 24, r: 5, icon: 12, text: '11 · 600', pad: 6, gap: 6 } };
 const DOWN = { L: 'M', M: 'S', S: 'XS' };
 const MINGAP = { L: 'any', M: 14, S: 10, XS: 6 };
 

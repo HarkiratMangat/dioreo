@@ -18,12 +18,12 @@ export function makeColours(L) {
   const over = (c, bg) => c.slice(0, 3).map((x, i) => x * c[3] + bg[i] * (1 - c[3]));
   const hex = (c) => '#' + c.slice(0, 3).map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
-  const wrap = (A) => `--warn: ${A}; --staged: ${A}; --ok: ${A}; --danger-ink: ${A}; --danger-edge: color-mix(in srgb, ${A} 30%, #0B0F12);`;
+  const wrap = (A) => `--warn: ${A}; --staged: ${A}; --ok: ${A}; --danger-ink: ${A}; --danger-edge: color-mix(in srgb, ${A} 55%, #0B0F12);`;
   /* a cell in the hover state: the recipe laid inline on the button (a stylesheet cannot be hovered on demand); its numbers read back off what it draws */
   function Cell({ kind, A, r, hue }) {
     const ref = useRef(); const [n, setN] = useState(null);
     useLayout(ref, (box) => { const b = box.querySelector('button'); if (!b) return; const w = r === 100 ? A : `color-mix(in srgb, ${A} ${r}%, white)`;
-      imp(b, 'transition', 'none'); imp(b, 'background', `color-mix(in srgb, ${A} 12%, var(--sunk))`); imp(b, 'box-shadow', `inset 0 0 0 1px color-mix(in srgb, ${A} 60%, transparent)`); imp(b, 'border-color', 'transparent'); imp(b, 'color', w);
+      imp(b, 'transition', 'none'); imp(b, 'background', `color-mix(in srgb, ${A} 12%, var(--sunk))`); imp(b, 'box-shadow', `inset 0 0 0 1px color-mix(in srgb, ${A} 75%, transparent)`); imp(b, 'border-color', 'transparent'); imp(b, 'color', w);
       b.querySelectorAll('svg').forEach((s) => imp(s, 'color', w));
       const c = getComputedStyle(b); const bg = over(P(c.backgroundColor), SUNK); const fg = P(c.color); if (!fg) return; const v = { cr: ratio(fg, bg), hx: hex(fg) }; setN((o) => (o && o.hx === v.hx && Math.abs(o.cr - v.cr) < 0.01 ? o : v)); rec(hue, kind, r, v); });
     return html`<div class="cl-c" ref=${ref} data-cl=${`${hue}|${kind}|${r}`}><div class="cl-b" style=${wrap(A)} inert>${el[kind]()}</div>${n ? html`<span class=${'cl-n' + (n.cr < 4.5 ? ' lo' : '')}><b>${n.cr.toFixed(1)}</b> ${n.hx}</span>` : null}</div>`;
