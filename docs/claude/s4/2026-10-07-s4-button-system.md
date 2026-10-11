@@ -258,3 +258,34 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - **q7 (22:37 EDT):** "24" → the badge box stays 24; the XS proposal withdrawn.
 - **q11 (22:48 EDT):** no choice, note: "the toast is part of the builder-2 board chrome." → the toast leaves the Overlays section; Q11 stays open for the drawers and the problem pop-up.
 - **(2026-10-10 19:12 EDT):** "why 390??" · **(19:13 EDT):** "search your linksee memory aboy mobile." → the phone is not a review surface for the boards (his 2026-09-18 11:08, 2026-09-20 12:02 and 2026-10-02 10:55 EDT words); the sweeps run at 1282 (his viewport) and 1440, never 390.
+
+## His 2026-10-10 21:02 EDT review of v50, verbatim (11 screenshots), written 2026-10-10 21:05 EDT
+> i still have a bit of usage left so i wont switch to the cloud session just yet, but do keep it sync'd up so i can switch over whenever.
+>
+> * for the never/set end date/weapon required...
+>    * i like the new outline on tint. let's use that for that style?
+>    * move 'never' and 'set end date' -> tint
+>    * 'weapon required'... so first, its not supposed to have any hover event. it's an informative chip. but im honestly still unsure what style i want it as. so before i decide, can you tell me what style these 'ready' and 'filled x slots' tags use? how do their styles compare to the current style of the 'weapon required'?
+> * for the reveal-right/left button, the text inside is clipping. also can you verify that both right/left use the same animation timing? because reveal-left seems more abrupt to me. overall can you give them more of an ease, as well as a ~50ms wait so a mouse over them doesnt accidentally trigger the animation.
+> * 'on the board' sections:
+>    * L buttons, yeah let's use 700 weight.
+>    * 'pick' button, isn't this .wash-staged?
+>    * the 'button-M-icon.paint--ghost--reveal-left' `x` button is still incorrect. in rest, it's icon is misaligned. and then on hover, the glow/lightup is completely incorrect and not what we use for .paint--ghost.
+>    * for the 'undo' button, give it `.paint-realm` for the history realm.
+>    * why is the trashbin icon stated twice?
+>    * the 'expand' button's hover is also incorrect.
+>    * confused how im supposed to judge an icon/button you drew in disabled state (the copy icon button from New Build drawer)
+>    * the selection bar's gunsmith code button is also incorrectly labeled. that style is clearly `paint--quiet`
+>    * You gave the announcement sort button the -realm token but didn't give it broadcast realm's actual accent tho?
+>    * it seems to be you're understanding isn't clear on what a default `.paint` button should look like vs a `.paint--ghost` vs `.paint-color`, similarly with `.tint`. like each button has a default style/color of its own when a color token isn't assigned to it. We should clear that up. and i guess this also ties to our definition of what each button is. so really we need to clear up the definition of each style, the exact rest/hover behavior/colors/etc of each style, and the default view of each style.
+>
+> * the icon button styles are nearly all broken on their hover. they don't work.
+> * Chips and tags... we'll return to these soon, because honestly they require their own styles/scale possibly.
+> * the badge boxes...we'll return to these as well, as part of the 'chips and tags' work.
+> * Segmented and switches... we'll return to this after the other buttons and colors and stuff are corrected.
+> * Inputs... these are either proposed incorrectly or they're broken. please correct this section.
+> * Pickers... PLEASE draw your proposals and measurements on these much better. this is such lazy, prose driven work which i've already had to state and correct you on multiple times!! literally look at transcript! Not to mention some of these picker proposals are literally broken and drawn incorrectly.
+> * Overlays... i have no idea what this section is even about or trying to propose.
+> * pop-ups... literally every single one is drawn incorrectly or broken.
+> * Data display... why tf is the whole broadcast cards gate here?? this is a spec-board, not the full gate board. we're refining and standardizing the individual elements that collective make a whole product. the broadcast cards are a collective product. Similarly the discord previews.
+
