@@ -25,7 +25,7 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": [
         "-c",
-        "import http.server,socketserver,os\nos.chdir('portal/public')\nclass H(http.server.SimpleHTTPRequestHandler):\n    def end_headers(self):\n        self.send_header('Cache-Control','no-store, must-revalidate')\n        self.send_header('Pragma','no-cache')\n        super().end_headers()\nsocketserver.TCPServer.allow_reuse_address=True\nsocketserver.TCPServer(('127.0.0.1',8901),H).serve_forever()\n"
+        "import http.server,socketserver,os\nos.chdir('portal/public')\nclass H(http.server.SimpleHTTPRequestHandler):\n    def end_headers(self):\n        self.send_header('Cache-Control','no-store, must-revalidate')\n        self.send_header('Pragma','no-cache')\n        super().end_headers()\nsocketserver.TCPServer.allow_reuse_address=True\nsocketserver.ThreadingTCPServer.request_queue_size=128\nsocketserver.ThreadingTCPServer.daemon_threads=True\nsocketserver.ThreadingTCPServer(('127.0.0.1',8901),H).serve_forever()\n"
       ],
       "port": 8901
     },

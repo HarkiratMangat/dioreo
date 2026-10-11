@@ -33,20 +33,9 @@
       "name": "command bar · typed query",
       "realm": "season",
       "flags": {},
-      "steps": [
-        {
-          "key": "k",
-          "meta": true
-        },
-        {
-          "type": {
-            "sel": ".cb-in",
-            "text": "draw"
-          }
-        }
-      ],
+      "steps": [{"key": "k", "meta": true}, {"type": {"sel": ".cb-in", "text": "zzqq"}}],
       "known": [],
-      "expect": ".cb-drop .plist"
+      "expect": ".cb-drop .pnone"
     },
     {
       "name": "account panel open",

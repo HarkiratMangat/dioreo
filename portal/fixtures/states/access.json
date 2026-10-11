@@ -76,6 +76,38 @@
       ],
       "known": [],
       "expect": ".drawer.open .idbar .gp-n b"
+    },
+    {
+      "name": "export strip · opens from the masthead",
+      "realm": "access",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mh-take button"
+        }
+      ],
+      "known": [],
+      "expect": "aside.drawer.open ul.exs",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker AHS's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "grant drawer · a permission chosen",
+      "realm": "access",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".mh-new, .pill.lead",
+            "text": "Grant access"
+          }
+        },
+        {
+          "click": ".drawer.open .tokgrid .chip.topic"
+        }
+      ],
+      "known": [],
+      "expect": ".tokgrid .chip.topic.on",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker AHS's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
     }
   ]
 }

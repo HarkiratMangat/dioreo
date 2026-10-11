@@ -28,6 +28,64 @@
         }
       ],
       "expect": "#manifest .empty"
+    },
+    {
+      "name": "export strip · opens from the masthead",
+      "realm": "history",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mh-take button"
+        }
+      ],
+      "known": [],
+      "expect": "aside.drawer.open ul.exs",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker BH's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "level filter · error empties the list",
+      "realm": "history",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".chip",
+            "text": "rror"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "p.empty",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker BH's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "selection · one row ticked",
+      "realm": "history",
+      "flags": {},
+      "steps": [
+        {
+          "click": "main tbody tr .cb"
+        }
+      ],
+      "known": [],
+      "expect": ".selbar.on",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker BH's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
+    },
+    {
+      "name": "manifest · sorted by When",
+      "realm": "history",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": "button.sortbtn",
+            "text": "When"
+          }
+        }
+      ],
+      "known": [],
+      "expect": "th.sorted-asc",
+      "note": "Registered by Session 4 (2026-10-02 09:34 EDT) so the element census reaches it: worker BH's inventory found this surface outside the registry, and the elements on it in no census family. The expect was read off a probe of what the steps produce (local/pins2/s4/work/lead/probe-states.cjs)."
     }
   ]
 }

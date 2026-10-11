@@ -4,8 +4,9 @@
 // `html[data-b3-<key>="<value>"]` selectors and `useB3('<key>')` branches. Only the value the board holds renders. A port
 // that copies a rule or a hunk without checking its switch ships a losing option — 256 of 415 keyed selectors are dead.
 // RE-RUN IT whenever a switch's value changes (Session 4 deciding p10 or e1–e6 is exactly that), then re-run extract-spec.cjs.
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const fs = require('fs'); const path = require('path');
-const ROOT = path.resolve(__dirname, '../../../..'); const KIT = path.join(ROOT, 'docs/pins2/kit');
+const ROOT = path.resolve(__dirname, '../../../..'); const KIT = KITC.DIR;
 const src = fs.readFileSync(path.join(KIT, 'b3/state.js'), 'utf8');
 const D = eval('(' + src.match(/DEFAULTS\s*=\s*(\{[\s\S]*?\n\});/)[1] + ')');
 // Who ruled each switch. handoff-3e.md §4 / §4b are the authority; OPEN means the value on the board is NOT a decision.
@@ -40,5 +41,5 @@ const out = ['---', 'kind: reference', 'status: live', '---', '', '# Board 3-E �
   '5. **Kept in files at his request** (Outline, Solid ground) — the dead rule is preserved in the PORTAL too, commented as unshipped, never deleted.', '',
   '| Switch | Board holds | Who ruled it | Live selectors | Dead selectors — do not port | JS branches |', '|---|---|---|---|---|---|', ...rows, ''];
 // OUT_DIR (2026-09-27 02:43 EDT): Board 4 writes beside its own spec (docs/pins2/final/board4-spec/), so Board 3-E's record is not overwritten.
-fs.writeFileSync(path.join(process.env.OUT_DIR || __dirname, 'switches.md'), out.join('\n').replace(/^# Board 3-E/m, '# Board 4: Collective (the kit Board 3-E shares)'));
+fs.writeFileSync(path.join(process.env.OUT_DIR || __dirname, 'switches.md'), out.join('\n').replace(/^# Board 3-E/m, '# ' + KITC.TITLE + ' (the kit Board 3-E shares)'));
 console.log(JSON.stringify({ keys: keys.length, live, dead, unexplained: keys.filter((k) => !RULED[k]) }));

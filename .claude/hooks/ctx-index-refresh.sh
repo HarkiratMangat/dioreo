@@ -3,7 +3,7 @@
 #
 # WHY THIS EXISTS (2026-08-30 11:46 EDT)
 # --------------------------------------
-# `ctx_index` writes a SNAPSHOT. Edit a rule file and the index keeps serving the old text under the old heading, with a real path — indistinguishable from current. There is no `detect_changes` equivalent (codebase-memory-mcp has one; context-mode does not). A one-off index is therefore a TRAP: it works for a week and then answers confidently with last month's rules, which is worse than not having it at all.
+# `ctx_index` used to be a pure SNAPSHOT: edit a rule file and the index kept serving the old text under the old heading, with a real path, indistinguishable from current. 🔴 Corrected 2026-10-04 23:42 EDT: context-mode 1.0.169 re-indexes a path-indexed file whose content changed, before every search (`#refreshStaleSources`: mtime, then SHA-256; measured on a probe file). This hook still matters for what that misses: a NEW file in an indexed directory, a DELETED file (its chunks stay), and the server's 14-day prune of untouched sources (`cleanupStaleSources(14)`), which is why a one-off index still decays.
 #
 # WHY *BEFORE A SEARCH*. Harkirat, 2026-08-30 11:46 EDT: *"isn't the point of the index to UPDATE the database? how does running it at the start make sense?"* Correct. SessionStart refreshes when nobody is reading and misses everything changed during the session. PostToolUse-on-write is the wrong trigger too: a file just edited is already in context and will not be searched for; the reads that matter are of files nobody touched. Freshness only matters at the instant of a READ.
 #

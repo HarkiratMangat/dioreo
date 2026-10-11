@@ -21,6 +21,7 @@
 //   default url  http://127.0.0.1:8900/docs/pins2/kit/board3e.html   (the kit is ES modules, so it needs http, not file://)
 //   Needs the kit's dev server up. A FRESH Chrome profile is used every run, so the board renders its defaults — which carry every
 //   ruled pick — rather than whatever a browser remembered.
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const path = require('path'); const fs = require('fs'); const os = require('os');
 const puppeteer = require(path.resolve(__dirname, '../../../../node_modules/puppeteer-core'));
 // 🔴 BOARDS 1 AND 2 TOO (2026-09-21 10:31 EDT). Harkirat: "board 1's designs were very poorly and incorrectly ported into the portal because
@@ -42,8 +43,8 @@ const CFG = {
     gates: [['G4', 'gate-g4', 'Armory manifest'], ['G6', 'gate-g6', 'Build name'], ['G11', 'gate-g11', 'Broadcast and History manifests'], ['G3', 'gate-g3', 'Announcement card'], ['G2', 'gate-g2', 'Admin traffic'], ['G1', 'gate-g1', 'Small text']] },
   // 🔴 BOARD 4: COLLECTIVE (2026-09-21 13:33 EDT). Every finished surface of boards 1–3 on one page in the kit's portal code — the one board Session 4
   // standardizes from and Session 5 ports once Board 4: Final supersedes it. Sections are `#c-<id>`; each stage is its `.g-stage`.
-  '4': { url: 'http://127.0.0.1:8900/docs/pins2/kit/board4.html', wait: '#c-admin .b4-vb .incchip', title: 'Board 4: Collective', out: 'b4-spec.md', stageAll: '.b4g',
-    css: ['b3/board.css', 'gates.css', 'app.css', 'b2.css', 'b1.css', 'b4.css'].map((f) => path.resolve(__dirname, '../../../../docs/pins2/kit', f)),
+  '4': { url: KITC.URL, wait: '#c-admin .b4-vb .incchip', title: KITC.TITLE, out: 'b4-spec.md', stageAll: '.b4g',
+    css: ['b3/board.css', 'gates.css', 'app.css', 'b2.css', 'b1.css', 'b4.css'].map((f) => path.join(KITC.DIR, f)),
     gates: [['C1', 'c-manifest', 'The Armory manifest'], ['C2', 'c-new-build', 'New build'], ['C3', 'c-compare', 'Compare'], ['C4', 'c-repairs', 'Repairs'],
       ['C5', 'c-export', 'Export'], ['C6', 'c-queue', 'The delivery queue'], ['C7', 'c-broadcast', 'The Broadcast manifest, and posting'], ['C8', 'c-history', 'History'],
       ['C9', 'c-admin', 'Admin traffic']] },

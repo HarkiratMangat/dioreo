@@ -2,8 +2,9 @@
 // (written 2026-09-30 19:40 EDT for the Session 4/5 prep). Comments are blanked with their newlines kept, so every line number is the file's own.
 // No CSS library: the kit's sheets are plain (no nesting), and a brace-depth walk is enough; @keyframes bodies are returned as their own rules
 // with media '@keyframes <name>'.
+const KITC = require('./kit.cjs'); // which board: Collective's kit, or Final after a bake (kit.cjs)
 const fs = require('fs'); const path = require('path');
-const KIT = path.resolve(__dirname, '../../kit');
+const KIT = KITC.DIR;
 const SHEETS = ['app.css', 'b1.css', 'b2.css', 'gates.css', 'b3/board.css', 'b4.css', 'b4/classes.css', 'b4/compare.css', 'b4/form.css', 'b4/bulk.css'];
 function blank(s) { return s.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' ')); }
 function parse(file) {
