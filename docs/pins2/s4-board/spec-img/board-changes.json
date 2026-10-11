@@ -680,6 +680,15 @@
       "his": "2026-10-10 21:02 EDT: \"for the 'undo' button, give it `.paint-realm` for the history realm.\"",
       "from": "spec board, On the board (2026-10-10 21:33 EDT)",
       "covers": []
+    },
+    {
+      "id": "styles",
+      "what": "Every button's look (wash, tint, fill, paint; with no token and with one; rest and hover; the flags)",
+      "now": "each button carries its own inks; paint's fill is none, sunk or raised by button; paint-colour hovers disagree (outline 42 to 45%, fill or none)",
+      "to": "the style definitions on the Styles section (C9): paint sunk 85% / rule2 / ink2, on hover hi / ink4 / ink, and with a colour tint's hover; tint sunk 85% / colour 55% on #0B0F12 / colour, on hover colour 12% on sunk / 75% / 80% on white; wash colour 14% / colour / ink, 24% on hover; fill colour / none / on-colour, on hover 74% on white with a 3px 26% glow",
+      "his": "2026-10-10 21:02 EDT: \"we need to clear up the definition of each style, the exact rest/hover behavior/colors/etc of each style, and the default view of each style.\" (the table waits on his calls \"defs\" and \"defaults\")",
+      "from": "spec board, Styles (2026-10-10 22:19 EDT)",
+      "covers": []
     }
   ]
 }

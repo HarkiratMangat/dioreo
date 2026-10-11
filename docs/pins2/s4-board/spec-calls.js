@@ -7,6 +7,8 @@
 export function makeCalls(L) {
   const { html, useState, useEffect, Sec } = L;
   const CALLS = [
+    ['defs', 'Styles', 'styles', 'The four styles as defined (no token and with one, rest and hover); they also paint every corrected copy', [['yes', 'approve'], ['no', 'not yet (say what in the note)']], 'yes'],   /* 2026-10-10 22:10 EDT: his 21:02 EDT "clear up the definition of each style" */
+    ['defaults', 'Styles', 'styles', 'A tint, wash or fill with no colour token takes', [['ink', 'ink, neutral (the -realm token stays explicit)'], ['realm', 'the realm it sits in']], 'ink'],
     ['ratio', 'Colours', 'colours', 'One ratio for every colour’s lighter variant (the words on hover)', [['86', '86% on white'], ['80', '80% on white'], ['74', '74% on white'], ['68', '68% on white']], '80'],
     ['warnink', 'Colours', 'colours', 'warn-ink: derive it from warn, or keep it fixed', [['derived', 'warn 80% on white (#FF956A)'], ['fixed', 'keep #FF9E72']], 'derived'],
     ['filled', 'Set end date and Never', 'filled', 'Weapon required (an informative chip, no hover) takes', [['chip', 'the chips’ own look, as Ready and Filled'], ['tint', 'tint, without hover'], ['wash', 'wash, without hover']], 'chip'],   /* 2026-10-10 21:27 EDT: Set end date and Never decided tint in chat (his 21:02 EDT); Weapon required is still his */

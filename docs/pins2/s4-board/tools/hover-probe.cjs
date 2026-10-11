@@ -9,7 +9,7 @@ const [SEC, MAX = '400'] = process.argv.slice(2);
   const p = await b.newPage(); await p.setViewport({ width: 1282, height: 888 }); await p.setCacheEnabled(false); await p.setRequestInterception(true);
   p.on('request', (r) => { if (r.url() === URL) r.respond({ status: 200, contentType: 'text/html', body: '<!doctype html><html><head><meta charset=utf8></head><body>' + fs.readFileSync(PAGE, 'utf8') + '</body></html>' }); else r.continue(); });
   await p.goto(URL, { waitUntil: 'networkidle0' }); await sleep(4000); await p.evaluate(() => dispatchEvent(new Event('spec-show-copies'))); await sleep(1500);
-  const n = await p.evaluate((S) => { const s = document.getElementById(S); const bs = [...s.querySelectorAll('button')].filter((x) => x.getClientRects().length && !x.closest('.callc, .callx, .tgl'));
+  const n = await p.evaluate((S) => { const s = document.getElementById(S); const bs = [...s.querySelectorAll('button')].filter((x) => x.getClientRects().length && !x.closest('.callc, .callx, .tgl') && !x.classList.contains('dfh'));
     bs.forEach((x, i) => x.setAttribute('data-hp', i)); return bs.length; }, SEC);
   const ink = (i) => p.evaluate((i) => { const e = document.querySelector(`[data-hp="${i}"]`); const c = getComputedStyle(e); const ic = e.querySelector('svg'); return { bg: c.backgroundColor, sh: c.boxShadow, bo: c.borderTopColor, co: c.color, ic: ic ? getComputedStyle(ic).color : '', cell: (e.closest('[data-facts],[data-na],[data-bsel],[data-bfix]') || {}).dataset ? JSON.stringify(Object.assign({}, (e.closest('[data-facts],[data-bsel],[data-bfix]') || { dataset: {} }).dataset)) : '' }; }, i);
   const rows = []; let dead = 0;
