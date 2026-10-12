@@ -125,8 +125,11 @@ const XREF_SKIP_SOURCES = [
   "docs/CHANGELOG-SUMMARY.md",
   "docs/DEVLOG.md",
   "docs/ideas/diors-notes.md",
+  // Moved from a memory file 2026-09-08 (WP5b, context-carriers plan). It documents EXTERNAL MCP servers' own internals (linksee-memory's installed npm package: dist/mcp/server.js, dist/skill/SKILL.md, dist/lib/map-view.js) -- paths that are real on disk inside that package, never inside this repo, and never will be. XREF_IGNORED_OPTIONAL does not fit: it exempts gitignored-and-absent paths, and these are not gitignored, they simply belong to a different codebase entirely.
+  "docs/reference/tool-capability-tests.md",
 ];
-const XREF_SKIP_PREFIXES = ["docs/archive/", "docs/superpowers/"];
+// docs/pins2/{plan,spec,final}/ came out of docs/superpowers/ on 2026-09-28 23:16 EDT and keep its exemption: the plan and FINAL.md cite kit files (`gates4/main.js`, `b3/fady.js`) by their kit-relative names, which live in the gitignored kit. docs/pins2/README.md and the handoffs stay checked.
+const XREF_SKIP_PREFIXES = ["docs/archive/", "docs/superpowers/", "docs/pins2/plan/", "docs/pins2/spec/", "docs/pins2/final/"];
 
 // Gitignored paths that have been TRIAGED and confirmed genuinely optional-by-design. These resolve silently; every OTHER gitignored-and-absent path still WARNs, which is the point — the warning exists because skipping wholesale once masked a real bug (CLAUDE.md and the notes file both pointed at `local/Harkirats-Space.md` after it moved to `docs/`, and the `local/` ignore rule hid it). This list is the narrow retirement of an ANSWERED ambiguity, not a widening of the exemption. ⚠️ An entry belongs here ONLY when the referencing docs are correct and the file is optional at RUNTIME — never to quiet a path someone has not actually chased down. Reason + date required.
 const XREF_IGNORED_OPTIONAL = {
@@ -180,6 +183,52 @@ const checks = [];
 // vacuousOk: an empty corpus is LEGITIMATE for this check, so examining 0 items is not suspicious. It is still reported in the ledger — visible, just not a warning. Default is to warn, because for most checks "matched nothing" means the matcher broke, not that the corpus vanished.
 const check = (id, severity, title, run, opts = {}) =>
   checks.push({ id, severity, title, run, vacuousOk: !!opts.vacuousOk });
+
+/* ----------------------- prompt-antiskim ---------------------------- */
+// Born 2026-09-01 21:00 EDT, from a defect that is structural rather than careless. A realm prompt is handed to the next session with a short OPENER pasted into chat. Writing that opener, the natural, helpful thing to do is summarise the document's findings -- and a summary is a SUBSTITUTE: the reader gets three bullets, feels oriented, and never opens the file. Harkirat, on exactly that: "A fresh session will read this and conclude on it and won't bother looking at the actually detailed stuff."
+//
+// ⚠️ THE PRINCIPLE WAS ALREADY WRITTEN DOWN AND STILL FAILED. `docs/reference/session-handoff-guide.md` has carried "JUDGEMENT DOES NOT COMPRESS -- CARRY A POINTER, NEVER A PARAPHRASE" since 2026-08-30, and the opener was summarised anyway, because the person writing it is the person who knows the content and summarising feels like service. That is the same shape as the timestamp placeholder: a rule everyone agrees with, violated at the moment of writing, so the remedy has to be a check rather than a better sentence.
+//
+// Deliberately narrow in WHAT it asserts, not in what it covers: it checks only that the DOCUMENT tells its reader an opener is not a summary of it. It cannot see the opener, which lives in a chat message -- so it guards the half that is on disk, and that half is what makes a skimming reader catch itself.
+check(
+  "prompt-antiskim",
+  "ERROR",
+  "every document a session is pointed at says a short opener is not a summary of it",
+  () => {
+    const out = [];
+    let examined = 0;
+    const dir = "docs/superpowers/plans";
+    const GUARD = /not a summary of (this|that) file|IF YOU WERE HANDED A SHORT OPENER/i;
+
+    // \u{1F534} WIDENED 2026-09-06 20:47 EDT — Harkirat: "why realm prompts only? seems useful for all handoff prompts, no?" He is right, and the original scope was an accident of where the defect was first seen. The failure is not a property of a FILENAME: it is a property of being the document a fresh session is POINTED AT, because that is the document whose opener gets pasted into chat instead of it. A plan named by SESSION-START is exactly as skimmable as a file called *-PROMPT.md, and on the day this widened, the live step-3 plan was named by three carriers and carried no guard at all.
+    //
+    // So the corpus is RELATIONAL rather than nominal: every *-PROMPT.md, PLUS every tracked .md that a session-start carrier names as read-this-first. That cannot go stale when a file is renamed, and it grows by itself when a new carrier starts pointing somewhere. \u26A0\uFE0F `.remember/remember.md` is READ FROM DISK, not from git — it is gitignored and is still the single highest-reach pointer a next session gets, so excluding it would leave the most-read carrier's target unchecked.
+    const targets = new Set();
+    for (const f of (existsSync(join(REPO, dir)) ? readdirSync(join(REPO, dir)) : []).filter((n) => /-PROMPT\.md$/.test(n))) {
+      targets.add(`${dir}/${f}`);
+    }
+    for (const carrier of ["docs/SESSION-START.md", ".remember/remember.md"]) {
+      const c = read(carrier);
+      if (c === null) continue;
+      // Only the head of a carrier counts: a path named in its history section is not what a session is pointed at.
+      for (const m of c.split("\n").slice(0, 60).join("\n").matchAll(/(docs\/(?:superpowers\/plans|pins2\/plan)\/[\w.\-]+\.md)/g)) {
+        if (existsSync(join(REPO, m[1]))) targets.add(m[1]);
+      }
+    }
+    for (const rel of [...targets].sort()) {
+      const txt = read(rel);
+      if (txt === null) continue;
+      examined++;
+      // Only the opening of the file counts. A guard buried at line 400 is read by somebody who already did not skim.
+      if (!GUARD.test(txt.split("\n").slice(0, 40).join("\n"))) {
+        out.push({ msg: `${rel} has no anti-skim guard in its first 40 lines. A session handed a short opener will act on the opener. State, near the top, that the opener is NOT a summary of this file and name at least one thing only the file carries.` });
+      }
+    }
+    return { findings: out, examined };
+  },
+  // A repo with no realm prompts has nothing to examine, and that is legitimate rather than a silent pass — this suite's own test fixture is exactly that case, which is how the vacuity was caught.
+  { vacuousOk: true },
+);
 
 /* ----------------------- changelog-pr-cite -------------------------- */
 // Born 2026-08-20 from a defect that shipped through a fully green audit: the v3.55.0 entry was written with a literal `(#PR)` placeholder, because the PR number does not exist yet at the moment the pre-merge changelog entry is composed on the branch. Every check passed — the version was covered, the hash chain was intact, the structure was sound — because none of them look at whether the citation is a real number or a note-to-self. It reached `main` and needed a follow-up release to correct, which is exactly what this suite exists to prevent.
@@ -250,6 +299,51 @@ check(
   }
 );
 
+/* --------------------------- npm-script-exists ------------------------- */
+// Added 2026-09-01 11:5x EDT, from a read-only reader test. A fresh session was handed the documents that start a realm pass and asked to work out its first ten actions. It could not run the fifth close condition, because `portal:realwalk` is named on the status board, named in the plan, named in two prompts — and **is not a script**. The file `scripts/portalRealWalk.mjs` exists; the npm entry point never did, and no document carried the raw invocation either. A condition nobody can invoke reads exactly like one nobody got round to.
+//
+// 🔴 THIS IS THE CLASS, NOT THE CASE. Of sixteen defects that reader test found, the largest group was documents asserting something about a TOOL — what a flag does, how many lists it prints, which script exists — that had drifted from the tool. Prose describing behaviour rots silently because nothing executes it. This check closes the one member of that class that is decidable from the text alone: a command either resolves in package.json or it does not.
+//
+// ⚠️ WHAT IT CANNOT SEE, said plainly so the green is not over-read: whether the script does what the doc claims. The same reader test found `--all` described as "every view in ONE batched call" when it lifts row caps on ONE view, and that sentence names a script that exists perfectly. Behaviour drift needs a human or a falsifier; only existence is mechanical.
+//
+// ⚠️ LIVE DOCS ONLY. A frozen spec naming a script that has since been renamed is a historical record and correct as written -- failing it would teach the next reader that the audit lies, the same reasoning as PLAN_AUDIT_FROM above.
+check(
+  "npm-script-exists",
+  "ERROR",
+  "every npm script named in a LIVE tracked doc actually exists in package.json",
+  () => {
+    const out = [];
+    let examined = 0;
+    // 🔴 ABSENT AND UNPARSEABLE ARE DIFFERENT STATES, and conflating them made this check fire on VALID input the first time its own falsifier ran. A fixture tree under DOCS_AUDIT_ROOT has no package.json at all — there is nothing to verify against and nothing wrong — so that SKIPS. A package.json that exists and cannot be read, or that declares no scripts, is a real refusal on the real tree. A check that cries wolf gets filtered, and then it guards nothing.
+    const pkgRaw = read("package.json");
+    if (pkgRaw === null) return { findings: [], examined: 0, skipped: "no package.json in this tree, so no npm script can be resolved" };
+    let scripts;
+    try { scripts = new Set(Object.keys(JSON.parse(pkgRaw).scripts || {})); }
+    catch { return { findings: [{ file: "package.json", msg: "exists but could not be parsed, so no npm script could be verified -- this is a REFUSAL, not a pass" }], examined: 0 }; }
+    // ⚠️ NO SPECIAL CASE FOR AN EMPTY SCRIPTS MAP, and the first version's was wrong. It refused, which fired on the fixture tree — valid input — and a finding that is wrong every run is one nobody reads. With no scripts, every `npm run` a doc names genuinely does not resolve and is reported on its own merits: screaming-obvious on a real repo, silently zero on a fixture with no doc mentions. The general path already gives the right answer, and a guard that only exists to say so is a guard that can be wrong.
+    for (const f of tracked()) {
+      if (!f.endsWith(".md")) continue;
+      const txt = read(f);
+      if (txt === null) continue;
+      // status: live only. A superseded or frozen doc is a snapshot of what was true then.
+      if (!/^status:\s*live\s*$/m.test(txt.slice(0, 400))) continue;
+      const seen = new Set();
+      for (const m of txt.matchAll(/npm run ([a-z0-9][a-z0-9:_-]*)/g)) {
+        const name = m[1];
+        if (seen.has(name)) continue;
+        seen.add(name);
+        examined++;
+        if (!scripts.has(name)) {
+          out.push({ file: f, msg: `names \`npm run ${name}\`, which is not a script in package.json. Either add the script or write the raw invocation -- a command a reader cannot run is worse than no command, because it reads as one somebody verified.` });
+        }
+      }
+    }
+    // ⚠️ A CORPUS NAMING NO SCRIPT IS A SKIP, NOT A PASS. The fixture tree has no live doc mentioning `npm run`, so this examines 0 there — and the framework rightly calls a 0-item pass vacuous. Saying "skipped" is the honest word for "there was nothing here to verify", and it keeps the vacuous-pass detector meaningful for the checks where a 0 really would mean a broken matcher. On the real tree this examines ~100 mentions.
+    if (!examined) return { findings: [], examined: 0, skipped: "no live tracked doc names an npm script in this tree" };
+    return { findings: out, examined };
+  }
+);
+
 /* --------------------------- plan-audit-log ------------------------- */
 // Added 2026-08-20 12:00 EDT. A plan is approved once and then executed by someone (or some session) with none of the context that produced it, so the moment to find its defects is BEFORE approval -- and "review the plan" does not find them. Asked to REVIEW its own hotpatch plan, a session found polish; asked to FALSIFY it, the same session found ten defects, two of which would have shipped a silent wrong result (a baseline commit that made the whole feature a no-op, and a command that never reached Discord under a success message). Neither was visible from the plan text -- both came from going and checking a claim the plan had accepted.
 //
@@ -265,7 +359,7 @@ check(
     const out = [];
     let examined = 0;
     for (const f of tracked()) {
-      const m = f.match(/^docs\/superpowers\/plans\/(\d{4}-\d{2}-\d{2})-/);
+      const m = f.match(/^docs\/(?:superpowers\/plans|pins2\/plan)\/(\d{4}-\d{2}-\d{2})-/);   // docs/pins2/plan/ holds the batch-2 plan since 2026-09-28 23:12 EDT
       if (!m || m[1] < PLAN_AUDIT_FROM) continue;
       const txt = read(f);
       if (txt === null) continue;
@@ -532,6 +626,17 @@ check(
     const headings = new Set(
       [...ch.matchAll(/^## (?:Pre-Release )?(v\d+\.\d+\.\d+)/gm)].map((m) => m[1])
     );
+    // A PROPOSED heading counts only while its version is still AHEAD of package.json. Found 2026-10-01 13:31 EDT: a long-lived branch (feat/portal-pins2-manifests) stamped its DEVLOG entries with the version it will mint, as the DEVLOG convention asks, and the Unreleased section held that version as "## Proposed Pre-Release v3.85.0" -- so the branch failed CI on a heading that was exactly where the workflow puts it. Accepting it unconditionally would let a Proposed heading left behind after the merge stand in for the real one; tying it to package.json closes that, because the pre-merge checkpoint bumps package.json to the minted version and the Proposed heading then stops counting.
+    const pkgRaw = read("package.json");
+    let pkgVer = null;
+    try { pkgVer = pkgRaw === null ? null : JSON.parse(pkgRaw).version.replace(/-.*$/, ""); } catch { pkgVer = null; }
+    const ahead = (v) => {
+      if (!pkgVer) return false;
+      const a = v.slice(1).split(".").map(Number), b = pkgVer.split(".").map(Number);
+      for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i];
+      return false;
+    };
+    for (const m of ch.matchAll(/^## Proposed (?:Pre-Release )?(v\d+\.\d+\.\d+)/gm)) if (ahead(m[1])) headings.add(m[1]);
     // Only DEVLOG *headings*, not prose -- the table of contents lists the same versions, and a substring test over the file would be satisfied by the TOC line alone while the body entry and the changelog heading were both gone.
     const claimed = [...dv.matchAll(/^## .*?\(v(\d+\.\d+\.\d+)(?:-pre)?\)\s*$/gm)].map((m) => "v" + m[1]);
 
@@ -847,6 +952,30 @@ check(
   }
 );
 
+/* ----------------------- session-start-size --------------------------- */
+check(
+  "session-start-size",
+  "ERROR",
+  "docs/SESSION-START.md stays under its 8KB delivery budget",
+  () => {
+    const content = read("docs/SESSION-START.md");
+    if (content === null) return { findings: [], examined: 0 };
+    const size = Buffer.byteLength(content, "utf8");
+    const BUDGET = 8000;
+    return {
+      examined: 1,
+      findings:
+        size > BUDGET
+          ? [
+              {
+                msg: `docs/SESSION-START.md is ${size}B, over its ${BUDGET}B delivery budget. It is @-imported into every session via CLAUDE.md, so its size is a permanent per-session tax -- trim it or move detail to a doc read on demand. Never restore the old cat-hook (a hook output over ~10KB reaches a session as a silently truncated ~2KB preview).`,
+              },
+            ]
+          : [],
+    };
+  }
+);
+
 /* --------------------------- secrets-hygiene ------------------------ */
 check(
   "secrets-hygiene",
@@ -893,8 +1022,22 @@ check(
     if (triggers.length && !triggers.every((t) => t.includes("v3-pre-release"))) {
       out.push({ msg: "a CI trigger branch list omits `v3-pre-release`. Every v3 feature PR targets that branch, so it would run no CI at all — and the failure is silent." });
     }
-    // 4 assertions over ci.yml: audit step, self-test step, fetch-depth, branch triggers.
-    return { findings: out, examined: 4 };
+    // The aggregate: `syntax-check` is the one required status check, so every other job must be in its `needs` or it can fail while the PR stays green, and a `name:` on it would rename the check branch protection knows. Added 2026-10-01 with the CI rebuild (#192), because nothing else stops a seventh job from being added and forgotten.
+    const jobsAt = ci.indexOf("\njobs:\n");
+    if (jobsAt === -1) out.push({ msg: "ci.yml has no `jobs:` block." });
+    else {
+      const body = ci.slice(jobsAt + 7);
+      const ids = [...body.matchAll(/^ {2}([A-Za-z0-9_-]+):[ \t]*$/gm)].map((m) => m[1]);
+      const agg = body.match(/^ {2}syntax-check:[ \t]*\n((?: {4}.*\n|\n)*)/m);
+      if (!agg) out.push({ msg: "ci.yml has no `syntax-check` job. It is the one required status check, so branch protection would wait for a check that never reports." });
+      else {
+        if (/^ {4}name:/m.test(agg[1])) out.push({ msg: "the `syntax-check` job has a `name:`. Branch protection keys on the job's name, so the job id must stay the check's name and nothing may override it." });
+        const needs = ((agg[1].match(/^ {4}needs:\s*\[([^\]]*)\]/m) || [, ""])[1]).split(",").map((x) => x.trim()).filter(Boolean);
+        for (const id of ids) if (id !== "syntax-check" && !needs.includes(id)) out.push({ msg: `ci.yml job \`${id}\` is not in syntax-check's \`needs\`, so it can fail while the required check stays green. Add it there; only an advisory job may be allowed to skip, and that is decided in the case block at the foot of the job.` });
+      }
+    }
+    // 7 assertions over ci.yml: audit step, self-test step, fetch-depth, branch triggers, a jobs block, the aggregate's name, and its needs.
+    return { findings: out, examined: 7 };
   }
 );
 
@@ -909,27 +1052,48 @@ check(
 const FM_KINDS = {
   rule: ["live"],
   guide: ["live"],
-  record: ["live"],
+  // 🔴 `record` GAINED `frozen` ON 2026-09-15 23:57 EDT, for the same reason `plan` gained `live`: the field has to be able to say what the file IS. `docs/claude/` holds dated write-ups — a lesson, an audit, a post-mortem — which are records frozen at their date, not live documents. Without this a dated lesson has to lie and call itself `live`.
+  record: ["live", "frozen"],
   reference: ["live"],
   idea: ["live"],
   legal: ["live"],
   spec: ["frozen", "superseded"],
-  plan: ["frozen", "superseded"],
+  // 🔴 `plan` GAINED `live` ON 2026-08-27 21:0x EDT, and the reason is the whole point of the field. Every plan here had been a frozen snapshot, which is right for a plan that is written once and then executed. It is WRONG for a plan that tracks its own execution: Harkirat asked for one that "never accidentally goes out of sync — mark off things that were done, or update the plan if anything changes midway". A frozen plan cannot do that, and forcing the status to `frozen` would have made the document lie about its own tense contract — the exact failure the field exists to prevent, pointing the other way. `spec` deliberately does NOT gain it: a dated design snapshot is superseded by a new one, never edited.
+  plan: ["frozen", "superseded", "live"],
   archive: ["dead"],
 };
 // The location→kind rule. Kept as ordered prefixes so the first match wins, mirroring the taxonomy table in CLAUDE.md. A new docs/ subdirectory MUST be added here, and that is intentional: an unclassifiable doc is a doc whose purpose nobody has decided.
 const FM_RULE = [
   [".claude/rules/", "rule"],
   ["docs/archive/", "archive"],
+  // Claude's tracked scratchpad and the portal's working records, added 2026-09-15 23:57 EDT. Both are "dump freely, sub-folder freely" by design, so their ARCHIVE prefixes must be listed FIRST — these are ordered and the first match wins. docs/pins2/ — everything portal pins batch 2's Sessions 4 and 5 read, gathered in one folder 2026-09-28 23:12 EDT (Harkirat: "everything is scattered all over the place right now"). One sub-folder per kind, the README is the index; listed before docs/claude/ so nothing falls through to a broader prefix.
+  ["docs/pins2/README.md", "reference"],
+  ["docs/pins2/plan/", "plan"],
+  ["docs/pins2/spec/", "spec"],
+  ["docs/pins2/final/", "reference"],
+  ["docs/pins2/instruments/", "reference"],
+  ["docs/pins2/kit/", "reference"],
+  ["docs/pins2/handoffs/", "record"],
+  ["docs/pins2/records/", "record"],
+  ["docs/claude/archive/", "archive"],
+  ["docs/claude/", "record"],
+  ["docs/portal/archive/", "archive"],
+  ["docs/portal/", "record"],
   ["docs/superpowers/specs/", "spec"],
+  // A mockup package's COMPANION is a LIVING reference — "read this to wire it correctly", kept true against the code — not a frozen dated snapshot like specs/. That distinction is the whole point of classifying it: a stale spec is correct, a stale COMPANION is a defect.
+  ["docs/superpowers/mockups/", "reference"],
   ["docs/superpowers/plans/", "plan"],
   ["docs/reference/", "reference"],
   ["docs/ideas/", "idea"],
   ["docs/legal/", "legal"],
+  // A README that documents how to INSTALL the files sitting next to it is a lookup doc, and it has to live beside them: scripts/launchd/README.md is read while copying those plists, and pointing it at docs/reference/ would put the instructions one directory away from the thing they operate on. Same shape as PRODUCT.md below - placement driven by what reads it, kind driven by what it is. Added 2026-09-05 14:46 EDT.
+  ["scripts/", "reference"],
 ];
 const fmExpected = (f) => {
   for (const [prefix, kind] of FM_RULE) if (f.startsWith(prefix)) return kind;
   if (["CONTRIBUTING.md", "CONTRIBUTORS.md", "SECURITY.md"].includes(f)) return "legal";
+  // PRODUCT.md is the impeccable skill's product record. It is a lookup doc (reference), but it MUST sit at the repo root: the skill's context.mjs resolves PROJECT_ROOT/PRODUCT.md and cannot be pointed at docs/reference/. Root placement is the tool's constraint, not a misfiling.
+  if (f === "PRODUCT.md" || f === "DESIGN.md") return "reference";
   if (f === "CLAUDE.md") return "guide";
   if (/^docs\/[^/]+\.md$/.test(f)) return "record";
   return null;
@@ -947,6 +1111,8 @@ check(
       if (!f.endsWith(".md")) continue;
       // Plugin-owned, on someone else's schema — not ours to annotate.
       if (f.includes("hookify")) continue;
+      // Impeccable's surface briefs carry the SKILL's own front matter (version/slug/primary_target) and its writer REGENERATES that block from fixed keys on every write, so a kind:/status: added here would be dropped by the next `surface-brief.mjs write`. Tool-owned, on the tool's schema, same as hookify above. Added 2026-09-06 00:56 EDT.
+      if (f.startsWith(".impeccable/")) continue;
       const expected = fmExpected(f);
       if (expected === null) {
         out.push({
@@ -995,7 +1161,17 @@ check(
         }
         // 🔴 `existsSync`/`join`, NOT `fs.`/`path.` -- this module imports them as NAMED bindings (line 49/51), so the original `fs.existsSync(path.join(ROOT, supersededBy))` referenced three identifiers that do not exist here (`fs`, `path`, and `ROOT` -- the repo root is `REPO`). It threw ReferenceError on the FIRST document to ever use superseded_by, 2026-08-23 11:36 EDT, which is also the first time this branch had ever executed: nothing in the repo carried the field, so the check was written, wired, counted among the passing gates, and never once run. A check that cannot run is not coverage.
         if (!existsSync(join(REPO, supersededBy))) {
-          out.push({ msg: `${f} points superseded_by: at ${supersededBy}, which does not exist.` });
+          // 🔴 GITIGNORED-AND-ABSENT IS AMBIGUOUS, NOT BROKEN — found 2026-09-09 when this exact branch failed CI: OWED-PROMPT.md's superseded_by: pointed at a real local/handoff/*.md file that exists on every local checkout and never exists in CI (gitignored, never committed). Blocking on it made this check permanently unsatisfiable in CI for any superseded_by: target under local/ — the same class xref already solved below with a WARN. Reuse that exact treatment instead of re-deriving a second, divergent answer.
+          if (ignoredSet([supersededBy]).has(supersededBy)) {
+            out.push({
+              severity: "WARN",
+              msg: `${f} points superseded_by: at \`${supersededBy}\`, which is gitignored AND not ` +
+                `present. That is either a real local handoff this checkout lacks, or a stale path — ` +
+                `the ignore rule makes the two indistinguishable, so confirm which.`,
+            });
+          } else {
+            out.push({ msg: `${f} points superseded_by: at ${supersededBy}, which does not exist.` });
+          }
         }
       }
       declaredPublished.set(f, /^published:\s*true\b/m.test(fm));
@@ -1124,6 +1300,30 @@ check(
   }
 );
 
+/* ------------------------- generator-artifact ----------------------- */
+check(
+  "generator-artifact",
+  "ERROR",
+  "no uninterpolated heredoc expression reached a tracked file",
+  () => {
+    // 🔴 THE EDITING TECHNIQUE THIS REPO MANDATES CAN EMIT ITS OWN SOURCE. The batching contract says any multi-file edit goes through a `python3` heredoc, so nearly every doc and script here is written by a generator -- and a mis-quoted f-string, or a concatenation that lands inside a literal instead of around it, ships the EXPRESSION rather than its value. One did exactly that in this file's own comments and survived a full `npm test`, a `docs:audit` and a comment-reflow pass, because to every gate it reads as ordinary prose. Added 2026-09-02 20:31 EDT.
+    //
+    // ⚠️ MY FIRST TWO NEEDLES WERE BOTH WRONG, IN OPPOSITE DIRECTIONS, AND THE RUN THAT CAUGHT THEM IS WHY THIS COMMENT EXISTS. `${STAMP}` flagged `.claude/hooks/ctx-index-refresh.sh`, where it is a perfectly ordinary SHELL VARIABLE -- a detector that cannot tell its target from valid code. And a bare triple-quote fragment flagged this file, because documenting the pattern spells it. Third detector today that did not match its own intent. The shape is pinned precisely now, and a line may opt out with GEN-EXAMPLE -- the same per-line, deliberately-typed, greppable escape `timestamp-check.sh` uses, for the identical reason: prose ABOUT a bad pattern must be able to quote it.
+    const SHAPE = /"{3}\s*\+\s*[A-Za-z_$][\w$]*\s*\+\s*"{3}|'{3}\s*\+\s*[A-Za-z_$][\w$]*\s*\+\s*'{3}/;
+    const out = [];
+    for (const f of tracked()) {
+      if (!/\.(md|mjs|js|sh|json)$/.test(f)) continue;
+      const t = read(f);
+      if (t === null) continue;
+      t.split("\n").forEach((line, n) => {
+        if (line.includes("GEN-EXAMPLE")) return;
+        if (SHAPE.test(line)) out.push({ msg: `${f}:${n + 1} carries an uninterpolated generator expression — the heredoc that wrote this line emitted its own source instead of the value. If the line is deliberately quoting the pattern, mark it GEN-EXAMPLE.` });
+      });
+    }
+    return out;
+  }
+);
+
 /* ----------------------------- rule-globs --------------------------- */
 check(
   "rule-globs",
@@ -1148,8 +1348,12 @@ check(
       const inline = (fm.match(/paths:\s*\[([^\]]+)\]/) || [])[1];
       const listed = [...fm.matchAll(/^\s*-\s*(\S+)\s*$/gm)].map((m) => m[1]);
       const globs = (inline ? inline.split(",") : listed).map((s) => s.trim().replace(/^['"]|['"]$/g, ""));
+      // A rule with NO `paths:` is legal and documented -- it loads unconditionally at launch, at the same priority as `.claude/CLAUDE.md`. This check predates that being known and treated every rule as path-scoped, so it reported the first genuinely unconditional rule as broken.
+      //
+      // It still ERRORS on an empty `paths:` by DEFAULT, because the far more likely cause is a rule whose globs were deleted or never written -- and that rule then never loads for anything, silently, which is the dead-guard shape this check exists for. `unconditional: true` is how a rule says the emptiness is deliberate: one line, visible in the frontmatter and in any diff, so intent and accident can never look the same. Added 2026-09-02 15:58 EDT with the first such rule (`silent-mode.md`, an instruction that applies to every turn rather than to one subsystem).
       if (!globs.length) {
-        out.push({ msg: `${rule} declares no \`paths:\` globs, so it never auto-loads for any file.` });
+        if (/^\s*unconditional:\s*true\s*$/m.test(fm)) continue;
+        out.push({ msg: `${rule} declares no \`paths:\` globs, so it never auto-loads for any file. If that is deliberate -- an instruction that applies to every turn rather than a trap for one subsystem -- add \`unconditional: true\` to its frontmatter so the intent is explicit and a rule whose globs were simply LOST still fails.` });
         continue;
       }
       globCount += globs.length;
@@ -1409,10 +1613,10 @@ check(
 /* ------------------------ scripts-documented ------------------------ */
 check(
   "scripts-documented",
-  "WARN",
+  "ERROR",
   "every script is mentioned in some rule file or doc",
   () => {
-    // `.claude/rules/scripts-and-migrations.md` is explicitly a POINTER MAP — "which subsystem rule documents each script". So the correct test is "named SOMEWHERE", not "named in that file": `checkEmojiCaptures.js` is documented in rendering-and-ui.md, and a narrower check would have reported it falsely. WARN, because a brand-new script legitimately lands before its docs do.
+    // `.claude/rules/scripts-and-migrations.md` is explicitly a POINTER MAP — "which subsystem rule documents each script". So the correct test is "named SOMEWHERE", not "named in that file": `checkEmojiCaptures.js` is documented in rendering-and-ui.md, and a narrower check would have reported it falsely. 🔴 RAISED WARN → ERROR 2026-09-04 20:18 EDT. The old justification was "a brand-new script legitimately lands before its docs do" — but the documenting edit is in the same working tree as the script, so "before" is a window of minutes that only exists if somebody chooses to leave it open. Against that: **a WARN with a green exit is invisible to this repo's own discipline of reading the exit code and never the tail.** `docs:audit` ran eight times in one session while this check warned about a file that session had just created, and every one of those runs was read as clean. The check was correct and unheard, which is the failure mode a warning has. At the moment of the raise the tree had **0 undocumented scripts of 172**, so this costs nothing today and only ever costs one line in the pointer map.
     const scripts = tracked().filter((f) => f.startsWith("scripts/") && /\.(js|mjs|sh)$/.test(f));
     const corpus = tracked()
       .filter((f) => f === "CLAUDE.md" || f.startsWith(".claude/rules/") || f.startsWith("docs/"))

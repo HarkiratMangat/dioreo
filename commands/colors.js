@@ -32,10 +32,10 @@ module.exports = {
         let prefs = await UserPreference.findOne({ discordId: userId });
         if (!prefs) prefs = new UserPreference({ discordId: userId });
 
-        // No dedicated visibility preference field of its own -- reuses settingsVisibility, same as the "View Colors" button inside /settings itself, so behavior stays consistent between the two entry points unless this specific invocation explicitly overrides it.
+        // /colors has its OWN visibility preference (colorsVisibility), detached from settingsVisibility 2026-08-30 21:39 EDT per docs/ROADMAP.md -- the "View Colors" button ON the /settings panel deliberately still reads settingsVisibility (see handlers/colors.js's colors_view branch), so the two entry points to the same panel can now diverge on purpose.
         const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
         const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
-        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'settingsVisibility' });
+        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'colorsVisibility' });
 
         if (!interaction.deferred && !interaction.replied) {
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });

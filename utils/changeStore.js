@@ -40,6 +40,8 @@ function recordChange(fields) {
             summary: fields.summary,
             detail: fields.detail,
             inverse: fields.inverse ?? null,
+            // Every caller of this writer is a Discord interaction (handlers/bot.js and every /manage op), so 'discord' is a fact about the call site rather than a guess. recordChangeIn below is the shared one and defaults to nothing.
+            source: fields.source || 'discord',
             createdAt: now,
         });
         pruneChanges(); // fire-and-forget; own throttle + swallow
@@ -53,7 +55,8 @@ async function recordChangeIn(session, fields) {
     const [row] = await ChangeLog.create([{
         changeId, actorId: fields.actorId, page: fields.page, action: fields.action,
         model: fields.model, target: fields.target, summary: fields.summary, detail: fields.detail,
-        inverse: fields.inverse ?? null, createdAt: now,
+        // ⚠️ NO FALLBACK HERE. commitSet() is driven by BOTH /manage and the portal, so a missing label means the caller did not say -- and an em dash is the honest answer, not an assumed one.
+        inverse: fields.inverse ?? null, source: fields.source, createdAt: now,
     }], { session });
     return row;
 }

@@ -3240,12 +3240,29 @@ h1 em{font-style:normal;color:var(--accent-t)}
     {c:'/timestamp',   o:'datetime', p:WHEN},
     {c:'/draws',       pairs:[['page','New Draws'],['page','Returning Draws']]},
     {c:'/draw prices', pairs:[['region','10 CP Region'],['region','30 CP Region']]},
+    /* ⚠️ ITS PAIRS ARE PICKED FOR THE CAP, NOT FOR VARIETY. render() gives a
+       spec room = MAXLEN - command.length - 1, so this 16-character command has
+       15 characters for an option name plus its value. The draw option (4) leaves
+       11, which every real DRAW_META name overruns, and region (6) plus its
+       '10 CP Region' value (12) is 18 and would be filtered out SILENTLY -- the
+       exact failure the cap comment above describes. pulls and balance are the
+       two that fit, and they are also the two a player actually types.
+       ⚠️ AND NO BACKTICKS IN HERE: CMD_JS is a template literal, so one inside a
+       comment closes it. An odd count is a parse error and an EVEN count renders
+       wrong while every gate stays green. Added 2026-09-09 16:50 EDT. */
+    {c:'/draw calculator', pairs:[['pulls','25'],['pulls','60'],['balance','1200']]},
     {c:'/calendar',    pairs:[['page','Draws'],['page','Events'],['page','Playlists & Modes'],
                               ['view','All Events'],['view','Active/Upcoming Only']]},
     {c:'/patch notes'},
     {c:'/season end'},
     {c:'/colors'},
-    {c:'/settings'}
+    {c:'/settings'},
+    /* The cmd option is a real autocomplete on /help and these are real command
+       names, so the line stays honest rather than decorative. */
+    {c:'/help', pairs:[['cmd','/gunsmiths'],['cmd','/calendar'],['cmd','/dmz']]},
+    /* Bare, like /colors and /settings: its only option is visibility, which no
+       spec here decorates with -- it says nothing about what the command does. */
+    {c:'/invite'}
   ];
 
   /* The line erases back to the slash and never past it, so the resting look

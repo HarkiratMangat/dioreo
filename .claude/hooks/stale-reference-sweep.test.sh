@@ -26,9 +26,12 @@ mkrepo() {
   echo seed > "$d/docs/plain.md"
   # A DOC that other prose references by name — docs/guide.md above names it. Before 2026-08-06 the sweep excluded docs/ entirely and never had `.md` in its extension list, so changing or deleting this file produced no subjects at all and the gate reported clean.
   echo "the known caveats live here" > "$d/docs/known-issues.md"
-  git -C "$d" add -A; git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m init
+  # No `sleep 1` (removed 2026-09-14 18:22 EDT). The order the hook depends on is seed mtime <= branch-point commit time < change mtime, in whole seconds. The seeds are stamped 200 s back and the branch point committed 100 s back, so the change written next is strictly newest. Both halves matter: backdating only the commit would make every seed newer than the branch point.
+  local now seed; now=$(date +%s)
+  seed=$(date -d "@$((now - 200))" '+%Y%m%d%H%M.%S' 2>/dev/null || date -r "$((now - 200))" '+%Y%m%d%H%M.%S')
+  find "$d" -type f ! -path '*/.git/*' -exec touch -t "$seed" {} +
+  git -C "$d" add -A; GIT_COMMITTER_DATE="@$((now - 100)) +0000" git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m init
   git -C "$d" checkout --quiet -b feat
-  sleep 1
   echo changed >> "$d/$2"
   shift 2
   for extra in "$@"; do echo changed >> "$d/$extra"; done
@@ -84,7 +87,9 @@ a "an OLD memory file IS flagged"       "old.md"                yes "$STALEMEM"
 #     clean branch were byte-identical.
 PATHLESS=$(mkrepo c9 utils/accentColor.js)
 IFS=$'\t' read -r _d3 _h3 <<< "$PATHLESS"
-out=$(PATH=/usr/bin:/bin HOME="$_h3" CLAUDE_PROJECT_DIR="$_d3" bash "$HOOK" main 2>/dev/null \
+# ⚠️ git and jq are linked into a private bin, then that bin leads the minimal PATH (changed 2026-09-14 19:38 EDT). The minimal PATH existed to hide rg, and it hid git too the moment git stopped living in /usr/bin: on a Mac with Homebrew git and no Xcode command line tools the hook could not run git, printed nothing, and this case failed for a reason that had nothing to do with rg.
+NORG_BIN="$TMP/no-rg-bin"; mkdir -p "$NORG_BIN"; for tool in git jq; do p=$(command -v "$tool") && ln -sf "$p" "$NORG_BIN/$tool"; done
+out=$(PATH="$NORG_BIN:/usr/bin:/bin" HOME="$_h3" CLAUDE_PROJECT_DIR="$_d3" bash "$HOOK" main 2>/dev/null \
       | jq -r '.hookSpecificOutput.additionalContext // "SILENT"')
 if command -v /usr/bin/rg >/dev/null 2>&1 || command -v /bin/rg >/dev/null 2>&1; then
   echo "  SKIP  rg lives on the minimal PATH here, cannot simulate its absence"

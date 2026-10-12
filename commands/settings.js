@@ -95,6 +95,7 @@ module.exports = {
         const seasonVis = (prefs.seasonalVisibility || 'public').toUpperCase();
         const timeVis = (prefs.timestampVisibility || 'public').toUpperCase();
         const settingsVis = (prefs.settingsVisibility || 'public').toUpperCase();
+        const colorsVis = (prefs.colorsVisibility || 'public').toUpperCase();
         const tz = prefs.timezone || 'America/Toronto';
         const style = prefs.timestampStyle || 'all_formats';
 
@@ -177,6 +178,7 @@ module.exports = {
             containerComponents.push(buildToggleRow('Seasonal Content', seasonVis, `toggle_seasonal_public`, `toggle_seasonal_ephemeral`));
             containerComponents.push(buildToggleRow('Timestamps', timeVis, `toggle_timestamp_public`, `toggle_timestamp_ephemeral`));
             containerComponents.push(buildToggleRow('Settings Dashboard', settingsVis, `toggle_settings_public`, `toggle_settings_ephemeral`));
+            containerComponents.push(buildToggleRow('Colors', colorsVis, `toggle_colors_public`, `toggle_colors_ephemeral`));
 
             containerComponents.push({ type: 10, content: `-# Choose your Preferences settings on page 2 →` });
         } else {

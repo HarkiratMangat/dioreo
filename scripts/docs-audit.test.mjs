@@ -48,15 +48,17 @@ const idsReported = (root, extraArgs) => {
   }
 };
 
-// 🔴 A CRASHED CHECK REPORTS ITS OWN ID, so `proves` cannot tell "correctly found the defect" from "threw a ReferenceError while looking". Measured 2026-08-23 11:36 EDT: `doc-frontmatter`'s superseded_by branch referenced three identifiers that do not exist in that module (`fs`, `path`, `ROOT`) and had NEVER once executed, because nothing in the repo carried a superseded_by field until that day -- and its self-test ("a superseded_by pointing at a file that does not exist") passed the whole time, against a check that could not run. The crash satisfied the only thing the test asked for. This makes that impossible for every check, not just that one: a proof is only a proof if the check reached a real conclusion.
-const crashedChecks = (root, extraArgs) => {
+// 🔴 A CRASHED CHECK REPORTS ITS OWN ID, so `proves` cannot tell "correctly found the defect" from "threw a ReferenceError while looking". Measured 2026-08-23 11:36 EDT: `doc-frontmatter`'s superseded_by branch referenced three identifiers that do not exist in that module (`fs`, `path`, `ROOT`) and had NEVER once executed, because nothing in the repo carried a superseded_by field until that day -- and its self-test ("a superseded_by pointing at a file that does not exist") passed the whole time, against a check that could not run. The crash satisfied the only thing the test asked for. This makes that impossible for every check, not just that one: a proof is only a proof if the check reached a real conclusion. ONE SPAWN, BOTH ANSWERS — added 2026-09-14 18:22 EDT. `proves()` used to spawn the audit three times per check (baseline, broken, crash scan) and every spawn ran ALL ~70 checks against the fixture: a full audit costs 4.79 s against 0.19 s for `--only <id>` (measured on the repo root). The broken-fixture spawn now yields the reported ids and the crashed ids together, and every targeted spawn passes `--only`.
+const auditReport = (root, extraArgs) => {
   const { out } = runAudit(root, extraArgs);
   try {
-    return new Set(JSON.parse(out).results
-      .filter((r) => /check crashed/.test(String(r.msg || "")))
-      .map((r) => r.id));
+    const results = JSON.parse(out).results;
+    return {
+      ids: new Set(results.map((r) => r.id)),
+      crashed: new Set(results.filter((r) => /check crashed/.test(String(r.msg || ""))).map((r) => r.id)),
+    };
   } catch {
-    return new Set();
+    return { ids: new Set(["<audit produced unparseable output>"]), crashed: new Set() };
   }
 };
 
@@ -120,7 +122,7 @@ const makeFixture = () => {
   write(
     root,
     "package.json",
-    JSON.stringify({ name: "fixture", version: "2.33.0", dependencies: { widget: "^1.2.3" } }, null, 2)
+    JSON.stringify({ name: "fixture", version: "2.33.0", scripts: { test: "node --version" }, dependencies: { widget: "^1.2.3" } }, null, 2)
   );
   write(
     root,
@@ -212,7 +214,7 @@ const makeFixture = () => {
   write(
     root,
     ".github/workflows/ci.yml",
-    "name: CI\non:\n  push:\n    branches: [main, v3-pre-release]\n  pull_request:\n    branches: [main, v3-pre-release]\njobs:\n  x:\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - run: npm run docs:audit:test\n      - run: npm run docs:audit\n"
+    "name: CI\non:\n  push:\n    branches: [main, v3-pre-release]\n  pull_request:\n    branches: [main, v3-pre-release]\njobs:\n  x:\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - run: npm run docs:audit:test\n      - run: npm run docs:audit\n  syntax-check:\n    needs: [x]\n    if: always()\n    steps:\n      - run: echo ok\n"
   );
   // rule-globs: a path-scoped rule whose glob matches a real tracked file.
   write(root, ".claude/rules/example.md", "---\npaths:\n  - docs/*.md\n---\n\nA rule.\n");
@@ -274,20 +276,20 @@ const proves = (name, checkId, breakIt, args = []) => {
   const root = makeFixture();
   try {
     // 1. The baseline must be clean, or nothing below means anything.
-    const before = idsReported(root, args);
+    const before = idsReported(root, [...args, "--only", checkId]);
     if (before.has(checkId)) {
       failures.push(`${name}: baseline fixture ALREADY reports [${checkId}] — the check fires on valid input.`);
       return;
     }
     // 2. Break it; the check must now report.
     breakIt(root);
-    const after = idsReported(root, args);
-    if (!after.has(checkId)) {
+    const after = auditReport(root, [...args, "--only", checkId]);
+    if (!after.ids.has(checkId)) {
       failures.push(`${name}: broke the invariant but [${checkId}] stayed SILENT — the check is dead.`);
       return;
     }
     // Reporting is not the same as CONCLUDING -- see crashedChecks above.
-    if (crashedChecks(root, args).has(checkId)) {
+    if (after.crashed.has(checkId)) {
       failures.push(`${name}: [${checkId}] reported only because it CRASHED — the proof is vacuous, the check never ran.`);
       return;
     }
@@ -307,7 +309,7 @@ const provesSilent = (name, checkId, setup) => {
   const root = makeFixture();
   try {
     setup(root);
-    const after = idsReported(root, []);
+    const after = idsReported(root, ["--only", checkId]);
     if (after.has(checkId)) {
       failures.push(`${name}: [${checkId}] fired on VALID input — false positive.`);
       return;
@@ -352,6 +354,17 @@ if (__mine()) provesBaselineClean();
 
 proves("a tracked docs/ file nothing in the README names", "readme-map", (root) => {
   write(root, "docs/orphan-record.md", "# Nobody maps me\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a live doc naming an npm script that does not exist", "npm-script-exists", (root) => {
+  write(root, "docs/reference/made-up.md", "---\nkind: reference\nstatus: live\n---\n\n# Made up\n\nRun `npm run portal:definitely-not-a-script` to do the thing.\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+// The baseline needs a LIVE doc naming a REAL script, or npm-script-exists examines 0 items and its clean run is a vacuous pass — which the framework correctly reports. This is the valid half of the pair the broken fixture above completes.
+provesSilent("a live doc naming an npm script that DOES exist", "npm-script-exists", (root) => {
+  write(root, "docs/reference/runs-a-real-one.md", "---\nkind: reference\nstatus: live\n---\n\n# Runs a real one\n\nRun `npm run test` before opening a PR.\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
@@ -453,6 +466,20 @@ proves("a PRE-RELEASE version in the DEVLOG with no CHANGELOG heading", "devlog-
   // The real v3.24.0 damage, 2026-08-15: the heading went, the body stayed and welded itself onto the entry above, and every check stayed green because CHANGELOG-SUMMARY -- summary-orphan's only reference list -- is not written during pre-release. DEVLOG is, which is why it is the reference here. The body below deliberately does not name its own version, exactly like the real one did not, so a substring test would not rescue it.
   write(root, "docs/DEVLOG.md", "# DEVLOG\n\n## 2026-08-15 12:38 EDT — closing a decomposition (v3.24.0-pre)\n\nthe body that survived\n");
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## Pre-Release v3.25.0 — 2026-08-15 13:37 EDT (#133) — later work\n\nbody of the entry that absorbed it\n");
+});
+
+provesSilent("a long branch's DEVLOG stamped with the version its PROPOSED heading still holds", "devlog-orphan", (root) => {
+  // The real shape, found 2026-10-01 13:31 EDT: feat/portal-pins2-manifests stamped DEVLOG entries (v3.85.0-pre) while package.json read 3.84.0-pre and CHANGELOG's Unreleased section held "## Proposed Pre-Release v3.85.0". The heading is exactly where the workflow puts it, so the check must stay silent.
+  write(root, "package.json", JSON.stringify({ name: "fixture", version: "3.24.0-pre" }, null, 2));
+  write(root, "docs/DEVLOG.md", "# DEVLOG\n\n## 2026-08-15 12:38 EDT — work on the branch (v3.25.0-pre)\n\nbody\n");
+  write(root, "docs/CHANGELOG.md", "# Changelog\n\n## Pre-Release v3.24.0 — 2026-08-14 10:00 EDT (#132) — earlier\n\nbody\n\n# Unreleased\n\n## Proposed Pre-Release v3.25.0 — the branch (2026-08-15 12:38 EDT)\n\nbody\n");
+});
+
+proves("a PROPOSED heading left behind after its version was minted", "devlog-orphan", (root) => {
+  // The failure the Proposed allowance must not open: package.json already reads the minted version, so the release needs its real heading, and a leftover Proposed one may not stand in for it.
+  write(root, "package.json", JSON.stringify({ name: "fixture", version: "3.25.0-pre" }, null, 2));
+  write(root, "docs/DEVLOG.md", "# DEVLOG\n\n## 2026-08-15 12:38 EDT — the release (v3.25.0-pre)\n\nbody\n");
+  write(root, "docs/CHANGELOG.md", "# Changelog\n\n## Pre-Release v3.24.0 — 2026-08-14 10:00 EDT (#132) — earlier\n\nbody\n\n# Unreleased\n\n## Proposed Pre-Release v3.25.0 — the branch (2026-08-15 12:38 EDT)\n\nbody\n");
 });
 
 proves("a released version whose CHANGELOG heading was deleted", "summary-orphan", (root) => {
@@ -611,6 +638,10 @@ proves("a core record file going missing", "records-present", (root) => {
   rmSync(join(root, "docs/ROADMAP.md"));
 });
 
+proves("docs/SESSION-START.md growing past its 8KB delivery budget", "session-start-size", (root) => {
+  write(root, "docs/SESSION-START.md", "# Session-start prompt\n\n" + "x".repeat(8200) + "\n");
+});
+
 proves(".env no longer gitignored", "secrets-hygiene", (root) => {
   write(root, ".gitignore", "!.claude/settings.local.json\n");
 });
@@ -635,8 +666,31 @@ proves("CI losing fetch-depth: 0", "ci-wiring", (root) => {
   write(root, ".github/workflows/ci.yml", ci);
 });
 
+proves("a CI job that syntax-check does not wait for", "ci-wiring", (root) => {
+  const ci = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").replace("needs: [x]", "needs: []");
+  write(root, ".github/workflows/ci.yml", ci);
+});
+
+proves("the required check given a name of its own", "ci-wiring", (root) => {
+  const ci = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").replace("  syntax-check:\n", "  syntax-check:\n    name: gate\n");
+  write(root, ".github/workflows/ci.yml", ci);
+});
+
 proves("a path-scoped rule whose glob matches nothing", "rule-globs", (root) => {
   write(root, ".claude/rules/example.md", "---\npaths:\n  - utils/deleted-subsystem/*.js\n---\n\nA rule nobody will ever load.\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+// The existing case above proves rule-globs can fail on a DEAD glob. It cannot reach the no-globs path at all, so the `unconditional: true` escape added 2026-09-02 16:05 EDT would have been an untested branch -- and an escape nobody has watched refuse anything is how a check quietly stops checking. This is the case that makes the escape a claim rather than a hope: a rule with an empty `paths:` and NO declaration must still ERROR, which is the far more likely cause (globs deleted, or never written) and the one that makes a rule silently stop loading for anything.
+proves("an uninterpolated generator expression in a tracked file", "generator-artifact", (root) => {
+  // The literal is assembled here rather than written out, so this test file cannot trip the very check it is proving -- the self-suppression trap the check's own comment names.
+  const q = '"'.repeat(3);
+  write(root, "docs/example.md", `---\nkind: reference\nstatus: live\n---\n\n# x\n\nconst v = ${q} + S + ${q};\n`);
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a rule with no globs and no `unconditional` declaration", "rule-globs", (root) => {
+  write(root, ".claude/rules/example.md", "---\nkind: rule\nstatus: live\n---\n\nA rule with no paths and no declaration.\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
@@ -689,6 +743,15 @@ proves("a record file with its top-level heading spliced in twice", "record-stru
   // The real incident this guards: a commit spliced CHANGELOG's own 183-line header into the middle of an entry, and every other check passed because none of them look at a file's SHAPE.
   const c = readFileSync(join(root, "docs/CHANGELOG.md"), "utf8");
   write(root, "docs/CHANGELOG.md", c + "\n# Changelog\n\nspliced in again\n");
+});
+
+// 🔴 THE GUARD IS THE ONLY HALF THAT IS ON DISK. The opener lives in a chat message and no check can see it, so this proves the document-side guard is required — which is what lets a skimming reader catch itself.
+proves("a realm prompt with no anti-skim guard", "prompt-antiskim", (root) => {
+  write(root, "docs/superpowers/plans/ZZTEST-PROMPT.md", "---\nkind: plan\nstatus: live\n---\n\n# Part 9 — ZZTest. Paste this in.\n\nSome content with no guard anywhere near the top.\n");
+});
+
+provesSilent("a realm prompt that carries the guard", "prompt-antiskim", (root) => {
+  write(root, "docs/superpowers/plans/ZZOK-PROMPT.md", "---\nkind: plan\nstatus: live\n---\n\n# Part 9 — ZZOk. Paste this in.\n\n> 🔴 IF YOU WERE HANDED A SHORT OPENER, IT IS NOT A SUMMARY OF THIS FILE. It carries the batching contract and the three files, which an opener cannot.\n");
 });
 
 proves("a changelog entry left citing an unfilled PR placeholder", "changelog-pr-cite", (root) => {
@@ -776,7 +839,7 @@ if (__mine()) {
     write(root, "docs/archive/graveyard.md", "# Graveyard\n\n- something completely unrelated was swept here instead today\n");
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "sweep the wrong thing"], { cwd: root });
-    const ids = idsReported(root, ["--diff", "HEAD~1"]);
+    const ids = idsReported(root, ["--diff", "HEAD~1", "--only", "archive-conservation"]);
     if (!ids.has("archive-conservation")) {
       failures.push("a deletion whose text never reached the archive: [archive-conservation] stayed SILENT — the content-tracing branch is dead.");
     } else {
@@ -798,7 +861,7 @@ if (__mine()) {
         "an open intake item long enough to count as substance, not reflow churn (edited in place)"));
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "edit in place"], { cwd: root });
-    const ids = idsReported(root, ["--diff", "HEAD~1"]);
+    const ids = idsReported(root, ["--diff", "HEAD~1", "--only", "archive-conservation"]);
     if (ids.has("archive-conservation")) {
       failures.push('an in-place edit of the notes file: [archive-conservation] fired on an EDIT, not a deletion.');
     } else {
@@ -825,7 +888,7 @@ if (__mine()) {
     write(root, "docs/ideas/diors-notes.md", readFileSync(p, "utf8").replace(OLD_H1, NEW_H1));
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "rename in the title"], { cwd: root });
-    const ids = idsReported(root, ["--diff", "HEAD~1"]);
+    const ids = idsReported(root, ["--diff", "HEAD~1", "--only", "archive-conservation"]);
     if (ids.has("archive-conservation")) {
       failures.push("a heading rename in the notes file: [archive-conservation] fired on a HEADING, which is structure and never an item.");
     } else {

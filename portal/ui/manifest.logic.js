@@ -17,11 +17,13 @@ function filterRows(rows, { query, searchableFields = [], filters = {} } = {}) {
     return rows.filter(row => matchesSearch(row, query, searchableFields) && matchesFilters(row, filters));
 }
 
-function sortRows(rows, { column, direction = 'asc' } = {}) {
+// ⚠️ A COLUMN MAY SORT ON SOMETHING OTHER THAN WHAT IT PRINTS. Season's Window column prints a formatted range, so sorting on the printed value ordered the season alphabetically — "Aug" before "Jul" before "Sep" — which looks like a sort and is not one. `sortValue` is the column's own accessor for the value the order is actually about.
+function sortRows(rows, { column, direction = 'asc' } = {}, sortValue) {
     if (!column) return rows;
     const sign = direction === 'desc' ? -1 : 1;
+    const read = typeof sortValue === 'function' ? sortValue : (r) => r[column];
     return [...rows].sort((a, b) => {
-        const av = a[column], bv = b[column];
+        const av = read(a), bv = read(b);
         if (av === bv) return 0;
         return av > bv ? sign : -sign;
     });
@@ -34,7 +36,14 @@ function toggleSelection(selectedIds, id) {
     return next;
 }
 
+// Sets a whole list of ids on or off in one step, returning a new Set. The Manifest's body prop hands this to a realm that renders its own rows (Armory's weapon groups, plan pins batch 2 §10.4 Architecture): a weapon header's checkbox selects or clears exactly that weapon's visible builds, and every other selection is left alone.
+function setSelection(selectedIds, ids, on) {
+    const next = new Set(selectedIds);
+    for (const id of ids || []) { if (on) next.add(id); else next.delete(id); }
+    return next;
+}
+
 // Guarded: a classic <script> in a real browser has no `module` global, and an unguarded assignment throws ReferenceError mid-parse -- silently true here only because every function above already executed before this line ran. Found by actually loading this file in a browser rather than assuming the classic-script plan would just work.
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { filterRows, sortRows, toggleSelection, matchesSearch, matchesFilters };
+    module.exports = { filterRows, sortRows, toggleSelection, setSelection, matchesSearch, matchesFilters };
 }

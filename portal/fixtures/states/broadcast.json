@@ -1,0 +1,50 @@
+{
+  "surface": "Broadcast",
+  "note": "Registered 2026-09-07 — no states file existed for this realm before now, so none of its drawers had ever been opened in a test. Three interactive surfaces (composer, export strip, per-row delete confirm) plus the two async states every realm shares.",
+  "states": [
+    {
+      "name": "composer · Post an announcement drawer opens",
+      "realm": "broadcast",
+      "steps": [
+        { "clickText": { "sel": ".mh-new, .pill.lead", "text": "Post announcement" } }
+      ],
+      "known": [],
+      "expect": ".drawer.open #post-text"
+    },
+    {
+      "name": "export strip · opens from the masthead",
+      "realm": "broadcast",
+      "steps": [
+        { "clickText": { "sel": ".mh-take button", "text": "Export" } }
+      ],
+      "known": [],
+      "expect": ".mh-take button[aria-expanded=\"true\"]"
+    },
+    {
+      "name": "delete confirm · a row's Remove opens the tier-2 confirm",
+      "realm": "broadcast",
+      "steps": [
+        { "click": "button.rmv" }
+      ],
+      "known": [],
+      "expect": ".dw-f button.go, .dw-f button.dang"
+    },
+    {
+      "name": "slow · the skeleton in the shape of the content",
+      "realm": "broadcast",
+      "flags": { "slow": "4000" },
+      "known": [],
+      "expect": ".skel",
+      "preSettleMs": 4200,
+      "settleMs": 300,
+      "note": "`slow` delays every request including the session, so landing past the session mint and checking quickly catches this realm's own fetch still in flight — same technique as Season's registered slow state."
+    },
+    {
+      "name": "failed · the server refuses",
+      "realm": "broadcast",
+      "flags": { "fail": "500" },
+      "known": [],
+      "expect": ".failbox"
+    }
+  ]
+}

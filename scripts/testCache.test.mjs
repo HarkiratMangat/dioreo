@@ -59,7 +59,8 @@ function runCache(key, commandArgs, extraEnv = {}) {
   try {
     execFileSync("node", [SCRIPT, key, inputFile, "--", ...commandArgs], {
       cwd: root,
-      env: { ...process.env, CI: "", TEST_CACHE_DIR: cacheDir, ...extraEnv },
+      env: { ...process.env, CI: "", TEST_CACHE: "", TEST_CACHE_DIR: cacheDir, ...extraEnv },
+      // 🔴 TEST_CACHE MUST BE NEUTRALISED HERE, EXACTLY AS CI IS. testCache.mjs:84 reads `TEST_CACHE === "0" || CI === "true"` — the two variables do the identical thing, and this file cleared one and not the other. So `TEST_CACHE=0 npm test`, which is the command testCache.mjs:95 PRINTS as the way to force a real re-run, failed 7 of this file's 15 assertions. The escape hatch the tool advertises broke the tool's own test, and only running the advertised command would ever have shown it. `extraEnv` spreads last, so case 5 can still set TEST_CACHE:"0" deliberately.
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -126,7 +127,7 @@ try {
     try {
       const out = execFileSync("node", [SCRIPT, key, inputPath, "--", ...commandArgs], {
         cwd: root,
-        env: { ...process.env, CI: "", TEST_CACHE_DIR: cacheDir },
+        env: { ...process.env, CI: "", TEST_CACHE: "", TEST_CACHE_DIR: cacheDir },
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
       });
@@ -145,7 +146,7 @@ try {
     try {
       execFileSync("node", [SCRIPT, "k3", dir, "--", "node", counterScript], {
         cwd: root,
-        env: { ...process.env, CI: "", TEST_CACHE_DIR: cacheDir },
+        env: { ...process.env, CI: "", TEST_CACHE: "", TEST_CACHE_DIR: cacheDir },
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
       });

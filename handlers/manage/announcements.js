@@ -38,8 +38,14 @@ async function editAnnouncement(interaction) {
     // Same overwrite-on-every-submit convention as `expiry` -- blank explicitly clears back to "show now", it is not a "leave whatever was there" no-op (the modal always re-submits every field in full).
     const startsAtRaw = interaction.fields.getTextInputValue('starts_at')?.trim();
 
+    // The Discord modal is capped at 5 fields and has neither a banner-image nor a repeat-count field (portal-only, pins batch 2 spec §7/§10.3) -- core/ops/announcements.js's apply() always $sets both from whatever the payload carries, defaulting an ABSENT key to null, so a Discord-side text/date fix would otherwise silently wipe a banner or repeat count the portal had set. Carry the CURRENT values through unchanged, the same "resubmit everything" contract this handler already applies to text/expiry/starts_at.
+    const Announcement = require('../../models/Announcement');
+    const current = await Announcement.findById(id).lean();
+    const bannerImageUrl = current?.bannerImageUrl ?? null;
+    const repeatCount = current?.repeatCount ?? null;
+
     const result = await commitSet(
-        [{ type: 'announcement.edit', target: { id }, payload: { text, expiry, startsAt: startsAtRaw || null } }],
+        [{ type: 'announcement.edit', target: { id }, payload: { text, expiry, startsAt: startsAtRaw || null, bannerImageUrl, repeatCount } }],
         { actorId: interaction.user.id }
     );
     if (!result.ok) {

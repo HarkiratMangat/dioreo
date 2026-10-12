@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # claim-detect.sh — the SINGLE definition of "this message claims the work is done".
 #
-# WHY THIS EXISTS (2026-08-06 09:46 EDT). Two hooks needed the same judgement and each carried its own copy of the regex: the completion-claim gate (added 2026-07-27, inline in settings.json) and completeness-sweep.sh (added today). That is byte-for-byte the defect `notes-open-items.sh` was written to fix — one regex, two copies, one of which silently went unfixed for weeks because there was no single place to fix it. Re-creating the pattern within the same repo, days later, is worse than the original: the lesson was already written down.
+# WHY THIS EXISTS (2026-08-06 09:46 EDT). Two hooks needed the same judgement and each carried its own copy of the regex: the completion-claim gate (added 2026-07-27, inline in settings.json) and commit-completeness-sweep.sh (added today). That is byte-for-byte the defect `notes-open-items.sh` was written to fix — one regex, two copies, one of which silently went unfixed for weeks because there was no single place to fix it. Re-creating the pattern within the same repo, days later, is worse than the original: the lesson was already written down.
 #
 # One implementation, called from both. Adding a phrase here changes every gate at once.
 #

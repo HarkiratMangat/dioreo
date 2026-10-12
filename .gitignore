@@ -13,6 +13,7 @@ node_modules/
 # never meaningful content. Untracked 2026-08-18 10:07 EDT after an accidental `git add -A` picked
 # it up (this repo has no global ignore for it, unlike most repos on this machine).
 Icon?
+dioreo-context.xml
 
 
 # Dev-bot-only emoji overrides consumed by utils/emojiMap.js's refreshEmojiIds() when
@@ -24,7 +25,7 @@ gun-builds/
 local/
 .restart-reason
 builds.xlsx
-Dioreo logo/
+Dioreo-logo/
 
 
 # Python bytecode cache -- introduced 2026-08-15 01:42 EDT by scripts/syncNameplateCatalog.py, the
@@ -82,3 +83,35 @@ utils/__hotpatchFixture.js
 # as a Node process on the VM and can run its own build during deploy.sh, so nothing needs this
 # tracked. Vendored preact.mjs/htm.mjs land here too, which would otherwise bloat every diff.
 portal/public/
+
+# 🔴 PERSONAL PROJECT INSTRUCTIONS — LOADED AT LAUNCH, NEVER COMMITTED. Claude Code loads
+# CLAUDE.local.md at the same priority as the reviewed project CLAUDE.md, and the vendor docs say to
+# gitignore it. It was NOT ignored here until 2026-09-01, so the first one written would have been
+# committed — a personal, unreviewed, launch-priority instruction file in everyone's tree. ⚠️ Because
+# it is ignored, NO GATE SEES IT: docs-audit, the reflow checks and the xref check all resolve their
+# file list from `git ls-files`. Highest trust, zero review. Keep POINTERS in it, never content.
+CLAUDE.local.md
+.impeccable/live/
+# Dated impeccable critique/audit reports are tool output, regenerated per run, and written in the
+# tool own format -- reflow-prose fights the generator on them. Ignored 2026-09-06 16:14 EDT. Anything a
+# report FINDS must be filed in docs/db-deferred-list.md, because an ignored path carries nothing forward.
+.impeccable/critique/
+.impeccable/audit/
+
+# Board-round screenshots I take while verifying a gate — scratch, never a deliverable.
+# They were swept into a commit by `git add -A` on 2026-09-20 17:46 EDT and removed again.
+shots/
+
+# Screenshots stay on this Mac — Harkirat, 2026-09-29 23:35 EDT: "kit can be tracked but leave screenshots local". Board captures and his pasted shots
+# live in local/pins2/intake-shots/ (already ignored under local/); the portal pin crops (docs/portal/portal-pins/), the summary captures
+# (docs/reference/silent-summary/) and every other image under docs/ stay where they are, untracked. These lines refuse an image anywhere
+# under docs/ except the kit's own design assets, so a future session cannot re-track one by accident.
+docs/**/*.png
+docs/**/*.webp
+docs/**/*.jpg
+docs/**/*.jpeg
+docs/**/*.gif
+!docs/pins2/kit/**
+# 2026-09-30 21:16 EDT, his option (c): the Board 4 kit is on this Mac only — gitignored, with its own local git repo inside docs/pins2/kit/ (its 11 commits since
+# 2026-09-29 kept there); this branch's history was rewritten without it (backup: refs/backup/pins2-before-kit-local), so no push can carry it.
+docs/pins2/kit/

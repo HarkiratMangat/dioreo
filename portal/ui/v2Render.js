@@ -40,3 +40,24 @@ export function renderV2(components) {
         </div>
     `;
 }
+
+// 🔴 THE TWO REALMS WHOSE OUTPUT A PLAYER READS VERBATIM COULD NOT SHOW IT. Armory has a real card — /api/armory/preview returns the bot's own Components V2 JSON and `renderV2` draws it — and no such route exists for a draw or an announcement, so Season and Broadcast were the only surfaces editing something a player sees with no picture of what they would see.
+//
+// ⚠️ IT IS A SHAPED PREVIEW, NOT A CLAIM TO BE THE MESSAGE, and the distinction is why this is a separate component from `renderV2` rather than a fallback inside it. `renderV2` draws what the bot actually built; this draws the fields you are editing in the shape Discord puts them in. Merging them would let a component that is GUESSING inherit the authority of one that is not.
+export function DiscordCard({ accent, title, sub, rows = [], badges = [], code }) {
+    return html`
+        <div class="dcard" style=${accent ? `--c:${accent}` : null}>
+            <h6>${title}</h6>
+            <!-- ALWAYS RENDERED, even empty. The design's card carries the sub slot unconditionally and its
+                 margin is part of the card's rhythm: omitting it when an announcement has no typed heading made
+                 every such card 5px shorter than the design's, which on a two-card preview is 10px and on the
+                 page is every element below the fold sitting at the wrong y. An empty box that reserves space
+                 is not decoration here — it is the reason two cards line up with two cards. -->
+            <div class="sub">${sub || ''}</div>
+            ${rows.filter((r) => r && r[1]).map((r) => html`
+                <div class="row" key=${r[0]}><b>${r[0]}</b><span>${r[1]}</span></div>`)}
+            ${badges.length ? html`
+                <div class="badges">${badges.map((b) => html`<span key=${b}>${b}</span>`)}</div>` : null}
+            ${code ? html`<div class="dcode">${code}</div>` : null}
+        </div>`;
+}

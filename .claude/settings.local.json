@@ -34,7 +34,9 @@
       "Bash(rtk git *)",
       "Bash(node -p \"require\\('./package.json'\\).version\")",
       "Bash(gh api *)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(rtk read *)",
+      "Bash(rm .claude/.headroom_wrap_settings.lock)"
     ]
   }
 }

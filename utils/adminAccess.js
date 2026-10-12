@@ -17,7 +17,11 @@
 const AdminUser = require('../models/AdminUser');
 const { isOwnerId } = require('./owner');
 
-const ADMIN_COMMANDS = ['manage', 'autobuild', 'bot'];
+// 'destructive' (added 2026-08-25) is NOT a command. It grants nothing on any surface; it grants the right to run the operations that CANNOT BE UNDONE -- every purge, season.startNew, season.promoteDraft -- across every realm, whatever page scopes the holder does or does not have. Tier-3 is owner-only by default (Harkirat, 2026-08-25); this is the one way to delegate it. It lives in ADMIN_COMMANDS because it is a top-level token like 'manage'/'bot'/'autobuild' rather than a 'manage.<page>' scope -- MANAGE_PAGE_SCOPES is for real /manage pages and this is not one.
+const ADMIN_COMMANDS = ['manage', 'autobuild', 'bot', 'destructive'];
+
+// 🔴 'all' MUST NOT EXPAND TO 'destructive'. A convenience that quietly hands out irreversibility is the opposite of a convenience: the owner typing "all" is asking for broad access, not for somebody else to be able to purge the season. Anything listed here is grantable only by naming it explicitly. Kept as a separate list rather than a flag on the token so the exclusion is visible at the point `all` is expanded, which is the only place it matters.
+const NOT_IN_ALL = ['destructive'];
 
 // One entry per REAL /manage page a permission can name, EXCEPT 'guide' (the Bulk Format Guide is read-only reference material, not data-mutating, so it's available to anyone with ANY manage access at all rather than needing its own grantable scope). 'season' is a PSEUDO-page -- it covers the two flat dropdown entries ("Season: Titles & Deadlines" / "Start New Season") that aren't a key in commands/manage.js's PAGES table at all, kept distinct from 'seasondraft' (the real "Next Season Draft" staging page) since editing what's LIVE right now and staging what's NEXT are different blast radii.
 const MANAGE_PAGE_SCOPES = ['draws', 'calendar', 'loadouts_mp', 'loadouts_dmz', 'patchnotes', 'seasondraft', 'season', 'announcement'];
@@ -81,7 +85,7 @@ async function getManagePages(userId) {
 function parsePermissionsInput(raw) {
     const tokens = (raw || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
     if (tokens.length === 0) return null;
-    if (tokens.length === 1 && tokens[0] === 'all') return [...ADMIN_COMMANDS];
+    if (tokens.length === 1 && tokens[0] === 'all') return ADMIN_COMMANDS.filter(c => !NOT_IN_ALL.includes(c));
     const result = new Set();
     for (const token of tokens) {
         if (ADMIN_COMMANDS.includes(token)) {
@@ -113,11 +117,23 @@ function formatPermissions(perms) {
         const pages = perms.filter(p => p.startsWith('manage.')).map(p => MANAGE_PAGE_LABELS[p.slice('manage.'.length)] || p);
         if (pages.length > 0) parts.push(`/manage: ${pages.join(', ')}`);
     }
+    // 🔴 THE ONE TOKEN THAT MUST NEVER BE OMITTED FROM A SUMMARY. formatPermissions() enumerated 'bot', 'autobuild' and 'manage' by name, so 'destructive' rendered as nothing at all -- ['destructive','manage'] read back as "/manage (full)" and the owner reviewing an admin's access could not see that they hold the right to purge. A permission that is granted and invisible is worse than one that is not granted. Last, and marked, because it is not a surface: it modifies what the tokens before it are allowed to do.
+    if (perms.includes('destructive')) parts.push('**one-way ops** (purges, season rollover)');
     return parts.join(' · ') || '*(none)*';
+}
+
+// 🔴 A HAND-MAINTAINED FORMATTER SILENTLY DROPS WHAT IT DOES NOT KNOW. `formatPermissions` names each token explicitly, which is right for readable output and wrong the moment a token is added -- exactly what happened above. This reports any grantable token the formatter cannot render, so the next one is caught by a test rather than by somebody noticing a gap in a summary.
+function unformattablePermissions() {
+    const every = [...ADMIN_COMMANDS, ...MANAGE_PAGE_SCOPES.map(p => `manage.${p}`)];
+    return every.filter(t => {
+        const out = formatPermissions([t]);
+        return out === '*(none)*' || out === '';
+    });
 }
 
 module.exports = {
     isAdmin, hasCommandAccess, hasManagePageAccess, getManagePages, isOwner,
     invalidateAdminCache, getAdminPermissionsMap, parsePermissionsInput, formatPermissions,
-    ADMIN_COMMANDS, MANAGE_PAGE_SCOPES
+    ADMIN_COMMANDS, MANAGE_PAGE_SCOPES,
+    NOT_IN_ALL, unformattablePermissions,
 };

@@ -1,0 +1,33 @@
+{
+  "surface": "History",
+  "note": "Split out of analytics.json on 2026-09-13 18:04 EDT, when the event river became its own realm (batch-2 spec §4). Both states moved unchanged except for their realm.",
+  "states": [
+    {
+      "name": "event drawer · a river row opens with its fields",
+      "realm": "history",
+      "steps": [
+        {
+          "clickText": {
+            "sel": "#manifest tbody td",
+            "text": "Bot online"
+          }
+        }
+      ],
+      "expect": ".diff .diff-r",
+      "note": "Addressed by the CELL and by its words, not the row: a coordinate click on a <tr> lands wherever its centre falls, and the checkbox cell stops propagation. The row handler is what opens the drawer, and it fires from any cell that does not."
+    },
+    {
+      "name": "manifest · nothing matches the search",
+      "realm": "history",
+      "steps": [
+        {
+          "type": {
+            "sel": "#manifest input",
+            "text": "zzzznomatchzzzz"
+          }
+        }
+      ],
+      "expect": "#manifest .empty"
+    }
+  ]
+}

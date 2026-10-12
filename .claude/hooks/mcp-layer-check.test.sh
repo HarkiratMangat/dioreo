@@ -27,7 +27,7 @@ mkfixture() { # $1 = number of misfiled memories to plant
   done
 }
 
-run() { MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_FRAG_WARN="${1:-25}" bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
+run() { MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_FRAG_WARN="${1:-25}" bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
 
 assert() { # name | needle | yes|no
   local name="$1" needle="$2" want="$3" out="$4"
@@ -43,7 +43,7 @@ echo "mcp-layer-check.sh — branch proofs"
 mkfixture 0; out="$(run 25)"
 assert "clean store: no warning"            "$WARN_MARKER"           no  "$out"
 assert "clean store: counts reported"       "misfiled elsewhere"     yes "$out"
-assert "clean store: routing rules present" "RECALL BY query"        yes "$out"
+assert "routing is not restated at session start (WP4 collapse)" "RECALL BY query" no "$out"
 
 # 2. 30 misfiled memories over a threshold of 25 -> warning MUST fire.
 mkfixture 30; out="$(run 25)"
@@ -61,9 +61,9 @@ out="$(run 0)"
 assert "sibling project 'dior' excluded"    "0 misfiled elsewhere"   yes "$out"
 
 # 5. Missing DB must degrade loudly, not crash or emit invalid JSON.
-out="$(MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext')"
+out="$(MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext')"
 assert "missing db reported"                "db not found"           yes "$out"
-MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -e . >/dev/null 2>&1 \
+MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -e . >/dev/null 2>&1 \
   && { echo "  PASS  missing db still emits valid JSON"; pass=$((pass+1)); } \
   || { echo "  FAIL  missing db emitted invalid JSON"; fail=$((fail+1)); }
 
@@ -85,7 +85,8 @@ JSON
 cat > "$DESK"  <<'JSON'
 {"mcpServers":{"linksee":{},"perseus-vault":{},"sequential-thinking":{},"codebase-memory-mcp":{},"jina-reader":{},"desktop-only-thing":{}}}
 JSON
-prun() { MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_CC_CONFIG="$1" MCPCHECK_DESKTOP_CONFIG="$2" \
+# MCPCHECK_PROBE=0 on every call that is not about the probe (here, in run() above, and the two missing-db calls). Without it each call made a real, timeout-bounded round trip to whatever linksee server this machine runs: 3.2 s per call, 23.2 s for the suite at 0.10 CPU (measured 2026-09-14), and a result that depended on the machine. The probe keeps its own stubbed cases below.
+prun() { MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_CC_CONFIG="$1" MCPCHECK_DESKTOP_CONFIG="$2" \
          bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
 
 # Healthy: every expected server present, desktop matches -> BOTH warnings absent. This is the discriminating half; without it the needles below could match a banner that always prints.
@@ -114,5 +115,31 @@ prun /nonexistent/cc.json /nonexistent/desktop.json >/dev/null 2>&1 \
   || { echo "  FAIL  no config crashed"; fail=$((fail+1)); }
 
 echo
+
+# ── the SERVER probe ───────────────────────────────────────────────────────── 🔴 THESE EXIST BECAUSE THE BANNER REPORTED THE DATABASE AND WAS READ AS REPORTING THE SERVER. On 2026-09-02 `claude mcp list` said linksee had failed to connect while this hook printed healthy counts, because the counts come from the sqlite file -- which is readable whether or not the server is up. The load-bearing case is the third one: a REACHABLE and an UNREACHABLE server must produce visibly different output, or the probe is decoration.
+ctx_of() { python3 -c 'import sys,json; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])'; }
+ok_json='{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2024-11-05"}}'
+
+# ⚠️ THESE FOUR RUNS MUST PIN THE FIXTURE DB, and the reason is a real CI failure (2026-09-02 22:15 UTC). They originally ran `bash "$CHECK"` bare, so `LINKSEE_DB` fell back to its default `$HOME/.linksee-memory/memory.db` — present on this Mac, absent on the runner. The counts line is emitted only when that file is readable, so "the counts line is labelled as db-derived" asserted a string that simply does not exist in a fresh environment: green here, red on CI, for a reason having nothing to do with the behaviour under test. An assertion whose SUBJECT exists in only one environment is not testing what it says it is.
+up=$(MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_PROBE_CMD="printf '%s' '$ok_json'" bash "$CHECK" | ctx_of)
+case "$up" in *"linksee MCP: reachable"*) echo "  PASS  a server that answers initialize reports reachable"; pass=$((pass+1));;
+  *) echo "  FAIL  a server that answers initialize reports reachable"; fail=$((fail+1));; esac
+
+down=$(MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_PROBE_CMD="false" bash "$CHECK" | ctx_of)
+case "$down" in *"UNREACHABLE THIS SESSION"*) echo "  PASS  a server that does not answer reports UNREACHABLE"; pass=$((pass+1));;
+  *) echo "  FAIL  a server that does not answer reports UNREACHABLE"; fail=$((fail+1));; esac
+
+if [ "$up" != "$down" ]; then echo "  PASS  reachable and unreachable produce different output"; pass=$((pass+1));
+else echo "  FAIL  reachable and unreachable produce IDENTICAL output -- the probe is decoration"; fail=$((fail+1)); fi
+
+# The db counts must no longer be phrased as a claim about the server.
+case "$down" in *"linksee db:"*) echo "  PASS  the counts line is labelled as db-derived"; pass=$((pass+1));;
+  *) echo "  FAIL  the counts line is labelled as db-derived"; fail=$((fail+1));; esac
+
+# And the probe must be skippable, or every hook test pays 3s and CI pays it on every run.
+skip=$(MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_PROBE=0 bash "$CHECK" | ctx_of)
+case "$skip" in *"probe skipped"*) echo "  PASS  MCPCHECK_PROBE=0 skips the round-trip"; pass=$((pass+1));;
+  *) echo "  FAIL  MCPCHECK_PROBE=0 skips the round-trip"; fail=$((fail+1));; esac
+
 echo "  $pass passed, $fail failed"
 [ "$fail" -eq 0 ] || exit 1

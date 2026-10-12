@@ -41,6 +41,7 @@ async function handleColorsButton(interaction) {
         const UserPreference = require('../models/UserPreference');
         let prefs = await UserPreference.findOne({ discordId: targetUserId });
         if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
+        // Deliberately still settingsVisibility, NOT colorsVisibility -- this button lives ON the /settings panel itself, and its own detached-visibility item (docs/ROADMAP.md) explicitly keeps "View Colors" tied to settings visibility while giving the STANDALONE /colors command its own preference. Do not "fix" this to match commands/colors.js.
         const isEphemeral = (prefs.settingsVisibility || 'public').toUpperCase() !== 'PUBLIC';
 
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });

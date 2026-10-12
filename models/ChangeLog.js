@@ -13,6 +13,8 @@ const ChangeLogSchema = new mongoose.Schema({
     target: { type: String },      // human label of the specific thing changed (a draw title, a weapon+build, ...)
     summary: { type: String },     // one-line human summary, same wording the confirmation message showed
     detail: { type: String },      // optional longer detail (counts, warnings) -- truncated same as AlertLog's detail
+    // 🔴 WHICH FRONT DOOR THIS CHANGE CAME THROUGH. Added 2026-09-10 15:06 EDT: portal/ui/analytics.js read `row.source` for its SOURCE column and NOTHING HAS EVER WRITTEN IT, so the ternary fell through to DISCORD on every row and the column presented a discriminator that could not discriminate. Harkirat found it by adding a draw through the portal's own composer and watching both it and its reversal report DISCORD. ⚠️ NO DEFAULT, DELIBERATELY. Every row written before this has no value, and `undefined` is the honest reading for them -- the portal renders an em dash. A default of 'discord' would silently relabel the entire history as something nobody verified.
+    source: { type: String, enum: ['discord', 'portal'] },
     // Flipped true when a registered Undo (handlers/manage/shared.js's registerUndo) consumes and reverses the change this row recorded. Undo itself is not separately audited -- this flag is the extent of undo-awareness in scope (see the design spec's Out of scope section).
     undone: { type: Boolean, default: false },
     // The op that reverses this change, stored so revert works from EITHER surface and survives a restart. handlers/manage/shared.js's registerUndo() holds a closure in a router-private Map: it dies with the process and the web cannot see it. This does neither.

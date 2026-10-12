@@ -6904,7 +6904,7 @@ const MORPH_JS = `
  *
  * ⚠️ NO BACKTICKS INSIDE THE TEMPLATE LITERAL BELOW, NOT EVEN IN A COMMENT — a backtick terminates the string and fails the build with a SyntaxError pointing at prose. This constant hit it on its second build with four of them, all in comments quoting option names. Quote such things with " instead. (This JSDoc block is outside the literal, so it is free of the rule.) Same family as the no-regex rule MORPH_JS carries: what reads as documentation here is program text to the generator.
  *
- * ⚠️ NOTHING HERE IS A FIXED STRING — it COMPOSES each line. `SPECS` holds the sixteen commands, and a command with options renders differently every time it comes up: bare, or carrying a randomly chosen option, sometimes a second one. That is the point rather than a flourish — Harkirat asked for a page that does not look the same on two visits, so the variety has to be generated, not enumerated.
+ * ⚠️ NOTHING HERE IS A FIXED STRING — it COMPOSES each line. `SPECS` holds the FOURTEEN commands the animation offers, matching the `/commands` page exactly — ⚠️ it said *sixteen* until 2026-09-09 16:45 EDT, which is exactly the receipt-shaped comment that lets a reader stop counting; `/help` and `/draw calculator` are the two known to be missing and are a filed step-4 item, and a command with options renders differently every time it comes up: bare, or carrying a randomly chosen option, sometimes a second one. That is the point rather than a flourish — Harkirat asked for a page that does not look the same on two visits, so the variety has to be generated, not enumerated.
  *
  * ⚠️ EVERY COMMAND AND EVERY OPTION NAME IS REAL, VERIFIED AGAINST THE ACTUAL REGISTERED COMMAND SHAPE, NOT ASSUMED. `/gunsmiths search` (weapon lookup, MP-only) and `/gunsmiths list` (scope: 11 named choices — 7 categories, All MP builds, Meta MP, Meta DMZ, DMZ) replaced `/all` + 8 per-category commands in the 2026-08-15 consolidation (docs/superpowers/specs/2026-08-15-gunsmiths- command-consolidation-design.md). ⚠️ **HISTORICAL TRAP, NOW RETIRED:** this comment used to warn that `/ar`/`/smg`/etc. were real commands invisible to a `commands/*.js` grep (built dynamically in bot/registry.js). That trap is GONE — those commands no longer exist at all, dynamically or otherwise — do not resurrect them here on the strength of the old warning.
  *
@@ -6980,12 +6980,29 @@ const CMD_JS = `
     {c:'/timestamp',   o:'datetime', p:WHEN},
     {c:'/draws',       pairs:[['page','New Draws'],['page','Returning Draws']]},
     {c:'/draw prices', pairs:[['region','10 CP Region'],['region','30 CP Region']]},
+    /* ⚠️ ITS PAIRS ARE PICKED FOR THE CAP, NOT FOR VARIETY. render() gives a
+       spec room = MAXLEN - command.length - 1, so this 16-character command has
+       15 characters for an option name plus its value. The draw option (4) leaves
+       11, which every real DRAW_META name overruns, and region (6) plus its
+       '10 CP Region' value (12) is 18 and would be filtered out SILENTLY -- the
+       exact failure the cap comment above describes. pulls and balance are the
+       two that fit, and they are also the two a player actually types.
+       ⚠️ AND NO BACKTICKS IN HERE: CMD_JS is a template literal, so one inside a
+       comment closes it. An odd count is a parse error and an EVEN count renders
+       wrong while every gate stays green. Added 2026-09-09 16:50 EDT. */
+    {c:'/draw calculator', pairs:[['pulls','25'],['pulls','60'],['balance','1200']]},
     {c:'/calendar',    pairs:[['page','Draws'],['page','Events'],['page','Playlists & Modes'],
                               ['view','All Events'],['view','Active/Upcoming Only']]},
     {c:'/patch notes'},
     {c:'/season end'},
     {c:'/colors'},
-    {c:'/settings'}
+    {c:'/settings'},
+    /* The cmd option is a real autocomplete on /help and these are real command
+       names, so the line stays honest rather than decorative. */
+    {c:'/help', pairs:[['cmd','/gunsmiths'],['cmd','/calendar'],['cmd','/dmz']]},
+    /* Bare, like /colors and /settings: its only option is visibility, which no
+       spec here decorates with -- it says nothing about what the command does. */
+    {c:'/invite'}
   ];
 
   /* The line erases back to the slash and never past it, so the resting look

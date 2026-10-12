@@ -1,0 +1,34 @@
+{
+  "surface": "Analytics",
+  "note": "Registered while walking Analytics in Part 5 (2026-09-02). Every state here was reached by hand in a browser during that pass and is written down so the reaching is repeatable rather than remembered — the four interactive surfaces this Part ADDED are exactly the ones no instrument could see before it, because a div and a button with the same class are identical to a page diff until you press one. Each `expect` is a selector observed on the page after the steps ran, never guessed: a state that cannot name its own subject reports a clean result for the default view.",
+  "states": [
+    {
+      "name": "level row · scopes the river to that level",
+      "realm": "analytics",
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".lvlbars .lvlb",
+            "text": "caution"
+          }
+        }
+      ],
+      "expect": "#manifest .mt-grp button[aria-pressed=\"true\"]",
+      "note": "Since 2026-09-13 18:04 EDT the river lives in History (batch-2 spec §4): the level row hands its filter over and navigates, so the pressed chip this expects is on the History page the state lands on."
+    },
+    {
+      "name": "health tile · navigates to what answers it",
+      "realm": "analytics",
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".tiles .tile",
+            "text": "Memory"
+          }
+        }
+      ],
+      "expect": ".seg button[aria-selected=\"true\"]::-p-text(Timing)",
+      "note": "Rewritten 2026-09-14 18:54 EDT. This state clicked a tile labelled \"RAM at last alert\", which pin 37 (2026-09-06) renamed to \"Memory\"; the old silent no-op click did nothing, and its expect — ANY selected view tab — was already true on the default Health view, so the state passed for eleven days while proving nothing. Found the first run after steps began waiting for their target. The expect now names the tab the tile navigates to, which is false before the click."
+    }
+  ]
+}

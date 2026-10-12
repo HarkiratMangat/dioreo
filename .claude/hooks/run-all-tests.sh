@@ -87,8 +87,39 @@ for f in *.sh; do
   fi
 done
 
+echo
+echo "registration uniqueness — no hook command registered twice under the same event (added 2026-09-08 13:05 EDT, context-carriers plan)"
+echo "───────────────────────────────────"
+dup_found=0
+for SETTINGS_FILE in "../settings.json" "$HOME/.claude/settings.json"; do
+  [ -f "$SETTINGS_FILE" ] || continue
+  dups="$(python3 -c '
+import json, sys
+from collections import Counter
+d = json.load(open(sys.argv[1]))
+c = Counter()
+for event, groups in d.get("hooks", {}).items():
+    for g in groups:
+        for h in g.get("hooks", []):
+            cmd = h.get("command", "")
+            if cmd:
+                c[(event, cmd)] += 1
+for (event, cmd), n in c.items():
+    if n > 1:
+        print(f"{n}x [{event}] {cmd[:80]}")
+' "$SETTINGS_FILE" 2>/dev/null)"
+  if [ -n "$dups" ]; then
+    printf '  ✗ %s has duplicate registrations:\n' "$SETTINGS_FILE"
+    printf '%s\n' "$dups" | sed 's/^/      /'
+    dup_found=1
+  else
+    printf '  ✓ %s — no duplicate registrations\n' "$SETTINGS_FILE"
+  fi
+done
+
 rc=0
 [ "$fail" -gt 0 ] && rc=1
+[ "$dup_found" -eq 1 ] && rc=1
 if [ -n "$missing" ]; then
   echo
   echo "  A new hook shipped without a self-test:$missing"

@@ -1,0 +1,265 @@
+#!/usr/bin/env node
+// scripts/handoffCheck.mjs — THE HANDOFF, AS A COMMAND RATHER THAN A PROCEDURE TO REMEMBER.
+//
+// 🔴 WHY THIS EXISTS. `docs/reference/session-handoff-guide.md` is 400+ lines of correct procedure and it has been followed inconsistently for weeks — because reading it is a thing you must REMEMBER to do, at exactly the moment (80% context, work in flight) when remembering is hardest. Harkirat, 2026-08-31: *"so what do I tell the future session so it properly hands off to the following session?"*
+//
+// **The answer should be one word.** He says "hand off"; the session runs this; the script says what is missing. Anything he has to explain beyond that is a defect in this file, not in the session.
+//
+// ⚠️ WHAT IT CANNOT DO, SAID FIRST SO NOBODY READS A PASS AS A GUARANTEE. It cannot tell whether a DECISION was made this session — that is judgement, and no script has it. What it can do is put the question in front of you with the evidence attached: here are the commits that touched decision-bearing code, and here is whether the ledger grew. A green run means the CARRIERS are in order, never that the content is right.
+
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'node:module';
+
+// ⚠️ `require_` DID NOT EXIST AND NOTHING RAN THIS FILE. Added 2026-09-04 14:10 EDT — the previous edit wrote `require_('./lib/handoffPlans.cjs')` into an ESM module that had no `createRequire`, so `npm run handoff` threw `ReferenceError: require_ is not defined` at import. **`npm test` stayed green**: the resolver has a self-test, and the SCRIPT had nothing that so much as imported it — a gate for the function beside no gate for the program. The self-test imports this module now.
+const require_ = createRequire(import.meta.url);
+
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const sh = (c) => { try { return execSync(c, { cwd: ROOT, encoding: 'utf8' }).trim(); } catch { return ''; } };
+const read = (p) => { try { return fs.readFileSync(path.join(ROOT, p), 'utf8'); } catch { return null; } };
+
+const LEDGER = 'docs/reference/portal-decision-ledger.md';
+
+// 🔴 THE LIVE PLAN COMES FROM SESSION-START, WHICH IS THE ONLY FILE THAT DECIDES WHAT GOVERNS NOW.
+//
+// Two earlier versions of this were both wrong, and the second wrongness is the interesting one. First it HARDCODED a dated filename that this repo's taxonomy expects to be superseded — caught by the second audit. Then it globbed for `kind: plan` + `status: live` and took the newest — and that is wrong by DESIGN, not by edge case: **there are legitimately TWO live plans right now** (the conformance plan governs realm work, the remediation plan governs the fixes), so "the live plan" was never a singular thing and a glob silently picked one. With zero live plans it would have thrown on path.basename(null).
+//
+// SESSION-START's FIRST ACTION is the one place that states what a session should read first. Derive from it, and if it names nothing, say so loudly rather than guess — a wrong guess here silently validates a pointer chain that leads somewhere else. 🔴 ALL OF THEM, NOT THE FIRST ONE — corrected 2026-09-04 14:02 EDT. The comment above has said since it was written that there are legitimately TWO live plans, and this function then returned `match()` — the FIRST path in the file. SESSION-START names the remediation plan first and the conformance work second, so the singular answer was always the remediation plan, and the `.remember` check below dutifully demanded that a session working realms name a plan about working MECHANISMS. That is how "which plan governs?" came to be recorded as an open question in `.remember` and in `docs/db-deferred-list.md` while THREE primary sources already answered it: the remediation plan's own "the conformance plan is NOT superseded", SESSION-START's 2026-09-01 amendment ("if you were handed a realm prompt, that prompt is your first action and this line is not"), and this very comment. A function contradicting the comment directly above it is the receipt class this repo keeps finding.
+const { plansNamedIn } = require_('./lib/handoffPlans.cjs');
+const { coverageDirective, coverageGaps, hasPassRecord, looksLikeASummary } = require_('./lib/handoffCoverage.cjs');
+
+// ⚠️ CONST DECLARATIONS MOVED ABOVE `livePlans()` ON PURPOSE (2026-09-08 18:17 EDT) -- the same TDZ class the comment below already warns about. `livePlans()` now reads BOTH files: as of a 2026-09-07 SESSION-START redesign (which the WP3 rewrite of this file, done the same day as this fix, preserved rather than caused), SESSION-START.md deliberately carries NO plan pointer any more -- that job moved to `.remember/remember.md`'s auto-injected LAST HANDOFF block. This function's comment below still said "SESSION-START is the ONLY file that decides what governs now", which was already false by the time this was found: the exact "comment contradicts the code" receipt class this file's own header says it has caught twice before, caught a third time by actually running the check rather than trusting it.
+const REMEMBER = '.remember/remember.md';
+const START = 'docs/SESSION-START.md';
+function livePlans() {
+    return plansNamedIn((read(START) || '') + '\n' + (read(REMEMBER) || ''));
+}
+const PLANS = livePlans();
+const PLAN = PLANS[0] || null;   // kept for the messages that name ONE path
+
+let bad = 0, warn = 0;
+const fail = (m, fix) => { bad++; console.log(`\n  ❌ ${m}\n     → ${fix}`); };
+const soft = (m, fix) => { warn++; console.log(`\n  ⚠️  ${m}\n     → ${fix}`); };
+const ok = (m) => console.log(`  ✅ ${m}`);
+
+console.log('\nhandoff check — a handoff is THREE APPENDS and ONE SHORT REWRITE\n');
+
+// ── 1. THE DURABLE CHAIN. This is the finding that scored the 2026-08-31 package 6/10: everything
+//    hung off .remember, which is gitignored and rewritten wholesale. If the tracked files do not
+//    name the live plan, losing one untracked file strands the work.
+const start = read(START) || '';
+if (!PLANS.length) fail('neither SESSION-START nor .remember names a plan at all — there is no first action',
+    `add the governing plan's path to ${REMEMBER} (SESSION-START deliberately carries none since 2026-09-07 -- session-specific state belongs in .remember, not the tracked file).`);
+else ok(`${PLANS.length} live plan(s) named (SESSION-START and/or .remember): ${PLANS.map((f) => path.basename(f)).join(' · ')}`);
+for (const [f, label] of [[LEDGER, 'the decision ledger']]) {
+    if (start.includes(path.basename(f)) || start.includes(f)) ok(`SESSION-START names ${label}`);
+    else fail(`SESSION-START does NOT name ${label} — the pointer chain runs through .remember alone`,
+        `add a line to ${START}. It is TRACKED and hook-injected; .remember is neither.`);
+}
+const claude = read('CLAUDE.md') || '';
+if (claude.includes(path.basename(LEDGER))) ok('CLAUDE.md names the decision ledger');
+else soft('CLAUDE.md does not name the ledger', 'add a row to its docs table — a second tracked pointer.');
+
+// ── 2. .remember IS A POINTER. Authoring a long one means the durable carriers are missing something.
+const rem = read(REMEMBER);
+if (rem === null) fail('.remember/remember.md is missing', 'write a short pointer, not an essay.');
+else {
+    const kb = Buffer.byteLength(rem) / 1024;
+    if (kb > 6) soft(`.remember is ${kb.toFixed(1)}KB — that is an essay, not a pointer`,
+        'move the facts into the ledger or the deferred list. A fact worth a paragraph there belongs in a tracked file.');
+    else ok(`.remember is ${kb.toFixed(1)}KB — pointer-sized`);
+    // ⚠️ ANY of the live plans, not a specific one. Demanding a named file here is what told three sessions to point `.remember` at the plan they were not working from.
+    const named = PLANS.filter((f) => rem.includes(path.basename(f)));
+    if (!named.length) fail('.remember names none of the live plans', `point at one of: ${PLANS.join(' · ')}.`);
+    else ok(`.remember names ${named.map((f) => path.basename(f)).join(' · ')}`);
+}
+
+// ── 3. THE THREE APPENDS. Did the carriers actually grow, and does the ledger cover what changed? ⚠️ THE WINDOW IS A GUESS AND IT SAYS SO. There is no reliable session boundary in git: `.remember` is gitignored, so its rewrites leave no history to anchor to. A fixed lookback can BOTH pass falsely (an unrelated ledger edit from a previous session sits inside it) and fail falsely (a long session pushes a correct early append outside it). The second audit called this broken by construction; it is, and the honest fix is to PRINT the window rather than imply precision. `--since <ref>` overrides it. ── A COMMIT HASH TYPED INTO A HANDOFF IS WRONG BY THE NEXT COMMIT (added 2026-09-07 01:55 EDT) ──────── WHY: on 2026-09-06/07 a single handoff pair carried THREE different values for HEAD, in the file whose own state block calls the head "the one number that goes stale by itself". A fresh-reader test found it as a blocker: a session running the prescribed `git log -1` gets one hash and two answers about what it means. Typing a hash is the defect; this makes typing a WRONG one loud. ⚠️ IT CHECKS SHAPE, NOT INTENT. A hash that names a real ancestor is fine — a handoff legitimately cites the commit a measurement was taken on. What cannot be right is a hash that is not in this branch's history at all, or a line CLAIMING to be the head while naming something else.
+const HEADSHA = sh('git log -1 --format=%h');
+for (const doc of ['docs/superpowers/plans/OWED-PROMPT.md', START]) {
+    const body = read(doc);
+    if (!body) continue;
+    const claims = [...body.matchAll(/HEAD[^\n]*?`([0-9a-f]{7,40})`|`([0-9a-f]{7,40})`[^\n]*?\bis HEAD\b/gi)]
+        .map((m) => m[1] || m[2]).filter(Boolean);
+    const wrong = [...new Set(claims)].filter((h) => !h.startsWith(HEADSHA) && !HEADSHA.startsWith(h));
+    if (wrong.length) {
+        fail(`${doc} claims HEAD is ${wrong.join(', ')} — git says ${HEADSHA}`,
+            'derive it in the write (git log -1 --format=%h) rather than typing it, and keep ONE such line per document.');
+    } else if (claims.length) {
+        ok(`${doc} names HEAD as ${HEADSHA}, and git agrees`);
+    }
+}
+
+const sinceArg = process.argv.includes('--since') ? process.argv[process.argv.indexOf('--since') + 1] : null;
+const hist = sh('git log --oneline -40 --format=%H').split('\n').filter(Boolean);
+const base = sinceArg || hist[Math.min(hist.length - 1, 19)] || 'HEAD~1';
+console.log(`  ℹ️  window: ${base.slice(0, 9)}..HEAD (${sh(`git rev-list --count ${base}..HEAD`) || '?'} commits)`
+    + `${sinceArg ? '' : ' — a GUESS, not the session boundary. Pass --since <ref> if it is wrong.'}`);
+const touched = sh(`git diff --name-only ${base}..HEAD`).split('\n').filter(Boolean);
+const codeTouched = touched.filter((f) => f.startsWith('portal/ui/') || f.startsWith('core/') || f.startsWith('scripts/portal'));
+const ledgerGrew = touched.includes(LEDGER);
+const listGrew = touched.includes('docs/db-deferred-list.md');
+const logGrew = touched.includes('docs/CHANGELOG.md');
+
+if (codeTouched.length && !ledgerGrew) {
+    console.log('\n  ══════════════════════════════════════════════════════════════════════');
+    console.log('  🔴 THE ONE QUESTION THIS SCRIPT CANNOT ANSWER, AND THE MOST DANGEROUS ONE');
+    console.log('  ══════════════════════════════════════════════════════════════════════');
+    soft(`${codeTouched.length} decision-bearing file(s) changed and the ledger did NOT grow`,
+        `a script cannot tell whether you DECIDED anything — you can. If any of these was a judgement call, append a row to ${LEDGER}:\n        ${codeTouched.slice(0, 6).join('\n        ')}`);
+} else if (ledgerGrew) ok('the decision ledger grew');
+else ok('no decision-bearing code changed');
+
+if (!listGrew) soft('docs/db-deferred-list.md did not change',
+    'if anything is left open, unfinished, or newly discovered, it goes there — a limitation that lives only in a chat message is indistinguishable from one nobody noticed.');
+else ok('the deferred list grew');
+
+if (codeTouched.length && !logGrew) soft('code changed and the changelog did not',
+    'append a ### to the open entry. Do NOT mint a new version.');
+else if (logGrew) ok('the changelog grew');
+
+// ── 3b. 🔴 THE HANDOFF AGAINST ITS OWN SOURCE, AND AGAINST ITS OWN PASS.
+//    Added 2026-09-10 13:17 EDT after a handoff shipped with one of the 36 items it organises in NEITHER
+//    carrier, another in no worklist, and three counted twice — while every check here was green. The
+//    carriers were in order; the CONTENT was not, and nothing looked. Harkirat: *"is your check of the
+//    handoff mechanical or actually thoughtful?"* It was mechanical, and these two are what mechanical
+//    can honestly cover so that thoughtful is spent on what it cannot.
+const handoffPaths = [...new Set((rem || '').match(/local\/handoff\/[\w.\-]+\.md/g) || [])];
+if (!handoffPaths.length) soft('.remember names no handoff file',
+    'a handoff nothing points at is a handoff nobody opens — name it in .remember, or say plainly that this session produced none.');
+// ⚠️ DATED FLOOR, the same carve-out `docs-audit`'s plan-audit-log makes. The 109 handoffs written before this convention existed are not defective for lacking it, and failing them would only teach the next reader that the check lies.
+const HANDOFF_AUDIT_FROM = '2026-09-10';
+for (const hp of handoffPaths) {
+    const dated = /(\d{4}-\d{2}-\d{2})/.exec(path.basename(hp));
+    if (dated && dated[1] < HANDOFF_AUDIT_FROM) { ok(`${path.basename(hp)} predates the audit-log floor — exempt`); continue; }
+    const doc = read(hp);
+    if (doc === null) { fail(`${hp} is named in .remember and does not exist`, 'fix the pointer or write the file.'); continue; }
+
+    // (a) Did a pass run OVER THE FINISHED ARTIFACT? Same argument as docs-audit's plan-audit-log.
+    if (!hasPassRecord(doc)) fail(`${hp} records no pass over itself`,
+        'add a `## Audit log` section saying what a falsification pass over the FINISHED handoff found — "no gaps found" is a legitimate entry. A handoff with none is one nobody tried to break, and that is invisible to the next session.');
+    else ok(`${path.basename(hp)} records its own audit pass`);
+
+    // (b) Does it conserve the list it summarises?
+    const dir = coverageDirective(doc);
+    // 🔴 THE "declares no source list" ADVISORY IS DELETED, AND THE MEASUREMENT IS WHY. It fired on
+    //    every handoff without a directive — and across all 109 in `local/handoff/`, **zero** name five
+    //    or more id-bearing items, so the round-2 handoff is the first in this project's history to
+    //    summarise a list at all. An advisory with a 1-in-109 hit rate is noise, and noise is how a
+    //    check stops being read. The guide tells you to add a directive when you summarise something;
+    //    this stays silent until one exists, and does real arithmetic once it does.
+    if (!dir) {
+        // Conditional, not universal — see looksLikeASummary's own note for the measurement that earned this back after I deleted it and left the check unable to fire.
+        if (looksLikeASummary(doc)) soft(`${path.basename(hp)} looks like it summarises a list and declares no source`,
+            'add one line so the arithmetic runs instead of your eyes:\n        <!-- coverage: <path> · <regex with one capture group> -->\n        Pointed at the previous session\'s handoff, this check named the exact pin its table had dropped.');
+    } else {
+        const src = read(dir.source);
+        if (src === null) fail(`${path.basename(hp)} declares a coverage source that does not exist: ${dir.source}`, 'fix the path.');
+        else {
+            const { ids, missing, vacuous, badPattern } = coverageGaps(src, dir.pattern, [doc, read('docs/db-deferred-list.md')]);
+            if (badPattern) fail(`${path.basename(hp)}'s coverage pattern is not a valid regex`, `pattern: ${dir.pattern}`);
+            else if (vacuous) fail(`${path.basename(hp)}'s coverage pattern matched ZERO ids in ${dir.source}`,
+                'a pattern that matches nothing reports full coverage forever. Fix the pattern — this is the vacuous pass, not a clean one.');
+            else if (missing.length) fail(`${missing.length} of ${ids.length} item(s) from ${dir.source} appear in NEITHER the handoff nor the deferred list`,
+                `they are: ${missing.join(', ')}`);
+            else ok(`all ${ids.length} items from ${path.basename(dir.source)} reach a carrier`);
+        }
+    }
+}
+
+// ── 3e. WHAT THIS SESSION LEFT IN `local/`, SHOWN RATHER THAN JUDGED. Added 2026-09-16 00:00 EDT.
+//    🔴 WHY. `local/` reached **253 markdown files** — plans, audits, a failure inventory, measured
+//    baselines, a 115KB spec variant, and the portal pin log the batch-2 plan cited BY PATH — because
+//    nothing else existed. The promotion rule was already written (this guide, §71 and §123: "if the
+//    pivot is bigger than the session, it does not belong only in a handoff"), and it had never once
+//    fired. 253 files is what a rule with no trigger produces.
+//    ⚠️ AND IT DELIBERATELY DOES NOT JUDGE, because Harkirat corrected the first version of this idea:
+//    *"a local/ file can be referenced while still practically being left in local/. It doesn't always
+//    mean that it should be moved out into a tracked folder. Sometimes the content is honestly short
+//    lived or not worth being tracked."* So this prints the candidates and the test; you decide. The
+//    same shape as 3c, for the same reason — a gate here would promote scratch and bury the signal.
+//    ⚠️ `touched` above is `git diff --name-only`, which is TRACKED-ONLY and therefore structurally
+//    blind to `local/`. That blindness is exactly how this went unnoticed, so this uses mtime instead.
+{
+    const baseISO = sh(`git log -1 --format=%cI ${base}`);
+    const cutoff = baseISO ? new Date(baseISO).getTime() : 0;
+    const localDocs = sh("find local -name '*.md' -not -path '*/.*' 2>/dev/null").split('\n').filter(Boolean);
+    const fresh = localDocs.filter((f) => { try { return fs.statSync(path.join(ROOT, f)).mtimeMs > cutoff; } catch { return false; } });
+    if (!fresh.length) ok('no local/ documents written in this window');
+    else {
+        // A tracked doc citing an untracked path is the one case with a REAL defect: a fresh clone cannot resolve it. Even then the fix is two-way, which is the whole of his correction.
+        const cited = fresh.filter((f) => sh(`git grep -l -F -- "${f}" -- docs CLAUDE.md scripts 2>/dev/null`).length > 0);
+        console.log(`\n  ℹ️  ${fresh.length} local/ document(s) written this window — promote to docs/claude/ or docs/portal/, or leave:`);
+        for (const f of fresh.slice(0, 12)) console.log(`        ${cited.includes(f) ? '📌 cited' : '·       '} ${f}`);
+        if (fresh.length > 12) console.log(`        … and ${fresh.length - 12} more`);
+        console.log('     → PROMOTE only when BOTH hold: losing it would cost real work to re-derive, AND');
+        console.log('       someone outside this session needs it. Short-lived working notes stay in local/.');
+        if (cited.length) soft(`${cited.length} of them are CITED by a tracked file while living in local/`,
+            'a tracked doc pointing at an untracked path is unresolvable in a fresh clone — and it has TWO valid fixes.\n'
+            + '       Promote the file, OR delete the citation. Pick by the test above, never by the warning itself.');
+        else ok('none of them is cited by a tracked file');
+    }
+}
+
+// ── 3c. THE RECORD LAYERS, SHOWN RATHER THAN JUDGED. Not every session earns a DEVLOG entry and a gate
+//    that demanded one would only produce filler — so this PRINTS the row and lets you decide, which is
+//    the difference between a layer you skipped and a layer you never thought about. Three were skipped
+//    on 2026-09-10 while a document about discipline was being written.
+const layers = [['CHANGELOG', 'docs/CHANGELOG.md'], ['DEVLOG', 'docs/DEVLOG.md'],
+                ['deferred list', 'docs/db-deferred-list.md'], ['decision ledger', LEDGER]];
+console.log('  ℹ️  record layers this window: '
+    + layers.map(([n, f]) => `${touched.includes(f) ? '✓' : '·'} ${n}`).join('  '));
+
+// ── 3d. THE NOTES FILE, AT THE MOMENT IT CAN STILL BE ACTED ON. A SessionStart hook flags it at the
+//    START of every session and nothing flags it at the END — which is the last point a session can
+//    discharge it. Four consecutive sessions were flagged and did nothing.
+const notes = read('docs/ideas/diors-notes.md');
+if (notes) {
+    // ⚠️ TWO COUNTS OF ONE THING, AND THEY DISAGREE ON PURPOSE. This counts EVERY unchecked box in the file; the SessionStart hook counts only those inside its working sections, so it reports one fewer. Neither is wrong — they measure different sets — but an unexplained 8-vs-9 is the duplicated-state defect this repo keeps removing, so the message below says which set it is.
+    const openItems = (notes.match(/^\s*-\s*\[ \]/gm) || []).length;
+    if (openItems && !touched.includes('docs/ideas/diors-notes.md')) {
+        soft(`docs/ideas/diors-notes.md has ${openItems} unchecked box(es) file-wide and was not touched this window`,
+            'this is the LAST moment this session can act on it. Answer or mark them, or state in the handoff that they are deliberately untouched and why — working-agreement rule 7.');
+    } else if (openItems) ok(`the notes file was touched (${openItems} still open)`);
+    else ok('the notes file has no open items');
+}
+
+// ── 4. 🔴 IS THE CODE ACTUALLY GREEN? The second audit's headline: this script reported full green while
+//    `npm test` was RED on a file the same round of work had just created, and `docs:audit` carried an
+//    unaccounted second error. **It verified the documentation plumbing while being structurally blind to
+//    the thing plumbing exists to protect.** The fast gates run here; the full suite is named, not run.
+for (const [cmd, label] of [['npm run docs:audit', 'docs:audit'],
+                            ['node scripts/reflow-prose.mjs --check', 'prose reflow'],
+                            ['node scripts/reflow-comments.mjs --check', 'comment reflow']]) {
+    let code = 0;
+    try { execSync(cmd, { cwd: ROOT, stdio: 'pipe' }); } catch (e) { code = e.status ?? 1; }
+    // docs:audit exits 1 on the single expected (#PR) placeholder while the branch has no PR. Anything ELSE failing is a real finding, so the count is read rather than the exit code alone.
+    if (label === 'docs:audit') {
+        let out = ''; try { out = execSync(cmd + ' 2>&1 || true', { cwd: ROOT, encoding: 'utf8' }); } catch { /* captured below */ }
+        const m = /fail CI \((\d+)\)/.exec(out);
+        const n = m ? Number(m[1]) : (code ? -1 : 0);
+        if (n > 1) fail(`docs:audit reports ${n} errors — more than the one expected (#PR) placeholder`,
+            'read them. The plan\'s Task 11 expects exactly 1; anything more is unaccounted for.');
+        else if (n < 0) fail('docs:audit failed and its error count could not be read', 'run it directly.');
+        else ok(`docs:audit at its expected baseline (${n} error)`);
+    } else if (code) fail(`${label} FAILS`, `run the command and fix it — it is a blocking gate in npm test, so the suite is RED right now.`);
+    else ok(`${label} clean`);
+}
+console.log('     ⚠️  `npm test` itself is NOT run here. Run it and read its EXIT CODE: it reports every failing entry, and');
+console.log('        locally it skips entries whose inputs are unchanged — TEST_CACHE=0 when the answer must be a real run.');
+
+// ── 5. NOTHING UNCOMMITTED. Work in flight does not survive a compact.
+const dirty = sh('git status --porcelain').split('\n').filter(Boolean);
+if (dirty.length) fail(`${dirty.length} uncommitted change(s)`, 'commit them — a compact does not preserve a dirty tree.');
+else ok('working tree clean');
+
+// ── 5. VERIFICATION IS A CLAIM ABOUT A COMMIT. Say when it was last true, never that it IS true.
+console.log(`\n  ℹ️  HEAD is ${sh('git rev-parse --short HEAD')} · ${sh('git rev-list --count origin/v3-pre-release..HEAD 2>/dev/null') || '?'} commit(s) ahead of v3-pre-release`);
+console.log('     ⚠️  This script does NOT run the suites. State when they last passed and on WHICH commit —');
+console.log('        a green remembered from three commits ago is a claim about a tree that no longer exists.');
+
+console.log(`\n${bad ? '❌' : '✅'} ${bad} blocking · ${warn} advisory`);
+console.log('   ⚠️  A pass means the CARRIERS are in order. It says nothing about whether what you wrote is RIGHT.');
+process.exit(bad ? 1 : 0);

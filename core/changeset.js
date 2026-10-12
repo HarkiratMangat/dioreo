@@ -3,6 +3,7 @@
 // A changeset is N ops that commit together or not at all.
 //
 // ⚠️ ALL-OR-NOTHING IS NOT A NICETY. The bot re-reads SeasonalData on every single interaction (commands/draws.js, calendar.js, patchnotes.js all call findOne(...).lean() per interaction), so a half-applied set is served to real users within seconds. That is why this uses a real Mongo transaction and not a best-effort loop.
+const ChangeLog = require('../models/ChangeLog');
 const mongoose = require('mongoose');
 const { resolveOp, actionForOpType, pageForOpType } = require('./ops');
 const { recordChangeIn } = require('../utils/changeStore');
@@ -43,11 +44,13 @@ async function previewSet(ops, live) {
     return Promise.all(ops.map(async (op, index) => {
         const impl = resolveOp(op.type);
         const v = impl.validate(op);
-        return { index, ...(await impl.preview(v.normalized || op, live)) };
+        // 🔴 THE SAME `||` BUG validateSet ABOVE ALREADY FIXED, ONE FUNCTION LOWER AND STILL LIVE. Most entities' validate() returns ONLY `{ payload: {...} }` in `normalized` — the long comment on validateSet says so and merges with `{...op, ...r.normalized}` for exactly that reason. This re-ran validate() itself and passed the BARE result to preview(), so `op.target` was undefined and draw.edit's preview threw on `op.target.category` before it read anything. Found 2026-08-26 by the first automated route test: /api/review still answered 200 because it catches preview failures, so every staged draw.edit had been showing an EMPTY DIFF on the review screen — the one screen whose whole job is showing what is about to change. A fix that lands in one function and not its neighbour is how a defect survives being fixed.
+        return { index, ...(await impl.preview(v.normalized ? { ...op, ...v.normalized } : op, live)) };
     }));
 }
 
-async function commitSet(ops, { actorId }) {
+// ⚠️ `source` DEFAULTS TO 'discord' BECAUSE EVERY EXISTING CALLER IS ONE -- handlers/manage/* and core/revert.js reached from /bot. The portal passes 'portal' explicitly (portal/api/changesets.js). A new non-Discord caller that forgets will be mislabelled, which is why the portal's own path is asserted in scripts/portalApi.test.js rather than left to prose.
+async function commitSet(ops, { actorId, source = 'discord' }) {
     // 🔴 FLATTEN BEFORE VALIDATING, not just before applying. A single-element `ops` array whose one element is ITSELF an array (any op's invert() may return an array -- draw.bulkDelete/purge and loadout.bulkAdd/bulkReplace all do) used to reach validateSet un-flattened: resolveOp(op.type) on an array has op.type === undefined, throws "unknown op type", and commitSet returned {ok:false} before the apply loop's own .flat() call ever ran -- so reverting any of those ops always failed. Found by the plan-1-range code review, confirmed by tracing revertChange's `commitSet([row.inverse], ...)` call against those invert() shapes.
     const v = validateSet(ops.flat());
     if (!v.ok) return { ok: false, failures: v.failures };
@@ -58,10 +61,13 @@ async function commitSet(ops, { actorId }) {
     // 🔴 SURFACED FOR CALLERS, not just for the audit log. A bulk op's apply() can carry warnings a handler needs to show the user (skipped items, reused thumbnails) — recordChangeIn already stores res.change.detail, but a Discord confirmation message needs res.applied directly, and nothing was returning it. Found during plan 1 Task 6 integration.
     let results = [];
     let failedAt = null;
+    // 🔴 SIDE EFFECTS OUTSIDE MONGO RUN AFTER THE COMMIT, NEVER INSIDE IT (pins batch 2 pre-push pass, 2026-09-15 09:43 EDT). A Cloudinary upload made inside withTransaction is not rolled back when a later op fails, so loadout.edit replaced a live image while its edit was discarded. apply() may return `afterCommit`; the list is reset on every retried attempt, like changeIds.
+    let afterCommit = [];
     try {
         await session.withTransaction(async () => {
             changeIds = [];
             results = [];
+            afterCommit = [];
             // invert() may return an ARRAY, so an inverse changeset is flattened before applying (the ops.flat() above already covers the outer `ops` array itself; this covers a normalized entry still nested one level).
             for (const [index, op] of v.normalized.flat().entries()) {
                 const impl = resolveOp(op.type);
@@ -69,17 +75,29 @@ async function commitSet(ops, { actorId }) {
                 if (!res.ok) { failedAt = { index, reason: res.reason }; throw new Error(`op ${index} failed: ${res.reason}`); }
                 // apply() is the ONLY writer and it ALWAYS audits — the caller cannot opt out. 🔴 `page` is DERIVED FROM THE OP TYPE, never hardcoded. An earlier draft wrote `page: 'draws'` here, which would have stamped every calendar, loadout, patchnote, season and announcement row as `draws` the moment plan 2 lands — breaking getRecentChanges({filterPage}) in /bot analytics AND core/revert.js's ON_CORE.has(row.page) branch, which is the whole mechanism this design added.
                 const row = await recordChangeIn(session, {
-                    ...res.change, actorId, page: pageForOp(op),
+                    ...res.change, actorId, source, page: pageForOp(op),
                     inverse: impl.invert({ ...res.change, applied: res.applied })
                 });
                 changeIds.push(row.changeId);
                 results.push({ index, change: res.change, applied: res.applied });
+                if (typeof res.afterCommit === 'function') afterCommit.push({ at: results.length - 1, changeId: row.changeId, run: res.afterCommit });
             }
         });
     } catch (e) {
         return { ok: false, failedAt, error: e.message };
     } finally {
         await session.endSession();
+    }
+    // The commit has already happened, so nothing here may turn it into a reported failure: a step's message is appended to its audit row (History shows it) and to its result.
+    for (const job of afterCommit) {
+        let detail = null;
+        try { detail = await job.run(); } catch (e) { detail = `A post-commit step failed: ${e && e.message}`; }
+        if (!detail) continue;
+        results[job.at].postCommitDetail = detail;
+        try {
+            const row = await ChangeLog.findOne({ changeId: job.changeId }).lean();
+            await ChangeLog.updateOne({ changeId: job.changeId }, { $set: { detail: [row && row.detail, detail].filter(Boolean).join(' ') } });
+        } catch (e) { console.error(`Could not record a post-commit message on ${job.changeId}: ${e && e.message}`); }
     }
     return { ok: true, changeIds, results };
 }

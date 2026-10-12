@@ -43,7 +43,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -109,7 +109,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -224,7 +224,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -330,7 +330,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -436,7 +436,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -476,7 +476,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -542,7 +542,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -648,7 +648,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -716,7 +716,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -782,7 +782,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -861,7 +861,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -927,7 +927,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1042,7 +1042,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1148,7 +1148,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1254,7 +1254,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1294,7 +1294,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -1360,7 +1360,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1484,7 +1484,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1552,7 +1552,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -1618,7 +1618,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1697,7 +1697,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -1763,7 +1763,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -1889,7 +1889,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2006,7 +2006,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2123,7 +2123,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2174,7 +2174,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -2240,7 +2240,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2375,7 +2375,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2501,7 +2501,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2663,7 +2663,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -2729,7 +2729,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2855,7 +2855,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -2972,7 +2972,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -3089,7 +3089,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -3140,7 +3140,7 @@
         },
         {
           "type": 10,
-          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
+          "content": "### `/colors`\nView the colors extracted from your Discord profile and pick which one accents your panels\n-# **Options**\n-# 🔹 `[page]` Jump directly to Avatar, Banner, Name, Nameplate, or Deco\n-# 🔹 `[source]` Read from your main profile, or your profile for this server\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/timestamp`\nConvert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone's own timezone\n-# **Options**\n-# 🔹 `<datetime>` e.g. \"tomorrow\", \"in 2 hours\", \"dec 25 at 9am\", \"19:30\", \"next monday\"\n-# 🔹 `[timezone]` Defaults to your saved `/settings` timezone\n-# 🔹 `[style]` Pick one format, or leave blank for all formats\n-# 🔹 `[view]` Embed or plain Text, one-off only\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/invite`\nGet a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord\n-# **Options**\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/colors** page:`Nameplate` source:`From Server Profile`\n-# 🔸 **/timestamp** datetime:`this saturday 7pm` timezone:`Pacific Time`\n-# 🔸 **/timestamp** datetime:`august 20` style:`Short Date (d)`\n-# 🔸 **/timestamp** datetime:`in 45 minutes` view:`Text`"
         },
         {
           "type": 14,
@@ -3206,7 +3206,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -3323,7 +3323,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",
@@ -3449,7 +3449,7 @@
                 {
                   "label": "Utilities",
                   "value": "utilities",
-                  "description": "Timestamp & profile color tools",
+                  "description": "Timestamp, profile color tools & sharing Dioreo",
                   "emoji": {
                     "animated": true,
                     "name": "Eyedropper",

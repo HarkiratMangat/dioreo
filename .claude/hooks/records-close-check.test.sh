@@ -22,9 +22,9 @@ mkrepo() {
     printf '## Questions\n## 📍 pointer\n' > "$d/docs/ideas/diors-notes.md"
   fi
   echo seed > "$d/docs/other.md"; echo seed > "$d/.claude/hooks/thing.sh"
-  git -C "$d" add -A; git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m init
+  # No `sleep 1` (removed 2026-09-14 18:22 EDT): the branch point is committed 100 s in the past instead, so a memory file written now is strictly newer than it. The hook compares a file mtime against the branch point's commit time in whole seconds, which is all the sleep ever bought — at one second per fixture, eight times.
+  git -C "$d" add -A; GIT_COMMITTER_DATE="@$(( $(date +%s) - 100 )) +0000" git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m init
   git -C "$d" checkout --quiet -b feat
-  sleep 1
   echo changed >> "$d/$3"
   git -C "$d" add -A; git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m change
   # Memory files are created AFTER the branch commit so their mtime is later than the branch point.
@@ -57,8 +57,8 @@ a "no open notes -> silent"          "(7) NOTES FILE" no  "$NO_OPEN"
 mkdir -p "$TMP/n4/docs/ideas"; git -C "$TMP/n4" init --quiet -b main 2>/dev/null
 printf '## Questions\n- [ ] a checkbox open item\n## 📍 pointer\n' > "$TMP/n4/docs/ideas/diors-notes.md"
 mkdir -p "$TMP/n4/.claude/hooks"; echo seed > "$TMP/n4/docs/other.md"; echo seed > "$TMP/n4/.claude/hooks/thing.sh"
-git -C "$TMP/n4" add -A; git -C "$TMP/n4" -c user.email=t@t -c user.name=t commit --quiet -m init
-git -C "$TMP/n4" checkout --quiet -b feat; sleep 1
+git -C "$TMP/n4" add -A; GIT_COMMITTER_DATE="@$(( $(date +%s) - 100 )) +0000" git -C "$TMP/n4" -c user.email=t@t -c user.name=t commit --quiet -m init
+git -C "$TMP/n4" checkout --quiet -b feat
 echo changed >> "$TMP/n4/docs/other.md"
 git -C "$TMP/n4" add -A; git -C "$TMP/n4" -c user.email=t@t -c user.name=t commit --quiet -m change
 mkdir -p "$TMP/n4-home/$MEMREL"; echo m > "$TMP/n4-home/$MEMREL/a_memory.md"

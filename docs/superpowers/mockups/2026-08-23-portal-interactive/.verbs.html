@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8"><title>verb census</title>
+<style>body{font:13px ui-monospace,monospace;background:#0B0D0E;color:#E8ECEF;padding:16px}
+pre{white-space:pre-wrap}b{color:#F2C230}.bad{color:#E5484D}.ok{color:#3DD68C}</style>
+<pre id="out">running…</pre>
+<script>
+const PAGES=['index','season','armory','broadcast','access','review','analytics','door'];
+const out=document.getElementById('out');
+const lines=[];
+// FALSIFIER: a page that certainly contains "delete" must report it. We plant one.
+function census(doc){
+  const txt=(doc.body.innerText||'').toLowerCase();
+  const n=(re)=>((txt.match(re)||[]).length);
+  const q=(s)=>doc.querySelectorAll(s).length;
+  return {
+    del:n(/\bdelete\b/g), rem:n(/\bremove\b/g), purge:n(/\bpurge\b/g),
+    disc:n(/\bdiscard\b/g), exp:n(/\bexport\b/g), dl:n(/\bdownload\b/g),
+    cb:q('.cb,input[type=checkbox]'),
+    selbar:q('.selbar,.bulkbar,.sel-actions,[data-selbar]'),
+    danger:q('.danger,.btn-danger,.pill.danger'),
+    rows:q('tbody tr'),
+    cards:q('.card,.att-row,.bgrp')
+  };
+}
+(async()=>{
+  for(const p of PAGES){
+    const f=document.createElement('iframe');
+    f.style.cssText='width:1280px;height:900px;position:fixed;left:-4000px;top:0;border:0';
+    f.src=p+'.html'; document.body.appendChild(f);
+    await new Promise(r=>{f.onload=()=>setTimeout(r,900);});
+    let c; try{ c=census(f.contentDocument); }catch(e){ c={err:e.message}; }
+    // falsifier: plant the word and re-read, proving the probe can report PRESENCE
+    let proved=false;
+    try{ const d=f.contentDocument; const s=d.createElement('p'); s.textContent='DELETE EXPORT PURGE';
+      d.body.appendChild(s); const c2=census(d); proved = c2.del>c.del && c2.exp>c.exp; s.remove(); }catch(e){}
+    lines.push(`${p.padEnd(10)} del=${c.del} remove=${c.rem} purge=${c.purge} discard=${c.disc} | export=${c.exp} download=${c.dl} | checkboxes=${c.cb} selbar=${c.selbar} danger=${c.danger} rows=${c.rows} cards=${c.cards} ${proved?'':'⚠ PROBE UNPROVEN'}`);
+    out.textContent=lines.join('\n'); f.remove();
+  }
+  out.textContent=lines.join('\n')+'\n\nDONE';
+})();
+</script>

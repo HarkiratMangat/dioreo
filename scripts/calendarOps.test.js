@@ -149,4 +149,24 @@ check('calendar.bulkAdd: bare "2x" alone (no CP token) does NOT set the flag', (
     }
 });
 
+check('calendar.bulkAdd: a title ending in a class letter is not truncated when the next entry is prefixed', () => {
+    const r = ops.resolveOp('calendar.bulkAdd').validate({
+        type: 'calendar.bulkAdd', payload: { text: 'p•7/1 - 7/2 | Warzone Rumble•e•7/3 - 7/4 | Anniversary' }
+    });
+    assert.strictEqual(r.ok, true, JSON.stringify(r.errors));
+    const [first, second] = r.normalized.payload.parsed;
+    assert.strictEqual(first.title, 'Warzone Rumble', 'the trailing "e" of "Rumble" must not be eaten as the next entry\'s prefix');
+    assert.strictEqual(first.category, 'playlist', 'entry 1 must keep its own "p" prefix');
+    assert.strictEqual(second.title, 'Anniversary');
+    assert.strictEqual(second.category, 'event', 'entry 2 must still get its own "e" prefix, not lose it to entry 1');
+});
+
+check('calendar.bulkAdd: the original db-deferred-list repro ("Krai BR Mode")', () => {
+    const r = ops.resolveOp('calendar.bulkAdd').validate({
+        type: 'calendar.bulkAdd', payload: { text: 'p•6/1 - 6/2 | Krai BR Mode•e•7/18 - 7/19 | Anniversary' }
+    });
+    assert.strictEqual(r.ok, true, JSON.stringify(r.errors));
+    assert.strictEqual(r.normalized.payload.parsed[0].title, 'Krai BR Mode', 'must not truncate to "Krai BR Mod"');
+});
+
 process.exit(failures ? 1 : 0);

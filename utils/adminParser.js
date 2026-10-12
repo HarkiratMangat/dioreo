@@ -72,7 +72,10 @@ function parseReleaseDateTime(dateStr, userTimezone = 'America/Toronto') {
         return parseAdminDate(cleanStr) || new Date();
     }
 
-    // A time was typed -- treat the literal date/time numbers as Harkirat's own local clock (userTimezone), then convert that wall-clock moment to its real UTC instant. `.tz(tz, true)` (keepLocalTime) re-anchors the exact Y/M/D H:M chrono extracted into userTimezone rather than reinterpreting whatever offset the initial naive parse assumed -- same pattern timestampHelper.js's generateTimestamps() already uses for user-facing /timestamp input.
+    // An input that CARRIES ITS OWN OFFSET is already an absolute instant -- return it untouched. 🔴 CI-only failure, fixed 2026-08-31: the reinterpretation below is correct for a human typing "July 22, 2026 7:20 AM" and WRONG for a stored ISO string like "2026-07-06T16:27:56.919Z". `.tz(tz, true)` keeps the wall clock as rendered in the SYSTEM timezone, so on a machine already set to userTimezone the two readings cancel and an ISO round-trips by luck. On a UTC host they do not: 16:27Z reads as 16:27, gets re-anchored to Toronto, and comes back 20:27Z -- a real four-hour shift of a published release time, since the GCP VM runs UTC while every local test ran in EDT. `scripts/portalPatchNotes.test.js` asserts the round-trip and passed locally for exactly that reason; only CI could see it. ⚠️ The NAIVE path below is already timezone-independent and must stay as it is -- verified 2026-08-31 under UTC, America/Toronto and Asia/Tokyo, all three returning 11:20Z for "July 22, 2026 7:20 AM" -- because chrono builds the naive Date in the system zone and dayjs reads it back in the same zone, so the two cancel. Do not "fix" it to match the branch above.
+    if (parsedComponents.isCertain('timezoneOffset')) return parsedComponents.date();
+
+    // A time was typed with no offset -- treat the literal date/time numbers as Harkirat's own local clock (userTimezone), then convert that wall-clock moment to its real UTC instant. `.tz(tz, true)` (keepLocalTime) re-anchors the exact Y/M/D H:M chrono extracted into userTimezone rather than reinterpreting whatever offset the initial naive parse assumed -- same pattern timestampHelper.js's generateTimestamps() already uses for user-facing /timestamp input.
     const localTarget = dayjs(parsedComponents.date()).tz(userTimezone, true);
     return localTarget.toDate();
 }
@@ -214,9 +217,7 @@ function buildCalendarEventFromParts(prefixChar, rawEntry) {
     return { title, startDate, endDate, isOngoing, category, isDoubleCP };
 }
 
-// Can't just bulkText.split('•') anymore -- the prefix letter sits BEFORE the bullet it belongs to, so a naive split leaves it dangling on the END of the PREVIOUS entry's content instead of tagging the entry that follows. This regex's non-greedy content group stops as early as possible, which is always right at the next real "[dpe]?•" boundary -- verified against legacy unprefixed text too (no prefix character = zero-width match, same split points as the old bulkText.split('•') behavior).
-const BULLETED_ENTRY = /([depgm])?•\s*([\s\S]*?)(?=[depgm]?•|$)/g;
-// Bulletless, newline-delimited entry (added 2026-08-22 19:47 EDT, Harkirat's direct pick -- "newline ends it", offered as an alternative to bullet-joined pastes rather than a replacement for them): prefix letter optionally followed by whitespace instead of a bullet ("p 8/6-8/19 | Krai BR").
+// A literal '•' is an unambiguous delimiter in this format (per buildCalendarEventFromParts's own header comment: '•' never appears inside content), so line.split('•') always yields a clean, strictly alternating [prefixCandidate, body, prefixCandidate, body, ...] array -- no regex guessing required. The PREVIOUS implementation used a non-greedy lookahead regex ("[depgm]?•|$") that had to GUESS where a body ended, and a non-greedy engine always prefers the EARLIEST position that satisfies the lookahead -- so whenever a title's own last character happened to be one of d/p/e/g/m and was immediately followed by a real bullet, it silently swallowed that trailing letter as if it were the NEXT entry's optional prefix, truncating the title by one character (found live 2026-08-22 19:30 EDT, "Krai BR Mode" -> "Krai BR Mod"; see docs/db-deferred-list.md). Bulletless, newline-delimited entry (added 2026-08-22 19:47 EDT, Harkirat's direct pick -- "newline ends it", offered as an alternative to bullet-joined pastes rather than a replacement for them): prefix letter optionally followed by whitespace instead of a bullet ("p 8/6-8/19 | Krai BR").
 const BARE_LINE = /^\s*(?:([depgm])\s+)?(.*)$/;
 
 function parseBulkEvents(bulkText) {
@@ -226,10 +227,11 @@ function parseBulkEvents(bulkText) {
     for (const line of bulkText.split('\n')) {
         if (!line.trim()) continue;
         if (line.includes('•')) {
-            let match;
-            BULLETED_ENTRY.lastIndex = 0; // stateful global regex reused across lines -- reset or later lines silently start mid-pattern
-            while ((match = BULLETED_ENTRY.exec(line)) !== null) {
-                const built = buildCalendarEventFromParts(match[1], match[2]);
+            // Pair the split output two at a time: even indices are the prefix candidate for the entry that follows (possibly '', meaning no explicit prefix), odd indices are that entry's body. A trailing unpaired fragment (an incomplete paste ending mid-bullet) is silently dropped by the `i + 1 < parts.length` bound, same as it would have been before.
+            const parts = line.split('•');
+            for (let i = 0; i + 1 < parts.length; i += 2) {
+                const prefixChar = /^[depgm]$/.test(parts[i]) ? parts[i] : undefined;
+                const built = buildCalendarEventFromParts(prefixChar, parts[i + 1]);
                 if (built) parsedEvents.push(built);
             }
         } else {

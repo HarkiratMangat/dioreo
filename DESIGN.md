@@ -1,0 +1,275 @@
+---
+kind: reference
+status: live
+name: Dioreo Admin Portal
+description: Blued-steel operator console for administering Dioreo's live content
+colors:
+  desk: "#0F1418"
+  paper: "#171E24"
+  raised: "#1F272E"
+  sunk: "#0B0F12"
+  hi: "#232C34"
+  rule: "#2A343D"
+  rule2: "#3A4752"
+  ink: "#E8EDF1"
+  ink2: "#9DAAB4"
+  ink3: "#85939F"
+  ink4: "#5C6A75"
+  patch: "#F2C230"
+  warn: "#FF7A45"
+  warnInk: "#FF9E72"
+  ok: "#7BDB63"
+  info: "#409AD0"
+  sched: "#A680FB"
+  del: "#FF6B6B"
+  laneNewDraws: "#AE72E0"
+  laneReturning: "#E8639B"
+  laneDrawWindow: "#6B4E7D"
+  laneEvent: "#4A90D9"
+  lanePlaylist: "#2CC4C4"
+  lanePatchNotes: "#F2C230"
+  lineBattlePass: "#F2994A"
+  lineRanked: "#FF3430"
+  lineDmz: "#337BA6"
+  discord: "#5865F2"
+typography:
+  ui:
+    fontFamily: "Space Grotesk, -apple-system, BlinkMacSystemFont, Segoe UI, system-ui, sans-serif"
+  data:
+    fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
+  display:
+    fontFamily: "Big Shoulders Display, Space Grotesk, sans-serif"
+rounded:
+  rad1: "3px"
+  rad2: "6px"
+  rad3: "10px"
+  round: "50%"
+  pill: "999px"
+components:
+  button:
+    backgroundColor: "{colors.raised}"
+    textColor: "{colors.ink2}"
+    rounded: "{rounded.rad2}"
+    padding: "9px"
+    height: "44px"
+  chip:
+    backgroundColor: "{colors.sunk}"
+    textColor: "{colors.ink2}"
+    rounded: "{rounded.pill}"
+    padding: "6px 11px"
+    height: "32px"
+  pill:
+    backgroundColor: "{colors.sunk}"
+    textColor: "{colors.ink2}"
+    rounded: "{rounded.pill}"
+    padding: "8px 13px"
+  input:
+    backgroundColor: "{colors.sunk}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.rad2}"
+    padding: "8px 10px"
+    height: "44px"
+  card:
+    backgroundColor: "{colors.raised}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.rad2}"
+    padding: "9px 10px"
+  drawer:
+    backgroundColor: "{colors.raised}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.rad3}"
+    width: "min(560px, calc(100vw - 40px))"
+  tooltip:
+    backgroundColor: "{colors.raised}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.rad2}"
+    padding: "6px 10px"
+  flag:
+    backgroundColor: "{colors.sunk}"
+    textColor: "{colors.ink2}"
+    rounded: "{rounded.rad2}"
+    padding: "8px 11px"
+---
+
+# Design — Dioreo admin portal
+
+<!-- impeccable:design-source mockups -->
+
+> 🔴 **THIS FILE DESCRIBES THE MOCKUPS, NOT `portal/ui/`** — the mockups are the design authority and the portal is the thing being converged onto them. Recording the incumbent would canonise its drift.
+>
+> **Regenerated 2026-08-30 14:5x EDT against `docs/superpowers/mockups/2026-08-23-portal-interactive/`** — `assets/tokens.css`, `assets/app.css`, `assets/fixtures.js` and the seven realm pages. That package is the current authority: CLAUDE.md's portal row names it, the whole conformance pass diffs against it, and Harkirat settled it on 2026-08-27 (*"the design is the mockup"*).
+>
+> 🔴 **THE PREVIOUS VERSION OF THIS FILE WAS GENERATED FROM `2026-08-20-portal/`, WHICH IS SUPERSEDED — and it was wrong in almost every measurable field.** It recorded the typography as IBM Plex Sans Condensed / IBM Plex Mono (the package uses **Space Grotesk / JetBrains Mono / Big Shoulders Display**), the radii as 2–5px (they are **3 / 6 / 10px** plus a circle and a pill), `--ink3` as `#80909D` (**`#85939F`**, lifted to clear the AA floor), `--ink4` as `#4E5A64` (**`#5C6A75`**), and it claimed the direction was borders-only with no shadows and carried "exactly one" transition — the package has **98 `box-shadow` rules and 91 `transition` declarations**. Its two "known divergences" were re-measured on the current package and **neither reproduces**. **The lesson is the plan's own §0.5 R2: a citation has two tests — does it EXIST, and does it still GOVERN.** Date every source; the later artifact wins.
+## Direction
+
+**Blued steel.** A dark, cool, instrument-panel surface — deliberately distinct from the public site's violet-graphite (legal pages) and green-black (chronicle) while obviously the same house. The operator arrives knowing what they came to change; the interface is a workbench, not a brochure. Mode is **Operate**: scanability, consistency and the real usage scene outrank expression, and brand lives in precise details rather than in decoration.
+
+## Palette
+
+Colour carries **topic**; shape carries **state**. That separation is the portal's signature and it is load-bearing rather than stylistic — it means a bar's meaning survives being read in greyscale, and it is why the accent is a fill and never a text colour (a proven 4.58:1 floor with `#000` ink).
+
+Six surfaces step from `--sunk` through `--desk`, `--paper`, `--raised`, `--hi` to `--rule`/`--rule2`, each jump only a few points of lightness.
+
+🔴 **FOUR INK TIERS EXIST AND ONLY THREE MAY CARRY TEXT.** Measured 2026-08-24 against every surface: `--ink4` at `#5C6A75` scores **3.02:1 on `--paper`**, failing AA in all 89 places it coloured text. Solving for four AA-passing steps collapses two into each other — at this floor, on these surfaces, the scale has room for three text tones. `--ink3` was lifted from `#80909D` to **`#85939F`** to sit on the 4.5:1 floor exactly. **`--ink4` is kept dark deliberately, for the 11 places it draws a border, stroke or fill. Never write `color:var(--ink4)`.**
+
+⚠️ **Two signal colours have the same problem and the same solution — one value for the fill, one lifted for ink, hue and saturation untouched because those ARE the identity:** `--ev` (3.28:1) pairs with **`--ev-ink:#25A570`**, and `--warn` pairs with **`--warn-ink:#FF9E72`** (composited true value 4.53:1 — passing by 0.03, which is not a margin).
+
+⚠️ **TOPIC ACCENT IS TWO DIFFERENT SETS AND CONFLATING THEM IS A REAL TRAP.** The package's `:root` declares `--draw:#FF3430 · --ret:#337BA6 · --ev:#1F8A5E · --play:#8A6BD1`, but what the Track and Board actually paint comes from the LANES fixture: **new draws `#AE72E0` · returning `#E8639B` · draw windows `#6B4E7D` · events `#4A90D9` · playlists `#2CC4C4` · patch notes `#F2C230`**. `portal/ui/tokens.css` matches the LANE hexes. Two of the `:root` values (`#FF3430`, `#337BA6`) are the **deadline line** colours for Ranked and DMZ, so reading `:root` as the topic palette produces a set that is both wrong and confusingly plausible.
+
+## Typography
+
+**Three families, split by kind rather than by hierarchy.** `--ui` (**Space Grotesk**) for interface chrome; `--data` (**JetBrains Mono**) for **every date, count, id and code**, so numerals align in columns; `--display` (**Big Shoulders Display**) for figures and realm titles. The mono assignment is a data-integrity decision, not a texture one.
+
+**The UI type scale moved up half a step on 2026-09-06 01:24 EDT** (build-out decision D6, `typeset`): `--t-micro 9.5 · --t-xs 10.5 · --t-sm 12 · --t-base 13 · --t-md 14.5 · --t-lg 16.5 · --t-xl 19 · --t-hero 26`, with three line-height jobs (`--lh-tight 1.15 · --lh-ui 1.35 · --lh-body 1.5`). Every literal px font-size in `portal/ui/app.css` was mapped onto a step in the same change (316 sites; 17px and 20px stay literal on the Armory rank column; the Discord preview keeps Discord's own sizes). ⚠️ **The mockup package keeps the old scale** (`--t-sm 11.5`, `--t-micro 9`): it is the design as approved, and the portal is deliberately ahead of it here — see Known divergences.
+
+## Shape carries state
+
+- **solid fill** — live
+- **hollow, dashed border** — staged
+- **diagonal hatch** — conflict
+
+Applied via a `--topic-accent` custom property set on the element, never via a colour class. A new state gets a new *shape*; a new entity gets a new *accent*.
+
+## Depth and geometry
+
+Structure is carried by **borders** (`--rule`, `--rule2`) — but "no shadows" is false and was an error in the previous version of this file: the package carries **98 `box-shadow` declarations**, overwhelmingly *inset* rings that occupy no layout (`inset 0 0 0 1px`) plus the drawer's single lift. **An inset ring is a border that does not take space** — that is the depth strategy, and it is why a ring can be added to an element whose box is already committed.
+
+**Five radii, named by size rather than by component:** `--rad-1:3px` (chips, ticks, tags — boxes under ~24px) · `--rad-2:6px` (**the default**: buttons, inputs, cards, panels) · `--rad-3:10px` (drawers, modals, the ⌘K palette) · `--rad-round:50%` (avatars, dots, beads) · `--rad-pill:999px` (a radius that always exceeds half the height). A workbench control reads as machined, not soft.
+
+**Slot hues, the box inset and the Best tier — added 2026-09-14 23:59 EDT (pins batch 2, design board 2).** Nine `--sl-<slot>` tokens, `oklch(76% .055 H)` with H muzzle 25 · barrel 65 · stock 105 · underbarrel 150 · optic 190 · laser 225 · rear grip 260 · perk 300 · ammunition 340, used only as a faint wash and outline on an attachment tag, never as ink. `--box-inset:5px` is how far a boxed icon button draws its visible box inside its 44px target. `--tier-best` is the legendary gold of the Best tier. The board's 5px and 7px radii port onto `--rad-2`. One step was added: `--rad-box:8px`, the visible box of a boxed icon button, which is 2px from either neighbour.
+
+## Overflow fades, it never cuts — added 2026-09-19 21:23 EDT
+
+*Recorded because the device had been reached for independently in five places before anyone wrote it down, and each one solved it slightly differently.*
+
+**Where a run of content is longer than its box, the box fades it out rather than clipping it or ellipsing it.** A hard edge says "this is the end"; an ellipsis says "there is more, and you cannot have it"; a fade says "there is more, keep going" — which is true, because in every one of these cases the content is reachable by scrolling, hovering or opening.
+
+| Surface | What runs over |
+|---|---|
+| Selection bar's weapon chips | two rows of chips that swipe sideways |
+| Export drawer's category bays | one row of bays that swipes, and follows the scrollspy |
+| Export tile's weapon name | a long name slides under its own build count on hover |
+| Export file body | the text block under its footer |
+| Delivery card's lifespan bar | a run with no end date fades off its right edge |
+
+**The rules.**
+
+1. **The mask goes on the BOX, not on the content.** A mask on the text itself is sized to the text, so its fade zone always lands on real ink and every short string loses its last characters. On the container, a short string stops before the fade and is untouched — no conditional, no measurement, no JavaScript. *(This was got wrong first, on the Export tile's names: every weapon in the bay read `AK11`, `DR-`, `LK2`.)*
+2. **A fade that can be scrolled past fades on BOTH edges, driven by scroll position.** A right-only mask keeps promising more content after the reader has reached the end. Each edge fades only while there is something beyond it.
+3. **The fade is 18–28px** — wide enough to read as a fade rather than a blur on the final glyph, narrow enough not to eat a whole word.
+4. **If the run can also move on its own** (a name that scrolls on hover, a row that follows a selection), the travel is exactly the overflow and clamps at zero, so content that already fits never moves. `100cqw - 100%` inside a container query does this with no measurement; `prefers-reduced-motion` keeps the fade and drops the travel.
+5. **It never replaces a control.** A faded edge tells you there is more; it does not tell you how to get there. Anything that must be reachable by keyboard still needs its own affordance.
+
+## Components
+
+*Added 2026-09-06 00:27 EDT, from `impeccable doctor`'s only finding: nothing here told a screen generator what a control looks like, so the live design panel drew generic approximations in their place.*
+
+🔴 **Extracted from the design package's `assets/app.css`, then diffed against `portal/ui/app.css`. All ten primitives below are BYTE-IDENTICAL on the two sides** — so unusually for this file, the Components section describes the mockups and the portal at once, and needs no divergence note.
+
+**Every control is a rectangle of `--sunk` or `--raised` inside a one-pixel `--rule2` border.** There is no filled-button variant anywhere in the system: emphasis is carried by *ground* (`--raised` sits forward, `--sunk` sits back) and by the accent appearing on a border or an inset ring, never by a saturated fill behind label text. That is what keeps `--on-accent` off the critical path — and it is why a new filled state is the one addition that has to declare which ground it is for.
+
+| Component | Ground | Border | Radius | Padding | Height |
+|---|---|---|---|---|---|
+| `.btn` | `--raised` | `--rule2` | `--rad-2` 6px | `9px` | `--tap` 44px |
+| `.chip` | `--sunk` | `--rule2` | `--rad-pill` | `6px 11px` | 32px |
+| `.pill` | `--sunk` | `--rule` | `--rad-pill` | `8px 13px` | auto |
+| `input` / `select` | `--sunk` | `--rule2` | `--rad-2` | `8px 10px` | `--tap` 44px |
+| `.card` | `--raised` | `--rule2` | `--rad-2` | `9px 10px` | content |
+| `.drawer` | `--raised` | `--rule2` | `--rad-3` 10px | — | `min(84vh,860px)` |
+| `.tip` | `--raised` | `--rule2` | `--rad-2` | `6px 10px` | content |
+| `.flag` | `--sunk` | `--rule` + **`2px --warn` on the left** | `--rad-2` | `8px 11px` | content |
+| `.realm` (rail item) | none | none | — | `11px 4px` | `--tap` 44px |
+| `.mark` (record diamond) | `--c` fallback `--ink3` | none | `--rad-1` | — | 13×13 rotated 45° |
+
+### The three named rules this vocabulary already obeys
+
+**The Ground Rule.** Two grounds and only two. `--raised` is a thing you act *on*; `--sunk` is a well you put something *into*. A control that inverts this reads as a different kind of object — which is precisely how `.btn` (raised) and `.chip` (sunk) stay distinguishable at 11.5px with the same border colour.
+
+**The 44px Rule.** `--tap:44px` is the floor for anything a pointer lands on, and `.btn`, `input`, `select` and `.realm` all state it explicitly rather than reaching it by accident. ⚠️ **It is bypassed in exactly one place, deliberately and with a dated comment** (`portal/ui/app.css`, the 32px control) — a documented exception, not drift. `.chip`'s 32px is the second, and it is the pattern to check before adding a third.
+
+**The Left-Edge Rule.** A `2px` coloured left border means *this row is telling you something*, and `.flag` is its only base-level use. ⚠️ **The impeccable detector calls this the single most recognisable tell of AI-generated UI** and counts **59 instances in the design package** against 29 in the portal. It is the design's own signature and predates the detector — but it is the one component decision in this file that an outside reviewer would challenge first, and it is recorded here so the challenge is answered from evidence rather than re-litigated from taste.
+
+### What a new component must state
+
+1. Which of the two grounds it sits on.
+2. Which radius step, by name — never a literal `px`.
+3. Whether it is a tap target, and therefore whether `--tap` applies.
+4. If it carries a fill, **which ground that fill is for** — `--on-accent` is near-black and reads at 2.86:1 on a dark fill.
+
+## Motion
+
+The package carries **91 `transition` declarations**; `portal/ui/app.css` carries **91**. The previous version of this file said "exactly one", measured against the retired package, and filed the difference as a portal defect. It does not reproduce.
+
+⚠️ **The conformance instrument still cannot see motion, and that is a real limit rather than a design position.** `portalDiff` zeroes transitions and animations so its pixel comparison is deterministic at a frozen clock — so it would score an *added* transition as a regression, and can never reward one. `portalAudit` does not zero them and now samples `transitionProperty` / `transitionDuration`, so a **declared** transition is comparable even though its motion is not. **Answered 2026-09-06 01:24 EDT** (build-out, `animate`): ONE page-load orchestration keyed on `--dur-3` (320ms) — the masthead figures rise in order 60ms apart, the rail items stagger once on mount, drawers scale in (they already did). It lives at the foot of `portal/ui/app.css` under the build-out banner, inside `prefers-reduced-motion:no-preference`, and the global reduced-motion kill zeroes it.
+
+## Spacing — a six-step scale, from 2026-09-06 01:24 EDT
+
+`--s1 4 · --s2 8 · --s3 12 · --s4 16 · --s5 24 · --s6 32` (`portal/ui/tokens.css`, build-out decision D6, `layout`). Structural gaps use s4–s6 — the masthead's padding, `.mh-stats` above the figures, `.panel + .panel` (the view layer and the Manifest sat flush), the record panel's margin, the identity panel's foot; inside a control s1–s3. A literal stays legal where it is optical (a hairline, an 11px diamond); a NEW structural gap on a literal is a defect. Pin 14 ("no breathing room in this entire design") is the finding it answers.
+
+🔴 **EVERY AUTHORED LENGTH IS A WHOLE PIXEL, OR A HALF AT THE FINEST — Harkirat, 2026-09-19 21:23 EDT.** *"can we not do .xx numbers for pixels? at mostttt 0.5 is okay but otherwise try to keep them whole numbers like 1, 2, 3."*
+
+This is about what gets WRITTEN, not about what gets measured. Measuring on the ink produces values like `67.84px` or `-3.57px`, and shipping those makes a stylesheet that nobody can read, reason about or re-derive — a number with two decimal places looks like a constant when it is really one render's residue. **Measure precisely, then round before it lands in a file**, and round in the code that computes it rather than afterwards, so a value that is recomputed at runtime cannot reintroduce the noise.
+
+⚠️ **The one thing this rule must not do is falsify the record.** A sweep that rounds `px` literals will also hit the numbers inside comments — the measurements that explain why a value is what it is — and rounding *those* turns an observation into a fiction. Values the browser reads get rounded; values the reader reads stay exactly as they were measured.
+
+**Before 2026-09-06 01:24 EDT there was no spacing scale, in either the mockups or the portal, and none was invented.** Measured across the six mockups 2026-08-30: **28 CSS custom properties, zero of them spacing**, and 19 distinct off-4px-grid values in padding/margin/gap — `9px` used 41 times, `11px` 31 times, plus 13/15/17/22/26/34/90px.
+
+Recording an invented scale would have been the wrong move twice over: it would make an arbitrary set of numbers look decided, and snapping the portal onto a grid would move pixels and **raise** the conformance diff. Per Harkirat's decision 2026-08-30 11:46 EDT: **no action now; revisit once the portal is conformed to the mockups, since that is when redesign work resumes anyway.** That revisit is the 2026-09-06 01:24 EDT scale above; the mockups keep their off-grid values because they are the approved design, not a live sheet.
+
+## The manifest row — five rules design board 3 settled, added 2026-09-20 14:16 EDT
+
+*This section is a MERGE, not a regeneration: `impeccable document`'s own reference says never to overwrite an existing DESIGN.md, and this file's header says it describes the mockups rather than `portal/ui/`. Everything below is read out of the board's own files — `docs/pins2/kit/b3/board.css` (rounds 6B · 9A · 9B · 10A · 10J · 10K · 11 · 11B · 11C · 12–12G), `b3/history.js`, `gates/history.js`'s `notes` (Harkirat's pins 51–57), and the package README's v62–v67 sections. It is recorded as SYSTEM rather than as one gate's styling because the same vocabulary draws the Armory manifest, the Season Repairs list and the History river; every rule below was reached on one of them and then found to be true of the others.*
+
+**The Mesh Rule.** A manifest row's hover and open ground is a FIELD, not a band. Three radial gradients plus a white 8% linear wash, composited `screen, screen, screen, normal`, so the layers mix like light and the ground stays dark: `70% 220% at -6% 120%` of `--c` at 14%, `62% 200% at 34% -24%` of `--warn` at 10%, `66% 210% at 104% 128%` of `--c` at 9%, then `linear-gradient(180deg,#ffffff08 0,transparent 30%)`. **Only `--c` changes** — it is the row's own topic hue. A band stops where its element stops, which is why a flat wash kept reading as a partial highlight; a field belongs to the whole row including its action cell. Swapping any other layer produces a glow that is *nearly* the manifest's, which is the same as not being it.
+
+**The Demotion Rule.** A column whose value is identical on every SHOWN row demotes — kind to a mark, who to the avatar alone — and never disappears. It is measured on the rows on screen rather than on the whole dataset, so it answers a filter. The column keeps its track and keeps telling the truth about being uniform; a column that vanishes tells the reader nothing about why.
+
+**The Story Rule.** Consecutive rows in one day naming the same thing by the same actor are drawn as ONE story: their left rails join into a single unbroken bar and the hairline between them goes. **Nothing merges and nothing hides** — every row stays present and countable, because a log's whole value is that it is complete. An event with no entity is identified by what it SAYS, so a run of repeated alerts binds exactly as a change pair does, and a genuinely different event inside a storm breaks the rail visibly.
+
+**The Neutral Chip Rule.** A chip's fallback hue is a neutral declared per surface (`--fc`), never a STATE colour. Reaching for `--patch` as "the default accent" tinted every unstated chip staging-yellow and said *staged* about things that were not.
+
+**The One Inset Rule.** A panel declares its content inset ONCE and every member uses it — rows, column head, day header, toolbar, foot. Three right insets and two left insets inside one panel is the defect class Harkirat finds by eye every time, and it is invisible in the CSS because each rule looks correct on its own.
+
+### The scrolling manifest — added with round 12
+
+**A long manifest scrolls its LIST, not its panel.** The toolbar and the column head are the frame; the rows are the thing that moves. The head sticks at the top of its own scrollport carrying an `inset 0 -1px 0` ring rather than a border, and day headers stack beneath it. Measured on H1 before the change: the day header had been written `position:sticky` since round 9A and had never once stuck, because its nearest scrollport was a panel that does not scroll — and the toolbar, 26% of the panel's height, left on the first scroll of a 4802px list.
+
+### Four don'ts the board paid for, added 2026-09-20 14:16 EDT
+
+- **Don't put `border-radius` on an `<svg>`.** An svg's overflow is hidden and the clip follows the radius, so `border-radius:50%` on an icon turns it into an ellipse and eats the corner strokes of its own glyph. Round the BOX around it.
+- **Don't let a child redraw its container's edge.** A panel draws a 1px border at `--rad-2`; a child sitting exactly 1px inside it with a full `inset 0 0 0 1px` ring of its own puts two 1px lines on the same three edges at two different radii. Measured at 175 against 174 and 1265 against 1266 — read as "why are there 2 different borders overlapped on the panels".
+- **Don't write `all:unset` on a `<button>` and stop there.** It strips the UA sheet's `user-select:none` as well, so the label becomes selectable and a stray drag leaves a highlight behind the text that reads as a rendering bug. Restore it explicitly.
+- **Don't trust source order over specificity.** `button:hover:not(:disabled)` is (0,2,1) and outranks every `.control:hover` at (0,2,0); an attribute-scoped `html[data-x] .mt-r2` beats a plain class. When a rule you wrote has no visible effect, ask the PAGE which rules match the element instead of re-reading the file — five separate rules were found setting `grid-template-columns` on one element that way.
+
+## Known divergences — the build-out's deliberate ones
+
+**From 2026-09-06 01:24 EDT the portal is AHEAD of the mockup package on purpose** (Harkirat, 2026-09-06 00:43 EDT: the conformance is done; build out, redesigns included; floors move). The package stays as approved. Each row is a divergence a future measurement will report, and the reason it should NOT be closed:
+
+| Divergence | Portal | Package | Why |
+|---|---|---|---|
+| UI type scale | `--t-sm 12`, `--t-base 13`, `--t-micro 9.5` … (Typography above) | `11.5 / 12.5 / 9` | D6 `typeset`; the detector's top rule was undersized-ui-text |
+| Spacing scale | `--s1…--s6`, structural gaps on s4–s6 | none | D6 `layout`; pin 14 |
+| Realm accents | eight: season `#F59E0C` · armory `#EF4444` · broadcast `#EC4899` · access `#6C8AF7` · analytics `#9CC85A` · history `#00E1D9` · review `#D8F24A` (= `--staged`, on purpose) · home ink2 | four alias state colours | batch-2 spec §1.1, 2026-09-13 18:59 EDT; supersedes D4 |
+| Semantic tokens | `--staged:#D8F24A` · `--ok:#7BDB63`, and confirm buttons (Commit, Save, Grant) fill with `--ok`; focus rings keep `--focus:#5FD4E8` | staged cyan, ok a status green no button used | batch-2 spec §1.3, 2026-09-13 18:59 EDT |
+| Header | no breadcrumb; command bar centred at ≥1200px; icon-only sign-out beside the profile | crumb `Realm › View`, bar between neighbours | batch-2 spec §8, 2026-09-13 18:59 EDT |
+| History realm | the event river and revert are their own realm below the rail rule, beside Review | the river is Analytics' Manifest | batch-2 spec §4, 2026-09-13 18:59 EDT |
+| Masthead wash | radial realm-hue light, 10% at top-left, keyed on `.app[data-realm]` | none | `bolder` — the signature |
+| Topic side-tab | 2px on cards (`.bcard`, tier cards, the composer preview) | 3px | `quieter`; the state callouts (`.flag`, `.callout`, `.failbox`) keep 3px because there the border IS the message |
+| Drawer field label | sentence case, `--t-sm`, `--ui` | 9.5px tracked uppercase | a six-field form is read, not scanned |
+| Manifest delete column | 52px, 12px in, ghost ring at rest, tip on hover | 40px / 8px / transparent ring | pin 22 |
+| Record-panel CTA row | `align-items:center` | `baseline` | pin 8 — a 30px button hung 8px below a 10.5px eyebrow |
+| Record spine | `.rec-mk{justify-self:center}` | left-aligned in its column | pin 9 — the marker sat 4.5px off the line it threads |
+
+*(Rows for what the realm units built — drawers, the Armory rack, the Access grant flow, the Analytics lead — are in `docs/reference/portal-decision-ledger.md` § Superseded 2026-09-06.)*
+
+**Before 2026-09-06 01:24 EDT this section read "none currently stand":**
+
+The previous version listed two, both measured against the retired `2026-08-20-portal` package. **Both were re-measured on the current authority on 2026-08-30 and neither reproduces:** `--ink4:#5C6A75` is declared identically in both token files, and the transition counts hold.
+
+🔴 **THE COUNTS IN THIS FILE WERE RE-DERIVED 2026-09-04 22:05 EDT AND TWO OF THEM WERE STALE.** Not by much, and that is the point — a number in prose rots quietly and then reads as measured. Current: **`box-shadow` portal 115 · package 103** (re-derived 2026-09-06 08:58 EDT: the build-out added four — the weapon-search popover, the best-weapon ring, the granted-row flash and the drawer vocabulary; it was 111 on 2026-09-04) (this file said "the package carries 98") and **`transition` 92 · 92** (it said 91/91). ⚠️ **They were stale before tonight's work and were inherited by an edit to this very section**, which is exactly the content-conservation failure the completeness sweep names: moved or edited text keeps asserting what it asserted, and the edit makes it look freshly checked. `rg -o 'box-shadow' portal/ui/app.css | wc -l` re-derives it in one command; prefer running that to trusting this sentence. Both are annotated in `docs/db-deferred-list.md` rather than deleted, so the next reader of the retired package finds the correction instead of repeating the hunt.
+
+⚠️ **This section should not stay empty by neglect.** Where the portal genuinely differs from the design, the live record is the conformance measurement itself — `npm run portal:audit -- --realm <r>` and `portalDiff`.
+
+🔴 **THE STAND-DOWN REGISTER THIS PARAGRAPH POINTED AT NO LONGER EXISTS — corrected 2026-09-04 21:52 EDT.** It said to read `rg -n 'conforming\(\)' portal/ui/*.js` as "the list of divergences that are deliberate". That grep returns **0** and has since 2026-08-31, when the two rendering modes collapsed: all 57 `conforming()` sites and the helper module were deleted, and there is ONE rendering now which is what ships. **A record that tells a reader to run a command whose empty output means "no divergences" is worse than one that says nothing** — the silence reads as a clean bill of health. The register that replaced it is `docs/reference/portal-decision-ledger.md`, where a deliberate divergence is a ROW with a falsifier; `npm run portal:ledger-rows` counts them per realm.
+
+🔁 **SUPERSEDED 2026-09-13 18:59 EDT by batch-2 spec §1.1** — every realm but Analytics moved, History was added, and Review took `#D8F24A`, the staged colour, deliberately: Review is where staged work goes. That settles the "defect or pun" question below as a pun. The D4 record stands as history: ✅ **RESOLVED 2026-09-06 01:24 EDT — decision D4, distinct hue per realm** (`--r-broadcast:#E56FA6 · --r-access:#6B8AF7 · --r-analytics:#9CC85A · --r-review:var(--ink) · --r-home:var(--ink2)`; season and armory unchanged). Review is colourless on purpose: it is the one realm with no topic, because it is every topic; Home is the arrival surface, not a territory. The paragraph that follows is the finding as it stood. 🔴 **THE PALETTE'S OWN LAW WAS BROKEN AT THE TOKEN LEVEL — measured 2026-09-04 21:52 EDT.** This file states *"colour carries topic; shape carries state"* and calls it load-bearing rather than stylistic. `portal/ui/tokens.css:104-105` then defines four of the six realm accents as ALIASES OF STATE COLOURS: `--r-broadcast:var(--patch)` · `--r-access:var(--info)` · `--r-analytics:var(--ev)` · `--r-review:var(--staged)`. Topic and state are not merely both coloured — on four realms they are the **same hex**, so no reader can tell "this is the Review realm" from "this is staged" by hue alone, and the shape vocabulary degrades from *the* signature to a redundancy. ⚠️ **Whether that is a defect or a deliberate pun** (Review IS where staged work goes) **is a design decision nobody has recorded**, which is precisely why it belongs in this section rather than in a comment.

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Proofs for claim-detect.sh — the single definition of "this message claims the work is done".
 #
-# Two hooks now depend on this predicate (the completion-claim gate in settings.json and completeness-sweep.sh), so a regression here silently disables BOTH. That is the whole reason the duplication was removed, and it is why the shared piece needs the strictest test in the directory.
+# Two hooks now depend on this predicate (the completion-claim gate in settings.json and commit-completeness-sweep.sh), so a regression here silently disables BOTH. That is the whole reason the duplication was removed, and it is why the shared piece needs the strictest test in the directory.
 #
 # ⚠️ Both directions matter, and the SECOND is the one that gets skipped. A pattern that matches everything makes both gates fire on every message and get disabled within a day — the noise argument written into four other hooks here. So ordinary progress narration is pinned as SILENT.
 #

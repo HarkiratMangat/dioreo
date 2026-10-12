@@ -28,13 +28,35 @@
 
 # WHY IT CHANGED AGAIN (2026-08-03 18:12 EDT) — a placeholder time slipped past every existing check. Wrote `2026-08-03 18:xx EDT` mid-comment (genuinely meaning to fill in the real minute later and then forgetting to), in the SAME session that had already been corrected once for a bare date with no time at all. The bare-date branch (B) only strips a stamp when its HH:MM is real digits (`s/${today} [0-9]{2}:[0-9]{2}//g`); `18:xx` doesn't match that, so the date survived the strip and the advisory DID fire correctly — but advisory-after-the-fact is what this file's own comments already call "a backstop for the rare miss, NOT the mechanism": it caught the mistake one edit too late instead of stopping it. Unlike an ordinary bare date (sometimes legitimate prose), a placeholder character sitting inside an HH:MM-shaped slot is never legitimate content — nobody means to publish literal "xx" or "??" as a time. That asymmetry is exactly what a bare-date advisory can't have (its whole design constraint is "must never be able to block a write," given its false-positive history) but a narrow, high-confidence pattern like this one can: DENY it in `pre`, same tier as an impossible future stamp, so the placeholder never reaches disk in the first place.
 
+# 🔴 THE `pre` BRANCH NOW RUNS ON Bash TOO — registered Edit|Write|Bash as of 2026-09-02 11:42 EDT. It read `.tool_input.command` from the day it was written and the autofix rewrites every string in `.tool_input`, so the ONLY thing standing between the substitution and a heredoc was the matcher. Meanwhile PostToolUse already carried Bash, so the repo was DETECTING placeholder stamps in heredocs and choosing not to fix them — the four that reached a tracked plan on 2026-09-01 all came through that gap.
+#
+# ⚠️ THE STATED REASON FOR NOT DOING THIS WAS FALSE, and it was disproven by execution rather than argument. Root CLAUDE.md says the hook is "deliberately not registered PreToolUse on Bash (rewriting a shell command mangles it)". Piping a synthetic payload into the globally-registered `rtk hook claude` returns `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecisionReason":"RTK auto-rewrite","updatedInput":{"command":"rtk git status",...}}}` — every Bash call on this machine has had its command rewritten via updatedInput for months. A constraint with a working counter-example one hook above it in the same config was a belief, not a limit.
+#
+# ⚠️ TWO PreToolUse HOOKS NOW RETURN updatedInput FOR THE SAME Bash CALL (rtk's rewrite and this substitution) and the documented precedence covers DECISIONS (deny > defer > ask > allow), not competing inputs. If rtk wins, a placeholder survives — which is exactly today's behaviour, so the failure direction is a no-op rather than a regression. If this wins, the command loses its `rtk` prefix and costs tokens, never correctness. Neither outcome can corrupt a command: the substitution only ever replaces a `YYYY-MM-DD HH:MM`-shaped slot whose minute is x/X/?, and the `still` guard below re-scans the result and falls back to a deny if any placeholder survives.
+#
+# ⚠️ `permissionDecision:"allow"` here does NOT hand a Bash command a free pass: the docs are explicit that deny and ask permission rules are still evaluated regardless of what a hook returns. It skips the prompt for a command the permission layer would already have allowed.
 mode="${1:-post}"
 
-content=$(jq -r '.tool_input.new_string // .tool_input.content // empty')
+payload=$(cat)
+# 🔴 `.command` IS READ BECAUSE THE BATCHING CONTRACT MANDATES `python3` HEREDOCS, AND EVERY ONE OF THEM WAS INVISIBLE HERE. This hook was registered on Edit|Write only, so a file written by a heredoc inside a Bash call never reached it -- and on 2026-09-01 four placeholder stamps landed in a tracked plan that way, in the same session that built the substitution branch below. The technique this repo tells you to use for any multi-file edit was the one path the guard did not cover.
+content=$(printf '%s' "$payload" | jq -r '.tool_input.new_string // .tool_input.content // .tool_input.command // empty')
 [ -z "$content" ] && exit 0
 
-today=$(date +%Y-%m-%d)
-now="$(date '+%Y-%m-%d %H:%M')"
+# 🔴 THE CLOCK IS PINNED TO THE REPO'S TIMEZONE — added 2026-09-02 21:56 EDT, after this gate's own safety suite went red on CI and green here for the third environment-dependent reason in one session. Every timestamp this repo writes is defined in Eastern (`CLAUDE.md`, the records convention, the `[clock]` hook that feeds them), so "today" is a fact about New York, not about whatever clock the machine happens to keep. Unpinned, `date` read UTC on the runner: between 20:00 and midnight Eastern the hook's `today` was tomorrow's date, it matched none of the placeholders the suite writes, and it silently corrected nothing — the exact silent-no-op the suite exists to catch, produced by the suite's own environment rather than by a defect in the hook.
+#
+# This is the same shape as the BSD/GNU `date` failure recorded above (46 of 47 assertions red in CI, all 47 green on this Mac), one layer up: there the date BINARY differed, here the date ZONE does. Pinning also fixes `localtz` below, which decides whether a stamp carrying an explicit zone is comparable at all — on a UTC runner it read `UTC`, so every `EDT` stamp in the repo was skipped as foreign and branch (A) went quiet exactly where it matters most.
+#
+# `TS_TZ` overrides it, so the pin is testable rather than an assumption baked in.
+export TZ="${TS_TZ:-America/New_York}"
+
+# TS_NOW_EPOCH pins "now" for the self-test. Unset, `ts_date` is the plain `date` it always was. Set, the hook reads that one instant everywhere it reads the clock, so a test that builds a stamp N minutes ahead and a hook that re-reads the clock a moment later can no longer land on opposite sides of the 180-second boundary — the race behind six CI failures between 2026-09-01 and 2026-09-13 (counted 2026-09-14 17:49 EDT). GNU date takes `-d @epoch`; BSD date takes `-r epoch`.
+if [ -n "${TS_NOW_EPOCH:-}" ]; then
+  ts_date() { date -d "@$TS_NOW_EPOCH" "$@" 2>/dev/null || date -r "$TS_NOW_EPOCH" "$@"; }
+else
+  ts_date() { date "$@"; }
+fi
+today=$(ts_date +%Y-%m-%d)
+now="$(ts_date '+%Y-%m-%d %H:%M')"
 
 # Rejoin a timestamp split across a line break, optionally through a comment leader (`#`, `//`, `*`) — see defect 4. Without this, wrapped prose reads as a bare date.
 joined=$(printf '%s' "$content" | perl -0pe 's/(\d{4}-\d{2}-\d{2})[ \t]*\n[ \t]*(?:#+|\/\/|\*)?[ \t]*(\d{2}:\d{2})/$1 $2/g' 2>/dev/null) || joined="$content"
@@ -43,14 +65,14 @@ joined=$(printf '%s' "$content" | perl -0pe 's/(\d{4}-\d{2}-\d{2})[ \t]*\n[ \t]*
 # --- (A) IMPOSSIBLE: a date-time later than now was not observed. NOT backtick-exempt. ---------- ⚠️ FOREIGN TIMEZONES ARE NOT COMPARABLE — added 2026-08-02 17:21 EDT, when this gate denied a perfectly good UTC stamp (TS-EXAMPLE: `2026-08-02 20:05 UTC`, which is 16:05 local, comfortably past) while writing the CLAUDE.md paragraph about CI. GitHub API times are UTC, so that is not a rare shape in this repo.
 #
 # Comparing a stamp in another zone against the LOCAL clock is meaningless without conversion, and converting inside a hook invites a subtler class of bug. So a stamp carrying an explicit timezone that is not the local one is skipped — out of scope, rather than guessed at. Anything with no zone, or with the local zone, is still compared, which covers every stamp the records convention actually asks for (`YYYY-MM-DD HH:MM TZ`, local).
-localtz=$(date '+%Z')
+localtz=$(ts_date '+%Z')
 # ⚠️ `TS-DEADLINE` — the second escape, added 2026-08-02 18:20 EDT because this gate denied a real one. The deny message says "if you mean a future deadline, write the date with NO clock time", and that advice is simply wrong for scheduled events: `docs/db-deferred-list.md` carries a reminder reading "⏰ 2026-08-09 17:00 EDT — CLOSE OUT the MCP observation window" (TS-EXAMPLE), where the clock time IS the content — the window closes at an hour, not on a day. Merely editing NEAR that line was refused, which is a gate blocking correct work.
 #
 # Kept as a separate token from TS-EXAMPLE rather than folded into it: they mean different things, and a reviewer grepping `rg TS-EXAMPLE` to audit for hidden fabrications should not have to wade through scheduled deadlines. Both are per-line and must be typed deliberately.
 #
 # ⚠️ PORTABLE EPOCH PARSE — added 2026-08-07 10:05 EDT, CI (ubuntu-latest, GNU date) vs. this project's own Darwin dev machine (BSD date). `date -j -f '%Y-%m-%d %H:%M' ... ` is BSD-only syntax; on GNU date it's an unrecognized-option error. That error was being swallowed by `2>/dev/null`, so every parse silently failed in CI, `future` was always empty, and the whole gate went permanently silent there — 46 of 47 test-suite assertions failed on PR #93 while all 47 passed locally on this Mac. Try BSD syntax first (this is still the primary dev environment), fall back to GNU `date -d` on failure.
 TOLERANCE_SECS=180
-now_epoch=$(date +%s)
+now_epoch=${TS_NOW_EPOCH:-$(date +%s)}
 future=$(printf '%s' "$joined" \
   | grep -v 'TS-EXAMPLE' \
   | grep -v 'TS-DEADLINE' \
@@ -80,15 +102,44 @@ if [ -n "$future" ]; then
   fi
 fi
 
-# --- (A2) PLACEHOLDER TIME: a date paired with an HH:MM slot that isn't real digits. -------------- Added 2026-08-03 18:12 EDT — see the file-header note for the incident. NOT backtick-exempt, same reasoning as (A): a fake stamp inside backticks is still a fake stamp. TS-EXAMPLE stays exempt so this file's own header can keep quoting the bad pattern as an example. x/X/? only — deliberately NOT h/H, since `YYYY-MM-DD HH:MM TZ` is this project's own literal format spec (used constantly in CLAUDE.md and this very file) and must never be flagged as a fake instance.
-placeholder=$(printf '%s' "$joined" \
-  | grep -v 'TS-EXAMPLE' \
-  | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]+[0-9xX?]{1,2}:[0-9xX?]{2}' \
-  | grep -E '[xX?]' | sort -u | tr '\n' ' ')
+# --- (A2) PLACEHOLDER TIME: a date paired with an HH:MM slot that isn't real digits. -------------- Added 2026-08-03 18:12 EDT — see the file-header note for the incident. NOT backtick-exempt, same reasoning as (A): a fake stamp inside backticks is still a fake stamp. TS-EXAMPLE stays exempt so this file's own header can keep quoting the bad pattern as an example. x/X/? only — deliberately NOT h/H, since `YYYY-MM-DD HH:MM TZ` is this project's own literal format spec (used constantly in CLAUDE.md and this very file) and must never be flagged as a fake instance. 🔴 TODAY ONLY, AND THIS NARROWING IS LOAD-BEARING — added 2026-09-02 16:58 EDT. This branch exists for ONE mishap: writing a stamp for NOW, meaning to fill the minute in later, and never doing it. A placeholder on a PAST date is the opposite thing — a deliberately imprecise historical reference (`2026-09-01 16:58 EDT`), and there are many of them in this repo's own records and hook comments. Substituting there does not repair anything: it INVENTS a precise time for a past event, which is the exact fabrication this whole file exists to prevent, committed by the fix rather than the author. Found by the completeness sweep asking whether this check fires on its OWN artifacts — feeding `memory-index-check.sh` (which carries four such stamps) through it returned an `updatedInput` rewriting them to the current minute. 🔴 ONE DEFINITION OF THE TARGET — added 2026-09-02 20:26 EDT. This branch has now drifted THREE times in one day, and every instance was the same cause: the target was written out separately in the detector, in the substitution, and in the post-substitution re-check, and a narrowing applied to one did not reach the others. First the substitution matched any date while the detector was scoped to today. Then the substitution ignored TS-EXAMPLE while the detector honoured it. Then the re-check ignored both narrowings and refused a correct fix. A shell variable is a weak abstraction and it is enough: there is one string now, and `grep -v TS-EXAMPLE` is applied at every site that reads it.
+PLACEHOLDER_RE="${today}[[:space:]]+[0-9xX?]{1,2}:[0-9xX?]{2}"
+find_placeholders() { printf '%s' "$1" | grep -v 'TS-EXAMPLE' | grep -oE "$PLACEHOLDER_RE" | grep -E '[xX?]'; }
+
+placeholder=$(find_placeholders "$joined" | sort -u)
+placeholder_nl="$placeholder"          # newline-separated: each match CONTAINS a space, so " " cannot delimit them
+placeholder=$(printf '%s' "$placeholder" | tr '\n' ' ')
 
 if [ -n "$placeholder" ]; then
   pmsg="PLACEHOLDER TIMESTAMP — \"${placeholder}\"has a date but no real clock time (x/X/? standing in for digits). This is exactly the 2026-08-03 mishap: a timestamp gets typed with the intent to fill in the real minute later, and later never comes before the write lands. Run \`date\` and paste the real HH:MM now, in the same edit — do not save a placeholder to fix in a follow-up."
   if [ "$mode" = "pre" ]; then
+    # 🔬 AUTOFIX PROBE, added 2026-09-01 19:24 EDT. Harkirat: "how exactly are you going to make it durable when the hooks already exist?" — and he is right that a fourth prose restatement is not a mechanism. Denying is correct but costs a whole round trip every time, and this branch has been firing for weeks. The only remedy that removes the cost is SUBSTITUTION: hand the harness a corrected tool_input instead of a refusal. Whether PreToolUse honours `updatedInput` in this build is NOT documented anywhere reachable (the CLI ships as a binary) and no hook in this repo has ever tried it, so this emits BOTH the substitution and the deny fallback and lets the observed behaviour settle it. If the write lands corrected, updatedInput is honoured and the deny can go. If it is still denied, it is not, and the honest conclusion is that no mechanism exists at this layer. 🔴 THIS BRANCH USED TO DENY, AND DENYING IS WHY IT KEPT COSTING A WHOLE ROUND TRIP. Harkirat, 2026-09-01 19:10 EDT: "the timestamp injection has been a hook into EVERY tool call you make for WEEKS now... and yet nearly every time you edit a file and input a timestamp, it triggers the denial... LIKE ARE WE DEADASS???" He was right that a fourth prose restatement of the rule is not a mechanism — three surfaces already carried it and the placeholder still got typed. A refusal detects the defect and then hands the work back; a SUBSTITUTION detects it and finishes the job, because the hook already knows the one value the write was missing. ⚠️ `updatedInput` IS HONOURED BY THIS BUILD — measured 2026-09-01 19:16 EDT, not assumed. The CLI ships as a binary so the capability is not greppable; a scratch write carrying `19:xx` landed on disk reading `19:16`. If a future build stops honouring it the fallback below still denies, so the failure mode is the old behaviour rather than a placeholder reaching disk. ⚠️ THE FALLBACK EXISTS FOR A CAPABILITY REGRESSION, AND NO CONTENT CAN SIMULATE ONE. Every placeholder the detector finds is by construction one the substitution can repair — the two use the same pattern — so there is no input that reaches the deny path, and a branch no test can enter is a branch that rots. `TS_NO_AUTOFIX=1` is a test-only seam that stands in for the day `updatedInput` stops being honoured; it is what makes the deny path a checked claim rather than a hope. Naming it here because a seam whose purpose is undocumented gets deleted as dead code.
+    [ -n "${TS_NO_AUTOFIX:-}" ] && { jq -n --arg r "$pmsg" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'; exit 0; }
+    now_hm=$(ts_date '+%H:%M')
+    # 🔴 SUBSTITUTE ONLY WHAT THE DETECTOR ACTUALLY FOUND — corrected 2026-09-02 18:21 EDT by a code review. The detector above was narrowed to `${today}`, and this gsub was left matching ANY date with a `[0-9xX?]{1,2}:[0-9xX?]{2}` slot. That character class also matches real digits, so an edit containing today's `18:xx` alongside a correct historical `2026-08-03 18:12 EDT` came back auto-allowed with the HISTORICAL stamp rewritten to the current minute -- the exact "inventing a precise time for a past event" this branch had just claimed to fix, now reaching heredocs too because the matcher gained Bash in the same change.
+    #
+    # The fix is to stop describing the target twice. `$placeholder` already holds the exact strings the detector matched; each is replaced literally, so the substitution cannot reach anything the detector did not flag, and the two can never drift apart again. `?` is the only regex-special character a placeholder can contain, so it is the only one escaped. Replacing each matched string LITERALLY needed the match escaped as a regex, and `?` -- which a placeholder is made of -- is the one character that makes that fiddly enough to get wrong; it was, twice. The pattern instead carries `$today` (so it cannot reach a past date) and REQUIRES a placeholder character in the hour or the minute (so it cannot reach a correct stamp). Those are the two properties that matter, stated directly, with nothing to escape.
+    fixed=$(printf '%s' "$payload" | jq --arg t "$now_hm" --arg d "$today" '
+      ("(?<p>" + $d + "[ \t]+)(?:[0-9xX?]{1,2}:[0-9xX?]?[xX?]|[0-9xX?]?[xX?]:[0-9xX?]{2})") as $re
+      | .tool_input |= with_entries(
+        if (.value | type) == "string"
+        # 🔴 PER LINE, AND SKIPPING TS-EXAMPLE — corrected 2026-09-02 20:26 EDT after an adversarial pass. The
+        # detector filters TS-EXAMPLE lines out; this gsub ran over the whole string value and did not,
+        # so a write containing an exempt line AND a real placeholder had the EXEMPT one rewritten.
+        # Reproduced: `the bad shape is <today> 09:xx EDT   TS-EXAMPLE` came back as the current time.
+        # That is the same detector-vs-substitution drift as the original defect, relocated into the
+        # escape hatch — which is worse, because the escape exists precisely for text that must not be
+        # touched. Third instance of one shape in one file; the two descriptions have to be ONE.
+        then .value |= (split("\n") | map(if test("TS-EXAMPLE") then . else gsub($re; .p + $t) end) | join("\n"))
+        else . end)
+      | .tool_input' 2>/dev/null)
+    # The fallback is not decoration: if jq fails, or the substitution changes nothing, an `allow` would pass the placeholder straight through — a fix that silently does not fix is worse than the refusal it replaced. ⚠️ THE FIRST VERSION OF THIS GUARD REJECTED ITS OWN CORRECT OUTPUT. It re-matched the placeholder pattern against the fixed text to prove the slot was gone — but `[0-9xX?]{2}` is an alternation, so a repaired `19:20` matches it just as happily as `18:xx` does, and every substitution was discarded as unfixed. The check has to ask whether a placeholder CHARACTER survives, which is the same two-step the detector above already uses: find the date+slot shapes, then keep only the ones carrying x/X/?. Same definition, same TS-EXAMPLE filter. A re-check looser than the detector refuses a fix that actually worked; a re-check tighter than it ships a half-fixed write. It has to be the same one.
+    still=$(find_placeholders "$fixed" | grep -c . || true)
+    if [ -n "$fixed" ] && [ "$fixed" != "null" ] && [ "${still:-1}" = "0" ]; then
+      jq -n --argjson i "$fixed" --arg r "PLACEHOLDER TIMESTAMP CORRECTED to ${now_hm} — you typed ${placeholder}with a digit slot standing in for the real minute. The hook substituted the current clock rather than refusing the write, so nothing is owed. ⚠️ If you meant a genuinely unknown time, say so in words; a placeholder digit is never publishable content." \
+        '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"allow",updatedInput:$i,permissionDecisionReason:$r}}'
+      exit 0
+    fi
     jq -n --arg r "$pmsg" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
     exit 0
   fi
@@ -141,7 +192,7 @@ if [ -n "$bare" ]; then
      wrapped across a line break are all stripped before this check, so this is prose. Add the
      time, or confirm it is a deliberate bare date (a historical reference, a list of dates, a range
      endpoint, or the player-facing summary).
-     ⏰ RIGHT NOW IT IS: $(date '+%Y-%m-%d %H:%M %Z') — paste that, do not derive it.
+     ⏰ RIGHT NOW IT IS: $(ts_date '+%Y-%m-%d %H:%M %Z') — paste that, do not derive it.
      ⚠️ This branch runs AFTER the bytes land, so it cannot prevent anything: reaching it already
      cost an extra edit. It is a backstop for the rare miss, NOT the mechanism. The mechanism is
      that the moment you type the year inside content, the time follows it in the same keystroke."

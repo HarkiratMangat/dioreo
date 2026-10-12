@@ -18,8 +18,9 @@ pass=0
 ok()  { pass=$((pass + 1)); printf '  PASS  %s\n' "$1"; }
 bad() { fails=$((fails + 1)); printf '  FAIL  %s\n        %s\n' "$1" "$2"; }
 
-check()  { if printf '%s' "$OUT" | grep -qF -- "$2"; then ok "$1"; else bad "$1" "missing: $2"; fi; }
-absent() { if printf '%s' "$OUT" | grep -qF -- "$2"; then bad "$1" "present but must NOT be: $2"; else ok "$1"; fi; }
+# A here-string, never `printf | grep -q`. Under `set -o pipefail`, grep -q exits at its first match, printf takes SIGPIPE writing the rest, and the pipeline reports failure for a needle that WAS found. Measured 2026-09-14 18:52 EDT: "printf: write error: Broken pipe" and a false FAIL while the suite ran beside other load, a clean pass alone.
+check()  { if grep -qF -- "$2" <<< "$OUT"; then ok "$1"; else bad "$1" "missing: $2"; fi; }
+absent() { if grep -qF -- "$2" <<< "$OUT"; then bad "$1" "present but must NOT be: $2"; else ok "$1"; fi; }
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -116,7 +117,9 @@ check 'mode 3: re-shows the grid so it can be re-derived' 'Opus5-Max'
 # ⚠️ NO `-o` here, deliberately: -o prints only the matched span, which ENDS before the trailing
 #    MG-EXAMPLE -- so an -o pipeline can never see the escape and the check fails even when correct.
 #    That is exactly what happened on the first attempt. Match whole LINES.
-if printf '%s' "$OUT" | grep -iE 'Premise[ _-]*(Low|Med|Medium|High)[^A-Za-z]{1,8}Delib(eration)?[ _-]*(Very high|Low|Med|Medium|High)[^A-Za-z]{0,10}(Sonnet5|Opus5)-(Low|Medium|High|XHigh|Max)' | grep -qv 'MG-EXAMPLE'; then
+# Captured, then tested with a here-string: the two-stage `printf | grep | grep -q` pipe that stood here is the SIGPIPE false-FAIL scripts/hookTestLint.test.mjs forbids under pipefail.
+derivations=$(grep -iE 'Premise[ _-]*(Low|Med|Medium|High)[^A-Za-z]{1,8}Delib(eration)?[ _-]*(Very high|Low|Med|Medium|High)[^A-Za-z]{0,10}(Sonnet5|Opus5)-(Low|Medium|High|XHigh|Max)' <<< "$OUT" || true)
+if [ -n "$derivations" ] && grep -qv 'MG-EXAMPLE' <<< "$derivations"; then
     bad 'mode 3: the correction does not self-match its own detector' 'an unescaped derivation is echoed back -- the hook will re-validate its own output forever'
 else
     ok 'mode 3: the correction does not self-match its own detector'
@@ -196,6 +199,22 @@ sys.exit(1)
 else
     bad 'SessionStart(compact|fork) marker hook is registered' 'not found in .claude/settings.json -- mode 5 can never fire'
 fi
+
+
+# ===========================================================================
+# WORKING-AGREEMENT STALENESS (added 2026-09-08 13:05 EDT, WP3/WP7 context-carriers plan). The plan decided this check and it was never built until now -- pin both directions with fixtures so it cannot silently stop firing.
+# ===========================================================================
+STALE_FIXTURE="$TMP/stale-agreement.md"
+FRESH_FIXTURE="$TMP/fresh-agreement.md"
+printf '# Working agreement\n\nlast reconciled: 2026-01-01 00:00 EST\n' > "$STALE_FIXTURE"
+TODAY="$(date '+%Y-%m-%d')"
+printf '# Working agreement\n\nlast reconciled: %s 00:00 EST\n' "$TODAY" > "$FRESH_FIXTURE"
+
+OUT="$(SELFCHECK_AGREEMENT_FILE="$STALE_FIXTURE" bash -c 'printf {} | bash "'"$HOOK"'"' 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext')"
+check 'staleness: a last-reconciled date >30 days old is flagged' "past the 30-day check-in point"
+
+OUT="$(SELFCHECK_AGREEMENT_FILE="$FRESH_FIXTURE" bash -c 'printf {} | bash "'"$HOOK"'"' 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext')"
+absent 'staleness: a fresh last-reconciled date stays quiet' "past the 30-day check-in point"
 
 printf '\n  %d passed, %d failed\n\n' "$pass" "$fails"
 [ "$fails" -eq 0 ]

@@ -1,0 +1,117 @@
+{
+  "surface": "Armory",
+  "note": "Registered while building out the Armory (unit C, 2026-09-06 01:42 EDT). Every state was reached in a browser during that pass. The rack now opens CLOSED, so the default view reaches no build card at all \u2014 a walk that only loads the page sees seven headers and nothing else. The typed-field state exists because of the Drawer focus defect fixed the same night: every drawer field accepted one character before focus jumped to the close button, and no gate could see it.",
+  "states": [
+    {
+      "name": "rack \u00b7 a category expands",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".trow.tcat .trow-h"
+        }
+      ],
+      "known": [],
+      "expect": ".trow.tcat .trow-body .bgrp"
+    },
+    {
+      "name": "rack \u00b7 expand all",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".racktools .chip",
+            "text": "Expand all"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".trow.tcat:not(.tclosed) .bgrp"
+    },
+    {
+      "name": "add drawer \u00b7 opens modal from the masthead",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mh-new"
+        }
+      ],
+      "known": [],
+      "expect": ".drawer.open .bed-side"
+    },
+    {
+      "name": "add drawer \u00b7 primary refuses until the weapon is named",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mh-new"
+        }
+      ],
+      "known": [],
+      "expect": ".dw-f .why.blocked"
+    },
+    {
+      "name": "add drawer \u00b7 a field keeps what is typed",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mh-new"
+        },
+        {
+          "type": {
+            "sel": ".drawer.open input",
+            "text": "AK117"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".drawer.open input[data-typed=\"AK117\"], .drawer.open .bed-side .lc"
+    },
+    {
+      "name": "compare \u00b7 typeahead offers matching weapons",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".seg button, [role=tab]",
+            "text": "Compare"
+          }
+        },
+        {
+          "type": {
+            "sel": "#cmp-weapon",
+            "text": "bal"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".wsrch-opt"
+    },
+    {
+      "name": "compare \u00b7 the suggestion chip lines two weapons up against each other",
+      "realm": "armory",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".seg button, [role=tab]",
+            "text": "Compare"
+          }
+        },
+        {
+          "clickText": {
+            "sel": ".racktools .pill",
+            "text": "Compare"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".cmpt .cv.d"
+    }
+  ]
+}

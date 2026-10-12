@@ -22,7 +22,7 @@ Three sessions execute this plan at different times with no shared memory except
 | Session | Phases owned | Recommended model | Status | Handoff note |
 |---|---|---|---|---|
 | A | 1 → 2 | Sonnet5-High — `Premise Med · Delib Med -> Sonnet5-High` (Phase 1 is verification with real premise risk; Phase 2 is engineering against already-diagnosed root causes across several files — bounded, not exploratory) | ✅ Complete | `local/handoff/2026-08-22-portal-alignment-session-A.md` |
-| B | 3 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (genuine creative/design judgment across 5+ realms, multiple skills, multi-round brainstorming — matches Harkirat's own "future opus5 design session" framing) | ⬜ Not started | — |
+| B | 3 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (genuine creative/design judgment across 5+ realms, multiple skills, multi-round brainstorming — matches Harkirat's own "future opus5 design session" framing) | ✅ Complete | `local/handoff/2026-08-23-portal-alignment-session-B.md` |
 | C | 4 | Opus5-XHigh — `Premise High · Delib High -> Opus5-XHigh` (verifying "is this actually fixed" is itself a judgment call, not a mechanical check, applied across every realm and every finding, plus an explicitly requested deep sequential-thinking pass) | ⬜ Not started | — |
 
 *(The `Premise <X> · Delib <Y> -> <Cell>` notation is an existing personal convention from Harkirat's global Claude Code config (a premise-risk × deliberation-load model-selection grid), not something defined in this repo — the recommendation itself is usable as a plain instruction even without that grid in hand; it names the reasoning for whoever does have it.)*
@@ -342,13 +342,13 @@ git commit -m "docs(portal): mark Session A complete, phases 1-2 of the design a
 
 **Why this phase is deliberately not fully specified here:** the visual design decisions belong to whoever does this work, informed by fresh invocations of `frontend-design:frontend-design`, `design:design-system`, and `design:ux-copy` at the time Phase 3 actually starts — not baked into this plan by a session that isn't doing the design. What *is* specified is the scope, the inputs, the process, and the acceptance criteria, so Phase 3 has no ambiguity about what "done" means.
 
-- [ ] **Task 3.0: Orient yourself — you are Session B, and you own Phase 3 alone, between Session A (already complete) and Session C (not yet started).** Read "Session status" and "Session handoff protocol" at the top of this document in full. Read Session A's handoff note at `local/handoff/` (the exact filename is in the Session status table's Session A row) before reading anything else — it will tell you what actually happened in Phases 1-2, which may differ from what this plan originally specified. Change the Session status table's Session B row to 🔄 In progress as your first commit.
+- [x] **Task 3.0: Orient yourself — you are Session B, and you own Phase 3 alone, between Session A (already complete) and Session C (not yet started).** Read "Session status" and "Session handoff protocol" at the top of this document in full. Read Session A's handoff note at `local/handoff/` (the exact filename is in the Session status table's Session A row) before reading anything else — it will tell you what actually happened in Phases 1-2, which may differ from what this plan originally specified. Change the Session status table's Session B row to 🔄 In progress as your first commit.
 
-- [ ] **Task 3.1: Read the audit spec (with Phase 1's addendum) and this plan's Phase 2 diff in full before starting.** Phase 3 is redesigning what Phase 2 actually shipped, not what the audit predicted — confirm the two match; if Phase 2 deviated from its own plan, that deviation is the real starting point.
+- [x] **Task 3.1: Read the audit spec (with Phase 1's addendum) and this plan's Phase 2 diff in full before starting.** Phase 3 is redesigning what Phase 2 actually shipped, not what the audit predicted — confirm the two match; if Phase 2 deviated from its own plan, that deviation is the real starting point.
 
-- [ ] **Task 3.2: Invoke `superpowers:brainstorming`, classify this as Architectural, and run its full process** — clarifying questions, 2-3 approaches, sectioned design presented to Harkirat, written to a new dated spec (`docs/superpowers/specs/YYYY-MM-DD-portal-redesign-visual-design.md`) — **before writing any CSS or component code.** This plan's job ends at handing Phase 3 a scoped brief; brainstorming's own hard gate about approval before implementation still applies in full.
+- [x] **Task 3.2: Invoke `superpowers:brainstorming`, classify this as Architectural, and run its full process** — clarifying questions, 2-3 approaches, sectioned design presented to Harkirat, written to a new dated spec (`docs/superpowers/specs/YYYY-MM-DD-portal-redesign-visual-design.md`) — **before writing any CSS or component code.** This plan's job ends at handing Phase 3 a scoped brief; brainstorming's own hard gate about approval before implementation still applies in full.
 
-- [ ] **Task 3.3: For each realm, invoke `design:design-system` (audit + extend), `frontend-design:frontend-design`, and `design:ux-copy`, and produce the masthead copy + visual treatment**, covering at minimum every item the audit spec lists under that realm in §2–§3:
+- [x] **Task 3.3: For each realm, invoke `design:design-system` (audit + extend), `frontend-design:frontend-design`, and `design:ux-copy`, and produce the masthead copy + visual treatment**, covering at minimum every item the audit spec lists under that realm in §2–§3:
   - **Shell/nav:** the header-overflow fix (audit §2.1) — needs a genuine below-640px design, not a port of the mockups' ~1200px tablet breakpoint (audit §2.1's explicit nuance).
   - **Season (Track + Manifest + Board):** the 4-color category system now has real tokens (Phase 2 Task 2.2) to build on; Board has never been screenshotted real or mock until Phase 1 got evidence — use that evidence, not the plan's guess.
   - **Access:** the grid component consuming Phase 2 Task 2.5's new endpoint.
@@ -357,20 +357,20 @@ git commit -m "docs(portal): mark Session A complete, phases 1-2 of the design a
   - **Analytics:** whatever Phase 1 Task 1.2.4 found — this may turn out to need its own brainstorming pass if the gap is larger than a styling difference (an unstyled raw-text dump vs. a designed dashboard is closer to a missing feature than a missing style).
   - **Every realm's masthead copy** (audit §3.3) — this is the single most labor-intensive item on this list; treat it as real writing work.
 
-- [ ] **Task 3.4: Fix the deeper systemic issues the audit found, not just their visible symptoms:**
+- [x] **Task 3.4: Fix the deeper systemic issues the audit found, not just their visible symptoms:**
   - The missing layout tokens (`--rail`/`--hdr`, audit §4) — tokenize shell dimensions rather than leaving them hardcoded per-property, so the mobile breakpoint from Task 3.3 has one place to override them.
   - The missing component states (audit §4's completeness table — no hover/disabled/loading treatment found anywhere for buttons or inputs).
   - `:focus-visible` exists globally but was never confirmed reachable in a real keyboard tab sequence (audit §7 item, if Phase 1 confirmed it's a real gap) — fix if so.
 
-- [ ] **Task 3.5: Self-review against the audit spec, item by item.** For every numbered finding in audit spec §2 and §3, write one line in the new visual-design spec's own addendum: fixed / deliberately deferred with reason / found to be already fine. This is what makes Phase 4's job checkable instead of a re-investigation from scratch.
+- [x] **Task 3.5: Self-review against the audit spec, item by item.** For every numbered finding in audit spec §2 and §3, write one line in the new visual-design spec's own addendum: fixed / deliberately deferred with reason / found to be already fine. This is what makes Phase 4's job checkable instead of a re-investigation from scratch.
 
 ### Task 3.6: Write Session B's handoff note for Session C
 
-- [ ] **Step 1: `mkdir -p local/handoff` if it doesn't already exist, then write `local/handoff/YYYY-MM-DD-portal-alignment-session-B.md`** (real date, not the literal string — use the date this session started Phase 3) covering: the new visual-design spec's path and a one-paragraph summary of the direction taken, the per-finding resolution notes from Task 3.5 (or a pointer to them if they're long), anything deferred out of Phase 3 with a reason, and anything Session C should specifically scrutinize given what was hardest to get right during the redesign.
+- [x] **Step 1: `mkdir -p local/handoff` if it doesn't already exist, then write `local/handoff/YYYY-MM-DD-portal-alignment-session-B.md`** (real date, not the literal string — use the date this session started Phase 3) covering: the new visual-design spec's path and a one-paragraph summary of the direction taken, the per-finding resolution notes from Task 3.5 (or a pointer to them if they're long), anything deferred out of Phase 3 with a reason, and anything Session C should specifically scrutinize given what was hardest to get right during the redesign.
 
-- [ ] **Step 2: Update the Session status table** — Session B row to ✅ Complete, with the handoff note's path.
+- [x] **Step 2: Update the Session status table** — Session B row to ✅ Complete, with the handoff note's path.
 
-- [ ] **Step 3: Commit.**
+- [x] **Step 3: Commit.**
 
 ```bash
 git add docs/superpowers/plans/2026-08-22-portal-design-alignment.md
