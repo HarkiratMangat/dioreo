@@ -38,7 +38,7 @@ Derive every value from these before asking Harkirat anything, and cite the rule
 - **C13 · One look for every field** (his 2026-10-08 15:27 EDT: the search.filter's "light-up when hovered is not the same as the other fields … hovering the `x` icon or the 'x matches' doesn't active the field's own hover state … the inner dark color is also different"): fill `#04070A 52% on sunk`, a 1px outline `ink 12%` that turns `ink 24%` when the pointer is anywhere over the field (its in-field buttons and count box included), focus a 2px `staged` ring inside with a 5px `staged 16%` halo. Its leading content sits 14 from the edge (C1 L padding), words 10 after an icon. Added 2026-10-08 16:59 EDT.
 
 ## Surfaces
-- **C15 · Pop-ups** share one surface: raised, a 1px edge in the tone 34% on rule2, an 8px glow at 13%, drop-shadow 0 10 14 at 0.55 (his "nah do the other shadow", 2026-10-11 21:32 EDT), corner 14, a 10px pointer; contents s3 14 from the edge (his popup, 2026-10-11 21:06 EDT). Everything inside follows C1, C5, C6, C7 and C9a.
+- **C15 · Pop-ups** share one surface: raised, a 1.5px edge in the tone 34% on rule2, an 8px glow at 13%, drop-shadow 0 10 14 at 0.55 (his "nah do the other shadow", 2026-10-11 21:32 EDT), corner 14, a 10px pointer; contents s3 14 from the edge, 6 above the first row and below the last, rows divided by ink3 (his 21:52 EDT round); (his popup, 2026-10-11 21:06 EDT). Everything inside follows C1, C5, C6, C7 and C9a.
 
 ## What is genuinely his to decide
 - A new design no rule covers · two rules that conflict · an exception to a rule · a name the grammar leaves truly ambiguous · anything he says he wants to own. Everything else: derive, apply, cite.
