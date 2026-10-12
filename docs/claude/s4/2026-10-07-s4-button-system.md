@@ -390,3 +390,15 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 > * for the all-pass pop-up, basically the same restructure with the weapon name/build # and "passes all checks" under them.
 - Applied (spec v68): the light shadow (0 10 14 at 0.55) for every pop-up; dividers rule3 → rule2; Open build and × paint--ghost--quiet; both headers restructured (the weapon, its build as tag-XS-box.static-cat, the state line in label-xs-600 warn / ok). -cat for .50 GS is Secondaries' #3F6E8E (his pin 6), BAL-27's is AR's #FF3B5C. Ledger pophead, popbtns, popdiv; popsurf's shadow updated; C15 updated.
 
+## His 21:52 EDT pop-up round, verbatim, written 2026-10-11 21:54 EDT
+- (on Expand) "im still confused what your asking... please *show*"
+> * sorry, i meant just paint--ghost. please change it.
+> * can i see the weapon name in 15, white?
+> * regarding the corner of the pop-ups, for the buttons we kind of had a scale going but i don;t think that scale would work for pop-ups sized at these larger dimensions, correct? so how do we standardize/set their corner radius so they don't feel odd from the button's corners?
+> * the "warn 34% on rule2" is that "rule2" is that what the button style's outline uses as well? such as the "warn 55%"?
+> * the outer glow, how does the pop-up's outer glow values compare to the yellow outline/glow used by the search fields?
+> * the divider for the rows, can we make it ink3. (also side note... wtf even is rule2? like what is it even intended for? is there a rule3 or 4? a rule1?)
+> * make the x->card edge gap 14 px. make last row->card bottom 6px. and also add that 6px above the 1st row.
+> * make the pop-up's outer outline 1.5px.
+- Applied (spec v69): Open build and × paint--ghost; the weapon at l 15 (Text: card titles); edge 1.5px; × 14 from the edge; 6 above the first row and below the last; dividers ink3; the corner drawn as scaffolding (11 · 14 today · 22 concentric). Expand shown as a picture.
+
