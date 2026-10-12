@@ -374,3 +374,8 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - (on the 3x reveal picture) "tf am i supposed to do with that info?" → send him only what he decides or judges, never proof of my own fix.
 - Applied (spec v63): the board shows finished elements only (Text, Labels, Gaps, Colours, Sizes, Styles, Flags, Icon-only, Pills and rails, Search fields) and a one-line list of families not in the library yet. Taken off: the calls index, On the board, The selection bar, Set end date and Never, the instance cards of Chips, Segmented, Inputs and Data display, the as-built Overlays and Pop-ups, the Board changes ledger (stays as spec-img/board-changes.json for the one Builder-2 update).
 
+## His pop-up answers, verbatim, written 2026-10-11 21:06 EDT
+- **(popup, on one surface or two):** "1. confused, i don't see the difference or what you're talking about? 2. the problem pop-up is drawn incorrectly (notice the gap in the full near the arc. The staged deletion pop-up is also drawn incorrectly (no accent matched outline or outer glow)"
+- **(popup, side inset):** "s3 14 (Recommended)"
+- Applied (spec v67): one surface for every pop-up (the card's: raised, edge tone 34% on rule2, the deep shadow), since the two read the same to him; contents s3 14 from the edge; the card's pointer now fills with its band (the seam near the arc); the staged hint takes `--del` (I had named a `--danger` token that does not exist, so its edge and glow drew nothing). The surface scaffold is taken down. Ledger row popsurf.
+
