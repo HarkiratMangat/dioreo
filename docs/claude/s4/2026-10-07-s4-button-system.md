@@ -420,3 +420,6 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - Applied (spec v72): tint's outline the colour at 55% opacity (C9a, ledger tint55); dividers rule3 14 in with 6 above and below (the line was taking a pixel out of the gap below); the hazard tape back on the problem card; the edge-and-glow proposal drawn on the board beside today's.
 - (2026-10-11 22:38 EDT) "for the pop-up comparison, can you change the 1.5px outline to 1px?" → the proposal's edge is 1px (spec v73); today's stays 1.5px beside it.
 - (2026-10-11 22:41 EDT) pop-up edge: "1px at 55% + 5px halo at 16%" → C15 and every pop-up (spec v74), scaffold taken down. Field focus: "what do you think? im leaning 1.5px at 100% for the focus" (asked back with my view).
+- (2026-10-11 22:49 EDT) field focus, my view asked back: "yeah" → C13: a 1.5px staged ring at 100% with the 5px halo at 16% (spec v75; ledger fieldfocus).
+- (2026-10-11 22:49 EDT) "and correct the 'no image'/'image didn't load' pop-ups as well. chip inside should be tag-xs-box.static. The text saying no image or key, etc should be size 13. the gap color near the arc needs correcting as well. then tell me what's next" → tags tag-XS-box.static, titles 13, the whole shape filled with the well colour (spec v75; ledger hintink, hinttag, hintwell).
+
