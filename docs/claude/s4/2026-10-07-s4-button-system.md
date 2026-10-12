@@ -456,3 +456,24 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (18:52) "i also notice you missed the Drawer's image section rectangular rail, as well as the badge rail in the New Build drawer. You also missed the badge checkbox chip from the New Build drawer."
 - (18:53) "these are lazy working failures that you could have easily caught if you had actively, frequently been using sequential-thinking and asking yourself GOOD, hard, challenging questions!!"
 - Cause: chip-sweep.cjs drops anything over 36 tall and anything inside a button, so every rail (40–44), every L chip and every control holding a badge was invisible, and the family was called complete from it; the ledger already held decided rows for most of them (srcrail, tiers, tagtoggle, tabsrail, fcnone, fcwarn, keys). A new sweep with no height cap (ctl-sweep.cjs) found 8 missing kinds. Applied (spec v81): box rails (image source, tiers), checkbox chips (badge chips, Pick all), key chips (keeping their 13 · 900 mono number, ledger keys), filter chip variants, and Builder-2 beside the library for all of them.
+
+## His 2026-10-12 19:48 EDT review of v81 (8 screenshots), verbatim, written 2026-10-12 19:50 EDT
+> * filter chips: the count is misaligned inside the pill. and can you confirm they follow our decided `paint` styling (count remains accent colored tho)?
+>    * their token should also be `button-M-pill.paint-cat--dot--count`
+>    * also update: seems the counter is misaligned in all the pill filter chips.
+> * History's empty filter chip is currently drawn incorrectly. it should be `paint-level--meter--count` following the accent of the error>warn>caution>info severity levels. And a count of 0, aka "empty" for any filter chip, should be displayed as the 40% disabled state. the count # should also be matching the accent color.
+>    * Similarly, it's sibling filter chips would each follow the same logic for their respective labels.
+> * Repairs' warning filter chips are also drawn incorrectly. it's icon should be accent colored.
+> * the "Repairs' launcher" is also drawn incorrectly. look at your proposed version vs the original. It should follow Wash's style, be drawn as `button-L-pill.wash-warn` + any flags that fit it's styling. it should have that circle with the counter as `static` (is that correct?) at size M. The "needs work" would be `label-xs-700.warn`.
+> * admin traffic toggle is also drawn incorrectly. It should be `button-L-pill.paint-analytics--icon` with the icon accent colored (icon or similar infront & counter or similar at the end are always accent matched when included as part of `--icon`/`--dot`/`--count`/etc).
+> * the by weapon/by table view rail is also drawn incorrectly, it uses paint-staged yet it's grey when selected.
+>    * which brings me to an important point, we standardized rest+hover state for the styles, but we never drew or standardized selected+selected-hover states. Those MUST be done before any more work on the spec-board, they are P0.
+> * and what's the point of drawing all these rails/pills/chips/etc when they aren't even properly interactive. They're just skeletons wearing make up.
+>
+> So this is what we're going to do:
+> 1. /workstyle:handoff prep for a compact, since you're at ~830k context. update/index; add my comments to your tracked notes or whatever; and anything else as part of the prep.
+> 2. after compact, work on the P0 item i mentioned. We'll continue working on it until it's refined and approved.
+> 3. After P0 is refined and approved, continue with my comments about the pills/rails; harshly critique/scrutinize your work and why these failures happened and don't make these mistakes again because this was literally just your lazy work that could have been easily prevented!
+> 4. once those are approved, then i'll go back to reviewing the spec-board and we'll continue as we were.
+- (19:49 EDT) "update: your failure in terms of incorrectly drawing the elements, it also seems to be very present in the below "Chips" section and all the new things you've drawn/shown/proposed there. So this is a class failure!"
+- Recorded as rules: C20 (the board's controls are interactive), C21 (accent-matched parts; a count of 0 is the 40% disabled state). His question on the launcher's counter, answered: yes, static (it's informative, no click of its own), one size down inside the L pill (C3: M, 6 around), round, in warn. Nothing on the board changed before the compact: P0 first, by his order.
