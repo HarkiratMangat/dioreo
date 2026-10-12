@@ -53,6 +53,20 @@ My only instrument (the Meas helper) checked dimension 3.
 
 Per family: search the rulings for his asks on the family's nouns plus selected, active and interactive, and carry each unclosed one in Open. The tool to build first: `states-sheet.cjs` (originals and library, every state, one sheet). Tools that already exist in `local/pins2/s4/work/lead/`: `tags-compare.cjs` and `ctl-crops.cjs` (crop originals from builder.html), and `ctl-sweep.cjs` (every rail, toggle and checkbox chip, with no height cap).
 
+## Tool routing, also wrong (his 2026-10-12 19:55 EDT: "your tool routing was also SO shit! why aren't you using context-mode correctly??")
+
+What I did:
+- Narrowed inside the capture: `ctx_batch_execute` commands carried `rg … | cut -c | head`, `awk 'NR>=…'` and `| head -30`, so most of the output never reached the index and `ctx_search` couldn't find it later. The context-mode rule: capture whole, then filter with `ctx_search`.
+- Read files through the shell (`awk` line ranges, `cat` on task output, `python3 -c` slices) instead of `read_smart` or `ctx_execute_file`.
+- Searched the tracked docs (rulings, handoff) with `rg` instead of `ctx_search` over the indexed sources, and made many one-call turns.
+
+The fix, every call from here on:
+- Gather with `ctx_batch_execute` and its `queries` (whole outputs, no `head`, `cut` or `awk` inside).
+- Follow up with `ctx_search`.
+- Ask a question about one file with `ctx_execute_file`.
+- Read whole files with `read_smart`.
+- Use plain Bash only for short fixed output or a state change.
+
 ## P0: selected and selected-hover per style
 
 - **Raw material:** about 110 picked-state rules in Builder-2, in at least six ad hoc recipes:
