@@ -407,3 +407,15 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - **(corner, 11 / 14 / 22 shown):** "no 22 is too much. 11 is low less. honestly 14 more or less looks fine but i don't just want to select it blindly, i want a proper rule or scale or something so we can accurately set the corners on the drawers or other panels/surfaces as well and still have a more or less consistent *feel* even if mathematically things arent perfect"
 - Applied (spec v70): Expand decided paint--ghost (ledger expandbtn). Three corner rules drawn on a pop-up, a drawer and a panel: A one scale (5 · 6 · 8 · 11 · 14 · 18 · 22, a step per layer), B half-concentric per surface (15 · 21 · 24), C one corner (14). Builder-2's surfaces today: 6, 10, 12, 14, 16 (measured on index.html).
 - **(corner rule, three drawn on a pop-up, a drawer and a panel):** "A · one scale (Recommended)" → C16; pop-ups 14, drawers 18, panels 22; scaffold taken down (spec v71, 2026-10-11 22:06 EDT). Ledger row corners.
+
+## His 22:16–22:31 EDT answers, verbatim, written 2026-10-11 22:33 EDT
+> * so we use color 55% in 2 different ways? can you show me warn and ok with outline using 'warn 55% on #0B0F12' and just 'warn 55%'? show me both tint and static.
+> * and isnt the glow's "ring" basically the outline? or is it different? like is that 1.5px edge not just the "ring"?
+> * can you show me the problem and stage deletion pop-ups using the Field Focus glow logic so i can compare them side-by-side with current vs field's glow?
+> * also, what if we just take out the dividers in the pop-ups? (side note, the divider in the problem pop-up was misaligned between the 2 rows)
+- (popup) on 55%: "which would you suggest? i want to hear your thought before deciding." · then "Both: 55% opacity (Recommended)"
+- (popup) on the glow: "show me 1.5px edge using color 55% opacity, with a 5px halo at 16%?" · then "let me see it physically on the spec-board."
+- (popup) on dividers: "still misaligned. and show me rule3 as well." · then "rule3 14px but it's still misaligned between the 2 rows. the gap isn't the same above/below the divider."
+- "also the problem pop-up has this hazard strip at the top of it, where'd that go??" (with a screenshot of Builder-2's problem card)
+- Applied (spec v72): tint's outline the colour at 55% opacity (C9a, ledger tint55); dividers rule3 14 in with 6 above and below (the line was taking a pixel out of the gap below); the hazard tape back on the problem card; the edge-and-glow proposal drawn on the board beside today's.
+
