@@ -350,4 +350,21 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - **Inputs (2026-10-11 19:14 EDT, spec v60):** per his 21:02 "Pickers… PLEASE draw your proposals and measurements on these much better" and "wait until later" on Q9/Q10: pickers drawn whole as built, no parked proposal; measurements drawn on the drawing (numbered part outlines, the whole's width and height).
 - **(19:37, with a Data display screenshot):** "first the inputs first and publish, then i'll review the board while you work on overlays." · "also what are all these \"1\" circles??" → the numbered outlines reached every drawn-whole card; now only where two or more parts are measured, and the whole's dimensions only on drawings that carry them (spec v61, 2026-10-11 19:52 EDT).
 
+## His 2026-10-11 19:55 EDT list, verbatim, written 2026-10-11 20:02 EDT
+> * reveal left/right text is still clipping despite you saying it's fixed.
+> * also revert the buttons back to 1px outline, the 1.5px adds too many conflicts with other designs. but keep static on 1.5px.
+> * download button being 'fill-analytics' is incorrect. that's fill-ok.
+> * similarly with the shade command button, it's paint-ok.
+> * and the "repair build" button. it's fill-ok.
+> * `x` close reveal-left button's animation is buggy. ('/Users/harkirat/Downloads/Arc (10-11-2026 at 7.48.24.PM).gif')
+> * expand button being stated as paint--borderless is both incorrect and the button itself also has broken hover event. An item i've already stated.
+> * the selection bar's gunsmith code button, i want it styled as paint-cat--quiet.
+> * the datepicker icon is drawn incorrect, it should be tint-realm--quiet.
+> * but also, why are these individual icons/buttons etc even being shown to me?? like you have the foundation for it so just made the corrected changed in builder-2 later on. No point showing me all these. You should be showing me genuinely unique/different buttons/items that don't fall into our standardized foundation so far. You're just wasting my time with these.
+> * honestly the entire spec-board is a cluster-fuck right now. It's so bloated with things that don't even matter/make sense being on here. Things are stale. Things aren't properly designed/organized/structured.
+
+(19:59) "run a proper harsh sequential-thinking before you start any work!"
+
+- Applied: C10 back to 1px with static at 1.5px; Download, Repair build and the share icon decided ok (Builder-2 paints them in Analytics' own green #9CC85A, so the namer read the colour right; the meaning is ok, his call); names: date icon tint-realm--quiet, gunsmith code paint-cat--quiet (C11 gains -cat), Expand paint--ghost (my reading, Collapse's pair); the reveal words keep their padding (content-box); the × card's measurements step aside while it reveals. His gif copied to `local/pins2/s4/intake/x-reveal-2026-10-11-1948.gif`. Ledger rows sharepaint, codechip, dateicon, expandbtn; filledfill and outline15 updated.
+- Verified 2026-10-11 20:16 EDT (spec v62): the reveal's words are whole at 3x (the cause was the box height under the mask, not the width); 1px on every button style, static 1.5px; Download, Repair build fill-ok and the share icon paint-ok (Builder-2 uses Analytics' own green #9CC85A there, so the colour change is a Builder-2 change, in the ledger).
 
