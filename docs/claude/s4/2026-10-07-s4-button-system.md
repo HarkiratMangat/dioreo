@@ -406,4 +406,4 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - **(Expand, three looks shown):** "paint--ghost (Recommended)"
 - **(corner, 11 / 14 / 22 shown):** "no 22 is too much. 11 is low less. honestly 14 more or less looks fine but i don't just want to select it blindly, i want a proper rule or scale or something so we can accurately set the corners on the drawers or other panels/surfaces as well and still have a more or less consistent *feel* even if mathematically things arent perfect"
 - Applied (spec v70): Expand decided paint--ghost (ledger expandbtn). Three corner rules drawn on a pop-up, a drawer and a panel: A one scale (5 · 6 · 8 · 11 · 14 · 18 · 22, a step per layer), B half-concentric per surface (15 · 21 · 24), C one corner (14). Builder-2's surfaces today: 6, 10, 12, 14, 16 (measured on index.html).
-
+- **(corner rule, three drawn on a pop-up, a drawer and a panel):** "A · one scale (Recommended)" → C16; pop-ups 14, drawers 18, panels 22; scaffold taken down (spec v71, 2026-10-11 22:06 EDT). Ledger row corners.

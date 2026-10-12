@@ -39,6 +39,7 @@ Derive every value from these before asking Harkirat anything, and cite the rule
 
 ## Surfaces
 - **C15 · Pop-ups** share one surface: raised, a 1.5px edge in the tone 34% on rule2, an 8px glow at 13%, drop-shadow 0 10 14 at 0.55 (his "nah do the other shadow", 2026-10-11 21:32 EDT), corner 14, a 10px pointer; contents s3 14 from the edge, 6 above the first row and below the last, rows divided by ink3 (his 21:52 EDT round); (his popup, 2026-10-11 21:06 EDT). Everything inside follows C1, C5, C6, C7 and C9a.
+- **C16 · Corners, one scale** 5 · 6 · 8 · 11 · 14 · 18 · 22. Controls take theirs from height (C2: XS 5 · S 6 · M 8 · L 11); a surface takes the step above what it holds: pop-ups 14 (they hold M parts), drawers 18, panels 22. Inner layers of a surface (a band, a media well) take its corner − its edge (his popup "A · one scale (Recommended)", 2026-10-11 22:06 EDT; he had rejected 22 and 11 for pop-ups and asked for "a proper rule or scale" that sets drawers and panels too).
 
 ## What is genuinely his to decide
 - A new design no rule covers · two rules that conflict · an exception to a rule · a name the grammar leaves truly ambiguous · anything he says he wants to own. Everything else: derive, apply, cite.
