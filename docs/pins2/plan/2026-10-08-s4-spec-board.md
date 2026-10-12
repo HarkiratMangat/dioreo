@@ -5,6 +5,8 @@ status: live
 
 # Session 4 · the spec board, finished for Builder-2
 
+> **Superseded framing (2026-10-11 20:26 EDT).** This plan read his element types as Builder-2 instances ("every element Builder-2 draws gets a spec-board section") and built a review tool: twins, as-built copies, a ledger on the board. His definition: "the spec board was supposed to be the showcase of our \"final\" specs of elements. Look at transcript, i even described it as such. Each open decision on it is just a tempoary scaffolding, that's supposed to be taken down and the real design constructed in its place with the standardized version." The board is the element library; Builder-2's per-instance corrections live only in `local/pins2/s4/builder-2/spec-img/board-changes.json`.
+
 *Written 2026-10-08 16:24 EDT by Session 4's lead. Parent: [the batch-2 plan](2026-09-13-portal-pins-batch-2.md) §5c — the spec board is Session 4's own standardization artifact (Step 4g's "its OWN artifact", Step 5's "board 4"). Artifact `QWFuca9DcrwLFuYXNbhyhQ`, titled "spec-board" from v21 ("Element Library" once complete). Builder-2: `local/pins2/s4/builder-2` (this Mac only, never pushed).*
 
 ## His words that shape this plan
