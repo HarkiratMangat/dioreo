@@ -402,3 +402,8 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 > * make the pop-up's outer outline 1.5px.
 - Applied (spec v69): Open build and × paint--ghost; the weapon at l 15 (Text: card titles); edge 1.5px; × 14 from the edge; 6 above the first row and below the last; dividers ink3; the corner drawn as scaffolding (11 · 14 today · 22 concentric). Expand shown as a picture.
 
+## His popup answers on Expand and the corner, verbatim, written 2026-10-11 22:03 EDT
+- **(Expand, three looks shown):** "paint--ghost (Recommended)"
+- **(corner, 11 / 14 / 22 shown):** "no 22 is too much. 11 is low less. honestly 14 more or less looks fine but i don't just want to select it blindly, i want a proper rule or scale or something so we can accurately set the corners on the drawers or other panels/surfaces as well and still have a more or less consistent *feel* even if mathematically things arent perfect"
+- Applied (spec v70): Expand decided paint--ghost (ledger expandbtn). Three corner rules drawn on a pop-up, a drawer and a panel: A one scale (5 · 6 · 8 · 11 · 14 · 18 · 22, a step per layer), B half-concentric per surface (15 · 21 · 24), C one corner (14). Builder-2's surfaces today: 6, 10, 12, 14, 16 (measured on index.html).
+
