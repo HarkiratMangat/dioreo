@@ -379,3 +379,14 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - **(popup, side inset):** "s3 14 (Recommended)"
 - Applied (spec v67): one surface for every pop-up (the card's: raised, edge tone 34% on rule2, the deep shadow), since the two read the same to him; contents s3 14 from the edge; the card's pointer now fills with its band (the seam near the arc); the staged hint takes `--del` (I had named a `--danger` token that does not exist, so its edge and glow drew nothing). The surface scaffold is taken down. Ledger row popsurf.
 
+## His 21:29 EDT pop-up round, verbatim, written 2026-10-11 21:32 EDT
+- (on one surface, the deep shadow) "nah do the other shadow"
+- (on Expand) "elaborate what you're asking me?"
+- "im noticing the icon chips inside the pop-ups have a 1.5px outline, correct?"
+> * can you also tell me what outer glow they use, what accent outline they use, the gaps between each element/text, etc etc the measurements of the pop-up basically
+> * also, the divider lines between each row in the pop-ups is BARELY visible, please change it from it's black color.
+> * make the `x` close button and the "open build" button `paint--ghost--quiet`
+> * the problem pop-up, in the top header area, rework it so it states the Weapon name in size 13 white text, followed by the `build x` tag in size 11 -cat colored, then add a label-xs (similar to the "passes every check") below them in a 2nd line saying "Problem(s) with build" or something similar in -warn color.
+> * for the all-pass pop-up, basically the same restructure with the weapon name/build # and "passes all checks" under them.
+- Applied (spec v68): the light shadow (0 10 14 at 0.55) for every pop-up; dividers rule3 → rule2; Open build and × paint--ghost--quiet; both headers restructured (the weapon, its build as tag-XS-box.static-cat, the state line in label-xs-600 warn / ok). -cat for .50 GS is Secondaries' #3F6E8E (his pin 6), BAL-27's is AR's #FF3B5C. Ledger pophead, popbtns, popdiv; popsurf's shadow updated; C15 updated.
+
