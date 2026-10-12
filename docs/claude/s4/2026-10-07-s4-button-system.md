@@ -419,3 +419,4 @@ Line height and letter spacing: mine to set (memory `feedback_line_height_tracki
 - "also the problem pop-up has this hazard strip at the top of it, where'd that go??" (with a screenshot of Builder-2's problem card)
 - Applied (spec v72): tint's outline the colour at 55% opacity (C9a, ledger tint55); dividers rule3 14 in with 6 above and below (the line was taking a pixel out of the gap below); the hazard tape back on the problem card; the edge-and-glow proposal drawn on the board beside today's.
 - (2026-10-11 22:38 EDT) "for the pop-up comparison, can you change the 1.5px outline to 1px?" → the proposal's edge is 1px (spec v73); today's stays 1.5px beside it.
+- (2026-10-11 22:41 EDT) pop-up edge: "1px at 55% + 5px halo at 16%" → C15 and every pop-up (spec v74), scaffold taken down. Field focus: "what do you think? im leaning 1.5px at 100% for the focus" (asked back with my view).
