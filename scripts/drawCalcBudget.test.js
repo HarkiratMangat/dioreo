@@ -474,7 +474,7 @@ t('Set Balance and Upgrade are disabled until a calculation exists to write them
     assert.strictEqual(buttons(empty).some(b => /^Upgrade/.test(b.label || '')), false);
     const drafted = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: false }));
     assert.strictEqual(Boolean(buttonLabelled(drafted, 'Set Balance').disabled), false);
-    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Upgrade: Not included').disabled), false);
+    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Upgrade: NO').disabled), false);
 });
 
 t('the saved-calculations list and the form share ONE screen -- both present, no extra hop', () => {
