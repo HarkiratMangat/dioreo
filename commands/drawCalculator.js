@@ -324,10 +324,12 @@ function qtyAllRow(state, basket) {
 
 // Style B: one "× N" dropdown per picked draw, showing its current count.
 function qtyTypeRow(state, basket, drawKey) {
+    // One select per draw, so each needs its own id: `f` carries the draw's index (Discord rejects duplicate custom_ids). The qty handler reads the draw from the picked value and clears `f` before re-rendering.
+    const rowState = { ...state, focus: Object.keys(DRAW_META).indexOf(drawKey) };
     const cur = basket.banners.filter(b => b.drawKey === drawKey).length;
     const max = Math.min(25, Math.max(4, cur));
     return { type: 1, components: [{
-        type: 3, custom_id: encodeState('qty', state), placeholder: `${shortName(drawKey)} × ${cur}`,
+        type: 3, custom_id: encodeState('qty', rowState), placeholder: `${shortName(drawKey)} × ${cur}`,
         options: Array.from({ length: max }, (_, i) => ({ label: `${shortName(drawKey)} × ${i + 1}`, value: `${drawKey}:${i + 1}`, default: i + 1 === cur, emoji: emojis.parseEmoji(emojis[DRAW_META[drawKey].tier]) }))
     }] };
 }
@@ -357,7 +359,8 @@ function pageNavRow(state, banners, perPage = MAX_BANNERS_PER_PAGE) {
         type: 1,
         components: [
             { type: 2, style: 2, label: '◀ Prev', custom_id: encodeState('bpage', { ...state, bpage: Math.max(0, current - 1) }), disabled: current === 0 },
-            { type: 2, style: 2, label: `Page ${current + 1}/${totalPages}`, custom_id: encodeState('bpage', state), disabled: true },
+            // Its own verb: on the first page Prev targets page 0 and on the last Next targets the current page, so a 'bpage' id here would equal one of theirs and Discord rejects the whole message (COMPONENT_CUSTOM_ID_DUPLICATED, found 2026-10-13 on any form with 5+ lines). Disabled, so no handler reads it.
+            { type: 2, style: 2, label: `Page ${current + 1}/${totalPages}`, custom_id: encodeState('bpinfo', state), disabled: true },
             { type: 2, style: 2, label: 'Next ▶', custom_id: encodeState('bpage', { ...state, bpage: Math.min(totalPages - 1, current + 1) }), disabled: current === totalPages - 1 }
         ]
     };
@@ -446,7 +449,7 @@ function bottomNavRow(state, { showReset = true } = {}) {
     if (showReset) components.push({ type: 2, style: resetArmed ? 4 : 2, label: resetArmed ? 'New Calculation — click again' : 'New Calculation', custom_id: encodeState(resetArmed ? 'reset' : 'resetarm', state) });
     components.push({ type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) });
     // Dev bot only, on the form: cycles the three quantity styles so Harkirat can try each (see QTY_STYLES).
-    if (!showReset && process.env.NODE_ENV === 'development') components.push({ type: 2, style: 2, label: `Test: style ${getQtyStyle()}`, custom_id: encodeState('qstyle', state) });
+    if (!showReset && process.env.NODE_ENV === 'development') components.push({ type: 2, style: 2, label: `Test: style ${getQtyStyle()} (tap for ${QTY_STYLES[(QTY_STYLES.indexOf(getQtyStyle()) + 1) % QTY_STYLES.length]})`, custom_id: encodeState('qstyle', state) });
     return { type: 1, components };
 }
 

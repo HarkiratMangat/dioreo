@@ -26,7 +26,14 @@ const countComponents = node => Array.isArray(node)
         ? 1 + countComponents(node.components || []) + (node.accessory ? countComponents(node.accessory) : 0)
         : 0;
 const SHARE_ROW = { type: 1, components: [{ type: 2, style: 2, label: 'Show Everyone', custom_id: 'share_public' }] };
-const messageCount = panel => countComponents([panel, SHARE_ROW]);
+// Every size check is also a duplicate-id check: Discord rejects a whole message when two components share a custom_id (COMPONENT_CUSTOM_ID_DUPLICATED), which is how style B and the line pager froze the form on 2026-10-13 while staying well under 40.
+function assertUniqueIds(panel) {
+    const ids = [];
+    (function walk(n) { if (Array.isArray(n)) return n.forEach(walk); if (!n || typeof n !== 'object') return; if (n.custom_id) ids.push(n.custom_id); walk(n.components); walk(n.accessory); })([panel, SHARE_ROW]);
+    const dup = ids.find((id, i) => ids.indexOf(id) !== i);
+    assert.ok(!dup, `duplicate custom_id ${dup}`);
+}
+const messageCount = panel => { assertUniqueIds(panel); return countComponents([panel, SHARE_ROW]); };
 
 // buildCalculatorPanel returns the message's TOP-LEVEL list (Container + sibling nav row); buildSetupPanel still returns a bare Container. Both shapes go through here.
 const container = p => (Array.isArray(p) ? p.find(x => x && x.type === 17) : p);

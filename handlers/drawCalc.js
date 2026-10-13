@@ -218,7 +218,7 @@ async function route(interaction) {
         if (!basket) return true;
         const [key, raw] = String(interaction.values[0] || '').split(':');
         const count = Number(raw);
-        if (!DRAW_META[key] || !(count >= 1 && count <= 25)) { await renderPanel(interaction, state, basket); return true; }
+        if (!DRAW_META[key] || !(count >= 1 && count <= 25)) { await renderPanel(interaction, { ...state, focus: null }, basket); return true; }
         const { banners, removed } = setTypeCount(basket.banners, key, count);
         const losing = removed.filter(b => b.pullsDone > 0);
         if (losing.length) {
@@ -227,7 +227,7 @@ async function route(interaction) {
             return true;
         }
         const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
-        await renderPanel(interaction, state, updated);
+        await renderPanel(interaction, { ...state, focus: null }, updated);
         return true;
     }
 
