@@ -510,3 +510,17 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 ## His 2026-10-13 10:52 EDT, verbatim, written 2026-10-13 10:53 EDT
 - "honestly, i barely notice the 24% on sunk for the select-hover. and i kind of don't like that just 24% changes on different surfaces. maybe let's try 30% on sunk? selected 18% on sunk is fine tho."
 - Built in spec v92: the alternative + hover (its column, the live selected beside it, and In use's second line) is the colour 30% on sunk; selected stays 18% on sunk.
+
+## His 2026-10-13 10:55–11:41 EDT, verbatim, written 2026-10-13 11:49 EDT
+- (10:55) "side note, should we also just reword \"paint\" to \"neutral\"? this way, if accent then paint/tint/wash/fill. if no accent then neutral. adds a style but overall simplifies definitions? what do you think"
+- (11:41) "yes rename to neutral, do it with the selected fold."
+> for the states:
+> * neutral: rest/rest-hover are fine. for selected/selected-hover...
+>    * selected: fill=hi. outline=ink 60%. words=ink.
+>    * selected-hover: fill≈hi 92% on ink. outline=ink. words=ink
+> * tint/paint: rest/rest-hover are fine. for selected/selected-hover...
+>    * selected: fill=warn 18% on sunk. outline=warn. words=warn 26% on white.
+>    * selected-hover: fill=warn 30% on sunk. outline=warn. words=warn 26% on white.
+> * wash: rest/rest-hover/selected/selected-hover all seem fine. Unless you'd suggest changing anything about them?
+> * fill/static no selected/selected-hover states.
+- Built in spec v93: C22 and the rename (C9, C9a). The styles grid gains a neutral row and a selected pair per cell; the scaffold is folded in; In use draws each control once on C22. Two bare-paint tokens stay for the class re-audit (History's empty chips, Admin traffic: his 19:48 EDT tokens).
