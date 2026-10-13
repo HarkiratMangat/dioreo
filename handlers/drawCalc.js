@@ -231,6 +231,7 @@ async function route(interaction) {
         return true;
     }
 
+    // `setfocus` and `down` are no longer rendered (2026-10-13 14:28 EDT: each line carries its own ▲ now). Kept so a panel posted before that still answers its old controls.
     if (interaction.isStringSelectMenu() && state.verb === 'setfocus') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;

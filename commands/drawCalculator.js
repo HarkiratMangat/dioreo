@@ -19,7 +19,8 @@ const { CP_PACKAGES, formatMoney, optimizePurchase } = require('../utils/cpPacka
 
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
 const DRAW_KEYS = Object.keys(DRAW_META);
-const MAX_BANNERS_PER_PAGE = 5; // readability, not budget -- 9 fit inside the component cap (spec §2)
+// 4, not 5, since 2026-10-13 14:26 EDT: each line now carries its own ▲ (a Section with a button accessory, 3 components) in place of the shared reorder select and ▲/▼ row, and 5 such lines measured past the 40-component cap. Same count the setup form uses.
+const MAX_BANNERS_PER_PAGE = 4;
 // The SETUP screen paginates tighter than the Edit page, and the difference is a budget fact, not an inconsistency: setup also carries the saved-calculations list, the draw multi-select, the region row and the Calculate row, all of which the Edit page does without. Measured by the sweep in scripts/drawCalcBudget.test.js -- change this number and that test tells you immediately whether it still fits.
 const SETUP_LINES_PER_PAGE = 4;
 
@@ -279,32 +280,6 @@ function addAnotherRow(state, basket) {
                 emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier])
             }))
         }]
-    };
-}
-
-// The ONE remaining focus pointer (spec §2) -- which banner ▲/▼ will move. A select, not a per-banner button pair, because a button pair per banner would cost a whole extra Action Row PER banner (5 banners = 5 extra rows) for a control used far less often than pulls-done.
-function reorderFocusRow(state, basket) {
-    return {
-        type: 1,
-        components: [{
-            type: 3, custom_id: encodeState('setfocus', state), placeholder: 'Reorder: pick a line to move...',
-            options: basket.banners.map((b, i) => ({
-                label: `#${i + 1} ${shortName(b.drawKey)} · ${b.pullsDone}/${pullCount(basket.region, b.drawKey) ?? '?'}`,
-                value: String(i),
-                default: state.focus === i
-            }))
-        }]
-    };
-}
-
-function reorderButtonsRow(state, basket) {
-    const focus = clampFocus(state.focus, basket.banners.length);
-    return {
-        type: 1,
-        components: [
-            { type: 2, style: 2, label: '▲ Move Up', custom_id: encodeState('up', { ...state, focus }), disabled: focus === null || focus === 0 },
-            { type: 2, style: 2, label: '▼ Move Down', custom_id: encodeState('down', { ...state, focus }), disabled: focus === null || focus === basket.banners.length - 1 }
-        ]
     };
 }
 
@@ -619,24 +594,25 @@ function buildBasketPage(state, basket, accentColor) {
         return { type: 17, accent_color: accentColor, components };
     }
 
-    components.push({ type: 10, content: '-# Select the **Pulls Done** for each line below. Reorder with the select + ▲/▼ near the bottom.' });
+    // 🔴 REORDER IS A ▲ ON EACH LINE (2026-10-13 14:26 EDT, Harkirat picked option A). It replaced a shared "Reorder: pick a line" select plus ▲/▼ buttons, where moving #5 to the top took a pick and four clicks; now each line's own heading carries a ▲ that moves it up one place, and the separate list that repeated every dropdown is gone. Priority is still the array order and is never sorted for the player.
+    components.push({ type: 10, content: '## YOUR DRAWS\n-# Set the **pulls done** on each draw. ▲ moves a draw up the Priority Plan.' });
 
     const totalPages = Math.max(1, Math.ceil(basket.banners.length / MAX_BANNERS_PER_PAGE));
     const bpage = Math.min(state.bpage || 0, totalPages - 1);
     const start = bpage * MAX_BANNERS_PER_PAGE;
     const pageIndices = basket.banners.map((_, i) => i).slice(start, start + MAX_BANNERS_PER_PAGE);
 
-    components.push({ type: 10, content: `## YOUR DRAWS\n${pageIndices.map(i => `${emojis.smallDot} #${i + 1} — ${drawName(basket.banners[i].drawKey)} (${basket.banners[i].pullsDone}/${pullCount(basket.region, basket.banners[i].drawKey) ?? '?'})`).join('\n')}` });
-    for (const i of pageIndices) components.push(bannerPullsRow(state, basket, i));
+    for (const i of pageIndices) {
+        components.push({
+            type: 9,
+            components: [{ type: 10, content: `**#${i + 1}** · ${drawName(basket.banners[i].drawKey)}` }],
+            accessory: { type: 2, style: 2, label: '▲', custom_id: encodeState('up', { ...state, focus: i }), disabled: i === 0 }
+        });
+        components.push(bannerPullsRow(state, basket, i));
+    }
 
     if (totalPages > 1) components.push(pageNavRow({ ...state, bpage }, basket.banners));
     if (usedTypes(basket.banners).length) components.push(addAnotherRow(state, basket));
-
-    if (basket.banners.length > 1) {
-        components.push({ type: 14, spacing: 1, divider: true });
-        components.push(reorderFocusRow(state, basket));
-        components.push(reorderButtonsRow(state, basket));
-    }
 
     components.push({ type: 14, spacing: 1, divider: true });
     components.push({ type: 1, components: [{ type: 2, style: 1, label: '◀ Cost Breakdown', custom_id: encodeState('page', { ...state, page: 0 }) }] });
@@ -665,7 +641,7 @@ function buildHelpPanel(accentColor) {
         { type: 10, content: [
             '**Calculation** — everything you are pricing out in one go. Name it to keep it; see Save below.',
             '**Line** — one draw in that calculation, plus how many pulls you have already done on it. There is no "quantity": three Mythic Weapon draws are three separate lines, each with its own progress, because you are rarely equally far along on all three.',
-            '**Priority** — the ORDER your lines appear in. It is never sorted for you; reorder with the select + ▲/▼ on the Edit Draws page.',
+            '**Priority** — the ORDER your draws appear in. It is never sorted for you; ▲ beside a draw on the Edit Draws page moves it up.',
             '**Simplify / Show Breakdown** — collapses or expands the full per-package math. Simplify still shows the total CP needed and the cheapest package.',
             '**Region** — the CP price of your first pull on a draw (10, 20 or 30 CP). It changes every price in the calculation.',
             '**Shortcut** — `/draw calculator draw: pulls: balance:` skips the form and opens straight on that draw\'s result.',

@@ -102,6 +102,8 @@ The rest is wording and layout: picker labels are SHORT names (`SHORT_NAME`, eac
 
 **Slash shortcut** (2026-10-13 12:49 EDT, his "yeah wire them"): `draw`/`pulls`/`balance` on the slash command go through `slashShortcut()`. `draw` creates a NEW calculation already `submitted`, so it opens on the result; `pulls` is clamped to the draw's real count (the option's 0-10 is one range for every draw, two have 7); a bare `balance` lands on whichever calculation opens; anything ignored becomes a panel notice.
 
+**Reorder and Show Breakdown** (2026-10-13 14:28 EDT): Edit Draws gives each line its own ▲ as a Section accessory on the line's heading (his pick, option A), replacing the shared reorder select and ▲/▼ row and the list that repeated every dropdown; it pages at **4** lines because 5 measured past the 40-component cap. Show Breakdown sits beside the COST BREAKDOWN heading the same way (his idea), and `handlers/share.js` unwraps a Section whose accessory is a calculator button so the public snapshot carries no live control.
+
 **Visibility:** `/draw calculator` reads `calculatorVisibility` (its own `/settings` toggle, public by default), no longer `seasonalVisibility`. A server's `/admin` policy still overrides it at the two choke points, with nothing calculator-specific.
 
 ### 🔴 THE PURCHASE OPTIMIZER'S TWO METHODS (rewritten 2026-08-27 00:07 EDT)

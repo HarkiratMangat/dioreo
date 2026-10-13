@@ -182,9 +182,9 @@ t('priority is the ARRAY ORDER, never a cheapest-first sort -- proven with an or
     const { perBanner } = basketCost('region_10', banners, false);
     assert.ok(perBanner[0].cost > perBanner[1].cost, 'fixture invariant broken -- banner 0 must cost MORE than banner 1 for this to be a real falsifier');
     const panel = render(makeBasket({ banners }), { page: 1 });
-    const basketListText = texts(panel).find(c => c.startsWith('## YOUR DRAWS'));
-    const firstLine = basketListText.split('\n')[1];
-    assert.ok(firstLine.includes('#1') && firstLine.includes('0/10'), 'banner #1 in the listing must be the array\'s first entry (0 pulls), not the cheaper 9-pulls one a cost-sort would promote');
+    // Each line is a ▲ Section heading plus its own pulls dropdown since 2026-10-13; line #1's dropdown must hold the array's first entry.
+    const first = selects(panel).find(s => s.custom_id.split('~')[1] === 'bpulls' && dc.decodeState(s.custom_id).focus === 0);
+    assert.strictEqual(first.options.find(o => o.default).value, '0', 'banner #1 must be the array\'s first entry (0 pulls), not the cheaper 9-pulls one a cost-sort would promote');
 });
 
 // ==========================================
@@ -210,11 +210,11 @@ t('setting up to 3 banners costs at most 4 taps -- one dropdown click per banner
     assert.strictEqual(bpullsSelects.length, 3, 'all 3 banners must have their OWN dropdown visible at once -- no focus pointer, no pagination hiding them at this size');
 });
 
-t('paginates the banner list at 5 per page, not because of the component budget (9 fit) but for readability', () => {
+t('paginates the banner list at 4 per page -- 5 lines with a ▲ each measured past the 40-component cap', () => {
     const banners = Object.keys(DRAW_META).slice(0, 7).map(k => ({ drawKey: k, pullsDone: 0 }));
     const panel = render(makeBasket({ banners }), { page: 1 });
     const bpullsSelects = selects(panel).filter(s => s.custom_id.split('~')[1] === 'bpulls');
-    assert.strictEqual(bpullsSelects.length, 5, '7 banners must show exactly 5 on the first page');
+    assert.strictEqual(bpullsSelects.length, 4, '7 banners must show exactly 4 on the first page');
     assert.ok(buttons(panel).some(b => /Page 1\//.test(b.label)), 'a pagination indicator must render when there is more than one page');
 });
 
@@ -615,6 +615,22 @@ t('the slash shortcut opens a calculated line, clamps pulls to the draw, and exp
     assert.strictEqual(orphan.balance, 500, 'a bare balance is applied to whichever calculation opens');
     assert.ok(/needs a `draw`/.test(orphan.notice));
     assert.deepStrictEqual(dc.slashShortcut({}), { create: null, balance: null, notice: null }, 'no options: no shortcut at all');
+});
+
+t('every line on Edit Draws carries its own ▲, the first one disabled, and the shared reorder select is gone', () => {
+    const banners = [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 3 }, { drawKey: 'doubleEpicCharacters', pullsDone: 0 }];
+    const panel = render(makeBasket({ banners }), { page: 1 });
+    const ups = container(panel).components.filter(c => c.type === 9 && c.accessory && c.accessory.label === '▲').map(c => c.accessory);
+    assert.strictEqual(ups.length, 3, 'one ▲ per line');
+    assert.deepStrictEqual(ups.map(b => dc.decodeState(b.custom_id).focus), [0, 1, 2], 'each ▲ moves its own line');
+    assert.deepStrictEqual(ups.map(b => Boolean(b.disabled)), [true, false, false], 'line #1 cannot move up');
+    assert.ok(ups.every(b => dc.decodeState(b.custom_id).verb === 'up'));
+    assert.strictEqual(selects(panel).some(s => s.custom_id.split('~')[1] === 'setfocus'), false, 'no shared reorder select');
+    assert.strictEqual(buttons(panel).some(b => /Move (Up|Down)/.test(b.label || '')), false, 'no shared ▲/▼ row');
+    for (let n = 1; n <= 9; n++) {
+        const many = Array.from({ length: n }, (_, i) => ({ drawKey: Object.keys(DRAW_META)[i], pullsDone: 0 }));
+        for (let bpage = 0; bpage < 3; bpage++) assert.ok(messageCount(render(makeBasket({ banners: many }), { page: 1, bpage })) <= 40, `${n} lines, page ${bpage + 1} is over 40`);
+    }
 });
 
 t('Show Breakdown sits beside the COST BREAKDOWN heading, not in the action row', () => {
