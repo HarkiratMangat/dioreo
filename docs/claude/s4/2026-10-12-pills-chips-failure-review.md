@@ -94,3 +94,25 @@ The fix, every call from here on:
   - focus-visible for buttons, pills and rails, never standardized (C13 covers fields only)
   - whether a rail's picked segment and a standalone chip share one recipe
   - which styles get a selected state at all (static? fill?)
+
+## The redraw, and what it showed (spec v95, written 2026-10-13 17:26 EDT)
+
+- **Two implementations of one control.** Styles' "Selected, in use" had a live rail and chip from v93; Pills, Rails and Chips drew their own dead copies (spec-small.js: Pill, BoxRail, TierRail, BadgeChip, PickAll, Key, each with tabindex -1, no click and its own recipe). Fixing the live copy left the dead ones as they were, because nothing tied them together. That is why it was a class failure: there was no class, only instances. Every control now comes from `spec-ctl.js`, and all four sections draw the same component.
+- **The instrument watched one section.** sel-check.cjs exercised only #selected, so it reported 27 live controls while 57 elsewhere were dead. ctl-check.cjs walks every control in Pills, Rails, Chips and Selected; its first run, on v94, failed with those 57 before it was trusted on v95.
+- **A crop that existed was taken as a crop that was right.** Builder-2's view rail crops (spec-img/sel-orig/vt-*.png) have shown only the tops of its segments since they were taken, and nobody opened them. Still open: in "Pick one build" the rail sits in the selection bar's folded list (vt-probe.cjs). It is the one control redrawn from its CSS without a full original.
+
+### Mistakes in the redraw itself, caught before publishing
+
+- I set counts to the plain accent, reading "the count # should also be matching the accent color" without its context: on v81 the filter chips' counts were already the colour 80% on white, which he called "accent colored". The plain accent read 3.0 to 3.9:1 on the dark category hues; counts went back to the lighter shade (lowest 4.6:1).
+- The build key lost its 13 · 900 face in the rewrite, a property dropped while moving code; ctl-check caught it.
+- The Gauge read a pill with a count as icon, words, pad, so its right pad read 29.6 against 10, and on the checkbox chips it measured the badge's own icon. It now reads a checkbox as the lead and the words through the count.
+- My crop attribute (data-ck) collided with the one sel-check stamps at run time; sel-check crashed on null instead of failing. Renamed data-cx.
+- One edit heredoc ran empty (no terminator), and the checks chained after it passed the unchanged board. Caught only because no "ok" lines printed.
+
+### From now on
+
+- One component per control kind, in spec-ctl.js; a section never draws its own copy.
+- A check is trusted only after it has failed on the board it replaces.
+- A crop is opened and looked at before it is cited.
+- A rewrite lists every property the old code set and ticks each off against the new.
+- An edit batch prints a line per edit; no lines means nothing ran, whatever the checks after it say.
