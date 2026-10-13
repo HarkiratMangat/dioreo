@@ -540,3 +540,14 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - "i also notice we're using different fonts instead of different buttons/tags/chips/pills/rails, can we set a rule for those? for what button or style uses what font?"
 - "and you still have all the pending work from my pre-compact comments to work on."
 - (12:37) "show me static color 26% on white text with --ghost as well"
+
+## His 2026-10-13 15:09–15:18 EDT answers on the answer page (artifact TdgcUCGf89G3eatMEoD4kR, db collection `answers`), verbatim, written 2026-10-13 15:26 EDT
+- wash (15:09): 34% / 42%
+- static (15:11), note: "Keep both. Implement it as a flag or something such as “—dual” because notice on some of the older tag designs that they had white + accent colored together? The 26% on white would basically replace that full white color for the tags"
+- build (15:12): --ghost 600
+- tall (15:14): S 24; note: "For the “live now”, keep that border on the left side"
+- fonts (15:16): adopt the rule
+- rails (15:17): yes, use C22; note: "Side note “wtf does c22 even mean?? That’s jargon”"
+- focus (15:18), note: "Idc for it so make it whatever you want"
+- q8 (15:18): still deciding; note: "I’ll let you know once I’m home on my mac"
+- Built in spec v94; C17, C22, C23, C24 written; five ledger rows for the Builder-2 update.
