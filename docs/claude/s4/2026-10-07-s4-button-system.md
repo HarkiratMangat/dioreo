@@ -556,3 +556,8 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 > also, your build key chips don't even have the proper plus/minus icon in the top corner.
 > and the checkbox buttons all lack the proper hover events for the checkbox and it's style
 - Built in spec v97: the keys carry Compare's corner mark (a plus to put a build in, a minus to take it out, shown on hover, the category 88% on white); every checkbox chip's checkbox is Builder-2's live "B · Soft well" in all five states (empty, the tick previewed on hover, ticked with a halo, ticked and pointed at with the tick lifting off, mixed). One checkbox size, 18, as Builder-2's.
+
+## His 2026-10-13 19:45–19:46 EDT, verbatim, written 2026-10-13 19:50 EDT
+- On "Selected, in use": "where do i even see that on the spec-board?" → shown: Styles, the block under the four styles grid, outlined in a picture.
+- On Live now's left bar: "it's part of the redesign because i want to give tags a few different shapes of their own and one of them is the left bar tag" → the bar question folds into Q8: tags get shapes of their own, one of them the left-bar tag.
+- (19:46, his screenshot: Builder-2's Live now beside mine) "also draw it correctly, that left bar looks stupid on your proposed version!" → spec v98: the bar is an inset 3px shadow under the outline, as Builder-2's tab tag (app.css .btab), so it curves with the corner.
