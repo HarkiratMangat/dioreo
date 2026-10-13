@@ -114,6 +114,12 @@ The fix, every call from here on:
 - **Every section, not only the four.** board-census.cjs clicked all 270 control-shaped elements on the board. 140 are plain buttons, which answer with hover and press only. Two stateful controls were dead, both on `noop` handlers, the pattern this review already forbids: the collapse button in Flags' reveal cases and the selection chip's ×. Both are live now. The ten pressed "+ hover" figures in the styles grid are deliberate forced specimens beside their live twins.
 - **Tags and badges.** tag-check.cjs holds 61 tags (57 in Tags, 4 on the pop-up card) and 12 badges to C17 and C18: rows, corners, padding, icons, the 6 to the words, the 1.5px outline, faces, the --dual lead. None miss. It was trusted only after it failed on a tag broken on purpose (TC_FALSIFY=1).
 
+### His catch on v96 (18:32 EDT, written 2026-10-13 18:46 EDT)
+
+- **The parts were never read.** A key's corner mark and a checkbox's tick are parts with their own states. I read each control's skin (fill, outline, words) and never opened `.cx-kb` or `.cb` in Builder-2's CSS, so the key had a minus on picked hover only and no plus, and the checkbox had a Lucide tick that appeared only when ticked.
+- **The originals hid the plus.** Builder-2's key crops exist only as picked (every key in Compare was picked when they were taken), so no original I compared against ever showed the plus. A missing state in the originals is a gap to close, not a state to skip.
+- **The check could not see it.** ctl-check read the control's skin only. It now reads the parts: the checkbox's four looks and its tick on hover, the key mark's visibility and its plus or minus. It failed on v96 with nine findings before v97 passed it.
+
 ### From now on
 
 - One component per control kind, in spec-ctl.js; a section never draws its own copy.
@@ -121,3 +127,4 @@ The fix, every call from here on:
 - A crop is opened and looked at before it is cited.
 - A rewrite lists every property the old code set and ticks each off against the new.
 - An edit batch prints a line per edit; no lines means nothing ran, whatever the checks after it say.
+- A control's parts (a checkbox, a corner mark, a count, a meter) get their own states read from Builder-2's CSS and checked, not only the control's skin.
