@@ -487,3 +487,8 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 
 ## His 2026-10-12 23:30 EDT words, verbatim, written 2026-10-12 23:38 EDT
 - (23:30) "also in the scafolding you removed the current version of the rest+hover so i could compare them to the selected+hover" (spec v87: each scaffold row draws its current rest and hover again, before the candidates)
+
+## His 2026-10-13 09:55 EDT asks, verbatim, written 2026-10-13 09:57 EDT
+> * can you change wash's white text to `color 26% on white`
+> * can you also change style 2's text from white to `color 26% on white`, then let me see.
+- Built in spec v88: wash's words at rest and on hover (every colour) and in candidate 1's selected; candidate 2's words wherever they were white (paint-warn, tint-warn, rails and chips). Paint with no colour keeps ink: it has no colour to mix. Wash's candidate 2 (fill) had dark on-colour words, unchanged. C9a updated.
