@@ -29,9 +29,11 @@ function ownsCustomId(customId) {
 function parseAmount(raw) {
     if (!raw) return 0;
     const cleaned = String(raw).trim().toLowerCase().replace(/[, ]/g, '');
-    if (cleaned === '') return 0;
-    const k = cleaned.endsWith('k');
-    const n = Number(k ? cleaned.slice(0, -1) : cleaned);
+    // Strip a trailing "cp" (2026-10-13 10:37 EDT): every figure on the panel reads like `26,630 CP`, so `3000 CP` is the input the panel itself teaches, and it used to be rejected as invalid.
+    const unit = cleaned.endsWith('cp') ? cleaned.slice(0, -2) : cleaned;
+    if (unit === '') return 0;
+    const k = unit.endsWith('k');
+    const n = Number(k ? unit.slice(0, -1) : unit);
     if (!Number.isFinite(n) || n < 0) return null;
     return Math.floor(k ? n * 1000 : n);
 }
@@ -319,4 +321,4 @@ async function handleDrawCalcInteraction(interaction) {
     return handled !== false;
 }
 
-module.exports = { handleDrawCalcInteraction, OWNED_PREFIXES };
+module.exports = { handleDrawCalcInteraction, OWNED_PREFIXES, parseAmount };

@@ -500,6 +500,16 @@ t('the cost breakdown LEADS with CP Needed -- the number the command exists to p
     assert.strictEqual(/Draws in basket/.test(block), false, 'the redundant line count must be gone -- the list above already shows every line');
 });
 
+t('Set Balance accepts the amount the way the panel prints it -- "3000 CP", "3,000 cp", "3k CP"', () => {
+    const { parseAmount } = require('../handlers/drawCalc');
+    assert.strictEqual(parseAmount('3000 CP'), 3000);
+    assert.strictEqual(parseAmount('3,000 cp'), 3000);
+    assert.strictEqual(parseAmount('3k CP'), 3000);
+    assert.strictEqual(parseAmount('3000'), 3000);
+    assert.strictEqual(parseAmount('cp'), 0, 'a bare unit is an empty amount, never NaN');
+    assert.strictEqual(parseAmount('3000 CAD'), null, 'any other unit is still rejected');
+});
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed === 0 ? 0 : 1);
 })();
