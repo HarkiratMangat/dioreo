@@ -502,3 +502,7 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (10:19) "so would the selected-hover be 24% on sunk then as well?" (mine: yes, 24% on sunk: an even 12 / 18 / 24 ladder, 3.5–5.1 from selected, the same on any surface)
 - (10:24) "okay remove 1 and 1b for paint/paint-color/tint-color and remove 2 for wash-color. and add another column to the right side showing selected-hover using 24% on sunk."
 - Built in spec v90: paint, paint-warn and tint-warn show only candidate 2, wash-warn only candidate 1; a fifth column draws candidate 2's + hover at the colour 24% on sunk; In use draws candidate 2 twice (+ hover 24%, + hover 24% on sunk). Not final; selRecipe keeps all three candidates.
+
+## His 2026-10-13 10:29 EDT, verbatim, written 2026-10-13 10:29 EDT
+- "sorry, 1 more tweak. please also copy the selected column beside the hover 24% on sunk. because that column has the button enabled and it allows me to actually test it by real time hovering over the selected state"
+- Built in spec v91: a sixth column, a live selected button whose hover is candidate 2's + hover at the colour 24% on sunk.
