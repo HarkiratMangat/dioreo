@@ -524,3 +524,19 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 > * wash: rest/rest-hover/selected/selected-hover all seem fine. Unless you'd suggest changing anything about them?
 > * fill/static no selected/selected-hover states.
 - Built in spec v93: C22 and the rename (C9, C9a). The styles grid gains a neutral row and a selected pair per cell; the scaffold is folded in; In use draws each control once on C22. Two bare-paint tokens stay for the class re-audit (History's empty chips, Admin traffic: his 19:48 EDT tokens).
+
+## His 2026-10-13 12:28–12:37 EDT replies on v93, verbatim, written 2026-10-13 12:41 EDT
+- Two bare-paint tokens: "elaborate?"
+- Wash raise: "show me now vs your proposed raise."
+- Rails and chips on paint's C22: "confused what this question is"
+- Neutral rows in Flags and Icon-only: "yeah sure"
+- Sideways scroll below 1282: "it's fine" (closed: not fixed)
+- 28-tall tags: "which ones are these?"
+- Left accent bar: "keep for now, i havent decided how to standardize them yet tho"
+- Build 1: "Space Grotesk size 11, idk which weight, line height/space are yours, style: static-cat--ghost. how does that look? what do you think?"
+- Q8: "this is still an open question because im deciding."
+- "also, can i see static with text in `color 26% on white`?"
+- "you also need to update wash icon button's icons to match it's new `color 26% on white` text instead of full white."
+- "i also notice we're using different fonts instead of different buttons/tags/chips/pills/rails, can we set a rule for those? for what button or style uses what font?"
+- "and you still have all the pending work from my pre-compact comments to work on."
+- (12:37) "show me static color 26% on white text with --ghost as well"
