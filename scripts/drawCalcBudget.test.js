@@ -602,6 +602,20 @@ t('Draw Prices opens its own message instead of replacing the calculator', () =>
     assert.strictEqual(dc.decodeState(nav.custom_id).verb, 'prices');
 });
 
+t('the slash shortcut opens a calculated line, clamps pulls to the draw, and explains what it ignored', () => {
+    const full = dc.slashShortcut({ draw: 'mythicWeapon', pulls: 3, balance: 2000, region: 'region_10' });
+    assert.deepStrictEqual(full.create, { banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], region: 'region_10', balance: 2000, submitted: true });
+    assert.strictEqual(full.notice, null);
+    const seven = dc.slashShortcut({ draw: 'sevenSpinLegendaryWeapon', pulls: 10, region: 'region_10' });
+    assert.strictEqual(seven.create.banners[0].pullsDone, 7, 'a 7-pull draw must never store 10 pulls');
+    assert.ok(/has 7 pulls/.test(seven.notice));
+    const orphan = dc.slashShortcut({ pulls: 4, balance: 500 });
+    assert.strictEqual(orphan.create, null);
+    assert.strictEqual(orphan.balance, 500, 'a bare balance is applied to whichever calculation opens');
+    assert.ok(/needs a `draw`/.test(orphan.notice));
+    assert.deepStrictEqual(dc.slashShortcut({}), { create: null, balance: null, notice: null }, 'no options: no shortcut at all');
+});
+
 t('the first screen leads with what the player gets', () => {
     const text = allText(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] }));
     assert.ok(/See how much CP you still need, and the cheapest way to buy it/.test(text));

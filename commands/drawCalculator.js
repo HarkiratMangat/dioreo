@@ -72,6 +72,24 @@ function applySelection(banners, selected) {
     return kept;
 }
 
+// The slash-command shortcut (2026-10-13 12:47 EDT, Harkirat: "yeah wire them"). `draw`, `pulls` and `balance` sat on /draw calculator doing nothing once the setup form arrived. Now `draw` opens a NEW calculation straight on its result -- one line at `pulls`, the player's `balance` -- skipping the form and Calculate. `balance` alone lands on whichever calculation opens. `pulls` is clamped to the draw's real pull count, since two draws have 7 pulls and the option allows 10 (Discord's min/max is one range for every draw). Pure, so it is tested without Discord or Mongo.
+function slashShortcut({ draw = null, pulls = null, balance = null, region = 'region_10' }) {
+    const notes = [];
+    if (pulls !== null && !draw) notes.push('`pulls` needs a `draw` to count against, so it was left out.');
+    if (!draw || !DRAW_META[draw]) return { create: null, balance, notice: notes.join(' ') || null };
+    const total = pullCount(region, draw);
+    let pullsDone = Math.max(0, pulls ?? 0);
+    if (total !== null && pullsDone > total) {
+        notes.push(`${drawName(draw)} has ${total} pulls, so ${pullsDone} was set to ${total}.`);
+        pullsDone = total;
+    }
+    return {
+        create: { banners: [{ drawKey: draw, pullsDone }], region, balance: balance ?? 0, submitted: true },
+        balance: null,
+        notice: notes.join(' ') || null
+    };
+}
+
 function upgradeCardEmoji(drawKey) {
     if (drawKey === 'mythicWeapon') return emojis.mythicCard;
     if (drawKey === 'mythicCharacter') return emojis.mythicCoin;
@@ -640,6 +658,7 @@ function buildHelpPanel(accentColor) {
             '**Priority** — the ORDER your lines appear in. It is never sorted for you; reorder with the select + ▲/▼ on the Edit Draws page.',
             '**Simplify / Show Breakdown** — collapses or expands the full per-package math. Simplify still shows the total CP needed and the cheapest package.',
             '**Region** — the CP price of your first pull on a draw (10, 20 or 30 CP). It changes every price in the calculation.',
+            '**Shortcut** — `/draw calculator draw: pulls: balance:` skips the form and opens straight on that draw\'s result.',
             '**Save** — naming a calculation is what keeps it. An unnamed one is cleared automatically after 30 days; a named one is kept until you delete it. Running `/draw calculator` again reopens the calculation you changed last.'
         ].join('\n\n') }
     ];
@@ -655,7 +674,7 @@ function buildCalculatorPanel(state, basket, accentColor, options = {}) {
     if (!basket) {
         const container = state.basketId
             ? buildMissingBasketPanel(state, options.savedBaskets, accentColor)
-            : buildSetupPanel(state, null, options.savedBaskets, accentColor, { region: options.region });
+            : buildSetupPanel(state, null, options.savedBaskets, accentColor, { region: options.region, notice: options.notice });
         return [container, bottomNavRow(state, { showReset: false })];
     }
     // 🔴 `submitted` is what separates a draft from a result, and it lives on the DOCUMENT, not the customId -- that is the whole reason a result survives a restart and "persists until reset / new calculation".
@@ -675,6 +694,7 @@ async function execute(interaction) {
     const basketStore = require('../utils/drawBasketStore');
 
     let argPrivate = null;
+    let shortcut = { create: null, balance: null, notice: null };
     const state = { ...defaultState(), authorId: userId };
     let region = 'region_10';
     if (prefs?.defaultRegionMode && prefs.defaultRegionMode !== 'last_viewed') region = prefs.defaultRegionMode;
@@ -685,6 +705,12 @@ async function execute(interaction) {
         argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
         const regionOption = interaction.options.getString('region');
         if (regionOption && REGION_ORDER.includes(regionOption)) region = regionOption;
+        shortcut = slashShortcut({
+            draw: interaction.options.getString('draw'),
+            pulls: interaction.options.getInteger('pulls'),
+            balance: interaction.options.getInteger('balance'),
+            region
+        });
     }
 
     const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'calculatorVisibility' });
@@ -692,11 +718,12 @@ async function execute(interaction) {
 
     const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
     const savedBaskets = await basketStore.listForUser(userId);
-    // 🔴 REOPEN THE LAST CALCULATION (2026-10-13 12:40 EDT). This always opened an empty form, and listForUser lists NAMED calculations only -- so an unsaved result could not be reached again once its message scrolled away, which broke the "persists until New Calculation" promise the setup form was approved on. A calculation reopened this way shows exactly what it was: the result if it was calculated, the form with its draws if not.
-    const latest = await basketStore.latestForUser(userId);
+    // 🔴 REOPEN THE LAST CALCULATION (2026-10-13 12:40 EDT). This always opened an empty form, and listForUser lists NAMED calculations only -- so an unsaved result could not be reached again once its message scrolled away, which broke the "persists until New Calculation" promise the setup form was approved on. A calculation reopened this way shows exactly what it was: the result if it was calculated, the form with its draws if not. The shortcut's new calculation wins over reopening the last one; a bare `balance` is written onto whichever opens (a fresh draft when there is none, so it is not lost).
+    let latest = shortcut.create ? await basketStore.save(userId, shortcut.create) : await basketStore.latestForUser(userId);
+    if (shortcut.balance !== null) latest = latest ? await basketStore.save(userId, { _id: latest._id, balance: shortcut.balance }) : await basketStore.save(userId, { banners: [], region, balance: shortcut.balance });
     const openState = latest ? { ...state, basketId: String(latest._id) } : state;
     const panel = buildCalculatorPanel(openState, latest, accentColor, {
-        savedBaskets, region,
+        savedBaskets, region, notice: shortcut.notice,
         currency: prefs?.cpCurrency || 'USD',
         client: interaction.client,
         liveDoubleCPEntry: latest && latest.submitted ? await findLiveDoubleCPEntry() : null
@@ -711,5 +738,5 @@ module.exports = {
     buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildDrawInfoPanel, buildHelpPanel,
     buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
-    parseAmount, applySelection, shortName, SHORT_NAME
+    parseAmount, applySelection, shortName, SHORT_NAME, slashShortcut
 };
