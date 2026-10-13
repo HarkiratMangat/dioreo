@@ -492,3 +492,8 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 > * can you change wash's white text to `color 26% on white`
 > * can you also change style 2's text from white to `color 26% on white`, then let me see.
 - Built in spec v88: wash's words at rest and on hover (every colour) and in candidate 1's selected; candidate 2's words wherever they were white (paint-warn, tint-warn, rails and chips). Paint with no colour keeps ink: it has no colour to mix. Wash's candidate 2 (fill) had dark on-colour words, unchanged. C9a updated.
+
+## His 2026-10-13 10:15–10:18 EDT, verbatim, written 2026-10-13 10:19 EDT
+- (10:15) "out of these 4, which fill style would you suggest and why?" (mine: 18% on sunk, the only one clearing 3 from hover and to + hover in every colour and on any surface)
+- (10:18) "ok adjust the style 2 from 14% to 18% on sunk on the spec-board, let me see it. i havent finalized yet but currently i am leaning style 2 for paint/paint-color/tint-color. haven't decided warn-color yet."
+- Built in spec v89: candidate 2's selected is the colour 18% on sunk; its + hover stays 24%. His lean is not a decision.
