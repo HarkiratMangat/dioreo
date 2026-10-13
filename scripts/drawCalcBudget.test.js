@@ -649,7 +649,7 @@ t('Show Breakdown sits beside the COST BREAKDOWN heading, not in the action row'
 });
 
 // ==========================================
-// QUANTITY STYLES A / B / C (2026-10-13) -- all three are built so Harkirat can pick by using them
+// QUANTITY STYLES C / E / F (round 2, 2026-10-13 18:40 EDT) -- built so Harkirat can pick by using them
 // ==========================================
 t('setTypeCount adds copies after the draw\'s last line and removes empty copies first', () => {
     const start = [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 3 }, { drawKey: 'doubleEpicCharacters', pullsDone: 0 }];
@@ -667,27 +667,54 @@ t('setTypeCount adds copies after the draw\'s last line and removes empty copies
 
 t('each style renders its own control on the setup form, and the dev switch cycles them', () => {
     const before = dc.getQtyStyle();
+    const verbOf = s => dc.decodeState(s.custom_id).verb;
     try {
         const draft = makeBasket({ submitted: false, banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }] });
-        dc.setQtyStyle('A');
-        let panel = dc.buildCalculatorPanel(state(), draft, ACCENT, { savedBaskets: [] });
-        const a = selects(panel).filter(s => dc.decodeState(s.custom_id).verb === 'qty');
-        assert.strictEqual(a.length, 1, 'A is one dropdown');
-        assert.ok(a[0].options.some(o => o.value === 'legendaryGunReactive:2') && a[0].options.some(o => o.value === 'mythicWeapon:3'));
-        assert.ok(a[0].options.length <= 25);
-        dc.setQtyStyle('B');
-        panel = dc.buildCalculatorPanel(state(), draft, ACCENT, { savedBaskets: [] });
-        const b = selects(panel).filter(s => dc.decodeState(s.custom_id).verb === 'qty');
-        assert.strictEqual(b.length, 2, 'B is one dropdown per draw');
-        assert.ok(b.every(s => s.options.find(o => o.default).value.endsWith(':1')), 'each shows its current count');
+        const form = () => dc.buildCalculatorPanel(state(), draft, ACCENT, { savedBaskets: [] });
+        const lineOpts = panel => selects(panel).filter(s => verbOf(s) === 'bpulls').map(s => s.options.map(o => o.value));
         dc.setQtyStyle('C');
-        panel = dc.buildCalculatorPanel(state(), draft, ACCENT, { savedBaskets: [] });
-        assert.strictEqual(selects(panel).some(s => dc.decodeState(s.custom_id).verb === 'qty'), false);
-        const lines = selects(panel).filter(s => dc.decodeState(s.custom_id).verb === 'bpulls');
-        assert.ok(lines.every(s => s.options.some(o => o.value === 'add') && s.options.some(o => o.value === 'del')), 'C puts add/remove in every line');
-        assert.strictEqual(dc.cycleQtyStyle(), 'A');
-        assert.strictEqual(dc.cycleQtyStyle(), 'B');
+        let panel = form();
+        assert.ok(selects(panel).some(s => verbOf(s) === 'draws'), 'C keeps the multi-select picker');
+        assert.ok(lineOpts(panel).every(v => v.includes('add') && v.includes('del')), 'C puts add and remove in every line');
+        assert.strictEqual(buttons(panel).some(b => b.label === 'How many of each?'), false);
+        dc.setQtyStyle('E');
+        panel = form();
+        const howMany = buttons(panel).find(b => b.label === 'How many of each?');
+        assert.ok(howMany && verbOf(howMany) === 'qtymodal', 'E shows the popup button');
+        assert.ok(lineOpts(panel).every(v => !v.includes('add') && !v.includes('del')), 'E keeps the lines plain');
+        assert.strictEqual(buttons(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })).some(b => b.label === 'How many of each?'), false, 'no popup button with nothing picked');
+        dc.setQtyStyle('F');
+        panel = form();
+        const add = selects(panel).find(s => verbOf(s) === 'addmore');
+        assert.ok(add, 'F swaps the picker for + Add a draw');
+        assert.strictEqual(add.max_values === undefined || add.max_values === 1, true, 'one pick adds one line');
+        assert.strictEqual(add.options.length, Object.keys(DRAW_META).length, 'it lists every draw, not only the picked ones');
+        assert.strictEqual(selects(panel).some(s => verbOf(s) === 'draws'), false);
+        assert.ok(lineOpts(panel).every(v => v.includes('del') && !v.includes('add')), 'F removes inside each line and adds from the top');
+        assert.ok(selects(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })).some(s => verbOf(s) === 'draws'), 'an empty form still starts from the multi-select');
+        dc.setQtyStyle('C');
+        assert.strictEqual(dc.cycleQtyStyle(), 'E');
+        assert.strictEqual(dc.cycleQtyStyle(), 'F');
+        assert.strictEqual(dc.cycleQtyStyle(), 'C');
     } finally { dc.setQtyStyle(before); }
+});
+
+t('the E popup shows each draw at its current count and never offers fewer than its lines with pulls', () => {
+    const banners = [
+        { drawKey: 'legendaryGunReactive', pullsDone: 3 }, { drawKey: 'legendaryGunReactive', pullsDone: 5 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 },
+        { drawKey: 'mythicWeapon', pullsDone: 0 }
+    ];
+    const modal = dc.buildQtyModal(state(), makeBasket({ submitted: false, banners }));
+    assert.strictEqual(dc.decodeState(modal.custom_id).verb, 'qtyset');
+    assert.strictEqual(modal.components.length, 2, 'one field per draw');
+    const [reactive, mythic] = modal.components.map(l => l.component);
+    assert.ok(modal.components.every(l => l.type === 18 && l.label.length <= 45 && (l.description || '').length <= 100));
+    assert.strictEqual(reactive.options.find(o => o.default).value, '3', 'set to the current count');
+    assert.strictEqual(reactive.options[0].value, '2', 'two lines have pulls, so 2 is the lowest offered');
+    assert.strictEqual(mythic.options[0].value, '1');
+    assert.ok(modal.components.every(l => l.component.options.length <= 25));
+    const nine = Object.keys(DRAW_META).map(drawKey => ({ drawKey, pullsDone: 0 }));
+    assert.strictEqual(dc.buildQtyModal(state(), makeBasket({ submitted: false, banners: nine })).components.length, dc.QTY_MODAL_MAX_DRAWS, 'a popup holds at most 5 fields');
 });
 
 t('every quantity style stays under 40 at its densest, with the dev switch and Show Everyone', () => {
