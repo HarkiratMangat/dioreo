@@ -59,7 +59,7 @@ Per family: search the rulings for his asks on the family's nouns plus selected,
 
 - I built P0's recipe carefully and improvised its board: no wireframe, no critique, no design skill, though his 2026-10-08 17:36 EDT rule and the compaction summary both required them.
 - Values were typed recipe strings, not colours read off the rendered element (the Styles states rule: "Nothing here is typed by hand"); the In use controls carried no values at all; Builder-2 photos went on the board against the pinned rule; rest and hover were repeated in every row; prose explained what drawing should show.
-- Prevention, every presentation: plan → ASCII wireframe → check against his bar and the no-photos rule → design-critique → show him → build; values by inkName and Gauge; content parts take the source's measured values (Live now is #7BDB63, Ended ink3: I had guessed ok and no colour).
+- Prevention, every presentation: plan → wireframe → check against his bar and the no-photos rule → design-critique, all internal → build → show him the built section (his 2026-10-12 22:22 EDT: no code-block wireframes); values by inkName and Gauge; content parts take the source's measured values (Live now is #7BDB63, Ended ink3: I had guessed ok and no colour).
 
 ## Tool routing, also wrong (his 2026-10-12 19:55 EDT: "your tool routing was also SO shit! why aren't you using context-mode correctly??")
 
