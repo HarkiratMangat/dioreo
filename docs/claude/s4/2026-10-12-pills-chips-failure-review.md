@@ -99,7 +99,7 @@ The fix, every call from here on:
 
 - **Two implementations of one control.** Styles' "Selected, in use" had a live rail and chip from v93; Pills, Rails and Chips drew their own dead copies (spec-small.js: Pill, BoxRail, TierRail, BadgeChip, PickAll, Key, each with tabindex -1, no click and its own recipe). Fixing the live copy left the dead ones as they were, because nothing tied them together. That is why it was a class failure: there was no class, only instances. Every control now comes from `spec-ctl.js`, and all four sections draw the same component.
 - **The instrument watched one section.** sel-check.cjs exercised only #selected, so it reported 27 live controls while 57 elsewhere were dead. ctl-check.cjs walks every control in Pills, Rails, Chips and Selected; its first run, on v94, failed with those 57 before it was trusted on v95.
-- **A crop that existed was taken as a crop that was right.** Builder-2's view rail crops (spec-img/sel-orig/vt-*.png) have shown only the tops of its segments since they were taken, and nobody opened them. Still open: in "Pick one build" the rail sits in the selection bar's folded list (vt-probe.cjs). It is the one control redrawn from its CSS without a full original.
+- **A crop that existed was taken as a crop that was right.** Builder-2's view rail crops (spec-img/sel-orig/vt-*.png) have shown only the tops of its segments since they were taken, and nobody opened them. Closed at v96 (2026-10-13 18:05 EDT): the rail lives in the selection bar's list, folded to 1px until the bar's List button opens it, so every crop was of a folded rail under the bar's buttons. states-sheet.cjs now opens the list first; the crops show the rail whole: picked grey with an ink4 ring, icons in staged, as its CSS said.
 
 ### Mistakes in the redraw itself, caught before publishing
 
@@ -108,6 +108,11 @@ The fix, every call from here on:
 - The Gauge read a pill with a count as icon, words, pad, so its right pad read 29.6 against 10, and on the checkbox chips it measured the badge's own icon. It now reads a checkbox as the lead and the words through the count.
 - My crop attribute (data-ck) collided with the one sel-check stamps at run time; sel-check crashed on null instead of failing. Renamed data-cx.
 - One edit heredoc ran empty (no terminator), and the checks chained after it passed the unchanged board. Caught only because no "ok" lines printed.
+
+### The rest of the board (spec v96, 2026-10-13 18:05 EDT)
+
+- **Every section, not only the four.** board-census.cjs clicked all 270 control-shaped elements on the board. 140 are plain buttons, which answer with hover and press only. Two stateful controls were dead, both on `noop` handlers, the pattern this review already forbids: the collapse button in Flags' reveal cases and the selection chip's ×. Both are live now. The ten pressed "+ hover" figures in the styles grid are deliberate forced specimens beside their live twins.
+- **Tags and badges.** tag-check.cjs holds 61 tags (57 in Tags, 4 on the pop-up card) and 12 badges to C17 and C18: rows, corners, padding, icons, the 6 to the words, the 1.5px outline, faces, the --dual lead. None miss. It was trusted only after it failed on a tag broken on purpose (TC_FALSIFY=1).
 
 ### From now on
 
