@@ -155,7 +155,8 @@ async function route(interaction) {
             let picked;
             try { picked = interaction.fields.getStringSelectValues(`q${i}`); } catch (absent) { return; }
             const count = Number(picked && picked[0]);
-            if (!(count >= 1)) return;
+            // Bounded like the popup itself (25 options at most): a forged submit must not make setTypeCount build an arbitrary number of lines.
+            if (!(Number.isInteger(count) && count >= 1 && count <= 25)) return;
             const floor = banners.filter(b => b.drawKey === key && b.pullsDone > 0).length;
             banners = setTypeCount(banners, key, Math.max(count, floor)).banners;
         });
