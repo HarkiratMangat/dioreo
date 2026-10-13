@@ -379,7 +379,7 @@ function dropConfirmRow(state, mask, count) {
     return {
         type: 1,
         components: [
-            { type: 2, style: 4, label: `Remove ${plural(count, 'line')} with progress`, custom_id: encodeState('dropok', { ...state, mask }) },
+            { type: 2, style: 4, label: `Remove ${plural(count, 'line')}`, custom_id: encodeState('dropok', { ...state, mask }) },
             { type: 2, style: 2, label: 'Keep them', custom_id: encodeState('page', { ...state, page: 0 }) }
         ]
     };

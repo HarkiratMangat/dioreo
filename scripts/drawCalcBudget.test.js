@@ -576,7 +576,7 @@ t('a grouped ×N keeps its progress figure, and the list is headed YOUR DRAWS', 
 
 t('unticking a draw with progress asks first; applySelection keeps order and progress', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }), {}, { notice: 'x', dropConfirm: { mask: 0, count: 1 } });
-    const confirm = buttonLabelled(panel, 'Remove 1 line with progress');
+    const confirm = buttonLabelled(panel, 'Remove 1 line');
     assert.ok(confirm && confirm.style === 4, 'the confirm must be Danger-styled');
     assert.strictEqual(selects(panel).some(s => s.custom_id.split('~')[1] === 'draws'), false, 'the picker steps aside while the confirm is open');
     assert.strictEqual(dc.decodeState(confirm.custom_id).mask, 0);
@@ -591,7 +591,7 @@ t('the untick confirm also shows on the setup form, and fits the budget at its d
     const saved = Array.from({ length: 25 }, (_, i) => ({ _id: String(i).padStart(24, '0'), name: `Saved ${i}`, banners, region: 'region_10' }));
     for (const submitted of [false, true]) {
         const panel = dc.buildCalculatorPanel(state(), makeBasket({ banners, submitted }), ACCENT, { savedBaskets: saved, notice: 'x', dropConfirm: { mask: 1, count: 8 } });
-        assert.ok(buttonLabelled(panel, 'Remove 8 lines with progress'), `confirm missing (submitted=${submitted})`);
+        assert.ok(buttonLabelled(panel, 'Remove 8 lines'), `confirm missing (submitted=${submitted})`);
         assert.ok(messageCount(panel) <= 40, `over the 40-component cap: ${messageCount(panel)} (submitted=${submitted})`);
     }
 });

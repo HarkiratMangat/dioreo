@@ -188,12 +188,14 @@ async function route(interaction) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         const selected = new Set(interaction.values);
-        // 🔴 Unticking a draw removes EVERY line of it. When that would throw away entered progress, ask first (2026-10-13 12:40 EDT) -- it used to happen on one untick with no confirm and no undo. The requested selection rides in `mask` on the confirm button.
-        const losing = basket.banners.filter(b => !selected.has(b.drawKey) && b.pullsDone > 0);
+        // 🔴 Unticking a draw removes EVERY line of it. When that would throw away entered progress, ask first (2026-10-13 12:40 EDT) -- it used to happen on one untick with no confirm and no undo. The requested selection rides in `mask` on the confirm button. The message counts EVERY line that goes, not only the ones with pulls (2026-10-13 13:43 EDT, found in his live click-test): unticking Reactive Legendary with two lines, one at 3/10, said "Remove 1 line with progress" while it removed both.
+        const removing = basket.banners.filter(b => !selected.has(b.drawKey));
+        const losing = removing.filter(b => b.pullsDone > 0);
         if (losing.length) {
             const mask = [...selected].reduce((m, key) => { const i = DRAW_KEY_ORDER.indexOf(key); return i === -1 ? m : m | (1 << i); }, 0);
-            const names = [...new Set(losing.map(b => DRAW_META_NAMES(b.drawKey)))].join(', ');
-            await renderPanel(interaction, state, basket, `⚠️ Unticking removes ${losing.length === 1 ? 'a line' : `${losing.length} lines`} with pulls already entered (${names}). Remove ${losing.length === 1 ? 'it' : 'them'}?`, { mask, count: losing.length });
+            const names = [...new Set(removing.map(b => DRAW_META_NAMES(b.drawKey)))].join(', ');
+            const lines = n => `${n} line${n === 1 ? '' : 's'}`;
+            await renderPanel(interaction, state, basket, `⚠️ Unticking removes ${lines(removing.length)} of ${names}, ${losing.length === removing.length ? (removing.length === 1 ? 'which has' : 'all with') : `${losing.length} with`} pulls already entered. Remove ${removing.length === 1 ? 'it' : 'them'}?`, { mask, count: removing.length });
             return true;
         }
         const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: applySelection(basket.banners, selected) });
