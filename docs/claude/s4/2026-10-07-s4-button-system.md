@@ -484,3 +484,6 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (22:07) "MAN DRAW IT PROPERLY! fucking lazy ass, prose-dependent scaffolding with half the elements missing values! What does your memory say about how to design the spec-board properly??"
 - (22:18) "why do you keep replying only in the thread when im messaging you directly?"
 - (22:21) "1. update your memory about this code block wireframe... its not helpful at all for me, id rather you just build the thing yourself correctly and with good design. 2. sure try it" (2: build the reworked Selected scaffold)
+
+## His 2026-10-12 23:30 EDT words, verbatim, written 2026-10-12 23:38 EDT
+- (23:30) "also in the scafolding you removed the current version of the rest+hover so i could compare them to the selected+hover" (spec v87: each scaffold row draws its current rest and hover again, before the candidates)
