@@ -31,10 +31,11 @@ const messageCount = panel => countComponents([panel, SHARE_ROW]);
 // buildCalculatorPanel returns the message's TOP-LEVEL list (Container + sibling nav row); buildSetupPanel still returns a bare Container. Both shapes go through here.
 const container = p => (Array.isArray(p) ? p.find(x => x && x.type === 17) : p);
 const siblingRows = p => (Array.isArray(p) ? p.filter(x => x && x.type === 1) : []);
-const texts = panel => container(panel).components.filter(c => c.type === 10).map(c => c.content);
+// A Section's text counts as panel text, and its button accessory as a button: Show Breakdown sits beside COST BREAKDOWN as one (2026-10-13).
+const texts = panel => container(panel).components.flatMap(c => c.type === 9 ? (c.components || []) : [c]).filter(c => c.type === 10).map(c => c.content);
 const allText = panel => texts(panel).join('\n');
 const rows = panel => [...container(panel).components.filter(c => c.type === 1), ...siblingRows(panel)];
-const buttons = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 2);
+const buttons = panel => [...rows(panel).flatMap(r => r.components), ...container(panel).components.filter(c => c.type === 9 && c.accessory).map(c => c.accessory)].filter(c => c.type === 2);
 const selects = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 3);
 const buttonLabelled = (panel, label) => buttons(panel).find(b => b.label === label);
 
@@ -614,6 +615,14 @@ t('the slash shortcut opens a calculated line, clamps pulls to the draw, and exp
     assert.strictEqual(orphan.balance, 500, 'a bare balance is applied to whichever calculation opens');
     assert.ok(/needs a `draw`/.test(orphan.notice));
     assert.deepStrictEqual(dc.slashShortcut({}), { create: null, balance: null, notice: null }, 'no options: no shortcut at all');
+});
+
+t('Show Breakdown sits beside the COST BREAKDOWN heading, not in the action row', () => {
+    const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], balance: 3000 }));
+    const section = container(panel).components.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Show Breakdown');
+    assert.ok(section, 'Show Breakdown must be the accessory of a Section');
+    assert.ok(section.components[0].content.startsWith('## COST BREAKDOWN'), 'and that Section must be the COST BREAKDOWN block');
+    assert.strictEqual(rows(panel).some(r => r.components.some(b => b.label === 'Show Breakdown')), false, 'it must not also sit in an action row');
 });
 
 t('the first screen leads with what the player gets', () => {

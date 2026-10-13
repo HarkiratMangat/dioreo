@@ -55,8 +55,10 @@ async function route(interaction) {
                 : (n && typeof n === 'object') ? (typeof n.custom_id === 'string' && n.custom_id.startsWith('calc~')) || hasCalcControl(n.components || []) || (n.accessory ? hasCalcControl(n.accessory) : false)
                 : false;
             if (hasCalcControl(components)) {
+                // A Section whose accessory is a calculator BUTTON is unwrapped to its text (2026-10-13 14:19 EDT): Show Breakdown now sits beside the COST BREAKDOWN heading as a Section accessory, which is not an action row and would otherwise survive the strip as a live control on the public copy. A thumbnail accessory is left alone.
+                const unwrap = c => (c.type === 9 && c.accessory && c.accessory.type === 2) ? (c.components || []) : [c];
                 components = components.map(entry => (entry && entry.type === 17)
-                    ? { ...entry, components: (entry.components || []).filter(c => c.type !== 1) }
+                    ? { ...entry, components: (entry.components || []).filter(c => c.type !== 1).flatMap(unwrap) }
                     : entry
                 ).filter(entry => entry.type !== 1);
             }

@@ -368,7 +368,6 @@ function costActionRow(state, basket) {
         components: [
             { type: 2, style: 2, label: basket.balance ? `Balance: ${fmt(basket.balance)} CP` : 'Set Balance', custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) },
             upgradeButton(state, basket),
-            { type: 2, style: 2, label: state.detail ? 'Simplify' : 'Show Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(state.detail ? emojis.simplify : emojis.expand) },
             { type: 2, style: 2, label: 'Edit Draws', custom_id: encodeState('page', { ...state, page: 1 }) }
         ].filter(Boolean)
     };
@@ -584,7 +583,18 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     else components.push(typesSelectRow(state, basket));
     components.push({ type: 14, spacing: 1, divider: true });
 
-    components.push({ type: 10, content: buildCostBlock(state, basket, currency, client, { compact: !state.detail }).join('\n') });
+    // Show Breakdown sits BESIDE the COST BREAKDOWN heading (2026-10-13 14:18 EDT, Harkirat: "why don't we move the show breakdown button? maybe inline with the cost breakdown section"). It is a Section with the button as its accessory, so the button sits next to what it expands; it also takes one button out of the action row, which wrapped Edit Draws onto a row of its own once a balance widened Set Balance.
+    const costLines = buildCostBlock(state, basket, currency, client, { compact: !state.detail });
+    const split = costLines.findIndex((l, i) => i > 0 && (l === '' || l.startsWith('## ')));
+    const head = split === -1 ? costLines : costLines.slice(0, split);
+    const tail = split === -1 ? [] : costLines.slice(split);
+    while (tail[0] === '') tail.shift();
+    components.push({
+        type: 9,
+        components: [{ type: 10, content: head.join('\n') }],
+        accessory: { type: 2, style: 2, label: state.detail ? 'Simplify' : 'Show Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(state.detail ? emojis.simplify : emojis.expand) }
+    });
+    if (tail.length) components.push({ type: 10, content: tail.join('\n') });
     components.push(costActionRow(state, basket));
     components.push(basketManageRow(state, basket));
 
