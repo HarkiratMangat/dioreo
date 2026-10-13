@@ -13,7 +13,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
-    findLiveDoubleCPEntry, parseAmount, applySelection
+    findLiveDoubleCPEntry, parseAmount, applySelection, setTypeCount, cycleQtyStyle
 } = require('../commands/drawCalculator');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES } = require('../utils/cpPackages');
@@ -212,6 +212,44 @@ async function route(interaction) {
         return true;
     }
 
+    // Styles A and B (2026-10-13 17:46 EDT): set how many lines of one draw, values `<drawKey>:<count>`. Lowering a count asks first when it would remove pulls; the confirm carries draw index × 32 + count in the `m` field.
+    if (interaction.isStringSelectMenu() && state.verb === 'qty') {
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const [key, raw] = String(interaction.values[0] || '').split(':');
+        const count = Number(raw);
+        if (!DRAW_META[key] || !(count >= 1 && count <= 25)) { await renderPanel(interaction, state, basket); return true; }
+        const { banners, removed } = setTypeCount(basket.banners, key, count);
+        const losing = removed.filter(b => b.pullsDone > 0);
+        if (losing.length) {
+            const lines = n => `${n} line${n === 1 ? '' : 's'}`;
+            await renderPanel(interaction, state, basket, `⚠️ ${DRAW_META_NAMES(key)} × ${count} removes ${lines(removed.length)}, ${losing.length === removed.length ? (removed.length === 1 ? 'which has' : 'all with') : `${losing.length} with`} pulls already entered. Remove ${removed.length === 1 ? 'it' : 'them'}?`, { mask: DRAW_KEY_ORDER.indexOf(key) * 32 + count, count: removed.length, verb: 'qtyok' });
+            return true;
+        }
+        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+        await renderPanel(interaction, state, updated);
+        return true;
+    }
+
+    if (interaction.isButton() && state.verb === 'qtyok') {
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const key = DRAW_KEY_ORDER[Math.floor(state.mask / 32)];
+        const count = state.mask % 32;
+        if (!key || count < 1) { await renderPanel(interaction, { ...state, mask: 0 }, basket); return true; }
+        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: setTypeCount(basket.banners, key, count).banners });
+        await renderPanel(interaction, { ...state, mask: 0 }, updated);
+        return true;
+    }
+
+    // Dev bot only: cycles the three quantity styles (commands/drawCalculator.js's QTY_STYLES) and re-renders.
+    if (interaction.isButton() && state.verb === 'qstyle') {
+        cycleQtyStyle();
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        await renderPanel(interaction, state, basket);
+        return true;
+    }
+
     if (interaction.isStringSelectMenu() && state.verb === 'addmore') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
@@ -225,6 +263,16 @@ async function route(interaction) {
         if (!basket) return true;
         const index = state.focus;
         if (index === null || !basket.banners[index]) { await renderPanel(interaction, state, basket); return true; }
+        // Style C: the line's own dropdown also adds a copy of its draw or removes the line. Removing is the player's explicit choice on that line, so it does not ask.
+        if (interaction.values[0] === 'add' || interaction.values[0] === 'del') {
+            const key = basket.banners[index].drawKey;
+            const banners = interaction.values[0] === 'add'
+                ? setTypeCount(basket.banners, key, basket.banners.filter(b => b.drawKey === key).length + 1).banners
+                : basket.banners.filter((_, i) => i !== index);
+            const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+            await renderPanel(interaction, { ...state, focus: null }, updated);
+            return true;
+        }
         const banners = basket.banners.map((b, i) => i === index ? { ...b, pullsDone: Number(interaction.values[0]) || 0 } : b);
         const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
         await renderPanel(interaction, { ...state, focus: null }, updated);

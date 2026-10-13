@@ -641,6 +641,72 @@ t('Show Breakdown sits beside the COST BREAKDOWN heading, not in the action row'
     assert.strictEqual(rows(panel).some(r => r.components.some(b => b.label === 'Show Breakdown')), false, 'it must not also sit in an action row');
 });
 
+// ==========================================
+// QUANTITY STYLES A / B / C (2026-10-13) -- all three are built so Harkirat can pick by using them
+// ==========================================
+t('setTypeCount adds copies after the draw\'s last line and removes empty copies first', () => {
+    const start = [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 3 }, { drawKey: 'doubleEpicCharacters', pullsDone: 0 }];
+    const up = dc.setTypeCount(start, 'legendaryGunReactive', 3);
+    assert.deepStrictEqual(up.banners.map(b => `${b.drawKey}:${b.pullsDone}`), ['mythicWeapon:0', 'legendaryGunReactive:3', 'legendaryGunReactive:0', 'legendaryGunReactive:0', 'doubleEpicCharacters:0']);
+    assert.strictEqual(up.removed.length, 0);
+    const down = dc.setTypeCount(up.banners, 'legendaryGunReactive', 1);
+    assert.deepStrictEqual(down.banners.map(b => `${b.drawKey}:${b.pullsDone}`), ['mythicWeapon:0', 'legendaryGunReactive:3', 'doubleEpicCharacters:0'], 'the copy with pulls must survive');
+    assert.strictEqual(down.removed.every(b => b.pullsDone === 0), true);
+    const forced = dc.setTypeCount([{ drawKey: 'mythicWeapon', pullsDone: 2 }, { drawKey: 'mythicWeapon', pullsDone: 5 }], 'mythicWeapon', 1);
+    assert.deepStrictEqual(forced.removed, [{ drawKey: 'mythicWeapon', pullsDone: 5 }], 'with no empty copy, the newest goes');
+    const fresh = dc.setTypeCount([], 'mythicWeapon', 2);
+    assert.strictEqual(fresh.banners.length, 2);
+});
+
+t('each style renders its own control on the setup form, and the dev switch cycles them', () => {
+    const before = dc.getQtyStyle();
+    try {
+        const draft = makeBasket({ submitted: false, banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }] });
+        dc.setQtyStyle('A');
+        let panel = dc.buildCalculatorPanel(state(), draft, ACCENT, { savedBaskets: [] });
+        const a = selects(panel).filter(s => dc.decodeState(s.custom_id).verb === 'qty');
+        assert.strictEqual(a.length, 1, 'A is one dropdown');
+        assert.ok(a[0].options.some(o => o.value === 'legendaryGunReactive:2') && a[0].options.some(o => o.value === 'mythicWeapon:3'));
+        assert.ok(a[0].options.length <= 25);
+        dc.setQtyStyle('B');
+        panel = dc.buildCalculatorPanel(state(), draft, ACCENT, { savedBaskets: [] });
+        const b = selects(panel).filter(s => dc.decodeState(s.custom_id).verb === 'qty');
+        assert.strictEqual(b.length, 2, 'B is one dropdown per draw');
+        assert.ok(b.every(s => s.options.find(o => o.default).value.endsWith(':1')), 'each shows its current count');
+        dc.setQtyStyle('C');
+        panel = dc.buildCalculatorPanel(state(), draft, ACCENT, { savedBaskets: [] });
+        assert.strictEqual(selects(panel).some(s => dc.decodeState(s.custom_id).verb === 'qty'), false);
+        const lines = selects(panel).filter(s => dc.decodeState(s.custom_id).verb === 'bpulls');
+        assert.ok(lines.every(s => s.options.some(o => o.value === 'add') && s.options.some(o => o.value === 'del')), 'C puts add/remove in every line');
+        assert.strictEqual(dc.cycleQtyStyle(), 'A');
+        assert.strictEqual(dc.cycleQtyStyle(), 'B');
+    } finally { dc.setQtyStyle(before); }
+});
+
+t('every quantity style stays under 40 at its densest, with the dev switch and Show Everyone', () => {
+    const before = dc.getQtyStyle(); const env = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'development';
+    try {
+        const keys = Object.keys(DRAW_META);
+        const saved = Array.from({ length: 25 }, (_, i) => ({ _id: String(i).padStart(24, '0'), name: `Saved ${i}`, banners: [], region: 'region_10' }));
+        for (const style of dc.QTY_STYLES) {
+            dc.setQtyStyle(style);
+            for (let types = 1; types <= keys.length; types++) for (let lines = types; lines <= 9; lines++) for (const savedBaskets of [[], saved]) for (let bpage = 0; bpage < 3; bpage++) {
+                const banners = Array.from({ length: lines }, (_, i) => ({ drawKey: keys[i % types], pullsDone: 1 }));
+                const panel = dc.buildCalculatorPanel(state({ bpage }), makeBasket({ submitted: false, banners }), ACCENT, { savedBaskets });
+                assert.ok(buttons(panel).some(x => /^Test: style/.test(x.label || '')), 'the dev switch must render on the form');
+                assert.ok(messageCount(panel) <= 40, `style ${style}, ${types} draws, ${lines} lines, saved ${savedBaskets.length}, page ${bpage + 1}: ${messageCount(panel)}`);
+            }
+        }
+    } finally { dc.setQtyStyle(before); process.env.NODE_ENV = env; }
+});
+
+t('the dev style switch never renders outside development', () => {
+    const env = process.env.NODE_ENV; delete process.env.NODE_ENV;
+    try { assert.strictEqual(buttons(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })).some(x => /^Test: style/.test(x.label || '')), false); }
+    finally { if (env !== undefined) process.env.NODE_ENV = env; }
+});
+
 t('the first screen leads with what the player gets', () => {
     const text = allText(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] }));
     assert.ok(/See how much CP you still need, and the cheapest way to buy it/.test(text));
