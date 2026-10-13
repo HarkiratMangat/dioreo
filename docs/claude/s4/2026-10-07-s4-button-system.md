@@ -497,3 +497,8 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (10:15) "out of these 4, which fill style would you suggest and why?" (mine: 18% on sunk, the only one clearing 3 from hover and to + hover in every colour and on any surface)
 - (10:18) "ok adjust the style 2 from 14% to 18% on sunk on the spec-board, let me see it. i havent finalized yet but currently i am leaning style 2 for paint/paint-color/tint-color. haven't decided warn-color yet."
 - Built in spec v89: candidate 2's selected is the colour 18% on sunk; its + hover stays 24%. His lean is not a decision.
+
+## His 2026-10-13 10:19–10:24 EDT, verbatim, written 2026-10-13 10:25 EDT
+- (10:19) "so would the selected-hover be 24% on sunk then as well?" (mine: yes, 24% on sunk: an even 12 / 18 / 24 ladder, 3.5–5.1 from selected, the same on any surface)
+- (10:24) "okay remove 1 and 1b for paint/paint-color/tint-color and remove 2 for wash-color. and add another column to the right side showing selected-hover using 24% on sunk."
+- Built in spec v90: paint, paint-warn and tint-warn show only candidate 2, wash-warn only candidate 1; a fifth column draws candidate 2's + hover at the colour 24% on sunk; In use draws candidate 2 twice (+ hover 24%, + hover 24% on sunk). Not final; selRecipe keeps all three candidates.
