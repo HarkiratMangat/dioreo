@@ -13,7 +13,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
-    findLiveDoubleCPEntry
+    findLiveDoubleCPEntry, parseAmount, applySelection
 } = require('../commands/drawCalculator');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES } = require('../utils/cpPackages');
@@ -22,21 +22,15 @@ const { resolvePanelActor } = require('../utils/interactionContext');
 
 const OWNED_PREFIXES = ['calc~'];
 
+const { DRAW_META } = require('../commands/drawprices');
+const DRAW_KEY_ORDER = Object.keys(DRAW_META);
+function DRAW_META_NAMES(key) { return DRAW_META[key]?.name || key; }
+
+
 function ownsCustomId(customId) {
     return typeof customId === 'string' && customId.startsWith('calc~');
 }
 
-function parseAmount(raw) {
-    if (!raw) return 0;
-    const cleaned = String(raw).trim().toLowerCase().replace(/[, ]/g, '');
-    // Strip a trailing "cp" (2026-10-13 10:37 EDT): every figure on the panel reads like `26,630 CP`, so `3000 CP` is the input the panel itself teaches, and it used to be rejected as invalid.
-    const unit = cleaned.endsWith('cp') ? cleaned.slice(0, -2) : cleaned;
-    if (unit === '') return 0;
-    const k = unit.endsWith('k');
-    const n = Number(k ? unit.slice(0, -1) : unit);
-    if (!Number.isFinite(n) || n < 0) return null;
-    return Math.floor(k ? n * 1000 : n);
-}
 
 function buildAmountModal(state) {
     const field = new TextInputBuilder().setCustomId('amount').setLabel('CP you already have')
@@ -57,18 +51,20 @@ function buildNameModal(state, currentName) {
         .addComponents(new ActionRowBuilder().addComponents(field));
 }
 
-async function renderPanel(interaction, state, basket, notice = null) {
+async function renderPanel(interaction, state, basket, notice = null, dropConfirm = null) {
     const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
     const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
     const liveDoubleCPEntry = await findLiveDoubleCPEntry();
     const isEphemeral = Boolean(interaction.message?.flags?.has?.(64));
-    const savedBaskets = basket ? null : await basketStore.listForUser(interaction.user.id);
+    // The saved list shows on the FORM -- with no calculation, and on a draft one, since a reopened draft lands there too.
+    const savedBaskets = basket && basket.submitted ? null : await basketStore.listForUser(interaction.user.id);
     const panel = buildCalculatorPanel(state, basket, accentColor, {
         liveDoubleCPEntry,
         currency: prefs?.cpCurrency || 'USD',
         client: interaction.client,
         savedBaskets,
-        notice
+        notice,
+        dropConfirm
     });
     // `panel` is already the top-level component LIST (Container + the sibling nav row) -- do not wrap it in another array.
     return sendV2Payload(interaction, withShareButton(panel, isEphemeral), { skipExpiry: true });
@@ -81,8 +77,13 @@ async function ackUpdate(interaction) {
 
 // The one place every basket-touching branch resolves ownership AND existence. Returns the basket document, or null after already sending a "gone" panel -- callers just `if (!basket) return true;`.
 async function loadOwned(interaction, state, actingUserId) {
-    // An ABSENT basketId (the /draw prices cross-link, or a customId built before any basket existed) is treated identically to a lookup that came back empty -- both need the landing panel actually rendered, not a silent no-op that leaves Discord's own click spinner hanging.
-    const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+    // An ABSENT basketId -- /draw prices' "Draw Calculator" link, which cannot know one -- reopens the player's most recent calculation (2026-10-13 12:40 EDT) instead of an empty form, then stops: the clicked control belonged to no calculation, so nothing should be applied to the one that opens. A basketId that resolves to nothing still gets the "no longer exists" form.
+    if (!state.basketId) {
+        const latest = await basketStore.latestForUser(actingUserId);
+        await renderPanel(interaction, { ...state, basketId: latest ? String(latest._id) : null, page: 0 }, latest || null);
+        return null;
+    }
+    const basket = await basketStore.load(actingUserId, state.basketId);
     if (!basket) {
         await renderPanel(interaction, { ...state, basketId: null, page: 0 }, null);
     }
@@ -155,6 +156,17 @@ async function route(interaction) {
         return true;
     }
 
+    // Draw Prices opens /draw prices as its OWN private message (2026-10-13 12:40 EDT), priced at this calculation's region -- the same shape as Draw Info beside it. It used to be the global nav's `nav_prices`, which replaced the calculator with /draw prices in place. drawprices' execute() sees an already-deferred, non-slash interaction, so it neither re-defers nor reads slash options, and its sendV2Payload patches this new message.
+    if (interaction.isButton() && state.verb === 'prices') {
+        try {
+            await interaction.deferReply({ flags: 64 });
+            const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+            const drawPrices = interaction.client.commands.get('draw');
+            await drawPrices.execute(interaction, basket?.region || null, 0);
+        } catch (notifyError) { console.error('Failed to open Draw Prices from the calculator (interaction likely expired):', notifyError); }
+        return true;
+    }
+
     // Everything below edits @original -- defer up front.
     await ackUpdate(interaction);
 
@@ -176,11 +188,25 @@ async function route(interaction) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         const selected = new Set(interaction.values);
-        const present = new Set(basket.banners.map(b => b.drawKey));
-        let banners = basket.banners.filter(b => selected.has(b.drawKey));
-        for (const key of selected) if (!present.has(key)) banners.push({ drawKey: key, pullsDone: 0 });
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+        // 🔴 Unticking a draw removes EVERY line of it. When that would throw away entered progress, ask first (2026-10-13 12:40 EDT) -- it used to happen on one untick with no confirm and no undo. The requested selection rides in `mask` on the confirm button.
+        const losing = basket.banners.filter(b => !selected.has(b.drawKey) && b.pullsDone > 0);
+        if (losing.length) {
+            const mask = [...selected].reduce((m, key) => { const i = DRAW_KEY_ORDER.indexOf(key); return i === -1 ? m : m | (1 << i); }, 0);
+            const names = [...new Set(losing.map(b => DRAW_META_NAMES(b.drawKey)))].join(', ');
+            await renderPanel(interaction, state, basket, `⚠️ Unticking removes ${losing.length === 1 ? 'a line' : `${losing.length} lines`} with pulls already entered (${names}). Remove ${losing.length === 1 ? 'it' : 'them'}?`, { mask, count: losing.length });
+            return true;
+        }
+        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: applySelection(basket.banners, selected) });
         await renderPanel(interaction, state, updated);
+        return true;
+    }
+
+    if (interaction.isButton() && state.verb === 'dropok') {
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const selected = new Set(DRAW_KEY_ORDER.filter((_, i) => (state.mask & (1 << i)) !== 0));
+        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: applySelection(basket.banners, selected) });
+        await renderPanel(interaction, { ...state, mask: 0 }, updated);
         return true;
     }
 
@@ -321,4 +347,4 @@ async function handleDrawCalcInteraction(interaction) {
     return handled !== false;
 }
 
-module.exports = { handleDrawCalcInteraction, OWNED_PREFIXES, parseAmount };
+module.exports = { handleDrawCalcInteraction, OWNED_PREFIXES };

@@ -24,7 +24,9 @@ const DrawBasketSchema = new mongoose.Schema({
     entitlementMask: { type: Number, default: 0 },
     // FALSE while the player is still filling in the setup form; TRUE once they have pressed Calculate. This is what makes a result "persist until reset / new calculation" (Harkirat, 2026-08-27) across restarts -- a draft has to survive the same way a finished calculation does, so it cannot live in memory or in the customId. Existing docs predate the field and read as false, which correctly reopens them on the form with their draws intact.
     submitted: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    // When the calculation last changed (2026-10-13 12:40 EDT). Running /draw calculator again reopens the most recently changed one -- before this an unsaved calculation could not be reached again once its message was gone. Written by utils/drawBasketStore.js on every save and rename. Older documents lack it and fall back to createdAt.
+    updatedAt: { type: Date, default: Date.now }
 });
 
 // 🔴 TTL ONLY ON UNNAMED BASKETS. A bare createdAt TTL would also delete a basket the player deliberately named and is actively planning around. `partialFilterExpression` scopes the expiry the same way models/Changeset.js's does for abandoned changesets. 30 days matches that precedent (Announcement uses 60, set explicitly by its own caller rather than as a schema default -- the better habit, followed here: nothing in this file sets `name` to a blank string as a default, so "unnamed" stays a true field-absence, not a stored empty value).

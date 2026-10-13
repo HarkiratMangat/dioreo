@@ -181,7 +181,7 @@ t('priority is the ARRAY ORDER, never a cheapest-first sort -- proven with an or
     const { perBanner } = basketCost('region_10', banners, false);
     assert.ok(perBanner[0].cost > perBanner[1].cost, 'fixture invariant broken -- banner 0 must cost MORE than banner 1 for this to be a real falsifier');
     const panel = render(makeBasket({ banners }), { page: 1 });
-    const basketListText = texts(panel).find(c => c.startsWith('## DRAWS IN PROGRESS'));
+    const basketListText = texts(panel).find(c => c.startsWith('## YOUR DRAWS'));
     const firstLine = basketListText.split('\n')[1];
     assert.ok(firstLine.includes('#1') && firstLine.includes('0/10'), 'banner #1 in the listing must be the array\'s first entry (0 pulls), not the cheaper 9-pulls one a cost-sort would promote');
 });
@@ -194,9 +194,12 @@ t('every pulls-done dropdown option carries its banner NUMBER, so a chosen value
     const panel = render(makeBasket({ banners }), { page: 1 });
     const bpullsSelects = selects(panel).filter(s => s.custom_id.split('~')[1] === 'bpulls');
     assert.strictEqual(bpullsSelects.length, 2);
-    assert.ok(bpullsSelects[0].placeholder.startsWith('#1 —'));
-    assert.ok(bpullsSelects[1].placeholder.startsWith('#2 —'));
-    assert.ok(bpullsSelects[0].options.every(o => o.label.startsWith('#1 —')), 'every OPTION (not just the placeholder) must carry its banner number');
+    assert.ok(bpullsSelects[0].placeholder.startsWith('#1 '));
+    assert.ok(bpullsSelects[1].placeholder.startsWith('#2 '));
+    assert.ok(bpullsSelects[0].options.every(o => o.label.startsWith('#1 ')), 'every OPTION (not just the placeholder) must carry its banner number');
+    // A closed select shows only the chosen option's label, so the label must also name the draw -- two lines of different draws read "#1 — Not started" / "#2 — Not started" before (2026-10-13 click-test).
+    assert.ok(bpullsSelects[0].options.every(o => o.label.includes('Mythic Weapon')), 'every option must name its draw');
+    assert.ok(bpullsSelects[1].options.every(o => o.label.includes('Mythic Character')), 'every option must name its draw');
 });
 
 t('setting up to 3 banners costs at most 4 taps -- one dropdown click per banner, plus the initial add', () => {
@@ -237,7 +240,11 @@ t('Delete Calculation is two-step the same way', () => {
     const basket = makeBasket();
     const plain = buttonLabelled(render(basket), 'Save'); // unnamed basket -> button reads "Save"
     assert.ok(plain, 'an unnamed basket\'s manage row must read Save, not Rename');
-    const armedDelete = buttonLabelled(render(basket, { verb: 'delarm' }), 'Delete Calculation — click again');
+    // Delete is offered on a SAVED calculation only: on an unsaved one it duplicated New Calculation (2026-10-13 click-test).
+    assert.strictEqual(buttonLabelled(render(basket), 'Delete Calculation'), undefined, 'an unsaved calculation must not offer Delete');
+    const named = makeBasket({ name: 'My Push' });
+    assert.ok(buttonLabelled(render(named), 'Delete Calculation'), 'a saved calculation offers Delete');
+    const armedDelete = buttonLabelled(render(named, { verb: 'delarm' }), 'Delete Calculation — click again');
     assert.ok(armedDelete && armedDelete.style === 4);
 });
 
@@ -462,9 +469,11 @@ t('Set Balance and Upgrade are disabled until a calculation exists to write them
     // Both write to a basket document. Offering them before one exists accepts input and discards it silently.
     const empty = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
     assert.strictEqual(buttonLabelled(empty, 'Set Balance').disabled, true);
-    assert.strictEqual(buttonLabelled(empty, 'Upgrade: NO').disabled, true);
+    // With no draw there is nothing to upgrade, so the toggle is absent rather than disabled (2026-10-13).
+    assert.strictEqual(buttons(empty).some(b => /^Upgrade/.test(b.label || '')), false);
     const drafted = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: false }));
     assert.strictEqual(Boolean(buttonLabelled(drafted, 'Set Balance').disabled), false);
+    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Upgrade: Not included').disabled), false);
 });
 
 t('the saved-calculations list and the form share ONE screen -- both present, no extra hop', () => {
@@ -501,13 +510,101 @@ t('the cost breakdown LEADS with CP Needed -- the number the command exists to p
 });
 
 t('Set Balance accepts the amount the way the panel prints it -- "3000 CP", "3,000 cp", "3k CP"', () => {
-    const { parseAmount } = require('../handlers/drawCalc');
+    const { parseAmount } = dc;
     assert.strictEqual(parseAmount('3000 CP'), 3000);
     assert.strictEqual(parseAmount('3,000 cp'), 3000);
     assert.strictEqual(parseAmount('3k CP'), 3000);
     assert.strictEqual(parseAmount('3000'), 3000);
     assert.strictEqual(parseAmount('cp'), 0, 'a bare unit is an empty amount, never NaN');
     assert.strictEqual(parseAmount('3000 CAD'), null, 'any other unit is still rejected');
+});
+
+// ==========================================
+// 2026-10-13 CLICK-TEST ROUND -- each case pins one finding from local/project/features/draw-calculator/critique-2026-10-13.md
+// ==========================================
+t('the picker labels fit before Discord cuts a chosen chip, and lead with what tells draws apart', () => {
+    for (const [key, label] of Object.entries(dc.SHORT_NAME)) assert.ok(label.length <= 22, `${key} label "${label}" is ${label.length} characters`);
+    assert.notStrictEqual(dc.shortName('legendaryGunReactive').slice(0, 12), dc.shortName('legendaryGunNonReactive').slice(0, 12), 'Reactive and Non-Reactive must differ within the first characters a chip shows');
+    for (const key of Object.keys(DRAW_META)) assert.ok(dc.SHORT_NAME[key], `${key} has no short name`);
+});
+
+t('Upgrade on a Mythic at 20 CP says it is NOT included, instead of silently adding nothing', () => {
+    const panel = render(makeBasket({ region: 'region_20', includeUpgrades: true, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }));
+    assert.ok(/Upgrade not included/.test(allText(panel)), 'the missing upgrade price must be named');
+    const r10 = render(makeBasket({ region: 'region_10', includeUpgrades: true, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }));
+    assert.strictEqual(/Upgrade not included/.test(allText(r10)), false, 'and only where it is actually missing');
+});
+
+t('every line finished, no balance: says so, never "your balance covers this"', () => {
+    const text = allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 10 }] })));
+    assert.ok(/Every draw here is finished/.test(text));
+    assert.strictEqual(/balance covers/i.test(text), false);
+    const rich = allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], balance: 20000 })));
+    assert.ok(/Your balance covers this\*\*, with \*\*`[\d,]+ CP`\*\* to spare/.test(rich), 'a covering balance says what is left after');
+});
+
+t('the upgrade toggle appears only for draws that have an upgrade', () => {
+    const legendary = render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }] }));
+    assert.strictEqual(buttons(legendary).some(b => /^Upgrade/.test(b.label || '')), false);
+    const mythic = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }));
+    assert.ok(buttons(mythic).some(b => /^Upgrade/.test(b.label || '')));
+});
+
+t('the region buttons carry a caption saying what a region is', () => {
+    for (const panel of [render(makeBasket()), dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })]) {
+        assert.ok(/\*\*Region\*\* · the CP price of your first pull/.test(allText(panel)));
+    }
+});
+
+t('the default view names the currency and where to change it', () => {
+    const text = allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })));
+    assert.ok(/Prices in \*\*CAD\*\*/.test(text), 'compact view must name the currency (the fixture renders in CAD)');
+});
+
+t('the compact package line states the price once, the packs, and the leftover', () => {
+    const block = texts(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).find(c => c.includes('## RECOMMENDED PACKAGE'));
+    const line = block.split('\n').find(l => l.startsWith('**Cheapest:**'));
+    assert.ok(/left over/.test(line), `leftover missing from "${line}"`);
+    assert.strictEqual((line.match(/10,800 CP/g) || []).length <= 1, true, `the pack total is repeated in "${line}"`);
+});
+
+t('a grouped ×N keeps its progress figure, and the list is headed YOUR DRAWS', () => {
+    const text = allText(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] })));
+    assert.ok(/## YOUR DRAWS/.test(text));
+    assert.ok(/×2 — 0\/10/.test(text));
+});
+
+t('unticking a draw with progress asks first; applySelection keeps order and progress', () => {
+    const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }), {}, { notice: 'x', dropConfirm: { mask: 0, count: 1 } });
+    const confirm = buttonLabelled(panel, 'Remove 1 line with progress');
+    assert.ok(confirm && confirm.style === 4, 'the confirm must be Danger-styled');
+    assert.strictEqual(selects(panel).some(s => s.custom_id.split('~')[1] === 'draws'), false, 'the picker steps aside while the confirm is open');
+    assert.strictEqual(dc.decodeState(confirm.custom_id).mask, 0);
+    const kept = dc.applySelection([{ drawKey: 'mythicWeapon', pullsDone: 3 }, { drawKey: 'legendaryGunReactive', pullsDone: 2 }], new Set(['legendaryGunReactive', 'doubleEpicCharacters']));
+    assert.deepStrictEqual(kept, [{ drawKey: 'legendaryGunReactive', pullsDone: 2 }, { drawKey: 'doubleEpicCharacters', pullsDone: 0 }]);
+    const s = dc.decodeState(dc.encodeState('dropok', { ...state(), basketId: 'a'.repeat(24), mask: 0b100000101 }));
+    assert.strictEqual(s.mask, 0b100000101, 'the pending selection must round-trip');
+});
+
+t('the untick confirm also shows on the setup form, and fits the budget at its densest', () => {
+    const banners = Array.from({ length: 9 }, (_, i) => ({ drawKey: Object.keys(DRAW_META)[i], pullsDone: 1 }));
+    const saved = Array.from({ length: 25 }, (_, i) => ({ _id: String(i).padStart(24, '0'), name: `Saved ${i}`, banners, region: 'region_10' }));
+    for (const submitted of [false, true]) {
+        const panel = dc.buildCalculatorPanel(state(), makeBasket({ banners, submitted }), ACCENT, { savedBaskets: saved, notice: 'x', dropConfirm: { mask: 1, count: 8 } });
+        assert.ok(buttonLabelled(panel, 'Remove 8 lines with progress'), `confirm missing (submitted=${submitted})`);
+        assert.ok(messageCount(panel) <= 40, `over the 40-component cap: ${messageCount(panel)} (submitted=${submitted})`);
+    }
+});
+
+t('Draw Prices opens its own message instead of replacing the calculator', () => {
+    const nav = buttonLabelled(render(makeBasket()), 'Draw Prices');
+    assert.notStrictEqual(nav.custom_id, 'nav_prices', 'nav_prices re-renders THIS message as /draw prices');
+    assert.strictEqual(dc.decodeState(nav.custom_id).verb, 'prices');
+});
+
+t('the first screen leads with what the player gets', () => {
+    const text = allText(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] }));
+    assert.ok(/See how much CP you still need, and the cheapest way to buy it/.test(text));
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

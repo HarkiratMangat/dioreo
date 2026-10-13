@@ -46,7 +46,16 @@ require.cache[modelPath].exports = {
     find: (query) => chain(async () => [...rows.values()]
         .filter(d => d.discordId === query.discordId && d.name !== undefined && d.name !== '')
         .map(d => ({ ...d }))),
-    deleteOne: async (query) => { rows.delete(String(query._id)); }
+    deleteOne: async (query) => { rows.delete(String(query._id)); },
+    // latestForUser's shape: findOne(query).sort(spec).lean() -- the stub honours the sort so the test can fail.
+    findOne: (query) => {
+        let spec = {};
+        const run = async () => [...rows.values()].filter(d => d.discordId === query.discordId)
+            .sort((a, b) => (+(b.updatedAt || 0) - +(a.updatedAt || 0)) || (+(b.createdAt || 0) - +(a.createdAt || 0)))
+            .map(d => ({ ...d }))[0] || null;
+        const obj = { sort: (s) => { spec = s; return obj; }, lean: () => { assert.deepStrictEqual(spec, { updatedAt: -1, createdAt: -1 }); return run(); } };
+        return obj;
+    }
 };
 
 const store = require('../utils/drawBasketStore');
@@ -168,6 +177,18 @@ const OTHER = '999999999999999999';
 
         await store.save(OWNER, { _id: created._id, banners: [], balance: 0, submitted: false });
         assert.strictEqual((await store.load(OWNER, created._id)).submitted, false, 'New Calculation must return it to a draft');
+    });
+
+    await t('latestForUser reopens the calculation changed most recently, never someone else\'s', async () => {
+        const LATEST = '222222222222222222';
+        const first = await store.save(LATEST, { banners: [{ drawKey: 'mythicWeapon', pullsDone: 1 }] });
+        await new Promise(r => setTimeout(r, 5));
+        const second = await store.save(LATEST, { banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] });
+        assert.strictEqual(String((await store.latestForUser(LATEST))._id), String(second._id));
+        await new Promise(r => setTimeout(r, 5));
+        await store.save(LATEST, { _id: first._id, balance: 500 });
+        assert.strictEqual(String((await store.latestForUser(LATEST))._id), String(first._id), 'editing an older calculation makes it the latest');
+        assert.strictEqual(await store.latestForUser('333333333333333333'), null);
     });
 
     console.log(`\n${passed} passed, ${failed} failed\n`);

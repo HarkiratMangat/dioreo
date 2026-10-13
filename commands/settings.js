@@ -96,6 +96,7 @@ module.exports = {
         const timeVis = (prefs.timestampVisibility || 'public').toUpperCase();
         const settingsVis = (prefs.settingsVisibility || 'public').toUpperCase();
         const colorsVis = (prefs.colorsVisibility || 'public').toUpperCase();
+        const calcVis = (prefs.calculatorVisibility || 'public').toUpperCase();
         const tz = prefs.timezone || 'America/Toronto';
         const style = prefs.timestampStyle || 'all_formats';
 
@@ -176,6 +177,7 @@ module.exports = {
 
             containerComponents.push(buildToggleRow('Weapon Builds', loadoutVis, `toggle_loadout_public`, `toggle_loadout_ephemeral`));
             containerComponents.push(buildToggleRow('Seasonal Content', seasonVis, `toggle_seasonal_public`, `toggle_seasonal_ephemeral`));
+            containerComponents.push(buildToggleRow('Draw Calculator', calcVis, `toggle_calculator_public`, `toggle_calculator_ephemeral`));
             containerComponents.push(buildToggleRow('Timestamps', timeVis, `toggle_timestamp_public`, `toggle_timestamp_ephemeral`));
             containerComponents.push(buildToggleRow('Settings Dashboard', settingsVis, `toggle_settings_public`, `toggle_settings_ephemeral`));
             containerComponents.push(buildToggleRow('Colors', colorsVis, `toggle_colors_public`, `toggle_colors_ephemeral`));

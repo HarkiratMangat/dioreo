@@ -57,8 +57,7 @@ check('filenameForPublicId: derived FROM the id, so the attachment and the cache
     assert.strictEqual(filenameForPublicId('dev_decoration_webp/legacy-a-68fda5e6'), 'legacy-a-68fda5e6.webp');
 });
 
-// 956 -> 986 on 2026-10-13 11:48 EDT, when the catalogue sync added 30 SKUs in three new collections (All Ears, Cauldron Chaos, Fall Foragers); the collision check above ran first and passed at 986, so only the count moved.
-// 941 -> 956 on 2026-09-09 18:11 EDT, when the catalogue sync brought in two new collections (Dark Folklore, Mermaid Melodies). ⚠️ THE NUMBER WAS NOT SIMPLY EDITED, which is what this test's own failure message forbids: the collision assertion below runs on EVERY variant and precedes the total, so the failing run had already walked all 956 ids and found no duplicate. Uniqueness is re-verified by construction on each run; the total is the tripwire that makes a refresh visible instead of silent.
+// 956 -> 986 on 2026-10-13 11:48 EDT, when the catalogue sync added 30 SKUs in three new collections (All Ears, Cauldron Chaos, Fall Foragers); the collision check above ran first and passed at 986, so only the count moved. 941 -> 956 on 2026-09-09 18:11 EDT, when the catalogue sync brought in two new collections (Dark Folklore, Mermaid Melodies). ⚠️ THE NUMBER WAS NOT SIMPLY EDITED, which is what this test's own failure message forbids: the collision assertion below runs on EVERY variant and precedes the total, so the failing run had already walked all 956 ids and found no duplicate. Uniqueness is re-verified by construction on each run; the total is the tripwire that makes a refresh visible instead of silent.
 check('the real catalog snapshot produces 986 DISTINCT ids -- checked globally, since the folder is flat', () => {
     const catalog = require('../docs/reference/nameplate-decoration-catalog.json');
     let total = 0;

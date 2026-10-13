@@ -28,7 +28,8 @@ async function save(discordId, basket) {
             balance: basket.balance || 0,
             includeUpgrades: Boolean(basket.includeUpgrades),
             entitlementMask: basket.entitlementMask || 0,
-            submitted: Boolean(basket.submitted)
+            submitted: Boolean(basket.submitted),
+            updatedAt: new Date()
         });
         return created.toObject();
     }
@@ -43,7 +44,8 @@ async function save(discordId, basket) {
             includeUpgrades: basket.includeUpgrades !== undefined ? basket.includeUpgrades : existing.includeUpgrades,
             entitlementMask: basket.entitlementMask !== undefined ? basket.entitlementMask : existing.entitlementMask,
             // 🔴 A field missing from BOTH the schema and this whitelist is the silent-revert bug CLAUDE.md names: it would set in memory, save without error, and be gone on the next read.
-            submitted: basket.submitted !== undefined ? basket.submitted : existing.submitted
+            submitted: basket.submitted !== undefined ? basket.submitted : existing.submitted,
+            updatedAt: new Date()
         } },
         { new: true }
     ).lean();
@@ -62,7 +64,7 @@ async function rename(discordId, basketId, name) {
     const existing = await load(discordId, basketId);
     if (!existing) return null;
     const trimmed = typeof name === 'string' ? name.trim().slice(0, 80) : '';
-    const update = trimmed ? { $set: { name: trimmed } } : { $unset: { name: 1 } };
+    const update = trimmed ? { $set: { name: trimmed, updatedAt: new Date() } } : { $unset: { name: 1 }, $set: { updatedAt: new Date() } };
     return DrawBasket.findByIdAndUpdate(basketId, update, { new: true }).lean();
 }
 
@@ -73,4 +75,9 @@ async function remove(discordId, basketId) {
     return true;
 }
 
-module.exports = { load, save, listForUser, rename, remove };
+// The calculation this player changed most recently, named or not (2026-10-13 12:40 EDT). Running /draw calculator, or arriving from /draw prices' cross-link, reopens it -- the result "persists until New Calculation" (Harkirat, 2026-08-27) only if the player can get back to it, and listForUser above deliberately lists NAMED ones only. Older documents have no updatedAt, so createdAt breaks the tie.
+async function latestForUser(discordId) {
+    return DrawBasket.findOne({ discordId }).sort({ updatedAt: -1, createdAt: -1 }).lean();
+}
+
+module.exports = { load, save, listForUser, rename, remove, latestForUser };
