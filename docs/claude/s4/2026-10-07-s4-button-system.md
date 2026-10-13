@@ -506,3 +506,7 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 ## His 2026-10-13 10:29 EDT, verbatim, written 2026-10-13 10:29 EDT
 - "sorry, 1 more tweak. please also copy the selected column beside the hover 24% on sunk. because that column has the button enabled and it allows me to actually test it by real time hovering over the selected state"
 - Built in spec v91: a sixth column, a live selected button whose hover is candidate 2's + hover at the colour 24% on sunk.
+
+## His 2026-10-13 10:52 EDT, verbatim, written 2026-10-13 10:53 EDT
+- "honestly, i barely notice the 24% on sunk for the select-hover. and i kind of don't like that just 24% changes on different surfaces. maybe let's try 30% on sunk? selected 18% on sunk is fine tho."
+- Built in spec v92: the alternative + hover (its column, the live selected beside it, and In use's second line) is the colour 30% on sunk; selected stays 18% on sunk.
