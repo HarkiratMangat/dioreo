@@ -204,7 +204,8 @@ t('every pulls-done dropdown option carries its banner NUMBER, so a chosen value
     assert.strictEqual(bpullsSelects.length, 2);
     assert.ok(bpullsSelects[0].placeholder.startsWith('#1 '));
     assert.ok(bpullsSelects[1].placeholder.startsWith('#2 '));
-    assert.ok(bpullsSelects[0].options.every(o => o.label.startsWith('#1 ')), 'every OPTION (not just the placeholder) must carry its banner number');
+    assert.ok(bpullsSelects[0].options.filter(o => o.value !== 'del').every(o => o.label.startsWith('#1 ')), 'every OPTION (not just the placeholder) must carry its banner number');
+    assert.ok(bpullsSelects[0].options.find(o => o.value === 'del').label.includes('#1 '), 'and so does its Remove option');
     // A closed select shows only the chosen option's label, so the label must also name the draw -- two lines of different draws read "#1 — Not started" / "#2 — Not started" before (2026-10-13 click-test).
     assert.ok(bpullsSelects[0].options.every(o => o.label.includes('Mythic Weapon')), 'every option must name its draw');
     assert.ok(bpullsSelects[1].options.every(o => o.label.includes('Mythic Character')), 'every option must name its draw');
@@ -229,7 +230,7 @@ t('a NEW banner starts at 0 pulls -- no inherited default from a sibling banner 
     const banners = [{ drawKey: 'mythicWeapon', pullsDone: 7 }];
     const panel = render(makeBasket({ banners }), { page: 1 });
     const addMore = selects(panel).find(s => s.custom_id.split('~')[1] === 'addmore');
-    assert.ok(addMore, 'a type already in the basket must be offered via + Add another');
+    assert.ok(addMore, 'Edit Draws must offer + Add more draws');
     assert.ok(addMore.options[0].description.includes('0 pulls'), 'the option copy must say the new banner starts at 0, never inheriting the existing 7');
 });
 
@@ -649,7 +650,7 @@ t('Show Breakdown sits beside the COST BREAKDOWN heading, not in the action row'
 });
 
 // ==========================================
-// QUANTITY STYLES C / E / F (round 2, 2026-10-13 18:40 EDT) -- built so Harkirat can pick by using them
+// ADDING MORE OF A DRAW (2026-10-13 19:48 EDT): Harkirat tried three shapes on the dev bot and chose "+ Add more draws" under the lines, with copies kept together
 // ==========================================
 t('setTypeCount adds copies after the draw\'s last line and removes empty copies first', () => {
     const start = [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 3 }, { drawKey: 'doubleEpicCharacters', pullsDone: 0 }];
@@ -665,80 +666,64 @@ t('setTypeCount adds copies after the draw\'s last line and removes empty copies
     assert.strictEqual(fresh.banners.length, 2);
 });
 
-t('each style renders its own control on the setup form, and the dev switch cycles them', () => {
-    const before = dc.getQtyStyle();
-    const verbOf = s => dc.decodeState(s.custom_id).verb;
-    try {
-        const draft = makeBasket({ submitted: false, banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }] });
-        const form = () => dc.buildCalculatorPanel(state(), draft, ACCENT, { savedBaskets: [] });
-        const lineOpts = panel => selects(panel).filter(s => verbOf(s) === 'bpulls').map(s => s.options.map(o => o.value));
-        dc.setQtyStyle('C');
-        let panel = form();
-        assert.ok(selects(panel).some(s => verbOf(s) === 'draws'), 'C keeps the multi-select picker');
-        assert.ok(lineOpts(panel).every(v => v.includes('add') && v.includes('del')), 'C puts add and remove in every line');
-        assert.strictEqual(buttons(panel).some(b => b.label === 'How many of each?'), false);
-        dc.setQtyStyle('E');
-        panel = form();
-        const howMany = buttons(panel).find(b => b.label === 'How many of each?');
-        assert.ok(howMany && verbOf(howMany) === 'qtymodal', 'E shows the popup button');
-        assert.ok(lineOpts(panel).every(v => !v.includes('add') && !v.includes('del')), 'E keeps the lines plain');
-        assert.strictEqual(buttons(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })).some(b => b.label === 'How many of each?'), false, 'no popup button with nothing picked');
-        dc.setQtyStyle('F');
-        panel = form();
-        const add = selects(panel).find(s => verbOf(s) === 'addmore');
-        assert.ok(add, 'F swaps the picker for + Add a draw');
-        assert.strictEqual(add.max_values === undefined || add.max_values === 1, true, 'one pick adds one line');
-        assert.strictEqual(add.options.length, Object.keys(DRAW_META).length, 'it lists every draw, not only the picked ones');
-        assert.strictEqual(selects(panel).some(s => verbOf(s) === 'draws'), false);
-        assert.ok(lineOpts(panel).every(v => v.includes('del') && !v.includes('add')), 'F removes inside each line and adds from the top');
-        assert.ok(selects(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })).some(s => verbOf(s) === 'draws'), 'an empty form still starts from the multi-select');
-        dc.setQtyStyle('C');
-        assert.strictEqual(dc.cycleQtyStyle(), 'E');
-        assert.strictEqual(dc.cycleQtyStyle(), 'F');
-        assert.strictEqual(dc.cycleQtyStyle(), 'C');
-    } finally { dc.setQtyStyle(before); }
+t('the form adds from ONE picker below the lines: nothing pre-ticked, every draw listed, remove inside each line', () => {
+    const verbOf = c => dc.decodeState(c.custom_id).verb;
+    const draft = makeBasket({ submitted: false, banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 2 }, { drawKey: 'mythicWeapon', pullsDone: 0 }] });
+    const panel = dc.buildCalculatorPanel(state(), draft, ACCENT, { savedBaskets: [] });
+    const all = selects(panel);
+    assert.strictEqual(all.some(s => verbOf(s) === 'draws'), false, 'with lines, the multi-select picker gives way to + Add more draws');
+    const addIdx = all.findIndex(s => verbOf(s) === 'addmore');
+    assert.ok(addIdx > 0 && all.slice(0, addIdx).every(s => verbOf(s) === 'bpulls'), 'the add picker comes after the lines');
+    const add = all[addIdx];
+    assert.strictEqual(add.options.length, Object.keys(DRAW_META).length, 'every draw is offered, not only the picked ones');
+    assert.ok(add.max_values > 1, 'several draws can be added in one pick');
+    assert.strictEqual(add.options.some(o => o.default), false, 'nothing is shown ticked: ticking always ADDS');
+    assert.ok(/You have 1 · adds a 2nd, at 0 pulls/.test(add.options.find(o => o.value === 'legendaryGunReactive').description));
+    const lines = all.filter(s => verbOf(s) === 'bpulls');
+    assert.ok(lines.every(s => s.options[s.options.length - 1].value === 'del'), 'each line ends with its own Remove');
+    assert.ok(/with its 2 pulls/.test(lines[0].options.find(o => o.value === 'del').description), 'Remove says what progress goes with it');
+    assert.strictEqual(buttons(panel).some(b => /^Test: style/.test(b.label || '')), false, 'the trial switch is gone');
+    const empty = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
+    assert.ok(selects(empty).some(s => verbOf(s) === 'draws' && s.max_values > 1), 'an empty form starts from the multi-select');
+    assert.strictEqual(selects(empty).some(s => verbOf(s) === 'addmore'), false);
 });
 
-t('the E popup shows each draw at its current count and never offers fewer than its lines with pulls', () => {
-    const banners = [
-        { drawKey: 'legendaryGunReactive', pullsDone: 3 }, { drawKey: 'legendaryGunReactive', pullsDone: 5 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 },
-        { drawKey: 'mythicWeapon', pullsDone: 0 }
-    ];
-    const modal = dc.buildQtyModal(state(), makeBasket({ submitted: false, banners }));
-    assert.strictEqual(dc.decodeState(modal.custom_id).verb, 'qtyset');
-    assert.strictEqual(modal.components.length, 2, 'one field per draw');
-    const [reactive, mythic] = modal.components.map(l => l.component);
-    assert.ok(modal.components.every(l => l.type === 18 && l.label.length <= 45 && (l.description || '').length <= 100));
-    assert.strictEqual(reactive.options.find(o => o.default).value, '3', 'set to the current count');
-    assert.strictEqual(reactive.options[0].value, '2', 'two lines have pulls, so 2 is the lowest offered');
-    assert.strictEqual(mythic.options[0].value, '1');
-    assert.ok(modal.components.every(l => l.component.options.length <= 25));
-    const nine = Object.keys(DRAW_META).map(drawKey => ({ drawKey, pullsDone: 0 }));
-    assert.strictEqual(dc.buildQtyModal(state(), makeBasket({ submitted: false, banners: nine })).components.length, dc.QTY_MODAL_MAX_DRAWS, 'a popup holds at most 5 fields');
+t('pages keep a draw\'s lines together, on the form and on Edit Draws', () => {
+    const run = keys => keys.map(drawKey => ({ drawKey, pullsDone: 0 }));
+    assert.deepStrictEqual(dc.linePages(run(['a', 'a', 'a', 'b', 'b', 'c']), 4), [[0, 1, 2], [3, 4, 5]], 'a group never splits to fill a page');
+    assert.deepStrictEqual(dc.linePages(run(['a', 'b', 'b', 'b', 'b', 'b']), 4), [[0], [1, 2, 3, 4], [5]], 'a group longer than a page is the only split');
+    assert.deepStrictEqual(dc.linePages([], 4), [[]]);
+    const banners = run(['mythicWeapon', 'legendaryGunReactive', 'legendaryGunReactive', 'legendaryGunReactive', 'legendaryGunReactive', 'doubleEpicCharacters']);
+    for (const page of [0, 1]) {
+        const panel = render(makeBasket({ banners }), { page: 1, bpage: page });
+        const shown = selects(panel).filter(s => dc.decodeState(s.custom_id).verb === 'bpulls').map(s => dc.decodeState(s.custom_id).focus);
+        assert.deepStrictEqual(shown, page === 0 ? [0] : [1, 2, 3, 4], `Edit Draws page ${page + 1}`);
+    }
+    const form = dc.buildCalculatorPanel(state(), makeBasket({ submitted: false, banners: run(['mythicWeapon', 'mythicWeapon', 'mythicWeapon', 'legendaryGunReactive', 'legendaryGunReactive']) }), ACCENT, { savedBaskets: [] });
+    assert.deepStrictEqual(selects(form).filter(s => dc.decodeState(s.custom_id).verb === 'bpulls').map(s => dc.decodeState(s.custom_id).focus), [0, 1, 2], 'the form\'s first page holds the three Mythic Weapons, not three plus one');
 });
 
-t('every quantity style stays under 40 at its densest, with the dev switch and Show Everyone', () => {
-    const before = dc.getQtyStyle(); const env = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'development';
-    try {
-        const keys = Object.keys(DRAW_META);
-        const saved = Array.from({ length: 25 }, (_, i) => ({ _id: String(i).padStart(24, '0'), name: `Saved ${i}`, banners: [], region: 'region_10' }));
-        for (const style of dc.QTY_STYLES) {
-            dc.setQtyStyle(style);
-            for (let types = 1; types <= keys.length; types++) for (let lines = types; lines <= 9; lines++) for (const savedBaskets of [[], saved]) for (let bpage = 0; bpage < 3; bpage++) {
-                const banners = Array.from({ length: lines }, (_, i) => ({ drawKey: keys[i % types], pullsDone: 1 }));
-                const panel = dc.buildCalculatorPanel(state({ bpage }), makeBasket({ submitted: false, banners }), ACCENT, { savedBaskets });
-                assert.ok(buttons(panel).some(x => /^Test: style/.test(x.label || '')), 'the dev switch must render on the form');
-                assert.ok(messageCount(panel) <= 40, `style ${style}, ${types} draws, ${lines} lines, saved ${savedBaskets.length}, page ${bpage + 1}: ${messageCount(panel)}`);
-            }
+t('a calculation stops at its line cap: the add picker says so and is disabled', () => {
+    const full = Array.from({ length: dc.MAX_LINES }, () => ({ drawKey: 'mythicWeapon', pullsDone: 0 }));
+    const add = selects(render(makeBasket({ banners: full }), { page: 1 })).find(s => dc.decodeState(s.custom_id).verb === 'addmore');
+    assert.ok(add.disabled && /up to 25 lines/.test(add.placeholder));
+    const near = full.slice(0, dc.MAX_LINES - 2);
+    const room = selects(render(makeBasket({ banners: near }), { page: 1 })).find(s => dc.decodeState(s.custom_id).verb === 'addmore');
+    assert.strictEqual(room.max_values, 2, 'it never lets one pick overshoot the cap');
+});
+
+t('the form and Edit Draws stay under 40 with unique ids at every size up to the cap', () => {
+    const keys = Object.keys(DRAW_META);
+    const saved = Array.from({ length: 25 }, (_, i) => ({ _id: String(i).padStart(24, '0'), name: `Saved ${i}`, banners: [], region: 'region_10' }));
+    for (const types of [1, 2, 3, 5, 9]) for (let lines = 1; lines <= dc.MAX_LINES; lines++) for (let bpage = 0; bpage < 8; bpage++) {
+        const banners = Array.from({ length: lines }, (_, i) => ({ drawKey: keys[Math.floor(i * types / lines)], pullsDone: 1 }));
+        for (const savedBaskets of [[], saved]) {
+            const form = dc.buildCalculatorPanel(state({ bpage }), makeBasket({ submitted: false, banners }), ACCENT, { savedBaskets });
+            assert.ok(messageCount(form) <= 40, `form: ${types} draws, ${lines} lines, saved ${savedBaskets.length}, page ${bpage + 1}: ${messageCount(form)}`);
         }
-    } finally { dc.setQtyStyle(before); process.env.NODE_ENV = env; }
-});
-
-t('the dev style switch never renders outside development', () => {
-    const env = process.env.NODE_ENV; delete process.env.NODE_ENV;
-    try { assert.strictEqual(buttons(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })).some(x => /^Test: style/.test(x.label || '')), false); }
-    finally { if (env !== undefined) process.env.NODE_ENV = env; }
+        const edit = render(makeBasket({ banners }), { page: 1, bpage });
+        assert.ok(messageCount(edit) <= 40, `Edit Draws: ${types} draws, ${lines} lines, page ${bpage + 1}: ${messageCount(edit)}`);
+    }
 });
 
 t('the first screen leads with what the player gets', () => {

@@ -13,7 +13,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
-    findLiveDoubleCPEntry, parseAmount, applySelection, setTypeCount, cycleQtyStyle, buildQtyModal
+    findLiveDoubleCPEntry, parseAmount, applySelection, setTypeCount, MAX_LINES
 } = require('../commands/drawCalculator');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES } = require('../utils/cpPackages');
@@ -112,14 +112,6 @@ async function route(interaction) {
         if (!basket) return true;
         return await interaction.showModal(buildNameModal(state, basket.name));
     }
-    // Quantity style E: the "How many of each?" popup. Same direct-response rule as the modals above; a calculation with no lines left has nothing to count, so it just redraws.
-    if (interaction.isButton() && state.verb === 'qtymodal') {
-        const basket = await loadOwned(interaction, state, actingUserId);
-        if (!basket) return true;
-        if (!basket.banners.length) { await renderPanel(interaction, state, basket); return true; }
-        return await interaction.showModal(buildQtyModal(state, basket));
-    }
-
     if (interaction.isModalSubmit() && state.verb === 'nums') {
         const amount = parseAmount(interaction.fields.getTextInputValue('amount'));
         if (amount === null) {
@@ -141,26 +133,6 @@ async function route(interaction) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         const updated = await basketStore.rename(actingUserId, state.basketId, name);
-        await renderPanel(interaction, state, updated);
-        return true;
-    }
-
-    // Style E's popup submit: one `q<draw index>` select per draw. A count is never applied below that draw's lines with pulls, the same floor the popup offers, so a stale popup cannot discard progress either.
-    if (interaction.isModalSubmit() && state.verb === 'qtyset') {
-        await interaction.deferUpdate();
-        const basket = await loadOwned(interaction, state, actingUserId);
-        if (!basket) return true;
-        let banners = basket.banners;
-        DRAW_KEY_ORDER.forEach((key, i) => {
-            let picked;
-            try { picked = interaction.fields.getStringSelectValues(`q${i}`); } catch (absent) { return; }
-            const count = Number(picked && picked[0]);
-            // Bounded like the popup itself (25 options at most): a forged submit must not make setTypeCount build an arbitrary number of lines.
-            if (!(Number.isInteger(count) && count >= 1 && count <= 25)) return;
-            const floor = banners.filter(b => b.drawKey === key && b.pullsDone > 0).length;
-            banners = setTypeCount(banners, key, Math.max(count, floor)).banners;
-        });
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
         await renderPanel(interaction, state, updated);
         return true;
     }
@@ -239,21 +211,19 @@ async function route(interaction) {
         return true;
     }
 
-    // Dev bot only: cycles the three quantity styles (commands/drawCalculator.js's QTY_STYLES) and re-renders.
-    if (interaction.isButton() && state.verb === 'qstyle') {
-        cycleQtyStyle();
-        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
-        await renderPanel(interaction, state, basket);
-        return true;
-    }
-
+    // "+ Add more draws" on the form and on Edit Draws: every ticked draw adds ONE line, right after that draw's existing lines (setTypeCount), so copies of a draw stay together. A key drawprices no longer knows is skipped, and the calculation stops at MAX_LINES.
     if (interaction.isStringSelectMenu() && state.verb === 'addmore') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        // Style F's "+ Add a draw" lists every draw, so check the key is one drawprices still knows before saving it.
-        if (!DRAW_META[interaction.values[0]]) { await renderPanel(interaction, state, basket); return true; }
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: [...basket.banners, { drawKey: interaction.values[0], pullsDone: 0 }] });
-        await renderPanel(interaction, state, updated);
+        let banners = basket.banners;
+        let skipped = 0;
+        for (const key of interaction.values) {
+            if (!DRAW_META[key]) continue;
+            if (banners.length >= MAX_LINES) { skipped++; continue; }
+            banners = setTypeCount(banners, key, banners.filter(b => b.drawKey === key).length + 1).banners;
+        }
+        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+        await renderPanel(interaction, state, updated, skipped ? `A calculation holds up to ${MAX_LINES} lines, so ${skipped === 1 ? '1 draw was' : `${skipped} draws were`} not added.` : null);
         return true;
     }
 
@@ -262,13 +232,9 @@ async function route(interaction) {
         if (!basket) return true;
         const index = state.focus;
         if (index === null || !basket.banners[index]) { await renderPanel(interaction, state, basket); return true; }
-        // Styles C and F: the line's own dropdown also adds a copy of its draw (C) or removes the line (both). Removing is the player's explicit choice on that line, so it does not ask.
-        if (interaction.values[0] === 'add' || interaction.values[0] === 'del') {
-            const key = basket.banners[index].drawKey;
-            const banners = interaction.values[0] === 'add'
-                ? setTypeCount(basket.banners, key, basket.banners.filter(b => b.drawKey === key).length + 1).banners
-                : basket.banners.filter((_, i) => i !== index);
-            const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+        // The line's own dropdown ends with "Remove" (form and Edit Draws). An explicit choice on that one line, so it does not ask.
+        if (interaction.values[0] === 'del') {
+            const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: basket.banners.filter((_, i) => i !== index) });
             await renderPanel(interaction, { ...state, focus: null }, updated);
             return true;
         }

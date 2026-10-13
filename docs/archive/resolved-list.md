@@ -5,6 +5,12 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ `/draw calculator`: how to add more of a draw — closed 2026-10-13 19:49 EDT `[DONE · 2026-10-13 19:49 EDT]`
+
+Harkirat tried round 1 (A, B, C) and round 2 (C, E, F) on the dev bot and chose F ("Lets go F but improve it", 2026-10-13 19:43 EDT): E's popup holds only five draws, and he wanted a draw's lines kept together. Built as one "+ Add more draws" multi-select under the lines on the form and on Edit Draws (each tick adds one line right after that draw's lines, nothing pre-ticked), "− Remove #N" ending each line's dropdown, pages that keep a draw's lines together (`linePages`), and a 25-line cap. C, E and the trial switch are deleted; no `Test: style` button, `CALC_QTY_STYLE` or `qstyle`/`qtymodal`/`qtyset` verb remains. The row as it stood:
+
+- **🧪 `/draw calculator`: pick ONE way to set how many of a draw, then delete the other two** `[P1 · S · Sonnet5-Medium · 👤Harkirat decides]` *(filed 2026-10-13 17:49 EDT)* Harkirat asked for quantity up front and wanted the shapes built to try in the bot. Round 1 (`5a17b3b4`) was A one "How many of each?" dropdown, B a "× N" dropdown per draw, C add/remove inside each line's dropdown; he found C easiest and A/B froze on duplicate ids (`2ab86c34`). Round 2 (2026-10-13 18:39 EDT) is C, E a "How many of each?" popup with a count per draw, and F a "+ Add a draw" picker once there are lines, with remove inside each line. The dev bot's setup form has a "Test: style" button that cycles them (`QTY_STYLES` in `commands/drawCalculator.js`; `CALC_QTY_STYLE` sets the default). **Once he picks:** delete the other styles' builders (`addDrawRow`, `buildQtyModal` and the `qtymodal`/`qtyset` verbs, or the line actions), the `qstyle` verb, the dev button and `CALC_QTY_STYLE`; keep `setTypeCount` and the budget-fitting loop in `buildSetupPanel`. **Verify by:** `scripts/drawCalcBudget.test.js`'s quantity cases rewritten for the one style, its budget sweep under 40, and no `Test: style` button anywhere. Must be resolved before the branch's PR merges.
+
 ## ✅ `/draw calculator` Edit Draws reorder method — closed 2026-10-13 14:28 EDT `[DONE · 2026-10-13 14:28 EDT]`
 
 Harkirat picked option A ("Yeah option A looks good I think", 2026-10-13 14:18 EDT): a ▲ on each line. Built on `feat/draw-calculator`; the budget sweep in `scripts/drawCalcBudget.test.js` holds every line count 1–9 under 40 at 4 lines per page. The row as it stood:

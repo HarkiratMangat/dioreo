@@ -23,20 +23,11 @@ const DRAW_KEYS = Object.keys(DRAW_META);
 const MAX_BANNERS_PER_PAGE = 4;
 // The SETUP screen paginates tighter than the Edit page, and the difference is a budget fact, not an inconsistency: setup also carries the saved-calculations list, the draw multi-select, the region row and the Calculate row, all of which the Edit page does without. Measured by the sweep in scripts/drawCalcBudget.test.js -- change this number and that test tells you immediately whether it still fits.
 const SETUP_LINES_PER_PAGE = 4;
-// The setup form's own budget (container included): 40, minus the Show Everyone row (2) and the bottom nav row at its widest on the form (1 + 4 buttons, counting the dev-only style switch). buildSetupPanel drops lines per page until it fits, so a style that adds rows can never push a send over the cap.
-const SETUP_CONTAINER_BUDGET = 33;
+// The setup form's own budget (container included): 40, minus the Show Everyone row (2) and the bottom nav row on the form (1 + 3 buttons). buildSetupPanel drops lines per page until it fits.
+const SETUP_CONTAINER_BUDGET = 34;
+// One calculation holds at most this many lines; the add picker disables itself at the cap and the handler stops there too.
+const MAX_LINES = 25;
 
-// 🧪 THREE WAYS TO SET HOW MANY OF A DRAW, round 2 (2026-10-13 18:39 EDT). Harkirat tried round 1 (A, B, C) on the dev bot: C worked and felt easiest, A and B froze (duplicate custom ids, fixed in 2ab86c34). He asked to try C beside two new shapes:
-//   C · "+ Add another" / "− Remove" inside each line's own pulls dropdown
-//   E · a "How many of each?" button opening a Discord popup with a count select per draw
-//   F · once there are lines, the top picker becomes "+ Add a draw": each pick adds one line, and "− Remove" sits inside each line
-// The data model is unchanged: copies are still separate lines, each with its own pulls. Which style renders is process-wide, from CALC_QTY_STYLE (default C), and the dev bot shows a "Test: style" button on the form that cycles it. Once he picks one, delete the others and the switch.
-const QTY_STYLES = ['C', 'E', 'F'];
-// A const holder, not a module-scope `let`: scripts/hotpatch.test.js refuses a `let` because a hot reload would silently reset it. A reload resetting this dev switch to the default is harmless.
-const qtyState = { style: QTY_STYLES.includes(process.env.CALC_QTY_STYLE) ? process.env.CALC_QTY_STYLE : 'C' };
-function getQtyStyle() { return qtyState.style; }
-function setQtyStyle(style) { if (QTY_STYLES.includes(style)) qtyState.style = style; return qtyState.style; }
-function cycleQtyStyle() { return setQtyStyle(QTY_STYLES[(QTY_STYLES.indexOf(qtyState.style) + 1) % QTY_STYLES.length]); }
 function countComponents(node) {
     if (Array.isArray(node)) return node.reduce((n, x) => n + countComponents(x), 0);
     if (!node || typeof node !== 'object') return 0;
@@ -276,8 +267,8 @@ function typesSelectRow(state, basket) {
     };
 }
 
-// Page 2's per-banner pulls-done dropdown. 🔴 The placeholder is REPLACED by the chosen option once picked, so without a banner number in every option a set dropdown stops saying which banner it belongs to (spec §2, found live) -- every option and the placeholder both carry `#N`. `f` here carries WHICH banner index this specific select edits, not the reorder pointer -- a per-control target, scoped to this one customId, distinct from the reorder focus stored across renders. `lineActions`: 'both' (style C: add a copy and remove the line), 'remove' (style F: adding lives in the top picker), or false.
-function bannerPullsRow(state, basket, index, { lineActions = false } = {}) {
+// Page 2's per-banner pulls-done dropdown. 🔴 The placeholder is REPLACED by the chosen option once picked, so without a banner number in every option a set dropdown stops saying which banner it belongs to (spec §2, found live) -- every option and the placeholder both carry `#N`. `f` here carries WHICH banner index this specific select edits, not the reorder pointer -- a per-control target, scoped to this one customId, distinct from the reorder focus stored across renders. `removable` ends the dropdown with the line's own Remove option.
+function bannerPullsRow(state, basket, index, { removable = false } = {}) {
     const banner = basket.banners[index];
     const total = pullCount(basket.region, banner.drawKey);
     const meta = DRAW_META[banner.drawKey] || { name: drawName(banner.drawKey), tier: null };
@@ -289,7 +280,7 @@ function bannerPullsRow(state, basket, index, { lineActions = false } = {}) {
         }] };
     }
     const options = [];
-    for (let n = 0; n <= total && options.length < 25; n++) {
+    for (let n = 0; n <= total && options.length < (removable ? 24 : 25); n++) {
         // The draw's name rides in the LABEL (2026-10-13 12:40 EDT): a closed select shows only the chosen option's label, so "#1 — Not started" / "#2 — Not started" could not say which draw each line was once two different draws were in play.
         options.push({
             label: `#${index + 1} ${shortName(banner.drawKey)} · ${n === 0 ? 'not started' : `${plural(n, 'pull')} done`}`,
@@ -298,71 +289,53 @@ function bannerPullsRow(state, basket, index, { lineActions = false } = {}) {
             default: n === banner.pullsDone
         });
     }
-    // Styles C and F put the quantity controls inside the line's own dropdown, below the pull counts.
-    if (lineActions === 'both') options.push({ label: `+ Add another ${shortName(banner.drawKey)}`, value: 'add', description: 'A second copy of this draw, starting at 0 pulls' });
-    if (lineActions) {
-        options.push({ label: `− Remove line #${index + 1}`, value: 'del', description: banner.pullsDone ? `Removes it and its ${plural(banner.pullsDone, 'pull')}` : 'Removes this line' });
-    }
+    // Removing a line is the last option in its own dropdown, on the form and on Edit Draws alike. It does not ask: it is an explicit choice on that one line.
+    if (removable) options.push({ label: `− Remove #${index + 1} ${shortName(banner.drawKey)}`, value: 'del', description: banner.pullsDone ? `Takes it out, with its ${plural(banner.pullsDone, 'pull')}` : 'Takes it out of this calculation' });
     return { type: 1, components: [{ type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} ${shortName(banner.drawKey)}`, options }] };
 }
 
-// Style F: once a calculation has lines, the top picker becomes this. Each pick adds ONE line of that draw, so picking a draw twice gives two; removing is the "− Remove" option inside each line. It reuses the `addmore` verb, which appends one line of the picked draw.
-function addDrawRow(state, basket) {
+// The draw picker once a calculation has lines (Harkirat chose this shape 2026-10-13 19:47 EDT, after trying three on the dev bot). Each draw ticked adds ONE line of it, placed right after that draw's existing lines, so ticking a draw you already have runs another of it; nothing is ever shown ticked, and removing lives in each line's own dropdown. It sits BELOW the lines on the form and on Edit Draws: the list grows above the control that adds to it, and an empty form shows its first-pick picker in that same spot.
+function addDrawsRow(state, basket) {
+    const room = MAX_LINES - basket.banners.length;
     return { type: 1, components: [{
-        type: 3, custom_id: encodeState('addmore', state), placeholder: '+ Add a draw (pick one twice to run two)...',
+        type: 3, custom_id: encodeState('addmore', state),
+        placeholder: room > 0 ? '+ Add more draws...' : `Full: a calculation holds up to ${MAX_LINES} lines`,
+        min_values: 1, max_values: Math.max(1, Math.min(DRAW_KEYS.length, room)), disabled: room <= 0,
         options: DRAW_KEYS.map(key => {
-            const n = basket.banners.filter(b => b.drawKey === key).length;
+            const have = basket.banners.filter(b => b.drawKey === key).length;
+            const total = pullCount(basket.region, key);
             return {
                 label: shortName(key), value: key,
-                description: (n ? `You have ${plural(n, 'line')} of it · adds one more` : DRAW_META[key].name).slice(0, 100),
+                description: (have
+                    ? `You have ${have} · adds a ${ordinal(have + 1)}, at 0 pulls`
+                    : total === null ? `${DRAW_META[key].name} · no data at ${regionLabel(basket.region)} yet`
+                        : `${plural(total, 'pull')} · ${fmt(remainingToFinish(basket.region, key, 0))} CP total · ${DRAW_META[key].name}`).slice(0, 100),
                 emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier])
             };
         })
     }] };
 }
+function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 
-// Style E: the popup behind "How many of each?". One Label per picked draw (a popup holds 5), each a count select set to what the calculation has now. The lowest count offered is that draw's number of lines with pulls entered, so the popup can never discard progress: those lines are removed from their own dropdown. Select ids are `q<draw index>`; the qtyset handler reads them back.
-const QTY_MODAL_MAX_DRAWS = 5;
-function buildQtyModal(state, basket) {
-    const types = usedTypes(basket.banners).filter(k => DRAW_META[k]).slice(0, QTY_MODAL_MAX_DRAWS);
-    return {
-        custom_id: encodeState('qtyset', state), title: 'How many of each draw?',
-        components: types.map(key => {
-            const cur = basket.banners.filter(b => b.drawKey === key).length;
-            const started = basket.banners.filter(b => b.drawKey === key && b.pullsDone > 0).length;
-            const floor = Math.max(1, started);
-            const top = Math.min(floor + 24, Math.max(4, cur + 2));
-            const options = [];
-            for (let n = floor; n <= top; n++) options.push({ label: `× ${n}`, value: String(n), default: n === cur });
-            return {
-                type: 18, label: DRAW_META[key].name.slice(0, 45),
-                description: started ? `${plural(started, 'line')} with pulls entered ${started === 1 ? 'stays' : 'stay'}; remove ${started === 1 ? 'it' : 'them'} from the line itself` : 'How many of this draw you are running',
-                component: { type: 3, custom_id: `q${DRAW_KEYS.indexOf(key)}`, min_values: 1, max_values: 1, options }
-            };
-        })
-    };
+// Pages hold whole draws: a draw's consecutive lines stay on one page (Harkirat, 2026-10-13 19:47 EDT: two of a draw split across two pages read as unrelated). A run longer than a page is the one case that still splits. Returns the line indices on each page.
+function linePages(banners, perPage) {
+    const pages = [];
+    let cur = [];
+    for (let i = 0; i < banners.length;) {
+        let j = i;
+        while (j < banners.length && banners[j].drawKey === banners[i].drawKey) j++;
+        const run = [];
+        for (let k = i; k < j; k++) run.push(k);
+        if (cur.length && cur.length + run.length > perPage) { pages.push(cur); cur = []; }
+        while (run.length > perPage) pages.push(run.splice(0, perPage));
+        cur.push(...run);
+        i = j;
+    }
+    if (cur.length || !pages.length) pages.push(cur);
+    return pages;
 }
 
-// "+ Add another" -- lists the DISTINCT types already in the basket (spec §2); picking one appends a fresh banner (0 pulls) of that same type as a new, independently-orderable row.
-function addAnotherRow(state, basket) {
-    // Filter to keys drawprices still knows -- buildDrawEntries indexes DRAW_META directly and would throw on a retired key (same hazard drawName() guards for the text paths).
-    const types = usedTypes(basket.banners).filter(k => DRAW_META[k]);
-    return {
-        type: 1,
-        components: [{
-            type: 3, custom_id: encodeState('addmore', state), placeholder: '+ Add the same draw again (two running at once)...',
-            options: types.map(key => ({
-                label: shortName(key),
-                value: key,
-                description: `A second ${DRAW_META[key].name}, starting at 0 pulls`.slice(0, 100),
-                emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier])
-            }))
-        }]
-    };
-}
-
-function pageNavRow(state, banners, perPage = MAX_BANNERS_PER_PAGE) {
-    const totalPages = Math.max(1, Math.ceil(banners.length / perPage));
+function pageNavRow(state, totalPages) {
     const current = Math.min(state.bpage || 0, totalPages - 1);
     return {
         type: 1,
@@ -457,8 +430,6 @@ function bottomNavRow(state, { showReset = true } = {}) {
     ];
     if (showReset) components.push({ type: 2, style: resetArmed ? 4 : 2, label: resetArmed ? 'New Calculation — click again' : 'New Calculation', custom_id: encodeState(resetArmed ? 'reset' : 'resetarm', state) });
     components.push({ type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) });
-    // Dev bot only, on the form: cycles the three quantity styles so Harkirat can try each (see QTY_STYLES).
-    if (!showReset && process.env.NODE_ENV === 'development') components.push({ type: 2, style: 2, label: `Test: style ${getQtyStyle()} (tap for ${QTY_STYLES[(QTY_STYLES.indexOf(getQtyStyle()) + 1) % QTY_STYLES.length]})`, custom_id: encodeState('qstyle', state) });
     return { type: 1, components };
 }
 
@@ -472,8 +443,6 @@ function setupActionRow(state, basket) {
             { type: 2, style: 2, disabled: !hasBasket, custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2),
               label: basket?.balance ? `Balance: ${fmt(basket.balance)} CP` : 'Set Balance' },
             upgradeButton(state, basket, { disabled: !hasBasket }),
-            // Style E only: opens the count popup (buildQtyModal).
-            getQtyStyle() === 'E' && lines ? { type: 2, style: 2, label: 'How many of each?', custom_id: encodeState('qtymodal', state) } : null,
             { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), disabled: lines === 0 }
         ].filter(Boolean)
     };
@@ -595,23 +564,21 @@ function buildSetupPanel(state, basket, savedBaskets, accentColor, { region, not
     }
 
     components.push({ type: 10, content: banners.length
-        ? `## SET UP YOUR CALCULATION\n-# Set how many pulls you have already done on each draw, then press **Calculate**.`
+        ? `## SET UP YOUR CALCULATION\n-# Set how many pulls you have already done on each draw, then press **Calculate**. Running a draw twice? Add it again below.`
         // Leads with what the player GETS (2026-10-13 12:40 EDT); it used to open with the steps.
         : `## SET UP YOUR CALCULATION\nSee how much CP you still need, and the cheapest way to buy it.\n-# Pick every draw you are pricing out, then set your progress, balance and region.` });
-    // The untick confirm replaces the picker here too (2026-10-13 12:43 EDT): the form's picker deletes lines the same way the result page's does, and without this branch a draft's untick re-rendered unchanged with no explanation. Style F swaps the multi-select for "+ Add a draw" once there is a line; an empty form still starts from the multi-select.
-    const style = getQtyStyle();
-    components.push(dropConfirm ? dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb) : (style === 'F' && banners.length ? addDrawRow(state, draft) : typesSelectRow(state, draft)));
+    // The untick confirm replaces the picker here too (2026-10-13 12:43 EDT): the form's picker deletes lines the same way the result page's does, and without this branch a draft's untick re-rendered unchanged with no explanation. With lines, the picker moves below them as "+ Add more draws" (addDrawsRow).
+    if (dropConfirm) components.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb));
+    else if (!banners.length) components.push(typesSelectRow(state, draft));
 
     const tail = [{ type: 14, spacing: 1, divider: true }, regionCaption(), regionRow(state, draft), setupActionRow(state, basket)];
-    const lineActions = style === 'C' ? 'both' : style === 'F' ? 'remove' : false;
-    // Builds the middle of the form at one lines-per-page.
+    // Builds the middle of the form at one lines-per-page: the lines, the pager, then the add picker.
     const build = perPage => {
-        const mid = [];
-        const totalPages = Math.max(1, Math.ceil(banners.length / perPage));
-        const bpage = Math.min(state.bpage || 0, totalPages - 1);
-        const start = bpage * perPage;
-        for (const i of banners.map((_, i) => i).slice(start, start + perPage)) mid.push(bannerPullsRow(state, draft, i, { lineActions }));
-        if (totalPages > 1) mid.push(pageNavRow({ ...state, bpage }, banners, perPage));
+        const pages = linePages(banners, perPage);
+        const bpage = Math.min(state.bpage || 0, pages.length - 1);
+        const mid = pages[bpage].map(i => bannerPullsRow(state, draft, i, { removable: true }));
+        if (pages.length > 1) mid.push(pageNavRow({ ...state, bpage }, pages.length));
+        if (banners.length && !dropConfirm) mid.push(addDrawsRow(state, draft));
         return [...components, ...mid, ...tail];
     };
     // Fewer lines per page until it fits.
@@ -686,22 +653,20 @@ function buildBasketPage(state, basket, accentColor) {
     // 🔴 REORDER IS A ▲ ON EACH LINE (2026-10-13 14:26 EDT, Harkirat picked option A). It replaced a shared "Reorder: pick a line" select plus ▲/▼ buttons, where moving #5 to the top took a pick and four clicks; now each line's own heading carries a ▲ that moves it up one place, and the separate list that repeated every dropdown is gone. Priority is still the array order and is never sorted for the player.
     components.push({ type: 10, content: '## YOUR DRAWS\n-# Set the **pulls done** on each draw. ▲ moves a draw up the Priority Plan.' });
 
-    const totalPages = Math.max(1, Math.ceil(basket.banners.length / MAX_BANNERS_PER_PAGE));
-    const bpage = Math.min(state.bpage || 0, totalPages - 1);
-    const start = bpage * MAX_BANNERS_PER_PAGE;
-    const pageIndices = basket.banners.map((_, i) => i).slice(start, start + MAX_BANNERS_PER_PAGE);
+    const pages = linePages(basket.banners, MAX_BANNERS_PER_PAGE);
+    const bpage = Math.min(state.bpage || 0, pages.length - 1);
 
-    for (const i of pageIndices) {
+    for (const i of pages[bpage]) {
         components.push({
             type: 9,
             components: [{ type: 10, content: `**#${i + 1}** · ${drawName(basket.banners[i].drawKey)}` }],
             accessory: { type: 2, style: 2, label: '▲', custom_id: encodeState('up', { ...state, focus: i }), disabled: i === 0 }
         });
-        components.push(bannerPullsRow(state, basket, i));
+        components.push(bannerPullsRow(state, basket, i, { removable: true }));
     }
 
-    if (totalPages > 1) components.push(pageNavRow({ ...state, bpage }, basket.banners));
-    if (usedTypes(basket.banners).length) components.push(addAnotherRow(state, basket));
+    if (pages.length > 1) components.push(pageNavRow({ ...state, bpage }, pages.length));
+    components.push(addDrawsRow(state, basket));
 
     components.push({ type: 14, spacing: 1, divider: true });
     components.push({ type: 1, components: [{ type: 2, style: 1, label: '◀ Cost Breakdown', custom_id: encodeState('page', { ...state, page: 0 }) }] });
@@ -814,5 +779,5 @@ module.exports = {
     buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
     parseAmount, applySelection, shortName, SHORT_NAME, slashShortcut,
-    setTypeCount, getQtyStyle, setQtyStyle, cycleQtyStyle, QTY_STYLES, SETUP_CONTAINER_BUDGET, buildQtyModal, QTY_MODAL_MAX_DRAWS
+    setTypeCount, SETUP_CONTAINER_BUDGET, MAX_LINES, linePages
 };
