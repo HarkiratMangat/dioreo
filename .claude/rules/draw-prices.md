@@ -100,6 +100,8 @@ He click-tested the setup form on the dev bot and asked for a harsh first-time-u
 
 The rest is wording and layout: picker labels are SHORT names (`SHORT_NAME`, each ≤ 22 characters, leading with what separates the draw) because Discord cuts a chosen chip after ~24 · a pulls option's label names its draw · a caption explains the region buttons · the compact view names the currency · the first screen leads with the outcome · "YOUR DRAWS" replaces "DRAWS IN PROGRESS" · a grouped `×N` keeps its progress · Delete shows only on a saved calculation · no balance line until one is set · "every draw is finished" is its own message · the compact package line states the price once with the leftover. `parseAmount` and `applySelection` moved into `commands/drawCalculator.js`, because a handler module exports exactly one function (`scripts/handlerRouting.test.js`).
 
+**Slash shortcut** (2026-10-13 12:49 EDT, his "yeah wire them"): `draw`/`pulls`/`balance` on the slash command go through `slashShortcut()`. `draw` creates a NEW calculation already `submitted`, so it opens on the result; `pulls` is clamped to the draw's real count (the option's 0-10 is one range for every draw, two have 7); a bare `balance` lands on whichever calculation opens; anything ignored becomes a panel notice.
+
 **Visibility:** `/draw calculator` reads `calculatorVisibility` (its own `/settings` toggle, public by default), no longer `seasonalVisibility`. A server's `/admin` policy still overrides it at the two choke points, with nothing calculator-specific.
 
 ### 🔴 THE PURCHASE OPTIMIZER'S TWO METHODS (rewritten 2026-08-27 00:07 EDT)
