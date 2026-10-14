@@ -96,7 +96,7 @@ status: live
 | A | the form is two numbered steps; the picker is an instruction; the region and priority explanations moved to Help; the saved list is the loader alone; "Your Selection" heads the result |
 | B | one name per draw (his renames), "N/10 Items", Title Case descriptions with "CP Total" and "+ N CP Upgrade", no repeated name; a test fails on any "… Draw" name |
 | C | Draw Info off the nav row |
-| D | ~~answered: checkboxes exist only in popups~~ → wrong (2026-10-13 23:59 EDT): his reference is the bot's own `/admin` channel select, which Discord draws with checkboxes; the draw picker is a string select, which showed none. Open: test a string select |
+| D | ~~answered: checkboxes exist only in popups~~ → wrong (2026-10-13 23:59 EDT): his reference is the bot's own `/admin` channel select, which Discord draws with checkboxes; the draw picker is a string select, which showed none. Tested 2026-10-14 00:03 EDT: phone draws checkboxes on every multi-select (the calculator's too), desktop on none of ours. Client-side, nothing to change |
 | E | New Calculation on every page with a line |
 | F | 6 lines per page |
 | G | each line's dropdown opens with Remove and Move Up; progress first in the label; tier emoji on every value; Remove with progress asks |
