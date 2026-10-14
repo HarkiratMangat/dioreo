@@ -186,6 +186,10 @@ Where this and the two sections above disagree, this wins.
 - **The title:** "Viewing Saved: name" on a saved one, "Edited from Saved: name" on a working copy (read live from `sourceId` in `renderPanel`, so a rename or delete never shows a stale name). Naming a working copy drops its `sourceId`.
 - **Emoji:** `emojis.saveStar` (prod id) on Save and Save as New.
 
+### Retired but kept: `buildDrawInfoPanel` (2026-10-14 19:58 EDT)
+
+The old "Draw Info" screen. Its button left the nav row in the 2026-10-14 intake (`15b49b09`); only calculator panels posted before that can still send the `info` verb. Harkirat: leave the code and decide on deletion in a later code-housekeeping session. Filed in `docs/db-deferred-list.md` (Someday / tech-debt). Don't wire the button back without asking him.
+
 ### Batch 10, 2026-10-14 18:02 EDT
 
 - **Both screens end with one row under a divider:** New Calculation · View Saved · Calculate on the form, New Calculation · View Saved · Save Result (SaveStar, verb `savepick`) on the result. Both nav rows are Draw Prices · Help (the Saved view and Save step keep Draw Prices · ◀ Back · Help). "View Saved" carries no counter.

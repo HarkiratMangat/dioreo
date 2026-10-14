@@ -2605,6 +2605,15 @@ The "Can be undone" filter and the row's Undo control are both computed as `kind
 
 ## 🧹 Someday / tech-debt
 
+### `[P3 · XS]` Decide whether to delete `buildDrawInfoPanel` and the `info` verb — a later code-housekeeping session
+
+*Filed 2026-10-14 19:58 EDT. Harkirat, same time: "document it and leave the code behind for now. we'll decide if we want to delete it in a later code housekeeping session or something".*
+
+- **What it is:** the old calculator's "Draw Info" screen, which showed real draw prices. Its button left the calculator's nav row in the intake of 2026-10-14 (`15b49b09`), so no new panel can open it. It stays reachable only from calculator panels posted before that, through the `info` verb (`handlers/drawCalc.js`).
+- **Where:** `commands/drawCalculator.js` `buildDrawInfoPanel`, the `info` branch in `handlers/drawCalc.js`, and one case in `scripts/drawCalcBudget.test.js` ("Draw Info must skip the retired key").
+- **Deleting it costs:** an old panel's Draw Info button would do nothing. **Keeping it costs:** dead code. If the Advanced Legendary draws join the calculator, decide then whether Draw Info returns or their pool details go through `/draw prices` (see the 2026-10-14 00:51 EDT note under the advanced-draws item).
+- **Verify when picked up:** `rg buildDrawInfoPanel` shows only the definition, the export, the one handler call and the one test case.
+
 ### `[P3 · S · Sonnet5-High]` CI speed: where the next seconds are, measured on GitHub and deliberately not taken — the path to check if a CI/tests improvement session starts
 
 *Filed 2026-10-01 19:55 EDT at PR #192; rewritten 2026-10-01 20:00 EDT after the first GitHub run. Harkirat, 2026-10-01 19:53 EDT: the ~15 s per CI run is not worth the extra hassle for the time being, but it must be thoroughly documented as a path to check if a future CI/tests improvement session is started. So this is a decision to wait, not a rejection, and not a bug.* ⚠️ **The first version of this entry ranked the candidates from a local proxy that put the hooks suite and `npm run check` on the critical path. On GitHub they take 8.2 s and 3.3 s, so cutting them saves nothing. The ranking below is from the GitHub run.**
