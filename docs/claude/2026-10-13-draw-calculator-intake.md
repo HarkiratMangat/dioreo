@@ -3,34 +3,29 @@ kind: record
 status: live
 ---
 
-# `/draw calculator` — intake round
+# `/draw calculator` intake round — opened 2026-10-13 20:51 EDT
 
-Harkirat's screen-by-screen review of the calculator on the dev bot, branch `feat/draw-calculator`. Opened 2026-10-13 20:51 EDT.
+> 📷 **Screenshots stay on this Mac only**, in `local/project/features/draw-calculator/intake-2026-10-13/`, numbered in the order he sends them. A fresh clone does not have them, by his standing call ("kit can be tracked but leave screenshots local", 2026-09-29).
 
-## How this round works
-
-- **Intake only.** Each comment is recorded here and nothing is built, changed or answered in code until he says the round is over.
-- **Grouped by class, not instance.** A comment that applies beyond the screen it was made on is filed once under its class, with every screen it touches. A comment about one screen only is filed under that screen.
-- **His words stay verbatim** in the log at the bottom; the class and screen sections are my reading of them, and say so where the grouping is a judgement.
-- **Kept in sync:** this file is updated and committed on the branch after each of his prompts. Screenshots he sends stay on this Mac in `local/project/features/draw-calculator/intake-2026-10-13/`, never pushed.
+*His review of the calculator on the dev bot, screen by screen, branch `feat/draw-calculator`. **Log only until he says the round is over:** nothing is built or changed before then. Shaped like the Board 4 rounds (`docs/pins2/handoffs/2026-09-21-board4-intake.md`): each batch is his words verbatim and dated, with the screenshots it came with; then his asks grouped by **class**, a class being the one underlying problem with every screen it touches and the sweep it implies before building, never one row per sentence. Classes are lettered across the whole round, and a later batch adds to an earlier class rather than opening a duplicate.*
 
 ## Status
 
 | | |
 |---|---|
-| Round | ⏳ open |
-| Prompts recorded | 0 |
+| Round | ⏳ open, log only |
+| Batches | 0 |
 | Classes | 0 |
-| Screen-specific items | 0 |
 
-## Classes (apply across screens)
-
-*None yet.*
-
-## Screen-specific
+## Batches
 
 *None yet.*
 
-## Log — his words, one entry per prompt
+## Ambiguities to settle at the build
 
-*None yet.*
+*None yet. A reading of his words that could go two ways is listed here, with what would settle it, rather than guessed.*
+
+## All classes, one index
+
+| Class | Screens | In one line |
+|---|---|---|
