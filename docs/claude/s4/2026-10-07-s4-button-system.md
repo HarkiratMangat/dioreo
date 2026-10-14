@@ -598,3 +598,13 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (on names for the texts) "don't forget "numbers". im thinking body is m 13. idk what we'd name s 11, hint?. L 15 can be title? xl 21? xxl 30? giant 44? jumbo 58?"
 - "maybe also rework the token for it, such as `label-mono-600.color--flag`? idk, im sleepy and just throwing around ideas. lowkey your method might be better"
 - Built in spec v101 (2026-10-14 02:03 EDT, version 1791957789-03bd, Builder-2 `3d14f2f`): D on every in-field button (--quiet--borderless) and on the match count (tag-M-box.static(-realm)--borderless); tag-check reads --borderless from a tag's name (it failed on v100 first); name-check holds the field buttons to --quiet--borderless. Proposed, waiting on his word: fields' third slot is the input's kind (`field-S-text.rename-ok`); texts `text-` · `num-` · `label-` · `code-` + size + weight + colour.
+
+## His 2026-10-14 11:17–12:32 EDT, verbatim, written 2026-10-14 12:33 EDT
+- (11:17, on `field-S-text.rename-ok`) "does -text really make the most sense here? maybe input.rename-ok? idk..."
+- (11:17, on the text tokens) "elaborate and explain the "code" family to me in simple terms?"
+- (11:22) "any other suggestions than inline?"
+- (11:27, on Builder-2 using the code font for attachment names) "what do we use for the attachment names? how does it compare?"
+- (11:27, on the rename's name) "then what about other fields such as the drawer's image key field? or bulk create surface? or the export pick build'd export lists? or post draw's announcement field? What i decide for the rename field depends on where those other fields fall or are named as"
+- (12:31, on the field kinds) "alternative word to "text" and "area"?"
+- (12:32, on my pick of Space Grotesk for every attachment name) "sure"
+- Decided: attachment names are Space Grotesk everywhere (C27; ledger attmono for Compare's 29 in JetBrains Mono 11 · 400). Proposed, waiting on his word: field kinds search · line · code · block · date (all 71 fields in Builder-2's code sorted by what you type), the rename `field-S-line.rename-ok--inline`, image key `field-L-code.key`, Bulk create `field-L-block.bulk`, the draw announcement `field-L-block.announcement`; Export's lists hold no field but the rename.
