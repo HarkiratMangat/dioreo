@@ -648,3 +648,12 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (the no-realm match count) "this literally ties directly into the question i asked earlier about static and tags. idek where you buried the answers to my earlier questions in your long prose. please sent them again"
 - Built in spec v105: the counter takes its toggle's words (C23, so not a one-off: today's 11 was the odd one); badge toggles paint-badge, mode toggles neutral (no hue); two-line lines 13 apart; Pick all's reveal sides drawn in a right-aligned bay head. Found: Builder-2's two-line tags are in the fault hint (b3/armory-parts.js), "4 of 5 empty / on the card" beside the 32-tall Slots row and "n missing / from the build" beside the attachments row, each as tall as its row (32, lines 12 apart).
 
+## His 2026-10-14 18:07 EDT, verbatim, written 2026-10-14 18:09 EDT
+- (two-line tags) "sure 32"
+- (Pick all's reveal side) "A."
+- (keep "static" in tag names?) "where else would we even add/use it? that's the real question. what other "static" elements do we have or could have?"
+- (the 5's hover) "oh then thats fine. leave it as that."
+- (the gunsmith code) "no, leave it as is. also --dual doesn't make sense for the pale words. --dual is when the tag has both the light and the tinted words. and tinted is the default so i think we should have `--dualtext` and `--paletext` instead to represent the text/icon color change for the tags"
+- (the good-day counter's hover) "but i mean it'll still kind of brighten, wont it? assuming it does the same thing the "5" hover did where the see-through fill allowed the below color to come thru and give it an impression like it had lightened up?"
+- (the no-realm match count) "we'll come back to this after we decide what to do with "static""
+- Built in spec v106: --dual split into --dualtext (two-line tags, both echoes, Pick all) and --paletext (the launcher's count, the slot code, the match count) on the board, the rules (C17, C21), the change list and tag-check; two-line tags 32; Pick all --reveal-right; both open blocks down. The good-day counter: static's fill is 14%, so the launcher's hover shows through it as on the 5; nothing to build.
