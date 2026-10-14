@@ -38,7 +38,8 @@ function assertSize(panel) {
     const size = JSON.stringify([panel, SHARE_ROW]).length;
     assert.ok(size <= 12500, `message is ${size} characters of JSON, over the 12,500 line`);
 }
-const messageCount = panel => { assertUniqueIds(panel); assertSize(panel); return countComponents([panel, SHARE_ROW]); };
+// The calculator sends no Show Everyone row since 2026-10-14 18:34 EDT, so it no longer counts toward the 40.
+const messageCount = panel => { assertUniqueIds(panel); assertSize(panel); return countComponents(panel); };
 
 // buildCalculatorPanel returns the message's TOP-LEVEL list (Container + sibling nav row); buildSetupPanel still returns a bare Container. Both shapes go through here.
 const container = p => (Array.isArray(p) ? p.find(x => x && x.type === 17) : p);
@@ -404,7 +405,8 @@ t('the bottom nav row is a SIBLING of the Container, never one of its children, 
 t('no button on the nav row or the save/delete row carries an emoji', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }));
     // Save Result and Save carry his SaveStar emoji on purpose (2026-10-14 17:58 EDT); the rest stay plain.
-    const named = ['Draw Info', 'Draw Prices', 'View Saved', 'New Calculation', 'Help', 'Rename', 'Delete Calculation', 'Export'];
+    const named = ['Draw Info', 'Draw Prices', 'View Saved', 'New Calculation', 'Help', 'Rename', 'Delete Calculation'];
+    assert.ok(buttons(render(makeBasket())).find(b => b.label === 'Export').emoji, 'Export carries the Show Everyone icon');
     for (const b of buttons(panel)) {
         if (named.some(n => (b.label || '').startsWith(n))) {
             assert.strictEqual('emoji' in b, false, `"${b.label}" must carry no emoji`);
@@ -660,9 +662,9 @@ t('what a region is lives in Help; the form only labels the row with a hint', ()
         assert.strictEqual(/Your Region & CP Balance/.test(allText(panel)), false);
         assert.strictEqual(/first pull/.test(allText(panel)), false, 'what a region is stays in Help');
     }
-    assert.ok(/\*\*Region\*\* · the CP price of your first spin/.test(allText(dc.buildHelpPanel(ACCENT))));
+    assert.ok(/Your region is the price of the \*\*first spin\*\*/.test(allText(dc.buildHelpPanel(ACCENT))));
     const help = dc.buildHelpPanel(ACCENT);
-    assert.deepStrictEqual(texts(help).map(c => c.split('\n')[0].replace(/<a?:\w+:\d+> /, '')), ['## Calculator Help', '### How It Works', "### Words You'll See", '### Buttons', '### Saving', '### Shortcut'], 'Help is sections, not paragraphs (2026-10-14 18:25 EDT)');
+    assert.deepStrictEqual(texts(help).map(c => c.split('\n')[0].replace(/<a?:\w+:\d+> ?/g, '')), ['## Calculator Help', '### 🧭 How It Works', '### 📈 How Prices Work', '### 🗺️ Find Your Region', '### 🧾 Reading Your Result', '### Saving', '### ⚡ Shortcut'], 'Help is sections with an emoji each, not paragraphs (2026-10-14 18:31 EDT)');
     assert.ok(texts(help).every(c => c.split('\n').every(l => l.length < 160)), 'no line runs on as a paragraph');
 });
 
@@ -888,6 +890,23 @@ t('Export gives the result as plain, pasteable markdown: draws, CP needed, balan
     assert.ok(text.length < 2000, 'fits a Discord message');
     const covered = dc.buildExportText(makeBasket({ balance: 999999, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), 'USD');
     assert.ok(/balance covers it/.test(covered) && !/Recommended Package/.test(covered));
+});
+
+t('Help explains what the screen cannot: the price ladder for the open draw, how to find a region, the result\'s hidden rules (2026-10-14 18:31 EDT)', () => {
+    const help = dc.buildHelpPanel(ACCENT, { region: 'region_30', drawKey: 'legendaryGunReactive' });
+    const text = allText(help);
+    assert.ok(/`30` › `80` › /.test(text) && /Legendary Weapon \(Reactive\)\*\* at .*\*\*30 CP\*\*/.test(text), 'the open draw at the open region');
+    assert.ok(/last 3 spins are \*\*\d+%\*\*/.test(text));
+    assert.ok(/Mythic Character and Pick Your Reward Card start higher/.test(text), 'never "check any draw": two draws start above the region');
+    assert.strictEqual(/Words You'll See|### Buttons/.test(text), false);
+    const fallback = allText(dc.buildHelpPanel(ACCENT, { region: 'region_20', drawKey: 'doubleEpicCharacters' }));
+    assert.ok(/Mythic Weapon\*\* at .*20 CP/.test(fallback), 'a draw with no prices at that region falls back to Mythic Weapon');
+});
+
+t('the calculator sends no Show Everyone row (2026-10-14 18:34 EDT)', () => {
+    for (const p of [render(makeBasket()), form([{ drawKey: 'mythicWeapon', pullsDone: 0 }])]) {
+        assert.strictEqual(JSON.stringify(p).includes('share_public'), false);
+    }
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

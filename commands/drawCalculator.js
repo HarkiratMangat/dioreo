@@ -6,7 +6,6 @@
 // ⚠️ FIFTH PASS, 2026-08-27 11:48 EDT -- rebuilt around the saved-basket redesign (docs/superpowers/specs/2026-08-27-draw-calculator-multi-draw-design.md, revision 3). The whole prior single-draw model (drawKey/pullsDone/target/targetValue living in the customId) is GONE. 🔴 THE BASKET IS A FLAT LIST OF BANNERS -- "quantity" does not exist as a concept. Three Mythic Weapon banners are three separate, independently-orderable rows in `basket.banners`, each with its own `pullsDone`. Budget mode and per-banner goals other than "finish" are explicitly out of scope (spec §10) -- there is no goal select any more, every banner is always priced to completion.
 //
 // ⚠️ STATE NOW LIVES IN TWO PLACES ON PURPOSE. The customId carries only a reference plus transient VIEW state (which page, detail on/off, the reorder focus pointer, the author lock) -- `calc~<verb>~<basketId>~g<page>~x<detail>~f<focus>~a<authorId base36>`. The basket itself (banners/region/balance/includeUpgrades/entitlementMask/name) lives in the DrawBasket collection via utils/drawBasketStore.js, and is looked up fresh on every render. 🔴 THAT MEANS THE PANEL CAN NOW GO STALE -- a basket can be deleted, or an unnamed one can expire (30-day TTL) -- which the old fully-stateless design made structurally impossible. Every render path through buildCalculatorPanel() takes `basket` as an explicit possibly-null argument and has a real "this basket no longer exists" branch; there is no path that assumes it is there.
-const { withShareButton } = require('../utils/shareButton');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { mentionCommand } = require('../utils/commandMentions');
@@ -23,8 +22,8 @@ const { buildTitleBlock } = require('../utils/titleBlock');
 const DRAW_KEYS = Object.keys(DRAW_META);
 // Five lines per page (2026-10-14 00:15 EDT). He asked for six; six measured past Discord's message SIZE cap, not the 40-component one: each line's dropdown carries 11-13 labelled options, and seven different draws at six per page came to ~13,800 characters against a cap measured between 13,100 and 13,412 on the dev bot. Five fits every draw mix under SETUP_JSON_BUDGET; buildSetupPanel still drops further when the saved list needs the room.
 const SETUP_LINES_PER_PAGE = 5;
-// The setup form's own budget (container included): 40, minus the Show Everyone row (2) and the form's bottom nav row (1 + 2 buttons: Draw Prices · Help; Saved and New Calculation sit in the form's own Calculate row since 2026-10-14 16:51 EDT). Was 33 with four nav buttons, 2026-10-14 13:13 EDT). buildSetupPanel drops lines per page until it fits.
-const SETUP_CONTAINER_BUDGET = 35;
+// The setup form's own budget (container included): 40, minus the Show Everyone row (2) and the form's bottom nav row (1 + 2 buttons: Draw Prices · Help; Saved and New Calculation sit in the form's own Calculate row since 2026-10-14 16:51 EDT). Was 33 with four nav buttons, 2026-10-14 13:13 EDT). buildSetupPanel drops lines per page until it fits. 37 since 2026-10-14 18:34 EDT: the Show Everyone row (2) is gone from this command.
+const SETUP_CONTAINER_BUDGET = 37;
 // Discord ALSO caps a message's size, separately from the 40 components (40005 "Message size exceeds maximum allowed"). Measured 2026-10-14 00:12 EDT on the dev bot: a form serialising to 13,687 characters of JSON posted, one at 16,634 was refused (six lines plus 25 saved calculations). 12,000 leaves margin; buildSetupPanel drops lines per page until both budgets hold.
 const SETUP_JSON_BUDGET = 12000;
 // One calculation holds at most this many lines; the add picker disables itself at the cap and the handler stops there too.
@@ -401,7 +400,7 @@ function regionRow(state, basket) {
     };
 }
 
-// The caption above the region buttons (2026-10-13 12:40 EDT). Three "10 / 20 / 30 CP" buttons sit among a dozen real CP amounts and read like one of them; nothing said what a region is or how a player finds theirs. The first pull's price IS the region, so that is the one sentence that answers both. No heading and no divider above it (2026-10-14 13:13 EDT, Harkirat: "'Your Region & CP Balance' remove it. Also remove the divider above it"); the hint alone labels the row, and Help keeps what a region is. "### Tweak Calculation" over the hint (2026-10-14 17:58 EDT, Harkirat).
+// The caption above the region buttons (2026-10-13 12:40 EDT). How a player finds their region lives in Help, which names the draws whose first spin IS the region (not every draw's is: Mythic Character and Pick Your Reward Card start higher, measured 2026-10-14 18:33 EDT). No heading and no divider above it (2026-10-14 13:13 EDT, Harkirat: "'Your Region & CP Balance' remove it. Also remove the divider above it"); the hint alone labels the row, and Help keeps what a region is. "### Tweak Calculation" over the hint (2026-10-14 17:58 EDT, Harkirat).
 function regionCaption() { return { type: 10, content: '### Tweak Calculation\n-# Set your CP region and current balance.' }; }
 // Room between blocks without a rule (his "more breathing room"): a separator with no divider.
 const SPACER = { type: 14, spacing: 2, divider: false };
@@ -480,8 +479,8 @@ function resultActionRow(state) {
     return { type: 1, components: [
         newCalculationButton(state),
         savedButton(state),
-        // Export (2026-10-14 18:23 EDT, Harkirat: "an export button which outputs the result into a simple copy-able markdown for the user to share"). It answers privately with the result as plain markdown in a code block, so it copies cleanly and renders when pasted anywhere in Discord.
-        { type: 2, style: 2, label: 'Export', custom_id: encodeState('export', state) },
+        // Export (2026-10-14 18:23 EDT, Harkirat: "an export button which outputs the result into a simple copy-able markdown for the user to share"). It answers privately with the result as plain markdown in a code block, so it copies cleanly and renders when pasted anywhere in Discord. The Show Everyone icon (2026-10-14 18:34 EDT, Harkirat), since Export is now how a result is shared.
+        { type: 2, style: 2, label: 'Export', custom_id: encodeState('export', state), emoji: emojis.parseEmoji(emojis.share) },
         { type: 2, style: 1, label: 'Save Result', custom_id: encodeState('savepick', state), emoji: emojis.parseEmoji(emojis.saveStar) }
     ] };
 }
@@ -827,45 +826,62 @@ function buildDrawInfoPanel(basket, accentColor) {
     return { type: 17, accent_color: accentColor, components };
 }
 
-// THE HELP PANEL, rebuilt as a scannable guide (2026-10-14 18:26 EDT, Harkirat: "SIGNIFICANTLY improve the help panel, omg it's just ALL prose"). It was nine bold-led paragraphs. Now: the four steps in order, then the words, the buttons and saving, each a short labelled list under its own heading and divider, so a player finds the one thing they opened Help for without reading the rest.
-function buildHelpPanel(accentColor) {
+// THE HELP PANEL (2026-10-14 18:33 EDT, Harkirat's second pass: "add some emojis to the help sections. and the 'words you'll see' section is useless. similarly with the button sections. rework those to hold and visually show better info"). Help now explains what the screen CANNOT show: how a draw's price climbs spin by spin (drawn from the player's own draw at their own region), how to find a region, and what the result's figures mean, including the optimizer's real rules. Labels a button already carries are not repeated here. 🔴 A REGION IS NOT "THE FIRST SPIN ON ANY DRAW". Measured 2026-10-14 18:33 EDT: Mythic Character's first spin is 20/35/50 CP and Pick Your Reward Card's is 60/90/120 at the 10/20/30 regions, so the old Help line ("check it on any draw") would make a player on the 10 CP region read 20 and pick wrong. Help names the draws whose first spin IS the region.
+function helpLadder(region, drawKey) {
+    const pick = (r, k) => (entryFor(r, k) && entryFor(r, k).draws ? { region: r, drawKey: k } : null);
+    const at = pick(region, drawKey) || pick(region, 'mythicWeapon') || pick('region_10', 'mythicWeapon');
+    const draws = entryFor(at.region, at.drawKey).draws;
+    const total = draws.reduce((x, y) => x + y, 0);
+    const last3 = draws.slice(-3).reduce((x, y) => x + y, 0);
+    return { ...at, draws, total, lastShare: Math.round((100 * last3) / total) };
+}
+function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWeapon' } = {}) {
     const dot = emojis.smallDot;
-    const list = rows => rows.map(([term, meaning]) => `${dot} **${term}** · ${meaning}`).join('\n');
     const divider = { type: 14, spacing: 2, divider: true };
+    const ladder = helpLadder(region, drawKey);
+    const tier = DRAW_META[ladder.drawKey] ? emojis[DRAW_META[ladder.drawKey].tier] : dot;
+    const regionChips = REGION_ORDER.map(r => `${emojis[REGION_EMOJI_KEY[r]]} **${regionLabel(r)}**`).join('  ');
+    const row = (term, meaning) => `${dot} **${term}** · ${meaning}`;
     const components = [
-        { type: 10, content: `## ${emojis.calculator} Calculator Help\n-# What each part does. Open it any time from the Help button.` },
+        { type: 10, content: `## ${emojis.calculator} Calculator Help\n-# How the calculator works, and how to read what it tells you.` },
         divider,
         { type: 10, content: [
-            '### How It Works',
+            '### 🧭 How It Works',
             '1. **Pick your draws** under Start a Calculation',
             '2. **Set your spins** on any draw you have already started',
             '3. **Set your region and balance** under Tweak Calculation',
-            '4. **Press Calculate** for the CP you need and the cheapest way to buy it'
+            `4. **Press ${emojis.sparkles} Calculate** for the CP you need and the cheapest way to buy it`
         ].join('\n') },
         divider,
-        { type: 10, content: `### Words You'll See\n${list([
-            ['Items', 'what a draw holds; most have 10, two have 7'],
-            ['Spins', 'how many you have already done on a draw; `0` means not started'],
-            ['Region', 'the CP price of your first spin (10, 20 or 30 CP); it sets every other price. Check it on any draw in the game'],
-            ['Balance', 'CP you already have; the package only covers the rest'],
-            ['Upgrade', 'adds a Mythic draw\'s upgrade cost to the total']
-        ])}` },
+        { type: 10, content: [
+            '### 📈 How Prices Work',
+            `Every spin costs more than the last. ${tier} **${shortName(ladder.drawKey)}** at ${emojis[REGION_EMOJI_KEY[ladder.region]]} **${regionLabel(ladder.region)}**:`,
+            ladder.draws.map(n => `\`${fmt(n)}\``).join(' › '),
+            `-# ${ladder.draws.length} spins = **${fmt(ladder.total)} CP**. The last 3 spins are **${ladder.lastShare}%** of it, so every spin you have already done matters.`
+        ].join('\n') },
+        { type: 10, content: [
+            '### 🗺️ Find Your Region',
+            regionChips,
+            'Your region is the price of the **first spin** on a Mythic Weapon or a Legendary Weapon draw.',
+            '-# Mythic Character and Pick Your Reward Card start higher, so do not check those.'
+        ].join('\n') },
         divider,
-        { type: 10, content: `### Buttons\n${list([
-            ['Edit Selection', 'back to your draws and spins, everything kept'],
-            ['Full Breakdown', 'what each draw costs, and a second package when it is worth it'],
-            ['Export', 'the result as text you can paste anywhere'],
-            ['New Calculation', 'start fresh; saved calculations stay as they are']
-        ])}` },
+        { type: 10, content: [
+            '### 🧾 Reading Your Result',
+            row('Recommended Package', 'the fewest store purchases within 3% of the cheapest price'),
+            row('Left Over', 'CP the packs give beyond what you need; it stays in your account'),
+            row('Stock Up', 'shown in Full Breakdown when spending a little more gets a better CP rate'),
+            row('2X Packs', 'tick the packs you can still buy at double CP; the package uses them')
+        ].join('\n') },
         divider,
-        { type: 10, content: `### Saving\n${list([
-            ['Save Result', 'save it as a new one, or pick a saved one to save over'],
-            ['View Saved', `reopen, rename or delete; up to ${MAX_SAVED} kept`],
-            ['Editing a saved one', 'changes go into a copy; the saved one only changes when you save over it'],
-            ['Unsaved', 'cleared 30 days after it was started; running the command reopens your latest']
-        ])}` },
+        { type: 10, content: [
+            `### ${emojis.saveStar} Saving`,
+            row('Saved stays saved', 'changing one opens a copy; it only changes when you save over it'),
+            row('Save over', 'Save Result lets you pick any saved one to replace'),
+            row('Limits', `up to ${MAX_SAVED} saved; an unsaved one clears after 30 days`)
+        ].join('\n') },
         divider,
-        { type: 10, content: '### Shortcut\n`/draw calculator draw: pulls: balance:`\n-# Skips the form and opens straight on that draw\'s result.' }
+        { type: 10, content: '### ⚡ Shortcut\n`/draw calculator draw: pulls: balance:`\n-# Skips the form and opens straight on that draw\'s result.' }
     ];
     return { type: 17, accent_color: accentColor, components };
 }
@@ -941,8 +957,8 @@ async function execute(interaction) {
         liveDoubleCPEntry: latest && latest.submitted ? await findLiveDoubleCPEntry() : null
     });
 
-    // skipExpiry (spec decision 7, "never expires"): re-derived 2026-08-27 against sendV2Payload's own bar -- "nothing on this panel can go stale". It holds. Every control is author-locked and re-reads the calculation from Mongo on each click, so a panel found hours later rebuilds from live data rather than showing a frozen view; and a component click is its own interaction with its own fresh 15-minute token, so editing this message never runs out of runway the way a single long-lived token would.
-    return sendV2Payload(interaction, withShareButton(panel, isEphemeral), { skipExpiry: true });
+    // skipExpiry (spec decision 7, "never expires"): re-derived 2026-08-27 against sendV2Payload's own bar -- "nothing on this panel can go stale". It holds. Every control is author-locked and re-reads the calculation from Mongo on each click, so a panel found hours later rebuilds from live data rather than showing a frozen view; and a component click is its own interaction with its own fresh 15-minute token, so editing this message never runs out of runway the way a single long-lived token would. No Show Everyone row (2026-10-14 18:34 EDT, Harkirat: "remove show everyone component"): Export shares the result as text instead, and the freed row is two more components for the form.
+    return sendV2Payload(interaction, panel, { skipExpiry: true });
 }
 
 module.exports = {

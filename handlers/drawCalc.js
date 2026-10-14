@@ -8,7 +8,6 @@
 // 🔴 EVERY BRANCH THAT TOUCHES A BASKET GOES THROUGH THE STORE, AND EVERY LOAD CAN COME BACK NULL. The old single-draw panel recomputed everything from the customId alone and could never go stale; this one persists to Mongo, so a basket can be deleted, expire, or belong to someone else's forged id by the time a click lands. `loadOwned()` below is the one place that happens, and every branch routes through it before touching `basket.*`.
 const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
-const { withShareButton } = require('../utils/shareButton');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
@@ -74,8 +73,8 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
         savedConfirm,
         overwriteConfirm
     });
-    // `panel` is already the top-level component LIST (Container + the sibling nav row) -- do not wrap it in another array.
-    return sendV2Payload(interaction, withShareButton(panel, isEphemeral), { skipExpiry: true });
+    // `panel` is already the top-level component LIST (Container + the sibling nav row) -- do not wrap it in another array. No Show Everyone row (2026-10-14 18:34 EDT): Export shares a result instead.
+    return sendV2Payload(interaction, panel, { skipExpiry: true });
 }
 
 // 🔴 COPY-ON-WRITE FOR SAVED CALCULATIONS (2026-10-14 17:28 EDT, Harkirat: "a saved calc should remain in it's saved state. so that means a user needs to press save and select that previous saved result to override it. otherwise selecting that saved calc again should bring you to it's result"). Every change to a calculation goes through here. On a SAVED one, the first real change opens an unnamed working copy carrying `sourceId`, applies the change there, and points this message at the copy (it mutates `state.basketId`, so every render after it follows); the saved one is untouched until the Save step saves over it. A change that changes nothing (Calculate on an already-calculated one) writes nothing and forks nothing.
@@ -191,7 +190,9 @@ async function route(interaction) {
             const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
             panel = buildDrawInfoPanel(basket || { banners: [], region: 'region_10' }, accentColor);
         } else {
-            panel = buildHelpPanel(accentColor);
+            // Help draws its price ladder from the open calculation's region and first draw (2026-10-14 18:33 EDT), so it shows the player their own numbers.
+            const open = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+            panel = buildHelpPanel(accentColor, { region: open?.region || 'region_10', drawKey: open?.banners?.[0]?.drawKey || 'mythicWeapon' });
         }
         try {
             await interaction.deferReply({ flags: 64 });

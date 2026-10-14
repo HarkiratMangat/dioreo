@@ -315,3 +315,11 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 **Built 2026-10-14 18:27 EDT:** Help is six sections under dividers: How It Works (four numbered steps), Words You'll See, Buttons, Saving, Shortcut; every entry a one-line "term · meaning". The dev bot was already running without `--watch` (one instance); restarted on the new code anyway.
 
+### Batch 13 — 2026-10-14 18:31 EDT, verbatim
+
+> add some emojis to the help sections. and the "words you'll see" section is useless. similarly with the button sections. rework those to hold and visually show better info. overall, /workstyle:think-pass and /design:design-critique your rework of it and rework it properly and nicely
+
+> also add the same emoji as the "show everyone" button to "Export" and remove "show everyone" component
+
+**Built 2026-10-14 18:38 EDT:** Help now carries what the screen cannot show: 🧭 How It Works (4 steps), 📈 How Prices Work (the open draw's real spin-by-spin price chain at the open region, with what the last three spins cost of the total), 🗺️ Find Your Region (region icons; which draws' first spin IS the region), 🧾 Reading Your Result (the package rule, left over, Stock Up, 2X), ⭐ Saving (saved stays saved, save over, limits), ⚡ Shortcut. The think-pass falsified the old line "region = first spin on any draw": Mythic Character and Pick Your Reward Card start higher. The critique cut the two result lines the screen already labels and promoted the region rule out of small text. Export carries the Show Everyone icon; the calculator no longer sends a Show Everyone row, which frees 2 components (`SETUP_CONTAINER_BUDGET` 37).
+

@@ -194,3 +194,10 @@ Where this and the two sections above disagree, this wins.
 - **Probed 2026-10-14 18:17 EDT:** a row holds ONE dropdown and nothing else. Two dropdowns in a row, or a dropdown beside a button, are refused with `COMPONENT_LAYOUT_WIDTH_EXCEEDED`, so a dropdown always costs 2 of the 40.
 - **Export (2026-10-14 18:24 EDT):** verb `export`, a private reply (its own `deferReply`, handled before the generic defer) carrying `buildExportText()` in a ```md block. Plain markdown only: no custom emoji (they break outside this bot's servers) and markdown characters stripped from the name so it cannot break the block. Under 1,800 characters.
 - **Help (2026-10-14 18:27 EDT):** sections, never paragraphs (his "it's just ALL prose"): How It Works, Words You'll See, Buttons, Saving, Shortcut, each a short list of "**term** · meaning" lines under a divider. A test pins the headings and that no line runs past 160 characters.
+
+### Help, Export and sharing, 2026-10-14 18:38 EDT — batch 13
+
+- **Help shows what the screen cannot** (his "words you'll see is useless. similarly with the button sections"): the open draw's spin-by-spin price chain at the open region (`helpLadder`, falling back to Mythic Weapon where a draw has no prices), how to find a region, the result's hidden rules, and saving. Never restate a button's label.
+- 🔴 **A region is the first spin's price on a Mythic Weapon or Legendary Weapon draw, NOT on every draw:** Mythic Character starts at 20/35/50 and Pick Your Reward Card at 60/90/120. A test pins the wording.
+- **No Show Everyone row on the calculator** (his call): Export, with the Show Everyone icon, is how a result is shared. `SETUP_CONTAINER_BUDGET` is 37 and the test counts no share row. ~~"Show Everyone" publishes a snapshot~~ (§ SIXTH PASS) no longer applies to this command; `handlers/share.js`'s calculator strip is left for messages posted before.
+
