@@ -176,3 +176,9 @@ A second think-pass (his `/nudge`, 2026-10-13 23:13 EDT) changed five things in 
 | Green and disabled in `/draw prices` too? | "yes" |
 | A Saved page inside the message instead of a popup | "oh basically like a surface switch? so you can dynamically switch the panel between \"saved\" settings and the calculator itself, instead of a pop-up? makes sense." Both versions are still shown as pictures before he picks |
 
+**Batch 4, follow-up, 2026-10-14 11:53 EDT, verbatim (class K):**
+
+> and you're right, they barely hold any info. the saved lists need more info to help easily understand what each saved calc even is.
+
+Today each option is the name plus "N lines · region". Room Discord gives an option: a 100-character label, a 100-character description and one emoji. Candidates for the build: which draws (short names, ×2 for repeats), CP still needed, whether it was calculated or is a draft, and when it last changed.
+
