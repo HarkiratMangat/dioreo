@@ -167,3 +167,15 @@ Where this and § THE REDESIGN disagree, this wins.
 - **The breakdown's package lines say each figure once:** the headline line, then one `-#` line of what is bought and left over, with per-pack prices only when there is more than one kind of pack.
 - **Probed on the dev bot 2026-10-14 13:19 EDT:** every worst case above (7-draw form, 25-line form, 9-draw breakdown, Saved at 25×80 names, armed, confirm, empty) posted to #test-spam and was deleted; the largest was 11,851 bytes.
 
+### 🔴 ROUND 3, 2026-10-14 16:54 EDT — batch 8 (his review of round 2)
+
+Where this and the two sections above disagree, this wins.
+
+- 🔴 **New Calculation never empties a SAVED calculation.** It used to clear banners in place and keep the name, so the fresh form said "Viewing Saved: test" and the saved one silently lost its draws. On a named calculation it now creates a new unnamed one at the same region; on an unnamed one it still clears in place.
+- **Save, Rename and Delete live in the Saved view**, in a "This Calculation" section at its top (only when the message has a calculation open). The result's row is Set Balance · Upgrade. A delete from the Saved view stays there with a notice; `del` from an old result panel keeps its old landing.
+- **Opening a saved calculation lands on its result.** A saved draft with lines is marked calculated on open; only an empty one opens on the form.
+- **The form ends with its own row** under a divider: Calculate (Sparkles emoji, the only Primary button) · New Calculation · Saved. The form's nav row is Draw Prices · Help; the result's nav keeps Draw Prices · Saved · New Calculation · Help. `SETUP_CONTAINER_BUDGET` is 35 to match.
+- **The title's saved name uses the Season Calendar's caption style** (`buildTitleBlock`, bold-italic letters).
+- **One shape for every package option**, compact and full: `> **price** for packs`, then `-# N CP Bought · N CP Left Over` (the full view prefixes per-pack prices when there are several kinds). Labels only when two options show; the heading then reads "Recommended Packages". CP Needed is the cost block's `###` heading.
+- **Emoji:** `emojis.cross` and `emojis.sparkles` hold the PROD ids; `refreshEmojiIds()` re-points the dev bot by name. Option descriptions cannot be bold in Discord.
+

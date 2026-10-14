@@ -102,6 +102,9 @@ const emojis = {
     showColors: '<a:ShowColors:1537280503105847486>',
     // The Refresh Colors notice's "everything is already up to date" state (added 2026-08-12 23:41 EDT). Harkirat supplied BOTH ids this time and both were confirmed by a live read before writing -- prod 1537301451506847947 (the literal, per this file's convention) and dev 1537301616229617695, which refreshEmojiIds() re-points to by name at boot.
     swatches: '<a:Swatches:1537301451506847947>',
+    // /draw calculator's "Remove this Selection" mark and its Calculate button (2026-10-14 16:51 EDT, Harkirat uploaded both to both apps and supplied both ids). The PROD ids are written here, per this file's convention; refreshEmojiIds() re-points the dev bot to its own copies (Cross 1560019354446463087, Sparkles 1560022548387856534) by name at boot.
+    cross: '<:Cross:1560019185747099758>',
+    sparkles: '<a:Sparkles:1560023184873488525>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');

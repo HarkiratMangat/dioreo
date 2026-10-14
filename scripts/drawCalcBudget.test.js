@@ -240,7 +240,7 @@ t('the form pages at 5 lines: six measured past Discord\'s message size cap (202
 t('a NEW line starts at 0 Items -- no inherited default from a sibling line of the same draw', () => {
     const add = selects(form([{ drawKey: 'mythicWeapon', pullsDone: 7 }])).find(s => verbOf(s) === 'addmore');
     assert.ok(add, 'the form must offer + Add more draws');
-    assert.ok(/^In Your Selection ×1 · Pick to Add Another$/.test(add.options[0].description), add.options[0].description);
+    assert.ok(/^1× In Your Selection · Pick to Add Another$/.test(add.options[0].description), add.options[0].description);
 });
 
 // ==========================================
@@ -256,19 +256,22 @@ t('New Calculation is two-step: armed shows Danger style + "click again", unarme
 
 t('Delete Calculation is two-step the same way', () => {
     const basket = makeBasket();
-    const plain = buttonLabelled(render(basket), 'Save'); // unnamed basket -> button reads "Save"
-    assert.ok(plain, 'an unnamed basket\'s manage row must read Save, not Rename');
+    const plain = buttonLabelled(dc.buildCalculatorPanel(state({ page: 3 }), basket, ACCENT, { savedBaskets: [] }), 'Save');
+    assert.ok(plain && verbOf(plain) === 'modal_name', 'an unsaved calculation is saved from the Saved view');
+    assert.strictEqual(buttonLabelled(render(basket), 'Save'), undefined, 'and not from the result');
     // Delete is offered on a SAVED calculation only: on an unsaved one it duplicated New Calculation (2026-10-13 click-test).
-    assert.strictEqual(buttonLabelled(render(basket), 'Delete Calculation'), undefined, 'an unsaved calculation must not offer Delete');
+    assert.strictEqual(buttonLabelled(render(basket), 'Delete Calculation'), undefined, 'the result offers no Delete (2026-10-14 16:47 EDT: it moved to the Saved view)');
     const named = makeBasket({ name: 'My Push' });
-    assert.ok(buttonLabelled(render(named), 'Delete Calculation'), 'a saved calculation offers Delete');
-    const armedDelete = buttonLabelled(render(named, { verb: 'delarm' }), 'Delete Calculation — click again');
-    assert.ok(armedDelete && armedDelete.style === 4);
+    const inSaved = s => dc.buildCalculatorPanel(state({ page: 3, ...s }), named, ACCENT, { savedBaskets: [named] });
+    assert.ok(buttonLabelled(inSaved(), 'Delete Calculation'), 'the Saved view offers Delete for the open saved calculation');
+    const armedDelete = buttonLabelled(inSaved({ verb: 'delarm' }), 'Delete Calculation — click again');
+    assert.ok(armedDelete && armedDelete.style === 4 && verbOf(armedDelete) === 'del' && dc.decodeState(armedDelete.custom_id).page === 3);
 });
 
 t('a NAMED basket\'s manage row reads Rename, not Save', () => {
-    const named = buttonLabelled(render(makeBasket({ name: 'My Push' })), 'Rename');
-    assert.ok(named);
+    const b = makeBasket({ name: 'My Push' });
+    assert.ok(buttonLabelled(dc.buildCalculatorPanel(state({ page: 3 }), b, ACCENT, { savedBaskets: [b] }), 'Rename'), 'Rename lives in the Saved view');
+    assert.strictEqual(buttonLabelled(render(b), 'Rename'), undefined, 'not on the result');
 });
 
 // ==========================================
@@ -389,10 +392,10 @@ t('a legacy calc~ id from the OLD single-draw codec decodes to a SAFE state rath
 // ==========================================
 
 t('the bottom nav row is a SIBLING of the Container, never one of its children, and Draw Info is gone', () => {
-    for (const panel of [render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })), form([{ drawKey: 'mythicWeapon', pullsDone: 3 }])]) {
+    for (const [panel, labels] of [[render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })), ['Draw Prices', 'Saved', 'New Calculation', 'Help']], [form([{ drawKey: 'mythicWeapon', pullsDone: 3 }]), ['Draw Prices', 'Help']]]) {
         const nav = panel.filter(x => x && x.type === 1);
         assert.strictEqual(nav.length, 1, 'exactly one top-level action row (the nav)');
-        assert.deepStrictEqual(nav[0].components.map(b => b.label), ['Draw Prices', 'Saved', 'New Calculation', 'Help']);
+        assert.deepStrictEqual(nav[0].components.map(b => b.label), labels, 'on the form, Saved and New Calculation sit in its Calculate row');
         assert.strictEqual(container(panel).components.filter(c => c.type === 1).some(r => r.components.some(b => b.label === 'Help')), false, 'the nav must not render inside the Container');
     }
 });
@@ -421,8 +424,9 @@ t('Cheapest and Stock Up are separated, and no heading is preceded by a stacked 
         makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }] }),
         'CAD', null, { compact: false }
     );
-    const stockUp = lines.findIndex(l => l.startsWith('**Stock Up:**'));
-    if (stockUp !== -1) assert.strictEqual(lines[stockUp - 1], '', 'Stock Up must be separated from Cheapest by a blank line');
+    const stockUp = lines.indexOf('**Stock Up**');
+    assert.ok(stockUp !== -1 && lines.includes('**Cheapest**') && lines.includes('### Recommended Packages'), 'two options, each labelled, under a plural heading');
+    assert.ok(lines[stockUp + 1].startsWith('> **`') && lines[stockUp + 2].startsWith('-# '), 'every option has the same shape: a quoted price line, then one quiet line');
     lines.forEach((l, i) => {
         if (l.startsWith('## ') && i > 0) {
             assert.notStrictEqual(lines[i - 1], '', `"${l}" is preceded by an explicit blank line -- headings carry their own top margin, so the two stack`);
@@ -465,12 +469,12 @@ t('the setup form fits the component budget at every draft size, with and withou
 t('an unsubmitted calculation shows the FORM; pressing Calculate is what produces the breakdown', () => {
     const banners = [{ drawKey: 'mythicWeapon', pullsDone: 3 }];
     const draft = form(banners);
-    assert.ok(/## Your Selection\n### Set Current Attempts/.test(allText(draft)), 'a draft renders the form');
+    assert.ok(/## Your Selection\n### Adjust Partial Completion/.test(allText(draft)), 'a draft renders the form');
     assert.strictEqual(/Cost Breakdown/.test(allText(draft)), false, 'a draft must NOT show a cost breakdown');
     assert.ok(buttonLabelled(draft, 'Calculate'), 'the form must offer Calculate');
     const done = render(makeBasket({ banners, submitted: true }));
     assert.ok(/## Cost Breakdown/.test(allText(done)), 'a submitted calculation shows the breakdown');
-    assert.strictEqual(/Set Current Attempts/.test(allText(done)) || Boolean(buttonLabelled(done, 'Calculate')), false, 'and not the form');
+    assert.strictEqual(/Adjust Partial Completion/.test(allText(done)) || Boolean(buttonLabelled(done, 'Calculate')), false, 'and not the form');
 });
 
 t('Calculate is DISABLED with nothing picked, and enabled the moment a line exists', () => {
@@ -556,10 +560,11 @@ t('the Saved view stays under Discord\'s caps at the 25-calculation limit with t
     assert.strictEqual(dc.decodeState(buttonLabelled(confirm, 'Delete 25 Calculations').custom_id).mask, (1 << 25) - 1, 'all 25 positions round-trip');
 });
 
-t('a saved calculation\'s name sits on its own line under the title, everywhere it is open', () => {
+t('a saved calculation\'s name sits under the title in the Season Calendar\'s caption style, everywhere it is open', () => {
     const named = makeBasket({ name: 'Season `12` push', banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] });
+    const { toBoldItalicUnicode } = require('../utils/titleBlock');
     for (const panel of [render(named), render(named, { page: 2 })]) {
-        assert.ok(texts(panel)[0].endsWith("\n> ### Viewing Saved: `Season '12' push`"), texts(panel)[0]);
+        assert.ok(texts(panel)[0].endsWith(`\n${toBoldItalicUnicode("Viewing Saved: Season '12' push")}`), texts(panel)[0]);
     }
     assert.strictEqual(/Viewing Saved/.test(texts(render(makeBasket()))[0]), false, 'nothing for an unsaved one');
 });
@@ -576,7 +581,7 @@ t('the first-pick picker is a MULTI-select and an instruction, with a live price
     assert.strictEqual(picker.placeholder, 'Select draw types to calculate');
     assert.ok(picker.options.every(o => o.description && o.description.length <= 100));
     const mythic = picker.options.find(o => o.value === 'mythicWeapon').description;
-    assert.ok(/^10 Items · [\d,]+ CP Total · \+ [\d,]+ CP Upgrade$/.test(mythic), mythic);
+    assert.ok(/^10 Items · [\d,]+ CP Total \+ [\d,]+ CP Upgrade$/.test(mythic), mythic);
     assert.ok(picker.options.every(o => !o.description.includes(o.label) && !/Draw/.test(o.description)), 'a description never repeats the draw\'s name');
 });
 
@@ -584,8 +589,9 @@ t('the cost breakdown LEADS with CP Needed -- the number the command exists to p
     const block = texts(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], balance: 1000 }))).find(c => c.startsWith('## Cost Breakdown'));
     assert.ok(/CP Needed/.test(block.split('\n')[1]), `the first line under the heading was "${block.split('\n')[1]}"`);
     assert.strictEqual(/Balance:|Region:/.test(block), false, 'no Balance/Region line: the button and the toggle already show both (2026-10-14, his ask)');
-    assert.ok(/Still to Buy: \*\*`[\d,]+ CP`\*\* after your balance/.test(block), 'what the balance changes is the one figure that stays');
-    assert.strictEqual(/Still to Buy/.test(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })))), false, 'and only when a balance is set');
+    assert.ok(/^### CP Needed: `[\d,]+ CP`$/.test(block.split('\n')[1]), 'CP Needed is the block\'s own heading');
+    assert.ok(/\*\*[\d,]+ CP\*\* still to buy after your 1,000 CP balance/.test(block), 'what the balance changes is the one figure that stays');
+    assert.strictEqual(/still to buy/.test(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })))), false, 'and only when a balance is set');
 });
 
 t('Set Balance accepts the amount the way the panel prints it -- "3000 CP", "3,000 cp", "3k CP"', () => {
@@ -633,8 +639,13 @@ t('the upgrade toggle is on the form AND the result, and only for draws that hav
     assert.ok(buttons(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }])).some(b => /^Upgrade/.test(b.label || '')));
     assert.ok(buttons(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }))).some(b => /^Upgrade/.test(b.label || '')), 'the result re-prices with it too (2026-10-14, his ask)');
     assert.strictEqual(buttons(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).some(b => /^Upgrade/.test(b.label || '')), false);
-    const step2 = rows(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }])).find(r => r.components.some(b => b.label === 'Calculate'));
-    assert.deepStrictEqual(step2.components.map(b => b.label), ['Set Balance', 'Calculate'], 'step 2 ends with Balance and Calculate only');
+    const f = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]);
+    assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Calculate')).components.map(b => b.label), ['Calculate', 'New Calculation', 'Saved'], 'Calculate has its own row with New Calculation and Saved (2026-10-14 16:47 EDT)');
+    assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Set Balance')).components.map(b => b.label), ['Set Balance', 'Upgrade: NO'], 'Upgrade sits beside Set Balance');
+    const items = container(f).components;
+    const calcRow = items.findIndex(c => c.type === 1 && c.components.some(b => b.label === 'Calculate'));
+    assert.ok(items[calcRow - 1].type === 14 && items[calcRow - 1].divider, 'a divider above the Calculate row');
+    assert.ok(buttonLabelled(f, 'Calculate').emoji, 'Calculate carries his Sparkles emoji');
 });
 
 t('what a region is lives in Help; the form only labels the row with a hint', () => {
@@ -653,9 +664,11 @@ t('the default view names the currency and where to change it', () => {
 
 t('the compact package line states the price once, the packs, and the leftover', () => {
     const block = texts(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).find(c => c.includes('### Recommended Package'));
-    const line = block.split('\n').find(l => l.startsWith('**Cheapest:**'));
-    assert.ok(/left over/.test(line), `leftover missing from "${line}"`);
-    assert.strictEqual((line.match(/10,800 CP/g) || []).length <= 1, true, `the pack total is repeated in "${line}"`);
+    const lines = block.split('\n');
+    const i = lines.findIndex(l => l.startsWith('> **`'));
+    assert.ok(i !== -1 && /CP Bought · [\d,]+ CP Left Over/.test(lines[i + 1]), `the price line, then what is bought and left over: "${lines[i + 1]}"`);
+    assert.strictEqual(/Cheapest/.test(block), false, 'no "Cheapest" label when only one option is shown (2026-10-14 16:47 EDT)');
+    assert.strictEqual((lines[i].match(/10,800 CP/g) || []).length <= 1, true, `the pack total is repeated in "${lines[i]}"`);
 });
 
 t('the result heads the list "Your Selection" with Edit beside it; a grouped ×N keeps its progress', () => {
@@ -751,7 +764,7 @@ t('the form adds from ONE picker below the lines: nothing pre-ticked, every draw
     assert.ok(add.max_values > 1);
     assert.strictEqual(add.options.some(o => o.default), false, 'nothing is shown ticked: ticking always ADDS');
     assert.strictEqual(add.placeholder, 'Add more draws to selection');
-    assert.ok(texts(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }])).some(c => c.startsWith('## Calculate Multiple Draws\n-# Select more draw types')), 'a heading and a hint above it (2026-10-14, his ask)');
+    assert.ok(texts(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }])).some(c => c.startsWith('### Add More Draws\n-# Select more draw types')), 'a sub-heading and a hint above it (2026-10-14 16:47 EDT)');
     const empty = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
     assert.ok(selects(empty).some(s => verbOf(s) === 'draws' && s.max_values > 1), 'an empty form starts from the multi-select');
 });
@@ -801,10 +814,10 @@ t('the landing starts a calculation, and Saved is one tap away in the nav row (2
 
 t('the result keeps Set Balance one tap away, and Edit is a VIEW that leaves the calculation submitted', () => {
     const result = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }));
-    const row = rows(result).find(r => r.components.some(b => b.label === 'Save'));
-    assert.deepStrictEqual(row.components.map(b => b.label), ['Set Balance', 'Upgrade: NO', 'Save'], 'the commonest return visit, "I have more CP now", is one tap');
+    const row = rows(result).find(r => r.components.some(b => b.label === 'Set Balance'));
+    assert.deepStrictEqual(row.components.map(b => b.label), ['Set Balance', 'Upgrade: NO'], 'the commonest return visit, "I have more CP now", is one tap');
     const editing = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: true }), { page: 2 });
-    assert.ok(/Set Current Attempts/.test(allText(editing)) && buttonLabelled(editing, 'Calculate'), 'page 2 of a submitted calculation is the form');
+    assert.ok(/Adjust Partial Completion/.test(allText(editing)) && buttonLabelled(editing, 'Calculate'), 'page 2 of a submitted calculation is the form');
     assert.strictEqual(dc.decodeState(buttonLabelled(editing, 'Calculate').custom_id).page, 2, 'its controls keep the view');
 });
 
@@ -815,6 +828,27 @@ t('removing a line with progress asks first; Keep stays on the page it was asked
     assert.ok(yes && keep);
     assert.strictEqual(dc.decodeState(yes.custom_id).focus, 0, 'the confirm carries which line');
     assert.strictEqual(dc.decodeState(keep.custom_id).page, 2, 'Keep does not throw an edit back to the result');
+});
+
+t('batch 8 (2026-10-14 16:47 EDT): plural selections, Adjust Partial Completion, the Cross emoji, and no "·" before an upgrade', () => {
+    const two = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }]);
+    assert.ok(allText(two).includes('## Your Selections\n### Adjust Partial Completion'));
+    assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).includes('## Your Selections'));
+    assert.ok(allText(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }])).includes('## Your Selection\n'), 'singular for one draw');
+    const remove = selects(two).find(s => verbOf(s) === 'bpulls').options.find(o => o.value === 'del');
+    assert.strictEqual(remove.emoji.name, 'Cross', 'his uploaded Cross emoji');
+    const fresh = selects(two).find(s => verbOf(s) === 'addmore').options.find(o => o.value === 'mythicCharacter').description;
+    assert.ok(/CP Total \+ [\d,]+ CP Upgrade$/.test(fresh) && !/· \+/.test(fresh), fresh);
+});
+
+t('the Saved view manages the open calculation at its top, and only when there is one', () => {
+    const named = makeBasket({ name: 'My Push' });
+    const withCurrent = dc.buildCalculatorPanel(state({ page: 3 }), named, ACCENT, { savedBaskets: [named] });
+    const text = allText(withCurrent);
+    assert.ok(text.indexOf('## This Calculation') < text.indexOf('## Saved Calculations'), 'the open calculation comes first');
+    assert.ok(verbOf(buttonLabelled(withCurrent, 'Rename')) === 'modal_name' && dc.decodeState(buttonLabelled(withCurrent, 'Rename').custom_id).page === 3, 'Rename returns to the Saved view');
+    assert.strictEqual(/This Calculation/.test(allText(dc.buildCalculatorPanel(state({ page: 3 }), null, ACCENT, { savedBaskets: [named] }))), false, 'no section when nothing is open');
+    assert.ok(messageCount(dc.buildCalculatorPanel(state({ page: 3, verb: 'delarm' }), named, ACCENT, { savedBaskets: savedList(dc.MAX_SAVED, 80) })) <= 40, 'fits at the cap with the section');
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

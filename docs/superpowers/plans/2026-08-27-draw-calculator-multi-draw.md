@@ -7,6 +7,8 @@ status: frozen
 
 *Written 2026-08-27 10:16 EDT, **rewritten 2026-08-27 11:03 EDT** against revision 3 of the design (the flat banner list + basket store). Design: `docs/superpowers/specs/2026-08-27-draw-calculator-multi-draw-design.md` — **read it in full first**; this plan carries tasks, not reasoning. Branch `claude/draw-calculator-breakdown-146641`.*
 
+> 🔴 **A SHORT OPENER IS NOT A SUMMARY OF THIS FILE, AND THIS FILE IS NOT THE CURRENT STATE** (added 2026-10-14 16:54 EDT, when `.remember` began naming it as this feature's plan of record). It is the 2026-08-27 build plan, frozen. What is built now is in `.claude/rules/draw-prices.md` § THE REDESIGN, § ROUND 2 and § ROUND 3. Only this file carries the original task-by-task verify steps and why the store owns every ownership check.
+
 ## Before you start
 
 1. **Read the spec.** Every 🔴 marks something that fails **silently** if you get it wrong.

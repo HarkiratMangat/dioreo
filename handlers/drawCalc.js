@@ -72,6 +72,11 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
     return sendV2Payload(interaction, withShareButton(panel, isEphemeral), { skipExpiry: true });
 }
 
+// The calculation a Saved-view render shows at its top: loaded quietly, since a gone one only drops that section.
+async function currentBasket(userId, state) {
+    return state.basketId ? basketStore.load(userId, state.basketId) : null;
+}
+
 // Deferred here, once, so every branch below can just call renderPanel -- 🔴 loadOwned() must be called AFTER this so a not-found/wrong-owner message can still be sent as an edit, not a second reply on top of an unacknowledged interaction.
 async function ackUpdate(interaction) {
     if (!interaction.deferred && !interaction.replied) await interaction.deferUpdate();
@@ -278,9 +283,9 @@ async function route(interaction) {
         return true;
     }
 
-    // THE SAVED VIEW (2026-10-14 13:13 EDT): a view of this message (page 3), reached from the nav row and left with Back. Opening one goes through `load` below.
+    // THE SAVED VIEW (2026-10-14 13:13 EDT): a view of this message (page 3), reached from the nav row and left with Back. Opening one goes through `load` below. The Saved view carries the open calculation at the top (2026-10-14 16:51 EDT), so it loads it; a calculation that is gone just leaves that section out.
     if (interaction.isButton() && (state.verb === 'saved' || state.verb === 'delallarm')) {
-        await renderPanel(interaction, { ...state, page: 3, mask: 0, check: null }, null);
+        await renderPanel(interaction, { ...state, page: 3, mask: 0, check: null }, await currentBasket(actingUserId, state));
         return true;
     }
     if (interaction.isButton() && state.verb === 'back') {
@@ -296,31 +301,33 @@ async function route(interaction) {
         const picked = new Set(interaction.values);
         const mask = list.reduce((m, b, i) => (picked.has(String(b._id)) ? m | (1 << i) : m), 0);
         const count = list.filter(b => picked.has(String(b._id))).length;
-        if (!count) { await renderPanel(interaction, { ...state, page: 3 }, null, 'Those calculations are already gone.'); return true; }
-        await renderPanel(interaction, { ...state, page: 3 }, null, `⚠️ Delete ${count === 1 ? 'this calculation' : `these ${count} calculations`}? This cannot be undone.`, null, { mask, count, check: savedChecksum(list) });
+        if (!count) { await renderPanel(interaction, { ...state, page: 3 }, await currentBasket(actingUserId, state), 'Those calculations are already gone.'); return true; }
+        await renderPanel(interaction, { ...state, page: 3 }, await currentBasket(actingUserId, state), `⚠️ Delete ${count === 1 ? 'this calculation' : `these ${count} calculations`}? This cannot be undone.`, null, { mask, count, check: savedChecksum(list) });
         return true;
     }
     if (interaction.isButton() && state.verb === 'savedelok') {
         const list = (await basketStore.listForUser(actingUserId)).slice(0, MAX_SAVED);
         // The list changed since the pick (a rename re-sorts it, another panel deleted one): positions no longer mean what was picked, so delete nothing and ask again.
-        if (savedChecksum(list) !== state.check) { await renderPanel(interaction, { ...state, page: 3, mask: 0, check: null }, null, 'Your saved list changed since you picked. Nothing was deleted; pick again.'); return true; }
+        if (savedChecksum(list) !== state.check) { await renderPanel(interaction, { ...state, page: 3, mask: 0, check: null }, await currentBasket(actingUserId, state), 'Your saved list changed since you picked. Nothing was deleted; pick again.'); return true; }
         const ids = list.filter((_, i) => (state.mask & (1 << i)) !== 0).map(b => String(b._id));
         const deleted = await basketStore.removeMany(actingUserId, ids);
         const basketId = ids.includes(String(state.basketId)) ? null : state.basketId;
-        await renderPanel(interaction, { ...state, basketId, page: 3, mask: 0, check: null }, null, `Deleted ${deleted} calculation${deleted === 1 ? '' : 's'}.`);
+        await renderPanel(interaction, { ...state, basketId, page: 3, mask: 0, check: null }, await currentBasket(actingUserId, { basketId }), `Deleted ${deleted} calculation${deleted === 1 ? '' : 's'}.`);
         return true;
     }
     if (interaction.isButton() && state.verb === 'delall') {
         const list = await basketStore.listForUser(actingUserId);
         const deleted = await basketStore.removeAllNamed(actingUserId);
         const basketId = list.some(b => String(b._id) === String(state.basketId)) ? null : state.basketId;
-        await renderPanel(interaction, { ...state, basketId, page: 3, verb: 'saved' }, null, deleted === 1 ? 'Deleted your 1 saved calculation.' : `Deleted all ${deleted} saved calculations.`);
+        await renderPanel(interaction, { ...state, basketId, page: 3, verb: 'saved' }, await currentBasket(actingUserId, { basketId }), deleted === 1 ? 'Deleted your 1 saved calculation.' : `Deleted all ${deleted} saved calculations.`);
         return true;
     }
 
+    // Opening a saved calculation lands on its RESULT (2026-10-14 16:51 EDT, Harkirat: "selecting a saved calc to view should open it to the result page, not take you through the full wizard process"). One that was saved before ever being calculated is calculated now; only an empty one opens on the form.
     if (interaction.isStringSelectMenu() && state.verb === 'load') {
-        await renderPanel(interaction, { ...state, basketId: interaction.values[0], page: 0, focus: null, bpage: 0 },
-            await basketStore.load(actingUserId, interaction.values[0]));
+        let opened = await basketStore.load(actingUserId, interaction.values[0]);
+        if (opened && opened.banners.length && !opened.submitted) opened = await basketStore.save(actingUserId, { _id: String(opened._id), submitted: true });
+        await renderPanel(interaction, { ...state, basketId: interaction.values[0], page: 0, focus: null, bpage: 0, detail: false, verb: 'load' }, opened);
         return true;
     }
 
@@ -406,7 +413,10 @@ async function route(interaction) {
         return true;
     }
     if (interaction.isButton() && state.verb === 'del') {
+        const gone = await basketStore.load(actingUserId, state.basketId);
         await basketStore.remove(actingUserId, state.basketId);
+        // Delete lives in the Saved view now (2026-10-14 16:51 EDT): stay there and say what went. A panel posted before still sends it from the result, which keeps its old landing.
+        if (state.page === 3) { await renderPanel(interaction, { ...state, basketId: null, page: 3, verb: 'saved' }, null, gone?.name ? `Deleted "${gone.name}".` : 'Deleted.'); return true; }
         await renderPanel(interaction, { ...state, basketId: null, page: 0, verb: 'landing' }, null);
         return true;
     }
@@ -421,6 +431,12 @@ async function route(interaction) {
     if (interaction.isButton() && state.verb === 'reset') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
+        // A SAVED calculation is never emptied by New Calculation (2026-10-14 16:51 EDT, Harkirat: "i clicked new calc, so why is it still saying viewing saved: test?"). Clearing it in place kept its name, so the fresh form claimed to be the saved one and the saved one lost its draws. A new, unnamed calculation starts instead, at the same region; the saved one stays in Saved untouched.
+        if (basket.name) {
+            const fresh = await basketStore.save(actingUserId, { banners: [], region: basket.region });
+            await renderPanel(interaction, { ...state, basketId: String(fresh._id), page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, fresh);
+            return true;
+        }
         // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form, which is what the button now says it does.
         const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: [], balance: 0, submitted: false });
         await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, updated);

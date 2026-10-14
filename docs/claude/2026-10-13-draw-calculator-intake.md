@@ -250,3 +250,36 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 **My additions, his to reverse:** only the chosen value of a line's dropdown keeps "#N · … · name" (the others read "3/10 Spins"), which pays for the longer spend text and keeps five lines a page · the result's headings became `##` to match the form's · the delete list shows each one's draw count and last-changed date · the Saved view gives up detail in steps when 25 long names would pass Discord's size cap.
 
+### Batch 8 — 2026-10-14 16:47 EDT, verbatim · round 2 on the dev bot (shots 16–21); a direct work order, built the same hour
+
+> * i clicked "new calc", so why is it still saying "viewing saved: test"? Also for the "viewing saved" line, can we use the same style as the season title we use normally?
+> * can we move "calculate" down to it's own action row, with a divider above it. Move "New calculation" and "saved" into that same row.
+> * move "upgrade" button beside the Set balance button.
+> * also replace the X emoji in the dropdown with `<:Cross:1560019185747099758>`(prod bot emoji id) `<:Cross:1560019354446463087>`(dev bot emoji id), i uploaded them but idk which one you need so here's both IDs
+> * add this emoji to the "Calculate" button: `<a:Sparkles:1560023184873488525>` (prod),  `<a:Sparkles:1560022548387856534>` (dev)
+> * "Calculate Multiple Draws" should be `###`. also reword to "add more draws"
+> * "Set Current Attempts" -> "adjust partial completion".
+> * "your selection" should have a plural "s" if there are 2 or more draws selected.
+> * rephrase "in your selection 1x" to "1x in your selection" (side note, are you able to make these desc characters bold? if yes, please make the "1x" bold.
+> * and a `·` between `7,220 CP Total` `+ 11,970 CP Upgrade` doesn't make sense since the `+` is already there.
+> * remove the "rename" button from the calc and implement it into the "saved" panel instead. also if viewing a saved calc and then the "saved" button is tapped, it show should a section at the top of it with options to edit that saved option such as renaming it, deleting it, etc. Remove the "delete calc" button from the calc result panel as well.
+> * also selecting a "saved" calc to view should open it to the result page, not take you through the full wizard process. Otherwise it's not different than a fresh calc.
+> * move "CP needed" into a `###` heading. and better organize that simplified view of that section.
+> * and no point stating "Cheapest" when no other option is being presented. It only makes sense in the full breakdown view.
+> * also better structure that section that mentions the cost, the packages, the left over CP. "Class, not instance".
+
+**Built 2026-10-14 16:54 EDT:**
+
+| Ask | Built |
+|---|---|
+| "Viewing saved" after New Calculation | the cause: New Calculation emptied the saved calculation in place and kept its name. It now starts a new unnamed calculation and leaves the saved one untouched |
+| Season-title style | `utils/titleBlock.js`'s caption, the same as the Season Calendar's |
+| Calculate row | its own row under a divider: Calculate · New Calculation · Saved; the form's nav keeps Draw Prices · Help |
+| Upgrade | beside Set Balance, on the form and the result |
+| Emojis | Cross and Sparkles added to `utils/emojiMap.js` with the prod ids; the dev bot re-points to its own copies by name |
+| Headings | "### Add More Draws", "Adjust Partial Completion", "Your Selections" from two draws |
+| Add-more descriptions | "1× In Your Selection · Pick to Add Another"; the "·" before "+ … CP Upgrade" removed. **Bold is not possible:** an option description is plain text in Discord |
+| Rename / Delete | gone from the result; the Saved view opens with a "This Calculation" section: Rename and Delete for a saved one, Save for an unsaved one |
+| Opening a saved one | lands on its result; one saved before it was ever calculated is calculated on open |
+| Cost section | "### CP Needed: `N CP`", a quiet "still to buy after your balance" line; every package option has one shape (quoted price and packs, one line of bought and left over); "Cheapest"/"Stock Up" labels only when two options show |
+
