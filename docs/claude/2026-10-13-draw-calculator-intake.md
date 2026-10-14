@@ -89,6 +89,22 @@ status: live
 | **H · Where editing lives** | adding another of a draw on the result page is behind Edit Draws at the bottom, away from the selection; the result page's draw picker does half the job (types only) while the other half lives on Edit Draws | the result page's selection block, its picker, Edit Draws, the form: one place, one way, to change what is being priced |
 | **I · Structure and clutter** (whole panel) | cluttered, poorly organised and structured; improve the visualisation | the order and grouping of every block on every page, the button rows, the breakdown's layout |
 
+## Built — 2026-10-13 23:13 EDT (branch `feat/draw-calculator`, not pushed)
+
+| Class | What changed |
+|---|---|
+| A | the form is two numbered steps; the picker is an instruction; the region and priority explanations moved to Help; the saved list is the loader alone; "Your Selection" heads the result |
+| B | one name per draw (his renames), "N/10 Items", Title Case descriptions with "CP Total" and "+ N CP Upgrade", no repeated name; a test fails on any "… Draw" name |
+| C | Draw Info off the nav row |
+| D | answered, not built: Discord's checkboxes exist only in popups |
+| E | New Calculation on every page with a line |
+| F | 6 lines per page |
+| G | each line's dropdown opens with Remove and Move Up; progress first in the label; tier emoji on every value; Remove with progress asks |
+| H | Edit beside "Your Selection" opens the form as a view; the Edit Draws page and the result's picker are gone |
+| I | the result's controls are one row (Set Balance · Save · Delete); the upgrade toggle moved to step 1 |
+
+A second think-pass (his `/nudge`, 2026-10-13 23:13 EDT) changed five things in the first build: Set Balance back on the result, Edit as a view instead of un-submitting, a confirm on Remove when progress would go, the upgrade toggle into step 1, and progress first in each line's label.
+
 ## Ambiguities to settle at the build
 
 *A reading of his words that could go two ways, with what would settle it, rather than a guess.*

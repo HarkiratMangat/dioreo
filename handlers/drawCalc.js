@@ -13,7 +13,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
-    findLiveDoubleCPEntry, parseAmount, applySelection, setTypeCount, MAX_LINES
+    findLiveDoubleCPEntry, parseAmount, applySelection, setTypeCount, MAX_LINES, shortName
 } = require('../commands/drawCalculator');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES } = require('../utils/cpPackages');
@@ -24,7 +24,8 @@ const OWNED_PREFIXES = ['calc~'];
 
 const { DRAW_META } = require('../commands/drawprices');
 const DRAW_KEY_ORDER = Object.keys(DRAW_META);
-function DRAW_META_NAMES(key) { return DRAW_META[key]?.name || key; }
+// The calculator's one name per draw (commands/drawCalculator.js SHORT_NAME), never DRAW_META's full "... Draw" name.
+function DRAW_META_NAMES(key) { return shortName(key); }
 
 
 function ownsCustomId(customId) {
@@ -232,7 +233,21 @@ async function route(interaction) {
         if (!basket) return true;
         const index = state.focus;
         if (index === null || !basket.banners[index]) { await renderPanel(interaction, state, basket); return true; }
-        // The line's own dropdown ends with "Remove" (form and Edit Draws). An explicit choice on that one line, so it does not ask.
+        // The line's own dropdown opens with Remove and Move Up. Both are explicit choices on that one line, so neither asks.
+        if (interaction.values[0] === 'up') {
+            if (index === 0) { await renderPanel(interaction, { ...state, focus: null }, basket); return true; }
+            const banners = [...basket.banners];
+            [banners[index - 1], banners[index]] = [banners[index], banners[index - 1]];
+            const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+            await renderPanel(interaction, { ...state, focus: null }, updated);
+            return true;
+        }
+        // Remove opens the list, so a slipped tap must not cost entered progress: a line with pulls asks first; an empty line goes at once.
+        if (interaction.values[0] === 'del' && basket.banners[index].pullsDone > 0) {
+            const b = basket.banners[index];
+            await renderPanel(interaction, { ...state, focus: index }, basket, `⚠️ Remove #${index + 1} ${shortName(b.drawKey)} and its ${b.pullsDone} Items of progress?`, { mask: 0, count: 1, verb: 'dellineok', label: `Remove #${index + 1}` });
+            return true;
+        }
         if (interaction.values[0] === 'del') {
             const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: basket.banners.filter((_, i) => i !== index) });
             await renderPanel(interaction, { ...state, focus: null }, updated);
@@ -315,6 +330,25 @@ async function route(interaction) {
         if (!basket.banners.length) { await renderPanel(interaction, state, basket); return true; }
         const updated = await basketStore.save(actingUserId, { _id: state.basketId, submitted: true });
         await renderPanel(interaction, { ...state, page: 0, bpage: 0, focus: null }, updated);
+        return true;
+    }
+
+    if (interaction.isButton() && state.verb === 'dellineok') {
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const index = state.focus;
+        const banners = index !== null && basket.banners[index] ? basket.banners.filter((_, i) => i !== index) : basket.banners;
+        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+        await renderPanel(interaction, { ...state, focus: null, mask: 0 }, updated);
+        return true;
+    }
+
+    // Edit, beside Your Selection on the result (2026-10-13 23:01 EDT): the form, with everything kept, as a view of this calculation.
+    if (interaction.isButton() && state.verb === 'edit') {
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        // A view, not a state change: the calculation stays submitted, so leaving mid-edit still reopens on the result.
+        await renderPanel(interaction, { ...state, page: 2, bpage: 0, focus: null, detail: false }, basket);
         return true;
     }
 

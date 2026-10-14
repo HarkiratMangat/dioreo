@@ -19,10 +19,8 @@ const { CP_PACKAGES, formatMoney, optimizePurchase } = require('../utils/cpPacka
 
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
 const DRAW_KEYS = Object.keys(DRAW_META);
-// 4, not 5, since 2026-10-13 14:26 EDT: each line now carries its own ▲ (a Section with a button accessory, 3 components) in place of the shared reorder select and ▲/▼ row, and 5 such lines measured past the 40-component cap. Same count the setup form uses.
-const MAX_BANNERS_PER_PAGE = 4;
-// The SETUP screen paginates tighter than the Edit page, and the difference is a budget fact, not an inconsistency: setup also carries the saved-calculations list, the draw multi-select, the region row and the Calculate row, all of which the Edit page does without. Measured by the sweep in scripts/drawCalcBudget.test.js -- change this number and that test tells you immediately whether it still fits.
-const SETUP_LINES_PER_PAGE = 4;
+// Six lines per page (2026-10-13 23:01 EDT, Harkirat: "can we paginate after 6?"). Each line is ONE dropdown row (2 components), its Remove and Move Up live inside it, and buildSetupPanel still drops lines per page until the form fits Discord's 40 when the saved list is showing.
+const SETUP_LINES_PER_PAGE = 6;
 // The setup form's own budget (container included): 40, minus the Show Everyone row (2) and the bottom nav row on the form (1 + 3 buttons). buildSetupPanel drops lines per page until it fits.
 const SETUP_CONTAINER_BUDGET = 34;
 // One calculation holds at most this many lines; the add picker disables itself at the cap and the handler stops there too.
@@ -42,15 +40,15 @@ function plural(n, word) { return `${n} ${word}${n === 1 ? '' : 's'}`; }
 // 🔴 NEVER write `DRAW_META[b.drawKey].name` for a drawKey that came out of a STORED calculation. DRAW_KEYS is derived from DRAW_META, so anything rendered from a select is safe by construction -- but a saved calculation holds whatever key it held on the day it was saved, and draws rotate. The day a key is retired from DRAW_META, every stored calculation containing it would throw on render, and the owner could not even open the panel to delete the entry. Degrade to the raw key instead: it is ugly, it is honest, and it leaves the row deletable. (Found 2026-08-27 by a test fixture using a key that does not exist -- the fixture was wrong, the crash it exposed was not.)
 function drawName(drawKey) { return DRAW_META[drawKey]?.name || `Unrecognized draw (${drawKey})`; }
 
-// SHORT NAMES for the calculator's own pickers (2026-10-13 12:40 EDT, Harkirat's click-test). Discord cuts a chosen option's chip after roughly 24 characters, and the full names put the only distinguishing word LAST -- "Legendary Weapon Draw (R" was all that showed, which cannot tell Reactive from Non-Reactive. These lead with what separates one draw from another and stay under the cut. The full name still appears in every text list and option description. Calculator-only: /draw prices keeps DRAW_META's names.
+// SHORT NAMES for the calculator's own pickers (2026-10-13 12:40 EDT, Harkirat's click-test). Discord cuts a chosen option's chip after roughly 24 characters, and the full names put the only distinguishing word LAST -- "Legendary Weapon Draw (R" was all that showed, which cannot tell Reactive from Non-Reactive. These lead with what separates one draw from another and stay under the cut. The full name still appears in every text list and option description. Calculator-only: /draw prices keeps DRAW_META's names. ONE NAME PER DRAW, used everywhere in the calculator (2026-10-13 23:01 EDT, Harkirat's intake: "Reactive Legendary -> reword to \"Legendary Weapon (Reactive)\"; similarly for non-reactive ... and so on"). The panel used to call one draw two things (this short name in the dropdowns, DRAW_META's full "... Draw" name in the lists), and the descriptions repeated the full name after the short one. A description never repeats the name now.
 const SHORT_NAME = {
     mythicWeapon: 'Mythic Weapon',
     mythicCharacter: 'Mythic Character',
-    legendaryGunReactive: 'Reactive Legendary',
-    legendaryGunNonReactive: 'Non-Reactive Legendary',
-    doubleLegendaryWeapons: 'Double Legendary',
+    legendaryGunReactive: 'Legendary Weapon (Reactive)',
+    legendaryGunNonReactive: 'Legendary Weapon (Non-Reactive)',
+    doubleLegendaryWeapons: 'Double Legendary Weapons',
     legendaryCharacterWeapon: 'Legendary Character',
-    sevenSpinLegendaryWeapon: '7-Spin Legendary',
+    sevenSpinLegendaryWeapon: '7 Spins Legendary Weapon',
     pickYourRewardCard: 'Pick Your Reward Card',
     doubleEpicCharacters: 'Double Epic Characters'
 };
@@ -91,7 +89,7 @@ function slashShortcut({ draw = null, pulls = null, balance = null, region = 're
     const total = pullCount(region, draw);
     let pullsDone = Math.max(0, pulls ?? 0);
     if (total !== null && pullsDone > total) {
-        notes.push(`${drawName(draw)} has ${total} pulls, so ${pullsDone} was set to ${total}.`);
+        notes.push(`${shortName(draw)} has ${total} Items, so ${pullsDone} was set to ${total}.`);
         pullsDone = total;
     }
     return {
@@ -247,18 +245,14 @@ function typesSelectRow(state, basket) {
     return {
         type: 1,
         components: [{
-            type: 3, custom_id: encodeState('draws', state), placeholder: 'Which draws are you pricing out?',
+            // An instruction, not a question (his intake): the form reads as steps to follow.
+            type: 3, custom_id: encodeState('draws', state), placeholder: 'Select draw types to calculate',
             min_values: 0, max_values: DRAW_KEYS.length,
-            // Descriptions inherited from the retired single-pick landing select: a player choosing what to price needs the pull count and the full fresh cost at THIS region, not just a bare total.
             options: DRAW_KEYS.map(key => {
-                const total = pullCount(basket.region, key);
-                const upgrade = total !== null ? upgradeCost(basket.region, key) : null;
                 return {
                     label: shortName(key),
                     value: key,
-                    description: total === null
-                        ? `${DRAW_META[key].name} · no data at ${regionLabel(basket.region)} yet`
-                        : `${plural(total, 'pull')} · ${fmt(remainingToFinish(basket.region, key, 0))} CP total${upgrade !== null ? ` + ${fmt(upgrade)} Upgrade` : ''} · ${DRAW_META[key].name}`.slice(0, 100),
+                    description: freshDrawDescription(basket.region, key),
                     emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier]),
                     default: present.has(key)
                 };
@@ -280,40 +274,49 @@ function bannerPullsRow(state, basket, index, { removable = false } = {}) {
         }] };
     }
     const options = [];
-    for (let n = 0; n <= total && options.length < (removable ? 24 : 25); n++) {
-        // The draw's name rides in the LABEL (2026-10-13 12:40 EDT): a closed select shows only the chosen option's label, so "#1 — Not started" / "#2 — Not started" could not say which draw each line was once two different draws were in play.
+    const icon = meta.tier ? emojis.parseEmoji(emojis[meta.tier]) : undefined;
+    // Actions FIRST (2026-10-13 23:01 EDT, his intake: "make the \"remove\" line the first item"), then the progress values. Move Up replaces the ▲ that sat on the retired Edit Draws page: one control per line now carries everything about that line, which is what lets six lines fit a page.
+    if (removable) {
+        options.push({ label: `✕ Remove #${index + 1}`, value: 'del', description: banner.pullsDone ? `Drops It and Its ${banner.pullsDone}/${total} Items` : 'Takes It Out of This Calculation' });
+        if (index > 0) options.push({ label: `▲ Move Up to #${index}`, value: 'up', description: 'Earlier in the Priority Plan' });
+    }
+    for (let n = 0; n <= total && options.length < 25; n++) {
+        // The draw's name rides in the LABEL (2026-10-13 12:40 EDT): a closed select shows only the chosen option's label.
         options.push({
-            label: `#${index + 1} ${shortName(banner.drawKey)} · ${n === 0 ? 'not started' : `${plural(n, 'pull')} done`}`,
+            // Progress FIRST (2026-10-13 23:10 EDT): a closed select on a phone shows about 30 characters, and "#2 Legendary Weapon (Non-Reactive) — 7/10 Items" lost the progress, the one thing the line exists to set.
+            label: `#${index + 1} · ${n}/${total} Items · ${shortName(banner.drawKey)}`,
             value: String(n),
-            description: n === total ? `Finished · nothing left on ${meta.name}` : `${fmt(remainingToFinish(basket.region, banner.drawKey, n))} CP left on ${meta.name}`,
+            description: n === total ? 'Finished' : `${fmt(remainingToFinish(basket.region, banner.drawKey, n))} CP Left`,
+            ...(icon ? { emoji: icon } : {}),
             default: n === banner.pullsDone
         });
     }
-    // Removing a line is the last option in its own dropdown, on the form and on Edit Draws alike. It does not ask: it is an explicit choice on that one line.
-    if (removable) options.push({ label: `− Remove #${index + 1} ${shortName(banner.drawKey)}`, value: 'del', description: banner.pullsDone ? `Takes it out, with its ${plural(banner.pullsDone, 'pull')}` : 'Takes it out of this calculation' });
     return { type: 1, components: [{ type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} ${shortName(banner.drawKey)}`, options }] };
 }
 
-// The draw picker once a calculation has lines (Harkirat chose this shape 2026-10-13 19:47 EDT, after trying three on the dev bot). Each draw ticked adds ONE line of it, placed right after that draw's existing lines, so ticking a draw you already have runs another of it; nothing is ever shown ticked, and removing lives in each line's own dropdown. It sits BELOW the lines on the form and on Edit Draws: the list grows above the control that adds to it, and an empty form shows its first-pick picker in that same spot.
+// The draw picker once a calculation has lines (Harkirat chose this shape 2026-10-13 19:47 EDT, after trying three on the dev bot). Each draw ticked adds ONE line of it, placed right after that draw's existing lines, so ticking a draw you already have runs another of it; nothing is ever shown ticked, and removing lives in each line's own dropdown. It sits BELOW the lines: the list grows above the control that adds to it, and an empty form shows its first-pick picker in that same spot.
 function addDrawsRow(state, basket) {
     const room = MAX_LINES - basket.banners.length;
     return { type: 1, components: [{
         type: 3, custom_id: encodeState('addmore', state),
-        placeholder: room > 0 ? '+ Add more draws...' : `Full: a calculation holds up to ${MAX_LINES} lines`,
+        placeholder: room > 0 ? '+ Add more draws (pick one again to run two)' : `Full: a calculation holds up to ${MAX_LINES} lines`,
         min_values: 1, max_values: Math.max(1, Math.min(DRAW_KEYS.length, room)), disabled: room <= 0,
         options: DRAW_KEYS.map(key => {
             const have = basket.banners.filter(b => b.drawKey === key).length;
-            const total = pullCount(basket.region, key);
             return {
                 label: shortName(key), value: key,
-                description: (have
-                    ? `You have ${have} · adds a ${ordinal(have + 1)}, at 0 pulls`
-                    : total === null ? `${DRAW_META[key].name} · no data at ${regionLabel(basket.region)} yet`
-                        : `${plural(total, 'pull')} · ${fmt(remainingToFinish(basket.region, key, 0))} CP total · ${DRAW_META[key].name}`).slice(0, 100),
+                description: have ? `Added ×${have} · Adds a ${ordinal(have + 1)}` : freshDrawDescription(basket.region, key),
                 emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier])
             };
         })
     }] };
+}
+// One description for a draw nobody has started, shared by both pickers: what it holds and what it costs at this region, in Title Case, never its name again.
+function freshDrawDescription(region, key) {
+    const total = pullCount(region, key);
+    if (total === null) return `No Data at ${regionLabel(region)} Yet`;
+    const upgrade = upgradeCost(region, key);
+    return `${total} Items · ${fmt(remainingToFinish(region, key, 0))} CP Total${upgrade !== null ? ` · + ${fmt(upgrade)} CP Upgrade` : ''}`.slice(0, 100);
 }
 function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 
@@ -380,7 +383,7 @@ function regionRow(state, basket) {
 }
 
 // The caption above the region buttons (2026-10-13 12:40 EDT). Three "10 / 20 / 30 CP" buttons sit among a dozen real CP amounts and read like one of them; nothing said what a region is or how a player finds theirs. The first pull's price IS the region, so that is the one sentence that answers both.
-function regionCaption() { return { type: 10, content: '-# **Region** · the CP price of your first pull on a draw' }; }
+function regionCaption() { return { type: 10, content: '### 2 · Region & Balance' }; }
 
 // The upgrade toggle shows only when a line's draw HAS an upgrade somewhere (2026-10-13 12:40 EDT). It used to show "Upgrade: NO" on a calculation of Legendary draws, which have none -- a control that could not change anything. Labels stay "Upgrade: YES / NO" (2026-10-13 15:21 EDT, Harkirat: "it's like super long... Yes, upgrade no"): the 2026-10-13 round had made them "Included / Not included", which he turned down as too long.
 function upgradeButton(state, basket, extra = {}) {
@@ -389,24 +392,13 @@ function upgradeButton(state, basket, extra = {}) {
     return { type: 2, style: basket.includeUpgrades ? 3 : 2, label: basket.includeUpgrades ? 'Upgrade: YES' : 'Upgrade: NO', custom_id: encodeState('upg', state), ...(cardEmoji ? { emoji: emojis.parseEmoji(cardEmoji) } : {}), ...extra };
 }
 
-function costActionRow(state, basket) {
+// The confirm a draw untick needs when it would delete progress (2026-10-13 12:40 EDT). Unticking a draw in the picker removes EVERY line of it; with progress on one, that silently threw away pulls the player had entered. `mask` is the selection they asked for, applied only when they confirm. `label` names what goes (a single line's confirm says "Remove #2"); Keep stays on the page it was asked from, so a confirm on the editing view does not drop the player back on the result.
+function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
     return {
         type: 1,
         components: [
-            { type: 2, style: 2, label: basket.balance ? `Balance: ${fmt(basket.balance)} CP` : 'Set Balance', custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) },
-            upgradeButton(state, basket),
-            { type: 2, style: 2, label: 'Edit Draws', custom_id: encodeState('page', { ...state, page: 1 }) }
-        ].filter(Boolean)
-    };
-}
-
-// The confirm a draw untick needs when it would delete progress (2026-10-13 12:40 EDT). Unticking a draw in the picker removes EVERY line of it; with progress on one, that silently threw away pulls the player had entered. `mask` is the selection they asked for, applied only when they confirm.
-function dropConfirmRow(state, mask, count, verb = 'dropok') {
-    return {
-        type: 1,
-        components: [
-            { type: 2, style: 4, label: `Remove ${plural(count, 'line')}`, custom_id: encodeState(verb, { ...state, mask }) },
-            { type: 2, style: 2, label: 'Keep them', custom_id: encodeState('page', { ...state, page: 0 }) }
+            { type: 2, style: 4, label: label || `Remove ${plural(count, 'line')}`, custom_id: encodeState(verb, { ...state, mask }) },
+            { type: 2, style: 2, label: count === 1 ? 'Keep it' : 'Keep them', custom_id: encodeState('page', { ...state, mask: 0 }) }
         ]
     };
 }
@@ -414,20 +406,20 @@ function dropConfirmRow(state, mask, count, verb = 'dropok') {
 // NO EMOJI on either button (2026-08-27, Harkirat) -- `mngEdit` was a pencil paired with a button labelled "Save", which never matched, and a destructive action reads clearer without decoration. Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement).
 function basketManageRow(state, basket) {
     const deleteArmed = state.verb === 'delarm';
-    // Delete shows only on a SAVED calculation (2026-10-13 12:40 EDT). On an unsaved one it did exactly what New Calculation does, so the two sat side by side meaning the same thing.
-    const components = [{ type: 2, style: 2, label: basket.name ? 'Rename' : 'Save', custom_id: encodeState('modal_name', state) }];
+    // Delete shows only on a SAVED calculation (2026-10-13 12:40 EDT). On an unsaved one it did exactly what New Calculation does, so the two sat side by side meaning the same thing. Set Balance leads this row on the result (2026-10-13 23:10 EDT): "I have more CP now" is the commonest return visit, and sending it through Edit and Calculate turned one tap into three.
+    const components = [
+        { type: 2, style: 2, label: basket.balance ? `Balance: ${fmt(basket.balance)} CP` : 'Set Balance', custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) },
+        { type: 2, style: 2, label: basket.name ? 'Rename' : 'Save', custom_id: encodeState('modal_name', state) }
+    ];
     if (basket.name) components.push({ type: 2, style: deleteArmed ? 4 : 2, label: deleteArmed ? 'Delete Calculation — click again' : 'Delete Calculation', custom_id: encodeState(deleteArmed ? 'del' : 'delarm', state) });
     return { type: 1, components };
 }
 
-// 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself. `showReset` is false on the setup form: there is no computed result to clear yet, and a live button that does nothing visible is worse than an absent one. On a submitted calculation it reads "New Calculation" -- Harkirat's own phrase for the action that ends a result's persistence and returns to the form.
+// 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself. `showReset` is false on the setup form: there is no computed result to clear yet, and a live button that does nothing visible is worse than an absent one. On a submitted calculation it reads "New Calculation" -- Harkirat's own phrase for the action that ends a result's persistence and returns to the form. Draw Prices · New Calculation · Help (2026-10-13 23:01 EDT, his intake: Draw Info removed, since /draw prices shows the same draws; New Calculation on EVERY page once there is something to clear, where it used to appear only on the result).
 function bottomNavRow(state, { showReset = true } = {}) {
     const resetArmed = state.verb === 'resetarm';
-    const components = [
-        { type: 2, style: 2, label: 'Draw Info', custom_id: encodeState('info', state) },
-        // Its own private message (2026-10-13 12:40 EDT), like Draw Info -- it used to be the global nav's `nav_prices`, which turned THIS panel into /draw prices in place.
-        { type: 2, style: 2, label: 'Draw Prices', custom_id: encodeState('prices', state) }
-    ];
+    // Its own private message (2026-10-13 12:40 EDT) -- it used to be the global nav's `nav_prices`, which turned THIS panel into /draw prices in place.
+    const components = [{ type: 2, style: 2, label: 'Draw Prices', custom_id: encodeState('prices', state) }];
     if (showReset) components.push({ type: 2, style: resetArmed ? 4 : 2, label: resetArmed ? 'New Calculation — click again' : 'New Calculation', custom_id: encodeState(resetArmed ? 'reset' : 'resetarm', state) });
     components.push({ type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) });
     return { type: 1, components };
@@ -442,7 +434,6 @@ function setupActionRow(state, basket) {
         components: [
             { type: 2, style: 2, disabled: !hasBasket, custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2),
               label: basket?.balance ? `Balance: ${fmt(basket.balance)} CP` : 'Set Balance' },
-            upgradeButton(state, basket, { disabled: !hasBasket }),
             { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), disabled: lines === 0 }
         ].filter(Boolean)
     };
@@ -459,27 +450,27 @@ function buildCostBlock(state, basket, currency, client, { compact }) {
     const shortfall = needed - (basket.balance || 0);
 
     // 🔴 CP NEEDED LEADS. This block used to open with "Draws in basket: 2" and put the one number the whole command exists to produce THIRD -- the eye landed on a count nobody asked for. The count itself is gone: the DRAWS IN PROGRESS list sits directly above and already shows every line.
-    const lines = [`## COST BREAKDOWN`];
+    const lines = [`### Cost Breakdown`];
     lines.push(`${dot} CP Needed: **\`${fmt(needed)} CP\`**`);
     // No balance means no balance line (2026-10-13 12:40 EDT): "Not specified" in a code chip read like a value.
     lines.push(basket.balance ? `${dot} Balance: **\`${fmt(basket.balance)} CP\`** ${dash} Region: **\`${regionLabel(basket.region)}\`**` : `${dot} Region: **\`${regionLabel(basket.region)}\`**`);
     if (unpriced.length) {
-        lines.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => drawName(b.drawKey)).join(', ')}.`);
+        lines.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => shortName(b.drawKey)).join(', ')}.`);
     }
     // 🔴 A SILENT ZERO, FOUND 2026-10-13 12:40 EDT. Mythic draws have no upgrade price at the 20 CP region, so "Upgrade: Included" added nothing there while the button claimed it was in the total. Say so instead.
     const upgradeMissing = basket.includeUpgrades ? perBanner.filter(b => b.priced && b.upgrade === null && hasUpgradeAnywhere(b.drawKey)) : [];
     if (upgradeMissing.length) {
-        lines.push(`⚠️ **Upgrade not included** for ${[...new Set(upgradeMissing.map(b => drawName(b.drawKey)))].join(', ')} — no upgrade price at ${regionLabel(basket.region)} yet.`);
+        lines.push(`⚠️ **Upgrade not included** for ${[...new Set(upgradeMissing.map(b => shortName(b.drawKey)))].join(', ')} — no upgrade price at ${regionLabel(basket.region)} yet.`);
     }
 
     if (!compact) {
         // NO explicit blank line before a `##` heading (2026-08-27) -- Discord gives a heading its own top margin, and that margin does NOT collapse against a blank line, so the two stacked into the gap Harkirat flagged between COST BREAKDOWN and PRIORITY PLAN. Same reasoning for the missing blank after the loop below.
-        lines.push(`## PRIORITY PLAN`);
+        lines.push(`### Priority Plan`);
         let running = 0;
         perBanner.forEach((b, i) => {
             running += b.cost;
             const total = pullCount(basket.region, b.drawKey);
-            lines.push(`${dot} ${i + 1}. ${drawName(b.drawKey)} — ${b.pullsDone}/${total ?? '?'} ${dash} **${fmt(b.cost)} CP** ${dash} running **${fmt(running)} CP**`);
+            lines.push(`${dot} ${i + 1}. ${shortName(b.drawKey)} — ${b.pullsDone}/${total ?? '?'} Items ${dash} **${fmt(b.cost)} CP** ${dash} running **${fmt(running)} CP**`);
         });
     }
 
@@ -515,7 +506,7 @@ function buildCostBlock(state, basket, currency, client, { compact }) {
             `-# Left Over: **\`${fmt(r.leftoverCp)} CP\`** (${fmt(r.totalCp)} CP Purchase − ${fmt(shortfall)} CP Needed)`
         ];
 
-    lines.push('## RECOMMENDED PACKAGE');
+    lines.push('### Recommended Package');
     lines.push(...packageLines('Cheapest', result.cheapest));
     if (!compact && result.stockUp) {
         lines.push(''); // the two methods ran together as one block without this -- they are alternatives, not a continuation
@@ -552,23 +543,21 @@ function buildSetupPanel(state, basket, savedBaskets, accentColor, { region, not
     const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
     if (notice) components.push({ type: 10, content: `-# ${notice}` });
 
+    // The saved list is the dropdown alone (2026-10-13 23:01 EDT, his intake: "cluttered"): a text list above it repeated every name the dropdown already holds.
     if (savedBaskets && savedBaskets.length) {
-        components.push({ type: 10, content: `## SAVED CALCULATIONS\n${savedBaskets.map(b => `${emojis.smallDot} **${b.name}** — ${plural(b.banners.length, 'line')}`).join('\n')}` });
         components.push({
             type: 1, components: [{
-                type: 3, custom_id: encodeState('load', state), placeholder: 'Load a saved calculation...',
+                type: 3, custom_id: encodeState('load', state), placeholder: `Load a saved calculation (${savedBaskets.length})`,
                 options: savedBaskets.slice(0, 25).map(b => ({ label: b.name, value: String(b._id), description: `${plural(b.banners.length, 'line')} · ${regionLabel(b.region)}` }))
             }]
         });
         components.push({ type: 14, spacing: 1, divider: true });
     }
 
-    components.push({ type: 10, content: banners.length
-        ? `## SET UP YOUR CALCULATION\n-# Set how many pulls you have already done on each draw, then press **Calculate**. Running a draw twice? Add it again below.`
-        // Leads with what the player GETS (2026-10-13 12:40 EDT); it used to open with the steps.
-        : `## SET UP YOUR CALCULATION\nSee how much CP you still need, and the cheapest way to buy it.\n-# Pick every draw you are pricing out, then set your progress, balance and region.` });
+    // A WALKED GUIDE, not instructions (2026-10-13 23:01 EDT, his intake: "too much prose reliance"). Two numbered steps and the Calculate button; what a region is, and how priority works, live in Help.
+    components.push({ type: 10, content: '### 1 · Your Selection' });
     // The untick confirm replaces the picker here too (2026-10-13 12:43 EDT): the form's picker deletes lines the same way the result page's does, and without this branch a draft's untick re-rendered unchanged with no explanation. With lines, the picker moves below them as "+ Add more draws" (addDrawsRow).
-    if (dropConfirm) components.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb));
+    if (dropConfirm) components.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
     else if (!banners.length) components.push(typesSelectRow(state, draft));
 
     const tail = [{ type: 14, spacing: 1, divider: true }, regionCaption(), regionRow(state, draft), setupActionRow(state, basket)];
@@ -579,6 +568,9 @@ function buildSetupPanel(state, basket, savedBaskets, accentColor, { region, not
         const mid = pages[bpage].map(i => bannerPullsRow(state, draft, i, { removable: true }));
         if (pages.length > 1) mid.push(pageNavRow({ ...state, bpage }, pages.length));
         if (banners.length && !dropConfirm) mid.push(addDrawsRow(state, draft));
+        // The upgrade is a choice about the draws, so it sits in step 1 (2026-10-13 23:10 EDT), only when a picked draw has one.
+        const upgrade = upgradeButton(state, basket, { disabled: !(basket && basket._id) });
+        if (upgrade && banners.length) mid.push({ type: 1, components: [upgrade] });
         return [...components, ...mid, ...tail];
     };
     // Fewer lines per page until it fits.
@@ -607,16 +599,19 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     }
 
     const groups = groupForDisplay(basket.banners);
-    // "YOUR DRAWS", not "DRAWS IN PROGRESS" (2026-10-13 12:40 EDT) -- it headed lines at 0 pulls. And a grouped ×N keeps its progress figure; it used to drop it while a single line showed "— 0/10".
-    components.push({ type: 10, content: `## YOUR DRAWS\n${groups.map(g => `${emojis.smallDot} ${drawName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''} — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'}`).join('\n')}` });
+    // "Your Selection" with Edit BESIDE it (2026-10-13 23:01 EDT, his intake: Edit Draws sat at the bottom, away from the list it edits, while a draw picker here did half the job). Every input now lives on the form; Edit reopens it with everything kept, and this page only reports.
+    components.push({
+        type: 9,
+        components: [{ type: 10, content: `### Your Selection\n${groups.map(g => `${DRAW_META[g.drawKey] ? emojis[DRAW_META[g.drawKey].tier] : emojis.smallDot} ${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''} — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'} Items`).join('\n')}` }],
+        accessory: { type: 2, style: 2, label: 'Edit', custom_id: encodeState('edit', state) }
+    });
     if (options.notice) components.push({ type: 10, content: `-# ${options.notice}` });
-    if (options.dropConfirm) components.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb));
-    else components.push(typesSelectRow(state, basket));
+    if (options.dropConfirm) components.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
     components.push({ type: 14, spacing: 1, divider: true });
 
     // Show Breakdown sits BESIDE the COST BREAKDOWN heading (2026-10-13 14:18 EDT, Harkirat: "why don't we move the show breakdown button? maybe inline with the cost breakdown section"). It is a Section with the button as its accessory, so the button sits next to what it expands; it also takes one button out of the action row, which wrapped Edit Draws onto a row of its own once a balance widened Set Balance.
     const costLines = buildCostBlock(state, basket, currency, client, { compact: !state.detail });
-    const split = costLines.findIndex((l, i) => i > 0 && (l === '' || l.startsWith('## ')));
+    const split = costLines.findIndex((l, i) => i > 0 && (l === '' || l.startsWith('### ')));
     const head = split === -1 ? costLines : costLines.slice(0, split);
     const tail = split === -1 ? [] : costLines.slice(split);
     while (tail[0] === '') tail.shift();
@@ -626,7 +621,6 @@ function buildCostPage(state, basket, accentColor, options = {}) {
         accessory: { type: 2, style: 2, label: state.detail ? 'Simplify' : 'Show Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(state.detail ? emojis.simplify : emojis.expand) }
     });
     if (tail.length) components.push({ type: 10, content: tail.join('\n') });
-    components.push(costActionRow(state, basket));
     components.push(basketManageRow(state, basket));
 
     if (liveDoubleCPEntry || basket.entitlementMask) {
@@ -635,43 +629,10 @@ function buildCostPage(state, basket, accentColor, options = {}) {
             : `-# Select which packages you still have an unused 2X entitlement on, if the event is running.` });
         components.push(entitlementSelectRow(state, basket));
     }
-    components.push({ type: 14, spacing: 1, divider: true });
-    components.push(regionCaption());
-    components.push(regionRow(state, basket));
     return { type: 17, accent_color: accentColor, components };
 }
 
-function buildBasketPage(state, basket, accentColor) {
-    const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
-
-    if (!basket.banners.length) {
-        components.push({ type: 10, content: 'This calculation is empty — go back to the Cost page and pick a draw.' });
-        components.push({ type: 1, components: [{ type: 2, style: 1, label: '◀ Cost Breakdown', custom_id: encodeState('page', { ...state, page: 0 }) }] });
-        return { type: 17, accent_color: accentColor, components };
-    }
-
-    // 🔴 REORDER IS A ▲ ON EACH LINE (2026-10-13 14:26 EDT, Harkirat picked option A). It replaced a shared "Reorder: pick a line" select plus ▲/▼ buttons, where moving #5 to the top took a pick and four clicks; now each line's own heading carries a ▲ that moves it up one place, and the separate list that repeated every dropdown is gone. Priority is still the array order and is never sorted for the player.
-    components.push({ type: 10, content: '## YOUR DRAWS\n-# Set the **pulls done** on each draw. ▲ moves a draw up the Priority Plan.' });
-
-    const pages = linePages(basket.banners, MAX_BANNERS_PER_PAGE);
-    const bpage = Math.min(state.bpage || 0, pages.length - 1);
-
-    for (const i of pages[bpage]) {
-        components.push({
-            type: 9,
-            components: [{ type: 10, content: `**#${i + 1}** · ${drawName(basket.banners[i].drawKey)}` }],
-            accessory: { type: 2, style: 2, label: '▲', custom_id: encodeState('up', { ...state, focus: i }), disabled: i === 0 }
-        });
-        components.push(bannerPullsRow(state, basket, i, { removable: true }));
-    }
-
-    if (pages.length > 1) components.push(pageNavRow({ ...state, bpage }, pages.length));
-    components.push(addDrawsRow(state, basket));
-
-    components.push({ type: 14, spacing: 1, divider: true });
-    components.push({ type: 1, components: [{ type: 2, style: 1, label: '◀ Cost Breakdown', custom_id: encodeState('page', { ...state, page: 0 }) }] });
-    return { type: 17, accent_color: accentColor, components };
-}
+// The Edit Draws page is gone (2026-10-13 23:01 EDT): Edit on the result reopens the form, which holds every line, its progress, Remove and Move Up. A panel posted before that still sends page 1, which now renders the result.
 
 // Draw Info -- its OWN ephemeral message, own fresh 40-component budget, full buildDrawEntries fidelity for every DISTINCT draw type in the basket (measured 23/40 at all nine draw types in the single-draw design; a basket of any size still spans at most nine distinct types, so this never needs pagination -- spec §3).
 function buildDrawInfoPanel(basket, accentColor) {
@@ -693,13 +654,15 @@ function buildHelpPanel(accentColor) {
         { type: 10, content: `## ${emojis.calculator} How the calculator works` },
         { type: 14, spacing: 2, divider: true },
         { type: 10, content: [
-            '**Calculation** — everything you are pricing out in one go. Name it to keep it; see Save below.',
-            '**Line** — one draw in that calculation, plus how many pulls you have already done on it. There is no "quantity": three Mythic Weapon draws are three separate lines, each with its own progress, because you are rarely equally far along on all three.',
-            '**Priority** — the ORDER your draws appear in. It is never sorted for you; ▲ beside a draw on the Edit Draws page moves it up.',
-            '**Simplify / Show Breakdown** — collapses or expands the full per-package math. Simplify still shows the total CP needed and the cheapest package.',
-            '**Region** — the CP price of your first pull on a draw (10, 20 or 30 CP). It changes every price in the calculation.',
+            '**Calculation** — everything you are pricing out in one go. Name it with **Save** to keep it.',
+            '**Your Selection** — one line per draw you are running. Pick a draw again in **+ Add more draws** to run two of it. Each line\'s dropdown sets how many Items you already have, and holds **Remove** and **Move Up**.',
+            '**Items** — what a draw holds. Most have 10, two have 7. Each pull wins one.',
+            '**Priority** — the order of your lines. The Priority Plan buys them top to bottom; **Move Up** in a line\'s dropdown changes it. It is never sorted for you.',
+            '**Region** — the CP price of your first pull on a draw (10, 20 or 30 CP), which sets every other price. Check it on any draw in the game.',
+            '**Balance** — the CP you already have. The plan only buys what is left.',
+            '**Edit** — on the result, reopens the form with everything kept. **New Calculation** clears it and starts again.',
             '**Shortcut** — `/draw calculator draw: pulls: balance:` skips the form and opens straight on that draw\'s result.',
-            '**Save** — naming a calculation is what keeps it. An unnamed one is cleared automatically after 30 days; a named one is kept until you delete it. Running `/draw calculator` again reopens the calculation you changed last.'
+            '**Saved calculations** — a named one is kept until you delete it; an unnamed one is cleared after 30 days. Running `/draw calculator` again reopens the one you changed last.'
         ].join('\n\n') }
     ];
     return { type: 17, accent_color: accentColor, components };
@@ -719,9 +682,11 @@ function buildCalculatorPanel(state, basket, accentColor, options = {}) {
     }
     // 🔴 `submitted` is what separates a draft from a result, and it lives on the DOCUMENT, not the customId -- that is the whole reason a result survives a restart and "persists until reset / new calculation".
     if (!basket.submitted) {
-        return [buildSetupPanel(state, basket, options.savedBaskets, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm }), bottomNavRow(state, { showReset: false })];
+        return [buildSetupPanel(state, basket, options.savedBaskets, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm }), bottomNavRow(state, { showReset: basket.banners.length > 0 })];
     }
-    const container = state.page === 1 ? buildBasketPage(state, basket, accentColor) : buildCostPage(state, basket, accentColor, options);
+    // Edit is a VIEW (page 2) on a calculation that stays submitted (2026-10-13 23:10 EDT): an abandoned edit still reopens on its result, the persistence the form's own header calls load-bearing. Calculate returns to page 0.
+    if (state.page === 2) return [buildSetupPanel(state, basket, null, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm }), bottomNavRow(state, { showReset: true })];
+    const container = buildCostPage(state, basket, accentColor, options);
     return [container, bottomNavRow(state)];
 }
 
