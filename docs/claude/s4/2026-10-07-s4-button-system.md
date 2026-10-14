@@ -561,3 +561,9 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - On "Selected, in use": "where do i even see that on the spec-board?" → shown: Styles, the block under the four styles grid, outlined in a picture.
 - On Live now's left bar: "it's part of the redesign because i want to give tags a few different shapes of their own and one of them is the left bar tag" → the bar question folds into Q8: tags get shapes of their own, one of them the left-bar tag.
 - (19:46, his screenshot: Builder-2's Live now beside mine) "also draw it correctly, that left bar looks stupid on your proposed version!" → spec v98: the bar is an inset 3px shadow under the outline, as Builder-2's tab tag (app.css .btab), so it curves with the corner.
+
+## His 2026-10-13 20:01 EDT, verbatim, written 2026-10-13 20:04 EDT
+- "Selected, in use": "leave it temporarily"
+- Q8: "we'll come back to it later, we still need to fix rails and pills."
+- "left bar, we'll come back this when we move to tags redesign"
+- "check your notes and remind me, did we move all the styles to 1.5px outline or just static? please verify because im forgetting" → just static. C10: buttons went back to 1px on 2026-10-11 20:02 EDT ("revert the buttons back to 1px outline… but keep static on 1.5px"); 1.5px for every style held only 17:31–19:55 EDT that day. Measured on the board (2026-10-13 20:04 EDT): neutral, paint, tint, wash and fill 1px; static 1.5px; all 82 pills, rail segments and chips 1px; all 57 tags 1.5px. C9a still said "every outline 1.5px" from its approval; it now points to C10.
