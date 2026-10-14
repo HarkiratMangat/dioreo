@@ -13,7 +13,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
-    findLiveDoubleCPEntry, parseAmount, applySelection, setTypeCount, MAX_LINES, shortName
+    findLiveDoubleCPEntry, parseAmount, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum
 } = require('../commands/drawCalculator');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES } = require('../utils/cpPackages');
@@ -52,20 +52,21 @@ function buildNameModal(state, currentName) {
         .addComponents(new ActionRowBuilder().addComponents(field));
 }
 
-async function renderPanel(interaction, state, basket, notice = null, dropConfirm = null) {
+async function renderPanel(interaction, state, basket, notice = null, dropConfirm = null, savedConfirm = null) {
     const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
     const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
     const liveDoubleCPEntry = await findLiveDoubleCPEntry();
     const isEphemeral = Boolean(interaction.message?.flags?.has?.(64));
-    // The saved list shows on the FORM -- with no calculation, and on a draft one, since a reopened draft lands there too.
-    const savedBaskets = basket && basket.submitted ? null : await basketStore.listForUser(interaction.user.id);
+    // Listed on every render: the Saved view needs the list and every other view shows its count on the nav's Saved button.
+    const savedBaskets = await basketStore.listForUser(interaction.user.id);
     const panel = buildCalculatorPanel(state, basket, accentColor, {
         liveDoubleCPEntry,
         currency: prefs?.cpCurrency || 'USD',
         client: interaction.client,
         savedBaskets,
         notice,
-        dropConfirm
+        dropConfirm,
+        savedConfirm
     });
     // `panel` is already the top-level component LIST (Container + the sibling nav row) -- do not wrap it in another array.
     return sendV2Payload(interaction, withShareButton(panel, isEphemeral), { skipExpiry: true });
@@ -133,6 +134,11 @@ async function route(interaction) {
         await interaction.deferUpdate();
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
+        // At the cap, Save refuses and says what to do; it never evicts a calculation he named (2026-10-14 13:13 EDT). Renaming one that is already saved is not a new save.
+        if (!basket.name && String(name || '').trim() && (await basketStore.listForUser(actingUserId)).length >= MAX_SAVED) {
+            await renderPanel(interaction, state, basket, `You have ${MAX_SAVED} saved calculations, the most it keeps. Delete one in **Saved** to save this one.`);
+            return true;
+        }
         const updated = await basketStore.rename(actingUserId, state.basketId, name);
         await renderPanel(interaction, state, updated);
         return true;
@@ -233,19 +239,12 @@ async function route(interaction) {
         if (!basket) return true;
         const index = state.focus;
         if (index === null || !basket.banners[index]) { await renderPanel(interaction, state, basket); return true; }
-        // The line's own dropdown opens with Remove and Move Up. Both are explicit choices on that one line, so neither asks.
-        if (interaction.values[0] === 'up') {
-            if (index === 0) { await renderPanel(interaction, { ...state, focus: null }, basket); return true; }
-            const banners = [...basket.banners];
-            [banners[index - 1], banners[index]] = [banners[index], banners[index - 1]];
-            const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
-            await renderPanel(interaction, { ...state, focus: null }, updated);
-            return true;
-        }
+        // Move Up is gone (2026-10-14 13:13 EDT), but a panel posted before still carries the option. It must do nothing: falling through would read 'up' as a spin count, Number('up') is NaN, and the line would silently drop to 0 spins.
+        if (interaction.values[0] === 'up') { await renderPanel(interaction, { ...state, focus: null }, basket); return true; }
         // Remove opens the list, so a slipped tap must not cost entered progress: a line with pulls asks first; an empty line goes at once.
         if (interaction.values[0] === 'del' && basket.banners[index].pullsDone > 0) {
             const b = basket.banners[index];
-            await renderPanel(interaction, { ...state, focus: index }, basket, `⚠️ Remove #${index + 1} ${shortName(b.drawKey)} and its ${b.pullsDone} Items of progress?`, { mask: 0, count: 1, verb: 'dellineok', label: `Remove #${index + 1}` });
+            await renderPanel(interaction, { ...state, focus: index }, basket, `⚠️ Remove #${index + 1} ${shortName(b.drawKey)} and its ${b.pullsDone} spins of progress?`, { mask: 0, count: 1, verb: 'dellineok', label: `Remove #${index + 1}` });
             return true;
         }
         if (interaction.values[0] === 'del') {
@@ -276,6 +275,46 @@ async function route(interaction) {
         }, 0);
         const updated = await basketStore.save(actingUserId, { _id: state.basketId, entitlementMask: mask });
         await renderPanel(interaction, state, updated);
+        return true;
+    }
+
+    // THE SAVED VIEW (2026-10-14 13:13 EDT): a view of this message (page 3), reached from the nav row and left with Back. Opening one goes through `load` below.
+    if (interaction.isButton() && (state.verb === 'saved' || state.verb === 'delallarm')) {
+        await renderPanel(interaction, { ...state, page: 3, mask: 0, check: null }, null);
+        return true;
+    }
+    if (interaction.isButton() && state.verb === 'back') {
+        // loadOwned reopens the latest calculation when this message had none open, and says so when the one it had is gone.
+        const basket = await loadOwned(interaction, { ...state, page: 0 }, actingUserId);
+        if (!basket) return true;
+        await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0 }, basket);
+        return true;
+    }
+    // Picking calculations to delete only asks: the pick rides on the confirm button as positions in the list (`m`) plus a checksum of that list (`k`), since 25 ids do not fit a custom_id.
+    if (interaction.isStringSelectMenu() && state.verb === 'savedsel') {
+        const list = (await basketStore.listForUser(actingUserId)).slice(0, MAX_SAVED);
+        const picked = new Set(interaction.values);
+        const mask = list.reduce((m, b, i) => (picked.has(String(b._id)) ? m | (1 << i) : m), 0);
+        const count = list.filter(b => picked.has(String(b._id))).length;
+        if (!count) { await renderPanel(interaction, { ...state, page: 3 }, null, 'Those calculations are already gone.'); return true; }
+        await renderPanel(interaction, { ...state, page: 3 }, null, `⚠️ Delete ${count === 1 ? 'this calculation' : `these ${count} calculations`}? This cannot be undone.`, null, { mask, count, check: savedChecksum(list) });
+        return true;
+    }
+    if (interaction.isButton() && state.verb === 'savedelok') {
+        const list = (await basketStore.listForUser(actingUserId)).slice(0, MAX_SAVED);
+        // The list changed since the pick (a rename re-sorts it, another panel deleted one): positions no longer mean what was picked, so delete nothing and ask again.
+        if (savedChecksum(list) !== state.check) { await renderPanel(interaction, { ...state, page: 3, mask: 0, check: null }, null, 'Your saved list changed since you picked. Nothing was deleted; pick again.'); return true; }
+        const ids = list.filter((_, i) => (state.mask & (1 << i)) !== 0).map(b => String(b._id));
+        const deleted = await basketStore.removeMany(actingUserId, ids);
+        const basketId = ids.includes(String(state.basketId)) ? null : state.basketId;
+        await renderPanel(interaction, { ...state, basketId, page: 3, mask: 0, check: null }, null, `Deleted ${deleted} calculation${deleted === 1 ? '' : 's'}.`);
+        return true;
+    }
+    if (interaction.isButton() && state.verb === 'delall') {
+        const list = await basketStore.listForUser(actingUserId);
+        const deleted = await basketStore.removeAllNamed(actingUserId);
+        const basketId = list.some(b => String(b._id) === String(state.basketId)) ? null : state.basketId;
+        await renderPanel(interaction, { ...state, basketId, page: 3, verb: 'saved' }, null, `Deleted all ${deleted} saved calculation${deleted === 1 ? '' : 's'}.`);
         return true;
     }
 

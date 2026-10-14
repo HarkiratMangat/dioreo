@@ -234,3 +234,19 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 **B, decided:** "Items" when speaking of a draw in general ("10 Items · 5,810 CP Total"); "Spins" for a count of attempts ("3/10 Spins").
 
+## Built, round 2 — 2026-10-14 13:19 EDT (branch `feat/draw-calculator`, not pushed)
+
+| Class | Built |
+|---|---|
+| J | current region green and disabled, in the calculator and `/draw prices` |
+| K | **Saved (N)** in the nav opens a Saved view: reopen (each option shows CP needed, region, draws, Draft), delete several with a confirm, Delete All in two clicks, ◀ Back; 25 kept at most, Save refuses at the cap |
+| L | "Start a Calculation" with his hint on the empty form; region heading and its divider removed; his region hint; "Viewing Saved: `name`" under the title |
+| B | "Spins" for counts, "Items" for what a draw holds |
+| G | Remove this Selection with a ✖️ emoji; each value's description "N CP Spent · N CP to Completion" |
+| L (batch 6) | "## Your Selection / ### Set Current Attempts" and his hint; "## Calculate Multiple Draws" with his hint; "Add more draws to selection"; add-picker descriptions "In Your Selection ×N · Pick to Add Another" |
+| M | Move Up, the order and the Priority Plan removed; "Cost Per Draw" in the breakdown; the balance-coverage plan filed as a future idea |
+| N | the result carries the region row and the upgrade toggle; the Balance/Region text line removed; "Still to Buy" only with a balance |
+| I | spacers between blocks; the breakdown's package lines say each figure once |
+
+**My additions, his to reverse:** only the chosen value of a line's dropdown keeps "#N · … · name" (the others read "3/10 Spins"), which pays for the longer spend text and keeps five lines a page · the result's headings became `##` to match the form's · the delete list shows each one's draw count and last-changed date · the Saved view gives up detail in steps when 25 long names would pass Discord's size cap.
+

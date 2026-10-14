@@ -47,6 +47,16 @@ require.cache[modelPath].exports = {
         .filter(d => d.discordId === query.discordId && d.name !== undefined && d.name !== '')
         .map(d => ({ ...d }))),
     deleteOne: async (query) => { rows.delete(String(query._id)); },
+    // removeMany / removeAllNamed: only the two query shapes the store sends, scoped by discordId the way Mongo applies it.
+    deleteMany: async (query) => {
+        let n = 0;
+        for (const [id, d] of [...rows]) {
+            if (d.discordId !== query.discordId) continue;
+            const hit = query._id ? query._id.$in.includes(id) : (d.name !== undefined && d.name !== '');
+            if (hit) { rows.delete(id); n++; }
+        }
+        return { deletedCount: n };
+    },
     // latestForUser's shape: findOne(query).sort(spec).lean() -- the stub honours the sort so the test can fail.
     findOne: (query) => {
         let spec = {};
@@ -189,6 +199,31 @@ const OTHER = '999999999999999999';
         await store.save(LATEST, { _id: first._id, balance: 500 });
         assert.strictEqual(String((await store.latestForUser(LATEST))._id), String(first._id), 'editing an older calculation makes it the latest');
         assert.strictEqual(await store.latestForUser('333333333333333333'), null);
+    });
+
+    await t('removeMany deletes only the owner\'s picked calculations, and skips malformed or foreign ids', async () => {
+        const a = await store.save(OWNER, { banners: [], region: 'region_10' });
+        const b = await store.save(OWNER, { banners: [], region: 'region_10' });
+        const theirs = await store.save(OTHER, { banners: [], region: 'region_10' });
+        const n = await store.removeMany(OWNER, [String(a._id), String(theirs._id), 'not-an-id']);
+        assert.strictEqual(n, 1, 'only the owner\'s own pick goes');
+        assert.strictEqual(await store.load(OWNER, String(a._id)), null);
+        assert.ok(await store.load(OWNER, String(b._id)), 'an unpicked one stays');
+        assert.ok(await store.load(OTHER, String(theirs._id)), 'someone else\'s is untouched even when its id is passed');
+        assert.strictEqual(await store.removeMany(OWNER, []), 0);
+    });
+
+    await t('removeAllNamed deletes every SAVED calculation of the owner and leaves unnamed ones and other players alone', async () => {
+        const named = await store.save(OWNER, { banners: [], region: 'region_10' });
+        await store.rename(OWNER, String(named._id), 'Keep Me Not');
+        const unnamed = await store.save(OWNER, { banners: [], region: 'region_10' });
+        const other = await store.save(OTHER, { banners: [], region: 'region_10' });
+        await store.rename(OTHER, String(other._id), 'Theirs');
+        const n = await store.removeAllNamed(OWNER);
+        assert.ok(n >= 1);
+        assert.strictEqual(await store.load(OWNER, String(named._id)), null);
+        assert.ok(await store.load(OWNER, String(unnamed._id)), 'an unnamed calculation is not "saved" and stays');
+        assert.ok(await store.load(OTHER, String(other._id)));
     });
 
     console.log(`\n${passed} passed, ${failed} failed\n`);

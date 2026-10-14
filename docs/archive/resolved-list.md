@@ -5,6 +5,12 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ `/draw calculator`: keep Move Up, or bring a visible ▲ back — closed 2026-10-14 13:19 EDT `[DONE · 2026-10-14 13:19 EDT]`
+
+Harkirat asked what the Priority Plan is and how the order affects it; the answer was that it changed only a running-total column. His call: "let's remove it for now." Move Up, the order language and the Priority Plan are removed; the idea of a plan that shows what the balance covers is filed in the active list. The row as it stood:
+
+- **🖱️ `/draw calculator`: keep ▲ Move Up inside each line's dropdown, or a visible ▲? — Harkirat's call** `[P2 · XS · Sonnet5-Medium · 👤Harkirat decides]` *(filed 2026-10-14 00:51 EDT)* The redesign (`15b49b09`) retired the Edit Draws page, so the visible ▲ per line he picked on 2026-10-13 14:18 EDT became the second option of each line's dropdown (after ✕ Remove); that is what lets 5 lines fit a page under Discord's message size cap. **If he wants a visible ▲ back:** a Section per line on the form (text + ▲ accessory) costs 3 components and ~200 characters per line, so re-measure lines per page with `scripts/drawCalcBudget.test.js`'s size sweep. **Verify by:** his answer recorded here, and the test's "each line's dropdown OPENS with its actions" case matching it. Decide before the branch's PR merges.
+
 ## ✅ `/draw calculator`: how to add more of a draw — closed 2026-10-13 19:49 EDT `[DONE · 2026-10-13 19:49 EDT]`
 
 Harkirat tried round 1 (A, B, C) and round 2 (C, E, F) on the dev bot and chose F ("Lets go F but improve it", 2026-10-13 19:43 EDT): E's popup holds only five draws, and he wanted a draw's lines kept together. Built as one "+ Add more draws" multi-select under the lines on the form and on Edit Draws (each tick adds one line right after that draw's lines, nothing pre-ticked), "− Remove #N" ending each line's dropdown, pages that keep a draw's lines together (`linePages`), and a 25-line cap. C, E and the trial switch are deleted; no `Test: style` button, `CALC_QTY_STYLE` or `qstyle`/`qtymodal`/`qtyset` verb remains. The row as it stood:

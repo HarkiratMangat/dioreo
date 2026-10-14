@@ -80,4 +80,18 @@ async function latestForUser(discordId) {
     return DrawBasket.findOne({ discordId }).sort({ updatedAt: -1, createdAt: -1 }).lean();
 }
 
-module.exports = { load, save, listForUser, rename, remove, latestForUser };
+// Deleting from the Saved view (2026-10-14 13:13 EDT): several at once, or every saved one. Both are scoped by discordId in the query itself, so a forged id in the list can only ever miss, never reach someone else's calculation; a malformed id is dropped before the query rather than left to throw a CastError.
+const VALID_ID = /^[0-9a-f]{24}$/i;
+async function removeMany(discordId, basketIds) {
+    const ids = (basketIds || []).map(String).filter(id => VALID_ID.test(id));
+    if (!ids.length) return 0;
+    const res = await DrawBasket.deleteMany({ discordId, _id: { $in: ids } });
+    return res?.deletedCount || 0;
+}
+// Every NAMED one, the same set listForUser shows; an unnamed calculation is not "saved" and is left to its TTL.
+async function removeAllNamed(discordId) {
+    const res = await DrawBasket.deleteMany({ discordId, name: { $exists: true, $ne: '' } });
+    return res?.deletedCount || 0;
+}
+
+module.exports = { load, save, listForUser, rename, remove, latestForUser, removeMany, removeAllNamed };
