@@ -673,3 +673,7 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - "oh i realise i typed `tag-M-box.static-realm--borderless--paletext` earlier... because i copy pasted what you had on the spec-board. and that was incorrect. the no realm is just `tag-M-box.static--borderless--paletext`"
 - Built in spec v109: v108's always-`-realm` name reverted; the no-realm field names its count `tag-M-box.static--borderless--paletext` (grey fill kept), the realm field `tag-M-box.static-realm--borderless--paletext`; C11 and C17 say so. In the portal every page has a realm (Builder-2 sets --realm-c per page), so the no-realm case is the board's "off" accent only.
 
+## His 2026-10-14 19:45 EDT, verbatim, written 2026-10-14 19:46 EDT
+- "the whole point of the "off" toggle was simply to view the raw element with no accents applied to it. but yeah in reality, it doesn't exist because it'll always have -realm to it"
+- Kept: the board's "off" accent stays, as a raw view; C11 says the portal's fields always read `-realm`.
+
