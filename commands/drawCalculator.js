@@ -486,7 +486,7 @@ function resultActionRow(state) {
     ] };
 }
 
-// THE EXPORT (2026-10-14 18:23 EDT): the result as plain markdown, no custom emoji (they break once pasted outside this bot's servers) and no code-span chips, so it reads the same wherever it lands. The same figures the result shows: each draw's spins and cost, CP needed, what the balance leaves, and the cheapest package.
+// THE EXPORT, between the compact result and Full Breakdown (2026-10-14 19:28 EDT, Harkirat: "provide a more detailed breakdown. not the full breakdown but also not the simplified, somewhere inbetween"). Each draw shows its spins, what is left, what is already spent and what finishing costs (the upgrade on its own line when it is on); then CP needed, what the balance leaves, the recommended packs with their prices, and the Stock Up option when there is one. Plain markdown: no custom emoji (they break outside this bot's servers) and no code-span chips, so it reads the same wherever it is pasted.
 function buildExportText(basket, currency = 'USD') {
     const { total: needed, perBanner } = basketCost(basket.region, basket.banners, basket.includeUpgrades);
     const shortfall = needed - (basket.balance || 0);
@@ -494,18 +494,32 @@ function buildExportText(basket, currency = 'USD') {
     const out = [`## Lucky Draw Calculation${basket.name ? `: ${clean(basket.name)}` : ''}`];
     out.push(`-# ${regionLabel(basket.region)} region · Upgrade ${basket.includeUpgrades ? 'included' : 'not included'}`);
     out.push('', '**Draws**');
+    let spentAll = 0;
     for (const g of groupForDisplay(basket.banners)) {
         const one = perBanner.find(b => b.drawKey === g.drawKey && b.pullsDone === g.pullsDone);
-        out.push(`- ${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''}: ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'} Spins · ${one && one.priced ? `${fmt(one.cost * g.count)} CP` : 'no price at this region'}`);
+        const total = pullCount(basket.region, g.drawKey);
+        const name = `${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''}`;
+        if (!one || !one.priced || total === null) { out.push(`- ${name}: ${g.pullsDone} Spins · no price at this region`); continue; }
+        const spent = (spentSoFar(basket.region, g.drawKey, g.pullsDone) || 0) * g.count;
+        spentAll += spent;
+        const finish = (one.cost - (one.upgrade || 0)) * g.count;
+        const left = total - g.pullsDone;
+        out.push(`- **${name}**: ${g.pullsDone}/${total} Spins · ${left ? `${left} left · ${fmt(finish)} CP to finish` : 'finished'}${spent ? ` · ${fmt(spent)} CP spent` : ''}`);
+        if (one.upgrade) out.push(`  - Upgrade: + ${fmt(one.upgrade * g.count)} CP`);
+        else if (basket.includeUpgrades && hasUpgradeAnywhere(g.drawKey)) out.push('  - Upgrade: no price at this region yet, so not included');
     }
-    out.push('', `**CP Needed:** ${fmt(needed)} CP`);
-    if (basket.balance) out.push(shortfall > 0 ? `**After your ${fmt(basket.balance)} CP balance:** ${fmt(shortfall)} CP to buy` : `**Your ${fmt(basket.balance)} CP balance covers it**, with ${fmt(-shortfall)} CP to spare`);
+    out.push('', `**CP Needed:** ${fmt(needed)} CP${spentAll ? ` (${fmt(spentAll)} CP already spent)` : ''}`);
+    if (basket.balance) out.push(shortfall > 0 ? `**Balance:** ${fmt(basket.balance)} CP → **${fmt(shortfall)} CP** to buy` : `**Balance:** ${fmt(basket.balance)} CP covers it, with ${fmt(-shortfall)} CP to spare`);
     if (shortfall > 0) {
         const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (basket.entitlementMask & (1 << i)) !== 0).map(p => p.id);
-        const r = optimizePurchase(shortfall, { currency, doubleCpAvailable })?.cheapest;
-        if (r) {
-            const packs = r.combo.map(c => `${c.count}× ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
-            out.push(`**Recommended Package:** ${formatMoney(r.totalCents, currency)} for ${packs} (${fmt(r.leftoverCp)} CP left over)`);
+        const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
+        const packs = r => r.combo.map(c => `${c.count}× ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
+        if (result?.cheapest) {
+            const r = result.cheapest;
+            out.push('', `**Recommended Package:** ${formatMoney(r.totalCents, currency)}`);
+            for (const c of r.combo) out.push(`- ${c.count}× ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''} · ${formatMoney(c.priceCents * c.count, currency)}`);
+            out.push(`-# ${fmt(r.totalCp)} CP bought · ${fmt(r.leftoverCp)} CP left over`);
+            if (result.stockUp) out.push(`**Stock Up option:** ${formatMoney(result.stockUp.totalCents, currency)} for ${packs(result.stockUp)} (${fmt(result.stockUp.leftoverCp)} CP left over, a better CP rate)`);
             out.push(`-# Prices in ${currency}, estimates only.`);
         }
     }
@@ -780,7 +794,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     components.push({
         type: 9,
         components: [{ type: 10, content: `## ${selectionHeading(basket.banners)}\n-# Press **Edit** to change your draws or spins.\n${groups.map(g => `${DRAW_META[g.drawKey] ? emojis[DRAW_META[g.drawKey].tier] : emojis.smallDot} ${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''} — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'} Spins`).join('\n')}` }],
-        accessory: { type: 2, style: 2, label: 'Edit Selection', custom_id: encodeState('edit', state) }
+        accessory: { type: 2, style: 2, label: 'Edit Selection', custom_id: encodeState('edit', state), emoji: emojis.parseEmoji(emojis.editCalc) }
     });
     if (options.notice) components.push({ type: 10, content: `-# ${options.notice}` });
     if (options.dropConfirm) components.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));

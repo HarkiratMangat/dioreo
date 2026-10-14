@@ -107,6 +107,8 @@ const emojis = {
     sparkles: '<a:Sparkles:1560023184873488525>',
     // The calculator's Save buttons (2026-10-14 17:28 EDT, Harkirat uploaded to both apps): prod id here; the dev bot re-points to its 1560041353185075250 by name at boot.
     saveStar: '<a:SaveStar:1560041207177023519>',
+    // The calculator's Edit Selection button (2026-10-14 19:28 EDT): prod id here; the dev bot re-points to its 1560068687942123642 by name at boot.
+    editCalc: '<a:EditCalc:1560069086531166209>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');

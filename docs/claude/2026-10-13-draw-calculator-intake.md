@@ -339,3 +339,13 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 **Fixed:** New Calculation on an edited copy kept "Edited from Saved" on the empty form (it now starts fresh and drops the copy); Stock Up sat flush against Cheapest's last line (a blank line between them); "Keep it" → "Keep It". **Not clicked:** Save as New (a modal needs typing), Delete and Delete All (they would delete his "test"); both are covered by the handler simulation and the tests.
 
+### Batch 14 — 2026-10-14 19:27 EDT, verbatim
+
+> do it later.
+>
+> * add this emoji to the "edit selection" button. <a:EditCalc:1560069086531166209> (prod), <a:EditCalc:1560068687942123642> (dev).
+> * side note, which emoji id do you even need? both or a specific one?
+> * and for the export text, provide a more detailed breakdown. not the full breakdown but also not the simplified, somewhere inbetween.
+
+**Built 2026-10-14 19:30 EDT:** EditCalc on Edit Selection (the prod id in `utils/emojiMap.js`; the dev bot re-points by name). The export now shows, per draw, spins, what is left, CP to finish and CP already spent, with the upgrade on its own line; then CP needed, what the balance leaves, each recommended pack with its price, and the Stock Up option. The delete click-test is filed in `docs/db-deferred-list.md` for later.
+
