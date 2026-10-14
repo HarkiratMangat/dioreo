@@ -33,7 +33,12 @@ function assertUniqueIds(panel) {
     const dup = ids.find((id, i) => ids.indexOf(id) !== i);
     assert.ok(!dup, `duplicate custom_id ${dup}`);
 }
-const messageCount = panel => { assertUniqueIds(panel); return countComponents([panel, SHARE_ROW]); };
+// And a size check: Discord refuses a message over its size cap (40005) however few components it has. the cap bisected between 13,100 and 13,412 characters of JSON on the dev bot; 12,500 is the line every sweep holds.
+function assertSize(panel) {
+    const size = JSON.stringify([panel, SHARE_ROW]).length;
+    assert.ok(size <= 12500, `message is ${size} characters of JSON, over the 12,500 line`);
+}
+const messageCount = panel => { assertUniqueIds(panel); assertSize(panel); return countComponents([panel, SHARE_ROW]); };
 
 // buildCalculatorPanel returns the message's TOP-LEVEL list (Container + sibling nav row); buildSetupPanel still returns a bare Container. Both shapes go through here.
 const container = p => (Array.isArray(p) ? p.find(x => x && x.type === 17) : p);
@@ -216,11 +221,12 @@ t('setting up to 3 lines costs at most 4 taps -- one dropdown click per line, pl
     assert.strictEqual(lines.length, 3, 'all 3 lines must have their OWN dropdown visible at once');
 });
 
-t('the form paginates at 6 lines (2026-10-13 23:03 EDT, his "can we paginate after 6?"), dropping to fewer only when the saved list makes it not fit', () => {
-    const seven = Object.keys(DRAW_META).slice(0, 7).map(k => ({ drawKey: k, pullsDone: 0 }));
-    const panel = form(seven);
-    assert.strictEqual(selects(panel).filter(s => verbOf(s) === 'bpulls').length, 6, '7 different draws show 6 on the first page');
-    assert.ok(buttons(panel).some(b => /Page 1\//.test(b.label)), 'and a pager');
+t('the form pages at 5 lines: six measured past Discord\'s message size cap (2026-10-14 00:15 EDT)', () => {
+    for (const keys of [Object.keys(DRAW_META).slice(0, 7), Array(7).fill('legendaryGunNonReactive')]) {
+        const panel = form(keys.map(k => ({ drawKey: k, pullsDone: 0 })));
+        assert.strictEqual(selects(panel).filter(s => verbOf(s) === 'bpulls').length, 5, keys[0]);
+        assert.ok(buttons(panel).some(b => /Page 1\//.test(b.label)), 'and a pager');
+    }
 });
 
 t('a NEW line starts at 0 Items -- no inherited default from a sibling line of the same draw', () => {
@@ -447,12 +453,12 @@ t('the setup form fits the component budget at every draft size, with and withou
 t('an unsubmitted calculation shows the FORM; pressing Calculate is what produces the breakdown', () => {
     const banners = [{ drawKey: 'mythicWeapon', pullsDone: 3 }];
     const draft = form(banners);
-    assert.ok(/1 · Your Selection/.test(allText(draft)) && /2 · Region & Balance/.test(allText(draft)), 'a draft renders the two steps');
+    assert.ok(/### Your Selection/.test(allText(draft)) && /### Your Region & CP Balance/.test(allText(draft)), 'a draft renders the form');
     assert.strictEqual(/Cost Breakdown/.test(allText(draft)), false, 'a draft must NOT show a cost breakdown');
     assert.ok(buttonLabelled(draft, 'Calculate'), 'the form must offer Calculate');
     const done = render(makeBasket({ banners, submitted: true }));
     assert.ok(/### Cost Breakdown/.test(allText(done)), 'a submitted calculation shows the breakdown');
-    assert.strictEqual(/1 · Your Selection/.test(allText(done)), false, 'and not the form');
+    assert.strictEqual(/Your Region & CP Balance/.test(allText(done)), false, 'and not the form');
 });
 
 t('Calculate is DISABLED with nothing picked, and enabled the moment a line exists', () => {
@@ -553,8 +559,8 @@ t('the upgrade toggle is on the form, and only for draws that have an upgrade', 
 
 t('what a region is lives in Help; the form only labels the step', () => {
     for (const panel of [form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]), dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })]) {
-        assert.ok(/### 2 · Region & Balance/.test(allText(panel)));
-        assert.strictEqual(/first pull/.test(allText(panel)), false);
+        assert.ok(/### Your Region & CP Balance\n-# Set your CP region/.test(allText(panel)), 'a heading that says what the block is for, and a hint');
+        assert.strictEqual(/first pull/.test(allText(panel)), false, 'what a region is stays in Help');
     }
     assert.ok(/\*\*Region\*\* — the CP price of your first pull/.test(allText(dc.buildHelpPanel(ACCENT))));
 });
@@ -700,10 +706,13 @@ t('the form and the result stay under 40 with unique ids at every size up to the
     }
 });
 
-t('the first screen is a walked guide: two numbered steps, no instruction prose', () => {
+t('the landing names each block by its purpose, keeps the useful hints, and always shows the saved loader (2026-10-14 00:08 EDT)', () => {
     const text = allText(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] }));
-    assert.ok(/### 1 · Your Selection/.test(text) && /### 2 · Region & Balance/.test(text));
-    assert.strictEqual(/Pick every draw|See how much CP/.test(text), false);
+    assert.ok(/### Saved Calculations\n-# None saved yet/.test(text) && /### Your Selection\n-# Pick every draw/.test(text) && /### Your Region & CP Balance/.test(text));
+    assert.strictEqual(/### \d/.test(text), false, 'no step numbers');
+    const loader = selects(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })).find(s => verbOf(s) === 'load');
+    assert.ok(loader && loader.disabled && /No saved calculations yet/.test(loader.placeholder), 'with none saved, the loader shows and says so');
+    assert.ok(/Press \*\*Edit\*\*/.test(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })))), 'the result says how to change things');
 });
 
 t('the result keeps Set Balance one tap away, and Edit is a VIEW that leaves the calculation submitted', () => {
@@ -711,7 +720,7 @@ t('the result keeps Set Balance one tap away, and Edit is a VIEW that leaves the
     const row = rows(result).find(r => r.components.some(b => b.label === 'Save'));
     assert.deepStrictEqual(row.components.map(b => b.label), ['Set Balance', 'Save'], 'the commonest return visit, "I have more CP now", is one tap');
     const editing = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: true }), { page: 2 });
-    assert.ok(/1 · Your Selection/.test(allText(editing)) && buttonLabelled(editing, 'Calculate'), 'page 2 of a submitted calculation is the form');
+    assert.ok(/Your Region & CP Balance/.test(allText(editing)) && buttonLabelled(editing, 'Calculate'), 'page 2 of a submitted calculation is the form');
     assert.strictEqual(dc.decodeState(buttonLabelled(editing, 'Calculate').custom_id).page, 2, 'its controls keep the view');
 });
 

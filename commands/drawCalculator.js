@@ -19,10 +19,12 @@ const { CP_PACKAGES, formatMoney, optimizePurchase } = require('../utils/cpPacka
 
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
 const DRAW_KEYS = Object.keys(DRAW_META);
-// Six lines per page (2026-10-13 23:01 EDT, Harkirat: "can we paginate after 6?"). Each line is ONE dropdown row (2 components), its Remove and Move Up live inside it, and buildSetupPanel still drops lines per page until the form fits Discord's 40 when the saved list is showing.
-const SETUP_LINES_PER_PAGE = 6;
+// Five lines per page (2026-10-14 00:15 EDT). He asked for six; six measured past Discord's message SIZE cap, not the 40-component one: each line's dropdown carries 11-13 labelled options, and seven different draws at six per page came to ~13,800 characters against a cap measured between 13,100 and 13,412 on the dev bot. Five fits every draw mix under SETUP_JSON_BUDGET; buildSetupPanel still drops further when the saved list needs the room.
+const SETUP_LINES_PER_PAGE = 5;
 // The setup form's own budget (container included): 40, minus the Show Everyone row (2) and the bottom nav row on the form (1 + 3 buttons). buildSetupPanel drops lines per page until it fits.
 const SETUP_CONTAINER_BUDGET = 34;
+// Discord ALSO caps a message's size, separately from the 40 components (40005 "Message size exceeds maximum allowed"). Measured 2026-10-14 00:12 EDT on the dev bot: a form serialising to 13,687 characters of JSON posted, one at 16,634 was refused (six lines plus 25 saved calculations). 12,000 leaves margin; buildSetupPanel drops lines per page until both budgets hold.
+const SETUP_JSON_BUDGET = 12000;
 // One calculation holds at most this many lines; the add picker disables itself at the cap and the handler stops there too.
 const MAX_LINES = 25;
 
@@ -287,8 +289,10 @@ function bannerPullsRow(state, basket, index, { removable = false } = {}) {
             label: `#${index + 1} · ${n}/${total} Items · ${shortName(banner.drawKey)}`,
             value: String(n),
             description: n === total ? 'Finished' : `${fmt(remainingToFinish(basket.region, banner.drawKey, n))} CP Left`,
-            ...(icon ? { emoji: icon } : {}),
-            default: n === banner.pullsDone
+            // The tier icon rides on the CHOSEN value only (2026-10-14 00:12 EDT): that is the option a closed select shows, and an icon on every value took six lines' dropdowns past Discord's message size limit (40005, measured 10,225 bytes of components).
+            ...(icon && n === banner.pullsDone ? { emoji: icon } : {}),
+            // `default` only on the chosen value: `default: false` on the other ten cost every line ~170 characters of Discord's size cap.
+            ...(n === banner.pullsDone ? { default: true } : {})
         });
     }
     return { type: 1, components: [{ type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} ${shortName(banner.drawKey)}`, options }] };
@@ -373,8 +377,8 @@ function regionRow(state, basket) {
         type: 1,
         components: REGION_ORDER.map(key => ({
             type: 2,
-            style: key === basket.region ? 1 : 2,
-            disabled: key === basket.region,
+            // Green and live for the current region, same as /draw prices (2026-10-14 00:16 EDT, Harkirat). Clicking it saves the same region and re-renders.
+            style: key === basket.region ? 3 : 2,
             custom_id: encodeState('region', { ...state, targetRegion: key }),
             label: regionLabel(key),
             emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
@@ -383,7 +387,7 @@ function regionRow(state, basket) {
 }
 
 // The caption above the region buttons (2026-10-13 12:40 EDT). Three "10 / 20 / 30 CP" buttons sit among a dozen real CP amounts and read like one of them; nothing said what a region is or how a player finds theirs. The first pull's price IS the region, so that is the one sentence that answers both.
-function regionCaption() { return { type: 10, content: '### 2 · Region & Balance' }; }
+function regionCaption() { return { type: 10, content: '### Your Region & CP Balance\n-# Set your CP region and the CP you already have. Not sure of your region? See **Help**.' }; }
 
 // The upgrade toggle shows only when a line's draw HAS an upgrade somewhere (2026-10-13 12:40 EDT). It used to show "Upgrade: NO" on a calculation of Legendary draws, which have none -- a control that could not change anything. Labels stay "Upgrade: YES / NO" (2026-10-13 15:21 EDT, Harkirat: "it's like super long... Yes, upgrade no"): the 2026-10-13 round had made them "Included / Not included", which he turned down as too long.
 function upgradeButton(state, basket, extra = {}) {
@@ -466,6 +470,7 @@ function buildCostBlock(state, basket, currency, client, { compact }) {
     if (!compact) {
         // NO explicit blank line before a `##` heading (2026-08-27) -- Discord gives a heading its own top margin, and that margin does NOT collapse against a blank line, so the two stacked into the gap Harkirat flagged between COST BREAKDOWN and PRIORITY PLAN. Same reasoning for the missing blank after the loop below.
         lines.push(`### Priority Plan`);
+        lines.push('-# Bought top to bottom. Change the order with **Move Up** in Edit.');
         let running = 0;
         perBanner.forEach((b, i) => {
             running += b.cost;
@@ -543,19 +548,25 @@ function buildSetupPanel(state, basket, savedBaskets, accentColor, { region, not
     const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
     if (notice) components.push({ type: 10, content: `-# ${notice}` });
 
-    // The saved list is the dropdown alone (2026-10-13 23:01 EDT, his intake: "cluttered"): a text list above it repeated every name the dropdown already holds.
-    if (savedBaskets && savedBaskets.length) {
+    // The landing ALWAYS shows its saved-calculations loader (2026-10-14 00:08 EDT, Harkirat: "this one is more like a landing"), disabled with a plain "none saved" state when there are none, so a first-timer learns saving exists. `null` (the edit view of a result) skips it: that screen is not the landing. On a draft with lines it shows only when there is something to load: there the space belongs to the lines.
+    if (Array.isArray(savedBaskets) && (!banners.length || savedBaskets.length)) {
+        components.push({ type: 10, content: savedBaskets.length ? '### Saved Calculations\n-# Pick one to reopen it.' : '### Saved Calculations\n-# None saved yet. Press **Save** on a result to keep it here.' });
         components.push({
-            type: 1, components: [{
+            type: 1, components: [savedBaskets.length ? {
                 type: 3, custom_id: encodeState('load', state), placeholder: `Load a saved calculation (${savedBaskets.length})`,
                 options: savedBaskets.slice(0, 25).map(b => ({ label: b.name, value: String(b._id), description: `${plural(b.banners.length, 'line')} · ${regionLabel(b.region)}` }))
+            } : {
+                type: 3, custom_id: encodeState('load', state), placeholder: 'No saved calculations yet', disabled: true,
+                options: [{ label: 'No saved calculations yet', value: 'none' }]
             }]
         });
         components.push({ type: 14, spacing: 1, divider: true });
     }
 
-    // A WALKED GUIDE, not instructions (2026-10-13 23:01 EDT, his intake: "too much prose reliance"). Two numbered steps and the Calculate button; what a region is, and how priority works, live in Help.
-    components.push({ type: 10, content: '### 1 · Your Selection' });
+    // Headings name what each block is FOR, and one short hint stays where a first-timer would otherwise not know what to do (2026-10-14 00:08 EDT, Harkirat: the step numbers go, "region & balance" was over-simplified, and "some [hints] were genuinely useful"). This replaced a walked guide (2026-10-13 23:01 EDT, his intake: "too much prose reliance"). Two numbered steps and the Calculate button; what a region is, and how priority works, live in Help.
+    components.push({ type: 10, content: banners.length
+        ? '### Your Selection\n-# Set how many Items you already have on each draw. Pick a draw again below to run two of it.'
+        : '### Your Selection\n-# Pick every draw you are pricing out. You can add more later.' });
     // The untick confirm replaces the picker here too (2026-10-13 12:43 EDT): the form's picker deletes lines the same way the result page's does, and without this branch a draft's untick re-rendered unchanged with no explanation. With lines, the picker moves below them as "+ Add more draws" (addDrawsRow).
     if (dropConfirm) components.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
     else if (!banners.length) components.push(typesSelectRow(state, draft));
@@ -577,7 +588,7 @@ function buildSetupPanel(state, basket, savedBaskets, accentColor, { region, not
     let out = [];
     for (let perPage = SETUP_LINES_PER_PAGE; perPage >= 1; perPage--) {
         out = build(perPage);
-        if (1 + countComponents(out) <= SETUP_CONTAINER_BUDGET) break;
+        if (1 + countComponents(out) <= SETUP_CONTAINER_BUDGET && JSON.stringify(out).length <= SETUP_JSON_BUDGET) break;
     }
     return { type: 17, accent_color: accentColor, components: out };
 }
@@ -602,7 +613,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     // "Your Selection" with Edit BESIDE it (2026-10-13 23:01 EDT, his intake: Edit Draws sat at the bottom, away from the list it edits, while a draw picker here did half the job). Every input now lives on the form; Edit reopens it with everything kept, and this page only reports.
     components.push({
         type: 9,
-        components: [{ type: 10, content: `### Your Selection\n${groups.map(g => `${DRAW_META[g.drawKey] ? emojis[DRAW_META[g.drawKey].tier] : emojis.smallDot} ${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''} — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'} Items`).join('\n')}` }],
+        components: [{ type: 10, content: `### Your Selection\n-# Press **Edit** to change your draws, progress, region or upgrade.\n${groups.map(g => `${DRAW_META[g.drawKey] ? emojis[DRAW_META[g.drawKey].tier] : emojis.smallDot} ${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''} — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'} Items`).join('\n')}` }],
         accessory: { type: 2, style: 2, label: 'Edit', custom_id: encodeState('edit', state) }
     });
     if (options.notice) components.push({ type: 10, content: `-# ${options.notice}` });
@@ -744,5 +755,5 @@ module.exports = {
     buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
     parseAmount, applySelection, shortName, SHORT_NAME, slashShortcut,
-    setTypeCount, SETUP_CONTAINER_BUDGET, MAX_LINES, linePages
+    setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, linePages
 };
