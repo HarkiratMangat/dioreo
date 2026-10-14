@@ -480,8 +480,36 @@ function resultActionRow(state) {
     return { type: 1, components: [
         newCalculationButton(state),
         savedButton(state),
+        // Export (2026-10-14 18:23 EDT, Harkirat: "an export button which outputs the result into a simple copy-able markdown for the user to share"). It answers privately with the result as plain markdown in a code block, so it copies cleanly and renders when pasted anywhere in Discord.
+        { type: 2, style: 2, label: 'Export', custom_id: encodeState('export', state) },
         { type: 2, style: 1, label: 'Save Result', custom_id: encodeState('savepick', state), emoji: emojis.parseEmoji(emojis.saveStar) }
     ] };
+}
+
+// THE EXPORT (2026-10-14 18:23 EDT): the result as plain markdown, no custom emoji (they break once pasted outside this bot's servers) and no code-span chips, so it reads the same wherever it lands. The same figures the result shows: each draw's spins and cost, CP needed, what the balance leaves, and the cheapest package.
+function buildExportText(basket, currency = 'USD') {
+    const { total: needed, perBanner } = basketCost(basket.region, basket.banners, basket.includeUpgrades);
+    const shortfall = needed - (basket.balance || 0);
+    const clean = t => String(t).replace(/[`*_~|]/g, '');
+    const out = [`## Lucky Draw Calculation${basket.name ? `: ${clean(basket.name)}` : ''}`];
+    out.push(`-# ${regionLabel(basket.region)} region · Upgrade ${basket.includeUpgrades ? 'included' : 'not included'}`);
+    out.push('', '**Draws**');
+    for (const g of groupForDisplay(basket.banners)) {
+        const one = perBanner.find(b => b.drawKey === g.drawKey && b.pullsDone === g.pullsDone);
+        out.push(`- ${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''}: ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'} Spins · ${one && one.priced ? `${fmt(one.cost * g.count)} CP` : 'no price at this region'}`);
+    }
+    out.push('', `**CP Needed:** ${fmt(needed)} CP`);
+    if (basket.balance) out.push(shortfall > 0 ? `**After your ${fmt(basket.balance)} CP balance:** ${fmt(shortfall)} CP to buy` : `**Your ${fmt(basket.balance)} CP balance covers it**, with ${fmt(-shortfall)} CP to spare`);
+    if (shortfall > 0) {
+        const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (basket.entitlementMask & (1 << i)) !== 0).map(p => p.id);
+        const r = optimizePurchase(shortfall, { currency, doubleCpAvailable })?.cheapest;
+        if (r) {
+            const packs = r.combo.map(c => `${c.count}× ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
+            out.push(`**Recommended Package:** ${formatMoney(r.totalCents, currency)} for ${packs} (${fmt(r.leftoverCp)} CP left over)`);
+            out.push(`-# Prices in ${currency}, estimates only.`);
+        }
+    }
+    return out.join('\n').slice(0, 1800);
 }
 
 // ==========================================
@@ -894,7 +922,7 @@ async function execute(interaction) {
 
 module.exports = {
     encodeState, decodeState, defaultState, clampFocus,
-    buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, buildSaveStepPanel, savedChecksum, savedDescription,
+    buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildExportText, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, buildSaveStepPanel, savedChecksum, savedDescription,
     buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
     parseAmount, applySelection, shortName, SHORT_NAME, slashShortcut,

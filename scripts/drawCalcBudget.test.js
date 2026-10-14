@@ -404,7 +404,7 @@ t('the bottom nav row is a SIBLING of the Container, never one of its children, 
 t('no button on the nav row or the save/delete row carries an emoji', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }));
     // Save Result and Save carry his SaveStar emoji on purpose (2026-10-14 17:58 EDT); the rest stay plain.
-    const named = ['Draw Info', 'Draw Prices', 'View Saved', 'New Calculation', 'Help', 'Rename', 'Delete Calculation'];
+    const named = ['Draw Info', 'Draw Prices', 'View Saved', 'New Calculation', 'Help', 'Rename', 'Delete Calculation', 'Export'];
     for (const b of buttons(panel)) {
         if (named.some(n => (b.label || '').startsWith(n))) {
             assert.strictEqual('emoji' in b, false, `"${b.label}" must carry no emoji`);
@@ -645,8 +645,8 @@ t('the upgrade toggle is on the form AND the result, and only for draws that hav
     assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Calculate')).components.map(b => b.label), ['New Calculation', 'View Saved', 'Calculate'], 'New Calculation, View Saved, then Calculate (2026-10-14 17:58 EDT)');
     const r = rows(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })));
     const last = r.find(x => x.components.some(b => b.label === 'Save Result'));
-    assert.deepStrictEqual(last.components.map(b => b.label), ['New Calculation', 'View Saved', 'Save Result'], 'the result keeps that row, Save Result in Calculate\'s place');
-    assert.ok(last.components[2].emoji && verbOf(last.components[2]) === 'savepick');
+    assert.deepStrictEqual(last.components.map(b => b.label), ['New Calculation', 'View Saved', 'Export', 'Save Result'], 'the result keeps that row, Export beside Save Result in Calculate\'s place');
+    assert.ok(last.components[3].emoji && verbOf(last.components[3]) === 'savepick' && verbOf(last.components[2]) === 'export');
     assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Set Balance')).components.map(b => b.label), ['Set Balance', 'Upgrade: NO'], 'Upgrade sits beside Set Balance');
     const items = container(f).components;
     const calcRow = items.findIndex(c => c.type === 1 && c.components.some(b => b.label === 'Calculate'));
@@ -874,6 +874,17 @@ t('a working copy says which saved calculation it came from, and the Save step c
     assert.ok(messageCount(dc.buildCalculatorPanel(state({ page: 4, basketId: copy._id }), copy, ACCENT, { savedBaskets: savedList(dc.MAX_SAVED, 80) })) <= 40, 'fits at the cap');
     const section = allText(dc.buildCalculatorPanel(state({ page: 3 }), copy, ACCENT, { savedBaskets: list }));
     assert.ok(/Edited from \*\*test\*\*, which is unchanged until you save over it/.test(section));
+});
+
+t('Export gives the result as plain, pasteable markdown: draws, CP needed, balance, package (2026-10-14 18:22 EDT)', () => {
+    const text = dc.buildExportText(makeBasket({ name: 'My `Push`', balance: 1000, banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 3 }] }), 'CAD');
+    assert.ok(text.startsWith('## Lucky Draw Calculation: My Push'), 'markdown characters in a name are dropped, so it cannot break the block');
+    assert.ok(/- Legendary Weapon \(Reactive\) ×2: 0\/10 Spins · [\d,]+ CP/.test(text) && /- Mythic Weapon: 3\/10 Spins/.test(text));
+    assert.ok(/\*\*CP Needed:\*\* [\d,]+ CP/.test(text) && /After your 1,000 CP balance/.test(text) && /\*\*Recommended Package:\*\* CA\$[\d,.]+ for /.test(text));
+    assert.strictEqual(/<a?:\w+:\d+>|```/.test(text), false, 'no custom emoji and no code fence inside it');
+    assert.ok(text.length < 2000, 'fits a Discord message');
+    const covered = dc.buildExportText(makeBasket({ balance: 999999, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), 'USD');
+    assert.ok(/balance covers it/.test(covered) && !/Recommended Package/.test(covered));
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

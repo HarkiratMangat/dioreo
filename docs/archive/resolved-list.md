@@ -5,6 +5,12 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ `/draw calculator`: the spacer above Tweak Calculation — closed 2026-10-14 18:23 EDT `[DONE · 2026-10-14 18:23 EDT]`
+
+Harkirat: "nah, leave it as is." The form keeps no spacer there; the Tweak Calculation heading's margin carries the gap. The row as it stood:
+
+- **❓ `/draw calculator`: free one component for the spacer above Tweak Calculation — Harkirat's call** `[P3 · XS · Sonnet5-Medium · 👤Harkirat decides]` *(filed 2026-10-14 18:15 EDT)* At 5 lines per page with a pager the form uses exactly 40 components (itemized in the chat of 2026-10-14 18:09 EDT; Discord refuses 41, probed the same day), so the spacer above "### Tweak Calculation" was dropped. **My recommendation:** remove the disabled "Page 1/2" button from `pageNavRow` in `commands/drawCalculator.js` and put "Page 1 of 2" in the Your Selections hint, then add the spacer back to `buildSetupPanel`'s `tail`. **Ruled out 2026-10-14 18:17 EDT:** putting two dropdowns in one row (his idea) — Discord refuses it (`COMPONENT_LAYOUT_WIDTH_EXCEEDED`), and a dropdown beside a button too. **Verify by:** `scripts/drawCalcBudget.test.js`'s "form pages at 5 lines" case still passing with the spacer present. Decide before the branch's PR merges.
+
 ## ✅ `/draw calculator`: keep Move Up, or bring a visible ▲ back — closed 2026-10-14 13:19 EDT `[DONE · 2026-10-14 13:19 EDT]`
 
 Harkirat asked what the Priority Plan is and how the order affects it; the answer was that it changed only a running-total column. His call: "let's remove it for now." Move Up, the order language and the Priority Plan are removed; the idea of a plan that shows what the balance covers is filed in the active list. The row as it stood:

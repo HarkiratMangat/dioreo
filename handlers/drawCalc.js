@@ -13,7 +13,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
-    findLiveDoubleCPEntry, parseAmount, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum
+    findLiveDoubleCPEntry, buildExportText, parseAmount, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum
 } = require('../commands/drawCalculator');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES } = require('../utils/cpPackages');
@@ -171,7 +171,18 @@ async function route(interaction) {
         return true;
     }
 
-    // Draw Info / Help open as their OWN ephemeral messages, own fresh 40-component budget each (spec §3) -- deferReply (never deferUpdate) starts a genuinely NEW response chain on this same interaction, so the sendV2Payload call below patches THAT message's @original, not the live panel's. Handled here, before the generic ack, because deferReply/deferUpdate are each only valid once per interaction -- this branch cannot fall through the generic defer below.
+    // Draw Info / Help open as their OWN ephemeral messages, own fresh 40-component budget each (spec §3) -- deferReply (never deferUpdate) starts a genuinely NEW response chain on this same interaction, so the sendV2Payload call below patches THAT message's @original, not the live panel's. Handled here, before the generic ack, because deferReply/deferUpdate are each only valid once per interaction -- this branch cannot fall through the generic defer below. Export answers privately with the result as copyable markdown (2026-10-14 18:23 EDT); a new reply, never an edit of the panel, so it is handled before the generic defer below.
+    if (interaction.isButton() && state.verb === 'export') {
+        try {
+            await interaction.deferReply({ flags: 64 });
+            const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+            if (!basket || !basket.banners.length) { await interaction.editReply({ content: 'That calculation no longer exists, so there is nothing to export.' }); return true; }
+            const prefs = await UserPreference.findOne({ discordId: actingUserId });
+            await interaction.editReply({ content: `Copy the block below and paste it anywhere in Discord:\n\`\`\`md\n${buildExportText(basket, prefs?.cpCurrency || 'USD')}\n\`\`\`` });
+        } catch (notifyError) { console.error('Failed to send the calculator export (interaction likely expired):', notifyError); }
+        return true;
+    }
+
     if (interaction.isButton() && (state.verb === 'info' || state.verb === 'help')) {
         const prefs = await UserPreference.findOne({ discordId: actingUserId });
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);

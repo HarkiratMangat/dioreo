@@ -303,3 +303,9 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 **Built 2026-10-14 18:02 EDT:** the last row is New Calculation · View Saved · Calculate on the form and New Calculation · View Saved · Save Result (SaveStar, opens the Save step) on the result, so both nav rows are Draw Prices · Help; a spacer above "### Add More Draws"; "### Tweak Calculation" over the region hint on both screens (its margin replaces the form's spacer there, which kept five lines a page); "Edit Selection"; "Full Breakdown".
 
+### Batch 11 — 2026-10-14 18:22 EDT, verbatim
+
+> nah, leave it as is. but this does remind me, on the results page, can we have an "export" button which outputs the result into a simple copy-able markdown for the user to share?
+
+**Built 2026-10-14 18:24 EDT:** the spacer question is closed as he left it. **Export** sits in the result's last row (New Calculation · View Saved · Export · Save Result) and answers privately with the result as markdown in a code block: each draw's spins and cost, CP needed, what the balance leaves, and the recommended package; no custom emoji, so it reads the same pasted anywhere.
+
