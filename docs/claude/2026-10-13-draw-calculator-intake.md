@@ -14,6 +14,7 @@ status: live
 | | |
 |---|---|
 | Round | ✅ closed 2026-10-13 22:57 EDT ("i don't think i need to go further"); build started |
+| Round 2 | ⏳ open since 2026-10-14 11:45 EDT, his review of the redesign (`1cd13c82`) on the dev bot; log only |
 | Batches | 3 |
 | Classes | 9 |
 
@@ -130,3 +131,40 @@ A second think-pass (his `/nudge`, 2026-10-13 23:13 EDT) changed five things in 
 | G | every select | dropdown options: Remove first, visual over prose |
 | H | Cost page, Edit Draws, form | one place and one way to change what is priced |
 | I | all | structure and clutter: order, grouping, rows, the breakdown |
+| J | landing, region row, `/draw prices` | the selected region reads as the current state: green and disabled |
+| K | landing, footer | saved calculations: where they live, how to open, delete and wipe them, the limit |
+| L | landing headings and hints | wording: "Start a Calculation", the region heading removed, shorter hints |
+
+## Round 2 — opened 2026-10-14 11:45 EDT
+
+### Batch 4 — 2026-10-14 11:45 EDT, verbatim · the landing
+
+> * when the cp region button is selected, make it green-disabled.
+> * how do i clear/remove saved calculations?
+> * "Pick one to reopen it." -> "Reopen a saved calculation." (also side note, what's the limit of how many can be saved and what if the user reaches the limit? is there a warning? is there a deletion system?  an override system? etc. Thoroughly sequential-think it and critique it, consider the edge cases/unasked angles)
+>    * maybe we move the saved calcs to a button in the footer? with a modal that allows you to pick the saved one from a dropdown + also holds the controls to delete specific saved calcs or wipe them all?
+> * "Your Selection" -> "Start a Calculation". "Pick every draw you are pricing out. You can add more later." -> "Pick all the draw types you want to calculate. You can add more later."
+> * "Your Region & CP Balance" remove it. Also remove the divider above it.
+> * "Set your CP region and the CP you already have. Not sure of your region? See Help." -> Set your CP region and current balance." leave as `-#` hint style text.
+
+**Classes:** J (green-disabled region), K (saved calculations), L (wording).
+
+**J:** reverses `1cd13c82`, where the selected button was made green but left clickable. The same button is in `/draw prices`, so the class covers both commands.
+
+**K, what the code does today** (read 2026-10-14 11:47 EDT):
+
+| Question | Today |
+|---|---|
+| Limit | none stored; the loader shows only the first 25 by name, so a 26th is unreachable while the placeholder still counts it |
+| Warning at a limit | none |
+| Delete one | only from a finished result's **Delete Calculation**, two clicks, named ones only |
+| Named draft (New Calculation keeps the name) | opens on the form, which has no Delete: it must be calculated first |
+| Unnamed | cannot be deleted; expires 30 days after it was **created**, even if edited yesterday |
+| Wipe all | none |
+| Duplicate names | allowed; two with one name look the same in the loader |
+| Size | 25 saved plus lines measured past Discord's message cap on 2026-10-14; the form drops lines to fit |
+
+**K, angles for the build:** moving the loader off the landing (his footer idea) also removes its weight from the size cap; a modal has one submit button, so open and delete cannot be two buttons in it; a cap of 25 matches one dropdown, and at the cap Save should refuse with a notice rather than evict a calculation he named; Wipe All needs a confirm; deleting the calculation the message shows must fall to the existing missing-calculation screen. Selects inside a modal are not used anywhere in this repo yet: probe on the dev bot before designing on them.
+
+**L:** "Your Selection" also heads the result page beside **Edit**; whether that one changes too is open. Removing the region heading also removes "Not sure of your region? See Help."; Help keeps the explanation.
+
