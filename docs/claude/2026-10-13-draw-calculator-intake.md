@@ -188,3 +188,27 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 **Class B (naming), extended:** the picked draws show as chips in the closed picker, and Discord's desktop client cuts each chip at a fixed width however wide the box is ("Legendary Weapon (Reactiv", "Legendary Weapon (Non-Re"). The chip width is drawn by the client; the bot sends only the option's label. Not probed: whether the phone cuts at the same length. The one lever is the label itself: put the word that tells two draws apart first ("Reactive Legendary Weapon"), so the cut takes the shared tail, not the difference.
 
+**His answer, 2026-10-14 12:28 EDT:** rename to "Reactive / Non-Reactive Legendary Weapon"? "no leave it for now."
+
+### Batch 6 — 2026-10-14 12:28 EDT, verbatim · the form with three lines, a line's dropdown, "+ Add more draws" open (shots 10–13)
+
+> * on this screen, "Your Selection" as `##`, add a `###` under it: "set current attempts"
+> * instead of the "X" being inline in the text itself, make it an emoji similar to how the legendary badge is an emoji. Also reword "Remove #1" to "Remove this Selection"
+> * "Set how many Items you already have on each draw. Pick a draw again below to run two of it." -> "Set how many spins you've already performed on each draw. `0` means draw is unattempted."
+> * change this dropdown's "x/x items" to "x/x spins"
+> * also before the "xxxx cp left", also add the amount of CPs spent so far on each spin. such as 0/10: `0 CP Spent · 4,950 CP to Completion`
+> * add a `##` above the "add more draws" dropdown: "Calculate multiple draws". And a hint line "Select more draw types or add more of the same type to calculate multiple at the same time".
+> * reword "Add more draws (pick one again to run two)" -> "Add more draws to selection"
+> * and slightly better phrase the desc of the items in the add more draws dropdown.
+> * and honestly, idk how useful the "move up" item currently is. What even is the priority plan? and how does the order of the draw effect it? im lowkey considering removing that part of the calc but idk yet.
+
+**Classes:** L (headings and hints), B (naming: spins), G (dropdown options: Remove as an emoji, CP spent), M (new: the priority order and Move Up).
+
+**B, spins:** reverses batch 1's "x pulls → x Items" for the line dropdowns. Whether "spins" also replaces "Items" in the picker's "10 Items · …", the Cost page and Help is open; one name across the calculator is class B's own rule.
+
+**L, headings:** on the empty landing the heading is "Start a Calculation" (batch 4); with lines it becomes `## Your Selection` over `### Set current attempts`. A `##` is larger than every heading on the form today, so the levels of the other headings get set in the same pass.
+
+**G, CP spent:** each line's dropdown carries 11–13 options; a longer description on each adds to the message size that already limits lines to 5 a page. Measure at the build.
+
+**M, what the Priority Plan does today** (read 2026-10-14 12:28 EDT): the result lists the lines in their order, each with its own cost and a running total. Nothing else uses the order: the CP needed, the purchase advice and the balance check are the same in any order, and the plan never marks where the balance runs out. So **Move Up changes only the running-total column.** Two directions for the build: drop the order, Move Up and the Priority Plan; or keep them and make the plan say which lines the balance already covers and where it runs short.
+
