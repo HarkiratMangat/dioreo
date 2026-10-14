@@ -186,3 +186,8 @@ Where this and the two sections above disagree, this wins.
 - **The title:** "Viewing Saved: name" on a saved one, "Edited from Saved: name" on a working copy (read live from `sourceId` in `renderPanel`, so a rename or delete never shows a stale name). Naming a working copy drops its `sourceId`.
 - **Emoji:** `emojis.saveStar` (prod id) on Save and Save as New.
 
+### Batch 10, 2026-10-14 18:02 EDT
+
+- **Both screens end with one row under a divider:** New Calculation · View Saved · Calculate on the form, New Calculation · View Saved · Save Result (SaveStar, verb `savepick`) on the result. Both nav rows are Draw Prices · Help (the Saved view and Save step keep Draw Prices · ◀ Back · Help). "View Saved" carries no counter.
+- "### Tweak Calculation" heads the region hint on both screens; on the form its margin replaces the spacer, which is the component that keeps five lines a page. "Edit Selection", "Full Breakdown".
+

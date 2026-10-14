@@ -291,3 +291,15 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 **Built 2026-10-14 17:32 EDT:** a saved calculation is a snapshot. The first real change to one (spins, draws, region, upgrade, balance, 2X) opens an unnamed working copy that records where it came from (`sourceId`); the title then reads "Edited from Saved: name". Save opens a Save step: Save as New, or pick a saved calculation and confirm saving over it, after which the working copy is removed and the saved one's result shows. Reopening a saved one always lands on its result. SaveStar is on both Save buttons. The "test" calculation emptied by the old New Calculation before this fix stays empty; it can be deleted in Saved.
 
+### Batch 10 — 2026-10-14 17:58 EDT, verbatim · landing, form and result (shots 22–24)
+
+> * move "saved" to the left of "calculate" and reword it to "View Saved", no counter.
+> * move "new calc" button to the front of the row. saved in middle. calculate last.
+> * add some space above the "add more draws" heading?
+> * add a `###` heading above the "set region..." hint line, "Tweak Calculation" or similarly worded
+> * reword "edit" to "edit selection"
+> * reword "show breakdown" to "full breakdown"
+> * the results screen also moved the "saved" / "new calc" buttons outside. leave them in their current row. just replace "calculate" with "Save result" and include the star emoji.
+
+**Built 2026-10-14 18:02 EDT:** the last row is New Calculation · View Saved · Calculate on the form and New Calculation · View Saved · Save Result (SaveStar, opens the Save step) on the result, so both nav rows are Draw Prices · Help; a spacer above "### Add More Draws"; "### Tweak Calculation" over the region hint on both screens (its margin replaces the form's spacer there, which kept five lines a page); "Edit Selection"; "Full Breakdown".
+

@@ -392,7 +392,8 @@ t('a legacy calc~ id from the OLD single-draw codec decodes to a SAFE state rath
 // ==========================================
 
 t('the bottom nav row is a SIBLING of the Container, never one of its children, and Draw Info is gone', () => {
-    for (const [panel, labels] of [[render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })), ['Draw Prices', 'Saved', 'New Calculation', 'Help']], [form([{ drawKey: 'mythicWeapon', pullsDone: 3 }]), ['Draw Prices', 'Help']]]) {
+    for (const [panel, labels] of [[render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })), ['Draw Prices', 'Help']], [form([{ drawKey: 'mythicWeapon', pullsDone: 3 }]), ['Draw Prices', 'Help']]]) {
+        // Both screens keep New Calculation and View Saved in their own last row since 2026-10-14 17:58 EDT.
         const nav = panel.filter(x => x && x.type === 1);
         assert.strictEqual(nav.length, 1, 'exactly one top-level action row (the nav)');
         assert.deepStrictEqual(nav[0].components.map(b => b.label), labels, 'on the form, Saved and New Calculation sit in its Calculate row');
@@ -402,7 +403,8 @@ t('the bottom nav row is a SIBLING of the Container, never one of its children, 
 
 t('no button on the nav row or the save/delete row carries an emoji', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }));
-    const named = ['Draw Info', 'Draw Prices', 'Saved', 'New Calculation', 'Help', 'Save', 'Rename', 'Delete Calculation'];
+    // Save Result and Save carry his SaveStar emoji on purpose (2026-10-14 17:58 EDT); the rest stay plain.
+    const named = ['Draw Info', 'Draw Prices', 'View Saved', 'New Calculation', 'Help', 'Rename', 'Delete Calculation'];
     for (const b of buttons(panel)) {
         if (named.some(n => (b.label || '').startsWith(n))) {
             assert.strictEqual('emoji' in b, false, `"${b.label}" must carry no emoji`);
@@ -640,7 +642,11 @@ t('the upgrade toggle is on the form AND the result, and only for draws that hav
     assert.ok(buttons(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }))).some(b => /^Upgrade/.test(b.label || '')), 'the result re-prices with it too (2026-10-14, his ask)');
     assert.strictEqual(buttons(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).some(b => /^Upgrade/.test(b.label || '')), false);
     const f = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]);
-    assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Calculate')).components.map(b => b.label), ['Calculate', 'New Calculation', 'Saved'], 'Calculate has its own row with New Calculation and Saved (2026-10-14 16:47 EDT)');
+    assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Calculate')).components.map(b => b.label), ['New Calculation', 'View Saved', 'Calculate'], 'New Calculation, View Saved, then Calculate (2026-10-14 17:58 EDT)');
+    const r = rows(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })));
+    const last = r.find(x => x.components.some(b => b.label === 'Save Result'));
+    assert.deepStrictEqual(last.components.map(b => b.label), ['New Calculation', 'View Saved', 'Save Result'], 'the result keeps that row, Save Result in Calculate\'s place');
+    assert.ok(last.components[2].emoji && verbOf(last.components[2]) === 'savepick');
     assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Set Balance')).components.map(b => b.label), ['Set Balance', 'Upgrade: NO'], 'Upgrade sits beside Set Balance');
     const items = container(f).components;
     const calcRow = items.findIndex(c => c.type === 1 && c.components.some(b => b.label === 'Calculate'));
@@ -650,7 +656,7 @@ t('the upgrade toggle is on the form AND the result, and only for draws that hav
 
 t('what a region is lives in Help; the form only labels the row with a hint', () => {
     for (const panel of [form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]), dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })]) {
-        assert.ok(texts(panel).includes('-# Set your CP region and current balance.'), 'the hint alone, no heading (2026-10-14, his ask)');
+        assert.ok(texts(panel).includes('### Tweak Calculation\n-# Set your CP region and current balance.'), 'his heading over the hint (2026-10-14 17:58 EDT)');
         assert.strictEqual(/Your Region & CP Balance/.test(allText(panel)), false);
         assert.strictEqual(/first pull/.test(allText(panel)), false, 'what a region is stays in Help');
     }
@@ -673,7 +679,7 @@ t('the compact package line states the price once, the packs, and the leftover',
 
 t('the result heads the list "Your Selection" with Edit beside it; a grouped ×N keeps its progress', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }));
-    const section = container(panel).components.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Edit');
+    const section = container(panel).components.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Edit Selection');
     assert.ok(section && section.components[0].content.startsWith('## Your Selection'), 'Edit sits beside Your Selection');
     assert.strictEqual(verbOf(section.accessory), 'edit');
     assert.ok(/Legendary Weapon \(Reactive\) ×2 — 0\/10 Spins/.test(allText(panel)));
@@ -732,9 +738,9 @@ t('each line\'s dropdown OPENS with Remove, then the values; Move Up is gone', (
 
 t('Show Breakdown sits beside the Cost Breakdown heading, not in an action row', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], balance: 3000 }));
-    const section = container(panel).components.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Show Breakdown');
+    const section = container(panel).components.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Full Breakdown');
     assert.ok(section && section.components[0].content.startsWith('## Cost Breakdown'));
-    assert.strictEqual(rows(panel).some(r => r.components.some(b => b.label === 'Show Breakdown')), false);
+    assert.strictEqual(rows(panel).some(r => r.components.some(b => b.label === 'Full Breakdown')), false);
 });
 
 // ==========================================
@@ -806,9 +812,9 @@ t('the landing starts a calculation, and Saved is one tap away in the nav row (2
     assert.ok(text.includes('## Start a Calculation\n-# Pick all the draw types you want to calculate. You can add more later.'));
     assert.strictEqual(/Saved Calculations/.test(text), false, 'the loader moved to its own view');
     assert.strictEqual(/#+ \d/.test(text), false, 'no step numbers');
-    assert.strictEqual(verbOf(buttonLabelled(landing, 'Saved')), 'saved', 'with none saved the button still shows, so saving is discoverable');
+    assert.strictEqual(verbOf(buttonLabelled(landing, 'View Saved')), 'saved', 'with none saved the button still shows, so saving is discoverable');
     const saved = [{ _id: 'c'.repeat(24), name: 'Season 12', banners: [], region: 'region_10' }];
-    assert.ok(buttonLabelled(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: saved }), 'Saved (1)'), 'and counts them when there are some');
+    assert.ok(buttonLabelled(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: saved }), 'View Saved'), 'no counter (2026-10-14 17:58 EDT)');
     assert.ok(/Press \*\*Edit\*\*/.test(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })))), 'the result says how to change things');
 });
 

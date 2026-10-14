@@ -401,8 +401,8 @@ function regionRow(state, basket) {
     };
 }
 
-// The caption above the region buttons (2026-10-13 12:40 EDT). Three "10 / 20 / 30 CP" buttons sit among a dozen real CP amounts and read like one of them; nothing said what a region is or how a player finds theirs. The first pull's price IS the region, so that is the one sentence that answers both. No heading and no divider above it (2026-10-14 13:13 EDT, Harkirat: "'Your Region & CP Balance' remove it. Also remove the divider above it"); the hint alone labels the row, and Help keeps what a region is.
-function regionCaption() { return { type: 10, content: '-# Set your CP region and current balance.' }; }
+// The caption above the region buttons (2026-10-13 12:40 EDT). Three "10 / 20 / 30 CP" buttons sit among a dozen real CP amounts and read like one of them; nothing said what a region is or how a player finds theirs. The first pull's price IS the region, so that is the one sentence that answers both. No heading and no divider above it (2026-10-14 13:13 EDT, Harkirat: "'Your Region & CP Balance' remove it. Also remove the divider above it"); the hint alone labels the row, and Help keeps what a region is. "### Tweak Calculation" over the hint (2026-10-14 17:58 EDT, Harkirat).
+function regionCaption() { return { type: 10, content: '### Tweak Calculation\n-# Set your CP region and current balance.' }; }
 // Room between blocks without a rule (his "more breathing room"): a separator with no divider.
 const SPACER = { type: 14, spacing: 2, divider: false };
 // "Your Selections" once there are two or more draws (2026-10-14 16:51 EDT, Harkirat).
@@ -435,9 +435,9 @@ function basketManageRow(state, basket) {
     ].filter(Boolean) };
 }
 
-// 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself. `showReset` is false on the setup form: there is no computed result to clear yet, and a live button that does nothing visible is worse than an absent one. On a submitted calculation it reads "New Calculation" -- Harkirat's own phrase for the action that ends a result's persistence and returns to the form. Draw Prices · New Calculation · Help (2026-10-13 23:01 EDT, his intake: Draw Info removed, since /draw prices shows the same draws; New Calculation on EVERY page once there is something to clear, where it used to appear only on the result).
-function savedButton(state, savedCount) {
-    return { type: 2, style: 2, label: savedCount ? `Saved (${savedCount})` : 'Saved', custom_id: encodeState('saved', state) };
+// 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself. `showReset` is false on the setup form: there is no computed result to clear yet, and a live button that does nothing visible is worse than an absent one. On a submitted calculation it reads "New Calculation" -- Harkirat's own phrase for the action that ends a result's persistence and returns to the form. Draw Prices · New Calculation · Help (2026-10-13 23:01 EDT, his intake: Draw Info removed, since /draw prices shows the same draws; New Calculation on EVERY page once there is something to clear, where it used to appear only on the result). "View Saved", no counter (2026-10-14 17:58 EDT, Harkirat).
+function savedButton(state) {
+    return { type: 2, style: 2, label: 'View Saved', custom_id: encodeState('saved', state) };
 }
 function newCalculationButton(state) {
     const armed = state.verb === 'resetarm';
@@ -450,7 +450,7 @@ function bottomNavRow(state, { showReset = true, savedCount = 0, onSaved = false
     // Saved calculations are their own view of this same message (2026-10-14 13:19 EDT, Harkirat's "surface switch"). On that view the slot reads Back.
     if (onSaved) components.push({ type: 2, style: 2, label: '◀ Back', custom_id: encodeState('back', state) });
     else if (!inForm) {
-        components.push(savedButton(state, savedCount));
+        components.push(savedButton(state));
         if (showReset) components.push(newCalculationButton(state));
     }
     components.push({ type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) });
@@ -466,14 +466,22 @@ function setupBalanceRow(state, basket) {
         (basket?.banners?.length ? upgradeButton(state, basket, { disabled: !hasBasket }) : null)
     ].filter(Boolean) };
 }
-// The form's last row, under its own divider (2026-10-14 16:51 EDT): Calculate (the ONLY Primary button in this command, with his Sparkles emoji), then New Calculation once there is something to clear, then Saved.
+// Order New Calculation · View Saved · Calculate (2026-10-14 17:58 EDT, Harkirat: "move new calc button to the front of the row. saved in middle. calculate last"). The form's last row, under its own divider (2026-10-14 16:51 EDT): Calculate (the ONLY Primary button in this command, with his Sparkles emoji), then New Calculation once there is something to clear, then Saved.
 function setupSubmitRow(state, basket, savedCount) {
     const lines = basket?.banners?.length || 0;
     return { type: 1, components: [
-        { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), disabled: lines === 0, emoji: emojis.parseEmoji(emojis.sparkles) },
         lines ? newCalculationButton(state) : null,
-        savedButton(state, savedCount)
+        savedButton(state),
+        { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), disabled: lines === 0, emoji: emojis.parseEmoji(emojis.sparkles) }
     ].filter(Boolean) };
+}
+// The result ends with the same row, Save Result in Calculate's place with his SaveStar emoji (2026-10-14 17:58 EDT, Harkirat: "leave them in their current row. just replace calculate with Save result"). It opens the Save step: save as new, or save over a saved one.
+function resultActionRow(state) {
+    return { type: 1, components: [
+        newCalculationButton(state),
+        savedButton(state),
+        { type: 2, style: 1, label: 'Save Result', custom_id: encodeState('savepick', state), emoji: emojis.parseEmoji(emojis.saveStar) }
+    ] };
 }
 
 // ==========================================
@@ -579,8 +587,8 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
     if (dropConfirm) components.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
     else if (!banners.length) components.push(typesSelectRow(state, draft));
 
-    // No heading and no divider before the region row (2026-10-14 13:13 EDT, his intake); a spacer keeps the room the divider gave.
-    const tail = [SPACER, regionCaption(), regionRow(state, draft), setupBalanceRow(state, basket), { type: 14, spacing: 2, divider: true }, setupSubmitRow(state, basket, savedCount)];
+    // No heading and no divider before the region row (2026-10-14 13:13 EDT, his intake); a spacer keeps the room the divider gave. The "Tweak Calculation" heading's own top margin replaces the spacer that sat here (2026-10-14 17:59 EDT); keeping both cost the component that keeps five lines a page.
+    const tail = [regionCaption(), regionRow(state, draft), setupBalanceRow(state, basket), { type: 14, spacing: 2, divider: true }, setupSubmitRow(state, basket, savedCount)];
     // Builds the middle of the form at one lines-per-page: the lines, the pager, then the add picker under its own heading.
     const build = perPage => {
         const pages = linePages(banners, perPage);
@@ -588,7 +596,8 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
         const mid = pages[bpage].map(i => bannerPullsRow(state, draft, i, { removable: true }));
         if (pages.length > 1) mid.push(pageNavRow({ ...state, bpage }, pages.length));
         if (banners.length && !dropConfirm) {
-            // A sub-heading of the selection, worded as the action (2026-10-14 16:51 EDT, Harkirat: "should be ###. also reword to add more draws").
+            // A sub-heading of the selection, worded as the action (2026-10-14 16:51 EDT, Harkirat: "should be ###. also reword to add more draws"). Room above it (2026-10-14 17:58 EDT, Harkirat: "add some space above the add more draws heading").
+            mid.push({ type: 14, spacing: 1, divider: false });
             mid.push({ type: 10, content: '### Add More Draws\n-# Select more draw types or add more of the same type to calculate multiple at the same time.' });
             mid.push(addDrawsRow(state, draft));
         }
@@ -741,7 +750,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     components.push({
         type: 9,
         components: [{ type: 10, content: `## ${selectionHeading(basket.banners)}\n-# Press **Edit** to change your draws or spins.\n${groups.map(g => `${DRAW_META[g.drawKey] ? emojis[DRAW_META[g.drawKey].tier] : emojis.smallDot} ${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''} — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'} Spins`).join('\n')}` }],
-        accessory: { type: 2, style: 2, label: 'Edit', custom_id: encodeState('edit', state) }
+        accessory: { type: 2, style: 2, label: 'Edit Selection', custom_id: encodeState('edit', state) }
     });
     if (options.notice) components.push({ type: 10, content: `-# ${options.notice}` });
     if (options.dropConfirm) components.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
@@ -757,12 +766,12 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     components.push({
         type: 9,
         components: [{ type: 10, content: head.join('\n') }],
-        accessory: { type: 2, style: 2, label: state.detail ? 'Simplify' : 'Show Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(state.detail ? emojis.simplify : emojis.expand) }
+        accessory: { type: 2, style: 2, label: state.detail ? 'Simplify' : 'Full Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(state.detail ? emojis.simplify : emojis.expand) }
     });
     // Room between the figures and the package that buys them (2026-10-14 13:13 EDT, his "more breathing room").
     if (tail.length) components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: tail.join('\n') });
     // Region and upgrade are adjustable right here (2026-10-14 13:13 EDT, Harkirat): "why are the cp region buttons gone from this screen? and the upgrade yes/no button". A click re-prices this same result.
-    components.push({ type: 14, spacing: 2, divider: true }, regionCaption(), regionRow(state, basket), basketManageRow(state, basket));
+    components.push({ type: 14, spacing: 2, divider: true }, regionCaption(), regionRow(state, basket), basketManageRow(state, basket), { type: 14, spacing: 2, divider: true }, resultActionRow(state));
 
     if (liveDoubleCPEntry || basket.entitlementMask) {
         components.push({ type: 10, content: liveDoubleCPEntry
@@ -832,7 +841,7 @@ function buildCalculatorPanel(state, basket, accentColor, options = {}) {
     // Edit is a VIEW (page 2) on a calculation that stays submitted (2026-10-13 23:10 EDT): an abandoned edit still reopens on its result, the persistence the form's own header calls load-bearing. Calculate returns to page 0.
     if (state.page === 2) return [buildSetupPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm, savedCount }), nav({ inForm: true })];
     const container = buildCostPage(state, basket, accentColor, options);
-    return [container, nav()];
+    return [container, nav({ inForm: true })];
 }
 
 // ==========================================
