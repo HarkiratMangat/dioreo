@@ -314,7 +314,7 @@ async function route(interaction) {
         const list = await basketStore.listForUser(actingUserId);
         const deleted = await basketStore.removeAllNamed(actingUserId);
         const basketId = list.some(b => String(b._id) === String(state.basketId)) ? null : state.basketId;
-        await renderPanel(interaction, { ...state, basketId, page: 3, verb: 'saved' }, null, `Deleted all ${deleted} saved calculation${deleted === 1 ? '' : 's'}.`);
+        await renderPanel(interaction, { ...state, basketId, page: 3, verb: 'saved' }, null, deleted === 1 ? 'Deleted your 1 saved calculation.' : `Deleted all ${deleted} saved calculations.`);
         return true;
     }
 

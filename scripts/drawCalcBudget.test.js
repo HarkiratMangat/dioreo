@@ -509,7 +509,7 @@ t('the Saved view opens a calculation, deletes several, or deletes all, and Back
     const del = selects(panel).find(s => verbOf(s) === 'savedsel');
     assert.ok(del && del.max_values === 3 && del.min_values === 1);
     assert.strictEqual(verbOf(buttonLabelled(panel, 'Delete All')), 'delallarm', 'Delete All is two-step');
-    const armed = buttonLabelled(savedView(savedList(3), { verb: 'delallarm' }), 'Delete All 3 — click again');
+    const armed = buttonLabelled(savedView(savedList(3), { verb: 'delallarm' }), 'Delete All (3) — click again');
     assert.ok(armed && armed.style === 4 && verbOf(armed) === 'delall');
     const nav = panel.filter(x => x && x.type === 1)[0].components.map(b => b.label);
     assert.deepStrictEqual(nav, ['Draw Prices', '◀ Back', 'Help']);

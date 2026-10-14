@@ -657,7 +657,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
             }] });
         }
         const armed = state.verb === 'delallarm';
-        components.push({ type: 1, components: [{ type: 2, style: armed ? 4 : 2, label: armed ? `Delete All ${list.length} — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view) }] });
+        components.push({ type: 1, components: [{ type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view) }] });
     }
     components.push({ type: 10, content: `-# ${list.length}/${MAX_SAVED} saved. An unsaved calculation is cleared 30 days after it was started.` });
     return { type: 17, accent_color: accentColor, components };
