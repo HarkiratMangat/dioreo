@@ -608,3 +608,7 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (12:31, on the field kinds) "alternative word to "text" and "area"?"
 - (12:32, on my pick of Space Grotesk for every attachment name) "sure"
 - Decided: attachment names are Space Grotesk everywhere (C27; ledger attmono for Compare's 29 in JetBrains Mono 11 · 400). Proposed, waiting on his word: field kinds search · line · code · block · date (all 71 fields in Builder-2's code sorted by what you type), the rename `field-S-line.rename-ok--inline`, image key `field-L-code.key`, Bulk create `field-L-block.bulk`, the draw announcement `field-L-block.announcement`; Export's lists hold no field but the rename.
+
+## His 2026-10-14 14:02 EDT, verbatim, written 2026-10-14 14:17 EDT
+- (on my 12:34 EDT pick of `line` and `block`) "line and block approved. unsure what else is open, but we'll continue it after the compact"
+- Decided: field kinds search · line · code · block · date, the set his 12:31 EDT reply quoted with only "text" and "area" changed; so the rename `field-S-line.rename-ok--inline`, image key `field-L-code.key`, a link `field-L-line.link`, Bulk create `field-L-block.bulk`, the draw announcement `field-L-block.announcement` (C25). Mine, the same pattern, in `spec-inputs.js` (Builder-2 `abe1aff`; its Inputs cards are off the board since 2026-10-11, so nothing to publish): gunsmith code `field-L-code.gunsmith`, build name `field-L-line.name`; the code kind sets the mono face, so the old `--mono` flags are gone.
