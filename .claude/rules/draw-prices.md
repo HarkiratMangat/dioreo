@@ -190,4 +190,4 @@ Where this and the two sections above disagree, this wins.
 
 - **Both screens end with one row under a divider:** New Calculation · View Saved · Calculate on the form, New Calculation · View Saved · Save Result (SaveStar, verb `savepick`) on the result. Both nav rows are Draw Prices · Help (the Saved view and Save step keep Draw Prices · ◀ Back · Help). "View Saved" carries no counter.
 - "### Tweak Calculation" heads the region hint on both screens; on the form its margin replaces the spacer, which is the component that keeps five lines a page. "Edit Selection", "Full Breakdown".
-
+- **Probed 2026-10-14 18:15 EDT on the dev bot:** a select placed directly in a Container is refused (only types 1, 9, 10, 12, 13, 14 may sit there, so every select and button needs its Action Row), 40 components counted WITH rows posts, 41 is refused with `COMPONENT_MAX_TOTAL_COMPONENTS_EXCEEDED`, and a Separator with `divider: false` (the spacer) is an ordinary type 14 that counts 1.
