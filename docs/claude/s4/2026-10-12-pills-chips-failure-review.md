@@ -129,3 +129,5 @@ The fix, every call from here on:
 - An edit batch prints a line per edit; no lines means nothing ran, whatever the checks after it say.
 - A control's parts (a checkbox, a corner mark, a count, a meter) get their own states read from Builder-2's CSS and checked, not only the control's skin.
 - A behaviour seen on the spec board is checked in Builder-2's own markup before it becomes a rule or a name: the board's controls are drawn by spec-ctl.js and carry its defaults (2026-10-13 23:55 EDT, the vocabulary: every Pill there is aria-pressed, yet the kit has pill-shaped action buttons).
+- A "measured" claim names what was measured, the board or Builder-2: v99 wrote "every rail is a box, measured" about my own drawing; Builder-2's view and Queue rails are pills (2026-10-14 01:14 EDT).
+- A named element renders its name's recipe. A grid of Builder-2 specimens restyled by hand-written CSS is a copy of the recipe that later rulings never reach: name-check.cjs found 18 of 57 named buttons off it, and the grids are now painted by recipe() itself (2026-10-14 01:14 EDT).
