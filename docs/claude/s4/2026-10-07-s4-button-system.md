@@ -663,3 +663,8 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (the no-realm match count, mid-turn) "with no realm color, doesnt it just use the neutral grey? since the tag is --borderless."
 - Drawn in spec v107 (an open block under Tags): static beside tint, wash and paint worn by tags, held at rest. Read from spec-defs.js recipe(): static's rest (colour 14%, outline 55% at 1.5px, words 80% on white) matches no style's rest, so as a flag it would either change every tag's look or carry a look of its own. The no-realm match count today is static with no colour: the neutral grey fill (sunk 85%), no outline (--borderless), words ink (--paletext); the ghost rule would take the grey away.
 
+## His 2026-10-14 19:12 EDT, verbatim, written 2026-10-14 19:13 EDT
+- (the no-realm match count) "no, why would it apply? the token for it is literally `tag-M-box.static-realm--borderless--paletext`. Why make it --ghost?"
+- (keep static as a style?) "sure keep."
+- Built in spec v108: the match count is named `tag-M-box.static-realm--borderless--paletext` in both the realm and the no-realm field (the board had dropped `-realm` when the accent switch was off); C11: `-realm` falls back to neutral on a page with no realm and stays a colour value; C17: static stays a style; the comparison block came down.
+
