@@ -168,3 +168,11 @@ A second think-pass (his `/nudge`, 2026-10-13 23:13 EDT) changed five things in 
 
 **L:** "Your Selection" also heads the result page beside **Edit**; whether that one changes too is open. Removing the region heading also removes "Not sure of your region? See Help."; Help keeps the explanation.
 
+**His answers, 2026-10-14 11:52 EDT, verbatim:**
+
+| Asked | His answer |
+|---|---|
+| "Start a Calculation" on the result page too? | "first screen for now. i havent looked at the result screen yet." |
+| Green and disabled in `/draw prices` too? | "yes" |
+| A Saved page inside the message instead of a popup | "oh basically like a surface switch? so you can dynamically switch the panel between \"saved\" settings and the calculator itself, instead of a pop-up? makes sense." Both versions are still shown as pictures before he picks |
+
