@@ -617,3 +617,21 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (on the text tokens `text-` · `num-` · `label-` · `code-`) "\"text\" for text style seems a bit silly."
 - (on `field-L-code.gunsmith` and `field-L-line.name`) "elaborate?"
 - Proposed, waiting on his word: `body-` · `display-` · `label-` · `code-`, C27's own family names; `num-` withdrawn, because Big Shoulders also draws page titles and group headings in Builder-2 (`.masthead h1`, `.pb-mast h1`, `.ghead h4`) and small counts are Space Grotesk (C23). The two field names come from Builder-2's own words: the code field is headed "Gunsmith code" (`.gunsmith`, since `-` picks a value, C11); the build-name field is captioned "Label" with the data `buildName` (`.name`, since `.label` would read as the label family).
+
+## His 2026-10-14 15:31 EDT, verbatim (13 screenshots), written 2026-10-14 15:52 EDT
+- (on the text tokens and the two field names) "approved."
+- "can i see the repair launcher "on a good day" variant of the button on the spec-board"
+- "for the repair launcher, the "5", doesn't it feel a bit small? can we give it the --dual color (i think that's the correct flag? idk. the color 26% on white)? and do we have anything that could increase the count's text size while being within our token system?"
+- "shouldn't admin traffic be paint-realm?"
+- "the badge toggles are incorrect size. the badges are only 24px, that means the toggles should be 32px, not 44px, correct? can we also give it .paint instead of .neutral? but what accent/color? the badges? the realms?"
+- "for the pick all toggles, reveal-right won't work i think because the toggles sit on the right side in the export drawer, or am i thinking incorrectly? and is their token also missing the --dual flag?"
+- "this rail is also incorrectly drawn, you drew in the inside as a box, but the base as a pill. Give it the pill shape. and draw a separate box rail beside it."
+- "the rails also need spacing correctly between their inner toggles. They currently touch edges, but they're supposed to have gaps between them, based on the element size. For example, the upload/link/stored rail is `rail-L-box>toggle-M-box.paint-realm--quiet`, that means it has a 6px gap all around the toggle, that would mean the 2 toggles need to sit 6px apart, not be touching each other's edge."
+- "can we also give "5 matches" the color 26% on white text? do we have a flag for that?"
+- "and line height seems a bit too close for these two 2-line tags, no?"
+- "and give this left border tag a proper shape or style name, because i want to use it's look for History's Kind/Count tags as well."
+- "static, no color should be `--ghost`"
+- "also if all tags are informative, no hover... then what's the point of "static"? But then what about the "5" tag inside the Repair launcher toggle? that has a hover. So im a bit confused."
+- "i want the "slot code" tag to have the `color 26% on white` text"
+- "i also want the "an echo"'s original version to be a sort of unique tag style option (mainly the icon tag inside a tag), but using the proposed version's `·` instead of `|`, and our other conventions."
+- Built in spec v103: the good-day launcher (Builder-2's `.b3-rv.ok`) as `toggle-L-pill.wash-ok>tag-M-round.static-ok--icon+label-xs-700.ok`; the launcher's count `--dual`; Admin traffic `paint-realm--icon` (C11); badge and mode toggles M 32 (C3); Pick all `--dual` (picked count lit, total in the colour); pill rails hold pill toggles (the size rows' 8px corner had beaten the rail's own) with a box rail beside each; every rail's toggles sit its step apart (C26); --dual is the flag for a one-part tag (the match count, the slot code); two-line tags 14 apart; Live now and History's kind and count tags are the bar shape; Optional `--ghost`; the held echo. Change list 129 rows (railgap, badgetog, dualone, ghostopt, tag2lh, bartag, echoheld, pickdual). Open, drawn for his pick: the launcher's count size (body-s-600 today, body-m-700, body-l-700, display-xl-700), the badge toggles' paint (each badge's hue or the realm's), a two-line tag's height (32 or 44). Answered, not changed: static and the 5's hover; Pick all's reveal side.
