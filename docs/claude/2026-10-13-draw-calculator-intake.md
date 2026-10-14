@@ -182,3 +182,9 @@ A second think-pass (his `/nudge`, 2026-10-13 23:13 EDT) changed five things in 
 
 Today each option is the name plus "N lines · region". Room Discord gives an option: a 100-character label, a 100-character description and one emoji. Candidates for the build: which draws (short names, ×2 for repeats), CP still needed, whether it was calculated or is a draft, and when it last changed.
 
+### Batch 5 — 2026-10-14 11:54 EDT, verbatim · the draw picker, open, with three picked (shot 09)
+
+> is this a discord limit? why do they get cutoff at the top even tho there's so much empty width?
+
+**Class B (naming), extended:** the picked draws show as chips in the closed picker, and Discord's desktop client cuts each chip at a fixed width however wide the box is ("Legendary Weapon (Reactiv", "Legendary Weapon (Non-Re"). The chip width is drawn by the client; the bot sends only the option's label. Not probed: whether the phone cuts at the same length. The one lever is the label itself: put the word that tells two draws apart first ("Reactive Legendary Weapon"), so the cut takes the shared tail, not the difference.
+
