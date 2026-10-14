@@ -668,3 +668,8 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (keep static as a style?) "sure keep."
 - Built in spec v108: the match count is named `tag-M-box.static-realm--borderless--paletext` in both the realm and the no-realm field (the board had dropped `-realm` when the accent switch was off); C11: `-realm` falls back to neutral on a page with no realm and stays a colour value; C17: static stays a style; the comparison block came down.
 
+## His 2026-10-14 19:42–19:44 EDT, verbatim, written 2026-10-14 19:44 EDT
+- (on the in-field × using -realm with no realm) "wdym? if theres no realm, why would it use `-realm`?"
+- "oh i realise i typed `tag-M-box.static-realm--borderless--paletext` earlier... because i copy pasted what you had on the spec-board. and that was incorrect. the no realm is just `tag-M-box.static--borderless--paletext`"
+- Built in spec v109: v108's always-`-realm` name reverted; the no-realm field names its count `tag-M-box.static--borderless--paletext` (grey fill kept), the realm field `tag-M-box.static-realm--borderless--paletext`; C11 and C17 say so. In the portal every page has a realm (Builder-2 sets --realm-c per page), so the no-realm case is the board's "off" accent only.
+
