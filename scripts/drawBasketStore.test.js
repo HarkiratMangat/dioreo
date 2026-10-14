@@ -226,6 +226,15 @@ const OTHER = '999999999999999999';
         assert.ok(await store.load(OTHER, String(other._id)));
     });
 
+    await t('a working copy records its source, and naming it makes it a saved calculation of its own', async () => {
+        const copy = await store.save(OWNER, { banners: [], region: 'region_10', sourceId: '0'.repeat(23) + '7' });
+        assert.strictEqual((await store.load(OWNER, String(copy._id))).sourceId, '0'.repeat(23) + '7');
+        await store.rename(OWNER, String(copy._id), 'Mine Now');
+        const named = await store.load(OWNER, String(copy._id));
+        assert.strictEqual(named.name, 'Mine Now');
+        assert.strictEqual(named.sourceId, undefined, 'naming drops the link to where it was opened from');
+    });
+
     console.log(`\n${passed} passed, ${failed} failed\n`);
     process.exit(failed === 0 ? 0 : 1);
 })();

@@ -171,6 +171,8 @@ function encodeState(verb, s) {
     if (s.mask) fields.push(`m${s.mask.toString(36)}`);
     // `k` carries a checksum of the saved list while the player confirms deleting some of it (savedChecksum): `m` is then a mask over that list's positions, and the checksum refuses the delete if the list changed in between, rather than deleting whatever now sits at those positions.
     if (s.check) fields.push(`k${s.check}`);
+    // `t` names the saved calculation an overwrite will replace (2026-10-14 17:26 EDT); only the Save view's confirm carries it.
+    if (s.target) fields.push(`t${s.target}`);
     return fields.join('~');
 }
 
@@ -185,6 +187,7 @@ function decodeState(customId) {
     const regionDigits = get('r', '');
     const maskRaw = get('m', '');
     const checkRaw = get('k', '');
+    const targetRaw = get('t', '');
     return {
         verb: parts[1] || 'landing',
         basketId: parts[2] || null,
@@ -195,7 +198,8 @@ function decodeState(customId) {
         bpage: Number(get('p', 0)) || 0,
         targetRegion: regionDigits ? `region_${regionDigits}` : null,
         mask: maskRaw ? (parseInt(maskRaw, 36) || 0) : 0,
-        check: checkRaw || null
+        check: checkRaw || null,
+        target: targetRaw || null
     };
 }
 
@@ -548,6 +552,8 @@ function buildCostBlock(state, basket, currency, client, { compact }) {
 // A saved calculation's name gets its own line under the title (2026-10-14 13:13 EDT, Harkirat: "Maybe put it in a 2nd line? '> ### Viewing Saved: `the name`'"). A backtick in a name would end the code span early, so it is swapped for a plain quote here only. Same style as the Season Calendar's season line (2026-10-14 16:51 EDT, Harkirat): utils/titleBlock.js's caption in bold-italic letters. A backtick in a name is swapped for a plain quote so it cannot open a code span.
 function titleBlock(basket) {
     if (basket && basket.name) return buildTitleBlock(`Viewing Saved: ${String(basket.name).replace(/`/g, "'")}`, emojis.calculator, 'Lucky Draw Calculator', 2);
+    // A working copy of a saved calculation says which one it came from (2026-10-14 17:28 EDT); `sourceName` is attached at render time from its `sourceId`, so a renamed or deleted source never shows a stale name.
+    if (basket && basket.sourceName) return buildTitleBlock(`Edited from Saved: ${String(basket.sourceName).replace(/`/g, "'")}`, emojis.calculator, 'Lucky Draw Calculator', 2);
     return { type: 10, content: `## ${emojis.calculator} Lucky Draw Calculator` };
 }
 
@@ -622,6 +628,35 @@ function savedChecksum(list) {
     return crypto.createHash('sha1').update((list || []).map(b => String(b._id)).join(',')).digest('hex').slice(0, 6);
 }
 
+// THE SAVE STEP (page 4, 2026-10-14 17:28 EDT): what Save opens. A saved calculation is only ever changed here, deliberately: save the open calculation as a new one, or pick a saved one and confirm saving over it (Harkirat: "a user needs to press save and select that previous saved result to override it"). The one it was opened from, if any, is marked in the list.
+function buildSaveStepPanel(state, savedBaskets, accentColor, { notice = null, current = null, overwriteConfirm = null } = {}) {
+    const list = (savedBaskets || []).slice(0, MAX_SAVED);
+    const view = { ...state, page: 4 };
+    const components = [titleBlock(current), { type: 14, spacing: 2, divider: true }];
+    if (notice) components.push({ type: 10, content: `-# ${notice}` });
+    components.push({ type: 10, content: `## Save This Calculation\n-# Save it as a new one, or pick a saved calculation to save over.` });
+    if (overwriteConfirm) {
+        components.push({ type: 1, components: [
+            { type: 2, style: 4, label: `Save Over "${String(overwriteConfirm.name).slice(0, 60)}"`, custom_id: encodeState('owok', { ...view, target: overwriteConfirm.target }) },
+            { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('savepick', view) }
+        ] });
+    } else {
+        components.push({ type: 1, components: [
+            { type: 2, style: 1, label: 'Save as New', custom_id: encodeState('modal_name', view), emoji: emojis.parseEmoji(emojis.saveStar) },
+            { type: 2, style: 2, label: 'Cancel', custom_id: encodeState('saved', { ...state, page: 3 }) }
+        ] });
+        if (list.length) {
+            components.push({ type: 1, components: [{
+                type: 3, custom_id: encodeState('owsel', view), placeholder: 'Or save over a saved calculation',
+                options: list.map(b => ({ label: String(b.name).slice(0, 100), value: String(b._id), description: current && String(current.sourceId) === String(b._id) ? 'Opened From This One' : cutText(savedDescription(b), 60), ...(savedEmoji(b) ? { emoji: savedEmoji(b) } : {}) }))
+            }] });
+        }
+    }
+    components.push({ type: 10, content: `-# ${list.length}/${MAX_SAVED} saved. Saving over one replaces its draws, spins, region, balance and upgrade.` });
+    return { type: 17, accent_color: accentColor, components };
+}
+function cutText(text, n) { return text.length > n ? `${text.slice(0, n - 1)}…` : text; }
+
 // Two 25-option dropdowns of long names can pass Discord's message size cap on their own (measured 2026-10-14 13:16 EDT: 14,001 characters of JSON at 25 calculations with 80-character names), so the view gives up detail in steps until it fits: the delete list's descriptions first, then the reopen list's descriptions are cut shorter, then the delete list's names. A player with short names never loses any of it.
 function buildSavedPanel(state, savedBaskets, accentColor, options = {}) {
     let out;
@@ -647,8 +682,11 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         ] });
         components.push({ type: 14, spacing: 2, divider: true });
     } else if (current && (current.banners || []).length) {
-        components.push({ type: 10, content: `## This Calculation\n-# Not saved yet. Save it to keep it here; an unsaved one is cleared 30 days after it was started.` });
-        components.push({ type: 1, components: [{ type: 2, style: 2, label: 'Save', custom_id: encodeState('modal_name', view) }] });
+        // Save opens the save step (2026-10-14 17:28 EDT): save it as a new one, or pick a saved calculation to save over.
+        components.push({ type: 10, content: current.sourceName
+            ? `## This Calculation\n-# Edited from **${current.sourceName}**, which is unchanged until you save over it.`
+            : `## This Calculation\n-# Not saved yet. Save it to keep it here; an unsaved one is cleared 30 days after it was started.` });
+        components.push({ type: 1, components: [{ type: 2, style: 2, label: 'Save', custom_id: encodeState('savepick', view), emoji: emojis.parseEmoji(emojis.saveStar) }] });
         components.push({ type: 14, spacing: 2, divider: true });
     }
     components.push({ type: 10, content: `## Saved Calculations\n-# ${list.length ? 'Reopen a saved calculation.' : 'None saved yet. Press **Save** on a result to keep it here.'}` });
@@ -779,6 +817,7 @@ function buildCalculatorPanel(state, basket, accentColor, options = {}) {
     const nav = extra => bottomNavRow(state, { savedCount, ...extra });
     // Page 3 is the Saved view; it belongs to no one calculation, and Back returns to whichever this message had open.
     if (state.page === 3) return [buildSavedPanel(state, options.savedBaskets, accentColor, { notice: options.notice, savedConfirm: options.savedConfirm, current: basket }), nav({ showReset: false, onSaved: true })];
+    if (state.page === 4) return [buildSaveStepPanel(state, options.savedBaskets, accentColor, { notice: options.notice, current: basket, overwriteConfirm: options.overwriteConfirm }), nav({ showReset: false, onSaved: true })];
     // No basket at all -> the setup form, empty. A basketId that resolved to nothing -> the same form, with a notice.
     if (!basket) {
         const container = state.basketId
@@ -846,7 +885,7 @@ async function execute(interaction) {
 
 module.exports = {
     encodeState, decodeState, defaultState, clampFocus,
-    buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, savedChecksum, savedDescription,
+    buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, buildSaveStepPanel, savedChecksum, savedDescription,
     buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
     parseAmount, applySelection, shortName, SHORT_NAME, slashShortcut,

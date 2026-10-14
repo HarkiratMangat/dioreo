@@ -29,6 +29,7 @@ async function save(discordId, basket) {
             includeUpgrades: Boolean(basket.includeUpgrades),
             entitlementMask: basket.entitlementMask || 0,
             submitted: Boolean(basket.submitted),
+            ...(basket.sourceId ? { sourceId: String(basket.sourceId) } : {}),
             updatedAt: new Date()
         });
         return created.toObject();
@@ -64,7 +65,8 @@ async function rename(discordId, basketId, name) {
     const existing = await load(discordId, basketId);
     if (!existing) return null;
     const trimmed = typeof name === 'string' ? name.trim().slice(0, 80) : '';
-    const update = trimmed ? { $set: { name: trimmed, updatedAt: new Date() } } : { $unset: { name: 1 }, $set: { updatedAt: new Date() } };
+    // Naming a working copy makes it a saved calculation of its own, so it stops pointing at the one it was opened from (2026-10-14 17:28 EDT).
+    const update = trimmed ? { $set: { name: trimmed, updatedAt: new Date() }, $unset: { sourceId: 1 } } : { $unset: { name: 1 }, $set: { updatedAt: new Date() } };
     return DrawBasket.findByIdAndUpdate(basketId, update, { new: true }).lean();
 }
 

@@ -283,3 +283,11 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 | Opening a saved one | lands on its result; one saved before it was ever calculated is calculated on open |
 | Cost section | "### CP Needed: `N CP`", a quiet "still to buy after your balance" line; every package option has one shape (quoted price and packs, one line of bought and left over); "Cheapest"/"Stock Up" labels only when two options show |
 
+### Batch 9 — 2026-10-14 17:25 EDT, verbatim · a correction to batch 8's New Calculation fix
+
+> no, a saved calc should remain in it's saved state. so that means a user needs to press "save" and select that previous saved result to override it. otherwise selecting that saved calc again should bring you to it's result, not a empty state.
+
+> also update Save button's emoji to <a:SaveStar:1560041207177023519>(prod), <a:SaveStar:1560041353185075250> (dev)
+
+**Built 2026-10-14 17:32 EDT:** a saved calculation is a snapshot. The first real change to one (spins, draws, region, upgrade, balance, 2X) opens an unnamed working copy that records where it came from (`sourceId`); the title then reads "Edited from Saved: name". Save opens a Save step: Save as New, or pick a saved calculation and confirm saving over it, after which the working copy is removed and the saved one's result shows. Reopening a saved one always lands on its result. SaveStar is on both Save buttons. The "test" calculation emptied by the old New Calculation before this fix stays empty; it can be deleted in Saved.
+

@@ -105,6 +105,8 @@ const emojis = {
     // /draw calculator's "Remove this Selection" mark and its Calculate button (2026-10-14 16:51 EDT, Harkirat uploaded both to both apps and supplied both ids). The PROD ids are written here, per this file's convention; refreshEmojiIds() re-points the dev bot to its own copies (Cross 1560019354446463087, Sparkles 1560022548387856534) by name at boot.
     cross: '<:Cross:1560019185747099758>',
     sparkles: '<a:Sparkles:1560023184873488525>',
+    // The calculator's Save buttons (2026-10-14 17:28 EDT, Harkirat uploaded to both apps): prod id here; the dev bot re-points to its 1560041353185075250 by name at boot.
+    saveStar: '<a:SaveStar:1560041207177023519>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');

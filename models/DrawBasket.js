@@ -24,6 +24,8 @@ const DrawBasketSchema = new mongoose.Schema({
     entitlementMask: { type: Number, default: 0 },
     // FALSE while the player is still filling in the setup form; TRUE once they have pressed Calculate. This is what makes a result "persist until reset / new calculation" (Harkirat, 2026-08-27) across restarts -- a draft has to survive the same way a finished calculation does, so it cannot live in memory or in the customId. Existing docs predate the field and read as false, which correctly reopens them on the form with their draws intact.
     submitted: { type: Boolean, default: false },
+    // A SAVED calculation stays exactly as it was saved (2026-10-14 17:28 EDT, Harkirat: "a saved calc should remain in its saved state. so that means a user needs to press save and select that previous saved result to override it"). The first change made to one opens an unnamed working copy instead, and this is the saved calculation it came from: the title says so, and Save offers to save over it.
+    sourceId: { type: String },
     createdAt: { type: Date, default: Date.now },
     // When the calculation last changed (2026-10-13 12:40 EDT). Running /draw calculator again reopens the most recently changed one -- before this an unsaved calculation could not be reached again once its message was gone. Written by utils/drawBasketStore.js on every save and rename. Older documents lack it and fall back to createdAt.
     updatedAt: { type: Date, default: Date.now }

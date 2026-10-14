@@ -179,3 +179,10 @@ Where this and the two sections above disagree, this wins.
 - **One shape for every package option**, compact and full: `> **price** for packs`, then `-# N CP Bought · N CP Left Over` (the full view prefixes per-pack prices when there are several kinds). Labels only when two options show; the heading then reads "Recommended Packages". CP Needed is the cost block's `###` heading.
 - **Emoji:** `emojis.cross` and `emojis.sparkles` hold the PROD ids; `refreshEmojiIds()` re-points the dev bot by name. Option descriptions cannot be bold in Discord.
 
+### 🔴 SAVED CALCULATIONS ARE SNAPSHOTS, 2026-10-14 17:32 EDT — batch 9
+
+- 🔴 **Every change to a calculation goes through `writeTo()` in `handlers/drawCalc.js`.** On a saved (named) one, the first change that actually changes something opens an unnamed working copy with `sourceId` (now in `models/DrawBasket.js` and PRIVACY.md Appendix A), applies the change there, and moves the message to the copy by setting `state.basketId`. A no-op change (Calculate on an already-calculated one) writes and forks nothing. **Never write a branch's save straight to `state.basketId` again:** it would edit a saved calculation in place, which is the bug this replaced.
+- **The Save step is page 4** (verb `savepick`): Save as New (the name modal, landing on the new result) or the `owsel` list of saved calculations (the one the copy came from is marked "Opened From This One") → a confirm carrying the target in the optional `t` field → `owok` copies the working copy's draws, spins, region, balance, upgrade and 2X onto the saved one, removes the copy and shows the saved result.
+- **The title:** "Viewing Saved: name" on a saved one, "Edited from Saved: name" on a working copy (read live from `sourceId` in `renderPanel`, so a rename or delete never shows a stale name). Naming a working copy drops its `sourceId`.
+- **Emoji:** `emojis.saveStar` (prod id) on Save and Save as New.
+

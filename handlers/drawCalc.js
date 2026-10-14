@@ -52,13 +52,18 @@ function buildNameModal(state, currentName) {
         .addComponents(new ActionRowBuilder().addComponents(field));
 }
 
-async function renderPanel(interaction, state, basket, notice = null, dropConfirm = null, savedConfirm = null) {
+async function renderPanel(interaction, state, basket, notice = null, dropConfirm = null, savedConfirm = null, overwriteConfirm = null) {
     const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
     const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
     const liveDoubleCPEntry = await findLiveDoubleCPEntry();
     const isEphemeral = Boolean(interaction.message?.flags?.has?.(64));
     // Listed on every render: the Saved view needs the list and every other view shows its count on the nav's Saved button.
     const savedBaskets = await basketStore.listForUser(interaction.user.id);
+    // A working copy shows which saved calculation it came from; read live, so a renamed or deleted source never shows a stale name.
+    if (basket && !basket.name && basket.sourceId) {
+        const source = await basketStore.load(interaction.user.id, basket.sourceId);
+        basket = { ...basket, sourceName: source?.name || null };
+    }
     const panel = buildCalculatorPanel(state, basket, accentColor, {
         liveDoubleCPEntry,
         currency: prefs?.cpCurrency || 'USD',
@@ -66,10 +71,25 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
         savedBaskets,
         notice,
         dropConfirm,
-        savedConfirm
+        savedConfirm,
+        overwriteConfirm
     });
     // `panel` is already the top-level component LIST (Container + the sibling nav row) -- do not wrap it in another array.
     return sendV2Payload(interaction, withShareButton(panel, isEphemeral), { skipExpiry: true });
+}
+
+// 🔴 COPY-ON-WRITE FOR SAVED CALCULATIONS (2026-10-14 17:28 EDT, Harkirat: "a saved calc should remain in it's saved state. so that means a user needs to press save and select that previous saved result to override it. otherwise selecting that saved calc again should bring you to it's result"). Every change to a calculation goes through here. On a SAVED one, the first real change opens an unnamed working copy carrying `sourceId`, applies the change there, and points this message at the copy (it mutates `state.basketId`, so every render after it follows); the saved one is untouched until the Save step saves over it. A change that changes nothing (Calculate on an already-calculated one) writes nothing and forks nothing.
+async function writeTo(userId, state, basket, fields) {
+    if (basket && basket.name) {
+        if (Object.entries(fields).every(([k, v]) => JSON.stringify(v) === JSON.stringify(basket[k]))) return basket;
+        const copy = await basketStore.save(userId, {
+            banners: basket.banners, region: basket.region, balance: basket.balance, includeUpgrades: basket.includeUpgrades,
+            entitlementMask: basket.entitlementMask, submitted: basket.submitted, sourceId: String(basket._id), ...fields
+        });
+        state.basketId = String(copy._id);
+        return copy;
+    }
+    return basketStore.save(userId, { _id: state.basketId, ...fields });
 }
 
 // The calculation a Saved-view render shows at its top: loaded quietly, since a gone one only drops that section.
@@ -129,7 +149,7 @@ async function route(interaction) {
         await interaction.deferUpdate();
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, balance: amount });
+        const updated = await writeTo(actingUserId, state, basket, { balance: amount });
         await renderPanel(interaction, state, updated);
         return true;
     }
@@ -145,6 +165,8 @@ async function route(interaction) {
             return true;
         }
         const updated = await basketStore.rename(actingUserId, state.basketId, name);
+        // "Save as New" from the Save step lands on the result it just saved (2026-10-14 17:28 EDT); a rename from the Saved view stays there.
+        if (state.page === 4 && updated?.name) { await renderPanel(interaction, { ...state, page: 0, verb: 'load' }, updated, `Saved as "${updated.name}".`); return true; }
         await renderPanel(interaction, state, updated);
         return true;
     }
@@ -209,7 +231,7 @@ async function route(interaction) {
             await renderPanel(interaction, state, basket, `⚠️ Unticking removes ${lines(removing.length)} of ${names}, ${losing.length === removing.length ? (removing.length === 1 ? 'which has' : 'all with') : `${losing.length} with`} pulls already entered. Remove ${removing.length === 1 ? 'it' : 'them'}?`, { mask, count: removing.length });
             return true;
         }
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: applySelection(basket.banners, selected) });
+        const updated = await writeTo(actingUserId, state, basket, { banners: applySelection(basket.banners, selected) });
         await renderPanel(interaction, state, updated);
         return true;
     }
@@ -218,7 +240,7 @@ async function route(interaction) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         const selected = new Set(DRAW_KEY_ORDER.filter((_, i) => (state.mask & (1 << i)) !== 0));
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: applySelection(basket.banners, selected) });
+        const updated = await writeTo(actingUserId, state, basket, { banners: applySelection(basket.banners, selected) });
         await renderPanel(interaction, { ...state, mask: 0 }, updated);
         return true;
     }
@@ -234,7 +256,7 @@ async function route(interaction) {
             if (banners.length >= MAX_LINES) { skipped++; continue; }
             banners = setTypeCount(banners, key, banners.filter(b => b.drawKey === key).length + 1).banners;
         }
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+        const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, state, updated, skipped ? `A calculation holds up to ${MAX_LINES} lines, so ${skipped === 1 ? '1 draw was' : `${skipped} draws were`} not added.` : null);
         return true;
     }
@@ -253,12 +275,12 @@ async function route(interaction) {
             return true;
         }
         if (interaction.values[0] === 'del') {
-            const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: basket.banners.filter((_, i) => i !== index) });
+            const updated = await writeTo(actingUserId, state, basket, { banners: basket.banners.filter((_, i) => i !== index) });
             await renderPanel(interaction, { ...state, focus: null }, updated);
             return true;
         }
         const banners = basket.banners.map((b, i) => i === index ? { ...b, pullsDone: Number(interaction.values[0]) || 0 } : b);
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+        const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: null }, updated);
         return true;
     }
@@ -278,7 +300,7 @@ async function route(interaction) {
             const i = CP_PACKAGES.findIndex(p => p.id === id);
             return i === -1 ? m : m | (1 << i);
         }, 0);
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, entitlementMask: mask });
+        const updated = await writeTo(actingUserId, state, basket, { entitlementMask: mask });
         await renderPanel(interaction, state, updated);
         return true;
     }
@@ -295,6 +317,29 @@ async function route(interaction) {
         await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0 }, basket);
         return true;
     }
+    // THE SAVE STEP (2026-10-14 17:28 EDT): Save opens it; picking a saved calculation only asks; the confirm saves over it.
+    if (interaction.isButton() && state.verb === 'savepick') {
+        await renderPanel(interaction, { ...state, page: 4, target: null }, await currentBasket(actingUserId, state));
+        return true;
+    }
+    if (interaction.isStringSelectMenu() && state.verb === 'owsel') {
+        const target = await basketStore.load(actingUserId, interaction.values[0]);
+        const current = await currentBasket(actingUserId, state);
+        if (!target || !target.name) { await renderPanel(interaction, { ...state, page: 4 }, current, 'That saved calculation is gone.'); return true; }
+        await renderPanel(interaction, { ...state, page: 4 }, current, `⚠️ Save over "${target.name}"? Its draws, spins, region, balance and upgrade are replaced with this calculation's.`, null, null, { target: String(target._id), name: target.name });
+        return true;
+    }
+    if (interaction.isButton() && state.verb === 'owok') {
+        const working = await currentBasket(actingUserId, state);
+        const target = state.target ? await basketStore.load(actingUserId, state.target) : null;
+        if (!working || !target || !target.name) { await renderPanel(interaction, { ...state, page: 4, target: null }, working, 'Nothing was saved: the calculation or the saved one is gone.'); return true; }
+        const saved = await basketStore.save(actingUserId, { _id: String(target._id), banners: working.banners, region: working.region, balance: working.balance, includeUpgrades: working.includeUpgrades, entitlementMask: working.entitlementMask, submitted: working.submitted });
+        // The working copy has done its job; a saved one picked as the open calculation is never removed here.
+        if (!working.name && String(working._id) !== String(target._id)) await basketStore.remove(actingUserId, String(working._id));
+        await renderPanel(interaction, { ...state, basketId: String(target._id), page: 0, target: null, verb: 'load' }, saved, `Saved over "${target.name}".`);
+        return true;
+    }
+
     // Picking calculations to delete only asks: the pick rides on the confirm button as positions in the list (`m`) plus a checksum of that list (`k`), since 25 ids do not fit a custom_id.
     if (interaction.isStringSelectMenu() && state.verb === 'savedsel') {
         const list = (await basketStore.listForUser(actingUserId)).slice(0, MAX_SAVED);
@@ -339,7 +384,7 @@ async function route(interaction) {
         if (i === null || j < 0 || j >= basket.banners.length) { await renderPanel(interaction, state, basket); return true; }
         const banners = [...basket.banners];
         [banners[i], banners[j]] = [banners[j], banners[i]];
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+        const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: j }, updated);
         return true;
     }
@@ -356,7 +401,7 @@ async function route(interaction) {
         if (!basket) return true;
         // Region switching preserves every banner untouched -- only `region` changes (spec §9).
         const region = state.targetRegion && REGION_ORDER.includes(state.targetRegion) ? state.targetRegion : basket.region;
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, region });
+        const updated = await writeTo(actingUserId, state, basket, { region });
         await renderPanel(interaction, { ...state, targetRegion: null }, updated);
         return true;
     }
@@ -364,7 +409,7 @@ async function route(interaction) {
     if (interaction.isButton() && state.verb === 'upg') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, includeUpgrades: !basket.includeUpgrades });
+        const updated = await writeTo(actingUserId, state, basket, { includeUpgrades: !basket.includeUpgrades });
         await renderPanel(interaction, state, updated);
         return true;
     }
@@ -374,7 +419,7 @@ async function route(interaction) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         if (!basket.banners.length) { await renderPanel(interaction, state, basket); return true; }
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, submitted: true });
+        const updated = await writeTo(actingUserId, state, basket, { submitted: true });
         await renderPanel(interaction, { ...state, page: 0, bpage: 0, focus: null }, updated);
         return true;
     }
@@ -384,7 +429,7 @@ async function route(interaction) {
         if (!basket) return true;
         const index = state.focus;
         const banners = index !== null && basket.banners[index] ? basket.banners.filter((_, i) => i !== index) : basket.banners;
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners });
+        const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: null, mask: 0 }, updated);
         return true;
     }
@@ -438,7 +483,7 @@ async function route(interaction) {
             return true;
         }
         // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form, which is what the button now says it does.
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: [], balance: 0, submitted: false });
+        const updated = await writeTo(actingUserId, state, basket, { banners: [], balance: 0, submitted: false });
         await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, updated);
         return true;
     }

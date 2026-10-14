@@ -257,7 +257,7 @@ t('New Calculation is two-step: armed shows Danger style + "click again", unarme
 t('Delete Calculation is two-step the same way', () => {
     const basket = makeBasket();
     const plain = buttonLabelled(dc.buildCalculatorPanel(state({ page: 3 }), basket, ACCENT, { savedBaskets: [] }), 'Save');
-    assert.ok(plain && verbOf(plain) === 'modal_name', 'an unsaved calculation is saved from the Saved view');
+    assert.ok(plain && verbOf(plain) === 'savepick' && plain.emoji, 'an unsaved calculation is saved from the Saved view, through the Save step, with his SaveStar emoji');
     assert.strictEqual(buttonLabelled(render(basket), 'Save'), undefined, 'and not from the result');
     // Delete is offered on a SAVED calculation only: on an unsaved one it duplicated New Calculation (2026-10-13 click-test).
     assert.strictEqual(buttonLabelled(render(basket), 'Delete Calculation'), undefined, 'the result offers no Delete (2026-10-14 16:47 EDT: it moved to the Saved view)');
@@ -849,6 +849,25 @@ t('the Saved view manages the open calculation at its top, and only when there i
     assert.ok(verbOf(buttonLabelled(withCurrent, 'Rename')) === 'modal_name' && dc.decodeState(buttonLabelled(withCurrent, 'Rename').custom_id).page === 3, 'Rename returns to the Saved view');
     assert.strictEqual(/This Calculation/.test(allText(dc.buildCalculatorPanel(state({ page: 3 }), null, ACCENT, { savedBaskets: [named] }))), false, 'no section when nothing is open');
     assert.ok(messageCount(dc.buildCalculatorPanel(state({ page: 3, verb: 'delarm' }), named, ACCENT, { savedBaskets: savedList(dc.MAX_SAVED, 80) })) <= 40, 'fits at the cap with the section');
+});
+
+t('a working copy says which saved calculation it came from, and the Save step can save over it (2026-10-14 17:26 EDT)', () => {
+    const { toBoldItalicUnicode } = require('../utils/titleBlock');
+    const copy = makeBasket({ _id: 'c'.repeat(24), name: undefined, sourceId: '0'.repeat(23) + '1', sourceName: 'test' });
+    assert.ok(texts(render(copy))[0].endsWith(toBoldItalicUnicode('Edited from Saved: test')), texts(render(copy))[0]);
+    const list = savedList(3);
+    const step = dc.buildCalculatorPanel(state({ page: 4, basketId: copy._id }), copy, ACCENT, { savedBaskets: list });
+    assert.ok(allText(step).includes('## Save This Calculation'));
+    assert.ok(buttonLabelled(step, 'Save as New') && verbOf(buttonLabelled(step, 'Save as New')) === 'modal_name' && buttonLabelled(step, 'Save as New').emoji);
+    assert.strictEqual(verbOf(buttonLabelled(step, 'Cancel')), 'saved');
+    const over = selects(step).find(s => verbOf(s) === 'owsel');
+    assert.strictEqual(over.options.find(o => o.value === copy.sourceId).description, 'Opened From This One', 'the source is marked in the list');
+    const confirm = dc.buildCalculatorPanel(state({ page: 4, basketId: copy._id }), copy, ACCENT, { savedBaskets: list, overwriteConfirm: { target: list[0]._id, name: list[0].name } });
+    const yes = buttonLabelled(confirm, `Save Over "${list[0].name}"`);
+    assert.ok(yes && yes.style === 4 && verbOf(yes) === 'owok' && dc.decodeState(yes.custom_id).target === list[0]._id && yes.custom_id.length <= 100);
+    assert.ok(messageCount(dc.buildCalculatorPanel(state({ page: 4, basketId: copy._id }), copy, ACCENT, { savedBaskets: savedList(dc.MAX_SAVED, 80) })) <= 40, 'fits at the cap');
+    const section = allText(dc.buildCalculatorPanel(state({ page: 3 }), copy, ACCENT, { savedBaskets: list }));
+    assert.ok(/Edited from \*\*test\*\*, which is unchanged until you save over it/.test(section));
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);
