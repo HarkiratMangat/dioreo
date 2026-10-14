@@ -660,7 +660,10 @@ t('what a region is lives in Help; the form only labels the row with a hint', ()
         assert.strictEqual(/Your Region & CP Balance/.test(allText(panel)), false);
         assert.strictEqual(/first pull/.test(allText(panel)), false, 'what a region is stays in Help');
     }
-    assert.ok(/\*\*Region\*\* — the CP price of your first pull/.test(allText(dc.buildHelpPanel(ACCENT))));
+    assert.ok(/\*\*Region\*\* · the CP price of your first spin/.test(allText(dc.buildHelpPanel(ACCENT))));
+    const help = dc.buildHelpPanel(ACCENT);
+    assert.deepStrictEqual(texts(help).map(c => c.split('\n')[0].replace(/<a?:\w+:\d+> /, '')), ['## Calculator Help', '### How It Works', "### Words You'll See", '### Buttons', '### Saving', '### Shortcut'], 'Help is sections, not paragraphs (2026-10-14 18:25 EDT)');
+    assert.ok(texts(help).every(c => c.split('\n').every(l => l.length < 160)), 'no line runs on as a paragraph');
 });
 
 t('the default view names the currency and where to change it', () => {

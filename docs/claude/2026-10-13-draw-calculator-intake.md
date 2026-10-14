@@ -309,3 +309,9 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 **Built 2026-10-14 18:24 EDT:** the spacer question is closed as he left it. **Export** sits in the result's last row (New Calculation · View Saved · Export · Save Result) and answers privately with the result as markdown in a code block: each draw's spins and cost, CP needed, what the balance leaves, and the recommended package; no custom emoji, so it reads the same pasted anywhere.
 
+### Batch 12 — 2026-10-14 18:25 EDT, verbatim
+
+> * restart the bot without --watch. and also SIGNIFICANTLY improve the help panel, omg it's just ALL prose.
+
+**Built 2026-10-14 18:27 EDT:** Help is six sections under dividers: How It Works (four numbered steps), Words You'll See, Buttons, Saving, Shortcut; every entry a one-line "term · meaning". The dev bot was already running without `--watch` (one instance); restarted on the new code anyway.
+

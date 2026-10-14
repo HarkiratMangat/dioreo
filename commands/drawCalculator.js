@@ -827,20 +827,45 @@ function buildDrawInfoPanel(basket, accentColor) {
     return { type: 17, accent_color: accentColor, components };
 }
 
+// THE HELP PANEL, rebuilt as a scannable guide (2026-10-14 18:26 EDT, Harkirat: "SIGNIFICANTLY improve the help panel, omg it's just ALL prose"). It was nine bold-led paragraphs. Now: the four steps in order, then the words, the buttons and saving, each a short labelled list under its own heading and divider, so a player finds the one thing they opened Help for without reading the rest.
 function buildHelpPanel(accentColor) {
+    const dot = emojis.smallDot;
+    const list = rows => rows.map(([term, meaning]) => `${dot} **${term}** · ${meaning}`).join('\n');
+    const divider = { type: 14, spacing: 2, divider: true };
     const components = [
-        { type: 10, content: `## ${emojis.calculator} How the calculator works` },
-        { type: 14, spacing: 2, divider: true },
+        { type: 10, content: `## ${emojis.calculator} Calculator Help\n-# What each part does. Open it any time from the Help button.` },
+        divider,
         { type: 10, content: [
-            '**Calculation** — everything you are pricing out in one go. Name it with **Save** to keep it; **Saved** lists the ones you kept.',
-            '**Your Selection** — the draws you are running. Pick a draw again in **Add more draws to selection** to run two of it. Each draw\'s dropdown sets how many spins you have already done, and holds **Remove this Selection**.',
-            '**Items** — what a draw holds. Most have 10, two have 7. Each spin wins one.',
-            '**Region** — the CP price of your first pull on a draw (10, 20 or 30 CP), which sets every other price. Check it on any draw in the game.',
-            '**Balance** — the CP you already have. The package only buys what is left.',
-            '**Edit** — on the result, reopens the form with everything kept. Region, upgrade and balance also change right on the result. **New Calculation** clears it and starts again.',
-            '**Shortcut** — `/draw calculator draw: pulls: balance:` skips the form and opens straight on that draw\'s result.',
-            `**Saved calculations** — a named one is kept until you delete it in **Saved**, up to ${MAX_SAVED}; an unnamed one is cleared 30 days after it was started. Running \`/draw calculator\` again reopens the one you changed last.`
-        ].join('\n\n') }
+            '### How It Works',
+            '1. **Pick your draws** under Start a Calculation',
+            '2. **Set your spins** on any draw you have already started',
+            '3. **Set your region and balance** under Tweak Calculation',
+            '4. **Press Calculate** for the CP you need and the cheapest way to buy it'
+        ].join('\n') },
+        divider,
+        { type: 10, content: `### Words You'll See\n${list([
+            ['Items', 'what a draw holds; most have 10, two have 7'],
+            ['Spins', 'how many you have already done on a draw; `0` means not started'],
+            ['Region', 'the CP price of your first spin (10, 20 or 30 CP); it sets every other price. Check it on any draw in the game'],
+            ['Balance', 'CP you already have; the package only covers the rest'],
+            ['Upgrade', 'adds a Mythic draw\'s upgrade cost to the total']
+        ])}` },
+        divider,
+        { type: 10, content: `### Buttons\n${list([
+            ['Edit Selection', 'back to your draws and spins, everything kept'],
+            ['Full Breakdown', 'what each draw costs, and a second package when it is worth it'],
+            ['Export', 'the result as text you can paste anywhere'],
+            ['New Calculation', 'start fresh; saved calculations stay as they are']
+        ])}` },
+        divider,
+        { type: 10, content: `### Saving\n${list([
+            ['Save Result', 'save it as a new one, or pick a saved one to save over'],
+            ['View Saved', `reopen, rename or delete; up to ${MAX_SAVED} kept`],
+            ['Editing a saved one', 'changes go into a copy; the saved one only changes when you save over it'],
+            ['Unsaved', 'cleared 30 days after it was started; running the command reopens your latest']
+        ])}` },
+        divider,
+        { type: 10, content: '### Shortcut\n`/draw calculator draw: pulls: balance:`\n-# Skips the form and opens straight on that draw\'s result.' }
     ];
     return { type: 17, accent_color: accentColor, components };
 }
