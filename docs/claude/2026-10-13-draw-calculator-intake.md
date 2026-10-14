@@ -14,7 +14,7 @@ status: live
 | | |
 |---|---|
 | Round | ✅ closed 2026-10-13 22:57 EDT ("i don't think i need to go further"); build started |
-| Round 2 | ⏳ open since 2026-10-14 11:45 EDT, his review of the redesign (`1cd13c82`) on the dev bot; log only |
+| Round 2 | ✅ closed 2026-10-14 13:07 EDT ("thats it for my intake so far, work autonomous and correct these things"); build started |
 | Batches | 3 |
 | Classes | 9 |
 
@@ -211,4 +211,26 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 **G, CP spent:** each line's dropdown carries 11–13 options; a longer description on each adds to the message size that already limits lines to 5 a page. Measure at the build.
 
 **M, what the Priority Plan does today** (read 2026-10-14 12:28 EDT): the result lists the lines in their order, each with its own cost and a running total. Nothing else uses the order: the CP needed, the purchase advice and the balance check are the same in any order, and the plan never marks where the balance runs out. So **Move Up changes only the running-total column.** Two directions for the build: drop the order, Move Up and the Priority Plan; or keep them and make the plan say which lines the balance already covers and where it runs short.
+
+**His answers, 2026-10-14 13:07 EDT, verbatim:**
+
+| Asked | His answer |
+|---|---|
+| "Spins" everywhere, or only in each draw's dropdown? | "when generally refering to them, it's \"items\", when referring to a specific count/attempts then \"spins\"" |
+| Remove the order and Move Up, or show what the balance covers? | "let's remove it for now. the \"your balance covers #1 and #2\" feels more like a future update to the calc and it's ability." |
+
+### Batch 7 — 2026-10-14 13:07 EDT, verbatim · the result page and its breakdown (shots 14–15, round closed)
+
+> * can we better implement the saved calc name into the title? Maybe put it in a 2nd line? "> ### Viewing Saved: `the name`"?
+> * why are the cp region buttons gone from this screen? and the upgrade yes/no button.
+> * the "Balance: 20 CP :BlueDash_BD: Region: 10 CP" line is also  redundant now that the balance is included inside the balance button. and the region is a toggle.
+> * overall, give the calc and breakdowns some more breathing room. refine things. refine the experience and display of info/buttons.
+>
+> thats it for my intake so far, work autonomous and correct these things. bumping you up to -high again.
+
+**Classes:** N (new: the result page carries its own controls: region, upgrade, balance; nothing repeated as text), I (structure and breathing room, extended), L (the saved name in the title).
+
+**M, decided:** the order, Move Up and the Priority Plan are removed. A plan that shows which lines the balance covers is filed as a future idea.
+
+**B, decided:** "Items" when speaking of a draw in general ("10 Items · 5,810 CP Total"); "Spins" for a count of attempts ("3/10 Spins").
 
