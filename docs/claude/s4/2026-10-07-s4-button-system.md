@@ -657,3 +657,9 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (the good-day counter's hover) "but i mean it'll still kind of brighten, wont it? assuming it does the same thing the "5" hover did where the see-through fill allowed the below color to come thru and give it an impression like it had lightened up?"
 - (the no-realm match count) "we'll come back to this after we decide what to do with "static""
 - Built in spec v106: --dual split into --dualtext (two-line tags, both echoes, Pick all) and --paletext (the launcher's count, the slot code, the match count) on the board, the rules (C17, C21), the change list and tag-check; two-line tags 32; Pick all --reveal-right; both open blocks down. The good-day counter: static's fill is 14%, so the launcher's hover shows through it as on the 5; nothing to build.
+
+## His 2026-10-14 18:51–18:54 EDT, verbatim, written 2026-10-14 18:54 EDT
+- "what if static was a flag instead of a style? would it work the same? be better? be worse?"
+- (the no-realm match count, mid-turn) "with no realm color, doesnt it just use the neutral grey? since the tag is --borderless."
+- Drawn in spec v107 (an open block under Tags): static beside tint, wash and paint worn by tags, held at rest. Read from spec-defs.js recipe(): static's rest (colour 14%, outline 55% at 1.5px, words 80% on white) matches no style's rest, so as a flag it would either change every tag's look or carry a look of its own. The no-realm match count today is static with no colour: the neutral grey fill (sunk 85%), no outline (--borderless), words ink (--paletext); the ghost rule would take the grey away.
+
