@@ -612,3 +612,8 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 ## His 2026-10-14 14:02 EDT, verbatim, written 2026-10-14 14:17 EDT
 - (on my 12:34 EDT pick of `line` and `block`) "line and block approved. unsure what else is open, but we'll continue it after the compact"
 - Decided: field kinds search · line · code · block · date, the set his 12:31 EDT reply quoted with only "text" and "area" changed; so the rename `field-S-line.rename-ok--inline`, image key `field-L-code.key`, a link `field-L-line.link`, Bulk create `field-L-block.bulk`, the draw announcement `field-L-block.announcement` (C25). Mine, the same pattern, in `spec-inputs.js` (Builder-2 `abe1aff`; its Inputs cards are off the board since 2026-10-11, so nothing to publish): gunsmith code `field-L-code.gunsmith`, build name `field-L-line.name`; the code kind sets the mono face, so the old `--mono` flags are gone.
+
+## His 2026-10-14 14:38 EDT, verbatim, written 2026-10-14 14:39 EDT
+- (on the text tokens `text-` · `num-` · `label-` · `code-`) "\"text\" for text style seems a bit silly."
+- (on `field-L-code.gunsmith` and `field-L-line.name`) "elaborate?"
+- Proposed, waiting on his word: `body-` · `display-` · `label-` · `code-`, C27's own family names; `num-` withdrawn, because Big Shoulders also draws page titles and group headings in Builder-2 (`.masthead h1`, `.pb-mast h1`, `.ghead h4`) and small counts are Space Grotesk (C23). The two field names come from Builder-2's own words: the code field is headed "Gunsmith code" (`.gunsmith`, since `-` picks a value, C11); the build-name field is captioned "Label" with the data `buildName` (`.name`, since `.label` would read as the label family).
