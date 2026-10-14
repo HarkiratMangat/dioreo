@@ -554,6 +554,7 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 
 ## His 2026-10-13 18:32 EDT, verbatim (two screenshots: hovering build key 3, and Pick all M), written 2026-10-13 18:46 EDT
 > also, your build key chips don't even have the proper plus/minus icon in the top corner.
+>
 > and the checkbox buttons all lack the proper hover events for the checkbox and it's style
 - Built in spec v97: the keys carry Compare's corner mark (a plus to put a build in, a minus to take it out, shown on hover, the category 88% on white); every checkbox chip's checkbox is Builder-2's live "B · Soft well" in all five states (empty, the tick previewed on hover, ticked with a halo, ticked and pointed at with the tick lifting off, mixed). One checkbox size, 18, as Builder-2's.
 
