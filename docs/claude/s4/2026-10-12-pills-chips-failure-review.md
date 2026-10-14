@@ -128,3 +128,4 @@ The fix, every call from here on:
 - A rewrite lists every property the old code set and ticks each off against the new.
 - An edit batch prints a line per edit; no lines means nothing ran, whatever the checks after it say.
 - A control's parts (a checkbox, a corner mark, a count, a meter) get their own states read from Builder-2's CSS and checked, not only the control's skin.
+- A behaviour seen on the spec board is checked in Builder-2's own markup before it becomes a rule or a name: the board's controls are drawn by spec-ctl.js and carry its defaults (2026-10-13 23:55 EDT, the vocabulary: every Pill there is aria-pressed, yet the kit has pill-shaped action buttons).
