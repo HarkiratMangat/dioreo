@@ -323,3 +323,19 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 **Built 2026-10-14 18:38 EDT:** Help now carries what the screen cannot show: 🧭 How It Works (4 steps), 📈 How Prices Work (the open draw's real spin-by-spin price chain at the open region, with what the last three spins cost of the total), 🗺️ Find Your Region (region icons; which draws' first spin IS the region), 🧾 Reading Your Result (the package rule, left over, Stock Up, 2X), ⭐ Saving (saved stays saved, save over, limits), ⚡ Shortcut. The think-pass falsified the old line "region = first spin on any draw": Mythic Character and Pick Your Reward Card start higher. The critique cut the two result lines the screen already labels and promoted the region rule out of small text. Export carries the Show Everyone icon; the calculator no longer sends a Show Everyone row, which frees 2 components (`SETUP_CONTAINER_BUDGET` 37).
 
+### Click-test — 2026-10-14 18:59 EDT, on the dev bot in his Discord app, in the background (his "go clicktest. use my computer but use it in the background")
+
+| Path | Result |
+|---|---|
+| Full Breakdown / Simplify | works; Cost Per Draw and both package options show |
+| Export | private markdown reply, renders and copies |
+| Help | the open draw's price chain at the open region; every section renders |
+| View Saved → This Calculation → Save → Save step | works |
+| Save over "test" → confirm | works; lands on its result with "Saved over" |
+| Region change on a saved result | opens a copy titled "Edited from Saved: test"; the saved one stays at 10 CP |
+| Reopen "test" from Saved | its result, unchanged |
+| Edit Selection → spins → Remove with progress → Keep It → Calculate | works |
+| New Calculation two-click | works |
+
+**Fixed:** New Calculation on an edited copy kept "Edited from Saved" on the empty form (it now starts fresh and drops the copy); Stock Up sat flush against Cheapest's last line (a blank line between them); "Keep it" → "Keep It". **Not clicked:** Save as New (a modal needs typing), Delete and Delete All (they would delete his "test"); both are covered by the handler simulation and the tests.
+

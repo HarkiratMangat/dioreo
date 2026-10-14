@@ -488,8 +488,9 @@ async function route(interaction) {
     if (interaction.isButton() && state.verb === 'reset') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        // A SAVED calculation is never emptied by New Calculation (2026-10-14 16:51 EDT, Harkirat: "i clicked new calc, so why is it still saying viewing saved: test?"). Clearing it in place kept its name, so the fresh form claimed to be the saved one and the saved one lost its draws. A new, unnamed calculation starts instead, at the same region; the saved one stays in Saved untouched.
-        if (basket.name) {
+        // A SAVED calculation is never emptied by New Calculation (2026-10-14 16:51 EDT, Harkirat: "i clicked new calc, so why is it still saying viewing saved: test?"). Clearing it in place kept its name, so the fresh form claimed to be the saved one and the saved one lost its draws. A new, unnamed calculation starts instead, at the same region; the saved one stays in Saved untouched. A working copy of a saved one starts fresh too, and the copy is dropped (click-test 2026-10-14 18:58 EDT): cleared in place it kept its `sourceId`, so the empty form still read "Edited from Saved: test".
+        if (basket.name || basket.sourceId) {
+            if (!basket.name) await basketStore.remove(actingUserId, String(basket._id));
             const fresh = await basketStore.save(actingUserId, { banners: [], region: basket.region });
             await renderPanel(interaction, { ...state, basketId: String(fresh._id), page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, fresh);
             return true;

@@ -835,7 +835,7 @@ t('the result keeps Set Balance one tap away, and Edit is a VIEW that leaves the
 t('removing a line with progress asks first; Keep stays on the page it was asked from', () => {
     const editing = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 7 }] }), { page: 2, focus: 0 }, { dropConfirm: { mask: 0, count: 1, verb: 'dellineok', label: 'Remove #1' }, notice: 'x' });
     const yes = buttonLabelled(editing, 'Remove #1');
-    const keep = buttonLabelled(editing, 'Keep it');
+    const keep = buttonLabelled(editing, 'Keep It');
     assert.ok(yes && keep);
     assert.strictEqual(dc.decodeState(yes.custom_id).focus, 0, 'the confirm carries which line');
     assert.strictEqual(dc.decodeState(keep.custom_id).page, 2, 'Keep does not throw an edit back to the result');

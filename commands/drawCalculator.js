@@ -420,7 +420,8 @@ function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
         type: 1,
         components: [
             { type: 2, style: 4, label: label || `Remove ${plural(count, 'line')}`, custom_id: encodeState(verb, { ...state, mask }) },
-            { type: 2, style: 2, label: count === 1 ? 'Keep it' : 'Keep them', custom_id: encodeState('page', { ...state, mask: 0 }) }
+            // Title Case like every other button (click-test 2026-10-14 18:58 EDT).
+            { type: 2, style: 2, label: count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('page', { ...state, mask: 0 }) }
         ]
     };
 }
@@ -575,6 +576,8 @@ function buildCostBlock(state, basket, currency, client, { compact }) {
     ];
     lines.push(showBoth ? '### Recommended Packages' : '### Recommended Package');
     lines.push(...option(showBoth ? 'Cheapest' : null, result.cheapest));
+    // A blank line between the two options (click-test 2026-10-14 18:56 EDT): without it "Stock Up" sat flush against Cheapest's last line and read as part of it. A bold label is not a heading, so the blank line does not stack a heading margin.
+    if (showBoth) lines.push('');
     if (showBoth) lines.push(...option('Stock Up', result.stockUp, `${formatMoney(result.stockUp.extraCents, currency)} more for ${fmt(result.stockUp.extraCp)} extra CP at a better rate, worth it only if you keep pulling`));
     // The currency line shows in BOTH views (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it.
     lines.push(`-# ${compact ? '' : 'Estimates only; tax and conversion vary. '}Prices in **${currency}** · change in ${settingsMention}`);
