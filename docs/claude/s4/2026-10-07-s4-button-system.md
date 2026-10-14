@@ -568,3 +568,16 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - Q8: "we'll come back to it later, we still need to fix rails and pills."
 - "left bar, we'll come back this when we move to tags redesign"
 - "check your notes and remind me, did we move all the styles to 1.5px outline or just static? please verify because im forgetting" → just static. C10: buttons went back to 1px on his 2026-10-11 19:55 EDT list ("also revert the buttons back to 1px outline, the 1.5px adds too many conflicts with other designs. but keep static on 1.5px."); 1.5px for every style held only 17:31–19:55 EDT that day. Nothing in his words since changes it (every transcript since 2026-10-07 searched, 2026-10-13 20:05 EDT); the 1.5px calls after it are other parts: the pop-up edge (made 1px, 22:38–22:41) and the field focus ring (1.5px, 22:49). Measured on the board (2026-10-13 20:04 EDT): neutral, paint, tint, wash and fill 1px; static 1.5px; all 82 pills, rail segments and chips 1px; all 57 tags 1.5px. C9a still said "every outline 1.5px" from its approval; it now points to C10.
+
+## His 2026-10-13 23:05–23:32 EDT, verbatim, written 2026-10-13 23:55 EDT
+- (23:05) "before we get into that... define button vs tag vs pill vs rail vs chip vs badge? because currently we use those terms to loosely and it's causing a lot of overlap and confusion in the token labeling for specific designs/elements"
+- (23:09) "invoke a thorough sequential-thinking /workstyle:think-pass on this topic. think outside the box. open your mind. ask hard questions. ask GOOD questions!"
+- → my answer: a type is what a click does; pill is a shape; the word the loose uses stood in for is toggle; rail a type of its own; the old and new name of every element on the board.
+- (23:32) "so pill is a shape, not a type? so can you break up the definitions into a proper grid? as well as a proper structure of the token labels (side note, can we not have a space before/after the `>`?)"
+- (23:32) "new flags approved, they make sense."
+- (23:32) "and toggle as a type is approved."
+- (23:32) "yeah rail as type makes sense."
+- (23:32) "5 matches = tag."
+- (23:32) "sure rename."
+- (23:32) "im eating so work autonomous as much/as long as you can by yourself"
+- Built in spec v99 (2026-10-13 23:55 EDT, version 1791950039-b4b5, Builder-2 `9117f5c`): C4, C11, C17, C19 to C23 rewritten; C25 (types) and C26 (rails) new. On the board the Pills section is Toggles and holds the box toggles too (badge checkboxes, Pick all, build keys); every rail is rail-<size>-box (all measured as boxes); names use `>` and `+` with no spaces; the match count is drawn as tag-M-box.static (-realm with a realm) and tag-check holds it (it failed on v98 first); the in-field names read -realm instead of the realm's own name. Ledger 118 rows (mhitstag added; 21 targets renamed). The `+` joiner is mine.
