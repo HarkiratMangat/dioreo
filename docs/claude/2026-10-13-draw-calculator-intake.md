@@ -13,9 +13,9 @@ status: live
 
 | | |
 |---|---|
-| Round | ⏳ open, log only |
-| Batches | 2 |
-| Classes | 7 |
+| Round | ✅ closed 2026-10-13 22:57 EDT ("i don't think i need to go further"); build started |
+| Batches | 3 |
+| Classes | 9 |
 
 ## Batches
 
@@ -66,6 +66,29 @@ status: live
 | **F · Lines per page** | why 4? is it the component limit? can it be 6? | his question first: measure the form and Edit Draws at 6 lines, with and without the saved list, against Discord's 40, and show the numbers |
 | **G · How a dropdown's options are designed** (every select) | Remove becomes the FIRST option of a line's dropdown; the options redesigned to look better and read visually, not as prose | every select in the calculator: a line's dropdown, the first-pick picker, "+ Add more draws", Load a saved calculation, the Cost page's picker. Where actions sit against values, what an option's emoji, label and description each carry |
 
+### Batch 3 — 2026-10-13 22:57 EDT, verbatim · the Cost page, simplified and with its breakdown open (round closed)
+
+**His screenshots:** `local/project/features/draw-calculator/intake-2026-10-13/07-cost-page.png` (the Cost page) · `08-cost-page-breakdown.png` (the same with Show Breakdown open)
+
+> * oh... a reset aka "new calculation" button does exist... it's just not available until the 3rd screen.
+> * instead of "your draws", rephrase to "Your selection" or something similar.
+> * also how do i add another quanity of a draw type on this screen? such as if i want to add another mythic draw? OH... it's the "edit draw" button. Then why is that button at the bottom instead of in the "your draw" section? and why have the dropdown menu to select draw types when the other half of the funtionality isn't available until "edit draw" screen?
+> * overall, improve visualization through finetuning design
+> * honestly, overall things also just seem very cluttered and poorly organized/structured.
+>
+> i don't think i need to go further into the intake, these comments above kind of address the overall issues with the calc right now.
+>
+> invoke a thorough /workstyle:think-pass on the comments, attach them, ask uncomfortable challenging questions, figure out the out of box solutions, and work on these autonomously. no taking over my screen pls.
+
+**His asks, by class** (logged 2026-10-13 22:57 EDT; the round is closed and the build starts from here):
+
+| Class | His asks | The sweep it implies |
+|---|---|---|
+| **A · Prose → a walked guide** *(extended)* | "YOUR DRAWS" → "Your selection"; finer visual design | every heading on every page |
+| **E · Start over** *(extended)* | New Calculation exists but only on the result page | one button, every page |
+| **H · Where editing lives** | adding another of a draw on the result page is behind Edit Draws at the bottom, away from the selection; the result page's draw picker does half the job (types only) while the other half lives on Edit Draws | the result page's selection block, its picker, Edit Draws, the form: one place, one way, to change what is being priced |
+| **I · Structure and clutter** (whole panel) | cluttered, poorly organised and structured; improve the visualisation | the order and grouping of every block on every page, the button rows, the breakdown's layout |
+
 ## Ambiguities to settle at the build
 
 *A reading of his words that could go two ways, with what would settle it, rather than a guess.*
@@ -89,3 +112,5 @@ status: live
 | E | nav row, every page | one Clear / start-over button outside the panel |
 | F | form, Edit Draws | lines per page: why 4, and whether 6 fits |
 | G | every select | dropdown options: Remove first, visual over prose |
+| H | Cost page, Edit Draws, form | one place and one way to change what is priced |
+| I | all | structure and clutter: order, grouping, rows, the breakdown |
