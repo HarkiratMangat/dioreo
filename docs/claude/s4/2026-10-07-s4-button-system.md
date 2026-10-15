@@ -727,3 +727,14 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - "as for open state, define it properly first, taking the problem button as our example..."
 - Measured: the count is `<span class="b3-sd-count" aria-label="3 selected">`, not clickable. aria-expanded marks pop-up openers (the problem and image chips, end-date buttons, post chips) and section folds (row heads, fold buttons, Repairs rows). The image chip (`.b3-fchip`): rest no fill and no outline, its icon in its colour; hover the colour at 14%; held while its pop-up is pinned. Proposed, waiting on him: `solid` = fill's informative counterpart (solid colour, dark words, no hover, no glow), the count a tag (`tag-L-icon.solid-staged` / `.solid-mode`) by its own label; the open state as defined in the reply, marked on a name by `--popup`; the problem button `tint-warn--quiet--borderless--icon--problem--dualtext--popup`.
 
+## His 2026-10-14 22:15 EDT, verbatim (one screenshot), written 2026-10-14 22:17 EDT
+- (add solid as a style) "yeah go for it."
+- (the count a tag) "okay makes sense as a tag."
+- (open with --popup) "why --popup? wasn't the whole point of "open" basically for the pop-up?"
+- (Compare's problem button outline) "elaborate?"
+- "doesn't seem right. because look at it. it's basically tint, it has tint's hover, but in 'open' state, it becomes `--ghost` and partially drops it's outline toward the side where the pop-up appears."
+- "* so open would be: fill: none. outline color: whatever the 'selected' state uses. outline-style: partially drops 1 side of it's outline. words: whatever the 'selected' state uses. no open-hovered state."
+- "so let's also take the staged deletion button as a sort of falsification for the state and apply it's effects to it as well when drawing it, okay?"
+- "How does that sound?"
+- Retracted: my "quiet--borderless" reading of the problem button came from the small image chip (.b3-fx-sm), not the big `.b3-fx > .b3-fchip` in his screenshot, and the Compare question rested on the same mix-up. Written: C17 solid and the count tag, C22 open. Found by the falsification: Stage deletion (the selection bar and the row's trash) opens `overlay.confirm`, a centred modal behind a scrim, with no side toward it; the problem pop-up flips above when there is no room (`data-up`).
+
