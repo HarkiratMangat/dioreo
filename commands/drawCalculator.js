@@ -810,7 +810,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     components.push({
         type: 9,
         components: [{ type: 10, content: head.join('\n') }],
-        accessory: { type: 2, style: 2, label: state.detail ? 'Simplify' : 'Full Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(state.detail ? emojis.simplify : emojis.expand) }
+        accessory: { type: 2, style: 2, label: state.detail ? 'Simplify' : 'Full Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(state.detail ? emojis.collapse : emojis.expand) }
     });
     // Room between the figures and the package that buys them (2026-10-14 13:13 EDT, his "more breathing room").
     if (tail.length) components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: tail.join('\n') });

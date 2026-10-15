@@ -349,3 +349,17 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 **Built 2026-10-14 19:30 EDT:** EditCalc on Edit Selection (the prod id in `utils/emojiMap.js`; the dev bot re-points by name). The export now shows, per draw, spins, what is left, CP to finish and CP already spent, with the upgrade on its own line; then CP needed, what the balance leaves, each recommended pack with its price, and the Stock Up option. The delete click-test is filed in `docs/db-deferred-list.md` for later.
 
+
+### Batch 15 — 2026-10-15 18:01 EDT, verbatim
+
+> update these following emojis (prod bot ids provided):
+>
+> *  "calculate" button sparkles to <a:Sparkles:1560410369447563274>
+> *  "full breakdown" button to <a:Expand:1560408706233933845>
+> *  "simplify" button to <a:Collapse:1560408707685294120>
+> *  "edit selections" button to <a:EditCalc:1560408533160296519>
+> * 30cp to <a:30CP:1560408352641519656>
+> * 20cp to <a:20CP:1560408353975443487>
+> * 10cp to <a:10CP:1560408355380404344>
+
+**Built 2026-10-15 18:03 EDT:** all seven prod ids in `utils/emojiMap.js`; the old `simplify` key is now `collapse` (its only user is the calculator's detail toggle). The three region icons are shared, so /draw prices' region switcher changes with the calculator's region select and Help chips. The dev app holds every new name once (read live), and the dev bot re-points them by name at boot.
