@@ -742,3 +742,9 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (open only for anchored pop-ups, the dropped side following the pop-up, no open state for centred confirm boxes) "makes sense."
 - Built in spec v112: `solid` in the recipe and the styles grid (fill's informative counterpart: the colour solid, dark words, no hover, glow or outline); the selection counts `tag-L-icon.solid-staged` and `tag-L-icon.solid-mode` (44 square, the digit at the L row's words, 13 · 700, pending his pick of the face); the problem button `button-M-box.tint-warn--icon--problem--dualtext` at rest, hover and open (pop-up below and above), live: a click opens and closes it. tag-check knows the L row (it still fails on a broken board); ctl-check checks a pop-up opener's rest against hover and its open look (no fill, three sides, the dropped side toward the pop-up) and failed before the open look settled correctly.
 
+## His 2026-10-14 23:00 EDT popup, verbatim, written 2026-10-14 23:03 EDT
+- (the selection count's digit, shown at body-m, body-l and display-xl) "D · display-xl-700 (Recommended)"
+- (the attachment chip, Laid on over Outline) "Laid on"
+- (a flag for its row-driven hover, --rowhover or --follow) "why do we need one when this is a chip? we never had any flag for the selection chip."
+- (one size, S 24 with the name 13, everywhere) "Yes, S 24 · 13 everywhere (Recommended)"
+- Built in spec v113: the counts' digit in display-xl-700; the attachment chip decided as `chip-S-box.tint-slot--paletext>label-xs-700.slot+body-m-400` (Laid on read as tint: a dark fill, the slot colour 1px at 55%, 75% with its row), no flag; ledger rows attchip and countface.
