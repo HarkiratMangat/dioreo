@@ -677,3 +677,7 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - "the whole point of the "off" toggle was simply to view the raw element with no accents applied to it. but yeah in reality, it doesn't exist because it'll always have -realm to it"
 - Kept: the board's "off" accent stays, as a raw view; C11 says the portal's fields always read `-realm`.
 
+## His 2026-10-14 20:07 EDT, verbatim, written 2026-10-14 20:13 EDT
+- "before that, question... what about the attachment tag in the armory manifest? what design/style is that? it can't be static since it has a hover event. tint--ghost?"
+- Measured on Builder-2's page (palette variant neutralbg, labels key): `.wg-at` has a grey fill (ink 6% on sunk), the slot colour at 46% as its outline, a JetBrains Mono caps slot label in the slot colour, then the name in white; no hover rule of its own, no click, no tooltip in the Manifest. Its outline goes to 72% when its CARD is hovered (pointer on the card alone does it), a part following its parent, as the launcher's 5. tint--ghost would drop the fill, colour the words and hover on its own. Drawn in spec v110 (open block under Tags): A `tag-S-box.static-slot>label-xs-700.slot`, B `tag-S-box.static-slot--paletext>label-xs-700.slot`.
+
