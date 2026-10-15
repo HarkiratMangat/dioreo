@@ -363,3 +363,11 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 > * 10cp to <a:10CP:1560408355380404344>
 
 **Built 2026-10-15 18:03 EDT:** all seven prod ids in `utils/emojiMap.js`; the old `simplify` key is now `collapse` (its only user is the calculator's detail toggle). The three region icons are shared, so /draw prices' region switcher changes with the calculator's region select and Help chips. The dev app holds every new name once (read live), and the dev bot re-points them by name at boot.
+
+### Batch 16 — 2026-10-15 18:12 EDT, verbatim
+
+> * let's change the season command's outside action row to green-disabled, instead of red-disabled.
+> * also, does the draw calc not have a timeout like the other commands? and can you check that it's locked to only the invoked user being able to interact with it? so a random person doesnt mess up someone's calculation (any warning message or anything for it? do we usually do those?)
+> * and you can take over my screen and test what you want for the bot.
+
+**Built 2026-10-15 18:22 EDT:** `utils/globalNav.js` marks the active page green (style 3) instead of red (style 4); it is one shared row, so all five season commands change. **Lock:** already in place: every calculator click goes through `resolvePanelActor`, and a stranger gets an ephemeral "🔒 That isn't your calculator! Run `/draw calculator` to start your own.", the same pattern as /settings' "🔒 Not your dashboard!". A simulation with a non-admin stranger on 12 controls (Calculate, View Saved, Delete All, confirm delete, New Calculation, Export, Help, Edit, Full Breakdown, the saved picker, the spins select, Save Over) refused every one, with no panel edit and no database call; the same run as the author passed. **Timeout:** none, on purpose: spec decision 7 ("never expires", re-derived 2026-08-27), because every click re-reads the calculation from the database. Whether to add the 10-minute idle timeout is his call. **Screen test:** the full-screen approval prompt timed out; background clicks did not reach the panel.
