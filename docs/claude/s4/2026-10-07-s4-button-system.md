@@ -702,3 +702,13 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - "i guess the 1/2/3/4/5 build weapon name elements can be their own section "tiles". "5 of 6" should be a "tag" but it's style doesn't fit in so it would have to be a new type of tag shape i guess? no idea what to do with the gunsmith code fill colored boxes or the striped boxes. idk about the others"
 - Written: C25 tile. Found: "5 of 6 builds" is Compare's capacity readout (`.cx-st`, pips `.cx-sts i` each in its build's weapon colour, "At most 6 builds sit side by side"); Broadcast's "1 of 10 slots used" (`.cmeter`) is the same kind. Proposed, waiting on him: its pips are the existing --meter part, so tag + --meter, no new shape; the SLOTS cells and the code's colour bars are meter cells too, the striped ones --problem cells; its dark well is static's no-colour fill, against the ghost rule.
 
+## His 2026-10-14 21:01–21:02 EDT, verbatim (one screenshot), written 2026-10-14 21:02 EDT
+- (on "Compare's TYPE 19 card") "that's not compare's type 19 card, that's a tile from the export drawer 'pick builds'"
+- (the lime 3) "it's in the armory manifest selection bar. it's also in the export drawer pick build's lists and on the export drawer landing" (screenshot: the selection bar's count of picked builds, a lime square, beside BAL-27)
+- (stripes for conflict and problems) "yeah, seems fine. problems are a conflict."
+- (dashed for placeholders, unpicked keys, "not in the code") "those seem fine and kind of feel like "Staged" honestly, but unsure about the "not in the code" usage of it."
+- (my pick: stripes = needs attention, dashed = staged and empty only) "sounds good"
+- "and while the new proposed "meter" type is fine. the underlying issue is the style, no? many of those screenshots are uniquely styled."
+- "also sent my earlier message without noticing you had described the 12 screenshots. so take this message and my prior message as collective comments i guess. and give me a better summary with things more thought out and distilled. that might change your "tile is not a type" statement."
+- Written: C17 stripes = needs attention, dashed = staged or empty only. Distilled (waiting on him): the 12 need four new looks, tiles (a colour gradient), meter cells, a fill counter (the lime 3), placeholders (dashed, a flag); the rest map onto existing styles plus named parts.
+
