@@ -712,3 +712,12 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - "also sent my earlier message without noticing you had described the 12 screenshots. so take this message and my prior message as collective comments i guess. and give me a better summary with things more thought out and distilled. that might change your "tile is not a type" statement."
 - Written: C17 stripes = needs attention, dashed = staged or empty only. Distilled (waiting on him): the 12 need four new looks, tiles (a colour gradient), meter cells, a fill counter (the lime 3), placeholders (dashed, a flag); the rest map onto existing styles plus named parts.
 
+## His 2026-10-14 21:43 EDT, verbatim, written 2026-10-14 21:45 EDT
+- ("5 of 6": static's grey well) "grey well? but the original uses black and black looks so much cleaner."
+- (the problem button as a warn button with flags) "you sure? because it currently uses a unique hover-state"
+- (tile as a look) "i think tile should be treated like a pop-up. where it's not a single element, it's a collective of elements creating a project. it can share underlying fundamentals so all future tiles follow a similar path but overall they still look different (e.g the problem/all-pass/image didnt load/staged deletion/etc pop-ups)"
+- (design the new looks one at a time on the board) "i agree."
+- (fill on tags, or the count as its own thing) "unsure, you tell me? think about it."
+- (the ghost rule for readouts) "but didn't we state already long ago that static with no accent color had a dark base (sunk 85%)? which kind of resolves my "grey? not black?" issue, right?"
+- Written: C17 the ghost rule is for status tags, readouts keep the near-black base; the selection count is tag-L-icon.fill-mode (fill allowed on a selection's count only); C25 tiles are compositions. Found: the problem button (.b3-fchip) turns a warn 14% fill on hover (22% and a 62% outline in Compare) and keeps it while its pop-up is open (aria-expanded); waiting on him whether it takes tint's hover.
+
