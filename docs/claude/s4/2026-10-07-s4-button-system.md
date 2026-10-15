@@ -738,3 +738,7 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - "How does that sound?"
 - Retracted: my "quiet--borderless" reading of the problem button came from the small image chip (.b3-fx-sm), not the big `.b3-fx > .b3-fchip` in his screenshot, and the Compare question rested on the same mix-up. Written: C17 solid and the count tag, C22 open. Found by the falsification: Stage deletion (the selection bar and the row's trash) opens `overlay.confirm`, a centred modal behind a scrim, with no side toward it; the problem pop-up flips above when there is no room (`data-up`).
 
+## His 2026-10-14 22:22 EDT, verbatim, written 2026-10-14 22:39 EDT
+- (open only for anchored pop-ups, the dropped side following the pop-up, no open state for centred confirm boxes) "makes sense."
+- Built in spec v112: `solid` in the recipe and the styles grid (fill's informative counterpart: the colour solid, dark words, no hover, glow or outline); the selection counts `tag-L-icon.solid-staged` and `tag-L-icon.solid-mode` (44 square, the digit at the L row's words, 13 · 700, pending his pick of the face); the problem button `button-M-box.tint-warn--icon--problem--dualtext` at rest, hover and open (pop-up below and above), live: a click opens and closes it. tag-check knows the L row (it still fails on a broken board); ctl-check checks a pop-up opener's rest against hover and its open look (no fill, three sides, the dropped side toward the pop-up) and failed before the open look settled correctly.
+
