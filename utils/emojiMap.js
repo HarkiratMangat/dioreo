@@ -111,6 +111,8 @@ const emojis = {
     saveStar: '<a:SaveStar:1560041207177023519>',
     // The calculator's Edit Selection button (2026-10-14 19:28 EDT): prod id here; the dev bot re-points to its 1560068687942123642 by name at boot.
     editCalc: '<a:EditCalc:1560408533160296519>',   // new EditCalc, 2026-10-15 18:02 EDT
+    // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.
+    copyExport: '<a:CopyExport:1560494126019903559>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');

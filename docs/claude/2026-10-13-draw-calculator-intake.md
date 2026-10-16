@@ -381,3 +381,9 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 > also the dev bot seems to have crashed, please start it
 
 **Built 2026-10-15 22:27 EDT:** the three region ids swapped in `utils/emojiMap.js`. **The "crash":** the process was still running; `/draw prices` was failing with `COMPONENT_INVALID_EMOJI`, because the dev app's old 10CP/20CP/30CP had been replaced after the bot boot-mapped their ids by name. A restart re-maps to the new dev uploads; any future re-upload needs a restart the same way.
+
+### Batch 18 — 2026-10-15 23:34 EDT, verbatim
+
+> <a:CopyExport:1560494126019903559> emoji for the "copy gunsmith code" button in loadouts and the "export" button in calc please.
+
+**Built 2026-10-15 23:37 EDT:** a new `copyExport` key in `utils/emojiMap.js` (prod id; the dev app has CopyExport once), on the loadout card's Copy Code button (`utils/loadoutRender.js`, MP builds; DMZ cards have no Copy Code) and on the calculator's Export button, which used the Share icon before. The shared `share` icon itself is unchanged.

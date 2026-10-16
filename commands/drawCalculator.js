@@ -481,7 +481,7 @@ function resultActionRow(state) {
         newCalculationButton(state),
         savedButton(state),
         // Export (2026-10-14 18:23 EDT, Harkirat: "an export button which outputs the result into a simple copy-able markdown for the user to share"). It answers privately with the result as plain markdown in a code block, so it copies cleanly and renders when pasted anywhere in Discord. The Show Everyone icon (2026-10-14 18:34 EDT, Harkirat), since Export is now how a result is shared.
-        { type: 2, style: 2, label: 'Export', custom_id: encodeState('export', state), emoji: emojis.parseEmoji(emojis.share) },
+        { type: 2, style: 2, label: 'Export', custom_id: encodeState('export', state), emoji: emojis.parseEmoji(emojis.copyExport) },
         { type: 2, style: 1, label: 'Save Result', custom_id: encodeState('savepick', state), emoji: emojis.parseEmoji(emojis.saveStar) }
     ] };
 }
