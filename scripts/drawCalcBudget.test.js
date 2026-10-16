@@ -506,7 +506,7 @@ const savedList = (n, nameLen = 10) => Array.from({ length: n }, (_, i) => ({
 }));
 const savedView = (list, s = {}, opts = {}) => dc.buildCalculatorPanel(state({ page: 3, ...s }), null, ACCENT, { savedBaskets: list, ...opts });
 
-t('the Saved view opens a calculation, deletes several, or deletes all, and Back replaces Saved in the nav', () => {
+t('the Saved view opens a calculation, deletes several, or deletes all, and its way back is a footer inside the panel (2026-10-16 11:10 EDT)', () => {
     const panel = savedView(savedList(3));
     const open = selects(panel).find(s => verbOf(s) === 'load');
     assert.ok(open && open.options.length === 3 && /Reopen a saved calculation \(3\)/.test(open.placeholder));
@@ -517,7 +517,10 @@ t('the Saved view opens a calculation, deletes several, or deletes all, and Back
     const armed = buttonLabelled(savedView(savedList(3), { verb: 'delallarm' }), 'Delete All (3) — click again');
     assert.ok(armed && armed.style === 4 && verbOf(armed) === 'delall');
     const nav = panel.filter(x => x && x.type === 1)[0].components.map(b => b.label);
-    assert.deepStrictEqual(nav, ['Draw Prices', '◀ Back', 'Help']);
+    assert.deepStrictEqual(nav, ['Draw Prices', 'Help']);
+    const footer = panel[0].components[panel[0].components.length - 1];
+    assert.deepStrictEqual(footer.components.map(b => b.label), ['Back to Calculation', 'New Calculation']);
+    assert.ok(footer.components[0].emoji && verbOf(footer.components[0]) === 'back', 'the pagination left arrow, and it goes back');
     assert.ok(/3\/25 saved/.test(allText(panel)), 'the limit is stated');
 });
 

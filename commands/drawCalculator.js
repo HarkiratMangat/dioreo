@@ -444,12 +444,19 @@ function newCalculationButton(state) {
     return { type: 2, style: armed ? 4 : 2, label: armed ? 'New Calculation — click again' : 'New Calculation', custom_id: encodeState(armed ? 'reset' : 'resetarm', state) };
 }
 // `inForm`: on the form, Saved and New Calculation sit in its own Calculate row (2026-10-14 16:51 EDT, Harkirat: "move calculate down to its own action row, with a divider above it. Move New calculation and saved into that same row"), so the nav keeps only Draw Prices and Help there.
+// The Saved view's and the Save step's footer (2026-10-16 11:19 EDT, Harkirat: "put the 'back' button inside of the embed as a footer button. reworded to 'Back to Calculation'. With a button beside it for 'New Calculation'", and "use the left arrow we use for pagination").
+function savedFooterRow(state) {
+    return { type: 1, components: [
+        { type: 2, style: 2, label: 'Back to Calculation', custom_id: encodeState('back', state), emoji: emojis.parseEmoji(emojis.left) },
+        newCalculationButton(state)
+    ] };
+}
 function bottomNavRow(state, { showReset = true, savedCount = 0, onSaved = false, inForm = false } = {}) {
     // Its own private message (2026-10-13 12:40 EDT) -- it used to be the global nav's `nav_prices`, which turned THIS panel into /draw prices in place.
     const components = [{ type: 2, style: 2, label: 'Draw Prices', custom_id: encodeState('prices', state) }];
     // Saved calculations are their own view of this same message (2026-10-14 13:19 EDT, Harkirat's "surface switch"). On that view the slot reads Back.
-    if (onSaved) components.push({ type: 2, style: 2, label: '◀ Back', custom_id: encodeState('back', state) });
-    else if (!inForm) {
+    // On the Saved view and the Save step the way back lives INSIDE the panel as a footer row (2026-10-16 11:19 EDT, savedFooterRow), so the nav keeps only Draw Prices and Help there.
+    if (!onSaved && !inForm) {
         components.push(savedButton(state));
         if (showReset) components.push(newCalculationButton(state));
     }
@@ -694,6 +701,7 @@ function buildSaveStepPanel(state, savedBaskets, accentColor, { notice = null, c
         }
     }
     components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: `-# **${list.length} of ${MAX_SAVED}** saved${list.length ? ' · Replacing one overwrites its draws, spins, region, balance and upgrade setting.' : ''}` });
+    components.push(savedFooterRow(state));
     return { type: 17, accent_color: accentColor, components };
 }
 function cutText(text, n) { return text.length > n ? `${text.slice(0, n - 1)}…` : text; }
@@ -757,6 +765,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         components.push({ type: 1, components: [{ type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view) }] });
     }
     components.push({ type: 10, content: `-# ${list.length}/${MAX_SAVED} saved. An unsaved calculation is cleared 30 days after it was started.` });
+    components.push(savedFooterRow(state));
     return { type: 17, accent_color: accentColor, components };
 }
 

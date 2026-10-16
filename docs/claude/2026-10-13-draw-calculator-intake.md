@@ -471,3 +471,11 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 >    * Cards = weapon. Coin=character.
 
 **Built 2026-10-16 11:14 EDT:** the Saved view's "Edited from" line stays (his call). Save step: hint "**Save as New** keeps it as its own calculation, or **replace** one you saved before."; placeholder "Or replace a previously saved calculation..."; a spacer, then "**3 of 25** saved · Replacing one overwrites its draws, spins, region, balance and upgrade setting." 20 CP Mythic upgrades added (weapon 1,000 × 10, character 1,170 × 14) for /draw prices and the calculator. /draw prices' total line is his format, with Mythic Card for weapon and Mythic Coin for character, and the same icon before "Weapon Upgrade" / "Character Upgrade". **Cancel:** the click at 10:38:50 reached the bot and was answered within 10 ms of arriving, but Discord replied "Unknown interaction" (the bot's own record: outcome expired, 5.2 s total), meaning the answer reached Discord past its 3-second window; replaying the same button through the real handler and database answers in 1 ms and opens the Saved view. A slow connection at that moment, not the button; retest.
+
+### Batch 28 — 2026-10-16 11:10 EDT, verbatim
+
+> and put the "back" button inside of the embed as a footer button. reworded to "Back to Calculation". With a button beside it for "New Calculation"
+>
+> for the "Back" button, use the left arrow we use for pagination.
+
+**Built 2026-10-16 11:19 EDT:** the Saved view and the Save step end with a footer row inside the panel: "Back to Calculation" (the pagination left arrow) and New Calculation (the same two-click button as elsewhere). Their nav row below the panel is now just Draw Prices and Help.
