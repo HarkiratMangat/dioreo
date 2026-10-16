@@ -160,6 +160,8 @@ function solveAtCap(dp, limit, bounded, currency, cap, better, shortfallCp) {
 //
 // Returns null when it is not meaningfully different from `practical`, and the caller renders nothing. That is the common case and it is intended -- a second method that always appears has to invent a difference, which is exactly how Least Waste ended up recommending a CA$26.00 premium for 20 CP.
 function findStockUp(shortfallCp, bounded, currency, practical) {
+    // The purchase limit GROWS WITH THE CALCULATION (2026-10-16 01:11 EDT, Harkirat: "yeah sounds good, go for it"): at least 3, or as many as the practical answer itself needs, never past its own ceiling of 6. A flat 3 topped out at 3 x 10,800 = 32,400 CP, so above ~30,000 CP short Stock Up could never appear; a sweep of all 41 currencies found 47 such shortfalls where a 4-6 purchase option beat the practical rate by more than 3%.
+    const maxTx = Math.min(PRACTICAL_MAX_TX, Math.max(STOCK_UP_MAX_TX, practical.transactions));
     const budget = Math.round(practical.totalCents * STOCK_UP_BUDGET_MULT);
     const baseRate = practical.totalCp / practical.totalCents;
     let best = null;
@@ -167,7 +169,7 @@ function findStockUp(shortfallCp, bounded, currency, practical) {
 
     for (let mask = 0; mask < (1 << bounded.length); mask++) {
         const usedCount = popcount(mask);
-        if (usedCount > STOCK_UP_MAX_TX) continue;
+        if (usedCount > maxTx) continue;
         let baseCents = 0, baseCp = 0;
         const used = [];
         for (let i = 0; i < bounded.length; i++) {
@@ -196,7 +198,7 @@ function findStockUp(shortfallCp, bounded, currency, practical) {
                 if (remaining) counts.set(pkg.id, remaining); else counts.delete(pkg.id);
             }
         };
-        walk(0, STOCK_UP_MAX_TX - usedCount, baseCents, baseCp);
+        walk(0, maxTx - usedCount, baseCents, baseCp);
     }
 
     if (!best) return null;
@@ -318,6 +320,6 @@ function optimizePurchase(shortfallCp, { currency = 'USD', doubleCpAvailable = [
 }
 
 // Stock Up's three thresholds, exported so the calculator's Help panel states the real numbers instead of a copy of them (2026-10-16 00:05 EDT).
-const STOCK_UP_RULES = { maxPurchases: STOCK_UP_MAX_TX, budgetMult: STOCK_UP_BUDGET_MULT, minRateGain: STOCK_UP_MIN_RATE_GAIN };
+const STOCK_UP_RULES = { maxPurchases: STOCK_UP_MAX_TX, maxPurchasesCeiling: PRACTICAL_MAX_TX, budgetMult: STOCK_UP_BUDGET_MULT, minRateGain: STOCK_UP_MIN_RATE_GAIN };
 
 module.exports = { CP_PACKAGES, CURRENCIES, STOCK_UP_RULES, normalCp, doubleCp, priceOf, priceCents, countryOf, formatMoney, optimizePurchase };

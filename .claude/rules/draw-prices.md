@@ -199,6 +199,12 @@ The old "Draw Info" screen. Its button left the nav row in the 2026-10-14 intake
 - **Export (2026-10-14 18:24 EDT):** verb `export`, a private reply (its own `deferReply`, handled before the generic defer) carrying `buildExportText()` in a ```md block. Plain markdown only: no custom emoji (they break outside this bot's servers) and markdown characters stripped from the name so it cannot break the block. Under 1,800 characters.
 - **Help (2026-10-14 18:27 EDT):** sections, never paragraphs (his "it's just ALL prose"): How It Works, Words You'll See, Buttons, Saving, Shortcut, each a short list of "**term** · meaning" lines under a divider. A test pins the headings and that no line runs past 160 characters.
 
+### Full Breakdown is his layout, 2026-10-16 01:17 EDT — batch 22
+
+- **Detail view = `buildBreakdownPage`** (Your Selections one row per line: number, spins, name, full cost, then spent / remaining; Cost Breakdown as CP still needed = cost of draws − spent − balance with per-row terms; Recommended Bundles). The compact view (`buildCostBlock`) is compact-only now; don't rebuild a detail branch in it.
+- 🔴 **Discord caps a message's text displays at 4,000 characters in total** (`COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED`, probed 2026-10-16 01:17 EDT; separate from the 40-component and ~13k JSON caps). The breakdown picks the most detailed of five levels that fits (`TEXT_BUDGET`, `SETUP_JSON_BUDGET`): one row per line holds up to 12 distinct lines; then adjacent identical lines share a row, then rows drop their note, then sums drop their terms, then one row per draw type. A test pins 25 lines under the cap.
+- **Stock Up's purchase limit** is max(3, the Recommended Package's purchases), at most 6 (`findStockUp`); a flat 3 hid it on every calculation over ~30,000 CP short.
+
 ### Help: Why Stock Up, 2026-10-16 00:09 EDT — batch 19
 
 Help lists every pack's price per 100 CP in the viewer's /settings currency, marks the cheapest **best rate**, and states Stock Up's thresholds from `STOCK_UP_RULES` in `utils/cpPackages.js` (never typed into the text). Rates are not monotonic by pack size (in CAD the 80 CP pack beats every pack up to 5,000), so never write "bigger packs are cheaper" anywhere.

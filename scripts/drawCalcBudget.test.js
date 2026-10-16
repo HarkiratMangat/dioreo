@@ -202,7 +202,7 @@ t('lines keep the ARRAY ORDER, never a cheapest-first sort -- proven with an ord
     const first = selects(form(banners)).find(s => verbOf(s) === 'bpulls' && dc.decodeState(s.custom_id).focus === 0);
     assert.strictEqual(first.options.find(o => o.default).value, '0', 'line #1 must be the array\'s first entry (0 pulls), not the cheaper 9-pulls one a cost-sort would promote');
     const detail = allText(render(makeBasket({ banners }), { detail: true }));
-    assert.ok(detail.indexOf('Mythic Weapon — 0/10 Spins') < detail.indexOf('Mythic Weapon — 9/10 Spins'), 'Cost Per Draw keeps the array order too');
+    assert.ok(/#1 · `0\/10` Spins · Mythic Weapon/.test(detail) && detail.indexOf('`0/10` Spins · Mythic') < detail.indexOf('`9/10` Spins · Mythic'), 'the Full Breakdown keeps the array order too');
     assert.strictEqual(/Priority Plan|Move Up/.test(detail), false, 'the Priority Plan and Move Up are gone (2026-10-14, his call)');
 });
 
@@ -423,14 +423,10 @@ t('/draw prices\' cross-link to the calculator carries no emoji either', () => {
 });
 
 t('Cheapest and Stock Up are separated, and no heading is preceded by a stacked blank line', () => {
-    const lines = dc.buildCostBlock(
-        state({ detail: true }),
-        makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }] }),
-        'CAD', null, { compact: false }
-    );
-    const stockUp = lines.indexOf('**Stock Up**');
-    assert.ok(stockUp !== -1 && lines.includes('**Cheapest**') && lines.includes('### Recommended Packages'), 'two options, each labelled, under a plural heading');
-    assert.ok(lines[stockUp + 1].startsWith('> **`') && lines[stockUp + 2].startsWith('-# '), 'every option has the same shape: a quoted price line, then one quiet line');
+    const lines = texts(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }, { drawKey: 'mythicWeapon', pullsDone: 0 }] }), { detail: true }, { currency: 'CAD' })).join('\n').split('\n');
+    const stockUp = lines.findIndex(l => l.startsWith('**Stock Up**'));
+    assert.ok(stockUp !== -1 && lines.some(l => l.startsWith('**Cheapest**')) && lines.includes('## Recommended Bundles'), 'two options, each labelled, under a plural heading');
+    assert.ok(lines[stockUp + 1].startsWith('> **') && lines[stockUp - 1] === '', 'a blank line, then the label, then the quoted bundle lines');
     lines.forEach((l, i) => {
         if (l.startsWith('## ') && i > 0) {
             assert.notStrictEqual(lines[i - 1], '', `"${l}" is preceded by an explicit blank line -- headings carry their own top margin, so the two stack`);
@@ -916,10 +912,42 @@ t('Help shows every pack\'s price per 100 CP in the viewer\'s currency and Stock
     assert.ok(/\*\*80 CP\*\* · CA\$1\.24/.test(cad), 'the smallest pack, in CAD');
     assert.ok(/\*\*10,800 CP\*\* · CA\$1\.20 · \*\*best rate\*\*/.test(cad), 'the cheapest per 100 CP is marked');
     assert.strictEqual((cad.match(/best rate/g) || []).length, 1);
-    assert.ok(cad.includes(`at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP`) && cad.includes(`at most ${STOCK_UP_RULES.budgetMult}×`) && cad.includes(`${STOCK_UP_RULES.maxPurchases} purchases or fewer`), 'thresholds come from cpPackages');
+    assert.ok(cad.includes(`at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP`) && cad.includes(`at most ${STOCK_UP_RULES.budgetMult}×`) && cad.includes(`at most ${STOCK_UP_RULES.maxPurchases} purchases, or as many as the Recommended Package`), 'thresholds come from cpPackages');
     assert.ok(/uses yours: \*\*USD\*\*/.test(allText(dc.buildHelpPanel(ACCENT))), 'USD when no currency is set');
-    assert.ok(/Pack prices differ by currency/.test(cad) && /^-# Stock Up is worked out in your currency: .* purchases or fewer\.$/m.test(cad) && /^Price per 100 CP \(lower is better\):$/m.test(cad) && !/Leftover CP stays/.test(cad), 'currency is named, and the hint is one line');
+    assert.ok(/Pack prices differ by currency/.test(cad) && /^-# Stock Up is worked out in your currency: .* when it needs more\.$/m.test(cad) && /^Price per 100 CP \(lower is better\):$/m.test(cad) && !/Leftover CP stays/.test(cad), 'currency is named, and the hint is one line');
     assert.ok(/¥148 · \*\*best rate\*\*/.test(allText(dc.buildHelpPanel(ACCENT, { currency: 'JPY' }))), 'a zero-decimal currency still reads as a price');
+});
+
+t('the Full Breakdown is his layout, with sums that check out (2026-10-16 01:07 EDT)', () => {
+    const banners = [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }, { drawKey: 'mythicWeapon', pullsDone: 0 }];
+    const t = allText(render(makeBasket({ banners }), { detail: true }, { currency: 'CAD' }));
+    assert.ok(/#2 · `1\/10` Spins · Legendary Weapon \(Reactive\) <:BlueDash_BD:\d+> \*\*`4,950 CP`\*\*/.test(t), 'a row: number, spins, name, full cost');
+    assert.ok(t.includes('-# `10 CP` spent · `4,940 CP` remaining until completion'));
+    assert.ok(t.includes('**CP still needed** ⌇ **`15,700 CP`**') && t.includes('Full cost of draws ⌇ `15,710 CP` Total') && t.includes('Amount Spent so far ⌇ `10 CP` Total'), '15,710 - 10 - 0 = 15,700');
+    assert.ok(t.includes('`4,950 CP` **+** `4,950 CP` **+** `5,810 CP`') && t.includes('CP Balance ⌇ `0 CP` Assumed'));
+    assert.ok(/\*\*Cheapest\*\* ⌇ \*\*`15,800 CP`\*\* for \*\*`CA\$199\.98`\*\*/.test(t) && t.includes('**`100 CP` Left Over**'));
+    assert.ok(t.includes('`CA$129.99` each') && /CoD:M webstore prices \*\*not\*\* considered/.test(t));
+    const compact = allText(render(makeBasket({ banners }), {}, { currency: 'CAD' }));
+    assert.strictEqual(/remaining until completion|Recommended Bundle/.test(compact), false, 'Simplify keeps the compact view as it was');
+});
+
+t('the Full Breakdown stays under Discord\'s 4,000-character text cap at 25 lines (probed 2026-10-16 01:12 EDT)', () => {
+    const keys = Object.keys(DRAW_META);
+    const textLen = p => { let n = 0; const w = x => { if (Array.isArray(x)) return x.forEach(w); if (x.type === 10) n += x.content.length; (x.components || []).forEach(w); }; w(p); return n; };
+    for (const banners of [Array(25).fill(0).map((_, i) => ({ drawKey: keys[i % keys.length], pullsDone: i % 7 })), Array(25).fill(0).map(() => ({ drawKey: 'mythicWeapon', pullsDone: 0 })), Array(12).fill(0).map((_, i) => ({ drawKey: keys[i % keys.length], pullsDone: i % 7 }))]) {
+        const p = render(makeBasket({ banners, includeUpgrades: true, balance: 3000, entitlementMask: 0b111111 }), { detail: true }, { currency: 'CAD', liveDoubleCPEntry: { isDoubleCP: true } });
+        assert.ok(textLen(p) <= 4000, `${banners.length} lines: ${textLen(p)} characters`);
+    }
+    const twelve = allText(render(makeBasket({ banners: Array(12).fill(0).map((_, i) => ({ drawKey: keys[i % keys.length], pullsDone: i % 7 })) }), { detail: true }, { currency: 'CAD' }));
+    assert.strictEqual((twelve.match(/remaining until completion/g) || []).length, 12, 'twelve different lines still get one row each');
+});
+
+t('Stock Up can use as many purchases as the Recommended Package, up to 6 (2026-10-16 01:07 EDT)', () => {
+    const { optimizePurchase } = require('../utils/cpPackages');
+    const big = optimizePurchase(39000, { currency: 'CAD' });
+    assert.ok(big.stockUp && big.stockUp.transactions > 3 && big.stockUp.transactions <= 6, `39,000 CP in CAD: ${big.stockUp && big.stockUp.transactions}`);
+    const small = optimizePurchase(5810, { currency: 'USD' });
+    assert.ok(!small.stockUp || small.stockUp.transactions <= 3, 'a small calculation keeps the 3-purchase limit');
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);
