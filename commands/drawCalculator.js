@@ -674,7 +674,8 @@ function buildSaveStepPanel(state, savedBaskets, accentColor, { notice = null, c
     const view = { ...state, page: 4 };
     const components = [titleBlock(current), { type: 14, spacing: 2, divider: true }];
     if (notice) components.push({ type: 10, content: `-# ${notice}` });
-    components.push({ type: 10, content: `## Save This Calculation\n-# Save it as a new one, or pick a saved calculation to save over.` });
+    // Copy reworked 2026-10-16 11:14 EDT (Harkirat: "better phrase ... and add some bold text to it's hint"; placeholder "Or replace a previously saved calculation..."; the count line "could also be designed better itself. and include a small space divider there").
+    components.push({ type: 10, content: `## Save This Calculation\n-# **Save as New** keeps it as its own calculation, or **replace** one you saved before.` });
     if (overwriteConfirm) {
         components.push({ type: 1, components: [
             { type: 2, style: 4, label: `Save Over "${String(overwriteConfirm.name).slice(0, 60)}"`, custom_id: encodeState('owok', { ...view, target: overwriteConfirm.target }) },
@@ -687,12 +688,12 @@ function buildSaveStepPanel(state, savedBaskets, accentColor, { notice = null, c
         ] });
         if (list.length) {
             components.push({ type: 1, components: [{
-                type: 3, custom_id: encodeState('owsel', view), placeholder: 'Or save over a saved calculation',
+                type: 3, custom_id: encodeState('owsel', view), placeholder: 'Or replace a previously saved calculation...',
                 options: list.map(b => ({ label: String(b.name).slice(0, 100), value: String(b._id), description: current && String(current.sourceId) === String(b._id) ? 'Opened From This One' : cutText(savedDescription(b), 60), ...(savedEmoji(b) ? { emoji: savedEmoji(b) } : {}) }))
             }] });
         }
     }
-    components.push({ type: 10, content: `-# ${list.length}/${MAX_SAVED} saved. Saving over one replaces its draws, spins, region, balance and upgrade.` });
+    components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: `-# **${list.length} of ${MAX_SAVED}** saved${list.length ? ' · Replacing one overwrites its draws, spins, region, balance and upgrade setting.' : ''}` });
     return { type: 17, accent_color: accentColor, components };
 }
 function cutText(text, n) { return text.length > n ? `${text.slice(0, n - 1)}…` : text; }

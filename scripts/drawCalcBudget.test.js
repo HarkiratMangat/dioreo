@@ -620,9 +620,16 @@ t('one name per draw, everywhere (2026-10-13 23:03 EDT): his renames, and no "Dr
     }
 });
 
-t('Upgrade on a Mythic at 20 CP says it is NOT included, instead of silently adding nothing', () => {
-    const panel = render(makeBasket({ region: 'region_20', includeUpgrades: true, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }));
+t('Upgrade at a region with no upgrade price says it is NOT included, instead of silently adding nothing', () => {
+    // Every region has Mythic upgrade prices since 2026-10-16, so the gap is made here to keep the guard tested.
+    const { DRAW_DATA } = require('../commands/drawprices');
+    const saved = DRAW_DATA.region_20.mythicWeapon.upgrade;
+    delete DRAW_DATA.region_20.mythicWeapon.upgrade;
+    let panel;
+    try { panel = render(makeBasket({ region: 'region_20', includeUpgrades: true, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })); }
+    finally { DRAW_DATA.region_20.mythicWeapon.upgrade = saved; }
     assert.ok(/Upgrade not included/.test(allText(panel)), 'the missing upgrade price must be named');
+    assert.strictEqual(/Upgrade not included/.test(allText(render(makeBasket({ region: 'region_20', includeUpgrades: true, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })))), false, '20 CP has its upgrade price now');
     const r10 = render(makeBasket({ region: 'region_10', includeUpgrades: true, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }));
     assert.strictEqual(/Upgrade not included/.test(allText(r10)), false, 'and only where it is actually missing');
 });

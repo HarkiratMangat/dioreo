@@ -451,3 +451,23 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 > * can you also restart the dev bot
 
 **Built 2026-10-16 09:59 EDT:** a working copy's title is just the calculator title (no "Edited from Saved" line); a saved one reads "𝑽𝒊𝒆𝒘𝒊𝒏𝒈 𝑺𝒂𝒗𝒆𝒅: `name`"; `saveStar` now holds the Save icon (every Save button and Help's Saving heading follow); new `viewSaved` on the View Saved button. The Saved view's "This Calculation · Edited from **test**, which is unchanged until you save over it" line is untouched, pending his call.
+
+### Batch 27 — 2026-10-16 11:08 EDT, verbatim
+
+> > The View Saved screen still says "This Calculation · Edited from test, which is unchanged until you save over it." Drop it too, or keep it there as the reminder for saving over the original?
+>
+> i think that makes sense there since that panel is supposed to hold those options anyway. The important thing is stating that this current calc was edited from test.
+>
+> * but i don't like the placeholder phrasing of the dropdown, adjust it to "Or replace a previously saved calculation..."
+> * the "3/25 saved. Saving over one replaces its draws, spins, region, balance and upgrade." line could also be designed better itself. and include a small space divider there.
+> * better phrase "Save it as a new one, or pick a saved calculation to save over." line as well. and add some bold text to it's hint.
+> * also pressing "cancel" doesn't seem to work.
+> * and please update this info into the draw prices page and the calc:
+>    * 20cp region mythic coins 1170cp x 14 spins (mythic character upgrade)
+>    * 20 region mythic card 1000cp x 10 (mythic wep upgrade)
+> * also in the draw prices command, where it currently says ":CP_CODM2: **`7,220 CP Draw`** + **`11,970 CP Upgrade`** = **`19,190 CP`**" change that to: ":CP_CODM2: **`7,220 CP`** Draw + <:MythicCoin:1542258675706757150> **`11,970 CP`** Upgrade ⌇ **`19,190 CP`**"
+>    * <:MythicCard:1542258676889288794> for mythic weapon respectively
+>    * and similarly infront of "Weapon Upgrade", add the respective emojis.
+>    * Cards = weapon. Coin=character.
+
+**Built 2026-10-16 11:14 EDT:** the Saved view's "Edited from" line stays (his call). Save step: hint "**Save as New** keeps it as its own calculation, or **replace** one you saved before."; placeholder "Or replace a previously saved calculation..."; a spacer, then "**3 of 25** saved · Replacing one overwrites its draws, spins, region, balance and upgrade setting." 20 CP Mythic upgrades added (weapon 1,000 × 10, character 1,170 × 14) for /draw prices and the calculator. /draw prices' total line is his format, with Mythic Card for weapon and Mythic Coin for character, and the same icon before "Weapon Upgrade" / "Character Upgrade". **Cancel:** the click at 10:38:50 reached the bot and was answered within 10 ms of arriving, but Discord replied "Unknown interaction" (the bot's own record: outcome expired, 5.2 s total), meaning the answer reached Discord past its 3-second window; replaying the same button through the real handler and database answers in 1 ms and opens the Saved view. A slow connection at that moment, not the button; retest.

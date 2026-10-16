@@ -51,8 +51,6 @@ check('absent data returns null rather than a fabricated number', () => {
     assert.strictEqual(cost.remainingToFinish('region_30', 'doubleEpicCharacters', 0), null);
     assert.strictEqual(cost.spentSoFar('region_20', 'doubleEpicCharacters', 0), null);
     assert.strictEqual(cost.pullCount('region_20', 'doubleEpicCharacters'), null);
-    assert.strictEqual(cost.upgradeCost('region_20', 'mythicWeapon'), null);
-    assert.strictEqual(cost.upgradeCost('region_20', 'mythicCharacter'), null);
 });
 
 check('upgrade cost is perDraw times count where it exists', () => {
@@ -60,6 +58,8 @@ check('upgrade cost is perDraw times count where it exists', () => {
     assert.strictEqual(cost.upgradeCost('region_10', 'mythicCharacter'), 855 * 14);
     assert.strictEqual(cost.upgradeCost('region_30', 'mythicWeapon'), 1440 * 10);
     assert.strictEqual(cost.upgradeCost('region_30', 'mythicCharacter'), 1440 * 14);
+    assert.strictEqual(cost.upgradeCost('region_20', 'mythicWeapon'), 1000 * 10, 'his 20 CP figures, 2026-10-16');
+    assert.strictEqual(cost.upgradeCost('region_20', 'mythicCharacter'), 1170 * 14);
     assert.strictEqual(cost.upgradeCost('region_10', 'legendaryGunReactive'), null);
 });
 

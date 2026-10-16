@@ -40,8 +40,9 @@ const DRAW_DATA = {
     },
     region_20: {
         label: '20 CP Region',
-        mythicWeapon: { draws: [20, 55, 80, 210, 350, 560, 900, 1600, 2300, 4000] },
-        mythicCharacter: { draws: [35, 90, 155, 280, 490, 770, 1200, 2000, 2900, 4700] },
+        // Upgrades added 2026-10-16 11:14 EDT, Harkirat's figures: "20 region mythic card 1000cp x 10 (mythic wep upgrade)", "20cp region mythic coins 1170cp x 14 spins (mythic character upgrade)".
+        mythicWeapon: { draws: [20, 55, 80, 210, 350, 560, 900, 1600, 2300, 4000], upgrade: { perDraw: 1000, count: 10 } },
+        mythicCharacter: { draws: [35, 90, 155, 280, 490, 770, 1200, 2000, 2900, 4700], upgrade: { perDraw: 1170, count: 14 } },
         legendaryGunReactive: { draws: [20, 55, 80, 210, 350, 560, 900, 1400, 1900, 3200] },
         legendaryGunNonReactive: { draws: [20, 55, 80, 210, 350, 560, 900, 1400, 1900, 2400] },
         doubleLegendaryWeapons: { draws: [20, 55, 80, 210, 350, 560, 900, 1900, 2400, 2900] },
@@ -125,6 +126,8 @@ const TOTAL_PAGES = SUBPAGES.length + 2;      // 2 key pages + the 2 Advanced pa
 
 // Mythic-tier draws are the only ones with a separate Upgrade step, and each needs its own noun ("Weapon"/"Character") in the "### {X} Upgrade" sub-heading per drawPrices_ui.json.
 const UPGRADE_LABEL = { mythicWeapon: 'Weapon', mythicCharacter: 'Character' };
+// The upgrade's own currency icon (2026-10-16 11:14 EDT, Harkirat: "Cards = weapon. Coin=character."). Read at render time, never captured at require time (see checkEmojiCaptures).
+function upgradeEmoji(key) { return key === 'mythicWeapon' ? emojis.mythicCard : key === 'mythicCharacter' ? emojis.mythicCoin : ''; }
 
 function formatCP(n) { return n.toLocaleString('en-US'); }
 
@@ -158,7 +161,7 @@ function buildDrawEntries(regionKey, keys) {
         let totalLine;
         if (entry.upgrade) {
             const upgradeTotal = entry.upgrade.perDraw * entry.upgrade.count;
-            totalLine = `> ${emojis.cp2} **\`${formatCP(total)} CP Draw\`** + **\`${formatCP(upgradeTotal)} CP Upgrade\`** = **\`${formatCP(total + upgradeTotal)} CP\`**`;
+            totalLine = `> ${emojis.cp2} **\`${formatCP(total)} CP\`** Draw + ${upgradeEmoji(key)} **\`${formatCP(upgradeTotal)} CP\`** Upgrade ⌇ **\`${formatCP(total + upgradeTotal)} CP\`**`;
         } else {
             totalLine = `> ${emojis.cp2} **\`${formatCP(total)} CP\`**`;
         }
@@ -170,7 +173,7 @@ function buildDrawEntries(regionKey, keys) {
         // Block 3 (upgrade entries only): its own separate Text Display, matching the reference file.
         if (entry.upgrade) {
             const upgradeTotal = entry.upgrade.perDraw * entry.upgrade.count;
-            blocks.push(`**${UPGRADE_LABEL[key]} Upgrade**\n${formatCP(entry.upgrade.perDraw)} CP x ${entry.upgrade.count} Spins ⌇ **\`${formatCP(upgradeTotal)} CP\`**`);
+            blocks.push(`**${upgradeEmoji(key)} ${UPGRADE_LABEL[key]} Upgrade**\n${formatCP(entry.upgrade.perDraw)} CP x ${entry.upgrade.count} Spins ⌇ **\`${formatCP(upgradeTotal)} CP\`**`);
         }
 
         return blocks;
@@ -349,7 +352,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
 module.exports = {
     // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads"). buildDrawEntries/UPGRADE_LABEL/formatCP exported 2026-08-26 17:25 EDT so the calculator's own per-draw summary block can reuse THIS command's exact rendering -- Harkirat's own mockup for the redesign was built by pasting a real /draw prices entry in verbatim, so the two must never drift apart into two similar-looking but independently-maintained copies.
     DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
-    buildDrawEntries, UPGRADE_LABEL, formatCP,
+    buildDrawEntries, UPGRADE_LABEL, upgradeEmoji, formatCP,
 
     // COMMAND DEFINITION: Base command 'draw' with subcommand 'prices'
     data: new SlashCommandBuilder()
