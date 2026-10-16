@@ -80,7 +80,7 @@ const emojis = {
     // "View Colors" button in /settings (utils/colorPaletteView.js, handlers/colors.js's colors_view/ colors_page_ handlers) -- blurple-recolored, background-removed eyedropper icon, per Harkirat's own design pass (2026-07-13). Uploaded by Harkirat directly, not via this bot.
     eyedropper: '<a:Eyedropper:1526293991166054541>',
     // "Show Everyone" button (utils/shareButton.js, formerly the plain 🌐 globe, 2026-07-14) -- Harkirat-provided icon, lives in the button's `emoji` field via parseEmoji(), not baked into `label` (see Components V2 point 4 above).
-    share: '<a:Share:1526666464625430558>',
+    share: '<a:Share:1560521317034233927>',   // Harkirat's new Share icon, 2026-10-16 01:18 EDT (was the orange paper plane, 1526666464625430558)
     // Patch notes "additional info" aliasing (2026-07-30 22:24 EDT) -- typing a standalone `b:`/`n:` token in the additional-info text gets swapped for these at render time (patchnotes.js's applyInfoAliases()). Harkirat-uploaded, not animated.
     buff: '<:Buff:1532771212172984401>',
     nerf: '<:Nerf:1532771213271892089>',

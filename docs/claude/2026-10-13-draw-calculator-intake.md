@@ -418,3 +418,9 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 > What do you think?
 
 **Built 2026-10-16 01:11 EDT:** Stock Up's purchase limit is now at least 3, or as many as the Recommended Package needs, at most 6 (Help says so). His Full Breakdown layout replaces the old detail view; Simplify keeps the compact view as it was. At many lines it degrades to fit Discord's limits: adjacent identical lines share a row (#1–#3), then those rows drop their note.
+
+### Batch 23 — 2026-10-16 01:14 EDT, verbatim
+
+> and here's the new share icon: <a:Share:1560521317034233927>
+
+**Built 2026-10-16 01:18 EDT:** `share` in `utils/emojiMap.js` now holds the new id (the Show Everyone button in `utils/shareButton.js` is its only user); the dev app has one Share emoji, re-pointed by name at boot.
