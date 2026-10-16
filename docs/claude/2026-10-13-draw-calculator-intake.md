@@ -432,3 +432,13 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 > yes
 
 **Built 2026-10-16 01:20 EDT:** every user-facing "package"/"pack" in the calculator now says "bundle": the compact view's heading, Export's "Recommended Bundle:", Help (Recommended Bundle, Left Over, 2X Bundles, "Bundle prices differ by currency", the Stock Up hint), the 2X notice and the 2X select's options. Code identifiers (`CP_PACKAGES`, `cpPackages.js`) keep their names.
+
+### Batch 25 — 2026-10-16 01:25 EDT, verbatim
+
+> > Big calculations: Discord refuses a message with more than 4,000 characters of text (I tested it). Your layout fits up to 12 different lines. Past that it shrinks in steps:
+>
+> then paginate if it begins reaching the limit?
+>
+> anyway, i still have more adjustments i want to make for it so we'll do those in the morning. im sleepy, its 1:25am
+
+**Not built yet (2026-10-16 01:26 EDT):** answered yes, it can page; held for the morning with his other adjustments. Shape to build: page Your Selections' rows (the form already pages lines with a pager row) instead of the fit levels, keeping one row per line with its note; the two sums would show totals on a paged view, or page their terms with the rows.
