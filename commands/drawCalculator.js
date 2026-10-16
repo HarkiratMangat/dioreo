@@ -441,7 +441,8 @@ function savedButton(state) {
 }
 function newCalculationButton(state) {
     const armed = state.verb === 'resetarm';
-    return { type: 2, style: armed ? 4 : 2, label: armed ? 'New Calculation — click again' : 'New Calculation', custom_id: encodeState(armed ? 'reset' : 'resetarm', state) };
+    // NewCalc icon (2026-10-16 14:31 EDT).
+    return { type: 2, style: armed ? 4 : 2, label: armed ? 'New Calculation — click again' : 'New Calculation', custom_id: encodeState(armed ? 'reset' : 'resetarm', state), emoji: emojis.parseEmoji(emojis.newCalc) };
 }
 // `inForm`: on the form, Saved and New Calculation sit in its own Calculate row (2026-10-14 16:51 EDT, Harkirat: "move calculate down to its own action row, with a divider above it. Move New calculation and saved into that same row"), so the nav keeps only Draw Prices and Help there.
 // The Saved view's and the Save step's footer (2026-10-16 11:19 EDT, Harkirat: "put the 'back' button inside of the embed as a footer button. reworded to 'Back to Calculation'. With a button beside it for 'New Calculation'", and "use the left arrow we use for pagination").
@@ -479,7 +480,7 @@ function setupSubmitRow(state, basket, savedCount) {
     return { type: 1, components: [
         lines ? newCalculationButton(state) : null,
         savedButton(state),
-        { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), disabled: lines === 0, emoji: emojis.parseEmoji(emojis.sparkles) }
+        { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), disabled: lines === 0, emoji: emojis.parseEmoji(emojis.calculate) }
     ].filter(Boolean) };
 }
 // The result ends with the same row, Save Result in Calculate's place with his SaveStar emoji (2026-10-14 17:58 EDT, Harkirat: "leave them in their current row. just replace calculate with Save result"). It opens the Save step: save as new, or save over a saved one.
@@ -654,100 +655,95 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
 // THE SAVED VIEW -- a view of this same message, reached from the nav row's Saved button (2026-10-14 13:13 EDT)
 // ==========================================
 // His intake asked how a calculation is removed, what the limit is, and what happens at it; the answer was "one at a time, from a result page, named ones only, no limit, and the loader silently showed only the first 25". This view is where all of that lives now: reopen one, delete several, or delete them all. What a saved calculation IS, in its option (his "they barely hold any info"): what it still costs, the region, and its draws; "Draft" when it was never calculated. Cut at Discord's 100 characters.
-function savedDescription(b) {
+// What a saved calculation IS, in its option (2026-10-16 14:31 EDT, Harkirat: "remove the emojis, they don't make sense in this list" and "add a date to it? and anything else that can help someone better distinguish the saved items"): when it last changed (in the viewer's own timezone), what it still costs, its region and its draws. An option's description is plain text capped at 100 characters, so a custom emoji could never render there anyway.
+function savedDescription(b, { timezone = null, mark = null } = {}) {
     const banners = b.banners || [];
-    if (!banners.length) return 'Empty';
+    const when = lastChanged(b, timezone);
+    const lead = [mark, b.submitted ? null : 'Draft', when].filter(Boolean).join(' · ');
+    if (!banners.length) return [lead, 'Empty'].filter(Boolean).join(' · ');
     const { total } = basketCost(b.region, banners, b.includeUpgrades);
     const draws = usedTypes(banners).map(k => { const n = banners.filter(x => x.drawKey === k).length; return `${shortName(k)}${n > 1 ? ` ×${n}` : ''}`; }).join(', ');
-    const text = `${b.submitted ? '' : 'Draft · '}${fmt(total)} CP Needed · ${regionLabel(b.region)} · ${draws}`;
+    const text = [lead, `${fmt(total)} CP Needed`, regionLabel(b.region), draws].filter(Boolean).join(' · ');
     return text.length > 100 ? `${text.slice(0, 99)}…` : text;
 }
-function savedEmoji(b) {
-    const key = (b.banners || []).map(x => x.drawKey).find(k => DRAW_META[k]);
-    return key ? emojis.parseEmoji(emojis[DRAW_META[key].tier]) : undefined;
-}
-function lastChanged(b) {
+function lastChanged(b, timezone = null) {
     const d = new Date(b.updatedAt || b.createdAt || 0);
-    return Number.isNaN(d.getTime()) || d.getTime() === 0 ? null : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    if (Number.isNaN(d.getTime()) || d.getTime() === 0) return null;
+    try { return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(timezone ? { timeZone: timezone } : {}) }); }
+    catch { return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
 }
 // A checksum of the list a delete was picked from (see encodeState's `k`).
 function savedChecksum(list) {
     return crypto.createHash('sha1').update((list || []).map(b => String(b._id)).join(',')).digest('hex').slice(0, 6);
 }
 
-// THE SAVE STEP (page 4, 2026-10-14 17:28 EDT): what Save opens. A saved calculation is only ever changed here, deliberately: save the open calculation as a new one, or pick a saved one and confirm saving over it (Harkirat: "a user needs to press save and select that previous saved result to override it"). The one it was opened from, if any, is marked in the list.
-function buildSaveStepPanel(state, savedBaskets, accentColor, { notice = null, current = null, overwriteConfirm = null } = {}) {
-    const list = (savedBaskets || []).slice(0, MAX_SAVED);
-    const view = { ...state, page: 4 };
-    const components = [titleBlock(current), { type: 14, spacing: 2, divider: true }];
-    if (notice) components.push({ type: 10, content: `-# ${notice}` });
-    // Copy reworked 2026-10-16 11:14 EDT (Harkirat: "better phrase ... and add some bold text to it's hint"; placeholder "Or replace a previously saved calculation..."; the count line "could also be designed better itself. and include a small space divider there").
-    components.push({ type: 10, content: `## Save This Calculation\n-# **Save as New** keeps it as its own calculation, or **replace** one you saved before.` });
-    if (overwriteConfirm) {
-        components.push({ type: 1, components: [
-            { type: 2, style: 4, label: `Save Over "${String(overwriteConfirm.name).slice(0, 60)}"`, custom_id: encodeState('owok', { ...view, target: overwriteConfirm.target }) },
-            { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('savepick', view) }
-        ] });
-    } else {
-        components.push({ type: 1, components: [
-            { type: 2, style: 1, label: 'Save as New', custom_id: encodeState('modal_name', view), emoji: emojis.parseEmoji(emojis.saveStar) },
-            { type: 2, style: 2, label: 'Cancel', custom_id: encodeState('saved', { ...state, page: 3 }) }
-        ] });
-        if (list.length) {
-            components.push({ type: 1, components: [{
-                type: 3, custom_id: encodeState('owsel', view), placeholder: 'Or replace a previously saved calculation...',
-                options: list.map(b => ({ label: String(b.name).slice(0, 100), value: String(b._id), description: current && String(current.sourceId) === String(b._id) ? 'Opened From This One' : cutText(savedDescription(b), 60), ...(savedEmoji(b) ? { emoji: savedEmoji(b) } : {}) }))
-            }] });
-        }
-    }
-    components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: `-# **${list.length} of ${MAX_SAVED}** saved${list.length ? ' · Replacing one overwrites its draws, spins, region, balance and upgrade setting.' : ''}` });
-    components.push(savedFooterRow(state));
-    return { type: 17, accent_color: accentColor, components };
-}
+// THE SAVED VIEW, with saving folded in (2026-10-16 14:31 EDT, Harkirat: "why switch the entire panel when clicking save within the 'view saved' panel? ... why not just have that save/replace direction in the 'view saved' panel itself?"). The separate Save step (page 4) is gone; a panel still carrying page 4 renders this. His structure, top to bottom: the title with "Saved Calculations" as its caption; a large divider; the save section; a small spacer; Your Saved Calculations; a small divider; Delete; a large divider; the Back to Calculation / New Calculation footer.
 function cutText(text, n) { return text.length > n ? `${text.slice(0, n - 1)}…` : text; }
-
-// Two 25-option dropdowns of long names can pass Discord's message size cap on their own (measured 2026-10-14 13:16 EDT: 14,001 characters of JSON at 25 calculations with 80-character names), so the view gives up detail in steps until it fits: the delete list's descriptions first, then the reopen list's descriptions are cut shorter, then the delete list's names. A player with short names never loses any of it.
+// Three 25-option dropdowns of long names pass Discord's message size cap on their own, so the view gives up detail in steps until it fits: the delete list's descriptions, the replace list's descriptions, shorter reopen descriptions, shorter delete and replace names, then the reopen descriptions. A player with short names never loses any of it.
 function buildSavedPanel(state, savedBaskets, accentColor, options = {}) {
     let out;
-    for (let level = 0; level <= 3; level++) {
+    for (let level = 0; level <= 5; level++) {
         out = buildSavedPanelAt(state, savedBaskets, accentColor, options, level);
         if (JSON.stringify(out).length <= SETUP_JSON_BUDGET) break;
     }
     return out;
 }
-function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, savedConfirm = null, current = null } = {}, level = 0) {
+function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, savedConfirm = null, overwriteConfirm = null, current = null, timezone = null } = {}, level = 0) {
     const list = (savedBaskets || []).slice(0, MAX_SAVED);
-    const cut = (text, n) => (text.length > n ? `${text.slice(0, n - 1)}…` : text);
     const view = { ...state, page: 3 };
-    const components = [titleBlock(current), { type: 14, spacing: 2, divider: true }];
+    const describe = (b, mark) => savedDescription(b, { timezone, mark });
+    const options = (descOf, nameLen = 100) => list.map(b => ({ label: cutText(String(b.name), nameLen), value: String(b._id), ...(descOf ? { description: descOf(b) } : {}) }));
+    const openMark = b => (current && String(current._id) === String(b._id) ? 'Open Now' : null);
+    const components = [
+        { type: 10, content: `## ${emojis.calculator} Lucky Draw Calculator\n${toBoldItalicUnicode('Saved Calculations')}` },
+        { type: 14, spacing: 2, divider: true }
+    ];
     if (notice) components.push({ type: 10, content: `-# ${notice}` });
-    // The calculation this message has open, managed at the top (2026-10-14 16:51 EDT, Harkirat: "if viewing a saved calc and then the saved button is tapped, it should show a section at the top of it with options to edit that saved option such as renaming it, deleting it"). Rename and Delete left the result for here; an unsaved one is saved from here.
+
+    // The save section: the open calculation, managed here.
+    let saveSection = false;
     if (current && current.name) {
         const armed = state.verb === 'delarm';
-        components.push({ type: 10, content: `## This Calculation\n-# Rename it, or delete it from your saved calculations.` });
+        components.push({ type: 10, content: `## This Calculation\n-# Viewing **${String(current.name).replace(/\*/g, '')}**. Rename it, or delete it from your saved calculations.` });
         components.push({ type: 1, components: [
             { type: 2, style: 2, label: 'Rename', custom_id: encodeState('modal_name', view) },
             { type: 2, style: armed ? 4 : 2, label: armed ? 'Delete Calculation — click again' : 'Delete Calculation', custom_id: encodeState(armed ? 'del' : 'delarm', view) }
         ] });
-        components.push({ type: 14, spacing: 2, divider: true });
+        saveSection = true;
     } else if (current && (current.banners || []).length) {
-        // Save opens the save step (2026-10-14 17:28 EDT): save it as a new one, or pick a saved calculation to save over.
-        components.push({ type: 10, content: current.sourceName
-            ? `## This Calculation\n-# Edited from **${current.sourceName}**, which is unchanged until you save over it.`
-            : `## This Calculation\n-# Not saved yet. Save it to keep it here; an unsaved one is cleared 30 days after it was started.` });
-        components.push({ type: 1, components: [{ type: 2, style: 2, label: 'Save', custom_id: encodeState('savepick', view), emoji: emojis.parseEmoji(emojis.saveStar) }] });
-        components.push({ type: 14, spacing: 2, divider: true });
+        const lines = ['## Save This Calculation'];
+        if (current.sourceName) lines.push(`-# Edited from **${current.sourceName}**, which stays as it was unless you replace it.`);
+        lines.push('-# **Save as New** keeps it as its own calculation, or **replace** one you saved before.');
+        components.push({ type: 10, content: lines.join('\n') });
+        if (overwriteConfirm) {
+            components.push({ type: 1, components: [
+                { type: 2, style: 4, label: `Replace "${String(overwriteConfirm.name).slice(0, 60)}"`, custom_id: encodeState('owok', { ...view, target: overwriteConfirm.target }) },
+                { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('saved', view) }
+            ] });
+        } else {
+            components.push({ type: 1, components: [{ type: 2, style: 1, label: 'Save as New', custom_id: encodeState('modal_name', view), emoji: emojis.parseEmoji(emojis.saveStar) }] });
+            if (list.length) {
+                const mark = b => (String(current.sourceId) === String(b._id) ? 'Edited From This One' : null);
+                components.push({ type: 1, components: [{
+                    type: 3, custom_id: encodeState('owsel', view), placeholder: 'Or replace a previously saved calculation...',
+                    options: options(level >= 2 ? null : b => describe(b, mark(b)), level >= 4 ? 40 : 100)
+                }] });
+            }
+        }
+        saveSection = true;
     }
-    components.push({ type: 10, content: `## Saved Calculations\n-# ${list.length ? 'Reopen a saved calculation.' : 'None saved yet. Press **Save** on a result to keep it here.'}` });
+    if (saveSection) components.push({ type: 14, spacing: 1, divider: false });
+
+    components.push({ type: 10, content: list.length ? '## Your Saved Calculations' : '## Your Saved Calculations\n-# None saved yet. Save a calculation to keep it here.' });
     components.push({ type: 1, components: [list.length ? {
-        type: 3, custom_id: encodeState('load', view), placeholder: `Reopen a saved calculation (${list.length})`,
-        options: list.map(b => ({ label: String(b.name).slice(0, 100), value: String(b._id), description: level >= 2 ? cut(savedDescription(b), 60) : savedDescription(b), ...(savedEmoji(b) ? { emoji: savedEmoji(b) } : {}) }))
+        type: 3, custom_id: encodeState('load', view), placeholder: `Reopen a saved calculation (${list.length}/${MAX_SAVED} Slots)`,
+        options: options(level >= 5 ? null : b => (level >= 3 ? cutText(describe(b, openMark(b)), 60) : describe(b, openMark(b))))
     } : {
         type: 3, custom_id: encodeState('load', view), placeholder: 'No saved calculations yet', disabled: true,
         options: [{ label: 'No saved calculations yet', value: 'none' }]
     }] });
     if (list.length) {
-        components.push(SPACER);
+        components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `### Delete\n-# Pick the ones you no longer need. Nothing is deleted until you confirm.` });
         if (savedConfirm) {
             components.push({ type: 1, components: [
@@ -758,14 +754,14 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
             components.push({ type: 1, components: [{
                 type: 3, custom_id: encodeState('savedsel', view), placeholder: 'Pick calculations to delete',
                 min_values: 1, max_values: list.length,
-                options: list.map(b => ({ label: level >= 3 ? cut(String(b.name), 40) : String(b.name).slice(0, 100), value: String(b._id), ...(level >= 1 ? {} : { description: `${plural((b.banners || []).length, 'Draw')}${lastChanged(b) ? ` · Last Changed ${lastChanged(b)}` : ''}` }) }))
+                options: options(level >= 1 ? null : b => describe(b, openMark(b)), level >= 4 ? 40 : 100)
             }] });
         }
         const armed = state.verb === 'delallarm';
         components.push({ type: 1, components: [{ type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view) }] });
     }
-    components.push({ type: 10, content: `-# ${list.length}/${MAX_SAVED} saved. An unsaved calculation is cleared 30 days after it was started.` });
-    components.push(savedFooterRow(state));
+    // "An unsaved calculation is cleared 30 days after it was started" left this view for Help, which already says it under Saving.
+    components.push({ type: 14, spacing: 2, divider: true }, savedFooterRow(state));
     return { type: 17, accent_color: accentColor, components };
 }
 
@@ -787,7 +783,8 @@ function lineFigures(basket) {
         const upgrade = priced && basket.includeUpgrades ? upgradeCost(basket.region, b.drawKey) : null;
         const spent = priced ? spentSoFar(basket.region, b.drawKey, b.pullsDone) : 0;
         const leftAll = priced ? left + (upgrade || 0) : 0;
-        return { n: i + 1, drawKey: b.drawKey, pullsDone: b.pullsDone, total: pullCount(basket.region, b.drawKey), priced, spent, left: leftAll, full: spent + leftAll };
+        // The draw and its Mythic upgrade are kept apart (2026-10-16 14:32 EDT, Harkirat's layout states the upgrade on its own): `drawFull`/`drawLeft` are the draw alone, `upgrade` the upgrade, `full`/`left` both together.
+        return { n: i + 1, drawKey: b.drawKey, pullsDone: b.pullsDone, total: pullCount(basket.region, b.drawKey), priced, spent, left: leftAll, full: spent + leftAll, drawLeft: priced ? left : 0, drawFull: priced ? spent + left : 0, upgrade: upgrade || 0 };
     });
 }
 function breakdownRows(figs, level) {
@@ -795,8 +792,8 @@ function breakdownRows(figs, level) {
     if (level >= 4) {
         const byType = new Map();
         for (const f of figs) {
-            const g = byType.get(f.drawKey) || { ...f, count: 0, spent: 0, left: 0, full: 0, pullsDone: 0, total: 0, byType: true };
-            g.count++; g.spent += f.spent; g.left += f.left; g.full += f.full; g.pullsDone += f.pullsDone; g.total += f.total || 0;
+            const g = byType.get(f.drawKey) || { ...f, count: 0, spent: 0, left: 0, full: 0, drawLeft: 0, drawFull: 0, upgrade: 0, pullsDone: 0, total: 0, byType: true };
+            g.count++; g.spent += f.spent; g.left += f.left; g.full += f.full; g.drawLeft += f.drawLeft; g.drawFull += f.drawFull; g.upgrade += f.upgrade; g.pullsDone += f.pullsDone; g.total += f.total || 0;
             byType.set(f.drawKey, g);
         }
         return [...byType.values()];
@@ -818,11 +815,15 @@ function breakdownSelectionText(basket, level) {
         const name = `${shortName(r.drawKey)}${r.count > 1 ? ` ×${r.count}` : ''}`;
         // A per-type row (level 4) already carries its lines' sums, so it is never multiplied again.
         const k = r.byType ? 1 : r.count;
-        if (r.byType) { out.push(`${icon} ${name} · \`${r.pullsDone}/${r.total || '?'}\` Spins ${dash} **${r.priced ? `\`${fmt(r.full)} CP\`` : 'no price here'}**`); continue; }
+        // His upgrade layout: "**`x CP` Weapon** + **`x CP` Upgrade**" on the row, "(+ `x CP` Upgrade)" in its note.
+        const cost = !r.priced ? '**no price here**'
+            : r.upgrade ? `**\`${fmt(r.drawFull * k)} CP\` ${UPGRADE_LABEL[r.drawKey] || 'Draw'}** + **\`${fmt(r.upgrade * k)} CP\` Upgrade**`
+            : `**\`${fmt(r.full * k)} CP\`**`;
+        if (r.byType) { out.push(`${icon} ${name} · \`${r.pullsDone}/${r.total || '?'}\` Spins ${dash} ${cost}`); continue; }
         const num = r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`;
-        out.push(`${icon} ${num} · \`${r.pullsDone}/${r.total ?? '?'}\` Spins · ${name} ${dash} **${r.priced ? `\`${fmt(r.full * k)} CP\`` : 'no price here'}**`);
+        out.push(`${icon} ${num} · \`${r.pullsDone}/${r.total ?? '?'}\` Spins · ${name} ${dash} ${cost}`);
         if (level < 2) out.push(r.priced
-            ? `-# \`${fmt(r.spent * r.count)} CP\` spent · \`${fmt(r.left * r.count)} CP\` remaining until completion`
+            ? `-# \`${fmt(r.spent * r.count)} CP\` spent · \`${fmt(r.drawLeft * r.count)} CP\`${r.upgrade ? ` (+ \`${fmt(r.upgrade * r.count)} CP\` Upgrade)` : ''} remaining until completion`
             : `-# No sourced price at ${regionLabel(basket.region)}, so this line is left out of the totals.`);
     }
     return out.join('\n');
@@ -836,15 +837,17 @@ function breakdownCostLines(basket, currency, client, level) {
     const needed = full - spent;
     const balance = basket.balance || 0;
     const shortfall = needed - balance;
-    const term = (r, key) => `\`${r.count > 1 ? `${r.count} × ` : ''}${fmt(r[key])} CP\``;
-    const terms = key => level >= 3 ? `across ${plural(figs.length, 'line')}` : (rows.length ? rows.map(r => term(r, key)).join(' **+** ') : '`0 CP`');
+    const term = (r, key) => `\`${r.count > 1 && !r.byType ? `${r.count} × ` : ''}${fmt(r[key])} CP\``;
+    const fullTerm = r => (r.upgrade ? `${term(r, 'drawFull')} (**+** \`${r.count > 1 && !r.byType ? `${r.count} × ` : ''}${fmt(r.upgrade)} CP\` Upgrade)` : term(r, 'full'));
+    const withUpgrades = figs.some(f => f.upgrade);
+    const terms = key => level >= 3 ? `across ${plural(figs.length, 'line')}` : (rows.length ? rows.map(r => (key === 'full' ? fullTerm(r) : term(r, key))).join(' **+** ') : '`0 CP`');
     const head = [
         '## Cost Breakdown',
         `**CP still needed**${BREAK}**\`${fmt(Math.max(shortfall, 0))} CP\`**`,
-        '-# `Cost of draws` **-** `amount spent` **-** `CP Balance`'
+        `-# \`Cost of draws${withUpgrades ? ' & mythic upgrades' : ''}\` **-** \`amount spent\` **-** \`CP Balance\``
     ];
     const tail = [
-        `Full cost of draws${BREAK}\`${fmt(full)} CP\` Total`,
+        `Full cost of draws${withUpgrades ? ' & upgrades' : ''}${BREAK}\`${fmt(full)} CP\` Total`,
         `-# ${b1} ${terms('full')}`,
         `Amount Spent so far${BREAK}\`${fmt(spent)} CP\` Total`,
         `-# ${b1} ${terms('spent')}`,
@@ -1015,7 +1018,7 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
             '1. **Pick your draws** under Start a Calculation',
             '2. **Set your spins** on any draw you have already started',
             '3. **Set your region and balance** under Tweak Calculation',
-            `4. **Press ${emojis.sparkles} Calculate** for the CP you need and the cheapest way to buy it`
+            `4. **Press ${emojis.calculate} Calculate** for the CP you need and the cheapest way to buy it`
         ].join('\n') },
         divider,
         { type: 10, content: [
@@ -1068,8 +1071,8 @@ function buildCalculatorPanel(state, basket, accentColor, options = {}) {
     const savedCount = options.savedCount ?? (options.savedBaskets || []).length;
     const nav = extra => bottomNavRow(state, { savedCount, ...extra });
     // Page 3 is the Saved view; it belongs to no one calculation, and Back returns to whichever this message had open.
-    if (state.page === 3) return [buildSavedPanel(state, options.savedBaskets, accentColor, { notice: options.notice, savedConfirm: options.savedConfirm, current: basket }), nav({ showReset: false, onSaved: true })];
-    if (state.page === 4) return [buildSaveStepPanel(state, options.savedBaskets, accentColor, { notice: options.notice, current: basket, overwriteConfirm: options.overwriteConfirm }), nav({ showReset: false, onSaved: true })];
+    // Page 4 (the old Save step) folded into the Saved view (2026-10-16), so a panel still carrying it renders this too.
+    if (state.page === 3 || state.page === 4) return [buildSavedPanel({ ...state, page: 3 }, options.savedBaskets, accentColor, { notice: options.notice, savedConfirm: options.savedConfirm, overwriteConfirm: options.overwriteConfirm, current: basket, timezone: options.timezone }), nav({ showReset: false, onSaved: true })];
     // No basket at all -> the setup form, empty. A basketId that resolved to nothing -> the same form, with a notice.
     if (!basket) {
         const container = state.basketId
@@ -1137,7 +1140,7 @@ async function execute(interaction) {
 
 module.exports = {
     encodeState, decodeState, defaultState, clampFocus,
-    buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildExportText, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, buildSaveStepPanel, savedChecksum, savedDescription,
+    buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildExportText, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, savedChecksum, savedDescription,
     buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
     parseAmount, applySelection, shortName, SHORT_NAME, slashShortcut,

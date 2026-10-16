@@ -257,8 +257,8 @@ t('New Calculation is two-step: armed shows Danger style + "click again", unarme
 
 t('Delete Calculation is two-step the same way', () => {
     const basket = makeBasket();
-    const plain = buttonLabelled(dc.buildCalculatorPanel(state({ page: 3 }), basket, ACCENT, { savedBaskets: [] }), 'Save');
-    assert.ok(plain && verbOf(plain) === 'savepick' && plain.emoji, 'an unsaved calculation is saved from the Saved view, through the Save step, with his SaveStar emoji');
+    const plain = buttonLabelled(dc.buildCalculatorPanel(state({ page: 3 }), basket, ACCENT, { savedBaskets: [] }), 'Save as New');
+    assert.ok(plain && verbOf(plain) === 'modal_name' && plain.emoji, 'an unsaved calculation is saved right in the Saved view (2026-10-16), with his Save emoji');
     assert.strictEqual(buttonLabelled(render(basket), 'Save'), undefined, 'and not from the result');
     // Delete is offered on a SAVED calculation only: on an unsaved one it duplicated New Calculation (2026-10-13 click-test).
     assert.strictEqual(buttonLabelled(render(basket), 'Delete Calculation'), undefined, 'the result offers no Delete (2026-10-14 16:47 EDT: it moved to the Saved view)');
@@ -405,7 +405,8 @@ t('the bottom nav row is a SIBLING of the Container, never one of its children, 
 t('no button on the nav row or the save/delete row carries an emoji', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }));
     // Save Result and Save carry his Save emoji on purpose (2026-10-14 17:58 EDT), and View Saved its ViewSaved icon (2026-10-16 09:58 EDT); the rest stay plain.
-    const named = ['Draw Info', 'Draw Prices', 'New Calculation', 'Help', 'Rename', 'Delete Calculation'];
+    const named = ['Draw Info', 'Draw Prices', 'Help', 'Rename', 'Delete Calculation'];
+    assert.ok(buttons(panel).find(b => b.label === 'New Calculation').emoji, 'New Calculation carries the NewCalc icon (2026-10-16)');
     assert.ok(buttons(render(makeBasket())).find(b => b.label === 'Export').emoji, 'Export carries the CopyExport icon');
     assert.ok(buttons(render(makeBasket())).find(b => b.label === 'View Saved').emoji, 'View Saved carries the ViewSaved icon');
     for (const b of buttons(panel)) {
@@ -509,8 +510,11 @@ const savedView = (list, s = {}, opts = {}) => dc.buildCalculatorPanel(state({ p
 t('the Saved view opens a calculation, deletes several, or deletes all, and its way back is a footer inside the panel (2026-10-16 11:10 EDT)', () => {
     const panel = savedView(savedList(3));
     const open = selects(panel).find(s => verbOf(s) === 'load');
-    assert.ok(open && open.options.length === 3 && /Reopen a saved calculation \(3\)/.test(open.placeholder));
-    assert.ok(allText(panel).includes('## Saved Calculations\n-# Reopen a saved calculation.'), 'his wording for the hint');
+    assert.ok(open && open.options.length === 3 && open.placeholder === `Reopen a saved calculation (3/${dc.MAX_SAVED} Slots)`, open && open.placeholder);
+    assert.ok(allText(panel).includes('## Your Saved Calculations'), 'his heading (2026-10-16)');
+    assert.ok(texts(panel)[0].endsWith(require('../utils/titleBlock').toBoldItalicUnicode('Saved Calculations')), 'the caption under the title');
+    assert.strictEqual(/30 days/.test(allText(panel)), false, 'the 30-day note lives in Help now');
+    assert.ok(/clears after 30 days/.test(allText(dc.buildHelpPanel(ACCENT))), 'and Help says it');
     const del = selects(panel).find(s => verbOf(s) === 'savedsel');
     assert.ok(del && del.max_values === 3 && del.min_values === 1);
     assert.strictEqual(verbOf(buttonLabelled(panel, 'Delete All')), 'delallarm', 'Delete All is two-step');
@@ -521,16 +525,17 @@ t('the Saved view opens a calculation, deletes several, or deletes all, and its 
     const footer = panel[0].components[panel[0].components.length - 1];
     assert.deepStrictEqual(footer.components.map(b => b.label), ['Back to Calculation', 'New Calculation']);
     assert.ok(footer.components[0].emoji && verbOf(footer.components[0]) === 'back', 'the pagination left arrow, and it goes back');
-    assert.ok(/3\/25 saved/.test(allText(panel)), 'the limit is stated');
+    assert.ok(selects(panel).some(x => /\(3\/25 Slots\)/.test(x.placeholder || '')), 'the limit is stated, in the reopen placeholder (2026-10-16)');
 });
 
 t('each saved calculation says what it is: what it still costs, its region, its draws, and Draft when never calculated', () => {
     const list = savedList(2);
     const options = selects(savedView(list)).find(s => verbOf(s) === 'load').options;
-    assert.ok(/^[\d,]+ CP Needed · 10 CP · Mythic Weapon/.test(options[0].description), options[0].description);
-    assert.ok(/^Draft · [\d,]+ CP Needed · 10 CP · /.test(options[1].description), options[1].description);
-    assert.ok(options.every(o => o.description.length <= 100 && o.emoji), 'within Discord\'s 100, with a tier icon');
-    assert.strictEqual(dc.savedDescription({ banners: [], region: 'region_10' }), 'Empty');
+    assert.ok(/^(\w{3} \d{1,2} · )?[\d,]+ CP Needed · 10 CP · Mythic Weapon/.test(options[0].description), options[0].description);
+    assert.ok(/^Draft · (\w{3} \d{1,2} · )?[\d,]+ CP Needed · 10 CP · /.test(options[1].description), options[1].description);
+    assert.ok(options.every(o => o.description.length <= 100 && !o.emoji), 'within Discord\'s 100, and no icon (2026-10-16: "they don\'t make sense in this list")');
+    assert.strictEqual(dc.savedDescription({ banners: [], region: 'region_10', submitted: true, updatedAt: new Date('2026-10-14T12:00:00Z') }, { timezone: 'America/Toronto' }), 'Oct 14 · Empty', 'the date leads, in the viewer\'s timezone');
+    assert.strictEqual(dc.savedDescription({ banners: [], region: 'region_10', submitted: true }), 'Empty');
 });
 
 t('none saved: the view says how to save one and offers nothing to delete', () => {
@@ -863,28 +868,32 @@ t('the Saved view manages the open calculation at its top, and only when there i
     const named = makeBasket({ name: 'My Push' });
     const withCurrent = dc.buildCalculatorPanel(state({ page: 3 }), named, ACCENT, { savedBaskets: [named] });
     const text = allText(withCurrent);
-    assert.ok(text.indexOf('## This Calculation') < text.indexOf('## Saved Calculations'), 'the open calculation comes first');
+    assert.ok(text.indexOf('## This Calculation') < text.indexOf('## Your Saved Calculations'), 'the open calculation comes first');
     assert.ok(verbOf(buttonLabelled(withCurrent, 'Rename')) === 'modal_name' && dc.decodeState(buttonLabelled(withCurrent, 'Rename').custom_id).page === 3, 'Rename returns to the Saved view');
     assert.strictEqual(/This Calculation/.test(allText(dc.buildCalculatorPanel(state({ page: 3 }), null, ACCENT, { savedBaskets: [named] }))), false, 'no section when nothing is open');
     assert.ok(messageCount(dc.buildCalculatorPanel(state({ page: 3, verb: 'delarm' }), named, ACCENT, { savedBaskets: savedList(dc.MAX_SAVED, 80) })) <= 40, 'fits at the cap with the section');
 });
 
-t('a working copy has no "Edited from Saved" line (2026-10-16 09:58 EDT), and the Save step can save over it (2026-10-14 17:26 EDT)', () => {
+t('a working copy has no "Edited from Saved" line (2026-10-16 09:58 EDT), and saving lives in the Saved view (2026-10-16 14:27 EDT)', () => {
     const copy = makeBasket({ _id: 'c'.repeat(24), name: undefined, sourceId: '0'.repeat(23) + '1', sourceName: 'test' });
     assert.strictEqual(texts(render(copy))[0], `## ${require('../utils/emojiMap').calculator} Lucky Draw Calculator`, texts(render(copy))[0]);
     const list = savedList(3);
-    const step = dc.buildCalculatorPanel(state({ page: 4, basketId: copy._id }), copy, ACCENT, { savedBaskets: list });
-    assert.ok(allText(step).includes('## Save This Calculation'));
-    assert.ok(buttonLabelled(step, 'Save as New') && verbOf(buttonLabelled(step, 'Save as New')) === 'modal_name' && buttonLabelled(step, 'Save as New').emoji);
-    assert.strictEqual(verbOf(buttonLabelled(step, 'Cancel')), 'saved');
-    const over = selects(step).find(s => verbOf(s) === 'owsel');
-    assert.strictEqual(over.options.find(o => o.value === copy.sourceId).description, 'Opened From This One', 'the source is marked in the list');
-    const confirm = dc.buildCalculatorPanel(state({ page: 4, basketId: copy._id }), copy, ACCENT, { savedBaskets: list, overwriteConfirm: { target: list[0]._id, name: list[0].name } });
-    const yes = buttonLabelled(confirm, `Save Over "${list[0].name}"`);
+    for (const page of [3, 4]) { // page 4 is the old Save step: a panel still carrying it gets the Saved view
+        const view = dc.buildCalculatorPanel(state({ page, basketId: copy._id }), copy, ACCENT, { savedBaskets: list });
+        const text = allText(view);
+        assert.ok(text.indexOf('## Save This Calculation') < text.indexOf('## Your Saved Calculations'), 'the save section sits above the list');
+        assert.ok(/Edited from \*\*test\*\*, which stays as it was unless you replace it/.test(text), 'and says what it was edited from');
+        assert.ok(buttonLabelled(view, 'Save as New') && verbOf(buttonLabelled(view, 'Save as New')) === 'modal_name' && buttonLabelled(view, 'Save as New').emoji);
+        assert.strictEqual(buttonLabelled(view, 'Cancel'), undefined, 'no Cancel: there is no separate step to leave');
+        const over = selects(view).find(s => verbOf(s) === 'owsel');
+        assert.ok(over.placeholder === 'Or replace a previously saved calculation...' && /^Edited From This One · /.test(over.options.find(o => o.value === copy.sourceId).description), 'the source is marked in the list');
+    }
+    const confirm = dc.buildCalculatorPanel(state({ page: 3, basketId: copy._id }), copy, ACCENT, { savedBaskets: list, overwriteConfirm: { target: list[0]._id, name: list[0].name } });
+    const yes = buttonLabelled(confirm, `Replace "${list[0].name}"`);
     assert.ok(yes && yes.style === 4 && verbOf(yes) === 'owok' && dc.decodeState(yes.custom_id).target === list[0]._id && yes.custom_id.length <= 100);
-    assert.ok(messageCount(dc.buildCalculatorPanel(state({ page: 4, basketId: copy._id }), copy, ACCENT, { savedBaskets: savedList(dc.MAX_SAVED, 80) })) <= 40, 'fits at the cap');
-    const section = allText(dc.buildCalculatorPanel(state({ page: 3 }), copy, ACCENT, { savedBaskets: list }));
-    assert.ok(/Edited from \*\*test\*\*, which is unchanged until you save over it/.test(section));
+    assert.strictEqual(verbOf(buttonLabelled(confirm, 'Keep It')), 'saved');
+    assert.ok(messageCount(dc.buildCalculatorPanel(state({ page: 3, basketId: copy._id }), copy, ACCENT, { savedBaskets: savedList(dc.MAX_SAVED, 80) })) <= 40, 'fits at the cap with three dropdowns');
+    assert.ok(JSON.stringify(dc.buildCalculatorPanel(state({ page: 3, basketId: copy._id }), copy, ACCENT, { savedBaskets: savedList(dc.MAX_SAVED, 80) })).length <= dc.SETUP_JSON_BUDGET + 1000, 'and under the size budget');
 });
 
 t('Export gives the result as plain, pasteable markdown: draws, CP needed, balance, package (2026-10-14 18:22 EDT)', () => {

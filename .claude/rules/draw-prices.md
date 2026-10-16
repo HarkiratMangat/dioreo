@@ -199,6 +199,13 @@ The old "Draw Info" screen. Its button left the nav row in the 2026-10-14 intake
 - **Export (2026-10-14 18:24 EDT):** verb `export`, a private reply (its own `deferReply`, handled before the generic defer) carrying `buildExportText()` in a ```md block. Plain markdown only: no custom emoji (they break outside this bot's servers) and markdown characters stripped from the name so it cannot break the block. Under 1,800 characters.
 - **Help (2026-10-14 18:27 EDT):** sections, never paragraphs (his "it's just ALL prose"): How It Works, Words You'll See, Buttons, Saving, Shortcut, each a short list of "**term** · meaning" lines under a divider. A test pins the headings and that no line runs past 160 characters.
 
+### Saving lives in the Saved view, 2026-10-16 14:39 EDT — batch 29
+
+- **The Save step (page 4) is gone.** Save Result opens the Saved view (page 3), which holds the save section (Save as New, or replace a saved one with a confirm), Your Saved Calculations, Delete, and the Back to Calculation / New Calculation footer, in that order with his dividers. A custom_id still carrying page 4 renders page 3.
+- **Saved list options carry no emoji** (a description is plain text, 100 characters max, so a custom emoji could never render there) and lead with the date last changed, in the viewer's /settings timezone; "Open Now" and "Edited From This One" mark the relevant rows. The reopen placeholder states the slots ("3/25 Slots"); the 30-day note lives only in Help.
+- **The Full Breakdown states a Mythic upgrade apart** (row: "`x CP` Weapon + `x CP` Upgrade"; note and sum: "(+ `x CP` Upgrade)"; labels gain "& mythic upgrades" / "& upgrades" only when an upgrade is included).
+- 🔴 **A re-uploaded emoji in the dev app breaks every panel using it until the dev bot restarts** (COMPONENT_INVALID_EMOJI): the bot maps dev ids by name at boot. That is what broke Back to Calculation on 2026-10-16.
+
 ### Full Breakdown is his layout, 2026-10-16 01:17 EDT — batch 22
 
 - **Detail view = `buildBreakdownPage`** (Your Selections one row per line: number, spins, name, full cost, then spent / remaining; Cost Breakdown as CP still needed = cost of draws − spent − balance with per-row terms; Recommended Bundles). The compact view (`buildCostBlock`) is compact-only now; don't rebuild a detail branch in it.

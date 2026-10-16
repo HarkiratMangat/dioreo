@@ -42,8 +42,9 @@ function buildAmountModal(state) {
 }
 
 function buildNameModal(state, currentName) {
-    const field = new TextInputBuilder().setCustomId('name').setLabel('Calculation name')
-        .setStyle(TextInputStyle.Short).setPlaceholder('e.g. Season 12 push')
+    // The 80-character limit is named in the label and the example is his (2026-10-16 14:31 EDT: "is there a character limit to the calc name? if yes, mention it in the pop-up modal? and change the placeholder there to 'e.g. Purchase spree'").
+    const field = new TextInputBuilder().setCustomId('name').setLabel('Calculation name (up to 80 characters)')
+        .setStyle(TextInputStyle.Short).setPlaceholder('e.g. Purchase spree')
         .setValue(currentName || '').setRequired(false).setMaxLength(80);
     return new ModalBuilder()
         .setCustomId(encodeState('nums_name', state))
@@ -66,6 +67,7 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
     const panel = buildCalculatorPanel(state, basket, accentColor, {
         liveDoubleCPEntry,
         currency: prefs?.cpCurrency || 'USD',
+        timezone: prefs?.timezone || null,
         client: interaction.client,
         savedBaskets,
         notice,
@@ -165,7 +167,8 @@ async function route(interaction) {
         }
         const updated = await basketStore.rename(actingUserId, state.basketId, name);
         // "Save as New" from the Save step lands on the result it just saved (2026-10-14 17:28 EDT); a rename from the Saved view stays there.
-        if (state.page === 4 && updated?.name) { await renderPanel(interaction, { ...state, page: 0, verb: 'load' }, updated, `Saved as "${updated.name}".`); return true; }
+        // Saving an unsaved calculation lands on its result; renaming one that was already saved stays where it was (the Save step folded into the Saved view, 2026-10-16).
+        if (!basket.name && updated?.name) { await renderPanel(interaction, { ...state, page: 0, verb: 'load' }, updated, `Saved as "${updated.name}".`); return true; }
         await renderPanel(interaction, state, updated);
         return true;
     }
@@ -330,26 +333,26 @@ async function route(interaction) {
         await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0 }, basket);
         return true;
     }
-    // THE SAVE STEP (2026-10-14 17:28 EDT): Save opens it; picking a saved calculation only asks; the confirm saves over it.
+    // SAVING lives in the Saved view now (2026-10-16): Save Result opens it; picking a saved calculation to replace only asks; the confirm replaces it.
     if (interaction.isButton() && state.verb === 'savepick') {
-        await renderPanel(interaction, { ...state, page: 4, target: null }, await currentBasket(actingUserId, state));
+        await renderPanel(interaction, { ...state, page: 3, target: null }, await currentBasket(actingUserId, state));
         return true;
     }
     if (interaction.isStringSelectMenu() && state.verb === 'owsel') {
         const target = await basketStore.load(actingUserId, interaction.values[0]);
         const current = await currentBasket(actingUserId, state);
-        if (!target || !target.name) { await renderPanel(interaction, { ...state, page: 4 }, current, 'That saved calculation is gone.'); return true; }
-        await renderPanel(interaction, { ...state, page: 4 }, current, `⚠️ Save over "${target.name}"? Its draws, spins, region, balance and upgrade are replaced with this calculation's.`, null, null, { target: String(target._id), name: target.name });
+        if (!target || !target.name) { await renderPanel(interaction, { ...state, page: 3 }, current, 'That saved calculation is gone.'); return true; }
+        await renderPanel(interaction, { ...state, page: 3 }, current, `⚠️ Replace **${target.name}**? Its draws, spins, region, balance and upgrade setting are overwritten with this calculation's.`, null, null, { target: String(target._id), name: target.name });
         return true;
     }
     if (interaction.isButton() && state.verb === 'owok') {
         const working = await currentBasket(actingUserId, state);
         const target = state.target ? await basketStore.load(actingUserId, state.target) : null;
-        if (!working || !target || !target.name) { await renderPanel(interaction, { ...state, page: 4, target: null }, working, 'Nothing was saved: the calculation or the saved one is gone.'); return true; }
+        if (!working || !target || !target.name) { await renderPanel(interaction, { ...state, page: 3, target: null }, working, 'Nothing was saved: the calculation or the saved one is gone.'); return true; }
         const saved = await basketStore.save(actingUserId, { _id: String(target._id), banners: working.banners, region: working.region, balance: working.balance, includeUpgrades: working.includeUpgrades, entitlementMask: working.entitlementMask, submitted: working.submitted });
         // The working copy has done its job; a saved one picked as the open calculation is never removed here.
         if (!working.name && String(working._id) !== String(target._id)) await basketStore.remove(actingUserId, String(working._id));
-        await renderPanel(interaction, { ...state, basketId: String(target._id), page: 0, target: null, verb: 'load' }, saved, `Saved over "${target.name}".`);
+        await renderPanel(interaction, { ...state, basketId: String(target._id), page: 0, target: null, verb: 'load' }, saved, `Replaced "${target.name}".`);
         return true;
     }
 
