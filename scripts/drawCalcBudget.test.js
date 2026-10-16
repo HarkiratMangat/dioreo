@@ -510,7 +510,7 @@ const savedView = (list, s = {}, opts = {}) => dc.buildCalculatorPanel(state({ p
 t('the Saved view opens a calculation, deletes several, or deletes all, and its way back is a footer inside the panel (2026-10-16 11:10 EDT)', () => {
     const panel = savedView(savedList(3));
     const open = selects(panel).find(s => verbOf(s) === 'load');
-    assert.ok(open && open.options.length === 3 && open.placeholder === `Reopen a saved calculation (3/${dc.MAX_SAVED} Slots)`, open && open.placeholder);
+    assert.ok(open && open.options.length === 3 && open.placeholder === `Reopen a saved calculation (3/${dc.MAX_SAVED} slots)`, open && open.placeholder);
     assert.ok(allText(panel).includes('## Your Saved Calculations'), 'his heading (2026-10-16)');
     assert.ok(texts(panel)[0].endsWith(require('../utils/titleBlock').toBoldItalicUnicode('Saved Calculations')), 'the caption under the title');
     assert.strictEqual(/30 days/.test(allText(panel)), false, 'the 30-day note lives in Help now');
@@ -518,6 +518,7 @@ t('the Saved view opens a calculation, deletes several, or deletes all, and its 
     const del = selects(panel).find(s => verbOf(s) === 'savedsel');
     assert.ok(del && del.max_values === 3 && del.min_values === 1);
     assert.strictEqual(verbOf(buttonLabelled(panel, 'Delete All')), 'delallarm', 'Delete All is two-step');
+    assert.ok(buttonLabelled(panel, 'Delete All').emoji, 'with his DeleteAll icon');
     const armed = buttonLabelled(savedView(savedList(3), { verb: 'delallarm' }), 'Delete All (3) — click again');
     assert.ok(armed && armed.style === 4 && verbOf(armed) === 'delall');
     const nav = panel.filter(x => x && x.type === 1)[0].components.map(b => b.label);
@@ -525,7 +526,7 @@ t('the Saved view opens a calculation, deletes several, or deletes all, and its 
     const footer = panel[0].components[panel[0].components.length - 1];
     assert.deepStrictEqual(footer.components.map(b => b.label), ['Back to Calculation', 'New Calculation']);
     assert.ok(footer.components[0].emoji && verbOf(footer.components[0]) === 'back', 'the pagination left arrow, and it goes back');
-    assert.ok(selects(panel).some(x => /\(3\/25 Slots\)/.test(x.placeholder || '')), 'the limit is stated, in the reopen placeholder (2026-10-16)');
+    assert.ok(selects(panel).some(x => /\(3\/25 slots\)/.test(x.placeholder || '')), 'the limit is stated, in the reopen placeholder (2026-10-16)');
 });
 
 t('each saved calculation says what it is: what it still costs, its region, its draws, and Draft when never calculated', () => {
@@ -882,7 +883,7 @@ t('a working copy has no "Edited from Saved" line (2026-10-16 09:58 EDT), and sa
         const view = dc.buildCalculatorPanel(state({ page, basketId: copy._id }), copy, ACCENT, { savedBaskets: list });
         const text = allText(view);
         assert.ok(text.indexOf('## Save This Calculation') < text.indexOf('## Your Saved Calculations'), 'the save section sits above the list');
-        assert.ok(/Edited from \*\*test\*\*, which stays as it was unless you replace it/.test(text), 'and says what it was edited from');
+        assert.ok(/^> -# Edited from \*\*test\*\*, which stays as it was unless you replace it\.$/m.test(text), 'and says what it was edited from, quoted because it is conditional');
         assert.ok(buttonLabelled(view, 'Save as New') && verbOf(buttonLabelled(view, 'Save as New')) === 'modal_name' && buttonLabelled(view, 'Save as New').emoji);
         assert.strictEqual(buttonLabelled(view, 'Cancel'), undefined, 'no Cancel: there is no separate step to leave');
         const over = selects(view).find(s => verbOf(s) === 'owsel');
@@ -941,13 +942,14 @@ t('the Full Breakdown is his layout, with sums that check out (2026-10-16 01:07 
     const banners = [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }, { drawKey: 'mythicWeapon', pullsDone: 0 }];
     const t = allText(render(makeBasket({ banners }), { detail: true }, { currency: 'CAD' }));
     assert.ok(/#2 · `1\/10` Spins · Legendary Weapon \(Reactive\) <:BlueDash_BD:\d+> \*\*`4,950 CP`\*\*/.test(t), 'a row: number, spins, name, full cost');
-    assert.ok(t.includes('-# `10 CP` spent · `4,940 CP` remaining until completion'));
-    assert.ok(t.includes('**CP still needed** ⌇ **`15,700 CP`**') && t.includes('Full cost of draws ⌇ `15,710 CP` Total') && t.includes('Amount Spent so far ⌇ `10 CP` Total'), '15,710 - 10 - 0 = 15,700');
+    assert.ok(t.includes('-# `10 CP` Spent · `4,940 CP` Remaining until Completion'));
+    assert.ok(t.includes('**CP Still Needed** ⌇ **`15,700 CP`**') && t.includes('Full Cost of Draws ⌇ `15,710 CP` Total') && t.includes('Amount Spent So Far ⌇ `10 CP` Total'), '15,710 - 10 - 0 = 15,700');
+    assert.ok(t.includes('`Cost of Draws` **−** `Amount Spent` **−** `CP Balance`') && !/Mythic Upgrades/.test(t), 'his template in Title Case, upgrades named only when included');
     assert.ok(t.includes('`4,950 CP` **+** `4,950 CP` **+** `5,810 CP`') && t.includes('CP Balance ⌇ `0 CP` Assumed'));
     assert.ok(/\*\*Cheapest\*\* ⌇ \*\*`15,800 CP`\*\* for \*\*`CA\$199\.98`\*\*/.test(t) && t.includes('**`100 CP` Left Over**'));
-    assert.ok(t.includes('`CA$129.99` each') && /CoD:M webstore prices \*\*not\*\* considered/.test(t));
+    assert.ok(t.includes('`CA$129.99` each') && /CoD: Mobile web store prices are \*\*not\*\* included/.test(t));
     const compact = allText(render(makeBasket({ banners }), {}, { currency: 'CAD' }));
-    assert.strictEqual(/remaining until completion|\*\*Cheapest\*\*|Full cost of draws/.test(compact), false, 'Simplify keeps the compact view as it was');
+    assert.strictEqual(/Remaining until Completion|\*\*Cheapest\*\*|Full Cost of Draws/.test(compact), false, 'Simplify keeps the compact view as it was');
 });
 
 t('the Full Breakdown stays under Discord\'s 4,000-character text cap at 25 lines (probed 2026-10-16 01:12 EDT)', () => {
@@ -958,7 +960,7 @@ t('the Full Breakdown stays under Discord\'s 4,000-character text cap at 25 line
         assert.ok(textLen(p) <= 4000, `${banners.length} lines: ${textLen(p)} characters`);
     }
     const twelve = allText(render(makeBasket({ banners: Array(12).fill(0).map((_, i) => ({ drawKey: keys[i % keys.length], pullsDone: i % 7 })) }), { detail: true }, { currency: 'CAD' }));
-    assert.strictEqual((twelve.match(/remaining until completion/g) || []).length, 12, 'twelve different lines still get one row each');
+    assert.strictEqual((twelve.match(/Remaining until Completion/g) || []).length, 12, 'twelve different lines still get one row each');
 });
 
 t('Stock Up can use as many purchases as the Recommended Package, up to 6 (2026-10-16 01:07 EDT)', () => {

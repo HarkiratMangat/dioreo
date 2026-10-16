@@ -57,7 +57,9 @@ const emojis = {
     timestamp: '<a:Timestamps:1523762211103969420>',
     drawPrices: '<a:DrawPrices:1525864071776305163>',
     // /draw calculator's title icon + the two per-draw upgrade "card" icons (added 2026-08-26 17:25 EDT, Harkirat uploaded to both dev+prod apps). ⚠️ id verified live against the DEV app's boot-time refreshEmojiIds() sync only -- this worktree has no prod credentials to check against. If either ever renders as broken text on prod, re-supply the PROD id per this file's own established method (a live read of /applications/{prodAppId}/emojis before writing it), same trap this file's other entries document repeatedly.
-    calculator: '<a:Calculator:1542232659940343819>',
+    calculator: '<a:DrawCalc:1560743128934256680>',   // DrawCalc, 2026-10-16 18:57 EDT (Harkirat; was Calculator 1542232659940343819); every calculator title uses it
+    // The Saved view's Delete All button (2026-10-16 18:57 EDT).
+    deleteAll: '<a:DeleteAll:1560788313508683807>',
     mythicCard: '<:MythicCard:1542258676889288794>',   // mythicWeapon's upgrade -- "Weapon Upgrade"
     mythicCoin: '<:MythicCoin:1542258675706757150>',   // mythicCharacter's upgrade -- "Character Upgrade"
     // COST BREAKDOWN's own inline bullet + field-separator glyphs (added 2026-08-26 23:03 EDT, matching Harkirat's own exported mockup verbatim) -- smallDot prefixes each field line, blueDash joins two fields sharing one line (Balance/Region, CP Spent/CP Needed). Both static, not animated. The toggle button's two states (added same pass): simplify shows once the breakdown is expanded, expand shows while it is collapsed -- see actionRow() in commands/drawCalculator.js.

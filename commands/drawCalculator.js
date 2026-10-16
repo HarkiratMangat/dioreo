@@ -712,7 +712,8 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         saveSection = true;
     } else if (current && (current.banners || []).length) {
         const lines = ['## Save This Calculation'];
-        if (current.sourceName) lines.push(`-# Edited from **${current.sourceName}**, which stays as it was unless you replace it.`);
+        // Conditional, so it is quoted (2026-10-16 18:57 EDT, Harkirat: "format it as `> -# text`").
+        if (current.sourceName) lines.push(`> -# Edited from **${current.sourceName}**, which stays as it was unless you replace it.`);
         lines.push('-# **Save as New** keeps it as its own calculation, or **replace** one you saved before.');
         components.push({ type: 10, content: lines.join('\n') });
         if (overwriteConfirm) {
@@ -736,7 +737,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
 
     components.push({ type: 10, content: list.length ? '## Your Saved Calculations' : '## Your Saved Calculations\n-# None saved yet. Save a calculation to keep it here.' });
     components.push({ type: 1, components: [list.length ? {
-        type: 3, custom_id: encodeState('load', view), placeholder: `Reopen a saved calculation (${list.length}/${MAX_SAVED} Slots)`,
+        type: 3, custom_id: encodeState('load', view), placeholder: `Reopen a saved calculation (${list.length}/${MAX_SAVED} slots)`,
         options: options(level >= 5 ? null : b => (level >= 3 ? cutText(describe(b, openMark(b)), 60) : describe(b, openMark(b))))
     } : {
         type: 3, custom_id: encodeState('load', view), placeholder: 'No saved calculations yet', disabled: true,
@@ -758,7 +759,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
             }] });
         }
         const armed = state.verb === 'delallarm';
-        components.push({ type: 1, components: [{ type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view) }] });
+        components.push({ type: 1, components: [{ type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) }] });
     }
     // "An unsaved calculation is cleared 30 days after it was started" left this view for Help, which already says it under Saving.
     components.push({ type: 14, spacing: 2, divider: true }, savedFooterRow(state));
@@ -823,7 +824,7 @@ function breakdownSelectionText(basket, level) {
         const num = r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`;
         out.push(`${icon} ${num} · \`${r.pullsDone}/${r.total ?? '?'}\` Spins · ${name} ${dash} ${cost}`);
         if (level < 2) out.push(r.priced
-            ? `-# \`${fmt(r.spent * r.count)} CP\` spent · \`${fmt(r.drawLeft * r.count)} CP\`${r.upgrade ? ` (+ \`${fmt(r.upgrade * r.count)} CP\` Upgrade)` : ''} remaining until completion`
+            ? `-# \`${fmt(r.spent * r.count)} CP\` Spent · \`${fmt(r.drawLeft * r.count)} CP\`${r.upgrade ? ` (+ \`${fmt(r.upgrade * r.count)} CP\` Upgrade)` : ''} Remaining until Completion`
             : `-# No sourced price at ${regionLabel(basket.region)}, so this line is left out of the totals.`);
     }
     return out.join('\n');
@@ -843,16 +844,17 @@ function breakdownCostLines(basket, currency, client, level) {
     const terms = key => level >= 3 ? `across ${plural(figs.length, 'line')}` : (rows.length ? rows.map(r => (key === 'full' ? fullTerm(r) : term(r, key))).join(' **+** ') : '`0 CP`');
     const head = [
         '## Cost Breakdown',
-        `**CP still needed**${BREAK}**\`${fmt(Math.max(shortfall, 0))} CP\`**`,
-        `-# \`Cost of draws${withUpgrades ? ' & mythic upgrades' : ''}\` **-** \`amount spent\` **-** \`CP Balance\``
+        // His rough template, cleaned up (2026-10-16 18:57 EDT, Harkirat: "you literally copied my typed template as is, when i said it was rough"): labels and terms in Title Case, sentences in sentence case, a real minus sign.
+        `**CP Still Needed**${BREAK}**\`${fmt(Math.max(shortfall, 0))} CP\`**`,
+        `-# \`Cost of Draws${withUpgrades ? ' & Mythic Upgrades' : ''}\` **−** \`Amount Spent\` **−** \`CP Balance\``
     ];
     const tail = [
-        `Full cost of draws${withUpgrades ? ' & upgrades' : ''}${BREAK}\`${fmt(full)} CP\` Total`,
+        `Full Cost of Draws${withUpgrades ? ' & Upgrades' : ''}${BREAK}\`${fmt(full)} CP\` Total`,
         `-# ${b1} ${terms('full')}`,
-        `Amount Spent so far${BREAK}\`${fmt(spent)} CP\` Total`,
+        `Amount Spent So Far${BREAK}\`${fmt(spent)} CP\` Total`,
         `-# ${b1} ${terms('spent')}`,
         balance ? `CP Balance${BREAK}\`${fmt(balance)} CP\`` : `CP Balance${BREAK}\`0 CP\` Assumed`,
-        `-# ${b1} ${balance ? 'Set under Tweak Calculation' : '`Not set`'}`
+        `-# ${b1} ${balance ? 'Set under Tweak Calculation' : '`Not Set`'}`
     ];
     const unpriced = lineFigures(basket).filter(f => !f.priced);
     if (unpriced.length) tail.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${[...new Set(unpriced.map(f => shortName(f.drawKey)))].join(', ')}.`);
@@ -875,9 +877,9 @@ function breakdownCostLines(basket, currency, client, level) {
     tail.push(result.stockUp ? '## Recommended Bundles' : '## Recommended Bundle', ...bundle('Cheapest', result.cheapest));
     if (result.stockUp) {
         tail.push('', ...bundle('Stock Up', result.stockUp));
-        tail.push(`-# **${money(result.stockUp.extraCents)} more** for **${fmt(result.stockUp.extraCp)} extra CP** at a *better rate*, worth it if you plan to purchase more draws in the future.`);
+        tail.push(`-# **${money(result.stockUp.extraCents)} more** buys **${fmt(result.stockUp.extraCp)} extra CP** at a *better rate*, which is worth it if you plan to buy more draws later.`);
     }
-    tail.push('', '-# Estimates only; local tax and conversion vary. CoD:M webstore prices **not** considered.', `-# Prices in **${currency}** · Change in ${settingsMention}`);
+    tail.push('', '-# Estimates only: local tax and currency conversion vary, and CoD: Mobile web store prices are **not** included.', `-# Prices in **${currency}** · Change in ${settingsMention}`);
     return { head, tail };
 }
 // Discord's text cap for one message's text displays, used with SETUP_JSON_BUDGET to pick the Full Breakdown's level.

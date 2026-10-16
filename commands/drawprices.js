@@ -126,7 +126,7 @@ const TOTAL_PAGES = SUBPAGES.length + 2;      // 2 key pages + the 2 Advanced pa
 
 // Mythic-tier draws are the only ones with a separate Upgrade step, and each needs its own noun ("Weapon"/"Character") in the "### {X} Upgrade" sub-heading per drawPrices_ui.json.
 const UPGRADE_LABEL = { mythicWeapon: 'Weapon', mythicCharacter: 'Character' };
-// The upgrade's own currency icon (2026-10-16 11:14 EDT, Harkirat: "Cards = weapon. Coin=character."). Read at render time, never captured at require time (see checkEmojiCaptures).
+// The upgrade's own currency icon, beside the Weapon/Character Upgrade heading only (2026-10-16 18:57 EDT, Harkirat: "remove the mythic card/coin emoji out of the ... line. just leave it beside the ... headings"). First added (2026-10-16 11:14 EDT, Harkirat: "Cards = weapon. Coin=character."). Read at render time, never captured at require time (see checkEmojiCaptures).
 function upgradeEmoji(key) { return key === 'mythicWeapon' ? emojis.mythicCard : key === 'mythicCharacter' ? emojis.mythicCoin : ''; }
 
 function formatCP(n) { return n.toLocaleString('en-US'); }
@@ -161,7 +161,7 @@ function buildDrawEntries(regionKey, keys) {
         let totalLine;
         if (entry.upgrade) {
             const upgradeTotal = entry.upgrade.perDraw * entry.upgrade.count;
-            totalLine = `> ${emojis.cp2} **\`${formatCP(total)} CP\`** Draw + ${upgradeEmoji(key)} **\`${formatCP(upgradeTotal)} CP\`** Upgrade ⌇ **\`${formatCP(total + upgradeTotal)} CP\`**`;
+            totalLine = `> ${emojis.cp2} **\`${formatCP(total)} CP\`** Draw + **\`${formatCP(upgradeTotal)} CP\`** Upgrade ⌇ **\`${formatCP(total + upgradeTotal)} CP\`**`;
         } else {
             totalLine = `> ${emojis.cp2} **\`${formatCP(total)} CP\`**`;
         }
