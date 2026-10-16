@@ -859,7 +859,7 @@ function packRates(currency) {
     const best = Math.min(...rates.map(r => r.per100));
     return rates.map(r => ({ ...r, best: r.per100 === best }));
 }
-function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWeapon', currency = 'USD' } = {}) {
+function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWeapon', currency = 'USD', client = null } = {}) {
     const dot = emojis.smallDot;
     const divider = { type: 14, spacing: 2, divider: true };
     const ladder = helpLadder(region, drawKey);
@@ -900,10 +900,10 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
         divider,
         { type: 10, content: [
             '### 💰 Why Stock Up',
-            `Each pack's price per 100 CP in **${currency}**. Lower is better:`,
+            // Currency is named first (Harkirat, 2026-10-16 00:14 EDT: "the fact that the stock-up varies by currency and the calculation adapts based on your set currency"), and the hint stays ONE line ("can you not artificially line break the hint line please?").
+            `Pack prices differ by currency, so the calculator uses yours: **${currency}**, set in ${client ? mentionCommand(client, '/settings') : '`/settings`'}. Price per 100 CP, lower is better:`,
             ...packRates(currency).map(r => `${dot} **${fmt(r.cp)} CP** · ${formatMoney(r.per100, currency)}${r.best ? ' · **best rate**' : ''}`),
-            `-# Stock Up shows in Full Breakdown only when it gets at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP for your money than the Recommended Package,`,
-            `-# costs at most ${STOCK_UP_RULES.budgetMult}× as much, and takes ${STOCK_UP_RULES.maxPurchases} purchases or fewer. Leftover CP stays in your account for later draws.`
+            `-# Stock Up is worked out in your currency: it shows in Full Breakdown only when it gets at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP for your money than the Recommended Package, costs at most ${STOCK_UP_RULES.budgetMult}× as much, and takes ${STOCK_UP_RULES.maxPurchases} purchases or fewer. Leftover CP stays in your account for later draws.`
         ].join('\n') },
         divider,
         { type: 10, content: [

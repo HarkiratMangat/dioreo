@@ -665,7 +665,7 @@ t('what a region is lives in Help; the form only labels the row with a hint', ()
     assert.ok(/Your region is the price of the \*\*first spin\*\*/.test(allText(dc.buildHelpPanel(ACCENT))));
     const help = dc.buildHelpPanel(ACCENT);
     assert.deepStrictEqual(texts(help).map(c => c.split('\n')[0].replace(/<a?:\w+:\d+> ?/g, '')), ['## Calculator Help', '### 🧭 How It Works', '### 📈 How Prices Work', '### 🗺️ Find Your Region', '### 🧾 Reading Your Result', '### 💰 Why Stock Up', '### Saving', '### ⚡ Shortcut'], 'Help is sections with an emoji each, not paragraphs (2026-10-14 18:31 EDT)');
-    assert.ok(texts(help).every(c => c.split('\n').every(l => l.length < 160)), 'no line runs on as a paragraph');
+    assert.ok(texts(help).every(c => c.split('\n').every(l => l.startsWith('-# ') || l.length < 160)), 'no line runs on as a paragraph; a -# hint is one line by his call (2026-10-16 00:13 EDT)');
 });
 
 t('the default view names the currency and where to change it', () => {
@@ -917,7 +917,8 @@ t('Help shows every pack\'s price per 100 CP in the viewer\'s currency and Stock
     assert.ok(/\*\*10,800 CP\*\* · CA\$1\.20 · \*\*best rate\*\*/.test(cad), 'the cheapest per 100 CP is marked');
     assert.strictEqual((cad.match(/best rate/g) || []).length, 1);
     assert.ok(cad.includes(`at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP`) && cad.includes(`at most ${STOCK_UP_RULES.budgetMult}×`) && cad.includes(`${STOCK_UP_RULES.maxPurchases} purchases or fewer`), 'thresholds come from cpPackages');
-    assert.ok(/per 100 CP in \*\*USD\*\*/.test(allText(dc.buildHelpPanel(ACCENT))), 'USD when no currency is set');
+    assert.ok(/uses yours: \*\*USD\*\*/.test(allText(dc.buildHelpPanel(ACCENT))), 'USD when no currency is set');
+    assert.ok(/Pack prices differ by currency/.test(cad) && /^-# Stock Up is worked out in your currency: .* Leftover CP stays/m.test(cad), 'currency is named, and the hint is one line');
     assert.ok(/¥148 · \*\*best rate\*\*/.test(allText(dc.buildHelpPanel(ACCENT, { currency: 'JPY' }))), 'a zero-decimal currency still reads as a price');
 });
 

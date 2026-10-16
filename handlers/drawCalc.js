@@ -193,7 +193,7 @@ async function route(interaction) {
         } else {
             // Help draws its price ladder from the open calculation's region and first draw (2026-10-14 18:33 EDT), so it shows the player their own numbers.
             const open = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
-            panel = buildHelpPanel(accentColor, { region: open?.region || 'region_10', drawKey: open?.banners?.[0]?.drawKey || 'mythicWeapon', currency: prefs?.cpCurrency || 'USD' });
+            panel = buildHelpPanel(accentColor, { region: open?.region || 'region_10', drawKey: open?.banners?.[0]?.drawKey || 'mythicWeapon', currency: prefs?.cpCurrency || 'USD', client: interaction.client });
         }
         try {
             await interaction.deferReply({ flags: 64 });
