@@ -108,7 +108,9 @@ const emojis = {
     cross: '<:Cross:1560019185747099758>',
     sparkles: '<a:Sparkles:1560410369447563274>',   // new Sparkles, 2026-10-15 18:02 EDT
     // The calculator's Save buttons (2026-10-14 17:28 EDT, Harkirat uploaded to both apps): prod id here; the dev bot re-points to its 1560041353185075250 by name at boot.
-    saveStar: '<a:SaveStar:1560041207177023519>',
+    saveStar: '<a:Save:1560652539211550720>',   // Harkirat's new Save icon, 2026-10-16 09:59 EDT (was SaveStar 1560041207177023519); the key keeps its name so every Save button follows
+    // The calculator's View Saved button (2026-10-16 09:59 EDT): prod id here; the dev bot re-points by name at boot.
+    viewSaved: '<a:ViewSaved:1560652540452937780>',
     // The calculator's Edit Selection button (2026-10-14 19:28 EDT): prod id here; the dev bot re-points to its 1560068687942123642 by name at boot.
     editCalc: '<a:EditCalc:1560408533160296519>',   // new EditCalc, 2026-10-15 18:02 EDT
     // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.

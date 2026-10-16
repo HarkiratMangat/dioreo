@@ -16,7 +16,7 @@ const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL 
 const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost } = require('../utils/drawCost');
 const crypto = require('crypto');
 const { CP_PACKAGES, STOCK_UP_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
-const { buildTitleBlock } = require('../utils/titleBlock');
+const { buildTitleBlock, toBoldItalicUnicode } = require('../utils/titleBlock');
 
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
 const DRAW_KEYS = Object.keys(DRAW_META);
@@ -437,7 +437,7 @@ function basketManageRow(state, basket) {
 
 // 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself. `showReset` is false on the setup form: there is no computed result to clear yet, and a live button that does nothing visible is worse than an absent one. On a submitted calculation it reads "New Calculation" -- Harkirat's own phrase for the action that ends a result's persistence and returns to the form. Draw Prices · New Calculation · Help (2026-10-13 23:01 EDT, his intake: Draw Info removed, since /draw prices shows the same draws; New Calculation on EVERY page once there is something to clear, where it used to appear only on the result). "View Saved", no counter (2026-10-14 17:58 EDT, Harkirat).
 function savedButton(state) {
-    return { type: 2, style: 2, label: 'View Saved', custom_id: encodeState('saved', state) };
+    return { type: 2, style: 2, label: 'View Saved', custom_id: encodeState('saved', state), emoji: emojis.parseEmoji(emojis.viewSaved) };
 }
 function newCalculationButton(state) {
     const armed = state.verb === 'resetarm';
@@ -590,9 +590,9 @@ function buildCostBlock(state, basket, currency, client) {
 // ==========================================
 // A saved calculation's name gets its own line under the title (2026-10-14 13:13 EDT, Harkirat: "Maybe put it in a 2nd line? '> ### Viewing Saved: `the name`'"). A backtick in a name would end the code span early, so it is swapped for a plain quote here only. Same style as the Season Calendar's season line (2026-10-14 16:51 EDT, Harkirat): utils/titleBlock.js's caption in bold-italic letters. A backtick in a name is swapped for a plain quote so it cannot open a code span.
 function titleBlock(basket) {
-    if (basket && basket.name) return buildTitleBlock(`Viewing Saved: ${String(basket.name).replace(/`/g, "'")}`, emojis.calculator, 'Lucky Draw Calculator', 2);
-    // A working copy of a saved calculation says which one it came from (2026-10-14 17:28 EDT); `sourceName` is attached at render time from its `sourceId`, so a renamed or deleted source never shows a stale name.
-    if (basket && basket.sourceName) return buildTitleBlock(`Edited from Saved: ${String(basket.sourceName).replace(/`/g, "'")}`, emojis.calculator, 'Lucky Draw Calculator', 2);
+    // The name sits in a code span after the styled caption (2026-10-16 09:59 EDT, Harkirat: "wrap the saved calc's name in backticks for 'viewing saved: `name`'").
+    if (basket && basket.name) return { type: 10, content: `## ${emojis.calculator} Lucky Draw Calculator\n${toBoldItalicUnicode('Viewing Saved:')} \`${String(basket.name).replace(/`/g, "'")}\`` };
+    // A working copy shows NO "Edited from Saved" line any more (2026-10-16 09:59 EDT, Harkirat: "when a saved calc is changed/edits, just remove the 'edited from saved' line because at that point it's basically a new calc that the user would save anyway"). `sourceName` still reaches the Saved view and the Save step, which offer saving over the original.
     return { type: 10, content: `## ${emojis.calculator} Lucky Draw Calculator` };
 }
 

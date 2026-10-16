@@ -442,3 +442,12 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 > anyway, i still have more adjustments i want to make for it so we'll do those in the morning. im sleepy, its 1:25am
 
 **Not built yet (2026-10-16 01:26 EDT):** answered yes, it can page; held for the morning with his other adjustments. Shape to build: page Your Selections' rows (the form already pages lines with a pager row) instead of the fit levels, keeping one row per line with its note; the two sums would show totals on a paged view, or page their terms with the rows.
+
+### Batch 26 — 2026-10-16 09:58 EDT, verbatim
+
+> * so i was thinking, when a saved calc is changed/edits, just remove the "edited from saved" line because at that point it's basically a new calc that the user would save anyway yk? also wrap the saved calc's name in backticks for "viewing saved: `name`"
+> * and please update the savestar icon to <a:Save:1560652539211550720>
+> * and add <a:ViewSaved:1560652540452937780> to the "view saved" button
+> * can you also restart the dev bot
+
+**Built 2026-10-16 09:59 EDT:** a working copy's title is just the calculator title (no "Edited from Saved" line); a saved one reads "𝑽𝒊𝒆𝒘𝒊𝒏𝒈 𝑺𝒂𝒗𝒆𝒅: `name`"; `saveStar` now holds the Save icon (every Save button and Help's Saving heading follow); new `viewSaved` on the View Saved button. The Saved view's "This Calculation · Edited from **test**, which is unchanged until you save over it" line is untouched, pending his call.

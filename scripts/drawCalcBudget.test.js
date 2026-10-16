@@ -404,9 +404,10 @@ t('the bottom nav row is a SIBLING of the Container, never one of its children, 
 
 t('no button on the nav row or the save/delete row carries an emoji', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }));
-    // Save Result and Save carry his SaveStar emoji on purpose (2026-10-14 17:58 EDT); the rest stay plain.
-    const named = ['Draw Info', 'Draw Prices', 'View Saved', 'New Calculation', 'Help', 'Rename', 'Delete Calculation'];
-    assert.ok(buttons(render(makeBasket())).find(b => b.label === 'Export').emoji, 'Export carries the Show Everyone icon');
+    // Save Result and Save carry his Save emoji on purpose (2026-10-14 17:58 EDT), and View Saved its ViewSaved icon (2026-10-16 09:58 EDT); the rest stay plain.
+    const named = ['Draw Info', 'Draw Prices', 'New Calculation', 'Help', 'Rename', 'Delete Calculation'];
+    assert.ok(buttons(render(makeBasket())).find(b => b.label === 'Export').emoji, 'Export carries the CopyExport icon');
+    assert.ok(buttons(render(makeBasket())).find(b => b.label === 'View Saved').emoji, 'View Saved carries the ViewSaved icon');
     for (const b of buttons(panel)) {
         if (named.some(n => (b.label || '').startsWith(n))) {
             assert.strictEqual('emoji' in b, false, `"${b.label}" must carry no emoji`);
@@ -564,7 +565,7 @@ t('a saved calculation\'s name sits under the title in the Season Calendar\'s ca
     const named = makeBasket({ name: 'Season `12` push', banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] });
     const { toBoldItalicUnicode } = require('../utils/titleBlock');
     for (const panel of [render(named), render(named, { page: 2 })]) {
-        assert.ok(texts(panel)[0].endsWith(`\n${toBoldItalicUnicode("Viewing Saved: Season '12' push")}`), texts(panel)[0]);
+        assert.ok(texts(panel)[0].endsWith(`\n${toBoldItalicUnicode('Viewing Saved:')} \`Season '12' push\``), texts(panel)[0]);
     }
     assert.strictEqual(/Viewing Saved/.test(texts(render(makeBasket()))[0]), false, 'nothing for an unsaved one');
 });
@@ -858,10 +859,9 @@ t('the Saved view manages the open calculation at its top, and only when there i
     assert.ok(messageCount(dc.buildCalculatorPanel(state({ page: 3, verb: 'delarm' }), named, ACCENT, { savedBaskets: savedList(dc.MAX_SAVED, 80) })) <= 40, 'fits at the cap with the section');
 });
 
-t('a working copy says which saved calculation it came from, and the Save step can save over it (2026-10-14 17:26 EDT)', () => {
-    const { toBoldItalicUnicode } = require('../utils/titleBlock');
+t('a working copy has no "Edited from Saved" line (2026-10-16 09:58 EDT), and the Save step can save over it (2026-10-14 17:26 EDT)', () => {
     const copy = makeBasket({ _id: 'c'.repeat(24), name: undefined, sourceId: '0'.repeat(23) + '1', sourceName: 'test' });
-    assert.ok(texts(render(copy))[0].endsWith(toBoldItalicUnicode('Edited from Saved: test')), texts(render(copy))[0]);
+    assert.strictEqual(texts(render(copy))[0], `## ${require('../utils/emojiMap').calculator} Lucky Draw Calculator`, texts(render(copy))[0]);
     const list = savedList(3);
     const step = dc.buildCalculatorPanel(state({ page: 4, basketId: copy._id }), copy, ACCENT, { savedBaskets: list });
     assert.ok(allText(step).includes('## Save This Calculation'));
