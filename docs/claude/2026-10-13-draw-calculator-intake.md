@@ -424,3 +424,11 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 > and here's the new share icon: <a:Share:1560521317034233927>
 
 **Built 2026-10-16 01:18 EDT:** `share` in `utils/emojiMap.js` now holds the new id (the Show Everyone button in `utils/shareButton.js` is its only user); the dev app has one Share emoji, re-pointed by name at boot.
+
+### Batch 24 — 2026-10-16 01:18 EDT, verbatim
+
+> > Switch "Package/pack" to "Bundle/bundle" everywhere (Simplify view, Help, Export) so it matches your layout?
+>
+> yes
+
+**Built 2026-10-16 01:20 EDT:** every user-facing "package"/"pack" in the calculator now says "bundle": the compact view's heading, Export's "Recommended Bundle:", Help (Recommended Bundle, Left Over, 2X Bundles, "Bundle prices differ by currency", the Stock Up hint), the 2X notice and the 2X select's options. Code identifiers (`CP_PACKAGES`, `cpPackages.js`) keep their names.

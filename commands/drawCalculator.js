@@ -375,7 +375,7 @@ function entitlementSelectRow(state, basket) {
             type: 3, custom_id: encodeState('ent', state), placeholder: 'Unused 2X entitlements (optional)...',
             min_values: 0, max_values: CP_PACKAGES.length,
             options: CP_PACKAGES.map((p, i) => ({
-                label: `${fmt(p.baseCp)} CP package`,
+                label: `${fmt(p.baseCp)} CP bundle`,
                 value: p.id,
                 description: `Gives ${fmt(p.baseCp * 2)} CP during a 2X event`,
                 default: (basket.entitlementMask & (1 << i)) !== 0
@@ -516,7 +516,7 @@ function buildExportText(basket, currency = 'USD') {
         const packs = r => r.combo.map(c => `${c.count}× ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
         if (result?.cheapest) {
             const r = result.cheapest;
-            out.push('', `**Recommended Package:** ${formatMoney(r.totalCents, currency)}`);
+            out.push('', `**Recommended Bundle:** ${formatMoney(r.totalCents, currency)}`);
             for (const c of r.combo) out.push(`- ${c.count}× ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''} · ${formatMoney(c.priceCents * c.count, currency)}`);
             out.push(`-# ${fmt(r.totalCp)} CP bought · ${fmt(r.leftoverCp)} CP left over`);
             if (result.stockUp) out.push(`**Stock Up option:** ${formatMoney(result.stockUp.totalCents, currency)} for ${packs(result.stockUp)} (${fmt(result.stockUp.leftoverCp)} CP left over, a better CP rate)`);
@@ -576,7 +576,8 @@ function buildCostBlock(state, basket, currency, client) {
         `> **\`${formatMoney(r.totalCents, currency)}\`** for ${describeCp(r)}`,
         `-# ${fmt(r.totalCp)} CP Bought · ${fmt(r.leftoverCp)} CP Left Over${extra ? ` · ${extra}` : ''}`
     ];
-    lines.push('### Recommended Package');
+    // "Bundle" everywhere (2026-10-16 01:20 EDT, Harkirat "yes" to matching his Full Breakdown's word): the compact view, Help, Export and the 2X select all say bundle now.
+    lines.push('### Recommended Bundle');
     lines.push(...option(null, result.cheapest));
     // A blank line between the two options (click-test 2026-10-14 18:56 EDT): without it "Stock Up" sat flush against Cheapest's last line and read as part of it. A bold label is not a heading, so the blank line does not stack a heading margin.
     // The currency line shows in BOTH views (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it.
@@ -949,8 +950,8 @@ function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntr
 
     if (liveDoubleCPEntry || basket.entitlementMask) {
         components.push({ type: 10, content: liveDoubleCPEntry
-            ? `-# 🎉 A **Double CP** event looks live right now${liveDoubleCPEntry.endDate ? ` (ends <t:${Math.floor(new Date(liveDoubleCPEntry.endDate).getTime() / 1000)}:R>)` : ''}. Tell the optimizer which packages you still have a 2X entitlement on.`
-            : `-# Select which packages you still have an unused 2X entitlement on, if the event is running.` });
+            ? `-# 🎉 A **Double CP** event looks live right now${liveDoubleCPEntry.endDate ? ` (ends <t:${Math.floor(new Date(liveDoubleCPEntry.endDate).getTime() / 1000)}:R>)` : ''}. Tell the optimizer which bundles you still have a 2X entitlement on.`
+            : `-# Select which bundles you still have an unused 2X entitlement on, if the event is running.` });
         components.push(entitlementSelectRow(state, basket));
     }
     return { type: 17, accent_color: accentColor, components };
@@ -1022,19 +1023,19 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
         divider,
         { type: 10, content: [
             '### 🧾 Reading Your Result',
-            row('Recommended Package', 'the fewest store purchases within 3% of the cheapest price'),
-            row('Left Over', 'CP the packs give beyond what you need; it stays in your account'),
+            row('Recommended Bundle', 'the fewest store purchases within 3% of the cheapest price'),
+            row('Left Over', 'CP the bundles give beyond what you need; it stays in your account'),
             row('Stock Up', 'a bigger buy at a better rate; see Why Stock Up below'),
-            row('2X Packs', 'tick the packs you can still buy at double CP; the package uses them')
+            row('2X Bundles', 'tick the bundles you can still buy at double CP; the recommendation uses them')
         ].join('\n') },
         divider,
         { type: 10, content: [
             '### 💰 Why Stock Up',
             // Currency is named first (Harkirat, 2026-10-16 00:14 EDT: "the fact that the stock-up varies by currency and the calculation adapts based on your set currency"), and the hint stays ONE line ("can you not artificially line break the hint line please?").
-            `Pack prices differ by currency, so the calculator uses yours: **${currency}**, set in ${client ? mentionCommand(client, '/settings') : '`/settings`'}.`,
+            `Bundle prices differ by currency, so the calculator uses yours: **${currency}**, set in ${client ? mentionCommand(client, '/settings') : '`/settings`'}.`,
             'Price per 100 CP (lower is better):',
             ...packRates(currency).map(r => `${dot} **${fmt(r.cp)} CP** · ${formatMoney(r.per100, currency)}${r.best ? ' · **best rate**' : ''}`),
-            `-# Stock Up is worked out in your currency: it shows in Full Breakdown only when it gets at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP for your money than the Recommended Package, costs at most ${STOCK_UP_RULES.budgetMult}× as much, and takes at most ${STOCK_UP_RULES.maxPurchases} purchases, or as many as the Recommended Package when it needs more.`
+            `-# Stock Up is worked out in your currency: it shows in Full Breakdown only when it gets at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP for your money than the Recommended Bundle, costs at most ${STOCK_UP_RULES.budgetMult}× as much, and takes at most ${STOCK_UP_RULES.maxPurchases} purchases, or as many as the Recommended Bundle when it needs more.`
         ].join('\n') },
         divider,
         { type: 10, content: [

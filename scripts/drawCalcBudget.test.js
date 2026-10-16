@@ -670,7 +670,7 @@ t('the default view names the currency and where to change it', () => {
 });
 
 t('the compact package line states the price once, the packs, and the leftover', () => {
-    const block = texts(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).find(c => c.includes('### Recommended Package'));
+    const block = texts(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).find(c => c.includes('### Recommended Bundle'));
     const lines = block.split('\n');
     const i = lines.findIndex(l => l.startsWith('> **`'));
     assert.ok(i !== -1 && /CP Bought · [\d,]+ CP Left Over/.test(lines[i + 1]), `the price line, then what is bought and left over: "${lines[i + 1]}"`);
@@ -881,11 +881,11 @@ t('Export gives the result as plain, pasteable markdown: draws, CP needed, balan
     const text = dc.buildExportText(makeBasket({ name: 'My `Push`', balance: 1000, banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 3 }] }), 'CAD');
     assert.ok(text.startsWith('## Lucky Draw Calculation: My Push'), 'markdown characters in a name are dropped, so it cannot break the block');
     assert.ok(/- \*\*Legendary Weapon \(Reactive\) ×2\*\*: 0\/10 Spins · 10 left · [\d,]+ CP to finish/.test(text) && /- \*\*Mythic Weapon\*\*: 3\/10 Spins · 7 left · [\d,]+ CP to finish · [\d,]+ CP spent/.test(text), 'each draw: spins, left, to finish, spent (2026-10-14 19:27 EDT)');
-    assert.ok(/\*\*CP Needed:\*\* [\d,]+ CP/.test(text) && /\*\*Balance:\*\* 1,000 CP → \*\*[\d,]+ CP\*\* to buy/.test(text) && /\*\*Recommended Package:\*\* CA\$[\d,.]+\n- \d+× [\d,]+ CP · CA\$/.test(text), 'the package lists each pack with its price');
+    assert.ok(/\*\*CP Needed:\*\* [\d,]+ CP/.test(text) && /\*\*Balance:\*\* 1,000 CP → \*\*[\d,]+ CP\*\* to buy/.test(text) && /\*\*Recommended Bundle:\*\* CA\$[\d,.]+\n- \d+× [\d,]+ CP · CA\$/.test(text), 'the package lists each pack with its price');
     assert.strictEqual(/<a?:\w+:\d+>|```/.test(text), false, 'no custom emoji and no code fence inside it');
     assert.ok(text.length < 2000, 'fits a Discord message');
     const covered = dc.buildExportText(makeBasket({ balance: 999999, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), 'USD');
-    assert.ok(/covers it/.test(covered) && !/Recommended Package/.test(covered));
+    assert.ok(/covers it/.test(covered) && !/Recommended Bundle/.test(covered));
 });
 
 t('Help explains what the screen cannot: the price ladder for the open draw, how to find a region, the result\'s hidden rules (2026-10-14 18:31 EDT)', () => {
@@ -912,9 +912,9 @@ t('Help shows every pack\'s price per 100 CP in the viewer\'s currency and Stock
     assert.ok(/\*\*80 CP\*\* · CA\$1\.24/.test(cad), 'the smallest pack, in CAD');
     assert.ok(/\*\*10,800 CP\*\* · CA\$1\.20 · \*\*best rate\*\*/.test(cad), 'the cheapest per 100 CP is marked');
     assert.strictEqual((cad.match(/best rate/g) || []).length, 1);
-    assert.ok(cad.includes(`at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP`) && cad.includes(`at most ${STOCK_UP_RULES.budgetMult}×`) && cad.includes(`at most ${STOCK_UP_RULES.maxPurchases} purchases, or as many as the Recommended Package`), 'thresholds come from cpPackages');
+    assert.ok(cad.includes(`at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP`) && cad.includes(`at most ${STOCK_UP_RULES.budgetMult}×`) && cad.includes(`at most ${STOCK_UP_RULES.maxPurchases} purchases, or as many as the Recommended Bundle`), 'thresholds come from cpPackages');
     assert.ok(/uses yours: \*\*USD\*\*/.test(allText(dc.buildHelpPanel(ACCENT))), 'USD when no currency is set');
-    assert.ok(/Pack prices differ by currency/.test(cad) && /^-# Stock Up is worked out in your currency: .* when it needs more\.$/m.test(cad) && /^Price per 100 CP \(lower is better\):$/m.test(cad) && !/Leftover CP stays/.test(cad), 'currency is named, and the hint is one line');
+    assert.ok(/Bundle prices differ by currency/.test(cad) && !/\b[Pp]ack(age)?s?\b/.test(cad) && /^-# Stock Up is worked out in your currency: .* when it needs more\.$/m.test(cad) && /^Price per 100 CP \(lower is better\):$/m.test(cad) && !/Leftover CP stays/.test(cad), 'currency is named, and the hint is one line');
     assert.ok(/¥148 · \*\*best rate\*\*/.test(allText(dc.buildHelpPanel(ACCENT, { currency: 'JPY' }))), 'a zero-decimal currency still reads as a price');
 });
 
@@ -928,7 +928,7 @@ t('the Full Breakdown is his layout, with sums that check out (2026-10-16 01:07 
     assert.ok(/\*\*Cheapest\*\* ⌇ \*\*`15,800 CP`\*\* for \*\*`CA\$199\.98`\*\*/.test(t) && t.includes('**`100 CP` Left Over**'));
     assert.ok(t.includes('`CA$129.99` each') && /CoD:M webstore prices \*\*not\*\* considered/.test(t));
     const compact = allText(render(makeBasket({ banners }), {}, { currency: 'CAD' }));
-    assert.strictEqual(/remaining until completion|Recommended Bundle/.test(compact), false, 'Simplify keeps the compact view as it was');
+    assert.strictEqual(/remaining until completion|\*\*Cheapest\*\*|Full cost of draws/.test(compact), false, 'Simplify keeps the compact view as it was');
 });
 
 t('the Full Breakdown stays under Discord\'s 4,000-character text cap at 25 lines (probed 2026-10-16 01:12 EDT)', () => {
