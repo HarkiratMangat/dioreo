@@ -918,7 +918,7 @@ t('Help shows every pack\'s price per 100 CP in the viewer\'s currency and Stock
     assert.strictEqual((cad.match(/best rate/g) || []).length, 1);
     assert.ok(cad.includes(`at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP`) && cad.includes(`at most ${STOCK_UP_RULES.budgetMult}×`) && cad.includes(`${STOCK_UP_RULES.maxPurchases} purchases or fewer`), 'thresholds come from cpPackages');
     assert.ok(/uses yours: \*\*USD\*\*/.test(allText(dc.buildHelpPanel(ACCENT))), 'USD when no currency is set');
-    assert.ok(/Pack prices differ by currency/.test(cad) && /^-# Stock Up is worked out in your currency: .* Leftover CP stays/m.test(cad), 'currency is named, and the hint is one line');
+    assert.ok(/Pack prices differ by currency/.test(cad) && /^-# Stock Up is worked out in your currency: .* purchases or fewer\.$/m.test(cad) && /^Price per 100 CP \(lower is better\):$/m.test(cad) && !/Leftover CP stays/.test(cad), 'currency is named, and the hint is one line');
     assert.ok(/¥148 · \*\*best rate\*\*/.test(allText(dc.buildHelpPanel(ACCENT, { currency: 'JPY' }))), 'a zero-decimal currency still reads as a price');
 });
 

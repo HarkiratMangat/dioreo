@@ -399,3 +399,12 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 > can you not artificially line break the hint line please? also the currency thing is important to mentions. the fact that the stock-up varies by currency and the calculation adapts based on your set currency.
 
 **Built 2026-10-16 00:14 EDT:** the Stock Up hint is one `-#` line again (the Help test's 160-character line cap now exempts `-#` hints), and the section opens with "Pack prices differ by currency, so the calculator uses yours: **CAD**, set in /settings" (a real command mention); the hint starts "Stock Up is worked out in your currency".
+
+### Batch 21 — 2026-10-16 00:26 EDT, verbatim
+
+> * remove "Leftover CP stays in your account for later draws."
+> * linebreak "Price per 100 CP, lower is better:" to a new line
+> * "lower is better" in (brackets)
+> * and regarding "and takes 3 purchases or fewer. ", but what if someone is calculating a large quality of draws? does that rule still hold up for edge cases?
+
+**Built 2026-10-16 00:35 EDT:** the leftover sentence is gone; "Price per 100 CP (lower is better):" is its own line. **Measured for his question** (all 41 currencies, shortfalls 500 to 60,000 CP in 500 steps): Stock Up never appears above 30,000 CP short, because 3 purchases top out at 32,400 CP; above 60,000 it is skipped by design (bulk mode already buys the best-rate pack). Above 32,400 CP, a 4–6 purchase option beat the Recommended Package's rate by more than 3% in 47 cases (EUR 14, RON 12, NZD 10, CAD 4, CHF 3, DKK 2, AUD 1, PKR 1), the CAD ones by 3.0–3.3%. Nothing wrong is ever shown; on a big calculation Stock Up just stays hidden. Whether to scale its purchase cap with the size of the calculation is his call.
