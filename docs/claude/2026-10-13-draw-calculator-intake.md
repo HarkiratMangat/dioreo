@@ -371,3 +371,13 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 > * and you can take over my screen and test what you want for the bot.
 
 **Built 2026-10-15 18:22 EDT:** `utils/globalNav.js` marks the active page green (style 3) instead of red (style 4); it is one shared row, so all five season commands change. **Lock:** already in place: every calculator click goes through `resolvePanelActor`, and a stranger gets an ephemeral "🔒 That isn't your calculator! Run `/draw calculator` to start your own.", the same pattern as /settings' "🔒 Not your dashboard!". A simulation with a non-admin stranger on 12 controls (Calculate, View Saved, Delete All, confirm delete, New Calculation, Export, Help, Edit, Full Breakdown, the saved picker, the spins select, Save Over) refused every one, with no panel edit and no database call; the same run as the author passed. **Timeout:** none, on purpose: spec decision 7 ("never expires", re-derived 2026-08-27), because every click re-reads the calculation from the database. Whether to add the 10-minute idle timeout is his call. **Screen test:** the full-screen approval prompt timed out; background clicks did not reach the panel.
+
+### Batch 17 — 2026-10-15 22:26 EDT, verbatim
+
+> yeah it's not openning, so let me just test on my own for now.
+> please change the 10/20/30cp emojis to the following:
+> <a:10CP:1560477395373400135> <a:20CP:1560477394081423501> <a:30CP:1560477392328196096>
+>
+> also the dev bot seems to have crashed, please start it
+
+**Built 2026-10-15 22:27 EDT:** the three region ids swapped in `utils/emojiMap.js`. **The "crash":** the process was still running; `/draw prices` was failing with `COMPONENT_INVALID_EMOJI`, because the dev app's old 10CP/20CP/30CP had been replaced after the bot boot-mapped their ids by name. A restart re-maps to the new dev uploads; any future re-upload needs a restart the same way.

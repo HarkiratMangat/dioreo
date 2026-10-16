@@ -29,10 +29,10 @@ const emojis = {
     // Animated icon for the draw-prices region-toggle button (drawPrices_ui.json) -- lives in the button's `emoji` field, not its `label` (see Components V2 point 4 in CLAUDE.md). Superseded as the 3-way region switcher's per-button icon 2026-08-07 15:45 EDT by the three region-specific emoji below (Harkirat provided them via diors-notes.md); kept defined since nothing else references it.
     regions: '<a:Regions:1525705441072382052>',
     // Per-region icons for the 3-way region-switch button row (drawprices.js's buildContainer), added 2026-08-07 15:45 EDT from Harkirat's diors-notes.md request -- one distinct icon per CP tier instead of the single generic `regions` icon shared across all three buttons.
-    // Replaced 2026-10-15 18:02 EDT with Harkirat's new 10CP / 20CP / 30CP set (prod ids he supplied; the dev bot re-points by name). Shared by /draw prices' region switcher and the calculator's region select and Help chips, so both change together.
-    region10Cp: '<a:10CP:1560408355380404344>',
-    region20Cp: '<a:20CP:1560408353975443487>',
-    region30Cp: '<a:30CP:1560408352641519656>',
+    // Re-uploaded 2026-10-15 22:27 EDT (second set, prod ids he supplied). Replaced 2026-10-15 18:02 EDT with Harkirat's new 10CP / 20CP / 30CP set (prod ids he supplied; the dev bot re-points by name). Shared by /draw prices' region switcher and the calculator's region select and Help chips, so both change together.
+    region10Cp: '<a:10CP:1560477395373400135>',
+    region20Cp: '<a:20CP:1560477394081423501>',
+    region30Cp: '<a:30CP:1560477392328196096>',
     // Added for the command heading redesign (calendar/draws/patchnotes/settings) /manage panel redesign (2026-07-12, per the 4 mockup JSONs in Downloads) -- these are the panel's own header/action icons, distinct from the public-command-header set above.
     database: '<a:Database:1524967327437815899>',
     mngAdd: '<a:Add:1525262938288558200>',
