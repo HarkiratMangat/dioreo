@@ -387,3 +387,9 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 > <a:CopyExport:1560494126019903559> emoji for the "copy gunsmith code" button in loadouts and the "export" button in calc please.
 
 **Built 2026-10-15 23:37 EDT:** a new `copyExport` key in `utils/emojiMap.js` (prod id; the dev app has CopyExport once), on the loadout card's Copy Code button (`utils/loadoutRender.js`, MP builds; DMZ cards have no Copy Code) and on the calculator's Export button, which used the Share icon before. The shared `share` icon itself is unchanged.
+
+### Batch 19 — 2026-10-16 00:04 EDT, verbatim
+
+> for ":SmallDot_SD: Stock Up · shown in Full Breakdown when spending a little more gets a better CP rate" in the Help panel, why not actually give some better insight? so the user doesnt assume we're giving that "better rate" out of our ass, you know? didn't we calculate where each rate or something was better, etc?
+
+**Built 2026-10-16 00:05 EDT:** a new Help section, **💰 Why Stock Up**: every pack's price per 100 CP in the viewer's own currency (from their /settings), the cheapest marked **best rate**, and the real thresholds Stock Up must pass (at least 3% more CP for the money than the Recommended Package, at most 1.6× the price, 3 purchases or fewer), read from `utils/cpPackages.js`'s new `STOCK_UP_RULES` export rather than typed into the text. The rates are not monotonic: in CAD the 80 CP pack (CA$1.24 per 100) beats every pack up to 5,000, and only 10,800 beats it.

@@ -199,6 +199,10 @@ The old "Draw Info" screen. Its button left the nav row in the 2026-10-14 intake
 - **Export (2026-10-14 18:24 EDT):** verb `export`, a private reply (its own `deferReply`, handled before the generic defer) carrying `buildExportText()` in a ```md block. Plain markdown only: no custom emoji (they break outside this bot's servers) and markdown characters stripped from the name so it cannot break the block. Under 1,800 characters.
 - **Help (2026-10-14 18:27 EDT):** sections, never paragraphs (his "it's just ALL prose"): How It Works, Words You'll See, Buttons, Saving, Shortcut, each a short list of "**term** · meaning" lines under a divider. A test pins the headings and that no line runs past 160 characters.
 
+### Help: Why Stock Up, 2026-10-16 00:09 EDT — batch 19
+
+Help lists every pack's price per 100 CP in the viewer's /settings currency, marks the cheapest **best rate**, and states Stock Up's thresholds from `STOCK_UP_RULES` in `utils/cpPackages.js` (never typed into the text). Rates are not monotonic by pack size (in CAD the 80 CP pack beats every pack up to 5,000), so never write "bigger packs are cheaper" anywhere.
+
 ### Help, Export and sharing, 2026-10-14 18:38 EDT — batch 13
 
 - **Help shows what the screen cannot** (his "words you'll see is useless. similarly with the button sections"): the open draw's spin-by-spin price chain at the open region (`helpLadder`, falling back to Mythic Weapon where a draw has no prices), how to find a region, the result's hidden rules, and saving. Never restate a button's label.

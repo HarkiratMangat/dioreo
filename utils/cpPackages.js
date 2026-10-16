@@ -317,4 +317,7 @@ function optimizePurchase(shortfallCp, { currency = 'USD', doubleCpAvailable = [
     };
 }
 
-module.exports = { CP_PACKAGES, CURRENCIES, normalCp, doubleCp, priceOf, priceCents, countryOf, formatMoney, optimizePurchase };
+// Stock Up's three thresholds, exported so the calculator's Help panel states the real numbers instead of a copy of them (2026-10-16 00:05 EDT).
+const STOCK_UP_RULES = { maxPurchases: STOCK_UP_MAX_TX, budgetMult: STOCK_UP_BUDGET_MULT, minRateGain: STOCK_UP_MIN_RATE_GAIN };
+
+module.exports = { CP_PACKAGES, CURRENCIES, STOCK_UP_RULES, normalCp, doubleCp, priceOf, priceCents, countryOf, formatMoney, optimizePurchase };

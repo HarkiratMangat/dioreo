@@ -15,7 +15,7 @@ const UserPreference = require('../models/UserPreference');
 const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL } = require('./drawprices');
 const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost } = require('../utils/drawCost');
 const crypto = require('crypto');
-const { CP_PACKAGES, formatMoney, optimizePurchase } = require('../utils/cpPackages');
+const { CP_PACKAGES, STOCK_UP_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 const { buildTitleBlock } = require('../utils/titleBlock');
 
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
@@ -853,7 +853,13 @@ function helpLadder(region, drawKey) {
     const last3 = draws.slice(-3).reduce((x, y) => x + y, 0);
     return { ...at, draws, total, lastShare: Math.round((100 * last3) / total) };
 }
-function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWeapon' } = {}) {
+// Price per 100 CP for every pack in the viewer's currency (Harkirat, 2026-10-16 00:05 EDT: "why not actually give some better insight? so the user doesnt assume we're giving that 'better rate' out of our ass"). Per 100 CP rather than CP per unit of money so a zero-decimal currency (JPY) still reads as a real price. The rates are not monotonic -- in CAD the 80 CP pack beats every pack up to 5,000 -- which is exactly why Stock Up is computed per currency rather than assumed from "bigger is better".
+function packRates(currency) {
+    const rates = CP_PACKAGES.map(pkg => ({ cp: normalCp(pkg), per100: Math.round((priceCents(pkg, currency) * 100) / normalCp(pkg)) }));
+    const best = Math.min(...rates.map(r => r.per100));
+    return rates.map(r => ({ ...r, best: r.per100 === best }));
+}
+function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWeapon', currency = 'USD' } = {}) {
     const dot = emojis.smallDot;
     const divider = { type: 14, spacing: 2, divider: true };
     const ladder = helpLadder(region, drawKey);
@@ -888,8 +894,16 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
             '### 🧾 Reading Your Result',
             row('Recommended Package', 'the fewest store purchases within 3% of the cheapest price'),
             row('Left Over', 'CP the packs give beyond what you need; it stays in your account'),
-            row('Stock Up', 'shown in Full Breakdown when spending a little more gets a better CP rate'),
+            row('Stock Up', 'a bigger buy at a better rate; see Why Stock Up below'),
             row('2X Packs', 'tick the packs you can still buy at double CP; the package uses them')
+        ].join('\n') },
+        divider,
+        { type: 10, content: [
+            '### 💰 Why Stock Up',
+            `Each pack's price per 100 CP in **${currency}**. Lower is better:`,
+            ...packRates(currency).map(r => `${dot} **${fmt(r.cp)} CP** · ${formatMoney(r.per100, currency)}${r.best ? ' · **best rate**' : ''}`),
+            `-# Stock Up shows in Full Breakdown only when it gets at least ${Math.round(STOCK_UP_RULES.minRateGain * 100)}% more CP for your money than the Recommended Package,`,
+            `-# costs at most ${STOCK_UP_RULES.budgetMult}× as much, and takes ${STOCK_UP_RULES.maxPurchases} purchases or fewer. Leftover CP stays in your account for later draws.`
         ].join('\n') },
         divider,
         { type: 10, content: [
