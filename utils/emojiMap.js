@@ -59,7 +59,7 @@ const emojis = {
     // /draw calculator's title icon + the two per-draw upgrade "card" icons (added 2026-08-26 17:25 EDT, Harkirat uploaded to both dev+prod apps). ⚠️ id verified live against the DEV app's boot-time refreshEmojiIds() sync only -- this worktree has no prod credentials to check against. If either ever renders as broken text on prod, re-supply the PROD id per this file's own established method (a live read of /applications/{prodAppId}/emojis before writing it), same trap this file's other entries document repeatedly.
     calculator: '<a:DrawCalc:1560743128934256680>',   // DrawCalc, 2026-10-16 18:57 EDT (Harkirat; was Calculator 1542232659940343819); every calculator title uses it
     // The Saved view's Delete All button (2026-10-16 18:57 EDT).
-    deleteAll: '<a:DeleteAll:1560788313508683807>',
+    deleteAll: '<a:DeleteAll:1561138182681133247>',
     mythicCard: '<:MythicCard:1542258676889288794>',   // mythicWeapon's upgrade -- "Weapon Upgrade"
     mythicCoin: '<:MythicCoin:1542258675706757150>',   // mythicCharacter's upgrade -- "Character Upgrade"
     // COST BREAKDOWN's own inline bullet + field-separator glyphs (added 2026-08-26 23:03 EDT, matching Harkirat's own exported mockup verbatim) -- smallDot prefixes each field line, blueDash joins two fields sharing one line (Balance/Region, CP Spent/CP Needed). Both static, not animated. The toggle button's two states (added same pass): simplify shows once the breakdown is expanded, expand shows while it is collapsed -- see actionRow() in commands/drawCalculator.js.
@@ -68,8 +68,8 @@ const emojis = {
     whiteDotGlow: '<:WhiteDotGlow_WDG:1542356488746573824>',
     blueDash: '<:BlueDash_BD:1542356720943239188>',
     // The calculator's Full Breakdown / Simplify toggle, its only user (commands/drawCalculator.js). Replaced 2026-10-15 18:02 EDT: a new Expand, and Collapse in place of the old Simplify icon (Harkirat, prod ids supplied; the dev app no longer has a Simplify emoji).
-    collapse: '<a:Collapse:1560408707685294120>',
-    expand: '<a:Expand:1560408706233933845>',
+    collapse: '<a:Collapse:1561145468824854668>',
+    expand: '<a:Expand:1561145493034246174>',
     b1: '<:b1:1523852972835082371>',
     // Shared pagination arrows (utils/paginationRow.js) — used by every command with a Prev/Next page row, not just one specific command's list. /invite's "Share Link" button (2026-08-22, Harkirat-provided). Distinct from `share` above, which is the "Show Everyone" button's icon -- two different actions, two different icons.
     shareHeart: '<a:ShareHeart:1539021725784739891>',

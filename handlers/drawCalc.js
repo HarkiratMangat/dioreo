@@ -34,17 +34,16 @@ function ownsCustomId(customId) {
 }
 
 
-// Mythic Cards and Coins join the balance (2026-10-17 12:01 EDT, Harkirat: "we need to include mythic cards and mythic coins within the 'Balance' modal pop-up"), each only when the calculation has that kind of Mythic line. Every field is pre-filled with what is set, because a blank field means 0: without the pre-fill, changing only the cards would wipe the CP.
+// Mythic Cards and Coins join the balance (2026-10-17 12:01 EDT, Harkirat: "we need to include mythic cards and mythic coins within the 'Balance' modal pop-up"), always shown (2026-10-17 18:54 EDT, his: "this way its ready incase they want to pivot over to that calculation. The balances shouldnt be restricted to *if* a mythic wep/char draw is selected"). Every field is pre-filled with what is set, because a blank field means 0: without the pre-fill, changing only the cards would wipe the CP.
 function buildAmountModal(state, basket) {
-    const keys = new Set((basket?.banners || []).map(b => b.drawKey));
     const field = (id, label, placeholder, value) => {
         const input = new TextInputBuilder().setCustomId(id).setLabel(label).setStyle(TextInputStyle.Short).setPlaceholder(placeholder).setRequired(false);
         if (value) input.setValue(String(value));
         return new ActionRowBuilder().addComponents(input);
     };
     const rows = [field('amount', 'CP you already have', 'e.g. 3,000 or 3k', basket?.balance)];
-    if (keys.has('mythicWeapon')) rows.push(field('cards', 'Mythic Cards you hold (steps of 5)', 'e.g. 300', basket?.mythicCards));
-    if (keys.has('mythicCharacter')) rows.push(field('coins', 'Mythic Coins you hold (steps of 5)', 'e.g. 150', basket?.mythicCoins));
+    rows.push(field('cards', 'Mythic Cards you hold', 'e.g. 300 or 2k', basket?.mythicCards));
+    rows.push(field('coins', 'Mythic Coins you hold', 'e.g. 300 or 2k', basket?.mythicCoins));
     return new ModalBuilder().setCustomId(encodeState('nums', state)).setTitle('Your Balance').addComponents(...rows);
 }
 

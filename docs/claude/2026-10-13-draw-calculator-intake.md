@@ -637,3 +637,19 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 
 **Built 2026-10-17 18:33 EDT:** his 18:28 draft for both views, polished (real minus signs, one space in "CP Balance", Mythic Upgrades only when set, labels only when two options show), and "You Need" in Export too.
 
+### Batch 40 — 2026-10-17 18:41 / 18:42 / 18:51 EDT, verbatim
+
+> Yeah it does wrap. What was your alternative suggestion for it? -# plain text?
+>
+> So switch and let me see on mobile
+>
+> * can we change the deleteall emoji to <a:DeleteAll:1561138182681133247>
+> * full breakdown's icon to: <a:Expand:1561145493034246174>
+> * simplified icon to: <a:Collapse:1561145468824854668>
+> * for set balance, allow the user to input their mythic coins balance as well. this way its ready incase they want to pivot over to that calculation. The balances shouldnt be restricted to *if* a mythic wep/char draw is selected.
+>
+> remove the "steps of 5" text. and improve the placeholder for it to "e.g. 300 or 2k"
+> and side note, does the form error if the inputs aren't numbers? or like what if someone types "3000 cp" or "250 cards" or types a number for cards that isn't a step of 5?
+
+**Built 2026-10-17 18:54 EDT:** plain-words terms line (`980c4325`); the three prod emoji ids (dev re-points by name on restart); Mythic Cards and Coins always in the Balance pop-up, no "(steps of 5)", placeholder "e.g. 300 or 2k". His side question answered in the thread.
+
