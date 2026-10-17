@@ -164,6 +164,26 @@ check('no note when every emoji was already right', () => {
     assert.strictEqual(t.formatReport({ named: [], remapped: [], fixed: [], unresolved: [] }, 3), null);
 });
 
+console.log('edit in place');
+check('the Edit JSON row is one real button, never a dummy id', () => {
+    const row = t.editRow({ name: 'EditCalc', id: '1' });
+    assert.deepStrictEqual([row.type, row.components[0].custom_id, row.components[0].label], [1, 'embedtest_edit', 'Edit JSON']);
+    assert.ok(!row.components[0].custom_id.startsWith(t.DUMMY_PREFIX));
+});
+check('the edit box keeps the paste, falls back to compact JSON, and refuses what cannot fit', () => {
+    assert.strictEqual(t.editBoxText('{ "a": 1 }'), '{ "a": 1 }');
+    const spaced = JSON.stringify({ components: Array(100).fill({ type: 10, content: 'x' }) }, null, 4);
+    assert.ok(spaced.length > 4000);
+    const fit = t.editBoxText(spaced);
+    assert.ok(fit && fit.length <= 4000 && JSON.parse(fit).components.length === 100, 'whitespace dropped to fit');
+    assert.strictEqual(t.editBoxText(JSON.stringify({ content: 'x'.repeat(5000) })), null);
+});
+check('a message turns back into JSON without its Edit row', () => {
+    const msg = { flags: 32768 | 64, content: '', embeds: [], components: [{ type: 17, components: [{ type: 10, content: 'hi' }] }, t.editRow()] };
+    const out = JSON.parse(t.payloadFromMessage(msg));
+    assert.deepStrictEqual(out, { flags: 32768, components: [{ type: 17, components: [{ type: 10, content: 'hi' }] }] });
+});
+
 console.log('registration');
 check('the command is skipped unless NODE_ENV is development', () => {
     const { loadCommandModules } = require(path.join(__dirname, '..', 'bot', 'registry'));

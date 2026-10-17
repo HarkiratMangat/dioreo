@@ -30,6 +30,24 @@ async function route(interaction) {
         return await command.renderPayload(interaction, interaction.fields.getTextInputValue(command.MODAL_FIELD));
     }
 
+    // EDIT JSON -- `embedtest_edit`, the one real button under every render (2026-10-17 16:35 EDT). Opens the box on the JSON that drew this message; its submit, `embedtest_editmodal`, redraws the same message.
+    if ((interaction.isButton() && interaction.customId === 'embedtest_edit') || (interaction.isModalSubmit() && interaction.customId === 'embedtest_editmodal')) {
+        const command = interaction.client.commands.get('embedtest');
+        if (!command || !command.isAllowed(interaction)) {
+            try { await interaction.reply({ content: '🔒 `/embedtest` is a dev-bot tool for the owner.', flags: 64 }); }
+            catch (notifyError) { console.error('embedtest: could not refuse an edit (interaction likely expired):', notifyError); }
+            return;
+        }
+        if (interaction.isModalSubmit()) return await command.renderPayload(interaction, interaction.fields.getTextInputValue(command.MODAL_FIELD), null, { edit: true });
+        const text = command.editTextFor(interaction.message);
+        if (!text) {
+            try { await interaction.reply({ content: 'This JSON is longer than the 4,000 characters an edit box holds. Send the changed version with `/embedtest file:` instead.', flags: 64 }); }
+            catch (notifyError) { console.error('embedtest: could not explain a too-long edit (interaction likely expired):', notifyError); }
+            return;
+        }
+        return await interaction.showModal(command.buildEditModal(text));
+    }
+
     // A DUMMY CONTROL -- `embedtest_dummy:N`. Acknowledged with no change, so the click neither does anything nor shows "This interaction failed".
     if ((interaction.isButton() || interaction.isAnySelectMenu()) && interaction.customId.startsWith('embedtest_dummy:')) {
         await interaction.deferUpdate().catch(() => {});

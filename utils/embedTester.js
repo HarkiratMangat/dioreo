@@ -21,6 +21,39 @@ const COMPONENT_CAP = 40;
 
 const DUMMY_PREFIX = 'embedtest_dummy:';
 
+// EDIT IN PLACE (2026-10-17 16:35 EDT, Harkirat: "a button under it that allows me to edit the embed's json so i dont have to send a brand new message each time"). One real button under every render opens a box holding the JSON that drew it; submitting redraws the same message.
+const EDIT_BUTTON_ID = 'embedtest_edit';
+const EDIT_MODAL_ID = 'embedtest_editmodal';
+// Discord's paragraph box holds 4,000 characters.
+const EDIT_BOX_MAX = 4000;
+
+function editRow(emoji) {
+    return { type: 1, components: [{ type: 2, style: 2, label: 'Edit JSON', custom_id: EDIT_BUTTON_ID, ...(emoji ? { emoji } : {}) }] };
+}
+
+// The text for the edit box: the JSON as pasted when it fits, else the same JSON without whitespace, else null (too long for the box at all).
+function editBoxText(raw) {
+    const text = String(raw ?? '').trim();
+    if (!text) return null;
+    if (text.length <= EDIT_BOX_MAX) return text;
+    const parsed = parseInput(text);
+    if (parsed.error) return null;
+    const min = JSON.stringify(parsed.value);
+    return min.length <= EDIT_BOX_MAX ? min : null;
+}
+
+// When the pasted text is no longer held (the bot restarted since the render), the posted message itself is turned back into JSON: its components without the Edit row, its flags, content and embeds. The ids it carries are the dummies, which a re-render replaces anyway.
+function payloadFromMessage(msg) {
+    const components = (msg.components || []).filter(row => !(row && row.type === 1 && (row.components || []).some(c => c.custom_id === EDIT_BUTTON_ID)));
+    const out = {};
+    const flags = Number(msg.flags) || 0;
+    if (flags & FLAG_COMPONENTS_V2) out.flags = FLAG_COMPONENTS_V2;
+    if (msg.content) out.content = msg.content;
+    if (msg.embeds && msg.embeds.length) out.embeds = msg.embeds;
+    out.components = components;
+    return JSON.stringify(out);
+}
+
 /**
  * Text → a parsed object, or a readable error. Strips a ```json fence (pasting straight out of a chat code block is the common case) and reports a parse failure with the text around where it broke, because "Unexpected token } in JSON at position 1734" alone is unusable on a phone.
  */
@@ -253,4 +286,10 @@ module.exports = {
     formatReport,
     COMPONENT_CAP,
     DUMMY_PREFIX,
+    EDIT_BUTTON_ID,
+    EDIT_MODAL_ID,
+    EDIT_BOX_MAX,
+    editRow,
+    editBoxText,
+    payloadFromMessage,
 };

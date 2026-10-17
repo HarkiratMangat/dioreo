@@ -11,6 +11,17 @@ const { SlashCommandBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, T
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { isOwner } = require('../utils/adminAccess');
 const tester = require('../utils/embedTester');
+const emojis = require('../utils/emojiMap');
+
+// The JSON each render was drawn from, by message id, so Edit JSON opens on exactly what was pasted (whitespace and the real custom_ids included). In memory on purpose: a dev tool, and after a restart the message itself is turned back into JSON instead (tester.payloadFromMessage). Capped so a long session cannot grow it without bound.
+const lastJson = new Map();
+const LAST_JSON_CAP = 200;
+function remember(messageId, text) {
+    if (!messageId) return;
+    lastJson.delete(messageId);
+    lastJson.set(messageId, text);
+    if (lastJson.size > LAST_JSON_CAP) lastJson.delete(lastJson.keys().next().value);
+}
 
 const MODAL_ID = 'embedtest_modal';
 const MODAL_FIELD = 'embedtest_json';
@@ -44,17 +55,26 @@ async function say(interaction, content, ephemeral = true) {
 /**
  * Parse → defer → resolve emojis → send. Shared by the slash command and the modal submit. `visibility` is 'hidden' | 'public' | null (null: the JSON's own ephemeral bit decides, else public).
  */
-async function renderPayload(interaction, rawText, visibility = null) {
+async function renderPayload(interaction, rawText, visibility = null, { edit = false } = {}) {
     const parsed = tester.parseInput(rawText);
     if (parsed.error) return say(interaction, parsed.error);
     const message = tester.normalizePayload(parsed.value);
     if (message.error) return say(interaction, message.error);
 
-    const ephemeral = visibility ? visibility === 'hidden' : message.ephemeral;
-    await interaction.deferReply({ flags: ephemeral ? 64 : 0 }); // flags, not the deprecated `ephemeral` option
+    // An edit redraws the message the Edit JSON button sits on (deferUpdate, then sendV2Payload patches @original), so it keeps that message's own visibility.
+    if (edit) await interaction.deferUpdate();
+    else {
+        const ephemeral = visibility ? visibility === 'hidden' : message.ephemeral;
+        await interaction.deferReply({ flags: ephemeral ? 64 : 0 }); // flags, not the deprecated `ephemeral` option
+    }
+    // After a defer, an error must not replace the render: an edit reports it privately and leaves the message as it was.
+    const fail = text => (edit ? interaction.followUp({ content: clip(text), flags: 64 }).catch(err => console.error('embedtest: could not report an edit error:', err?.message || err)) : say(interaction, text));
 
     const dummies = tester.dummyComponents(message.components);
     const count = tester.countComponents(message.components);
+    // The Edit JSON row goes under the design, after the dummies are made so it stays a real button. It costs 2 of the 40, so a design already at the cap renders without it.
+    const editable = count + 2 <= tester.COMPONENT_CAP;
+    if (editable) message.components.push(tester.editRow(emojis.parseEmoji(emojis.editCalc)));
 
     let report = { named: [], remapped: [], fixed: [], unresolved: [] };
     try {
@@ -64,8 +84,9 @@ async function renderPayload(interaction, rawText, visibility = null) {
         report.unresolved.push(`(emoji list unavailable: ${err?.message || err})`);
     }
 
+    let sent;
     try {
-        await sendV2Payload(interaction, message.components, {
+        sent = await sendV2Payload(interaction, message.components, {
             content: message.content,
             embeds: message.embeds,
             flags: message.sendFlags,
@@ -75,10 +96,12 @@ async function renderPayload(interaction, rawText, visibility = null) {
         });
     } catch (err) {
         const cap = count > tester.COMPONENT_CAP ? `\nThis payload has **${count}** components; Discord allows ${tester.COMPONENT_CAP}, counted recursively.` : '';
-        return say(interaction, `Discord refused this payload.${cap}\n\`\`\`\n${tester.formatDiscordError(err)}\n\`\`\``);
+        return fail(`Discord refused this payload${edit ? ', so the message was left as it was' : ''}.${cap}\n\`\`\`\n${tester.formatDiscordError(err)}\n\`\`\``);
     }
+    remember(sent?.id || interaction.message?.id, String(rawText ?? '').trim());
 
-    const note = tester.formatReport(report, dummies);
+    let note = tester.formatReport(report, dummies);
+    if (!editable) note = `${note ? `${note}\n` : ''}-# No Edit JSON button: the design already uses ${count} of Discord's ${tester.COMPONENT_CAP} components.`;
     if (note) {
         try {
             await interaction.followUp({ content: clip(note), flags: 64, allowedMentions: { parse: [] } });
@@ -86,6 +109,35 @@ async function renderPayload(interaction, rawText, visibility = null) {
             console.error('embedtest: could not send the emoji note:', err?.message || err);
         }
     }
+}
+
+// The JSON for a rendered message's edit box: what was pasted when it is still held, else the message turned back into JSON. Null when even the compact form passes the box's 4,000 characters.
+function editTextFor(message) {
+    if (!message) return null;
+    const held = lastJson.get(message.id);
+    if (held) return tester.editBoxText(held);
+    const plain = {
+        flags: message.flags?.bitfield ?? 0,
+        content: message.content || '',
+        embeds: (message.embeds || []).map(e => (e.toJSON ? e.toJSON() : e)),
+        components: (message.components || []).map(c => (c.toJSON ? c.toJSON() : c))
+    };
+    return tester.editBoxText(tester.payloadFromMessage(plain));
+}
+
+function buildEditModal(text) {
+    return new ModalBuilder()
+        .setCustomId(tester.EDIT_MODAL_ID)
+        .setTitle('Edit embed JSON')
+        .addComponents(new ActionRowBuilder().addComponents(
+            new TextInputBuilder()
+                .setCustomId(MODAL_FIELD)
+                .setLabel('Message JSON')
+                .setStyle(TextInputStyle.Paragraph)
+                .setValue(text)
+                .setRequired(true)
+                .setMaxLength(tester.EDIT_BOX_MAX)
+        ));
 }
 
 function buildModal() {
@@ -109,6 +161,8 @@ module.exports = {
     MODAL_FIELD,
     isAllowed,
     renderPayload,
+    editTextFor,
+    buildEditModal,
     data: new SlashCommandBuilder()
         .setName('embedtest')
         .setDescription('Dev bot: render pasted message JSON with the bot\'s own emojis')
