@@ -241,5 +241,6 @@ Harkirat's ladders (2026-10-17 11:50 EDT): weapon Levels 1–5 at 125 / 375 / 77
 - **`buildCostBlock` returns `{ cost, purchase, buying }`** and `compactSelectionText` writes the list; `buildCostPage`'s simplified branch picks the most detailed of four levels that fits (a block per line, shared blocks, no quiet line, one block per draw type).
 - **The sum reads as a sum:** `> **CP Still Needed**` first, then Full Cost of Draws, **+** Mythic Upgrades (only when set, with one `-#` line per card or coin pool), **−** Spent Already, **−** Your Balance (*not set* when it is 0).
 - **Buttons follow their section:** Edit Selection under the list, Full Breakdown under the figures (the Full Breakdown keeps Simplify under its heading). The caption over the controls is his bold **Tweak Calculation** / "Adjust the result in real time."; the form keeps its own.
-- **Title:** "Lucky Draw Cost Calculator" on every view. ⚠️ `emojis.whiteDotGlow` holds the DEV id until he gives the prod one; prod needs it before this ships.
+- **Title:** "Lucky Draw Cost Calculator" on every view. `emojis.whiteDotGlow` holds the prod id, read from the prod app's emoji list at his word (2026-10-17 17:22 EDT).
+- 🔴 **"Attempts" replaces "Items"; "Spins" stays** (2026-10-17 17:22 EDT, Harkirat: *"'attempts' basically took the spot of 'items'. spins stays as-is."*). What a draw holds is "10 Attempts"; a count of tries stays "3/10 Spins", except the simplified list's `0/10` Attempts, which is his draft. This supersedes the 2026-10-14 Items/Spins rule above.
 

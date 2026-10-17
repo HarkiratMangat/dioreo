@@ -108,7 +108,7 @@ function slashShortcut({ draw = null, pulls = null, balance = null, region = 're
     const total = pullCount(region, draw);
     let pullsDone = Math.max(0, pulls ?? 0);
     if (total !== null && pullsDone > total) {
-        notes.push(`${shortName(draw)} has ${total} Items, so ${pullsDone} was set to ${total}.`);
+        notes.push(`${shortName(draw)} has ${total} Attempts, so ${pullsDone} was set to ${total}.`);
         pullsDone = total;
     }
     return {
@@ -476,7 +476,8 @@ function freshDrawDescription(region, key) {
     if (total === null) return `No Data at ${regionLabel(region)} Yet`;
     const upgrade = upgradeCost(region, key);
     // No "·" before the upgrade (2026-10-14 16:51 EDT, Harkirat): the "+" already joins it to the total.
-    return `${total} Items · ${fmt(remainingToFinish(region, key, 0))} CP Total${upgrade !== null ? ` + ${fmt(upgrade)} CP Upgrade` : ''}`.slice(0, 100);
+    // "Attempts" took the place of "Items" (2026-10-17 17:20 EDT, Harkirat: "'attempts' basically took the spot of 'items'. spins stays as-is.").
+    return `${total} Attempts · ${fmt(remainingToFinish(region, key, 0))} CP Total${upgrade !== null ? ` + ${fmt(upgrade)} CP Upgrade` : ''}`.slice(0, 100);
 }
 function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 

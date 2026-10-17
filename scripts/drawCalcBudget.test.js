@@ -591,7 +591,7 @@ t('the first-pick picker is a MULTI-select and an instruction, with a live price
     assert.strictEqual(picker.placeholder, 'Select draw types to calculate');
     assert.ok(picker.options.every(o => o.description && o.description.length <= 100));
     const mythic = picker.options.find(o => o.value === 'mythicWeapon').description;
-    assert.ok(/^10 Items · [\d,]+ CP Total \+ [\d,]+ CP Upgrade$/.test(mythic), mythic);
+    assert.ok(/^10 Attempts · [\d,]+ CP Total \+ [\d,]+ CP Upgrade$/.test(mythic), mythic);
     assert.ok(picker.options.every(o => !o.description.includes(o.label) && !/Draw/.test(o.description)), 'a description never repeats the draw\'s name');
 });
 
@@ -745,7 +745,7 @@ t('the slash shortcut opens a calculated line, clamps pulls to the draw, and exp
     assert.strictEqual(full.notice, null);
     const seven = dc.slashShortcut({ draw: 'sevenSpinLegendaryWeapon', pulls: 10, region: 'region_10' });
     assert.strictEqual(seven.create.banners[0].pullsDone, 7, 'a 7-pull draw must never store 10 pulls');
-    assert.ok(/has 7 Items/.test(seven.notice));
+    assert.ok(/has 7 Attempts/.test(seven.notice));
     const orphan = dc.slashShortcut({ pulls: 4, balance: 500 });
     assert.strictEqual(orphan.create, null);
     assert.strictEqual(orphan.balance, 500, 'a bare balance is applied to whichever calculation opens');

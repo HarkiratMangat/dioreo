@@ -609,3 +609,11 @@ Earlier in the same round he chose the bigger "Suggested Purchase" heading with 
 
 **Built 2026-10-17 17:15 EDT:** his draft as the simplified view, with the critique applied: the sum reads Full Cost of Draws, + Mythic Upgrades (with one line per card or coin pool), − Spent Already, − Your Balance *(not set)*; the Mythic line gains its upgrade; one glowing-dot line per bundle, "each" only above one; the currency line kept; Edit Selection under the list and Full Breakdown under the figures; the title is "Lucky Draw Cost Calculator" everywhere. "Attempts" kept as he wrote it, which differs from "Spins" elsewhere (asked). The glowing dot carries the DEV id until he gives the prod one.
 
+### Batch 36 — 2026-10-17 17:20 EDT, verbatim
+
+> "attempts" basically took the spot of "items". spins stays as-is.
+>
+> can't you just use the discord api to check?
+
+**Done 2026-10-17 17:22 EDT:** "Items" → "Attempts" in the pickers' descriptions and the shortcut's notice; the glowing dot's prod id read from the prod app's emoji list (`1542356488746573824`).
+

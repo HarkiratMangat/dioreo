@@ -64,8 +64,8 @@ const emojis = {
     mythicCoin: '<:MythicCoin:1542258675706757150>',   // mythicCharacter's upgrade -- "Character Upgrade"
     // COST BREAKDOWN's own inline bullet + field-separator glyphs (added 2026-08-26 23:03 EDT, matching Harkirat's own exported mockup verbatim) -- smallDot prefixes each field line, blueDash joins two fields sharing one line (Balance/Region, CP Spent/CP Needed). Both static, not animated. The toggle button's two states (added same pass): simplify shows once the breakdown is expanded, expand shows while it is collapsed -- see actionRow() in commands/drawCalculator.js.
     smallDot: '<:SmallDot_SD:1542356720070697001>',
-    // The simplified view's bundle bullet (2026-10-17 17:08 EDT, his draft). ⚠️ DEV id: the prod id is not known yet; the dev bot re-points by name, but prod needs the real id before this ships.
-    whiteDotGlow: '<:WhiteDotGlow_WDG:1542357392212234330>',
+    // The simplified view's bundle bullet (2026-10-17 17:08 EDT, his draft). Prod id read from the prod app's emoji list at his word (2026-10-17 17:20 EDT).
+    whiteDotGlow: '<:WhiteDotGlow_WDG:1542356488746573824>',
     blueDash: '<:BlueDash_BD:1542356720943239188>',
     // The calculator's Full Breakdown / Simplify toggle, its only user (commands/drawCalculator.js). Replaced 2026-10-15 18:02 EDT: a new Expand, and Collapse in place of the old Simplify icon (Harkirat, prod ids supplied; the dev app no longer has a Simplify emoji).
     collapse: '<a:Collapse:1560408707685294120>',
