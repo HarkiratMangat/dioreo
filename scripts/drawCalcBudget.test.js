@@ -52,7 +52,11 @@ const buttons = panel => [...rows(panel).flatMap(r => r.components), ...containe
 const selects = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 3);
 const buttonLabelled = (panel, label) => buttons(panel).find(b => b.label === label);
 
+// `includeUpgrades: true` in a fixture now means "every Mythic line upgraded to Max" (2026-10-17 19:16 EDT): the basket-wide toggle no longer prices anything, so the fixture sets each line's own target, which keeps every worst-case sweep below exercising the upgrade lines.
+const MAX_WANT = { mythicWeapon: [5], mythicCharacter: [3, 3, 3, 1] };
+const withMaxUpgrades = banners => (banners || []).map(b => (MAX_WANT[b.drawKey] && !b.upWant ? { ...b, upWant: MAX_WANT[b.drawKey] } : b));
 function makeBasket(overrides = {}) {
+    if (overrides.includeUpgrades && overrides.banners) overrides = { ...overrides, banners: withMaxUpgrades(overrides.banners) };
     return {
         _id: '000000000000000000000001', name: null,
         banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }],
@@ -988,8 +992,10 @@ t('Stock Up can use as many purchases as the Recommended Package, up to 6 (2026-
 t('upgrades: the ladders, the shared pool and the presets', () => {
     const { upgradePlan, upgradeNeed, characterPreset } = require('../utils/drawCost');
     const pool = (b, key) => upgradePlan({ region: 'region_20', ...b }).pools.find(p => p.drawKey === key);
-    const legacy = { includeUpgrades: true, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }] };
-    assert.deepStrictEqual([pool(legacy, 'mythicWeapon').spins, pool(legacy, 'mythicWeapon').cp], [10, 10000], 'an old "Upgrade: YES" line still prices as Max: 10 spins of 1,000 CP');
+    const unset = { includeUpgrades: true, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }] };
+    assert.strictEqual(upgradePlan({ region: 'region_20', ...unset }).cp, 0, 'a Mythic line with no target of its own has no upgrade, whatever the old toggle says (2026-10-17 19:15 EDT)');
+    const legacy = { banners: [{ drawKey: 'mythicWeapon', pullsDone: 0, upWant: [5] }, { drawKey: 'mythicCharacter', pullsDone: 0, upWant: [3, 3, 3, 1] }] };
+    assert.deepStrictEqual([pool(legacy, 'mythicWeapon').spins, pool(legacy, 'mythicWeapon').cp], [10, 10000], 'Max is 10 spins of 1,000 CP');
     assert.deepStrictEqual([pool(legacy, 'mythicCharacter').need, pool(legacy, 'mythicCharacter').spins, pool(legacy, 'mythicCharacter').cp], [2820, 14, 16380], '2,820 coins is exactly 14 spins, never 15 from a float');
     const threeL1 = { banners: [0, 1, 2].map(() => ({ drawKey: 'mythicWeapon', pullsDone: 0, upWant: [1] })) };
     assert.strictEqual(pool(threeL1, 'mythicWeapon').spins, 2, 'the pool is shared: three Level 1s are 375 cards, 2 spins, not 1 + 1 + 1');

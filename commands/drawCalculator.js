@@ -570,7 +570,7 @@ const SPACER = { type: 14, spacing: 2, divider: false };
 // "Your Selections" once there are two or more draws (2026-10-14 16:51 EDT, Harkirat).
 function selectionHeading(banners) { return (banners || []).length >= 2 ? 'Your Selections' : 'Your Selection'; }
 
-// The old "Upgrade: YES / NO" toggle (verb `upg`) gave way to upgradeControls on 2026-10-17 13:17 EDT: a per-line target set in a pop-up. Its verb still answers panels posted before, and still flips includeUpgrades, which lines with no target of their own fall back to.
+// The old "Upgrade: YES / NO" toggle (verb `upg`) gave way to upgradeControls on 2026-10-17 13:17 EDT: a per-line target set in a pop-up. Its verb still answers panels posted before; the includeUpgrades it flips no longer prices anything (2026-10-17 19:16 EDT).
 
 // The confirm a draw untick needs when it would delete progress (2026-10-13 12:40 EDT). Unticking a draw in the picker removes EVERY line of it; with progress on one, that silently threw away pulls the player had entered. `mask` is the selection they asked for, applied only when they confirm. `label` names what goes (a single line's confirm says "Remove #2"); Keep stays on the page it was asked from, so a confirm on the editing view does not drop the player back on the result.
 function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {

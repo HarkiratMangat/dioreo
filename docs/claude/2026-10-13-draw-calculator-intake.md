@@ -661,3 +661,11 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 
 **Built 2026-10-17 19:04 EDT:** "mythic" is accepted before card(s)/coin(s); the pop-up saves the fields that are fine and a private message names the refused ones and says to press Set Balance.
 
+### Batch 42 — 2026-10-17 19:10 / 19:14 EDT, verbatim
+
+> wait what happens if someone has multiple mythic weapons/characters selected? especially with the mythic character modal's dropdowns since only 5 are allowed in a modal?
+>
+> confused why it's assuming max upgrade for #4 and #5?
+
+**Answered 19:10 EDT:** one pop-up per Mythic draw, picked from the dropdown. **Fixed 2026-10-17 19:16 EDT:** #4 and #5 had no target of their own and fell back to the copied calculation's old "Upgrade: YES"; an unset draw now has no upgrade.
+

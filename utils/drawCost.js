@@ -54,7 +54,7 @@ function upgradeCost(region, key) {
 // ==========================================
 // MYTHIC UPGRADES BY TIER (2026-10-17 13:12 EDT, Harkirat's build go)
 // ==========================================
-// A line's upgrade is a HAVE and a WANT, each an array: weapon `[level]` (0-5); character `[battle, arm, color, finalForm]` (tiers 0-3, then 0/1). Stored on the line as `upHave`/`upWant` (models/DrawBasket.js). HAVE only counts on a line whose draw is finished: upgrades unlock only after the last spin, so any earlier line has nothing upgraded yet. A line with no stored WANT falls back to the old basket-wide toggle: Max from where it stands when `includeUpgrades` is on, nothing when it is off -- so every calculation saved before this prices exactly as it did.
+// A line's upgrade is a HAVE and a WANT, each an array: weapon `[level]` (0-5); character `[battle, arm, color, finalForm]` (tiers 0-3, then 0/1). Stored on the line as `upHave`/`upWant` (models/DrawBasket.js). HAVE only counts on a line whose draw is finished: upgrades unlock only after the last spin, so any earlier line has nothing upgraded yet. A line with no stored WANT has no upgrade; `includeUpgrades` is no longer read (see upgradeState).
 function upgradeShape(key) {
     const u = MYTHIC_UPGRADE[key];
     if (!u) return null;
@@ -71,7 +71,8 @@ function upgradeState(banner, { complete, includeUpgrades }) {
     const zero = max.map(() => 0);
     const have = (complete && cleanUpgradeArray(banner.upHave, max)) || zero;
     const stored = cleanUpgradeArray(banner.upWant, max);
-    const want = (stored || (includeUpgrades ? max : zero)).map((w, i) => Math.max(w, have[i]));
+    // No stored target means no upgrade (2026-10-17 19:15 EDT). Lines used to fall back to the old basket-wide Upgrade: YES toggle, so a calculation copied from one with the toggle on showed every newly added Mythic draw at Max (Harkirat: "confused why it's assuming max upgrade for #4 and #5?"). The toggle left the UI with the tier pop-ups, and the calculator has never shipped, so no player's saved price changes.
+    const want = (stored || zero).map((w, i) => Math.max(w, have[i]));
     return { have, want, explicit: Boolean(stored) };
 }
 function sumTiers(tiers, from, to) { let n = 0; for (let t = from; t < to; t++) n += tiers[t]; return n; }
