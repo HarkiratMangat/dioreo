@@ -501,3 +501,10 @@ His asks: the Full Breakdown states Mythic upgrades apart (his layout); Cancel w
 > Can you improve the structure of the content so it fits better on mobile? Such as the "simplify" buttons position
 
 **Built 2026-10-16 20:37 EDT:** no Section accessory beside text anywhere on the result: Edit Selection, Full Breakdown and Simplify each sit on their own row directly under their heading (on a phone the accessory took about a third of the width, so "21,400 / CP" broke and the formula wrapped three times). The formula line is plain words, not code spans (monospace is wider on a phone); "Total" left the Full Cost and Amount Spent lines; the bundle note drops "Bought" (the line above already says it) and reads "`21,400 CP` Needed · **`200 CP` Left Over**".
+
+### Batch 32 — 2026-10-16 21:04 EDT, verbatim
+
+> Could you also take the full breakdown changes and appropriately make them
+> For the simplified version as well? /think-pass it before implementing
+
+**Built 2026-10-16 21:10 EDT, after a think-pass:** the compact view keeps his `###` headline and his "no Cheapest label with one option", and takes the Full Breakdown's terms and shapes without its detail. Rows: "#1–#2 · `0/10` Spins · Legendary Weapon (Reactive) ×2" (no cost). Headline: "### CP Still Needed: `x CP`", now the same NET figure the breakdown shows (it was the gross figure, so switching views changed the "needed" number), with one note only when something was subtracted or added ("`5,720 CP` for the draws − your `1,000 CP` balance", or "Includes `5,700 CP` of Mythic upgrades"). Bundle: "## Recommended Bundle", "**`21,600 CP`** for **`CA$259.98`**", one quoted line per bundle without its price, "**`200 CP` Left Over**". Footer "Change in". Export was left as it is (it already shows both the gross and the net figure); offered to him separately.

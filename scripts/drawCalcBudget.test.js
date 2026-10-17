@@ -599,11 +599,13 @@ t('the cost breakdown LEADS with CP Needed -- the number the command exists to p
     // The heading and what follows are separate texts since the toggle moved under the heading (2026-10-16 20:31 EDT); read them as one block.
     const lines = texts(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], balance: 1000 }))).join('\n').split('\n');
     const block = lines.slice(lines.indexOf('## Cost Breakdown'), lines.indexOf('## Cost Breakdown') + 4).join('\n');
-    assert.ok(/CP Needed/.test(block.split('\n')[1]), `the first line under the heading was "${block.split('\n')[1]}"`);
+    assert.ok(/CP Still Needed/.test(block.split('\n')[1]), `the first line under the heading was "${block.split('\n')[1]}"`);
     assert.strictEqual(/Balance:|Region:/.test(block), false, 'no Balance/Region line: the button and the toggle already show both (2026-10-14, his ask)');
-    assert.ok(/^### CP Needed: `[\d,]+ CP`$/.test(block.split('\n')[1]), 'CP Needed is the block\'s own heading');
-    assert.ok(/\*\*[\d,]+ CP\*\* still to buy after your 1,000 CP balance/.test(block), 'what the balance changes is the one figure that stays');
-    assert.strictEqual(/still to buy/.test(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })))), false, 'and only when a balance is set');
+    // The same NET figure and words as the Full Breakdown (2026-10-16 21:04 EDT), kept as his ### heading; the note shows the subtraction.
+    assert.ok(/^### CP Still Needed: `4,720 CP`$/.test(block.split('\n')[1]), block.split('\n')[1]);
+    assert.ok(block.includes('-# `5,720 CP` for the draws − your `1,000 CP` balance'), 'what the balance changes');
+    assert.strictEqual(/ balance$/m.test(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })))), false, 'and only when a balance is set');
+    assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], includeUpgrades: true }))).includes('-# Includes `5,700 CP` of Mythic upgrades'), 'an included upgrade is named');
 });
 
 t('Set Balance accepts the amount the way the panel prints it -- "3000 CP", "3,000 cp", "3k CP"', () => {
@@ -688,13 +690,15 @@ t('the default view names the currency and where to change it', () => {
     assert.ok(/Prices in \*\*CAD\*\*/.test(text), 'compact view must name the currency (the fixture renders in CAD)');
 });
 
-t('the compact package line states the price once, the packs, and the leftover', () => {
-    const block = texts(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).find(c => c.includes('### Recommended Bundle'));
+t('the compact bundle has the Full Breakdown\'s shape without its detail (2026-10-16 21:04 EDT)', () => {
+    const block = texts(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).find(c => c.includes('## Recommended Bundle'));
     const lines = block.split('\n');
-    const i = lines.findIndex(l => l.startsWith('> **`'));
-    assert.ok(i !== -1 && /CP Bought · [\d,]+ CP Left Over/.test(lines[i + 1]), `the price line, then what is bought and left over: "${lines[i + 1]}"`);
+    const i = lines.indexOf('## Recommended Bundle');
+    assert.ok(/^\*\*`[\d,]+ CP`\*\* for \*\*`CA\$[\d,.]+`\*\*$/.test(lines[i + 1]), `what it buys for what it costs: "${lines[i + 1]}"`);
+    assert.ok(/^> \*\*\d+×\*\* [\d,]+ CP bundle$/.test(lines[i + 2]), `one quoted line per bundle, no per-bundle price: "${lines[i + 2]}"`);
+    assert.ok(lines.some(l => /^-# \*\*`[\d,]+ CP` Left Over\*\*$/.test(l)), 'then what is left over');
     assert.strictEqual(/Cheapest/.test(block), false, 'no "Cheapest" label when only one option is shown (2026-10-14 16:47 EDT)');
-    assert.strictEqual((lines[i].match(/10,800 CP/g) || []).length <= 1, true, `the pack total is repeated in "${lines[i]}"`);
+    assert.ok(/· Change in /.test(block), 'the currency line matches the breakdown\'s case');
 });
 
 t('the result heads the list "Your Selection" with Edit beside it; a grouped ×N keeps its progress', () => {
@@ -704,7 +708,7 @@ t('the result heads the list "Your Selection" with Edit beside it; a grouped ×N
     assert.ok(at > 0 && comps[at - 1].type === 10 && comps[at - 1].content.startsWith('## Your Selection'), 'Edit sits on its own row under Your Selection (2026-10-16 20:31 EDT, for phones)');
     assert.strictEqual(verbOf(comps[at].components[0]), 'edit');
     assert.strictEqual(comps.some(c => c.type === 9), false, 'no Section accessory squeezes text on a phone');
-    assert.ok(/Legendary Weapon \(Reactive\) ×2 — 0\/10 Spins/.test(allText(panel)));
+    assert.ok(/#1–#2 · `0\/10` Spins · Legendary Weapon \(Reactive\) ×2/.test(allText(panel)), 'the Full Breakdown\'s row shape, without the cost (2026-10-16 21:04 EDT)');
     assert.strictEqual(selects(panel).some(s => ['draws', 'addmore', 'bpulls'].includes(verbOf(s))), false, 'the result edits nothing itself');
 });
 

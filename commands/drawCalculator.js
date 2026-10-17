@@ -546,8 +546,11 @@ function buildCostBlock(state, basket, currency, client) {
     const shortfall = needed - (basket.balance || 0);
 
     // 🔴 CP NEEDED LEADS. This block used to open with "Draws in basket: 2" and put the one number the whole command exists to produce THIRD -- the eye landed on a count nobody asked for. The count itself is gone: the DRAWS IN PROGRESS list sits directly above and already shows every line. CP Needed is the block's own heading (2026-10-14 16:51 EDT, Harkirat: "move CP needed into a ### heading"). No Balance or Region line (2026-10-14 13:19 EDT): the button and the toggle show both. What the balance CHANGES is on no button, so it stays, as one quiet line.
-    const lines = [`## Cost Breakdown`, `### CP Needed: \`${fmt(needed)} CP\``];
-    if (basket.balance && shortfall > 0) lines.push(`-# **${fmt(shortfall)} CP** still to buy after your ${fmt(basket.balance)} CP balance.`);
+    // The Full Breakdown's terms carried over (2026-10-16 21:06 EDT, Harkirat: "take the full breakdown changes and appropriately make them for the simplified version as well"). The headline is the SAME net figure the breakdown calls CP Still Needed (it used to be the gross figure, so switching views changed the "needed" number), kept as his `###` heading; one note says what was subtracted or added, and only when something was.
+    const upgradeTotal = perBanner.reduce((n, b) => n + (b.priced && b.upgrade ? b.upgrade : 0), 0);
+    const lines = [`## Cost Breakdown`, `### CP Still Needed: \`${fmt(Math.max(shortfall, 0))} CP\``];
+    if (basket.balance && shortfall > 0) lines.push(`-# \`${fmt(needed)} CP\` for the draws${upgradeTotal ? ' and Mythic upgrades' : ''} − your \`${fmt(basket.balance)} CP\` balance`);
+    else if (upgradeTotal && shortfall > 0) lines.push(`-# Includes \`${fmt(upgradeTotal)} CP\` of Mythic upgrades`);
     if (unpriced.length) {
         lines.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => shortName(b.drawKey)).join(', ')}.`);
     }
@@ -576,20 +579,20 @@ function buildCostBlock(state, basket, currency, client) {
         lines.push(`⚠️ **${fmt(shortfall)} CP** is more than a reasonable number of store purchases can cover at once.`);
         return lines;
     }
-    const describeCp = r => r.combo.map(c => `**${c.count}×** ${fmt(c.cpEach)} CP${c.mode === 'double' ? ' (2X)' : ''}`).join(' + ');
     // ONE SHAPE FOR EVERY PACKAGE, in both views (2026-10-14 16:51 EDT, Harkirat: "better structure that section that mentions the cost, the packages, the left over CP. Class, not instance"): the price and the packs on a quoted line, then one quiet line of what is bought and left over. The Full Breakdown has its own layout (breakdownCostLines). A label ("Cheapest", "Stock Up") shows only when there are two options to tell apart: "no point stating Cheapest when no other option is being presented".
     const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
-    const option = (label, r, extra = null) => [
-        ...(label ? [`**${label}**`] : []),
-        `> **\`${formatMoney(r.totalCents, currency)}\`** for ${describeCp(r)}`,
-        `-# ${fmt(r.totalCp)} CP Bought · ${fmt(r.leftoverCp)} CP Left Over${extra ? ` · ${extra}` : ''}`
+    // The Full Breakdown's bundle shape without its detail (his "Class, not instance"): what it buys for what it costs, one quoted line per bundle, then what is left over. No "Cheapest" label with one option (his 2026-10-14 ask), no per-bundle prices (that is the breakdown's job). One bundle per line also stops "1× 80 CP + 1× 420 CP + …" wrapping on a phone.
+    const option = r => [
+        `**\`${fmt(r.totalCp)} CP\`** for **\`${formatMoney(r.totalCents, currency)}\`**`,
+        ...r.combo.map(c => `> **${c.count}×** ${fmt(c.cpEach)} CP bundle${c.mode === 'double' ? ' (2X)' : ''}`),
+        `-# **\`${fmt(r.leftoverCp)} CP\` Left Over**`
     ];
     // "Bundle" everywhere (2026-10-16 01:20 EDT, Harkirat "yes" to matching his Full Breakdown's word): the compact view, Help, Export and the 2X select all say bundle now.
-    lines.push('### Recommended Bundle');
-    lines.push(...option(null, result.cheapest));
+    lines.push('## Recommended Bundle');
+    lines.push(...option(result.cheapest));
     // A blank line between the two options (click-test 2026-10-14 18:56 EDT): without it "Stock Up" sat flush against Cheapest's last line and read as part of it. A bold label is not a heading, so the blank line does not stack a heading margin.
     // The currency line shows in BOTH views (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it.
-    lines.push(`-# Prices in **${currency}** · change in ${settingsMention}`);
+    lines.push(`-# Prices in **${currency}** · Change in ${settingsMention}`);
     return lines;
 }
 
@@ -931,9 +934,10 @@ function buildCostPage(state, basket, accentColor, options = {}) {
         }
         return out;
     }
-    const groups = groupForDisplay(basket.banners);
     // "Your Selection" with Edit BESIDE it (2026-10-13 23:01 EDT, his intake: Edit Draws sat at the bottom, away from the list it edits, while a draw picker here did half the job). Every input now lives on the form; Edit reopens it with everything kept, and this page only reports.
-    components.push(...headedSection(`## ${selectionHeading(basket.banners)}\n-# Press **Edit** to change your draws or spins.`, editSelectionButton(state), `${groups.map(g => `${DRAW_META[g.drawKey] ? emojis[DRAW_META[g.drawKey].tier] : emojis.smallDot} ${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''} — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'} Spins`).join('\n')}`));
+    // The rows take the Full Breakdown's shape without its cost (2026-10-16 21:06 EDT): number, spins, name; adjacent identical lines share one row.
+    const compactRows = breakdownRows(lineFigures(basket), 1).map(r => `${DRAW_META[r.drawKey] ? emojis[DRAW_META[r.drawKey].tier] : emojis.smallDot} ${r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`} · \`${r.pullsDone}/${r.total ?? '?'}\` Spins · ${shortName(r.drawKey)}${r.count > 1 ? ` ×${r.count}` : ''}`);
+    components.push(...headedSection(`## ${selectionHeading(basket.banners)}\n-# Press **Edit** to change your draws or spins.`, editSelectionButton(state), compactRows.join('\n')));
     if (options.notice) components.push({ type: 10, content: `-# ${options.notice}` });
     if (options.dropConfirm) components.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
     components.push({ type: 14, spacing: 1, divider: true });
