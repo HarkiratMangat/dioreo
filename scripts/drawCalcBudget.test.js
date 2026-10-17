@@ -596,7 +596,9 @@ t('the first-pick picker is a MULTI-select and an instruction, with a live price
 });
 
 t('the cost breakdown LEADS with CP Needed -- the number the command exists to produce', () => {
-    const block = texts(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], balance: 1000 }))).find(c => c.startsWith('## Cost Breakdown'));
+    // The heading and what follows are separate texts since the toggle moved under the heading (2026-10-16 20:31 EDT); read them as one block.
+    const lines = texts(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], balance: 1000 }))).join('\n').split('\n');
+    const block = lines.slice(lines.indexOf('## Cost Breakdown'), lines.indexOf('## Cost Breakdown') + 4).join('\n');
     assert.ok(/CP Needed/.test(block.split('\n')[1]), `the first line under the heading was "${block.split('\n')[1]}"`);
     assert.strictEqual(/Balance:|Region:/.test(block), false, 'no Balance/Region line: the button and the toggle already show both (2026-10-14, his ask)');
     assert.ok(/^### CP Needed: `[\d,]+ CP`$/.test(block.split('\n')[1]), 'CP Needed is the block\'s own heading');
@@ -697,9 +699,11 @@ t('the compact package line states the price once, the packs, and the leftover',
 
 t('the result heads the list "Your Selection" with Edit beside it; a grouped ×N keeps its progress', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }));
-    const section = container(panel).components.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Edit Selection');
-    assert.ok(section && section.components[0].content.startsWith('## Your Selection'), 'Edit sits beside Your Selection');
-    assert.strictEqual(verbOf(section.accessory), 'edit');
+    const comps = container(panel).components;
+    const at = comps.findIndex(c => c.type === 1 && c.components.some(b => b.label === 'Edit Selection'));
+    assert.ok(at > 0 && comps[at - 1].type === 10 && comps[at - 1].content.startsWith('## Your Selection'), 'Edit sits on its own row under Your Selection (2026-10-16 20:31 EDT, for phones)');
+    assert.strictEqual(verbOf(comps[at].components[0]), 'edit');
+    assert.strictEqual(comps.some(c => c.type === 9), false, 'no Section accessory squeezes text on a phone');
     assert.ok(/Legendary Weapon \(Reactive\) ×2 — 0\/10 Spins/.test(allText(panel)));
     assert.strictEqual(selects(panel).some(s => ['draws', 'addmore', 'bpulls'].includes(verbOf(s))), false, 'the result edits nothing itself');
 });
@@ -754,11 +758,13 @@ t('each line\'s dropdown OPENS with Remove, then the values; Move Up is gone', (
     assert.ok(lines.every(s => s.options.length <= 25));
 });
 
-t('Show Breakdown sits beside the Cost Breakdown heading, not in an action row', () => {
-    const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], balance: 3000 }));
-    const section = container(panel).components.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Full Breakdown');
-    assert.ok(section && section.components[0].content.startsWith('## Cost Breakdown'));
-    assert.strictEqual(rows(panel).some(r => r.components.some(b => b.label === 'Full Breakdown')), false);
+t('the breakdown toggle sits on its own row right under the Cost Breakdown heading, in both views (2026-10-16 20:31 EDT, for phones)', () => {
+    for (const [st, label] of [[{}, 'Full Breakdown'], [{ detail: true }, 'Simplify']]) {
+        const comps = container(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], balance: 3000 }), st)).components;
+        const at = comps.findIndex(c => c.type === 1 && c.components.some(x => x.label === label));
+        assert.ok(at > 0 && comps[at - 1].content === '## Cost Breakdown' && comps[at].components.length === 1, `${label} under the heading`);
+        assert.strictEqual(comps.some(c => c.type === 9), false, 'no Section accessory beside text');
+    }
 });
 
 // ==========================================
@@ -943,8 +949,8 @@ t('the Full Breakdown is his layout, with sums that check out (2026-10-16 01:07 
     const t = allText(render(makeBasket({ banners }), { detail: true }, { currency: 'CAD' }));
     assert.ok(/#2 · `1\/10` Spins · Legendary Weapon \(Reactive\) <:BlueDash_BD:\d+> \*\*`4,950 CP`\*\*/.test(t), 'a row: number, spins, name, full cost');
     assert.ok(t.includes('-# `10 CP` Spent · `4,940 CP` Remaining until Completion'));
-    assert.ok(t.includes('**CP Still Needed** ⌇ **`15,700 CP`**') && t.includes('Full Cost of Draws ⌇ `15,710 CP` Total') && t.includes('Amount Spent So Far ⌇ `10 CP` Total'), '15,710 - 10 - 0 = 15,700');
-    assert.ok(t.includes('`Cost of Draws` **−** `Amount Spent` **−** `CP Balance`') && !/Mythic Upgrades/.test(t), 'his template in Title Case, upgrades named only when included');
+    assert.ok(t.includes('**CP Still Needed** ⌇ **`15,700 CP`**') && t.includes('Full Cost of Draws ⌇ `15,710 CP`') && t.includes('Amount Spent So Far ⌇ `10 CP`'), '15,710 - 10 - 0 = 15,700');
+    assert.ok(t.includes('-# Cost of Draws **−** Amount Spent **−** CP Balance') && !/Mythic Upgrades/.test(t), 'his template in Title Case, upgrades named only when included');
     assert.ok(t.includes('`4,950 CP` **+** `4,950 CP` **+** `5,810 CP`') && t.includes('CP Balance ⌇ `0 CP` Assumed'));
     assert.ok(/\*\*Cheapest\*\* ⌇ \*\*`15,800 CP`\*\* for \*\*`CA\$199\.98`\*\*/.test(t) && t.includes('**`100 CP` Left Over**'));
     assert.ok(t.includes('`CA$129.99` each') && /CoD: Mobile web store prices are \*\*not\*\* included/.test(t));

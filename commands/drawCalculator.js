@@ -846,12 +846,13 @@ function breakdownCostLines(basket, currency, client, level) {
         '## Cost Breakdown',
         // His rough template, cleaned up (2026-10-16 18:57 EDT, Harkirat: "you literally copied my typed template as is, when i said it was rough"): labels and terms in Title Case, sentences in sentence case, a real minus sign.
         `**CP Still Needed**${BREAK}**\`${fmt(Math.max(shortfall, 0))} CP\`**`,
-        `-# \`Cost of Draws${withUpgrades ? ' & Mythic Upgrades' : ''}\` **−** \`Amount Spent\` **−** \`CP Balance\``
+        // Plain words, not code spans: a monospace span is about a third wider on a phone and wrapped three times there.
+        `-# Cost of Draws${withUpgrades ? ' & Mythic Upgrades' : ''} **−** Amount Spent **−** CP Balance`
     ];
     const tail = [
-        `Full Cost of Draws${withUpgrades ? ' & Upgrades' : ''}${BREAK}\`${fmt(full)} CP\` Total`,
+        `Full Cost of Draws${withUpgrades ? ' & Upgrades' : ''}${BREAK}\`${fmt(full)} CP\``,
         `-# ${b1} ${terms('full')}`,
-        `Amount Spent So Far${BREAK}\`${fmt(spent)} CP\` Total`,
+        `Amount Spent So Far${BREAK}\`${fmt(spent)} CP\``,
         `-# ${b1} ${terms('spent')}`,
         balance ? `CP Balance${BREAK}\`${fmt(balance)} CP\`` : `CP Balance${BREAK}\`0 CP\` Assumed`,
         `-# ${b1} ${balance ? 'Set under Tweak Calculation' : '`Not Set`'}`
@@ -871,7 +872,8 @@ function breakdownCostLines(basket, currency, client, level) {
     const bundle = (label, r) => [
         `**${label}**${BREAK}**\`${fmt(r.totalCp)} CP\`** for **\`${money(r.totalCents)}\`**`,
         ...r.combo.map(c => `> **${c.count}×** ${fmt(c.cpEach)} CP bundle${c.mode === 'double' ? ' (2X)' : ''}${BREAK}\`${money(c.priceCents)}\`${c.count > 1 ? ' each' : ''}`),
-        `-# \`${fmt(r.totalCp)} CP\` Bought · \`${fmt(shortfall)} CP\` Needed${BREAK}**\`${fmt(r.leftoverCp)} CP\` Left Over**`
+        // The heading line already says what is bought, so the note keeps the two figures it adds, short enough for one line on a phone.
+        `-# \`${fmt(shortfall)} CP\` Needed · **\`${fmt(r.leftoverCp)} CP\` Left Over**`
     ];
     const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
     tail.push(result.stockUp ? '## Recommended Bundles' : '## Recommended Bundle', ...bundle('Cheapest', result.cheapest));
@@ -891,23 +893,22 @@ function textLength(node) {
     return n;
 }
 
+// A section's button sits on its own row UNDER the heading, never beside the text as a Section accessory (2026-10-16 20:32 EDT, Harkirat's phone screenshot: "Can you improve the structure of the content so it fits better on mobile? Such as the 'simplify' buttons position"). On a phone the accessory took a third of the width, so "21,400 / CP" broke across lines and the formula's code spans wrapped three times. The heading-then-button order keeps his 2026-10-13 asks (Edit beside Your Selection, the breakdown toggle with Cost Breakdown) on a phone-sized width.
+function editSelectionButton(state) { return { type: 2, style: 2, label: 'Edit Selection', custom_id: encodeState('edit', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
+function headedSection(heading, button, rest) {
+    return [{ type: 10, content: heading }, { type: 1, components: [button] }, ...(rest ? [{ type: 10, content: rest }] : [])];
+}
+const splitHeading = text => { const i = text.indexOf('\n'); return i === -1 ? [text, ''] : [text.slice(0, i), text.slice(i + 1)]; };
 function buildBreakdownPage(state, basket, accentColor, options, level) {
     const { currency = 'USD', client = null, liveDoubleCPEntry = null } = options;
     const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
-    components.push({
-        type: 9,
-        components: [{ type: 10, content: breakdownSelectionText(basket, level) }],
-        accessory: { type: 2, style: 2, label: 'Edit Selection', custom_id: encodeState('edit', state), emoji: emojis.parseEmoji(emojis.editCalc) }
-    });
+    const [selHeading, selRows] = splitHeading(breakdownSelectionText(basket, level));
+    components.push(...headedSection(selHeading, editSelectionButton(state), selRows));
     if (options.notice) components.push({ type: 10, content: `-# ${options.notice}` });
     if (options.dropConfirm) components.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
     components.push({ type: 14, spacing: 1, divider: true });
     const { head, tail } = breakdownCostLines(basket, currency, client, level);
-    components.push({
-        type: 9,
-        components: [{ type: 10, content: head.join('\n') }],
-        accessory: { type: 2, style: 2, label: 'Simplify', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(emojis.collapse) }
-    });
+    components.push(...headedSection(head[0], { type: 2, style: 2, label: 'Simplify', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(emojis.collapse) }, head.slice(1).join('\n')));
     components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: tail.join('\n') });
     return finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry);
 }
@@ -932,11 +933,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     }
     const groups = groupForDisplay(basket.banners);
     // "Your Selection" with Edit BESIDE it (2026-10-13 23:01 EDT, his intake: Edit Draws sat at the bottom, away from the list it edits, while a draw picker here did half the job). Every input now lives on the form; Edit reopens it with everything kept, and this page only reports.
-    components.push({
-        type: 9,
-        components: [{ type: 10, content: `## ${selectionHeading(basket.banners)}\n-# Press **Edit** to change your draws or spins.\n${groups.map(g => `${DRAW_META[g.drawKey] ? emojis[DRAW_META[g.drawKey].tier] : emojis.smallDot} ${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''} — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'} Spins`).join('\n')}` }],
-        accessory: { type: 2, style: 2, label: 'Edit Selection', custom_id: encodeState('edit', state), emoji: emojis.parseEmoji(emojis.editCalc) }
-    });
+    components.push(...headedSection(`## ${selectionHeading(basket.banners)}\n-# Press **Edit** to change your draws or spins.`, editSelectionButton(state), `${groups.map(g => `${DRAW_META[g.drawKey] ? emojis[DRAW_META[g.drawKey].tier] : emojis.smallDot} ${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''} — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'} Spins`).join('\n')}`));
     if (options.notice) components.push({ type: 10, content: `-# ${options.notice}` });
     if (options.dropConfirm) components.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
     components.push({ type: 14, spacing: 1, divider: true });
@@ -948,11 +945,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     const head = split === -1 ? costLines : costLines.slice(0, split);
     const tail = split === -1 ? [] : costLines.slice(split);
     while (tail[0] === '') tail.shift();
-    components.push({
-        type: 9,
-        components: [{ type: 10, content: head.join('\n') }],
-        accessory: { type: 2, style: 2, label: 'Full Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(emojis.expand) }
-    });
+    components.push(...headedSection(head[0], { type: 2, style: 2, label: 'Full Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(emojis.expand) }, head.slice(1).join('\n')));
     // Room between the figures and the package that buys them (2026-10-14 13:13 EDT, his "more breathing room").
     if (tail.length) components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: tail.join('\n') });
     return finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry);
