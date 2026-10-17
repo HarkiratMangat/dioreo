@@ -153,7 +153,13 @@ async function route(interaction) {
             catch (notifyError) { console.error('Failed to notify user of a missing upgrade line (interaction likely expired):', notifyError); }
             return true;
         }
-        return await interaction.showModal(modal);
+        await interaction.showModal(modal);
+        // 🧪 Discord keeps a dropdown's pick after the pop-up is cancelled, and picking the same draw again sends nothing (2026-10-17 19:19 EDT, Harkirat: "i clicked the #3 option before to adjust it. but i want to click it again/adjust again and I'm unable to do so"). Redrawing the panel right after the pop-up opens clears the pick. Whether Discord accepts an edit after a pop-up response is being tested live, so the outcome is logged either way.
+        if (state.verb === 'upgpick') {
+            try { await renderPanel(interaction, state, basket); console.log('🧪 upgpick: dropdown reset after the pop-up opened'); }
+            catch (resetError) { console.warn('🧪 upgpick: could not reset the dropdown after the pop-up:', resetError?.code || resetError?.message || resetError); }
+        }
+        return true;
     }
     if (interaction.isModalSubmit() && (state.verb === 'upgsavew' || state.verb === 'upgsavec')) {
         await interaction.deferUpdate();
