@@ -35,7 +35,7 @@ async function fetchAppEmojis(client) {
 async function say(interaction, content, ephemeral = true) {
     try {
         if (interaction.deferred || interaction.replied) await interaction.editReply({ content: clip(content), components: [], embeds: [] });
-        else await interaction.reply({ content: clip(content), ephemeral });
+        else await interaction.reply({ content: clip(content), flags: ephemeral ? 64 : 0 });
     } catch (err) {
         console.error('embedtest: could not deliver a reply (interaction likely expired):', err?.message || err);
     }
@@ -51,7 +51,7 @@ async function renderPayload(interaction, rawText, visibility = null) {
     if (message.error) return say(interaction, message.error);
 
     const ephemeral = visibility ? visibility === 'hidden' : message.ephemeral;
-    await interaction.deferReply({ ephemeral });
+    await interaction.deferReply({ flags: ephemeral ? 64 : 0 }); // flags, not the deprecated `ephemeral` option
 
     const dummies = tester.dummyComponents(message.components);
     const count = tester.countComponents(message.components);
@@ -81,7 +81,7 @@ async function renderPayload(interaction, rawText, visibility = null) {
     const note = tester.formatReport(report, dummies);
     if (note) {
         try {
-            await interaction.followUp({ content: clip(note), ephemeral: true, allowedMentions: { parse: [] } });
+            await interaction.followUp({ content: clip(note), flags: 64, allowedMentions: { parse: [] } });
         } catch (err) {
             console.error('embedtest: could not send the emoji note:', err?.message || err);
         }

@@ -21,7 +21,7 @@ async function route(interaction) {
         const command = interaction.client.commands.get('embedtest');
         if (!command || !command.isAllowed(interaction)) {
             try {
-                await interaction.reply({ content: '🔒 `/embedtest` is a dev-bot tool for the owner.', ephemeral: true });
+                await interaction.reply({ content: '🔒 `/embedtest` is a dev-bot tool for the owner.', flags: 64 });
             } catch (notifyError) {
                 console.error('embedtest: could not refuse a modal submit (interaction likely expired):', notifyError);
             }
