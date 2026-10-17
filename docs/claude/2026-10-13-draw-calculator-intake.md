@@ -508,3 +508,11 @@ His asks: the Full Breakdown states Mythic upgrades apart (his layout); Cancel w
 > For the simplified version as well? /think-pass it before implementing
 
 **Built 2026-10-16 21:10 EDT, after a think-pass:** the compact view keeps his `###` headline and his "no Cheapest label with one option", and takes the Full Breakdown's terms and shapes without its detail. Rows: "#1–#2 · `0/10` Spins · Legendary Weapon (Reactive) ×2" (no cost). Headline: "### CP Still Needed: `x CP`", now the same NET figure the breakdown shows (it was the gross figure, so switching views changed the "needed" number), with one note only when something was subtracted or added ("`5,720 CP` for the draws − your `1,000 CP` balance", or "Includes `5,700 CP` of Mythic upgrades"). Bundle: "## Recommended Bundle", "**`21,600 CP`** for **`CA$259.98`**", one quoted line per bundle without its price, "**`200 CP` Left Over**". Footer "Change in". Export was left as it is (it already shows both the gross and the net figure); offered to him separately.
+
+### Batch 33 — 2026-10-16 21:59 / 22:29 EDT, verbatim
+
+> I noticed I've been getting a lot of like this kind of like freezing interaction failed, and then like instantly it'll work and actually like switch over when I press buttons, such as like 20 CP or 10 CP or whatnot. And I'm wondering, like, is that just because like the code is updating, because I clicked on an old command that was sent like yesterday and now it's updating to like the new files? Or is it like something else that's like an actual issue?
+>
+> Sure, go for it
+
+**Answered 21:59 EDT:** not code updating (old buttons run the current code); every click the bot received tonight was answered in 0–29 ms and finished under ~1 s; the two failures he saw were the first click after a 33- and 55-minute idle; the dev bot runs on his Mac (restarts, 162 gateway reconnects in its log). **Built 2026-10-16 22:30 EDT:** a dev-bot-only log line per click in `handlers/router.js` (`🕒 time verb · arrived X ms after the click · sent +Y · confirmed +Z · done +W`, flagged past 3 s), fed by a new `noteAckDone` in `utils/eventStore.js` that times Discord's confirmation of the first defer/reply. Nothing is stored; production logs nothing new.

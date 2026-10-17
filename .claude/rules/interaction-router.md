@@ -137,3 +137,8 @@ Everything else — the buffer, the flush rules, the dependency wrappers, the se
 
 ## Command routing — `client.commands` keys & `NAV_COMMAND_ALIASES`
 **Important:** `client.commands` is keyed by the exact `SlashCommandBuilder.setName()` value. Several nav buttons use shorter custom_id suffixes than their actual command name (e.g. button `nav_prices` → command `draw`). `handlers/navigation.js` has a `NAV_COMMAND_ALIASES` map bridging these — check it before assuming `client.commands.get(strippedCustomId)` will just work.
+
+## Dev-bot click timing log (2026-10-16 22:31 EDT)
+
+On the dev bot only (`NODE_ENV=development`), `handleInteraction`'s finally prints one `🕒` line per click: how long after the click it **arrived** (from the interaction's own id), when the first defer/reply was **sent**, when Discord **confirmed** it (`noteAckDone` in `utils/eventStore.js`), and when the handler was **done**, flagged when arrived + confirmed passes Discord's 3 s. It exists because "interaction failed" with a fast `ackMs` (which only measures when the ack was sent) left the delivery leg invisible. Nothing is stored and production prints nothing new.
+
