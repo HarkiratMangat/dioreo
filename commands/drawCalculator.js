@@ -661,7 +661,8 @@ function buildExportText(basket, currency = 'USD') {
     for (const p of upgrades.pools.filter(x => x.need)) {
         out.push(`- **Mythic ${p.currency}:** ${fmt(p.need)} needed${p.held ? ` − ${fmt(p.held)} held` : ''} → ${p.short ? `about ${p.spins} spins${p.cp !== null ? ` · ${fmt(p.cp)} CP` : ' · no upgrade price at this region yet'}` : 'covered'}`);
     }
-    out.push('', `**CP Needed:** ${fmt(needed)} CP${spentAll ? ` (${fmt(spentAll)} CP already spent)` : ''}`);
+    // "You Need", the result's own word for this figure (2026-10-17 18:28 EDT).
+    out.push('', `**You Need:** ${fmt(needed)} CP${spentAll ? ` (${fmt(spentAll)} CP already spent)` : ''}`);
     if (basket.balance) out.push(shortfall > 0 ? `**Balance:** ${fmt(basket.balance)} CP → **${fmt(shortfall)} CP** to buy` : `**Balance:** ${fmt(basket.balance)} CP covers it, with ${fmt(-shortfall)} CP to spare`);
     if (shortfall > 0) {
         const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (basket.entitlementMask & (1 << i)) !== 0).map(p => p.id);
@@ -693,24 +694,25 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     const priced = lineFigures(basket).filter(f => f.priced);
     const rows = breakdownRows(priced, level >= 4 ? 4 : level >= 1 ? 1 : 0);
     const terms = key => (level >= 3 ? `across ${plural(priced.length, 'line')}` : rows.map(r => `\`${r.count > 1 && !r.byType ? `${r.count} × ` : ''}${fmt(r[key])} CP\``).join(' **+** ') || '`0 CP`');
-    const termLine = key => (detail ? [`-# ${emojis.b1} ${terms(key)}`] : []);
-    const cost = [
-        '## Cost Breakdown',
-        `> **CP Still Needed**${BREAK}**\`${fmt(Math.max(shortfall, 0))} CP\`**`,
-        // "Full Cost of Draws" over his "Draws Cost": it is the whole price, what is spent included, and the signs make the lines read as the sum they are.
-        `Full Cost of Draws${BREAK}\`${fmt(drawTotal + spent)} CP\``,
-        ...termLine('full')
-    ];
-    if (upgrades.cp) {
-        cost.push(`**+** Mythic Upgrades${BREAK}\`${fmt(upgrades.cp)} CP\``);
-        for (const p of upgrades.pools.filter(x => x.need)) {
-            const icon = p.drawKey === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
-            cost.push(`-# ${icon} \`${fmt(p.need)}\` ${p.currency}${p.held ? ` − \`${fmt(p.held)}\` held` : ''} → about **${p.spins}** spins × \`${fmt(p.perDraw)} CP\``);
+    // HIS LAYOUT FOR BOTH VIEWS (2026-10-17 18:28 EDT; the tree he tried first was dropped because "-# lines break the emoji tree illusion"). The simplified view: You Need in bold, then one quiet line naming the sum's terms. The Full Breakdown: the same headline, then the sum quoted, one term per line with its sign and a `-#` line of what it is made of. Colons for a label and its value, ⌇ for a thing and what it costs, the grammar /draw prices already uses.
+    const quiet = key => (detail ? [`> -# ${terms(key)}`] : []);
+    const cost = ['## Cost Breakdown', `**You Need: \`${fmt(Math.max(shortfall, 0))} CP\`**`];
+    if (!detail) {
+        // Code spans on the terms are his draft's (his own call, against the 2026-10-16 note that spans wrap sooner on a phone).
+        cost.push(`-# \`Cost of Draws\`${upgrades.cp ? ' **+** `Mythic Upgrades`' : ''} **−** \`Spent Already\` **−** \`CP Balance\``);
+    } else {
+        cost.push(`> Full Cost of Draws: \`${fmt(drawTotal + spent)} CP\``, ...quiet('full'));
+        if (upgrades.cp) {
+            cost.push(`> **+** Mythic Upgrades: \`${fmt(upgrades.cp)} CP\``);
+            for (const p of upgrades.pools.filter(x => x.need)) {
+                const icon = p.drawKey === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
+                cost.push(`> -# ${icon} \`${fmt(p.need)}\` ${p.currency}${p.held ? ` − \`${fmt(p.held)}\` held` : ''} → about ${p.spins} spins × \`${fmt(p.perDraw)} CP\``);
+            }
         }
+        cost.push(`> **−** Spent Already: \`${fmt(spent)} CP\``, ...quiet('spent'));
+        // "Not set" so a balance nobody entered does not read as one set to 0.
+        cost.push(`> **−** CP Balance: \`${fmt(balance)} CP\`${balance ? '' : ' *(not set)*'}`);
     }
-    cost.push(`**−** Spent Already${BREAK}\`${fmt(spent)} CP\``, ...termLine('spent'));
-    // "Not set" so a balance nobody entered does not read as one set to 0.
-    cost.push(`**−** Your Balance${BREAK}\`${fmt(balance)} CP\`${balance ? '' : ' *(not set)*'}`);
     if (unpriced.length) cost.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => shortName(b.drawKey)).join(', ')}.`);
     // 🔴 A SILENT ZERO, FOUND 2026-10-13 12:40 EDT: an upgrade with no price at the region used to add nothing while claiming it was included. Say so instead.
     cost.push(...upgradeWarnings(basket, upgrades));
@@ -724,24 +726,23 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     if (!result || !result.cheapest) return { cost, purchase: [`⚠️ **${fmt(shortfall)} CP** is more than a reasonable number of store purchases can cover at once.`], buying: false };
     const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
     const money = cents => formatMoney(cents, currency);
-    // One option's block, his draft's shape: what it buys for what it costs, what is left over, one glowing-dot line per bundle.
-    const option = r => [
-        `> **\`${fmt(r.totalCp)} CP\`** for **\`${money(r.totalCents)}\`**`,
-        `> -# **\`${fmt(r.leftoverCp)} CP\` left over** after completing your draws${upgrades.cp ? ' and upgrades' : ''}`,
-        ...r.combo.map(c => `${emojis.whiteDotGlow} **${c.count}× \`${fmt(c.cpEach)} CP\`** bundle${c.mode === 'double' ? ' (2X)' : ''}${BREAK}**\`${money(c.priceCents)}\`**${c.count > 1 ? ' each' : ''}`)
-    ];
     const stockUp = detail ? result.stockUp : null;
-    const purchase = ['## Suggested Purchase'];
-    // Labels only when there are two options to tell apart (2026-10-14 16:47 EDT: "no point stating Cheapest when no other option is being presented").
-    if (stockUp) purchase.push('**Cheapest**');
-    purchase.push(...option(result.cheapest));
+    const afterWhat = ` after completing your draws${upgrades.cp ? ' and upgrades' : ''}`;
+    // One option: the total for its price (labelled only when two options show, 2026-10-14 16:47 EDT), what is left over, then each bundle quoted with ⌇ before its price.
+    const option = (r, label) => [
+        `**${label ? `${label}: ` : ''}\`${fmt(r.totalCp)} CP\`** for **\`${money(r.totalCents)}\`**`,
+        `-# **\`${fmt(r.leftoverCp)} CP\` left over**${detail ? afterWhat : ''}`,
+        ...r.combo.map(c => `> **${c.count}× \`${fmt(c.cpEach)} CP\`** bundle${c.mode === 'double' ? ' (2X)' : ''}${BREAK}**\`${money(c.priceCents)}\`**${c.count > 1 ? ' each' : ''}`)
+    ];
+    const purchase = ['## Suggested Purchase', ...option(result.cheapest, stockUp ? 'Cheapest' : null)];
     if (stockUp) {
-        purchase.push('', '**Stock Up**', ...option(stockUp));
-        purchase.push(`-# **${money(stockUp.extraCents)} more** buys **${fmt(stockUp.extraCp)} extra CP** at a *better rate*, which is worth it if you plan to buy more draws later.`);
+        purchase.push('', ...option(stockUp, 'Stock Up'));
+        purchase.push(`> -# Costs **${money(stockUp.extraCents)} more** · Buys **${fmt(stockUp.extraCp)} extra CP** at a better rate`);
     }
-    if (detail) purchase.push('-# Estimates only: local tax and currency conversion vary, and CoD: Mobile web store prices are **not** included.');
-    // The currency line stays (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it.
-    purchase.push(`-# Prices in **${currency}** · Change in ${settingsMention}`);
+    // The currency line stays (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it. Italic, his draft.
+    purchase.push(detail
+        ? `-# *Estimates only: local tax and currency conversion vary, and CoD: Mobile web store prices are not included · Prices in **${currency}** · Change in ${settingsMention}*`
+        : `-# *Prices in **${currency}** · Change in ${settingsMention}*`);
     return { cost, purchase, buying: true };
 }
 

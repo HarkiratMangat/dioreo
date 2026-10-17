@@ -252,3 +252,12 @@ Harkirat (2026-10-17 17:30 EDT): *"use the simplified version as a reference poi
 - **Both views are two Sections:** the list with Edit Selection; Cost Breakdown + Suggested Purchase with the toggle (Full Breakdown ⇄ Simplify). Both use the bold **Tweak Calculation** caption.
 - **Fitting:** five levels (a block per line with per-line terms, grouped blocks and terms, no quiet lines, terms as "across N lines", one block per draw type).
 
+### His result layout, 2026-10-17 18:33 EDT — batch 39
+
+His draft for both views (2026-10-17 18:28 EDT), after a tree layout was dropped because "the -# break the emoji tree illusion":
+
+- **Simplified:** `**You Need: \`X CP\`**`, then one `-#` line naming the terms (`Cost of Draws` **+** `Mythic Upgrades` **−** `Spent Already` **−** `CP Balance`, Mythic only when set); the purchase total for its price, `-#` what is left over, each bundle quoted (`> **1× \`880 CP\`** bundle ⌇ **\`CA$12.99\`**`), the currency line in italics.
+- **Full Breakdown:** the same headline, then the sum quoted, one signed term per line (`> **−** Spent Already: \`…\``) with a `> -#` line of what it is made of; **Cheapest:** / **Stock Up:** inside each total's line (only when both show), "left over after completing your draws (and upgrades)", the Stock Up extra-cost line quoted, one italic line for the estimates and currency.
+- 🔴 **The grammar, from /draw prices:** a colon joins a label and its value; `⌇` joins a thing and what it comes to or costs. Check that before changing a separator in either command.
+- "You Need" names the figure in both views and in Export. `emojis.whiteDotGlow` is no longer used by the result.
+

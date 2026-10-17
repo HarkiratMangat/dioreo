@@ -631,3 +631,9 @@ Earlier in the same round he chose the bigger "Suggested Purchase" heading with 
 
 **Built 2026-10-17 17:41 EDT.**
 
+### Batch 39 — 2026-10-17 17:53 to 18:28 EDT
+
+A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bullets as a tree or a dot, keep or drop `⌇` ("we use ⌇ in the /draw prices command/breakdown tho. so please /think-pass critique it"), then his final draft for both views at 18:28 EDT, verbatim in the thread. The think-pass found /draw prices' grammar (colon = label: value, `⌇` = thing ⌇ what it costs) and that my "use 'for'" advice broke it.
+
+**Built 2026-10-17 18:33 EDT:** his 18:28 draft for both views, polished (real minus signs, one space in "CP Balance", Mythic Upgrades only when set, labels only when two options show), and "You Need" in Export too.
+
