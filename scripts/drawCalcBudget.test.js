@@ -912,7 +912,7 @@ t('Export gives the result as plain, pasteable markdown: draws, CP needed, balan
     const text = dc.buildExportText(makeBasket({ name: 'My `Push`', balance: 1000, banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 3 }] }), 'CAD');
     assert.ok(text.startsWith('## Lucky Draw Calculation: My Push'), 'markdown characters in a name are dropped, so it cannot break the block');
     assert.ok(/- \*\*Legendary Weapon \(Reactive\) ×2\*\*: 0\/10 Spins · 10 left · [\d,]+ CP to finish/.test(text) && /- \*\*Mythic Weapon\*\*: 3\/10 Spins · 7 left · [\d,]+ CP to finish · [\d,]+ CP spent/.test(text), 'each draw: spins, left, to finish, spent (2026-10-14 19:27 EDT)');
-    assert.ok(/\*\*CP Needed:\*\* [\d,]+ CP/.test(text) && /\*\*Balance:\*\* 1,000 CP → \*\*[\d,]+ CP\*\* to buy/.test(text) && /\*\*Recommended Bundle:\*\* CA\$[\d,.]+\n- \d+× [\d,]+ CP · CA\$/.test(text), 'the package lists each pack with its price');
+    assert.ok(/\*\*You Need:\*\* [\d,]+ CP/.test(text) && /\*\*Balance:\*\* 1,000 CP → \*\*[\d,]+ CP\*\* to buy/.test(text) && /\*\*Recommended Bundle:\*\* CA\$[\d,.]+\n- \d+× [\d,]+ CP · CA\$/.test(text), 'the package lists each pack with its price');
     assert.strictEqual(/<a?:\w+:\d+>|```/.test(text), false, 'no custom emoji and no code fence inside it');
     assert.ok(text.length < 2000, 'fits a Discord message');
     const covered = dc.buildExportText(makeBasket({ balance: 999999, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), 'USD');
