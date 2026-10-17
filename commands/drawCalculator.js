@@ -746,7 +746,7 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
 }
 
 // The simplified view's selection list, his draft: each draw a bold heading line, then a quoted Price line with its attempts, a quiet spent / to-complete line, and the Mythic upgrade when one is set. `level` keeps it inside Discord's 4,000-character text cap at many lines: 0 = a block per line, 1 = adjacent identical lines share a block (prices "each"), 2 = those blocks without the quiet line, 3 = one block per draw type.
-function compactSelectionText(basket, level) {
+function compactSelectionText(basket, level, detail = false) {
     const rows = breakdownRows(lineFigures(basket), level >= 3 ? 4 : level >= 1 ? 1 : 0);
     const out = [];
     for (const r of rows) {
@@ -758,7 +758,8 @@ function compactSelectionText(basket, level) {
         // A per-type row carries its lines' sums, so it never says "each".
         const each = many && !r.byType ? ' each' : '';
         out.push(`> **Price: \`${fmt(r.drawFull)} CP\`**${each} · \`${r.pullsDone}/${r.total ?? '?'}\` Attempts`);
-        if (level < 2) out.push(`> -# \`${fmt(r.spent)} CP\` Spent · \`${fmt(r.drawLeft)} CP\` To Complete${each}`);
+        // The spent / to-complete line is the Full Breakdown's only (2026-10-17 17:41 EDT, Harkirat: "for the simplified view, we should drop the '0 CP Spent · 4,950 CP To Complete' lines ... And show them during full breakdown view").
+        if (detail && level < 2) out.push(`> -# \`${fmt(r.spent)} CP\` Spent · \`${fmt(r.drawLeft)} CP\` To Complete${each}`);
         if (r.up || r.upNeed) {
             const u = MYTHIC_UPGRADE[r.drawKey];
             const icon2 = r.drawKey === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
@@ -1014,7 +1015,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     // HIS SIMPLIFIED VIEW (2026-10-17 17:08 EDT), built the way he tested it (2026-10-17 17:26 EDT, Harkirat: "i had done a section+accent element type of component. where 'Your Draw Selections' was 1 section+button. and 'Cost Breakdown' combined with 'Suggested Purchase' were 1 section+button"). So each block is a Section with its button as the accessory: the list with Edit Selection, then Cost Breakdown and Suggested Purchase together with Full Breakdown. This reverses the 2026-10-16 20:31 EDT move of these buttons onto their own rows. The Full Breakdown is the same two Sections with its working shown and Simplify as the button (2026-10-17 17:30 EDT, "2 matching sets"). Fewer details per line until it fits Discord's caps.
     const build = level => {
         const out = [...components];
-        out.push({ type: 9, components: [{ type: 10, content: `## ${basket.banners.length >= 2 ? 'Your Draw Selections' : 'Your Draw Selection'}\n${compactSelectionText(basket, Math.min(level, 3))}` }], accessory: editSelectionButton(state) });
+        out.push({ type: 9, components: [{ type: 10, content: `## ${basket.banners.length >= 2 ? 'Your Draw Selections' : 'Your Draw Selection'}\n${compactSelectionText(basket, Math.min(level, 3), state.detail)}` }], accessory: editSelectionButton(state) });
         if (options.notice) out.push({ type: 10, content: `-# ${options.notice}` });
         if (options.dropConfirm) out.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
         out.push({ type: 14, spacing: 1, divider: true });

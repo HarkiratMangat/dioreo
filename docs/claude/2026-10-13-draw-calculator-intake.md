@@ -625,3 +625,9 @@ Earlier in the same round he chose the bigger "Suggested Purchase" heading with 
 
 **Built:** the Section accessories at 17:29 EDT (`ae754bda`); the Full Breakdown as the simplified layout with its working shown at 2026-10-17 17:35 EDT.
 
+### Batch 38 — 2026-10-17 17:41 EDT, verbatim
+
+> i think for the simplified view, we should drop the "0 CP Spent · 4,950 CP To Complete" lines from the "your draw selections". And show them during full breakdown view.
+
+**Built 2026-10-17 17:41 EDT.**
+

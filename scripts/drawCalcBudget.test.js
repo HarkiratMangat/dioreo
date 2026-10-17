@@ -706,7 +706,8 @@ t('the simplified list is his draft: a bold line per draw, Price and attempts qu
     assert.ok(sec && sec.components[0].content.startsWith('## Your Draw Selections'), 'the list and its button are one Section');
     assert.strictEqual(verbOf(sec.accessory), 'edit');
     const t = allText(panel);
-    assert.ok(/\*\*<:\w+:\d+> #2 · Legendary Weapon \(Reactive\)\*\*\n> \*\*Price: `4,950 CP`\*\* · `1\/10` Attempts\n> -# `10 CP` Spent · `4,940 CP` To Complete/.test(t), t);
+    assert.ok(/\*\*<:\w+:\d+> #2 · Legendary Weapon \(Reactive\)\*\*\n> \*\*Price: `4,950 CP`\*\* · `1\/10` Attempts/.test(t), t);
+    assert.strictEqual(/To Complete/.test(t), false, 'spent / to complete is the Full Breakdown\'s only (2026-10-17 17:41 EDT)');
     assert.strictEqual(selects(panel).some(s => ['draws', 'addmore', 'bpulls'].includes(verbOf(s))), false, 'the result edits nothing itself');
 });
 
@@ -956,7 +957,7 @@ t('the Full Breakdown is the simplified layout with its working shown, and the s
     assert.ok(t.includes('**Cheapest**') && t.includes('> **`15,800 CP`** for **`CA$199.98`**') && t.includes('**`100 CP` left over**'));
     assert.ok(t.includes('**`CA$129.99`** each') && /CoD: Mobile web store prices are \*\*not\*\* included/.test(t));
     const compact = allText(render(makeBasket({ banners }), {}, { currency: 'CAD' }));
-    assert.strictEqual(/\*\*Cheapest\*\*|Estimates only|`4,950 CP` \*\*\+\*\*/.test(compact), false, 'the simplified view leaves the working out');
+    assert.strictEqual(/\*\*Cheapest\*\*|Estimates only|`4,950 CP` \*\*\+\*\*|To Complete/.test(compact), false, 'the simplified view leaves the working out');
 });
 
 t('the Full Breakdown stays under Discord\'s 4,000-character text cap at 25 lines (probed 2026-10-16 01:12 EDT)', () => {

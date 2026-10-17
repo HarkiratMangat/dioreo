@@ -248,7 +248,7 @@ Harkirat's ladders (2026-10-17 11:50 EDT): weapon Levels 1–5 at 125 / 375 / 77
 
 Harkirat (2026-10-17 17:30 EDT): *"use the simplified version as a reference point and adjust/change/improve the design of the full breakdown version as well? so they actually flow better as 2 matching sets instead of 2 completely different designs and structures"*.
 
-- **One builder, two depths.** `buildCostPage` renders both views; `buildCostBlock(…, { detail, level })` adds the working in detail: a `-# :b1:` line of terms under Full Cost of Draws and under Spent Already, the **Cheapest** / **Stock Up** pair with the extra-cost note, and the estimates note. The list (`compactSelectionText`) is the same in both. `buildBreakdownPage`, `breakdownSelectionText`, `breakdownCostLines` and `headedSection` are gone.
+- **One builder, two depths.** `buildCostPage` renders both views; `buildCostBlock(…, { detail, level })` adds the working in detail: a `-# :b1:` line of terms under Full Cost of Draws and under Spent Already, the **Cheapest** / **Stock Up** pair with the extra-cost note, and the estimates note. The list (`compactSelectionText`) is the same in both, except the `-#` Spent / To Complete line, which only the Full Breakdown shows (2026-10-17 17:41 EDT, his call). `buildBreakdownPage`, `breakdownSelectionText`, `breakdownCostLines` and `headedSection` are gone.
 - **Both views are two Sections:** the list with Edit Selection; Cost Breakdown + Suggested Purchase with the toggle (Full Breakdown ⇄ Simplify). Both use the bold **Tweak Calculation** caption.
 - **Fitting:** five levels (a block per line with per-line terms, grouped blocks and terms, no quiet lines, terms as "across N lines", one block per draw type).
 
