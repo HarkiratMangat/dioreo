@@ -124,6 +124,26 @@ const ADVANCED_PAGE_INDEX = SUBPAGES.length; // = 2 (the 3rd page)
 const CHARACTER_ADVANCED_PAGE_INDEX = ADVANCED_PAGE_INDEX + 1; // = 3 (the 4th page)
 const TOTAL_PAGES = SUBPAGES.length + 2;      // 2 key pages + the 2 Advanced pages
 
+// THE MYTHIC UPGRADE LADDERS (2026-10-17 11:50 EDT, Harkirat). The card and coin counts are the same in every region; only the 10x upgrade spin's price differs (`upgrade.perDraw` in DRAW_DATA). `upgrade.count` there is the AVERAGE number of 10x spins that collects the full amount, so one spin averages full ÷ count (about 197.5 cards, about 201 coins). Weapon: the cumulative cards to reach Levels 1–5. Character: three Tech paths of three sub-tiers each, every sub-tier only after the one before it, plus Final Form, which needs at least 7 of the 9 sub-tiers.
+const MYTHIC_UPGRADE = {
+    mythicWeapon: { currency: 'Cards', heldField: 'mythicCards', levels: [125, 375, 775, 1275, 1975] },
+    mythicCharacter: { currency: 'Coins', heldField: 'mythicCoins', paths: ['Battle Tech', 'Arm Tech', 'Color Tech'], tiers: [80, 200, 420], finalForm: { name: 'Final Form', cost: 720, minTiers: 7 } }
+};
+// The full amount each ladder takes, derived so it can never disagree with the ladder itself.
+function upgradeFullAmount(key) {
+    const u = MYTHIC_UPGRADE[key];
+    if (!u) return null;
+    if (u.levels) return u.levels[u.levels.length - 1];
+    return u.paths.length * u.tiers.reduce((a, b) => a + b, 0) + u.finalForm.cost;
+}
+// The ladder in one quiet line under the Upgrade heading (2026-10-17 13:12 EDT, Harkirat: "yeah, it would make sense"). Weapon: cards per level as a running total. Character: one Tech path's three costs, which every path shares, then Final Form.
+function upgradeLadderLine(key) {
+    const u = MYTHIC_UPGRADE[key];
+    if (!u) return null;
+    if (u.levels) return `-# **Cards by Level:** ${u.levels.map((n, i) => `L${i + 1} ${formatCP(n)}`).join(' › ')} (Max)`;
+    return `-# **Coins per Tech Path** (${u.paths.join(', ')})**:** ${u.tiers.map(formatCP).join(' › ')} · **${u.finalForm.name}:** ${formatCP(u.finalForm.cost)} after ${u.finalForm.minTiers} of ${u.paths.length * u.tiers.length} · ${formatCP(upgradeFullAmount(key))} in All`;
+}
+
 // Mythic-tier draws are the only ones with a separate Upgrade step, and each needs its own noun ("Weapon"/"Character") in the "### {X} Upgrade" sub-heading per drawPrices_ui.json.
 const UPGRADE_LABEL = { mythicWeapon: 'Weapon', mythicCharacter: 'Character' };
 // The upgrade's own currency icon, beside the Weapon/Character Upgrade heading only (2026-10-16 18:57 EDT, Harkirat: "remove the mythic card/coin emoji out of the ... line. just leave it beside the ... headings"). First added (2026-10-16 11:14 EDT, Harkirat: "Cards = weapon. Coin=character."). Read at render time, never captured at require time (see checkEmojiCaptures).
@@ -173,7 +193,8 @@ function buildDrawEntries(regionKey, keys) {
         // Block 3 (upgrade entries only): its own separate Text Display, matching the reference file.
         if (entry.upgrade) {
             const upgradeTotal = entry.upgrade.perDraw * entry.upgrade.count;
-            blocks.push(`**${upgradeEmoji(key)} ${UPGRADE_LABEL[key]} Upgrade**\n${formatCP(entry.upgrade.perDraw)} CP x ${entry.upgrade.count} Spins ⌇ **\`${formatCP(upgradeTotal)} CP\`**`);
+            const ladder = upgradeLadderLine(key);
+            blocks.push(`**${upgradeEmoji(key)} ${UPGRADE_LABEL[key]} Upgrade**\n${formatCP(entry.upgrade.perDraw)} CP x ${entry.upgrade.count} Spins ⌇ **\`${formatCP(upgradeTotal)} CP\`**${ladder ? `\n${ladder}` : ''}`);
         }
 
         return blocks;
@@ -352,7 +373,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
 module.exports = {
     // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads"). buildDrawEntries/UPGRADE_LABEL/formatCP exported 2026-08-26 17:25 EDT so the calculator's own per-draw summary block can reuse THIS command's exact rendering -- Harkirat's own mockup for the redesign was built by pasting a real /draw prices entry in verbatim, so the two must never drift apart into two similar-looking but independently-maintained copies.
     DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
-    buildDrawEntries, UPGRADE_LABEL, upgradeEmoji, formatCP,
+    buildDrawEntries, UPGRADE_LABEL, upgradeEmoji, formatCP, MYTHIC_UPGRADE, upgradeFullAmount,
 
     // COMMAND DEFINITION: Base command 'draw' with subcommand 'prices'
     data: new SlashCommandBuilder()

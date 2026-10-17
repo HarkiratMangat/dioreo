@@ -27,6 +27,8 @@ async function save(discordId, basket) {
             region: basket.region || 'region_10',
             balance: basket.balance || 0,
             includeUpgrades: Boolean(basket.includeUpgrades),
+            mythicCards: basket.mythicCards || 0,
+            mythicCoins: basket.mythicCoins || 0,
             entitlementMask: basket.entitlementMask || 0,
             submitted: Boolean(basket.submitted),
             ...(basket.sourceId ? { sourceId: String(basket.sourceId) } : {}),
@@ -43,6 +45,8 @@ async function save(discordId, basket) {
             region: basket.region !== undefined ? basket.region : existing.region,
             balance: basket.balance !== undefined ? basket.balance : existing.balance,
             includeUpgrades: basket.includeUpgrades !== undefined ? basket.includeUpgrades : existing.includeUpgrades,
+            mythicCards: basket.mythicCards !== undefined ? basket.mythicCards : (existing.mythicCards || 0),
+            mythicCoins: basket.mythicCoins !== undefined ? basket.mythicCoins : (existing.mythicCoins || 0),
             entitlementMask: basket.entitlementMask !== undefined ? basket.entitlementMask : existing.entitlementMask,
             // 🔴 A field missing from BOTH the schema and this whitelist is the silent-revert bug CLAUDE.md names: it would set in memory, save without error, and be gone on the next read.
             submitted: basket.submitted !== undefined ? basket.submitted : existing.submitted,

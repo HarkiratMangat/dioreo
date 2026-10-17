@@ -12,8 +12,8 @@ const { mentionCommand } = require('../utils/commandMentions');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const emojis = require('../utils/emojiMap');
 const UserPreference = require('../models/UserPreference');
-const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL } = require('./drawprices');
-const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost } = require('../utils/drawCost');
+const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL, MYTHIC_UPGRADE, upgradeFullAmount } = require('./drawprices');
+const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset } = require('../utils/drawCost');
 const crypto = require('crypto');
 const { CP_PACKAGES, STOCK_UP_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 const { buildTitleBlock, toBoldItalicUnicode } = require('../utils/titleBlock');
@@ -58,8 +58,6 @@ const SHORT_NAME = {
     doubleEpicCharacters: 'Double Epic Characters'
 };
 function shortName(drawKey) { return SHORT_NAME[drawKey] || drawName(drawKey); }
-// A draw that HAS an upgrade somewhere -- the toggle is meaningful for it even at a region with no upgrade price yet, because that gap is exactly what the cost block has to say out loud.
-function hasUpgradeAnywhere(drawKey) { return REGION_ORDER.some(r => upgradeCost(r, drawKey) !== null); }
 
 const DRAW_DATA = require('./drawprices').DRAW_DATA;
 function entryFor(region, drawKey) { return (DRAW_DATA[region] && DRAW_DATA[region][drawKey]) || null; }
@@ -75,7 +73,23 @@ function parseAmount(raw) {
     const k = unit.endsWith('k');
     const n = Number(k ? unit.slice(0, -1) : unit);
     if (!Number.isFinite(n) || n < 0) return null;
-    return Math.floor(k ? n * 1000 : n);
+    // Whole CP only (2026-10-17 12:01 EDT, Harkirat: "CP are allowed of any whole number value ... no decimal values"). It used to floor 3.5 to 3 without a word. `3.5k` is still 3,500; the rounding absorbs float error (3.7 × 1000 is 3700.0000000000005).
+    const v = k ? n * 1000 : n;
+    const r = Math.round(v);
+    return Math.abs(v - r) > 1e-6 ? null : r;
+}
+// Mythic Cards and Coins in the Balance pop-up (2026-10-17 12:01 EDT, Harkirat: "only allowed as steps of 5 ... Only 0 or multiples of 5s, 10s"). Every tier cost in the game is a multiple of 5, so this never refuses a real count. Blank is 0, like CP.
+function parseCount(raw) {
+    if (raw === null || raw === undefined) return 0;
+    const cleaned = String(raw).trim().toLowerCase().replace(/[, ]/g, '').replace(/(cards?|coins?)$/, '');
+    if (cleaned === '') return 0;
+    const k = cleaned.endsWith('k');
+    const n = Number(k ? cleaned.slice(0, -1) : cleaned);
+    if (!Number.isFinite(n) || n < 0) return null;
+    const v = k ? n * 1000 : n;
+    const r = Math.round(v);
+    if (Math.abs(v - r) > 1e-6 || r % 5 !== 0) return null;
+    return r;
 }
 
 // The picker's FULL selection is the set of draws to keep: lines of an unticked draw go, a newly ticked draw gets one fresh line at 0 pulls, every other line keeps its place and progress.
@@ -125,6 +139,133 @@ function upgradeCardEmoji(drawKey) {
     if (drawKey === 'mythicWeapon') return emojis.mythicCard;
     if (drawKey === 'mythicCharacter') return emojis.mythicCoin;
     return null;
+}
+
+// ==========================================
+// MYTHIC UPGRADES BY TIER (2026-10-17 13:12 EDT, Harkirat: "Yeah you can build it")
+// ==========================================
+// The math lives in utils/drawCost.js (upgradePlan); these turn it into words and controls. Cards and coins held are a SHARED pool each, so the CP for upgrades is worked out once per currency, never per line.
+function heldOf(basket) { return { mythicCards: basket?.mythicCards || 0, mythicCoins: basket?.mythicCoins || 0 }; }
+function costOf(basket) { return basketCost(basket.region, basket.banners, basket.includeUpgrades, heldOf(basket)); }
+// "Level 5"; "7/9 Tiers + Final Form".
+function upgradeStateText(drawKey, arr) {
+    const u = MYTHIC_UPGRADE[drawKey];
+    if (u.levels) return `Level ${arr[0]}`;
+    const P = u.paths.length;
+    const tiers = arr.slice(0, P).reduce((a, b) => a + b, 0);
+    return `${tiers}/${P * u.tiers.length} Tiers${arr[P] ? ` + ${u.finalForm.name}` : ''}`;
+}
+function upgradeIsSet(line) { return Boolean(line) && line.want.some((w, i) => w > line.have[i]); }
+// "Level 2 → Level 5", or just "Level 5" from nothing.
+function upgradeTransition(line) {
+    const from = line.have.some(Boolean) ? `${upgradeStateText(line.drawKey, line.have)} → ` : '';
+    return `${from}${upgradeStateText(line.drawKey, line.want)}`;
+}
+function upgradeTargetText(line) {
+    if (!upgradeIsSet(line)) return line.have.some(Boolean) ? `${upgradeStateText(line.drawKey, line.have)} · Nothing to Add` : 'No Upgrade Set';
+    return `${upgradeTransition(line)} · ${fmt(line.need)} ${MYTHIC_UPGRADE[line.drawKey].currency}`;
+}
+// One Mythic line: a button that opens its pop-up. Two or more: a dropdown of the Mythic lines, each option opening that line's pop-up (2026-10-17 12:33 EDT, his "a modal to submit the 'Character Upgrade' selections"). A dropdown needs a row of its own, so it comes back as `row`.
+function upgradeControls(state, basket, extra = {}) {
+    const lines = basket?.banners?.length ? upgradePlan(basket).lines : [];
+    if (!lines.length) return { button: null, row: null };
+    const icon = key => (upgradeCardEmoji(key) ? { emoji: emojis.parseEmoji(upgradeCardEmoji(key)) } : {});
+    if (lines.length === 1) {
+        const l = lines[0];
+        const set = upgradeIsSet(l);
+        return { button: { type: 2, style: set ? 3 : 2, label: `Upgrade: ${set ? upgradeStateText(l.drawKey, l.want) : 'None'}`.slice(0, 80), custom_id: encodeState('upgset', { ...state, focus: l.index }), ...icon(l.drawKey), ...extra }, row: null };
+    }
+    return { button: null, row: { type: 1, components: [{
+        type: 3, custom_id: encodeState('upgpick', state), placeholder: 'Set an upgrade for a Mythic draw...', ...(extra.disabled ? { disabled: true } : {}),
+        options: lines.slice(0, 25).map(l => ({ label: `#${l.index + 1} ${shortName(l.drawKey)}`, value: String(l.index), description: upgradeTargetText(l).slice(0, 100), ...icon(l.drawKey) }))
+    }] } };
+}
+function balanceLabel(basket) {
+    const parts = [];
+    if (basket?.balance) parts.push(`${fmt(basket.balance)} CP`);
+    if (basket?.mythicCards) parts.push(`${fmt(basket.mythicCards)} Cards`);
+    if (basket?.mythicCoins) parts.push(`${fmt(basket.mythicCoins)} Coins`);
+    return parts.length ? `Balance: ${parts.join(' · ')}`.slice(0, 80) : 'Set Balance';
+}
+
+// THE UPGRADE POP-UP, as raw modal JSON so it is tested without Discord. Discord allows dropdowns in a pop-up inside a Label (type 18), five at most, so a character's Quick Pick, three Tech paths and Final Form fill it exactly. "Already" fields appear only once the draw is finished: upgrades unlock after the last spin, so before that there is nothing to have (2026-10-17 12:12 EDT, his "the question is kind of conditional on the fact if the user has completed 10/10 spins").
+function sumTierCost(tiers, from, to) { let n = 0; for (let t = from; t < to; t++) n += tiers[t]; return n; }
+function buildUpgradeModal(state, basket, index) {
+    const b = basket?.banners?.[index];
+    const u = b && MYTHIC_UPGRADE[b.drawKey];
+    if (!u) return null;
+    const total = pullCount(basket.region, b.drawKey);
+    const complete = total !== null && b.pullsDone >= total;
+    const st = upgradeState(b, { complete, includeUpgrades: basket.includeUpgrades });
+    const label = (text, description, component) => ({ type: 18, label: text, ...(description ? { description } : {}), component });
+    const select = (id, options) => ({ type: 3, custom_id: id, options: options.map(o => ({ label: o.label, value: o.value, ...(o.description ? { description: o.description } : {}), ...(o.default ? { default: true } : {}) })) });
+    const components = [];
+    if (u.levels) {
+        const at = [0, ...u.levels];
+        if (complete) {
+            components.push(label('Already At', 'The level this weapon is upgraded to now', select('have', at.map((n, lv) => ({
+                label: lv ? `Level ${lv}${lv === u.levels.length ? ' (Max)' : ''}` : 'Level 0 · Not Upgraded', value: String(lv),
+                description: lv ? `${fmt(n)} Cards Used` : null, default: st.have[0] === lv
+            })))));
+        }
+        components.push(label('Upgrade To', complete ? 'Cards still needed count from Already At' : 'Upgrades unlock once this draw is finished', select('want', [
+            { label: 'No Upgrade', value: '0', default: st.want[0] === st.have[0] },
+            ...u.levels.map((n, i) => ({ label: `Level ${i + 1}${i + 1 === u.levels.length ? ' (Max)' : ''}`, value: String(i + 1), description: `${fmt(n)} Cards in Total`, default: st.want[0] === i + 1 && st.want[0] !== st.have[0] }))
+        ])));
+    } else {
+        const P = u.paths.length, T = u.tiers.length;
+        const pathFull = sumTierCost(u.tiers, 0, T);
+        const cheapest = characterPreset(u.paths.map(() => 0).concat(0), 'ff');
+        const cheapestCoins = cheapest.slice(0, P).reduce((n, t) => n + sumTierCost(u.tiers, 0, t), 0) + u.finalForm.cost;
+        components.push(label('Quick Pick', 'Picking one replaces the paths below', select('quick', [
+            { label: 'Use My Choices Below', value: 'keep', default: true },
+            { label: 'No Upgrade', value: 'none' },
+            { label: 'One Full Path', value: 'path', description: complete ? 'Finishes the path closest to done' : `${fmt(pathFull)} Coins` },
+            { label: `Cheapest ${u.finalForm.name}`, value: 'ff', description: complete ? 'From the tiers you already have' : `${fmt(cheapestCoins)} Coins · ${u.finalForm.minTiers} of ${P * T} Tiers + ${u.finalForm.name}` },
+            { label: 'Everything', value: 'all', description: complete ? `Every tier and ${u.finalForm.name}` : `${fmt(upgradeFullAmount(b.drawKey))} Coins` }
+        ])));
+        u.paths.forEach((name, p) => {
+            const options = [];
+            if (complete) {
+                for (let h = 0; h <= T; h++) for (let w = h; w <= T; w++) options.push({ label: h === w ? `At Tier ${h} · Keep` : `At Tier ${h} → Tier ${w}`, value: `${h}${w}`, description: h === w ? null : `${fmt(sumTierCost(u.tiers, h, w))} Coins`, default: st.have[p] === h && st.want[p] === w });
+            } else {
+                for (let w = 0; w <= T; w++) options.push({ label: w ? `Tier ${w}` : 'Tier 0 · Skip', value: `0${w}`, description: w ? `${fmt(sumTierCost(u.tiers, 0, w))} Coins` : null, default: st.want[p] === w });
+            }
+            components.push(label(name, null, select(`p${p}`, options)));
+        });
+        const ffHave = st.have[P] === 1, ffWant = st.want[P] === 1;
+        components.push(label(u.finalForm.name, `Needs ${u.finalForm.minTiers} of ${P * T} tiers`, select('ff', [
+            { label: complete ? "Don't Have It · Skip" : 'Skip', value: '00', default: !ffWant },
+            { label: 'Add It', value: '01', description: `${fmt(u.finalForm.cost)} Coins`, default: ffWant && !ffHave },
+            ...(complete ? [{ label: 'Already Have It', value: '11', default: ffHave }] : [])
+        ])));
+    }
+    return { custom_id: encodeState(u.levels ? 'upgsavew' : 'upgsavec', { ...state, focus: index }), title: `#${index + 1} ${shortName(b.drawKey)} Upgrade`.slice(0, 45), components };
+}
+// Reads the pop-up back. `get(id)` returns the picked value or null. Pure, so it is tested without Discord. Final Form asked for below 7 of 9 tiers is left off and said so (his "Final upgrade can only be purchased if a minimum of 7 of the 9 sub-tiers are purchased").
+function readUpgradeModal(drawKey, complete, get) {
+    const u = MYTHIC_UPGRADE[drawKey];
+    if (!u) return null;
+    const int = v => Math.max(0, Math.floor(Number(v) || 0));
+    if (u.levels) {
+        const have = [complete ? Math.min(u.levels.length, int(get('have'))) : 0];
+        const asked = Math.min(u.levels.length, int(get('want')));
+        const notice = asked && asked <= have[0] ? `Already at Level ${have[0]}, so there is nothing to add.` : null;
+        return { have, want: [Math.max(asked, have[0])], notice };
+    }
+    const P = u.paths.length, T = u.tiers.length;
+    const pair = id => { const v = String(get(id) || '00'); return [Math.min(T, int(v[0])), Math.min(T, int(v[1]))]; };
+    const have = [], want = [];
+    for (let p = 0; p < P; p++) { const [h, w] = pair(`p${p}`); have.push(complete ? h : 0); want.push(Math.max(w, complete ? h : 0)); }
+    const [fh, fw] = pair('ff');
+    have.push(complete && fh ? 1 : 0);
+    want.push(fw || have[P] ? 1 : 0);
+    const quick = get('quick');
+    const final = quick && quick !== 'keep' ? characterPreset(have, quick) : want;
+    let notice = null;
+    const tiers = final.slice(0, P).reduce((a, b) => a + b, 0);
+    if (final[P] && !have[P] && tiers < u.finalForm.minTiers) { final[P] = 0; notice = `${u.finalForm.name} needs ${u.finalForm.minTiers} of ${P * T} tiers, so it was left off.`; }
+    return { have, want: final, notice };
 }
 
 // ==========================================
@@ -241,11 +382,13 @@ function usedTypes(banners) {
 // Display compression for the COST page's basket listing ONLY (spec §1: "Page 1 may render three consecutive identical-progress banners as ×3 for readability. Page 2 always shows them individually, because that is where they are edited."). State stays flat either way -- this touches nothing but the rendered string.
 function groupForDisplay(banners) {
     const groups = [];
-    for (const b of banners || []) {
+    // Lines with different upgrade plans never merge (2026-10-17 13:17 EDT); `first` is the index of the group's first line.
+    const upKey = b => JSON.stringify([b.upHave || null, b.upWant || null]);
+    (banners || []).forEach((b, i) => {
         const last = groups[groups.length - 1];
-        if (last && last.drawKey === b.drawKey && last.pullsDone === b.pullsDone) last.count++;
-        else groups.push({ drawKey: b.drawKey, pullsDone: b.pullsDone, count: 1 });
-    }
+        if (last && last.drawKey === b.drawKey && last.pullsDone === b.pullsDone && last.upKey === upKey(b)) last.count++;
+        else groups.push({ drawKey: b.drawKey, pullsDone: b.pullsDone, count: 1, first: i, upKey: upKey(b) });
+    });
     return groups;
 }
 
@@ -407,12 +550,7 @@ const SPACER = { type: 14, spacing: 2, divider: false };
 // "Your Selections" once there are two or more draws (2026-10-14 16:51 EDT, Harkirat).
 function selectionHeading(banners) { return (banners || []).length >= 2 ? 'Your Selections' : 'Your Selection'; }
 
-// The upgrade toggle shows only when a line's draw HAS an upgrade somewhere (2026-10-13 12:40 EDT). It used to show "Upgrade: NO" on a calculation of Legendary draws, which have none -- a control that could not change anything. Labels stay "Upgrade: YES / NO" (2026-10-13 15:21 EDT, Harkirat: "it's like super long... Yes, upgrade no"): the 2026-10-13 round had made them "Included / Not included", which he turned down as too long.
-function upgradeButton(state, basket, extra = {}) {
-    if (!(basket?.banners || []).some(b => hasUpgradeAnywhere(b.drawKey))) return null;
-    const cardEmoji = usedTypes(basket.banners).map(upgradeCardEmoji).find(Boolean);
-    return { type: 2, style: basket.includeUpgrades ? 3 : 2, label: basket.includeUpgrades ? 'Upgrade: YES' : 'Upgrade: NO', custom_id: encodeState('upg', state), ...(cardEmoji ? { emoji: emojis.parseEmoji(cardEmoji) } : {}), ...extra };
-}
+// The old "Upgrade: YES / NO" toggle (verb `upg`) gave way to upgradeControls on 2026-10-17 13:17 EDT: a per-line target set in a pop-up. Its verb still answers panels posted before, and still flips includeUpgrades, which lines with no target of their own fall back to.
 
 // The confirm a draw untick needs when it would delete progress (2026-10-13 12:40 EDT). Unticking a draw in the picker removes EVERY line of it; with progress on one, that silently threw away pulls the player had entered. `mask` is the selection they asked for, applied only when they confirm. `label` names what goes (a single line's confirm says "Remove #2"); Keep stays on the page it was asked from, so a confirm on the editing view does not drop the player back on the result.
 function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
@@ -427,12 +565,13 @@ function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
 }
 
 // NO EMOJI on either button (2026-08-27, Harkirat) -- `mngEdit` was a pencil paired with a button labelled "Save", which never matched, and a destructive action reads clearer without decoration. Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement).
-function basketManageRow(state, basket) {
-    // Balance and Upgrade side by side (2026-10-14 16:51 EDT, Harkirat: "move upgrade button beside the Set balance button"). Save, Rename and Delete moved to the Saved view, where the calculation's own section manages it (2026-10-14 16:51 EDT).
-    return { type: 1, components: [
-        { type: 2, style: 2, label: basket.balance ? `Balance: ${fmt(basket.balance)} CP` : 'Set Balance', custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) },
-        upgradeButton(state, basket)
-    ].filter(Boolean) };
+function basketManageRows(state, basket) {
+    // Balance and Upgrade side by side (2026-10-14 16:51 EDT, Harkirat: "move upgrade button beside the Set balance button"). Save, Rename and Delete moved to the Saved view, where the calculation's own section manages it (2026-10-14 16:51 EDT). With two or more Mythic lines the upgrade control is a dropdown, which takes its own row under it.
+    const up = upgradeControls(state, basket);
+    return [{ type: 1, components: [
+        { type: 2, style: 2, label: balanceLabel(basket), custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) },
+        up.button
+    ].filter(Boolean) }, up.row].filter(Boolean);
 }
 
 // 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself. `showReset` is false on the setup form: there is no computed result to clear yet, and a live button that does nothing visible is worse than an absent one. On a submitted calculation it reads "New Calculation" -- Harkirat's own phrase for the action that ends a result's persistence and returns to the form. Draw Prices · New Calculation · Help (2026-10-13 23:01 EDT, his intake: Draw Info removed, since /draw prices shows the same draws; New Calculation on EVERY page once there is something to clear, where it used to appear only on the result). "View Saved", no counter (2026-10-14 17:58 EDT, Harkirat).
@@ -466,13 +605,13 @@ function bottomNavRow(state, { showReset = true, savedCount = 0, onSaved = false
 }
 
 // The setup form's balance row: Set Balance with Upgrade beside it (2026-10-14 16:51 EDT). Both are disabled until a draw exists, because both write to a calculation document that does not exist yet and would otherwise accept input and silently discard it.
-function setupBalanceRow(state, basket) {
+function setupBalanceRows(state, basket) {
     const hasBasket = Boolean(basket && basket._id);
-    return { type: 1, components: [
-        { type: 2, style: 2, disabled: !hasBasket, custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2),
-          label: basket?.balance ? `Balance: ${fmt(basket.balance)} CP` : 'Set Balance' },
-        (basket?.banners?.length ? upgradeButton(state, basket, { disabled: !hasBasket }) : null)
-    ].filter(Boolean) };
+    const up = upgradeControls(state, basket, { disabled: !hasBasket });
+    return [{ type: 1, components: [
+        { type: 2, style: 2, disabled: !hasBasket, custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2), label: balanceLabel(basket) },
+        up.button
+    ].filter(Boolean) }, up.row].filter(Boolean);
 }
 // Order New Calculation · View Saved · Calculate (2026-10-14 17:58 EDT, Harkirat: "move new calc button to the front of the row. saved in middle. calculate last"). The form's last row, under its own divider (2026-10-14 16:51 EDT): Calculate (the ONLY Primary button in this command, with his Sparkles emoji), then New Calculation once there is something to clear, then Saved.
 function setupSubmitRow(state, basket, savedCount) {
@@ -496,25 +635,28 @@ function resultActionRow(state) {
 
 // THE EXPORT, between the compact result and Full Breakdown (2026-10-14 19:28 EDT, Harkirat: "provide a more detailed breakdown. not the full breakdown but also not the simplified, somewhere inbetween"). Each draw shows its spins, what is left, what is already spent and what finishing costs (the upgrade on its own line when it is on); then CP needed, what the balance leaves, the recommended packs with their prices, and the Stock Up option when there is one. Plain markdown: no custom emoji (they break outside this bot's servers) and no code-span chips, so it reads the same wherever it is pasted.
 function buildExportText(basket, currency = 'USD') {
-    const { total: needed, perBanner } = basketCost(basket.region, basket.banners, basket.includeUpgrades);
+    const { total: needed, perBanner, upgrades } = costOf(basket);
     const shortfall = needed - (basket.balance || 0);
     const clean = t => String(t).replace(/[`*_~|]/g, '');
     const out = [`## Lucky Draw Calculation${basket.name ? `: ${clean(basket.name)}` : ''}`];
-    out.push(`-# ${regionLabel(basket.region)} region · Upgrade ${basket.includeUpgrades ? 'included' : 'not included'}`);
+    out.push(`-# ${regionLabel(basket.region)} region${upgrades.lines.some(upgradeIsSet) ? ' · Mythic upgrades included' : ''}`);
     out.push('', '**Draws**');
     let spentAll = 0;
     for (const g of groupForDisplay(basket.banners)) {
-        const one = perBanner.find(b => b.drawKey === g.drawKey && b.pullsDone === g.pullsDone);
+        const one = perBanner[g.first];
         const total = pullCount(basket.region, g.drawKey);
         const name = `${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''}`;
         if (!one || !one.priced || total === null) { out.push(`- ${name}: ${g.pullsDone} Spins · no price at this region`); continue; }
         const spent = (spentSoFar(basket.region, g.drawKey, g.pullsDone) || 0) * g.count;
         spentAll += spent;
-        const finish = (one.cost - (one.upgrade || 0)) * g.count;
+        const finish = one.cost * g.count;
         const left = total - g.pullsDone;
         out.push(`- **${name}**: ${g.pullsDone}/${total} Spins · ${left ? `${left} left · ${fmt(finish)} CP to finish` : 'finished'}${spent ? ` · ${fmt(spent)} CP spent` : ''}`);
-        if (one.upgrade) out.push(`  - Upgrade: + ${fmt(one.upgrade * g.count)} CP`);
-        else if (basket.includeUpgrades && hasUpgradeAnywhere(g.drawKey)) out.push('  - Upgrade: no price at this region yet, so not included');
+        if (upgradeIsSet(one.upgrade)) out.push(`  - Upgrade: ${upgradeTargetText(one.upgrade).replace(/ (Cards|Coins)$/, m => m.toLowerCase())}${g.count > 1 ? ' each' : ''}`);
+    }
+    // The pooled upgrade, once per currency (cards and coins are shared across every Mythic line).
+    for (const p of upgrades.pools.filter(x => x.need)) {
+        out.push(`- **Mythic ${p.currency}:** ${fmt(p.need)} needed${p.held ? ` − ${fmt(p.held)} held` : ''} → ${p.short ? `about ${p.spins} spins${p.cp !== null ? ` · ${fmt(p.cp)} CP` : ' · no upgrade price at this region yet'}` : 'covered'}`);
     }
     out.push('', `**CP Needed:** ${fmt(needed)} CP${spentAll ? ` (${fmt(spentAll)} CP already spent)` : ''}`);
     if (basket.balance) out.push(shortfall > 0 ? `**Balance:** ${fmt(basket.balance)} CP → **${fmt(shortfall)} CP** to buy` : `**Balance:** ${fmt(basket.balance)} CP covers it, with ${fmt(-shortfall)} CP to spare`);
@@ -541,24 +683,21 @@ function buildExportText(basket, currency = 'USD') {
 function buildCostBlock(state, basket, currency, client) {
     const dot = emojis.smallDot;
     const dash = emojis.blueDash;
-    const { total: needed, perBanner } = basketCost(basket.region, basket.banners, basket.includeUpgrades);
+    const { total: needed, perBanner, upgrades } = costOf(basket);
     const unpriced = perBanner.filter(b => !b.priced);
     const shortfall = needed - (basket.balance || 0);
 
     // 🔴 CP NEEDED LEADS. This block used to open with "Draws in basket: 2" and put the one number the whole command exists to produce THIRD -- the eye landed on a count nobody asked for. The count itself is gone: the DRAWS IN PROGRESS list sits directly above and already shows every line. CP Needed is the block's own heading (2026-10-14 16:51 EDT, Harkirat: "move CP needed into a ### heading"). No Balance or Region line (2026-10-14 13:19 EDT): the button and the toggle show both. What the balance CHANGES is on no button, so it stays, as one quiet line.
     // The Full Breakdown's terms carried over (2026-10-16 21:06 EDT, Harkirat: "take the full breakdown changes and appropriately make them for the simplified version as well"). The headline is the SAME net figure the breakdown calls CP Still Needed (it used to be the gross figure, so switching views changed the "needed" number), kept as his `###` heading; one note says what was subtracted or added, and only when something was.
-    const upgradeTotal = perBanner.reduce((n, b) => n + (b.priced && b.upgrade ? b.upgrade : 0), 0);
+    const upgradeTotal = upgrades.cp;
     const lines = [`## Cost Breakdown`, `### CP Still Needed: \`${fmt(Math.max(shortfall, 0))} CP\``];
     if (basket.balance && shortfall > 0) lines.push(`-# \`${fmt(needed)} CP\` for the draws${upgradeTotal ? ' and Mythic upgrades' : ''} − your \`${fmt(basket.balance)} CP\` balance`);
     else if (upgradeTotal && shortfall > 0) lines.push(`-# Includes \`${fmt(upgradeTotal)} CP\` of Mythic upgrades`);
     if (unpriced.length) {
         lines.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => shortName(b.drawKey)).join(', ')}.`);
     }
-    // 🔴 A SILENT ZERO, FOUND 2026-10-13 12:40 EDT. Mythic draws have no upgrade price at the 20 CP region, so "Upgrade: Included" added nothing there while the button claimed it was in the total. Say so instead.
-    const upgradeMissing = basket.includeUpgrades ? perBanner.filter(b => b.priced && b.upgrade === null && hasUpgradeAnywhere(b.drawKey)) : [];
-    if (upgradeMissing.length) {
-        lines.push(`⚠️ **Upgrade not included** for ${[...new Set(upgradeMissing.map(b => shortName(b.drawKey)))].join(', ')} — no upgrade price at ${regionLabel(basket.region)} yet.`);
-    }
+    // 🔴 A SILENT ZERO, FOUND 2026-10-13 12:40 EDT. Mythic draws had no upgrade price at the 20 CP region, so "Upgrade: Included" added nothing there while the button claimed it was in the total. Say so instead.
+    lines.push(...upgradeWarnings(basket, upgrades));
 
     // Two different "nothing to buy" states (2026-10-13 12:40 EDT): every line already finished, and a balance that covers what is left. The first used to say "Your balance already covers this" with no balance set at all.
     if (needed === 0 && !unpriced.length) {
@@ -630,7 +769,7 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
     else if (!banners.length) components.push(typesSelectRow(state, draft));
 
     // No heading and no divider before the region row (2026-10-14 13:13 EDT, his intake); a spacer keeps the room the divider gave. The "Tweak Calculation" heading's own top margin replaces the spacer that sat here (2026-10-14 17:59 EDT); keeping both cost the component that keeps five lines a page.
-    const tail = [regionCaption(), regionRow(state, draft), setupBalanceRow(state, basket), { type: 14, spacing: 2, divider: true }, setupSubmitRow(state, basket, savedCount)];
+    const tail = [regionCaption(), regionRow(state, draft), ...setupBalanceRows(state, basket), { type: 14, spacing: 2, divider: true }, setupSubmitRow(state, basket, savedCount)];
     // Builds the middle of the form at one lines-per-page: the lines, the pager, then the add picker under its own heading.
     const build = perPage => {
         const pages = linePages(banners, perPage);
@@ -664,7 +803,7 @@ function savedDescription(b, { timezone = null, mark = null } = {}) {
     const when = lastChanged(b, timezone);
     const lead = [mark, b.submitted ? null : 'Draft', when].filter(Boolean).join(' · ');
     if (!banners.length) return [lead, 'Empty'].filter(Boolean).join(' · ');
-    const { total } = basketCost(b.region, banners, b.includeUpgrades);
+    const { total } = basketCost(b.region, banners, b.includeUpgrades, heldOf(b));
     const draws = usedTypes(banners).map(k => { const n = banners.filter(x => x.drawKey === k).length; return `${shortName(k)}${n > 1 ? ` ×${n}` : ''}`; }).join(', ');
     const text = [lead, `${fmt(total)} CP Needed`, regionLabel(b.region), draws].filter(Boolean).join(' · ');
     return text.length > 100 ? `${text.slice(0, 99)}…` : text;
@@ -780,15 +919,24 @@ function buildMissingBasketPanel(state, accentColor, savedCount = 0) {
 // FULL BREAKDOWN -- Harkirat's own layout (2026-10-16 01:11 EDT, "Can we try this rough layout format i made for the full breakdown?"). Every line on its own row with what it costs in full, then what is spent and what is left; CP still needed as a sum the player can check (cost of draws - spent - balance), each term itemised per row; then the bundles. Simplify keeps the old compact view untouched.
 // `level` keeps it inside Discord's message limits at many lines: 0 = one row per line, 1 = adjacent identical lines share a row ("#1–#3"), 2 = those shared rows without their spent/remaining note, 3 = the two sums show their totals without the per-row terms, 4 = one row per draw TYPE (every line of it summed, spins as done/total across them), which caps the rows at the number of draw types. Discord refuses a message whose text displays add up to more than 4,000 characters (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED, probed 2026-10-16 01:12 EDT); 25 distinct lines at level 2 measured 4,974.
 const BREAK = ' ⌇ ';
+// Warnings the two cost views share: an upgrade pool with no price at this region, and Final Form asked for below its minimum.
+function upgradeWarnings(basket, upgrades) {
+    const out = [];
+    if (upgrades.missing.length) out.push(`⚠️ **Upgrade not included** for ${upgrades.missing.map(p => `Mythic ${p.currency}`).join(', ')} — no upgrade price at ${regionLabel(basket.region)} yet.`);
+    if (upgrades.lines.some(l => l.finalFormBlocked)) out.push(`⚠️ **${MYTHIC_UPGRADE.mythicCharacter.finalForm.name} left out** — it needs ${MYTHIC_UPGRADE.mythicCharacter.finalForm.minTiers} of 9 tiers.`);
+    return out;
+}
 function lineFigures(basket) {
+    const plan = upgradePlan(basket);
     return (basket.banners || []).map((b, i) => {
         const left = remainingToFinish(basket.region, b.drawKey, b.pullsDone);
         const priced = left !== null;
-        const upgrade = priced && basket.includeUpgrades ? upgradeCost(basket.region, b.drawKey) : null;
         const spent = priced ? spentSoFar(basket.region, b.drawKey, b.pullsDone) : 0;
-        const leftAll = priced ? left + (upgrade || 0) : 0;
-        // The draw and its Mythic upgrade are kept apart (2026-10-16 14:32 EDT, Harkirat's layout states the upgrade on its own): `drawFull`/`drawLeft` are the draw alone, `upgrade` the upgrade, `full`/`left` both together.
-        return { n: i + 1, drawKey: b.drawKey, pullsDone: b.pullsDone, total: pullCount(basket.region, b.drawKey), priced, spent, left: leftAll, full: spent + leftAll, drawLeft: priced ? left : 0, drawFull: priced ? spent + left : 0, upgrade: upgrade || 0 };
+        const leftAll = priced ? left : 0;
+        // The draw and its Mythic upgrade are kept apart (2026-10-16 14:32 EDT, Harkirat's layout states the upgrade on its own). Since 2026-10-17 13:17 EDT a line's upgrade is what it still needs in CARDS or COINS (`upNeed`), because both are pooled across lines and only the pool becomes CP; `full`/`left` are the draw alone.
+        const up = plan.lines.find(l => l.index === i) || null;
+        const upNeed = upgradeIsSet(up) ? up.need : 0;
+        return { n: i + 1, drawKey: b.drawKey, pullsDone: b.pullsDone, total: pullCount(basket.region, b.drawKey), priced, spent, left: leftAll, full: spent + leftAll, drawLeft: leftAll, drawFull: spent + leftAll, up: upNeed ? up : null, upNeed, upKey: up ? JSON.stringify([up.have, up.want]) : '' };
     });
 }
 function breakdownRows(figs, level) {
@@ -796,8 +944,8 @@ function breakdownRows(figs, level) {
     if (level >= 4) {
         const byType = new Map();
         for (const f of figs) {
-            const g = byType.get(f.drawKey) || { ...f, count: 0, spent: 0, left: 0, full: 0, drawLeft: 0, drawFull: 0, upgrade: 0, pullsDone: 0, total: 0, byType: true };
-            g.count++; g.spent += f.spent; g.left += f.left; g.full += f.full; g.drawLeft += f.drawLeft; g.drawFull += f.drawFull; g.upgrade += f.upgrade; g.pullsDone += f.pullsDone; g.total += f.total || 0;
+            const g = byType.get(f.drawKey) || { ...f, count: 0, spent: 0, left: 0, full: 0, drawLeft: 0, drawFull: 0, upNeed: 0, up: null, pullsDone: 0, total: 0, byType: true };
+            g.count++; g.spent += f.spent; g.left += f.left; g.full += f.full; g.drawLeft += f.drawLeft; g.drawFull += f.drawFull; g.upNeed += f.upNeed; g.pullsDone += f.pullsDone; g.total += f.total || 0;
             byType.set(f.drawKey, g);
         }
         return [...byType.values()];
@@ -805,7 +953,7 @@ function breakdownRows(figs, level) {
     const rows = [];
     for (const f of figs) {
         const last = rows[rows.length - 1];
-        if (last && last.drawKey === f.drawKey && last.pullsDone === f.pullsDone && last.priced === f.priced) { last.to = f.n; last.count++; }
+        if (last && last.drawKey === f.drawKey && last.pullsDone === f.pullsDone && last.priced === f.priced && last.upKey === f.upKey) { last.to = f.n; last.count++; }
         else rows.push({ ...f, from: f.n, to: f.n, count: 1 });
     }
     return rows;
@@ -819,15 +967,16 @@ function breakdownSelectionText(basket, level) {
         const name = `${shortName(r.drawKey)}${r.count > 1 ? ` ×${r.count}` : ''}`;
         // A per-type row (level 4) already carries its lines' sums, so it is never multiplied again.
         const k = r.byType ? 1 : r.count;
-        // His upgrade layout: "**`x CP` Weapon** + **`x CP` Upgrade**" on the row, "(+ `x CP` Upgrade)" in its note.
+        // His upgrade layout: "**`x CP` Weapon** + **`x …` Upgrade**" on the row. The upgrade is stated in its own currency (2026-10-17 13:17 EDT): cards and coins are pooled across lines, so only the pool's total has a CP figure, in the Cost Breakdown below.
+        const currency = MYTHIC_UPGRADE[r.drawKey]?.currency || '';
         const cost = !r.priced ? '**no price here**'
-            : r.upgrade ? `**\`${fmt(r.drawFull * k)} CP\` ${UPGRADE_LABEL[r.drawKey] || 'Draw'}** + **\`${fmt(r.upgrade * k)} CP\` Upgrade**`
+            : r.upNeed ? `**\`${fmt(r.drawFull * k)} CP\` ${UPGRADE_LABEL[r.drawKey] || 'Draw'}** + **\`${fmt(r.upNeed * k)} ${currency}\` Upgrade**`
             : `**\`${fmt(r.full * k)} CP\`**`;
         if (r.byType) { out.push(`${icon} ${name} · \`${r.pullsDone}/${r.total || '?'}\` Spins ${dash} ${cost}`); continue; }
         const num = r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`;
         out.push(`${icon} ${num} · \`${r.pullsDone}/${r.total ?? '?'}\` Spins · ${name} ${dash} ${cost}`);
         if (level < 2) out.push(r.priced
-            ? `-# \`${fmt(r.spent * r.count)} CP\` Spent · \`${fmt(r.drawLeft * r.count)} CP\`${r.upgrade ? ` (+ \`${fmt(r.upgrade * r.count)} CP\` Upgrade)` : ''} Remaining until Completion`
+            ? `-# \`${fmt(r.spent * r.count)} CP\` Spent · \`${fmt(r.drawLeft * r.count)} CP\` Remaining until Completion${r.up ? ` · Upgrade: ${upgradeTransition(r.up)}` : ''}`
             : `-# No sourced price at ${regionLabel(basket.region)}, so this line is left out of the totals.`);
     }
     return out.join('\n');
@@ -836,15 +985,23 @@ function breakdownCostLines(basket, currency, client, level) {
     const b1 = emojis.b1;
     const figs = lineFigures(basket).filter(f => f.priced);
     const rows = breakdownRows(figs, level);
-    const full = figs.reduce((n, f) => n + f.full, 0);
+    const upgrades = upgradePlan(basket);
+    const full = figs.reduce((n, f) => n + f.full, 0) + upgrades.cp;
     const spent = figs.reduce((n, f) => n + f.spent, 0);
     const needed = full - spent;
     const balance = basket.balance || 0;
     const shortfall = needed - balance;
     const term = (r, key) => `\`${r.count > 1 && !r.byType ? `${r.count} × ` : ''}${fmt(r[key])} CP\``;
-    const fullTerm = r => (r.upgrade ? `${term(r, 'drawFull')} (**+** \`${r.count > 1 && !r.byType ? `${r.count} × ` : ''}${fmt(r.upgrade)} CP\` Upgrade)` : term(r, 'full'));
-    const withUpgrades = figs.some(f => f.upgrade);
-    const terms = key => level >= 3 ? `across ${plural(figs.length, 'line')}` : (rows.length ? rows.map(r => (key === 'full' ? fullTerm(r) : term(r, key))).join(' **+** ') : '`0 CP`');
+    const withUpgrades = upgrades.cp > 0;
+    // The pooled upgrade CP joins the Full Cost sum as ONE term (2026-10-17 13:17 EDT): it is not any one line's.
+    const upgradeTerm = withUpgrades ? ` **+** \`${fmt(upgrades.cp)} CP\` Upgrades` : '';
+    const terms = key => level >= 3 ? `across ${plural(figs.length, 'line')}${key === 'full' ? upgradeTerm : ''}` : (rows.length ? rows.map(r => term(r, key)).join(' **+** ') + (key === 'full' ? upgradeTerm : '') : '`0 CP`');
+    // How the upgrade CP was reached, one line per currency: what the lines need, minus what is held, then the spins it takes.
+    const upgradeLines = upgrades.pools.filter(p => p.need).map(p => {
+        const icon = emojis[p.drawKey === 'mythicWeapon' ? 'mythicCard' : 'mythicCoin'] || '';
+        const after = p.short ? (p.cp !== null ? ` · About **${p.spins}** Spins × \`${fmt(p.perDraw)} CP\`` : ' · No upgrade price here yet') : ' · Covered';
+        return `-# ${b1} ${icon} \`${fmt(p.need)}\` ${p.currency} Needed${p.held ? ` **−** \`${fmt(p.held)}\` Held` : ''}${after}`;
+    });
     const head = [
         '## Cost Breakdown',
         // His rough template, cleaned up (2026-10-16 18:57 EDT, Harkirat: "you literally copied my typed template as is, when i said it was rough"): labels and terms in Title Case, sentences in sentence case, a real minus sign.
@@ -855,6 +1012,7 @@ function breakdownCostLines(basket, currency, client, level) {
     const tail = [
         `Full Cost of Draws${withUpgrades ? ' & Upgrades' : ''}${BREAK}\`${fmt(full)} CP\``,
         `-# ${b1} ${terms('full')}`,
+        ...(upgradeLines.length ? [`Mythic Upgrades${BREAK}\`${fmt(upgrades.cp)} CP\``, ...upgradeLines] : []),
         `Amount Spent So Far${BREAK}\`${fmt(spent)} CP\``,
         `-# ${b1} ${terms('spent')}`,
         balance ? `CP Balance${BREAK}\`${fmt(balance)} CP\`` : `CP Balance${BREAK}\`0 CP\` Assumed`,
@@ -862,8 +1020,7 @@ function breakdownCostLines(basket, currency, client, level) {
     ];
     const unpriced = lineFigures(basket).filter(f => !f.priced);
     if (unpriced.length) tail.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${[...new Set(unpriced.map(f => shortName(f.drawKey)))].join(', ')}.`);
-    const upgradeMissing = basket.includeUpgrades ? lineFigures(basket).filter(f => f.priced && upgradeCost(basket.region, f.drawKey) === null && hasUpgradeAnywhere(f.drawKey)) : [];
-    if (upgradeMissing.length) tail.push(`⚠️ **Upgrade not included** for ${[...new Set(upgradeMissing.map(f => shortName(f.drawKey)))].join(', ')} — no upgrade price at ${regionLabel(basket.region)} yet.`);
+    tail.push(...upgradeWarnings(basket, upgrades));
 
     if (needed === 0 && !unpriced.length) return { head, tail: [...tail, '', '✅ **Every draw here is finished** — nothing left to buy.'] };
     if (shortfall <= 0) return { head, tail: [...tail, '', `✅ **Your balance covers this**, with **\`${fmt(-shortfall)} CP\`** to spare.`] };
@@ -936,7 +1093,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     }
     // "Your Selection" with Edit BESIDE it (2026-10-13 23:01 EDT, his intake: Edit Draws sat at the bottom, away from the list it edits, while a draw picker here did half the job). Every input now lives on the form; Edit reopens it with everything kept, and this page only reports.
     // The rows take the Full Breakdown's shape without its cost (2026-10-16 21:06 EDT): number, spins, name; adjacent identical lines share one row.
-    const compactRows = breakdownRows(lineFigures(basket), 1).map(r => `${DRAW_META[r.drawKey] ? emojis[DRAW_META[r.drawKey].tier] : emojis.smallDot} ${r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`} · \`${r.pullsDone}/${r.total ?? '?'}\` Spins · ${shortName(r.drawKey)}${r.count > 1 ? ` ×${r.count}` : ''}`);
+    const compactRows = breakdownRows(lineFigures(basket), 1).map(r => `${DRAW_META[r.drawKey] ? emojis[DRAW_META[r.drawKey].tier] : emojis.smallDot} ${r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`} · \`${r.pullsDone}/${r.total ?? '?'}\` Spins · ${shortName(r.drawKey)}${r.count > 1 ? ` ×${r.count}` : ''}${r.up ? ` · Upgrade: ${upgradeTransition(r.up)}` : ''}`);
     components.push(...headedSection(`## ${selectionHeading(basket.banners)}\n-# Press **Edit** to change your draws or spins.`, editSelectionButton(state), compactRows.join('\n')));
     if (options.notice) components.push({ type: 10, content: `-# ${options.notice}` });
     if (options.dropConfirm) components.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
@@ -958,7 +1115,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
 // The rows under the cost, shared by the compact view and the Full Breakdown.
 function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry) {
     // Region and upgrade are adjustable right here (2026-10-14 13:13 EDT, Harkirat): "why are the cp region buttons gone from this screen? and the upgrade yes/no button". A click re-prices this same result.
-    components.push({ type: 14, spacing: 2, divider: true }, regionCaption(), regionRow(state, basket), basketManageRow(state, basket), { type: 14, spacing: 2, divider: true }, resultActionRow(state));
+    components.push({ type: 14, spacing: 2, divider: true }, regionCaption(), regionRow(state, basket), ...basketManageRows(state, basket), { type: 14, spacing: 2, divider: true }, resultActionRow(state));
 
     if (liveDoubleCPEntry || basket.entitlementMask) {
         components.push({ type: 10, content: liveDoubleCPEntry
@@ -1038,7 +1195,9 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
             row('Recommended Bundle', 'the fewest store purchases within 3% of the cheapest price'),
             row('Left Over', 'CP the bundles give beyond what you need; it stays in your account'),
             row('Stock Up', 'a bigger buy at a better rate; see Why Stock Up below'),
-            row('2X Bundles', 'tick the bundles you can still buy at double CP; the recommendation uses them')
+            row('2X Bundles', 'tick the bundles you can still buy at double CP; the recommendation uses them'),
+            // Derived from the ladders and DRAW_DATA's spin counts, never typed (2026-10-17 13:17 EDT).
+            row('Mythic Upgrade', `spins are estimates: a 10x spin averages about ${['mythicWeapon', 'mythicCharacter'].map(k => `${Math.round(upgradeFullAmount(k) / entryFor('region_10', k).upgrade.count)} ${k === 'mythicWeapon' ? 'cards' : 'coins'}`).join(' or ')}; what you hold comes off first`)
         ].join('\n') },
         divider,
         { type: 10, content: [
@@ -1142,6 +1301,7 @@ module.exports = {
     buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildExportText, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, savedChecksum, savedDescription,
     buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
-    parseAmount, applySelection, shortName, SHORT_NAME, slashShortcut,
+    parseAmount, parseCount, applySelection, shortName, SHORT_NAME, slashShortcut,
+    buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,
     setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages
 };

@@ -516,3 +516,60 @@ His asks: the Full Breakdown states Mythic upgrades apart (his layout); Cancel w
 > Sure, go for it
 
 **Answered 21:59 EDT:** not code updating (old buttons run the current code); every click the bot received tonight was answered in 0–29 ms and finished under ~1 s; the two failures he saw were the first click after a 33- and 55-minute idle; the dev bot runs on his Mac (restarts, 162 gateway reconnects in its log). **Built 2026-10-16 22:30 EDT:** a dev-bot-only log line per click in `handlers/router.js` (`🕒 time verb · arrived X ms after the click · sent +Y · confirmed +Z · done +W`, flagged past 3 s), fed by a new `noteAckDone` in `utils/eventStore.js` that times Discord's confirmation of the first defer/reply. Nothing is stored; production logs nothing new.
+
+### Batch 34 — 2026-10-17 11:50 / 12:04 / 12:12 / 12:33 / 13:12 EDT, verbatim
+
+> leave the embed version running for now, until then what i want you to do is consider an update to the calc because i realize we missed an important part of the calc process: the mythic weapon/character upgrade process.
+>
+> so the 10 spins (weapon) / 14 spins (character) for the upgrades remain as-is. They're basically the avg amount of 10x bundle spins you need to do to acquire all the cards/coins needed to fully max the weapon/character.
+>
+> but the actual upgrade process is divided up differently into tier systems.
+>
+> for the Weapon:
+> ```
+> • Level 1: 125 Mythic Cards
+> • Level 2: 375 Mythic Cards (cumulative total)
+> • Level 3: 775 Mythic Cards (cumulative total)
+> • Level 4: 1,275 Mythic Cards (cumulative total)
+> • Level 5 (Max): 1,975 Mythic Cards (cumulative total)
+> ```
+> * so it takes ~10 spins (at the respective price we have stated in the price list) of the 10x bundle (individual spins are a bit more expensive so we'll only be using the 10x bundle and counting it as "1 spin") on avg to acquire the 1975 mythic cards.
+>
+> For the character:
+> ```
+> • There's 3 paths + a final upgrade. Each path has 3 sub-tiers, each sub-tier only avaiable after the previous sub-tiers purchase. Final upgrade can only be purchased if a minimum of 7 of the 9 sub-tiers are purchased/upgraded.
+> • Tier 1: 80 Coins (240 Coins total for all 3 paths)
+> • Tier 2: 200 Coins (600 Coins total for all 3 paths)
+> • Tier 3: 420 Coins (1,260 Coins total for all 3 paths)
+> • Final Center Piece: 720 Coins (unlocks after completing a minimum of 7 of the 9 paths)
+> Full upgrade total Requirement: 240 + 600 + 1,260 + 720 = 2,820 Mythic Coins.
+> ```
+> - and it takes about ~14 spins of the 10x bundle on avg to get those 2,820 coins. (similar logic to the mythic cards).
+> - The path names (no particular order): Battle Tech, Arm Tech, Color Tech. Center piece upgrade named: Final Form.
+>
+> That means we need to include mythic cards and mythic coins within the "Balance" modal pop-up. (just fyi, the cards/coins should only be allowed as steps of 5. so no partial numbers like 1/2/3/4/6/7/8/9. Only 0 or multiplies of 5s, 10s. CP are allowed of any whole number value, such as 0/1/2/etc. no decimal values. And no balance set assumes the same logic as today that it's "0".)
+>
+> to clarify, each path has the 3 sub-tiers within it: 80 > 200 > 420. so the "240 coins total for all 3 paths" refers to tier 1 being purchased on all 3 paths.
+>
+> > Are Mythic Cards tied to one weapon (and coins to one character), or shared across every Mythic?
+>
+> shared poll.
+>
+> > Should a player be able to say which upgrades they've already bought (weapon at Level 2, say)?
+>
+> honestly idk. the upgrades are only ever unlocked AFTER the main draw is completed (but mythic cards/coins themselves can be purchased whenever. they just cant be used on the upgrades until after the main draw is complete). So it's possible that someone uses the calculator and says 10/10 spins completed on a mythic wep/character and they mainly attempt to calculate for the upgrade process only. So the question is kind of conditional on the fact if the user has completed 10/10 spins for the mythic weapon or character draw first. Think about it thoroughly honestly.
+>
+> > Upgrade target: always Max, or let them pick?
+>
+> let them pick. including for the character. but it gets a bit tricky with the character so for that i'd assume we constrain it to full path, cheapest to final form, everything? Tho i still want you to thoroughly think about it further, incase we can effectively implement a way where they can choose exactly which path/tier to upgrade to?
+>
+> > Show the tier ladder on /draw prices too?
+>
+> yeah, it would make sense. and just fyi, the amount of cards/coins needed for the upgrade is same across the regions. its the actual 10x bundle spin that's priced differently.
+>
+> so how would that upgrade path appear tho? like if someone selects the 10/10 option on the mythic draw's dropdown, then a new button appears to request/input the additional info for the upgrade process? like a modal to submit the "Character Upgrade" selections?
+>
+> Yeah you can build it. Kill the embed preview bot.
+
+**Built 2026-10-17 13:26 EDT** (rules: `.claude/rules/draw-prices.md` § Mythic upgrades by tier): the ladders in `MYTHIC_UPGRADE`; a shared pool per currency, converted to spins once; per-line have/want with "already" fields only on a finished draw; exact per-path choice plus four Quick Picks; one Upgrade button or a dropdown of Mythic lines opening a pop-up; Mythic Cards and Coins in the Balance pop-up in steps of 5; whole CP only; the ladders on `/draw prices`. His side question in the same message (two screenshots of a cost layout, which looks better) is answered in the thread, not built.
+

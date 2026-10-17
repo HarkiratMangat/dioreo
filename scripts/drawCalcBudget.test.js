@@ -494,7 +494,7 @@ t('Set Balance and Upgrade are disabled until a calculation exists to write them
     assert.strictEqual(buttons(empty).some(b => /^Upgrade/.test(b.label || '')), false);
     const drafted = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: false }));
     assert.strictEqual(Boolean(buttonLabelled(drafted, 'Set Balance').disabled), false);
-    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Upgrade: NO').disabled), false);
+    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Upgrade: None').disabled), false);
 });
 
 // ==========================================
@@ -666,7 +666,7 @@ t('the upgrade toggle is on the form AND the result, and only for draws that hav
     const last = r.find(x => x.components.some(b => b.label === 'Save Result'));
     assert.deepStrictEqual(last.components.map(b => b.label), ['New Calculation', 'View Saved', 'Export', 'Save Result'], 'the result keeps that row, Export beside Save Result in Calculate\'s place');
     assert.ok(last.components[3].emoji && verbOf(last.components[3]) === 'savepick' && verbOf(last.components[2]) === 'export');
-    assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Set Balance')).components.map(b => b.label), ['Set Balance', 'Upgrade: NO'], 'Upgrade sits beside Set Balance');
+    assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Set Balance')).components.map(b => b.label), ['Set Balance', 'Upgrade: None'], 'Upgrade sits beside Set Balance');
     const items = container(f).components;
     const calcRow = items.findIndex(c => c.type === 1 && c.components.some(b => b.label === 'Calculate'));
     assert.ok(items[calcRow - 1].type === 14 && items[calcRow - 1].divider, 'a divider above the Calculate row');
@@ -849,7 +849,7 @@ t('the landing starts a calculation, and Saved is one tap away in the nav row (2
 t('the result keeps Set Balance one tap away, and Edit is a VIEW that leaves the calculation submitted', () => {
     const result = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }));
     const row = rows(result).find(r => r.components.some(b => b.label === 'Set Balance'));
-    assert.deepStrictEqual(row.components.map(b => b.label), ['Set Balance', 'Upgrade: NO'], 'the commonest return visit, "I have more CP now", is one tap');
+    assert.deepStrictEqual(row.components.map(b => b.label), ['Set Balance', 'Upgrade: None'], 'the commonest return visit, "I have more CP now", is one tap');
     const editing = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: true }), { page: 2 });
     assert.ok(/Adjust Partial Completion/.test(allText(editing)) && buttonLabelled(editing, 'Calculate'), 'page 2 of a submitted calculation is the form');
     assert.strictEqual(dc.decodeState(buttonLabelled(editing, 'Calculate').custom_id).page, 2, 'its controls keep the view');
@@ -979,6 +979,99 @@ t('Stock Up can use as many purchases as the Recommended Package, up to 6 (2026-
     assert.ok(big.stockUp && big.stockUp.transactions > 3 && big.stockUp.transactions <= 6, `39,000 CP in CAD: ${big.stockUp && big.stockUp.transactions}`);
     const small = optimizePurchase(5810, { currency: 'USD' });
     assert.ok(!small.stockUp || small.stockUp.transactions <= 3, 'a small calculation keeps the 3-purchase limit');
+});
+
+// ==========================================
+// MYTHIC UPGRADES BY TIER (2026-10-17 13:17 EDT, Harkirat's build go at 13:12 EDT)
+// ==========================================
+t('upgrades: the ladders, the shared pool and the presets', () => {
+    const { upgradePlan, upgradeNeed, characterPreset } = require('../utils/drawCost');
+    const pool = (b, key) => upgradePlan({ region: 'region_20', ...b }).pools.find(p => p.drawKey === key);
+    const legacy = { includeUpgrades: true, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }] };
+    assert.deepStrictEqual([pool(legacy, 'mythicWeapon').spins, pool(legacy, 'mythicWeapon').cp], [10, 10000], 'an old "Upgrade: YES" line still prices as Max: 10 spins of 1,000 CP');
+    assert.deepStrictEqual([pool(legacy, 'mythicCharacter').need, pool(legacy, 'mythicCharacter').spins, pool(legacy, 'mythicCharacter').cp], [2820, 14, 16380], '2,820 coins is exactly 14 spins, never 15 from a float');
+    const threeL1 = { banners: [0, 1, 2].map(() => ({ drawKey: 'mythicWeapon', pullsDone: 0, upWant: [1] })) };
+    assert.strictEqual(pool(threeL1, 'mythicWeapon').spins, 2, 'the pool is shared: three Level 1s are 375 cards, 2 spins, not 1 + 1 + 1');
+    const held = { mythicCards: 300, banners: [{ drawKey: 'mythicWeapon', pullsDone: 10, upHave: [2], upWant: [5] }] };
+    assert.deepStrictEqual([pool(held, 'mythicWeapon').need, pool(held, 'mythicWeapon').short, pool(held, 'mythicWeapon').spins], [1600, 1300, 7], 'Level 2 → 5 is 1,600 cards; 300 held leaves 1,300, 7 spins');
+    const notDone = { banners: [{ drawKey: 'mythicWeapon', pullsDone: 9, upHave: [2], upWant: [5] }] };
+    assert.strictEqual(pool(notDone, 'mythicWeapon').need, 1975, 'an unfinished draw has upgraded nothing, whatever was stored');
+    assert.deepStrictEqual(characterPreset([0, 0, 0, 0], 'ff'), [3, 2, 2, 1], 'cheapest Final Form from nothing: one path complete, two at Tier 2');
+    assert.strictEqual(upgradeNeed('mythicCharacter', [0, 0, 0, 0], [3, 2, 2, 1]).need, 1980);
+    assert.deepStrictEqual(characterPreset([3, 1, 0, 0], 'ff'), [3, 2, 2, 1], 'and from what is already bought');
+    assert.strictEqual(upgradeNeed('mythicCharacter', [3, 1, 0, 0], [3, 2, 2, 1]).need, 200 + 280 + 720);
+    assert.deepStrictEqual(characterPreset([1, 2, 0, 0], 'path'), [1, 3, 0, 0], 'One Full Path finishes the path closest to done');
+    assert.deepStrictEqual(upgradeNeed('mythicCharacter', [0, 0, 0, 0], [3, 1, 1, 1]), { need: 860, finalFormBlocked: true }, 'Final Form below 7 of 9 is not priced, and says so');
+});
+
+t('upgrades: the pop-up holds the right fields, one default each, and Discord.js accepts it', () => {
+    const { ModalBuilder } = require('discord.js');
+    const fieldsOf = (drawKey, pullsDone, extra = {}) => {
+        const m = dc.buildUpgradeModal(state(), makeBasket({ region: 'region_20', banners: [{ drawKey, pullsDone, ...extra }] }), 0);
+        const json = new ModalBuilder(m).toJSON();
+        assert.ok(json.title.length <= 45 && json.components.length <= 5, json.title);
+        for (const c of json.components) {
+            assert.strictEqual(c.component.options.filter(o => o.default).length, 1, `${c.label}: exactly one picked option`);
+            assert.ok(c.label.length <= 45 && c.component.options.every(o => o.label.length <= 100 && (!o.description || o.description.length <= 100)));
+        }
+        return json.components.map(c => c.label);
+    };
+    assert.deepStrictEqual(fieldsOf('mythicWeapon', 0), ['Upgrade To'], 'no "Already At" before the draw is finished');
+    assert.deepStrictEqual(fieldsOf('mythicWeapon', 10, { upHave: [2] }), ['Already At', 'Upgrade To']);
+    assert.deepStrictEqual(fieldsOf('mythicCharacter', 0), ['Quick Pick', 'Battle Tech', 'Arm Tech', 'Color Tech', 'Final Form']);
+    assert.deepStrictEqual(fieldsOf('mythicCharacter', 10, { upHave: [1, 0, 0, 0] }), ['Quick Pick', 'Battle Tech', 'Arm Tech', 'Color Tech', 'Final Form']);
+    assert.strictEqual(dc.buildUpgradeModal(state(), makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }] }), 0), null, 'no pop-up for a draw with no upgrade');
+});
+
+t('upgrades: reading the pop-up back', () => {
+    const answers = a => id => (id in a ? a[id] : null);
+    assert.deepStrictEqual(dc.readUpgradeModal('mythicCharacter', false, answers({ quick: 'ff', p0: '00', p1: '00', p2: '00', ff: '00' })), { have: [0, 0, 0, 0], want: [3, 2, 2, 1], notice: null }, 'Quick Pick replaces the paths');
+    const blocked = dc.readUpgradeModal('mythicCharacter', false, answers({ quick: 'keep', p0: '03', p1: '01', p2: '01', ff: '01' }));
+    assert.deepStrictEqual(blocked.want, [3, 1, 1, 0], 'Final Form below 7 of 9 is left off');
+    assert.ok(/needs 7 of 9 tiers/.test(blocked.notice));
+    assert.deepStrictEqual(dc.readUpgradeModal('mythicCharacter', true, answers({ quick: 'keep', p0: '13', p1: '22', p2: '02', ff: '01' })).want, [3, 2, 2, 1], 'at 10/10 each path reads have and want');
+    assert.deepStrictEqual(dc.readUpgradeModal('mythicWeapon', true, answers({ have: '3', want: '2' })), { have: [3], want: [3], notice: 'Already at Level 3, so there is nothing to add.' });
+    assert.deepStrictEqual(dc.readUpgradeModal('mythicWeapon', false, answers({ have: '3', want: '5' })).have, [0], 'an unfinished draw cannot have upgrades');
+});
+
+t('upgrades: one Mythic line gets a button, two or more a dropdown, none gets nothing', () => {
+    const one = dc.upgradeControls(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }));
+    assert.ok(one.button && !one.row && verbOf(one.button) === 'upgset' && dc.decodeState(one.button.custom_id).focus === 0 && one.button.label === 'Upgrade: None');
+    const set = dc.upgradeControls(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0, upWant: [5] }] }));
+    assert.ok(set.button.label === 'Upgrade: Level 5' && set.button.style === 3);
+    const two = dc.upgradeControls(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0, upWant: [3, 2, 2, 1] }] }));
+    assert.ok(!two.button && two.row && verbOf(two.row.components[0]) === 'upgpick');
+    assert.deepStrictEqual(two.row.components[0].options.map(o => [o.label, o.description]), [['#1 Mythic Weapon', 'No Upgrade Set'], ['#2 Mythic Character', '7/9 Tiers + Final Form · 1,980 Coins']]);
+    assert.deepStrictEqual(dc.upgradeControls(state(), makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }] })), { button: null, row: null });
+    const p = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }] }));
+    messageCount(container(p));
+    assert.ok(selects(p).some(s => verbOf(s) === 'upgpick'), 'the result carries the dropdown');
+});
+
+t('upgrades: the balance takes whole CP and cards or coins in steps of 5', () => {
+    assert.deepStrictEqual(['', '300', '1,975', '1k', '0'].map(dc.parseCount), [0, 300, 1975, 1000, 0]);
+    assert.deepStrictEqual(['7', '302', '-5', 'abc', '2.5'].map(dc.parseCount), [null, null, null, null, null]);
+    assert.deepStrictEqual(['3.5', '3.5k', '3.7k'].map(dc.parseAmount), [null, 3500, 3700], 'no decimal CP; 3.7k is exactly 3,700');
+    assert.strictEqual(dc.balanceLabel(makeBasket({ balance: 3000, mythicCards: 300 })), 'Balance: 3,000 CP · 300 Cards');
+    assert.strictEqual(dc.balanceLabel(makeBasket()), 'Set Balance');
+});
+
+t('upgrades: the result states cards and coins per line and turns the pool into CP once', () => {
+    const basket = makeBasket({ region: 'region_20', mythicCards: 300, banners: [{ drawKey: 'mythicWeapon', pullsDone: 10, upHave: [2], upWant: [5] }] });
+    const full = allText(render(basket, { detail: true }));
+    assert.ok(full.includes('**`1,600 Cards` Upgrade**'), 'the row states the upgrade in cards');
+    assert.ok(full.includes('`1,600` Cards Needed **−** `300` Held · About **7** Spins × `1,000 CP`'), full);
+    assert.ok(full.includes('Mythic Upgrades ⌇ `7,000 CP`') && full.includes('**CP Still Needed** ⌇ **`7,000 CP`**'), 'a finished draw costs only its upgrade');
+    assert.ok(allText(render(basket)).includes('Upgrade: Level 2 → Level 5'), 'the compact rows say what the upgrade goes to');
+    const exp = dc.buildExportText(basket, 'USD');
+    assert.ok(/Mythic Cards:\*\* 1,600 needed − 300 held → about 7 spins · 7,000 CP/.test(exp), exp);
+});
+
+t('/draw prices states the upgrade ladders under each Upgrade heading', () => {
+    const { buildDrawEntries } = require('../commands/drawprices');
+    const [w, c] = buildDrawEntries('region_20', ['mythicWeapon', 'mythicCharacter']);
+    assert.ok(w[2].includes('L1 125 › L2 375 › L3 775 › L4 1,275 › L5 1,975 (Max)'), w[2]);
+    assert.ok(c[2].includes('80 › 200 › 420') && c[2].includes('Final Form:** 720 after 7 of 9') && c[2].includes('2,820 in All'), c[2]);
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

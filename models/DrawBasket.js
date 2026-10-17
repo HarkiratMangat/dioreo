@@ -9,7 +9,10 @@ const mongoose = require('mongoose');
 
 const BannerSchema = new mongoose.Schema({
     drawKey: { type: String, required: true },
-    pullsDone: { type: Number, default: 0 }
+    pullsDone: { type: Number, default: 0 },
+    // Mythic upgrade by tier (2026-10-17 13:17 EDT): what this line has already upgraded (only meaningful once its draw is finished) and what it is planned up to. Weapon `[level]`; character `[battle, arm, color, finalForm]`. Absent = not set, which falls back to the basket's old includeUpgrades toggle (utils/drawCost.js upgradeState).
+    upHave: { type: [Number], default: undefined },
+    upWant: { type: [Number], default: undefined }
 }, { _id: false });
 
 const DrawBasketSchema = new mongoose.Schema({
@@ -20,6 +23,9 @@ const DrawBasketSchema = new mongoose.Schema({
     region: { type: String, default: 'region_10' },
     balance: { type: Number, default: 0 },
     includeUpgrades: { type: Boolean, default: false },
+    // Mythic Cards and Mythic Coins the player already holds (2026-10-17 13:17 EDT): one shared pool each, in steps of 5, taken off the pooled upgrade need.
+    mythicCards: { type: Number, default: 0 },
+    mythicCoins: { type: Number, default: 0 },
     // The existing 6-bit mask over CP_PACKAGES (cp80...cp8000), snapshotted onto the basket -- there is no live entitlement source to read, only what the player told us they still hold.
     entitlementMask: { type: Number, default: 0 },
     // FALSE while the player is still filling in the setup form; TRUE once they have pressed Calculate. This is what makes a result "persist until reset / new calculation" (Harkirat, 2026-08-27) across restarts -- a draft has to survive the same way a finished calculation does, so it cannot live in memory or in the customId. Existing docs predate the field and read as false, which correctly reopens them on the form with their draws intact.

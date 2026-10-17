@@ -12,8 +12,10 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
-    findLiveDoubleCPEntry, buildExportText, parseAmount, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum
+    findLiveDoubleCPEntry, buildExportText, parseAmount, parseCount, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
+    buildUpgradeModal, readUpgradeModal
 } = require('../commands/drawCalculator');
+const { pullCount } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES } = require('../utils/cpPackages');
 const basketStore = require('../utils/drawBasketStore');
@@ -32,13 +34,18 @@ function ownsCustomId(customId) {
 }
 
 
-function buildAmountModal(state) {
-    const field = new TextInputBuilder().setCustomId('amount').setLabel('CP you already have')
-        .setStyle(TextInputStyle.Short).setPlaceholder('e.g. 3,000 or 3k').setRequired(false);
-    return new ModalBuilder()
-        .setCustomId(encodeState('nums', state))
-        .setTitle('Your CP Balance')
-        .addComponents(new ActionRowBuilder().addComponents(field));
+// Mythic Cards and Coins join the balance (2026-10-17 12:01 EDT, Harkirat: "we need to include mythic cards and mythic coins within the 'Balance' modal pop-up"), each only when the calculation has that kind of Mythic line. Every field is pre-filled with what is set, because a blank field means 0: without the pre-fill, changing only the cards would wipe the CP.
+function buildAmountModal(state, basket) {
+    const keys = new Set((basket?.banners || []).map(b => b.drawKey));
+    const field = (id, label, placeholder, value) => {
+        const input = new TextInputBuilder().setCustomId(id).setLabel(label).setStyle(TextInputStyle.Short).setPlaceholder(placeholder).setRequired(false);
+        if (value) input.setValue(String(value));
+        return new ActionRowBuilder().addComponents(input);
+    };
+    const rows = [field('amount', 'CP you already have', 'e.g. 3,000 or 3k', basket?.balance)];
+    if (keys.has('mythicWeapon')) rows.push(field('cards', 'Mythic Cards you hold (steps of 5)', 'e.g. 300', basket?.mythicCards));
+    if (keys.has('mythicCharacter')) rows.push(field('coins', 'Mythic Coins you hold (steps of 5)', 'e.g. 150', basket?.mythicCoins));
+    return new ModalBuilder().setCustomId(encodeState('nums', state)).setTitle('Your Balance').addComponents(...rows);
 }
 
 function buildNameModal(state, currentName) {
@@ -85,6 +92,7 @@ async function writeTo(userId, state, basket, fields) {
         if (Object.entries(fields).every(([k, v]) => JSON.stringify(v) === JSON.stringify(basket[k]))) return basket;
         const copy = await basketStore.save(userId, {
             banners: basket.banners, region: basket.region, balance: basket.balance, includeUpgrades: basket.includeUpgrades,
+            mythicCards: basket.mythicCards || 0, mythicCoins: basket.mythicCoins || 0,
             entitlementMask: basket.entitlementMask, submitted: basket.submitted, sourceId: String(basket._id), ...fields
         });
         state.basketId = String(copy._id);
@@ -133,7 +141,36 @@ async function route(interaction) {
 
     // showModal() must be the DIRECT response to the button -- cannot follow a deferReply/deferUpdate.
     if (interaction.isButton() && state.verb === 'modal') {
-        return await interaction.showModal(buildAmountModal(state));
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        return await interaction.showModal(buildAmountModal(state, basket));
+    }
+    // The upgrade pop-up (2026-10-17 13:17 EDT): from the one-line button (`upgset`, the line in `f`) or the Mythic-lines dropdown (`upgpick`, the line as its value). A direct response like every showModal, so it comes before the generic defer.
+    if ((interaction.isButton() && state.verb === 'upgset') || (interaction.isStringSelectMenu() && state.verb === 'upgpick')) {
+        const index = state.verb === 'upgpick' ? Number(interaction.values[0]) : state.focus;
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        const modal = basket ? buildUpgradeModal(state, basket, index) : null;
+        if (!modal) {
+            try { await interaction.reply({ content: 'That draw is no longer in this calculation.', ephemeral: true }); }
+            catch (notifyError) { console.error('Failed to notify user of a missing upgrade line (interaction likely expired):', notifyError); }
+            return true;
+        }
+        return await interaction.showModal(modal);
+    }
+    if (interaction.isModalSubmit() && (state.verb === 'upgsavew' || state.verb === 'upgsavec')) {
+        await interaction.deferUpdate();
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const index = state.focus;
+        const line = index !== null ? basket.banners[index] : null;
+        // The line the pop-up was opened for must still be the same kind of Mythic draw; a removed or reordered line is refused rather than given another line's upgrade.
+        if (!line || line.drawKey !== (state.verb === 'upgsavew' ? 'mythicWeapon' : 'mythicCharacter')) { await renderPanel(interaction, state, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
+        const get = id => { try { return interaction.fields.getStringSelectValues(id)[0] ?? null; } catch { return null; } };
+        const total = pullCount(basket.region, line.drawKey);
+        const read = readUpgradeModal(line.drawKey, total !== null && line.pullsDone >= total, get);
+        const banners = basket.banners.map((b, i) => (i === index ? { ...b, upHave: read.have, upWant: read.want } : b));
+        const updated = await writeTo(actingUserId, state, basket, { banners });
+        await renderPanel(interaction, { ...state, focus: null }, updated, read.notice);
+        return true;
     }
     if (interaction.isButton() && state.verb === 'modal_name') {
         const basket = await loadOwned(interaction, state, actingUserId);
@@ -141,16 +178,24 @@ async function route(interaction) {
         return await interaction.showModal(buildNameModal(state, basket.name));
     }
     if (interaction.isModalSubmit() && state.verb === 'nums') {
-        const amount = parseAmount(interaction.fields.getTextInputValue('amount'));
-        if (amount === null) {
-            try { await interaction.reply({ content: '❌ That amount was not understood — try a plain number like `3000` or `3k`.', ephemeral: true }); }
+        // A field the pop-up did not carry (no Mythic weapon, say) reads null and leaves that balance alone.
+        const text = id => { try { return interaction.fields.getTextInputValue(id); } catch { return null; } };
+        const amount = parseAmount(text('amount'));
+        const cardsRaw = text('cards'), coinsRaw = text('coins');
+        const cards = cardsRaw === null ? undefined : parseCount(cardsRaw);
+        const coins = coinsRaw === null ? undefined : parseCount(coinsRaw);
+        const problem = amount === null ? 'CP must be a whole number, like `3000` or `3k`.'
+            : cards === null ? 'Mythic Cards must be 0 or a multiple of 5, like `300`.'
+            : coins === null ? 'Mythic Coins must be 0 or a multiple of 5, like `150`.' : null;
+        if (problem) {
+            try { await interaction.reply({ content: `❌ ${problem} Nothing was changed.`, ephemeral: true }); }
             catch (notifyError) { console.error('Failed to notify user of invalid amount (interaction likely expired):', notifyError); }
             return true;
         }
         await interaction.deferUpdate();
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        const updated = await writeTo(actingUserId, state, basket, { balance: amount });
+        const updated = await writeTo(actingUserId, state, basket, { balance: amount, ...(cards !== undefined ? { mythicCards: cards } : {}), ...(coins !== undefined ? { mythicCoins: coins } : {}) });
         await renderPanel(interaction, state, updated);
         return true;
     }
@@ -295,7 +340,14 @@ async function route(interaction) {
             await renderPanel(interaction, { ...state, focus: null }, updated);
             return true;
         }
-        const banners = basket.banners.map((b, i) => i === index ? { ...b, pullsDone: Number(interaction.values[0]) || 0 } : b);
+        // Upgrades unlock only once a draw is finished, so taking a line below its last spin drops what it had upgraded (2026-10-17 13:17 EDT).
+        const banners = basket.banners.map((b, i) => {
+            if (i !== index) return b;
+            const pullsDone = Number(interaction.values[0]) || 0;
+            const total = pullCount(basket.region, b.drawKey);
+            if (total !== null && pullsDone < total && b.upHave) { const { upHave, ...rest } = b; return { ...rest, pullsDone }; }
+            return { ...b, pullsDone };
+        });
         const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: null }, updated);
         return true;
@@ -349,7 +401,7 @@ async function route(interaction) {
         const working = await currentBasket(actingUserId, state);
         const target = state.target ? await basketStore.load(actingUserId, state.target) : null;
         if (!working || !target || !target.name) { await renderPanel(interaction, { ...state, page: 3, target: null }, working, 'Nothing was saved: the calculation or the saved one is gone.'); return true; }
-        const saved = await basketStore.save(actingUserId, { _id: String(target._id), banners: working.banners, region: working.region, balance: working.balance, includeUpgrades: working.includeUpgrades, entitlementMask: working.entitlementMask, submitted: working.submitted });
+        const saved = await basketStore.save(actingUserId, { _id: String(target._id), banners: working.banners, region: working.region, balance: working.balance, includeUpgrades: working.includeUpgrades, mythicCards: working.mythicCards || 0, mythicCoins: working.mythicCoins || 0, entitlementMask: working.entitlementMask, submitted: working.submitted });
         // The working copy has done its job; a saved one picked as the open calculation is never removed here.
         if (!working.name && String(working._id) !== String(target._id)) await basketStore.remove(actingUserId, String(working._id));
         await renderPanel(interaction, { ...state, basketId: String(target._id), page: 0, target: null, verb: 'load' }, saved, `Replaced "${target.name}".`);
@@ -500,7 +552,7 @@ async function route(interaction) {
             return true;
         }
         // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form, which is what the button now says it does.
-        const updated = await writeTo(actingUserId, state, basket, { banners: [], balance: 0, submitted: false });
+        const updated = await writeTo(actingUserId, state, basket, { banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, submitted: false });
         await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, updated);
         return true;
     }
