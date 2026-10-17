@@ -202,7 +202,7 @@ t('lines keep the ARRAY ORDER, never a cheapest-first sort -- proven with an ord
     const first = selects(form(banners)).find(s => verbOf(s) === 'bpulls' && dc.decodeState(s.custom_id).focus === 0);
     assert.strictEqual(first.options.find(o => o.default).value, '0', 'line #1 must be the array\'s first entry (0 pulls), not the cheaper 9-pulls one a cost-sort would promote');
     const detail = allText(render(makeBasket({ banners }), { detail: true }));
-    assert.ok(/#1 · `0\/10` Spins · Mythic Weapon/.test(detail) && detail.indexOf('`0/10` Spins · Mythic') < detail.indexOf('`9/10` Spins · Mythic'), 'the Full Breakdown keeps the array order too');
+    assert.ok(/#1 · Mythic Weapon\*\*\n> \*\*Price: `5,810 CP`\*\* · `0\/10` Attempts/.test(detail) && detail.indexOf('`0/10` Attempts') < detail.indexOf('`9/10` Attempts'), 'the Full Breakdown keeps the array order too');
     assert.strictEqual(/Priority Plan|Move Up/.test(detail), false, 'the Priority Plan and Move Up are gone (2026-10-14, his call)');
 });
 
@@ -427,7 +427,7 @@ t('/draw prices\' cross-link to the calculator carries no emoji either', () => {
 t('Cheapest and Stock Up are separated, and no heading is preceded by a stacked blank line', () => {
     const lines = texts(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }, { drawKey: 'mythicWeapon', pullsDone: 0 }] }), { detail: true }, { currency: 'CAD' })).join('\n').split('\n');
     const stockUp = lines.findIndex(l => l.startsWith('**Stock Up**'));
-    assert.ok(stockUp !== -1 && lines.some(l => l.startsWith('**Cheapest**')) && lines.includes('## Recommended Bundles'), 'two options, each labelled, under a plural heading');
+    assert.ok(stockUp !== -1 && lines.some(l => l.startsWith('**Cheapest**')) && lines.includes('## Suggested Purchase'), 'two options, each labelled, under the one heading');
     assert.ok(lines[stockUp + 1].startsWith('> **') && lines[stockUp - 1] === '', 'a blank line, then the label, then the quoted bundle lines');
     lines.forEach((l, i) => {
         if (l.startsWith('## ') && i > 0) {
@@ -760,15 +760,14 @@ t('each line\'s dropdown OPENS with Remove, then the values; Move Up is gone', (
     assert.ok(lines.every(s => s.options.length <= 25));
 });
 
-t('Full Breakdown is the button of ONE Section holding Cost Breakdown and Suggested Purchase (simplified, 2026-10-17 17:26 EDT); Simplify keeps its own row under the heading (Full Breakdown)', () => {
-    const compact = container(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], balance: 3000 }))).components;
-    const sec = compact.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Full Breakdown');
-    assert.ok(sec && sec.components.length === 2 && sec.components[0].content.startsWith('## Cost Breakdown') && sec.components[1].content.startsWith('## Suggested Purchase'), 'one Section, two texts');
-    assert.strictEqual(verbOf(sec.accessory), 'detail');
-    const full = container(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], balance: 3000 }), { detail: true })).components;
-    const b = full.findIndex(c => c.type === 1 && c.components.some(x => x.label === 'Simplify'));
-    assert.ok(b > 0 && full[b - 1].content === '## Cost Breakdown' && full[b].components.length === 1, 'Simplify under the heading');
-    assert.strictEqual(full.some(c => c.type === 9), false, 'the Full Breakdown keeps its rows');
+t('both views are the same two Sections: the list with Edit Selection, the figures and purchase with the view toggle (2026-10-17 17:26 / 17:30 EDT)', () => {
+    for (const [st, label, verb] of [[{}, 'Full Breakdown', 'detail'], [{ detail: true }, 'Simplify', 'detail']]) {
+        const comps = container(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], balance: 3000 }), st)).components;
+        const sec = comps.find(c => c.type === 9 && c.accessory && c.accessory.label === label);
+        assert.ok(sec && sec.components.length === 2 && sec.components[0].content.startsWith('## Cost Breakdown') && sec.components[1].content.startsWith('## Suggested Purchase'), `${label}: one Section, two texts`);
+        assert.strictEqual(verbOf(sec.accessory), verb);
+        assert.ok(comps.some(c => c.type === 9 && c.accessory && c.accessory.label === 'Edit Selection'), `${label}: the list Section too`);
+    }
 });
 
 // ==========================================
@@ -948,18 +947,16 @@ t('Help shows every pack\'s price per 100 CP in the viewer\'s currency and Stock
     assert.ok(/¥148 · \*\*best rate\*\*/.test(allText(dc.buildHelpPanel(ACCENT, { currency: 'JPY' }))), 'a zero-decimal currency still reads as a price');
 });
 
-t('the Full Breakdown is his layout, with sums that check out (2026-10-16 01:07 EDT)', () => {
+t('the Full Breakdown is the simplified layout with its working shown, and the sums check out (2026-10-17 17:30 EDT)', () => {
     const banners = [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }, { drawKey: 'mythicWeapon', pullsDone: 0 }];
     const t = allText(render(makeBasket({ banners }), { detail: true }, { currency: 'CAD' }));
-    assert.ok(/#2 · `1\/10` Spins · Legendary Weapon \(Reactive\) <:BlueDash_BD:\d+> \*\*`4,950 CP`\*\*/.test(t), 'a row: number, spins, name, full cost');
-    assert.ok(t.includes('-# `10 CP` Spent · `4,940 CP` Remaining until Completion'));
-    assert.ok(t.includes('**CP Still Needed** ⌇ **`15,700 CP`**') && t.includes('Full Cost of Draws ⌇ `15,710 CP`') && t.includes('Amount Spent So Far ⌇ `10 CP`'), '15,710 - 10 - 0 = 15,700');
-    assert.ok(t.includes('-# Cost of Draws **−** Amount Spent **−** CP Balance') && !/Mythic Upgrades/.test(t), 'his template in Title Case, upgrades named only when included');
-    assert.ok(t.includes('`4,950 CP` **+** `4,950 CP` **+** `5,810 CP`') && t.includes('CP Balance ⌇ `0 CP` Assumed'));
-    assert.ok(/\*\*Cheapest\*\* ⌇ \*\*`15,800 CP`\*\* for \*\*`CA\$199\.98`\*\*/.test(t) && t.includes('**`100 CP` Left Over**'));
-    assert.ok(t.includes('`CA$129.99` each') && /CoD: Mobile web store prices are \*\*not\*\* included/.test(t));
+    assert.ok(/#2 · Legendary Weapon \(Reactive\)\*\*\n> \*\*Price: `4,950 CP`\*\* · `1\/10` Attempts\n> -# `10 CP` Spent · `4,940 CP` To Complete/.test(t), 'the same list as the simplified view');
+    assert.ok(t.includes('> **CP Still Needed** ⌇ **`15,700 CP`**') && t.includes('Full Cost of Draws ⌇ `15,710 CP`') && t.includes('**−** Spent Already ⌇ `10 CP`'), '15,710 − 10 − 0 = 15,700');
+    assert.ok(t.includes('`4,950 CP` **+** `4,950 CP` **+** `5,810 CP`') && t.includes('`0 CP` **+** `10 CP` **+** `0 CP`'), 'each sum shows its terms');
+    assert.ok(t.includes('**Cheapest**') && t.includes('> **`15,800 CP`** for **`CA$199.98`**') && t.includes('**`100 CP` left over**'));
+    assert.ok(t.includes('**`CA$129.99`** each') && /CoD: Mobile web store prices are \*\*not\*\* included/.test(t));
     const compact = allText(render(makeBasket({ banners }), {}, { currency: 'CAD' }));
-    assert.strictEqual(/Remaining until Completion|\*\*Cheapest\*\*/.test(compact), false, 'Simplify shows its own, shorter layout');
+    assert.strictEqual(/\*\*Cheapest\*\*|Estimates only|`4,950 CP` \*\*\+\*\*/.test(compact), false, 'the simplified view leaves the working out');
 });
 
 t('the Full Breakdown stays under Discord\'s 4,000-character text cap at 25 lines (probed 2026-10-16 01:12 EDT)', () => {
@@ -970,7 +967,7 @@ t('the Full Breakdown stays under Discord\'s 4,000-character text cap at 25 line
         assert.ok(textLen(p) <= 4000, `${banners.length} lines: ${textLen(p)} characters`);
     }
     const twelve = allText(render(makeBasket({ banners: Array(12).fill(0).map((_, i) => ({ drawKey: keys[i % keys.length], pullsDone: i % 7 })) }), { detail: true }, { currency: 'CAD' }));
-    assert.strictEqual((twelve.match(/Remaining until Completion/g) || []).length, 12, 'twelve different lines still get one row each');
+    assert.strictEqual((twelve.match(/To Complete/g) || []).length, 12, 'twelve different lines still get one block each');
 });
 
 t('Stock Up can use as many purchases as the Recommended Package, up to 6 (2026-10-16 01:07 EDT)', () => {
@@ -1059,9 +1056,9 @@ t('upgrades: the balance takes whole CP and cards or coins in steps of 5', () =>
 t('upgrades: the result states cards and coins per line and turns the pool into CP once', () => {
     const basket = makeBasket({ region: 'region_20', mythicCards: 300, banners: [{ drawKey: 'mythicWeapon', pullsDone: 10, upHave: [2], upWant: [5] }] });
     const full = allText(render(basket, { detail: true }));
-    assert.ok(full.includes('**`1,600 Cards` Upgrade**'), 'the row states the upgrade in cards');
-    assert.ok(full.includes('`1,600` Cards Needed **−** `300` Held · About **7** Spins × `1,000 CP`'), full);
-    assert.ok(full.includes('Mythic Upgrades ⌇ `7,000 CP`') && full.includes('**CP Still Needed** ⌇ **`7,000 CP`**'), 'a finished draw costs only its upgrade');
+    assert.ok(full.includes('Upgrade Level 2 → Level 5 · `1,600 Cards`'), 'the line states the upgrade in cards');
+    assert.ok(full.includes('`1,600` Cards − `300` held → about **7** spins × `1,000 CP`'), full);
+    assert.ok(full.includes('**+** Mythic Upgrades ⌇ `7,000 CP`') && full.includes('**CP Still Needed** ⌇ **`7,000 CP`**'), 'a finished draw costs only its upgrade');
     assert.ok(allText(render(basket)).includes('Upgrade Level 2 → Level 5 · `1,600 Cards`'), 'the simplified list says what the upgrade goes to');
     const exp = dc.buildExportText(basket, 'USD');
     assert.ok(/Mythic Cards:\*\* 1,600 needed − 300 held → about 7 spins · 7,000 CP/.test(exp), exp);

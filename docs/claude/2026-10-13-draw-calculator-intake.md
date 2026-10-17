@@ -617,3 +617,11 @@ Earlier in the same round he chose the bigger "Suggested Purchase" heading with 
 
 **Done 2026-10-17 17:22 EDT:** "Items" → "Attempts" in the pickers' descriptions and the shortcut's notice; the glowing dot's prod id read from the prod app's emoji list (`1542356488746573824`).
 
+### Batch 37 — 2026-10-17 17:26 / 17:30 EDT, verbatim
+
+> the buttons are incorrect. you have them as their own action row. but the way i was testing them, i had done a section+accent element type of component. where "Your Draw Selections" was 1 section+button. and "Cost Breakdown" combined with "Suggested Purchase" were 1 section+button.
+>
+> can you use the simplified version as a reference point and adjust/change/improve the design of the full breakdown version as well? so they actually flow better as 2 matching sets instead of 2 completely different designs and structures
+
+**Built:** the Section accessories at 17:29 EDT (`ae754bda`); the Full Breakdown as the simplified layout with its working shown at 2026-10-17 17:35 EDT.
+

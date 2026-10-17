@@ -208,7 +208,7 @@ The old "Draw Info" screen. Its button left the nav row in the 2026-10-14 intake
 
 ### Full Breakdown is his layout, 2026-10-16 01:17 EDT — batch 22
 
-- **Detail view = `buildBreakdownPage`** (Your Selections one row per line: number, spins, name, full cost, then spent / remaining; Cost Breakdown as CP still needed = cost of draws − spent − balance with per-row terms; Recommended Bundles). The compact view (`buildCostBlock`) is compact-only now; don't rebuild a detail branch in it.
+- ⚠️ **SUPERSEDED 2026-10-17 17:33 EDT** (§ The Full Breakdown matches the simplified view): **Detail view = `buildBreakdownPage`** (Your Selections one row per line: number, spins, name, full cost, then spent / remaining; Cost Breakdown as CP still needed = cost of draws − spent − balance with per-row terms; Recommended Bundles). The compact view (`buildCostBlock`) is compact-only now; don't rebuild a detail branch in it.
 - 🔴 **Discord caps a message's text displays at 4,000 characters in total** (`COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED`, probed 2026-10-16 01:17 EDT; separate from the 40-component and ~13k JSON caps). The breakdown picks the most detailed of five levels that fits (`TEXT_BUDGET`, `SETUP_JSON_BUDGET`): one row per line holds up to 12 distinct lines; then adjacent identical lines share a row, then rows drop their note, then sums drop their terms, then one row per draw type. A test pins 25 lines under the cap.
 - **Stock Up's purchase limit** is max(3, the Recommended Package's purchases), at most 6 (`findStockUp`); a flat 3 hid it on every calculation over ~30,000 CP short.
 
@@ -240,7 +240,15 @@ Harkirat's ladders (2026-10-17 11:50 EDT): weapon Levels 1–5 at 125 / 375 / 77
 
 - **`buildCostBlock` returns `{ cost, purchase, buying }`** and `compactSelectionText` writes the list; `buildCostPage`'s simplified branch picks the most detailed of four levels that fits (a block per line, shared blocks, no quiet line, one block per draw type).
 - **The sum reads as a sum:** `> **CP Still Needed**` first, then Full Cost of Draws, **+** Mythic Upgrades (only when set, with one `-#` line per card or coin pool), **−** Spent Already, **−** Your Balance (*not set* when it is 0).
-- **Two Sections with button accessories** (2026-10-17 17:26 EDT, his way of testing it): the list with **Edit Selection**, and Cost Breakdown + Suggested Purchase (two texts in one Section) with **Full Breakdown**. This reverses the 2026-10-16 own-row buttons for the simplified view only; the Full Breakdown keeps Simplify on its own row under its heading. The caption over the controls is his bold **Tweak Calculation** / "Adjust the result in real time."; the form keeps its own.
+- **Two Sections with button accessories** (2026-10-17 17:26 EDT, his way of testing it): the list with **Edit Selection**, and Cost Breakdown + Suggested Purchase (two texts in one Section) with **Full Breakdown**. This reverses the 2026-10-16 own-row buttons. The caption over the controls is his bold **Tweak Calculation** / "Adjust the result in real time."; the form keeps its own.
 - **Title:** "Lucky Draw Cost Calculator" on every view. `emojis.whiteDotGlow` holds the prod id, read from the prod app's emoji list at his word (2026-10-17 17:22 EDT).
 - 🔴 **"Attempts" replaces "Items"; "Spins" stays** (2026-10-17 17:22 EDT, Harkirat: *"'attempts' basically took the spot of 'items'. spins stays as-is."*). What a draw holds is "10 Attempts"; a count of tries stays "3/10 Spins", except the simplified list's `0/10` Attempts, which is his draft. This supersedes the 2026-10-14 Items/Spins rule above.
+
+### The Full Breakdown matches the simplified view, 2026-10-17 17:35 EDT — batch 37
+
+Harkirat (2026-10-17 17:30 EDT): *"use the simplified version as a reference point and adjust/change/improve the design of the full breakdown version as well? so they actually flow better as 2 matching sets instead of 2 completely different designs and structures"*.
+
+- **One builder, two depths.** `buildCostPage` renders both views; `buildCostBlock(…, { detail, level })` adds the working in detail: a `-# :b1:` line of terms under Full Cost of Draws and under Spent Already, the **Cheapest** / **Stock Up** pair with the extra-cost note, and the estimates note. The list (`compactSelectionText`) is the same in both. `buildBreakdownPage`, `breakdownSelectionText`, `breakdownCostLines` and `headedSection` are gone.
+- **Both views are two Sections:** the list with Edit Selection; Cost Breakdown + Suggested Purchase with the toggle (Full Breakdown ⇄ Simplify). Both use the bold **Tweak Calculation** caption.
+- **Fitting:** five levels (a block per line with per-line terms, grouped blocks and terms, no quiet lines, terms as "across N lines", one block per draw type).
 

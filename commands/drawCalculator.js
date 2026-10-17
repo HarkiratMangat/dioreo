@@ -683,17 +683,23 @@ function buildExportText(basket, currency = 'USD') {
 // COST BREAKDOWN -- basket-wide, always priced to FINISH every banner (budget mode and per-banner goals other than Finish are out of scope, spec §10 -- there is no goal select any more).
 // ==========================================
 // THE SIMPLIFIED VIEW'S COST AND PURCHASE, Harkirat's draft (2026-10-17 17:08 EDT, "here's my preliminary draft for the simplified view ... fix it/polish it up. add in the mythic upgrade stuff i missed"). CP Still Needed leads, quoted; then the sum that reaches it, one term per line with its sign; then the purchase that covers it, with each bundle on its own glowing-dot line. Returns the cost lines, the purchase lines, and whether there is anything to buy. The Full Breakdown has its own layout (breakdownCostLines).
-function buildCostBlock(state, basket, currency, client) {
+function buildCostBlock(state, basket, currency, client, { detail = false, level = 0 } = {}) {
     const { total: needed, drawTotal, perBanner, upgrades } = costOf(basket);
     const unpriced = perBanner.filter(b => !b.priced);
     const balance = basket.balance || 0;
     const spent = (basket.banners || []).reduce((n, b) => n + (spentSoFar(basket.region, b.drawKey, b.pullsDone) || 0), 0);
     const shortfall = needed - balance;
+    // THE FULL BREAKDOWN IS THE SAME LAYOUT WITH ITS WORKING SHOWN (2026-10-17 17:30 EDT, Harkirat: "use the simplified version as a reference point ... so they actually flow better as 2 matching sets instead of 2 completely different designs and structures"). It adds what each sum is made of, a `-#` line of terms under Full Cost and Spent Already, and in the purchase the Stock Up option and the estimates note. At many lines the terms group identical lines ("2 × `4,950 CP`"), then collapse to "across N lines".
+    const priced = lineFigures(basket).filter(f => f.priced);
+    const rows = breakdownRows(priced, level >= 4 ? 4 : level >= 1 ? 1 : 0);
+    const terms = key => (level >= 3 ? `across ${plural(priced.length, 'line')}` : rows.map(r => `\`${r.count > 1 && !r.byType ? `${r.count} × ` : ''}${fmt(r[key])} CP\``).join(' **+** ') || '`0 CP`');
+    const termLine = key => (detail ? [`-# ${emojis.b1} ${terms(key)}`] : []);
     const cost = [
         '## Cost Breakdown',
         `> **CP Still Needed**${BREAK}**\`${fmt(Math.max(shortfall, 0))} CP\`**`,
         // "Full Cost of Draws" over his "Draws Cost": it is the whole price, what is spent included, and the signs make the lines read as the sum they are.
-        `Full Cost of Draws${BREAK}\`${fmt(drawTotal + spent)} CP\``
+        `Full Cost of Draws${BREAK}\`${fmt(drawTotal + spent)} CP\``,
+        ...termLine('full')
     ];
     if (upgrades.cp) {
         cost.push(`**+** Mythic Upgrades${BREAK}\`${fmt(upgrades.cp)} CP\``);
@@ -702,7 +708,7 @@ function buildCostBlock(state, basket, currency, client) {
             cost.push(`-# ${icon} \`${fmt(p.need)}\` ${p.currency}${p.held ? ` − \`${fmt(p.held)}\` held` : ''} → about **${p.spins}** spins × \`${fmt(p.perDraw)} CP\``);
         }
     }
-    cost.push(`**−** Spent Already${BREAK}\`${fmt(spent)} CP\``);
+    cost.push(`**−** Spent Already${BREAK}\`${fmt(spent)} CP\``, ...termLine('spent'));
     // "Not set" so a balance nobody entered does not read as one set to 0.
     cost.push(`**−** Your Balance${BREAK}\`${fmt(balance)} CP\`${balance ? '' : ' *(not set)*'}`);
     if (unpriced.length) cost.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => shortName(b.drawKey)).join(', ')}.`);
@@ -716,17 +722,26 @@ function buildCostBlock(state, basket, currency, client) {
     const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (basket.entitlementMask & (1 << i)) !== 0).map(p => p.id);
     const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
     if (!result || !result.cheapest) return { cost, purchase: [`⚠️ **${fmt(shortfall)} CP** is more than a reasonable number of store purchases can cover at once.`], buying: false };
-    const r = result.cheapest;
     const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
     const money = cents => formatMoney(cents, currency);
-    const purchase = [
-        '## Suggested Purchase',
+    // One option's block, his draft's shape: what it buys for what it costs, what is left over, one glowing-dot line per bundle.
+    const option = r => [
         `> **\`${fmt(r.totalCp)} CP\`** for **\`${money(r.totalCents)}\`**`,
         `> -# **\`${fmt(r.leftoverCp)} CP\` left over** after completing your draws${upgrades.cp ? ' and upgrades' : ''}`,
-        ...r.combo.map(c => `${emojis.whiteDotGlow} **${c.count}× \`${fmt(c.cpEach)} CP\`** bundle${c.mode === 'double' ? ' (2X)' : ''}${BREAK}**\`${money(c.priceCents)}\`**${c.count > 1 ? ' each' : ''}`),
-        // The currency line stays (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it.
-        `-# Prices in **${currency}** · Change in ${settingsMention}`
+        ...r.combo.map(c => `${emojis.whiteDotGlow} **${c.count}× \`${fmt(c.cpEach)} CP\`** bundle${c.mode === 'double' ? ' (2X)' : ''}${BREAK}**\`${money(c.priceCents)}\`**${c.count > 1 ? ' each' : ''}`)
     ];
+    const stockUp = detail ? result.stockUp : null;
+    const purchase = ['## Suggested Purchase'];
+    // Labels only when there are two options to tell apart (2026-10-14 16:47 EDT: "no point stating Cheapest when no other option is being presented").
+    if (stockUp) purchase.push('**Cheapest**');
+    purchase.push(...option(result.cheapest));
+    if (stockUp) {
+        purchase.push('', '**Stock Up**', ...option(stockUp));
+        purchase.push(`-# **${money(stockUp.extraCents)} more** buys **${fmt(stockUp.extraCp)} extra CP** at a *better rate*, which is worth it if you plan to buy more draws later.`);
+    }
+    if (detail) purchase.push('-# Estimates only: local tax and currency conversion vary, and CoD: Mobile web store prices are **not** included.');
+    // The currency line stays (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it.
+    purchase.push(`-# Prices in **${currency}** · Change in ${settingsMention}`);
     return { cost, purchase, buying: true };
 }
 
@@ -976,92 +991,6 @@ function breakdownRows(figs, level) {
     }
     return rows;
 }
-function breakdownSelectionText(basket, level) {
-    const dash = emojis.blueDash;
-    const rows = breakdownRows(lineFigures(basket), level);
-    const out = [`## ${selectionHeading(basket.banners)}`];
-    for (const r of rows) {
-        const icon = DRAW_META[r.drawKey] ? emojis[DRAW_META[r.drawKey].tier] : emojis.smallDot;
-        const name = `${shortName(r.drawKey)}${r.count > 1 ? ` ×${r.count}` : ''}`;
-        // A per-type row (level 4) already carries its lines' sums, so it is never multiplied again.
-        const k = r.byType ? 1 : r.count;
-        // His upgrade layout: "**`x CP` Weapon** + **`x …` Upgrade**" on the row. The upgrade is stated in its own currency (2026-10-17 13:17 EDT): cards and coins are pooled across lines, so only the pool's total has a CP figure, in the Cost Breakdown below.
-        const currency = MYTHIC_UPGRADE[r.drawKey]?.currency || '';
-        const cost = !r.priced ? '**no price here**'
-            : r.upNeed ? `**\`${fmt(r.drawFull * k)} CP\` ${UPGRADE_LABEL[r.drawKey] || 'Draw'}** + **\`${fmt(r.upNeed * k)} ${currency}\` Upgrade**`
-            : `**\`${fmt(r.full * k)} CP\`**`;
-        if (r.byType) { out.push(`${icon} ${name} · \`${r.pullsDone}/${r.total || '?'}\` Spins ${dash} ${cost}`); continue; }
-        const num = r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`;
-        out.push(`${icon} ${num} · \`${r.pullsDone}/${r.total ?? '?'}\` Spins · ${name} ${dash} ${cost}`);
-        if (level < 2) out.push(r.priced
-            ? `-# \`${fmt(r.spent * r.count)} CP\` Spent · \`${fmt(r.drawLeft * r.count)} CP\` Remaining until Completion${r.up ? ` · Upgrade: ${upgradeTransition(r.up)}` : ''}`
-            : `-# No sourced price at ${regionLabel(basket.region)}, so this line is left out of the totals.`);
-    }
-    return out.join('\n');
-}
-function breakdownCostLines(basket, currency, client, level) {
-    const b1 = emojis.b1;
-    const figs = lineFigures(basket).filter(f => f.priced);
-    const rows = breakdownRows(figs, level);
-    const upgrades = upgradePlan(basket);
-    const full = figs.reduce((n, f) => n + f.full, 0) + upgrades.cp;
-    const spent = figs.reduce((n, f) => n + f.spent, 0);
-    const needed = full - spent;
-    const balance = basket.balance || 0;
-    const shortfall = needed - balance;
-    const term = (r, key) => `\`${r.count > 1 && !r.byType ? `${r.count} × ` : ''}${fmt(r[key])} CP\``;
-    const withUpgrades = upgrades.cp > 0;
-    // The pooled upgrade CP joins the Full Cost sum as ONE term (2026-10-17 13:17 EDT): it is not any one line's.
-    const upgradeTerm = withUpgrades ? ` **+** \`${fmt(upgrades.cp)} CP\` Upgrades` : '';
-    const terms = key => level >= 3 ? `across ${plural(figs.length, 'line')}${key === 'full' ? upgradeTerm : ''}` : (rows.length ? rows.map(r => term(r, key)).join(' **+** ') + (key === 'full' ? upgradeTerm : '') : '`0 CP`');
-    // How the upgrade CP was reached, one line per currency: what the lines need, minus what is held, then the spins it takes.
-    const upgradeLines = upgrades.pools.filter(p => p.need).map(p => {
-        const icon = emojis[p.drawKey === 'mythicWeapon' ? 'mythicCard' : 'mythicCoin'] || '';
-        const after = p.short ? (p.cp !== null ? ` · About **${p.spins}** Spins × \`${fmt(p.perDraw)} CP\`` : ' · No upgrade price here yet') : ' · Covered';
-        return `-# ${b1} ${icon} \`${fmt(p.need)}\` ${p.currency} Needed${p.held ? ` **−** \`${fmt(p.held)}\` Held` : ''}${after}`;
-    });
-    const head = [
-        '## Cost Breakdown',
-        // His rough template, cleaned up (2026-10-16 18:57 EDT, Harkirat: "you literally copied my typed template as is, when i said it was rough"): labels and terms in Title Case, sentences in sentence case, a real minus sign.
-        `**CP Still Needed**${BREAK}**\`${fmt(Math.max(shortfall, 0))} CP\`**`,
-        // Plain words, not code spans: a monospace span is about a third wider on a phone and wrapped three times there.
-        `-# Cost of Draws${withUpgrades ? ' & Mythic Upgrades' : ''} **−** Amount Spent **−** CP Balance`
-    ];
-    const tail = [
-        `Full Cost of Draws${withUpgrades ? ' & Upgrades' : ''}${BREAK}\`${fmt(full)} CP\``,
-        `-# ${b1} ${terms('full')}`,
-        ...(upgradeLines.length ? [`Mythic Upgrades${BREAK}\`${fmt(upgrades.cp)} CP\``, ...upgradeLines] : []),
-        `Amount Spent So Far${BREAK}\`${fmt(spent)} CP\``,
-        `-# ${b1} ${terms('spent')}`,
-        balance ? `CP Balance${BREAK}\`${fmt(balance)} CP\`` : `CP Balance${BREAK}\`0 CP\` Assumed`,
-        `-# ${b1} ${balance ? 'Set under Tweak Calculation' : '`Not Set`'}`
-    ];
-    const unpriced = lineFigures(basket).filter(f => !f.priced);
-    if (unpriced.length) tail.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${[...new Set(unpriced.map(f => shortName(f.drawKey)))].join(', ')}.`);
-    tail.push(...upgradeWarnings(basket, upgrades));
-
-    if (needed === 0 && !unpriced.length) return { head, tail: [...tail, '', '✅ **Every draw here is finished** — nothing left to buy.'] };
-    if (shortfall <= 0) return { head, tail: [...tail, '', `✅ **Your balance covers this**, with **\`${fmt(-shortfall)} CP\`** to spare.`] };
-
-    const doubleCpAvailable = CP_PACKAGES.filter((pk, i) => (basket.entitlementMask & (1 << i)) !== 0).map(pk => pk.id);
-    const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
-    if (!result || !result.cheapest) return { head, tail: [...tail, '', `⚠️ **${fmt(shortfall)} CP** is more than a reasonable number of store purchases can cover at once.`] };
-    const money = cents => formatMoney(cents, currency);
-    const bundle = (label, r) => [
-        `**${label}**${BREAK}**\`${fmt(r.totalCp)} CP\`** for **\`${money(r.totalCents)}\`**`,
-        ...r.combo.map(c => `> **${c.count}×** ${fmt(c.cpEach)} CP bundle${c.mode === 'double' ? ' (2X)' : ''}${BREAK}\`${money(c.priceCents)}\`${c.count > 1 ? ' each' : ''}`),
-        // The heading line already says what is bought, so the note keeps the two figures it adds, short enough for one line on a phone.
-        `-# \`${fmt(shortfall)} CP\` Needed · **\`${fmt(r.leftoverCp)} CP\` Left Over**`
-    ];
-    const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
-    tail.push(result.stockUp ? '## Recommended Bundles' : '## Recommended Bundle', ...bundle('Cheapest', result.cheapest));
-    if (result.stockUp) {
-        tail.push('', ...bundle('Stock Up', result.stockUp));
-        tail.push(`-# **${money(result.stockUp.extraCents)} more** buys **${fmt(result.stockUp.extraCp)} extra CP** at a *better rate*, which is worth it if you plan to buy more draws later.`);
-    }
-    tail.push('', '-# Estimates only: local tax and currency conversion vary, and CoD: Mobile web store prices are **not** included.', `-# Prices in **${currency}** · Change in ${settingsMention}`);
-    return { head, tail };
-}
 // Discord's text cap for one message's text displays, used with SETUP_JSON_BUDGET to pick the Full Breakdown's level.
 const TEXT_BUDGET = 4000;
 function textLength(node) {
@@ -1071,26 +1000,8 @@ function textLength(node) {
     return n;
 }
 
-// A section's button sits on its own row UNDER the heading, never beside the text as a Section accessory (2026-10-16 20:32 EDT, Harkirat's phone screenshot: "Can you improve the structure of the content so it fits better on mobile? Such as the 'simplify' buttons position"). On a phone the accessory took a third of the width, so "21,400 / CP" broke across lines and the formula's code spans wrapped three times. The heading-then-button order keeps his 2026-10-13 asks (Edit beside Your Selection, the breakdown toggle with Cost Breakdown) on a phone-sized width.
+// Edit Selection is the list Section's button (2026-10-17 17:26 EDT). The 2026-10-16 20:31 EDT rule that kept buttons off Section accessories for phones was reversed by his own testing.
 function editSelectionButton(state) { return { type: 2, style: 2, label: 'Edit Selection', custom_id: encodeState('edit', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
-function headedSection(heading, button, rest) {
-    return [{ type: 10, content: heading }, { type: 1, components: [button] }, ...(rest ? [{ type: 10, content: rest }] : [])];
-}
-const splitHeading = text => { const i = text.indexOf('\n'); return i === -1 ? [text, ''] : [text.slice(0, i), text.slice(i + 1)]; };
-function buildBreakdownPage(state, basket, accentColor, options, level) {
-    const { currency = 'USD', client = null, liveDoubleCPEntry = null } = options;
-    const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
-    const [selHeading, selRows] = splitHeading(breakdownSelectionText(basket, level));
-    components.push(...headedSection(selHeading, editSelectionButton(state), selRows));
-    if (options.notice) components.push({ type: 10, content: `-# ${options.notice}` });
-    if (options.dropConfirm) components.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
-    components.push({ type: 14, spacing: 1, divider: true });
-    const { head, tail } = breakdownCostLines(basket, currency, client, level);
-    components.push(...headedSection(head[0], { type: 2, style: 2, label: 'Simplify', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(emojis.collapse) }, head.slice(1).join('\n')));
-    components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: tail.join('\n') });
-    return finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry);
-}
-
 function buildCostPage(state, basket, accentColor, options = {}) {
     const { currency = 'USD', client = null, liveDoubleCPEntry = null } = options;
     const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
@@ -1100,28 +1011,20 @@ function buildCostPage(state, basket, accentColor, options = {}) {
         return buildSetupPanel(state, basket, accentColor, { region: basket.region, savedCount: options.savedCount ?? (options.savedBaskets || []).length, notice: basket.name ? `"${basket.name}" is empty — pick a draw to add to it.` : null });
     }
 
-    if (state.detail) {
-        // Harkirat's Full Breakdown layout, at the most detailed level that fits (see breakdownRows).
-        let out = null;
-        for (const level of [0, 1, 2, 3, 4]) {
-            out = buildBreakdownPage(state, basket, accentColor, options, level);
-            if (JSON.stringify(out).length <= SETUP_JSON_BUDGET && textLength(out) <= TEXT_BUDGET) break;
-        }
-        return out;
-    }
-    // HIS SIMPLIFIED VIEW (2026-10-17 17:08 EDT), built the way he tested it (2026-10-17 17:26 EDT, Harkirat: "i had done a section+accent element type of component. where 'Your Draw Selections' was 1 section+button. and 'Cost Breakdown' combined with 'Suggested Purchase' were 1 section+button"). So each block is a Section with its button as the accessory: the list with Edit Selection, then Cost Breakdown and Suggested Purchase together with Full Breakdown. This reverses the 2026-10-16 20:31 EDT move of these buttons onto their own rows, for this view only; the Full Breakdown keeps its rows. Fewer details per line until it fits Discord's caps.
+    // HIS SIMPLIFIED VIEW (2026-10-17 17:08 EDT), built the way he tested it (2026-10-17 17:26 EDT, Harkirat: "i had done a section+accent element type of component. where 'Your Draw Selections' was 1 section+button. and 'Cost Breakdown' combined with 'Suggested Purchase' were 1 section+button"). So each block is a Section with its button as the accessory: the list with Edit Selection, then Cost Breakdown and Suggested Purchase together with Full Breakdown. This reverses the 2026-10-16 20:31 EDT move of these buttons onto their own rows. The Full Breakdown is the same two Sections with its working shown and Simplify as the button (2026-10-17 17:30 EDT, "2 matching sets"). Fewer details per line until it fits Discord's caps.
     const build = level => {
         const out = [...components];
-        out.push({ type: 9, components: [{ type: 10, content: `## ${basket.banners.length >= 2 ? 'Your Draw Selections' : 'Your Draw Selection'}\n${compactSelectionText(basket, level)}` }], accessory: editSelectionButton(state) });
+        out.push({ type: 9, components: [{ type: 10, content: `## ${basket.banners.length >= 2 ? 'Your Draw Selections' : 'Your Draw Selection'}\n${compactSelectionText(basket, Math.min(level, 3))}` }], accessory: editSelectionButton(state) });
         if (options.notice) out.push({ type: 10, content: `-# ${options.notice}` });
         if (options.dropConfirm) out.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
         out.push({ type: 14, spacing: 1, divider: true });
-        const { cost, purchase } = buildCostBlock(state, basket, currency, client);
-        out.push({ type: 9, components: [{ type: 10, content: cost.join('\n') }, { type: 10, content: purchase.join('\n') }], accessory: { type: 2, style: 2, label: 'Full Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(emojis.expand) } });
+        const { cost, purchase } = buildCostBlock(state, basket, currency, client, { detail: state.detail, level });
+        const toggle = state.detail ? { label: 'Simplify', emoji: emojis.collapse } : { label: 'Full Breakdown', emoji: emojis.expand };
+        out.push({ type: 9, components: [{ type: 10, content: cost.join('\n') }, { type: 10, content: purchase.join('\n') }], accessory: { type: 2, style: 2, label: toggle.label, custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(toggle.emoji) } });
         return finishCostPage(state, basket, accentColor, out, liveDoubleCPEntry, { caption: TWEAK_RESULT_CAPTION });
     };
     let out = null;
-    for (const level of [0, 1, 2, 3]) {
+    for (const level of [0, 1, 2, 3, 4]) {
         out = build(level);
         if (JSON.stringify(out).length <= SETUP_JSON_BUDGET && textLength(out) <= TEXT_BUDGET) break;
     }
