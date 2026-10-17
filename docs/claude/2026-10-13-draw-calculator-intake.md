@@ -653,3 +653,11 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 
 **Built 2026-10-17 18:54 EDT:** plain-words terms line (`980c4325`); the three prod emoji ids (dev re-points by name on restart); Mythic Cards and Coins always in the Balance pop-up, no "(steps of 5)", placeholder "e.g. 300 or 2k". His side question answered in the thread.
 
+### Batch 41 — 2026-10-17 19:01 / 19:03 EDT, verbatim
+
+> what about `3 k`? or `250 card` or `250 mythic card`, etc? and what happens on a refuse? an error message instructing the user to reopen and retype?
+>
+> yeah go ahead. and lets keep the warning in the seperate message (ephemeral)
+
+**Built 2026-10-17 19:04 EDT:** "mythic" is accepted before card(s)/coin(s); the pop-up saves the fields that are fine and a private message names the refused ones and says to press Set Balance.
+

@@ -1068,6 +1068,18 @@ t('upgrades: the result states cards and coins per line and turns the pool into 
     assert.ok(/Mythic Cards:\*\* 1,600 needed − 300 held → about 7 spins · 7,000 CP/.test(exp), exp);
 });
 
+t('the balance pop-up saves the fields that are fine and names the refused ones (2026-10-17 19:03 EDT)', () => {
+    assert.deepStrictEqual(['250 mythic card', '250 mythic cards', '250 card', '2 k'].map(dc.parseCount), [250, 250, 250, 2000]);
+    assert.strictEqual(dc.parseAmount('3 k'), 3000);
+    const ok = dc.readBalanceFields({ amount: '3k', cards: '300', coins: '' });
+    assert.deepStrictEqual(ok, { fields: { balance: 3000, mythicCards: 300, mythicCoins: 0 }, warning: null });
+    const mixed = dc.readBalanceFields({ amount: '3000 cp', cards: '252', coins: '150' });
+    assert.deepStrictEqual(mixed.fields, { balance: 3000, mythicCoins: 150 }, 'the good fields are kept');
+    assert.ok(mixed.warning.startsWith('⚠️ Saved CP and Mythic Coins.') && mixed.warning.includes('**Mythic Cards** `252` wasn\'t saved: use 0 or a multiple of 5') && mixed.warning.endsWith('Press **Set Balance** to fix it.'), mixed.warning);
+    const none = dc.readBalanceFields({ amount: 'abc', cards: '7', coins: null });
+    assert.ok(none.warning.startsWith('⚠️ Nothing was saved.') && none.warning.endsWith('to fix them.') && !Object.keys(none.fields).length);
+});
+
 t('/draw prices states the upgrade ladders under each Upgrade heading', () => {
     const { buildDrawEntries } = require('../commands/drawprices');
     const [w, c] = buildDrawEntries('region_20', ['mythicWeapon', 'mythicCharacter']);

@@ -12,7 +12,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
-    findLiveDoubleCPEntry, buildExportText, parseAmount, parseCount, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
+    findLiveDoubleCPEntry, buildExportText, readBalanceFields, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
     buildUpgradeModal, readUpgradeModal
 } = require('../commands/drawCalculator');
 const { pullCount } = require('../utils/drawCost');
@@ -177,25 +177,18 @@ async function route(interaction) {
         return await interaction.showModal(buildNameModal(state, basket.name));
     }
     if (interaction.isModalSubmit() && state.verb === 'nums') {
-        // A field the pop-up did not carry (no Mythic weapon, say) reads null and leaves that balance alone.
+        // Every field that is fine is saved; a refused one is named in a private warning after the panel updates (readBalanceFields). A field the pop-up did not carry reads null and changes nothing.
         const text = id => { try { return interaction.fields.getTextInputValue(id); } catch { return null; } };
-        const amount = parseAmount(text('amount'));
-        const cardsRaw = text('cards'), coinsRaw = text('coins');
-        const cards = cardsRaw === null ? undefined : parseCount(cardsRaw);
-        const coins = coinsRaw === null ? undefined : parseCount(coinsRaw);
-        const problem = amount === null ? 'CP must be a whole number, like `3000` or `3k`.'
-            : cards === null ? 'Mythic Cards must be 0 or a multiple of 5, like `300`.'
-            : coins === null ? 'Mythic Coins must be 0 or a multiple of 5, like `150`.' : null;
-        if (problem) {
-            try { await interaction.reply({ content: `❌ ${problem} Nothing was changed.`, ephemeral: true }); }
-            catch (notifyError) { console.error('Failed to notify user of invalid amount (interaction likely expired):', notifyError); }
-            return true;
-        }
+        const { fields, warning } = readBalanceFields({ amount: text('amount'), cards: text('cards'), coins: text('coins') });
         await interaction.deferUpdate();
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        const updated = await writeTo(actingUserId, state, basket, { balance: amount, ...(cards !== undefined ? { mythicCards: cards } : {}), ...(coins !== undefined ? { mythicCoins: coins } : {}) });
+        const updated = Object.keys(fields).length ? await writeTo(actingUserId, state, basket, fields) : basket;
         await renderPanel(interaction, state, updated);
+        if (warning) {
+            try { await interaction.followUp({ content: warning, flags: 64 }); }
+            catch (notifyError) { console.error('Failed to warn about a refused balance field (interaction likely expired):', notifyError); }
+        }
         return true;
     }
 

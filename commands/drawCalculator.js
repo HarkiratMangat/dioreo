@@ -79,9 +79,26 @@ function parseAmount(raw) {
     return Math.abs(v - r) > 1e-6 ? null : r;
 }
 // Mythic Cards and Coins in the Balance pop-up (2026-10-17 12:01 EDT, Harkirat: "only allowed as steps of 5 ... Only 0 or multiples of 5s, 10s"). Every tier cost in the game is a multiple of 5, so this never refuses a real count. Blank is 0, like CP.
+// The balance pop-up's three fields, read together. A field that is fine is saved even when another is refused (2026-10-17 19:04 EDT, Harkirat: "yeah go ahead. and lets keep the warning in the seperate message (ephemeral)"), so nobody retypes the ones that were right; the warning names each refused field and how to fix it. A field the pop-up did not carry is null and changes nothing.
+function readBalanceFields({ amount = null, cards = null, coins = null }) {
+    const fields = {}, saved = [], refused = [];
+    const take = (raw, label, parse, key, hint) => {
+        if (raw === null) return;
+        const v = parse(raw);
+        if (v === null) refused.push(`**${label}** \`${String(raw).trim().slice(0, 20)}\` wasn't saved: ${hint}`);
+        else { fields[key] = v; saved.push(label); }
+    };
+    take(amount, 'CP', parseAmount, 'balance', 'use a whole number, like `3000` or `3k`.');
+    take(cards, 'Mythic Cards', parseCount, 'mythicCards', 'use 0 or a multiple of 5, like `300`.');
+    take(coins, 'Mythic Coins', parseCount, 'mythicCoins', 'use 0 or a multiple of 5, like `300`.');
+    const lead = saved.length ? `Saved ${saved.join(' and ')}.` : 'Nothing was saved.';
+    const warning = refused.length ? `⚠️ ${lead}\n${refused.map(r => `- ${r}`).join('\n')}\nPress **Set Balance** to fix ${refused.length === 1 ? 'it' : 'them'}.` : null;
+    return { fields, warning };
+}
 function parseCount(raw) {
     if (raw === null || raw === undefined) return 0;
-    const cleaned = String(raw).trim().toLowerCase().replace(/[, ]/g, '').replace(/(cards?|coins?)$/, '');
+    // "250 cards", "250 mythic card", "2 k" (2026-10-17 19:04 EDT, Harkirat: "what about `3 k`? or `250 card` or `250 mythic card`").
+    const cleaned = String(raw).trim().toLowerCase().replace(/[, ]/g, '').replace(/(mythic)?(cards?|coins?)$/, '');
     if (cleaned === '') return 0;
     const k = cleaned.endsWith('k');
     const n = Number(k ? cleaned.slice(0, -1) : cleaned);
@@ -1225,7 +1242,7 @@ module.exports = {
     buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildExportText, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, savedChecksum, savedDescription,
     buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
-    parseAmount, parseCount, applySelection, shortName, SHORT_NAME, slashShortcut,
+    parseAmount, parseCount, readBalanceFields, applySelection, shortName, SHORT_NAME, slashShortcut,
     buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,
     setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages
 };
