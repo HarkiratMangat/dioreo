@@ -1,5 +1,4 @@
-// scripts/embedTester.test.js — utils/embedTester.js (the dev-only /embedtest) and its dev-only registration.
-// Run: node scripts/embedTester.test.js
+// scripts/embedTester.test.js — utils/embedTester.js (the dev-only /embedtest) and its dev-only registration. Run: node scripts/embedTester.test.js
 const assert = require('assert');
 const path = require('path');
 const t = require('../utils/embedTester');

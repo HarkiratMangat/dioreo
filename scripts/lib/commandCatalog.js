@@ -96,6 +96,8 @@ function readBuilders(dir = COMMANDS_DIR) {
         const mod = require(path.join(dir, file));
         // A module with no `data` export is not a registered command — the draw calculator lives in its own file and is registered as a subcommand of `/draw` by `commands/drawprices.js`, so it has none.
         if (!mod || !mod.data || typeof mod.data.toJSON !== 'function') continue;
+        // A `devOnly` module (/embedtest, 2026-10-17) is registered only on the dev bot (bot/registry.js), so the public /commands page must never list it.
+        if (mod.devOnly) continue;
         for (const leaf of leavesOf(mod.data.toJSON())) {
             leaves.push({ ...leaf, options: leaf.options.map(normalizeOption), file });
         }
