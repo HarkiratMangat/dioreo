@@ -573,3 +573,39 @@ His asks: the Full Breakdown states Mythic upgrades apart (his layout); Cancel w
 
 **Built 2026-10-17 13:26 EDT** (rules: `.claude/rules/draw-prices.md` § Mythic upgrades by tier): the ladders in `MYTHIC_UPGRADE`; a shared pool per currency, converted to spins once; per-line have/want with "already" fields only on a finished draw; exact per-path choice plus four Quick Picks; one Upgrade button or a dropdown of Mythic lines opening a pop-up; Mythic Cards and Coins in the Balance pop-up in steps of 5; whole CP only; the ladders on `/draw prices`. His side question in the same message (two screenshots of a cost layout, which looks better) is answered in the thread, not built.
 
+### Batch 35 — 2026-10-17 16:46 / 17:08 EDT, verbatim
+
+> i still need to see how the new mythic update system in the calc works, but here's my preliminary draft for the simplified view:
+>
+> ```
+> ## :DrawCalc: Lucky Draw Cost Calculator
+> ## Your Draw Selections
+> **:5Legendary_CODM: #1 · Legendary Weapon (Reactive)**
+> > **Price: `4,950 CP`** · `0/10` Attempts
+> > -# `0 CP` Spent · `4,950 CP` To Complete
+> **:5Legendary_CODM: #2 · Legendary Weapon (Reactive)**
+> > **Price: `4,950 CP`** · `1/10` Attempts
+> > -# `10 CP` Spent · `4,940 CP` To Complete
+> **:7Mythic_CODM: #3 · Mythic Weapon**
+> > **Price: `5,810 CP`** · `0/10` Attempts
+> > -# `0 CP` Spent · `5,810 CP` To Complete
+> ## Cost Breakdown
+> > **CP Still Needed** ⌇ **`15,700 CP`**
+> Draws Cost ⌇ `15,710 CP`
+> Spent Already ⌇ `10 CP`
+> Your Balance ⌇ `0 CP`
+> ## Suggested Purchase
+> > **`21,600 CP`** for **`CA$259.98`**
+> > -# **`200 CP` left over** after completing draws
+> :WhiteDotGlow_WDG: **2× `10,800 CP`** bundle ⌇ **`CA$129.99`** each
+> :WhiteDotGlow_WDG: **2× `10,800 CP`** bundle ⌇ **`CA$129.99`** each
+> **Tweak Calculation**
+> -# Adjust the result in real time.
+> ```
+>
+> please adjust/correct it accordingly. fix it/polish it up. add in the mythic upgrade stuff i missed, etc. It's just a rough direction/guideline. Does that make sense?
+
+Earlier in the same round he chose the bigger "Suggested Purchase" heading with the total first, and "Cost Breakdown" as the figures' heading, and asked for a critique of the draft's screenshot (signs on the sum, "Full Cost of Draws", a Mythic Upgrades line, "left over" said once, "not set" on an empty balance).
+
+**Built 2026-10-17 17:15 EDT:** his draft as the simplified view, with the critique applied: the sum reads Full Cost of Draws, + Mythic Upgrades (with one line per card or coin pool), − Spent Already, − Your Balance *(not set)*; the Mythic line gains its upgrade; one glowing-dot line per bundle, "each" only above one; the currency line kept; Edit Selection under the list and Full Breakdown under the figures; the title is "Lucky Draw Cost Calculator" everywhere. "Attempts" kept as he wrote it, which differs from "Spins" elsewhere (asked). The glowing dot carries the DEV id until he gives the prod one.
+

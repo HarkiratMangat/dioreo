@@ -545,6 +545,8 @@ function regionRow(state, basket) {
 
 // The caption above the region buttons (2026-10-13 12:40 EDT). How a player finds their region lives in Help, which names the draws whose first spin IS the region (not every draw's is: Mythic Character and Pick Your Reward Card start higher, measured 2026-10-14 18:33 EDT). No heading and no divider above it (2026-10-14 13:13 EDT, Harkirat: "'Your Region & CP Balance' remove it. Also remove the divider above it"); the hint alone labels the row, and Help keeps what a region is. "### Tweak Calculation" over the hint (2026-10-14 17:58 EDT, Harkirat).
 function regionCaption() { return { type: 10, content: '### Tweak Calculation\n-# Set your CP region and current balance.' }; }
+// The simplified result's caption, his draft (2026-10-17 17:08 EDT): bold, not a heading, over one line of what the controls do.
+const TWEAK_RESULT_CAPTION = { type: 10, content: '**Tweak Calculation**\n-# Adjust the result in real time.' };
 // Room between blocks without a rule (his "more breathing room"): a separator with no divider.
 const SPACER = { type: 14, spacing: 2, divider: false };
 // "Your Selections" once there are two or more draws (2026-10-14 16:51 EDT, Harkirat).
@@ -679,60 +681,75 @@ function buildExportText(basket, currency = 'USD') {
 // ==========================================
 // COST BREAKDOWN -- basket-wide, always priced to FINISH every banner (budget mode and per-banner goals other than Finish are out of scope, spec §10 -- there is no goal select any more).
 // ==========================================
-// The COMPACT cost block only, since Harkirat's Full Breakdown layout (2026-10-16) renders the detail view through breakdownCostLines.
+// THE SIMPLIFIED VIEW'S COST AND PURCHASE, Harkirat's draft (2026-10-17 17:08 EDT, "here's my preliminary draft for the simplified view ... fix it/polish it up. add in the mythic upgrade stuff i missed"). CP Still Needed leads, quoted; then the sum that reaches it, one term per line with its sign; then the purchase that covers it, with each bundle on its own glowing-dot line. Returns the cost lines, the purchase lines, and whether there is anything to buy. The Full Breakdown has its own layout (breakdownCostLines).
 function buildCostBlock(state, basket, currency, client) {
-    const dot = emojis.smallDot;
-    const dash = emojis.blueDash;
-    const { total: needed, perBanner, upgrades } = costOf(basket);
+    const { total: needed, drawTotal, perBanner, upgrades } = costOf(basket);
     const unpriced = perBanner.filter(b => !b.priced);
-    const shortfall = needed - (basket.balance || 0);
+    const balance = basket.balance || 0;
+    const spent = (basket.banners || []).reduce((n, b) => n + (spentSoFar(basket.region, b.drawKey, b.pullsDone) || 0), 0);
+    const shortfall = needed - balance;
+    const cost = [
+        '## Cost Breakdown',
+        `> **CP Still Needed**${BREAK}**\`${fmt(Math.max(shortfall, 0))} CP\`**`,
+        // "Full Cost of Draws" over his "Draws Cost": it is the whole price, what is spent included, and the signs make the lines read as the sum they are.
+        `Full Cost of Draws${BREAK}\`${fmt(drawTotal + spent)} CP\``
+    ];
+    if (upgrades.cp) {
+        cost.push(`**+** Mythic Upgrades${BREAK}\`${fmt(upgrades.cp)} CP\``);
+        for (const p of upgrades.pools.filter(x => x.need)) {
+            const icon = p.drawKey === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
+            cost.push(`-# ${icon} \`${fmt(p.need)}\` ${p.currency}${p.held ? ` − \`${fmt(p.held)}\` held` : ''} → about **${p.spins}** spins × \`${fmt(p.perDraw)} CP\``);
+        }
+    }
+    cost.push(`**−** Spent Already${BREAK}\`${fmt(spent)} CP\``);
+    // "Not set" so a balance nobody entered does not read as one set to 0.
+    cost.push(`**−** Your Balance${BREAK}\`${fmt(balance)} CP\`${balance ? '' : ' *(not set)*'}`);
+    if (unpriced.length) cost.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => shortName(b.drawKey)).join(', ')}.`);
+    // 🔴 A SILENT ZERO, FOUND 2026-10-13 12:40 EDT: an upgrade with no price at the region used to add nothing while claiming it was included. Say so instead.
+    cost.push(...upgradeWarnings(basket, upgrades));
 
-    // 🔴 CP NEEDED LEADS. This block used to open with "Draws in basket: 2" and put the one number the whole command exists to produce THIRD -- the eye landed on a count nobody asked for. The count itself is gone: the DRAWS IN PROGRESS list sits directly above and already shows every line. CP Needed is the block's own heading (2026-10-14 16:51 EDT, Harkirat: "move CP needed into a ### heading"). No Balance or Region line (2026-10-14 13:19 EDT): the button and the toggle show both. What the balance CHANGES is on no button, so it stays, as one quiet line.
-    // The Full Breakdown's terms carried over (2026-10-16 21:06 EDT, Harkirat: "take the full breakdown changes and appropriately make them for the simplified version as well"). The headline is the SAME net figure the breakdown calls CP Still Needed (it used to be the gross figure, so switching views changed the "needed" number), kept as his `###` heading; one note says what was subtracted or added, and only when something was.
-    const upgradeTotal = upgrades.cp;
-    const lines = [`## Cost Breakdown`, `### CP Still Needed: \`${fmt(Math.max(shortfall, 0))} CP\``];
-    if (basket.balance && shortfall > 0) lines.push(`-# \`${fmt(needed)} CP\` for the draws${upgradeTotal ? ' and Mythic upgrades' : ''} − your \`${fmt(basket.balance)} CP\` balance`);
-    else if (upgradeTotal && shortfall > 0) lines.push(`-# Includes \`${fmt(upgradeTotal)} CP\` of Mythic upgrades`);
-    if (unpriced.length) {
-        lines.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => shortName(b.drawKey)).join(', ')}.`);
-    }
-    // 🔴 A SILENT ZERO, FOUND 2026-10-13 12:40 EDT. Mythic draws had no upgrade price at the 20 CP region, so "Upgrade: Included" added nothing there while the button claimed it was in the total. Say so instead.
-    lines.push(...upgradeWarnings(basket, upgrades));
-
-    // Two different "nothing to buy" states (2026-10-13 12:40 EDT): every line already finished, and a balance that covers what is left. The first used to say "Your balance already covers this" with no balance set at all.
-    if (needed === 0 && !unpriced.length) {
-        lines.push('');
-        lines.push('✅ **Every draw here is finished** — nothing left to buy.');
-        return lines;
-    }
-    if (shortfall <= 0) {
-        lines.push('');
-        lines.push(`✅ **Your balance covers this**, with **\`${fmt(-shortfall)} CP\`** to spare.`);
-        return lines;
-    }
+    // Two different "nothing to buy" states (2026-10-13 12:40 EDT): every line already finished, and a balance that covers what is left.
+    if (needed === 0 && !unpriced.length) return { cost, purchase: ['✅ **Every draw here is finished** — nothing left to buy.'], buying: false };
+    if (shortfall <= 0) return { cost, purchase: [`✅ **Your balance covers this**, with **\`${fmt(-shortfall)} CP\`** to spare.`], buying: false };
 
     const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (basket.entitlementMask & (1 << i)) !== 0).map(p => p.id);
     const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
-    if (!result || !result.cheapest) {
-        lines.push('');
-        lines.push(`⚠️ **${fmt(shortfall)} CP** is more than a reasonable number of store purchases can cover at once.`);
-        return lines;
-    }
-    // ONE SHAPE FOR EVERY PACKAGE, in both views (2026-10-14 16:51 EDT, Harkirat: "better structure that section that mentions the cost, the packages, the left over CP. Class, not instance"): the price and the packs on a quoted line, then one quiet line of what is bought and left over. The Full Breakdown has its own layout (breakdownCostLines). A label ("Cheapest", "Stock Up") shows only when there are two options to tell apart: "no point stating Cheapest when no other option is being presented".
+    if (!result || !result.cheapest) return { cost, purchase: [`⚠️ **${fmt(shortfall)} CP** is more than a reasonable number of store purchases can cover at once.`], buying: false };
+    const r = result.cheapest;
     const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
-    // The Full Breakdown's bundle shape without its detail (his "Class, not instance"): what it buys for what it costs, one quoted line per bundle, then what is left over. No "Cheapest" label with one option (his 2026-10-14 ask), no per-bundle prices (that is the breakdown's job). One bundle per line also stops "1× 80 CP + 1× 420 CP + …" wrapping on a phone.
-    const option = r => [
-        `**\`${fmt(r.totalCp)} CP\`** for **\`${formatMoney(r.totalCents, currency)}\`**`,
-        ...r.combo.map(c => `> **${c.count}×** ${fmt(c.cpEach)} CP bundle${c.mode === 'double' ? ' (2X)' : ''}`),
-        `-# **\`${fmt(r.leftoverCp)} CP\` Left Over**`
+    const money = cents => formatMoney(cents, currency);
+    const purchase = [
+        '## Suggested Purchase',
+        `> **\`${fmt(r.totalCp)} CP\`** for **\`${money(r.totalCents)}\`**`,
+        `> -# **\`${fmt(r.leftoverCp)} CP\` left over** after completing your draws${upgrades.cp ? ' and upgrades' : ''}`,
+        ...r.combo.map(c => `${emojis.whiteDotGlow} **${c.count}× \`${fmt(c.cpEach)} CP\`** bundle${c.mode === 'double' ? ' (2X)' : ''}${BREAK}**\`${money(c.priceCents)}\`**${c.count > 1 ? ' each' : ''}`),
+        // The currency line stays (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it.
+        `-# Prices in **${currency}** · Change in ${settingsMention}`
     ];
-    // "Bundle" everywhere (2026-10-16 01:20 EDT, Harkirat "yes" to matching his Full Breakdown's word): the compact view, Help, Export and the 2X select all say bundle now.
-    lines.push('## Recommended Bundle');
-    lines.push(...option(result.cheapest));
-    // A blank line between the two options (click-test 2026-10-14 18:56 EDT): without it "Stock Up" sat flush against Cheapest's last line and read as part of it. A bold label is not a heading, so the blank line does not stack a heading margin.
-    // The currency line shows in BOTH views (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it.
-    lines.push(`-# Prices in **${currency}** · Change in ${settingsMention}`);
-    return lines;
+    return { cost, purchase, buying: true };
+}
+
+// The simplified view's selection list, his draft: each draw a bold heading line, then a quoted Price line with its attempts, a quiet spent / to-complete line, and the Mythic upgrade when one is set. `level` keeps it inside Discord's 4,000-character text cap at many lines: 0 = a block per line, 1 = adjacent identical lines share a block (prices "each"), 2 = those blocks without the quiet line, 3 = one block per draw type.
+function compactSelectionText(basket, level) {
+    const rows = breakdownRows(lineFigures(basket), level >= 3 ? 4 : level >= 1 ? 1 : 0);
+    const out = [];
+    for (const r of rows) {
+        const icon = DRAW_META[r.drawKey] ? emojis[DRAW_META[r.drawKey].tier] : emojis.smallDot;
+        const num = r.byType ? '' : `${r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`} · `;
+        const many = r.count > 1;
+        out.push(`**${icon} ${num}${shortName(r.drawKey)}${many ? ` ×${r.count}` : ''}**`);
+        if (!r.priced) { out.push(`> -# No sourced price at ${regionLabel(basket.region)}, so it is left out of the totals.`); continue; }
+        // A per-type row carries its lines' sums, so it never says "each".
+        const each = many && !r.byType ? ' each' : '';
+        out.push(`> **Price: \`${fmt(r.drawFull)} CP\`**${each} · \`${r.pullsDone}/${r.total ?? '?'}\` Attempts`);
+        if (level < 2) out.push(`> -# \`${fmt(r.spent)} CP\` Spent · \`${fmt(r.drawLeft)} CP\` To Complete${each}`);
+        if (r.up || r.upNeed) {
+            const u = MYTHIC_UPGRADE[r.drawKey];
+            const icon2 = r.drawKey === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
+            out.push(`> -# ${icon2} Upgrade${r.up && !r.byType ? ` ${upgradeTransition(r.up)}` : ''} · \`${fmt(r.upNeed)} ${u.currency}\`${each}`);
+        }
+    }
+    return out.join('\n');
 }
 
 // ==========================================
@@ -740,10 +757,10 @@ function buildCostBlock(state, basket, currency, client) {
 // ==========================================
 // A saved calculation's name gets its own line under the title (2026-10-14 13:13 EDT, Harkirat: "Maybe put it in a 2nd line? '> ### Viewing Saved: `the name`'"). A backtick in a name would end the code span early, so it is swapped for a plain quote here only. Same style as the Season Calendar's season line (2026-10-14 16:51 EDT, Harkirat): utils/titleBlock.js's caption in bold-italic letters. A backtick in a name is swapped for a plain quote so it cannot open a code span.
 function titleBlock(basket) {
-    // The name sits in a code span after the styled caption (2026-10-16 09:59 EDT, Harkirat: "wrap the saved calc's name in backticks for 'viewing saved: `name`'").
-    if (basket && basket.name) return { type: 10, content: `## ${emojis.calculator} Lucky Draw Calculator\n${toBoldItalicUnicode('Viewing Saved:')} \`${String(basket.name).replace(/`/g, "'")}\`` };
+    // "Lucky Draw Cost Calculator" (2026-10-17 17:08 EDT, his draft's title). The name sits in a code span after the styled caption (2026-10-16 09:59 EDT, Harkirat: "wrap the saved calc's name in backticks for 'viewing saved: `name`'").
+    if (basket && basket.name) return { type: 10, content: `## ${emojis.calculator} Lucky Draw Cost Calculator\n${toBoldItalicUnicode('Viewing Saved:')} \`${String(basket.name).replace(/`/g, "'")}\`` };
     // A working copy shows NO "Edited from Saved" line any more (2026-10-16 09:59 EDT, Harkirat: "when a saved calc is changed/edits, just remove the 'edited from saved' line because at that point it's basically a new calc that the user would save anyway"). `sourceName` still reaches the Saved view and the Save step, which offer saving over the original.
-    return { type: 10, content: `## ${emojis.calculator} Lucky Draw Calculator` };
+    return { type: 10, content: `## ${emojis.calculator} Lucky Draw Cost Calculator` };
 }
 
 // ==========================================
@@ -837,7 +854,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
     const options = (descOf, nameLen = 100) => list.map(b => ({ label: cutText(String(b.name), nameLen), value: String(b._id), ...(descOf ? { description: descOf(b) } : {}) }));
     const openMark = b => (current && String(current._id) === String(b._id) ? 'Open Now' : null);
     const components = [
-        { type: 10, content: `## ${emojis.calculator} Lucky Draw Calculator\n${toBoldItalicUnicode('Saved Calculations')}` },
+        { type: 10, content: `## ${emojis.calculator} Lucky Draw Cost Calculator\n${toBoldItalicUnicode('Saved Calculations')}` },
         { type: 14, spacing: 2, divider: true }
     ];
     if (notice) components.push({ type: 10, content: `-# ${notice}` });
@@ -1091,31 +1108,32 @@ function buildCostPage(state, basket, accentColor, options = {}) {
         }
         return out;
     }
-    // "Your Selection" with Edit BESIDE it (2026-10-13 23:01 EDT, his intake: Edit Draws sat at the bottom, away from the list it edits, while a draw picker here did half the job). Every input now lives on the form; Edit reopens it with everything kept, and this page only reports.
-    // The rows take the Full Breakdown's shape without its cost (2026-10-16 21:06 EDT): number, spins, name; adjacent identical lines share one row.
-    const compactRows = breakdownRows(lineFigures(basket), 1).map(r => `${DRAW_META[r.drawKey] ? emojis[DRAW_META[r.drawKey].tier] : emojis.smallDot} ${r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`} · \`${r.pullsDone}/${r.total ?? '?'}\` Spins · ${shortName(r.drawKey)}${r.count > 1 ? ` ×${r.count}` : ''}${r.up ? ` · Upgrade: ${upgradeTransition(r.up)}` : ''}`);
-    components.push(...headedSection(`## ${selectionHeading(basket.banners)}\n-# Press **Edit** to change your draws or spins.`, editSelectionButton(state), compactRows.join('\n')));
-    if (options.notice) components.push({ type: 10, content: `-# ${options.notice}` });
-    if (options.dropConfirm) components.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
-    components.push({ type: 14, spacing: 1, divider: true });
-
-    // Show Breakdown sits BESIDE the COST BREAKDOWN heading (2026-10-13 14:18 EDT, Harkirat: "why don't we move the show breakdown button? maybe inline with the cost breakdown section"). It is a Section with the button as its accessory, so the button sits next to what it expands; it also takes one button out of the action row, which wrapped Edit Draws onto a row of its own once a balance widened Set Balance.
-    const costLines = buildCostBlock(state, basket, currency, client);
-    // The head is the heading and CP Needed with its notes; the tail starts at the next heading or blank line.
-    const split = costLines.findIndex((l, i) => i > 1 && (l === '' || l.startsWith('### ') || l.startsWith('## ')));
-    const head = split === -1 ? costLines : costLines.slice(0, split);
-    const tail = split === -1 ? [] : costLines.slice(split);
-    while (tail[0] === '') tail.shift();
-    components.push(...headedSection(head[0], { type: 2, style: 2, label: 'Full Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(emojis.expand) }, head.slice(1).join('\n')));
-    // Room between the figures and the package that buys them (2026-10-14 13:13 EDT, his "more breathing room").
-    if (tail.length) components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: tail.join('\n') });
-    return finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry);
+    // HIS SIMPLIFIED VIEW (2026-10-17 17:08 EDT): the list, then Edit Selection under it (his screenshot puts the button after the list); Cost Breakdown, then Full Breakdown under it; Suggested Purchase. Fewer details per line until it fits Discord's caps.
+    const build = level => {
+        const out = [...components];
+        out.push({ type: 10, content: `## ${basket.banners.length >= 2 ? 'Your Draw Selections' : 'Your Draw Selection'}\n${compactSelectionText(basket, level)}` });
+        out.push({ type: 1, components: [editSelectionButton(state)] });
+        if (options.notice) out.push({ type: 10, content: `-# ${options.notice}` });
+        if (options.dropConfirm) out.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
+        out.push({ type: 14, spacing: 1, divider: true });
+        const { cost, purchase } = buildCostBlock(state, basket, currency, client);
+        out.push({ type: 10, content: cost.join('\n') });
+        out.push({ type: 1, components: [{ type: 2, style: 2, label: 'Full Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(emojis.expand) }] });
+        out.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: purchase.join('\n') });
+        return finishCostPage(state, basket, accentColor, out, liveDoubleCPEntry, { caption: TWEAK_RESULT_CAPTION });
+    };
+    let out = null;
+    for (const level of [0, 1, 2, 3]) {
+        out = build(level);
+        if (JSON.stringify(out).length <= SETUP_JSON_BUDGET && textLength(out) <= TEXT_BUDGET) break;
+    }
+    return out;
 }
 
 // The rows under the cost, shared by the compact view and the Full Breakdown.
-function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry) {
+function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry, { caption = null } = {}) {
     // Region and upgrade are adjustable right here (2026-10-14 13:13 EDT, Harkirat): "why are the cp region buttons gone from this screen? and the upgrade yes/no button". A click re-prices this same result.
-    components.push({ type: 14, spacing: 2, divider: true }, regionCaption(), regionRow(state, basket), ...basketManageRows(state, basket), { type: 14, spacing: 2, divider: true }, resultActionRow(state));
+    components.push({ type: 14, spacing: 2, divider: true }, caption || regionCaption(), regionRow(state, basket), ...basketManageRows(state, basket), { type: 14, spacing: 2, divider: true }, resultActionRow(state));
 
     if (liveDoubleCPEntry || basket.entitlementMask) {
         components.push({ type: 10, content: liveDoubleCPEntry

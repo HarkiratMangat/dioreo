@@ -236,3 +236,10 @@ Harkirat's ladders (2026-10-17 11:50 EDT): weapon Levels 1–5 at 125 / 375 / 77
 - **Balance pop-up** gains Mythic Cards and Mythic Coins (only when the calculation has that kind of Mythic line), steps of 5 (`parseCount`). Every field is pre-filled, because a blank field means 0. CP is whole numbers only now (`parseAmount` refuses 3.5; 3.5k is 3,500).
 - **Probed on the dev bot 2026-10-17 13:26 EDT:** a 25-line form with the Mythic dropdown, the Full Breakdown and compact result with upgrades, and `/draw prices` page 1 with both ladders were accepted. The pop-ups cannot be posted by REST; `new ModalBuilder(json)` parses each of the four shapes in the tests, and the first real check is his click-test.
 
+### The simplified view is his draft, 2026-10-17 17:15 EDT — batch 35
+
+- **`buildCostBlock` returns `{ cost, purchase, buying }`** and `compactSelectionText` writes the list; `buildCostPage`'s simplified branch picks the most detailed of four levels that fits (a block per line, shared blocks, no quiet line, one block per draw type).
+- **The sum reads as a sum:** `> **CP Still Needed**` first, then Full Cost of Draws, **+** Mythic Upgrades (only when set, with one `-#` line per card or coin pool), **−** Spent Already, **−** Your Balance (*not set* when it is 0).
+- **Buttons follow their section:** Edit Selection under the list, Full Breakdown under the figures (the Full Breakdown keeps Simplify under its heading). The caption over the controls is his bold **Tweak Calculation** / "Adjust the result in real time."; the form keeps its own.
+- **Title:** "Lucky Draw Cost Calculator" on every view. ⚠️ `emojis.whiteDotGlow` holds the DEV id until he gives the prod one; prod needs it before this ships.
+
