@@ -830,6 +830,8 @@ t('the form and the result stay under 40 with unique ids at every size up to the
             const form = dc.buildCalculatorPanel(state({ bpage }), makeBasket({ submitted: false, banners }), ACCENT, { savedBaskets });
             assert.ok(messageCount(form) <= 40, `form: ${types} draws, ${lines} lines, saved ${savedBaskets.length}, page ${bpage + 1}: ${messageCount(form)}`);
         }
+        // The result has no line pages, so its two views are checked once per size, not on every form page (2026-10-17 18:52 EDT: rendering it 8 times per size made this case take most of a minute).
+        if (bpage > 1) continue;
         const result = render(makeBasket({ banners }), { bpage, detail: bpage % 2 === 1 });
         assert.ok(messageCount(result) <= 40, `result: ${types} draws, ${lines} lines: ${messageCount(result)}`);
     }

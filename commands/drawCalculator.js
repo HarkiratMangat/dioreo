@@ -684,7 +684,7 @@ function buildExportText(basket, currency = 'USD') {
 // COST BREAKDOWN -- basket-wide, always priced to FINISH every banner (budget mode and per-banner goals other than Finish are out of scope, spec §10 -- there is no goal select any more).
 // ==========================================
 // THE SIMPLIFIED VIEW'S COST AND PURCHASE, Harkirat's draft (2026-10-17 17:08 EDT, "here's my preliminary draft for the simplified view ... fix it/polish it up. add in the mythic upgrade stuff i missed"). CP Still Needed leads, quoted; then the sum that reaches it, one term per line with its sign; then the purchase that covers it, with each bundle on its own glowing-dot line. Returns the cost lines, the purchase lines, and whether there is anything to buy. The Full Breakdown has its own layout (breakdownCostLines).
-function buildCostBlock(state, basket, currency, client, { detail = false, level = 0 } = {}) {
+function buildCostBlock(state, basket, currency, client, { detail = false, level = 0, memo = null } = {}) {
     const { total: needed, drawTotal, perBanner, upgrades } = costOf(basket);
     const unpriced = perBanner.filter(b => !b.priced);
     const balance = basket.balance || 0;
@@ -722,7 +722,9 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     if (shortfall <= 0) return { cost, purchase: [`✅ **Your balance covers this**, with **\`${fmt(-shortfall)} CP\`** to spare.`], buying: false };
 
     const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (basket.entitlementMask & (1 << i)) !== 0).map(p => p.id);
-    const result = optimizePurchase(shortfall, { currency, doubleCpAvailable });
+    // The purchase search is the expensive part and does not change with the fitting level, so one render runs it once (`memo`), however many levels it tries.
+    const result = memo && 'result' in memo ? memo.result : optimizePurchase(shortfall, { currency, doubleCpAvailable });
+    if (memo) memo.result = result;
     if (!result || !result.cheapest) return { cost, purchase: [`⚠️ **${fmt(shortfall)} CP** is more than a reasonable number of store purchases can cover at once.`], buying: false };
     const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
     const money = cents => formatMoney(cents, currency);
@@ -1014,13 +1016,14 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     }
 
     // HIS SIMPLIFIED VIEW (2026-10-17 17:08 EDT), built the way he tested it (2026-10-17 17:26 EDT, Harkirat: "i had done a section+accent element type of component. where 'Your Draw Selections' was 1 section+button. and 'Cost Breakdown' combined with 'Suggested Purchase' were 1 section+button"). So each block is a Section with its button as the accessory: the list with Edit Selection, then Cost Breakdown and Suggested Purchase together with Full Breakdown. This reverses the 2026-10-16 20:31 EDT move of these buttons onto their own rows. The Full Breakdown is the same two Sections with its working shown and Simplify as the button (2026-10-17 17:30 EDT, "2 matching sets"). Fewer details per line until it fits Discord's caps.
+    const memo = {};
     const build = level => {
         const out = [...components];
         out.push({ type: 9, components: [{ type: 10, content: `## ${basket.banners.length >= 2 ? 'Your Draw Selections' : 'Your Draw Selection'}\n${compactSelectionText(basket, Math.min(level, 3), state.detail)}` }], accessory: editSelectionButton(state) });
         if (options.notice) out.push({ type: 10, content: `-# ${options.notice}` });
         if (options.dropConfirm) out.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
         out.push({ type: 14, spacing: 1, divider: true });
-        const { cost, purchase } = buildCostBlock(state, basket, currency, client, { detail: state.detail, level });
+        const { cost, purchase } = buildCostBlock(state, basket, currency, client, { detail: state.detail, level, memo });
         const toggle = state.detail ? { label: 'Simplify', emoji: emojis.collapse } : { label: 'Full Breakdown', emoji: emojis.expand };
         out.push({ type: 9, components: [{ type: 10, content: cost.join('\n') }, { type: 10, content: purchase.join('\n') }], accessory: { type: 2, style: 2, label: toggle.label, custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(toggle.emoji) } });
         return finishCostPage(state, basket, accentColor, out, liveDoubleCPEntry, { caption: TWEAK_RESULT_CAPTION });
