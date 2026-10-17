@@ -1109,18 +1109,15 @@ function buildCostPage(state, basket, accentColor, options = {}) {
         }
         return out;
     }
-    // HIS SIMPLIFIED VIEW (2026-10-17 17:08 EDT): the list, then Edit Selection under it (his screenshot puts the button after the list); Cost Breakdown, then Full Breakdown under it; Suggested Purchase. Fewer details per line until it fits Discord's caps.
+    // HIS SIMPLIFIED VIEW (2026-10-17 17:08 EDT), built the way he tested it (2026-10-17 17:26 EDT, Harkirat: "i had done a section+accent element type of component. where 'Your Draw Selections' was 1 section+button. and 'Cost Breakdown' combined with 'Suggested Purchase' were 1 section+button"). So each block is a Section with its button as the accessory: the list with Edit Selection, then Cost Breakdown and Suggested Purchase together with Full Breakdown. This reverses the 2026-10-16 20:31 EDT move of these buttons onto their own rows, for this view only; the Full Breakdown keeps its rows. Fewer details per line until it fits Discord's caps.
     const build = level => {
         const out = [...components];
-        out.push({ type: 10, content: `## ${basket.banners.length >= 2 ? 'Your Draw Selections' : 'Your Draw Selection'}\n${compactSelectionText(basket, level)}` });
-        out.push({ type: 1, components: [editSelectionButton(state)] });
+        out.push({ type: 9, components: [{ type: 10, content: `## ${basket.banners.length >= 2 ? 'Your Draw Selections' : 'Your Draw Selection'}\n${compactSelectionText(basket, level)}` }], accessory: editSelectionButton(state) });
         if (options.notice) out.push({ type: 10, content: `-# ${options.notice}` });
         if (options.dropConfirm) out.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
         out.push({ type: 14, spacing: 1, divider: true });
         const { cost, purchase } = buildCostBlock(state, basket, currency, client);
-        out.push({ type: 10, content: cost.join('\n') });
-        out.push({ type: 1, components: [{ type: 2, style: 2, label: 'Full Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(emojis.expand) }] });
-        out.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: purchase.join('\n') });
+        out.push({ type: 9, components: [{ type: 10, content: cost.join('\n') }, { type: 10, content: purchase.join('\n') }], accessory: { type: 2, style: 2, label: 'Full Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(emojis.expand) } });
         return finishCostPage(state, basket, accentColor, out, liveDoubleCPEntry, { caption: TWEAK_RESULT_CAPTION });
     };
     let out = null;

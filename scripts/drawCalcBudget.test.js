@@ -699,13 +699,12 @@ t('the simplified purchase is his draft: the total quoted, what is left over, th
     assert.ok(/· Change in /.test(block) && !/Cheapest/.test(block));
 });
 
-t('the simplified list is his draft: a bold line per draw, Price and attempts quoted, then Edit Selection under the list', () => {
+t('the simplified list is his draft: a bold line per draw, Price and attempts quoted, in a Section with Edit Selection as its button (2026-10-17 17:26 EDT)', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }] }));
     const comps = container(panel).components;
-    const at = comps.findIndex(c => c.type === 1 && c.components.some(b => b.label === 'Edit Selection'));
-    assert.ok(at > 0 && comps[at - 1].type === 10 && comps[at - 1].content.startsWith('## Your Draw Selections'), 'Edit Selection follows the list it edits');
-    assert.strictEqual(verbOf(comps[at].components[0]), 'edit');
-    assert.strictEqual(comps.some(c => c.type === 9), false, 'no Section accessory squeezes text on a phone');
+    const sec = comps.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Edit Selection');
+    assert.ok(sec && sec.components[0].content.startsWith('## Your Draw Selections'), 'the list and its button are one Section');
+    assert.strictEqual(verbOf(sec.accessory), 'edit');
     const t = allText(panel);
     assert.ok(/\*\*<:\w+:\d+> #2 · Legendary Weapon \(Reactive\)\*\*\n> \*\*Price: `4,950 CP`\*\* · `1\/10` Attempts\n> -# `10 CP` Spent · `4,940 CP` To Complete/.test(t), t);
     assert.strictEqual(selects(panel).some(s => ['draws', 'addmore', 'bpulls'].includes(verbOf(s))), false, 'the result edits nothing itself');
@@ -761,14 +760,15 @@ t('each line\'s dropdown OPENS with Remove, then the values; Move Up is gone', (
     assert.ok(lines.every(s => s.options.length <= 25));
 });
 
-t('the breakdown toggle sits on its own row after the Cost Breakdown block (simplified) and under its heading (Full Breakdown)', () => {
+t('Full Breakdown is the button of ONE Section holding Cost Breakdown and Suggested Purchase (simplified, 2026-10-17 17:26 EDT); Simplify keeps its own row under the heading (Full Breakdown)', () => {
     const compact = container(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], balance: 3000 }))).components;
-    const a = compact.findIndex(c => c.type === 1 && c.components.some(x => x.label === 'Full Breakdown'));
-    assert.ok(a > 0 && compact[a - 1].content.startsWith('## Cost Breakdown') && compact[a].components.length === 1, 'Full Breakdown after the figures');
+    const sec = compact.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Full Breakdown');
+    assert.ok(sec && sec.components.length === 2 && sec.components[0].content.startsWith('## Cost Breakdown') && sec.components[1].content.startsWith('## Suggested Purchase'), 'one Section, two texts');
+    assert.strictEqual(verbOf(sec.accessory), 'detail');
     const full = container(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], balance: 3000 }), { detail: true })).components;
     const b = full.findIndex(c => c.type === 1 && c.components.some(x => x.label === 'Simplify'));
     assert.ok(b > 0 && full[b - 1].content === '## Cost Breakdown' && full[b].components.length === 1, 'Simplify under the heading');
-    assert.strictEqual([...compact, ...full].some(c => c.type === 9), false, 'no Section accessory beside text');
+    assert.strictEqual(full.some(c => c.type === 9), false, 'the Full Breakdown keeps its rows');
 });
 
 // ==========================================
