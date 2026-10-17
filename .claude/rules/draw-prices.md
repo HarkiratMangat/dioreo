@@ -261,3 +261,7 @@ His draft for both views (2026-10-17 18:28 EDT), after a tree layout was dropped
 - 🔴 **The grammar, from /draw prices:** a colon joins a label and its value; `⌇` joins a thing and what it comes to or costs. Check that before changing a separator in either command.
 - "You Need" names the figure in both views and in Export. `emojis.whiteDotGlow` is no longer used by the result.
 
+### A dropdown that opens a pop-up must be reset, 2026-10-17 19:22 EDT
+
+Discord keeps a dropdown's pick after its pop-up is cancelled, and choosing the option already picked sends the bot nothing, so the Mythic dropdown (`upgpick`) could not reopen the same draw. 🔴 **Discord accepts a PATCH of `@original` after a `showModal` response**: the handler redraws the panel right after the pop-up opens, which clears the pick (confirmed in his click-test). Any other dropdown that opens a pop-up needs the same redraw.
+
