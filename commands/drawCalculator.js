@@ -698,8 +698,8 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     const quiet = key => (detail ? [`> -# ${terms(key)}`] : []);
     const cost = ['## Cost Breakdown', `**You Need: \`${fmt(Math.max(shortfall, 0))} CP\`**`];
     if (!detail) {
-        // Code spans on the terms are his draft's (his own call, against the 2026-10-16 note that spans wrap sooner on a phone).
-        cost.push(`-# \`Cost of Draws\`${upgrades.cp ? ' **+** `Mythic Upgrades`' : ''} **−** \`Spent Already\` **−** \`CP Balance\``);
+        // Plain words, not code spans (2026-10-17 18:41 EDT, Harkirat on his phone: "Yeah it does wrap ... -# plain text?"): spans are wider and wrapped the line on a phone.
+        cost.push(`-# Cost of Draws${upgrades.cp ? ' **+** Mythic Upgrades' : ''} **−** Spent Already **−** CP Balance`);
     } else {
         cost.push(`> Full Cost of Draws: \`${fmt(drawTotal + spent)} CP\``, ...quiet('full'));
         if (upgrades.cp) {

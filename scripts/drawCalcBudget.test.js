@@ -599,8 +599,8 @@ t('the cost breakdown LEADS with You Need; the simplified view names the terms, 
     const basket = makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], balance: 1000 });
     const lines = allText(render(basket)).split('\n');
     const at = lines.indexOf('## Cost Breakdown');
-    assert.deepStrictEqual(lines.slice(at + 1, at + 3), ['**You Need: `4,720 CP`**', '-# `Cost of Draws` **−** `Spent Already` **−** `CP Balance`'], 'the headline, then the terms by name');
-    assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], includeUpgrades: true }))).includes('-# `Cost of Draws` **+** `Mythic Upgrades` **−**'), 'Mythic Upgrades named only when set');
+    assert.deepStrictEqual(lines.slice(at + 1, at + 3), ['**You Need: `4,720 CP`**', '-# Cost of Draws **−** Spent Already **−** CP Balance'], 'the headline, then the terms by name');
+    assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], includeUpgrades: true }))).includes('-# Cost of Draws **+** Mythic Upgrades **−**'), 'Mythic Upgrades named only when set');
     const full = allText(render(basket, { detail: true })).split('\n');
     const f = full.indexOf('## Cost Breakdown');
     assert.deepStrictEqual([full[f + 1], full[f + 2], full[f + 4], full[f + 6]], ['**You Need: `4,720 CP`**', '> Full Cost of Draws: `5,810 CP`', '> **−** Spent Already: `90 CP`', '> **−** CP Balance: `1,000 CP`'], '5,810 − 90 − 1,000 = 4,720, quoted, one term per line');
