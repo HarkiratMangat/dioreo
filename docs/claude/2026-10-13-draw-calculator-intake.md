@@ -728,3 +728,9 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > Can we implement a drop down above the region toggle's hint line? A quick jump to a draw type basically. And when in that view, the pagination buttons basically get replaced with a "back" button to go back to the "all view"
 
 **Built 2026-10-17 22:05 EDT** on /draw prices: the "Jump to a draw type" dropdown above the region hint; one draw on its own with **Back** in place of the pager (back to that draw's page); a region switch keeps the open draw. All 45 page and jump views across the three regions were accepted by Discord.
+
+### Batch 50 — 2026-10-17 22:14 EDT, verbatim
+
+> I don't like the simple "back". It kind of feels like back as in a page. Rephrase it's button?
+
+**Built 2026-10-17 22:14 EDT:** the button reads **Show All Draws**, with no arrow.

@@ -1108,9 +1108,9 @@ t('/draw prices: the quick jump opens one draw type, Back replaces the pager, an
             assert.ok(jump && jump.options.length === keys.length, `${region} ${view}: the jump select lists every draw type`);
             const focused = typeof view === 'string' ? view.slice(1) : null;
             assert.deepStrictEqual(jump.options.filter(o => o.default).map(o => o.value), focused ? [focused] : [], `${region} ${view}: the open draw is the select's default`);
-            const back = all.find(c => c.type === 2 && c.label === 'Back');
+            const back = all.find(c => c.type === 2 && c.label === 'Show All Draws');
             const pager = all.some(c => c.custom_id === 'price_subpage_indicator');
-            assert.strictEqual(Boolean(back), Boolean(focused), `${region} ${view}: Back only in a jump`);
+            assert.strictEqual(Boolean(back), Boolean(focused), `${region} ${view}: Show All Draws only in a jump`);
             assert.strictEqual(pager, !focused, `${region} ${view}: the pager only in the all view`);
             const regionIds = all.filter(c => c.type === 2 && /^price_region_/.test(c.custom_id || '')).map(c => c.custom_id.split('_').pop());
             assert.ok(regionIds.every(v => v === String(focused ? `f${focused}` : view)), `${region} ${view}: a region switch keeps the view`);

@@ -328,8 +328,8 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
         : withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
 
     // Prev/Next between the 2 entry pages, same region -- shared pagination row helper (see utils/paginationRow.js), same style as /calendar and /draws' sub-page navigation. Placed directly under the entries themselves (own divider on both sides) rather than next to the region-switch footer/button below -- sitting right next to that footer's "Switch between viewing 10 CP or 30 CP region prices" text read as if the page arrows were ALSO part of switching region, which they aren't (Harkirat's explicit fix, 2026-07-12).
-    // In a jump the pager is replaced by Back, to the all-view page that draw sits on.
-    const paginationRow = focus ? { type: 1, components: [{ type: 2, style: 2, label: 'Back', emoji: emojis.parseEmoji(emojis.left), custom_id: `price_subpage_${regionKey}_${currentPage}` }] } : buildPaginationRow({
+    // In a jump the pager is replaced by Show All Draws, to the all-view page that draw sits on. Not "Back" and no arrow (2026-10-17 22:14 EDT, Harkirat: "It kind of feels like back as in a page").
+    const paginationRow = focus ? { type: 1, components: [{ type: 2, style: 2, label: 'Show All Draws', custom_id: `price_subpage_${regionKey}_${currentPage}` }] } : buildPaginationRow({
         totalChunks: TOTAL_PAGES,
         currentPage,
         // Looping pager: the helper wraps last↔first and builds the id from the wrapped page.
