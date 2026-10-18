@@ -330,7 +330,7 @@ t('the landing offers Resume a Saved Calculation under Start a Calculation, and 
     const top = landing[0].components;
     const h = top.findIndex(c => c.type === 10 && c.content === '### Resume a Saved Calculation');
     assert.ok(h > 0, 'the heading');
-    assert.deepStrictEqual([top[h - 1].type, top[h - 1].divider, top[h - 1].spacing], [14, false, 2], 'a large space with no line above it');
+    assert.deepStrictEqual([top[h - 1].type, top[h - 1].divider, top[h - 1].spacing], [14, false, 1], 'a small space with no line above it (2026-10-18 19:31 EDT, his "large spacing seems was too much")');
     assert.ok(top.slice(0, h).some(c => c.type === 10 && /^## Start a Calculation/.test(c.content)), 'under Start a Calculation');
     const sel = top[h + 1].components[0];
     assert.strictEqual(verbOf(sel), 'load', 'the View Saved reopen verb');
@@ -753,14 +753,16 @@ t('the purchase is his layout: the total for its price, what is left over, then 
     assert.ok(/^-# \*Prices in \*\*CAD\*\* · Change in .+\*$/.test(lines[lines.length - 1]) && !/Cheapest/.test(block), 'the currency line, in italics');
 });
 
-t('the simplified list is his draft: a bold line per draw, Price and attempts quoted, in a Section with Edit Selection as its button (2026-10-17 17:26 EDT)', () => {
+t('the simplified list is his draft: a bold line per draw, in a Section with Edit Selection as its button; Price and attempts only in the Full Breakdown (2026-10-18 19:31 EDT)', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }] }));
     const comps = container(panel).components;
     const sec = comps.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Edit Selections');
     assert.ok(sec && sec.components[0].content.startsWith('## Your Draw Selections'), 'the list and its button are one Section');
     assert.strictEqual(verbOf(sec.accessory), 'edit');
     const t = allText(panel);
-    assert.ok(/\*\*<:\w+:\d+> #2 · Legendary Weapon \(Reactive\)\*\*\n> \*\*Price: `4,950 CP`\*\* · `1\/10` Attempts/.test(t), t);
+    assert.strictEqual(/Price: /.test(t), false, 'no Price line on the simple view (2026-10-18 19:31 EDT, his ask)');
+    const full = allText(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }] }), { detail: true }));
+    assert.ok(/\*\*<:\w+:\d+> #2 · Legendary Weapon \(Reactive\)\*\*\n> \*\*Price: `4,950 CP`\*\* · `1\/10` Attempts/.test(full), full);
     assert.strictEqual(/To Complete/.test(t), false, 'spent / to complete is the Full Breakdown\'s only (2026-10-17 17:41 EDT)');
     assert.strictEqual(selects(panel).some(s => ['draws', 'addmore', 'bpulls'].includes(verbOf(s))), false, 'the result edits nothing itself');
 });

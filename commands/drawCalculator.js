@@ -797,7 +797,7 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     return { cost, purchase, buying: true };
 }
 
-// The simplified view's selection list, his draft: each draw a bold heading line, then a quoted Price line with its attempts, a quiet spent / to-complete line, and the Mythic upgrade when one is set. `level` keeps it inside Discord's 4,000-character text cap at many lines: 0 = a block per line, 1 = adjacent identical lines share a block (prices "each"), 2 = those blocks without the quiet line, 3 = one block per draw type.
+// The selection list, his draft: each draw a bold heading line, then (Full Breakdown only) a quoted Price line with its attempts and a quiet spent / to-complete line, and the Mythic upgrade when one is set. `level` keeps it inside Discord's 4,000-character text cap at many lines: 0 = a block per line, 1 = adjacent identical lines share a block (prices "each"), 2 = those blocks without the quiet line, 3 = one block per draw type.
 function compactSelectionText(basket, level, detail = false) {
     const rows = breakdownRows(lineFigures(basket), level >= 3 ? 4 : level >= 1 ? 1 : 0);
     const out = [];
@@ -811,7 +811,8 @@ function compactSelectionText(basket, level, detail = false) {
         // A per-type row carries its lines' sums, so it never says "each".
         const each = many && !r.byType ? ' each' : '';
         const unit = isArmoryKey(r.drawKey) ? unitOf(r.drawKey) : 'Attempts';
-        out.push(`> **Price: \`${fmt(r.drawFull)} CP\`**${each} · \`${r.pullsDone}/${r.total ?? '?'}\` ${unit}${r.spinsIn && !r.byType ? ` + ${r.spinsIn} spins` : ''}`);
+        // The Price line is the Full Breakdown's only too (2026-10-18 19:31 EDT, Harkirat: "with the '> Price: 28,800 CP · 0/3 Weapons' line removed? only appearing when 'full breakdown' is toggled").
+        if (detail) out.push(`> **Price: \`${fmt(r.drawFull)} CP\`**${each} · \`${r.pullsDone}/${r.total ?? '?'}\` ${unit}${r.spinsIn && !r.byType ? ` + ${r.spinsIn} spins` : ''}`);
         // The spent / to-complete line is the Full Breakdown's only (2026-10-17 17:41 EDT, Harkirat: "for the simplified view, we should drop the '0 CP Spent · 4,950 CP To Complete' lines ... And show them during full breakdown view").
         if (detail && level < 2) out.push(`> -# \`${fmt(r.spent)} CP\` Spent · \`${fmt(r.drawLeft)} CP\` To Complete${each}`);
         if (r.up || r.upNeed) {
@@ -924,9 +925,9 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
         else {
             if (season) components.push(season);
             components.push(typesSelectRow(state, draft));
-            // RESUME A SAVED CALCULATION (2026-10-18 19:24 EDT, his ask), under Start a Calculation after a large space with no line. The same reopen dropdown as View Saved (verb `load`); hidden when nothing is saved. Reverses "saved calculations stay off the landing" (2026-10-17 23:53 EDT, my recommendation then).
+            // RESUME A SAVED CALCULATION (2026-10-18 19:24 EDT, his ask), under Start a Calculation after a small space with no line (large was too much, 2026-10-18 19:31 EDT). The same reopen dropdown as View Saved (verb `load`); hidden when nothing is saved. Reverses "saved calculations stay off the landing" (2026-10-17 23:53 EDT, my recommendation then).
             const resume = resumeSavedRow(state, savedBaskets);
-            if (resume) components.push(SPACER, { type: 10, content: '### Resume a Saved Calculation' }, resume);
+            if (resume) components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: '### Resume a Saved Calculation' }, resume);
         }
     } else {
         // The summary rides in a Section with Set Draw Progress as its button, the way the result's selection carries Edit Selection.
