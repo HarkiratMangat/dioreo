@@ -10,7 +10,7 @@ function parseEmoji(mention) {
     return { animated: !!match[1], name: match[2], id: match[3] };
 }
 
-// Every mention string below is written with the PRODUCTION app's emoji ids, which stay the literal source of truth in git. They are also the fallback if the sync below can't run.
+// Every mention string below is written with the PRODUCTION app's emoji ids, which stay the literal source of truth in git. The NAMES must match the apps' emoji names, because refreshEmojiIds() re-points by name: twelve /manage emojis were renamed with a DB_ prefix by Harkirat (2026-10-18 11:59 EDT, names only, same images), which is why they read DB_* here. They are also the fallback if the sync below can't run.
 const emojis = {
     // /settings' "Made with love by @dior" footer -- replaced dioreo with diorHeart (2026-07-12, same day, Harkirat's follow-up correction). Animated this time (a: prefix).
     diorHeart: '<a:diorHeart:1525941004929339594>',
@@ -33,21 +33,21 @@ const emojis = {
     region20Cp: '<a:20CP:1560477394081423501>',
     region30Cp: '<a:30CP:1560477392328196096>',
     // Added for the command heading redesign (calendar/draws/patchnotes/settings) /manage panel redesign (2026-07-12, per the 4 mockup JSONs in Downloads) -- these are the panel's own header/action icons, distinct from the public-command-header set above.
-    database: '<a:Database:1524967327437815899>',
-    mngAdd: '<a:Add:1525262938288558200>',
-    mngEdit: '<a:Edit:1525262950313623772>',
-    mngDelete: '<a:Delete:1525262947532931163>',
-    mngBulkAdd: '<a:BulkAdd:1525328428201414761>',
-    mngBulkReplace: '<a:BulkReplace:1525262944815022170>',
-    mngBulkDelete: '<a:BulkDelete:1525262942906482880>',
-    mngExport: '<a:Export:1525262952540934264>',
-    mngPurge: '<a:Purge:1525327754013442129>',
-    mngInfo: '<a:Info:1525337539085340722>',
+    database: '<a:DB_Database:1524967327437815899>',
+    mngAdd: '<a:DB_Add:1525262938288558200>',
+    mngEdit: '<a:DB_Edit:1525262950313623772>',
+    mngDelete: '<a:DB_Delete:1525262947532931163>',
+    mngBulkAdd: '<a:DB_BulkAdd:1525328428201414761>',
+    mngBulkReplace: '<a:DB_BulkReplace:1525262944815022170>',
+    mngBulkDelete: '<a:DB_BulkDelete:1525262942906482880>',
+    mngExport: '<a:DB_Export:1525262952540934264>',
+    mngPurge: '<a:DB_Purge:1525327754013442129>',
+    mngInfo: '<a:DB_Info:1525337539085340722>',
     // /manage's Announcement page + each announcement's own heading (2026-08-22, Harkirat-provided). Replaces the generic `mngInfo` this page borrowed when it was built -- the empty-state notice keeps mngInfo, since that one really is an info notice rather than an announcement.
     announcements: '<a:Announcements:1540916435914723490>',
     // /bot access's panel heading AND /help's "Bot Admin" category icon (2026-08-22, Harkirat-provided) -- one icon for the admin surface in both places, replacing a literal 🔑 in one and the borrowed `database` icon in the other.
     botAccess: '<a:BotAccess:1540915865506160660>',
-    mngUrls: '<a:URLs:1525337321568997449>',
+    mngUrls: '<a:DB_URLs:1525337321568997449>',
     calendar: '<a:Calendar:1523762208050385107>',
     newDraws: '<a:NewDraws:1523837409211453613>',
     returningDraws: '<a:ReturningDraws:1523838126596817016>',
@@ -96,7 +96,7 @@ const emojis = {
     // /admin's panel headings (added 2026-08-10 17:07 EDT, Harkirat provided it). Prod id as usual, verified present in BOTH apps by a live read of /applications/@me/emojis before writing it -- dev's copy is 1536468996688453752 and refreshEmojiIds() re-points to it by name at boot.
     serverSettings: '<a:ServerSettings:1536468904996774008>',
     // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
-    guide: '<a:Guide:1532894836301238477>',
+    guide: '<a:DB_Guide:1532894836301238477>',
     // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmiths category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmiths now covers /all + every per-category command too, not just DMZ).
     dioreoCombo: '<:DioreoCombo:1534640183230730470>',
     loadouts: '<a:Loadouts:1535779248982335618>',
