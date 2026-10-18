@@ -48,6 +48,7 @@ function isArmory(key) { return Boolean(prices().SERIES_ARMORY[key]); }
 // An armory's item count is its own item list, "-#" note lines excluded (they are free text, never an item).
 function armoryItemCount(draw) { return ((draw && draw.items) || []).filter(i => i && i.tier !== 'comment').length; }
 // The refusal the op validators show for a tag that names no draw type. utils/adminParser.js marks an unresolved tag with a leading "?" so it reaches the validator instead of being dropped silently.
-function unknownDrawTypeError(raw) { return `Unknown draw type "${String(raw).replace(/^\?/, '')}". Use one of: ${Object.values(DRAW_TYPE_CODES).join(', ')}.`; }
+// Each code beside its full name (2026-10-18 11:21 EDT, Harkirat: "full form stated beside the list of codes? so its understood what each code belongs to?").
+function unknownDrawTypeError(raw) { return `Unknown draw type "${String(raw).replace(/^\?/, '')}". Use one of:\n${drawTypeOptions().map(o => `\`${o.code}\` ${o.name}`).join('\n')}`; }
 
 module.exports = { DRAW_TYPE_CODES, drawTypeOptions, resolveDrawType, isDrawType, drawTypeCode, drawTypeName, isArmory, armoryItemCount, unknownDrawTypeError };

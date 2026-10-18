@@ -1101,8 +1101,8 @@ t('/draw prices: the Series Armory page is page 3, priced per item and per full 
     const text = (region, view) => dp.buildContainer(region, 0, true, view, null).flatMap(flat).filter(c => c.type === 10).map(c => c.content).join('\n');
     // His figures: 50/80/120 CP a spin; 75 / 100 / 120 spins per item.
     const p10 = text('region_10', 2);
-    assert.ok(p10.includes('LEGENDARY WEAPON SERIES ARMORY') && p10.includes('`50 CP` x 75 Spins ⌇ **`3,750 CP`**') && p10.includes('6 Items `22,500`'), p10);
-    assert.ok(p10.includes('`50 CP` x 100 Spins ⌇ **`5,000 CP`**') && p10.includes('`50 CP` x 120 Spins ⌇ **`6,000 CP`**') && p10.includes('3 Items `18,000`'), p10);
+    assert.ok(p10.includes('LEGENDARY WEAPON SERIES ARMORY') && p10.includes('`50 CP` x 75 Spins ⌇ **`3,750 CP`**') && p10.includes('-# **Full Armory by Weapon Count:**\n-# **3 Weapons** `11,250 CP` • **4 Weapons** `15,000 CP` • **5 Weapons** `18,750 CP` • **6 Weapons** `22,500 CP`') && p10.includes('**`3,750 CP`** Per Weapon'), p10);
+    assert.ok(p10.includes('`50 CP` x 100 Spins ⌇ **`5,000 CP`**') && p10.includes('`50 CP` x 120 Spins ⌇ **`6,000 CP`**') && p10.includes('**3 Weapons** `18,000 CP`') && p10.includes('**`5,000 CP`** Per Character') && p10.includes('**6 Characters** `30,000 CP`'), p10);
     assert.ok(p10.indexOf('MYTHIC WEAPON SERIES ARMORY') < p10.indexOf('LEGENDARY WEAPON SERIES ARMORY'), 'Mythic first, as on page 1');
     assert.ok(!/MYTHIC CHARACTER SERIES ARMORY/.test(p10), 'there is no Mythic Character armory');
     assert.ok(text('region_30', 2).includes('`120 CP` x 120 Spins ⌇ **`14,400 CP`**') && text('region_20', 2).includes('`80 CP` x 75 Spins ⌇ **`6,000 CP`**'));

@@ -122,9 +122,9 @@ const SUBPAGES = [PAGE_1_KEYS, PAGE_2_KEYS];
 const ARMORY_SPIN_CP = { region_10: 50, region_20: 80, region_30: 120 };
 // Mythic first, the same tier order as page 1.
 const SERIES_ARMORY = {
-    armoryMythicWeapon: { name: 'Mythic Weapon Series Armory', tier: 'mythic', spins: 120 },
-    armoryLegendaryWeapon: { name: 'Legendary Weapon Series Armory', tier: 'legendary', spins: 75 },
-    armoryLegendaryCharacter: { name: 'Legendary Character Series Armory', tier: 'legendary', spins: 100 }
+    armoryMythicWeapon: { name: 'Mythic Weapon Series Armory', tier: 'mythic', spins: 120, noun: 'Weapon' },
+    armoryLegendaryWeapon: { name: 'Legendary Weapon Series Armory', tier: 'legendary', spins: 75, noun: 'Weapon' },
+    armoryLegendaryCharacter: { name: 'Legendary Character Series Armory', tier: 'legendary', spins: 100, noun: 'Character' }
 };
 // The item counts he has seen in a real armory ("havent seen less or more than that").
 const ARMORY_ITEM_COUNTS = [3, 4, 5, 6];
@@ -320,8 +320,9 @@ function buildArmoryEntries(regionKey, keys) {
         const a = SERIES_ARMORY[key];
         const perItem = perSpin * a.spins;
         return [
-            `**${tierIcon(a.tier)} ${a.name.toUpperCase()}**\n> ${emojis.cp2} **\`${formatCP(perItem)} CP\`** per Item`,
-            `\`${formatCP(perSpin)} CP\` x ${a.spins} Spins ⌇ **\`${formatCP(perItem)} CP\`**\n-# **Full Armory by Item Count:** ${ARMORY_ITEM_COUNTS.map(n => `${n} Items \`${formatCP(perItem * n)}\``).join(' › ')}`
+            // His wording (2026-10-18 11:21 EDT): the item is named for what the armory holds, "Per Weapon" / "Per Character", and the whole-armory line is its own heading over a bold count per total.
+            `**${tierIcon(a.tier)} ${a.name.toUpperCase()}**\n> ${emojis.cp2} **\`${formatCP(perItem)} CP\`** Per ${a.noun}`,
+            `\`${formatCP(perSpin)} CP\` x ${a.spins} Spins ⌇ **\`${formatCP(perItem)} CP\`**\n-# **Full Armory by ${a.noun} Count:**\n-# ${ARMORY_ITEM_COUNTS.map(n => `**${n} ${a.noun}s** \`${formatCP(perItem * n)} CP\``).join(' • ')}`
         ];
     });
 }

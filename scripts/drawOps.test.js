@@ -104,6 +104,7 @@ check('draw types: an unknown tag is refused by add and by bulk add, never saved
     const add = ops.resolveOp('draw.add').validate({ type: 'draw.add', payload: { title: 'X', category: 'new', items: [], priceType: '?zz' } });
     assert.strictEqual(add.ok, false);
     assert.ok(/Unknown draw type "zz"/.test(add.errors.join(' ')), add.errors.join(' '));
+    assert.ok(add.errors.join(' ').includes('`salw` Legendary Weapon Series Armory'), 'each code beside its full name');
     const bulk = ops.resolveOp('draw.bulkAdd').validate({ type: 'draw.bulkAdd', target: { category: 'new' }, payload: { text: 'X, type: zz, l AK, July 15' } });
     assert.strictEqual(bulk.ok, false);
     assert.ok(/Unknown draw type "zz"/.test(bulk.errors.join(' ')), bulk.errors.join(' '));
