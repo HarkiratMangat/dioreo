@@ -976,7 +976,7 @@ t('Help explains what the screen cannot: the price ladder for the open draw, how
     const text = allText(help);
     assert.ok(/`30` › `80` › /.test(text) && /Legendary Weapon \(Reactive\)\*\* at .*\*\*30 CP\*\*/.test(text), 'the open draw at the open region');
     assert.ok(/last 3 spins are \*\*\d+%\*\*/.test(text));
-    assert.ok(/Mythic Character and Pick Your Reward Card start higher/.test(text), 'never "check any draw": two draws start above the region');
+    assert.ok(/Other draw types may start higher, so do not check those\./.test(text), 'never "check any draw": some draws start above the region (his wording, 2026-10-18 19:56 EDT)');
     assert.strictEqual(/Words You'll See|### Buttons/.test(text), false);
     const fallback = allText(dc.buildHelpPanel(ACCENT, { region: 'region_20', drawKey: 'doubleEpicCharacters' }));
     assert.ok(/Mythic Weapon\*\* at .*20 CP/.test(fallback), 'a draw with no prices at that region falls back to Mythic Weapon');

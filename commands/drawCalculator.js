@@ -1404,7 +1404,8 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
             '### 🗺️ Find Your Region',
             regionChips,
             'Your region is the price of the **first spin** on a Mythic Weapon or a Legendary Weapon draw.',
-            '-# Mythic Character and Pick Your Reward Card start higher, so do not check those.'
+            // His wording (2026-10-18 19:56 EDT): no draw named, since the list of draws that start higher changes as draws are added.
+            '-# Other draw types may start higher, so do not check those.'
         ].join('\n') },
         divider,
         { type: 10, content: [
