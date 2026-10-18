@@ -669,3 +669,32 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 
 **Answered 19:10 EDT:** one pop-up per Mythic draw, picked from the dropdown. **Fixed 2026-10-17 19:16 EDT:** #4 and #5 had no target of their own and fell back to the copied calculation's old "Upgrade: YES"; an unset draw now has no upgrade.
 
+### Batch 43 — 2026-10-17 19:18 / 19:21 EDT, verbatim
+
+> another thing i noticed, it seems to be a toggle dropdown and saves its result. like i clicked the #3 option before to adjust it. but i want to click it again/adjust again and I'm unable to do so.
+>
+> yeah the fix works
+
+**Fixed 2026-10-17 19:20 EDT** (`cb392cf7`): the Mythic dropdown is redrawn right after its pop-up opens, so the same draw can be picked again. He confirmed it works.
+
+### Batch 44 — 2026-10-17 19:28 / 19:34 EDT, verbatim
+
+> remember how we increased the suggested bundles limit up to 6 for a large quanity? it needs refining. i think it seems to only consider the total cost of draws+upgrades for that threshold, instead of the actual "cp needed" quantity. Because look at this screenshot, i basically set my cp balance to 20k, and got i need 8730cp, but it's showing 6 packages here which doesnt make sense
+>
+> typo, 5 packages*
+>
+> yeah Go A i think. Because realistically, no one is making those 5 purchases to save 26 cents. when those extra 26 cents would give them ~2000 extra CP. The $125.95 value is so poor and the bot/calc suggesting that is a major issue. Please /think-pass this to catch any other odd edge cases like this because this was a crazy blindside that i happened to have accidentally stumbled upon. We can't ship things like this as the "completed draw calc"
+
+**Answered:** the optimizer did use the 8,730 CP shortfall; the fault was the flat 3% rule. A sweep across the price table found A (1.5% per purchase saved) picks MORE purchases than today in 880 of 16,154 cases, so H was proposed instead: the larger of 3% and, per purchase saved, the smallest pack's price or 1.5%.
+
+### Batch 45 — 2026-10-17 20:45 EDT, verbatim
+
+> H sounds good. before you implement it, can you distill it through a /think-pass just to be sure? just to make sure theres no gaps, mistakes, skipped/unconsidered angles, improvements/changes, anything else that was missed, etc?
+
+**Built 2026-10-17 21:06 EDT:** H in `utils/cpPackages.js` (`PURCHASE_RULES` exported), Help's Recommended Bundle row from those numbers, two tests in `scripts/cpPackages.test.js` (his 8,730 CP case; never more purchases than the 3% rule, swept over six currencies). The pass also found two older defects, fixed 2026-10-17 21:12 EDT: with 2X available, about 15% of picks bought a pack at the normal rate while its own 2X sat unused (the game doubles that pack's first purchase anyway), so CP and Left Over were under-reported and Stock Up offered the 2X pack "for 0 more"; and a Stock Up costing a few cents less printed "Costs −€0.02 more", now "Costs €0.02 less" or "Costs the same".
+
+### Batch 46 — 2026-10-17 20:50 EDT, verbatim
+
+> and another feature i want to implement... where instead of a generic lucky draw, it actually allows you to select the lucky drops currently available or releasing this season, based on whatever is added in the calendar or the /draws command. it would be like it's own dropdown
+
+**Scoped 2026-10-17 21:06 EDT, not built:** no stored draw says which price type it is (Reactive vs Non-Reactive, armory series), so his three questions are in the thread.

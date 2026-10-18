@@ -15,7 +15,7 @@ const UserPreference = require('../models/UserPreference');
 const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL, MYTHIC_UPGRADE, upgradeFullAmount } = require('./drawprices');
 const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset } = require('../utils/drawCost');
 const crypto = require('crypto');
-const { CP_PACKAGES, STOCK_UP_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
+const { CP_PACKAGES, STOCK_UP_RULES, PURCHASE_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 const { buildTitleBlock, toBoldItalicUnicode } = require('../utils/titleBlock');
 
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
@@ -756,7 +756,9 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     const purchase = ['## Suggested Purchase', ...option(result.cheapest, stockUp ? 'Cheapest' : null)];
     if (stockUp) {
         purchase.push('', ...option(stockUp, 'Stock Up'));
-        purchase.push(`> -# Costs **${money(stockUp.extraCents)} more** · Buys **${fmt(stockUp.extraCp)} extra CP** at a better rate`);
+        // extraCents can be 0 or below: Stock Up may need MORE purchases for the same money or a few cents less (EUR 2,364 CP short: three bundles for €29.97 against one for €29.99), so "Costs −€0.02 more" is never printed.
+        const costWord = stockUp.extraCents > 0 ? `**${money(stockUp.extraCents)} more**` : stockUp.extraCents === 0 ? '**the same**' : `**${money(-stockUp.extraCents)} less**`;
+        purchase.push(`> -# Costs ${costWord} · Buys **${fmt(stockUp.extraCp)} extra CP** at a better rate`);
     }
     // The currency line stays (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it. Italic, his draft.
     purchase.push(detail
@@ -1133,7 +1135,7 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
         divider,
         { type: 10, content: [
             '### 🧾 Reading Your Result',
-            row('Recommended Bundle', 'the fewest store purchases within 3% of the cheapest price'),
+            row('Recommended Bundle', `fewest purchases within ${Math.round(PURCHASE_RULES.tolerancePct * 100)}% of the cheapest, or a small bundle's price more per purchase saved`),
             row('Left Over', 'CP the bundles give beyond what you need; it stays in your account'),
             row('Stock Up', 'a bigger buy at a better rate; see Why Stock Up below'),
             row('2X Bundles', 'tick the bundles you can still buy at double CP; the recommendation uses them'),

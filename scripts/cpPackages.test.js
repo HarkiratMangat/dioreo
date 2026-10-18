@@ -164,6 +164,54 @@ check('the displayed cheapest prefers far fewer purchases over a trivial saving'
     assert.ok(r.cheapest.totalCp > r.absoluteCheapest.totalCp, 'and it should bank MORE cp, not less');
 });
 
+// His case that retired the flat 3% rule (2026-10-17 20:09 EDT): 8,730 CP short in CAD, five purchases for CA$125.95 were shown over one 10,800 pack for CA$129.99 -- 26 cents a purchase saved, and about 2,000 CP less.
+check('one big pack beats five small ones that save a few cents each', () => {
+    const r = optimizePurchase(8730, { currency: 'CAD' });
+    assert.strictEqual(r.absoluteCheapest.transactions, 5, 'expected the arithmetic optimum to still be the 5-purchase combo');
+    assert.strictEqual(r.cheapest.transactions, 1, `displayed recommendation used ${r.cheapest.transactions} purchases`);
+    assert.strictEqual(r.cheapest.totalCp, 10800);
+});
+
+// The property the per-purchase allowance was chosen for, swept across currencies: it may only ever pick FEWER purchases than the old flat-3% rule, never more, and never pay past its own allowance.
+check('the per-purchase allowance never picks more purchases than the flat 3% rule', () => {
+    const { PURCHASE_RULES } = require('../utils/cpPackages');
+    for (const currency of ['CAD', 'USD', 'EUR', 'JPY', 'BRL', 'KWD']) {
+        for (let shortfall = 40; shortfall <= 24000; shortfall += 1993) {
+            const r = optimizePurchase(shortfall, { currency });
+            if (!r) continue;
+            const abs = r.absoluteCheapest;
+            const floor = Math.round(abs.totalCents * PURCHASE_RULES.tolerancePct);
+            let old = null;
+            for (let cap = 1; cap <= 6 && !old; cap++) {
+                const c = optimizePurchase(shortfall, { currency, maxTransactions: cap });
+                if (c && c.absoluteCheapest.totalCents <= abs.totalCents + floor) old = c.absoluteCheapest;
+            }
+            assert.ok(r.cheapest.transactions <= (old || abs).transactions, `${currency} ${shortfall}: ${r.cheapest.transactions} purchases, the 3% rule picked ${(old || abs).transactions}`);
+            const perPurchase = Math.max(priceCents(CP_PACKAGES[0], currency), Math.round(abs.totalCents * PURCHASE_RULES.perPurchasePct));
+            assert.ok(r.cheapest.totalCents <= abs.totalCents + Math.max(floor, (abs.transactions - r.cheapest.transactions) * perPurchase), `${currency} ${shortfall}: over its allowance`);
+        }
+    }
+});
+
+// A pack's 2X applies to its first purchase in the game, so a result may never show that pack at the normal rate while its 2X is unused (2026-10-17 21:10 EDT; before the fix, 246 of 1,681 swept picks did).
+check('an available 2X is always used on its own pack before that pack is bought at the normal rate', () => {
+    const tiny = optimizePurchase(20, { currency: 'CAD', doubleCpAvailable: ['cp80'] });
+    assert.deepStrictEqual(tiny.cheapest.combo.map(c => `${c.count}x${c.cpEach}${c.mode === 'double' ? '(2X)' : ''}`), ['1x160(2X)']);
+    assert.strictEqual(tiny.cheapest.leftoverCp, 140);
+    const all = CP_PACKAGES.map(p => p.id);
+    for (const currency of ['CAD', 'EUR', 'JPY', 'AUD']) {
+        for (let shortfall = 20; shortfall <= 24000; shortfall += 1499) {
+            const r = optimizePurchase(shortfall, { currency, doubleCpAvailable: all });
+            for (const pick of [r.cheapest, r.absoluteCheapest]) {
+                const doubled = new Set(pick.combo.filter(c => c.mode === 'double').map(c => c.id));
+                const unused = pick.combo.filter(c => c.mode === 'normal' && !doubled.has(c.id));
+                assert.strictEqual(unused.length, 0, `${currency} ${shortfall}: ${unused.map(c => c.id).join(',')} bought at the normal rate with its 2X unused`);
+                assert.strictEqual(pick.totalCp, pick.combo.reduce((n, c) => n + c.count * c.cpEach, 0), `${currency} ${shortfall}: totalCp out of step with the combo`);
+            }
+        }
+    }
+});
+
 // Stock Up must never be the thing Least Waste was: a worse deal wearing a second label.
 check('stock-up, when shown, is genuinely better value and genuinely more CP', () => {
     for (const shortfall of [130, 950, 4100, 5810, 11000, 11510, 15000]) {
