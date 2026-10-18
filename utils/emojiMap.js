@@ -28,10 +28,10 @@ const emojis = {
     cp2: '<:CP_CODM2:1523190111460786318>',
     // Animated icon for the draw-prices region-toggle button (drawPrices_ui.json) -- lives in the button's `emoji` field, not its `label` (see Components V2 point 4 in CLAUDE.md). Superseded as the 3-way region switcher's per-button icon 2026-08-07 15:45 EDT by the three region-specific emoji below (Harkirat provided them via diors-notes.md); kept defined since nothing else references it.
     regions: '<a:Regions:1525705441072382052>',
-    // Per-region icons for the 3-way region-switch button row (drawprices.js's buildContainer), added 2026-08-07 15:45 EDT from Harkirat's diors-notes.md request -- one distinct icon per CP tier instead of the single generic `regions` icon shared across all three buttons.
-    region10Cp: '<a:10CpRegion:1535356505614852237>',
-    region20Cp: '<a:20CpRegion:1535357376369139752>',
-    region30Cp: '<a:30CpRegion:1535357851352965240>',
+    // Per-region icons for the 3-way region-switch button row (drawprices.js's buildContainer), added 2026-08-07 15:45 EDT from Harkirat's diors-notes.md request -- one distinct icon per CP tier instead of the single generic `regions` icon shared across all three buttons. Re-uploaded 2026-10-15 22:27 EDT (second set, prod ids he supplied). Replaced 2026-10-15 18:02 EDT with Harkirat's new 10CP / 20CP / 30CP set (prod ids he supplied; the dev bot re-points by name). Shared by /draw prices' region switcher and the calculator's region select and Help chips, so both change together.
+    region10Cp: '<a:10CP:1560477395373400135>',
+    region20Cp: '<a:20CP:1560477394081423501>',
+    region30Cp: '<a:30CP:1560477392328196096>',
     // Added for the command heading redesign (calendar/draws/patchnotes/settings) /manage panel redesign (2026-07-12, per the 4 mockup JSONs in Downloads) -- these are the panel's own header/action icons, distinct from the public-command-header set above.
     database: '<a:Database:1524967327437815899>',
     mngAdd: '<a:Add:1525262938288558200>',
@@ -56,9 +56,19 @@ const emojis = {
     timestamp: '<a:Timestamps:1523762211103969420>',
     drawPrices: '<a:DrawPrices:1525864071776305163>',
     // /draw calculator's title icon + the two per-draw upgrade "card" icons (added 2026-08-26 17:25 EDT, Harkirat uploaded to both dev+prod apps). ⚠️ id verified live against the DEV app's boot-time refreshEmojiIds() sync only -- this worktree has no prod credentials to check against. If either ever renders as broken text on prod, re-supply the PROD id per this file's own established method (a live read of /applications/{prodAppId}/emojis before writing it), same trap this file's other entries document repeatedly.
-    calculator: '<a:Calculator:1542232659940343819>',
+    calculator: '<a:DrawCalc:1560743128934256680>',   // DrawCalc, 2026-10-16 18:57 EDT (Harkirat; was Calculator 1542232659940343819); every calculator title uses it
+    // The Saved view's Delete All button (2026-10-16 18:57 EDT).
+    deleteAll: '<a:DeleteAll:1561138182681133247>',
     mythicCard: '<:MythicCard:1542258676889288794>',   // mythicWeapon's upgrade -- "Weapon Upgrade"
     mythicCoin: '<:MythicCoin:1542258675706757150>',   // mythicCharacter's upgrade -- "Character Upgrade"
+    // COST BREAKDOWN's own inline bullet + field-separator glyphs (added 2026-08-26 23:03 EDT, matching Harkirat's own exported mockup verbatim) -- smallDot prefixes each field line, blueDash joins two fields sharing one line (Balance/Region, CP Spent/CP Needed). Both static, not animated. The toggle button's two states (added same pass): simplify shows once the breakdown is expanded, expand shows while it is collapsed -- see actionRow() in commands/drawCalculator.js.
+    smallDot: '<:SmallDot_SD:1542356720070697001>',
+    // The simplified view's bundle bullet (2026-10-17 17:08 EDT, his draft). Prod id read from the prod app's emoji list at his word (2026-10-17 17:20 EDT).
+    whiteDotGlow: '<:WhiteDotGlow_WDG:1542356488746573824>',
+    blueDash: '<:BlueDash_BD:1542356720943239188>',
+    // The calculator's Full Breakdown / Simple Breakdown toggle (the second was Simplify until 2026-10-17 21:33 EDT), its only user (commands/drawCalculator.js). Replaced 2026-10-15 18:02 EDT: a new Expand, and Collapse in place of the old Simplify icon (Harkirat, prod ids supplied; the dev app no longer has a Simplify emoji).
+    collapse: '<a:Collapse:1561145468824854668>',
+    expand: '<a:Expand:1561145493034246174>',
     b1: '<:b1:1523852972835082371>',
     // Shared pagination arrows (utils/paginationRow.js) — used by every command with a Prev/Next page row, not just one specific command's list. /invite's "Share Link" button (2026-08-22, Harkirat-provided). Distinct from `share` above, which is the "Show Everyone" button's icon -- two different actions, two different icons.
     shareHeart: '<a:ShareHeart:1539021725784739891>',
@@ -73,7 +83,7 @@ const emojis = {
     // "View Colors" button in /settings (utils/colorPaletteView.js, handlers/colors.js's colors_view/ colors_page_ handlers) -- blurple-recolored, background-removed eyedropper icon, per Harkirat's own design pass (2026-07-13). Uploaded by Harkirat directly, not via this bot.
     eyedropper: '<a:Eyedropper:1526293991166054541>',
     // "Show Everyone" button (utils/shareButton.js, formerly the plain 🌐 globe, 2026-07-14) -- Harkirat-provided icon, lives in the button's `emoji` field via parseEmoji(), not baked into `label` (see Components V2 point 4 above).
-    share: '<a:Share:1526666464625430558>',
+    share: '<a:Share:1560682903795662948>',   // re-uploaded 2026-10-16 14:31 EDT   // Harkirat's new Share icon, 2026-10-16 01:18 EDT (was the orange paper plane, 1526666464625430558)
     // Patch notes "additional info" aliasing (2026-07-30 22:24 EDT) -- typing a standalone `b:`/`n:` token in the additional-info text gets swapped for these at render time (patchnotes.js's applyInfoAliases()). Harkirat-uploaded, not animated.
     buff: '<:Buff:1532771212172984401>',
     nerf: '<:Nerf:1532771213271892089>',
@@ -97,6 +107,20 @@ const emojis = {
     showColors: '<a:ShowColors:1537280503105847486>',
     // The Refresh Colors notice's "everything is already up to date" state (added 2026-08-12 23:41 EDT). Harkirat supplied BOTH ids this time and both were confirmed by a live read before writing -- prod 1537301451506847947 (the literal, per this file's convention) and dev 1537301616229617695, which refreshEmojiIds() re-points to by name at boot.
     swatches: '<a:Swatches:1537301451506847947>',
+    // /draw calculator's "Remove this Selection" mark and its Calculate button (2026-10-14 16:51 EDT, Harkirat uploaded both to both apps and supplied both ids). The PROD ids are written here, per this file's convention; refreshEmojiIds() re-points the dev bot to its own copies (Cross 1560019354446463087, Sparkles 1560022548387856534) by name at boot.
+    cross: '<:Cross:1560019185747099758>',
+    // The Calculate button's icon (2026-10-16 14:31 EDT, Harkirat's Calculate emoji replaces Sparkles; the key was `sparkles`).
+    calculate: '<a:Calculate:1560700164103217263>',
+    // New Calculation's icon (2026-10-16 14:31 EDT).
+    newCalc: '<a:NewCalc:1560694028608081961>',
+    // The calculator's Save buttons (2026-10-14 17:28 EDT, Harkirat uploaded to both apps): prod id here; the dev bot re-points to its 1560041353185075250 by name at boot.
+    saveStar: '<a:Save:1560682840692105346>',   // re-uploaded 2026-10-16 14:31 EDT   // Harkirat's new Save icon, 2026-10-16 09:59 EDT (was SaveStar 1560041207177023519); the key keeps its name so every Save button follows
+    // The calculator's View Saved button (2026-10-16 09:59 EDT): prod id here; the dev bot re-points by name at boot.
+    viewSaved: '<a:ViewSaved:1560682871151132793>',   // re-uploaded 2026-10-16 14:31 EDT
+    // The calculator's Edit Selection button (2026-10-14 19:28 EDT): prod id here; the dev bot re-points to its 1560068687942123642 by name at boot.
+    editCalc: '<a:EditCalc:1560408533160296519>',   // new EditCalc, 2026-10-15 18:02 EDT
+    // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.
+    copyExport: '<a:CopyExport:1560682776305471600>',   // re-uploaded 2026-10-16 14:31 EDT
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');

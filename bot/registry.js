@@ -31,6 +31,9 @@ function loadCommandModules(client) {
             const filePath = path.join(commandsPath, file);
             const command = require(filePath);
 
+            // DEV-ONLY COMMANDS (2026-10-17, /embedtest): a module exporting `devOnly: true` registers only when NODE_ENV is 'development', which .env.dev sets and prod's .env never does (utils/cloudinaryDevGuard.js's header). Skipped before both client.commands and the registration array, so prod neither shows nor routes it.
+            if (command.devOnly && process.env.NODE_ENV !== 'development') continue;
+
             if ('data' in command && 'execute' in command) {
                 client.commands.set(command.data.name, command);
                 commands.push(command.data);

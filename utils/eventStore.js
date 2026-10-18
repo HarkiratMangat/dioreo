@@ -272,6 +272,10 @@ function noteAck() {
     const ctx = getContext();
     if (ctx && ctx.startedAt && ctx.ackMs == null) ctx.ackMs = Date.now() - ctx.startedAt;
 }
+// When Discord CONFIRMED the first defer/reply (2026-10-16 22:30 EDT). ackMs is when the bot SENT it; the gap between the two is the network leg, which is the part an "interaction failed" with a fast ackMs can still lose. Read only by the dev-bot click log in handlers/router.js; not stored.
+function noteAckDone(ctx) {
+    if (ctx && ctx.startedAt && ctx.ackDoneMs == null) ctx.ackDoneMs = Date.now() - ctx.startedAt;
+}
 
 // Discord's own codes for "this interaction is no longer answerable": 10062 Unknown interaction (the token expired) and 40060 already acknowledged. This is what turns a dead click into an `expired` outcome instead of a silent nothing.
 function noteResponseFailure(err) {
@@ -292,8 +296,9 @@ function instrumentAck(interaction) {
         Object.defineProperty(interaction, name, {
             value: function (...args) {
                 if (stampsAck) noteAck();
+                const ctx = stampsAck ? getContext() : null;
                 const result = original.apply(this, args);
-                if (result && typeof result.then === 'function') result.then(() => {}, noteResponseFailure);
+                if (result && typeof result.then === 'function') result.then(() => { if (ctx) noteAckDone(ctx); }, noteResponseFailure);
                 return result;
             },
             configurable: true,

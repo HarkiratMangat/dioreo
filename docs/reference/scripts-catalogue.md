@@ -36,6 +36,11 @@ Migrates the `rendertimings` collection into the event plane **with its raw `dis
 
 ⚠️ **Four cases (added 2026-08-18 14:30 EDT, v3-pre-release review finding #56) cover the `SearchTerm` buffer and the shutdown-flush memoization it exposed a gap in**, but they only prove the PURE LOGIC — `models/SearchTerm`'s `bulkWrite` is stubbed here too, so this file cannot prove a real process SIGTERM actually lands the write. That property was proven separately, live, against real local dev Mongo with a disposable harness (not committed): the pre-fix two-listener race reproduced with the write silently dropped, and the shipped `flushAllForShutdown()` fix landed it across 4 repeated real `SIGTERM` runs. See `utils/eventStore.js`'s `flushAllForShutdown()` and `installShutdownFlush()` comments, and `utils/instanceLock.js`'s `releaseLock` comment, for the full mechanism.
 
+
+## `scripts/drawBasketStore.test.js` — coverage for `utils/drawBasketStore.js` (added 2026-08-27 12:05 EDT, the saved-basket redesign)
+
+13 cases against a stubbed `models/DrawBasket` (same `require.cache` technique as `scripts/eventStore.test.js`), wired into `npm test`. Proves the store's ownership contract on every operation — a non-owner's `load`/`save`/`rename`/`remove` is refused rather than silently redirected — and that a malformed/stale basketId (the stub's `findById` throws a CastError-shaped error on purpose, mirroring real Mongoose) decodes to `null`, never a thrown error. See `.claude/rules/models.md` for the model itself and `.claude/rules/draw-prices.md` for the panel that consumes it.
+
 ## The observability layer's stage-4 test scripts (added 2026-08-16 17:07 EDT, v3.37.0-pre)
 
 Three tracked scripts from the health/roll-up stage, all wired into `npm test` and all needing no Mongo:

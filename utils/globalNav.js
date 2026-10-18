@@ -7,17 +7,22 @@ const NAV_ITEMS = [
     { label: 'Season End', custom_id: 'nav_seasonend' }
 ];
 
-// `activeCustomId` gets style 4 (Danger/red) + disabled, matching the existing "locked to active state" convention; every other button stays style 2 (Secondary/gray).
-function buildGlobalNavRow(activeCustomId) {
+// `activeCustomId` gets style 3 (Success/green) + disabled; every other button stays style 2 (Secondary/gray). Green since 2026-10-15 18:14 EDT (Harkirat: "let's change the season command's outside action row to green-disabled, instead of red-disabled"), the same green-means-selected rule /draw prices' region switcher took on 2026-10-14; it was style 4 (red) before.
+//
+// `overrides` (added 2026-08-26 23:03 EDT, the /draw prices <-> /draw calculator cross-link) lets a caller replace one slot's label/custom_id/emoji entirely -- keyed by the slot's ORIGINAL custom_id, so /draw prices can swap its own disabled-and-useless "Draw Prices" button for an active "Draw Calculator" link without a duplicate copy of NAV_ITEMS. An overridden item is never treated as the active/disabled slot, regardless of `activeCustomId` -- it points somewhere else now, so it must stay clickable.
+function buildGlobalNavRow(activeCustomId, overrides = {}) {
     return {
         type: 1,
         components: NAV_ITEMS.map(item => {
-            const isActive = item.custom_id === activeCustomId;
+            const override = overrides[item.custom_id];
+            const resolved = override ? { ...item, ...override } : item;
+            const isActive = !override && item.custom_id === activeCustomId;
             return {
                 type: 2,
-                style: isActive ? 4 : 2,
-                label: item.label,
-                custom_id: item.custom_id,
+                style: isActive ? 3 : 2,
+                label: resolved.label,
+                custom_id: resolved.custom_id,
+                ...(resolved.emoji ? { emoji: resolved.emoji } : {}),
                 ...(isActive ? { disabled: true } : {})
             };
         })

@@ -27,6 +27,7 @@ const HANDLER_BINDINGS = [
     ['timestamp', 'handleTimestampInteraction'],
     ['help', 'handleHelpInteraction'],
     ['invite', 'handleInviteInteraction'],
+    ['embedTest', 'handleEmbedTestInteraction'],
     ['patchnotes', 'handlePatchnotesInteraction'],
     ['settings', 'handleSettingsInteraction'],
     ['loadouts', 'handleLoadoutsInteraction'],
@@ -49,6 +50,7 @@ const handleManageInteraction = late('manage', 'handleManageInteraction');
 const handleTimestampInteraction = late('timestamp', 'handleTimestampInteraction');
 const handleHelpInteraction = late('help', 'handleHelpInteraction');
 const handleInviteInteraction = late('invite', 'handleInviteInteraction');
+const handleEmbedTestInteraction = late('embedTest', 'handleEmbedTestInteraction');
 const handlePatchnotesInteraction = late('patchnotes', 'handlePatchnotesInteraction');
 const handleSettingsInteraction = late('settings', 'handleSettingsInteraction');
 const handleLoadoutsInteraction = late('loadouts', 'handleLoadoutsInteraction');
@@ -90,6 +92,8 @@ function buildInteractionContext(interaction) {
         startedAt: Date.now(),
         outcome: null,     // set by the guards below and by the catch; first writer wins
         ackMs: null,       // stamped by instrumentAck() on the first defer/reply
+        ackDoneMs: null,   // when Discord confirmed that first defer/reply (dev-bot click log only)
+        createdTimestamp: interaction.createdTimestamp ?? null, // when the user clicked, from the interaction's own id
         deps: null,        // aggregated per dependency name by noteDep()
         detail: null,      // subsystem fields via mergeDetail() -- absorbs the retired RenderTiming
     };
@@ -109,8 +113,23 @@ async function handleInteraction(interaction) {
             return await handleInteractionInner(interaction);
         } finally {
             recordInteractionEvent(interaction, ctx, interaction.user?.id);
+            logClickTiming(interaction, ctx);
         }
     });
+}
+
+// DEV BOT ONLY: one line per click saying where its time went (2026-10-16 22:30 EDT, Harkirat: "Sure, go for it" to a log that shows whether an "interaction failed" is delivery or code). `arrived` is how long after the click the bot received it (Discord's clock vs this Mac's, so a few hundred ms of skew is normal); `sent` and `confirmed` are the first defer/reply leaving and Discord accepting it; `done` is the whole handler. Discord shows "interaction failed" when arrived + confirmed passes 3 s. Production stays quiet.
+function logClickTiming(interaction, ctx) {
+    try {
+        if (process.env.NODE_ENV !== 'development' || !ctx || !ctx.startedAt || interaction.isAutocomplete?.()) return;
+        const arrived = ctx.createdTimestamp ? ctx.startedAt - ctx.createdTimestamp : null;
+        const ms = v => (v == null ? '—' : `${v} ms`);
+        const total = arrived != null && ctx.ackDoneMs != null ? arrived + ctx.ackDoneMs : null;
+        const flag = total != null && total > 3000 ? '  ⚠️ past Discord\'s 3 s' : (ctx.outcome === 'expired' ? '  ⚠️ expired' : '');
+        const at = new Date(ctx.startedAt).toLocaleTimeString('en-US', { hour12: false });
+        const what = String(ctx.command || '').split('~').slice(0, 2).join('~');
+        console.log(`🕒 ${at} ${what} · arrived ${ms(arrived)} after the click · sent +${ms(ctx.ackMs)} · confirmed +${ms(ctx.ackDoneMs)} · done +${ms(Date.now() - ctx.startedAt)}${flag}`);
+    } catch { /* a diagnostic never breaks a click */ }
 }
 
 async function handleInteractionInner(interaction) {
@@ -186,6 +205,8 @@ async function handleInteractionInner(interaction) {
         if (await handleHelpInteraction(interaction)) return;
         markHandler('invite');
         if (await handleInviteInteraction(interaction)) return;
+        markHandler('embedTest');
+        if (await handleEmbedTestInteraction(interaction)) return;
         markHandler('patchnotes');
         if (await handlePatchnotesInteraction(interaction)) return;
         markHandler('settings');

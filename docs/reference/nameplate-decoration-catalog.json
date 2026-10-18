@@ -1,4 +1,385 @@
 {
+    "Fall Foragers": {
+        "decorations": [
+            {
+                "group_name": "Japanese Maple",
+                "base_sku_id": "1545533418073231482",
+                "variants": [
+                    {
+                        "sku_id": "1545533418073231482",
+                        "name": "Japanese Maple",
+                        "asset": "a_3fc0f92dd90e96adb617cd90f207f7f0",
+                        "label": "Red maple branches encircle the avatar."
+                    }
+                ]
+            },
+            {
+                "group_name": "Gardener's Friend",
+                "base_sku_id": "1545533300171346131",
+                "variants": [
+                    {
+                        "sku_id": "1545533300171346131",
+                        "name": "Gardener's Friend",
+                        "asset": "a_e73462eef71738e4e478a55ccea7823d",
+                        "label": "Bare branches with red berries encircle the avatar, a robin perched at the top."
+                    }
+                ]
+            },
+            {
+                "group_name": "Leafy Loaf",
+                "base_sku_id": "1545530967433674853",
+                "variants": [
+                    {
+                        "sku_id": "1545530967433674853",
+                        "name": "Leafy Loaf",
+                        "asset": "a_47202ff223e839a2ecf14a8b0f3ce7a1",
+                        "label": "A black cat lounges in a pile of autumn leaves."
+                    }
+                ]
+            }
+        ],
+        "nameplates": [
+            {
+                "group_name": "Toadstools",
+                "base_sku_id": "1545536600677814393",
+                "variants": [
+                    {
+                        "sku_id": "1545536600677814393",
+                        "name": "Toadstools",
+                        "asset": "nameplates/toadstools/1545536600677814393/",
+                        "label": "Red-capped toadstools grow in a patch of grass.",
+                        "palette": "teal",
+                        "palette_hex": "#086460"
+                    }
+                ]
+            },
+            {
+                "group_name": "Harvest Mouse",
+                "base_sku_id": "1545534249216638986",
+                "variants": [
+                    {
+                        "sku_id": "1545534249216638986",
+                        "asset": "nameplates/harvest_mouse/1545534249216638986/",
+                        "label": "A brown mouse nibbles berries atop a pile of red berries.",
+                        "palette": "berry",
+                        "palette_hex": "#893a99",
+                        "variant_label": "Brown",
+                        "variant_value": "#EA8551"
+                    },
+                    {
+                        "sku_id": "1545534622782455918",
+                        "asset": "nameplates/harvest_mouse/1545534622782455918/",
+                        "label": "A gray mouse nibbles berries atop a pile of red berries.",
+                        "palette": "sky",
+                        "palette_hex": "#0080b7",
+                        "variant_label": "Gray",
+                        "variant_value": "#AAAAAA"
+                    }
+                ]
+            },
+            {
+                "group_name": "Gardener's Friend",
+                "base_sku_id": "1545534123182002246",
+                "variants": [
+                    {
+                        "sku_id": "1545534123182002246",
+                        "name": "Gardener's Friend",
+                        "asset": "nameplates/gardener's_friend/1545534123182002246/",
+                        "label": "A robin perches on a berry branch.",
+                        "palette": "sky",
+                        "palette_hex": "#0080b7"
+                    }
+                ]
+            }
+        ]
+    },
+    "All Ears": {
+        "decorations": [
+            {
+                "group_name": "Red Panda",
+                "base_sku_id": "1545192639022768209",
+                "variants": [
+                    {
+                        "sku_id": "1545192639022768209",
+                        "name": "Red Panda",
+                        "asset": "a_dffbc02bef8af95f3b37e72d33c49824",
+                        "label": "Red panda ears and a striped tail encircle the avatar."
+                    }
+                ]
+            },
+            {
+                "group_name": "Fox Guardian",
+                "base_sku_id": "1545192421854285834",
+                "variants": [
+                    {
+                        "sku_id": "1545192421854285834",
+                        "name": "Fox Guardian",
+                        "asset": "a_3288867bbacde931ce5f688560f9aa1c",
+                        "label": "Cream fox ears with red tassels and bells."
+                    }
+                ]
+            },
+            {
+                "group_name": "Tiger",
+                "base_sku_id": "1545192163170582569",
+                "variants": [
+                    {
+                        "sku_id": "1545192163170582569",
+                        "name": "Tiger",
+                        "asset": "a_f1c2e3a6005a8bfc3bec150569f7baca",
+                        "label": "Striped tiger ears and a curled tail."
+                    }
+                ]
+            },
+            {
+                "group_name": "Boss Bear",
+                "base_sku_id": "1545192768341807174",
+                "variants": [
+                    {
+                        "sku_id": "1545192768341807174",
+                        "asset": "a_456d475b768d6d3f3b1f76d2a3d9b475",
+                        "label": "White polar bear ears",
+                        "variant_label": "Polar",
+                        "variant_value": "#d9e3e2"
+                    },
+                    {
+                        "sku_id": "1545192974537986108",
+                        "asset": "a_74ad27a006e3b3d3afb42fc49594c341",
+                        "label": "Brown bear ears",
+                        "variant_label": "Brown",
+                        "variant_value": "#834f4e"
+                    },
+                    {
+                        "sku_id": "1545193090808283147",
+                        "asset": "a_ea728cadf2ed3756e7917719b38b713b",
+                        "label": "Black bear ears",
+                        "variant_label": "Black",
+                        "variant_value": "#494a58"
+                    }
+                ]
+            },
+            {
+                "group_name": "Fox",
+                "base_sku_id": "1545564784341032960",
+                "variants": [
+                    {
+                        "sku_id": "1545564784341032960",
+                        "asset": "a_657d2766be35a27a8239f98c60e414c0",
+                        "label": "Orange fox ears and a bushy tail encircle the avatar.",
+                        "variant_label": "Ears",
+                        "variant_value": "#fe7b2a"
+                    },
+                    {
+                        "sku_id": "1545192700209528912",
+                        "asset": "a_349e431d5f4befc7d5010364eefd8107",
+                        "label": "Orange fox ears, fluffy cheeks, and a bushy tail encircle the avatar.",
+                        "variant_label": "Fluffy",
+                        "variant_value": "#f3c8ad"
+                    }
+                ]
+            },
+            {
+                "group_name": "Lunar Wolf",
+                "base_sku_id": "1545191881489653833",
+                "variants": [
+                    {
+                        "sku_id": "1545191881489653833",
+                        "name": "Lunar Wolf",
+                        "asset": "a_389fc7b1f648159a29b4d3fa7cade94c",
+                        "label": "Iridescent wolf ears and a crescent-shaped wisp of fur."
+                    }
+                ]
+            },
+            {
+                "group_name": "Bunny Babe",
+                "base_sku_id": "1545191973307154432",
+                "variants": [
+                    {
+                        "sku_id": "1545191973307154432",
+                        "name": "Bunny Babe",
+                        "asset": "a_2440982ce3fe9978fcf29cdac7cb4018",
+                        "label": "Pink bunny ears downturned with a purple bow on top."
+                    }
+                ]
+            },
+            {
+                "group_name": "Ribbon Kitten",
+                "base_sku_id": "1545191258564075630",
+                "variants": [
+                    {
+                        "sku_id": "1545191258564075630",
+                        "name": "Ribbon Kitten",
+                        "asset": "a_940cc58c4d1a1789c7d0ee55ce581278",
+                        "label": "Cat ears tied with pink bows above paws wearing a bell collar."
+                    }
+                ]
+            },
+            {
+                "group_name": "Snow Leopard",
+                "base_sku_id": "1545192075551703201",
+                "variants": [
+                    {
+                        "sku_id": "1545192075551703201",
+                        "name": "Snow Leopard",
+                        "asset": "a_48ea85305bdf65404273af1efa467dc3",
+                        "label": "Spotted snow leopard ears and a curled tail."
+                    }
+                ]
+            },
+            {
+                "group_name": "Alt Raccoon",
+                "base_sku_id": "1545192554469920779",
+                "variants": [
+                    {
+                        "sku_id": "1545192554469920779",
+                        "name": "Alt Raccoon",
+                        "asset": "a_628b1b338d3216a2a971083b2b2efffc",
+                        "label": "Pierced raccoon ears and a striped tail encircle the avatar"
+                    }
+                ]
+            }
+        ],
+        "nameplates": [
+            {
+                "group_name": "Tiger Print",
+                "base_sku_id": "1545193363958005790",
+                "variants": [
+                    {
+                        "sku_id": "1545193363958005790",
+                        "name": "Tiger Print",
+                        "asset": "nameplates/tiger_print/1545193363958005790/",
+                        "label": "Sparkling tiger fur.",
+                        "palette": "black",
+                        "palette_hex": "#000000"
+                    }
+                ]
+            },
+            {
+                "group_name": "Lunar Wolf Fur",
+                "base_sku_id": "1545193498725322762",
+                "variants": [
+                    {
+                        "sku_id": "1545193498725322762",
+                        "name": "Lunar Wolf Fur",
+                        "asset": "nameplates/lunar_wolf_fur/1545193498725322762/",
+                        "label": "Iridescent blue and pink wolf fur with sparkles.",
+                        "palette": "sky",
+                        "palette_hex": "#0080b7"
+                    }
+                ]
+            },
+            {
+                "group_name": "Leopard Print",
+                "base_sku_id": "1545193190783586314",
+                "variants": [
+                    {
+                        "sku_id": "1545193190783586314",
+                        "name": "Leopard Print",
+                        "asset": "nameplates/leopard_print/1545193190783586314/",
+                        "label": "Sparkling leopard print fur.",
+                        "palette": "black",
+                        "palette_hex": "#000000"
+                    }
+                ]
+            },
+            {
+                "group_name": "Alt Raccoon Fur",
+                "base_sku_id": "1545193669932482620",
+                "variants": [
+                    {
+                        "sku_id": "1545193669932482620",
+                        "name": "Alt Raccoon Fur",
+                        "asset": "nameplates/alt_raccoon_fur/1545193669932482620/",
+                        "label": "Gray striped fur with a heart pendant charm.",
+                        "palette": "black",
+                        "palette_hex": "#000000"
+                    }
+                ]
+            }
+        ]
+    },
+    "Cauldron Chaos": {
+        "decorations": [
+            {
+                "group_name": "Grinning Gourds",
+                "base_sku_id": "1551708537984389240",
+                "variants": [
+                    {
+                        "sku_id": "1551708537984389240",
+                        "name": "Grinning Gourds",
+                        "asset": "a_f2cea6597b77a277ff458099d051ba62",
+                        "label": "Glowing green ring with two grinning jack-o'-lanterns and flying bats"
+                    }
+                ]
+            },
+            {
+                "group_name": "Summoning Circle",
+                "base_sku_id": "1551708446984896635",
+                "variants": [
+                    {
+                        "sku_id": "1551708446984896635",
+                        "name": "Summoning Circle",
+                        "asset": "a_2e3ef537ad942007c7582f18cd17220b",
+                        "label": "A glowing teal ring etched with runes and stars."
+                    }
+                ]
+            },
+            {
+                "group_name": "Witch Dust",
+                "base_sku_id": "1551708342672560208",
+                "variants": [
+                    {
+                        "sku_id": "1551708342672560208",
+                        "name": "Witch Dust",
+                        "asset": "a_39d94e0acd47c12e98b4f0bccf5694f4",
+                        "label": "A ring of colorful sparkles and stars."
+                    }
+                ]
+            },
+            {
+                "group_name": "Hex's Hat",
+                "base_sku_id": "1551702173111554158",
+                "variants": [
+                    {
+                        "sku_id": "1551702173111554158",
+                        "name": "Hex's Hat",
+                        "asset": "a_ea9e485919a47373eb2f05cc4a1d0c0c",
+                        "label": "A purple witch hat decorated with a crescent moon and cat ears, and a cat tail."
+                    }
+                ]
+            }
+        ],
+        "nameplates": [
+            {
+                "group_name": "Night Flight",
+                "base_sku_id": "1551708828741931039",
+                "variants": [
+                    {
+                        "sku_id": "1551708828741931039",
+                        "name": "Night Flight",
+                        "asset": "nameplates/night_flight/1551708828741931039/",
+                        "label": "Bats fly across a full moon.",
+                        "palette": "cobalt",
+                        "palette_hex": "#0131c2"
+                    }
+                ]
+            },
+            {
+                "group_name": "Witch Dust",
+                "base_sku_id": "1551708652665315368",
+                "variants": [
+                    {
+                        "sku_id": "1551708652665315368",
+                        "name": "Witch Dust",
+                        "asset": "nameplates/witch_dust/1551708652665315368/",
+                        "label": "Colorful sparkles and stars scatter across a purple haze.",
+                        "palette": "cobalt",
+                        "palette_hex": "#0131c2"
+                    }
+                ]
+            }
+        ]
+    },
     "Dark Folklore": {
         "decorations": [
             {

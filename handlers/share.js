@@ -43,10 +43,25 @@ async function route(interaction) {
             const rawComponents = (msg.components || []).map(c => (typeof c.toJSON === 'function' ? c.toJSON() : c));
 
             // Drop the share row itself — a message that's already public doesn't need a button offering to make it public. We only ever add it as its OWN dedicated row (never mixed into an existing row), so dropping any row that contains it is safe and precise.
-            const components = rawComponents.filter(entry => {
+            let components = rawComponents.filter(entry => {
                 if (entry.type !== 1) return true;
                 return !(entry.components || []).some(c => c.custom_id === SHARE_BUTTON_CUSTOM_ID);
             });
+
+            // 🔴 A /draw calculator basket panel publishes as a SNAPSHOT, not a live copy (design decision 10, docs/superpowers/specs/2026-08-27-draw-calculator-multi-draw-design.md §8). Every one of its controls is author-locked and reads a basket document by id -- shared as-is they'd sit there looking clickable while silently rejecting every non-owner who tries (v3-pre-release review, finding #24). Detected by the SAME signal ownership already uses everywhere in this bot: a `calc~` custom_id prefix, anywhere in the message.
+            //
+            // Strips only the INTERACTIVE components (action rows -- type 1, which is where every button/select lives), never the Container or its Text Displays/dividers -- the whole point of a snapshot is that the cost breakdown, basket listing and priority plan stay fully readable, just with nothing left to click.
+            const hasCalcControl = n => Array.isArray(n) ? n.some(hasCalcControl)
+                : (n && typeof n === 'object') ? (typeof n.custom_id === 'string' && n.custom_id.startsWith('calc~')) || hasCalcControl(n.components || []) || (n.accessory ? hasCalcControl(n.accessory) : false)
+                : false;
+            if (hasCalcControl(components)) {
+                // A Section whose accessory is a calculator BUTTON is unwrapped to its text (2026-10-13 14:19 EDT): Show Breakdown now sits beside the COST BREAKDOWN heading as a Section accessory, which is not an action row and would otherwise survive the strip as a live control on the public copy. A thumbnail accessory is left alone.
+                const unwrap = c => (c.type === 9 && c.accessory && c.accessory.type === 2) ? (c.components || []) : [c];
+                components = components.map(entry => (entry && entry.type === 17)
+                    ? { ...entry, components: (entry.components || []).filter(c => c.type !== 1).flatMap(unwrap) }
+                    : entry
+                ).filter(entry => entry.type !== 1);
+            }
 
             // Preserve the Components V2 flag (32768) if present, but strip EPHEMERAL (64) — this response IS the public copy now, not a private confirmation about one.
             const flags = (msg.flags?.bitfield || 0) & ~64;

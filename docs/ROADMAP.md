@@ -89,7 +89,7 @@ status: live
 
 **C · Launch mechanics — the things only Harkirat can do**
 
-- [ ] **Flip GUILD INSTALL in the Developer Portal** `[P1 · M]`. Per-application, not settable from code. Prod is still `guild_count: 0`. This also makes `/invite`'s "Add to Server" link live, and is the enabler for D below
+- [x] ✅ **DONE by Harkirat, reported 2026-10-13 12:35 EDT:** guild install is on for the prod app and the prod bot is invited to dioreoland. Checked the same minute with the prod token, read-only: install types `0,1`, `approximate_guild_count` 8, both cache channels readable. ~~**Flip GUILD INSTALL in the Developer Portal** `[P1 · M]`.~~ Per-application, not settable from code. Prod is still `guild_count: 0`. This also makes `/invite`'s "Add to Server" link live, and is the enabler for D below
 - [ ] **Server-admin control surface** `[P1 · L]` — designed 2026-08-10, implementation remains, and it is a **launch blocker for guild install**. "Usage" is parked and undefined
 - [ ] **Update the Discord Developer Portal listing** — name, description, banner
 - [ ] **Re-check TERMS / LICENSE / NOTICE before launch** — v3 ships guild install, which changes the legal surface. → deferred list
@@ -97,10 +97,10 @@ status: live
 
 **D · Prod data and environment**
 
-- [ ] **Prod `.env` is missing `NAMEPLATE_CACHE_CHANNEL_ID` and `DECORATION_CACHE_CHANNEL_ID`** — they exist in `.env.dev` only
-- [ ] 🔴 **Push the catalogue into prod Mongo — `node scripts/syncCatalogToMongo.js`.** ⚠️ **This was MISSING from the checklist until 2026-09-09 18:09 EDT, found because Harkirat asked whether it was stated before letting the run happen.** It is the step BEFORE the row below: the bulk-cache reads `CollectibleCatalog` docs and tracks its progress on them, so nothing can run against SKUs that were never flattened in. The JSON was synced 2026-09-09 18:09 EDT (941 → **956** SKUs, two new collections) and prod Mongo does not have the 15 new ones. Additive by construction — descriptive fields `$set` every run, the bot's own `cacheStatus`/`cachedAt`/`lastAttemptAt`/`lastError` `$setOnInsert` only, so a re-run never resets progress for a SKU already processed
-- [ ] **The nameplate/decoration bulk-cache full run against PROD** — an explicit pre-launch item, blocked on C's guild-install flip
-- [ ] 🔴 **The nameplate cache-embed REDESIGN is Harkirat's own and has never been provided.** Nothing can proceed on it until he does
+- [x] ~~**Prod `.env` is missing `NAMEPLATE_CACHE_CHANNEL_ID` and `DECORATION_CACHE_CHANNEL_ID`** — they exist in `.env.dev` only~~ → added to prod's `.env` 2026-08-30 22:10 EDT with `img2webp` (memory `project_nameplate_decoration_webp_pivot`); this row was left unticked until 2026-10-13 12:08 EDT
+- [ ] 🔴 **Push the catalogue into prod Mongo — `node scripts/syncCatalogToMongo.js`.** ⚠️ **This was MISSING from the checklist until 2026-09-09 18:09 EDT, found because Harkirat asked whether it was stated before letting the run happen.** It is the step BEFORE the row below: the bulk-cache reads `CollectibleCatalog` docs and tracks its progress on them, so nothing can run against SKUs that were never flattened in. The JSON was synced 2026-09-09 18:09 EDT (941 → **956** SKUs, two new collections) and prod Mongo does not have the 15 new ones. **Updated 2026-10-13 12:08 EDT:** the JSON is now **986** SKUs (30 more, three new collections: All Ears, Cauldron Chaos, Fall Foragers), so prod Mongo lacks 45. Additive by construction — descriptive fields `$set` every run, the bot's own `cacheStatus`/`cachedAt`/`lastAttemptAt`/`lastError` `$setOnInsert` only, so a re-run never resets progress for a SKU already processed
+- [ ] **The nameplate/decoration bulk-cache full run against PROD** — an explicit pre-launch item. **Unblocked 2026-10-13 12:35 EDT:** the guild-install flip and the dioreoland invite are done, and the prod token reads both cache channels. Still needs the catalogue row above first, and his word at the time (it writes prod Cloudinary, prod Mongo and the cache channels)
+- [x] ~~🔴 **The nameplate cache-embed REDESIGN is Harkirat's own and has never been provided.** Nothing can proceed on it until he does~~ → **provided the same day it was filed:** Pre-Release v3.30.0 (#138, `0d88ba5`, 2026-08-15 23:06 EDT), "the cache-channel message layout, specified by Harkirat to the character". This row stayed open until 2026-10-13 12:35 EDT, when he asked for it to be checked
 
 **E · The working layer — not features, but they gate confidence in everything above**
 

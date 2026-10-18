@@ -29,7 +29,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.87.0 — 2026-10-01 20:33 EDT (#195) — the first hook-free PR is watched for, and two CI decisions are recorded
+## Pre-Release v3.88.0 — 2026-10-18 00:11 EDT (#197) — the draw calculator rebuilt from his click-tests: saved calculations, Mythic upgrades by tier, and a smarter bundle pick
+**`/draw calculator`, `/draw prices` and `/help`.** Built on the dev bot from Harkirat's click-tests and his screen-by-screen intake, 56 batches logged verbatim in `docs/claude/2026-10-13-draw-calculator-intake.md`; what is true now is `.claude/rules/draw-prices.md` § CURRENT STATE.
+
+- **The calculator is one live panel.** A landing to start a calculation, then a result with **Your Draw Selections** and **Cost Breakdown** + **Suggested Purchase**, toggled between **Simple Breakdown** and **Full Breakdown**. Calculations save (named ones until deleted, unnamed ones for 30 days), reopen on the next run, and live in **View Saved**. `page:` opens on Start a Calculation, View Saved or Help; the old `draw`/`pulls`/`balance`/`region` options are unwired and kept.
+- **Mythic upgrades by tier.** Weapon levels 1–5 in Mythic Cards and the character's three paths plus Final Form in Mythic Coins, from one shared pool each; one pop-up per Mythic draw; the balance pop-up takes CP, cards and coins, accepts `2k` and `250 cards`, and names any refused field privately.
+- **A bundle pick people would actually make.** The recommendation is the fewest purchases within the larger of 3% of the cheapest total and, per purchase saved, the smallest bundle's price or 1.5% (his case: 8,730 CP in CAD is now one 10,800 bundle, not five purchases saving 26 cents). Swept over all 41 currencies, it never picks more purchases than before. The sweep also found that about 15% of picks with 2X available showed a bundle at the normal rate while its own 2X sat unused; a bundle's 2X is now used on its first buy. The label beside Stock Up reads **Just Enough**.
+- **`/draw prices`:** a **Jump to a draw type** dropdown and `type:` option open one draw with **Show All Draws** in place of the pager; the Mythic upgrade ladders in his format; Legendary Character + Legendary Weapon moves to page 2.
+- **`/help`:** `/gunsmiths search` and `list` are real links on the landing, the Draws page has a **Calculator Guide** button, and four out-of-date pages are corrected. A new check in `scripts/helpBodySnapshot.test.js` fails when /help and the registered options disagree.
+- **Data:** `DrawBasket` gains upgrade levels and card/coin balances, covered by PRIVACY §2.1d and Appendix A. The dev-only `/embedtest` arrives with this branch and registers only on the dev bot.
+
+## Pre-Release v3.87.0 — 2026-10-01 20:33 EDT (#195 · `c40ce607`) — the first hook-free PR is watched for, and two CI decisions are recorded
 **Documentation only; no runtime change.** `CLAUDE.md`'s CI block now tells every session what to expect from the first PR that touches no hook: `hooks on macOS` skipped and `syntax-check` still green, with where to fix it if it is red. This PR changes no hook, so its own CI was that first case: `hooks on macOS` was skipped and `syntax-check` stayed green (run 36946454845), recorded in the resolved list. The deferred list also records Harkirat's two calls: the sync commit's missing test is accepted as is (`main` is paused until v3 merges), and the macOS job stays advisory for now. The CI plan's §7 points at the watch-for.
 
 ## Pre-Release v3.86.0 — 2026-10-01 18:32 EDT (#192 · `37f42959`) — CI and the test queue rebuilt: a parallel runner, deterministic browser walks, CI split into jobs
