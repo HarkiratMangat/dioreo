@@ -84,11 +84,11 @@ const emojis = {
     eyedropper: '<a:Eyedropper:1526293991166054541>',
     // "Show Everyone" button (utils/shareButton.js, formerly the plain 🌐 globe, 2026-07-14) -- Harkirat-provided icon, lives in the button's `emoji` field via parseEmoji(), not baked into `label` (see Components V2 point 4 above).
     share: '<a:Share:1560682903795662948>',   // re-uploaded 2026-10-16 14:31 EDT   // Harkirat's new Share icon, 2026-10-16 01:18 EDT (was the orange paper plane, 1526666464625430558)
-    // Patch notes "additional info" aliasing (2026-07-30 22:24 EDT) -- typing a standalone `b:`/`n:` token in the additional-info text gets swapped for these at render time (patchnotes.js's applyInfoAliases()). Harkirat-uploaded, not animated.
-    buff: '<:Buff:1532771212172984401>',
-    nerf: '<:Nerf:1532771213271892089>',
+    // Patch notes "additional info" aliasing (2026-07-30 22:24 EDT) -- typing a standalone `b:`/`n:` token in the additional-info text gets swapped for these at render time (patchnotes.js's applyInfoAliases()). Harkirat-uploaded, not animated. Patch notes' buff / nerf / fix marks swapped to his animated PN_ set (2026-10-18 13:39 EDT, Harkirat).
+    buff: '<a:PN_Buff:1561432978545184928>',
+    nerf: '<a:PN_Nerf:1561432951080615996>',
     // "f:" alias added 2026-08-08 00:22 EDT alongside buff/nerf, same word-boundary-guarded swap in patchnotes.js's applyInfoAliases()/formatAdditionalInfo().
-    fix: '<:Fix:1535479788007985172>',
+    fix: '<a:PN_Fix:1561432903919996968>',
     // Section heading icons for the 3-section calendar redesign's Events/Playlists pages (2026-07-31 14:00 EDT) -- Draws reuses the existing newDraws/returningDraws emojis above.
     events: '<a:Events:1532830530108653659>',
     // Re-uploaded 2026-08-08 00:22 EDT (Harkirat deleted the old id from the portal) -- new id only, same key.
@@ -99,6 +99,9 @@ const emojis = {
     guide: '<a:DB_Guide:1532894836301238477>',
     // The calculator's "covered" and "finished" lines (2026-10-18 13:05 EDT, Harkirat: "swap the icon used beside the 'your balance covers this' line").
     checkmark: '<a:Checkmark:1561412941004406955>',
+    // The calculator's Add Draws and Remove buttons (2026-10-18 13:36 EDT, Harkirat supplied both).
+    plus: '<a:Plus:1560408706233933845>',
+    deleteBin: '<a:DeleteBin:1560788313508683807>',
     // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmiths category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmiths now covers /all + every per-category command too, not just DMZ).
     dioreoCombo: '<:DioreoCombo:1534640183230730470>',
     loadouts: '<a:Loadouts:1535779248982335618>',

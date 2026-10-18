@@ -845,8 +845,8 @@ function selectionSummary(basket, max = 12) {
     if (lines.length > max) return [...lines.slice(0, max), `-# …and ${lines.length - max} more, all on **Set Draw Progress**.`].join('\n');
     return lines.join('\n');
 }
-// "Set Draw Progress & Upgrades" once a Mythic line is in the calculation (2026-10-18 13:05 EDT, his ask), on the button and the screen it opens.
-function progressTitle(basket) { return (basket?.banners || []).some(b => upgradeKeyOf(b.drawKey)) ? 'Set Draw Progress & Upgrades' : 'Set Draw Progress'; }
+// "Set Draw Progress & Upgrades" once a Mythic line is in the calculation (2026-10-18 13:05 EDT, his ask), on the button and the screen it opens. Renamed 2026-10-18 13:37 EDT (Harkirat): "Adjust Draws & Progress" / "Adjust Draws, Progress, & Upgrades". The screen now adds and removes draws too.
+function progressTitle(basket) { return (basket?.banners || []).some(b => upgradeKeyOf(b.drawKey)) ? 'Adjust Draws, Progress, & Upgrades' : 'Adjust Draws & Progress'; }
 function progressButton(state, basket) { return { type: 2, style: 2, label: progressTitle(basket), custom_id: encodeState('progress', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
 
 // THIS SEASON'S DRAWS (sidelined 2026-10-17 21:29 EDT, built 2026-10-18 12:15 EDT). First on the form (his "yes"). Each option is the draw's own title with its Draw Type under it (decided 2026-10-17 21:28 EDT). The list is listSeasonDraws's, read by the caller and passed in, because building a panel never touches the database.
@@ -916,7 +916,8 @@ function progressLineBlocks(state, basket, index) {
     const text = `${icon} **#${index + 1}** ${lineName(b)}${b.title ? `\n-# ${shortName(b.drawKey)}` : ''}`;
     const extra = lineExtraButtons(state, basket, index);
     const head = extra.length === 1 ? { type: 9, components: [{ type: 10, content: text }], accessory: extra[0] } : { type: 10, content: text };
-    const out = [head, bannerPullsRow(state, basket, index, { removable: true })];
+    // No Remove option in the line's dropdown: Remove is one pop-up for every selection now (his Mock 2).
+    const out = [head, bannerPullsRow(state, basket, index)];
     if (extra.length > 1) out.push({ type: 1, components: extra });
     return out;
 }
@@ -926,11 +927,17 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
         { type: 10, content: `## ${progressTitle(basket)}\n-# Set how far you are on each draw. \`0\` means you haven't started it.` }];
     if (notice) top.push({ type: 10, content: `-# ${notice}` });
     if (dropConfirm) top.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
-    // Back to Selections, and Calculate beside it (2026-10-18 13:08 EDT, his ask), so a finished edit goes straight to the result.
-    const back = [{ type: 14, spacing: 2, divider: true }, { type: 1, components: [
-        { type: 2, style: 2, label: 'Back to Selections', custom_id: encodeState('progback', state), emoji: emojis.parseEmoji(emojis.left) },
-        { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), emoji: emojis.parseEmoji(emojis.calculate) }
-    ] }];
+    // HIS TWO FOOTER ROWS (2026-10-18 13:37 EDT): Add Draws · Remove (red) · Calculate, then Back to Result · Back to Selections. Add and Remove open pop-ups (his Mock 2: "it also adds a soft confirm to delete ... and overall keeps the panel slim and clean"). Back to Result shows only when there is a result.
+    const back = [{ type: 14, spacing: 2, divider: true },
+        { type: 1, components: [
+            { type: 2, style: 2, label: 'Add Draws', custom_id: encodeState('addopen', state), emoji: emojis.parseEmoji(emojis.plus), disabled: banners.length >= MAX_LINES },
+            { type: 2, style: 4, label: 'Remove', custom_id: encodeState('rmopen', state), emoji: emojis.parseEmoji(emojis.deleteBin) },
+            { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), emoji: emojis.parseEmoji(emojis.calculate) }
+        ] },
+        { type: 1, components: [
+            ...(basket.submitted ? [{ type: 2, style: 2, label: 'Back to Result', custom_id: encodeState('progresult', state), emoji: emojis.parseEmoji(emojis.left) }] : []),
+            { type: 2, style: 2, label: 'Back to Selections', custom_id: encodeState('progback', state), emoji: emojis.parseEmoji(emojis.left) }
+        ] }];
     const build = perPage => {
         const pages = linePages(banners, perPage);
         const bpage = Math.min(state.bpage || 0, pages.length - 1);
@@ -946,6 +953,48 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
         if (1 + countComponents(out) <= SETUP_CONTAINER_BUDGET && JSON.stringify(out).length <= SETUP_JSON_BUDGET) break;
     }
     return { type: 17, accent_color: accentColor, components: out };
+}
+
+// THE ADD DRAWS POP-UP (2026-10-18 13:37 EDT, his Mock 2): this season's draws, then the draw types, both multi-pick and optional. Each pick adds one selection; a draw type adds after that type's last line, as the form's picker does.
+function buildAddDrawsModal(state, basket, seasonDraws) {
+    const room = MAX_LINES - (basket?.banners?.length || 0);
+    const list = (seasonDraws || []).slice(0, 25);
+    const label = (text, description, component) => ({ type: 18, label: text, description, component });
+    const components = [];
+    if (list.length) {
+        components.push(label("This Season's Draws", 'Pick any number; each adds one selection', {
+            type: 3, custom_id: 'season', required: false, min_values: 0, max_values: Math.max(1, Math.min(list.length, room)),
+            options: list.map(d => ({ label: String(d.title).slice(0, 100), value: d.id, description: `${shortName(d.drawKey)}${isArmoryKey(d.drawKey) ? ` · ${d.size} ${unitOf(d.drawKey)}` : ''}`.slice(0, 100), emoji: emojis.parseEmoji(emojis[metaOf(d.drawKey).tier]) }))
+        }));
+    }
+    components.push(label('Draw Types', list.length ? 'For a draw not listed above, or another copy of one' : 'Pick any number; each adds one selection', {
+        type: 3, custom_id: 'types', required: false, min_values: 0, max_values: Math.max(1, Math.min(CALC_KEYS.length, room)),
+        options: CALC_KEYS.map(key => ({ label: shortName(key), value: key, description: freshDrawDescription(basket?.region || 'region_10', key), emoji: emojis.parseEmoji(emojis[metaOf(key).tier]) }))
+    }));
+    return { custom_id: encodeState('addsave', state), title: 'Add Draws', components };
+}
+// THE REMOVE POP-UP (2026-10-18 13:37 EDT): every selection, pick one or more. Submitting is the confirmation (his "soft confirm"). Each value carries the line's draw too, so a pop-up opened before the list changed cannot remove the wrong line.
+function buildRemoveModal(state, basket) {
+    const lines = (basket?.banners || []).slice(0, 25);
+    if (!lines.length) return null;
+    return { custom_id: encodeState('rmsave', state), title: 'Remove Selections', components: [{ type: 18, label: 'Selections to Remove', description: 'Pick one or more; any with progress lose it', component: {
+        type: 3, custom_id: 'lines', required: true, min_values: 1, max_values: lines.length,
+        options: lines.map((b, i) => {
+            const total = pullCount(basket.region, b.drawKey, b);
+            const up = Array.isArray(b.upWant) && b.upWant.some(Boolean) ? ' · Upgrade Set' : '';
+            return { label: `#${i + 1} · ${lineName(b)}`.slice(0, 100), value: `${i}:${b.drawKey}`, description: `${b.pullsDone}/${total ?? '?'} ${unitOf(b.drawKey)}${up}`, emoji: emojis.parseEmoji(emojis[metaOf(b.drawKey)?.tier] || emojis.smallDot) };
+        })
+    } }] };
+}
+// Reads the Remove pop-up back: the indexes whose draw still matches.
+function readRemovePicks(basket, values) {
+    const drop = new Set();
+    for (const v of values || []) {
+        const [i, key] = String(v).split(':');
+        const n = Number(i);
+        if (basket.banners[n] && basket.banners[n].drawKey === key) drop.add(n);
+    }
+    return drop;
 }
 
 // SPINS IN (2026-10-18 12:15 EDT): spins already done toward a Series Armory's next item, one optional box. Blank is 0.
@@ -1399,5 +1448,6 @@ module.exports = {
     parseAmount, parseCount, readBalanceFields, applySelection, shortName, SHORT_NAME, slashShortcut,
     buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,
     setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages,
-    CALC_KEYS, metaOf, unitOf, lineName, freshLine, buildProgressPanel, buildSpinsInModal, readSpinsIn, listSeasonDraws, selectionSummary
+    CALC_KEYS, metaOf, unitOf, lineName, freshLine, buildProgressPanel, buildSpinsInModal, readSpinsIn, listSeasonDraws, selectionSummary,
+    buildAddDrawsModal, buildRemoveModal, readRemovePicks, progressTitle
 };

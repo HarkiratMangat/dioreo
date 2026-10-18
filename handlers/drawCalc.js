@@ -13,7 +13,8 @@ const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
     findLiveDoubleCPEntry, buildExportText, readBalanceFields, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
-    buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName
+    buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName,
+    buildAddDrawsModal, buildRemoveModal, readRemovePicks
 } = require('../commands/drawCalculator');
 const { pullCount, upgradeKeyOf, isArmoryKey, armorySize } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
@@ -174,6 +175,45 @@ async function route(interaction) {
             return true;
         }
         return await interaction.showModal(modal);
+    }
+    // ADD DRAWS and REMOVE (2026-10-18 13:37 EDT, his Mock 2): two pop-ups from the Adjust Draws screen's footer.
+    if (interaction.isButton() && (state.verb === 'addopen' || state.verb === 'rmopen')) {
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        const modal = !basket ? null : state.verb === 'addopen' ? buildAddDrawsModal(state, basket, await listSeasonDraws()) : buildRemoveModal(state, basket);
+        if (!modal) {
+            try { await interaction.reply({ content: 'That calculation has nothing to remove.', ephemeral: true }); }
+            catch (notifyError) { console.error('Failed to notify user of an empty remove (interaction likely expired):', notifyError); }
+            return true;
+        }
+        return await interaction.showModal(modal);
+    }
+    if (interaction.isModalSubmit() && (state.verb === 'addsave' || state.verb === 'rmsave')) {
+        await interaction.deferUpdate();
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const picks = id => { try { return interaction.fields.getStringSelectValues(id) || []; } catch { return []; } };
+        if (state.verb === 'rmsave') {
+            const drop = readRemovePicks(basket, picks('lines'));
+            if (!drop.size) { await renderPanel(interaction, state, basket, 'Those selections changed since the pop-up opened, so nothing was removed.'); return true; }
+            const updated = await writeTo(actingUserId, state, basket, { banners: basket.banners.filter((_, i) => !drop.has(i)) });
+            await renderPanel(interaction, { ...state, focus: null, bpage: 0 }, updated, `Removed ${drop.size === 1 ? '1 selection' : `${drop.size} selections`}.`);
+            return true;
+        }
+        const season = await listSeasonDraws();
+        let banners = [...basket.banners];
+        let skipped = 0;
+        for (const d of season.filter(x => picks('season').includes(x.id))) {
+            if (banners.length >= MAX_LINES) { skipped++; continue; }
+            banners.push({ drawKey: d.drawKey, pullsDone: 0, title: d.title, ...(d.size ? { size: d.size } : {}) });
+        }
+        for (const key of picks('types').filter(k => CALC_KEYS.includes(k))) {
+            if (banners.length >= MAX_LINES) { skipped++; continue; }
+            banners = setTypeCount(banners, key, banners.filter(b => b.drawKey === key).length + 1).banners;
+        }
+        if (banners.length === basket.banners.length) { await renderPanel(interaction, state, basket, skipped ? `A calculation holds up to ${MAX_LINES} lines, so nothing was added.` : 'Nothing was picked, so nothing was added.'); return true; }
+        const updated = await writeTo(actingUserId, state, basket, { banners });
+        await renderPanel(interaction, state, updated, skipped ? `A calculation holds up to ${MAX_LINES} lines, so ${skipped} ${skipped === 1 ? 'draw was' : 'draws were'} not added.` : null);
+        return true;
     }
     if (interaction.isModalSubmit() && state.verb === 'spinsinsave') {
         await interaction.deferUpdate();
@@ -353,10 +393,10 @@ async function route(interaction) {
     }
 
     // SET DRAW PROGRESS (2026-10-18 12:16 EDT): a view (page 5) of the same calculation; Back returns to the form it came from (Edit's page 2 for a result, the draft form otherwise).
-    if (interaction.isButton() && (state.verb === 'progress' || state.verb === 'progback')) {
+    if (interaction.isButton() && (state.verb === 'progress' || state.verb === 'progback' || state.verb === 'progresult')) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        const page = state.verb === 'progress' ? 5 : (basket.submitted ? 2 : 0);
+        const page = state.verb === 'progress' ? 5 : state.verb === 'progresult' ? 0 : (basket.submitted ? 2 : 0);
         await renderPanel(interaction, { ...state, page, bpage: 0, focus: null }, basket);
         return true;
     }
@@ -579,8 +619,8 @@ async function route(interaction) {
     if (interaction.isButton() && state.verb === 'edit') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        // A view, not a state change: the calculation stays submitted, so leaving mid-edit still reopens on the result.
-        await renderPanel(interaction, { ...state, page: 2, bpage: 0, focus: null, detail: false }, basket);
+        // A view, not a state change: the calculation stays submitted, so leaving mid-edit still reopens on the result. Edit Selection opens Adjust Draws & Progress directly (2026-10-18 13:37 EDT, his ask): it covers everything about the draws. Back to Selections still reaches the form (page 2).
+        await renderPanel(interaction, { ...state, page: 5, bpage: 0, focus: null, detail: false }, basket);
         return true;
     }
 
