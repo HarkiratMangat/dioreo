@@ -754,8 +754,8 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
             }
         }
         cost.push(`> **− Spent Already: \`${fmt(spent)} CP\`**`, ...quiet('spent'));
-        // "Not set" so a balance nobody entered does not read as one set to 0.
-        cost.push(`> **− CP Balance: \`${fmt(balance)} CP\`**${balance ? '' : ' *(not set)*'}`);
+        // "Not set" so a balance nobody entered does not read as one set to 0. An unset balance says so on its own line (2026-10-18 19:48 EDT, his wording).
+        cost.push(`> **− CP Balance: \`${fmt(balance)} CP\`**`, ...(balance ? [] : ['> -# *Not set* so 0 CP assumed']));
     }
     // An armory not set up yet is left out with its own reason (2026-10-18 15:13 EDT), not "no pricing".
     const notSetUp = (basket.banners || []).map((b, i) => (isArmoryKey(b.drawKey) && armorySize(b) === null ? `#${i + 1}` : null)).filter(Boolean);
