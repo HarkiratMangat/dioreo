@@ -356,7 +356,7 @@ function fromBase36Id(str) {
     return n.toString();
 }
 
-// `r` is an OPTIONAL trailing field, emitted only by regionRow -- every other control leaves it off entirely rather than paying bytes for a field almost no click needs. It carries the TARGET region for a 'region' verb click; it is never the basket's own persisted region (that lives on the basket document, read fresh at render time, same as everything else in §5). `p` (the within-BASKET-page banner-list page, distinct from `g`'s COST/BASKET page selector) and `r` (a region-switch's TARGET region) are both OPTIONAL trailing fields -- most controls need neither, so most customIds don't pay their bytes.
+// `r` is an OPTIONAL trailing field, emitted only by the region buttons that Set Region & Balance replaced on 2026-10-18 (the 'region' verb still answers panels posted before) -- every other control leaves it off entirely rather than paying bytes for a field almost no click needs. It carries the TARGET region for a 'region' verb click; it is never the basket's own persisted region (that lives on the basket document, read fresh at render time, same as everything else in §5). `p` (the within-BASKET-page banner-list page, distinct from `g`'s COST/BASKET page selector) and `r` (a region-switch's TARGET region) are both OPTIONAL trailing fields -- most controls need neither, so most customIds don't pay their bytes.
 function encodeState(verb, s) {
     const fields = [
         'calc', verb,
@@ -609,26 +609,6 @@ function entitlementSelectRow(state, basket) {
     };
 }
 
-// Region switching (kept from the single-draw panel, verb 'region') -- MUST preserve every banner's progress (spec §9): switching region never touches `basket.banners`, only `basket.region`, so pullsDone rides across unaffected. A banner with no data at the new region still renders (excluded from the total, named on its own row -- buildCostBlock's `unpriced` branch), never silently dropped.
-function regionRow(state, basket) {
-    return {
-        type: 1,
-        components: REGION_ORDER.map(key => ({
-            type: 2,
-            // Green AND disabled for the current region, same as /draw prices (2026-10-14 13:13 EDT, Harkirat: "make it green-disabled"): green says which is active, disabled says there is nothing to press. Green and live (2026-10-14 00:16 EDT) re-rendered the same thing on a click.
-            style: key === basket.region ? 3 : 2,
-            disabled: key === basket.region,
-            custom_id: encodeState('region', { ...state, targetRegion: key }),
-            label: regionLabel(key),
-            emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
-        }))
-    };
-}
-
-// The caption above the region buttons (2026-10-13 12:40 EDT). How a player finds their region lives in Help, which names the draws whose first spin IS the region (not every draw's is: Mythic Character and Pick Your Reward Card start higher, measured 2026-10-14 18:33 EDT). No heading and no divider above it (2026-10-14 13:13 EDT, Harkirat: "'Your Region & CP Balance' remove it. Also remove the divider above it"); the hint alone labels the row, and Help keeps what a region is. "### Tweak Calculation" over the hint (2026-10-14 17:58 EDT, Harkirat).
-function regionCaption() { return { type: 10, content: '### Tweak Calculation\n-# Set your CP region and current balance.' }; }
-// The simplified result's caption, his draft (2026-10-17 17:08 EDT): bold, not a heading, over one line of what the controls do.
-const TWEAK_RESULT_CAPTION = { type: 10, content: '**Tweak Calculation**\n-# Adjust the result in real time.' };
 // Room between blocks without a rule (his "more breathing room"): a separator with no divider.
 const SPACER = { type: 14, spacing: 2, divider: false };
 // "Your Selections" once there are two or more draws (2026-10-14 16:51 EDT, Harkirat).
@@ -648,14 +628,6 @@ function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
     };
 }
 
-// NO EMOJI on either button (2026-08-27, Harkirat) -- `mngEdit` was a pencil paired with a button labelled "Save", which never matched, and a destructive action reads clearer without decoration. Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement). The Upgrade button left this row 2026-10-18 12:15 EDT (Harkirat: "yeah sure"): it lives beside each Mythic line on Set Draw Progress, with every other per-line setting. The result's Tweak Calculation row: the three regions and Set Balance inline, one row (2026-10-18 15:50 EDT, his ask), as on the editor.
-function resultTweakRow(state, basket) { return { type: 1, components: [...regionRow(state, basket).components, ...basketManageRows(state, basket)[0].components] }; }
-function basketManageRows(state, basket) {
-    // Balance and Upgrade side by side (2026-10-14 16:51 EDT, Harkirat: "move upgrade button beside the Set balance button"). Save, Rename and Delete moved to the Saved view, where the calculation's own section manages it (2026-10-14 16:51 EDT). With two or more Mythic lines the upgrade control is a dropdown, which takes its own row under it.
-    return [{ type: 1, components: [
-        { type: 2, style: 2, label: balanceLabel(basket), custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) }
-    ] }];
-}
 
 // 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself. `showReset` is false on the setup form: there is no computed result to clear yet, and a live button that does nothing visible is worse than an absent one. On a submitted calculation it reads "New Calculation" -- Harkirat's own phrase for the action that ends a result's persistence and returns to the form. Draw Prices · New Calculation · Help (2026-10-13 23:01 EDT, his intake: Draw Info removed, since /draw prices shows the same draws; New Calculation on EVERY page once there is something to clear, where it used to appear only on the result). "View Saved", no counter (2026-10-14 17:58 EDT, Harkirat).
 function savedButton(state) {
@@ -685,13 +657,6 @@ function bottomNavRow(state, { showReset = true, savedCount = 0, onSaved = false
     return { type: 1, components };
 }
 
-// The setup form's balance row: Set Balance with Upgrade beside it (2026-10-14 16:51 EDT). Both are disabled until a draw exists, because both write to a calculation document that does not exist yet and would otherwise accept input and silently discard it.
-function setupBalanceRows(state, basket) {
-    const hasBasket = Boolean(basket && basket._id);
-    return [{ type: 1, components: [
-        { type: 2, style: 2, disabled: !hasBasket, custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2), label: balanceLabel(basket) }
-    ] }];
-}
 // Order New Calculation · View Saved · Calculate (2026-10-14 17:58 EDT, Harkirat: "move new calc button to the front of the row. saved in middle. calculate last"). The form's last row, under its own divider (2026-10-14 16:51 EDT): Calculate (the ONLY Primary button in this command, with his Sparkles emoji), then New Calculation once there is something to clear, then Saved.
 function setupSubmitRow(state, basket, savedCount) {
     const lines = basket?.banners?.length || 0;
@@ -892,15 +857,25 @@ function selectionSummary(basket, max = 12) {
 }
 // "Set Draw Progress & Upgrades" once a Mythic line is in the calculation (2026-10-18 13:05 EDT, his ask), on the button and the screen it opens. Renamed 2026-10-18 13:37 EDT (Harkirat): "Adjust Draws & Progress" / "Adjust Draws, Progress, & Upgrades". The screen now adds and removes draws too.
 function progressTitle(basket) { return (basket?.banners || []).some(b => upgradeKeyOf(b.drawKey)) ? 'Adjust Draws, Progress, & Upgrades' : 'Adjust Draws & Progress'; }
-// The landing's button reads "Set Draw Progress"; the result's reads "Edit Selections" (2026-10-18 14:57 EDT, his labels). Both open the screen titled by progressTitle. The editor's Region & Balance, as text beside one button (2026-10-18 16:17 EDT). Cards show once a Mythic Weapon line is picked or any are held, Coins likewise for a Mythic Character, so a calculation without Mythic draws reads one balance.
+// Where Set Region & Balance sits on the landing, the editor and the result: 'top' (under the screen's title) or 'bottom' (above the screen's last row). One setting for all three, so the section is always in the same place.
+const LAYOUT = { regionBalance: 'top' };
+// SET REGION & BALANCE (2026-10-18 16:17 EDT on the editor; the landing and the result 2026-10-18 17:25 EDT, his ask: "moving away from the 4 button row. This one is more informative"): the region and every balance as text beside one button. His layout (2026-10-18 17:25 EDT): one line each, the value in code, every balance shown. Disabled until a calculation exists to write to, as Set Balance was.
 function regionBalanceSection(state, basket) {
-    const keys = (basket?.banners || []).map(b => upgradeKeyOf(b.drawKey));
-    const held = [`${fmt(basket?.balance || 0)} CP`];
-    if (basket?.mythicCards || keys.includes('mythicWeapon')) held.push(`${fmt(basket?.mythicCards || 0)} Mythic Cards`);
-    if (basket?.mythicCoins || keys.includes('mythicCharacter')) held.push(`${fmt(basket?.mythicCoins || 0)} Mythic Coins`);
     const region = basket?.region || 'region_10';
-    return { type: 9, components: [{ type: 10, content: `**Region:** ${emojis[REGION_EMOJI_KEY[region]]} ${regionLabel(region)}\n**Balance:** ${held.join(' · ')}` }],
-        accessory: { type: 2, style: 2, label: 'Set Region & Balance', custom_id: encodeState('rbmodal', state), emoji: emojis.parseEmoji(emojis.cp2) } };
+    const content = [
+        `${emojis[REGION_EMOJI_KEY[region]]} **\`${regionLabel(region)}\`** Region`,
+        `${emojis.cp} **\`${fmt(basket?.balance || 0)} CP\`** Balance`,
+        `${emojis.mythicCard} **\`${fmt(basket?.mythicCards || 0)} Mythic Cards\`**`,
+        `${emojis.mythicCoin} **\`${fmt(basket?.mythicCoins || 0)} Mythic Coins\`**`
+    ].join('\n');
+    return { type: 9, components: [{ type: 10, content }],
+        accessory: { type: 2, style: 2, label: 'Set Region & Balance', custom_id: encodeState('rbmodal', state), emoji: emojis.parseEmoji(emojis.cp2), ...(basket && basket._id ? {} : { disabled: true }) } };
+}
+// The section with its divider, placed per LAYOUT: under a title it is followed by a divider; at the bottom it follows one.
+function regionBalanceBlock(state, basket, where) {
+    if (LAYOUT.regionBalance !== where) return [];
+    const div = { type: 14, spacing: 2, divider: true };
+    return where === 'top' ? [regionBalanceSection(state, basket), div] : [div, regionBalanceSection(state, basket)];
 }
 // THE REGION & BALANCE POP-UP: the region as a dropdown over the three balance boxes, each pre-filled (a blank box means 0). Submits to the same `nums` verb as Set Balance, which also reads `region` when the pop-up carries it.
 function buildRegionBalanceModal(state, basket) {
@@ -916,6 +891,7 @@ function buildRegionBalanceModal(state, basket) {
         box('coins', 'Mythic Coins You Hold', 'e.g. 300 or 2k', basket?.mythicCoins)
     ] };
 }
+// The landing's button reads "Set Draw Progress"; the result's reads "Edit Selections" (2026-10-18 14:57 EDT, his labels). Both open the screen titled by progressTitle.
 function progressButton(state) { return { type: 2, style: 2, label: 'Set Draw Progress', custom_id: encodeState('progress', { ...state, fromResult: false, dirty: false }), emoji: emojis.parseEmoji(emojis.editCalc) }; }
 
 // THIS SEASON'S DRAWS (sidelined 2026-10-17 21:29 EDT, built 2026-10-18 12:15 EDT). First on the form (his "yes"). Each option is the draw's own title with its Draw Type under it (decided 2026-10-17 21:28 EDT). The list is listSeasonDraws's, read by the caller and passed in, because building a panel never touches the database.
@@ -939,7 +915,7 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
     // A shim, so every row builder below works identically whether a draft document exists yet or not.
     const draft = basket || { banners: [], region: region || 'region_10', balance: 0, includeUpgrades: false };
     const banners = draft.banners || [];
-    const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
+    const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }, ...regionBalanceBlock(state, basket, 'top')];
     if (notice) components.push({ type: 10, content: `-# ${notice}` });
     const season = seasonDrawsRow(state, seasonDraws, MAX_LINES - banners.length);
     if (!banners.length) {
@@ -960,7 +936,7 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
             components.push(addDrawsRow(state, draft));
         }
     }
-    components.push(regionCaption(), regionRow(state, draft), ...setupBalanceRows(state, basket), { type: 14, spacing: 2, divider: true }, setupSubmitRow(state, basket, savedCount));
+    components.push(...regionBalanceBlock(state, basket, 'bottom'), { type: 14, spacing: 2, divider: true }, setupSubmitRow(state, basket, savedCount));
     return { type: 17, accent_color: accentColor, components };
 }
 
@@ -993,7 +969,8 @@ function lineHint(basket, index) {
     else if (total === null) parts.push(`No Data at ${regionLabel(basket.region)} Yet`);
     else {
         const done = Math.min(b.pullsDone || 0, total);
-        parts.push(`${fmt(spentSoFar(basket.region, b.drawKey, done, b))} CP Spent`, done >= total ? 'Finished' : `${fmt(remainingToFinish(basket.region, b.drawKey, done, b))} CP to Completion`);
+        // The figures in code (2026-10-18 17:25 EDT, his layout): "`0 CP` Spent · `10,075 CP` to Completion".
+        parts.push(`\`${fmt(spentSoFar(basket.region, b.drawKey, done, b))} CP\` Spent`, done >= total ? 'Finished' : `\`${fmt(remainingToFinish(basket.region, b.drawKey, done, b))} CP\` to Completion`);
     }
     return parts.join(' · ');
 }
@@ -1012,11 +989,11 @@ function progressLineBlocks(state, basket, index) {
 function buildProgressPanel(state, basket, accentColor, { notice = null, dropConfirm = null } = {}) {
     const banners = basket.banners || [];
     const top = [titleBlock(basket), { type: 14, spacing: 2, divider: true },
-        { type: 10, content: `## ${progressTitle(basket)}\n-# Set how far you are on each draw. \`0\` means you haven't started it.` }];
+        { type: 10, content: `## ${progressTitle(basket)}\n-# Set your current progress on each draw. \`0\` means you haven't started it.` }, ...regionBalanceBlock(state, basket, 'top')];
     if (notice) top.push({ type: 10, content: `-# ${notice}` });
     if (dropConfirm) top.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
     // HIS TWO FOOTER ROWS (2026-10-18 13:37 EDT): Add Draws · Remove (red) · Calculate, then Back to Result · Back to Selections. Add and Remove open pop-ups (his Mock 2: "it also adds a soft confirm to delete ... and overall keeps the panel slim and clean"). Back to Result shows only when there is a result. ONE EDITOR (2026-10-18 15:13 EDT, his "yes"): after the first pick this is the calculator's screen, so the region buttons and Set Balance live here in one row. No "Tweak Calculation" caption here: it would cost the component a third Mythic line needs, and the region buttons say what they are. SET REGION & BALANCE (2026-10-18 16:17 EDT, his ask): the three region buttons and Set Balance became one pop-up, with the region and balances shown as text beside its button. A Section is 3 components where the row was 5, so a page holds more draws.
-    const tweak = [{ type: 14, spacing: 2, divider: true }, regionBalanceSection(state, basket)];
+    const tweak = regionBalanceBlock(state, basket, 'bottom');
     const back = [...tweak, { type: 14, spacing: 2, divider: true },
         { type: 1, components: [
             { type: 2, style: 3, label: 'Add Draws', custom_id: encodeState('addopen', state), emoji: emojis.parseEmoji(emojis.plus), disabled: banners.length >= MAX_LINES },
@@ -1316,7 +1293,7 @@ function textLength(node) {
 function editSelectionButton(state) { return { type: 2, style: 2, label: 'Edit Selections', custom_id: encodeState('edit', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
 function buildCostPage(state, basket, accentColor, options = {}) {
     const { currency = 'USD', client = null, liveDoubleCPEntry = null } = options;
-    const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
+    const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }, ...regionBalanceBlock(state, basket, 'top')];
 
     if (!basket.banners.length) {
         // Empty basket returns to the landing look (spec §9), but STAYS bound to this basketId so picking a draw adds to the same (possibly named) basket instead of creating a second one.
@@ -1334,7 +1311,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
         const { cost, purchase } = buildCostBlock(state, basket, currency, client, { detail: state.detail, level, memo });
         const toggle = state.detail ? { label: 'Simple Breakdown', emoji: emojis.collapse } : { label: 'Full Breakdown', emoji: emojis.expand };
         out.push({ type: 9, components: [{ type: 10, content: cost.join('\n') }, { type: 10, content: purchase.join('\n') }], accessory: { type: 2, style: 2, label: toggle.label, custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(toggle.emoji) } });
-        return finishCostPage(state, basket, accentColor, out, liveDoubleCPEntry, { caption: TWEAK_RESULT_CAPTION });
+        return finishCostPage(state, basket, accentColor, out, liveDoubleCPEntry);
     };
     let out = null;
     for (const level of [0, 1, 2, 3, 4]) {
@@ -1345,9 +1322,9 @@ function buildCostPage(state, basket, accentColor, options = {}) {
 }
 
 // The rows under the cost, shared by the compact view and the Full Breakdown.
-function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry, { caption = null } = {}) {
-    // Region and upgrade are adjustable right here (2026-10-14 13:13 EDT, Harkirat): "why are the cp region buttons gone from this screen? and the upgrade yes/no button". A click re-prices this same result.
-    components.push({ type: 14, spacing: 2, divider: true }, caption || regionCaption(), resultTweakRow(state, basket), { type: 14, spacing: 2, divider: true }, resultActionRow(state));
+function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry) {
+    // Region and balance are adjustable right here (2026-10-14 13:13 EDT, Harkirat: "why are the cp region buttons gone from this screen?"), since 2026-10-18 17:25 EDT through Set Region & Balance. A change re-prices this same result.
+    components.push(...regionBalanceBlock(state, basket, 'bottom'), { type: 14, spacing: 2, divider: true }, resultActionRow(state));
 
     if (liveDoubleCPEntry || basket.entitlementMask) {
         components.push({ type: 10, content: liveDoubleCPEntry
@@ -1549,5 +1526,5 @@ module.exports = {
     buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,
     setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages,
     CALC_KEYS, metaOf, unitOf, lineName, freshLine, buildProgressPanel, buildSpinsInModal, readSpinsIn, listSeasonDraws, selectionSummary,
-    buildAddDrawsModal, buildRemoveModal, readRemovePicks, progressTitle, buildRegionBalanceModal, regionBalanceSection, lineHint
+    buildAddDrawsModal, buildRemoveModal, readRemovePicks, progressTitle, buildRegionBalanceModal, regionBalanceSection, lineHint, LAYOUT
 };

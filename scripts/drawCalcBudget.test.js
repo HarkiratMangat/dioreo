@@ -293,15 +293,36 @@ t('a NAMED basket\'s manage row reads Rename, not Save', () => {
 // ==========================================
 // REGION SWITCHING PRESERVES PROGRESS
 // ==========================================
-t('region buttons sit on the empty form AND the result, encode their own target, and the current one is green and disabled', () => {
-    for (const panel of [dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] }), render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 6 }] }))]) {
-        const regionButtons = buttons(panel).filter(b => b.custom_id && verbOf(b) === 'region');
-        assert.strictEqual(regionButtons.length, 3);
-        assert.ok(regionButtons.find(b => b.custom_id.includes('~r20')), 'a region button must encode its OWN target region');
-        const current = regionButtons.find(b => b.custom_id.includes('~r10'));
-        assert.ok(current.style === 3 && current.disabled === true, 'the current region is green and disabled (2026-10-14, his ask)');
-        assert.ok(regionButtons.filter(b => b !== current).every(b => b.style === 2 && !b.disabled));
+// SET REGION & BALANCE on every screen (2026-10-18 17:25 EDT, his ask: "moving away from the 4 button row"): the landing, the editor and the result each carry the one Section, with his four lines, and no region buttons or Set Balance.
+t('Set Region & Balance sits on the landing, the editor and the result, in his layout, and in one place on all three', () => {
+    const basket = { region: 'region_20', balance: 3000, mythicCards: 300 };
+    const screens = {
+        landing: dc.buildCalculatorPanel(state({ basketId: '0'.repeat(24) }), makeBasket({ banners: [], ...basket }), ACCENT, { savedBaskets: [] }),
+        editor: form([{ drawKey: 'mythicWeapon', pullsDone: 0 }], {}, { basket }),
+        result: render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 6 }], ...basket }))
+    };
+    const e = require('../utils/emojiMap');
+    const his = `${e.region20Cp} **\`20 CP\`** Region\n${e.cp} **\`3,000 CP\`** Balance\n${e.mythicCard} **\`300 Mythic Cards\`**\n${e.mythicCoin} **\`0 Mythic Coins\`**`;
+    const at = {};
+    for (const [name, panel] of Object.entries(screens)) {
+        assert.strictEqual(buttons(panel).filter(b => verbOf(b) === 'region' || b.label === 'Set Balance').length, 0, `${name}: no region buttons, no Set Balance`);
+        const rb = buttonLabelled(panel, 'Set Region & Balance');
+        assert.ok(rb && verbOf(rb) === 'rbmodal' && !rb.disabled, `${name}: one live button opens the pop-up`);
+        assert.ok(texts(panel).includes(his), `${name}: his four lines\n${texts(panel).join('\n---\n').slice(0, 600)}`);
+        const top = panel[0].components;
+        at[name] = top.findIndex(c => c.type === 9 && c.accessory && c.accessory.label === 'Set Region & Balance');
     }
+    assert.deepStrictEqual([at.landing, at.result], [2, 2], 'top: right under the title and its divider');
+    assert.strictEqual(at.editor, 3, 'top: right under the editor\'s title and hint');
+    const firstPick = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
+    assert.strictEqual(buttonLabelled(firstPick, 'Set Region & Balance').disabled, true, 'disabled until a calculation exists to write to');
+    // The other placement: above the screen's last row.
+    dc.LAYOUT.regionBalance = 'bottom';
+    try {
+        const ed = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }], {}, { basket })[0].components;
+        const i = ed.findIndex(c => c.type === 9 && c.accessory && c.accessory.label === 'Set Region & Balance');
+        assert.ok(i > ed.findIndex(c => c.type === 10 && /^### /.test(c.content || '') || (c.type === 9 && /### /.test(c.components[0].content))), 'bottom: under the draws');
+    } finally { dc.LAYOUT.regionBalance = 'top'; }
 });
 
 // ==========================================
@@ -503,13 +524,8 @@ t('Calculate is DISABLED with nothing picked, and enabled the moment a line exis
 
 t('Set Balance is disabled until a calculation exists to write it to; on the editor the region and balances are one pop-up (2026-10-18 16:17 EDT)', () => {
     const empty = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
-    assert.strictEqual(buttonLabelled(empty, 'Set Balance').disabled, true);
+    assert.strictEqual(buttonLabelled(empty, 'Set Region & Balance').disabled, true);
     assert.strictEqual(buttons(empty).some(b => /^Upgrade/.test(b.label || '')), false);
-    const drafted = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]);
-    assert.strictEqual(buttons(drafted).filter(b => verbOf(b) === 'region' || b.label === 'Set Balance').length, 0, 'no region buttons and no Set Balance on the editor');
-    const rb = buttonLabelled(drafted, 'Set Region & Balance');
-    assert.ok(rb && verbOf(rb) === 'rbmodal', 'one button opens the pop-up');
-    assert.ok(allText(drafted).includes('**Region:** ') && allText(drafted).includes('**Balance:** 0 CP · 0 Mythic Cards'), 'the region and balances shown as text; Cards because a Mythic Weapon line is picked');
     const withCards = makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], region: 'region_20', balance: 3000, mythicCards: 300 });
     const modal = dc.buildRegionBalanceModal(state(), withCards);
     assert.strictEqual(modal.title, 'Set Region & Balance');
@@ -518,7 +534,7 @@ t('Set Balance is disabled until a calculation exists to write it to; on the edi
     assert.deepStrictEqual(modal.components.slice(1).map(l => l.component.value), ['3000', '300', undefined], 'set balances pre-filled, a blank box means 0');
     assert.ok(verbOf({ custom_id: modal.custom_id }) === 'nums', 'submits to the Set Balance verb');
     assert.ok(modal.components.every(l => l.type === 18 && l.label.length <= 45));
-    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Upgrade: None').disabled), false, 'Upgrade beside its line');
+    assert.strictEqual(Boolean(buttonLabelled(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]), 'Upgrade: None').disabled), false, 'Upgrade beside its line');
 });
 
 // ==========================================
@@ -693,11 +709,10 @@ t('the Upgrade button sits beside its Mythic line on the editor, and nowhere els
     assert.ok(buttonLabelled(f, 'Calculate').emoji, 'Calculate carries his Sparkles emoji');
 });
 
-t('what a region is lives in Help; the form only labels the row with a hint', () => {
-    // The landing keeps the caption; the editor drops it for room (2026-10-18 15:16 EDT).
+t('what a region is lives in Help; the form only shows the region', () => {
+    // The Tweak Calculation caption left with the region buttons (2026-10-18 17:25 EDT): Set Region & Balance labels itself.
     for (const panel of [dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })]) {
-        assert.ok(texts(panel).some(c => /^(### |\*\*)Tweak Calculation(\*\*)?\n-# Set your CP region and current balance\.$/.test(c)), 'his heading over the hint (2026-10-14 17:58 EDT)');
-        assert.strictEqual(/Your Region & CP Balance/.test(allText(panel)), false);
+        assert.strictEqual(/Tweak Calculation|Your Region & CP Balance/.test(allText(panel)), false);
         assert.strictEqual(/first pull/.test(allText(panel)), false, 'what a region is stays in Help');
     }
     assert.ok(/Your region is the price of the \*\*first spin\*\*/.test(allText(dc.buildHelpPanel(ACCENT))));
@@ -866,10 +881,9 @@ t('the landing starts a calculation, and Saved is one tap away in the nav row (2
     assert.ok(buttonLabelled(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })), 'Edit Selections'), 'the result offers a way to change things');
 });
 
-t('the result keeps Set Balance one tap away, and Edit Selections opens the editor while the calculation stays submitted', () => {
+t('the result keeps Set Region & Balance one tap away, and Edit Selections opens the editor while the calculation stays submitted', () => {
     const result = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }));
-    const row = rows(result).find(r => r.components.some(b => b.label === 'Set Balance'));
-    assert.deepStrictEqual(row.components.map(b => b.label), ['10 CP', '20 CP', '30 CP', 'Set Balance'], 'one tap, inline with the regions (2026-10-18 15:50 EDT)');
+    assert.strictEqual(verbOf(buttonLabelled(result, 'Set Region & Balance')), 'rbmodal', 'one tap (2026-10-18 17:25 EDT)');
     assert.strictEqual(verbOf(buttonLabelled(result, 'Edit Selections')), 'edit');
     for (const page of [2, 5]) {
         const editing = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: true }), { page, fromResult: true });
@@ -1235,8 +1249,8 @@ t('the armory pop-up: weapon count required on a draw-type Legendary armory, Spi
 t('the editor names a season line as its draw with its Draw Type under it (his one editor (2026-10-18 15:15 EDT))', () => {
     const f = form([{ drawKey: 'armoryLegendaryWeapon', pullsDone: 2, size: 5, spinsIn: 40, title: 'Undead Legion Series Armory' }, { drawKey: 'mythicWeapon', pullsDone: 10, upWant: [3] }]);
     // A `###` heading over a hint line (2026-10-18 16:17 EDT, his ask): the type, then the line's spent and left, as its dropdown's chosen value reads.
-    assert.ok(allText(f).includes('#1 · Undead Legion Series Armory\n-# Legendary Weapon Armory · 9,500 CP Spent · 9,250 CP to Completion'), allText(f).slice(0, 400));
-    assert.ok(allText(f).includes('#2 · Mythic Weapon\n-# ') && allText(f).includes('CP Spent · Finished'), 'an untitled line has no type in its hint; a finished one says so');
+    assert.ok(allText(f).includes('#1 · Undead Legion Series Armory\n-# Legendary Weapon Armory · `9,500 CP` Spent · `9,250 CP` to Completion'), allText(f).slice(0, 400));
+    assert.ok(allText(f).includes('#2 · Mythic Weapon\n-# ') && allText(f).includes('CP` Spent · Finished'), 'an untitled line has no type in its hint; a finished one says so');
     assert.ok(texts(f).some(c => /^### /.test(c)), 'each line is a ### heading');
     assert.strictEqual((JSON.stringify(f).match(/"type":14,"spacing":1,"divider":true/g) || []).length, 0, 'no divider between draws');
     assert.ok(buttonLabelled(f, 'Upgrade: Level 3'));
