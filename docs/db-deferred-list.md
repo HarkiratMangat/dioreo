@@ -686,6 +686,10 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 ## 🔔 Reminders / watch-for
 
 
+### `[P3 · XS]` Check the PROD app's emoji names carry the `DB_` prefix before v3 deploys — filed 2026-10-18 12:04 EDT
+
+Harkirat renamed twelve `/manage` emojis with a `DB_` prefix (Database, Add, Edit, Delete, BulkAdd, BulkReplace, BulkDelete, Export, Purge, Info, URLs, Guide; names only, same images), and `utils/emojiMap.js` now uses the `DB_` names (`feat/series-armory`, 108e1812). The dev app was checked: 0 unmatched. The prod app was not, because the Dioreo-Bot worktree has no prod `.env`. If prod still has the old names, `refreshEmojiIds()` lists those twelve as missing at boot and keeps the hardcoded prod ids, which still render, so nothing breaks; only the boot log's unmatched count says so. **Do:** on the first prod boot of v3, read the "Emoji ids: … unmatched" line. **Verify:** it reads `0 unmatched`, or rename the twelve on the prod app in the Developer Portal (his action).
+
 ### `[P2 · S]` Morphing marks draw through the CSS `d` property — check the portal's browsers before Session 5 ports them
 
 **Filed 2026-09-29 23:27 EDT, the Session 4/5 readiness pass.** Caret (`docs/pins2/kit/b4/form.js`, its path set only by an inline `d:path(...)` style with no `d` attribute), Fold (`app.css .ic-fold path`), `ProblemChip`'s edge (`docs/pins2/kit/b3/armory-parts.js`) and the Picker's tick (`b4/classes.css`) morph by transitioning CSS `d`. A browser without CSS `d` support draws the first three as nothing; the tick keeps its ✓ (it carries a `d` attribute) but never shows its ×. **Verify:** name the portal's supported browsers; for each mark, a `d` attribute holds its rest shape, and the page in each browser shows every mark.
