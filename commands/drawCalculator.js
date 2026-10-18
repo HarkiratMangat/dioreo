@@ -1433,9 +1433,7 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
             row('Save over', 'Save Result lets you pick any saved one to replace'),
             row('Limits', `up to ${MAX_SAVED} saved; an unsaved one clears after 30 days`)
         ].join('\n') },
-        divider,
-        { type: 10, content: '### ⚡ Shortcut\n`/draw calculator draw: pulls: balance:`\n-# Skips the form and opens straight on that draw\'s result.' },
-        // The estimates disclaimer, a footer (2026-10-18 19:44 EDT, his ask), moved off the result's Full Breakdown. His wording (2026-10-18 19:54 EDT).
+        // No Shortcut section (2026-10-18 19:57 EDT, his call: "that lives in the main /help command"); the draw:/pulls:/balance: options it showed were unregistered 2026-10-17. The estimates disclaimer, a footer (2026-10-18 19:44 EDT, his ask), moved off the result's Full Breakdown. His wording (2026-10-18 19:54 EDT).
         divider,
         { type: 10, content: '-# *Estimates only; not financial advice. Local taxes extra. Local currency conversion may vary. CoD: Mobile web store prices, and any sales or discounts, are not included.*' }
     ];

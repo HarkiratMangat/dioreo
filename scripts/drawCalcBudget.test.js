@@ -734,7 +734,7 @@ t('what a region is lives in Help; the form only shows the region', () => {
     }
     assert.ok(/Your region is the price of the \*\*first spin\*\*/.test(allText(dc.buildHelpPanel(ACCENT))));
     const help = dc.buildHelpPanel(ACCENT);
-    assert.deepStrictEqual(texts(help).map(c => c.split('\n')[0].replace(/<a?:\w+:\d+> ?/g, '')), ['## Calculator Help', '### 🧭 How It Works', '### 📈 How Prices Work', '### 🗺️ Find Your Region', '### 🧾 Reading Your Result', '### 💰 Why Stock Up', '### Saving', '### ⚡ Shortcut', '-# *Estimates only; not financial advice. Local taxes extra. Local currency conversion may vary. CoD: Mobile web store prices, and any sales or discounts, are not included.*'], 'Help is sections with an emoji each, not paragraphs (2026-10-14 18:31 EDT)');
+    assert.deepStrictEqual(texts(help).map(c => c.split('\n')[0].replace(/<a?:\w+:\d+> ?/g, '')), ['## Calculator Help', '### 🧭 How It Works', '### 📈 How Prices Work', '### 🗺️ Find Your Region', '### 🧾 Reading Your Result', '### 💰 Why Stock Up', '### Saving', '-# *Estimates only; not financial advice. Local taxes extra. Local currency conversion may vary. CoD: Mobile web store prices, and any sales or discounts, are not included.*'], 'Help is sections with an emoji each, not paragraphs (2026-10-14 18:31 EDT)');
     assert.ok(texts(help).every(c => c.split('\n').every(l => l.startsWith('-# ') || l.length < 160)), 'no line runs on as a paragraph; a -# hint is one line by his call (2026-10-16 00:13 EDT)');
 });
 
