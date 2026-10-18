@@ -796,8 +796,7 @@ function compactSelectionText(basket, level, detail = false) {
         const num = r.byType ? '' : `${r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`} · `;
         const many = r.count > 1;
         out.push(`**${icon} ${num}${r.byType ? shortName(r.drawKey) : lineName(r)}${many ? ` ×${r.count}` : ''}**`);
-        // A season draw names its Draw Type under its own name (decided 2026-10-17 21:28 EDT).
-        if (r.title && !r.byType) out.push(`-# ${shortName(r.drawKey)}`);
+        // No Draw Type line under a season draw on the result (2026-10-18 13:08 EDT, Harkirat: "remove the hint 'mythic weapon', etc lines from the calculation page"); the form and Set Draw Progress keep it.
         if (!r.priced) { out.push(`> -# No sourced price at ${regionLabel(basket.region)}, so it is left out of the totals.`); continue; }
         // A per-type row carries its lines' sums, so it never says "each".
         const each = many && !r.byType ? ' each' : '';
@@ -837,8 +836,8 @@ function selectionSummary(basket, max = 12) {
         const total = pullCount(basket.region, b.drawKey, b);
         const icon = metaOf(b.drawKey) ? emojis[metaOf(b.drawKey).tier] : emojis.smallDot;
         const spinsIn = isArmoryKey(b.drawKey) && b.spinsIn && total !== null && b.pullsDone < total ? ` · ${b.spinsIn} Spins In` : '';
-        // The tier icon first, then the number (2026-10-18 13:05 EDT, his "keep the emojis first"); a season draw's type under it; the upgrade on its own quoted line with its card or coin (his format).
-        const out = [`${icon} **#${i + 1}** ${lineName(b)} · \`${b.pullsDone}/${total ?? '?'}\` ${unitOf(b.drawKey)}${spinsIn}`];
+        // The tier icon first, then the number (2026-10-18 13:05 EDT, his "keep the emojis first"); a season draw's type under it; the upgrade on its own quoted line with its card or coin (his format). Bold like the result's list (2026-10-18 13:08 EDT, his ask): "#1 · Name".
+        const out = [`${icon} **#${i + 1} · ${lineName(b)}** · \`${b.pullsDone}/${total ?? '?'}\` ${unitOf(b.drawKey)}${spinsIn}`];
         if (b.title) out.push(`-# ${shortName(b.drawKey)}`);
         if (Array.isArray(b.upWant) && upgradeKeyOf(b.drawKey) && b.upWant.some(Boolean)) out.push(`> -# ${upgradeCardEmoji(b.drawKey) || ''} Upgrade to ${upgradeStateText(b.drawKey, b.upWant)}`);
         return out.join('\n');
@@ -927,7 +926,11 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
         { type: 10, content: `## ${progressTitle(basket)}\n-# Set how far you are on each draw. \`0\` means you haven't started it.` }];
     if (notice) top.push({ type: 10, content: `-# ${notice}` });
     if (dropConfirm) top.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
-    const back = [{ type: 14, spacing: 2, divider: true }, { type: 1, components: [{ type: 2, style: 2, label: 'Back to Calculation', custom_id: encodeState('progback', state), emoji: emojis.parseEmoji(emojis.left) }] }];
+    // Back to Selections, and Calculate beside it (2026-10-18 13:08 EDT, his ask), so a finished edit goes straight to the result.
+    const back = [{ type: 14, spacing: 2, divider: true }, { type: 1, components: [
+        { type: 2, style: 2, label: 'Back to Selections', custom_id: encodeState('progback', state), emoji: emojis.parseEmoji(emojis.left) },
+        { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), emoji: emojis.parseEmoji(emojis.calculate) }
+    ] }];
     const build = perPage => {
         const pages = linePages(banners, perPage);
         const bpage = Math.min(state.bpage || 0, pages.length - 1);

@@ -479,7 +479,7 @@ t('the setup form fits the component budget at every draft size, with and withou
 t('an unsubmitted calculation shows the FORM; pressing Calculate is what produces the breakdown', () => {
     const banners = [{ drawKey: 'mythicWeapon', pullsDone: 3 }];
     const draft = form(banners);
-    assert.ok(/## Your Selection\n<a?:\w+:\d+> \*\*#1\*\*/.test(allText(draft)) && buttonLabelled(draft, 'Set Draw Progress & Upgrades'), 'a draft renders the form: its lines as a summary, and Set Draw Progress');
+    assert.ok(/## Your Selection\n<a?:\w+:\d+> \*\*#1 · /.test(allText(draft)) && buttonLabelled(draft, 'Set Draw Progress & Upgrades'), 'a draft renders the form: its lines as a summary, and Set Draw Progress');
     assert.strictEqual(/Cost Breakdown/.test(allText(draft)), false, 'a draft must NOT show a cost breakdown');
     assert.ok(buttonLabelled(draft, 'Calculate'), 'the form must offer Calculate');
     const done = render(makeBasket({ banners, submitted: true }));
@@ -879,7 +879,7 @@ t('removing a line with progress asks first; Keep stays on the page it was asked
 
 t('batch 8 (2026-10-14 16:47 EDT): plural selections, the Cross emoji, and no "·" before an upgrade', () => {
     const two = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }]);
-    assert.ok(/## Your Selections\n<a?:\w+:\d+> \*\*#1\*\*/.test(allText(two)));
+    assert.ok(/## Your Selections\n<a?:\w+:\d+> \*\*#1 · /.test(allText(two)));
     assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).includes('## Your Draw Selections'));
     assert.ok(allText(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }])).includes('## Your Selection\n'), 'singular for one draw');
     const remove = selects(progress([{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }])).find(s => verbOf(s) === 'bpulls').options.find(o => o.value === 'del');
@@ -1191,7 +1191,8 @@ t('Set Draw Progress: a line\'s extra settings sit beside its name, and a Mythic
     // The helper lists row buttons before Section accessories, so the order here is not the panel's; sorted by line.
     assert.deepStrictEqual(spins.map(b => [dc.decodeState(b.custom_id).focus, b.label]).sort((a, b) => a[0] - b[0]), [[1, 'Spins In: 40'], [2, 'Spins In: 0']]);
     assert.deepStrictEqual(buttons(pr).filter(b => verbOf(b) === 'upgset').map(b => dc.decodeState(b.custom_id).focus), [2], 'only the Mythic armory has an Upgrade');
-    assert.ok(buttonLabelled(pr, 'Back to Calculation') && verbOf(buttonLabelled(pr, 'Back to Calculation')) === 'progback');
+    assert.ok(buttonLabelled(pr, 'Back to Selections') && verbOf(buttonLabelled(pr, 'Back to Selections')) === 'progback');
+    assert.strictEqual(verbOf(buttonLabelled(pr, 'Calculate')), 'submit', 'Calculate beside it (his ask)');
     const done = progress([{ drawKey: 'armoryLegendaryWeapon', pullsDone: 4, size: 4 }]);
     assert.ok(buttonLabelled(done, 'Spins In: Finished').disabled, 'a finished armory has no next item to spin toward');
 });
@@ -1213,8 +1214,8 @@ t('Spins In reads a whole number below one item\'s spins, and refuses anything e
 t('the form is a summary: a season line reads as its draw with its Draw Type under it, and Set Draw Progress beside the list', () => {
     const f = form([{ drawKey: 'armoryLegendaryWeapon', pullsDone: 2, size: 5, spinsIn: 40, title: 'Undead Legion Series Armory' }, { drawKey: 'mythicWeapon', pullsDone: 10, upWant: [3] }]);
     const text = allText(f);
-    assert.ok(text.includes('**#1** Undead Legion Series Armory · `2/5` Weapons · 40 Spins In\n-# Legendary Weapon Armory'), text);
-    assert.ok(/<a?:\w+:\d+> \*\*#2\*\* Mythic Weapon · `10\/10` Spins\n> -# <a?:MythicCard:\d+> Upgrade to Level 3/.test(text), 'tier icon first, the upgrade on its own quoted line (his format)');
+    assert.ok(text.includes('**#1 · Undead Legion Series Armory** · `2/5` Weapons · 40 Spins In\n-# Legendary Weapon Armory'), text);
+    assert.ok(/<a?:\w+:\d+> \*\*#2 · Mythic Weapon\*\* · `10\/10` Spins\n> -# <a?:MythicCard:\d+> Upgrade to Level 3/.test(text), 'tier icon first, the upgrade on its own quoted line (his format)');
     assert.strictEqual(buttonLabelled(f, 'Set Draw Progress & Upgrades') ? true : false, true, 'with a Mythic line the button names upgrades too');
     assert.strictEqual(selects(f).some(s => verbOf(s) === 'bpulls'), false, 'no per-line dropdown on the form');
     assert.ok(verbOf(buttonLabelled(f, 'Set Draw Progress & Upgrades')) === 'progress');
@@ -1260,6 +1261,11 @@ t('click-test round 1 (2026-10-18 13:07 EDT): Two Full Paths, optional pop-up dr
     assert.ok(m.components[0].component.options.some(o => o.value === 'path2' && o.label === 'Two Full Paths'));
     const covered = allText(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }], balance: 99999 })));
     assert.ok(/<a?:Checkmark:\d+> \*\*Your balance covers this\*\*/.test(covered), 'his Checkmark emoji');
+});
+
+t('the result names a season draw without its Draw Type line (2026-10-18 13:08 EDT, his ask)', () => {
+    const r = allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0, title: 'Deepstar Wraith Mythic Drop' }] })));
+    assert.ok(r.includes('#1 · Deepstar Wraith Mythic Drop**') && !r.includes('-# Mythic Weapon'), r.slice(0, 300));
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);
