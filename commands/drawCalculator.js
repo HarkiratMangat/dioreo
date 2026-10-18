@@ -1434,9 +1434,9 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
         ].join('\n') },
         divider,
         { type: 10, content: '### ⚡ Shortcut\n`/draw calculator draw: pulls: balance:`\n-# Skips the form and opens straight on that draw\'s result.' },
-        // The estimates disclaimer, a footer (2026-10-18 19:44 EDT, his ask), moved off the result's Full Breakdown.
+        // The estimates disclaimer, a footer (2026-10-18 19:44 EDT, his ask), moved off the result's Full Breakdown. His wording (2026-10-18 19:54 EDT).
         divider,
-        { type: 10, content: '-# *Estimates only: local tax and currency conversion vary, and CoD: Mobile web store prices are not included.*' }
+        { type: 10, content: '-# *Estimates only; not financial advice. Local taxes extra. Local currency conversion may vary. CoD: Mobile web store prices, and any sales or discounts, are not included.*' }
     ];
     return { type: 17, accent_color: accentColor, components };
 }
