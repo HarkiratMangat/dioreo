@@ -128,6 +128,11 @@ function characterPreset(have, preset) {
     const ff = have[P] === 1 ? 1 : 0;
     if (preset === 'none') return [...have.slice(0, P), ff];
     if (preset === 'all') return [...u.paths.map(() => T), 1];
+    // Two Full Paths (2026-10-18 13:05 EDT, his ask): the two paths closest to done, finished.
+    if (preset === 'path2') {
+        const order = have.slice(0, P).map((t, p) => [t, p]).sort((a, b) => b[0] - a[0] || a[1] - b[1]).slice(0, 2).map(x => x[1]);
+        return [...have.slice(0, P).map((t, p) => (order.includes(p) ? T : t)), ff];
+    }
     if (preset === 'path') {
         if (have.slice(0, P).some(t => t === T)) return [...have.slice(0, P), ff];
         let best = 0;

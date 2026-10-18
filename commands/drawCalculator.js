@@ -227,7 +227,8 @@ function buildUpgradeModal(state, basket, index) {
     const complete = armory ? (b.pullsDone || 0) > 0 : total !== null && b.pullsDone >= total;
     const st = upgradeState(b, { complete, includeUpgrades: basket.includeUpgrades });
     const label = (text, description, component) => ({ type: 18, label: text, ...(description ? { description } : {}), component });
-    const select = (id, options) => ({ type: 3, custom_id: id, options: options.map(o => ({ label: o.label, value: o.value, ...(o.description ? { description: o.description } : {}), ...(o.default ? { default: true } : {}) })) });
+    // Optional, every one (2026-10-18 13:05 EDT, his ask): a dropdown left alone keeps what it shows.
+    const select = (id, options) => ({ type: 3, custom_id: id, required: false, options: options.map(o => ({ label: o.label, value: o.value, ...(o.description ? { description: o.description } : {}), ...(o.default ? { default: true } : {}) })) });
     const components = [];
     if (u.levels) {
         const at = [0, ...u.levels];
@@ -237,7 +238,7 @@ function buildUpgradeModal(state, basket, index) {
                 description: lv ? `${fmt(n)} Cards Used` : null, default: st.have[0] === lv
             })))));
         }
-        components.push(label('Upgrade To', armory ? `Every weapon in the armory (${armorySize(b)})` : complete ? 'Cards still needed count from Already At' : 'Upgrades unlock once this draw is finished', select('want', [
+        components.push(label('Upgrade to Level', armory ? `Every weapon in the armory (${armorySize(b)})` : complete ? 'Cards still needed count from Already At' : 'Upgrades unlock once this draw is finished', select('want', [
             { label: 'No Upgrade', value: '0', default: st.want[0] === st.have[0] },
             ...u.levels.map((n, i) => ({ label: `Level ${i + 1}${i + 1 === u.levels.length ? ' (Max)' : ''}`, value: String(i + 1), description: `${fmt(n)} Cards in Total`, default: st.want[0] === i + 1 && st.want[0] !== st.have[0] }))
         ])));
@@ -246,10 +247,11 @@ function buildUpgradeModal(state, basket, index) {
         const pathFull = sumTierCost(u.tiers, 0, T);
         const cheapest = characterPreset(u.paths.map(() => 0).concat(0), 'ff');
         const cheapestCoins = cheapest.slice(0, P).reduce((n, t) => n + sumTierCost(u.tiers, 0, t), 0) + u.finalForm.cost;
-        components.push(label('Quick Pick', 'Picking one replaces the paths below', select('quick', [
+        components.push(label('Quick Pick', 'Quick Pick ignores the other toggles below', select('quick', [
             { label: 'Use My Choices Below', value: 'keep', default: true },
             { label: 'No Upgrade', value: 'none' },
             { label: 'One Full Path', value: 'path', description: complete ? 'Finishes the path closest to done' : `${fmt(pathFull)} Coins` },
+            { label: 'Two Full Paths', value: 'path2', description: complete ? 'Finishes the two paths closest to done' : `${fmt(2 * pathFull)} Coins` },
             { label: `Cheapest ${u.finalForm.name}`, value: 'ff', description: complete ? 'From the tiers you already have' : `${fmt(cheapestCoins)} Coins · ${u.finalForm.minTiers} of ${P * T} Tiers + ${u.finalForm.name}` },
             { label: 'Everything', value: 'all', description: complete ? `Every tier and ${u.finalForm.name}` : `${fmt(upgradeFullAmount(b.drawKey))} Coins` }
         ])));
@@ -474,8 +476,8 @@ function bannerPullsRow(state, basket, index, { removable = false } = {}) {
             const line = isArmoryKey(banner.drawKey) ? { ...banner, size, spinsIn: chosen ? banner.spinsIn : 0 } : banner;
             const left = remainingToFinish(basket.region, banner.drawKey, n, line);
             options.push({
-                // The draw's name rides in the LABEL of the chosen value only (2026-10-13 12:40 EDT): a closed select shows only that label. Progress first (2026-10-13 23:10 EDT): a phone shows about 30 characters.
-                label: chosen ? `#${index + 1} · ${n}/${size} ${unit} · ${lineName(banner)}`.slice(0, 100) : `${n}/${size} ${unit}`,
+                // The draw's name rides in the LABEL of the chosen value only (2026-10-13 12:40 EDT): a closed select shows only that label. Progress first (2026-10-13 23:10 EDT): a phone shows about 30 characters. "#1 · Progress: 0/10 Spins" (2026-10-18 13:05 EDT, Harkirat: "it doesnt really make sense including the draw name inside the dropdown"): the line's name sits right above it now.
+                label: chosen ? `#${index + 1} · Progress: ${n}/${size} ${unit}` : `${n}/${size} ${unit}`,
                 value: sizes.length > 1 ? `${size}:${n}` : String(n),
                 description: `${fmt(spentSoFar(basket.region, banner.drawKey, n, line))} CP Spent · ${n === size ? 'Finished' : `${fmt(left)} CP to Completion`}`,
                 // The tier icon and `default` only on the chosen value: each costs every line characters of Discord's size cap (2026-10-14 00:12 EDT).
@@ -753,8 +755,8 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     cost.push(...upgradeWarnings(basket, upgrades));
 
     // Two different "nothing to buy" states (2026-10-13 12:40 EDT): every line already finished, and a balance that covers what is left.
-    if (needed === 0 && !unpriced.length) return { cost, purchase: ['✅ **Every draw here is finished** — nothing left to buy.'], buying: false };
-    if (shortfall <= 0) return { cost, purchase: [`✅ **Your balance covers this**, with **\`${fmt(-shortfall)} CP\`** to spare.`], buying: false };
+    if (needed === 0 && !unpriced.length) return { cost, purchase: [`${emojis.checkmark} **Every draw here is finished** — nothing left to buy.`], buying: false };
+    if (shortfall <= 0) return { cost, purchase: [`${emojis.checkmark} **Your balance covers this**, with **\`${fmt(-shortfall)} CP\`** to spare.`], buying: false };
 
     const doubleCpAvailable = CP_PACKAGES.filter((p, i) => (basket.entitlementMask & (1 << i)) !== 0).map(p => p.id);
     // The purchase search is the expensive part and does not change with the fitting level, so one render runs it once (`memo`), however many levels it tries.
@@ -834,16 +836,19 @@ function selectionSummary(basket, max = 12) {
     const lines = (basket.banners || []).map((b, i) => {
         const total = pullCount(basket.region, b.drawKey, b);
         const icon = metaOf(b.drawKey) ? emojis[metaOf(b.drawKey).tier] : emojis.smallDot;
-        const extras = [];
-        if (isArmoryKey(b.drawKey) && b.spinsIn && total !== null && b.pullsDone < total) extras.push(`${b.spinsIn} Spins In`);
-        if (Array.isArray(b.upWant) && upgradeKeyOf(b.drawKey) && b.upWant.some(Boolean)) extras.push(`Upgrade to ${upgradeStateText(b.drawKey, b.upWant)}`);
-        const head = `**#${i + 1}** ${icon} ${lineName(b)} · \`${b.pullsDone}/${total ?? '?'}\` ${unitOf(b.drawKey)}${extras.length ? ` · ${extras.join(' · ')}` : ''}`;
-        return b.title ? `${head}\n-# ${shortName(b.drawKey)}` : head;
+        const spinsIn = isArmoryKey(b.drawKey) && b.spinsIn && total !== null && b.pullsDone < total ? ` · ${b.spinsIn} Spins In` : '';
+        // The tier icon first, then the number (2026-10-18 13:05 EDT, his "keep the emojis first"); a season draw's type under it; the upgrade on its own quoted line with its card or coin (his format).
+        const out = [`${icon} **#${i + 1}** ${lineName(b)} · \`${b.pullsDone}/${total ?? '?'}\` ${unitOf(b.drawKey)}${spinsIn}`];
+        if (b.title) out.push(`-# ${shortName(b.drawKey)}`);
+        if (Array.isArray(b.upWant) && upgradeKeyOf(b.drawKey) && b.upWant.some(Boolean)) out.push(`> -# ${upgradeCardEmoji(b.drawKey) || ''} Upgrade to ${upgradeStateText(b.drawKey, b.upWant)}`);
+        return out.join('\n');
     });
     if (lines.length > max) return [...lines.slice(0, max), `-# …and ${lines.length - max} more, all on **Set Draw Progress**.`].join('\n');
     return lines.join('\n');
 }
-function progressButton(state) { return { type: 2, style: 2, label: 'Set Draw Progress', custom_id: encodeState('progress', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
+// "Set Draw Progress & Upgrades" once a Mythic line is in the calculation (2026-10-18 13:05 EDT, his ask), on the button and the screen it opens.
+function progressTitle(basket) { return (basket?.banners || []).some(b => upgradeKeyOf(b.drawKey)) ? 'Set Draw Progress & Upgrades' : 'Set Draw Progress'; }
+function progressButton(state, basket) { return { type: 2, style: 2, label: progressTitle(basket), custom_id: encodeState('progress', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
 
 // THIS SEASON'S DRAWS (sidelined 2026-10-17 21:29 EDT, built 2026-10-18 12:15 EDT). First on the form (his "yes"). Each option is the draw's own title with its Draw Type under it (decided 2026-10-17 21:28 EDT). The list is listSeasonDraws's, read by the caller and passed in, because building a panel never touches the database.
 function seasonDrawsRow(state, seasonDraws, room) {
@@ -878,7 +883,7 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
         }
     } else {
         // The summary rides in a Section with Set Draw Progress as its button, the way the result's selection carries Edit Selection.
-        components.push({ type: 9, components: [{ type: 10, content: `## ${selectionHeading(banners)}\n${selectionSummary(draft)}` }], accessory: progressButton(state) });
+        components.push({ type: 9, components: [{ type: 10, content: `## ${selectionHeading(banners)}\n${selectionSummary(draft)}` }], accessory: progressButton(state, draft) });
         if (dropConfirm) components.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
         else {
             components.push({ type: 14, spacing: 1, divider: false });
@@ -909,7 +914,7 @@ function lineExtraButtons(state, basket, index) {
 function progressLineBlocks(state, basket, index) {
     const b = basket.banners[index];
     const icon = metaOf(b.drawKey) ? emojis[metaOf(b.drawKey).tier] : emojis.smallDot;
-    const text = `**#${index + 1}** ${icon} ${lineName(b)}${b.title ? `\n-# ${shortName(b.drawKey)}` : ''}`;
+    const text = `${icon} **#${index + 1}** ${lineName(b)}${b.title ? `\n-# ${shortName(b.drawKey)}` : ''}`;
     const extra = lineExtraButtons(state, basket, index);
     const head = extra.length === 1 ? { type: 9, components: [{ type: 10, content: text }], accessory: extra[0] } : { type: 10, content: text };
     const out = [head, bannerPullsRow(state, basket, index, { removable: true })];
@@ -919,7 +924,7 @@ function progressLineBlocks(state, basket, index) {
 function buildProgressPanel(state, basket, accentColor, { notice = null, dropConfirm = null } = {}) {
     const banners = basket.banners || [];
     const top = [titleBlock(basket), { type: 14, spacing: 2, divider: true },
-        { type: 10, content: "## Set Draw Progress\n-# Set how far you are on each draw. `0` means you haven't started it. A draw with more to set has its button beside its name." }];
+        { type: 10, content: `## ${progressTitle(basket)}\n-# Set how far you are on each draw. \`0\` means you haven't started it.` }];
     if (notice) top.push({ type: 10, content: `-# ${notice}` });
     if (dropConfirm) top.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
     const back = [{ type: 14, spacing: 2, divider: true }, { type: 1, components: [{ type: 2, style: 2, label: 'Back to Calculation', custom_id: encodeState('progback', state), emoji: emojis.parseEmoji(emojis.left) }] }];

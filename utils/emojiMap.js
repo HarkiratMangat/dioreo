@@ -97,6 +97,8 @@ const emojis = {
     serverSettings: '<a:ServerSettings:1536468904996774008>',
     // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
     guide: '<a:DB_Guide:1532894836301238477>',
+    // The calculator's "covered" and "finished" lines (2026-10-18 13:05 EDT, Harkirat: "swap the icon used beside the 'your balance covers this' line").
+    checkmark: '<a:Checkmark:1561412941004406955>',
     // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmiths category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmiths now covers /all + every per-category command too, not just DMZ).
     dioreoCombo: '<:DioreoCombo:1534640183230730470>',
     loadouts: '<a:Loadouts:1535779248982335618>',
