@@ -264,7 +264,7 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[jump_to]` Open one draw type on its own\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[type]` Open one draw type on its own\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
         },
         {
           "type": 9,
@@ -288,7 +288,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** jump_to:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** type:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
         },
         {
           "type": 14,
@@ -1106,7 +1106,7 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[jump_to]` Open one draw type on its own\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[type]` Open one draw type on its own\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
         },
         {
           "type": 9,
@@ -1130,7 +1130,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** jump_to:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** type:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
         },
         {
           "type": 14,
@@ -1988,7 +1988,7 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[jump_to]` Open one draw type on its own\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[type]` Open one draw type on its own\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
         },
         {
           "type": 9,
@@ -2012,7 +2012,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** jump_to:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** type:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
         },
         {
           "type": 14,
@@ -2978,7 +2978,7 @@
         },
         {
           "type": 10,
-          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[jump_to]` Open one draw type on its own\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
+          "content": "### `/draws`\nBrowse this season's New and Returning lucky draws\n-# **Options**\n-# 🔹 `[page]` Jump directly to New Draws or Returning Draws\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/draw prices`\nCP cost breakdown for every draw type, split by CP region\n-# **Options**\n-# 🔹 `[type]` Open one draw type on its own\n-# 🔹 `[region]` Jump directly to the 10, 20, or 30 CP region\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat."
         },
         {
           "type": 9,
@@ -3002,7 +3002,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** jump_to:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
+          "content": "-# **Examples**\n-# 🔸 **/draws** page:`Returning Draws`\n-# 🔸 **/draw prices** region:`30 CP Region`\n-# 🔸 **/draw prices** type:`Mythic Weapon Draw`\n-# 🔸 **/draw calculator** page:`View Saved`"
         },
         {
           "type": 14,

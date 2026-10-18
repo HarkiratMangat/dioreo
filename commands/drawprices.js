@@ -421,9 +421,9 @@ module.exports = {
             .setName('prices')
             .setDescription('View the CP cost breakdown for Lucky Draws')
             // Optional direct-jump flag
+            // The quick jump from the command line, as `type`, listed before `region` (2026-10-17 23:54 EDT, Harkirat: "please arrange 'jump_to' above the 'region' option. let's also reword it to either 'filter' or 'type'"; `type` because the choices ARE draw types). First added (2026-10-17 22:48 EDT, Harkirat: "you also need to implement that jump within the slash command itself as an option"). Same targets as the dropdown, derived from JUMP_KEYS so the two never differ.
+            .addStringOption(option => option.setName('type').setDescription('Open one draw type on its own').addChoices(...JUMP_KEYS.map(key => ({ name: jumpMeta(key).name, value: key }))))
             .addStringOption(option => option.setName('region').setDescription('Jump directly to a specific CP region').addChoices({ name: '10 CP Region', value: 'region_10' }, { name: '20 CP Region', value: 'region_20' }, { name: '30 CP Region', value: 'region_30' }))
-            // The quick jump from the command line (2026-10-17 22:48 EDT, Harkirat: "you also need to implement that jump within the slash command itself as an option"). Same targets as the dropdown, derived from JUMP_KEYS so the two never differ.
-            .addStringOption(option => option.setName('jump_to').setDescription('Open one draw type on its own').addChoices(...JUMP_KEYS.map(key => ({ name: jumpMeta(key).name, value: key }))))
             .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .addSubcommand(sub => sub
             .setName('calculator')
@@ -464,7 +464,7 @@ module.exports = {
             argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
             const userChoice = interaction.options.getString('region');
             if (userChoice) targetRegion = userChoice;
-            const jumpChoice = interaction.options.getString('jump_to');
+            const jumpChoice = interaction.options.getString('type');
             if (jumpChoice) subpageOverride = `f${jumpChoice}`;
         }
 

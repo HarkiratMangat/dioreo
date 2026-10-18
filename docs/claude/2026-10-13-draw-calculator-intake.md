@@ -794,3 +794,9 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > and side note, it seems the help command panels need a review and stale/gaps housesweep to be improved.
 
 **Built 2026-10-17 23:53 EDT:** `page:` (Start a Calculation / View Saved / Help, Help with an Open Calculator button); `/gunsmiths search` and `/gunsmiths list` as real links on the /help landing (a mention of a command with subcommands never links); a **Calculator Guide** button on /help's Draws page. Sweep: /draw prices `jump_to` and the calculator's `page` documented, the calculator's description rewritten, /manage's retired Manage Admins removed and its `action` documented, "both commands" / "every command above" no longer promise `[visibility]` to /admin and /bot hotpatch. A new check in `scripts/helpBodySnapshot.test.js` fails when /help and the registered options disagree (proved: it fails on the old /help). **Recommended:** saved calculations stay off the landing.
+
+### Batch 56 — 2026-10-17 23:49 EDT, verbatim
+
+> please arrange "jump_to" above the "region" option. let's also reword it to either "filter" or "type"?
+
+**Built 2026-10-17 23:54 EDT:** the option is `type`, listed before `region` (`type` over `filter`: its choices are draw types, so `/draw prices type: Mythic Weapon Draw` reads as what it does).

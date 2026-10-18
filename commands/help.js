@@ -124,8 +124,8 @@ const CATEGORY_DEFS = [
             cmd('/draw prices', {
                 description: 'CP cost breakdown for every draw type, split by CP region',
                 options: [
-                    { name: 'region', required: false, desc: 'Jump directly to the 10, 20, or 30 CP region' },
-                    { name: 'jump_to', required: false, desc: 'Open one draw type on its own' }
+                    { name: 'type', required: false, desc: 'Open one draw type on its own' },
+                    { name: 'region', required: false, desc: 'Jump directly to the 10, 20, or 30 CP region' }
                 ]
             }),
             cmd('/draw calculator', {
@@ -257,7 +257,7 @@ function buildDrawsBody(commands, client) {
         const dc = require('./drawCalculator');
         parts.push({ content: renderCommandBlock(calc, client).trimEnd(), accessory: { type: 2, style: 2, label: 'Calculator Guide', emoji: emojis.parseEmoji(emojis.calculator), custom_id: dc.encodeState('help', dc.defaultState()) } });
     }
-    parts.push({ content: `-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\`\n-# 🔸 **/draw prices** jump_to:\`Mythic Weapon Draw\`\n-# 🔸 **/draw calculator** page:\`View Saved\`` });
+    parts.push({ content: `-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\`\n-# 🔸 **/draw prices** type:\`Mythic Weapon Draw\`\n-# 🔸 **/draw calculator** page:\`View Saved\`` });
     return parts;
 }
 

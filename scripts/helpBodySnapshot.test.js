@@ -37,7 +37,7 @@ async function run() {
         }
     }
 
-    // OPTION DRIFT (2026-10-17 23:51 EDT). The snapshot above freezes what /help SAYS; this checks it against what each command REGISTERS. /help had gone stale three ways nobody saw: /draw prices' jump_to missing, /manage still listing the retired Manage Admins and not its `action`, and two "Options" lines promising [visibility] on commands without it. Every registered option except visibility must be named on its command's page as `[name]` or `<name>`, and every such name on a page must belong to a command on it.
+    // OPTION DRIFT (2026-10-17 23:51 EDT). The snapshot above freezes what /help SAYS; this checks it against what each command REGISTERS. /help had gone stale three ways nobody saw: /draw prices' type (then jump_to) missing, /manage still listing the retired Manage Admins and not its `action`, and two "Options" lines promising [visibility] on commands without it. Every registered option except visibility must be named on its command's page as `[name]` or `<name>`, and every such name on a page must belong to a command on it.
     await check('every /help page names exactly the options its commands register', async () => {
         const fs = require('fs');
         const registered = {};
