@@ -1000,8 +1000,8 @@ function lineHint(basket, index) {
 function progressLineBlocks(state, basket, index) {
     const b = basket.banners[index];
     const icon = metaOf(b.drawKey) ? emojis[metaOf(b.drawKey).tier] : emojis.smallDot;
-    // A `###` heading over a hint line (2026-10-18 16:17 EDT, his ask), in place of a bold name. A blank line above each heading (2026-10-18 17:08 EDT, his ask): the :blank: emoji on a `-#` line, which Discord keeps where a bare empty line would collapse.
-    const text = `-# ${emojis.blank}\n### ${icon} #${index + 1} · ${lineName(b)}\n-# ${lineHint(basket, index)}`;
+    // A `###` heading over a hint line (2026-10-18 16:17 EDT, his ask), in place of a bold name.
+    const text = `### ${icon} #${index + 1} · ${lineName(b)}\n-# ${lineHint(basket, index)}`;
     const extra = lineExtraButtons(state, basket, index);
     const head = extra.length === 1 ? { type: 9, components: [{ type: 10, content: text }], accessory: extra[0] } : { type: 10, content: text };
     // No Remove option in the line's dropdown: Remove is one pop-up for every selection now (his Mock 2).
