@@ -101,7 +101,7 @@ function readBalanceFields({ amount = null, cards = null, coins = null }) {
     take(cards, 'Mythic Cards', parseCount, 'mythicCards', 'use 0 or a multiple of 5, like `300`.');
     take(coins, 'Mythic Coins', parseCount, 'mythicCoins', 'use 0 or a multiple of 5, like `300`.');
     const lead = saved.length ? `Saved ${saved.join(' and ')}.` : 'Nothing was saved.';
-    const warning = refused.length ? `⚠️ ${lead}\n${refused.map(r => `- ${r}`).join('\n')}\nPress **Set Balance** to fix ${refused.length === 1 ? 'it' : 'them'}.` : null;
+    const warning = refused.length ? `⚠️ ${lead}\n${refused.map(r => `- ${r}`).join('\n')}\nPress **Set Region & Balance** to fix ${refused.length === 1 ? 'it' : 'them'}.` : null;
     return { fields, warning };
 }
 function parseCount(raw) {
@@ -1381,7 +1381,7 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
             '### 🧭 How It Works',
             '1. **Pick your draws** under Start a Calculation',
             '2. **Set your progress** under Set Draw Progress, on any draw you have already started',
-            '3. **Set your region and balance** under Tweak Calculation',
+            '3. **Set your region and balance** with Set Region & Balance',
             `4. **Press ${emojis.calculate} Calculate** for the CP you need and the cheapest way to buy it`
         ].join('\n') },
         divider,
