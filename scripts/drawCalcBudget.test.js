@@ -1247,6 +1247,7 @@ t('Set Draw Progress fits Discord at every size: 1–25 lines of armories and My
         const pages = dc.linePages(banners, 5).length;
         for (let bpage = 0; bpage < pages; bpage++) {
             const p = progress(banners, { bpage });
+            messageCount(dc.buildCalculatorPanel(state({ page: 5, bpage, fromResult: true, dirty: true }), makeBasket({ banners }), ACCENT, { savedBaskets: [] }));
             const c = messageCount(p);
             worst = Math.max(worst, c);
             assert.ok(c <= 40, `${n} lines page ${bpage}: ${c} components`);
@@ -1279,6 +1280,8 @@ t('his Mock 2 (2026-10-18 13:38 EDT): Add Draws and Remove open pop-ups, his two
     const footer = rows(draft).slice(-2, -1).map(r => r.components.map(b => b.label));
     assert.deepStrictEqual(footer, [['Add Draws', 'Remove', 'Calculate']], 'a draft has no result to go back to, and no selections screen any more');
     const done = dc.buildCalculatorPanel(state({ page: 5, fromResult: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
+    messageCount(done); // every custom_id unique: a duplicated Back to Result made Discord refuse this screen (2026-10-18 16:05 EDT)
+    assert.strictEqual(buttons(done).filter(b => b.label === 'Back to Result').length, 1);
     assert.deepStrictEqual(done.filter(x => x.type === 1)[0].components.map(b => b.label), ['Back to Result', 'New Calculation', 'Draw Prices', 'Help'], 'his nav order from a result, no View Saved (2026-10-18 15:48 EDT)');
     const dirty = dc.buildCalculatorPanel(state({ page: 5, fromResult: true, dirty: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
     assert.ok(buttonLabelled(dirty, 'Recalculate') && !buttonLabelled(dirty, 'Calculate'), 'a change after Edit Selections offers Recalculate');

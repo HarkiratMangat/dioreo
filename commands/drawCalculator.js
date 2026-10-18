@@ -648,8 +648,7 @@ function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
     };
 }
 
-// NO EMOJI on either button (2026-08-27, Harkirat) -- `mngEdit` was a pencil paired with a button labelled "Save", which never matched, and a destructive action reads clearer without decoration. Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement). The Upgrade button left this row 2026-10-18 12:15 EDT (Harkirat: "yeah sure"): it lives beside each Mythic line on Set Draw Progress, with every other per-line setting.
-// The result's Tweak Calculation row: the three regions and Set Balance inline, one row (2026-10-18 15:50 EDT, his ask), as on the editor.
+// NO EMOJI on either button (2026-08-27, Harkirat) -- `mngEdit` was a pencil paired with a button labelled "Save", which never matched, and a destructive action reads clearer without decoration. Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement). The Upgrade button left this row 2026-10-18 12:15 EDT (Harkirat: "yeah sure"): it lives beside each Mythic line on Set Draw Progress, with every other per-line setting. The result's Tweak Calculation row: the three regions and Set Balance inline, one row (2026-10-18 15:50 EDT, his ask), as on the editor.
 function resultTweakRow(state, basket) { return { type: 1, components: [...regionRow(state, basket).components, ...basketManageRows(state, basket)[0].components] }; }
 function basketManageRows(state, basket) {
     // Balance and Upgrade side by side (2026-10-14 16:51 EDT, Harkirat: "move upgrade button beside the Set balance button"). Save, Rename and Delete moved to the Saved view, where the calculation's own section manages it (2026-10-14 16:51 EDT). With two or more Mythic lines the upgrade control is a dropdown, which takes its own row under it.
@@ -988,9 +987,9 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
             { type: 2, style: 4, label: 'Remove', custom_id: encodeState('rmopen', state), emoji: emojis.parseEmoji(emojis.deleteBin) },
             { type: 2, style: 1, label: state.fromResult && state.dirty ? 'Recalculate' : 'Calculate', custom_id: encodeState('submit', state), emoji: emojis.parseEmoji(emojis.calculate) }
         ] },
-        // Back to Result only when opened from a result; there is no selections screen to go back to any more (2026-10-18 15:13 EDT).
-        ...(state.fromResult && basket.submitted ? [{ type: 1, components: [{ type: 2, style: 2, label: 'Back to Result', custom_id: encodeState('progresult', state), emoji: emojis.parseEmoji(emojis.left) }] }] : [])];
-    const build = (perPage, at = state.bpage || 0) => {
+        // Back to Result lives in the nav row under the panel only (2026-10-18 16:05 EDT). It was left here too by the 15:47 EDT move, so a result's editor carried the same button twice and Discord refused the whole message (COMPONENT_CUSTOM_ID_DUPLICATED): his "it wont load at all".
+    ];
+    const build =(perPage, at = state.bpage || 0) => {
         const pages = linePages(banners, perPage);
         const bpage = Math.min(at, pages.length - 1);
         const mid = [];
