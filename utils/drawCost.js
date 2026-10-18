@@ -167,8 +167,7 @@ function reachableWithBudget(region, key, pullsDone, budgetCp) {
 
 // The basket cost model (added 2026-08-27 11:41 EDT, the saved-basket redesign) -- one call over the WHOLE flat banner list, never a per-type loop, because the basket has no per-type grouping left to loop over (docs/superpowers/specs/2026-08-27-draw-calculator-multi-draw-design.md §1). Upgrades are added PER BANNER, not once per draw type -- three Mythic Weapon banners each carry their own upgrade cost when the toggle is on, because each is an independently in-progress draw.
 //
-// An unpriced banner (no DRAW_DATA at this region) is EXCLUDED from the total and reported with `priced: false` rather than silently dropped or estimated -- spec §9, and the same never-interpolate rule DRAW_DATA's own header sets out.
-// Upgrades are no longer a per-line CP figure (2026-10-17 13:17 EDT): they are pooled per currency (upgradePlan), so `cost` is the draw alone, each line's `upgrade` is its tier state and need in cards or coins, and the pooled upgrade CP joins `total` once. `held` carries the basket's mythicCards/mythicCoins.
+// An unpriced banner (no DRAW_DATA at this region) is EXCLUDED from the total and reported with `priced: false` rather than silently dropped or estimated -- spec §9, and the same never-interpolate rule DRAW_DATA's own header sets out. Upgrades are no longer a per-line CP figure (2026-10-17 13:17 EDT): they are pooled per currency (upgradePlan), so `cost` is the draw alone, each line's `upgrade` is its tier state and need in cards or coins, and the pooled upgrade CP joins `total` once. `held` carries the basket's mythicCards/mythicCoins.
 function basketCost(region, banners, includeUpgrades, held = {}) {
     let drawTotal = 0;
     const upgrades = upgradePlan({ region, banners, includeUpgrades, ...held });

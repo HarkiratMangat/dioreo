@@ -209,8 +209,7 @@ async function route(interaction) {
             return true;
         }
         const updated = await basketStore.rename(actingUserId, state.basketId, name);
-        // "Save as New" from the Save step lands on the result it just saved (2026-10-14 17:28 EDT); a rename from the Saved view stays there.
-        // Saving an unsaved calculation lands on its result; renaming one that was already saved stays where it was (the Save step folded into the Saved view, 2026-10-16).
+        // "Save as New" from the Save step lands on the result it just saved (2026-10-14 17:28 EDT); a rename from the Saved view stays there. Saving an unsaved calculation lands on its result; renaming one that was already saved stays where it was (the Save step folded into the Saved view, 2026-10-16).
         if (!basket.name && updated?.name) { await renderPanel(interaction, { ...state, page: 0, verb: 'load' }, updated, `Saved as "${updated.name}".`); return true; }
         await renderPanel(interaction, state, updated);
         return true;

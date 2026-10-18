@@ -28,8 +28,7 @@ const emojis = {
     cp2: '<:CP_CODM2:1523190111460786318>',
     // Animated icon for the draw-prices region-toggle button (drawPrices_ui.json) -- lives in the button's `emoji` field, not its `label` (see Components V2 point 4 in CLAUDE.md). Superseded as the 3-way region switcher's per-button icon 2026-08-07 15:45 EDT by the three region-specific emoji below (Harkirat provided them via diors-notes.md); kept defined since nothing else references it.
     regions: '<a:Regions:1525705441072382052>',
-    // Per-region icons for the 3-way region-switch button row (drawprices.js's buildContainer), added 2026-08-07 15:45 EDT from Harkirat's diors-notes.md request -- one distinct icon per CP tier instead of the single generic `regions` icon shared across all three buttons.
-    // Re-uploaded 2026-10-15 22:27 EDT (second set, prod ids he supplied). Replaced 2026-10-15 18:02 EDT with Harkirat's new 10CP / 20CP / 30CP set (prod ids he supplied; the dev bot re-points by name). Shared by /draw prices' region switcher and the calculator's region select and Help chips, so both change together.
+    // Per-region icons for the 3-way region-switch button row (drawprices.js's buildContainer), added 2026-08-07 15:45 EDT from Harkirat's diors-notes.md request -- one distinct icon per CP tier instead of the single generic `regions` icon shared across all three buttons. Re-uploaded 2026-10-15 22:27 EDT (second set, prod ids he supplied). Replaced 2026-10-15 18:02 EDT with Harkirat's new 10CP / 20CP / 30CP set (prod ids he supplied; the dev bot re-points by name). Shared by /draw prices' region switcher and the calculator's region select and Help chips, so both change together.
     region10Cp: '<a:10CP:1560477395373400135>',
     region20Cp: '<a:20CP:1560477394081423501>',
     region30Cp: '<a:30CP:1560477392328196096>',
@@ -67,7 +66,7 @@ const emojis = {
     // The simplified view's bundle bullet (2026-10-17 17:08 EDT, his draft). Prod id read from the prod app's emoji list at his word (2026-10-17 17:20 EDT).
     whiteDotGlow: '<:WhiteDotGlow_WDG:1542356488746573824>',
     blueDash: '<:BlueDash_BD:1542356720943239188>',
-    // The calculator's Full Breakdown / Simplify toggle, its only user (commands/drawCalculator.js). Replaced 2026-10-15 18:02 EDT: a new Expand, and Collapse in place of the old Simplify icon (Harkirat, prod ids supplied; the dev app no longer has a Simplify emoji).
+    // The calculator's Full Breakdown / Simple Breakdown toggle (the second was Simplify until 2026-10-17 21:33 EDT), its only user (commands/drawCalculator.js). Replaced 2026-10-15 18:02 EDT: a new Expand, and Collapse in place of the old Simplify icon (Harkirat, prod ids supplied; the dev app no longer has a Simplify emoji).
     collapse: '<a:Collapse:1561145468824854668>',
     expand: '<a:Expand:1561145493034246174>',
     b1: '<:b1:1523852972835082371>',

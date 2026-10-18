@@ -78,8 +78,7 @@ function parseAmount(raw) {
     const r = Math.round(v);
     return Math.abs(v - r) > 1e-6 ? null : r;
 }
-// Mythic Cards and Coins in the Balance pop-up (2026-10-17 12:01 EDT, Harkirat: "only allowed as steps of 5 ... Only 0 or multiples of 5s, 10s"). Every tier cost in the game is a multiple of 5, so this never refuses a real count. Blank is 0, like CP.
-// The balance pop-up's three fields, read together. A field that is fine is saved even when another is refused (2026-10-17 19:04 EDT, Harkirat: "yeah go ahead. and lets keep the warning in the seperate message (ephemeral)"), so nobody retypes the ones that were right; the warning names each refused field and how to fix it. A field the pop-up did not carry is null and changes nothing.
+// Mythic Cards and Coins in the Balance pop-up (2026-10-17 12:01 EDT, Harkirat: "only allowed as steps of 5 ... Only 0 or multiples of 5s, 10s"). Every tier cost in the game is a multiple of 5, so this never refuses a real count. Blank is 0, like CP. The balance pop-up's three fields, read together. A field that is fine is saved even when another is refused (2026-10-17 19:04 EDT, Harkirat: "yeah go ahead. and lets keep the warning in the seperate message (ephemeral)"), so nobody retypes the ones that were right; the warning names each refused field and how to fix it. A field the pop-up did not carry is null and changes nothing.
 function readBalanceFields({ amount = null, cards = null, coins = null }) {
     const fields = {}, saved = [], refused = [];
     const take = (raw, label, parse, key, hint) => {
@@ -492,8 +491,7 @@ function freshDrawDescription(region, key) {
     const total = pullCount(region, key);
     if (total === null) return `No Data at ${regionLabel(region)} Yet`;
     const upgrade = upgradeCost(region, key);
-    // No "·" before the upgrade (2026-10-14 16:51 EDT, Harkirat): the "+" already joins it to the total.
-    // "Attempts" took the place of "Items" (2026-10-17 17:20 EDT, Harkirat: "'attempts' basically took the spot of 'items'. spins stays as-is.").
+    // No "·" before the upgrade (2026-10-14 16:51 EDT, Harkirat): the "+" already joins it to the total. "Attempts" took the place of "Items" (2026-10-17 17:20 EDT, Harkirat: "'attempts' basically took the spot of 'items'. spins stays as-is.").
     return `${total} Attempts · ${fmt(remainingToFinish(region, key, 0))} CP Total${upgrade !== null ? ` + ${fmt(upgrade)} CP Upgrade` : ''}`.slice(0, 100);
 }
 function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
@@ -603,8 +601,7 @@ function newCalculationButton(state) {
     // NewCalc icon (2026-10-16 14:31 EDT).
     return { type: 2, style: armed ? 4 : 2, label: armed ? 'New Calculation — click again' : 'New Calculation', custom_id: encodeState(armed ? 'reset' : 'resetarm', state), emoji: emojis.parseEmoji(emojis.newCalc) };
 }
-// `inForm`: on the form, Saved and New Calculation sit in its own Calculate row (2026-10-14 16:51 EDT, Harkirat: "move calculate down to its own action row, with a divider above it. Move New calculation and saved into that same row"), so the nav keeps only Draw Prices and Help there.
-// The Saved view's and the Save step's footer (2026-10-16 11:19 EDT, Harkirat: "put the 'back' button inside of the embed as a footer button. reworded to 'Back to Calculation'. With a button beside it for 'New Calculation'", and "use the left arrow we use for pagination").
+// `inForm`: on the form, Saved and New Calculation sit in its own Calculate row (2026-10-14 16:51 EDT, Harkirat: "move calculate down to its own action row, with a divider above it. Move New calculation and saved into that same row"), so the nav keeps only Draw Prices and Help there. The Saved view's and the Save step's footer (2026-10-16 11:19 EDT, Harkirat: "put the 'back' button inside of the embed as a footer button. reworded to 'Back to Calculation'. With a button beside it for 'New Calculation'", and "use the left arrow we use for pagination").
 function savedFooterRow(state) {
     return { type: 1, components: [
         { type: 2, style: 2, label: 'Back to Calculation', custom_id: encodeState('back', state), emoji: emojis.parseEmoji(emojis.left) },
@@ -614,8 +611,7 @@ function savedFooterRow(state) {
 function bottomNavRow(state, { showReset = true, savedCount = 0, onSaved = false, inForm = false } = {}) {
     // Its own private message (2026-10-13 12:40 EDT) -- it used to be the global nav's `nav_prices`, which turned THIS panel into /draw prices in place.
     const components = [{ type: 2, style: 2, label: 'Draw Prices', custom_id: encodeState('prices', state) }];
-    // Saved calculations are their own view of this same message (2026-10-14 13:19 EDT, Harkirat's "surface switch"). On that view the slot reads Back.
-    // On the Saved view and the Save step the way back lives INSIDE the panel as a footer row (2026-10-16 11:19 EDT, savedFooterRow), so the nav keeps only Draw Prices and Help there.
+    // Saved calculations are their own view of this same message (2026-10-14 13:19 EDT, Harkirat's "surface switch"). On that view the slot reads Back. On the Saved view and the Save step the way back lives INSIDE the panel as a footer row (2026-10-16 11:19 EDT, savedFooterRow), so the nav keeps only Draw Prices and Help there.
     if (!onSaved && !inForm) {
         components.push(savedButton(state));
         if (showReset) components.push(newCalculationButton(state));
@@ -852,8 +848,7 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
 // ==========================================
 // THE SAVED VIEW -- a view of this same message, reached from the nav row's Saved button (2026-10-14 13:13 EDT)
 // ==========================================
-// His intake asked how a calculation is removed, what the limit is, and what happens at it; the answer was "one at a time, from a result page, named ones only, no limit, and the loader silently showed only the first 25". This view is where all of that lives now: reopen one, delete several, or delete them all. What a saved calculation IS, in its option (his "they barely hold any info"): what it still costs, the region, and its draws; "Draft" when it was never calculated. Cut at Discord's 100 characters.
-// What a saved calculation IS, in its option (2026-10-16 14:31 EDT, Harkirat: "remove the emojis, they don't make sense in this list" and "add a date to it? and anything else that can help someone better distinguish the saved items"): when it last changed (in the viewer's own timezone), what it still costs, its region and its draws. An option's description is plain text capped at 100 characters, so a custom emoji could never render there anyway.
+// His intake asked how a calculation is removed, what the limit is, and what happens at it; the answer was "one at a time, from a result page, named ones only, no limit, and the loader silently showed only the first 25". This view is where all of that lives now: reopen one, delete several, or delete them all. What a saved calculation IS, in its option (his "they barely hold any info"): what it still costs, the region, and its draws; "Draft" when it was never calculated. Cut at Discord's 100 characters. What a saved calculation IS, in its option (2026-10-16 14:31 EDT, Harkirat: "remove the emojis, they don't make sense in this list" and "add a date to it? and anything else that can help someone better distinguish the saved items"): when it last changed (in the viewer's own timezone), what it still costs, its region and its draws. An option's description is plain text capped at 100 characters, so a custom emoji could never render there anyway.
 function savedDescription(b, { timezone = null, mark = null } = {}) {
     const banners = b.banners || [];
     const when = lastChanged(b, timezone);
@@ -972,8 +967,7 @@ function buildMissingBasketPanel(state, accentColor, savedCount = 0) {
     });
 }
 
-// FULL BREAKDOWN -- Harkirat's own layout (2026-10-16 01:11 EDT, "Can we try this rough layout format i made for the full breakdown?"). Every line on its own row with what it costs in full, then what is spent and what is left; CP still needed as a sum the player can check (cost of draws - spent - balance), each term itemised per row; then the bundles. Simplify keeps the old compact view untouched.
-// `level` keeps it inside Discord's message limits at many lines: 0 = one row per line, 1 = adjacent identical lines share a row ("#1–#3"), 2 = those shared rows without their spent/remaining note, 3 = the two sums show their totals without the per-row terms, 4 = one row per draw TYPE (every line of it summed, spins as done/total across them), which caps the rows at the number of draw types. Discord refuses a message whose text displays add up to more than 4,000 characters (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED, probed 2026-10-16 01:12 EDT); 25 distinct lines at level 2 measured 4,974.
+// FULL BREAKDOWN -- Harkirat's own layout (2026-10-16 01:11 EDT, "Can we try this rough layout format i made for the full breakdown?"). Every line on its own row with what it costs in full, then what is spent and what is left; CP still needed as a sum the player can check (cost of draws - spent - balance), each term itemised per row; then the bundles. Simplify keeps the old compact view untouched. `level` keeps it inside Discord's message limits at many lines: 0 = one row per line, 1 = adjacent identical lines share a row ("#1–#3"), 2 = those shared rows without their spent/remaining note, 3 = the two sums show their totals without the per-row terms, 4 = one row per draw TYPE (every line of it summed, spins as done/total across them), which caps the rows at the number of draw types. Discord refuses a message whose text displays add up to more than 4,000 characters (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED, probed 2026-10-16 01:12 EDT); 25 distinct lines at level 2 measured 4,974.
 const BREAK = ' ⌇ ';
 // Warnings the two cost views share: an upgrade pool with no price at this region, and Final Form asked for below its minimum.
 function upgradeWarnings(basket, upgrades) {
@@ -1071,8 +1065,7 @@ function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntr
 
 // The Edit Draws page is gone (2026-10-13 23:01 EDT): Edit on the result reopens the form, which holds every line, its progress, Remove and Move Up. A panel posted before that still sends page 1, which now renders the result.
 
-// RETIRED FROM THE UI, KEPT ON PURPOSE (2026-10-14 19:58 EDT): the Draw Info button left the calculator's nav row in the intake of 2026-10-14 (commit 15b49b09), so no new panel can reach this. It still runs for a panel posted before that, through the old `info` verb in handlers/drawCalc.js, and one case in scripts/drawCalcBudget.test.js covers it. Harkirat chose to leave it until a later code-housekeeping session decides on deletion (filed in docs/db-deferred-list.md, Someday / tech-debt). /draw prices shows real pricing in the meantime.
-// Draw Info -- its OWN ephemeral message, own fresh 40-component budget, full buildDrawEntries fidelity for every DISTINCT draw type in the basket (measured 23/40 at all nine draw types in the single-draw design; a basket of any size still spans at most nine distinct types, so this never needs pagination -- spec §3).
+// RETIRED FROM THE UI, KEPT ON PURPOSE (2026-10-14 19:58 EDT): the Draw Info button left the calculator's nav row in the intake of 2026-10-14 (commit 15b49b09), so no new panel can reach this. It still runs for a panel posted before that, through the old `info` verb in handlers/drawCalc.js, and one case in scripts/drawCalcBudget.test.js covers it. Harkirat chose to leave it until a later code-housekeeping session decides on deletion (filed in docs/db-deferred-list.md, Someday / tech-debt). /draw prices shows real pricing in the meantime. Draw Info -- its OWN ephemeral message, own fresh 40-component budget, full buildDrawEntries fidelity for every DISTINCT draw type in the basket (measured 23/40 at all nine draw types in the single-draw design; a basket of any size still spans at most nine distinct types, so this never needs pagination -- spec §3).
 function buildDrawInfoPanel(basket, accentColor) {
     const { buildDrawEntries } = require('./drawprices');
     // Filter to keys drawprices still knows -- buildDrawEntries indexes DRAW_META directly and would throw on a retired key (same hazard drawName() guards on the text paths).
@@ -1171,8 +1164,7 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
 function buildCalculatorPanel(state, basket, accentColor, options = {}) {
     const savedCount = options.savedCount ?? (options.savedBaskets || []).length;
     const nav = extra => bottomNavRow(state, { savedCount, ...extra });
-    // Page 3 is the Saved view; it belongs to no one calculation, and Back returns to whichever this message had open.
-    // Page 4 (the old Save step) folded into the Saved view (2026-10-16), so a panel still carrying it renders this too.
+    // Page 3 is the Saved view; it belongs to no one calculation, and Back returns to whichever this message had open. Page 4 (the old Save step) folded into the Saved view (2026-10-16), so a panel still carrying it renders this too.
     if (state.page === 3 || state.page === 4) return [buildSavedPanel({ ...state, page: 3 }, options.savedBaskets, accentColor, { notice: options.notice, savedConfirm: options.savedConfirm, overwriteConfirm: options.overwriteConfirm, current: basket, timezone: options.timezone }), nav({ showReset: false, onSaved: true })];
     // No basket at all -> the setup form, empty. A basketId that resolved to nothing -> the same form, with a notice.
     if (!basket) {

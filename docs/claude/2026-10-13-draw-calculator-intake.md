@@ -374,8 +374,7 @@ Today each option is the name plus "N lines · region". Room Discord gives an op
 
 ### Batch 17 — 2026-10-15 22:26 EDT, verbatim
 
-> yeah it's not openning, so let me just test on my own for now.
-> please change the 10/20/30cp emojis to the following:
+> yeah it's not openning, so let me just test on my own for now. please change the 10/20/30cp emojis to the following:
 > <a:10CP:1560477395373400135> <a:20CP:1560477394081423501> <a:30CP:1560477392328196096>
 >
 > also the dev bot seems to have crashed, please start it
@@ -504,8 +503,7 @@ His asks: the Full Breakdown states Mythic upgrades apart (his layout); Cancel w
 
 ### Batch 32 — 2026-10-16 21:04 EDT, verbatim
 
-> Could you also take the full breakdown changes and appropriately make them
-> For the simplified version as well? /think-pass it before implementing
+> Could you also take the full breakdown changes and appropriately make them For the simplified version as well? /think-pass it before implementing
 
 **Built 2026-10-16 21:10 EDT, after a think-pass:** the compact view keeps his `###` headline and his "no Cheapest label with one option", and takes the Full Breakdown's terms and shapes without its detail. Rows: "#1–#2 · `0/10` Spins · Legendary Weapon (Reactive) ×2" (no cost). Headline: "### CP Still Needed: `x CP`", now the same NET figure the breakdown shows (it was the gross figure, so switching views changed the "needed" number), with one note only when something was subtracted or added ("`5,720 CP` for the draws − your `1,000 CP` balance", or "Includes `5,700 CP` of Mythic upgrades"). Bundle: "## Recommended Bundle", "**`21,600 CP`** for **`CA$259.98`**", one quoted line per bundle without its price, "**`200 CP` Left Over**". Footer "Change in". Export was left as it is (it already shows both the gross and the net figure); offered to him separately.
 
@@ -648,8 +646,7 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > * simplified icon to: <a:Collapse:1561145468824854668>
 > * for set balance, allow the user to input their mythic coins balance as well. this way its ready incase they want to pivot over to that calculation. The balances shouldnt be restricted to *if* a mythic wep/char draw is selected.
 >
-> remove the "steps of 5" text. and improve the placeholder for it to "e.g. 300 or 2k"
-> and side note, does the form error if the inputs aren't numbers? or like what if someone types "3000 cp" or "250 cards" or types a number for cards that isn't a step of 5?
+> remove the "steps of 5" text. and improve the placeholder for it to "e.g. 300 or 2k" and side note, does the form error if the inputs aren't numbers? or like what if someone types "3000 cp" or "250 cards" or types a number for cards that isn't a step of 5?
 
 **Built 2026-10-17 18:54 EDT:** plain-words terms line (`980c4325`); the three prod emoji ids (dev re-points by name on restart); Mythic Cards and Coins always in the Balance pop-up, no "(steps of 5)", placeholder "e.g. 300 or 2k". His side question answered in the thread.
 
@@ -737,9 +734,7 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 
 ### Batch 51 — 2026-10-17 22:47 EDT, verbatim
 
-> nah keep the back arrow.
-> you also need to implement that jump within the slash command itself as an option. /draw prices Jump to:Mythic Weapon Draw
-> or something similar
+> nah keep the back arrow. you also need to implement that jump within the slash command itself as an option. /draw prices Jump to:Mythic Weapon Draw or something similar
 
 **Built 2026-10-17 22:48 EDT:** Show All Draws keeps the left arrow; `/draw prices jump_to:` opens one draw type, the same 11 choices as the dropdown.
 
