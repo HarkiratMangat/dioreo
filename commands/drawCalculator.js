@@ -13,7 +13,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const emojis = require('../utils/emojiMap');
 const UserPreference = require('../models/UserPreference');
 const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP } = require('./drawprices');
-const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE } = require('../utils/drawCost');
+const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE } = require('../utils/drawCost');
 const crypto = require('crypto');
 const { CP_PACKAGES, STOCK_UP_RULES, PURCHASE_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 const { buildTitleBlock, toBoldItalicUnicode } = require('../utils/titleBlock');
@@ -118,8 +118,8 @@ function parseCount(raw) {
     return r;
 }
 
-// The picker's FULL selection is the set of draws to keep: lines of an unticked draw go, a newly ticked draw gets one fresh line at 0 pulls, every other line keeps its place and progress. A new line: 0 done, and for an armory the default size until the line's dropdown says otherwise.
-function freshLine(drawKey) { return isArmoryKey(drawKey) ? { drawKey, pullsDone: 0, size: ARMORY_DEFAULT_SIZE } : { drawKey, pullsDone: 0 }; }
+// The picker's FULL selection is the set of draws to keep: lines of an unticked draw go, a newly ticked draw gets one fresh line at 0 pulls, every other line keeps its place and progress. A new line: 0 done, and for an armory the default size until the line's dropdown says otherwise. No assumed armory size (2026-10-18 15:13 EDT): a Legendary armory waits for Set Up Armory; the Mythic Weapon armory is always 3.
+function freshLine(drawKey) { return { drawKey, pullsDone: 0 }; }
 function applySelection(banners, selected) {
     const present = new Set(banners.map(b => b.drawKey));
     const kept = banners.filter(b => selected.has(b.drawKey));
@@ -176,6 +176,8 @@ function heldOf(basket) { return { mythicCards: basket?.mythicCards || 0, mythic
 function costOf(basket) { return basketCost(basket.region, basket.banners, basket.includeUpgrades, heldOf(basket)); }
 // "Level 5"; "7/9 Tiers + Final Form".
 function upgradeStateText(drawKey, arr) {
+    // A level per armory weapon (2026-10-18 15:13 EDT): "L5 · L3 · —".
+    if (drawKey === 'armoryMythicWeapon') return arr.map(l => (l ? `L${l}` : '—')).join(' · ');
     const u = MYTHIC_UPGRADE[upgradeKeyOf(drawKey)];
     if (u.levels) return `Level ${arr[0]}`;
     const P = u.paths.length;
@@ -221,6 +223,23 @@ function buildUpgradeModal(state, basket, index) {
     const b = basket?.banners?.[index];
     const u = b && MYTHIC_UPGRADE[upgradeKeyOf(b.drawKey)];
     if (!u) return null;
+    // THE MYTHIC WEAPON ARMORY (2026-10-18 15:13 EDT, his ask): one dropdown per weapon, each its own level. A collected weapon's dropdown pairs where it is with where it goes ("At L2 → L5"); one not yet collected starts at nothing.
+    if (b.drawKey === 'armoryMythicWeapon') {
+        const st = upgradePlan(basket).lines.find(l => l.index === index);
+        const got = Math.min(b.pullsDone || 0, MYTHIC_ARMORY_SIZE);
+        const at = [0, ...u.levels];
+        const lv = n => (n ? `Level ${n}${n === u.levels.length ? ' (Max)' : ''}` : 'Level 0');
+        const components = Array.from({ length: MYTHIC_ARMORY_SIZE }, (_, i) => {
+            const options = [];
+            if (i < got) {
+                for (let h = 0; h <= u.levels.length; h++) for (let w = h; w <= u.levels.length; w++) options.push({ label: h === w ? `At ${lv(h)} · Keep` : `At ${lv(h)} → ${lv(w)}`, value: `${h}${w}`, ...(h === w ? {} : { description: `${fmt(at[w] - at[h])} Cards` }), ...(st.have[i] === h && st.want[i] === w ? { default: true } : {}) });
+            } else {
+                for (let w = 0; w <= u.levels.length; w++) options.push({ label: w ? lv(w) : 'No Upgrade', value: `0${w}`, ...(w ? { description: `${fmt(at[w])} Cards` } : {}), ...(st.want[i] === w ? { default: true } : {}) });
+            }
+            return { type: 18, label: `Weapon ${i + 1}`, description: i < got ? 'Collected: where it is now, and the level to upgrade it to' : 'Not collected yet: the level to upgrade it to', component: { type: 3, custom_id: `w${i}`, required: false, options } };
+        });
+        return { custom_id: encodeState('upgsavew', { ...state, focus: index }), title: `#${index + 1} ${lineName(b)} Upgrade`.slice(0, 45), components };
+    }
     const total = pullCount(basket.region, b.drawKey, b);
     // An armory's collected weapons can already be upgraded, so "Already At" shows once one is collected; a draw's only once it is finished.
     const armory = isArmoryKey(b.drawKey);
@@ -274,9 +293,20 @@ function buildUpgradeModal(state, basket, index) {
     return { custom_id: encodeState(u.levels ? 'upgsavew' : 'upgsavec', { ...state, focus: index }), title: `#${index + 1} ${lineName(b)} Upgrade`.slice(0, 45), components };
 }
 // Reads the pop-up back. `get(id)` returns the picked value or null. Pure, so it is tested without Discord. Final Form asked for below 7 of 9 tiers is left off and said so (his "Final upgrade can only be purchased if a minimum of 7 of the 9 sub-tiers are purchased").
-function readUpgradeModal(drawKey, complete, get) {
+function readUpgradeModal(drawKey, complete, get, line = null) {
     const u = MYTHIC_UPGRADE[upgradeKeyOf(drawKey)];
     if (!u) return null;
+    if (drawKey === 'armoryMythicWeapon') {
+        const got = Math.min((line && line.pullsDone) || 0, MYTHIC_ARMORY_SIZE);
+        const have = [], want = [];
+        for (let i = 0; i < MYTHIC_ARMORY_SIZE; i++) {
+            const v = String(get(`w${i}`) || '00');
+            const h = i < got ? Math.min(u.levels.length, Number(v[0]) || 0) : 0;
+            have.push(h);
+            want.push(Math.max(h, Math.min(u.levels.length, Number(v[1]) || 0)));
+        }
+        return { have, want, notice: null };
+    }
     const int = v => Math.max(0, Math.floor(Number(v) || 0));
     if (u.levels) {
         const have = [complete ? Math.min(u.levels.length, int(get('have'))) : 0];
@@ -460,6 +490,10 @@ function bannerPullsRow(state, basket, index, { removable = false } = {}) {
     const meta = metaOf(banner.drawKey) || { name: drawName(banner.drawKey), tier: null };
     const rowState = { ...state, focus: index };
     const unit = unitOf(banner.drawKey);
+    // A Legendary armory with no size yet: nothing to pick until Set Up Armory sets one (2026-10-18 15:13 EDT).
+    if (isArmoryKey(banner.drawKey) && armorySize(banner) === null) {
+        return { type: 1, components: [{ type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} · Set up the armory first`, options: [{ label: 'Set up the armory first', value: '0' }], disabled: true }] };
+    }
     if (total === null) {
         return { type: 1, components: [{
             type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} ${lineName(banner)} · no data at this region`,
@@ -472,8 +506,8 @@ function bannerPullsRow(state, basket, index, { removable = false } = {}) {
     if (removable) {
         options.push({ label: 'Remove this Selection', value: 'del', emoji: emojis.parseEmoji(emojis.cross), description: banner.pullsDone ? `Drops It and Its ${banner.pullsDone}/${total} ${unit}` : 'Takes It Out of This Calculation' });
     }
-    // An armory line that did not come from a season draw also picks its SIZE (2026-10-18 12:15 EDT): one pick sets both, "2/5 Weapons", across the sizes he has seen (3–6 items, 22 values). A season draw's size is its own item count, so its line lists only that size.
-    const sizes = isArmoryKey(banner.drawKey) && !banner.title ? ARMORY_SIZES : [isArmoryKey(banner.drawKey) ? armorySize(banner) : total];
+    // One size per line (2026-10-18 15:13 EDT): an armory's comes from Set Up Armory, a season armory's from its items, the Mythic Weapon armory's is 3. The size-in-the-dropdown values ("5:2") are gone (his "it's confusing all being in the dropdowns"); the handler still reads them from an older panel.
+    const sizes = [total];
     for (const size of sizes) {
         for (let n = 0; n <= size && options.length < 25; n++) {
             const chosen = n === banner.pullsDone && (sizes.length === 1 || size === armorySize(banner));
@@ -756,7 +790,11 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
         // "Not set" so a balance nobody entered does not read as one set to 0.
         cost.push(`> **−** CP Balance: \`${fmt(balance)} CP\`${balance ? '' : ' *(not set)*'}`);
     }
-    if (unpriced.length) cost.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => shortName(b.drawKey)).join(', ')}.`);
+    // An armory not set up yet is left out with its own reason (2026-10-18 15:13 EDT), not "no pricing".
+    const notSetUp = (basket.banners || []).map((b, i) => (isArmoryKey(b.drawKey) && armorySize(b) === null ? `#${i + 1}` : null)).filter(Boolean);
+    const noPrice = unpriced.filter(b => !(isArmoryKey(b.drawKey) && armorySize(b) === null));
+    if (notSetUp.length) cost.push(`⚠️ **${notSetUp.join(', ')} left out** — set up ${notSetUp.length === 1 ? 'that armory' : 'those armories'} in Edit Selections first.`);
+    if (noPrice.length) cost.push(`⚠️ **${plural(noPrice.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${noPrice.map(b => shortName(b.drawKey)).join(', ')}.`);
     // 🔴 A SILENT ZERO, FOUND 2026-10-13 12:40 EDT: an upgrade with no price at the region used to add nothing while claiming it was included. Say so instead.
     cost.push(...upgradeWarnings(basket, upgrades));
 
@@ -908,8 +946,12 @@ function lineExtraButtons(state, basket, index) {
     const out = [];
     // Spins In first, then Upgrade (2026-10-18 14:57 EDT, his order for a Mythic Weapon armory).
     if (isArmoryKey(b.drawKey)) {
-        const done = (b.pullsDone || 0) >= armorySize(b);
-        out.push({ type: 2, style: b.spinsIn && !done ? 3 : 2, label: done ? 'Spins In: Finished' : `Spins In: ${b.spinsIn || 0}`, custom_id: encodeState('spinsin', { ...state, focus: index }), disabled: done });
+        const size = armorySize(b);
+        const done = size !== null && (b.pullsDone || 0) >= size;
+        // SET UP ARMORY (2026-10-18 15:13 EDT): a Legendary armory with no size shows this (blue) until its pop-up sets one; after that the button reads its size and spins in, and reopens the same pop-up.
+        const sizable = b.drawKey !== 'armoryMythicWeapon' && !b.title;
+        const label = size === null ? 'Set Up Armory' : done ? `${sizable ? `${size} ${unitOf(b.drawKey)} · ` : ''}Finished` : `${sizable ? `${size} ${unitOf(b.drawKey)} · ` : ''}Spins In: ${b.spinsIn || 0}`;
+        out.push({ type: 2, style: size === null ? 1 : b.spinsIn && !done ? 3 : 2, label, custom_id: encodeState('spinsin', { ...state, focus: index }), disabled: done && !sizable });
     }
     if (upgradeKeyOf(b.drawKey)) {
         const line = upgradePlan(basket).lines.find(l => l.index === index);
@@ -935,17 +977,17 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
         { type: 10, content: `## ${progressTitle(basket)}\n-# Set how far you are on each draw. \`0\` means you haven't started it.` }];
     if (notice) top.push({ type: 10, content: `-# ${notice}` });
     if (dropConfirm) top.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
-    // HIS TWO FOOTER ROWS (2026-10-18 13:37 EDT): Add Draws · Remove (red) · Calculate, then Back to Result · Back to Selections. Add and Remove open pop-ups (his Mock 2: "it also adds a soft confirm to delete ... and overall keeps the panel slim and clean"). Back to Result shows only when there is a result.
-    const back = [{ type: 14, spacing: 2, divider: true },
+    // HIS TWO FOOTER ROWS (2026-10-18 13:37 EDT): Add Draws · Remove (red) · Calculate, then Back to Result · Back to Selections. Add and Remove open pop-ups (his Mock 2: "it also adds a soft confirm to delete ... and overall keeps the panel slim and clean"). Back to Result shows only when there is a result. ONE EDITOR (2026-10-18 15:13 EDT, his "yes"): after the first pick this is the calculator's screen, so the region buttons and Set Balance live here in one row. No "Tweak Calculation" caption here: it would cost the component a third Mythic line needs, and the region buttons say what they are.
+    const tweak = [{ type: 14, spacing: 2, divider: true },
+        { type: 1, components: [...regionRow(state, basket).components, { type: 2, style: 2, label: balanceLabel(basket), custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) }] }].filter(Boolean);
+    const back = [...tweak, { type: 14, spacing: 2, divider: true },
         { type: 1, components: [
             { type: 2, style: 3, label: 'Add Draws', custom_id: encodeState('addopen', state), emoji: emojis.parseEmoji(emojis.plus), disabled: banners.length >= MAX_LINES },
             { type: 2, style: 4, label: 'Remove', custom_id: encodeState('rmopen', state), emoji: emojis.parseEmoji(emojis.deleteBin) },
             { type: 2, style: 1, label: state.fromResult && state.dirty ? 'Recalculate' : 'Calculate', custom_id: encodeState('submit', state), emoji: emojis.parseEmoji(emojis.calculate) }
         ] },
-        // ONE way back, to where it was opened from (2026-10-18 14:57 EDT, Harkirat): Back to Result from the result, Back to Selections from the landing.
-        { type: 1, components: [state.fromResult && basket.submitted
-            ? { type: 2, style: 2, label: 'Back to Result', custom_id: encodeState('progresult', state), emoji: emojis.parseEmoji(emojis.left) }
-            : { type: 2, style: 2, label: 'Back to Selections', custom_id: encodeState('progback', state), emoji: emojis.parseEmoji(emojis.left) }] }];
+        // Back to Result only when opened from a result; there is no selections screen to go back to any more (2026-10-18 15:13 EDT).
+        ...(state.fromResult && basket.submitted ? [{ type: 1, components: [{ type: 2, style: 2, label: 'Back to Result', custom_id: encodeState('progresult', state), emoji: emojis.parseEmoji(emojis.left) }] }] : [])];
     const build = perPage => {
         const pages = linePages(banners, perPage);
         const bpage = Math.min(state.bpage || 0, pages.length - 1);
@@ -959,7 +1001,8 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
     let out = [];
     for (let perPage = SETUP_LINES_PER_PAGE; perPage >= 1; perPage--) {
         out = build(perPage);
-        if (1 + countComponents(out) <= SETUP_CONTAINER_BUDGET && JSON.stringify(out).length <= SETUP_JSON_BUDGET) break;
+        // The editor's nav row carries four buttons (5 components) where the form's carried two, so its container gets 2 fewer (2026-10-18 15:13 EDT, measured: 41 at 5 lines otherwise).
+        if (1 + countComponents(out) <= SETUP_CONTAINER_BUDGET - 2 && JSON.stringify(out).length <= SETUP_JSON_BUDGET) break;
     }
     return { type: 17, accent_color: accentColor, components: out };
 }
@@ -1011,11 +1054,14 @@ function buildSpinsInModal(state, basket, index) {
     const b = basket?.banners?.[index];
     if (!b || !isArmoryKey(b.drawKey)) return null;
     const a = SERIES_ARMORY[b.drawKey];
-    return {
-        custom_id: encodeState('spinsinsave', { ...state, focus: index }), title: `#${index + 1} ${lineName(b)}`.slice(0, 45),
-        components: [{ type: 18, label: `Spins toward the next ${a.noun.toLowerCase()}`, description: `0 to ${a.spins - 1}. A ${a.noun.toLowerCase()} is guaranteed at ${a.spins} spins.`,
-            component: { type: 4, custom_id: 'spins', style: 1, required: false, max_length: 4, placeholder: 'e.g. 40', ...(b.spinsIn ? { value: String(b.spinsIn) } : {}) } }]
-    };
+    const components = [];
+    // A Legendary armory picked as a draw type sets its size here, required (his "i think we need a button or something"). A season armory and the Mythic Weapon armory have theirs already.
+    if (b.drawKey !== 'armoryMythicWeapon' && !b.title) {
+        components.push({ type: 18, label: `${a.noun}s in the Armory`, description: 'Every armory so far has held 3 to 6', component: { type: 3, custom_id: 'size', required: true, options: ARMORY_SIZES.map(n => ({ label: `${n} ${a.noun}s`, value: String(n), description: `${fmt(n * a.spins)} Spins in Total`, ...(armorySize(b) === n ? { default: true } : {}) })) } });
+    }
+    components.push({ type: 18, label: `Spins toward the next ${a.noun.toLowerCase()}`, description: `Optional. 0 to ${a.spins - 1}; a ${a.noun.toLowerCase()} is guaranteed at ${a.spins} spins.`,
+        component: { type: 4, custom_id: 'spins', style: 1, required: false, max_length: 4, placeholder: 'e.g. 40', ...(b.spinsIn ? { value: String(b.spinsIn) } : {}) } });
+    return { custom_id: encodeState('spinsinsave', { ...state, focus: index }), title: `#${index + 1} ${lineName(b)}`.slice(0, 45), components };
 }
 // Reads the box back: a whole number from 0 to one less than an item's spins, or null with nothing saved.
 function readSpinsIn(drawKey, raw) {
@@ -1045,7 +1091,7 @@ async function listSeasonDraws(nowMs = Date.now()) {
             const endMs = cal && cal.endDate ? new Date(cal.endDate).getTime() : bpEndMs;
             if (!(endMs > nowMs)) continue;
         }
-        out.push({ id: String(d._id), title: d.title, drawKey: d.priceType, date: d.date || null, size: isArmoryKey(d.priceType) ? Math.max(1, armoryItemCount(d)) : null });
+        out.push({ id: String(d._id), title: d.title, drawKey: d.priceType, date: d.date || null, size: d.priceType === 'armoryMythicWeapon' ? MYTHIC_ARMORY_SIZE : isArmoryKey(d.priceType) ? Math.max(1, armoryItemCount(d)) : null });
     }
     return out.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 }
@@ -1380,13 +1426,10 @@ function buildCalculatorPanel(state, basket, accentColor, options = {}) {
             : buildSetupPanel(state, null, accentColor, { region: options.region, notice: options.notice, savedCount, seasonDraws: options.seasonDraws });
         return [container, nav({ inForm: true })];
     }
-    // 🔴 `submitted` is what separates a draft from a result, and it lives on the DOCUMENT, not the customId -- that is the whole reason a result survives a restart and "persists until reset / new calculation". Page 5 is Set Draw Progress, for a draft and a submitted calculation alike.
-    if (state.page === 5 && basket.banners.length) return [buildProgressPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm }), nav({ inForm: true })];
-    if (!basket.submitted) {
-        return [buildSetupPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm, savedCount, seasonDraws: options.seasonDraws }), nav({ inForm: true })];
-    }
-    // Edit is a VIEW (page 2) on a calculation that stays submitted (2026-10-13 23:10 EDT): an abandoned edit still reopens on its result, the persistence the form's own header calls load-bearing. Calculate returns to page 0.
-    if (state.page === 2) return [buildSetupPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm, savedCount, seasonDraws: options.seasonDraws }), nav({ inForm: true })];
+    // 🔴 `submitted` is what separates a draft from a result, and it lives on the DOCUMENT, not the customId -- that is the whole reason a result survives a restart and "persists until reset / new calculation". Page 5 is Set Draw Progress, for a draft and a submitted calculation alike. ONE EDITOR (2026-10-18 15:13 EDT, his "yes"): the landing form shows only before the first pick; any draft with lines, Edit Selections (page 5), and an older panel's form view (page 2) all open Adjust Draws. Its nav row carries View Saved and New Calculation, which the landing's Calculate row used to.
+    const editor = () => [buildProgressPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm }), nav({})];
+    if (!basket.banners.length) return [buildSetupPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm, savedCount, seasonDraws: options.seasonDraws }), nav({ inForm: true })];
+    if (state.page === 5 || state.page === 2 || !basket.submitted) return editor();
     const container = buildCostPage(state, basket, accentColor, options);
     return [container, nav({ inForm: true })];
 }

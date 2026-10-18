@@ -439,7 +439,8 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
         makeCustomId: (p) => `colors_subpage_${effectiveSource}_${p}|${targetUserId}|${v}`,
         indicatorCustomId: 'colors_subpage_indicator'
     });
-    if (subpageRow) containerComponents.push(subpageRow);
+    // A small space above the pager, no line (2026-10-18 15:12 EDT, Harkirat: "add a divider:false small spacing ... anywhere else that pagination buttons appear").
+    if (subpageRow) containerComponents.push({ type: 14, spacing: 1, divider: false }, subpageRow);
 
     containerComponents.push({ type: 14, spacing: 2, divider: true });
     // Hint line (2026-07-14, Harkirat's request) above the source-switch row -- short, tells a user who's never clicked the other page buttons that they exist, plus a nudge toward Refresh Colors for the (real, and otherwise easy to miss) case where they've since updated their avatar/ banner/etc and the panel is still showing the old cached extraction.

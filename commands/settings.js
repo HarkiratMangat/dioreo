@@ -295,7 +295,8 @@ module.exports = {
             makeCustomId: (p) => `set_page_${p}|${userId}`,
             indicatorCustomId: 'set_page_indicator'
         });
-        if (paginationRow) containerComponents.push(paginationRow);
+        // A small space above the pager, no line (2026-10-18 15:12 EDT, Harkirat: "add a divider:false small spacing ... anywhere else that pagination buttons appear").
+        if (paginationRow) containerComponents.push({ type: 14, spacing: 1, divider: false }, paginationRow);
         containerComponents.push({ type: 14, spacing: 2, divider: true });
 
         // FOOTER (2026-07-12) -- silent mention (doesn't ping Harkirat when someone else opens /settings) using the same `allowed_mentions: { users: [] }` suppression already applied to the header's own self-mention below; renders as a normal clickable mention either way. A Text Display can paste a raw emoji mention string directly (unlike a button's `label`, which needs the parsed { id, name, animated } shape -- see parseEmoji()'s own comment).

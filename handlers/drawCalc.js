@@ -227,8 +227,16 @@ async function route(interaction) {
         let raw = null;
         try { raw = interaction.fields.getTextInputValue('spins'); } catch { raw = null; }
         const spinsIn = readSpinsIn(line.drawKey, raw);
-        if (spinsIn === null) { await renderPanel(interaction, { ...state, focus: null }, basket, `"${String(raw).trim().slice(0, 12)}" wasn't saved: use a whole number below the spins one item takes.`); return true; }
-        const banners = basket.banners.map((b, i) => (i === index ? { ...b, spinsIn } : b));
+        // Set Up Armory's weapon count (2026-10-18 15:17 EDT): present only on a Legendary armory picked as a draw type. Items collected never exceed it.
+        let size = null;
+        try { size = Number(interaction.fields.getStringSelectValues('size')[0]) || null; } catch { size = null; }
+        if (spinsIn === null) {
+            const next = size ? basket.banners.map((b, i) => (i === index ? { ...b, size, pullsDone: Math.min(b.pullsDone || 0, size) } : b)) : null;
+            const kept = next ? await writeTo(actingUserId, state, basket, { banners: next }) : basket;
+            await renderPanel(interaction, { ...state, focus: null }, kept, `"${String(raw).trim().slice(0, 12)}" wasn't saved as Spins In: use a whole number below the spins one item takes.`);
+            return true;
+        }
+        const banners = basket.banners.map((b, i) => (i === index ? { ...b, spinsIn, ...(size ? { size, pullsDone: Math.min(b.pullsDone || 0, size) } : {}) } : b));
         const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: null }, updated);
         return true;
@@ -245,7 +253,7 @@ async function route(interaction) {
         const total = pullCount(basket.region, line.drawKey, line);
         // The same "complete" the pop-up was built with: an armory's collected weapons can carry an upgrade already.
         const complete = isArmoryKey(line.drawKey) ? (line.pullsDone || 0) > 0 : total !== null && line.pullsDone >= total;
-        const read = readUpgradeModal(line.drawKey, complete, get);
+        const read = readUpgradeModal(line.drawKey, complete, get, line);
         const banners = basket.banners.map((b, i) => (i === index ? { ...b, upHave: read.have, upWant: read.want } : b));
         const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: null }, updated, read.notice);

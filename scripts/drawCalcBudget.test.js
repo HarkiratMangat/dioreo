@@ -6,6 +6,7 @@ const Module = require('module');
 
 const dc = require('../commands/drawCalculator');
 const { DRAW_META, REGION_ORDER } = require('../commands/drawprices');
+// dc.freshLine is exported for the "no assumed size" check.
 const { basketCost } = require('../utils/drawCost');
 
 let failed = 0, passed = 0;
@@ -238,18 +239,24 @@ t('setting up to 3 lines costs at most 5 taps -- the initial add, Set Draw Progr
     assert.strictEqual(lines.length, 3, 'all 3 lines must have their OWN dropdown visible at once on Set Draw Progress');
 });
 
-t('Adjust Draws & Progress pages at 4 lines: his two footer rows (2026-10-18 13:38 EDT) take the room the fifth had', () => {
+t('Adjust Draws & Progress pages its lines with a pager, a small space above it (2026-10-18 15:15 EDT)', () => {
     for (const keys of [Object.keys(DRAW_META).slice(0, 7), Array(7).fill('legendaryGunNonReactive')]) {
         const panel = progress(keys.map(k => ({ drawKey: k, pullsDone: 0 })));
-        assert.strictEqual(selects(panel).filter(s => verbOf(s) === 'bpulls').length, keys[0] === 'mythicWeapon' ? 4 : 5, keys[0]); // a Mythic line's Upgrade button makes its name a Section, so four fit; plain lines fit five
+        const shown = selects(panel).filter(s => verbOf(s) === 'bpulls').length;
+        // Measured: 2 Mythic lines (each a Section with its Upgrade) or 3 plain lines fit beside the region row, footer, pager and nav.
+        assert.ok(shown >= (keys[0] === 'mythicWeapon' ? 2 : 3) && shown < 7, `${keys[0]}: ${shown} on page 1`);
         assert.ok(buttons(panel).some(b => /^1 \/ \d+$/.test(b.label || '')), 'and a pager');
+        const items = container(panel).components;
+        const pager = items.findIndex(c => c.type === 1 && c.components.some(b => /^1 \/ /.test(b.label || '')));
+        assert.ok(items[pager - 1].type === 14 && items[pager - 1].divider === false, 'a space, no line, above the pager');
     }
 });
 
-t('a NEW line starts at 0 Items -- no inherited default from a sibling line of the same draw', () => {
-    const add = selects(form([{ drawKey: 'mythicWeapon', pullsDone: 7 }])).find(s => verbOf(s) === 'addmore');
-    assert.ok(add, 'the form must offer + Add more draws');
-    assert.ok(/^1× In Your Selection · Pick to Add Another$/.test(add.options[0].description), add.options[0].description);
+t('a NEW line starts at 0 -- no inherited default from a sibling line of the same draw, and no assumed armory size (2026-10-18 15:15 EDT)', () => {
+    assert.deepStrictEqual(dc.freshLine('mythicWeapon'), { drawKey: 'mythicWeapon', pullsDone: 0 });
+    assert.deepStrictEqual(dc.freshLine('armoryLegendaryWeapon'), { drawKey: 'armoryLegendaryWeapon', pullsDone: 0 }, 'no size until Set Up Armory');
+    const add = dc.buildAddDrawsModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 7 }] }), []);
+    assert.ok(add.components[0].component.options.every(o => !o.default), 'nothing pre-picked');
 });
 
 // ==========================================
@@ -401,11 +408,11 @@ t('a legacy calc~ id from the OLD single-draw codec decodes to a SAFE state rath
 // ==========================================
 
 t('the bottom nav row is a SIBLING of the Container, never one of its children, and Draw Info is gone', () => {
-    for (const [panel, labels] of [[render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })), ['Draw Prices', 'Help']], [form([{ drawKey: 'mythicWeapon', pullsDone: 3 }]), ['Draw Prices', 'Help']]]) {
-        // Both screens keep New Calculation and View Saved in their own last row since 2026-10-14 17:58 EDT.
+    for (const [panel, labels] of [[render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })), ['Draw Prices', 'Help']], [form([{ drawKey: 'mythicWeapon', pullsDone: 3 }]), ['Draw Prices', 'View Saved', 'New Calculation', 'Help']]]) {
+        // The result keeps New Calculation and View Saved in its own last row (2026-10-14 17:58 EDT); the editor has no such row, so its nav carries them (his one editor (2026-10-18 15:15 EDT)).
         const nav = panel.filter(x => x && x.type === 1);
         assert.strictEqual(nav.length, 1, 'exactly one top-level action row (the nav)');
-        assert.deepStrictEqual(nav[0].components.map(b => b.label), labels, 'on the form, Saved and New Calculation sit in its Calculate row');
+        assert.deepStrictEqual(nav[0].components.map(b => b.label), labels);
         assert.strictEqual(container(panel).components.filter(c => c.type === 1).some(r => r.components.some(b => b.label === 'Help')), false, 'the nav must not render inside the Container');
     }
 });
@@ -476,15 +483,15 @@ t('the setup form fits the component budget at every draft size, with and withou
     }
 });
 
-t('an unsubmitted calculation shows the FORM; pressing Calculate is what produces the breakdown', () => {
+t('a draft with lines opens Adjust Draws (his one editor (2026-10-18 15:15 EDT)); pressing Calculate is what produces the breakdown', () => {
     const banners = [{ drawKey: 'mythicWeapon', pullsDone: 3 }];
     const draft = form(banners);
-    assert.ok(/## Your Selection\n<a?:\w+:\d+> \*\*#1 · /.test(allText(draft)) && buttonLabelled(draft, 'Set Draw Progress'), 'a draft renders the form: its lines as a summary, and Set Draw Progress');
+    assert.ok(allText(draft).includes('## Adjust Draws, Progress, & Upgrades'), 'after the first pick, the editor');
     assert.strictEqual(/Cost Breakdown/.test(allText(draft)), false, 'a draft must NOT show a cost breakdown');
-    assert.ok(buttonLabelled(draft, 'Calculate'), 'the form must offer Calculate');
+    assert.ok(buttonLabelled(draft, 'Calculate'), 'the editor offers Calculate');
     const done = render(makeBasket({ banners, submitted: true }));
     assert.ok(/## Cost Breakdown/.test(allText(done)), 'a submitted calculation shows the breakdown');
-    assert.strictEqual(Boolean(buttonLabelled(done, 'Set Draw Progress')) || Boolean(buttonLabelled(done, 'Calculate')), false, 'and not the form');
+    assert.strictEqual(Boolean(buttonLabelled(done, 'Calculate')), false, 'and not the editor');
 });
 
 t('Calculate is DISABLED with nothing picked, and enabled the moment a line exists', () => {
@@ -494,16 +501,14 @@ t('Calculate is DISABLED with nothing picked, and enabled the moment a line exis
     assert.strictEqual(Boolean(buttonLabelled(drafted, 'Calculate').disabled), false, 'one line is enough to calculate');
 });
 
-t('Set Balance is disabled until a calculation exists to write it to, and Upgrade lives on Set Draw Progress', () => {
-    // Both write to a basket document. Offering them before one exists accepts input and discards it silently.
+t('Set Balance is disabled until a calculation exists to write it to; on the editor it sits beside the region buttons', () => {
     const empty = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
     assert.strictEqual(buttonLabelled(empty, 'Set Balance').disabled, true);
-    // With no draw there is nothing to upgrade, so the toggle is absent rather than disabled (2026-10-13).
     assert.strictEqual(buttons(empty).some(b => /^Upgrade/.test(b.label || '')), false);
-    const drafted = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: false }));
-    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Set Balance').disabled), false);
-    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Upgrade: None')), false, 'Upgrade left the Balance row (2026-10-18 12:17 EDT, his "yeah sure")');
-    assert.strictEqual(Boolean(buttonLabelled(progress([{ drawKey: 'mythicWeapon', pullsDone: 0 }]), 'Upgrade: None').disabled), false);
+    const drafted = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]);
+    const row = rows(drafted).find(r => r.components.some(b => b.label === 'Set Balance'));
+    assert.deepStrictEqual(row.components.map(b => b.label), ['10 CP', '20 CP', '30 CP', 'Set Balance'], 'one row: region and balance (his one editor (2026-10-18 15:15 EDT))');
+    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Upgrade: None').disabled), false, 'Upgrade beside its line');
 });
 
 // ==========================================
@@ -663,19 +668,15 @@ t('every line finished, no balance: says so, never "your balance covers this"', 
     assert.ok(/Your balance covers this\*\*, with \*\*`[\d,]+ CP`\*\* to spare/.test(rich), 'a covering balance says what is left after');
 });
 
-t('the Upgrade button sits beside its Mythic line on Set Draw Progress, and nowhere else', () => {
+t('the Upgrade button sits beside its Mythic line on the editor, and nowhere else', () => {
     assert.strictEqual(buttons(progress([{ drawKey: 'legendaryGunReactive', pullsDone: 0 }])).some(b => /^Upgrade/.test(b.label || '')), false);
     assert.ok(buttons(progress([{ drawKey: 'mythicWeapon', pullsDone: 0 }])).some(b => /^Upgrade/.test(b.label || '')));
-    assert.strictEqual(buttons(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }])).some(b => /^Upgrade/.test(b.label || '')), false, 'not on the form');
-    assert.strictEqual(buttons(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }))).some(b => /^Upgrade/.test(b.label || '')), false, 'nor on the result: Edit Selection, then Set Draw Progress (2026-10-18 12:17 EDT, his "yeah sure")');
-    assert.strictEqual(buttons(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).some(b => /^Upgrade/.test(b.label || '')), false);
-    const f = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]);
-    assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Calculate')).components.map(b => b.label), ['New Calculation', 'View Saved', 'Calculate'], 'New Calculation, View Saved, then Calculate (2026-10-14 17:58 EDT)');
+    assert.strictEqual(buttons(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }))).some(b => /^Upgrade/.test(b.label || '')), false, 'nor on the result');
     const r = rows(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })));
     const last = r.find(x => x.components.some(b => b.label === 'Save Result'));
-    assert.deepStrictEqual(last.components.map(b => b.label), ['New Calculation', 'View Saved', 'Export', 'Save Result'], 'the result keeps that row, Export beside Save Result in Calculate\'s place');
+    assert.deepStrictEqual(last.components.map(b => b.label), ['New Calculation', 'View Saved', 'Export', 'Save Result'], 'the result keeps its row');
     assert.ok(last.components[3].emoji && verbOf(last.components[3]) === 'savepick' && verbOf(last.components[2]) === 'export');
-    assert.deepStrictEqual(rows(f).find(r => r.components.some(b => b.label === 'Set Balance')).components.map(b => b.label), ['Set Balance'], 'Set Balance alone on its row');
+    const f = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]);
     const items = container(f).components;
     const calcRow = items.findIndex(c => c.type === 1 && c.components.some(b => b.label === 'Calculate'));
     assert.ok(items[calcRow - 1].type === 14 && items[calcRow - 1].divider, 'a divider above the Calculate row');
@@ -683,8 +684,9 @@ t('the Upgrade button sits beside its Mythic line on Set Draw Progress, and nowh
 });
 
 t('what a region is lives in Help; the form only labels the row with a hint', () => {
-    for (const panel of [form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]), dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })]) {
-        assert.ok(texts(panel).includes('### Tweak Calculation\n-# Set your CP region and current balance.'), 'his heading over the hint (2026-10-14 17:58 EDT)');
+    // The landing keeps the caption; the editor drops it for room (2026-10-18 15:16 EDT).
+    for (const panel of [dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })]) {
+        assert.ok(texts(panel).some(c => /^(### |\*\*)Tweak Calculation(\*\*)?\n-# Set your CP region and current balance\.$/.test(c)), 'his heading over the hint (2026-10-14 17:58 EDT)');
         assert.strictEqual(/Your Region & CP Balance/.test(allText(panel)), false);
         assert.strictEqual(/first pull/.test(allText(panel)), false, 'what a region is stays in Help');
     }
@@ -800,19 +802,14 @@ t('setTypeCount adds copies after the draw\'s last line and removes empty copies
     assert.strictEqual(fresh.banners.length, 2);
 });
 
-t('the form adds from ONE picker below the summary: nothing pre-ticked, every draw listed', () => {
-    const all = selects(form([{ drawKey: 'legendaryGunReactive', pullsDone: 2 }, { drawKey: 'mythicWeapon', pullsDone: 0 }]));
-    assert.strictEqual(all.some(s => verbOf(s) === 'draws'), false, 'with lines, the multi-select gives way to + Add more draws');
-    const addIdx = all.findIndex(s => verbOf(s) === 'addmore');
-    assert.ok(addIdx === 0, 'with no season draws the add picker is the form\'s only dropdown: the lines are a summary now');
-    const add = all[addIdx];
-    assert.strictEqual(add.options.length, dc.CALC_KEYS.length, 'every draw and the three Series Armories');
-    assert.ok(add.max_values > 1);
-    assert.strictEqual(add.options.some(o => o.default), false, 'nothing is shown ticked: ticking always ADDS');
-    assert.strictEqual(add.placeholder, 'Add more draws to selection');
-    assert.ok(texts(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }])).some(c => c.startsWith('### Add More Draws\n-# Select more draw types')), 'a sub-heading and a hint above it (2026-10-14 16:47 EDT)');
+t('the landing starts from ONE multi-select; after that, Add Draws is a pop-up with every draw and the three Series Armories (his one editor (2026-10-18 15:15 EDT))', () => {
     const empty = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
     assert.ok(selects(empty).some(s => verbOf(s) === 'draws' && s.max_values > 1), 'an empty form starts from the multi-select');
+    const ed = form([{ drawKey: 'legendaryGunReactive', pullsDone: 2 }, { drawKey: 'mythicWeapon', pullsDone: 0 }]);
+    assert.strictEqual(selects(ed).some(s => verbOf(s) === 'draws' || verbOf(s) === 'addmore'), false, 'no picker on the editor');
+    const add = dc.buildAddDrawsModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), []);
+    assert.strictEqual(add.components[0].component.options.length, dc.CALC_KEYS.length);
+    assert.ok(add.components[0].component.max_values > 1);
 });
 
 t('pages keep a draw\'s lines together', () => {
@@ -824,12 +821,11 @@ t('pages keep a draw\'s lines together', () => {
     assert.ok([2, 5].includes(shown.length) && shown.every((v, i) => v === i), `page 1 ends at a draw boundary, never inside the three Reactives (showed ${shown.join(',')})`);
 });
 
-t('a calculation stops at its line cap: the add picker says so and is disabled', () => {
+t('a calculation stops at its line cap: Add Draws is disabled, and its pop-up never lets one pick overshoot', () => {
     const full = Array.from({ length: dc.MAX_LINES }, () => ({ drawKey: 'mythicWeapon', pullsDone: 0 }));
-    const add = selects(form(full)).find(s => verbOf(s) === 'addmore');
-    assert.ok(add.disabled && /up to 25 draws/.test(add.placeholder));
-    const room = selects(form(full.slice(0, dc.MAX_LINES - 2))).find(s => verbOf(s) === 'addmore');
-    assert.strictEqual(room.max_values, 2, 'it never lets one pick overshoot the cap');
+    assert.ok(buttonLabelled(form(full), 'Add Draws').disabled);
+    const room = dc.buildAddDrawsModal(state(), makeBasket({ banners: full.slice(0, dc.MAX_LINES - 2) }), []);
+    assert.strictEqual(room.components[0].component.max_values, 2);
 });
 
 t('the form and the result stay under 40 with unique ids at every size up to the cap', () => {
@@ -860,13 +856,15 @@ t('the landing starts a calculation, and Saved is one tap away in the nav row (2
     assert.ok(buttonLabelled(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })), 'Edit Selections'), 'the result offers a way to change things');
 });
 
-t('the result keeps Set Balance one tap away, and Edit is a VIEW that leaves the calculation submitted', () => {
+t('the result keeps Set Balance one tap away, and Edit Selections opens the editor while the calculation stays submitted', () => {
     const result = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }));
     const row = rows(result).find(r => r.components.some(b => b.label === 'Set Balance'));
     assert.deepStrictEqual(row.components.map(b => b.label), ['Set Balance'], 'the commonest return visit, "I have more CP now", is one tap');
-    const editing = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: true }), { page: 2 });
-    assert.ok(buttonLabelled(editing, 'Set Draw Progress') && buttonLabelled(editing, 'Calculate'), 'page 2 of a submitted calculation is the form');
-    assert.strictEqual(dc.decodeState(buttonLabelled(editing, 'Calculate').custom_id).page, 2, 'its controls keep the view');
+    assert.strictEqual(verbOf(buttonLabelled(result, 'Edit Selections')), 'edit');
+    for (const page of [2, 5]) {
+        const editing = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: true }), { page, fromResult: true });
+        assert.ok(allText(editing).includes('## Adjust Draws') && buttonLabelled(editing, 'Back to Result'), `page ${page} is the editor`);
+    }
 });
 
 t('removing a line with progress asks first; Keep stays on the page it was asked from', () => {
@@ -878,14 +876,11 @@ t('removing a line with progress asks first; Keep stays on the page it was asked
     assert.strictEqual(dc.decodeState(keep.custom_id).page, 2, 'Keep does not throw an edit back to the result');
 });
 
-t('batch 8 (2026-10-14 16:47 EDT): plural selections, the Cross emoji, and no "·" before an upgrade', () => {
-    const two = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }]);
-    assert.ok(/## Your Selections\n<a?:\w+:\d+> \*\*#1 · /.test(allText(two)));
+t('batch 8 (2026-10-14 16:47 EDT): plural selections on the result, the DeleteBin on Remove, and no "·" before an upgrade', () => {
     assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).includes('## Your Draw Selections'));
-    assert.ok(allText(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }])).includes('## Your Selection\n'), 'singular for one draw');
     const remove = buttonLabelled(progress([{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }]), 'Remove');
-    assert.strictEqual(remove.emoji.name, 'DeleteBin', 'his DeleteBin emoji (the Cross went with the dropdown option)');
-    const fresh = selects(two).find(s => verbOf(s) === 'addmore').options.find(o => o.value === 'mythicCharacter').description;
+    assert.strictEqual(remove.emoji.name, 'DeleteBin');
+    const fresh = dc.buildAddDrawsModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), []).components[0].component.options.find(o => o.value === 'mythicCharacter').description;
     assert.ok(/CP Total \+ [\d,]+ CP Upgrade$/.test(fresh) && !/· \+/.test(fresh), fresh);
 });
 
@@ -1165,73 +1160,82 @@ t('an armory line is priced per item: items left times spins times the region pr
     assert.strictEqual(bc('region_10', [{ drawKey: 'armoryLegendaryCharacter', pullsDone: 0, size: 3 }], false).total, 3 * 100 * 50);
 });
 
-t('a Mythic Weapon armory upgrades from the SAME Mythic Cards as the Mythic Weapon draw: one pool, every weapon in the armory', () => {
-    const { upgradePlan } = require('../utils/drawCost');
-    const plan = upgradePlan({ region: 'region_10', banners: [{ drawKey: 'mythicWeapon', pullsDone: 10, upWant: [5] }, { drawKey: 'armoryMythicWeapon', pullsDone: 0, size: 3, upWant: [5] }], mythicCards: 100 });
+t('the Mythic Weapon armory: 3 weapons, a level each, from the SAME Mythic Cards as the Mythic Weapon draw (2026-10-18 15:15 EDT)', () => {
+    const { upgradePlan, armorySize, pullCount } = require('../utils/drawCost');
+    assert.strictEqual(armorySize({ drawKey: 'armoryMythicWeapon' }), 3, 'always 3 (his call)');
+    assert.strictEqual(pullCount('region_10', 'armoryMythicWeapon', { drawKey: 'armoryMythicWeapon', size: 6 }), 3, 'a stored size never overrides it');
+    const plan = upgradePlan({ region: 'region_10', banners: [{ drawKey: 'mythicWeapon', pullsDone: 10, upWant: [5] }, { drawKey: 'armoryMythicWeapon', pullsDone: 1, upHave: [2, 0, 0], upWant: [5, 3, 0] }], mythicCards: 100 });
     assert.strictEqual(plan.pools.length, 1, 'one Mythic Cards pool, never two');
-    assert.strictEqual(plan.pools[0].need, 1975 + 3 * 1975, 'the draw\'s weapon plus all three armory weapons to Level 5');
+    // 1,975 for the draw's weapon; armory: weapon 1 L2→L5 (1,975 − 375), weapon 2 L0→L3 (775), weapon 3 nothing.
+    assert.strictEqual(plan.pools[0].need, 1975 + (1975 - 375) + 775);
     assert.strictEqual(plan.pools[0].held, 100, 'held cards come off once');
+    const notGot = upgradePlan({ region: 'region_10', banners: [{ drawKey: 'armoryMythicWeapon', pullsDone: 0, upHave: [2, 2, 2], upWant: [5, 0, 0] }] });
+    assert.strictEqual(notGot.pools[0].need, 1975, 'a weapon not collected yet has nothing upgraded');
+    const m = dc.buildUpgradeModal(state(), makeBasket({ banners: [{ drawKey: 'armoryMythicWeapon', pullsDone: 1 }] }), 0);
+    assert.deepStrictEqual(m.components.map(l => [l.label, l.component.custom_id]), [['Weapon 1', 'w0'], ['Weapon 2', 'w1'], ['Weapon 3', 'w2']]);
+    assert.ok(m.components[0].component.options.some(o => o.value === '25' && /At Level 2 → Level 5/.test(o.label)), 'a collected weapon pairs now and target');
+    assert.ok(m.components[1].component.options.every(o => o.value[0] === '0'), 'one not collected starts at nothing');
+    assert.ok(m.components.every(l => l.component.options.length <= 25));
+    const read = dc.readUpgradeModal('armoryMythicWeapon', true, id => ({ w0: '25', w1: '03', w2: null })[id], { pullsDone: 1 });
+    assert.deepStrictEqual([read.have, read.want], [[2, 0, 0], [5, 3, 0]]);
 });
 
-t('an armory line picks its size and its items in one dropdown; a season armory lists only its own size', () => {
+t('an armory line\'s dropdown is its items only; with no size yet it waits for Set Up Armory (2026-10-18 15:15 EDT)', () => {
     const sel = selects(progress([{ drawKey: 'armoryLegendaryWeapon', pullsDone: 2, size: 5 }])).find(s => verbOf(s) === 'bpulls');
-    assert.strictEqual(sel.options.length, 22, '3–6 items: 4 + 5 + 6 + 7 values');
-    assert.ok(sel.options.length <= 25);
-    const chosen = sel.options.find(o => o.default);
-    assert.strictEqual(chosen.value, '5:2');
-    assert.strictEqual(chosen.label, '#1 · Progress: 2/5 Weapons', 'no name in the dropdown: it sits right above it (his call)');
-    assert.ok(sel.options.filter(o => o.value !== 'del').every(o => /^(#1 · Progress: )?\d\/\d Weapons$/.test(o.label)), 'an armory counts Weapons, never Spins');
-    const season = selects(progress([{ drawKey: 'armoryLegendaryCharacter', pullsDone: 0, size: 4, title: 'Undead Legion' }])).find(s => verbOf(s) === 'bpulls');
-    assert.deepStrictEqual(season.options.filter(o => o.value !== 'del').map(o => o.value), ['0', '1', '2', '3', '4'], 'its size is the draw\'s own item count');
-    assert.ok(allText(progress([{ drawKey: 'armoryLegendaryCharacter', pullsDone: 0, size: 4, title: 'Undead Legion' }])).includes('**#1 · Undead Legion**\n-# Legendary Character Armory'), 'and the line reads as the draw');
+    assert.deepStrictEqual(sel.options.map(o => o.value), ['0', '1', '2', '3', '4', '5']);
+    assert.strictEqual(sel.options.find(o => o.default).label, '#1 · Progress: 2/5 Weapons');
+    assert.ok(sel.options.every(o => /^(#1 · Progress: )?\d\/\d Weapons$/.test(o.label)), 'an armory counts Weapons, never Spins');
+    const bare = progress([{ drawKey: 'armoryLegendaryWeapon', pullsDone: 0 }]);
+    const waiting = selects(bare).find(s => verbOf(s) === 'bpulls');
+    assert.ok(waiting.disabled && /Set up the armory first/.test(waiting.placeholder));
+    const setup = buttonLabelled(bare, 'Set Up Armory');
+    assert.ok(setup && setup.style === 1 && verbOf(setup) === 'spinsin');
+    assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'armoryLegendaryWeapon', pullsDone: 0 }] }))).includes('#1 left out'), 'the result says it was left out, and why');
+    assert.ok(allText(progress([{ drawKey: 'armoryLegendaryCharacter', pullsDone: 0, size: 4, title: 'Undead Legion' }])).includes('**#1 · Undead Legion**\n-# Legendary Character Armory'), 'a season armory reads as the draw');
 });
 
-t('Set Draw Progress: a line\'s extra settings sit beside its name, and a Mythic Weapon armory gets both of its buttons', () => {
-    const pr = progress([{ drawKey: 'legendaryGunReactive', pullsDone: 3 }, { drawKey: 'armoryLegendaryWeapon', pullsDone: 1, size: 4, spinsIn: 40 }, { drawKey: 'armoryMythicWeapon', pullsDone: 0, size: 3 }]);
+t('the editor: a line\'s extra settings sit beside its name; a Mythic Weapon armory has Spins In, then Upgrade', () => {
+    const pr = progress([{ drawKey: 'legendaryGunReactive', pullsDone: 3 }, { drawKey: 'armoryLegendaryWeapon', pullsDone: 1, size: 4, spinsIn: 40 }, { drawKey: 'armoryMythicWeapon', pullsDone: 0 }]);
     const spins = buttons(pr).filter(b => verbOf(b) === 'spinsin');
-    // The helper lists row buttons before Section accessories, so the order here is not the panel's; sorted by line.
-    assert.deepStrictEqual(spins.map(b => [dc.decodeState(b.custom_id).focus, b.label]).sort((a, b) => a[0] - b[0]), [[1, 'Spins In: 40'], [2, 'Spins In: 0']]);
+    assert.deepStrictEqual(spins.map(b => [dc.decodeState(b.custom_id).focus, b.label]).sort((a, b) => a[0] - b[0]), [[1, '4 Weapons · Spins In: 40'], [2, 'Spins In: 0']]);
     assert.deepStrictEqual(buttons(pr).filter(b => verbOf(b) === 'upgset').map(b => dc.decodeState(b.custom_id).focus), [2], 'only the Mythic armory has an Upgrade');
-    assert.ok(buttonLabelled(pr, 'Back to Selections') && verbOf(buttonLabelled(pr, 'Back to Selections')) === 'progback');
-    assert.strictEqual(verbOf(buttonLabelled(pr, 'Calculate')), 'submit', 'Calculate beside it (his ask)');
-    const done = progress([{ drawKey: 'armoryLegendaryWeapon', pullsDone: 4, size: 4 }]);
-    assert.ok(buttonLabelled(done, 'Spins In: Finished').disabled, 'a finished armory has no next item to spin toward');
+    const row = rows(pr).find(r => r.components.some(b => verbOf(b) === 'upgset'));
+    assert.deepStrictEqual(row.components.map(verbOf), ['spinsin', 'upgset'], 'Spins In before Upgrade (his order)');
+    assert.strictEqual(buttonLabelled(pr, 'Back to Selections'), undefined, 'no selections screen to go back to');
+    assert.strictEqual(verbOf(buttonLabelled(pr, 'Calculate')), 'submit');
 });
 
-t('Spins In reads a whole number below one item\'s spins, and refuses anything else', () => {
+t('the armory pop-up: weapon count required on a draw-type Legendary armory, Spins In optional everywhere', () => {
     assert.strictEqual(dc.readSpinsIn('armoryLegendaryWeapon', ''), 0);
-    assert.strictEqual(dc.readSpinsIn('armoryLegendaryWeapon', '40'), 40);
     assert.strictEqual(dc.readSpinsIn('armoryLegendaryWeapon', '40 spins'), 40);
-    assert.strictEqual(dc.readSpinsIn('armoryLegendaryWeapon', '74'), 74);
     assert.strictEqual(dc.readSpinsIn('armoryLegendaryWeapon', '75'), null, 'at 75 the weapon is already guaranteed');
     assert.strictEqual(dc.readSpinsIn('armoryMythicWeapon', '119'), 119);
-    assert.strictEqual(dc.readSpinsIn('armoryLegendaryWeapon', '4.5'), null);
     assert.strictEqual(dc.readSpinsIn('mythicWeapon', '4'), null, 'only an armory has Spins In');
     const m = dc.buildSpinsInModal(state(), makeBasket({ banners: [{ drawKey: 'armoryLegendaryWeapon', pullsDone: 1, size: 4, spinsIn: 12 }] }), 0);
-    assert.strictEqual(m.components[0].component.value, '12');
+    assert.deepStrictEqual(m.components.map(l => [l.component.custom_id, l.component.required]), [['size', true], ['spins', false]]);
+    assert.deepStrictEqual(m.components[0].component.options.filter(o => o.default).map(o => o.value), ['4']);
+    assert.strictEqual(m.components[1].component.value, '12');
+    for (const line of [{ drawKey: 'armoryMythicWeapon', pullsDone: 0 }, { drawKey: 'armoryLegendaryWeapon', pullsDone: 0, size: 4, title: 'Undead Legion' }]) {
+        assert.deepStrictEqual(dc.buildSpinsInModal(state(), makeBasket({ banners: [line] }), 0).components.map(l => l.component.custom_id), ['spins'], `${line.drawKey}: its size is known`);
+    }
     assert.strictEqual(dc.buildSpinsInModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), 0), null);
 });
 
-t('the form is a summary: a season line reads as its draw with its Draw Type under it, and Set Draw Progress beside the list', () => {
+t('the editor names a season line as its draw with its Draw Type under it (his one editor (2026-10-18 15:15 EDT))', () => {
     const f = form([{ drawKey: 'armoryLegendaryWeapon', pullsDone: 2, size: 5, spinsIn: 40, title: 'Undead Legion Series Armory' }, { drawKey: 'mythicWeapon', pullsDone: 10, upWant: [3] }]);
-    const text = allText(f);
-    assert.ok(text.includes('**#1 · Undead Legion Series Armory** · `2/5` Weapons · 40 Spins In\n-# Legendary Weapon Armory'), text);
-    assert.ok(/<a?:\w+:\d+> \*\*#2 · Mythic Weapon\*\* · `10\/10` Spins\n> -# <a?:MythicCard:\d+> Upgrade to Level 3/.test(text), 'tier icon first, the upgrade on its own quoted line (his format)');
-    assert.ok(buttonLabelled(f, 'Set Draw Progress'), 'the landing\'s button reads Set Draw Progress (2026-10-18 14:58 EDT)');
-    assert.strictEqual(selects(f).some(s => verbOf(s) === 'bpulls'), false, 'no per-line dropdown on the form');
-    assert.ok(verbOf(buttonLabelled(f, 'Set Draw Progress')) === 'progress');
+    assert.ok(allText(f).includes('**#1 · Undead Legion Series Armory**\n-# Legendary Weapon Armory'), allText(f).slice(0, 400));
+    assert.ok(buttonLabelled(f, 'Upgrade: Level 3'));
 });
 
-t('this season\'s draws come first, each its own title with its Draw Type under it', () => {
+t('this season\'s draws come first on the landing, each its own title with its Draw Type under it', () => {
     const seasonDraws = [{ id: 'a'.repeat(24), title: 'Sky Armory', drawKey: 'armoryLegendaryWeapon', date: new Date('2026-08-11T00:00:00Z'), size: 5 }, { id: 'b'.repeat(24), title: 'Molten Fusion Draw', drawKey: 'legendaryGunReactive', date: new Date('2026-08-09T00:00:00Z'), size: null }];
     const empty = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [], seasonDraws });
     const sel = selects(empty);
     assert.deepStrictEqual(sel.map(verbOf), ['season', 'draws'], 'first, above the draw-type picker (his "yes")');
     assert.deepStrictEqual(sel[0].options.map(o => [o.label, o.description]), [['Sky Armory', 'Legendary Weapon Armory · 5 Weapons · Aug 11'], ['Molten Fusion Draw', 'Legendary Weapon (Reactive) · Aug 9']]);
     assert.deepStrictEqual(selects(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [], seasonDraws: [] })).map(verbOf), ['draws'], 'hidden when there is none');
-    const withLines = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }], {}, {});
-    assert.deepStrictEqual(selects(dc.buildCalculatorPanel(state(), makeBasket({ submitted: false, banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), ACCENT, { savedBaskets: [], seasonDraws })).map(verbOf), ['season', 'addmore']);
-    assert.ok(withLines);
+    const add = dc.buildAddDrawsModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), seasonDraws);
+    assert.deepStrictEqual(add.components.map(l => l.component.custom_id), ['season', 'types'], 'after the first pick, the same two lists in Add Draws');
 });
 
 t('Set Draw Progress fits Discord at every size: 1–25 lines of armories and Mythic draws, every page', () => {
@@ -1271,8 +1275,8 @@ t('the result names a season draw without its Draw Type line (2026-10-18 13:08 E
 
 t('his Mock 2 (2026-10-18 13:38 EDT): Add Draws and Remove open pop-ups, his two footer rows, and Remove reads back only lines that still match', () => {
     const draft = progress([{ drawKey: 'mythicWeapon', pullsDone: 2 }, { drawKey: 'armoryLegendaryWeapon', pullsDone: 0, size: 4 }]);
-    const footer = rows(draft).slice(-3, -1).map(r => r.components.map(b => b.label));
-    assert.deepStrictEqual(footer, [['Add Draws', 'Remove', 'Calculate'], ['Back to Selections']], 'a draft has no result to go back to');
+    const footer = rows(draft).slice(-2, -1).map(r => r.components.map(b => b.label));
+    assert.deepStrictEqual(footer, [['Add Draws', 'Remove', 'Calculate']], 'a draft has no result to go back to, and no selections screen any more');
     const done = dc.buildCalculatorPanel(state({ page: 5, fromResult: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
     assert.deepStrictEqual(rows(done).slice(-2, -1)[0].components.map(b => b.label), ['Back to Result'], 'one way back, to where it was opened from (2026-10-18 14:58 EDT)');
     const dirty = dc.buildCalculatorPanel(state({ page: 5, fromResult: true, dirty: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });

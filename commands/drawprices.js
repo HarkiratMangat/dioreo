@@ -392,8 +392,8 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
             buildTitleBlock(region.label, emojis.drawPrices, 'Breakdown of Draw Prices', 2, true),
             { type: 14, spacing: 2, divider: true },
             ...entrySections,
-            // NO divider between the last entry and the pagination row (Harkirat's explicit, repeated correction) -- pagination sits directly under the entries with no separator.
-            ...(paginationRow ? [paginationRow] : []),
+            // NO divider between the last entry and the pagination row (Harkirat's explicit, repeated correction) -- pagination sits directly under the entries with no separator. A small space above the pager, no line (2026-10-18 15:12 EDT, Harkirat: "add a divider:false small spacing ... anywhere else that pagination buttons appear"). This replaces the old "nothing between the last entry and the pager" rule: a space, still no line.
+            ...(paginationRow ? [{ type: 14, spacing: 1, divider: false }, paginationRow] : []),
             { type: 14, spacing: 2, divider: true },
             // The quick jump sits above the region hint line, as he asked; in a jump it shows which draw is open.
             {

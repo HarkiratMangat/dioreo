@@ -13,16 +13,22 @@ const { DRAW_DATA, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN
 // ==========================================
 // An armory is priced per ITEM, not per spin: each item is guaranteed after a fixed number of spins at one flat price (commands/drawprices.js SERIES_ARMORY: 75 / 100 / 120 spins at 50 / 80 / 120 CP a spin). A line stores `size` (items in the armory) and its `pullsDone` counts ITEMS collected, so every ladder sum below holds with one "pull" = one item. `spinsIn`, the spins already done toward the next item, comes off what is left (Harkirat, 2026-10-18 11:59 EDT: "sure, sounds fine"). Every function that prices a line takes the line as an optional last argument, because an armory's ladder depends on the line's own size.
 const ARMORY_SIZES = [3, 4, 5, 6];
-// A new generic armory line starts at 4 items: he has seen 3 to 6, and the line's dropdown changes it in one pick.
-const ARMORY_DEFAULT_SIZE = 4;
+// NO DEFAULT SIZE (2026-10-18 15:12 EDT, Harkirat: "why did it assume 4 weapons as the default"). A Legendary armory picked as a draw type has no size until Set Up Armory sets one, and until then it is not priced. A season armory's size is its own item count. THE MYTHIC WEAPON ARMORY HOLDS 3 WEAPONS, ALWAYS (2026-10-18 15:12 EDT, Harkirat: "limit the mythic weapon armory to 3 weapons ... it was composed of 3 weapons only"), so its upgrade pop-up can give each weapon its own level.
+const MYTHIC_ARMORY_SIZE = 3;
+const ARMORY_DEFAULT_SIZE = null;
 function isArmoryKey(key) { return Boolean(SERIES_ARMORY[key]); }
-// A line's item count. A line picked from this season's draws carries the draw's own count, which may fall outside 3–6, so only 1–25 is enforced.
-function armorySize(line) { const n = Math.floor(Number(line && line.size) || ARMORY_DEFAULT_SIZE); return Math.max(1, Math.min(25, n)); }
+// A line's item count, or null when it has none yet. A season draw's count may fall outside 3–6, so only 1–25 is enforced.
+function armorySize(line) {
+    if (line && line.drawKey === 'armoryMythicWeapon') return MYTHIC_ARMORY_SIZE;
+    const n = Math.floor(Number(line && line.size) || 0);
+    return n > 0 ? Math.min(25, n) : null;
+}
 function armoryEntry(region, key, line) {
     const a = SERIES_ARMORY[key];
     const perSpin = ARMORY_SPIN_CP[region];
     if (!a || !perSpin) return null;
-    return { draws: Array(armorySize(line)).fill(a.spins * perSpin), perSpin, spinsPerItem: a.spins };
+    if (armorySize({ ...(line || {}), drawKey: key }) === null) return null;
+    return { draws: Array(armorySize({ ...(line || {}), drawKey: key })).fill(a.spins * perSpin), perSpin, spinsPerItem: a.spins };
 }
 // The CP already spent toward the next item: 0 once the armory is finished, and never a whole item's worth.
 function spinsInCp(region, key, line, pullsDone) {
@@ -85,6 +91,8 @@ function upgradeCost(region, key) {
 // ==========================================
 // A line's upgrade is a HAVE and a WANT, each an array: weapon `[level]` (0-5); character `[battle, arm, color, finalForm]` (tiers 0-3, then 0/1). Stored on the line as `upHave`/`upWant` (models/DrawBasket.js). HAVE only counts on a line whose draw is finished: upgrades unlock only after the last spin, so any earlier line has nothing upgraded yet. A line with no stored WANT has no upgrade; `includeUpgrades` is no longer read (see upgradeState).
 function upgradeShape(key) {
+    // One level per weapon in the Mythic Weapon armory.
+    if (key === 'armoryMythicWeapon') return Array(MYTHIC_ARMORY_SIZE).fill(MYTHIC_UPGRADE.mythicWeapon.levels.length);
     const u = MYTHIC_UPGRADE[upgradeKeyOf(key)];
     if (!u) return null;
     return u.levels ? [u.levels.length] : [...u.paths.map(() => u.tiers.length), 1];
@@ -107,6 +115,11 @@ function upgradeState(banner, { complete, includeUpgrades }) {
 function sumTiers(tiers, from, to) { let n = 0; for (let t = from; t < to; t++) n += tiers[t]; return n; }
 // What a line still has to collect, in its own currency. Final Form only counts when the wanted tiers reach its minimum; finalFormBlocked says it was asked for and could not be.
 function upgradeNeed(key, have, want) {
+    // The Mythic Weapon armory: each weapon climbs the Mythic Weapon ladder on its own, from the same cards.
+    if (key === 'armoryMythicWeapon') {
+        const at = [0, ...MYTHIC_UPGRADE.mythicWeapon.levels];
+        return { need: want.reduce((n, w, i) => n + (w > have[i] ? at[w] - at[have[i]] : 0), 0), finalFormBlocked: false };
+    }
     const u = MYTHIC_UPGRADE[upgradeKeyOf(key)];
     if (!u) return { need: 0, finalFormBlocked: false };
     if (u.levels) {
@@ -164,13 +177,15 @@ function upgradePlan(basket) {
         const upgradeKey = upgradeKeyOf(b.drawKey);
         if (!upgradeKey) return;
         if (isArmoryKey(b.drawKey)) {
-            // AN ARMORY HOLDS SEVERAL WEAPONS. The target applies to EVERY weapon in it; what is already upgraded applies to the weapons collected, and the rest start at nothing. My reading of "same upgrade process", stated in the spec.
-            const size = armorySize(b);
-            const got = Math.min(b.pullsDone || 0, size);
-            const st = upgradeState(b, { complete: got > 0, includeUpgrades: basket.includeUpgrades });
-            const each = upgradeNeed(upgradeKey, st.have, st.want).need;
-            const fresh = upgradeNeed(upgradeKey, st.have.map(() => 0), st.want).need;
-            lines.push({ index, drawKey: b.drawKey, upgradeKey, ...st, need: got * each + (size - got) * fresh, finalFormBlocked: false, weapons: size });
+            // A LEVEL PER WEAPON (2026-10-18 15:12 EDT, his call: nothing assumes every weapon is upgraded). Weapon i's "already at" counts only once it is collected.
+            const got = Math.min(b.pullsDone || 0, MYTHIC_ARMORY_SIZE);
+            // The stored target, never one raised by a weapon's "already at": a weapon not collected has nothing upgraded, so its "already at" must not lift its target either.
+            const max = upgradeShape(b.drawKey);
+            const storedHave = cleanUpgradeArray(b.upHave, max) || max.map(() => 0);
+            const storedWant = cleanUpgradeArray(b.upWant, max);
+            const have = storedHave.map((h, i) => (i < got ? h : 0));
+            const want = (storedWant || max.map(() => 0)).map((w, i) => Math.max(w, have[i]));
+            lines.push({ index, drawKey: b.drawKey, upgradeKey, have, want, explicit: Boolean(storedWant), ...upgradeNeed(b.drawKey, have, want) });
             return;
         }
         const total = pullCount(region, b.drawKey);
@@ -227,4 +242,4 @@ function basketCost(region, banners, includeUpgrades, held = {}) {
     return { total: drawTotal + upgrades.cp, drawTotal, perBanner, upgrades };
 }
 
-module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, upgradeCost, reachableWithBudget, basketCost, upgradePlan, upgradeState, upgradeNeed, upgradeShape, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE };
+module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, upgradeCost, reachableWithBudget, basketCost, upgradePlan, upgradeState, upgradeNeed, upgradeShape, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE, MYTHIC_ARMORY_SIZE };
