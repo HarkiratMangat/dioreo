@@ -864,6 +864,7 @@ t('the result keeps Set Balance one tap away, and Edit Selections opens the edit
     for (const page of [2, 5]) {
         const editing = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: true }), { page, fromResult: true });
         assert.ok(allText(editing).includes('## Adjust Draws') && buttonLabelled(editing, 'Back to Result'), `page ${page} is the editor`);
+        assert.strictEqual(buttonLabelled(editing, 'View Saved'), undefined, 'no View Saved from a result');
     }
 });
 
@@ -1278,7 +1279,7 @@ t('his Mock 2 (2026-10-18 13:38 EDT): Add Draws and Remove open pop-ups, his two
     const footer = rows(draft).slice(-2, -1).map(r => r.components.map(b => b.label));
     assert.deepStrictEqual(footer, [['Add Draws', 'Remove', 'Calculate']], 'a draft has no result to go back to, and no selections screen any more');
     const done = dc.buildCalculatorPanel(state({ page: 5, fromResult: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
-    assert.deepStrictEqual(rows(done).slice(-2, -1)[0].components.map(b => b.label), ['Back to Result'], 'one way back, to where it was opened from (2026-10-18 14:58 EDT)');
+    assert.deepStrictEqual(done.filter(x => x.type === 1)[0].components.map(b => b.label), ['Back to Result', 'New Calculation', 'Draw Prices', 'Help'], 'his nav order from a result, no View Saved (2026-10-18 15:48 EDT)');
     const dirty = dc.buildCalculatorPanel(state({ page: 5, fromResult: true, dirty: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
     assert.ok(buttonLabelled(dirty, 'Recalculate') && !buttonLabelled(dirty, 'Calculate'), 'a change after Edit Selections offers Recalculate');
     assert.ok(buttonLabelled(draft, 'Calculate'), 'a fresh draft keeps Calculate');
@@ -1294,6 +1295,17 @@ t('his Mock 2 (2026-10-18 13:38 EDT): Add Draws and Remove open pop-ups, his two
     assert.deepStrictEqual(rm.components[0].component.options.map(o => [o.label, o.value, o.description]), [['#1 · Mythic Weapon', '0:mythicWeapon', '2/10 Spins · Upgrade Set'], ['#2 · Legendary Weapon Armory', '1:armoryLegendaryWeapon', '1/4 Weapons']]);
     assert.ok(rm.components[0].component.max_values === 2 && rm.components[0].component.min_values === 1, 'several at once');
     assert.deepStrictEqual([...dc.readRemovePicks(basket, ['1:armoryLegendaryWeapon', '0:legendaryGunReactive'])], [1], 'a pick whose line changed is skipped');
+});
+
+t('the editor pages at ONE size: every page agrees on the page count, whatever lines it holds (2026-10-18 15:48 EDT, his 1/3 then 2/2 bug)', () => {
+    const lines = [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }, { drawKey: 'armoryLegendaryWeapon', pullsDone: 0, size: 4, title: 'Undead Legion' }, { drawKey: 'armoryMythicWeapon', pullsDone: 0 }];
+    const counts = [0, 1, 2, 3].map(bpage => (buttons(progress(lines, { bpage })).find(b => /^\d+ \/ \d+$/.test(b.label || '')) || {}).label);
+    const totals = new Set(counts.map(c => c && c.split(' / ')[1]));
+    assert.strictEqual(totals.size, 1, `every page names the same total: ${counts.join(', ')}`);
+    const shown = new Set();
+    const total = Number([...totals][0]);
+    for (let bpage = 0; bpage < total; bpage++) selects(progress(lines, { bpage })).filter(s => verbOf(s) === 'bpulls').forEach(s => shown.add(dc.decodeState(s.custom_id).focus));
+    assert.deepStrictEqual([...shown].sort(), [0, 1, 2, 3, 4], 'every line on exactly one of the pages');
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);
