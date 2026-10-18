@@ -714,3 +714,11 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > (on shortening button labels) not shorten. if anything, i think we need to increase the characters of the simplify button to a different term
 
 **Measured 2026-10-17 21:29 EDT** on his phone (test panel in #testing-spam): "Simplify" and "Edit" stay beside their heading, "Full Breakdown" and "Edit Selection" drop below; it is the label's width. A second panel shows five longer Simplify names and four names for the "Cheapest" label. **Season draws dropdown: sidelined** until he sends the Series Armory draw structure.
+
+### Batch 48 — 2026-10-17 21:33 EDT, verbatim
+
+> (on the Simplify button) simple breakdown seems fine.
+>
+> (on the label) sure sounds good.
+
+**Built 2026-10-17 21:33 EDT:** the toggle reads **Simple Breakdown**; the recommendation's label next to Stock Up reads **Just Enough**.

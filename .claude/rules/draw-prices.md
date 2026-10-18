@@ -250,7 +250,7 @@ Harkirat's ladders (2026-10-17 11:50 EDT): weapon Levels 1–5 at 125 / 375 / 77
 Harkirat (2026-10-17 17:30 EDT): *"use the simplified version as a reference point and adjust/change/improve the design of the full breakdown version as well? so they actually flow better as 2 matching sets instead of 2 completely different designs and structures"*.
 
 - **One builder, two depths.** `buildCostPage` renders both views; `buildCostBlock(…, { detail, level })` adds the working in detail: a `-# :b1:` line of terms under Full Cost of Draws and under Spent Already, the **Cheapest** / **Stock Up** pair with the extra-cost note, and the estimates note. The list (`compactSelectionText`) is the same in both, except the `-#` Spent / To Complete line, which only the Full Breakdown shows (2026-10-17 17:41 EDT, his call). `buildBreakdownPage`, `breakdownSelectionText`, `breakdownCostLines` and `headedSection` are gone.
-- **Both views are two Sections:** the list with Edit Selection; Cost Breakdown + Suggested Purchase with the toggle (Full Breakdown ⇄ Simplify). Both use the bold **Tweak Calculation** caption.
+- **Both views are two Sections:** the list with Edit Selection; Cost Breakdown + Suggested Purchase with the toggle (Full Breakdown ⇄ Simple Breakdown; renamed from Simplify 2026-10-17 21:33 EDT so it drops below its heading on a phone like Full Breakdown does: a short label stays beside it). Both use the bold **Tweak Calculation** caption.
 - **Fitting:** five levels (a block per line with per-line terms, grouped blocks and terms, no quiet lines, terms as "across N lines", one block per draw type).
 
 ### His result layout, 2026-10-17 18:33 EDT — batch 39
@@ -258,7 +258,7 @@ Harkirat (2026-10-17 17:30 EDT): *"use the simplified version as a reference poi
 His draft for both views (2026-10-17 18:28 EDT), after a tree layout was dropped because "the -# break the emoji tree illusion":
 
 - **Simplified:** `**You Need: \`X CP\`**`, then one `-#` line naming the terms in plain words (Cost of Draws **+** Mythic Upgrades **−** Spent Already **−** CP Balance, Mythic only when set; code spans wrapped it on his phone, 2026-10-17 18:41 EDT); the purchase total for its price, `-#` what is left over, each bundle quoted (`> **1× \`880 CP\`** bundle ⌇ **\`CA$12.99\`**`), the currency line in italics.
-- **Full Breakdown:** the same headline, then the sum quoted, one signed term per line (`> **−** Spent Already: \`…\``) with a `> -#` line of what it is made of; **Cheapest:** / **Stock Up:** inside each total's line (only when both show), "left over after completing your draws (and upgrades)", the Stock Up extra-cost line quoted, one italic line for the estimates and currency.
+- **Full Breakdown:** the same headline, then the sum quoted, one signed term per line (`> **−** Spent Already: \`…\``) with a `> -#` line of what it is made of; **Just Enough:** (was Cheapest, renamed 2026-10-17 21:33 EDT) / **Stock Up:** inside each total's line (only when both show), "left over after completing your draws (and upgrades)", the Stock Up extra-cost line quoted, one italic line for the estimates and currency.
 - 🔴 **The grammar, from /draw prices:** a colon joins a label and its value; `⌇` joins a thing and what it comes to or costs. Check that before changing a separator in either command.
 - "You Need" names the figure in both views and in Export. `emojis.whiteDotGlow` is no longer used by the result.
 

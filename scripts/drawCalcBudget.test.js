@@ -431,7 +431,7 @@ t('/draw prices\' cross-link to the calculator carries no emoji either', () => {
 t('Cheapest and Stock Up are separated, and no heading is preceded by a stacked blank line', () => {
     const lines = texts(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }, { drawKey: 'mythicWeapon', pullsDone: 0 }] }), { detail: true }, { currency: 'CAD' })).join('\n').split('\n');
     const stockUp = lines.findIndex(l => l.startsWith('**Stock Up: '));
-    assert.ok(stockUp !== -1 && lines.some(l => l.startsWith('**Cheapest: ')) && lines.includes('## Suggested Purchase'), 'two options, each labelled in its total line, under the one heading');
+    assert.ok(stockUp !== -1 && lines.some(l => l.startsWith('**Just Enough: ')) && lines.includes('## Suggested Purchase'), 'two options, each labelled in its total line, under the one heading');
     assert.ok(lines[stockUp - 1] === '' && lines[stockUp + 1].startsWith('-# **`') && lines[stockUp + 2].startsWith('> **'), 'a blank line, the labelled total, what is left over, then the quoted bundles');
     lines.forEach((l, i) => {
         if (l.startsWith('## ') && i > 0) {
@@ -767,7 +767,7 @@ t('each line\'s dropdown OPENS with Remove, then the values; Move Up is gone', (
 });
 
 t('both views are the same two Sections: the list with Edit Selection, the figures and purchase with the view toggle (2026-10-17 17:26 / 17:30 EDT)', () => {
-    for (const [st, label, verb] of [[{}, 'Full Breakdown', 'detail'], [{ detail: true }, 'Simplify', 'detail']]) {
+    for (const [st, label, verb] of [[{}, 'Full Breakdown', 'detail'], [{ detail: true }, 'Simple Breakdown', 'detail']]) {
         const comps = container(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], balance: 3000 }), st)).components;
         const sec = comps.find(c => c.type === 9 && c.accessory && c.accessory.label === label);
         assert.ok(sec && sec.components.length === 2 && sec.components[0].content.startsWith('## Cost Breakdown') && sec.components[1].content.startsWith('## Suggested Purchase'), `${label}: one Section, two texts`);
@@ -961,7 +961,7 @@ t('the Full Breakdown is the simplified layout with its working shown, and the s
     assert.ok(/#2 · Legendary Weapon \(Reactive\)\*\*\n> \*\*Price: `4,950 CP`\*\* · `1\/10` Attempts\n> -# `10 CP` Spent · `4,940 CP` To Complete/.test(t), 'the same list as the simplified view');
     assert.ok(t.includes('**You Need: `15,700 CP`**') && t.includes('> Full Cost of Draws: `15,710 CP`') && t.includes('> **−** Spent Already: `10 CP`'), '15,710 − 10 − 0 = 15,700');
     assert.ok(t.includes('`4,950 CP` **+** `4,950 CP` **+** `5,810 CP`') && t.includes('`0 CP` **+** `10 CP` **+** `0 CP`'), 'each sum shows its terms');
-    assert.ok(t.includes('**Cheapest: `15,800 CP`** for **`CA$199.98`**') && t.includes('-# **`100 CP` left over** after completing your draws'));
+    assert.ok(t.includes('**Just Enough: `15,800 CP`** for **`CA$199.98`**') && t.includes('-# **`100 CP` left over** after completing your draws'));
     assert.ok(t.includes('**`CA$129.99`** each') && /CoD: Mobile web store prices are not included/.test(t));
     const compact = allText(render(makeBasket({ banners }), {}, { currency: 'CAD' }));
     assert.strictEqual(/Cheapest|Estimates only|`4,950 CP` \*\*\+\*\*|To Complete/.test(compact), false, 'the simplified view leaves the working out');

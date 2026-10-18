@@ -753,7 +753,7 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
         `-# **\`${fmt(r.leftoverCp)} CP\` left over**${detail ? afterWhat : ''}`,
         ...r.combo.map(c => `> **${c.count}× \`${fmt(c.cpEach)} CP\`** bundle${c.mode === 'double' ? ' (2X)' : ''}${BREAK}**\`${money(c.priceCents)}\`**${c.count > 1 ? ' each' : ''}`)
     ];
-    const purchase = ['## Suggested Purchase', ...option(result.cheapest, stockUp ? 'Cheapest' : null)];
+    const purchase = ['## Suggested Purchase', ...option(result.cheapest, stockUp ? 'Just Enough' : null)]; // "Just Enough" (2026-10-17 21:33 EDT, Harkirat: "sure sounds good"): the pick is no longer always the cheapest, and "Best Pick" would read as better than Stock Up
     if (stockUp) {
         purchase.push('', ...option(stockUp, 'Stock Up'));
         // extraCents can be 0 or below: Stock Up may need MORE purchases for the same money or a few cents less (EUR 2,364 CP short: three bundles for €29.97 against one for €29.99), so "Costs −€0.02 more" is never printed.
@@ -1043,7 +1043,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
         if (options.dropConfirm) out.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
         out.push({ type: 14, spacing: 1, divider: true });
         const { cost, purchase } = buildCostBlock(state, basket, currency, client, { detail: state.detail, level, memo });
-        const toggle = state.detail ? { label: 'Simplify', emoji: emojis.collapse } : { label: 'Full Breakdown', emoji: emojis.expand };
+        const toggle = state.detail ? { label: 'Simple Breakdown', emoji: emojis.collapse } : { label: 'Full Breakdown', emoji: emojis.expand };
         out.push({ type: 9, components: [{ type: 10, content: cost.join('\n') }, { type: 10, content: purchase.join('\n') }], accessory: { type: 2, style: 2, label: toggle.label, custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(toggle.emoji) } });
         return finishCostPage(state, basket, accentColor, out, liveDoubleCPEntry, { caption: TWEAK_RESULT_CAPTION });
     };
