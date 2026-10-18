@@ -13,9 +13,9 @@ const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
     findLiveDoubleCPEntry, buildExportText, readBalanceFields, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
-    buildUpgradeModal, readUpgradeModal
+    buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName
 } = require('../commands/drawCalculator');
-const { pullCount } = require('../utils/drawCost');
+const { pullCount, upgradeKeyOf, isArmoryKey, armorySize } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES } = require('../utils/cpPackages');
 const basketStore = require('../utils/drawBasketStore');
@@ -24,7 +24,8 @@ const { resolvePanelActor } = require('../utils/interactionContext');
 const OWNED_PREFIXES = ['calc~'];
 
 const { DRAW_META } = require('../commands/drawprices');
-const DRAW_KEY_ORDER = Object.keys(DRAW_META);
+// The draws a calculation can hold, in the untick confirm's mask bit order (the three Series Armories after the nine draws since 2026-10-18 12:16 EDT).
+const DRAW_KEY_ORDER = CALC_KEYS;
 // The calculator's one name per draw (commands/drawCalculator.js SHORT_NAME), never DRAW_META's full "... Draw" name.
 function DRAW_META_NAMES(key) { return shortName(key); }
 
@@ -72,6 +73,8 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
     }
     const panel = buildCalculatorPanel(state, basket, accentColor, {
         liveDoubleCPEntry,
+        // This season's draws for the form's first dropdown, read on every render so a draw added in /manage shows on the next click.
+        seasonDraws: await listSeasonDraws(),
         currency: prefs?.cpCurrency || 'USD',
         timezone: prefs?.timezone || null,
         client: interaction.client,
@@ -161,17 +164,46 @@ async function route(interaction) {
         }
         return true;
     }
+    // SPINS IN (2026-10-18 12:16 EDT): a Series Armory's spins toward its next item, from the button beside the line on Set Draw Progress.
+    if (interaction.isButton() && state.verb === 'spinsin') {
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        const modal = basket ? buildSpinsInModal(state, basket, state.focus) : null;
+        if (!modal) {
+            try { await interaction.reply({ content: 'That armory is no longer in this calculation.', ephemeral: true }); }
+            catch (notifyError) { console.error('Failed to notify user of a missing armory line (interaction likely expired):', notifyError); }
+            return true;
+        }
+        return await interaction.showModal(modal);
+    }
+    if (interaction.isModalSubmit() && state.verb === 'spinsinsave') {
+        await interaction.deferUpdate();
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const index = state.focus;
+        const line = index !== null ? basket.banners[index] : null;
+        if (!line || !isArmoryKey(line.drawKey)) { await renderPanel(interaction, { ...state, focus: null }, basket, 'That armory is no longer in this calculation, so nothing changed.'); return true; }
+        let raw = null;
+        try { raw = interaction.fields.getTextInputValue('spins'); } catch { raw = null; }
+        const spinsIn = readSpinsIn(line.drawKey, raw);
+        if (spinsIn === null) { await renderPanel(interaction, { ...state, focus: null }, basket, `"${String(raw).trim().slice(0, 12)}" wasn't saved: use a whole number below the spins one item takes.`); return true; }
+        const banners = basket.banners.map((b, i) => (i === index ? { ...b, spinsIn } : b));
+        const updated = await writeTo(actingUserId, state, basket, { banners });
+        await renderPanel(interaction, { ...state, focus: null }, updated);
+        return true;
+    }
     if (interaction.isModalSubmit() && (state.verb === 'upgsavew' || state.verb === 'upgsavec')) {
         await interaction.deferUpdate();
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         const index = state.focus;
         const line = index !== null ? basket.banners[index] : null;
-        // The line the pop-up was opened for must still be the same kind of Mythic draw; a removed or reordered line is refused rather than given another line's upgrade.
-        if (!line || line.drawKey !== (state.verb === 'upgsavew' ? 'mythicWeapon' : 'mythicCharacter')) { await renderPanel(interaction, state, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
+        // The line the pop-up was opened for must still be the same kind of Mythic draw; a removed or reordered line is refused rather than given another line's upgrade. A Mythic Weapon armory saves through the Mythic Weapon upgrade (same cards, same ladder).
+        if (!line || upgradeKeyOf(line.drawKey) !== (state.verb === 'upgsavew' ? 'mythicWeapon' : 'mythicCharacter')) { await renderPanel(interaction, state, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
         const get = id => { try { return interaction.fields.getStringSelectValues(id)[0] ?? null; } catch { return null; } };
-        const total = pullCount(basket.region, line.drawKey);
-        const read = readUpgradeModal(line.drawKey, total !== null && line.pullsDone >= total, get);
+        const total = pullCount(basket.region, line.drawKey, line);
+        // The same "complete" the pop-up was built with: an armory's collected weapons can carry an upgrade already.
+        const complete = isArmoryKey(line.drawKey) ? (line.pullsDone || 0) > 0 : total !== null && line.pullsDone >= total;
+        const read = readUpgradeModal(line.drawKey, complete, get);
         const banners = basket.banners.map((b, i) => (i === index ? { ...b, upHave: read.have, upWant: read.want } : b));
         const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: null }, updated, read.notice);
@@ -269,7 +301,7 @@ async function route(interaction) {
             if (prefs?.defaultRegionMode && prefs.defaultRegionMode !== 'last_viewed') region = prefs.defaultRegionMode;
             else if (prefs?.defaultRegion) region = prefs.defaultRegion;
             const created = await basketStore.save(actingUserId, {
-                banners: interaction.values.map(drawKey => ({ drawKey, pullsDone: 0 })),
+                banners: interaction.values.filter(key => CALC_KEYS.includes(key)).map(freshLine),
                 region
             });
             await renderPanel(interaction, { ...state, basketId: String(created._id), page: 0 }, created);
@@ -294,6 +326,41 @@ async function route(interaction) {
         return true;
     }
 
+    // THIS SEASON'S DRAWS (2026-10-18 12:16 EDT): each picked draw adds one line named for it, priced as its Draw Type, an armory at its own item count. The list is read again here rather than trusted from the click, so a draw removed since the panel drew is skipped.
+    if (interaction.isStringSelectMenu() && state.verb === 'season') {
+        const list = await listSeasonDraws();
+        const picked = list.filter(d => interaction.values.includes(d.id));
+        const lines = picked.map(d => ({ drawKey: d.drawKey, pullsDone: 0, title: d.title, ...(d.size ? { size: d.size } : {}) }));
+        const gone = interaction.values.length - picked.length;
+        if (!state.basketId) {
+            const prefs = await UserPreference.findOne({ discordId: actingUserId });
+            let region = 'region_10';
+            if (prefs?.defaultRegionMode && prefs.defaultRegionMode !== 'last_viewed') region = prefs.defaultRegionMode;
+            else if (prefs?.defaultRegion) region = prefs.defaultRegion;
+            const created = await basketStore.save(actingUserId, { banners: lines.slice(0, MAX_LINES), region });
+            await renderPanel(interaction, { ...state, basketId: String(created._id), page: 0 }, created, gone ? 'A draw you picked is no longer listed, so it was left out.' : null);
+            return true;
+        }
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const room = Math.max(0, MAX_LINES - basket.banners.length);
+        const updated = await writeTo(actingUserId, state, basket, { banners: [...basket.banners, ...lines.slice(0, room)] });
+        const notes = [];
+        if (lines.length > room) notes.push(`A calculation holds up to ${MAX_LINES} lines, so ${lines.length - room} ${lines.length - room === 1 ? 'draw was' : 'draws were'} not added.`);
+        if (gone) notes.push('A draw you picked is no longer listed, so it was left out.');
+        await renderPanel(interaction, state, updated, notes.join(' ') || null);
+        return true;
+    }
+
+    // SET DRAW PROGRESS (2026-10-18 12:16 EDT): a view (page 5) of the same calculation; Back returns to the form it came from (Edit's page 2 for a result, the draft form otherwise).
+    if (interaction.isButton() && (state.verb === 'progress' || state.verb === 'progback')) {
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const page = state.verb === 'progress' ? 5 : (basket.submitted ? 2 : 0);
+        await renderPanel(interaction, { ...state, page, bpage: 0, focus: null }, basket);
+        return true;
+    }
+
     if (interaction.isButton() && state.verb === 'dropok') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
@@ -310,7 +377,7 @@ async function route(interaction) {
         let banners = basket.banners;
         let skipped = 0;
         for (const key of interaction.values) {
-            if (!DRAW_META[key]) continue;
+            if (!CALC_KEYS.includes(key)) continue;
             if (banners.length >= MAX_LINES) { skipped++; continue; }
             banners = setTypeCount(banners, key, banners.filter(b => b.drawKey === key).length + 1).banners;
         }
@@ -329,7 +396,7 @@ async function route(interaction) {
         // Remove opens the list, so a slipped tap must not cost entered progress: a line with pulls asks first; an empty line goes at once.
         if (interaction.values[0] === 'del' && basket.banners[index].pullsDone > 0) {
             const b = basket.banners[index];
-            await renderPanel(interaction, { ...state, focus: index }, basket, `⚠️ Remove #${index + 1} ${shortName(b.drawKey)} and its ${b.pullsDone} spins of progress?`, { mask: 0, count: 1, verb: 'dellineok', label: `Remove #${index + 1}` });
+            await renderPanel(interaction, { ...state, focus: index }, basket, `⚠️ Remove #${index + 1} ${lineName(b)} and its ${b.pullsDone} ${unitOf(b.drawKey).toLowerCase()} of progress?`, { mask: 0, count: 1, verb: 'dellineok', label: `Remove #${index + 1}` });
             return true;
         }
         if (interaction.values[0] === 'del') {
@@ -340,10 +407,19 @@ async function route(interaction) {
         // Upgrades unlock only once a draw is finished, so taking a line below its last spin drops what it had upgraded (2026-10-17 13:17 EDT).
         const banners = basket.banners.map((b, i) => {
             if (i !== index) return b;
-            const pullsDone = Number(interaction.values[0]) || 0;
-            const total = pullCount(basket.region, b.drawKey);
-            if (total !== null && pullsDone < total && b.upHave) { const { upHave, ...rest } = b; return { ...rest, pullsDone }; }
-            return { ...b, pullsDone };
+            // An armory line's value is "size:items" when the line also picks its size (2026-10-18 12:16 EDT). Its Spins In stays only while there is a next item to spin toward.
+            const [sizeRaw, itemsRaw] = String(interaction.values[0]).includes(':') ? String(interaction.values[0]).split(':') : [null, interaction.values[0]];
+            const pullsDone = Number(itemsRaw) || 0;
+            const next = sizeRaw !== null && isArmoryKey(b.drawKey) ? { ...b, size: Number(sizeRaw) || armorySize(b) } : { ...b };
+            const total = pullCount(basket.region, next.drawKey, next);
+            if (isArmoryKey(next.drawKey)) {
+                if (total !== null && pullsDone >= total) delete next.spinsIn;
+                // An armory's weapons hold an upgrade once one is collected, so only dropping back to none clears it.
+                if (pullsDone === 0 && next.upHave) delete next.upHave;
+                return { ...next, pullsDone };
+            }
+            if (total !== null && pullsDone < total && next.upHave) { const { upHave, ...rest } = next; return { ...rest, pullsDone }; }
+            return { ...next, pullsDone };
         });
         const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: null }, updated);

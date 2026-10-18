@@ -83,6 +83,10 @@ check('draw types: every /draw prices type has a unique bulk code (2026-10-18 11
     const codes = Object.values(DRAW_TYPE_CODES);
     assert.strictEqual(new Set(codes).size, codes.length, 'codes are unique');
     assert.deepStrictEqual(Object.keys(DRAW_TYPE_CODES).sort(), opts.map(o => o.key).sort(), 'no code for a type /draw prices does not have');
+    // utils/drawTypes.js keeps its own copy so it requires nothing (hotpatch); this is what keeps the copy honest.
+    const dp = require('../commands/drawprices');
+    assert.deepStrictEqual(opts.map(o => [o.key, o.name, o.tier]), dp.JUMP_KEYS.map(k => [k, dp.jumpMeta(k).name, dp.jumpMeta(k).tier]), 'the same keys, names, tiers and order as /draw prices');
+    assert.deepStrictEqual(require('../utils/drawTypes').DRAW_TYPES.filter(x => x.armory).map(x => x.key), Object.keys(dp.SERIES_ARMORY));
 });
 
 check('draw types: a bulk line carries its type tag, the export writes it back, and an armory counts its own items', () => {

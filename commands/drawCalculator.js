@@ -12,14 +12,21 @@ const { mentionCommand } = require('../utils/commandMentions');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const emojis = require('../utils/emojiMap');
 const UserPreference = require('../models/UserPreference');
-const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL, MYTHIC_UPGRADE, upgradeFullAmount } = require('./drawprices');
-const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset } = require('../utils/drawCost');
+const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP } = require('./drawprices');
+const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE } = require('../utils/drawCost');
 const crypto = require('crypto');
 const { CP_PACKAGES, STOCK_UP_RULES, PURCHASE_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 const { buildTitleBlock, toBoldItalicUnicode } = require('../utils/titleBlock');
 
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
 const DRAW_KEYS = Object.keys(DRAW_META);
+// Every draw a calculation can hold: the nine ladder draws, then the three Series Armories (2026-10-18 12:15 EDT). Advanced draws stay out (deferred). The order is also the bit order of the untick confirm's mask.
+const CALC_KEYS = [...DRAW_KEYS, ...Object.keys(SERIES_ARMORY)];
+function metaOf(key) { return DRAW_META[key] || SERIES_ARMORY[key] || null; }
+// What one "pull" of a line is: a spin, or for an armory the item it holds.
+function unitOf(drawKey) { return SERIES_ARMORY[drawKey] ? `${SERIES_ARMORY[drawKey].noun}s` : 'Spins'; }
+// A line picked from this season's draws reads as that draw; any other line as its draw type.
+function lineName(b) { return (b && b.title) || shortName(b && b.drawKey); }
 // Five lines per page (2026-10-14 00:15 EDT). He asked for six; six measured past Discord's message SIZE cap, not the 40-component one: each line's dropdown carries 11-13 labelled options, and seven different draws at six per page came to ~13,800 characters against a cap measured between 13,100 and 13,412 on the dev bot. Five fits every draw mix under SETUP_JSON_BUDGET; buildSetupPanel still drops further when the saved list needs the room.
 const SETUP_LINES_PER_PAGE = 5;
 // The setup form's own budget (container included): 40, minus the Show Everyone row (2) and the form's bottom nav row (1 + 2 buttons: Draw Prices · Help; Saved and New Calculation sit in the form's own Calculate row since 2026-10-14 16:51 EDT). Was 33 with four nav buttons, 2026-10-14 13:13 EDT). buildSetupPanel drops lines per page until it fits. 37 since 2026-10-14 18:34 EDT: the Show Everyone row (2) is gone from this command.
@@ -43,7 +50,7 @@ function regionLabel(region) { return `${(region || 'region_10').split('_')[1]} 
 function plural(n, word) { return `${n} ${word}${n === 1 ? '' : 's'}`; }
 
 // 🔴 NEVER write `DRAW_META[b.drawKey].name` for a drawKey that came out of a STORED calculation. DRAW_KEYS is derived from DRAW_META, so anything rendered from a select is safe by construction -- but a saved calculation holds whatever key it held on the day it was saved, and draws rotate. The day a key is retired from DRAW_META, every stored calculation containing it would throw on render, and the owner could not even open the panel to delete the entry. Degrade to the raw key instead: it is ugly, it is honest, and it leaves the row deletable. (Found 2026-08-27 by a test fixture using a key that does not exist -- the fixture was wrong, the crash it exposed was not.)
-function drawName(drawKey) { return DRAW_META[drawKey]?.name || `Unrecognized draw (${drawKey})`; }
+function drawName(drawKey) { return metaOf(drawKey)?.name || `Unrecognized draw (${drawKey})`; }
 
 // SHORT NAMES for the calculator's own pickers (2026-10-13 12:40 EDT, Harkirat's click-test). Discord cuts a chosen option's chip after roughly 24 characters, and the full names put the only distinguishing word LAST -- "Legendary Weapon Draw (R" was all that showed, which cannot tell Reactive from Non-Reactive. These lead with what separates one draw from another and stay under the cut. The full name still appears in every text list and option description. Calculator-only: /draw prices keeps DRAW_META's names. ONE NAME PER DRAW, used everywhere in the calculator (2026-10-13 23:01 EDT, Harkirat's intake: "Reactive Legendary -> reword to \"Legendary Weapon (Reactive)\"; similarly for non-reactive ... and so on"). The panel used to call one draw two things (this short name in the dropdowns, DRAW_META's full "... Draw" name in the lists), and the descriptions repeated the full name after the short one. A description never repeats the name now.
 const SHORT_NAME = {
@@ -55,7 +62,10 @@ const SHORT_NAME = {
     legendaryCharacterWeapon: 'Legendary Character',
     sevenSpinLegendaryWeapon: '7 Spins Legendary Weapon',
     pickYourRewardCard: 'Pick Your Reward Card',
-    doubleEpicCharacters: 'Double Epic Characters'
+    doubleEpicCharacters: 'Double Epic Characters',
+    armoryMythicWeapon: 'Mythic Weapon Armory',
+    armoryLegendaryWeapon: 'Legendary Weapon Armory',
+    armoryLegendaryCharacter: 'Legendary Character Armory'
 };
 function shortName(drawKey) { return SHORT_NAME[drawKey] || drawName(drawKey); }
 
@@ -108,11 +118,12 @@ function parseCount(raw) {
     return r;
 }
 
-// The picker's FULL selection is the set of draws to keep: lines of an unticked draw go, a newly ticked draw gets one fresh line at 0 pulls, every other line keeps its place and progress.
+// The picker's FULL selection is the set of draws to keep: lines of an unticked draw go, a newly ticked draw gets one fresh line at 0 pulls, every other line keeps its place and progress. A new line: 0 done, and for an armory the default size until the line's dropdown says otherwise.
+function freshLine(drawKey) { return isArmoryKey(drawKey) ? { drawKey, pullsDone: 0, size: ARMORY_DEFAULT_SIZE } : { drawKey, pullsDone: 0 }; }
 function applySelection(banners, selected) {
     const present = new Set(banners.map(b => b.drawKey));
     const kept = banners.filter(b => selected.has(b.drawKey));
-    for (const key of selected) if (!present.has(key)) kept.push({ drawKey: key, pullsDone: 0 });
+    for (const key of selected) if (!present.has(key)) kept.push(freshLine(key));
     return kept;
 }
 
@@ -140,7 +151,7 @@ function setTypeCount(banners, drawKey, count) {
     const idx = list.map((b, i) => (b.drawKey === drawKey ? i : -1)).filter(i => i !== -1);
     if (count > idx.length) {
         const at = idx.length ? idx[idx.length - 1] + 1 : list.length;
-        list.splice(at, 0, ...Array.from({ length: count - idx.length }, () => ({ drawKey, pullsDone: 0 })));
+        list.splice(at, 0, ...Array.from({ length: count - idx.length }, () => freshLine(drawKey)));
         return { banners: list, removed: [] };
     }
     const order = [...idx].reverse().sort((a, b) => (list[a].pullsDone > 0) - (list[b].pullsDone > 0));
@@ -152,8 +163,8 @@ function copies(n) { return n === 1 ? '1 copy' : `${n} copies`; }
 function maxCountFor(typeCount) { return Math.max(1, Math.min(4, Math.floor(25 / Math.max(1, typeCount)))); }
 
 function upgradeCardEmoji(drawKey) {
-    if (drawKey === 'mythicWeapon') return emojis.mythicCard;
-    if (drawKey === 'mythicCharacter') return emojis.mythicCoin;
+    if (upgradeKeyOf(drawKey) === 'mythicWeapon') return emojis.mythicCard;
+    if (upgradeKeyOf(drawKey) === 'mythicCharacter') return emojis.mythicCoin;
     return null;
 }
 
@@ -165,7 +176,7 @@ function heldOf(basket) { return { mythicCards: basket?.mythicCards || 0, mythic
 function costOf(basket) { return basketCost(basket.region, basket.banners, basket.includeUpgrades, heldOf(basket)); }
 // "Level 5"; "7/9 Tiers + Final Form".
 function upgradeStateText(drawKey, arr) {
-    const u = MYTHIC_UPGRADE[drawKey];
+    const u = MYTHIC_UPGRADE[upgradeKeyOf(drawKey)];
     if (u.levels) return `Level ${arr[0]}`;
     const P = u.paths.length;
     const tiers = arr.slice(0, P).reduce((a, b) => a + b, 0);
@@ -179,7 +190,7 @@ function upgradeTransition(line) {
 }
 function upgradeTargetText(line) {
     if (!upgradeIsSet(line)) return line.have.some(Boolean) ? `${upgradeStateText(line.drawKey, line.have)} · Nothing to Add` : 'No Upgrade Set';
-    return `${upgradeTransition(line)} · ${fmt(line.need)} ${MYTHIC_UPGRADE[line.drawKey].currency}`;
+    return `${upgradeTransition(line)} · ${fmt(line.need)} ${MYTHIC_UPGRADE[upgradeKeyOf(line.drawKey)].currency}`;
 }
 // One Mythic line: a button that opens its pop-up. Two or more: a dropdown of the Mythic lines, each option opening that line's pop-up (2026-10-17 12:33 EDT, his "a modal to submit the 'Character Upgrade' selections"). A dropdown needs a row of its own, so it comes back as `row`.
 function upgradeControls(state, basket, extra = {}) {
@@ -208,10 +219,12 @@ function balanceLabel(basket) {
 function sumTierCost(tiers, from, to) { let n = 0; for (let t = from; t < to; t++) n += tiers[t]; return n; }
 function buildUpgradeModal(state, basket, index) {
     const b = basket?.banners?.[index];
-    const u = b && MYTHIC_UPGRADE[b.drawKey];
+    const u = b && MYTHIC_UPGRADE[upgradeKeyOf(b.drawKey)];
     if (!u) return null;
-    const total = pullCount(basket.region, b.drawKey);
-    const complete = total !== null && b.pullsDone >= total;
+    const total = pullCount(basket.region, b.drawKey, b);
+    // An armory's collected weapons can already be upgraded, so "Already At" shows once one is collected; a draw's only once it is finished.
+    const armory = isArmoryKey(b.drawKey);
+    const complete = armory ? (b.pullsDone || 0) > 0 : total !== null && b.pullsDone >= total;
     const st = upgradeState(b, { complete, includeUpgrades: basket.includeUpgrades });
     const label = (text, description, component) => ({ type: 18, label: text, ...(description ? { description } : {}), component });
     const select = (id, options) => ({ type: 3, custom_id: id, options: options.map(o => ({ label: o.label, value: o.value, ...(o.description ? { description: o.description } : {}), ...(o.default ? { default: true } : {}) })) });
@@ -219,12 +232,12 @@ function buildUpgradeModal(state, basket, index) {
     if (u.levels) {
         const at = [0, ...u.levels];
         if (complete) {
-            components.push(label('Already At', 'The level this weapon is upgraded to now', select('have', at.map((n, lv) => ({
+            components.push(label('Already At', armory ? 'The level your collected weapons are at now' : 'The level this weapon is upgraded to now', select('have', at.map((n, lv) => ({
                 label: lv ? `Level ${lv}${lv === u.levels.length ? ' (Max)' : ''}` : 'Level 0 · Not Upgraded', value: String(lv),
                 description: lv ? `${fmt(n)} Cards Used` : null, default: st.have[0] === lv
             })))));
         }
-        components.push(label('Upgrade To', complete ? 'Cards still needed count from Already At' : 'Upgrades unlock once this draw is finished', select('want', [
+        components.push(label('Upgrade To', armory ? `Every weapon in the armory (${armorySize(b)})` : complete ? 'Cards still needed count from Already At' : 'Upgrades unlock once this draw is finished', select('want', [
             { label: 'No Upgrade', value: '0', default: st.want[0] === st.have[0] },
             ...u.levels.map((n, i) => ({ label: `Level ${i + 1}${i + 1 === u.levels.length ? ' (Max)' : ''}`, value: String(i + 1), description: `${fmt(n)} Cards in Total`, default: st.want[0] === i + 1 && st.want[0] !== st.have[0] }))
         ])));
@@ -256,11 +269,11 @@ function buildUpgradeModal(state, basket, index) {
             ...(complete ? [{ label: 'Already Have It', value: '11', default: ffHave }] : [])
         ])));
     }
-    return { custom_id: encodeState(u.levels ? 'upgsavew' : 'upgsavec', { ...state, focus: index }), title: `#${index + 1} ${shortName(b.drawKey)} Upgrade`.slice(0, 45), components };
+    return { custom_id: encodeState(u.levels ? 'upgsavew' : 'upgsavec', { ...state, focus: index }), title: `#${index + 1} ${lineName(b)} Upgrade`.slice(0, 45), components };
 }
 // Reads the pop-up back. `get(id)` returns the picked value or null. Pure, so it is tested without Discord. Final Form asked for below 7 of 9 tiers is left off and said so (his "Final upgrade can only be purchased if a minimum of 7 of the 9 sub-tiers are purchased").
 function readUpgradeModal(drawKey, complete, get) {
-    const u = MYTHIC_UPGRADE[drawKey];
+    const u = MYTHIC_UPGRADE[upgradeKeyOf(drawKey)];
     if (!u) return null;
     const int = v => Math.max(0, Math.floor(Number(v) || 0));
     if (u.levels) {
@@ -399,11 +412,11 @@ function usedTypes(banners) {
 function groupForDisplay(banners) {
     const groups = [];
     // Lines with different upgrade plans never merge (2026-10-17 13:17 EDT); `first` is the index of the group's first line.
-    const upKey = b => JSON.stringify([b.upHave || null, b.upWant || null]);
+    const upKey = b => JSON.stringify([b.upHave || null, b.upWant || null, b.title || null, b.size || null, b.spinsIn || 0]);
     (banners || []).forEach((b, i) => {
         const last = groups[groups.length - 1];
         if (last && last.drawKey === b.drawKey && last.pullsDone === b.pullsDone && last.upKey === upKey(b)) last.count++;
-        else groups.push({ drawKey: b.drawKey, pullsDone: b.pullsDone, count: 1, first: i, upKey: upKey(b) });
+        else groups.push({ drawKey: b.drawKey, pullsDone: b.pullsDone, count: 1, first: i, upKey: upKey(b), line: b });
     });
     return groups;
 }
@@ -419,13 +432,13 @@ function typesSelectRow(state, basket) {
         components: [{
             // An instruction, not a question (his intake): the form reads as steps to follow.
             type: 3, custom_id: encodeState('draws', state), placeholder: 'Select draw types to calculate',
-            min_values: 0, max_values: DRAW_KEYS.length,
-            options: DRAW_KEYS.map(key => {
+            min_values: 0, max_values: CALC_KEYS.length,
+            options: CALC_KEYS.map(key => {
                 return {
                     label: shortName(key),
                     value: key,
                     description: freshDrawDescription(basket.region, key),
-                    emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier]),
+                    emoji: emojis.parseEmoji(emojis[metaOf(key).tier]),
                     default: present.has(key)
                 };
             })
@@ -436,36 +449,42 @@ function typesSelectRow(state, basket) {
 // Page 2's per-banner pulls-done dropdown. 🔴 The placeholder is REPLACED by the chosen option once picked, so without a banner number in every option a set dropdown stops saying which banner it belongs to (spec §2, found live) -- every option and the placeholder both carry `#N`. `f` here carries WHICH banner index this specific select edits, not the reorder pointer -- a per-control target, scoped to this one customId, distinct from the reorder focus stored across renders. `removable` ends the dropdown with the line's own Remove option.
 function bannerPullsRow(state, basket, index, { removable = false } = {}) {
     const banner = basket.banners[index];
-    const total = pullCount(basket.region, banner.drawKey);
-    const meta = DRAW_META[banner.drawKey] || { name: drawName(banner.drawKey), tier: null };
+    const total = pullCount(basket.region, banner.drawKey, banner);
+    const meta = metaOf(banner.drawKey) || { name: drawName(banner.drawKey), tier: null };
     const rowState = { ...state, focus: index };
+    const unit = unitOf(banner.drawKey);
     if (total === null) {
         return { type: 1, components: [{
-            type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} ${shortName(banner.drawKey)} · no data at this region`,
+            type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} ${lineName(banner)} · no data at this region`,
             options: [{ label: 'No data at this region', value: '0', default: true }], disabled: true
         }] };
     }
     const options = [];
     const icon = meta.tier ? emojis.parseEmoji(emojis[meta.tier]) : undefined;
-    // The action FIRST (2026-10-13 23:01 EDT, his intake: "make the \"remove\" line the first item"), then the progress values. Its mark is an emoji like the tier badge, not an "✕" typed into the label, and it reads "Remove this Selection" (2026-10-14 13:13 EDT, Harkirat). Move Up is gone with the order it changed: nothing but a running total ever read the order (2026-10-14 13:13 EDT, his call: "let's remove it for now").
+    // The action FIRST (2026-10-13 23:01 EDT, his intake), then the progress values. His own Cross emoji (2026-10-14 16:51 EDT).
     if (removable) {
-        // His own Cross emoji (2026-10-14 16:51 EDT), in place of the ✖️ character.
-        options.push({ label: 'Remove this Selection', value: 'del', emoji: emojis.parseEmoji(emojis.cross), description: banner.pullsDone ? `Drops It and Its ${banner.pullsDone}/${total} Spins` : 'Takes It Out of This Calculation' });
+        options.push({ label: 'Remove this Selection', value: 'del', emoji: emojis.parseEmoji(emojis.cross), description: banner.pullsDone ? `Drops It and Its ${banner.pullsDone}/${total} ${unit}` : 'Takes It Out of This Calculation' });
     }
-    for (let n = 0; n <= total && options.length < 25; n++) {
-        // The draw's name rides in the LABEL (2026-10-13 12:40 EDT): a closed select shows only the chosen option's label.
-        options.push({
-            // Progress FIRST (2026-10-13 23:10 EDT): a closed select on a phone shows about 30 characters, and "#2 Legendary Weapon (Non-Reactive) — 7/10 Items" lost the progress, the one thing the line exists to set. "Spins" for a count of attempts, "Items" for what a draw holds (2026-10-14 13:13 EDT, Harkirat: "when generally refering to them, it's items, when referring to a specific count/attempts then spins"). The description gives both sides of the spend: what those spins cost, and what finishing costs from there. Only the CHOSEN value carries the line number and the draw (2026-10-14 13:16 EDT): a closed select shows only that one label, and in the open list the rest repeated "#1 · … · Legendary Weapon (Reactive)" eleven times. It also pays for the longer spend description inside Discord's message size cap, which is what keeps five lines a page.
-            label: n === banner.pullsDone ? `#${index + 1} · ${n}/${total} Spins · ${shortName(banner.drawKey)}` : `${n}/${total} Spins`,
-            value: String(n),
-            description: `${fmt(spentSoFar(basket.region, banner.drawKey, n))} CP Spent · ${n === total ? 'Finished' : `${fmt(remainingToFinish(basket.region, banner.drawKey, n))} CP to Completion`}`,
-            // The tier icon rides on the CHOSEN value only (2026-10-14 00:12 EDT): that is the option a closed select shows, and an icon on every value took six lines' dropdowns past Discord's message size limit (40005, measured 10,225 bytes of components).
-            ...(icon && n === banner.pullsDone ? { emoji: icon } : {}),
-            // `default` only on the chosen value: `default: false` on the other ten cost every line ~170 characters of Discord's size cap.
-            ...(n === banner.pullsDone ? { default: true } : {})
-        });
+    // An armory line that did not come from a season draw also picks its SIZE (2026-10-18 12:15 EDT): one pick sets both, "2/5 Weapons", across the sizes he has seen (3–6 items, 22 values). A season draw's size is its own item count, so its line lists only that size.
+    const sizes = isArmoryKey(banner.drawKey) && !banner.title ? ARMORY_SIZES : [isArmoryKey(banner.drawKey) ? armorySize(banner) : total];
+    for (const size of sizes) {
+        for (let n = 0; n <= size && options.length < 25; n++) {
+            const chosen = n === banner.pullsDone && (sizes.length === 1 || size === armorySize(banner));
+            // Spins toward the next item count only on the chosen value; the others price a fresh armory of that size.
+            const line = isArmoryKey(banner.drawKey) ? { ...banner, size, spinsIn: chosen ? banner.spinsIn : 0 } : banner;
+            const left = remainingToFinish(basket.region, banner.drawKey, n, line);
+            options.push({
+                // The draw's name rides in the LABEL of the chosen value only (2026-10-13 12:40 EDT): a closed select shows only that label. Progress first (2026-10-13 23:10 EDT): a phone shows about 30 characters.
+                label: chosen ? `#${index + 1} · ${n}/${size} ${unit} · ${lineName(banner)}`.slice(0, 100) : `${n}/${size} ${unit}`,
+                value: sizes.length > 1 ? `${size}:${n}` : String(n),
+                description: `${fmt(spentSoFar(basket.region, banner.drawKey, n, line))} CP Spent · ${n === size ? 'Finished' : `${fmt(left)} CP to Completion`}`,
+                // The tier icon and `default` only on the chosen value: each costs every line characters of Discord's size cap (2026-10-14 00:12 EDT).
+                ...(icon && chosen ? { emoji: icon } : {}),
+                ...(chosen ? { default: true } : {})
+            });
+        }
     }
-    return { type: 1, components: [{ type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} ${shortName(banner.drawKey)}`, options }] };
+    return { type: 1, components: [{ type: 3, custom_id: encodeState('bpulls', rowState), placeholder: `#${index + 1} ${lineName(banner)}`.slice(0, 150), options }] };
 }
 
 // The draw picker once a calculation has lines (Harkirat chose this shape 2026-10-13 19:47 EDT, after trying three on the dev bot). Each draw ticked adds ONE line of it, placed right after that draw's existing lines, so ticking a draw you already have runs another of it; nothing is ever shown ticked, and removing lives in each line's own dropdown. It sits BELOW the lines: the list grows above the control that adds to it, and an empty form shows its first-pick picker in that same spot.
@@ -474,20 +493,25 @@ function addDrawsRow(state, basket) {
     return { type: 1, components: [{
         type: 3, custom_id: encodeState('addmore', state),
         placeholder: room > 0 ? 'Add more draws to selection' : `Full: a calculation holds up to ${MAX_LINES} draws`,
-        min_values: 1, max_values: Math.max(1, Math.min(DRAW_KEYS.length, room)), disabled: room <= 0,
-        options: DRAW_KEYS.map(key => {
+        min_values: 1, max_values: Math.max(1, Math.min(CALC_KEYS.length, room)), disabled: room <= 0,
+        options: CALC_KEYS.map(key => {
             const have = basket.banners.filter(b => b.drawKey === key).length;
             return {
                 label: shortName(key), value: key,
                 // The count leads (2026-10-14 16:51 EDT, Harkirat: "1x in your selection"). An option description is plain text in Discord: it cannot be bold.
                 description: have ? `${have}× In Your Selection · Pick to Add Another` : freshDrawDescription(basket.region, key),
-                emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier])
+                emoji: emojis.parseEmoji(emojis[metaOf(key).tier])
             };
         })
     }] };
 }
 // One description for a draw nobody has started, shared by both pickers: what it holds and what it costs at this region, in Title Case, never its name again.
 function freshDrawDescription(region, key) {
+    // An armory is priced per item (his /draw prices wording, "Per Weapon").
+    if (isArmoryKey(key)) {
+        const a = SERIES_ARMORY[key];
+        return ARMORY_SPIN_CP[region] ? `${fmt(a.spins * ARMORY_SPIN_CP[region])} CP per ${a.noun} · ${a.spins} Spins Each` : `No Data at ${regionLabel(region)} Yet`;
+    }
     const total = pullCount(region, key);
     if (total === null) return `No Data at ${regionLabel(region)} Yet`;
     const upgrade = upgradeCost(region, key);
@@ -582,14 +606,12 @@ function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
     };
 }
 
-// NO EMOJI on either button (2026-08-27, Harkirat) -- `mngEdit` was a pencil paired with a button labelled "Save", which never matched, and a destructive action reads clearer without decoration. Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement).
+// NO EMOJI on either button (2026-08-27, Harkirat) -- `mngEdit` was a pencil paired with a button labelled "Save", which never matched, and a destructive action reads clearer without decoration. Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement). The Upgrade button left this row 2026-10-18 12:15 EDT (Harkirat: "yeah sure"): it lives beside each Mythic line on Set Draw Progress, with every other per-line setting.
 function basketManageRows(state, basket) {
     // Balance and Upgrade side by side (2026-10-14 16:51 EDT, Harkirat: "move upgrade button beside the Set balance button"). Save, Rename and Delete moved to the Saved view, where the calculation's own section manages it (2026-10-14 16:51 EDT). With two or more Mythic lines the upgrade control is a dropdown, which takes its own row under it.
-    const up = upgradeControls(state, basket);
     return [{ type: 1, components: [
-        { type: 2, style: 2, label: balanceLabel(basket), custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) },
-        up.button
-    ].filter(Boolean) }, up.row].filter(Boolean);
+        { type: 2, style: 2, label: balanceLabel(basket), custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) }
+    ] }];
 }
 
 // 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself. `showReset` is false on the setup form: there is no computed result to clear yet, and a live button that does nothing visible is worse than an absent one. On a submitted calculation it reads "New Calculation" -- Harkirat's own phrase for the action that ends a result's persistence and returns to the form. Draw Prices · New Calculation · Help (2026-10-13 23:01 EDT, his intake: Draw Info removed, since /draw prices shows the same draws; New Calculation on EVERY page once there is something to clear, where it used to appear only on the result). "View Saved", no counter (2026-10-14 17:58 EDT, Harkirat).
@@ -623,11 +645,9 @@ function bottomNavRow(state, { showReset = true, savedCount = 0, onSaved = false
 // The setup form's balance row: Set Balance with Upgrade beside it (2026-10-14 16:51 EDT). Both are disabled until a draw exists, because both write to a calculation document that does not exist yet and would otherwise accept input and silently discard it.
 function setupBalanceRows(state, basket) {
     const hasBasket = Boolean(basket && basket._id);
-    const up = upgradeControls(state, basket, { disabled: !hasBasket });
     return [{ type: 1, components: [
-        { type: 2, style: 2, disabled: !hasBasket, custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2), label: balanceLabel(basket) },
-        up.button
-    ].filter(Boolean) }, up.row].filter(Boolean);
+        { type: 2, style: 2, disabled: !hasBasket, custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2), label: balanceLabel(basket) }
+    ] }];
 }
 // Order New Calculation · View Saved · Calculate (2026-10-14 17:58 EDT, Harkirat: "move new calc button to the front of the row. saved in middle. calculate last"). The form's last row, under its own divider (2026-10-14 16:51 EDT): Calculate (the ONLY Primary button in this command, with his Sparkles emoji), then New Calculation once there is something to clear, then Saved.
 function setupSubmitRow(state, basket, savedCount) {
@@ -660,14 +680,16 @@ function buildExportText(basket, currency = 'USD') {
     let spentAll = 0;
     for (const g of groupForDisplay(basket.banners)) {
         const one = perBanner[g.first];
-        const total = pullCount(basket.region, g.drawKey);
-        const name = `${shortName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ''}`;
-        if (!one || !one.priced || total === null) { out.push(`- ${name}: ${g.pullsDone} Spins · no price at this region`); continue; }
-        const spent = (spentSoFar(basket.region, g.drawKey, g.pullsDone) || 0) * g.count;
+        const total = pullCount(basket.region, g.drawKey, g.line);
+        const unit = unitOf(g.drawKey);
+        const name = `${lineName(g.line)}${g.count > 1 ? ` ×${g.count}` : ''}`;
+        if (!one || !one.priced || total === null) { out.push(`- ${name}: ${g.pullsDone} ${unit} · no price at this region`); continue; }
+        const spent = (spentSoFar(basket.region, g.drawKey, g.pullsDone, g.line) || 0) * g.count;
         spentAll += spent;
         const finish = one.cost * g.count;
         const left = total - g.pullsDone;
-        out.push(`- **${name}**: ${g.pullsDone}/${total} Spins · ${left ? `${left} left · ${fmt(finish)} CP to finish` : 'finished'}${spent ? ` · ${fmt(spent)} CP spent` : ''}`);
+        const spinsIn = isArmoryKey(g.drawKey) && left && g.line.spinsIn ? ` · ${g.line.spinsIn} spins in` : '';
+        out.push(`- **${name}**: ${g.pullsDone}/${total} ${unit}${spinsIn} · ${left ? `${left} left · ${fmt(finish)} CP to finish` : 'finished'}${spent ? ` · ${fmt(spent)} CP spent` : ''}`);
         if (upgradeIsSet(one.upgrade)) out.push(`  - Upgrade: ${upgradeTargetText(one.upgrade).replace(/ (Cards|Coins)$/, m => m.toLowerCase())}${g.count > 1 ? ' each' : ''}`);
     }
     // The pooled upgrade, once per currency (cards and coins are shared across every Mythic line).
@@ -701,7 +723,7 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     const { total: needed, drawTotal, perBanner, upgrades } = costOf(basket);
     const unpriced = perBanner.filter(b => !b.priced);
     const balance = basket.balance || 0;
-    const spent = (basket.banners || []).reduce((n, b) => n + (spentSoFar(basket.region, b.drawKey, b.pullsDone) || 0), 0);
+    const spent = (basket.banners || []).reduce((n, b) => n + (spentSoFar(basket.region, b.drawKey, b.pullsDone, b) || 0), 0);
     const shortfall = needed - balance;
     // THE FULL BREAKDOWN IS THE SAME LAYOUT WITH ITS WORKING SHOWN (2026-10-17 17:30 EDT, Harkirat: "use the simplified version as a reference point ... so they actually flow better as 2 matching sets instead of 2 completely different designs and structures"). It adds what each sum is made of, a `-#` line of terms under Full Cost and Spent Already, and in the purchase the Stock Up option and the estimates note. At many lines the terms group identical lines ("2 × `4,950 CP`"), then collapse to "across N lines".
     const priced = lineFigures(basket).filter(f => f.priced);
@@ -768,19 +790,22 @@ function compactSelectionText(basket, level, detail = false) {
     const rows = breakdownRows(lineFigures(basket), level >= 3 ? 4 : level >= 1 ? 1 : 0);
     const out = [];
     for (const r of rows) {
-        const icon = DRAW_META[r.drawKey] ? emojis[DRAW_META[r.drawKey].tier] : emojis.smallDot;
+        const icon = metaOf(r.drawKey) ? emojis[metaOf(r.drawKey).tier] : emojis.smallDot;
         const num = r.byType ? '' : `${r.from === r.to ? `#${r.from}` : `#${r.from}–#${r.to}`} · `;
         const many = r.count > 1;
-        out.push(`**${icon} ${num}${shortName(r.drawKey)}${many ? ` ×${r.count}` : ''}**`);
+        out.push(`**${icon} ${num}${r.byType ? shortName(r.drawKey) : lineName(r)}${many ? ` ×${r.count}` : ''}**`);
+        // A season draw names its Draw Type under its own name (decided 2026-10-17 21:28 EDT).
+        if (r.title && !r.byType) out.push(`-# ${shortName(r.drawKey)}`);
         if (!r.priced) { out.push(`> -# No sourced price at ${regionLabel(basket.region)}, so it is left out of the totals.`); continue; }
         // A per-type row carries its lines' sums, so it never says "each".
         const each = many && !r.byType ? ' each' : '';
-        out.push(`> **Price: \`${fmt(r.drawFull)} CP\`**${each} · \`${r.pullsDone}/${r.total ?? '?'}\` Attempts`);
+        const unit = isArmoryKey(r.drawKey) ? unitOf(r.drawKey) : 'Attempts';
+        out.push(`> **Price: \`${fmt(r.drawFull)} CP\`**${each} · \`${r.pullsDone}/${r.total ?? '?'}\` ${unit}${r.spinsIn && !r.byType ? ` + ${r.spinsIn} spins` : ''}`);
         // The spent / to-complete line is the Full Breakdown's only (2026-10-17 17:41 EDT, Harkirat: "for the simplified view, we should drop the '0 CP Spent · 4,950 CP To Complete' lines ... And show them during full breakdown view").
         if (detail && level < 2) out.push(`> -# \`${fmt(r.spent)} CP\` Spent · \`${fmt(r.drawLeft)} CP\` To Complete${each}`);
         if (r.up || r.upNeed) {
-            const u = MYTHIC_UPGRADE[r.drawKey];
-            const icon2 = r.drawKey === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
+            const u = MYTHIC_UPGRADE[upgradeKeyOf(r.drawKey)];
+            const icon2 = upgradeKeyOf(r.drawKey) === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
             out.push(`> -# ${icon2} Upgrade${r.up && !r.byType ? ` ${upgradeTransition(r.up)}` : ''} · \`${fmt(r.upNeed)} ${u.currency}\`${each}`);
         }
     }
@@ -804,45 +829,159 @@ function titleBlock(basket) {
 // 🔴 THIS REVERSES THIS COMMAND'S OWN "never a setup form again" RULE, deliberately (Harkirat, 2026-08-27). That rule came from a single-draw panel where five interactions preceded any figure AT ALL, every single visit. Two things make this different, and both are load-bearing rather than cosmetic:
 //   1. ONE screen. The saved-calculations list and the form share it -- loading an old calculation and starting a new one are both one interaction from opening the command, never a hop apart.
 //   2. IT PERSISTS. Pressing Calculate sets `submitted` on the basket document, so the result is what you come back to -- until you press New Calculation. The form is filled in once, not on every visit.
-// If either of those is ever removed, this is the old failure again and the old rule should come back.
-function buildSetupPanel(state, basket, accentColor, { region, notice = null, dropConfirm = null, savedCount = 0 } = {}) {
+// If either of those is ever removed, this is the old failure again and the old rule should come back. THE FORM AS A SUMMARY (2026-10-18 12:15 EDT, Harkirat's Mock B: "i think B might be better? we're we nearly at component limit for the landing panel anyway"). Measured that minute: 5 lines cost 30–32 of 40 components and 10.7–11.4k of the 12k size budget. Each line is now a line of text, and every per-line control (spins, a Series Armory's size and spins toward the next item, a Mythic upgrade) is on Set Draw Progress, one press away.
+function selectionSummary(basket, max = 12) {
+    const lines = (basket.banners || []).map((b, i) => {
+        const total = pullCount(basket.region, b.drawKey, b);
+        const icon = metaOf(b.drawKey) ? emojis[metaOf(b.drawKey).tier] : emojis.smallDot;
+        const extras = [];
+        if (isArmoryKey(b.drawKey) && b.spinsIn && total !== null && b.pullsDone < total) extras.push(`${b.spinsIn} Spins In`);
+        if (Array.isArray(b.upWant) && upgradeKeyOf(b.drawKey) && b.upWant.some(Boolean)) extras.push(`Upgrade to ${upgradeStateText(b.drawKey, b.upWant)}`);
+        const head = `**#${i + 1}** ${icon} ${lineName(b)} · \`${b.pullsDone}/${total ?? '?'}\` ${unitOf(b.drawKey)}${extras.length ? ` · ${extras.join(' · ')}` : ''}`;
+        return b.title ? `${head}\n-# ${shortName(b.drawKey)}` : head;
+    });
+    if (lines.length > max) return [...lines.slice(0, max), `-# …and ${lines.length - max} more, all on **Set Draw Progress**.`].join('\n');
+    return lines.join('\n');
+}
+function progressButton(state) { return { type: 2, style: 2, label: 'Set Draw Progress', custom_id: encodeState('progress', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
+
+// THIS SEASON'S DRAWS (sidelined 2026-10-17 21:29 EDT, built 2026-10-18 12:15 EDT). First on the form (his "yes"). Each option is the draw's own title with its Draw Type under it (decided 2026-10-17 21:28 EDT). The list is listSeasonDraws's, read by the caller and passed in, because building a panel never touches the database.
+function seasonDrawsRow(state, seasonDraws, room) {
+    if (!seasonDraws || !seasonDraws.length) return null;
+    const list = seasonDraws.slice(0, 25);
+    return { type: 1, components: [{
+        type: 3, custom_id: encodeState('season', state),
+        placeholder: room > 0 ? "Add this season's draws" : `Full: a calculation holds up to ${MAX_LINES} draws`,
+        min_values: 1, max_values: Math.max(1, Math.min(list.length, room)), disabled: room <= 0,
+        options: list.map(d => ({
+            label: String(d.title).slice(0, 100), value: d.id,
+            // The calculator's own short name for the type, never the "... Draw" full name (his rename rule, 2026-10-13 23:03 EDT).
+            description: `${shortName(d.drawKey)}${isArmoryKey(d.drawKey) ? ` · ${d.size} ${unitOf(d.drawKey)}` : ''}${d.date ? ` · ${new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}` : ''}`.slice(0, 100),
+            emoji: emojis.parseEmoji(emojis[metaOf(d.drawKey).tier])
+        }))
+    }] };
+}
+
+function buildSetupPanel(state, basket, accentColor, { region, notice = null, dropConfirm = null, savedCount = 0, seasonDraws = null } = {}) {
     // A shim, so every row builder below works identically whether a draft document exists yet or not.
     const draft = basket || { banners: [], region: region || 'region_10', balance: 0, includeUpgrades: false };
     const banners = draft.banners || [];
     const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
     if (notice) components.push({ type: 10, content: `-# ${notice}` });
+    const season = seasonDrawsRow(state, seasonDraws, MAX_LINES - banners.length);
+    if (!banners.length) {
+        components.push({ type: 10, content: season ? "## Start a Calculation\n-# Pick this season's draws, or any draw types. You can add more later." : '## Start a Calculation\n-# Pick all the draw types you want to calculate. You can add more later.' });
+        if (dropConfirm) components.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
+        else {
+            if (season) components.push(season);
+            components.push(typesSelectRow(state, draft));
+        }
+    } else {
+        // The summary rides in a Section with Set Draw Progress as its button, the way the result's selection carries Edit Selection.
+        components.push({ type: 9, components: [{ type: 10, content: `## ${selectionHeading(banners)}\n${selectionSummary(draft)}` }], accessory: progressButton(state) });
+        if (dropConfirm) components.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
+        else {
+            components.push({ type: 14, spacing: 1, divider: false });
+            components.push({ type: 10, content: season ? "### Add More Draws\n-# Add this season's draws, or more draw types and copies of the same one." : '### Add More Draws\n-# Select more draw types or add more of the same type to calculate multiple at the same time.' });
+            if (season) components.push(season);
+            components.push(addDrawsRow(state, draft));
+        }
+    }
+    components.push(regionCaption(), regionRow(state, draft), ...setupBalanceRows(state, basket), { type: 14, spacing: 2, divider: true }, setupSubmitRow(state, basket, savedCount));
+    return { type: 17, accent_color: accentColor, components };
+}
 
-    // The saved-calculations loader left this screen for its own view (2026-10-14 13:13 EDT, Harkirat's footer-button idea, built as a view of this message rather than a popup): the nav row's Saved button reaches it from every screen, so a first-timer still sees that saving exists. Headings name what each block is FOR, with one short hint each (2026-10-14 00:08 EDT and 2026-10-14 13:13 EDT, Harkirat: "Start a Calculation" on the empty screen; "## Your Selection" over "### Set Current Attempts" once there are lines; Title Case, as every heading in the calculator). "Your Selections" from two draws up, and "Adjust Partial Completion" (2026-10-14 16:51 EDT, Harkirat).
-    components.push({ type: 10, content: banners.length
-        ? `## ${selectionHeading(banners)}\n### Adjust Partial Completion\n-# Set how many spins you've already performed on each draw. \`0\` means draw is unattempted.`
-        : '## Start a Calculation\n-# Pick all the draw types you want to calculate. You can add more later.' });
-    // The untick confirm replaces the picker here too (2026-10-13 12:43 EDT). With lines, the picker moves below them as "Add more draws to selection" (addDrawsRow).
-    if (dropConfirm) components.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
-    else if (!banners.length) components.push(typesSelectRow(state, draft));
-
-    // No heading and no divider before the region row (2026-10-14 13:13 EDT, his intake); a spacer keeps the room the divider gave. The "Tweak Calculation" heading's own top margin replaces the spacer that sat here (2026-10-14 17:59 EDT); keeping both cost the component that keeps five lines a page.
-    const tail = [regionCaption(), regionRow(state, draft), ...setupBalanceRows(state, basket), { type: 14, spacing: 2, divider: true }, setupSubmitRow(state, basket, savedCount)];
-    // Builds the middle of the form at one lines-per-page: the lines, the pager, then the add picker under its own heading.
+// SET DRAW PROGRESS (2026-10-18 12:15 EDT): every line's progress in one place (his ask, "a single button for 'Set Draw Progress' that changes the panel"). The rule for every kind of draw, now and later: the line's DROPDOWN is its main progress, and a BUTTON beside the line's name opens everything else it has. A Mythic draw's button is its Upgrade; a Series Armory's is Spins In; a Mythic Weapon armory has both, so its two buttons sit in a row under the dropdown. Advanced draws, when they come, get the same shape.
+function lineExtraButtons(state, basket, index) {
+    const b = basket.banners[index];
+    const out = [];
+    if (upgradeKeyOf(b.drawKey)) {
+        const line = upgradePlan(basket).lines.find(l => l.index === index);
+        const set = upgradeIsSet(line);
+        out.push({ type: 2, style: set ? 3 : 2, label: `Upgrade: ${set ? upgradeStateText(b.drawKey, line.want) : 'None'}`.slice(0, 80), custom_id: encodeState('upgset', { ...state, focus: index }), ...(upgradeCardEmoji(b.drawKey) ? { emoji: emojis.parseEmoji(upgradeCardEmoji(b.drawKey)) } : {}) });
+    }
+    if (isArmoryKey(b.drawKey)) {
+        const done = (b.pullsDone || 0) >= armorySize(b);
+        out.push({ type: 2, style: b.spinsIn && !done ? 3 : 2, label: done ? 'Spins In: Finished' : `Spins In: ${b.spinsIn || 0}`, custom_id: encodeState('spinsin', { ...state, focus: index }), disabled: done });
+    }
+    return out;
+}
+function progressLineBlocks(state, basket, index) {
+    const b = basket.banners[index];
+    const icon = metaOf(b.drawKey) ? emojis[metaOf(b.drawKey).tier] : emojis.smallDot;
+    const text = `**#${index + 1}** ${icon} ${lineName(b)}${b.title ? `\n-# ${shortName(b.drawKey)}` : ''}`;
+    const extra = lineExtraButtons(state, basket, index);
+    const head = extra.length === 1 ? { type: 9, components: [{ type: 10, content: text }], accessory: extra[0] } : { type: 10, content: text };
+    const out = [head, bannerPullsRow(state, basket, index, { removable: true })];
+    if (extra.length > 1) out.push({ type: 1, components: extra });
+    return out;
+}
+function buildProgressPanel(state, basket, accentColor, { notice = null, dropConfirm = null } = {}) {
+    const banners = basket.banners || [];
+    const top = [titleBlock(basket), { type: 14, spacing: 2, divider: true },
+        { type: 10, content: "## Set Draw Progress\n-# Set how far you are on each draw. `0` means you haven't started it. A draw with more to set has its button beside its name." }];
+    if (notice) top.push({ type: 10, content: `-# ${notice}` });
+    if (dropConfirm) top.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
+    const back = [{ type: 14, spacing: 2, divider: true }, { type: 1, components: [{ type: 2, style: 2, label: 'Back to Calculation', custom_id: encodeState('progback', state), emoji: emojis.parseEmoji(emojis.left) }] }];
     const build = perPage => {
         const pages = linePages(banners, perPage);
         const bpage = Math.min(state.bpage || 0, pages.length - 1);
-        const mid = pages[bpage].map(i => bannerPullsRow(state, draft, i, { removable: true }));
+        const mid = [];
+        pages[bpage].forEach((i, k) => { if (k) mid.push({ type: 14, spacing: 1, divider: true }); mid.push(...progressLineBlocks(state, basket, i)); });
         if (pages.length > 1) mid.push(pageNavRow({ ...state, bpage }, pages.length));
-        if (banners.length && !dropConfirm) {
-            // A sub-heading of the selection, worded as the action (2026-10-14 16:51 EDT, Harkirat: "should be ###. also reword to add more draws"). Room above it (2026-10-14 17:58 EDT, Harkirat: "add some space above the add more draws heading").
-            mid.push({ type: 14, spacing: 1, divider: false });
-            mid.push({ type: 10, content: '### Add More Draws\n-# Select more draw types or add more of the same type to calculate multiple at the same time.' });
-            mid.push(addDrawsRow(state, draft));
-        }
-        return [...components, ...mid, ...tail];
+        return [...top, ...mid, ...back];
     };
-    // Fewer lines per page until it fits.
+    // Fewer lines per page until it fits (the same two budgets as the form): a Series Armory's 22-value dropdown is about twice a ladder line's size.
     let out = [];
     for (let perPage = SETUP_LINES_PER_PAGE; perPage >= 1; perPage--) {
         out = build(perPage);
         if (1 + countComponents(out) <= SETUP_CONTAINER_BUDGET && JSON.stringify(out).length <= SETUP_JSON_BUDGET) break;
     }
     return { type: 17, accent_color: accentColor, components: out };
+}
+
+// SPINS IN (2026-10-18 12:15 EDT): spins already done toward a Series Armory's next item, one optional box. Blank is 0.
+function buildSpinsInModal(state, basket, index) {
+    const b = basket?.banners?.[index];
+    if (!b || !isArmoryKey(b.drawKey)) return null;
+    const a = SERIES_ARMORY[b.drawKey];
+    return {
+        custom_id: encodeState('spinsinsave', { ...state, focus: index }), title: `#${index + 1} ${lineName(b)}`.slice(0, 45),
+        components: [{ type: 18, label: `Spins toward the next ${a.noun.toLowerCase()}`, description: `0 to ${a.spins - 1}. A ${a.noun.toLowerCase()} is guaranteed at ${a.spins} spins.`,
+            component: { type: 4, custom_id: 'spins', style: 1, required: false, max_length: 4, placeholder: 'e.g. 40', ...(b.spinsIn ? { value: String(b.spinsIn) } : {}) } }]
+    };
+}
+// Reads the box back: a whole number from 0 to one less than an item's spins, or null with nothing saved.
+function readSpinsIn(drawKey, raw) {
+    const a = SERIES_ARMORY[drawKey];
+    if (!a) return null;
+    const t = String(raw ?? '').trim().replace(/spins?$/i, '').trim();
+    if (t === '') return 0;
+    const v = Number(t);
+    return Number.isInteger(v) && v >= 0 && v < a.spins ? v : null;
+}
+
+// THIS SEASON'S DRAWS, read from the database (2026-10-18 12:15 EDT, Harkirat's rule): every draw stored this season, past, live and upcoming. The list is wiped at the season's end (`bpEnd`): after it, a draw stays only while it still runs, its calendar end date later than now, and a draw with no calendar end date ends with the season. "only remove previous season's draws automatically; basically linking the draw calc dropdown wipe to season end date". Left out: a draw with no Draw Type or Unsure / Unknown (nothing to price), and the Advanced draws (not in the calculator yet).
+async function listSeasonDraws(nowMs = Date.now()) {
+    const SeasonalData = require('../models/SeasonalData');
+    const { isPricedDrawType, armoryItemCount } = require('../utils/drawTypes');
+    const { isSameDrawTitle } = require('../utils/search');
+    const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
+    if (!doc) return [];
+    const bpEndMs = doc.bpEnd && !doc.bpEndTBD ? new Date(doc.bpEnd).getTime() : null;
+    const seasonOver = bpEndMs !== null && nowMs > bpEndMs;
+    const calendarDraws = (doc.calendar || []).filter(e => e.category === 'draw');
+    const out = [];
+    for (const d of [...(doc.newDraws || []), ...(doc.returningDraws || [])]) {
+        if (!d.priceType || !isPricedDrawType(d.priceType) || !CALC_KEYS.includes(d.priceType)) continue;
+        if (seasonOver) {
+            const cal = calendarDraws.find(e => isSameDrawTitle(e.title, d.title));
+            const endMs = cal && cal.endDate ? new Date(cal.endDate).getTime() : bpEndMs;
+            if (!(endMs > nowMs)) continue;
+        }
+        out.push({ id: String(d._id), title: d.title, drawKey: d.priceType, date: d.date || null, size: isArmoryKey(d.priceType) ? Math.max(1, armoryItemCount(d)) : null });
+    }
+    return out.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 }
 
 // ==========================================
@@ -979,14 +1118,16 @@ function upgradeWarnings(basket, upgrades) {
 function lineFigures(basket) {
     const plan = upgradePlan(basket);
     return (basket.banners || []).map((b, i) => {
-        const left = remainingToFinish(basket.region, b.drawKey, b.pullsDone);
+        const left = remainingToFinish(basket.region, b.drawKey, b.pullsDone, b);
         const priced = left !== null;
-        const spent = priced ? spentSoFar(basket.region, b.drawKey, b.pullsDone) : 0;
+        const spent = priced ? spentSoFar(basket.region, b.drawKey, b.pullsDone, b) : 0;
+        const total = pullCount(basket.region, b.drawKey, b);
+        const spinsIn = isArmoryKey(b.drawKey) && total !== null && b.pullsDone < total ? (b.spinsIn || 0) : 0;
         const leftAll = priced ? left : 0;
         // The draw and its Mythic upgrade are kept apart (2026-10-16 14:32 EDT, Harkirat's layout states the upgrade on its own). Since 2026-10-17 13:17 EDT a line's upgrade is what it still needs in CARDS or COINS (`upNeed`), because both are pooled across lines and only the pool becomes CP; `full`/`left` are the draw alone.
         const up = plan.lines.find(l => l.index === i) || null;
         const upNeed = upgradeIsSet(up) ? up.need : 0;
-        return { n: i + 1, drawKey: b.drawKey, pullsDone: b.pullsDone, total: pullCount(basket.region, b.drawKey), priced, spent, left: leftAll, full: spent + leftAll, drawLeft: leftAll, drawFull: spent + leftAll, up: upNeed ? up : null, upNeed, upKey: up ? JSON.stringify([up.have, up.want]) : '' };
+        return { n: i + 1, drawKey: b.drawKey, title: b.title || null, spinsIn, pullsDone: b.pullsDone, total, priced, spent, left: leftAll, full: spent + leftAll, drawLeft: leftAll, drawFull: spent + leftAll, up: upNeed ? up : null, upNeed, upKey: JSON.stringify([up ? up.have : null, up ? up.want : null, b.title || null, total, spinsIn]) };
     });
 }
 function breakdownRows(figs, level) {
@@ -1108,7 +1249,7 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
         { type: 10, content: [
             '### 🧭 How It Works',
             '1. **Pick your draws** under Start a Calculation',
-            '2. **Set your spins** on any draw you have already started',
+            '2. **Set your progress** under Set Draw Progress, on any draw you have already started',
             '3. **Set your region and balance** under Tweak Calculation',
             `4. **Press ${emojis.calculate} Calculate** for the CP you need and the cheapest way to buy it`
         ].join('\n') },
@@ -1170,15 +1311,16 @@ function buildCalculatorPanel(state, basket, accentColor, options = {}) {
     if (!basket) {
         const container = state.basketId
             ? buildMissingBasketPanel(state, accentColor, savedCount)
-            : buildSetupPanel(state, null, accentColor, { region: options.region, notice: options.notice, savedCount });
+            : buildSetupPanel(state, null, accentColor, { region: options.region, notice: options.notice, savedCount, seasonDraws: options.seasonDraws });
         return [container, nav({ inForm: true })];
     }
-    // 🔴 `submitted` is what separates a draft from a result, and it lives on the DOCUMENT, not the customId -- that is the whole reason a result survives a restart and "persists until reset / new calculation".
+    // 🔴 `submitted` is what separates a draft from a result, and it lives on the DOCUMENT, not the customId -- that is the whole reason a result survives a restart and "persists until reset / new calculation". Page 5 is Set Draw Progress, for a draft and a submitted calculation alike.
+    if (state.page === 5 && basket.banners.length) return [buildProgressPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm }), nav({ inForm: true })];
     if (!basket.submitted) {
-        return [buildSetupPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm, savedCount }), nav({ inForm: true })];
+        return [buildSetupPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm, savedCount, seasonDraws: options.seasonDraws }), nav({ inForm: true })];
     }
     // Edit is a VIEW (page 2) on a calculation that stays submitted (2026-10-13 23:10 EDT): an abandoned edit still reopens on its result, the persistence the form's own header calls load-bearing. Calculate returns to page 0.
-    if (state.page === 2) return [buildSetupPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm, savedCount }), nav({ inForm: true })];
+    if (state.page === 2) return [buildSetupPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm, savedCount, seasonDraws: options.seasonDraws }), nav({ inForm: true })];
     const container = buildCostPage(state, basket, accentColor, options);
     return [container, nav({ inForm: true })];
 }
@@ -1231,7 +1373,7 @@ async function execute(interaction) {
     const viewState = pageChoice === 'saved' ? { ...openState, page: 3 } : pageChoice === 'start' ? state : openState;
     const viewBasket = pageChoice === 'start' ? null : latest;
     const panel = buildCalculatorPanel(viewState, viewBasket, accentColor, {
-        savedBaskets, region, notice: shortcut.notice,
+        savedBaskets, region, notice: shortcut.notice, seasonDraws: await listSeasonDraws(),
         currency: prefs?.cpCurrency || 'USD',
         client: interaction.client,
         liveDoubleCPEntry: viewBasket && viewBasket.submitted ? await findLiveDoubleCPEntry() : null
@@ -1248,5 +1390,6 @@ module.exports = {
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
     parseAmount, parseCount, readBalanceFields, applySelection, shortName, SHORT_NAME, slashShortcut,
     buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,
-    setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages
+    setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages,
+    CALC_KEYS, metaOf, unitOf, lineName, freshLine, buildProgressPanel, buildSpinsInModal, readSpinsIn, listSeasonDraws, selectionSummary
 };

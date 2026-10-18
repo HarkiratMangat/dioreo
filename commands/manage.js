@@ -451,8 +451,7 @@ function buildBulkRemoveDrawsModal(drawType) {
     return modal;
 }
 
-// THE DRAW TYPE DROPDOWN, shared by Add and Edit Draw (2026-10-18 11:09 EDT, Harkirat: "a single dropdown for the collective 'draw type' selection and include the armory types within it"). /draw prices' own list in page order (utils/drawTypes.js); the stored type is preselected, and picking nothing leaves it unset. An armory's item count is read off the Items field, so there is no count to pick. A select lives in a modal only inside a Label, which is why both draw forms are built from Labels.
-// REQUIRED, with Unsure / Unknown first (2026-10-18 11:37 EDT, Harkirat: "make it a required field and add the option for 'unsure/unknown' at the top of the list"), on Add and Edit alike so an untyped draw can only come from a bulk paste without a tag. Unknown is a stored flag the portal can list for fixing later.
+// THE DRAW TYPE DROPDOWN, shared by Add and Edit Draw (2026-10-18 11:09 EDT, Harkirat: "a single dropdown for the collective 'draw type' selection and include the armory types within it"). /draw prices' own list in page order (utils/drawTypes.js); the stored type is preselected, and picking nothing leaves it unset. An armory's item count is read off the Items field, so there is no count to pick. A select lives in a modal only inside a Label, which is why both draw forms are built from Labels. REQUIRED, with Unsure / Unknown first (2026-10-18 11:37 EDT, Harkirat: "make it a required field and add the option for 'unsure/unknown' at the top of the list"), on Add and Edit alike so an untyped draw can only come from a bulk paste without a tag. Unknown is a stored flag the portal can list for fixing later.
 function drawTypeLabel(current = '') {
     const { drawTypeChoices } = require('../utils/drawTypes');
     return new LabelBuilder().setLabel('Draw Type').setDescription('How /draw prices and the calculator price this draw').setStringSelectMenuComponent(

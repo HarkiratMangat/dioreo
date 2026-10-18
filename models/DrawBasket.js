@@ -12,7 +12,12 @@ const BannerSchema = new mongoose.Schema({
     pullsDone: { type: Number, default: 0 },
     // Mythic upgrade by tier (2026-10-17 13:17 EDT): what this line has already upgraded (only meaningful once its draw is finished) and what it is planned up to. Weapon `[level]`; character `[battle, arm, color, finalForm]`. Absent = not set, which falls back to the basket's old includeUpgrades toggle (utils/drawCost.js upgradeState).
     upHave: { type: [Number], default: undefined },
-    upWant: { type: [Number], default: undefined }
+    upWant: { type: [Number], default: undefined },
+    // Series Armory lines (2026-10-18 12:13 EDT): `size` is the number of items in the armory and `pullsDone` then counts items collected; `spinsIn` is the spins already done toward the next item (utils/drawCost.js). Absent on every other draw.
+    size: { type: Number, default: undefined },
+    spinsIn: { type: Number, default: undefined },
+    // A line picked from this season's draws (2026-10-18 12:13 EDT) keeps that draw's title, so the line reads as the draw and a saved calculation never moves when the draw is later renamed. `drawKey` is the draw's Draw Type at the time it was picked.
+    title: { type: String, default: undefined }
 }, { _id: false });
 
 const DrawBasketSchema = new mongoose.Schema({

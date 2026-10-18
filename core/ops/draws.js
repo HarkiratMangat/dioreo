@@ -117,8 +117,7 @@ registerEntity('draws', {
             const before = await SeasonalData.findOne(DOC).select(path).lean().session(session);
             const cur = before[path].find(d => String(d._id) === op.target.elementId);
             if (!cur) return { ok: false, reason: 'missing' };
-            // The prior-value assertion IS the conflict check — see core/mongo/positional.js.
-            // A field the stored draw has never had reads `undefined` off this lean() fetch; it is asserted as null, which is what MongoDB matches a missing field with. Found 2026-10-18 11:06 EDT adding `priceType`: every draw saved before it lacks the field.
+            // The prior-value assertion IS the conflict check — see core/mongo/positional.js. A field the stored draw has never had reads `undefined` off this lean() fetch; it is asserted as null, which is what MongoDB matches a missing field with. Found 2026-10-18 11:06 EDT adding `priceType`: every draw saved before it lacks the field.
             const expect = Object.fromEntries(Object.keys(op.payload).map(k => [k, cur[k] === undefined ? null : cur[k]]));
             const res = await updateElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path,
                                               elementId: op.target.elementId, expect, set: op.payload, session });
