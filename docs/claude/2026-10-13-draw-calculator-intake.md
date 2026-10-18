@@ -734,3 +734,11 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > I don't like the simple "back". It kind of feels like back as in a page. Rephrase it's button?
 
 **Built 2026-10-17 22:14 EDT:** the button reads **Show All Draws**, with no arrow.
+
+### Batch 51 — 2026-10-17 22:47 EDT, verbatim
+
+> nah keep the back arrow.
+> you also need to implement that jump within the slash command itself as an option. /draw prices Jump to:Mythic Weapon Draw
+> or something similar
+
+**Built 2026-10-17 22:48 EDT:** Show All Draws keeps the left arrow; `/draw prices jump_to:` opens one draw type, the same 11 choices as the dropdown.

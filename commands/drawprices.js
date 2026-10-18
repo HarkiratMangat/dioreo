@@ -328,8 +328,8 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
         : withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
 
     // Prev/Next between the 2 entry pages, same region -- shared pagination row helper (see utils/paginationRow.js), same style as /calendar and /draws' sub-page navigation. Placed directly under the entries themselves (own divider on both sides) rather than next to the region-switch footer/button below -- sitting right next to that footer's "Switch between viewing 10 CP or 30 CP region prices" text read as if the page arrows were ALSO part of switching region, which they aren't (Harkirat's explicit fix, 2026-07-12).
-    // In a jump the pager is replaced by Show All Draws, to the all-view page that draw sits on. Not "Back" and no arrow (2026-10-17 22:14 EDT, Harkirat: "It kind of feels like back as in a page").
-    const paginationRow = focus ? { type: 1, components: [{ type: 2, style: 2, label: 'Show All Draws', custom_id: `price_subpage_${regionKey}_${currentPage}` }] } : buildPaginationRow({
+    // In a jump the pager is replaced by Show All Draws, to the all-view page that draw sits on. Not "Back" (it read as a page back), but the arrow stays (Harkirat 2026-10-17 22:47 EDT: "nah keep the back arrow"; 2026-10-17 22:14 EDT, Harkirat: "It kind of feels like back as in a page").
+    const paginationRow = focus ? { type: 1, components: [{ type: 2, style: 2, label: 'Show All Draws', emoji: emojis.parseEmoji(emojis.left), custom_id: `price_subpage_${regionKey}_${currentPage}` }] } : buildPaginationRow({
         totalChunks: TOTAL_PAGES,
         currentPage,
         // Looping pager: the helper wraps last↔first and builds the id from the wrapped page.
@@ -408,6 +408,8 @@ module.exports = {
             .setDescription('View the CP cost breakdown for Lucky Draws')
             // Optional direct-jump flag
             .addStringOption(option => option.setName('region').setDescription('Jump directly to a specific CP region').addChoices({ name: '10 CP Region', value: 'region_10' }, { name: '20 CP Region', value: 'region_20' }, { name: '30 CP Region', value: 'region_30' }))
+            // The quick jump from the command line (2026-10-17 22:48 EDT, Harkirat: "you also need to implement that jump within the slash command itself as an option"). Same targets as the dropdown, derived from JUMP_KEYS so the two never differ.
+            .addStringOption(option => option.setName('jump_to').setDescription('Open one draw type on its own').addChoices(...JUMP_KEYS.map(key => ({ name: jumpMeta(key).name, value: key }))))
             .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .addSubcommand(sub => sub
             .setName('calculator')
@@ -449,6 +451,8 @@ module.exports = {
             argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
             const userChoice = interaction.options.getString('region');
             if (userChoice) targetRegion = userChoice;
+            const jumpChoice = interaction.options.getString('jump_to');
+            if (jumpChoice) subpageOverride = `f${jumpChoice}`;
         }
 
         // NOTE: switched from the old per-command `pricesVisibility` field to the shared `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in /settings (Option A).

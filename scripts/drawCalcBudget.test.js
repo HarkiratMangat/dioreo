@@ -1116,6 +1116,8 @@ t('/draw prices: the quick jump opens one draw type, Back replaces the pager, an
             assert.ok(regionIds.every(v => v === String(focused ? `f${focused}` : view)), `${region} ${view}: a region switch keeps the view`);
         }
     }
+    const jumpOpt = dp.data.toJSON().options.find(o => o.name === 'prices').options.find(o => o.name === 'jump_to');
+    assert.deepStrictEqual(jumpOpt.choices.map(c => c.value).sort(), [...keys].sort(), '/draw prices jump_to lists the same draws as the dropdown');
     const one = dp.buildContainer('region_10', 0, true, 'fmythicWeapon', null).flatMap(flat).filter(c => c.type === 10).map(c => c.content).join('\n');
     assert.ok(/Mythic Weapon Draw/i.test(one) && !/Legendary Weapon Draw \(Reactive\)/i.test(one), 'a jump shows only the picked draw');
 });
