@@ -277,3 +277,8 @@ Discord keeps a dropdown's pick after its pop-up is cancelled, and choosing the 
 
 ### /draw calculator's slash options are unwired (2026-10-17 23:38 EDT)
 - Only `visibility` is registered. `draw`, `pulls`, `balance` and `region` are kept in `addCalculatorShortcutOptions` (`commands/drawprices.js`) and applied nowhere, at his word; the shortcut code still runs and finds nothing. How to wire them back is in `docs/db-deferred-list.md` (Someday).
+
+### /draw calculator `page:` and the /help Calculator Guide (2026-10-17 23:53 EDT)
+- **`page:`** on `/draw calculator`: *Start a Calculation* (the landing; the last calculation stays saved), *View Saved* (page 3), *Help*. Blank keeps the old behaviour (reopen the last calculation). Help from the command IS the message, so it carries an **Open Calculator** button (verb `page`, the last calculation or the landing) that turns the message into the calculator; the calculator's own Help button keeps opening its private copy. Harkirat: *"if help is opened direction from the slash command, that means help in that situation needs a button to change it's page to the draw calc"*.
+- **/help → Draws:** the `/draw calculator` block is a Section whose **Calculator Guide** button opens the calculator's full Help privately, through the calculator's own `help` verb with no author, so anyone can press it.
+- **Saved calculations stay off the landing** (my recommendation, 2026-10-17 23:53 EDT; his question): the landing is for starting, View Saved is one press away, and a saved list there would compete with the Start dropdown and the component budget.

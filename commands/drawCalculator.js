@@ -1229,11 +1229,20 @@ async function execute(interaction) {
     let latest = shortcut.create ? await basketStore.save(userId, shortcut.create) : await basketStore.latestForUser(userId);
     if (shortcut.balance !== null) latest = latest ? await basketStore.save(userId, { _id: latest._id, balance: shortcut.balance }) : await basketStore.save(userId, { banners: [], region, balance: shortcut.balance });
     const openState = latest ? { ...state, basketId: String(latest._id) } : state;
-    const panel = buildCalculatorPanel(openState, latest, accentColor, {
+    // `page:` (2026-10-17 23:51 EDT, Harkirat). Help opened from the command IS the message, so it carries an Open Calculator button that turns this message into the calculator (verb `page`, the last calculation or the landing); after that, the calculator's own Help button opens its private copy as usual. View Saved is page 3; Start a Calculation is the landing, leaving the last calculation saved.
+    const pageChoice = interaction.isChatInputCommand() ? interaction.options.getString('page') : null;
+    if (pageChoice === 'help') {
+        const help = buildHelpPanel(accentColor, { region: latest?.region || region, drawKey: latest?.banners?.[0]?.drawKey || 'mythicWeapon', currency: prefs?.cpCurrency || 'USD', client: interaction.client });
+        const openRow = { type: 1, components: [{ type: 2, style: 2, label: 'Open Calculator', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('page', { ...openState, page: 0 }) }] };
+        return sendV2Payload(interaction, [help, openRow], { skipExpiry: true });
+    }
+    const viewState = pageChoice === 'saved' ? { ...openState, page: 3 } : pageChoice === 'start' ? state : openState;
+    const viewBasket = pageChoice === 'start' ? null : latest;
+    const panel = buildCalculatorPanel(viewState, viewBasket, accentColor, {
         savedBaskets, region, notice: shortcut.notice,
         currency: prefs?.cpCurrency || 'USD',
         client: interaction.client,
-        liveDoubleCPEntry: latest && latest.submitted ? await findLiveDoubleCPEntry() : null
+        liveDoubleCPEntry: viewBasket && viewBasket.submitted ? await findLiveDoubleCPEntry() : null
     });
 
     // skipExpiry (spec decision 7, "never expires"): re-derived 2026-08-27 against sendV2Payload's own bar -- "nothing on this panel can go stale". It holds. Every control is author-locked and re-reads the calculation from Mongo on each click, so a panel found hours later rebuilds from live data rather than showing a frozen view; and a component click is its own interaction with its own fresh 15-minute token, so editing this message never runs out of runway the way a single long-lived token would. No Show Everyone row (2026-10-14 18:34 EDT, Harkirat: "remove show everyone component"): Export shares the result as text instead, and the freed row is two more components for the form.

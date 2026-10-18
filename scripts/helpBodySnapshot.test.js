@@ -37,6 +37,32 @@ async function run() {
         }
     }
 
+    // OPTION DRIFT (2026-10-17 23:51 EDT). The snapshot above freezes what /help SAYS; this checks it against what each command REGISTERS. /help had gone stale three ways nobody saw: /draw prices' jump_to missing, /manage still listing the retired Manage Admins and not its `action`, and two "Options" lines promising [visibility] on commands without it. Every registered option except visibility must be named on its command's page as `[name]` or `<name>`, and every such name on a page must belong to a command on it.
+    await check('every /help page names exactly the options its commands register', async () => {
+        const fs = require('fs');
+        const registered = {};
+        for (const f of fs.readdirSync(path.join(__dirname, '..', 'commands'))) {
+            const m = require(path.join(__dirname, '..', 'commands', f));
+            if (m.data) { const j = m.data.toJSON(); registered[j.name] = j; }
+        }
+        const optionsOf = name => {
+            const [base, sub] = name.replace('/', '').split(' ');
+            let opts = (registered[base] || {}).options || [];
+            if (sub) opts = (opts.find(o => o.name === sub) || {}).options || [];
+            return opts.filter(o => o.type !== 1 && o.type !== 2).map(o => o.name);
+        };
+        const perms = PERM_MATRICES.fullBotAdmin;
+        const texts = c => [c.content || '', ...(c.components || []).flatMap(texts)].join('\n');
+        for (const cat of helpCommand.CATEGORY_DEFS) {
+            const page = texts(await helpCommand.buildContainer(cat.key, 16743772, perms, fakeClient));
+            const commands = cat.detailCommands || cat.staticCommands;
+            const expected = new Set(commands.flatMap(c => optionsOf(c.name)).filter(n => n !== 'visibility'));
+            const named = new Set([...page.matchAll(/🔹 `[<\[]([a-z_]+)[>\]]`/g)].map(m => m[1]).filter(n => n !== 'visibility'));
+            for (const n of expected) assert.ok(named.has(n), `${cat.key}: registered option "${n}" is not on the /help page`);
+            for (const n of named) assert.ok(expected.has(n), `${cat.key}: /help names "${n}", which no command on the page registers`);
+        }
+    });
+
     console.log(failures === 0 ? '\nAll help.js snapshot checks passed.' : `\n${failures} check(s) FAILED.`);
     process.exit(failures === 0 ? 0 : 1);
 }

@@ -780,3 +780,17 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > can we also remove the options from the draw calc slash command, except for the visibility option? i honestly dont think they're that useful at the moment. dont delete the code, but unwire it and document it. it might be wired back into the bot at some future stage if i feel like it
 
 **Built 2026-10-17 23:38 EDT:** `/draw calculator` registers only `visibility`; the other four are kept in `addCalculatorShortcutOptions`, documented in the rules and filed under Someday with the steps to wire them back. `public/commands.html` rebuilt.
+
+### Batch 55 — 2026-10-17 23:47 EDT, verbatim
+
+> can we also add the "Your Saved Calculations" section to the /draw calc landing page? or would you suggest we leave it out and just keep it within the "view saved" button?
+>
+> but do add view saved into the /draw calculator slash command. im thinking as an optional: "page:{Start a Caclculation/View Saved/Help}"? Side note: if help is opened direction from the slash command, that means help in that situation needs a button to change it's page to the draw calc so it can be switched over. then any future press of the "help" button will open the ephemeral as usual, does that make sense?
+>
+> also the /gunsmith command link seems to be broken in the /help command landing.
+>
+> also add a button in the /help draws page, as a section+accessory for the /draw calc section, to view the full help panel. but idk what term or phrase to use for the button.
+>
+> and side note, it seems the help command panels need a review and stale/gaps housesweep to be improved.
+
+**Built 2026-10-17 23:53 EDT:** `page:` (Start a Calculation / View Saved / Help, Help with an Open Calculator button); `/gunsmiths search` and `/gunsmiths list` as real links on the /help landing (a mention of a command with subcommands never links); a **Calculator Guide** button on /help's Draws page. Sweep: /draw prices `jump_to` and the calculator's `page` documented, the calculator's description rewritten, /manage's retired Manage Admins removed and its `action` documented, "both commands" / "every command above" no longer promise `[visibility]` to /admin and /bot hotpatch. A new check in `scripts/helpBodySnapshot.test.js` fails when /help and the registered options disagree (proved: it fails on the old /help). **Recommended:** saved calculations stay off the landing.
