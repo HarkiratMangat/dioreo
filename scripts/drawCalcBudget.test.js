@@ -734,7 +734,7 @@ t('what a region is lives in Help; the form only shows the region', () => {
     }
     assert.ok(/Your region is the price of the \*\*first spin\*\*/.test(allText(dc.buildHelpPanel(ACCENT))));
     const help = dc.buildHelpPanel(ACCENT);
-    assert.deepStrictEqual(texts(help).map(c => c.split('\n')[0].replace(/<a?:\w+:\d+> ?/g, '')), ['## Calculator Help', '### 🧭 How It Works', '### 📈 How Prices Work', '### 🗺️ Find Your Region', '### 🧾 Reading Your Result', '### 💰 Why Stock Up', '### Saving', '### ⚡ Shortcut'], 'Help is sections with an emoji each, not paragraphs (2026-10-14 18:31 EDT)');
+    assert.deepStrictEqual(texts(help).map(c => c.split('\n')[0].replace(/<a?:\w+:\d+> ?/g, '')), ['## Calculator Help', '### 🧭 How It Works', '### 📈 How Prices Work', '### 🗺️ Find Your Region', '### 🧾 Reading Your Result', '### 💰 Why Stock Up', '### Saving', '### ⚡ Shortcut', '-# *Estimates only: local tax and currency conversion vary, and CoD: Mobile web store prices are not included.*'], 'Help is sections with an emoji each, not paragraphs (2026-10-14 18:31 EDT)');
     assert.ok(texts(help).every(c => c.split('\n').every(l => l.startsWith('-# ') || l.length < 160)), 'no line runs on as a paragraph; a -# hint is one line by his call (2026-10-16 00:13 EDT)');
 });
 
@@ -1008,7 +1008,8 @@ t('the Full Breakdown is the simplified layout with its working shown, and the s
     assert.ok(t.includes('**You Need: `15,700 CP`**') && t.includes('> **Full Cost of Draws: `15,710 CP`**') && t.includes('> **− Spent Already: `10 CP`**'), '15,710 − 10 − 0 = 15,700');
     assert.ok(t.includes('`4,950 CP` **+** `4,950 CP` **+** `5,810 CP`') && t.includes('`0 CP` **+** `10 CP` **+** `0 CP`'), 'each sum shows its terms');
     assert.ok(t.includes('**Just Enough: `15,800 CP`** for **`CA$199.98`**') && t.includes('-# **`100 CP` left over** after completing your draws'));
-    assert.ok(t.includes('**`CA$129.99`** each') && /CoD: Mobile web store prices are not included/.test(t));
+    assert.ok(t.includes('**`CA$129.99`** each') && !/web store prices/.test(t), 'the estimates disclaimer is Help\'s footer now (2026-10-18 19:44 EDT)');
+    assert.ok(/CoD: Mobile web store prices are not included/.test(allText(dc.buildHelpPanel(ACCENT))), 'Help carries it');
     const compact = allText(render(makeBasket({ banners }), {}, { currency: 'CAD' }));
     assert.strictEqual(/Cheapest|Estimates only|`4,950 CP` \*\*\+\*\*|To Complete/.test(compact), false, 'the simplified view leaves the working out');
 });

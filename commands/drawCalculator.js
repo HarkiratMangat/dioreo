@@ -791,10 +791,8 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
         const costWord = stockUp.extraCents > 0 ? `**${money(stockUp.extraCents)} more**` : stockUp.extraCents === 0 ? '**the same**' : `**${money(-stockUp.extraCents)} less**`;
         purchase.push(`> -# Costs ${costWord} · Buys **${fmt(stockUp.extraCp)} extra CP** at a better rate`);
     }
-    // The currency line stays (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it. Italic, his draft.
-    purchase.push(detail
-        ? `-# *Estimates only: local tax and currency conversion vary, and CoD: Mobile web store prices are not included · Prices in **${currency}** · Change in ${settingsMention}*`
-        : `-# *Prices in **${currency}** · Change in ${settingsMention}*`);
+    // The currency line stays (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it. Italic, his draft. The estimates disclaimer moved to Help's footer (2026-10-18 19:44 EDT, his ask: "this thing is more like a disclaimer and clutters the real info").
+    purchase.push(`-# *Prices in **${currency}** · Change in ${settingsMention}*`);
     return { cost, purchase, buying: true };
 }
 
@@ -1435,7 +1433,10 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
             row('Limits', `up to ${MAX_SAVED} saved; an unsaved one clears after 30 days`)
         ].join('\n') },
         divider,
-        { type: 10, content: '### ⚡ Shortcut\n`/draw calculator draw: pulls: balance:`\n-# Skips the form and opens straight on that draw\'s result.' }
+        { type: 10, content: '### ⚡ Shortcut\n`/draw calculator draw: pulls: balance:`\n-# Skips the form and opens straight on that draw\'s result.' },
+        // The estimates disclaimer, a footer (2026-10-18 19:44 EDT, his ask), moved off the result's Full Breakdown.
+        divider,
+        { type: 10, content: '-# *Estimates only: local tax and currency conversion vary, and CoD: Mobile web store prices are not included.*' }
     ];
     return { type: 17, accent_color: accentColor, components };
 }
