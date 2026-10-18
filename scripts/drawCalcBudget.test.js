@@ -1093,6 +1093,33 @@ t('/draw prices states the upgrade ladders under each Upgrade heading', () => {
     assert.ok(c[2].includes('80 › 200 › 420') && c[2].includes('Final Form:** 720 after 7 of 9') && c[2].includes('2,820 in All'), c[2]);
 });
 
+t('/draw prices: the quick jump opens one draw type, Back replaces the pager, and every view fits Discord (2026-10-17 22:01 EDT)', () => {
+    const dp = require('../commands/drawprices');
+    const count = c => (c.components || []).reduce((n, x) => n + 1 + count(x), 0) + (c.accessory ? 1 : 0);
+    const flat = c => [c, ...(c.components || []).flatMap(flat), ...(c.accessory ? [c.accessory] : [])];
+    const keys = [...Object.keys(DRAW_META), 'advancedWeapon', 'advancedCharacter'];
+    for (const region of REGION_ORDER) {
+        for (const view of [0, 1, 2, 3, ...keys.map(k => `f${k}`)]) {
+            const comps = dp.buildContainer(region, 0, true, view, null);
+            const total = comps.reduce((n, c) => n + 1 + count(c), 0);
+            assert.ok(total <= 40, `${region} ${view}: ${total} components`);
+            const all = comps.flatMap(flat);
+            const jump = all.find(c => c.type === 3 && c.custom_id === `price_jump_${region}`);
+            assert.ok(jump && jump.options.length === keys.length, `${region} ${view}: the jump select lists every draw type`);
+            const focused = typeof view === 'string' ? view.slice(1) : null;
+            assert.deepStrictEqual(jump.options.filter(o => o.default).map(o => o.value), focused ? [focused] : [], `${region} ${view}: the open draw is the select's default`);
+            const back = all.find(c => c.type === 2 && c.label === 'Back');
+            const pager = all.some(c => c.custom_id === 'price_subpage_indicator');
+            assert.strictEqual(Boolean(back), Boolean(focused), `${region} ${view}: Back only in a jump`);
+            assert.strictEqual(pager, !focused, `${region} ${view}: the pager only in the all view`);
+            const regionIds = all.filter(c => c.type === 2 && /^price_region_/.test(c.custom_id || '')).map(c => c.custom_id.split('_').pop());
+            assert.ok(regionIds.every(v => v === String(focused ? `f${focused}` : view)), `${region} ${view}: a region switch keeps the view`);
+        }
+    }
+    const one = dp.buildContainer('region_10', 0, true, 'fmythicWeapon', null).flatMap(flat).filter(c => c.type === 10).map(c => c.content).join('\n');
+    assert.ok(/Mythic Weapon Draw/i.test(one) && !/Legendary Weapon Draw \(Reactive\)/i.test(one), 'a jump shows only the picked draw');
+});
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed === 0 ? 0 : 1);
 })();

@@ -722,3 +722,9 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > (on the label) sure sounds good.
 
 **Built 2026-10-17 21:33 EDT:** the toggle reads **Simple Breakdown**; the recommendation's label next to Stock Up reads **Just Enough**.
+
+### Batch 49 — 2026-10-17 22:01 EDT, verbatim
+
+> Can we implement a drop down above the region toggle's hint line? A quick jump to a draw type basically. And when in that view, the pagination buttons basically get replaced with a "back" button to go back to the "all view"
+
+**Built 2026-10-17 22:05 EDT** on /draw prices: the "Jump to a draw type" dropdown above the region hint; one draw on its own with **Back** in place of the pager (back to that draw's page); a region switch keeps the open draw. All 45 page and jump views across the three regions were accepted by Discord.

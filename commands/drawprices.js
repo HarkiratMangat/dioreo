@@ -297,25 +297,39 @@ function buildAdvancedDoubleLegendaryCharacterEntry(regionKey) {
     return blocks.map(content => ({ type: 10, content }));
 }
 
+// QUICK JUMP TO ONE DRAW TYPE (2026-10-17 22:02 EDT, Harkirat: "Can we implement a drop down above the region toggle's hint line? A quick jump to a draw type basically. And when in that view, the pagination buttons basically get replaced with a 'back' button to go back to the 'all view'"). A jump target is any DRAW_META key plus the two Advanced pages. The focused view travels as the page value `f<key>` (keys are camelCase, so the `_`-split custom_ids still parse), which is how a region switch keeps the jump.
+const ADVANCED_JUMPS = { advancedWeapon: { name: 'Advanced Double Legendary Weapon Draw', tier: 'legendary', page: ADVANCED_PAGE_INDEX }, advancedCharacter: { name: 'Advanced Double Legendary Character Draw', tier: 'legendary', page: CHARACTER_ADVANCED_PAGE_INDEX } };
+const JUMP_KEYS = [...SUBPAGES.flat(), ...Object.keys(ADVANCED_JUMPS)];
+function jumpMeta(key) { return DRAW_META[key] || ADVANCED_JUMPS[key] || null; }
+// The page a draw sits on in the all view, so Back returns to where that draw lives.
+function pageOfJump(key) { return ADVANCED_JUMPS[key] ? ADVANCED_JUMPS[key].page : Math.max(0, SUBPAGES.findIndex(keys => keys.includes(key))); }
+function focusOf(subpage) { const key = typeof subpage === 'string' && subpage.startsWith('f') ? subpage.slice(1) : null; return key && jumpMeta(key) ? key : null; }
+
 /**
  * UI BUILDER: Constructs the V2 JSON Payload Separated into its own function so handlers/drawprices.js can call it directly when users swap regions or pages without needing to re-run the entire slash command.
  */
 function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = false, subpage = 0, client) {
     const region = DRAW_DATA[regionKey] || DRAW_DATA.region_10;
     // Clamp rather than reject an out-of-range page (matches the "build N of M" clamping convention used elsewhere, e.g. loadout pagination) -- defensive, not expected to trigger in practice since the pagination row's own disabled state already prevents going out of bounds.
-    const currentPage = Math.min(Math.max(subpage, 0), TOTAL_PAGES - 1);
+    const focus = focusOf(subpage);
+    const currentPage = focus ? pageOfJump(focus) : Math.min(Math.max(Number(subpage) || 0, 0), TOTAL_PAGES - 1);
+    // What the region buttons carry so a switch keeps the view: the page number, or `f<key>` in a jump.
+    const viewToken = focus ? `f${focus}` : String(currentPage);
 
     // Flat, divider-separated sequence per drawPrices_ui.json — no group headers at all (the old Mythic/Legendary-Epic two-group split is gone). Split across 2 pages (see PAGE_1_KEYS/ PAGE_2_KEYS above) to stay under Discord's 40-component cap now that each entry can render as up to 3 separate Text Displays. Large divider spacing (2) between draw entries, applied to BOTH regions as of 2026-07-12 -- this used to be a region_10-only test to compare against region_30's spacing 1, but Harkirat confirmed he wants the larger spacing everywhere now that the comparison's done. Every OTHER divider in this container (title, pagination, nav row) also uses spacing 2 now -- the earlier "title divider stays spacing 1" exception was dropped the same day per Harkirat's "large spacing across the board" follow-up.
     const innerDividerSpacing = 2;
     // The two Advanced pages (3rd and 4th) are each rendered by their own builder since neither fits the shared key/`draws: []` model; every other page goes through buildDrawEntries.
-    const entrySections = currentPage === ADVANCED_PAGE_INDEX
+    const entrySections = focus && !ADVANCED_JUMPS[focus]
+        ? withInnerDividers(buildDrawEntries(regionKey, [focus]), innerDividerSpacing)
+        : currentPage === ADVANCED_PAGE_INDEX
         ? buildAdvancedDoubleLegendaryEntry(regionKey)
         : currentPage === CHARACTER_ADVANCED_PAGE_INDEX
         ? buildAdvancedDoubleLegendaryCharacterEntry(regionKey)
         : withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
 
     // Prev/Next between the 2 entry pages, same region -- shared pagination row helper (see utils/paginationRow.js), same style as /calendar and /draws' sub-page navigation. Placed directly under the entries themselves (own divider on both sides) rather than next to the region-switch footer/button below -- sitting right next to that footer's "Switch between viewing 10 CP or 30 CP region prices" text read as if the page arrows were ALSO part of switching region, which they aren't (Harkirat's explicit fix, 2026-07-12).
-    const paginationRow = buildPaginationRow({
+    // In a jump the pager is replaced by Back, to the all-view page that draw sits on.
+    const paginationRow = focus ? { type: 1, components: [{ type: 2, style: 2, label: 'Back', emoji: emojis.parseEmoji(emojis.left), custom_id: `price_subpage_${regionKey}_${currentPage}` }] } : buildPaginationRow({
         totalChunks: TOTAL_PAGES,
         currentPage,
         // Looping pager: the helper wraps last↔first and builds the id from the wrapped page.
@@ -348,6 +362,16 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
             // NO divider between the last entry and the pagination row (Harkirat's explicit, repeated correction) -- pagination sits directly under the entries with no separator.
             ...(paginationRow ? [paginationRow] : []),
             { type: 14, spacing: 2, divider: true },
+            // The quick jump sits above the region hint line, as he asked; in a jump it shows which draw is open.
+            {
+                type: 1,
+                components: [{
+                    type: 3,
+                    custom_id: `price_jump_${regionKey}`,
+                    placeholder: 'Jump to a draw type',
+                    options: JUMP_KEYS.map(key => ({ label: jumpMeta(key).name, value: key, emoji: emojis.parseEmoji(tierIcon(jumpMeta(key).tier)), default: key === focus }))
+                }]
+            },
             // One-line footer (was two `-#` lines) per example_reformat.json. Updated 2026-08-07 for the 3rd region.
             { type: 10, content: `-# Switch between viewing 10 CP, 20 CP, or 30 CP region prices. (Tip: check out ${mentionCommand(client, '/settings')})` },
             {
@@ -358,7 +382,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                     // The CURRENT region is green and disabled (2026-10-14 13:13 EDT, Harkirat: "when the cp region button is selected, make it green-disabled"). Green says which is active (2026-10-14 00:16 EDT, "so it implies active/selected"); disabled says there is nothing to press, since a click only re-rendered the same page. Same as the calculator's region row.
                     style: key === regionKey ? 3 : 2,
                     disabled: key === regionKey,
-                    custom_id: `price_region_${key.split('_')[1]}_${currentPage}`,
+                    custom_id: `price_region_${key.split('_')[1]}_${viewToken}`,
                     label: `${key.split('_')[1]} CP`,
                     emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
                 }))
