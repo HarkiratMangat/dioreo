@@ -698,3 +698,19 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > and another feature i want to implement... where instead of a generic lucky draw, it actually allows you to select the lucky drops currently available or releasing this season, based on whatever is added in the calendar or the /draws command. it would be like it's own dropdown
 
 **Scoped 2026-10-17 21:06 EDT, not built:** no stored draw says which price type it is (Reactive vs Non-Reactive, armory series), so his three questions are in the thread.
+
+### Batch 47 — 2026-10-17 20:48 / 21:28 EDT, verbatim
+
+> Also forgot to sent this earlier. Why is the simplify button over here on mobile? Shouldn't it have moved down due to spacing? Or is the buttons width/text not wide enough to trigger it? Or is it a placement issue? Because "edit selections" moved down correctly
+
+> (on "Keep the label Cheapest: next to Stock Up, or rename it, e.g. Best Pick:?") rename but not best pick either, because that can mislead to thinking this pick might be better than the stock-up method. consider alternative terms.
+>
+> (on how a draw gets its price type) oh good catch! series armory do have a different draw structure so i still need to provide you that info for both draw prices and the calc. so sideline this request until ive provided you that info for the series armory draw type.
+>
+> (on "live now plus releasing later this season") correct.
+>
+> (on "a picked line shows the draw's own name with its price type underneath") correct.
+>
+> (on shortening button labels) not shorten. if anything, i think we need to increase the characters of the simplify button to a different term
+
+**Measured 2026-10-17 21:29 EDT** on his phone (test panel in #testing-spam): "Simplify" and "Edit" stay beside their heading, "Full Breakdown" and "Edit Selection" drop below; it is the label's width. A second panel shows five longer Simplify names and four names for the "Cheapest" label. **Season draws dropdown: sidelined** until he sends the Series Armory draw structure.
