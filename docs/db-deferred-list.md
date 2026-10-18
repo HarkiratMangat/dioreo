@@ -86,6 +86,10 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
+### `[P3 · S]` The runner self-test's "two readers share" timing check fails inside a full `npm test` — filed 2026-10-18 15:22 EDT
+
+`scripts/testRunner.test.mjs:131` asserts that two read-locked entries finish faster together than a writer and a reader. Under a full `TEST_CACHE=0 npm test` on this Mac (8 slots, 139 entries) it failed twice on 2026-10-18 (12:24 EDT: readers 3,714 ms vs 2,980 ms; 15:18 EDT: 2,876 ms vs 3,413 ms, which is the right order and still failed its margin), and passed both times when run alone. The other 138 entries passed each time, so it reads as wall-clock contention, not a runner defect. **Do:** give the check headroom that load cannot erase (compare against a measured baseline in the same process, or move it to its own serial lane in `scripts/testManifest.mjs`). **Verify:** three consecutive full `TEST_CACHE=0 npm test` runs pass it.
+
 ### Escape in any portal drawer discards the draft without asking `[P1 · XS]`
 
 Found 2026-09-22 15:40 EDT by a flow test on Board 4 (Session 3 of pins batch 2), which writes no portal code, so it is filed for Session 5. `portal/ui/overlay.js` `Drawer` adds its keydown listener once (`useEffect(..., [])`), so the Escape branch calls the `onClose` from the drawer's FIRST render — when every draft is still empty. A filled build, post or edit is thrown away with no "Discard this draft?", while the Close button, which reads the current `onClose`, asks. The board's copy (`docs/pins2/kit/ui/overlay.js`) is fixed with a ref that always holds the current `onClose`; the portal needs the same three lines.
