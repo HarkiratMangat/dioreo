@@ -91,6 +91,8 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
 
 // 🔴 COPY-ON-WRITE FOR SAVED CALCULATIONS (2026-10-14 17:28 EDT, Harkirat: "a saved calc should remain in it's saved state. so that means a user needs to press save and select that previous saved result to override it. otherwise selecting that saved calc again should bring you to it's result"). Every change to a calculation goes through here. On a SAVED one, the first real change opens an unnamed working copy carrying `sourceId`, applies the change there, and points this message at the copy (it mutates `state.basketId`, so every render after it follows); the saved one is untouched until the Save step saves over it. A change that changes nothing (Calculate on an already-calculated one) writes nothing and forks nothing.
 async function writeTo(userId, state, basket, fields) {
+    // Any change marks the view dirty, so Adjust Draws opened from a result offers Recalculate (2026-10-18 14:57 EDT). The handlers render from this same state object after writing.
+    state.dirty = true;
     if (basket && basket.name) {
         if (Object.entries(fields).every(([k, v]) => JSON.stringify(v) === JSON.stringify(basket[k]))) return basket;
         const copy = await basketStore.save(userId, {
@@ -397,7 +399,7 @@ async function route(interaction) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         const page = state.verb === 'progress' ? 5 : state.verb === 'progresult' ? 0 : (basket.submitted ? 2 : 0);
-        await renderPanel(interaction, { ...state, page, bpage: 0, focus: null }, basket);
+        await renderPanel(interaction, { ...state, page, bpage: 0, focus: null, ...(page === 5 ? {} : { fromResult: false, dirty: false }) }, basket);
         return true;
     }
 
@@ -601,7 +603,7 @@ async function route(interaction) {
         if (!basket) return true;
         if (!basket.banners.length) { await renderPanel(interaction, state, basket); return true; }
         const updated = await writeTo(actingUserId, state, basket, { submitted: true });
-        await renderPanel(interaction, { ...state, page: 0, bpage: 0, focus: null }, updated);
+        await renderPanel(interaction, { ...state, page: 0, bpage: 0, focus: null, fromResult: false, dirty: false }, updated);
         return true;
     }
 
@@ -620,7 +622,7 @@ async function route(interaction) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         // A view, not a state change: the calculation stays submitted, so leaving mid-edit still reopens on the result. Edit Selection opens Adjust Draws & Progress directly (2026-10-18 13:37 EDT, his ask): it covers everything about the draws. Back to Selections still reaches the form (page 2).
-        await renderPanel(interaction, { ...state, page: 5, bpage: 0, focus: null, detail: false }, basket);
+        await renderPanel(interaction, { ...state, page: 5, bpage: 0, focus: null, detail: false, fromResult: true, dirty: false }, basket);
         return true;
     }
 

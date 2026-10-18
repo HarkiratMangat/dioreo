@@ -242,7 +242,7 @@ t('Adjust Draws & Progress pages at 4 lines: his two footer rows (2026-10-18 13:
     for (const keys of [Object.keys(DRAW_META).slice(0, 7), Array(7).fill('legendaryGunNonReactive')]) {
         const panel = progress(keys.map(k => ({ drawKey: k, pullsDone: 0 })));
         assert.strictEqual(selects(panel).filter(s => verbOf(s) === 'bpulls').length, keys[0] === 'mythicWeapon' ? 4 : 5, keys[0]); // a Mythic line's Upgrade button makes its name a Section, so four fit; plain lines fit five
-        assert.ok(buttons(panel).some(b => /Page 1\//.test(b.label)), 'and a pager');
+        assert.ok(buttons(panel).some(b => /^1 \/ \d+$/.test(b.label || '')), 'and a pager');
     }
 });
 
@@ -479,7 +479,7 @@ t('the setup form fits the component budget at every draft size, with and withou
 t('an unsubmitted calculation shows the FORM; pressing Calculate is what produces the breakdown', () => {
     const banners = [{ drawKey: 'mythicWeapon', pullsDone: 3 }];
     const draft = form(banners);
-    assert.ok(/## Your Selection\n<a?:\w+:\d+> \*\*#1 · /.test(allText(draft)) && buttonLabelled(draft, 'Adjust Draws, Progress, & Upgrades'), 'a draft renders the form: its lines as a summary, and Set Draw Progress');
+    assert.ok(/## Your Selection\n<a?:\w+:\d+> \*\*#1 · /.test(allText(draft)) && buttonLabelled(draft, 'Set Draw Progress'), 'a draft renders the form: its lines as a summary, and Set Draw Progress');
     assert.strictEqual(/Cost Breakdown/.test(allText(draft)), false, 'a draft must NOT show a cost breakdown');
     assert.ok(buttonLabelled(draft, 'Calculate'), 'the form must offer Calculate');
     const done = render(makeBasket({ banners, submitted: true }));
@@ -713,7 +713,7 @@ t('the purchase is his layout: the total for its price, what is left over, then 
 t('the simplified list is his draft: a bold line per draw, Price and attempts quoted, in a Section with Edit Selection as its button (2026-10-17 17:26 EDT)', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }] }));
     const comps = container(panel).components;
-    const sec = comps.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Edit Selection');
+    const sec = comps.find(c => c.type === 9 && c.accessory && c.accessory.label === 'Edit Selections');
     assert.ok(sec && sec.components[0].content.startsWith('## Your Draw Selections'), 'the list and its button are one Section');
     assert.strictEqual(verbOf(sec.accessory), 'edit');
     const t = allText(panel);
@@ -779,7 +779,7 @@ t('both views are the same two Sections: the list with Edit Selection, the figur
         const sec = comps.find(c => c.type === 9 && c.accessory && c.accessory.label === label);
         assert.ok(sec && sec.components.length === 2 && sec.components[0].content.startsWith('## Cost Breakdown') && sec.components[1].content.startsWith('## Suggested Purchase'), `${label}: one Section, two texts`);
         assert.strictEqual(verbOf(sec.accessory), verb);
-        assert.ok(comps.some(c => c.type === 9 && c.accessory && c.accessory.label === 'Edit Selection'), `${label}: the list Section too`);
+        assert.ok(comps.some(c => c.type === 9 && c.accessory && c.accessory.label === 'Edit Selections'), `${label}: the list Section too`);
     }
 });
 
@@ -857,7 +857,7 @@ t('the landing starts a calculation, and Saved is one tap away in the nav row (2
     assert.strictEqual(verbOf(buttonLabelled(landing, 'View Saved')), 'saved', 'with none saved the button still shows, so saving is discoverable');
     const saved = [{ _id: 'c'.repeat(24), name: 'Season 12', banners: [], region: 'region_10' }];
     assert.ok(buttonLabelled(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: saved }), 'View Saved'), 'no counter (2026-10-14 17:58 EDT)');
-    assert.ok(buttonLabelled(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })), 'Edit Selection'), 'the result offers a way to change things');
+    assert.ok(buttonLabelled(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })), 'Edit Selections'), 'the result offers a way to change things');
 });
 
 t('the result keeps Set Balance one tap away, and Edit is a VIEW that leaves the calculation submitted', () => {
@@ -865,7 +865,7 @@ t('the result keeps Set Balance one tap away, and Edit is a VIEW that leaves the
     const row = rows(result).find(r => r.components.some(b => b.label === 'Set Balance'));
     assert.deepStrictEqual(row.components.map(b => b.label), ['Set Balance'], 'the commonest return visit, "I have more CP now", is one tap');
     const editing = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: true }), { page: 2 });
-    assert.ok(buttonLabelled(editing, 'Adjust Draws, Progress, & Upgrades') && buttonLabelled(editing, 'Calculate'), 'page 2 of a submitted calculation is the form');
+    assert.ok(buttonLabelled(editing, 'Set Draw Progress') && buttonLabelled(editing, 'Calculate'), 'page 2 of a submitted calculation is the form');
     assert.strictEqual(dc.decodeState(buttonLabelled(editing, 'Calculate').custom_id).page, 2, 'its controls keep the view');
 });
 
@@ -1183,7 +1183,7 @@ t('an armory line picks its size and its items in one dropdown; a season armory 
     assert.ok(sel.options.filter(o => o.value !== 'del').every(o => /^(#1 · Progress: )?\d\/\d Weapons$/.test(o.label)), 'an armory counts Weapons, never Spins');
     const season = selects(progress([{ drawKey: 'armoryLegendaryCharacter', pullsDone: 0, size: 4, title: 'Undead Legion' }])).find(s => verbOf(s) === 'bpulls');
     assert.deepStrictEqual(season.options.filter(o => o.value !== 'del').map(o => o.value), ['0', '1', '2', '3', '4'], 'its size is the draw\'s own item count');
-    assert.ok(allText(progress([{ drawKey: 'armoryLegendaryCharacter', pullsDone: 0, size: 4, title: 'Undead Legion' }])).includes('**#1** Undead Legion\n-# Legendary Character Armory'), 'and the line reads as the draw');
+    assert.ok(allText(progress([{ drawKey: 'armoryLegendaryCharacter', pullsDone: 0, size: 4, title: 'Undead Legion' }])).includes('**#1 · Undead Legion**\n-# Legendary Character Armory'), 'and the line reads as the draw');
 });
 
 t('Set Draw Progress: a line\'s extra settings sit beside its name, and a Mythic Weapon armory gets both of its buttons', () => {
@@ -1217,9 +1217,9 @@ t('the form is a summary: a season line reads as its draw with its Draw Type und
     const text = allText(f);
     assert.ok(text.includes('**#1 · Undead Legion Series Armory** · `2/5` Weapons · 40 Spins In\n-# Legendary Weapon Armory'), text);
     assert.ok(/<a?:\w+:\d+> \*\*#2 · Mythic Weapon\*\* · `10\/10` Spins\n> -# <a?:MythicCard:\d+> Upgrade to Level 3/.test(text), 'tier icon first, the upgrade on its own quoted line (his format)');
-    assert.strictEqual(buttonLabelled(f, 'Adjust Draws, Progress, & Upgrades') ? true : false, true, 'with a Mythic line the button names upgrades too');
+    assert.ok(buttonLabelled(f, 'Set Draw Progress'), 'the landing\'s button reads Set Draw Progress (2026-10-18 14:58 EDT)');
     assert.strictEqual(selects(f).some(s => verbOf(s) === 'bpulls'), false, 'no per-line dropdown on the form');
-    assert.ok(verbOf(buttonLabelled(f, 'Adjust Draws, Progress, & Upgrades')) === 'progress');
+    assert.ok(verbOf(buttonLabelled(f, 'Set Draw Progress')) === 'progress');
 });
 
 t('this season\'s draws come first, each its own title with its Draw Type under it', () => {
@@ -1273,8 +1273,13 @@ t('his Mock 2 (2026-10-18 13:38 EDT): Add Draws and Remove open pop-ups, his two
     const draft = progress([{ drawKey: 'mythicWeapon', pullsDone: 2 }, { drawKey: 'armoryLegendaryWeapon', pullsDone: 0, size: 4 }]);
     const footer = rows(draft).slice(-3, -1).map(r => r.components.map(b => b.label));
     assert.deepStrictEqual(footer, [['Add Draws', 'Remove', 'Calculate'], ['Back to Selections']], 'a draft has no result to go back to');
-    const done = dc.buildCalculatorPanel(state({ page: 5 }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
-    assert.deepStrictEqual(rows(done).slice(-2, -1)[0].components.map(b => b.label), ['Back to Result', 'Back to Selections']);
+    const done = dc.buildCalculatorPanel(state({ page: 5, fromResult: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
+    assert.deepStrictEqual(rows(done).slice(-2, -1)[0].components.map(b => b.label), ['Back to Result'], 'one way back, to where it was opened from (2026-10-18 14:58 EDT)');
+    const dirty = dc.buildCalculatorPanel(state({ page: 5, fromResult: true, dirty: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
+    assert.ok(buttonLabelled(dirty, 'Recalculate') && !buttonLabelled(dirty, 'Calculate'), 'a change after Edit Selections offers Recalculate');
+    assert.ok(buttonLabelled(draft, 'Calculate'), 'a fresh draft keeps Calculate');
+    assert.strictEqual(buttonLabelled(draft, 'Add Draws').style, 3, 'Add Draws is green');
+    assert.deepStrictEqual(dc.decodeState(dc.encodeState('x', { ...dc.defaultState(), fromResult: true, dirty: true })).fromResult, true);
     assert.ok(allText(done).includes('## Adjust Draws, Progress, & Upgrades'), 'his name for the screen');
     assert.ok(allText(progress([{ drawKey: 'legendaryGunReactive', pullsDone: 0 }])).includes('## Adjust Draws & Progress'));
     const basket = makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2, upWant: [3] }, { drawKey: 'armoryLegendaryWeapon', pullsDone: 1, size: 4 }] });

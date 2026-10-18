@@ -344,6 +344,9 @@ function encodeState(verb, s) {
     if (s.check) fields.push(`k${s.check}`);
     // `t` names the saved calculation an overwrite will replace (2026-10-14 17:26 EDT); only the Save view's confirm carries it.
     if (s.target) fields.push(`t${s.target}`);
+    // `o1`: Adjust Draws was opened from the RESULT, so its way back is Back to Result; `d1`: something changed since, so Calculate reads Recalculate (2026-10-18 14:57 EDT, Harkirat).
+    if (s.fromResult) fields.push('o1');
+    if (s.dirty) fields.push('d1');
     return fields.join('~');
 }
 
@@ -370,7 +373,9 @@ function decodeState(customId) {
         targetRegion: regionDigits ? `region_${regionDigits}` : null,
         mask: maskRaw ? (parseInt(maskRaw, 36) || 0) : 0,
         check: checkRaw || null,
-        target: targetRaw || null
+        target: targetRaw || null,
+        fromResult: get('o', '') === '1',
+        dirty: get('d', '') === '1'
     };
 }
 
@@ -545,10 +550,11 @@ function pageNavRow(state, totalPages) {
     return {
         type: 1,
         components: [
-            { type: 2, style: 2, label: '◀ Prev', custom_id: encodeState('bpage', { ...state, bpage: Math.max(0, current - 1) }), disabled: current === 0 },
+            // The shared pager's own arrow emojis and "1 / 2" (utils/paginationRow.js), not text glyphs (2026-10-18 14:57 EDT, Harkirat).
+            { type: 2, style: 2, emoji: emojis.parseEmoji(emojis.left), custom_id: encodeState('bpage', { ...state, bpage: Math.max(0, current - 1) }), disabled: current === 0 },
             // Its own verb: on the first page Prev targets page 0 and on the last Next targets the current page, so a 'bpage' id here would equal one of theirs and Discord rejects the whole message (COMPONENT_CUSTOM_ID_DUPLICATED, found 2026-10-13 on any form with 5+ lines). Disabled, so no handler reads it.
-            { type: 2, style: 2, label: `Page ${current + 1}/${totalPages}`, custom_id: encodeState('bpinfo', state), disabled: true },
-            { type: 2, style: 2, label: 'Next ▶', custom_id: encodeState('bpage', { ...state, bpage: Math.min(totalPages - 1, current + 1) }), disabled: current === totalPages - 1 }
+            { type: 2, style: 2, label: `${current + 1} / ${totalPages}`, custom_id: encodeState('bpinfo', state), disabled: true },
+            { type: 2, style: 2, emoji: emojis.parseEmoji(emojis.right), custom_id: encodeState('bpage', { ...state, bpage: Math.min(totalPages - 1, current + 1) }), disabled: current === totalPages - 1 }
         ]
     };
 }
@@ -847,7 +853,8 @@ function selectionSummary(basket, max = 12) {
 }
 // "Set Draw Progress & Upgrades" once a Mythic line is in the calculation (2026-10-18 13:05 EDT, his ask), on the button and the screen it opens. Renamed 2026-10-18 13:37 EDT (Harkirat): "Adjust Draws & Progress" / "Adjust Draws, Progress, & Upgrades". The screen now adds and removes draws too.
 function progressTitle(basket) { return (basket?.banners || []).some(b => upgradeKeyOf(b.drawKey)) ? 'Adjust Draws, Progress, & Upgrades' : 'Adjust Draws & Progress'; }
-function progressButton(state, basket) { return { type: 2, style: 2, label: progressTitle(basket), custom_id: encodeState('progress', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
+// The landing's button reads "Set Draw Progress"; the result's reads "Edit Selections" (2026-10-18 14:57 EDT, his labels). Both open the screen titled by progressTitle.
+function progressButton(state) { return { type: 2, style: 2, label: 'Set Draw Progress', custom_id: encodeState('progress', { ...state, fromResult: false, dirty: false }), emoji: emojis.parseEmoji(emojis.editCalc) }; }
 
 // THIS SEASON'S DRAWS (sidelined 2026-10-17 21:29 EDT, built 2026-10-18 12:15 EDT). First on the form (his "yes"). Each option is the draw's own title with its Draw Type under it (decided 2026-10-17 21:28 EDT). The list is listSeasonDraws's, read by the caller and passed in, because building a panel never touches the database.
 function seasonDrawsRow(state, seasonDraws, room) {
@@ -882,7 +889,7 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
         }
     } else {
         // The summary rides in a Section with Set Draw Progress as its button, the way the result's selection carries Edit Selection.
-        components.push({ type: 9, components: [{ type: 10, content: `## ${selectionHeading(banners)}\n${selectionSummary(draft)}` }], accessory: progressButton(state, draft) });
+        components.push({ type: 9, components: [{ type: 10, content: `## ${selectionHeading(banners)}\n${selectionSummary(draft)}` }], accessory: progressButton(state) });
         if (dropConfirm) components.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
         else {
             components.push({ type: 14, spacing: 1, divider: false });
@@ -899,21 +906,22 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
 function lineExtraButtons(state, basket, index) {
     const b = basket.banners[index];
     const out = [];
+    // Spins In first, then Upgrade (2026-10-18 14:57 EDT, his order for a Mythic Weapon armory).
+    if (isArmoryKey(b.drawKey)) {
+        const done = (b.pullsDone || 0) >= armorySize(b);
+        out.push({ type: 2, style: b.spinsIn && !done ? 3 : 2, label: done ? 'Spins In: Finished' : `Spins In: ${b.spinsIn || 0}`, custom_id: encodeState('spinsin', { ...state, focus: index }), disabled: done });
+    }
     if (upgradeKeyOf(b.drawKey)) {
         const line = upgradePlan(basket).lines.find(l => l.index === index);
         const set = upgradeIsSet(line);
         out.push({ type: 2, style: set ? 3 : 2, label: `Upgrade: ${set ? upgradeStateText(b.drawKey, line.want) : 'None'}`.slice(0, 80), custom_id: encodeState('upgset', { ...state, focus: index }), ...(upgradeCardEmoji(b.drawKey) ? { emoji: emojis.parseEmoji(upgradeCardEmoji(b.drawKey)) } : {}) });
-    }
-    if (isArmoryKey(b.drawKey)) {
-        const done = (b.pullsDone || 0) >= armorySize(b);
-        out.push({ type: 2, style: b.spinsIn && !done ? 3 : 2, label: done ? 'Spins In: Finished' : `Spins In: ${b.spinsIn || 0}`, custom_id: encodeState('spinsin', { ...state, focus: index }), disabled: done });
     }
     return out;
 }
 function progressLineBlocks(state, basket, index) {
     const b = basket.banners[index];
     const icon = metaOf(b.drawKey) ? emojis[metaOf(b.drawKey).tier] : emojis.smallDot;
-    const text = `${icon} **#${index + 1}** ${lineName(b)}${b.title ? `\n-# ${shortName(b.drawKey)}` : ''}`;
+    const text = `${icon} **#${index + 1} · ${lineName(b)}**${b.title ? `\n-# ${shortName(b.drawKey)}` : ''}`;
     const extra = lineExtraButtons(state, basket, index);
     const head = extra.length === 1 ? { type: 9, components: [{ type: 10, content: text }], accessory: extra[0] } : { type: 10, content: text };
     // No Remove option in the line's dropdown: Remove is one pop-up for every selection now (his Mock 2).
@@ -930,20 +938,21 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
     // HIS TWO FOOTER ROWS (2026-10-18 13:37 EDT): Add Draws · Remove (red) · Calculate, then Back to Result · Back to Selections. Add and Remove open pop-ups (his Mock 2: "it also adds a soft confirm to delete ... and overall keeps the panel slim and clean"). Back to Result shows only when there is a result.
     const back = [{ type: 14, spacing: 2, divider: true },
         { type: 1, components: [
-            { type: 2, style: 2, label: 'Add Draws', custom_id: encodeState('addopen', state), emoji: emojis.parseEmoji(emojis.plus), disabled: banners.length >= MAX_LINES },
+            { type: 2, style: 3, label: 'Add Draws', custom_id: encodeState('addopen', state), emoji: emojis.parseEmoji(emojis.plus), disabled: banners.length >= MAX_LINES },
             { type: 2, style: 4, label: 'Remove', custom_id: encodeState('rmopen', state), emoji: emojis.parseEmoji(emojis.deleteBin) },
-            { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), emoji: emojis.parseEmoji(emojis.calculate) }
+            { type: 2, style: 1, label: state.fromResult && state.dirty ? 'Recalculate' : 'Calculate', custom_id: encodeState('submit', state), emoji: emojis.parseEmoji(emojis.calculate) }
         ] },
-        { type: 1, components: [
-            ...(basket.submitted ? [{ type: 2, style: 2, label: 'Back to Result', custom_id: encodeState('progresult', state), emoji: emojis.parseEmoji(emojis.left) }] : []),
-            { type: 2, style: 2, label: 'Back to Selections', custom_id: encodeState('progback', state), emoji: emojis.parseEmoji(emojis.left) }
-        ] }];
+        // ONE way back, to where it was opened from (2026-10-18 14:57 EDT, Harkirat): Back to Result from the result, Back to Selections from the landing.
+        { type: 1, components: [state.fromResult && basket.submitted
+            ? { type: 2, style: 2, label: 'Back to Result', custom_id: encodeState('progresult', state), emoji: emojis.parseEmoji(emojis.left) }
+            : { type: 2, style: 2, label: 'Back to Selections', custom_id: encodeState('progback', state), emoji: emojis.parseEmoji(emojis.left) }] }];
     const build = perPage => {
         const pages = linePages(banners, perPage);
         const bpage = Math.min(state.bpage || 0, pages.length - 1);
         const mid = [];
         pages[bpage].forEach((i, k) => { if (k) mid.push({ type: 14, spacing: 1, divider: true }); mid.push(...progressLineBlocks(state, basket, i)); });
-        if (pages.length > 1) mid.push(pageNavRow({ ...state, bpage }, pages.length));
+        // A small space above the pager (2026-10-18 14:57 EDT, his ask), no line.
+        if (pages.length > 1) mid.push({ type: 14, spacing: 1, divider: false }, pageNavRow({ ...state, bpage }, pages.length));
         return [...top, ...mid, ...back];
     };
     // Fewer lines per page until it fits (the same two budgets as the form): a Series Armory's 22-value dropdown is about twice a ladder line's size.
@@ -1216,7 +1225,7 @@ function textLength(node) {
 }
 
 // Edit Selection is the list Section's button (2026-10-17 17:26 EDT). The 2026-10-16 20:31 EDT rule that kept buttons off Section accessories for phones was reversed by his own testing.
-function editSelectionButton(state) { return { type: 2, style: 2, label: 'Edit Selection', custom_id: encodeState('edit', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
+function editSelectionButton(state) { return { type: 2, style: 2, label: 'Edit Selections', custom_id: encodeState('edit', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
 function buildCostPage(state, basket, accentColor, options = {}) {
     const { currency = 'USD', client = null, liveDoubleCPEntry = null } = options;
     const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
