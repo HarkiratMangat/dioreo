@@ -271,3 +271,7 @@ Discord keeps a dropdown's pick after its pop-up is cancelled, and choosing the 
 - **How the view travels:** the page value is a number, or `f<key>` in a jump (`focusOf` in `commands/drawprices.js`). Region buttons carry it, so a region switch keeps the open draw; `handlers/drawprices.js` passes an `f…` segment through untouched. Keys are camelCase so the `_`-split ids still parse.
 - ⚠️ **Page 1 sits at 39 of Discord's 40 components** with the select added. A sixth draw on page 1, or one more control in the footer, needs a page split first. Pinned by the quick-jump test in `scripts/drawCalcBudget.test.js`, which counts every page and jump view in every region.
 
+### /draw prices Mythic upgrade block (2026-10-17 23:19 EDT)
+- **His format**, built by `upgradeBlock` in `commands/drawprices.js`: the currency icon beside the bold **Weapon/Character Upgrade** heading, the full amount quoted small (`> -# **\`1,975\`** Mythic Cards`), the spin line (`\`570 CP\` x 10 Spins ⌇ **\`5,700 CP\`**`), then small ladder lines: cumulative cards by level for the weapon; for the character, one path's costs × 3 paths and Final Form after 7 of 9 slots. Every number comes from `MYTHIC_UPGRADE`.
+- Polish applied to his draft: `›` between steps (as the CP Spent line uses) where he typed `>`; the icon outside the bold on both; sentence case after the labels. The character total is **2,820** (3 × 700 + 720), computed; his draft said 2,825.
+

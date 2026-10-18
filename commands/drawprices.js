@@ -136,12 +136,17 @@ function upgradeFullAmount(key) {
     if (u.levels) return u.levels[u.levels.length - 1];
     return u.paths.length * u.tiers.reduce((a, b) => a + b, 0) + u.finalForm.cost;
 }
-// The ladder in one quiet line under the Upgrade heading (2026-10-17 13:12 EDT, Harkirat: "yeah, it would make sense"). Weapon: cards per level as a running total. Character: one Tech path's three costs, which every path shares, then Final Form.
-function upgradeLadderLine(key) {
+// THE UPGRADE BLOCK, his format (2026-10-17 23:18 EDT, Harkirat: "for the draw prices mythic draws, let's do the upgrades like this format"): the currency icon beside the bold heading, the full amount quoted small, the spin cost, then the ladder in small lines. Weapon: cumulative cards per level. Character: one path's three costs times the number of paths, then Final Form. Every number is derived from MYTHIC_UPGRADE, so the full amount always matches its ladder.
+function upgradeBlock(key, upgrade) {
     const u = MYTHIC_UPGRADE[key];
-    if (!u) return null;
-    if (u.levels) return `-# **Cards by Level:** ${u.levels.map((n, i) => `L${i + 1} ${formatCP(n)}`).join(' › ')} (Max)`;
-    return `-# **Coins per Tech Path** (${u.paths.join(', ')})**:** ${u.tiers.map(formatCP).join(' › ')} · **${u.finalForm.name}:** ${formatCP(u.finalForm.cost)} after ${u.finalForm.minTiers} of ${u.paths.length * u.tiers.length} · ${formatCP(upgradeFullAmount(key))} in All`;
+    const spinLine = `\`${formatCP(upgrade.perDraw)} CP\` x ${upgrade.count} Spins ⌇ **\`${formatCP(upgrade.perDraw * upgrade.count)} CP\`**`;
+    const lines = [`${upgradeEmoji(key)} **${UPGRADE_LABEL[key]} Upgrade**`, `> -# **\`${formatCP(upgradeFullAmount(key))}\`** Mythic ${u.currency}`, spinLine];
+    if (u.levels) {
+        lines.push(`-# **Cumulative Mythic ${u.currency} by Upgrade Level:**`, `-# ${u.levels.map((n, i) => `L${i + 1}${i === u.levels.length - 1 ? ' (Max)' : ''} \`${formatCP(n)}\``).join(' › ')}`);
+    } else {
+        lines.push(`-# **Mythic ${u.currency} per Path:** (${u.tiers.map(n => `\`${formatCP(n)}\``).join(' › ')}) x ${u.paths.length} paths`, `-# **${u.finalForm.name}:** \`${formatCP(u.finalForm.cost)}\` coins after ${u.finalForm.minTiers} of ${u.paths.length * u.tiers.length} slots are unlocked`);
+    }
+    return lines.join('\n');
 }
 
 // Mythic-tier draws are the only ones with a separate Upgrade step, and each needs its own noun ("Weapon"/"Character") in the "### {X} Upgrade" sub-heading per drawPrices_ui.json.
@@ -192,9 +197,7 @@ function buildDrawEntries(regionKey, keys) {
 
         // Block 3 (upgrade entries only): its own separate Text Display, matching the reference file.
         if (entry.upgrade) {
-            const upgradeTotal = entry.upgrade.perDraw * entry.upgrade.count;
-            const ladder = upgradeLadderLine(key);
-            blocks.push(`**${upgradeEmoji(key)} ${UPGRADE_LABEL[key]} Upgrade**\n${formatCP(entry.upgrade.perDraw)} CP x ${entry.upgrade.count} Spins ⌇ **\`${formatCP(upgradeTotal)} CP\`**${ladder ? `\n${ladder}` : ''}`);
+            blocks.push(upgradeBlock(key, entry.upgrade));
         }
 
         return blocks;

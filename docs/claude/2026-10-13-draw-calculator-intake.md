@@ -742,3 +742,27 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > or something similar
 
 **Built 2026-10-17 22:48 EDT:** Show All Draws keeps the left arrow; `/draw prices jump_to:` opens one draw type, the same 11 choices as the dropdown.
+
+### Batch 52 — 2026-10-17 23:17 EDT, verbatim
+
+> for the draw prices mythic draws, let's do the upgrades like this format:
+>
+> ```
+> :MythicCard: **Weapon Upgrade**
+> > -# **`1,975`** Mythic Cards
+> `570 CP` x 10 Spins ⌇ **`5,700 CP`**
+> -# **Cumulative Mythic Cards by Upgrade Level:**
+> -# L1 `125` > L2 `375` > L3 `775` > L4 `1,275` > L5 (Max) `1,975`
+> ```
+>
+> ```
+> **:MythicCoin: Character Upgrade**
+> > -# **`2,825`** Mythic Coins
+> `855 CP` x 14 Spins ⌇ **`11,970 CP`**
+> -# **Mythic Coins per Path:** (`80` > `200` > `420`) x 3 Paths
+> -# **Final Form:** `720` coins after 7 of 9 Slots Unlocked
+> ```
+>
+> What do you think?
+
+**Built 2026-10-17 23:19 EDT:** his format for both Mythic draws, with `›` between steps, the icon outside the bold on both, sentence case after the labels, and the computed character total 2,820 (his draft said 2,825).

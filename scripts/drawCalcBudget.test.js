@@ -1089,8 +1089,10 @@ t('the balance pop-up saves the fields that are fine and names the refused ones 
 t('/draw prices states the upgrade ladders under each Upgrade heading', () => {
     const { buildDrawEntries } = require('../commands/drawprices');
     const [w, c] = buildDrawEntries('region_20', ['mythicWeapon', 'mythicCharacter']);
-    assert.ok(w[2].includes('L1 125 › L2 375 › L3 775 › L4 1,275 › L5 1,975 (Max)'), w[2]);
-    assert.ok(c[2].includes('80 › 200 › 420') && c[2].includes('Final Form:** 720 after 7 of 9') && c[2].includes('2,820 in All'), c[2]);
+    // His format (2026-10-17 23:19 EDT): the full amount quoted small, the spin cost, then the ladder.
+    assert.deepStrictEqual(w[2].split('\n').slice(1), ['> -# **`1,975`** Mythic Cards', '`1,000 CP` x 10 Spins ⌇ **`10,000 CP`**', '-# **Cumulative Mythic Cards by Upgrade Level:**', '-# L1 `125` › L2 `375` › L3 `775` › L4 `1,275` › L5 (Max) `1,975`'], w[2]);
+    assert.ok(/^<a?:MythicCard:\d+> \*\*Weapon Upgrade\*\*$/.test(w[2].split('\n')[0]) && /^<a?:MythicCoin:\d+> \*\*Character Upgrade\*\*$/.test(c[2].split('\n')[0]), 'the icon sits beside the bold heading');
+    assert.ok(c[2].includes('> -# **`2,820`** Mythic Coins') && c[2].includes('-# **Mythic Coins per Path:** (`80` › `200` › `420`) x 3 paths') && c[2].includes('-# **Final Form:** `720` coins after 7 of 9 slots are unlocked'), c[2]);
 });
 
 t('/draw prices: the quick jump opens one draw type, Back replaces the pager, and every view fits Discord (2026-10-17 22:01 EDT)', () => {
