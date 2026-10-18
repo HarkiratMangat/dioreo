@@ -766,3 +766,11 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > What do you think?
 
 **Built 2026-10-17 23:19 EDT:** his format for both Mythic draws, with `›` between steps, the icon outside the bold on both, sentence case after the labels, and the computed character total 2,820 (his draft said 2,825).
+
+### Batch 53 — 2026-10-17 23:30 / 23:32 EDT, verbatim
+
+> 2820 is correct
+>
+> can we also move the "LEGENDARY CHARACTER + LEGENDARY WEAPON DRAW" section to page 2? page 2 reads as very tall right now
+
+**Built 2026-10-17 23:33 EDT:** Legendary Character + Legendary Weapon is now the first draw on page 2; page 1 holds the two Mythic draws and the two Legendary Weapon draws (36 components, was 39).

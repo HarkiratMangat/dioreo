@@ -114,8 +114,9 @@ const DRAW_META = {
 };
 
 // Rendered as one flat divider-separated sequence within each page (drawPrices_ui.json has no group headers at all, unlike the previous Mythic/Legendary-Epic two-group layout) — order matches the reference file. Split across 2 pages (2026-07-12, Harkirat's explicit split) purely to stay under Discord's 40-component cap now that each entry renders as up to 3 separate Text Displays (see buildDrawEntries) rather than one merged block -- not a content-grouping choice.
-const PAGE_1_KEYS = ['mythicWeapon', 'mythicCharacter', 'legendaryGunReactive', 'legendaryGunNonReactive', 'legendaryCharacterWeapon'];
-const PAGE_2_KEYS = ['doubleLegendaryWeapons', 'sevenSpinLegendaryWeapon', 'pickYourRewardCard', 'doubleEpicCharacters'];
+// Legendary Character + Legendary Weapon moved to the top of page 2 (2026-10-17 23:32 EDT, Harkirat: "can we also move the 'LEGENDARY CHARACTER + LEGENDARY WEAPON DRAW' section to page 2?"): page 1 had grown tall with the two Mythic upgrade blocks, and it was at 39 of Discord's 40 components.
+const PAGE_1_KEYS = ['mythicWeapon', 'mythicCharacter', 'legendaryGunReactive', 'legendaryGunNonReactive'];
+const PAGE_2_KEYS = ['legendaryCharacterWeapon', 'doubleLegendaryWeapons', 'sevenSpinLegendaryWeapon', 'pickYourRewardCard', 'doubleEpicCharacters'];
 const SUBPAGES = [PAGE_1_KEYS, PAGE_2_KEYS];
 
 // The Advanced Double Legendary Weapon Draw (2026-07-21) gets its own dedicated page AFTER the two key-driven pages -- it doesn't fit the shared `draws: []` model buildDrawEntries renders, so it's built by its own function (buildAdvancedDoubleLegendaryEntry) and is intentionally NOT part of SUBPAGES. TOTAL_PAGES is what the pagination row + page clamp use, so it must include this page.
