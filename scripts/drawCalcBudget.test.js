@@ -293,8 +293,8 @@ t('a NAMED basket\'s manage row reads Rename, not Save', () => {
 // ==========================================
 // REGION SWITCHING PRESERVES PROGRESS
 // ==========================================
-// SET REGION & BALANCE on every screen (2026-10-18 17:25 EDT, his ask: "moving away from the 4 button row"): the landing, the editor and the result each carry the one Section, with his four lines, and no region buttons or Set Balance.
-t('Set Region & Balance sits on the landing, the editor and the result, in his layout, and in one place on all three', () => {
+// SET REGION & BALANCE on every screen (2026-10-18 17:25 EDT, his ask: "moving away from the 4 button row"), in his two-line layout and his placement (2026-10-18 19:24 EDT): the bottom of the landing and the editor, right under the list of draws on the result.
+t('Set Region & Balance sits at the bottom of the landing and the editor and under the result\'s list, in his layout', () => {
     const basket = { region: 'region_20', balance: 3000, mythicCards: 300 };
     const screens = {
         landing: dc.buildCalculatorPanel(state({ basketId: '0'.repeat(24) }), makeBasket({ banners: [], ...basket }), ACCENT, { savedBaskets: [] }),
@@ -302,27 +302,43 @@ t('Set Region & Balance sits on the landing, the editor and the result, in his l
         result: render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 6 }], ...basket }))
     };
     const e = require('../utils/emojiMap');
-    const his = `${e.region20Cp} **\`20 CP\`** Region\n${e.cp} **\`3,000 CP\`** Balance\n${e.mythicCard} **\`300 Mythic Cards\`**\n${e.mythicCoin} **\`0 Mythic Coins\`**`;
+    const his = `-# **${e.region20Cp} \`20 CP\` Region · ${e.cp} \`3,000 CP\` Balance**\n-# **${e.mythicCard} \`300\` Mythic Cards · ${e.mythicCoin} \`0\` Mythic Coins**`;
     const at = {};
     for (const [name, panel] of Object.entries(screens)) {
         assert.strictEqual(buttons(panel).filter(b => verbOf(b) === 'region' || b.label === 'Set Balance').length, 0, `${name}: no region buttons, no Set Balance`);
         const rb = buttonLabelled(panel, 'Set Region & Balance');
         assert.ok(rb && verbOf(rb) === 'rbmodal' && !rb.disabled, `${name}: one live button opens the pop-up`);
-        assert.ok(texts(panel).includes(his), `${name}: his four lines\n${texts(panel).join('\n---\n').slice(0, 600)}`);
+        assert.ok(texts(panel).includes(his), `${name}: his two lines\n${texts(panel).join('\n---\n').slice(0, 600)}`);
         const top = panel[0].components;
-        at[name] = top.findIndex(c => c.type === 9 && c.accessory && c.accessory.label === 'Set Region & Balance');
+        at[name] = { i: top.findIndex(c => c.type === 9 && c.accessory && c.accessory.label === 'Set Region & Balance'), n: top.length, top };
     }
-    assert.deepStrictEqual([at.landing, at.result], [2, 2], 'top: right under the title and its divider');
-    assert.strictEqual(at.editor, 3, 'top: right under the editor\'s title and hint');
+    for (const name of ['landing', 'editor']) {
+        const { i, top } = at[name];
+        assert.ok(top.slice(i + 1).every(c => c.type === 14 || c.type === 1), `${name}: at the bottom, only a divider and the last row below it`);
+        assert.ok(top[i - 1].type === 14 && top[i - 1].divider, `${name}: under a divider`);
+    }
+    const { i, top } = at.result;
+    assert.ok(top[i - 1].type === 9 && top[i - 1].accessory.label === 'Edit Selections', 'result: right under the list of draws, no divider between');
     const firstPick = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
     assert.strictEqual(buttonLabelled(firstPick, 'Set Region & Balance').disabled, true, 'disabled until a calculation exists to write to');
-    // The other placement: above the screen's last row.
-    dc.LAYOUT.regionBalance = 'bottom';
-    try {
-        const ed = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }], {}, { basket })[0].components;
-        const i = ed.findIndex(c => c.type === 9 && c.accessory && c.accessory.label === 'Set Region & Balance');
-        assert.ok(i > ed.findIndex(c => c.type === 10 && /^### /.test(c.content || '') || (c.type === 9 && /### /.test(c.components[0].content))), 'bottom: under the draws');
-    } finally { dc.LAYOUT.regionBalance = 'top'; }
+});
+
+// RESUME A SAVED CALCULATION (2026-10-18 19:24 EDT, his ask): under Start a Calculation, after a large space with no line.
+t('the landing offers Resume a Saved Calculation under Start a Calculation, and only when something is saved', () => {
+    const saved = [{ _id: 'a'.repeat(24), name: 'Spree', banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }], region: 'region_10', submitted: true, updatedAt: new Date('2026-10-18T12:00:00Z') }];
+    const landing = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: saved });
+    const top = landing[0].components;
+    const h = top.findIndex(c => c.type === 10 && c.content === '### Resume a Saved Calculation');
+    assert.ok(h > 0, 'the heading');
+    assert.deepStrictEqual([top[h - 1].type, top[h - 1].divider, top[h - 1].spacing], [14, false, 2], 'a large space with no line above it');
+    assert.ok(top.slice(0, h).some(c => c.type === 10 && /^## Start a Calculation/.test(c.content)), 'under Start a Calculation');
+    const sel = top[h + 1].components[0];
+    assert.strictEqual(verbOf(sel), 'load', 'the View Saved reopen verb');
+    assert.deepStrictEqual(sel.options.map(o => [o.label, o.value]), [['Spree', 'a'.repeat(24)]]);
+    assert.ok(sel.options.every(o => o.description && o.description.length <= 100));
+    assert.strictEqual(allText(dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] })).includes('Resume a Saved Calculation'), false, 'hidden when nothing is saved');
+    const full = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: Array.from({ length: 25 }, (_, i) => ({ ...saved[0], _id: String(i + 1).padStart(24, '0'), name: `${'N'.repeat(77)}${String(i).padStart(3, '0')}`, banners: Object.keys(DRAW_META).map(k => ({ drawKey: k, pullsDone: 1 })) })) });
+    assert.ok(1 + countComponents(full) <= 40 && JSON.stringify(full).length <= 12500, 'fits with 25 saved and the longest names');
 });
 
 // ==========================================
