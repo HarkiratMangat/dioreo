@@ -744,17 +744,18 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
         // Plain words, not code spans (2026-10-17 18:41 EDT, Harkirat on his phone: "Yeah it does wrap ... -# plain text?"): spans are wider and wrapped the line on a phone.
         cost.push(`-# Cost of Draws${upgrades.cp ? ' **+** Mythic Upgrades' : ''} **−** Spent Already **−** CP Balance`);
     } else {
-        cost.push(`> Full Cost of Draws: \`${fmt(drawTotal + spent)} CP\``, ...quiet('full'));
+        // The four term lines bold, sign included (2026-10-18 19:38 EDT, his ask); their `-#` working lines stay plain.
+        cost.push(`> **Full Cost of Draws: \`${fmt(drawTotal + spent)} CP\`**`, ...quiet('full'));
         if (upgrades.cp) {
-            cost.push(`> **+** Mythic Upgrades: \`${fmt(upgrades.cp)} CP\``);
+            cost.push(`> **+ Mythic Upgrades: \`${fmt(upgrades.cp)} CP\`**`);
             for (const p of upgrades.pools.filter(x => x.need)) {
                 const icon = p.drawKey === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
                 cost.push(`> -# ${icon} \`${fmt(p.need)}\` ${p.currency}${p.held ? ` − \`${fmt(p.held)}\` held` : ''} → about ${p.spins} spins × \`${fmt(p.perDraw)} CP\``);
             }
         }
-        cost.push(`> **−** Spent Already: \`${fmt(spent)} CP\``, ...quiet('spent'));
+        cost.push(`> **− Spent Already: \`${fmt(spent)} CP\`**`, ...quiet('spent'));
         // "Not set" so a balance nobody entered does not read as one set to 0.
-        cost.push(`> **−** CP Balance: \`${fmt(balance)} CP\`${balance ? '' : ' *(not set)*'}`);
+        cost.push(`> **− CP Balance: \`${fmt(balance)} CP\`**${balance ? '' : ' *(not set)*'}`);
     }
     // An armory not set up yet is left out with its own reason (2026-10-18 15:13 EDT), not "no pricing".
     const notSetUp = (basket.banners || []).map((b, i) => (isArmoryKey(b.drawKey) && armorySize(b) === null ? `#${i + 1}` : null)).filter(Boolean);

@@ -660,8 +660,8 @@ t('the cost breakdown LEADS with You Need; the simplified view names the terms, 
     assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], includeUpgrades: true }))).includes('-# Cost of Draws **+** Mythic Upgrades **−**'), 'Mythic Upgrades named only when set');
     const full = allText(render(basket, { detail: true })).split('\n');
     const f = full.indexOf('## Cost Breakdown');
-    assert.deepStrictEqual([full[f + 1], full[f + 2], full[f + 4], full[f + 6]], ['**You Need: `4,720 CP`**', '> Full Cost of Draws: `5,810 CP`', '> **−** Spent Already: `90 CP`', '> **−** CP Balance: `1,000 CP`'], '5,810 − 90 − 1,000 = 4,720, quoted, one term per line');
-    assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }), { detail: true })).includes('> **−** CP Balance: `0 CP` *(not set)*'), 'an unset balance says so');
+    assert.deepStrictEqual([full[f + 1], full[f + 2], full[f + 4], full[f + 6]], ['**You Need: `4,720 CP`**', '> **Full Cost of Draws: `5,810 CP`**', '> **− Spent Already: `90 CP`**', '> **− CP Balance: `1,000 CP`**'], '5,810 − 90 − 1,000 = 4,720, quoted, one term per line');
+    assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }), { detail: true })).includes('> **− CP Balance: `0 CP`** *(not set)*'), 'an unset balance says so');
 });
 
 t('Set Balance accepts the amount the way the panel prints it -- "3000 CP", "3,000 cp", "3k CP"', () => {
@@ -1005,7 +1005,7 @@ t('the Full Breakdown is the simplified layout with its working shown, and the s
     const banners = [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }, { drawKey: 'mythicWeapon', pullsDone: 0 }];
     const t = allText(render(makeBasket({ banners }), { detail: true }, { currency: 'CAD' }));
     assert.ok(/#2 · Legendary Weapon \(Reactive\)\*\*\n> \*\*Price: `4,950 CP`\*\* · `1\/10` Attempts\n> -# `10 CP` Spent · `4,940 CP` To Complete/.test(t), 'the same list as the simplified view');
-    assert.ok(t.includes('**You Need: `15,700 CP`**') && t.includes('> Full Cost of Draws: `15,710 CP`') && t.includes('> **−** Spent Already: `10 CP`'), '15,710 − 10 − 0 = 15,700');
+    assert.ok(t.includes('**You Need: `15,700 CP`**') && t.includes('> **Full Cost of Draws: `15,710 CP`**') && t.includes('> **− Spent Already: `10 CP`**'), '15,710 − 10 − 0 = 15,700');
     assert.ok(t.includes('`4,950 CP` **+** `4,950 CP` **+** `5,810 CP`') && t.includes('`0 CP` **+** `10 CP` **+** `0 CP`'), 'each sum shows its terms');
     assert.ok(t.includes('**Just Enough: `15,800 CP`** for **`CA$199.98`**') && t.includes('-# **`100 CP` left over** after completing your draws'));
     assert.ok(t.includes('**`CA$129.99`** each') && /CoD: Mobile web store prices are not included/.test(t));
@@ -1116,7 +1116,7 @@ t('upgrades: the result states cards and coins per line and turns the pool into 
     const full = allText(render(basket, { detail: true }));
     assert.ok(full.includes('Upgrade: Level 2 → Level 5 · `1,600 Cards`'), 'the line states the upgrade in cards');
     assert.ok(full.includes('`1,600` Cards − `300` held → about 7 spins × `1,000 CP`'), full);
-    assert.ok(full.includes('> **+** Mythic Upgrades: `7,000 CP`') && full.includes('**You Need: `7,000 CP`**'), 'a finished draw costs only its upgrade');
+    assert.ok(full.includes('> **+ Mythic Upgrades: `7,000 CP`**') && full.includes('**You Need: `7,000 CP`**'), 'a finished draw costs only its upgrade');
     assert.ok(/Upgrade: Level 2 → Level 5$/m.test(allText(render(basket))), 'the simplified list says what the upgrade goes to, without its amount (2026-10-18 19:34 EDT, his ask)');
     assert.ok(allText(render(basket, { detail: true })).includes('Upgrade: Level 2 → Level 5 · `1,600 Cards`'), 'the Full Breakdown keeps the amount');
     const exp = dc.buildExportText(basket, 'USD');
