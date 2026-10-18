@@ -1237,7 +1237,7 @@ t('the editor names a season line as its draw with its Draw Type under it (his o
     // A `###` heading over a hint line (2026-10-18 16:17 EDT, his ask): the type, then the line's spent and left, as its dropdown's chosen value reads.
     assert.ok(allText(f).includes('#1 · Undead Legion Series Armory\n-# Legendary Weapon Armory · 9,500 CP Spent · 9,250 CP to Completion'), allText(f).slice(0, 400));
     assert.ok(allText(f).includes('#2 · Mythic Weapon\n-# ') && allText(f).includes('CP Spent · Finished'), 'an untitled line has no type in its hint; a finished one says so');
-    assert.ok(texts(f).some(c => /^### /.test(c)), 'each line is a ### heading');
+    assert.ok(texts(f).some(c => c.startsWith(`-# ${require('../utils/emojiMap').blank}\n### `)), 'each line is a ### heading with a blank line above it (2026-10-18 17:08 EDT)');
     assert.strictEqual((JSON.stringify(f).match(/"type":14,"spacing":1,"divider":true/g) || []).length, 0, 'no divider between draws');
     assert.ok(buttonLabelled(f, 'Upgrade: Level 3'));
 });
