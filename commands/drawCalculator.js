@@ -867,8 +867,9 @@ function progressTitle(basket) { return (basket?.banners || []).some(b => upgrad
 function regionBalanceSection(state, basket) {
     const region = basket?.region || 'region_10';
     const content = [
-        `-# **${emojis[REGION_EMOJI_KEY[region]]} \`${regionLabel(region)}\` Region · ${emojis.cp} \`${fmt(basket?.balance || 0)} CP\` Balance**`,
-        `-# **${emojis.mythicCard} \`${fmt(basket?.mythicCards || 0)}\` Mythic Cards · ${emojis.mythicCoin} \`${fmt(basket?.mythicCoins || 0)}\` Mythic Coins**`
+        // The word before its value, with a colon (2026-10-18 19:40 EDT, his ask: "like **Region: `20 CP`**"): a label joined to its value, the /draw prices grammar.
+        `-# **${emojis[REGION_EMOJI_KEY[region]]} Region: \`${regionLabel(region)}\` · ${emojis.cp} Balance: \`${fmt(basket?.balance || 0)} CP\`**`,
+        `-# **${emojis.mythicCard} Mythic Cards: \`${fmt(basket?.mythicCards || 0)}\` · ${emojis.mythicCoin} Mythic Coins: \`${fmt(basket?.mythicCoins || 0)}\`**`
     ].join('\n');
     return { type: 9, components: [{ type: 10, content }],
         accessory: { type: 2, style: 2, label: 'Set Region & Balance', custom_id: encodeState('rbmodal', state), emoji: emojis.parseEmoji(emojis.cp2), ...(basket && basket._id ? {} : { disabled: true }) } };

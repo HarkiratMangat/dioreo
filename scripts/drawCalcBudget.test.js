@@ -302,7 +302,7 @@ t('Set Region & Balance sits at the bottom of the landing and the editor and und
         result: render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 6 }], ...basket }))
     };
     const e = require('../utils/emojiMap');
-    const his = `-# **${e.region20Cp} \`20 CP\` Region · ${e.cp} \`3,000 CP\` Balance**\n-# **${e.mythicCard} \`300\` Mythic Cards · ${e.mythicCoin} \`0\` Mythic Coins**`;
+    const his = `-# **${e.region20Cp} Region: \`20 CP\` · ${e.cp} Balance: \`3,000 CP\`**\n-# **${e.mythicCard} Mythic Cards: \`300\` · ${e.mythicCoin} Mythic Coins: \`0\`**`;
     const at = {};
     for (const [name, panel] of Object.entries(screens)) {
         assert.strictEqual(buttons(panel).filter(b => verbOf(b) === 'region' || b.label === 'Set Balance').length, 0, `${name}: no region buttons, no Set Balance`);
