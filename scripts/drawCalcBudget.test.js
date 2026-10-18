@@ -1110,7 +1110,7 @@ t('the balance pop-up saves the fields that are fine and names the refused ones 
     assert.deepStrictEqual(ok, { fields: { balance: 3000, mythicCards: 300, mythicCoins: 0 }, warning: null });
     const mixed = dc.readBalanceFields({ amount: '3000 cp', cards: '252', coins: '150' });
     assert.deepStrictEqual(mixed.fields, { balance: 3000, mythicCoins: 150 }, 'the good fields are kept');
-    assert.ok(mixed.warning.startsWith('⚠️ Saved CP and Mythic Coins.') && mixed.warning.includes('**Mythic Cards** `252` wasn\'t saved: use 0 or a multiple of 5') && mixed.warning.endsWith('Press **Set Balance** to fix it.'), mixed.warning);
+    assert.ok(mixed.warning.startsWith('⚠️ Saved CP and Mythic Coins.') && mixed.warning.includes('**Mythic Cards** `252` wasn\'t saved: use 0 or a multiple of 5') && mixed.warning.endsWith('Press **Set Region & Balance** to fix it.'), mixed.warning);
     const none = dc.readBalanceFields({ amount: 'abc', cards: '7', coins: null });
     assert.ok(none.warning.startsWith('⚠️ Nothing was saved.') && none.warning.endsWith('to fix them.') && !Object.keys(none.fields).length);
 });
