@@ -313,10 +313,10 @@ function buildAdvancedDoubleLegendaryCharacterEntry(regionKey) {
     return blocks.map(content => ({ type: 10, content }));
 }
 
-// SERIES ARMORY ENTRIES, in the same two-block shape as buildDrawEntries (the heading with a quoted total, then the spin line with a small cumulative line), so the page reads like the rest of /draw prices. The quoted total is ONE item; the small line is the whole armory at each item count. The no-luck note rides on the last block, as on the Advanced pages, so it costs no component.
+// SERIES ARMORY ENTRIES, in the same two-block shape as buildDrawEntries (the heading with a quoted total, then the spin line with a small cumulative line), so the page reads like the rest of /draw prices. The quoted total is ONE item; the small line is the whole armory at each item count. No no-luck note (2026-10-18 10:46 EDT, Harkirat: "that's not needed. we dont mention it for the other draws anyway since the draw prices page is the full breakdown anyway.").
 function buildArmoryEntries(regionKey, keys) {
     const perSpin = ARMORY_SPIN_CP[regionKey] || ARMORY_SPIN_CP.region_10;
-    const groups = keys.map(key => {
+    return keys.map(key => {
         const a = SERIES_ARMORY[key];
         const perItem = perSpin * a.spins;
         return [
@@ -324,9 +324,6 @@ function buildArmoryEntries(regionKey, keys) {
             `\`${formatCP(perSpin)} CP\` x ${a.spins} Spins ⌇ **\`${formatCP(perItem)} CP\`**\n-# **Full Armory by Item Count:** ${ARMORY_ITEM_COUNTS.map(n => `${n} Items \`${formatCP(perItem * n)}\``).join(' › ')}`
         ];
     });
-    const last = groups[groups.length - 1];
-    last[last.length - 1] += `\n-# Note: Each item is guaranteed at its spin count, and these prices assume you didn't get lucky. Spins come 1 or 10 at a time, with no discount for 10.`;
-    return groups;
 }
 
 // QUICK JUMP TO ONE DRAW TYPE (2026-10-17 22:02 EDT, Harkirat: "Can we implement a drop down above the region toggle's hint line? A quick jump to a draw type basically. And when in that view, the pagination buttons basically get replaced with a 'back' button to go back to the 'all view'"). A jump target is any DRAW_META key plus the two Advanced pages. The focused view travels as the page value `f<key>` (keys are camelCase, so the `_`-split custom_ids still parse), which is how a region switch keeps the jump.

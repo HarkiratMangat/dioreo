@@ -1108,7 +1108,8 @@ t('/draw prices: the Series Armory page is page 3, priced per item and per full 
     assert.ok(text('region_30', 2).includes('`120 CP` x 120 Spins ⌇ **`14,400 CP`**') && text('region_20', 2).includes('`80 CP` x 75 Spins ⌇ **`6,000 CP`**'));
     assert.ok(text('region_10', 3).includes('ADVANCED DOUBLE LEGENDARY WEAPON DRAW') && text('region_10', 4).includes('ADVANCED DOUBLE LEGENDARY CHARACTER DRAW'), 'the Advanced pages are 4 and 5');
     const one = text('region_10', 'farmoryLegendaryCharacter');
-    assert.ok(one.includes('LEGENDARY CHARACTER SERIES ARMORY') && !one.includes('MYTHIC WEAPON SERIES ARMORY') && one.includes("didn't get lucky"), one);
+    assert.ok(one.includes('LEGENDARY CHARACTER SERIES ARMORY') && !one.includes('MYTHIC WEAPON SERIES ARMORY'), one);
+    assert.ok(!p10.includes("didn't get lucky"), 'no no-luck note: the page is the full breakdown, like the other draws (his call, 2026-10-18 10:46 EDT)');
     assert.ok(!Object.keys(DRAW_META).some(k => k in dp.SERIES_ARMORY), 'armories stay out of DRAW_META, so the calculator never prices one as a ladder');
 });
 
