@@ -14,7 +14,7 @@ const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
     findLiveDoubleCPEntry, buildExportText, readBalanceFields, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
     buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName,
-    buildAddDrawsModal, buildRemoveModal, readRemovePicks
+    buildAddDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal
 } = require('../commands/drawCalculator');
 const { pullCount, upgradeKeyOf, isArmoryKey, armorySize } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
@@ -149,6 +149,11 @@ async function route(interaction) {
         const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
         return await interaction.showModal(buildAmountModal(state, basket));
     }
+    // SET REGION & BALANCE (2026-10-18 16:17 EDT): the editor's one pop-up for the region and the balances.
+    if (interaction.isButton() && state.verb === 'rbmodal') {
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        return await interaction.showModal(buildRegionBalanceModal(state, basket));
+    }
     // The upgrade pop-up (2026-10-17 13:17 EDT): from the one-line button (`upgset`, the line in `f`) or the Mythic-lines dropdown (`upgpick`, the line as its value). A direct response like every showModal, so it comes before the generic defer.
     if ((interaction.isButton() && state.verb === 'upgset') || (interaction.isStringSelectMenu() && state.verb === 'upgpick')) {
         const index = state.verb === 'upgpick' ? Number(interaction.values[0]) : state.focus;
@@ -271,6 +276,10 @@ async function route(interaction) {
         await interaction.deferUpdate();
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
+        // The region, when the pop-up carried it (Set Region & Balance). A pick outside the known regions changes nothing.
+        let region = null;
+        try { region = interaction.fields.getStringSelectValues('region')[0] || null; } catch { region = null; }
+        if (region && REGION_ORDER.includes(region) && region !== basket.region) fields.region = region;
         const updated = Object.keys(fields).length ? await writeTo(actingUserId, state, basket, fields) : basket;
         await renderPanel(interaction, state, updated);
         if (warning) {

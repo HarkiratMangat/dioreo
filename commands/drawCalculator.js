@@ -892,7 +892,30 @@ function selectionSummary(basket, max = 12) {
 }
 // "Set Draw Progress & Upgrades" once a Mythic line is in the calculation (2026-10-18 13:05 EDT, his ask), on the button and the screen it opens. Renamed 2026-10-18 13:37 EDT (Harkirat): "Adjust Draws & Progress" / "Adjust Draws, Progress, & Upgrades". The screen now adds and removes draws too.
 function progressTitle(basket) { return (basket?.banners || []).some(b => upgradeKeyOf(b.drawKey)) ? 'Adjust Draws, Progress, & Upgrades' : 'Adjust Draws & Progress'; }
-// The landing's button reads "Set Draw Progress"; the result's reads "Edit Selections" (2026-10-18 14:57 EDT, his labels). Both open the screen titled by progressTitle.
+// The landing's button reads "Set Draw Progress"; the result's reads "Edit Selections" (2026-10-18 14:57 EDT, his labels). Both open the screen titled by progressTitle. The editor's Region & Balance, as text beside one button (2026-10-18 16:17 EDT). Cards show once a Mythic Weapon line is picked or any are held, Coins likewise for a Mythic Character, so a calculation without Mythic draws reads one balance.
+function regionBalanceSection(state, basket) {
+    const keys = (basket?.banners || []).map(b => upgradeKeyOf(b.drawKey));
+    const held = [`${fmt(basket?.balance || 0)} CP`];
+    if (basket?.mythicCards || keys.includes('mythicWeapon')) held.push(`${fmt(basket?.mythicCards || 0)} Mythic Cards`);
+    if (basket?.mythicCoins || keys.includes('mythicCharacter')) held.push(`${fmt(basket?.mythicCoins || 0)} Mythic Coins`);
+    const region = basket?.region || 'region_10';
+    return { type: 9, components: [{ type: 10, content: `**Region:** ${emojis[REGION_EMOJI_KEY[region]]} ${regionLabel(region)}\n**Balance:** ${held.join(' · ')}` }],
+        accessory: { type: 2, style: 2, label: 'Set Region & Balance', custom_id: encodeState('rbmodal', state), emoji: emojis.parseEmoji(emojis.cp2) } };
+}
+// THE REGION & BALANCE POP-UP: the region as a dropdown over the three balance boxes, each pre-filled (a blank box means 0). Submits to the same `nums` verb as Set Balance, which also reads `region` when the pop-up carries it.
+function buildRegionBalanceModal(state, basket) {
+    const region = basket?.region || 'region_10';
+    const box = (id, label, placeholder, value) => ({ type: 18, label, component: { type: 4, custom_id: id, style: 1, required: false, placeholder, ...(value ? { value: String(value) } : {}) } });
+    return { custom_id: encodeState('nums', state), title: 'Set Region & Balance', components: [
+        { type: 18, label: 'CP Region', description: 'Not sure? Help shows how to find yours', component: {
+            type: 3, custom_id: 'region', required: true, min_values: 1, max_values: 1,
+            options: REGION_ORDER.map(key => ({ label: regionLabel(key), value: key, emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]]), ...(key === region ? { default: true } : {}) }))
+        } },
+        box('amount', 'CP You Already Have', 'e.g. 3,000 or 3k', basket?.balance),
+        box('cards', 'Mythic Cards You Hold', 'e.g. 300 or 2k', basket?.mythicCards),
+        box('coins', 'Mythic Coins You Hold', 'e.g. 300 or 2k', basket?.mythicCoins)
+    ] };
+}
 function progressButton(state) { return { type: 2, style: 2, label: 'Set Draw Progress', custom_id: encodeState('progress', { ...state, fromResult: false, dirty: false }), emoji: emojis.parseEmoji(emojis.editCalc) }; }
 
 // THIS SEASON'S DRAWS (sidelined 2026-10-17 21:29 EDT, built 2026-10-18 12:15 EDT). First on the form (his "yes"). Each option is the draw's own title with its Draw Type under it (decided 2026-10-17 21:28 EDT). The list is listSeasonDraws's, read by the caller and passed in, because building a panel never touches the database.
@@ -961,10 +984,24 @@ function lineExtraButtons(state, basket, index) {
     }
     return out;
 }
+// The hint under a line's heading (2026-10-18 16:17 EDT, his ask: "include the additional info such as the price as a hint line"): a season draw's type, then what the line has cost and what is left, the same figures as its dropdown's chosen value.
+function lineHint(basket, index) {
+    const b = basket.banners[index];
+    const parts = b.title ? [shortName(b.drawKey)] : [];
+    const total = pullCount(basket.region, b.drawKey, b);
+    if (isArmoryKey(b.drawKey) && armorySize(b) === null) parts.push(freshDrawDescription(basket.region, b.drawKey));
+    else if (total === null) parts.push(`No Data at ${regionLabel(basket.region)} Yet`);
+    else {
+        const done = Math.min(b.pullsDone || 0, total);
+        parts.push(`${fmt(spentSoFar(basket.region, b.drawKey, done, b))} CP Spent`, done >= total ? 'Finished' : `${fmt(remainingToFinish(basket.region, b.drawKey, done, b))} CP to Completion`);
+    }
+    return parts.join(' · ');
+}
 function progressLineBlocks(state, basket, index) {
     const b = basket.banners[index];
     const icon = metaOf(b.drawKey) ? emojis[metaOf(b.drawKey).tier] : emojis.smallDot;
-    const text = `${icon} **#${index + 1} · ${lineName(b)}**${b.title ? `\n-# ${shortName(b.drawKey)}` : ''}`;
+    // A `###` heading over a hint line (2026-10-18 16:17 EDT, his ask), in place of a bold name.
+    const text = `### ${icon} #${index + 1} · ${lineName(b)}\n-# ${lineHint(basket, index)}`;
     const extra = lineExtraButtons(state, basket, index);
     const head = extra.length === 1 ? { type: 9, components: [{ type: 10, content: text }], accessory: extra[0] } : { type: 10, content: text };
     // No Remove option in the line's dropdown: Remove is one pop-up for every selection now (his Mock 2).
@@ -978,9 +1015,8 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
         { type: 10, content: `## ${progressTitle(basket)}\n-# Set how far you are on each draw. \`0\` means you haven't started it.` }];
     if (notice) top.push({ type: 10, content: `-# ${notice}` });
     if (dropConfirm) top.push(dropConfirmRow(state, dropConfirm.mask, dropConfirm.count, dropConfirm.verb, dropConfirm.label));
-    // HIS TWO FOOTER ROWS (2026-10-18 13:37 EDT): Add Draws · Remove (red) · Calculate, then Back to Result · Back to Selections. Add and Remove open pop-ups (his Mock 2: "it also adds a soft confirm to delete ... and overall keeps the panel slim and clean"). Back to Result shows only when there is a result. ONE EDITOR (2026-10-18 15:13 EDT, his "yes"): after the first pick this is the calculator's screen, so the region buttons and Set Balance live here in one row. No "Tweak Calculation" caption here: it would cost the component a third Mythic line needs, and the region buttons say what they are.
-    const tweak = [{ type: 14, spacing: 2, divider: true },
-        { type: 1, components: [...regionRow(state, basket).components, { type: 2, style: 2, label: balanceLabel(basket), custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) }] }].filter(Boolean);
+    // HIS TWO FOOTER ROWS (2026-10-18 13:37 EDT): Add Draws · Remove (red) · Calculate, then Back to Result · Back to Selections. Add and Remove open pop-ups (his Mock 2: "it also adds a soft confirm to delete ... and overall keeps the panel slim and clean"). Back to Result shows only when there is a result. ONE EDITOR (2026-10-18 15:13 EDT, his "yes"): after the first pick this is the calculator's screen, so the region buttons and Set Balance live here in one row. No "Tweak Calculation" caption here: it would cost the component a third Mythic line needs, and the region buttons say what they are. SET REGION & BALANCE (2026-10-18 16:17 EDT, his ask): the three region buttons and Set Balance became one pop-up, with the region and balances shown as text beside its button. A Section is 3 components where the row was 5, so a page holds more draws.
+    const tweak = [{ type: 14, spacing: 2, divider: true }, regionBalanceSection(state, basket)];
     const back = [...tweak, { type: 14, spacing: 2, divider: true },
         { type: 1, components: [
             { type: 2, style: 3, label: 'Add Draws', custom_id: encodeState('addopen', state), emoji: emojis.parseEmoji(emojis.plus), disabled: banners.length >= MAX_LINES },
@@ -993,7 +1029,8 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
         const pages = linePages(banners, perPage);
         const bpage = Math.min(at, pages.length - 1);
         const mid = [];
-        pages[bpage].forEach((i, k) => { if (k) mid.push({ type: 14, spacing: 1, divider: true }); mid.push(...progressLineBlocks(state, basket, i)); });
+        // No divider between draws (2026-10-18 16:17 EDT, his ask): each draw's `###` heading separates it, and every divider was a component a page could not spend on a draw.
+        pages[bpage].forEach(i => mid.push(...progressLineBlocks(state, basket, i)));
         // A small space above the pager (2026-10-18 14:57 EDT, his ask), no line.
         if (pages.length > 1) mid.push({ type: 14, spacing: 1, divider: false }, pageNavRow({ ...state, bpage }, pages.length));
         return [...top, ...mid, ...back];
@@ -1512,5 +1549,5 @@ module.exports = {
     buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,
     setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages,
     CALC_KEYS, metaOf, unitOf, lineName, freshLine, buildProgressPanel, buildSpinsInModal, readSpinsIn, listSeasonDraws, selectionSummary,
-    buildAddDrawsModal, buildRemoveModal, readRemovePicks, progressTitle
+    buildAddDrawsModal, buildRemoveModal, readRemovePicks, progressTitle, buildRegionBalanceModal, regionBalanceSection, lineHint
 };
