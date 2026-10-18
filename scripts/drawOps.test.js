@@ -98,6 +98,9 @@ check('draw types: a bulk line carries its type tag, the export writes it back, 
     assert.strictEqual(resolveDrawType('Legendary Weapon Draw (Reactive)'), 'legendaryGunReactive');
     assert.strictEqual(resolveDrawType('legendary weapon draw (non-reactive)'), 'legendaryGunNonReactive');
     assert.strictEqual(resolveDrawType('Mythic Character Series Armory'), null, 'there is no Mythic Character armory');
+    const [unk] = parseBulkDrawList('Mystery Draw, type: unknown, l AK, July 15');
+    assert.strictEqual(unk.priceType, 'unknown', 'Unsure / Unknown is a storable flag');
+    assert.ok(formatDrawsAsBulkText([unk]).includes('type: unknown'));
 });
 
 check('draw types: an unknown tag is refused by add and by bulk add, never saved silently', () => {
@@ -108,6 +111,7 @@ check('draw types: an unknown tag is refused by add and by bulk add, never saved
     const bulk = ops.resolveOp('draw.bulkAdd').validate({ type: 'draw.bulkAdd', target: { category: 'new' }, payload: { text: 'X, type: zz, l AK, July 15' } });
     assert.strictEqual(bulk.ok, false);
     assert.ok(/Unknown draw type "zz"/.test(bulk.errors.join(' ')), bulk.errors.join(' '));
+    assert.ok(ops.resolveOp('draw.add').validate({ type: 'draw.add', payload: { title: 'X', category: 'new', items: [], priceType: 'unknown' } }).ok, 'Unsure / Unknown saves');
     const good = ops.resolveOp('draw.add').validate({ type: 'draw.add', payload: { title: 'X', category: 'new', items: [], priceType: 'armoryMythicWeapon' } });
     assert.strictEqual(good.ok, true, JSON.stringify(good.errors));
 });
@@ -118,7 +122,10 @@ check('Edit Draw: five Labels, and the Draw Type dropdown preselects the stored 
     assert.ok(m.components.every(c => c.type === 18), 'every field is a Label');
     const sel = m.components[4].component;
     assert.strictEqual(sel.custom_id, 'price_type');
-    assert.strictEqual(sel.options.length, 14);
+    assert.strictEqual(sel.options.length, 15, 'Unsure / Unknown plus the 14 types');
+    assert.strictEqual(sel.options[0].value, 'unknown', 'Unsure / Unknown sits first');
+    assert.strictEqual(sel.required, true, 'a required field (his call, 2026-10-18 11:36 EDT)');
+    assert.strictEqual(sel.min_values, 1);
     assert.deepStrictEqual(sel.options.filter(o => o.default).map(o => o.value), ['armoryLegendaryWeapon']);
     assert.ok(sel.options.every(o => o.label.length <= 100 && (o.description || '').length <= 100));
     assert.deepStrictEqual(m.components.slice(0, 4).map(c => c.component.custom_id), ['title', 'items', 'date', 'url'], 'the handler reads these ids');

@@ -452,11 +452,12 @@ function buildBulkRemoveDrawsModal(drawType) {
 }
 
 // THE DRAW TYPE DROPDOWN, shared by Add and Edit Draw (2026-10-18 11:09 EDT, Harkirat: "a single dropdown for the collective 'draw type' selection and include the armory types within it"). /draw prices' own list in page order (utils/drawTypes.js); the stored type is preselected, and picking nothing leaves it unset. An armory's item count is read off the Items field, so there is no count to pick. A select lives in a modal only inside a Label, which is why both draw forms are built from Labels.
+// REQUIRED, with Unsure / Unknown first (2026-10-18 11:37 EDT, Harkirat: "make it a required field and add the option for 'unsure/unknown' at the top of the list"), on Add and Edit alike so an untyped draw can only come from a bulk paste without a tag. Unknown is a stored flag the portal can list for fixing later.
 function drawTypeLabel(current = '') {
-    const { drawTypeOptions } = require('../utils/drawTypes');
+    const { drawTypeChoices } = require('../utils/drawTypes');
     return new LabelBuilder().setLabel('Draw Type').setDescription('How /draw prices and the calculator price this draw').setStringSelectMenuComponent(
-        new StringSelectMenuBuilder().setCustomId('price_type').setPlaceholder('Not set').setRequired(false).setMinValues(0).setMaxValues(1)
-            .addOptions(drawTypeOptions().map(o => ({ label: o.name, value: o.key, description: `Bulk tag: type: ${o.code}`, emoji: emojis.parseEmoji(emojis[o.tier]), default: o.key === current })))
+        new StringSelectMenuBuilder().setCustomId('price_type').setPlaceholder('Pick its Draw Type').setRequired(true).setMinValues(1).setMaxValues(1)
+            .addOptions(drawTypeChoices().map(o => ({ label: o.name, value: o.key, description: o.tier ? `Bulk tag: type: ${o.code}` : 'Flags it to set later. Bulk tag: type: unknown', emoji: o.tier ? emojis.parseEmoji(emojis[o.tier]) : { name: '❓' }, default: o.key === current })))
     );
 }
 // A Label holding a text input. interaction.fields.getTextInputValue() reads it exactly as it read an action row's.
@@ -488,7 +489,6 @@ function buildEditDrawModal(targetDraw, targetId, drawType) {
         text('date', 'Release Date', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(new Date(targetDraw.date).toISOString().split('T')[0])),
         // Pre-filled with the CURRENT thumbnail (already a Cloudinary URL if this draw was ever cached) — optional so clearing it and resubmitting re-resolves via the cache lookup instead of requiring a re-typed URL just to leave the image unchanged. BUG FIX (2026-07-12): setValue() throws a synchronous validation error if given `undefined`/non-string — discord.js requires a real string, even for an optional field. Any draw doc missing thumbnailUrl (legacy entries from before the Cloudinary-cache feature, or any doc that somehow saved without one) made this throw INSIDE resolveManagePanelAction's showModal() call, before the interaction was ever acknowledged — which is exactly what surfaced as Discord's generic "Something went wrong. Try again." toast on Edit Draws. Fall back to '' like every other optional field already does.
         text('url', 'Thumbnail URL (blank = reuse cached image)', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl || '').setRequired(false)),
-        // Picking nothing here CLEARS a stored type (handlers/manage/draws.js's editDraw).
         drawTypeLabel(targetDraw.priceType || '')
     );
     return modal;
