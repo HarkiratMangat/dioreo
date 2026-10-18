@@ -2605,6 +2605,15 @@ The "Can be undone" filter and the row's Undo control are both computed as `kind
 
 ## 🧹 Someday / tech-debt
 
+### `[P3 · XS]` Wire `/draw calculator`'s shortcut options back in, if Harkirat wants them
+
+*Filed 2026-10-17 23:38 EDT. Harkirat, 2026-10-17 23:37 EDT: "can we also remove the options from the draw calc slash command, except for the visibility option? i honestly dont think they're that useful at the moment. dont delete the code, but unwire it and document it. it might be wired back into the bot at some future stage if i feel like it".*
+
+- **What was unwired:** `draw`, `pulls`, `balance` and `region` on `/draw calculator`. `visibility` stays.
+- **Where the code is:** the option definitions are in `addCalculatorShortcutOptions` (`commands/drawprices.js`), applied nowhere; `slashShortcut` and the option reads in `commands/drawCalculator.js` are untouched and return no shortcut while the options are absent. Its test (`scripts/drawCalcBudget.test.js`, slashShortcut) still runs.
+- **To wire back:** call `addCalculatorShortcutOptions(sub)` on the calculator subcommand before `.addStringOption(... 'visibility' ...)`, rebuild `public/commands.html` with `npm run site`, restart the bot so the command registers.
+- **Verify when done:** the dev bot's registered `draw calculator` lists the four options, and `/draw calculator draw:` opens straight on a result.
+
 ### `[P3 · XS]` Decide whether to delete `buildDrawInfoPanel` and the `info` verb — a later code-housekeeping session
 
 *Filed 2026-10-14 19:58 EDT. Harkirat, same time: "document it and leave the code behind for now. we'll decide if we want to delete it in a later code housekeeping session or something".*

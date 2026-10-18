@@ -774,3 +774,9 @@ A design round in the thread: his tree draft (`:b2:`/`:b1:` under You Need), bul
 > can we also move the "LEGENDARY CHARACTER + LEGENDARY WEAPON DRAW" section to page 2? page 2 reads as very tall right now
 
 **Built 2026-10-17 23:33 EDT:** Legendary Character + Legendary Weapon is now the first draw on page 2; page 1 holds the two Mythic draws and the two Legendary Weapon draws (36 components, was 39).
+
+### Batch 54 — 2026-10-17 23:37 EDT, verbatim
+
+> can we also remove the options from the draw calc slash command, except for the visibility option? i honestly dont think they're that useful at the moment. dont delete the code, but unwire it and document it. it might be wired back into the bot at some future stage if i feel like it
+
+**Built 2026-10-17 23:38 EDT:** `/draw calculator` registers only `visibility`; the other four are kept in `addCalculatorShortcutOptions`, documented in the rules and filed under Someday with the steps to wire them back. `public/commands.html` rebuilt.

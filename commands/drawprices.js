@@ -398,6 +398,16 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
     return withShareButton([containerPayload, globalNavigationRow], isEphemeral);
 }
 
+// /draw calculator's shortcut options, UNWIRED 2026-10-17 23:38 EDT and kept so they can come back (see the calculator subcommand below).
+// Every option is optional and every one maps onto a control the panel also carries, so the command line and the panel are two doors into the same state rather than two features. Choices are DERIVED from DRAW_META/REGION_ORDER rather than transcribed -- a tenth draw or a fourth region appears here on its own, which is the same rule DRAW_DATA's header sets for every other number in this file.
+function addCalculatorShortcutOptions(sub) {
+    return sub
+        .addStringOption(option => option.setName('draw').setDescription('Which draw you are pulling on').addChoices(...Object.entries(DRAW_META).map(([value, meta]) => ({ name: meta.name, value }))))
+        .addIntegerOption(option => option.setName('pulls').setDescription('How many pulls you have already done on it (most draws have 10, two have 7)').setMinValue(0).setMaxValue(10))
+        .addIntegerOption(option => option.setName('balance').setDescription('CP you already have, so it can tell you what is left to buy').setMinValue(0))
+        .addStringOption(option => option.setName('region').setDescription('Price it in a specific CP region').addChoices(...REGION_ORDER.map(value => ({ name: `${value.split('_')[1]} CP Region`, value }))));
+}
+
 module.exports = {
     // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads"). buildDrawEntries/UPGRADE_LABEL/formatCP exported 2026-08-26 17:25 EDT so the calculator's own per-draw summary block can reuse THIS command's exact rendering -- Harkirat's own mockup for the redesign was built by pasting a real /draw prices entry in verbatim, so the two must never drift apart into two similar-looking but independently-maintained copies.
     DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
@@ -418,15 +428,12 @@ module.exports = {
         .addSubcommand(sub => sub
             .setName('calculator')
             .setDescription('Work out how much more CP you need, and the cheapest way to buy it')
-            // Every option is optional and every one maps onto a control the panel also carries, so the command line and the panel are two doors into the same state rather than two features. Choices are DERIVED from DRAW_META/REGION_ORDER rather than transcribed -- a tenth draw or a fourth region appears here on its own, which is the same rule DRAW_DATA's header sets for every other number in this file.
-            .addStringOption(option => option.setName('draw').setDescription('Which draw you are pulling on').addChoices(...Object.entries(DRAW_META).map(([value, meta]) => ({ name: meta.name, value }))))
-            .addIntegerOption(option => option.setName('pulls').setDescription('How many pulls you have already done on it (most draws have 10, two have 7)').setMinValue(0).setMaxValue(10))
-            .addIntegerOption(option => option.setName('balance').setDescription('CP you already have, so it can tell you what is left to buy').setMinValue(0))
-            .addStringOption(option => option.setName('region').setDescription('Price it in a specific CP region').addChoices(...REGION_ORDER.map(value => ({ name: `${value.split('_')[1]} CP Region`, value }))))
+            // UNWIRED 2026-10-17 23:38 EDT (Harkirat: "can we also remove the options from the draw calc slash command, except for the visibility option? i honestly dont think they're that useful at the moment. dont delete the code, but unwire it and document it"). `draw`, `pulls`, `balance` and `region` live on in addCalculatorShortcutOptions below, applied nowhere; to wire them back, call it on this subcommand before `visibility`. drawCalculator.js still reads them and gets null, which slashShortcut treats as "no shortcut". Filed in docs/db-deferred-list.md (Someday).
             .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     buildContainer, // Expose to the root router
+    addCalculatorShortcutOptions,
 
     async execute(interaction, regionOverride = null, subpageOverride = 0) {
         // The `draw` group owns two subcommands. The calculator lives in its own module -- but that module deliberately exports no `data`, because bot/registry.js keys commands by data.name and a second file exporting setName('draw') would register a DUPLICATE command and silently overwrite this one in client.commands. Do NOT "fix" that missing export.

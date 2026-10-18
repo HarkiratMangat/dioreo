@@ -1209,6 +1209,7 @@ async function execute(interaction) {
     if (interaction.isChatInputCommand()) {
         const visibilityChoice = interaction.options.getString('visibility');
         argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
+        // `region`, `draw`, `pulls` and `balance` were unwired from the slash command 2026-10-17 23:38 EDT (commands/drawprices.js, addCalculatorShortcutOptions), so these reads return null and no shortcut runs. Kept so wiring them back is one call.
         const regionOption = interaction.options.getString('region');
         if (regionOption && REGION_ORDER.includes(regionOption)) region = regionOption;
         shortcut = slashShortcut({
