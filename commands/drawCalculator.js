@@ -649,6 +649,8 @@ function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
 }
 
 // NO EMOJI on either button (2026-08-27, Harkirat) -- `mngEdit` was a pencil paired with a button labelled "Save", which never matched, and a destructive action reads clearer without decoration. Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement). The Upgrade button left this row 2026-10-18 12:15 EDT (Harkirat: "yeah sure"): it lives beside each Mythic line on Set Draw Progress, with every other per-line setting.
+// The result's Tweak Calculation row: the three regions and Set Balance inline, one row (2026-10-18 15:50 EDT, his ask), as on the editor.
+function resultTweakRow(state, basket) { return { type: 1, components: [...regionRow(state, basket).components, ...basketManageRows(state, basket)[0].components] }; }
 function basketManageRows(state, basket) {
     // Balance and Upgrade side by side (2026-10-14 16:51 EDT, Harkirat: "move upgrade button beside the Set balance button"). Save, Rename and Delete moved to the Saved view, where the calculation's own section manages it (2026-10-14 16:51 EDT). With two or more Mythic lines the upgrade control is a dropdown, which takes its own row under it.
     return [{ type: 1, components: [
@@ -1309,7 +1311,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
 // The rows under the cost, shared by the compact view and the Full Breakdown.
 function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry, { caption = null } = {}) {
     // Region and upgrade are adjustable right here (2026-10-14 13:13 EDT, Harkirat): "why are the cp region buttons gone from this screen? and the upgrade yes/no button". A click re-prices this same result.
-    components.push({ type: 14, spacing: 2, divider: true }, caption || regionCaption(), regionRow(state, basket), ...basketManageRows(state, basket), { type: 14, spacing: 2, divider: true }, resultActionRow(state));
+    components.push({ type: 14, spacing: 2, divider: true }, caption || regionCaption(), resultTweakRow(state, basket), { type: 14, spacing: 2, divider: true }, resultActionRow(state));
 
     if (liveDoubleCPEntry || basket.entitlementMask) {
         components.push({ type: 10, content: liveDoubleCPEntry

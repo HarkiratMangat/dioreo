@@ -859,7 +859,7 @@ t('the landing starts a calculation, and Saved is one tap away in the nav row (2
 t('the result keeps Set Balance one tap away, and Edit Selections opens the editor while the calculation stays submitted', () => {
     const result = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }));
     const row = rows(result).find(r => r.components.some(b => b.label === 'Set Balance'));
-    assert.deepStrictEqual(row.components.map(b => b.label), ['Set Balance'], 'the commonest return visit, "I have more CP now", is one tap');
+    assert.deepStrictEqual(row.components.map(b => b.label), ['10 CP', '20 CP', '30 CP', 'Set Balance'], 'one tap, inline with the regions (2026-10-18 15:50 EDT)');
     assert.strictEqual(verbOf(buttonLabelled(result, 'Edit Selections')), 'edit');
     for (const page of [2, 5]) {
         const editing = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: true }), { page, fromResult: true });
