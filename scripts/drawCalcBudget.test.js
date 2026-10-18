@@ -1095,13 +1095,30 @@ t('/draw prices states the upgrade ladders under each Upgrade heading', () => {
     assert.ok(c[2].includes('> -# **`2,820`** Mythic Coins') && c[2].includes('-# **Mythic Coins per Path:** (`80` › `200` › `420`) x 3 paths') && c[2].includes('-# **Final Form:** `720` coins after 7 of 9 slots are unlocked'), c[2]);
 });
 
+t('/draw prices: the Series Armory page is page 3, priced per item and per full armory, with the Advanced pages after it (2026-10-18 10:31 EDT)', () => {
+    const dp = require('../commands/drawprices');
+    const flat = c => [c, ...(c.components || []).flatMap(flat), ...(c.accessory ? [c.accessory] : [])];
+    const text = (region, view) => dp.buildContainer(region, 0, true, view, null).flatMap(flat).filter(c => c.type === 10).map(c => c.content).join('\n');
+    // His figures: 50/80/120 CP a spin; 75 / 100 / 120 spins per item.
+    const p10 = text('region_10', 2);
+    assert.ok(p10.includes('LEGENDARY WEAPON SERIES ARMORY') && p10.includes('`50 CP` x 75 Spins ⌇ **`3,750 CP`**') && p10.includes('6 Items `22,500`'), p10);
+    assert.ok(p10.includes('`50 CP` x 100 Spins ⌇ **`5,000 CP`**') && p10.includes('`50 CP` x 120 Spins ⌇ **`6,000 CP`**') && p10.includes('3 Items `18,000`'), p10);
+    assert.ok(p10.indexOf('MYTHIC WEAPON SERIES ARMORY') < p10.indexOf('LEGENDARY WEAPON SERIES ARMORY'), 'Mythic first, as on page 1');
+    assert.ok(!/MYTHIC CHARACTER SERIES ARMORY/.test(p10), 'there is no Mythic Character armory');
+    assert.ok(text('region_30', 2).includes('`120 CP` x 120 Spins ⌇ **`14,400 CP`**') && text('region_20', 2).includes('`80 CP` x 75 Spins ⌇ **`6,000 CP`**'));
+    assert.ok(text('region_10', 3).includes('ADVANCED DOUBLE LEGENDARY WEAPON DRAW') && text('region_10', 4).includes('ADVANCED DOUBLE LEGENDARY CHARACTER DRAW'), 'the Advanced pages are 4 and 5');
+    const one = text('region_10', 'farmoryLegendaryCharacter');
+    assert.ok(one.includes('LEGENDARY CHARACTER SERIES ARMORY') && !one.includes('MYTHIC WEAPON SERIES ARMORY') && one.includes("didn't get lucky"), one);
+    assert.ok(!Object.keys(DRAW_META).some(k => k in dp.SERIES_ARMORY), 'armories stay out of DRAW_META, so the calculator never prices one as a ladder');
+});
+
 t('/draw prices: the quick jump opens one draw type, Back replaces the pager, and every view fits Discord (2026-10-17 22:01 EDT)', () => {
     const dp = require('../commands/drawprices');
     const count = c => (c.components || []).reduce((n, x) => n + 1 + count(x), 0) + (c.accessory ? 1 : 0);
     const flat = c => [c, ...(c.components || []).flatMap(flat), ...(c.accessory ? [c.accessory] : [])];
-    const keys = [...Object.keys(DRAW_META), 'advancedWeapon', 'advancedCharacter'];
+    const keys = [...Object.keys(DRAW_META), ...Object.keys(dp.SERIES_ARMORY), 'advancedWeapon', 'advancedCharacter'];
     for (const region of REGION_ORDER) {
-        for (const view of [0, 1, 2, 3, ...keys.map(k => `f${k}`)]) {
+        for (const view of [0, 1, 2, 3, 4, ...keys.map(k => `f${k}`)]) {
             const comps = dp.buildContainer(region, 0, true, view, null);
             const total = comps.reduce((n, c) => n + 1 + count(c), 0);
             assert.ok(total <= 40, `${region} ${view}: ${total} components`);

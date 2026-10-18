@@ -118,11 +118,24 @@ const PAGE_1_KEYS = ['mythicWeapon', 'mythicCharacter', 'legendaryGunReactive', 
 const PAGE_2_KEYS = ['legendaryCharacterWeapon', 'doubleLegendaryWeapons', 'sevenSpinLegendaryWeapon', 'pickYourRewardCard', 'doubleEpicCharacters'];
 const SUBPAGES = [PAGE_1_KEYS, PAGE_2_KEYS];
 
-// The Advanced Double Legendary Weapon Draw (2026-07-21) gets its own dedicated page AFTER the two key-driven pages -- it doesn't fit the shared `draws: []` model buildDrawEntries renders, so it's built by its own function (buildAdvancedDoubleLegendaryEntry) and is intentionally NOT part of SUBPAGES. TOTAL_PAGES is what the pagination row + page clamp use, so it must include this page.
-const ADVANCED_PAGE_INDEX = SUBPAGES.length; // = 2 (the 3rd page)
+// SERIES ARMORY (2026-10-18 10:31 EDT, Harkirat). A different structure from every draw above: one flat price per spin, and each item is guaranteed after a fixed number of spins, so it does not fit the `draws: [...]` ladder. His figures: "50cp for 10cp region for 1 spin/attempt", "80cp for 20cp", "120cp for 30cp"; a Legendary Weapon armory takes 75 spins per item, a Legendary Character one 100, a Mythic Weapon one 120, and "no mythic character series armory"; "3-6 items per armory", and an armory never mixes item types; spins come 1 at a time or 10 at a time, "no discount for 10x at a time". Priced like every other draw here, assuming no luck: each item takes its full spins. Kept OUT of DRAW_DATA and DRAW_META on purpose, because the calculator and utils/drawCost.js iterate those and would price an armory as a ladder.
+const ARMORY_SPIN_CP = { region_10: 50, region_20: 80, region_30: 120 };
+// Mythic first, the same tier order as page 1.
+const SERIES_ARMORY = {
+    armoryMythicWeapon: { name: 'Mythic Weapon Series Armory', tier: 'mythic', spins: 120 },
+    armoryLegendaryWeapon: { name: 'Legendary Weapon Series Armory', tier: 'legendary', spins: 75 },
+    armoryLegendaryCharacter: { name: 'Legendary Character Series Armory', tier: 'legendary', spins: 100 }
+};
+// The item counts he has seen in a real armory ("havent seen less or more than that").
+const ARMORY_ITEM_COUNTS = [3, 4, 5, 6];
+// The 3rd page, his placement: "probably page #3, with page 4 and 5 being the advanced draws".
+const ARMORY_PAGE_INDEX = SUBPAGES.length; // = 2 (the 3rd page)
+
+// The Advanced Double Legendary Weapon Draw (2026-07-21) gets its own dedicated page AFTER the two key-driven pages (and, since 2026-10-18, after the Series Armory page) -- it doesn't fit the shared `draws: []` model buildDrawEntries renders, so it's built by its own function (buildAdvancedDoubleLegendaryEntry) and is intentionally NOT part of SUBPAGES. TOTAL_PAGES is what the pagination row + page clamp use, so it must include this page.
+const ADVANCED_PAGE_INDEX = ARMORY_PAGE_INDEX + 1; // = 3 (the 4th page)
 // The Advanced Double Legendary CHARACTER Draw (2026-08-07) gets its own page right after the Weapon Advanced page, same "doesn't fit SUBPAGES' model" reasoning -- built by buildAdvancedDoubleLegendaryCharacterEntry. If you add more key-driven pages, push to SUBPAGES; both ADVANCED_PAGE_INDEX/CHARACTER_ADVANCED_PAGE_INDEX/TOTAL_PAGES re-derive automatically and this page stays last.
-const CHARACTER_ADVANCED_PAGE_INDEX = ADVANCED_PAGE_INDEX + 1; // = 3 (the 4th page)
-const TOTAL_PAGES = SUBPAGES.length + 2;      // 2 key pages + the 2 Advanced pages
+const CHARACTER_ADVANCED_PAGE_INDEX = ADVANCED_PAGE_INDEX + 1; // = 4 (the 5th page)
+const TOTAL_PAGES = SUBPAGES.length + 3;      // 2 key pages + the Series Armory page + the 2 Advanced pages
 
 // THE MYTHIC UPGRADE LADDERS (2026-10-17 11:50 EDT, Harkirat). The card and coin counts are the same in every region; only the 10x upgrade spin's price differs (`upgrade.perDraw` in DRAW_DATA). `upgrade.count` there is the AVERAGE number of 10x spins that collects the full amount, so one spin averages full ÷ count (about 197.5 cards, about 201 coins). Weapon: the cumulative cards to reach Levels 1–5. Character: three Tech paths of three sub-tiers each, every sub-tier only after the one before it, plus Final Form, which needs at least 7 of the 9 sub-tiers.
 const MYTHIC_UPGRADE = {
@@ -300,12 +313,28 @@ function buildAdvancedDoubleLegendaryCharacterEntry(regionKey) {
     return blocks.map(content => ({ type: 10, content }));
 }
 
+// SERIES ARMORY ENTRIES, in the same two-block shape as buildDrawEntries (the heading with a quoted total, then the spin line with a small cumulative line), so the page reads like the rest of /draw prices. The quoted total is ONE item; the small line is the whole armory at each item count. The no-luck note rides on the last block, as on the Advanced pages, so it costs no component.
+function buildArmoryEntries(regionKey, keys) {
+    const perSpin = ARMORY_SPIN_CP[regionKey] || ARMORY_SPIN_CP.region_10;
+    const groups = keys.map(key => {
+        const a = SERIES_ARMORY[key];
+        const perItem = perSpin * a.spins;
+        return [
+            `**${tierIcon(a.tier)} ${a.name.toUpperCase()}**\n> ${emojis.cp2} **\`${formatCP(perItem)} CP\`** per Item`,
+            `\`${formatCP(perSpin)} CP\` x ${a.spins} Spins ⌇ **\`${formatCP(perItem)} CP\`**\n-# **Full Armory by Item Count:** ${ARMORY_ITEM_COUNTS.map(n => `${n} Items \`${formatCP(perItem * n)}\``).join(' › ')}`
+        ];
+    });
+    const last = groups[groups.length - 1];
+    last[last.length - 1] += `\n-# Note: Each item is guaranteed at its spin count, and these prices assume you didn't get lucky. Spins come 1 or 10 at a time, with no discount for 10.`;
+    return groups;
+}
+
 // QUICK JUMP TO ONE DRAW TYPE (2026-10-17 22:02 EDT, Harkirat: "Can we implement a drop down above the region toggle's hint line? A quick jump to a draw type basically. And when in that view, the pagination buttons basically get replaced with a 'back' button to go back to the 'all view'"). A jump target is any DRAW_META key plus the two Advanced pages. The focused view travels as the page value `f<key>` (keys are camelCase, so the `_`-split custom_ids still parse), which is how a region switch keeps the jump.
 const ADVANCED_JUMPS = { advancedWeapon: { name: 'Advanced Double Legendary Weapon Draw', tier: 'legendary', page: ADVANCED_PAGE_INDEX }, advancedCharacter: { name: 'Advanced Double Legendary Character Draw', tier: 'legendary', page: CHARACTER_ADVANCED_PAGE_INDEX } };
-const JUMP_KEYS = [...SUBPAGES.flat(), ...Object.keys(ADVANCED_JUMPS)];
-function jumpMeta(key) { return DRAW_META[key] || ADVANCED_JUMPS[key] || null; }
+const JUMP_KEYS = [...SUBPAGES.flat(), ...Object.keys(SERIES_ARMORY), ...Object.keys(ADVANCED_JUMPS)];
+function jumpMeta(key) { return DRAW_META[key] || SERIES_ARMORY[key] || ADVANCED_JUMPS[key] || null; }
 // The page a draw sits on in the all view, so Back returns to where that draw lives.
-function pageOfJump(key) { return ADVANCED_JUMPS[key] ? ADVANCED_JUMPS[key].page : Math.max(0, SUBPAGES.findIndex(keys => keys.includes(key))); }
+function pageOfJump(key) { if (SERIES_ARMORY[key]) return ARMORY_PAGE_INDEX; return ADVANCED_JUMPS[key] ? ADVANCED_JUMPS[key].page : Math.max(0, SUBPAGES.findIndex(keys => keys.includes(key))); }
 function focusOf(subpage) { const key = typeof subpage === 'string' && subpage.startsWith('f') ? subpage.slice(1) : null; return key && jumpMeta(key) ? key : null; }
 
 /**
@@ -321,9 +350,13 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
 
     // Flat, divider-separated sequence per drawPrices_ui.json — no group headers at all (the old Mythic/Legendary-Epic two-group split is gone). Split across 2 pages (see PAGE_1_KEYS/ PAGE_2_KEYS above) to stay under Discord's 40-component cap now that each entry can render as up to 3 separate Text Displays. Large divider spacing (2) between draw entries, applied to BOTH regions as of 2026-07-12 -- this used to be a region_10-only test to compare against region_30's spacing 1, but Harkirat confirmed he wants the larger spacing everywhere now that the comparison's done. Every OTHER divider in this container (title, pagination, nav row) also uses spacing 2 now -- the earlier "title divider stays spacing 1" exception was dropped the same day per Harkirat's "large spacing across the board" follow-up.
     const innerDividerSpacing = 2;
-    // The two Advanced pages (3rd and 4th) are each rendered by their own builder since neither fits the shared key/`draws: []` model; every other page goes through buildDrawEntries.
-    const entrySections = focus && !ADVANCED_JUMPS[focus]
+    // The two Advanced pages (4th and 5th) and the Series Armory page (3rd) are each rendered by their own builder since neither fits the shared key/`draws: []` model; every other page goes through buildDrawEntries.
+    const entrySections = focus && SERIES_ARMORY[focus]
+        ? withInnerDividers(buildArmoryEntries(regionKey, [focus]), innerDividerSpacing)
+        : focus && !ADVANCED_JUMPS[focus]
         ? withInnerDividers(buildDrawEntries(regionKey, [focus]), innerDividerSpacing)
+        : currentPage === ARMORY_PAGE_INDEX
+        ? withInnerDividers(buildArmoryEntries(regionKey, Object.keys(SERIES_ARMORY)), innerDividerSpacing)
         : currentPage === ADVANCED_PAGE_INDEX
         ? buildAdvancedDoubleLegendaryEntry(regionKey)
         : currentPage === CHARACTER_ADVANCED_PAGE_INDEX
@@ -408,7 +441,7 @@ function addCalculatorShortcutOptions(sub) {
 module.exports = {
     // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads"). buildDrawEntries/UPGRADE_LABEL/formatCP exported 2026-08-26 17:25 EDT so the calculator's own per-draw summary block can reuse THIS command's exact rendering -- Harkirat's own mockup for the redesign was built by pasting a real /draw prices entry in verbatim, so the two must never drift apart into two similar-looking but independently-maintained copies.
     DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
-    buildDrawEntries, UPGRADE_LABEL, upgradeEmoji, formatCP, MYTHIC_UPGRADE, upgradeFullAmount,
+    buildDrawEntries, SERIES_ARMORY, ARMORY_SPIN_CP, UPGRADE_LABEL, upgradeEmoji, formatCP, MYTHIC_UPGRADE, upgradeFullAmount,
 
     // COMMAND DEFINITION: Base command 'draw' with subcommand 'prices'
     data: new SlashCommandBuilder()
