@@ -265,6 +265,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-01 15:24 EDT — portal pins batch 2 — Board 4 signed off at Version 81, the readiness audit, and Session 3's close (v3.85.0-pre)
 - 2026-10-01 18:33 EDT — CI and the test queue, rebuilt from a measurement, then re-measured after the merge (v3.86.0-pre)
 - 2026-10-01 20:33 EDT — The first hook-free PR is this one, so it can watch itself (v3.87.0-pre)
+- 2026-10-18 00:11 EDT — The draw calculator, rebuilt from 56 batches of his click-tests (v3.88.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4561,6 +4562,14 @@ The pre-merge pass found one more premise that was false, in the plan, the PR an
 The CI rebuild left one check nobody had seen: a PR that touches no hook, so the macOS job is skipped and the aggregate has to pass anyway. The pre-merge pass of the rebuild filed it as a reminder, in the deferred list. Harkirat's question afterwards was the right one: would Session 4 or 5 ever open that list? They would not. The plan said only that the skip was allowed, and `CLAUDE.md`, which every session reads, did not mention it. So the note went into `CLAUDE.md`'s CI block, with where to fix it if it is red.
 
 His second point was sharper than the plan. A docs-only PR touches no hook, so this very PR is the first one on which GitHub skips the macOS job. The reminder did not have to wait for a portal session to stumble onto it: this PR's own CI is the observation, and the result is written down before it merges. It did what it should: the macOS job was skipped and the aggregate stayed green (run 36946454845). The same PR records his two calls on the other open CI items, that the sync commit's missing test is fine because `main` is paused until v3 merges, and that the macOS job stays advisory for now.
+
+## 2026-10-18 00:11 EDT — The draw calculator, rebuilt from 56 batches of his click-tests (v3.88.0-pre)
+
+Seven weeks after the first saved-basket build (2026-08-27), the calculator was rebuilt screen by screen from Harkirat's own click-tests on the dev bot: 56 batches, each logged verbatim with what was built (`docs/claude/2026-10-13-draw-calculator-intake.md`).
+
+**What the sweep found that no test had.** His report was one case: 8,730 CP short in CAD, the panel suggested five purchases for CA$125.95 over one 10,800 bundle for CA$129.99. The first fix he picked (1.5% per purchase saved) looked right on that case and was wrong across the table: swept over all 41 currencies it picked MORE purchases than the old 3% rule in 880 of 16,154 cases. Rule H, the larger of the two allowances, never picks more, and the same sweep, by asserting things about the whole result rather than only the rule being changed, found an older modelling bug: with 2X bundles available, about 15% of picks bought a bundle at the normal rate while its own 2X sat unused, which the game cannot do. Lesson kept as a test: sweep every optimizer threshold across the price table, and check whole-result invariants, before proposing it.
+
+**What the merge prep found.** Only the calculator suites had been run after each batch. The full suite, run before the push, found the reflow gates failing on comments and prose written that evening. They would have turned CI red. The full `npm test` is now the step before any push, not the step after review.
 
 # Part B — Lessons Ledger (thematic)
 
