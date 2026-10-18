@@ -13,50 +13,37 @@ const {
     thumbnailNote, loadOrCreateSeasonalDoc, registerBulkDelete, extractCommitError
 } = require('./shared');
 const { failWithRetry } = require('./retry');
+const { drawTypeName } = require('../../utils/drawTypes');
 
 // --- SAVE NEW SINGLE DRAW --- custom_id: add_draw_{new|returning}
 async function addDraw(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    const { toTitleCase, parseItemLine, parseAdminDate, parseBulkDrawList } = require('../../utils/adminParser');
+    const { toTitleCase, parseItemLine, parseAdminDate } = require('../../utils/adminParser');
     const customId = interaction.customId;
     const drawType = customId.replace('add_draw_', '');
 
-    // 5th field: an alternative to filling in the 4 separate fields below -- paste the whole draw as one bulk-style line and it's run through the SAME parser bulk import uses. All 5 fields are setRequired(false) (see commands/manage.js's buildAddDrawModal), so Discord itself won't block a submit with only this one filled.
-    const combinedLine = interaction.fields.getTextInputValue('combined')?.trim();
+    // The 5th field is the Draw Type dropdown since 2026-10-18 11:09 EDT (Harkirat's pick, "B sounds fine"); the "Or Paste As One Line" field it replaced lives on as Add Multiple, which takes the same line format and the same `type:` tag.
+    const title = toTitleCase(interaction.fields.getTextInputValue('title'));
+    const dateStr = interaction.fields.getTextInputValue('date');
+    const rawUrl = interaction.fields.getTextInputValue('url');
+    const rawItems = interaction.fields.getTextInputValue('items');
+    let priceType = '';
+    try { priceType = interaction.fields.getStringSelectValues('price_type')[0] || ''; } catch { priceType = ''; }
 
-    let newDrawObj;
-    let cloudinaryWarning = null;
-
-    if (combinedLine) {
-        const [parsed] = parseBulkDrawList(combinedLine);
-        if (!parsed) {
-            return await failWithRetry(interaction, 'Could not parse that line -- expected format: `Title, m Item 1, l Item 2, Date, URL` (URL optional).');
-        }
-        // No URL + no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null.
-        const thumbResult = await resolveThumbnail(parsed.title, parsed.thumbnailUrl);
-        cloudinaryWarning = thumbResult.url ? thumbnailNote(thumbResult) : '⚠️ No image URL provided and none cached for this title -- draw saved without an image.';
-        newDrawObj = { title: parsed.title, items: parsed.items, date: parsed.date, thumbnailUrl: thumbResult.url };
-    } else {
-        const title = toTitleCase(interaction.fields.getTextInputValue('title'));
-        const dateStr = interaction.fields.getTextInputValue('date');
-        const rawUrl = interaction.fields.getTextInputValue('url');
-        const rawItems = interaction.fields.getTextInputValue('items');
-
-        if (!title || !dateStr || !rawItems) {
-            return await failWithRetry(interaction, 'Fill in Title, Items, and Release Date, or use the "Or Paste As One Line" field instead.');
-        }
-        const parsedSingleDate = parseAdminDate(dateStr);
-        if (!parsedSingleDate) {
-            return await failWithRetry(interaction, `Date "${dateStr}" wasn't understood -- nothing was saved.`);
-        }
-
-        // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to be a hard rejection; relaxed 2026-08-22 19:40 EDT (click-test fix) to save without an image instead -- see the combined-line branch above for the full reasoning.
-        const thumbResult = await resolveThumbnail(title, rawUrl);
-        cloudinaryWarning = thumbResult.url ? thumbnailNote(thumbResult) : '⚠️ No image URL provided and none cached for this title -- draw saved without an image.';
-
-        const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
-        newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url };
+    if (!title || !dateStr || !rawItems) {
+        return await failWithRetry(interaction, 'Fill in Title, Items, and Release Date.');
     }
+    const parsedSingleDate = parseAdminDate(dateStr);
+    if (!parsedSingleDate) {
+        return await failWithRetry(interaction, `Date "${dateStr}" wasn't understood -- nothing was saved.`);
+    }
+
+    // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null.
+    const thumbResult = await resolveThumbnail(title, rawUrl);
+    const cloudinaryWarning = thumbResult.url ? thumbnailNote(thumbResult) : '⚠️ No image URL provided and none cached for this title -- draw saved without an image.';
+
+    const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
+    const newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url, ...(priceType ? { priceType } : {}) };
 
     const result = await commitSet(
         [{ type: 'draw.add', payload: { ...newDrawObj, category: drawType } }],
@@ -66,7 +53,8 @@ async function addDraw(interaction) {
         return await failWithRetry(interaction, extractCommitError(result));
     }
 
-    let confirmation = `✅ **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${newDrawObj.items.length} item(s), releases <t:${Math.floor(new Date(newDrawObj.date).getTime() / 1000)}:D>).`;
+    const addedType = drawTypeName(newDrawObj.priceType);
+    let confirmation = `✅ **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${addedType ? `${addedType}, ` : ''}${newDrawObj.items.length} item(s), releases <t:${Math.floor(new Date(newDrawObj.date).getTime() / 1000)}:D>).`;
     if (cloudinaryWarning) confirmation += `\n${cloudinaryWarning}`;
     return interaction.followUp({ content: confirmation });
 }
@@ -95,16 +83,23 @@ async function editDraw(interaction) {
         const rawItems = interaction.fields.getTextInputValue('items');
         const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
 
+        // Draw Type (2026-10-18 11:06 EDT): the form's dropdown; nothing picked clears it. Sent only when it CHANGED, so an edit that never touches it leaves the stored type, and the op's conflict check, alone. A modal built before this field existed (an old open form) has no dropdown and is read as unchanged.
+        let pickedType = null;
+        try { pickedType = interaction.fields.getStringSelectValues('price_type')[0] || ''; } catch { pickedType = null; }
+        const storedType = arrayTarget[drawIndex].priceType || '';
+        const typeChanged = pickedType !== null && pickedType !== storedType;
+
         const result = await commitSet(
             [{ type: 'draw.edit', target: { elementId: targetId, category: drawType },
-               payload: { title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems } }],
+               payload: { title: newTitle, date: parsedDrawDate, thumbnailUrl: thumbResult.url, items: parsedItems, ...(typeChanged ? { priceType: pickedType } : {}) } }],
             { actorId: interaction.user.id }
         );
         if (!result.ok) {
             return await failWithRetry(interaction, extractCommitError(result));
         }
 
-        let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${parsedItems.length} item(s), releases <t:${Math.floor(parsedDrawDate.getTime() / 1000)}:D>).`;
+        const shownType = drawTypeName(typeChanged ? pickedType : storedType);
+        let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${shownType ? `${shownType}, ` : ''}${parsedItems.length} item(s), releases <t:${Math.floor(parsedDrawDate.getTime() / 1000)}:D>).`;
         const editThumbNote = thumbResult.url ? thumbnailNote(thumbResult) : '⚠️ No image URL provided and none cached for this title -- draw saved without an image.';
         if (editThumbNote) confirmation += `\n${editThumbNote}`;
         return interaction.followUp({ content: confirmation });

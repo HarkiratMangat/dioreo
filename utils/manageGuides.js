@@ -52,6 +52,10 @@ function drawsSections() {
             `\`m\` ${emojis.mythic} Mythic · \`l\` ${emojis.legendary} Legendary · \`lg\` ${emojis.legacy} Legacy · \`e\` ${emojis.epic} Epic\n` +
             '-# Spell the tier out instead if you\'d rather (`mythic`, `legendary`, etc.) -- both work.\n' +
             '-# Start an item with `-# ` instead of a tier to add a free-text note (e.g. a collab callout) instead of a tiered item.'),
+        // Draw Type tag (2026-10-18 11:06 EDT): the codes are read from utils/drawTypes.js, so a new draw type shows here without editing this guide.
+        section('🎟️ Draw Type (optional)',
+            'Add `type: <code>` anywhere after the title to say how **/draw prices** and the calculator price the draw. An armory\'s item count comes from its own item list.\n' +
+            `-# ${require('./drawTypes').drawTypeOptions().map(o => `\`${o.code}\` ${o.name}`).join(' · ')}`),
         section('✨ What Gets Auto-Formatted',
             '• **Title** and every **item name** → auto Title Case (acronyms like `FSS`/`AK`/`MP`/`BR` are preserved, hyphens/slashes capitalize each side independently).\n' +
             '• A `-# note` line is the one exception -- kept **exactly as typed**, never title-cased (it\'s free text, not an item name).\n' +

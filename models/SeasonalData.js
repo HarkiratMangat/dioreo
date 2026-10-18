@@ -35,6 +35,7 @@ const SeasonalDataSchema = new mongoose.Schema({
         title: { type: String },
         date: { type: Date },
         thumbnailUrl: { type: String },
+        priceType: { type: String, default: '' }, // The /draw prices type this draw is priced as (2026-10-18 11:06 EDT, utils/drawTypes.js): a quick-jump key, '' when not set
         items: [{
             tier: { type: String }, // Maps to L, M, LL, E shorthands
             name: { type: String }
@@ -44,6 +45,7 @@ const SeasonalDataSchema = new mongoose.Schema({
         title: { type: String },
         date: { type: Date },
         thumbnailUrl: { type: String },
+        priceType: { type: String, default: '' }, // The /draw prices type this draw is priced as (2026-10-18 11:06 EDT, utils/drawTypes.js): a quick-jump key, '' when not set
         items: [{
             tier: { type: String },
             name: { type: String }
@@ -84,12 +86,14 @@ const SeasonalDataSchema = new mongoose.Schema({
             title: { type: String },
             date: { type: Date },
             thumbnailUrl: { type: String },
+            priceType: { type: String, default: '' }, // The /draw prices type this draw is priced as (2026-10-18 11:06 EDT, utils/drawTypes.js): a quick-jump key, '' when not set
             items: [{ tier: { type: String }, name: { type: String } }]
         }],
         returningDraws: [{
             title: { type: String },
             date: { type: Date },
             thumbnailUrl: { type: String },
+            priceType: { type: String, default: '' }, // The /draw prices type this draw is priced as (2026-10-18 11:06 EDT, utils/drawTypes.js): a quick-jump key, '' when not set
             items: [{ tier: { type: String }, name: { type: String } }]
         }],
         calendar: [{

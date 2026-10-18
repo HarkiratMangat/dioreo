@@ -20,7 +20,8 @@ const MAX_SNIPPET = 1200;
 function captureModalValues(interaction) {
     const out = {};
     try {
-        for (const field of interaction.fields.fields.values()) out[field.customId] = field.value ?? '';
+        // A select (the Draw Type dropdown, 2026-10-18 11:06 EDT) submits `values`, not `value`; its one pick is kept as a string like every text field.
+        for (const field of interaction.fields.fields.values()) out[field.customId] = field.value ?? (Array.isArray(field.values) ? (field.values[0] ?? '') : '');
         if (Object.keys(out).length) return out;
     } catch { /* fall through to the component walk */ }
     try {
@@ -36,11 +37,11 @@ function captureModalValues(interaction) {
 // ---------------------------------------------------------------- snippet builders
 const v = (values, key) => (values[key] || '').trim();
 
-// "Title, m Item 1, l Item 2, July 15, url" -- exactly parseBulkDrawList's own line format, which is also what the Add Draw modal's 5th "Or Paste As One Line" field accepts. Items arrive as one shorthand per LINE and are joined with commas here, which is the only shape difference between the two.
+// "Title, type: salw, m Item 1, l Item 2, July 15, url" -- exactly parseBulkDrawList's own line format, which Add Multiple takes. Items arrive as one shorthand per LINE and are joined with commas here, which is the only shape difference between the two. The Draw Type pick rides as the format's `type:` tag (2026-10-18 11:06 EDT).
 function drawSnippet(values) {
-    if (v(values, 'combined')) return v(values, 'combined');
     const items = v(values, 'items').split('\n').map(l => l.trim()).filter(Boolean).join(', ');
-    return [v(values, 'title'), items, v(values, 'date'), v(values, 'url')].filter(Boolean).join(', ');
+    const code = require('../../utils/drawTypes').drawTypeCode(v(values, 'price_type'));
+    return [v(values, 'title'), code ? `type: ${code}` : '', items, v(values, 'date'), v(values, 'url')].filter(Boolean).join(', ');
 }
 
 // "7/2 - 8/5 | Title" -- parseBulkEvents' format. A blank End Date means All Season, which is what that parser reads "All Season" as, so it is spelled out rather than left empty.
@@ -160,10 +161,13 @@ function buildRetryModal(token) {
     if (!spec) return null;
 
     const json = spec.rebuild(pending.modalCustomId).toJSON();
+    // A field sits in an action row (`components`) or, since the draw forms moved to Labels (2026-10-18 11:06 EDT), in a Label (`component`). A select is refilled by marking its stored option as the default.
     for (const row of json.components || []) {
-        for (const comp of row.components || []) {
+        for (const comp of (row.component ? [row.component] : row.components || [])) {
             const stored = pending.values[comp.custom_id];
-            if (typeof stored === 'string') comp.value = stored;
+            if (typeof stored !== 'string') continue;
+            if (Array.isArray(comp.options)) comp.options.forEach(o => { o.default = o.value === stored; });
+            else comp.value = stored;
         }
     }
     return json;

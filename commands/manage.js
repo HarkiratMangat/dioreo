@@ -5,7 +5,7 @@
 //
 // NOTE on the deferred "search + multi-select" flow: the mockups describe "Delete Multiple" (all entities) and Loadouts' "Replace Multiple" as searching first, then picking which matches to act on from a list — a new interaction, different from today's paste-a-list-of-names bulk-remove. Per Harkirat's explicit direction, that real search+multi-select rebuild is intentionally NOT part of this pass — it's large enough on its own that bundling it here risked a usage-limit interruption mid-build. This pass keeps those specific actions on today's paste-based modals (renamed/re-styled to match the new buttons) as a deliberate placeholder, not an oversight.
 
-const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { formatAdminDate, formatReleaseDateTime } = require('../utils/adminParser');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const emojis = require('../utils/emojiMap');
@@ -451,17 +451,27 @@ function buildBulkRemoveDrawsModal(drawType) {
     return modal;
 }
 
+// THE DRAW TYPE DROPDOWN, shared by Add and Edit Draw (2026-10-18 11:09 EDT, Harkirat: "a single dropdown for the collective 'draw type' selection and include the armory types within it"). /draw prices' own list in page order (utils/drawTypes.js); the stored type is preselected, and picking nothing leaves it unset. An armory's item count is read off the Items field, so there is no count to pick. A select lives in a modal only inside a Label, which is why both draw forms are built from Labels.
+function drawTypeLabel(current = '') {
+    const { drawTypeOptions } = require('../utils/drawTypes');
+    return new LabelBuilder().setLabel('Draw Type').setDescription('How /draw prices and the calculator price this draw').setStringSelectMenuComponent(
+        new StringSelectMenuBuilder().setCustomId('price_type').setPlaceholder('Not set').setRequired(false).setMinValues(0).setMaxValues(1)
+            .addOptions(drawTypeOptions().map(o => ({ label: o.name, value: o.key, description: `Bulk tag: type: ${o.code}`, emoji: emojis.parseEmoji(emojis[o.tier]), default: o.key === current })))
+    );
+}
+// A Label holding a text input. interaction.fields.getTextInputValue() reads it exactly as it read an action row's.
+const drawTextLabel = (id, label, input) => new LabelBuilder().setLabel(label).setTextInputComponent(input.setCustomId(id));
+
 function buildAddDrawModal(drawType) {
     const modal = new ModalBuilder().setCustomId(`add_draw_${drawType}`).setTitle(`Add ${drawType === 'new' ? 'New' : 'Returning'} Draw`);
-    modal.addComponents(
-        // All 4 of these are now setRequired(false) (2026-07-12) — see the 5th field below. Discord validates required fields BEFORE the modal-submit handler ever runs, so if these stayed required, submitting with only the combined-line field filled would get rejected by Discord itself before handlers/manage.js's handler got a chance to fall back to it.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Draw Title').setStyle(TextInputStyle.Short).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('items').setLabel('Items (Shorthand)').setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note").setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15").setRequired(false)),
-        // Optional (2026-07-12, Cloudinary-cache feature) — leaving this blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js). Only fails if nothing has ever been cached for this title yet — handlers/manage.js's handler surfaces that as a clear error rather than silently saving a draw with no thumbnail at all.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('url').setLabel('Thumbnail URL (blank = reuse cached image)').setStyle(TextInputStyle.Short).setRequired(false)),
-        // 5th field (2026-07-12) — alternative to filling in the 4 fields above separately: paste the whole draw as one bulk-style line (same format as Bulk Add/Export: `Title, m Item 1, l Item 2, Date, URL`). handlers/manage.js's handler runs this through the same parseBulkDrawList() parser used everywhere else if it's non-empty, otherwise falls back to the 4 separate fields — so exactly one of "fill in the 4 fields" or "paste one line" needs to actually be used, not both.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('combined').setLabel('Or Paste As One Line (overrides fields above)').setStyle(TextInputStyle.Paragraph).setPlaceholder("Title, m Item 1, l Item 2, July 15, url.jpg").setRequired(false))
+    // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone.
+    modal.addLabelComponents(
+        drawTextLabel('title', 'Draw Title', new TextInputBuilder().setStyle(TextInputStyle.Short)),
+        drawTextLabel('items', 'Items (Shorthand)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note")),
+        drawTextLabel('date', 'Release Date', new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15")),
+        // Optional (2026-07-12, Cloudinary-cache feature): blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js).
+        drawTextLabel('url', 'Thumbnail URL (blank = reuse cached image)', new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false)),
+        drawTypeLabel()
     );
     return modal;
 }
@@ -470,12 +480,16 @@ function buildEditDrawModal(targetDraw, targetId, drawType) {
     // 'comment' items (2026-07-30 22:24 EDT, "-# note" lines) reconstruct as "-# text", not their first-letter shorthand -- charAt(0) would produce "c", which round-trips through parseItemLine as an unrecognized tier instead of a comment.
     const itemsText = targetDraw.items.map(i => `${i.tier === 'comment' ? '-#' : i.tier.charAt(0).toLowerCase()} ${i.name}`).join('\n');
     const modal = new ModalBuilder().setCustomId(`edit_draw_${targetId}_${drawType}`).setTitle('Edit Lucky Draw');
-    modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Draw Title').setStyle(TextInputStyle.Short).setValue(targetDraw.title)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('items').setLabel('Items (Shorthand)').setStyle(TextInputStyle.Paragraph).setValue(itemsText)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(new Date(targetDraw.date).toISOString().split('T')[0])),
+    // LABELS (2026-10-18 11:06 EDT): every field is a Label so the Draw Type dropdown can sit beside them (see drawTypeLabel above).
+    const text = drawTextLabel;
+    modal.addLabelComponents(
+        text('title', 'Draw Title', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.title)),
+        text('items', 'Items (Shorthand)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(itemsText)),
+        text('date', 'Release Date', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(new Date(targetDraw.date).toISOString().split('T')[0])),
         // Pre-filled with the CURRENT thumbnail (already a Cloudinary URL if this draw was ever cached) — optional so clearing it and resubmitting re-resolves via the cache lookup instead of requiring a re-typed URL just to leave the image unchanged. BUG FIX (2026-07-12): setValue() throws a synchronous validation error if given `undefined`/non-string — discord.js requires a real string, even for an optional field. Any draw doc missing thumbnailUrl (legacy entries from before the Cloudinary-cache feature, or any doc that somehow saved without one) made this throw INSIDE resolveManagePanelAction's showModal() call, before the interaction was ever acknowledged — which is exactly what surfaced as Discord's generic "Something went wrong. Try again." toast on Edit Draws. Fall back to '' like every other optional field already does.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('url').setLabel('Thumbnail URL (blank = reuse cached image)').setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl || '').setRequired(false))
+        text('url', 'Thumbnail URL (blank = reuse cached image)', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl || '').setRequired(false)),
+        // Picking nothing here CLEARS a stored type (handlers/manage/draws.js's editDraw).
+        drawTypeLabel(targetDraw.priceType || '')
     );
     return modal;
 }

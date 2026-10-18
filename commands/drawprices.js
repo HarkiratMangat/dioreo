@@ -131,7 +131,7 @@ const ARMORY_ITEM_COUNTS = [3, 4, 5, 6];
 // The 3rd page, his placement: "probably page #3, with page 4 and 5 being the advanced draws".
 const ARMORY_PAGE_INDEX = SUBPAGES.length; // = 2 (the 3rd page)
 
-// The Advanced Double Legendary Weapon Draw (2026-07-21) gets its own dedicated page AFTER the two key-driven pages (and, since 2026-10-18, after the Series Armory page) -- it doesn't fit the shared `draws: []` model buildDrawEntries renders, so it's built by its own function (buildAdvancedDoubleLegendaryEntry) and is intentionally NOT part of SUBPAGES. TOTAL_PAGES is what the pagination row + page clamp use, so it must include this page.
+// The Advanced Double Legendary Weapon Draw (2026-07-21) gets its own dedicated page AFTER the two key-driven pages (and, since 2026-10-18 11:06 EDT, after the Series Armory page) -- it doesn't fit the shared `draws: []` model buildDrawEntries renders, so it's built by its own function (buildAdvancedDoubleLegendaryEntry) and is intentionally NOT part of SUBPAGES. TOTAL_PAGES is what the pagination row + page clamp use, so it must include this page.
 const ADVANCED_PAGE_INDEX = ARMORY_PAGE_INDEX + 1; // = 3 (the 4th page)
 // The Advanced Double Legendary CHARACTER Draw (2026-08-07) gets its own page right after the Weapon Advanced page, same "doesn't fit SUBPAGES' model" reasoning -- built by buildAdvancedDoubleLegendaryCharacterEntry. If you add more key-driven pages, push to SUBPAGES; both ADVANCED_PAGE_INDEX/CHARACTER_ADVANCED_PAGE_INDEX/TOTAL_PAGES re-derive automatically and this page stays last.
 const CHARACTER_ADVANCED_PAGE_INDEX = ADVANCED_PAGE_INDEX + 1; // = 4 (the 5th page)
@@ -438,7 +438,7 @@ function addCalculatorShortcutOptions(sub) {
 module.exports = {
     // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads"). buildDrawEntries/UPGRADE_LABEL/formatCP exported 2026-08-26 17:25 EDT so the calculator's own per-draw summary block can reuse THIS command's exact rendering -- Harkirat's own mockup for the redesign was built by pasting a real /draw prices entry in verbatim, so the two must never drift apart into two similar-looking but independently-maintained copies.
     DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
-    buildDrawEntries, SERIES_ARMORY, ARMORY_SPIN_CP, UPGRADE_LABEL, upgradeEmoji, formatCP, MYTHIC_UPGRADE, upgradeFullAmount,
+    buildDrawEntries, SERIES_ARMORY, ARMORY_SPIN_CP, JUMP_KEYS, jumpMeta, UPGRADE_LABEL, upgradeEmoji, formatCP, MYTHIC_UPGRADE, upgradeFullAmount,
 
     // COMMAND DEFINITION: Base command 'draw' with subcommand 'prices'
     data: new SlashCommandBuilder()

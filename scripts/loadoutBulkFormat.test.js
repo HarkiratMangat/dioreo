@@ -224,8 +224,24 @@ check('the draw retry snippet re-imports cleanly through the real draw parser', 
     assert.strictEqual(parsed.items.length, 2);
 });
 
-check('the combined "paste as one line" field wins over the separate draw fields', () => {
-    assert.strictEqual(retry.drawSnippet({ combined: 'A, m B, July 1', title: 'ignored' }), 'A, m B, July 1');
+check('the draw retry snippet carries the Draw Type pick as its type: tag, and re-imports with it (2026-10-18 11:06 EDT)', () => {
+    const { parseBulkDrawList } = require('../utils/adminParser');
+    const snippet = retry.drawSnippet({ title: 'Sky Armory', items: 'l AK\nl M4', date: 'July 15', url: '', price_type: 'armoryLegendaryWeapon' });
+    assert.strictEqual(snippet, 'Sky Armory, type: salw, l AK, l M4, July 15');
+    const [parsed] = parseBulkDrawList(snippet);
+    assert.strictEqual(parsed.priceType, 'armoryLegendaryWeapon');
+    assert.strictEqual(parsed.items.length, 2);
+});
+
+check('Try Again refills an Add Draw form built from Labels, the Draw Type dropdown included', () => {
+    retry.pendingModalRetries.set('tokd', { modalCustomId: 'add_draw_new', values: { title: 'Sky Armory', items: 'l AK', date: 'July 15', url: '', price_type: 'armoryMythicWeapon' } });
+    const json = retry.buildRetryModal('tokd');
+    const byId = Object.fromEntries(json.components.map(l => [l.component.custom_id, l.component]));
+    assert.strictEqual(byId.title.value, 'Sky Armory');
+    assert.strictEqual(byId.items.value, 'l AK');
+    assert.deepStrictEqual(byId.price_type.options.filter(o => o.default).map(o => o.value), ['armoryMythicWeapon']);
+    assert.ok(!('combined' in byId), 'the one-line field is gone from Add Draw');
+    retry.pendingModalRetries.delete('tokd');
 });
 
 check('a blank calendar End Date reconstructs as "All Season", which its own parser understands', () => {

@@ -6,6 +6,7 @@ const timezone = require('dayjs/plugin/timezone');
 dayjs.extend(utc);
 dayjs.extend(timezone);
 const { fuzzyMatch, normalizeForSearch } = require('./search');
+const { resolveDrawType, drawTypeCode } = require('./drawTypes');
 
 // NOTE (fixed during review): the old implementation did `str.toLowerCase()` on the WHOLE string first, then re-capitalized only the character immediately following whitespace. Real bugs fell out of that: (1) an already-uppercase acronym like "FSS Hurricane" got globally lowercased first and only its "F"/"H" recapitalized, producing "Fss Hurricane"; (2) a parenthesized word like "(Operator)" has "(" — not a letter — as the character right after the space, so nothing got recapitalized and "operator" stayed lowercase inside the parens; (3) a HYPHENATED word like "Blood-Red" was treated as ONE whitespace-delimited token, so only its very first letter ("B") got capitalized and everything else — including the "R" in "Red" — got lowercased into "Blood-red". Fixed by additionally splitting each whitespace-delimited word on its own hyphens and running the same acronym-preserve-or-capitalize logic on each hyphen segment independently, so "Blood-Red" capitalizes both "Blood" AND "Red" instead of just the first.
 function capitalizeSegment(segment) {
@@ -115,15 +116,26 @@ function parseBulkDrawList(bulkText) {
         const parsedDate = parseAdminDate(dateStr);
         if (!parsedDate) continue; // Unparseable date -- skip this line rather than import a wrong one
 
+        // Draw Type tag (2026-10-18 11:06 EDT): a `type: <code or name>` segment anywhere after the title says which /draw prices type the draw is (utils/drawTypes.js). It is never an item. An unresolved tag is kept as "?<text>" so the op validator refuses it by name rather than the draw saving with no type.
+        let priceType;
+        const itemParts = parts.slice(1).filter(part => {
+            const tag = part.match(/^type\s*:\s*(.+)$/i);
+            if (!tag) return true;
+            priceType = resolveDrawType(tag[1]) || `?${tag[1].trim()}`;
+            return false;
+        });
+
         // Extract Items (everything left in the middle)
-        const items = parts.slice(1).map(parseItemLine);
+        const items = itemParts.map(parseItemLine);
 
         parsedDraws.push({
             title: title,
             date: parsedDate,
             // Null means "no URL given, resolve via Cloudinary cache lookup at save time" -- a bare Cloudinary key still gets expanded to a full URL here same as before; a real HTTP URL passes through untouched either way (resolveThumbnail re-uploads it into temp_draws/).
             thumbnailUrl: url ? (url.startsWith('http') ? url : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${url}`) : null,
-            items: items
+            items: items,
+            // Only when tagged: Replace Multiple merges a parsed draw over the stored one (utils/bulkMerge.js's Object.assign), so an untagged line must not carry an empty type that would wipe a stored one.
+            ...(priceType ? { priceType } : {})
         });
     }
     return parsedDraws;
@@ -254,7 +266,9 @@ function formatDrawsAsBulkText(draws) {
     return draws.map(draw => {
         const itemsStr = draw.items.map(item => `${TIER_SHORTHAND[item.tier] || item.tier} ${item.name}`).join(', ');
         const dateStr = dayjs.utc(draw.date).format('MMMM D, YYYY');
-        return `${draw.title}, ${itemsStr}, ${dateStr}, ${draw.thumbnailUrl}`;
+        // The Draw Type tag rides right after the title, so an export pastes straight back with its type (2026-10-18 11:06 EDT).
+        const typeStr = drawTypeCode(draw.priceType) ? `, type: ${drawTypeCode(draw.priceType)}` : '';
+        return `${draw.title}${typeStr}, ${itemsStr}, ${dateStr}, ${draw.thumbnailUrl}`;
     }).join('\n');
 }
 
