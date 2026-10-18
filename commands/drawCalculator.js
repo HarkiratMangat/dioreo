@@ -818,7 +818,11 @@ function compactSelectionText(basket, level, detail = false) {
         if (r.up || r.upNeed) {
             const u = MYTHIC_UPGRADE[upgradeKeyOf(r.drawKey)];
             const icon2 = upgradeKeyOf(r.drawKey) === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
-            out.push(`> -# ${icon2} Upgrade${r.up && !r.byType ? ` ${upgradeTransition(r.up)}` : ''} · \`${fmt(r.upNeed)} ${u.currency}\`${each}`);
+            // The amount is the Full Breakdown's only (2026-10-18 19:34 EDT, Harkirat: "remove the ' · 1,980 Coins' part of the upgrade line as well. it appears in full breakdown"). A line with no transition to show (one row per draw type) keeps it, or it would read "Upgrade" alone.
+            const transition = r.up && !r.byType ? ` ${upgradeTransition(r.up)}` : '';
+            const amount = detail || !transition ? ` · \`${fmt(r.upNeed)} ${u.currency}\`${each}` : '';
+            // A colon after Upgrade (2026-10-18 19:35 EDT, his ask): a label joined to its value, the /draw prices grammar.
+            out.push(`> -# ${icon2} Upgrade:${transition}${transition ? amount : amount.replace(/^ · /, ' ')}`);
         }
     }
     return out.join('\n');
@@ -1309,8 +1313,8 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     const build = level => {
         const out = [...components];
         out.push({ type: 9, components: [{ type: 10, content: `## ${basket.banners.length >= 2 ? 'Your Draw Selections' : 'Your Draw Selection'}\n${compactSelectionText(basket, Math.min(level, 3), state.detail)}` }], accessory: editSelectionButton(state) });
-        // Region and balance right under the list (2026-10-18 19:24 EDT, his ask). A change re-prices this same result.
-        out.push(regionBalanceSection(state, basket));
+        // Region and balance right under the list (2026-10-18 19:24 EDT, his ask), a small space with no line above it (2026-10-18 19:36 EDT, his ask). A change re-prices this same result.
+        out.push({ type: 14, spacing: 1, divider: false }, regionBalanceSection(state, basket));
         if (options.notice) out.push({ type: 10, content: `-# ${options.notice}` });
         if (options.dropConfirm) out.push(dropConfirmRow(state, options.dropConfirm.mask, options.dropConfirm.count, options.dropConfirm.verb, options.dropConfirm.label));
         out.push({ type: 14, spacing: 1, divider: true });

@@ -318,7 +318,8 @@ t('Set Region & Balance sits at the bottom of the landing and the editor and und
         assert.ok(top[i - 1].type === 14 && top[i - 1].divider, `${name}: under a divider`);
     }
     const { i, top } = at.result;
-    assert.ok(top[i - 1].type === 9 && top[i - 1].accessory.label === 'Edit Selections', 'result: right under the list of draws, no divider between');
+    assert.ok(top[i - 2].type === 9 && top[i - 2].accessory.label === 'Edit Selections', 'result: right under the list of draws');
+    assert.deepStrictEqual([top[i - 1].type, top[i - 1].divider, top[i - 1].spacing], [14, false, 1], 'result: a small space with no line between (2026-10-18 19:36 EDT, his ask)');
     const firstPick = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
     assert.strictEqual(buttonLabelled(firstPick, 'Set Region & Balance').disabled, true, 'disabled until a calculation exists to write to');
 });
@@ -1113,10 +1114,11 @@ t('upgrades: the balance takes whole CP and cards or coins in steps of 5', () =>
 t('upgrades: the result states cards and coins per line and turns the pool into CP once', () => {
     const basket = makeBasket({ region: 'region_20', mythicCards: 300, banners: [{ drawKey: 'mythicWeapon', pullsDone: 10, upHave: [2], upWant: [5] }] });
     const full = allText(render(basket, { detail: true }));
-    assert.ok(full.includes('Upgrade Level 2 → Level 5 · `1,600 Cards`'), 'the line states the upgrade in cards');
+    assert.ok(full.includes('Upgrade: Level 2 → Level 5 · `1,600 Cards`'), 'the line states the upgrade in cards');
     assert.ok(full.includes('`1,600` Cards − `300` held → about 7 spins × `1,000 CP`'), full);
     assert.ok(full.includes('> **+** Mythic Upgrades: `7,000 CP`') && full.includes('**You Need: `7,000 CP`**'), 'a finished draw costs only its upgrade');
-    assert.ok(allText(render(basket)).includes('Upgrade Level 2 → Level 5 · `1,600 Cards`'), 'the simplified list says what the upgrade goes to');
+    assert.ok(/Upgrade: Level 2 → Level 5$/m.test(allText(render(basket))), 'the simplified list says what the upgrade goes to, without its amount (2026-10-18 19:34 EDT, his ask)');
+    assert.ok(allText(render(basket, { detail: true })).includes('Upgrade: Level 2 → Level 5 · `1,600 Cards`'), 'the Full Breakdown keeps the amount');
     const exp = dc.buildExportText(basket, 'USD');
     assert.ok(/Mythic Cards:\*\* 1,600 needed − 300 held → about 7 spins · 7,000 CP/.test(exp), exp);
 });
