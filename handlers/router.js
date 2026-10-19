@@ -29,6 +29,7 @@ const HANDLER_BINDINGS = [
     ['invite', 'handleInviteInteraction'],
     ['embedTest', 'handleEmbedTestInteraction'],
     ['addToPatchNotes', 'handleAddToPatchNotesInteraction'],
+    ['viewColors', 'handleViewColorsInteraction'],
     ['patchnotes', 'handlePatchnotesInteraction'],
     ['settings', 'handleSettingsInteraction'],
     ['loadouts', 'handleLoadoutsInteraction'],
@@ -53,6 +54,7 @@ const handleHelpInteraction = late('help', 'handleHelpInteraction');
 const handleInviteInteraction = late('invite', 'handleInviteInteraction');
 const handleEmbedTestInteraction = late('embedTest', 'handleEmbedTestInteraction');
 const handleAddToPatchNotesInteraction = late('addToPatchNotes', 'handleAddToPatchNotesInteraction');
+const handleViewColorsInteraction = late('viewColors', 'handleViewColorsInteraction');
 const handlePatchnotesInteraction = late('patchnotes', 'handlePatchnotesInteraction');
 const handleSettingsInteraction = late('settings', 'handleSettingsInteraction');
 const handleLoadoutsInteraction = late('loadouts', 'handleLoadoutsInteraction');
@@ -211,6 +213,8 @@ async function handleInteractionInner(interaction) {
         if (await handleEmbedTestInteraction(interaction)) return;
         markHandler('addToPatchNotes');
         if (await handleAddToPatchNotesInteraction(interaction)) return;
+        markHandler('viewColors');
+        if (await handleViewColorsInteraction(interaction)) return;
         markHandler('patchnotes');
         if (await handlePatchnotesInteraction(interaction)) return;
         markHandler('settings');

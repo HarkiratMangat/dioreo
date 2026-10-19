@@ -127,6 +127,17 @@ check('the colour cache keys each image by a fingerprint with no user id, and ne
     assert.ok(!Object.keys(ColorCache.schema.paths).some(p => /discord|user/i.test(p)), 'the model has no user field');
     assert.strictEqual(ColorCache.schema.path('createdAt').options.expires, 30 * 24 * 60 * 60, 'deleted 30 days after first seen');
 });
+check('View Colors\' page row always points at the person right-clicked, whoever presses it', () => {
+    const row = viewColors.pageRow('111122223333444455', 'banner', 's');
+    assert.deepStrictEqual(row.components.map(b => b.label), ['Avatar', 'Banner', 'Name', 'Nameplate', 'Deco']);
+    assert.ok(row.components.every(b => b.custom_id.startsWith('vc_page|111122223333444455|') && b.custom_id.length <= 100));
+    const open = row.components.find(b => b.label === 'Banner');
+    assert.ok(open.disabled && open.style === 3, 'the open page is green and disabled');
+    const src = fs.readFileSync(path.join(__dirname, '..', 'handlers', 'viewColors.js'), 'utf8');
+    assert.ok(!/interaction\.user\.id/.test(src), 'the click handler never reads the clicker as the subject');
+    const cmd = fs.readFileSync(path.join(__dirname, '..', 'commands', 'viewColors.js'), 'utf8');
+    assert.ok(/skipExpiry: true/.test(cmd) && !/flags: 64|isEphemeral/.test(cmd), 'public by default and no idle timeout');
+});
 check('View Colors registers as a public right-click on a user', () => {
     const json = viewColors.data.toJSON();
     assert.strictEqual(json.type, 2);
