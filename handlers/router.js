@@ -402,6 +402,32 @@ async function handleInteractionInner(interaction) {
     }
 
     // ==========================================
+    // --- CONTEXT MENU ROUTE (right-click → Apps) ---
+    // ==========================================
+    // One entry point for every right-click command (2026-10-19 09:49 EDT, Add to Patch Notes). A context-menu command's name is its label ("Add to Patch Notes"), and loadCommandModules keys client.commands by that same name, so the lookup is the slash route's. Errors fall through to the outer try/catch, the crash net; the fallback reply is awaited for the reason the slash route's comment gives.
+    if (interaction.isContextMenuCommand()) {
+        const command = interaction.client.commands.get(interaction.commandName);
+        if (command) {
+            markHandler(interaction.commandName);
+            try {
+                await command.execute(interaction);
+            } catch (error) {
+                console.error(`Error executing context menu command ${interaction.commandName}:`, error);
+                try {
+                    if (interaction.deferred || interaction.replied) {
+                        await interaction.editReply({ content: 'There was an error running this!' });
+                    } else {
+                        await interaction.reply({ content: 'There was an error running this!', ephemeral: true });
+                    }
+                } catch (notifyError) {
+                    console.error(`Failed to notify user of context menu error for ${interaction.commandName}:`, notifyError);
+                }
+            }
+            return;
+        }
+    }
+
+    // ==========================================
     // COMPONENT INTERACTIONS (buttons · selects · modal submits)
     // ==========================================
     // Handled entirely by the per-subsystem dispatch chain above. The three separate `isStringSelectMenu()` / `isButton()` / `isModalSubmit()` blocks that used to live here are gone: every branch they held now lives in a handlers/*.js module, and each module checks the interaction TYPE itself where that still matters. ⚠️ That type check is not ceremony. `mpbrowse` was once written inside the isButton() block when it is a SELECT, and the branch was simply dead -- no error, no log, just a timed-out interaction. If you add a branch to a handler, make sure it sits under the right type.
