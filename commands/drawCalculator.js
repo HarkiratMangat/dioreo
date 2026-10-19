@@ -1021,7 +1021,8 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
             newCalculationButton(state),
             // Grey, not green (2026-10-18 21:16 EDT, his ask): green on this screen means a set Upgrade.
             { type: 2, style: 2, label: 'Add Draws', custom_id: encodeState('addopen', state), emoji: emojis.parseEmoji(emojis.plus), disabled: banners.length >= MAX_LINES },
-            { type: 2, style: 4, label: 'Remove', custom_id: encodeState('rmopen', state), emoji: emojis.parseEmoji(emojis.deleteBin) },
+            // "Remove Selections" (2026-10-18 21:24 EDT, his wording).
+            { type: 2, style: 4, label: 'Remove Selections', custom_id: encodeState('rmopen', state), emoji: emojis.parseEmoji(emojis.deleteBin) },
             { type: 2, style: 1, label: state.fromResult && state.dirty ? 'Recalculate' : 'Calculate', custom_id: encodeState('submit', state), emoji: emojis.parseEmoji(emojis.calculate) }
         ] },
         // Back to Result lives in the nav row under the panel only (2026-10-18 16:05 EDT). It was left here too by the 15:47 EDT move, so a result's editor carried the same button twice and Discord refused the whole message (COMPONENT_CUSTOM_ID_DUPLICATED): his "it wont load at all".
