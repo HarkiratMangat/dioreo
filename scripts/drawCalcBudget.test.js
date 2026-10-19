@@ -1157,7 +1157,7 @@ t('upgrades: the result states cards and coins per line and turns the pool into 
     const basket = makeBasket({ region: 'region_20', mythicCards: 300, banners: [{ drawKey: 'mythicWeapon', pullsDone: 10, upHave: [2], upWant: [5] }] });
     const full = allText(render(basket, { detail: true }));
     assert.ok(full.includes('Upgrade: Level 2 → Level 5 · `1,600 Cards`'), 'the line states the upgrade in cards');
-    assert.ok(full.includes('`1,600` Cards − `300` held → about 7 spins × `1,000 CP`'), full);
+    assert.ok(/`1,600` <a?:\w+:\d+> Cards − `300` held ⌇ ~7 spins × `1,000 CP`/.test(full), full);
     assert.ok(full.includes('> **+ Mythic Upgrades: `7,000 CP`**') && full.includes('**You Need: `7,000 CP`**'), 'a finished draw costs only its upgrade');
     assert.ok(/Upgrade: Level 2 → Level 5$/m.test(allText(render(basket))), 'the simplified list says what the upgrade goes to, without its amount (2026-10-18 19:34 EDT, his ask)');
     assert.ok(allText(render(basket, { detail: true })).includes('Upgrade: Level 2 → Level 5 · `1,600 Cards`'), 'the Full Breakdown keeps the amount');
