@@ -1315,7 +1315,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         if (savedConfirm) {
             components.push({ type: 10, content: `-# ⚠️ Delete ${savedConfirm.count === 1 ? 'this calculation' : `these ${savedConfirm.count} calculations`}? This cannot be undone.` });
             components.push({ type: 1, components: [
-                { type: 2, style: 4, label: `Delete ${plural(savedConfirm.count, 'Calculation')}`, custom_id: encodeState('savedelok', { ...view, mask: savedConfirm.mask, check: savedConfirm.check }) },
+                { type: 2, style: 4, label: `Delete ${plural(savedConfirm.count, 'Calculation')}`, custom_id: encodeState('savedelok', { ...view, mask: savedConfirm.mask, check: savedConfirm.check }), emoji: emojis.parseEmoji(emojis.deleteBin) }, // Remove Draws' bin (2026-10-19 10:46 EDT, his ask)
                 { type: 2, style: 2, label: savedConfirm.count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view) }
             ] });
         } else {
@@ -1326,7 +1326,15 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
             }] });
         }
         const armed = state.verb === 'delallarm';
-        components.push({ type: 1, components: [{ type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) }] });
+        // No Delete All while a single delete is being confirmed (2026-10-19 10:46 EDT, Harkirat: "remove the "delete all" button from the single deletion's confirmation phase"): the confirm row is the only choice then.
+        if (!savedConfirm) {
+        // Armed Delete All carries the same warning and the same way out as a single delete (2026-10-19 10:45 EDT, Harkirat: "can that warning also appear after clicking "delete all" ... As well as a "keep them" button appearing beside it").
+        if (armed) components.push({ type: 10, content: `-# ⚠️ Delete ${list.length === 1 ? 'this calculation' : `all ${list.length} calculations`}? This cannot be undone.` });
+        components.push({ type: 1, components: [
+            { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
+            ...(armed ? [{ type: 2, style: 2, label: list.length === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view) }] : []),
+        ] });
+        }
     }
     // "An unsaved calculation is cleared 30 days after it was started" left this view for Help, which already says it under Saving.
     components.push({ type: 14, spacing: 2, divider: true }, savedFooterRow(state));

@@ -709,6 +709,11 @@ t('the Saved view opens a calculation, deletes several, or deletes all, and its 
     assert.ok(buttonLabelled(panel, 'Delete All').emoji, 'with his DeleteAll icon');
     const armed = buttonLabelled(savedView(savedList(3), { verb: 'delallarm' }), 'Delete All (3) — click again');
     assert.ok(armed && armed.style === 4 && verbOf(armed) === 'delall');
+    // Armed Delete All warns and offers Keep Them, like a single delete (2026-10-19 10:46 EDT).
+    const armedPanel = savedView(savedList(3), { verb: 'delallarm' });
+    assert.ok(/Delete all 3 calculations\? This cannot be undone\./.test(allText(armedPanel)), 'the warning shows once Delete All is armed');
+    assert.strictEqual(verbOf(buttonLabelled(armedPanel, 'Keep Them')), 'saved', 'and Keep Them backs out');
+    assert.strictEqual(Boolean(buttonLabelled(panel, 'Keep Them')), false, 'not before it is armed');
     const nav = panel.filter(x => x && x.type === 1)[0].components.map(b => b.label);
     assert.deepStrictEqual(nav, ['Draws', 'Draw Prices', 'Help']);
     const footer = panel[0].components[panel[0].components.length - 1];
@@ -745,6 +750,8 @@ t('deleting asks first; the confirm carries the picked positions and a checksum 
     assert.strictEqual(decoded.check, check);
     assert.ok(yes.custom_id.length <= 100);
     assert.strictEqual(verbOf(buttonLabelled(panel, 'Keep Them')), 'saved');
+    assert.ok(yes.emoji, 'with Remove Draws\' bin (2026-10-19 10:46 EDT)');
+    assert.strictEqual(Boolean(buttonLabelled(panel, 'Delete All')), false, 'no Delete All while a single delete is being confirmed');
     assert.notStrictEqual(dc.savedChecksum(list.slice(1)), check, 'a changed list must not pass the checksum');
 });
 
