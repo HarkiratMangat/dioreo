@@ -1119,7 +1119,7 @@ function buildGoalModal(state, basket, index) {
     if (!b || !isAdvancedKey(b.drawKey)) return null;
     const totals = advancedGoalTotals(basket.region, b.drawKey);
     const current = advancedGoal(b);
-    return { custom_id: encodeState('goalsave', { ...state, focus: index }), title: 'Set Goal', components: [{ type: 18, label: 'Goal', description: 'Priced as if no early pull gets lucky, as on /draw prices', component: {
+    return { custom_id: encodeState('goalsave', { ...state, focus: index }), title: 'Set Goal', components: [{ type: 18, label: 'Goal', component: {
         type: 3, custom_id: 'goal', required: true, min_values: 1, max_values: 1,
         options: ADVANCED_GOALS.map(g => ({ label: ADVANCED_GOAL_TEXT[g][b.drawKey], value: g, description: `${ADVANCED_GOAL_TEXT[g].path}${totals ? ` · ${fmt(totals[g])} CP` : ''}`, ...(g === current ? { default: true } : {}) }))
     } }] };
