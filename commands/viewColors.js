@@ -67,6 +67,15 @@ function missingHint(available) {
     return `-# **No custom ${list} detected.**`;
 }
 
+// /colors' hint block above its buttons goes entirely here: "Updated your profile? Refresh Colors" (there is no Refresh) and "Tap a button below to view colors from a different part of your profile" (it is someone else's profile). Harkirat: "remove the "refresh color" hint line", then 2026-10-19 11:58 EDT: "just remove it altogether for this variant of the panel". What the person lacks is named in its place, above the row.
+function rewriteHint(parts, available) {
+    const hint = parts.find(c => c.type === 10 && /Refresh Colors|different part of your profile/.test(c.content || ''));
+    if (hint) parts.splice(parts.indexOf(hint), 1);
+    const missing = missingHint(available);
+    if (missing) parts.push({ type: 10, content: missing });
+    return parts;
+}
+
 // Draws one page of `target`'s colours. `member` is their server profile when there is one to read (the right-click's own targetMember, or a REST fetch on a page click).
 async function renderPanel(interaction, target, member, page) {
     const own = await UserPreference.findOne({ discordId: target.id });
@@ -85,15 +94,7 @@ async function renderPanel(interaction, target, member, page) {
     if (panel[0]?.components) {
         const parts = panel[0].components;
         parts.unshift({ type: 10, content: `-# Colors from **${name}**'s profile` });
-        // The "Updated your profile? Refresh Colors" tip goes (Harkirat: "remove the "refresh color" hint line"): there is no Refresh here. What the person lacks is named in its place, above the row.
-        const hint = parts.find(c => c.type === 10 && /Refresh Colors/.test(c.content || ''));
-        const kept = hint ? hint.content.split('\n').filter(line => !/Refresh Colors/.test(line)) : [];
-        const missing = missingHint(available);
-        if (missing) kept.push(missing);
-        if (hint) {
-            if (kept.length) hint.content = kept.join('\n');
-            else parts.splice(parts.indexOf(hint), 1);
-        } else if (missing) parts.push({ type: 10, content: missing });
+        rewriteHint(parts, available);
         parts.push(pageRow(target.id, page, variant === 'server' ? 's' : 'g', available));
     }
     return { panel, files };
@@ -108,6 +109,7 @@ module.exports = {
     stripControls,
     pageRow,
     missingHint,
+    rewriteHint,
     renderPanel,
     PAGES,
 

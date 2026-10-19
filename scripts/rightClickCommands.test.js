@@ -152,6 +152,15 @@ check('View Colors: a banner, name color, nameplate or deco the person lacks is 
     assert.strictEqual(viewColors.missingHint(['avatar', 'banner', 'name', 'nameplate']), '-# **No custom deco detected.**');
     assert.strictEqual(viewColors.missingHint(['avatar', 'banner', 'name', 'nameplate', 'decoration']), null);
 });
+check('View Colors drops /colors\' hint block (both lines) and puts the missing-pages hint in its place', () => {
+    const parts = [{ type: 10, content: 'swatches' }, { type: 10, content: '-# Tap a button below to view colors from a different part of your profile.\n-# (Tip: Updated your profile? `Refresh Colors`)' }];
+    viewColors.rewriteHint(parts, ['avatar', 'banner']);
+    const text = parts.map(p => p.content).join('\n');
+    assert.ok(!/Refresh Colors|your profile/.test(text), text);
+    assert.ok(/No custom name color, nameplate, or deco detected/.test(text));
+    const full = viewColors.rewriteHint([{ type: 10, content: '-# Tap a button below to view colors from a different part of your profile.\n-# (Tip: Updated your profile? `Refresh Colors`)' }], ['avatar', 'banner', 'name', 'nameplate', 'decoration']);
+    assert.strictEqual(full.length, 0, 'nothing missing, no hint at all');
+});
 check('View Colors registers as a public right-click on a user', () => {
     const json = viewColors.data.toJSON();
     assert.strictEqual(json.type, 2);
