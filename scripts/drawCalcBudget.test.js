@@ -330,10 +330,13 @@ t('Advanced draws are priced per set, and from a fresh line each strategy goal m
     assert.ok(/Finished/.test(dc.lineHint(done, 0)) && !/Finished/.test(dc.lineHint(done, 1)), `${dc.lineHint(done, 0)} | ${dc.lineHint(done, 1)}`);
     // The pop-up: five goals with the current one picked, then the spun sets with the full ones picked.
     const modal = dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'advancedCharacter', pullsDone: 3, goal: 'top2', bothSets: [2] }] }), 0);
-    assert.deepStrictEqual(modal.components[0].component.options.map(o => [o.label, !!o.default]), [['Both Legendary Characters & Weapons', false], ['Both Characters + 1 Random Weapon', true], ['1 Random Character + Both Weapons', false], ['Regular Pulls Only: 1 Random Character + 1 Random Weapon', false], ['Both Weapons', false], ['1 Random Weapon', false], ['Everything (All 10 Sets)', false]]);
+    assert.deepStrictEqual(modal.components[0].component.options.map(o => [o.label, !!o.default]), [['Both Legendary Characters & Weapons', false], ['Both Characters + 1 Random Weapon', true], ['1 Random Character + Both Weapons', false], ['Regular Pulls Only: 1 Item Per Set', false], ['Both Weapons (No Characters)', false], ['1 Random Weapon Only (No Characters)', false], ['Advanced Pulls Only: All 20 Items', false]]);
     assert.deepStrictEqual(modal.components[1].component.options.map(o => [o.label, !!o.default]), [['Set 1', false], ['Set 2', true], ['Set 3', false]]);
     assert.strictEqual(modal.components[1].component.max_values, 3);
     assert.ok(modal.components[0].component.options.every(o => o.description.length <= 100 && / CP Left$/.test(o.description)));
+    // Regular only, 3 sets spun: the Regular price of sets 4 to 10.
+    const regLeft = require('../commands/drawprices').DRAW_DATA.region_10.legendaryCharacterWeapon.draws.slice(3).reduce((x, y) => x + y, 0);
+    assert.strictEqual(modal.components[0].component.options[3].description, `Gets you 1 Random Character + 1 Random Weapon · Reg only 1-10 · ${regLeft.toLocaleString('en-US')} CP Left`);
     assert.strictEqual(dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'advancedWeapon', pullsDone: 0 }] }), 0).components.length, 1, 'no spun set, no second field');
     assert.strictEqual(dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), 0), null, 'only an Advanced line has a goal');
     assert.deepStrictEqual([dc.readGoal('top2'), dc.readGoal('nope')], ['top2', null]);
