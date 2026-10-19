@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.94.0 — 2026-10-19 18:10 EDT (#203) — the deferred list and roadmap swept for staleness, and Harkirat's 2026-10-19 decisions recorded
+## Pre-Release v3.94.0 — 2026-10-19 18:10 EDT (#203 · `c508a9f3`) — the deferred list and roadmap swept for staleness, and Harkirat's 2026-10-19 decisions recorded
 **Records only, plus one code comment.** His ask 2026-10-19 18:00 EDT: clean the staleness and gaps out of the deferred list so everything is up to date. What is true now is `docs/db-deferred-list.md` and `docs/ROADMAP.md`.
 
 - **Ten entries closed into `docs/archive/resolved-list.md`**, each checked against code and git history first: `/bot analytics` Phase 2 (#173), disabling expired buttons on every command (`sendV2Payload`'s `schedulePanelExpiry`), `/invite` in `/help`, the Actions `@v5` bump, the prod DB rename off `test`, the `RENDER_API_KEY` revocation, the landing SPECS gap, the changelog gap for the four portal commits, a duplicate `/help` entry and orphaned calculator sub-bullets.

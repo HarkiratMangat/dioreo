@@ -5,6 +5,18 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ `PRIVACY.md`'s two history tables disagreed — closed 2026-10-19 18:23 EDT `[DONE · 2026-10-19 18:23 EDT]`
+
+Fixed on Harkirat's word (2026-10-19 18:21 EDT: "Yeah, you can fix the privacy.md gap if you want."). §12.1 Revision history gained 1.16 and 1.14 rows, and the 1.14 note that sat as a loose paragraph above Appendix B's table is now a row in it, marked *(pending)* like the other v3 rows (`colorsVisibility` ships with v3). Both tables now list 1.11 to 1.16; `public/privacy.html` rebuilt.
+
+- ⚠️ **Found in the same check, not fixed here: the two history tables disagree.** §12.1 Revision history has no 1.14 and no 1.16 row; 1.14 (2026-08-31, `colorsVisibility`) and 1.16 appear only in Appendix B. A reader of §12.1 sees the policy jump from 1.15 to a 1.16 it never describes. `docs/legal/PRIVACY.md` is a published source, so the fix belongs in a privacy-policy change with `dior legal build`, not in a tracker sweep. `[P2 · XS · Sonnet5-Medium]` (filed 2026-10-19 18:05 EDT). **Verify:** both tables list the same versions, or one of them is removed and the other is complete.
+
+## ✅ `/draw calculator`: the Delete Calculation click-test — closed 2026-10-19 18:23 EDT `[DROPPED · 2026-10-19 18:23 EDT]`
+
+Dropped by Harkirat, 2026-10-19 18:21 EDT: "No, I don't care for the delete keep and click test." The calculator merged in #197 and he called it done after #199.
+
+- **🖱️ `/draw calculator`: click-test Delete Calculation, delete-several and Delete All in Discord** `[P2 · XS · Sonnet5-Medium]` *(filed 2026-10-14 19:30 EDT; Harkirat: "do it later")* **Amended 2026-10-15 18:23 EDT:** he allowed a screen takeover ("you can take over my screen and test what you want for the bot"), but the full-screen approval prompt timed out unanswered and background clicks no longer reached the panel. Run it on his next approval, and in the same pass screenshot `/draws` to confirm the season nav marks the current page green (commit 9bbb5f89). Verify: dev DB `drawbaskets` loses test / test 2 / test 3 as each confirm lands, and the nav button is green-disabled. The background click-test stalled because Discord stops redrawing a fully covered window. Set up and waiting: a live Saved panel at the bottom of #testing-spam and three saved calculations for his account in the dev database ("test", "test 2", "test 3"; the last two are copies made for this). **Do:** with part of the Discord window visible, reopen "test" → View Saved → Delete Calculation twice; pick "test 2" in the delete list → confirm; Delete All twice. **Verify by:** each leaves the Saved view with its notice, and `listForUser` in the dev database returns none of the three. Before the branch's PR merges. 🔄 **2026-10-19 18:05 EDT: that PR merged as #197 without this pass on record**, and Harkirat called the calculator done after #199. Whether the pass is still wanted is his call; until he says, it stays open.
+
 ## ✅ The four `feat/portal-redesign-session-b` commits had no changelog entry — closed 2026-10-19 18:05 EDT `[DONE · 2026-10-19 18:05 EDT]`
 
 They merged in #176 as Pre-Release v3.69.0, which carries their changelog entry and the version bump, and `docs/CHANGELOG.md` no longer holds a `(#PR)` placeholder (`npm run docs:audit` exits 0 on `v3-pre-release`). Closed in the 2026-10-19 deferred-list sweep.
