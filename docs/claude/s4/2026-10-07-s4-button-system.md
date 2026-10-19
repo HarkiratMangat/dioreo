@@ -788,3 +788,7 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 ## His 2026-10-19 16:15 EDT, verbatim, written 2026-10-19 16:16 EDT
 - (tile shape: A today's card · B a row · C a coloured head) "A"
 - Built in spec v121: Tiles Decided as drawn (the card); the shape options removed; ledger tileframe; conventions C29. The lettering and shape variants and the unused MP / DMZ tab cleared; every Spec-vs-Builder-2 row reads "Spec".
+
+## Pickers proposed, written 2026-10-19 16:51 EDT
+- Built in spec v122, no new words of his: the pickers drawn live from Builder-2's own components (his 2026-09-27 date picker, his 2026-09-28 accent block) with only what a rule sets changed (C10, C13, C15, C16, C17, his 2026-10-19 15:43 EDT realm-coloured buttons). His 2026-10-11 "wait until later" on Q9 and Q10 is answered by C16 (2026-10-11 22:06 EDT, after it) for the day size; the swatch size is asked (Answer Shots `pkswatch`), with `pkdate`.
+
