@@ -780,3 +780,7 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (MP / DMZ) "A" (a rail)
 - (to the coordinator) "whenever session 4's auto compact happens, tell it to use /workstyle:continue-session"
 - Built in spec v119: the stepper's − and + `button-M-icon.tint-realm`; MP / DMZ `rail-L-box>toggle-M-box.paint-mode`; the unpicked key `toggle-M-box.paint-cat--mark--pending`; three tile lettering variants on the Answer Shots page (`tilevar`).
+
+## His 2026-10-19 15:56 EDT, verbatim, written 2026-10-19 16:00 EDT
+- (the three tile lettering variants) "they;re the same?"
+- Built in spec v120: three different tile shapes instead (A today's card · B a row, the colour a bar on the left · C a coloured head), asked on the Answer Shots page as `tiledir`.
