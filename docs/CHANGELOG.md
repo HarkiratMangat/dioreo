@@ -29,7 +29,35 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.92.0 — 2026-10-19 15:43 EDT (#201) — Dioreo Admin, a second app for the admin commands, and View Colors from a message
+## Pre-Release v3.95.0 — 2026-10-19 18:22 EDT (#204) — `/autobuild` moves to Gemini 3.8 Flash
+**`utils/visionExtract.js`, its two Vertex scripts and a new cost test.** Harkirat's ask 2026-10-19 18:09 EDT: the newest model in the tier already in use, the mid one, no Pro and no Flash-Lite. What is true now is `.claude/rules/autobuild.md` ("Vision model").
+
+- **gemini-3.5-flash → gemini-3.8-flash**, the newest Flash that is generally available on Google's Agent Platform (formerly Vertex AI): GA 2026-09-02 in its release notes, listed under the `us` multi-region the bot calls. 3.6 and 3.7 were skipped. The request needed no change: it sends none of the parameters 3.8 deprecates and leaves thinking at the `medium` default.
+- **Cheaper while the introductory rate lasts:** $0.825 in / $4.125 out per million tokens on `us` through 2026-12-31, against 3.5's $1.65 / $9.90, then $1.65 / $8.25 from 2027-01-01. The cost log carries both periods and picks by date.
+- **The cost log now counts thinking tokens**, which Google bills as output and the log used to leave out, and records them as `thinkingTokens`. `scripts/visionCost.test.js` pins the model, the rate switch and the thinking count.
+- **Still to do, on his Mac:** one live call, `node --env-file=.env.dev scripts/test-vertex-extract.js`, which now prints the model it used. A `GCP_MODEL` line in a `.env` overrides the new default, so the VM's `.env` is worth checking at deploy.
+
+
+## Pre-Release v3.94.0 — 2026-10-19 18:10 EDT (#203 · `c508a9f3`) — the deferred list and roadmap swept for staleness, and Harkirat's 2026-10-19 decisions recorded
+**Records only, plus one code comment.** His ask 2026-10-19 18:00 EDT: clean the staleness and gaps out of the deferred list so everything is up to date. What is true now is `docs/db-deferred-list.md` and `docs/ROADMAP.md`.
+
+- **Ten entries closed into `docs/archive/resolved-list.md`**, each checked against code and git history first: `/bot analytics` Phase 2 (#173), disabling expired buttons on every command (`sendV2Payload`'s `schedulePanelExpiry`), `/invite` in `/help`, the Actions `@v5` bump, the prod DB rename off `test`, the `RENDER_API_KEY` revocation, the landing SPECS gap, the changelog gap for the four portal commits, a duplicate `/help` entry and orphaned calculator sub-bullets.
+- **His decisions recorded in his words:** View Colors' unset pages abandoned (the button and page stay hidden), different view options moved to v4, admin commands never listed on the public `/commands` page, the Troll Build badge deferred indefinitely, and the first-use welcome guide deferred out of the launch checklist.
+- **Stale claims corrected:** "not yet merged" on the `/server` → `/admin` rename (#125) and hotpatch (#162), guild install now done, the server-admin control surface shipped, the calculator passover done (#175, #197 to #199), and the `/settings` jump-to lines ticked now that #202 is in.
+- **New gaps filed, not fixed here:** `PRIVACY.md`'s §12.1 Revision history lacks 1.14 and 1.16, and the landing page's `/draw calculator` SPECS still types the unwired pulls and balance options.
+- **`scripts/lib/commandCatalog.js`:** a comment that said `/invite` was missing from `CATEGORY_DEFS` now says it lives in Utilities.
+
+
+## Pre-Release v3.93.0 — 2026-10-19 18:03 EDT (#202 · `5a62c59c`) — `/settings` opens on the page you ask for, and `/autobuild` reads DMZ builds
+**`/settings`, `/autobuild`, `/help` and two new test scripts.** Harkirat's picks 2026-10-19 17:45 EDT; what is true now is `.claude/rules/settings-and-expiry.md` and `.claude/rules/autobuild.md` ("DMZ detection").
+
+- **`/settings customize:`** opens Visibility, Preferences or View Colors directly. Colors follows the Settings visibility, the same as the dashboard's View Colors button.
+- **`/autobuild` tells MP from DMZ** by the Gunsmith screen itself (Pen stats and the Equip/Customize tabs vs Select Blueprints and a code in the title), needing two signals that agree. When it can't tell, the review card says so and Confirm waits for the new `mode:` option or the Edit modal's `Category | Mode` box.
+- **Up to nine attachments are read**, so DMZ builds come through whole. An MP read over five gets a warning instead of being cut. DMZ builds are saved with DMZ badges (`dmzRangeRank`), a `DMZ-WEAPON-N` image, no code and blank slots, since DMZ prints no slot label. Duplicates, badge inheritance and Open Loadout compare within the same mode.
+- **Still to do, on his Mac:** `node --env-file=.env.dev scripts/autobuildDmzCheck.js` runs the DMZ screenshots already in the bot through the real vision call, read-only. It could not run from the cloud session that built this.
+
+
+## Pre-Release v3.92.0 — 2026-10-19 15:43 EDT (#201 · `606fbd1f`) — Dioreo Admin, a second app for the admin commands, and View Colors from a message
 **A second Discord application, a message right-click, `/patch notes` and the emoji copy script.** Harkirat's asks on this branch; what is true now is `bot/clients.js` and `docs/db-deferred-list.md` ("Dioreo Admin").
 
 - **Dioreo Admin:** with `ADMIN_BOT_TOKEN` set, `/manage`, `/bot`, `/autobuild`, the four admin right-clicks and the dev-only `/embedtest` leave the public app for a user-install-only admin app, so they stop showing in every user's command list. One process logs in twice, with the same router and database; each app shows its own emoji copies, and command links work across both. `/admin` stays on Dioreo. Without the token nothing changes.

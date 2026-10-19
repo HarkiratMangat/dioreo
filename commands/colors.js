@@ -27,7 +27,8 @@ module.exports = {
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
-    async execute(interaction) {
+    // `prefsField` (2026-10-19 17:48 EDT) lets `/settings customize:colors` open this panel under settingsVisibility, the field the dashboard's own View Colors button uses -- see commands/settings.js's execute(). Omitted, as on every real /colors call, it is colorsVisibility.
+    async execute(interaction, { prefsField = 'colorsVisibility' } = {}) {
         const userId = interaction.user.id;
         let prefs = await UserPreference.findOne({ discordId: userId });
         if (!prefs) prefs = new UserPreference({ discordId: userId });
@@ -35,7 +36,7 @@ module.exports = {
         // /colors has its OWN visibility preference (colorsVisibility), detached from settingsVisibility 2026-08-30 21:39 EDT per docs/ROADMAP.md -- the "View Colors" button ON the /settings panel deliberately still reads settingsVisibility (see handlers/colors.js's colors_view branch), so the two entry points to the same panel can now diverge on purpose.
         const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
         const argPrivate = visibilityChoice === null ? null : visibilityChoice === 'hidden';
-        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'colorsVisibility' });
+        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField });
 
         if (!interaction.deferred && !interaction.replied) {
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
