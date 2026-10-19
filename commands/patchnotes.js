@@ -9,6 +9,7 @@ const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { buildTitleBlock } = require('../utils/titleBlock');
+const { splitSeasonEmoji, seasonEmojiFor, withCaptionEmoji } = require('../utils/seasonEmoji');
 const { fuzzyMatch } = require('../utils/search');
 const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
@@ -23,9 +24,9 @@ function cleanPatchTitle(title) {
     return title.replace(/^balance changes for\s*/i, '').trim();
 }
 
-// Resolves a patch entry's actual displayed title -- `titleOverride` (2026-07-24, /manage "Add New Season"/"Past Seasons") wins when set (an admin-typed placeholder, e.g. patch notes released before the new season's real name is announced), otherwise falls back to the auto-synced `title`. Every display site (here, handlers/router.js's autocomplete, the manage-panel dropdown) should call this instead of reading `patch.title` directly, so the override can never be silently ignored somewhere.
+// Resolves a patch entry's actual displayed title -- `titleOverride` (2026-07-24, /manage "Add New Season"/"Past Seasons") wins when set (an admin-typed placeholder, e.g. patch notes released before the new season's real name is announced), otherwise falls back to the auto-synced `title`. Every display site (here, handlers/router.js's autocomplete, the manage-panel dropdown) should call this instead of reading `patch.title` directly, so the override can never be silently ignored somewhere. An emoji typed in front of a patch entry's own title is left out of the title (2026-10-19 09:30 EDT): a select option's label is plain text and would show its raw <a:name:id>. seasonEmoji() below picks it up instead.
 function displayTitle(patch) {
-    return cleanPatchTitle(patch.titleOverride || patch.title);
+    return cleanPatchTitle(splitSeasonEmoji(patch.titleOverride || patch.title).title);
 }
 
 // Buff/nerf/fix shorthand for the additional-info field (2026-07-30 22:24 EDT, per Harkirat's request; "f:" fix alias added 2026-08-08 00:22 EDT) -- typing a standalone "b:"/"n:"/"f:" token gets swapped for the buff/nerf/fix emoji. Read INSIDE this function (render time), not captured into a module-level string -- emojiMap's ids get rewritten in place by refreshEmojiIds() on the dev bot, and anything that reads emojis.x at require time freezes the pre-sync prod id (see rendering-and-ui.md's emoji-capture rule). Word-boundary guarded (start-of-line/whitespace before, nothing glued on after the colon) so this only fires on the alias itself, not on a URL or some other "b:"/"n:"/"f:" substring inside real prose.
@@ -102,11 +103,14 @@ function formatAdditionalInfo(text) {
     return parts.join('\n\n');
 }
 
-// A season's own emoji (2026-10-19 00:30 EDT, Harkirat), picked by the season number in its title; a title with no number, or a season with no emoji yet, gets none.
+// A season's own emoji (2026-10-19 00:30 EDT, Harkirat), picked by the season number in its title; a title with no number, or a season with no emoji yet, gets none. The emoji synced onto the entry from /manage's season title wins, then one typed in front of the entry's own title (2026-10-19 09:30 EDT); utils/seasonEmoji.js holds the rule.
 function seasonEmoji(patch) {
-    const m = /season\s*(\d+)/i.exec(displayTitle(patch));
-    return m ? emojis[`season${m[1]}`] || null : null;
+    const typed = splitSeasonEmoji(patch.titleOverride || patch.title).emoji;
+    return seasonEmojiFor(displayTitle(patch), patch.emoji || typed);
 }
+
+// The Leakers on Duty Discord, as their own watermark gives it (2026-10-19 09:36 EDT).
+const LEAKERS_ON_DUTY_URL = 'https://discord.gg/nicecat';
 
 // EVERY SEASON IS KEPT (2026-10-19 00:30 EDT, Harkirat, superseding "only the previous 5"): the dropdown lists the 12 newest, and Search Older Seasons (a pop-up, past 12) finds any other. A select holds 25 options, so 12 leaves room for the open season when it is older.
 const HISTORY_SHOWN = 12;
@@ -154,8 +158,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
         buildTitleBlock(cleanTitle, emojis.patchNotes, 'Balance Changes', 2)
     ];
     // The season's emoji sits in front of its name, outside the bold-italic lettering (which would mangle an emoji).
-    const titleEmoji = seasonEmoji(activePatch);
-    if (titleEmoji) components[0].content = components[0].content.replace('\n', `\n${titleEmoji} `);
+    withCaptionEmoji(components[0], seasonEmoji(activePatch));
 
     if (hasInfo) {
         components.push(
@@ -169,7 +172,8 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
     components.push(
         { type: 14, spacing: 2, divider: true },
         { type: 12, items: carouselItems }, // NATIVE MEDIA CAROUSEL INJECTION
-        { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>` },
+        // Credit where the content is shown (2026-10-19 09:39 EDT, Harkirat: "let's just do it for good faith"): Leakers on Duty publish under CC BY, which asks for attribution in the medium, and their watermark does not come along when the content is retyped. NOTICE §4A.4 carries the full credit.
+        { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>\n-# Source: [Leakers on Duty](${LEAKERS_ON_DUTY_URL})` },
         { type: 14, spacing: 2, divider: true },
         { type: 10, content: `-# Select from the list below to view **previous balance changes**` }
     );

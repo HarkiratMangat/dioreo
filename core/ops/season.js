@@ -11,6 +11,7 @@ const { resolveThumbnailsForDraws } = require('../../utils/bulkMerge');
 const { syncPatchEntryMetadata } = require('../../utils/patchNotesCache');
 const { cleanPatchTitle } = require('../../commands/patchnotes');
 const SeasonalData = require('../../models/SeasonalData');
+const { splitSeasonEmoji } = require('../../utils/seasonEmoji');
 
 const DOC = { docType: 'global' };
 
@@ -55,6 +56,14 @@ function applyFields(current, payload, prefix, line, label, skipped) {
     return out;
 }
 
+// THE SEASON'S EMOJI (2026-10-19 09:30 EDT, Harkirat: "can I just input the <emoji:id> infront of the season title?"). A custom emoji typed in front of the title is split off into its own field, so the title stays plain text everywhere it is read. Discord's modal pre-fills emoji + title, so a title submitted through it (`mainTitle`) with no emoji in front means the emoji was deleted, and it clears. The portal sends `currentSeasonTitle` and has no emoji box, so its edit keeps the stored one unless it types one or sends `currentSeasonEmoji` itself.
+function readSeasonTitle(payload, currentEmoji) {
+    const { emoji, title } = splitSeasonEmoji(payload.mainTitle || payload.currentSeasonTitle || '');
+    let next = emoji || (payload.mainTitle ? '' : currentEmoji || '');
+    if (payload.currentSeasonEmoji !== undefined) next = String(payload.currentSeasonEmoji || '').trim();
+    return { title, emoji: next };
+}
+
 function mapParsedEvents(parsed) {
     return parsed.map(e => ({ title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category }));
 }
@@ -64,32 +73,36 @@ registerEntity('season', {
         action: 'season:titlesdeadlines', tier: 1,
         validate: (op) => ({ ok: true, errors: [], normalized: op }),
         // ⚠️ THE PREVIEW HAS TO READ THE SAME KEYS APPLY DOES. It read only mainTitle, so it agreed with the broken no-op and the Review screen showed "Season title: unchanged" — the one surface whose entire job is saying what a commit will do, confirming that it would do nothing.
-        preview: (op, live) => ({ before: { title: live.currentSeasonTitle }, after: { title: (op.payload.mainTitle || op.payload.currentSeasonTitle || '').trim() || live.currentSeasonTitle } }),
+        preview: (op, live) => ({ before: { title: live.currentSeasonTitle }, after: { title: readSeasonTitle(op.payload, live.currentSeasonEmoji).title || live.currentSeasonTitle } }),
         apply: async (op, { session }) => {
             const before = await SeasonalData.findOne(DOC).lean().session(session);
             const prior = {
-                currentSeasonTitle: before.currentSeasonTitle, bpTitle: before.bpTitle, rankTitle: before.rankTitle, dmzTitle: before.dmzTitle,
+                currentSeasonTitle: before.currentSeasonTitle, currentSeasonEmoji: before.currentSeasonEmoji || '', bpTitle: before.bpTitle, rankTitle: before.rankTitle, dmzTitle: before.dmzTitle,
                 bpEnd: before.bpEnd, rankEnd: before.rankEnd, dmzEnd: before.dmzEnd,
                 bpEndTBD: before.bpEndTBD, rankEndTBD: before.rankEndTBD, dmzEndTBD: before.dmzEndTBD
             };
             // `currentSeasonTitle` beside `mainTitle` for the same reason as the lines: the portal's field is named after the schema, Discord's modal field is named after the sentence it reads as.
-            const currentSeasonTitle = (op.payload.mainTitle || op.payload.currentSeasonTitle || '').trim() || before.currentSeasonTitle;
+            const typed = readSeasonTitle(op.payload, before.currentSeasonEmoji);
+            const currentSeasonTitle = typed.title || before.currentSeasonTitle;
+            const currentSeasonEmoji = typed.emoji;
             const skipped = [];
             const bp = applyFields({ title: before.bpTitle, end: before.bpEnd, endTBD: before.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
             const rank = applyFields({ title: before.rankTitle, end: before.rankEnd, endTBD: before.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
             const dmz = applyFields({ title: before.dmzTitle, end: before.dmzEnd, endTBD: before.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
             const $set = {
-                currentSeasonTitle, bpTitle: bp.title, rankTitle: rank.title, dmzTitle: dmz.title,
+                currentSeasonTitle, currentSeasonEmoji, bpTitle: bp.title, rankTitle: rank.title, dmzTitle: dmz.title,
                 bpEnd: bp.end, rankEnd: rank.end, dmzEnd: dmz.end, bpEndTBD: bp.endTBD, rankEndTBD: rank.endTBD, dmzEndTBD: dmz.endTBD
             };
             await SeasonalData.updateOne(DOC, { $set }, { session });
             let patchPrior = null;
-            if (before.patchNotes.length > 0 && currentSeasonTitle !== before.currentSeasonTitle) {
+            const titleChanged = currentSeasonTitle !== before.currentSeasonTitle;
+            // The emoji rides the same sync as the title, and an emoji-only edit syncs too: the current entry is what /patch notes shows, so it shows this season's emoji.
+            if (before.patchNotes.length > 0 && (titleChanged || currentSeasonEmoji !== (before.currentSeasonEmoji || ''))) {
                 const last = before.patchNotes[before.patchNotes.length - 1];
-                patchPrior = { elementId: String(last._id), title: last.title };
-                await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': currentSeasonTitle } }, { session });
+                patchPrior = { elementId: String(last._id), title: last.title, emoji: last.emoji || '' };
+                await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': currentSeasonTitle, 'patchNotes.$.emoji': currentSeasonEmoji } }, { session });
                 // The pre-core handler always re-synced the latest patch entry's cached-image Cloudinary metadata after a title rename -- missed on a first pass of this op (DB field updates fine; only the Cloudinary-side metadata would have gone stale). Best-effort, matching the original's own no-throw contract.
-                await syncPatchEntryMetadata({ ...last, title: currentSeasonTitle }, cleanPatchTitle(currentSeasonTitle));
+                if (titleChanged) await syncPatchEntryMetadata({ ...last, title: currentSeasonTitle }, cleanPatchTitle(currentSeasonTitle));
             }
             return {
                 ok: true,
@@ -103,16 +116,17 @@ registerEntity('season', {
 
     'season.startNew': {
         action: 'season:wipe', tier: 3,
-        validate: (op) => (op.payload?.newTitle || '').trim() ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['A new season needs a title.'] },
+        // An emoji typed in front of the new season's title is split off the same way as an edit's; a new season with none typed starts with none, never the old season's.
+        validate: (op) => splitSeasonEmoji(op.payload?.newTitle).title ? { ok: true, errors: [], normalized: op } : { ok: false, errors: ['A new season needs a title.'] },
         preview: (op, live) => ({
             before: { title: live.currentSeasonTitle, draws: live.newDraws.length + live.returningDraws.length, events: live.calendar.length },
-            after: { title: op.payload.newTitle, draws: 0, events: 0 }
+            after: { title: splitSeasonEmoji(op.payload.newTitle).title, draws: 0, events: 0 }
         }),
         apply: async (op, { session }) => {
             const before = await SeasonalData.findOne(DOC).lean().session(session);
-            const prior = { currentSeasonTitle: before.currentSeasonTitle, newDraws: before.newDraws, returningDraws: before.returningDraws, calendar: before.calendar };
-            const newTitle = op.payload.newTitle.trim();
-            await SeasonalData.updateOne(DOC, { $set: { currentSeasonTitle: newTitle, newDraws: [], returningDraws: [], calendar: [] } }, { session });
+            const prior = { currentSeasonTitle: before.currentSeasonTitle, currentSeasonEmoji: before.currentSeasonEmoji || '', newDraws: before.newDraws, returningDraws: before.returningDraws, calendar: before.calendar };
+            const { title: newTitle, emoji } = splitSeasonEmoji(op.payload.newTitle);
+            await SeasonalData.updateOne(DOC, { $set: { currentSeasonTitle: newTitle, currentSeasonEmoji: emoji, newDraws: [], returningDraws: [], calendar: [] } }, { session });
             return {
                 ok: true,
                 change: { action: 'wipe', model: 'SeasonalData', target: newTitle, summary: `Started new season "${newTitle}" (wiped Draws + Calendar)` },
@@ -138,14 +152,15 @@ registerEntity('season', {
             const draft = before.draft || {};
             if (!draft.active) return { ok: false, reason: 'missing' };
             const prior = {
-                currentSeasonTitle: before.currentSeasonTitle, bpTitle: before.bpTitle, rankTitle: before.rankTitle, dmzTitle: before.dmzTitle,
+                currentSeasonTitle: before.currentSeasonTitle, currentSeasonEmoji: before.currentSeasonEmoji || '', bpTitle: before.bpTitle, rankTitle: before.rankTitle, dmzTitle: before.dmzTitle,
                 bpEnd: before.bpEnd, rankEnd: before.rankEnd, dmzEnd: before.dmzEnd,
                 bpEndTBD: before.bpEndTBD, rankEndTBD: before.rankEndTBD, dmzEndTBD: before.dmzEndTBD,
                 newDraws: before.newDraws, returningDraws: before.returningDraws, calendar: before.calendar,
                 drawsBannerUrl: before.drawsBannerUrl, eventsBannerUrl: before.eventsBannerUrl, playlistsBannerUrl: before.playlistsBannerUrl
             };
             const $set = {};
-            if (draft.currentSeasonTitle) $set.currentSeasonTitle = draft.currentSeasonTitle;
+            // The draft's emoji goes live WITH its title, blank included: a new season never keeps the old one's emoji.
+            if (draft.currentSeasonTitle) { $set.currentSeasonTitle = draft.currentSeasonTitle; $set.currentSeasonEmoji = draft.currentSeasonEmoji || ''; }
             if (draft.bpTitle) $set.bpTitle = draft.bpTitle;
             if (draft.rankTitle) $set.rankTitle = draft.rankTitle;
             if (draft.dmzTitle) $set.dmzTitle = draft.dmzTitle;
@@ -167,8 +182,8 @@ registerEntity('season', {
             let patchPrior = null;
             if (draft.currentSeasonTitle && before.patchNotes.length > 0) {
                 const last = before.patchNotes[before.patchNotes.length - 1];
-                patchPrior = { elementId: String(last._id), title: last.title };
-                await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': newTitle } }, { session });
+                patchPrior = { elementId: String(last._id), title: last.title, emoji: last.emoji || '' };
+                await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': last._id }, { $set: { 'patchNotes.$.title': newTitle, 'patchNotes.$.emoji': $set.currentSeasonEmoji } }, { session });
             }
             return {
                 ok: true,
@@ -194,8 +209,10 @@ registerEntity('season', {
             if (__patchTitleRestore) {
                 const last = before.patchNotes.find(p => String(p._id) === __patchTitleRestore.elementId);
                 if (last) {
-                    patchPrior = { elementId: __patchTitleRestore.elementId, title: last.title };
-                    await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': __patchTitleRestore.elementId }, { $set: { 'patchNotes.$.title': __patchTitleRestore.title } }, { session });
+                    // `emoji` only when the record carries one: a restore recorded before the season emoji existed (2026-10-19 09:30 EDT) restores the title alone, as it always did.
+                    const hasEmoji = __patchTitleRestore.emoji !== undefined;
+                    patchPrior = { elementId: __patchTitleRestore.elementId, title: last.title, ...(hasEmoji ? { emoji: last.emoji || '' } : {}) };
+                    await SeasonalData.updateOne({ ...DOC, 'patchNotes._id': __patchTitleRestore.elementId }, { $set: { 'patchNotes.$.title': __patchTitleRestore.title, ...(hasEmoji ? { 'patchNotes.$.emoji': __patchTitleRestore.emoji } : {}) } }, { session });
                 }
             }
             return {
@@ -251,14 +268,15 @@ registerEntity('season', {
             const before = await SeasonalData.findOne(DOC).select('draft').lean().session(session);
             const draft = before.draft || {};
             const prior = { ...draft };
-            const mainTitle = (op.payload.mainTitle || op.payload.currentSeasonTitle || '').trim();
+            const typed = readSeasonTitle(op.payload, draft.currentSeasonEmoji);
+            const mainTitle = typed.title;
             const skipped = [];
             const bp = applyFields({ title: draft.bpTitle || 'Battle Pass', end: draft.bpEnd, endTBD: draft.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
             const rank = applyFields({ title: draft.rankTitle || 'Ranked Series', end: draft.rankEnd, endTBD: draft.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
             const dmz = applyFields({ title: draft.dmzTitle || 'DMZ Season', end: draft.dmzEnd, endTBD: draft.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
             const $set = {
                 'draft.active': true,
-                ...(mainTitle ? { 'draft.currentSeasonTitle': mainTitle } : {}),
+                ...(mainTitle ? { 'draft.currentSeasonTitle': mainTitle, 'draft.currentSeasonEmoji': typed.emoji } : {}),
                 'draft.bpTitle': bp.title, 'draft.rankTitle': rank.title, 'draft.dmzTitle': dmz.title,
                 'draft.bpEnd': bp.end, 'draft.rankEnd': rank.end, 'draft.dmzEnd': dmz.end,
                 'draft.bpEndTBD': bp.endTBD, 'draft.rankEndTBD': rank.endTBD, 'draft.dmzEndTBD': dmz.endTBD
@@ -342,5 +360,5 @@ registerEntity('season', {
     }
 });
 
-// ⚠️ EXPORTED FOR ONE REASON: apply() needs a Mongo session, so every existing test here reaches only validate() and invert() — which is precisely why a payload the op could not read survived. This is the seam where the portal's field names meet the op's reader, and it is the only part of that path testable without a database.
-module.exports = { applyFields };
+// ⚠️ EXPORTED FOR ONE REASON: apply() needs a Mongo session, so every existing test here reaches only validate() and invert() — which is precisely why a payload the op could not read survived. This is the seam where the portal's field names meet the op's reader, and it is the only part of that path testable without a database. readSeasonTitle for the same reason (2026-10-19 09:30 EDT): it decides whether a submit keeps, sets or clears the season emoji, and apply() is out of reach without a database.
+module.exports = { applyFields, readSeasonTitle };

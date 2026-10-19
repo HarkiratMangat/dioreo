@@ -397,7 +397,7 @@ t('the 2X offers sit under the cost breakdown in his wording, each option giving
     const top = panel[0].components;
     const ent = top.findIndex(c => c.type === 1 && c.components[0].custom_id && verbOf(c.components[0]) === 'ent');
     assert.ok(ent > 0, 'the dropdown is there');
-    assert.ok(top[ent - 1].type === 10 && top[ent - 1].content === '-# 🎉 **Double CP** event is live!\n-# Select which 2X CP offers are still available for you to purchase.', top[ent - 1].content);
+    assert.ok(top[ent - 1].type === 10 && top[ent - 1].content === '-# 🎉 **Double CP event is live!**\n-# Select which 2X CP offers are still available for you to purchase.', top[ent - 1].content);
     assert.deepStrictEqual([top[ent - 2].type, top[ent - 2].divider, top[ent - 2].spacing], [14, false, 1], 'a small space with no line above it');
     assert.ok(top[ent - 3].type === 9 && /Full Breakdown|Simple Breakdown/.test(top[ent - 3].accessory.label), 'right under the cost breakdown');
     assert.ok(top.slice(ent + 1).some(c => c.type === 1 && c.components.some(b => b.label === 'Save Result')), 'above the action row');
@@ -559,7 +559,7 @@ t('a legacy calc~ id from the OLD single-draw codec decodes to a SAFE state rath
 // ==========================================
 
 t('the bottom nav row is a SIBLING of the Container, never one of its children, and Draw Info is gone', () => {
-    for (const [panel, labels] of [[render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })), ['Draw Prices', 'Help']], [form([{ drawKey: 'mythicWeapon', pullsDone: 3 }]), ['Draw Prices', 'View Saved', 'Help']]]) {
+    for (const [panel, labels] of [[render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })), ['Draws', 'Draw Prices', 'Help']], [form([{ drawKey: 'mythicWeapon', pullsDone: 3 }]), ['View Saved', 'Draws', 'Draw Prices', 'Help']]]) {
         // The result keeps New Calculation and View Saved in its own last row (2026-10-14 17:58 EDT); the editor has no such row, so its nav carries them (his one editor (2026-10-18 15:15 EDT)).
         const nav = panel.filter(x => x && x.type === 1);
         assert.strictEqual(nav.length, 1, 'exactly one top-level action row (the nav)');
@@ -710,7 +710,7 @@ t('the Saved view opens a calculation, deletes several, or deletes all, and its 
     const armed = buttonLabelled(savedView(savedList(3), { verb: 'delallarm' }), 'Delete All (3) — click again');
     assert.ok(armed && armed.style === 4 && verbOf(armed) === 'delall');
     const nav = panel.filter(x => x && x.type === 1)[0].components.map(b => b.label);
-    assert.deepStrictEqual(nav, ['Draw Prices', 'Help']);
+    assert.deepStrictEqual(nav, ['Draws', 'Draw Prices', 'Help']);
     const footer = panel[0].components[panel[0].components.length - 1];
     assert.deepStrictEqual(footer.components.map(b => b.label), ['Back to Calculation', 'New Calculation']);
     assert.ok(footer.components[0].emoji && verbOf(footer.components[0]) === 'back', 'the pagination left arrow, and it goes back');
@@ -852,8 +852,8 @@ t('the Upgrade button sits beside its Mythic line on the editor, and nowhere els
     assert.strictEqual(buttons(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }))).some(b => /^Upgrade/.test(b.label || '')), false, 'nor on the result');
     const r = rows(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] })));
     const last = r.find(x => x.components.some(b => b.label === 'Save Result'));
-    assert.deepStrictEqual(last.components.map(b => b.label), ['New Calculation', 'View Saved', 'Export', 'Save Result'], 'the result keeps its row');
-    assert.ok(last.components[3].emoji && verbOf(last.components[3]) === 'savepick' && verbOf(last.components[2]) === 'export');
+    assert.deepStrictEqual(last.components.map(b => b.label), ['New Calculation', 'Export', 'View Saved', 'Save Result'], 'the result keeps its row, in his 2026-10-19 order');
+    assert.ok(last.components[3].emoji && verbOf(last.components[3]) === 'savepick' && verbOf(last.components[1]) === 'export');
     const f = form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]);
     const items = container(f).components;
     const calcRow = items.findIndex(c => c.type === 1 && c.components.some(b => b.label === 'Calculate'));
@@ -929,6 +929,16 @@ t('Draw Prices opens its own message instead of replacing the calculator', () =>
     const nav = buttonLabelled(render(makeBasket()), 'Draw Prices');
     assert.notStrictEqual(nav.custom_id, 'nav_prices', 'nav_prices re-renders THIS message as /draw prices');
     assert.strictEqual(dc.decodeState(nav.custom_id).verb, 'prices');
+});
+
+t('Draws sits in front of Draw Prices in every nav row and opens its own message (2026-10-19 09:24 EDT)', () => {
+    const navOf = panel => panel.filter(x => x && x.type === 1).pop().components.map(b => b.label);
+    for (const panel of [render(makeBasket()), form([{ drawKey: 'mythicWeapon', pullsDone: 3 }]), dc.buildCalculatorPanel(state({ page: 3 }), null, ACCENT, { savedBaskets: [] })]) {
+        const labels = navOf(panel);
+        assert.strictEqual(labels.indexOf('Draws') + 1, labels.indexOf('Draw Prices'), labels.join(' · '));
+    }
+    const draws = buttonLabelled(render(makeBasket()), 'Draws');
+    assert.strictEqual(dc.decodeState(draws.custom_id).verb, 'seasondraws', 'not `draws`, which is the setup form\'s picker');
 });
 
 t('the slash shortcut opens a calculated line, clamps pulls to the draw, and explains what it ignored', () => {
@@ -1467,7 +1477,7 @@ t('his Mock 2 (2026-10-18 13:38 EDT): Add Draws and Remove open pop-ups, his two
     const done = dc.buildCalculatorPanel(state({ page: 5, fromResult: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
     messageCount(done); // every custom_id unique: a duplicated Back to Result made Discord refuse this screen (2026-10-18 16:05 EDT)
     assert.strictEqual(buttons(done).filter(b => b.label === 'Back to Result').length, 1);
-    assert.deepStrictEqual(done.filter(x => x.type === 1)[0].components.map(b => b.label), ['Back to Result', 'Draw Prices', 'Help'], 'his nav order from a result, no View Saved (2026-10-18 15:48 EDT); New Calculation is in the footer since 2026-10-18 21:18 EDT');
+    assert.deepStrictEqual(done.filter(x => x.type === 1)[0].components.map(b => b.label), ['Back to Result', 'Draws', 'Draw Prices', 'Help'], 'his nav order from a result, no View Saved (2026-10-18 15:48 EDT); New Calculation is in the footer since 2026-10-18 21:18 EDT');
     const dirty = dc.buildCalculatorPanel(state({ page: 5, fromResult: true, dirty: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
     assert.ok(buttonLabelled(dirty, 'Recalculate') && !buttonLabelled(dirty, 'Calculate'), 'a change after Edit Selections offers Recalculate');
     assert.ok(buttonLabelled(draft, 'Calculate'), 'a fresh draft keeps Calculate');
