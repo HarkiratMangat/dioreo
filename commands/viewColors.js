@@ -66,7 +66,8 @@ async function renderPanel(interaction, target, member, page, subpage = 0) {
     const { components, files } = await buildColorPalettePanel({
         source: page, subpage, data, targetUserId: target.id, variant,
         avatarThumbnailUrl: data.avatarThumbnailUrl || target.displayAvatarURL({ extension: 'png', size: 256 }),
-        readOnly: true, makePageId: key => ids(key, 0), makeSubpageId: (key, sub) => ids(key, sub),
+        // A page button ends in `p`, a pager button in its number: the open page's button and the pager's "page 1" arrow both meant `{page}|0` once, and Discord refuses a message with two identical custom_ids (2026-10-19 12:20 EDT, his first right-click on himself). The handler reads `p` as page 1.
+        readOnly: true, makePageId: key => ids(key, 'p'), makeSubpageId: (key, sub) => ids(key, sub),
         accentColor: firstImpression(data), extraHint: missingHint(getAvailableSources(data)),
     });
     const name = (member?.nick || target.globalName || target.username || 'this user').replace(/[*_`~|]/g, '');

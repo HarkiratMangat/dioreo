@@ -118,6 +118,22 @@ t('read-only (the View Colors right-click): its own ids, no Refresh, switch or h
     assert.ok(countComponents(components) <= LIMIT);
 });
 
+t('no panel ever carries two identical custom_ids, on any page or sub-page, in either mode', async () => {
+    // A duplicate makes Discord refuse the whole message (2026-10-19 12:20 EDT: the read-only open-page button and the pager's page-1 arrow were the same id). Walked across both modes and both sub-pages.
+    const viewColors = require('../commands/viewColors');
+    const ids = viewColors.pageId('1', 'g');
+    for (const readOnly of [false, true]) for (const subpage of [0, 1]) {
+        const { components } = await buildColorPalettePanel({
+            source: 'avatar', subpage,
+            data: { avatar: palette, avatarFullUrl: CDN, banner: palette, bannerUrl: CDN, bannerFullUrl: CDN, hasServerProfile: true, inGuild: true },
+            targetUserId: '1', avatarThumbnailUrl: CDN, variant: 'global',
+            ...(readOnly ? { readOnly, makePageId: k => ids(k, 'p'), makeSubpageId: (k, n) => ids(k, n) } : {})
+        });
+        const all = JSON.stringify(components).match(/"custom_id":"[^"]+"/g) || [];
+        assert.strictEqual(new Set(all).size, all.length, `duplicate custom_id (readOnly=${readOnly}, subpage=${subpage}): ${all.join(' ')}`);
+    }
+});
+
 t('Refresh is the row\'s only PRIMARY, and both interactive buttons carry icons', async () => {
     // The view switch is lateral navigation and stays grey on purpose (Harkirat was 50/50 on it, 2026-08-12 22:11 EDT); two blurple buttons would leave neither reading as the main thing. The download button is a style-5 Link, which Discord renders grey and which carries no emoji.
     const { components } = await render('avatar', { avatar: palette, avatarFullUrl: CDN });
