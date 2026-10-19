@@ -10,7 +10,7 @@ function parseEmoji(mention) {
     return { animated: !!match[1], name: match[2], id: match[3] };
 }
 
-// Every mention string below is written with the PRODUCTION app's emoji ids, which stay the literal source of truth in git. They are also the fallback if the sync below can't run.
+// Every mention string below is written with the PRODUCTION app's emoji ids, which stay the literal source of truth in git. The NAMES must match the apps' emoji names, because refreshEmojiIds() re-points by name: twelve /manage emojis were renamed with a DB_ prefix by Harkirat (2026-10-18 11:59 EDT, names only, same images), which is why they read DB_* here. They are also the fallback if the sync below can't run.
 const emojis = {
     // /settings' "Made with love by @dior" footer -- replaced dioreo with diorHeart (2026-07-12, same day, Harkirat's follow-up correction). Animated this time (a: prefix).
     diorHeart: '<a:diorHeart:1525941004929339594>',
@@ -33,25 +33,30 @@ const emojis = {
     region20Cp: '<a:20CP:1560477394081423501>',
     region30Cp: '<a:30CP:1560477392328196096>',
     // Added for the command heading redesign (calendar/draws/patchnotes/settings) /manage panel redesign (2026-07-12, per the 4 mockup JSONs in Downloads) -- these are the panel's own header/action icons, distinct from the public-command-header set above.
-    database: '<a:Database:1524967327437815899>',
-    mngAdd: '<a:Add:1525262938288558200>',
-    mngEdit: '<a:Edit:1525262950313623772>',
-    mngDelete: '<a:Delete:1525262947532931163>',
-    mngBulkAdd: '<a:BulkAdd:1525328428201414761>',
-    mngBulkReplace: '<a:BulkReplace:1525262944815022170>',
-    mngBulkDelete: '<a:BulkDelete:1525262942906482880>',
-    mngExport: '<a:Export:1525262952540934264>',
-    mngPurge: '<a:Purge:1525327754013442129>',
-    mngInfo: '<a:Info:1525337539085340722>',
+    database: '<a:DB_Database:1524967327437815899>',
+    mngAdd: '<a:DB_Add:1525262938288558200>',
+    mngEdit: '<a:DB_Edit:1525262950313623772>',
+    mngDelete: '<a:DB_Delete:1525262947532931163>',
+    mngBulkAdd: '<a:DB_BulkAdd:1525328428201414761>',
+    mngBulkReplace: '<a:DB_BulkReplace:1525262944815022170>',
+    mngBulkDelete: '<a:DB_BulkDelete:1525262942906482880>',
+    mngExport: '<a:DB_Export:1525262952540934264>',
+    mngPurge: '<a:DB_Purge:1525327754013442129>',
+    mngInfo: '<a:DB_Info:1525337539085340722>',
     // /manage's Announcement page + each announcement's own heading (2026-08-22, Harkirat-provided). Replaces the generic `mngInfo` this page borrowed when it was built -- the empty-state notice keeps mngInfo, since that one really is an info notice rather than an announcement.
     announcements: '<a:Announcements:1540916435914723490>',
     // /bot access's panel heading AND /help's "Bot Admin" category icon (2026-08-22, Harkirat-provided) -- one icon for the admin surface in both places, replacing a literal 🔑 in one and the borrowed `database` icon in the other.
     botAccess: '<a:BotAccess:1540915865506160660>',
-    mngUrls: '<a:URLs:1525337321568997449>',
+    mngUrls: '<a:DB_URLs:1525337321568997449>',
     calendar: '<a:Calendar:1523762208050385107>',
     newDraws: '<a:NewDraws:1523837409211453613>',
     returningDraws: '<a:ReturningDraws:1523838126596817016>',
     patchNotes: '<a:PatchNotes:1523762216954888286>',
+    // One per season (2026-10-19 00:30 EDT, Harkirat), beside the season's title on /patch notes and in its history dropdown (commands/patchnotes.js seasonEmoji, keyed by the season number). Seasons 8 and 9 have no patch notes yet; theirs are here for when they do.
+    season6: '<a:S6TakeYourHeart:1561594930542018611>',
+    season7: '<a:S7Terminated:1561595008807735447>',
+    season8: '<a:S8AgainstAllFate:1561595098767163496>',
+    season9: '<a:S9VampiresVsWerewolves:1561595142425550898>',
     settings: '<a:Settings:1523762203537309696>',
     timestamp: '<a:Timestamps:1523762211103969420>',
     drawPrices: '<a:DrawPrices:1525864071776305163>',
@@ -84,11 +89,11 @@ const emojis = {
     eyedropper: '<a:Eyedropper:1526293991166054541>',
     // "Show Everyone" button (utils/shareButton.js, formerly the plain 🌐 globe, 2026-07-14) -- Harkirat-provided icon, lives in the button's `emoji` field via parseEmoji(), not baked into `label` (see Components V2 point 4 above).
     share: '<a:Share:1560682903795662948>',   // re-uploaded 2026-10-16 14:31 EDT   // Harkirat's new Share icon, 2026-10-16 01:18 EDT (was the orange paper plane, 1526666464625430558)
-    // Patch notes "additional info" aliasing (2026-07-30 22:24 EDT) -- typing a standalone `b:`/`n:` token in the additional-info text gets swapped for these at render time (patchnotes.js's applyInfoAliases()). Harkirat-uploaded, not animated.
-    buff: '<:Buff:1532771212172984401>',
-    nerf: '<:Nerf:1532771213271892089>',
+    // Patch notes "additional info" aliasing (2026-07-30 22:24 EDT) -- typing a standalone `b:`/`n:` token in the additional-info text gets swapped for these at render time (patchnotes.js's applyInfoAliases()). Harkirat-uploaded, not animated. Patch notes' buff / nerf / fix marks swapped to his animated PN_ set (2026-10-18 13:39 EDT, Harkirat).
+    buff: '<a:PN_Buff:1561432978545184928>',
+    nerf: '<a:PN_Nerf:1561432951080615996>',
     // "f:" alias added 2026-08-08 00:22 EDT alongside buff/nerf, same word-boundary-guarded swap in patchnotes.js's applyInfoAliases()/formatAdditionalInfo().
-    fix: '<:Fix:1535479788007985172>',
+    fix: '<a:PN_Fix:1561432903919996968>',
     // Section heading icons for the 3-section calendar redesign's Events/Playlists pages (2026-07-31 14:00 EDT) -- Draws reuses the existing newDraws/returningDraws emojis above.
     events: '<a:Events:1532830530108653659>',
     // Re-uploaded 2026-08-08 00:22 EDT (Harkirat deleted the old id from the portal) -- new id only, same key.
@@ -96,9 +101,16 @@ const emojis = {
     // /admin's panel headings (added 2026-08-10 17:07 EDT, Harkirat provided it). Prod id as usual, verified present in BOTH apps by a live read of /applications/@me/emojis before writing it -- dev's copy is 1536468996688453752 and refreshEmojiIds() re-points to it by name at boot.
     serverSettings: '<a:ServerSettings:1536468904996774008>',
     // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
-    guide: '<a:Guide:1532894836301238477>',
+    guide: '<a:DB_Guide:1532894836301238477>',
+    // The calculator's "covered" and "finished" lines (2026-10-18 13:05 EDT, Harkirat: "swap the icon used beside the 'your balance covers this' line").
+    checkmark: '<a:Checkmark:1561412941004406955>',
+    // The calculator's Add Draws and Remove buttons (2026-10-18 13:36 EDT, Harkirat supplied both).
+    plus: '<a:Plus:1560408706233933845>',
+    deleteBin: '<a:DeleteBin:1560788313508683807>',
     // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmiths category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmiths now covers /all + every per-category command too, not just DMZ).
     dioreoCombo: '<:DioreoCombo:1534640183230730470>',
+    // /invite's Share Link line (2026-10-18 20:15 EDT, Harkirat supplied the prod id).
+    dioreoKawaii: '<:DioreoKawaii3B:1534640190491070599>',
     loadouts: '<a:Loadouts:1535779248982335618>',
     // /bot analytics' change-detail diff (added 2026-08-23 12:31 EDT, Harkirat supplied both). A git-style minus/add pair, one per value line, so a before/after reads as a diff rather than as two values with an arrow between them. 🔴 They are GLYPHS carrying meaning, which is deliberate: iOS strips ANSI colour from a code fence silently (see the successor spec's rule A), so colour can never be the thing that tells "before" from "after" -- a glyph survives. ✅ VERIFIED PROD IDS, not dev's -- the exact trap the View Colors note below records, checked rather than assumed. Method: added them, let the watching dev bot re-boot, and read refreshEmojiIds()' own counters. They went 57 -> 59 re-pointed with 0 unmatched, so both emoji exist in the dev app AND their dev ids DIFFER from the ones written here (a matching id would not have counted as a re-point). Since these came from a dev-bot session that was the live risk, and it is now ruled out by the sync's own arithmetic rather than by trust.
     diffMinus: '<:DiffMinus:1541120801892208741>',

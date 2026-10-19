@@ -29,7 +29,19 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.88.0 — 2026-10-18 00:11 EDT (#197) — the draw calculator rebuilt from his click-tests: saved calculations, Mythic upgrades by tier, and a smarter bundle pick
+## Pre-Release v3.89.0 — 2026-10-19 00:54 EDT (#198) — Series Armory and the Advanced draws join the calculator, and /patch notes keeps every season
+**`/draw calculator`, `/draw prices`, `/manage` Draws, `/patch notes`, `/help` and `/invite`.** Built on the dev bot from Harkirat's click-tests on `feat/series-armory`; what is true now is `.claude/rules/draw-prices.md` § CURRENT STATE.
+
+- **Series Armory.** `/draw prices` gains the three armories (Legendary Weapon, Legendary Character, Mythic Weapon), priced per item and per full armory, and the calculator prices them per item with the spins already in; the Mythic Weapon armory's weapons upgrade from the same Mythic Cards as the Mythic Weapon draw.
+- **This season's draws** come first in the calculator, each priced by a Draw Type set in `/manage` (or `type:` in a bulk paste).
+- **The Advanced Double Legendary draws, priced per set.** A line records the sets spun and which are full (from an Advanced pull or finished later), and seven goals run from one random Epic to all 20 items, each priced set by set at its cheapest.
+- **The calculator, polished.** Set Draw Progress with Add Draws and Remove Draws pop-ups, one Set Region & Balance section, a currency per calculation, Resume a Saved Calculation on the landing, the 2X offers under the Cost Breakdown, and a one-press New Calculation with **Restore Calculation** to undo it until the next Calculate.
+- **`/patch notes` keeps every season.** The dropdown lists the 12 newest with **Search Older Seasons** for the rest, and each season's title carries its emoji.
+- **`/help` and `/invite`:** the button reads Invite Dioreo, and Share Link posts publicly with the invite as a link.
+- **Data:** `DrawBasket` gains `currency`, `goal`, `bothSets`, `laterSets` and `previous`, and draws gain `priceType`; PRIVACY §2.1d and Appendix A cover them.
+
+
+## Pre-Release v3.88.0 — 2026-10-18 00:11 EDT (#197 · `bbd64dba`) — the draw calculator rebuilt from his click-tests: saved calculations, Mythic upgrades by tier, and a smarter bundle pick
 **`/draw calculator`, `/draw prices` and `/help`.** Built on the dev bot from Harkirat's click-tests and his screen-by-screen intake, 56 batches logged verbatim in `docs/claude/2026-10-13-draw-calculator-intake.md`; what is true now is `.claude/rules/draw-prices.md` § CURRENT STATE.
 
 - **The calculator is one live panel.** A landing to start a calculation, then a result with **Your Draw Selections** and **Cost Breakdown** + **Suggested Purchase**, toggled between **Simple Breakdown** and **Full Breakdown**. Calculations save (named ones until deleted, unnamed ones for 30 days), reopen on the next run, and live in **View Saved**. `page:` opens on Start a Calculation, View Saved or Help; the old `draw`/`pulls`/`balance`/`region` options are unwired and kept.

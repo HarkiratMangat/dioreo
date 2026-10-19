@@ -92,6 +92,7 @@ export const TESTS = [
     {"cmd": "node scripts/settingsPickers.test.js", "lane": "unit"},
     {"cmd": "node scripts/helpBodySnapshot.test.js", "lane": "unit"},
     {"cmd": "node scripts/drawCost.test.js", "lane": "unit"},
+    {"cmd": "node scripts/patchNotesHistory.test.js", "lane": "unit"},
     {"cmd": "node scripts/drawCalcBudget.test.js", "lane": "unit"},
     {"cmd": "node scripts/drawBasketStore.test.js", "lane": "unit"},
     {"cmd": "node scripts/catalogGrouping.test.js", "lane": "unit"},

@@ -13,18 +13,20 @@ const UserPreference = require('../models/UserPreference');
 const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
     findLiveDoubleCPEntry, buildExportText, readBalanceFields, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
-    buildUpgradeModal, readUpgradeModal
+    buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName,
+    buildAddDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency, buildGoalModal, readGoal
 } = require('../commands/drawCalculator');
-const { pullCount } = require('../utils/drawCost');
+const { pullCount, upgradeKeyOf, isArmoryKey, armorySize, isAdvancedKey, advancedBoth, advancedLater } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
-const { CP_PACKAGES } = require('../utils/cpPackages');
+const { CP_PACKAGES, CURRENCIES } = require('../utils/cpPackages');
 const basketStore = require('../utils/drawBasketStore');
 const { resolvePanelActor } = require('../utils/interactionContext');
 
 const OWNED_PREFIXES = ['calc~'];
 
 const { DRAW_META } = require('../commands/drawprices');
-const DRAW_KEY_ORDER = Object.keys(DRAW_META);
+// The draws a calculation can hold, in the untick confirm's mask bit order (the three Series Armories after the nine draws since 2026-10-18 12:16 EDT).
+const DRAW_KEY_ORDER = CALC_KEYS;
 // The calculator's one name per draw (commands/drawCalculator.js SHORT_NAME), never DRAW_META's full "... Draw" name.
 function DRAW_META_NAMES(key) { return shortName(key); }
 
@@ -72,7 +74,10 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
     }
     const panel = buildCalculatorPanel(state, basket, accentColor, {
         liveDoubleCPEntry,
-        currency: prefs?.cpCurrency || 'USD',
+        // This season's draws for the form's first dropdown, read on every render so a draw added in /manage shows on the next click.
+        seasonDraws: await listSeasonDraws(),
+        // The calculation's own currency, else the /settings default (2026-10-18 20:00 EDT).
+        currency: calcCurrency(basket, prefs?.cpCurrency || 'USD'),
         timezone: prefs?.timezone || null,
         client: interaction.client,
         savedBaskets,
@@ -85,13 +90,22 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
     return sendV2Payload(interaction, panel, { skipExpiry: true });
 }
 
-// 🔴 COPY-ON-WRITE FOR SAVED CALCULATIONS (2026-10-14 17:28 EDT, Harkirat: "a saved calc should remain in it's saved state. so that means a user needs to press save and select that previous saved result to override it. otherwise selecting that saved calc again should bring you to it's result"). Every change to a calculation goes through here. On a SAVED one, the first real change opens an unnamed working copy carrying `sourceId`, applies the change there, and points this message at the copy (it mutates `state.basketId`, so every render after it follows); the saved one is untouched until the Save step saves over it. A change that changes nothing (Calculate on an already-calculated one) writes nothing and forks nothing.
+// 🔴 COPY-ON-WRITE FOR SAVED CALCULATIONS (2026-10-14 17:28 EDT, Harkirat: "a saved calc should remain in it's saved state. so that means a user needs to press save and select that previous saved result to override it. otherwise selecting that saved calc again should bring you to it's result"). Every change to a calculation goes through here. On a SAVED one, the first real change opens an unnamed working copy carrying `sourceId`, applies the change there, and points this message at the copy (it mutates `state.basketId`, so every render after it follows); the saved one is untouched until the Save step saves over it. A change that changes nothing (Calculate on an already-calculated one) writes nothing and forks nothing. What Restore Calculation brings back: every field the calculation's own result depends on.
+function restorableCopy(basket) {
+    return {
+        banners: basket.banners, region: basket.region, balance: basket.balance || 0, includeUpgrades: Boolean(basket.includeUpgrades),
+        mythicCards: basket.mythicCards || 0, mythicCoins: basket.mythicCoins || 0, currency: basket.currency || null,
+        entitlementMask: basket.entitlementMask || 0, submitted: Boolean(basket.submitted), ...(basket.sourceId ? { sourceId: String(basket.sourceId) } : {})
+    };
+}
 async function writeTo(userId, state, basket, fields) {
+    // Any change marks the view dirty, so Adjust Draws opened from a result offers Recalculate (2026-10-18 14:57 EDT). The handlers render from this same state object after writing.
+    state.dirty = true;
     if (basket && basket.name) {
         if (Object.entries(fields).every(([k, v]) => JSON.stringify(v) === JSON.stringify(basket[k]))) return basket;
         const copy = await basketStore.save(userId, {
             banners: basket.banners, region: basket.region, balance: basket.balance, includeUpgrades: basket.includeUpgrades,
-            mythicCards: basket.mythicCards || 0, mythicCoins: basket.mythicCoins || 0,
+            mythicCards: basket.mythicCards || 0, mythicCoins: basket.mythicCoins || 0, currency: basket.currency || null,
             entitlementMask: basket.entitlementMask, submitted: basket.submitted, sourceId: String(basket._id), ...fields
         });
         state.basketId = String(copy._id);
@@ -143,6 +157,12 @@ async function route(interaction) {
         const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
         return await interaction.showModal(buildAmountModal(state, basket));
     }
+    // SET REGION & BALANCE (2026-10-18 16:17 EDT): the editor's one pop-up for the region and the balances.
+    if (interaction.isButton() && state.verb === 'rbmodal') {
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+        return await interaction.showModal(buildRegionBalanceModal(state, basket, { defaultCurrency: prefs?.cpCurrency || 'USD' }));
+    }
     // The upgrade pop-up (2026-10-17 13:17 EDT): from the one-line button (`upgset`, the line in `f`) or the Mythic-lines dropdown (`upgpick`, the line as its value). A direct response like every showModal, so it comes before the generic defer.
     if ((interaction.isButton() && state.verb === 'upgset') || (interaction.isStringSelectMenu() && state.verb === 'upgpick')) {
         const index = state.verb === 'upgpick' ? Number(interaction.values[0]) : state.focus;
@@ -161,17 +181,135 @@ async function route(interaction) {
         }
         return true;
     }
+    // SPINS IN (2026-10-18 12:16 EDT): a Series Armory's spins toward its next item, from the button beside the line on Set Draw Progress.
+    if (interaction.isButton() && state.verb === 'spinsin') {
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        const modal = basket ? buildSpinsInModal(state, basket, state.focus) : null;
+        if (!modal) {
+            try { await interaction.reply({ content: 'That armory is no longer in this calculation.', ephemeral: true }); }
+            catch (notifyError) { console.error('Failed to notify user of a missing armory line (interaction likely expired):', notifyError); }
+            return true;
+        }
+        return await interaction.showModal(modal);
+    }
+    // THE GOAL of an Advanced line (2026-10-18 21:51 EDT): its button opens the pop-up, a direct response like every showModal.
+    if (interaction.isButton() && state.verb === 'goalset') {
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        const modal = basket ? buildGoalModal(state, basket, state.focus) : null;
+        if (!modal) {
+            try { await interaction.reply({ content: 'That draw is no longer in this calculation.', ephemeral: true }); }
+            catch (notifyError) { console.error('Failed to notify user of a missing Advanced line (interaction likely expired):', notifyError); }
+            return true;
+        }
+        return await interaction.showModal(modal);
+    }
+    if (interaction.isModalSubmit() && state.verb === 'goalsave') {
+        await interaction.deferUpdate();
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const index = state.focus;
+        const line = index !== null ? basket.banners[index] : null;
+        let picked = null;
+        try { picked = readGoal(interaction.fields.getStringSelectValues('goal')[0]); } catch { picked = null; }
+        // The full sets fields exist only once a set is spun; missing fields leave them as they were. 'both' is the single field of a pop-up opened before the split, read as Advanced.
+        const setsPicked = id => { try { return interaction.fields.getStringSelectValues(id); } catch { return null; } };
+        const advPicked = setsPicked('adv') ?? setsPicked('both');
+        const laterPicked = setsPicked('later');
+        if (!line || !buildGoalModal(state, basket, index) || !picked) { await renderPanel(interaction, { ...state, focus: null }, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
+        // 'all4' is the default, so it is stored as absent; so is an empty list of full sets.
+        const banners = basket.banners.map((b, i) => {
+            if (i !== index) return b;
+            const next = { ...b, goal: picked === 'all4' ? undefined : picked };
+            if (advPicked !== null || laterPicked !== null) {
+                // A set picked in both counts as Advanced.
+                const adv = advancedBoth({ bothSets: advPicked || [] }, b.pullsDone);
+                const later = advancedBoth({ bothSets: laterPicked || [] }, b.pullsDone).filter(n => !adv.includes(n));
+                const both = [...adv, ...later].sort((x, y) => x - y);
+                next.bothSets = both.length ? both : undefined;
+                next.laterSets = later.length ? later : undefined;
+            }
+            return next;
+        });
+        const updated = await writeTo(actingUserId, state, basket, { banners });
+        await renderPanel(interaction, { ...state, focus: null }, updated);
+        return true;
+    }
+    // ADD DRAWS and REMOVE (2026-10-18 13:37 EDT, his Mock 2): two pop-ups from the Adjust Draws screen's footer.
+    if (interaction.isButton() && (state.verb === 'addopen' || state.verb === 'rmopen')) {
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        const modal = !basket ? null : state.verb === 'addopen' ? buildAddDrawsModal(state, basket, await listSeasonDraws()) : buildRemoveModal(state, basket);
+        if (!modal) {
+            try { await interaction.reply({ content: 'That calculation has nothing to remove.', ephemeral: true }); }
+            catch (notifyError) { console.error('Failed to notify user of an empty remove (interaction likely expired):', notifyError); }
+            return true;
+        }
+        return await interaction.showModal(modal);
+    }
+    if (interaction.isModalSubmit() && (state.verb === 'addsave' || state.verb === 'rmsave')) {
+        await interaction.deferUpdate();
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const picks = id => { try { return interaction.fields.getStringSelectValues(id) || []; } catch { return []; } };
+        if (state.verb === 'rmsave') {
+            const drop = readRemovePicks(basket, picks('lines'));
+            if (!drop.size) { await renderPanel(interaction, state, basket, 'Those selections changed since the pop-up opened, so nothing was removed.'); return true; }
+            const updated = await writeTo(actingUserId, state, basket, { banners: basket.banners.filter((_, i) => !drop.has(i)) });
+            await renderPanel(interaction, { ...state, focus: null, bpage: 0 }, updated, `Removed ${drop.size === 1 ? '1 selection' : `${drop.size} selections`}.`);
+            return true;
+        }
+        const season = await listSeasonDraws();
+        let banners = [...basket.banners];
+        let skipped = 0;
+        for (const d of season.filter(x => picks('season').includes(x.id))) {
+            if (banners.length >= MAX_LINES) { skipped++; continue; }
+            banners.push({ drawKey: d.drawKey, pullsDone: 0, title: d.title, ...(d.size ? { size: d.size } : {}) });
+        }
+        for (const key of picks('types').filter(k => CALC_KEYS.includes(k))) {
+            if (banners.length >= MAX_LINES) { skipped++; continue; }
+            banners = setTypeCount(banners, key, banners.filter(b => b.drawKey === key).length + 1).banners;
+        }
+        if (banners.length === basket.banners.length) { await renderPanel(interaction, state, basket, skipped ? `A calculation holds up to ${MAX_LINES} lines, so nothing was added.` : 'Nothing was picked, so nothing was added.'); return true; }
+        const updated = await writeTo(actingUserId, state, basket, { banners });
+        await renderPanel(interaction, state, updated, skipped ? `A calculation holds up to ${MAX_LINES} lines, so ${skipped} ${skipped === 1 ? 'draw was' : 'draws were'} not added.` : null);
+        return true;
+    }
+    if (interaction.isModalSubmit() && state.verb === 'spinsinsave') {
+        await interaction.deferUpdate();
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const index = state.focus;
+        const line = index !== null ? basket.banners[index] : null;
+        if (!line || !isArmoryKey(line.drawKey)) { await renderPanel(interaction, { ...state, focus: null }, basket, 'That armory is no longer in this calculation, so nothing changed.'); return true; }
+        let raw = null;
+        try { raw = interaction.fields.getTextInputValue('spins'); } catch { raw = null; }
+        const spinsIn = readSpinsIn(line.drawKey, raw);
+        // Set Up Armory's weapon count (2026-10-18 15:17 EDT): present only on a Legendary armory picked as a draw type. Items collected never exceed it.
+        let size = null;
+        try { size = Number(interaction.fields.getStringSelectValues('size')[0]) || null; } catch { size = null; }
+        if (spinsIn === null) {
+            const next = size ? basket.banners.map((b, i) => (i === index ? { ...b, size, pullsDone: Math.min(b.pullsDone || 0, size) } : b)) : null;
+            const kept = next ? await writeTo(actingUserId, state, basket, { banners: next }) : basket;
+            await renderPanel(interaction, { ...state, focus: null }, kept, `"${String(raw).trim().slice(0, 12)}" wasn't saved as Spins In: use a whole number below the spins one item takes.`);
+            return true;
+        }
+        const banners = basket.banners.map((b, i) => (i === index ? { ...b, spinsIn, ...(size ? { size, pullsDone: Math.min(b.pullsDone || 0, size) } : {}) } : b));
+        const updated = await writeTo(actingUserId, state, basket, { banners });
+        await renderPanel(interaction, { ...state, focus: null }, updated);
+        return true;
+    }
     if (interaction.isModalSubmit() && (state.verb === 'upgsavew' || state.verb === 'upgsavec')) {
         await interaction.deferUpdate();
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         const index = state.focus;
         const line = index !== null ? basket.banners[index] : null;
-        // The line the pop-up was opened for must still be the same kind of Mythic draw; a removed or reordered line is refused rather than given another line's upgrade.
-        if (!line || line.drawKey !== (state.verb === 'upgsavew' ? 'mythicWeapon' : 'mythicCharacter')) { await renderPanel(interaction, state, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
+        // The line the pop-up was opened for must still be the same kind of Mythic draw; a removed or reordered line is refused rather than given another line's upgrade. A Mythic Weapon armory saves through the Mythic Weapon upgrade (same cards, same ladder).
+        if (!line || upgradeKeyOf(line.drawKey) !== (state.verb === 'upgsavew' ? 'mythicWeapon' : 'mythicCharacter')) { await renderPanel(interaction, state, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
         const get = id => { try { return interaction.fields.getStringSelectValues(id)[0] ?? null; } catch { return null; } };
-        const total = pullCount(basket.region, line.drawKey);
-        const read = readUpgradeModal(line.drawKey, total !== null && line.pullsDone >= total, get);
+        const total = pullCount(basket.region, line.drawKey, line);
+        // The same "complete" the pop-up was built with: an armory's collected weapons can carry an upgrade already.
+        const complete = isArmoryKey(line.drawKey) ? (line.pullsDone || 0) > 0 : total !== null && line.pullsDone >= total;
+        const read = readUpgradeModal(line.drawKey, complete, get, line);
         const banners = basket.banners.map((b, i) => (i === index ? { ...b, upHave: read.have, upWant: read.want } : b));
         const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: null }, updated, read.notice);
@@ -189,6 +327,18 @@ async function route(interaction) {
         await interaction.deferUpdate();
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
+        // The region, when the pop-up carried it (Set Region & Balance). A pick outside the known regions changes nothing.
+        let region = null;
+        try { region = interaction.fields.getStringSelectValues('region')[0] || null; } catch { region = null; }
+        if (region && REGION_ORDER.includes(region) && region !== basket.region) fields.region = region;
+        // The currency, per calculation (2026-10-18 20:00 EDT). Picking the /settings default stores null, so the calculation keeps following the default if it changes later.
+        let cur = null;
+        try { cur = interaction.fields.getStringSelectValues('currency')[0] || null; } catch { cur = null; }
+        if (cur && CURRENCIES.includes(cur)) {
+            const prefs = await UserPreference.findOne({ discordId: actingUserId });
+            const want = cur === (prefs?.cpCurrency || 'USD') ? null : cur;
+            if ((basket.currency || null) !== want) fields.currency = want;
+        }
         const updated = Object.keys(fields).length ? await writeTo(actingUserId, state, basket, fields) : basket;
         await renderPanel(interaction, state, updated);
         if (warning) {
@@ -222,7 +372,7 @@ async function route(interaction) {
             const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
             if (!basket || !basket.banners.length) { await interaction.editReply({ content: 'That calculation no longer exists, so there is nothing to export.' }); return true; }
             const prefs = await UserPreference.findOne({ discordId: actingUserId });
-            await interaction.editReply({ content: `Copy the block below and paste it anywhere in Discord:\n\`\`\`md\n${buildExportText(basket, prefs?.cpCurrency || 'USD')}\n\`\`\`` });
+            await interaction.editReply({ content: `Copy the block below and paste it anywhere in Discord:\n\`\`\`md\n${buildExportText(basket, calcCurrency(basket, prefs?.cpCurrency || 'USD'))}\n\`\`\`` });
         } catch (notifyError) { console.error('Failed to send the calculator export (interaction likely expired):', notifyError); }
         return true;
     }
@@ -238,7 +388,7 @@ async function route(interaction) {
         } else {
             // Help draws its price ladder from the open calculation's region and first draw (2026-10-14 18:33 EDT), so it shows the player their own numbers.
             const open = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
-            panel = buildHelpPanel(accentColor, { region: open?.region || 'region_10', drawKey: open?.banners?.[0]?.drawKey || 'mythicWeapon', currency: prefs?.cpCurrency || 'USD', client: interaction.client });
+            panel = buildHelpPanel(accentColor, { region: open?.region || 'region_10', drawKey: open?.banners?.[0]?.drawKey || 'mythicWeapon', currency: calcCurrency(open, prefs?.cpCurrency || 'USD'), client: interaction.client });
         }
         try {
             await interaction.deferReply({ flags: 64 });
@@ -269,7 +419,7 @@ async function route(interaction) {
             if (prefs?.defaultRegionMode && prefs.defaultRegionMode !== 'last_viewed') region = prefs.defaultRegionMode;
             else if (prefs?.defaultRegion) region = prefs.defaultRegion;
             const created = await basketStore.save(actingUserId, {
-                banners: interaction.values.map(drawKey => ({ drawKey, pullsDone: 0 })),
+                banners: interaction.values.filter(key => CALC_KEYS.includes(key)).map(freshLine),
                 region
             });
             await renderPanel(interaction, { ...state, basketId: String(created._id), page: 0 }, created);
@@ -294,6 +444,41 @@ async function route(interaction) {
         return true;
     }
 
+    // THIS SEASON'S DRAWS (2026-10-18 12:16 EDT): each picked draw adds one line named for it, priced as its Draw Type, an armory at its own item count. The list is read again here rather than trusted from the click, so a draw removed since the panel drew is skipped.
+    if (interaction.isStringSelectMenu() && state.verb === 'season') {
+        const list = await listSeasonDraws();
+        const picked = list.filter(d => interaction.values.includes(d.id));
+        const lines = picked.map(d => ({ drawKey: d.drawKey, pullsDone: 0, title: d.title, ...(d.size ? { size: d.size } : {}) }));
+        const gone = interaction.values.length - picked.length;
+        if (!state.basketId) {
+            const prefs = await UserPreference.findOne({ discordId: actingUserId });
+            let region = 'region_10';
+            if (prefs?.defaultRegionMode && prefs.defaultRegionMode !== 'last_viewed') region = prefs.defaultRegionMode;
+            else if (prefs?.defaultRegion) region = prefs.defaultRegion;
+            const created = await basketStore.save(actingUserId, { banners: lines.slice(0, MAX_LINES), region });
+            await renderPanel(interaction, { ...state, basketId: String(created._id), page: 0 }, created, gone ? 'A draw you picked is no longer listed, so it was left out.' : null);
+            return true;
+        }
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const room = Math.max(0, MAX_LINES - basket.banners.length);
+        const updated = await writeTo(actingUserId, state, basket, { banners: [...basket.banners, ...lines.slice(0, room)] });
+        const notes = [];
+        if (lines.length > room) notes.push(`A calculation holds up to ${MAX_LINES} lines, so ${lines.length - room} ${lines.length - room === 1 ? 'draw was' : 'draws were'} not added.`);
+        if (gone) notes.push('A draw you picked is no longer listed, so it was left out.');
+        await renderPanel(interaction, state, updated, notes.join(' ') || null);
+        return true;
+    }
+
+    // SET DRAW PROGRESS (2026-10-18 12:16 EDT): a view (page 5) of the same calculation; Back returns to the form it came from (Edit's page 2 for a result, the draft form otherwise).
+    if (interaction.isButton() && (state.verb === 'progress' || state.verb === 'progback' || state.verb === 'progresult')) {
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const page = state.verb === 'progress' ? 5 : state.verb === 'progresult' ? 0 : (basket.submitted ? 2 : 0);
+        await renderPanel(interaction, { ...state, page, bpage: 0, focus: null, ...(page === 5 ? {} : { fromResult: false, dirty: false }) }, basket);
+        return true;
+    }
+
     if (interaction.isButton() && state.verb === 'dropok') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
@@ -310,7 +495,7 @@ async function route(interaction) {
         let banners = basket.banners;
         let skipped = 0;
         for (const key of interaction.values) {
-            if (!DRAW_META[key]) continue;
+            if (!CALC_KEYS.includes(key)) continue;
             if (banners.length >= MAX_LINES) { skipped++; continue; }
             banners = setTypeCount(banners, key, banners.filter(b => b.drawKey === key).length + 1).banners;
         }
@@ -329,7 +514,7 @@ async function route(interaction) {
         // Remove opens the list, so a slipped tap must not cost entered progress: a line with pulls asks first; an empty line goes at once.
         if (interaction.values[0] === 'del' && basket.banners[index].pullsDone > 0) {
             const b = basket.banners[index];
-            await renderPanel(interaction, { ...state, focus: index }, basket, `⚠️ Remove #${index + 1} ${shortName(b.drawKey)} and its ${b.pullsDone} spins of progress?`, { mask: 0, count: 1, verb: 'dellineok', label: `Remove #${index + 1}` });
+            await renderPanel(interaction, { ...state, focus: index }, basket, `⚠️ Remove #${index + 1} ${lineName(b)} and its ${b.pullsDone} ${unitOf(b.drawKey).toLowerCase()} of progress?`, { mask: 0, count: 1, verb: 'dellineok', label: `Remove #${index + 1}` });
             return true;
         }
         if (interaction.values[0] === 'del') {
@@ -340,10 +525,26 @@ async function route(interaction) {
         // Upgrades unlock only once a draw is finished, so taking a line below its last spin drops what it had upgraded (2026-10-17 13:17 EDT).
         const banners = basket.banners.map((b, i) => {
             if (i !== index) return b;
-            const pullsDone = Number(interaction.values[0]) || 0;
-            const total = pullCount(basket.region, b.drawKey);
-            if (total !== null && pullsDone < total && b.upHave) { const { upHave, ...rest } = b; return { ...rest, pullsDone }; }
-            return { ...b, pullsDone };
+            // An armory line's value is "size:items" when the line also picks its size (2026-10-18 12:16 EDT). Its Spins In stays only while there is a next item to spin toward.
+            const [sizeRaw, itemsRaw] = String(interaction.values[0]).includes(':') ? String(interaction.values[0]).split(':') : [null, interaction.values[0]];
+            const pullsDone = Number(itemsRaw) || 0;
+            const next = sizeRaw !== null && isArmoryKey(b.drawKey) ? { ...b, size: Number(sizeRaw) || armorySize(b) } : { ...b };
+            const total = pullCount(basket.region, next.drawKey, next);
+            if (isArmoryKey(next.drawKey)) {
+                if (total !== null && pullsDone >= total) delete next.spinsIn;
+                // An armory's weapons hold an upgrade once one is collected, so only dropping back to none clears it.
+                if (pullsDone === 0 && next.upHave) delete next.upHave;
+                return { ...next, pullsDone };
+            }
+            // An Advanced line keeps only the full sets it has still spun.
+            if (isAdvancedKey(next.drawKey) && (next.bothSets || next.laterSets)) {
+                const both = advancedBoth(next, pullsDone);
+                const later = advancedLater(next, pullsDone);
+                next.bothSets = both.length ? both : undefined;
+                next.laterSets = later.length ? later : undefined;
+            }
+            if (total !== null && pullsDone < total && next.upHave) { const { upHave, ...rest } = next; return { ...rest, pullsDone }; }
+            return { ...next, pullsDone };
         });
         const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: null }, updated);
@@ -398,7 +599,7 @@ async function route(interaction) {
         const working = await currentBasket(actingUserId, state);
         const target = state.target ? await basketStore.load(actingUserId, state.target) : null;
         if (!working || !target || !target.name) { await renderPanel(interaction, { ...state, page: 3, target: null }, working, 'Nothing was saved: the calculation or the saved one is gone.'); return true; }
-        const saved = await basketStore.save(actingUserId, { _id: String(target._id), banners: working.banners, region: working.region, balance: working.balance, includeUpgrades: working.includeUpgrades, mythicCards: working.mythicCards || 0, mythicCoins: working.mythicCoins || 0, entitlementMask: working.entitlementMask, submitted: working.submitted });
+        const saved = await basketStore.save(actingUserId, { _id: String(target._id), banners: working.banners, region: working.region, balance: working.balance, includeUpgrades: working.includeUpgrades, mythicCards: working.mythicCards || 0, mythicCoins: working.mythicCoins || 0, currency: working.currency || null, entitlementMask: working.entitlementMask, submitted: working.submitted });
         // The working copy has done its job; a saved one picked as the open calculation is never removed here.
         if (!working.name && String(working._id) !== String(target._id)) await basketStore.remove(actingUserId, String(working._id));
         await renderPanel(interaction, { ...state, basketId: String(target._id), page: 0, target: null, verb: 'load' }, saved, `Replaced "${target.name}".`);
@@ -412,7 +613,8 @@ async function route(interaction) {
         const mask = list.reduce((m, b, i) => (picked.has(String(b._id)) ? m | (1 << i) : m), 0);
         const count = list.filter(b => picked.has(String(b._id))).length;
         if (!count) { await renderPanel(interaction, { ...state, page: 3 }, await currentBasket(actingUserId, state), 'Those calculations are already gone.'); return true; }
-        await renderPanel(interaction, { ...state, page: 3 }, await currentBasket(actingUserId, state), `⚠️ Delete ${count === 1 ? 'this calculation' : `these ${count} calculations`}? This cannot be undone.`, null, { mask, count, check: savedChecksum(list) });
+        // The warning sits beside its red button now (2026-10-19 00:12 EDT, his ask), not at the top of the view.
+        await renderPanel(interaction, { ...state, page: 3 }, await currentBasket(actingUserId, state), null, null, { mask, count, check: savedChecksum(list) });
         return true;
     }
     if (interaction.isButton() && state.verb === 'savedelok') {
@@ -484,8 +686,9 @@ async function route(interaction) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         if (!basket.banners.length) { await renderPanel(interaction, state, basket); return true; }
-        const updated = await writeTo(actingUserId, state, basket, { submitted: true });
-        await renderPanel(interaction, { ...state, page: 0, bpage: 0, focus: null }, updated);
+        // Calculate is where the Restore copy ends (his rule: kept "until the moment they click calculate again").
+        const updated = await writeTo(actingUserId, state, basket, { submitted: true, ...(basket.previous ? { previous: null } : {}) });
+        await renderPanel(interaction, { ...state, page: 0, bpage: 0, focus: null, fromResult: false, dirty: false }, updated);
         return true;
     }
 
@@ -503,8 +706,8 @@ async function route(interaction) {
     if (interaction.isButton() && state.verb === 'edit') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        // A view, not a state change: the calculation stays submitted, so leaving mid-edit still reopens on the result.
-        await renderPanel(interaction, { ...state, page: 2, bpage: 0, focus: null, detail: false }, basket);
+        // A view, not a state change: the calculation stays submitted, so leaving mid-edit still reopens on the result. Edit Selection opens Adjust Draws & Progress directly (2026-10-18 13:37 EDT, his ask): it covers everything about the draws. Back to Selections still reaches the form (page 2).
+        await renderPanel(interaction, { ...state, page: 5, bpage: 0, focus: null, detail: false, fromResult: true, dirty: false }, basket);
         return true;
     }
 
@@ -531,26 +734,46 @@ async function route(interaction) {
         return true;
     }
 
-    // New Calculation (verb still `reset`) is also two-step. Clears the contents, the transient view state (spec §9) AND the submitted flag -- but never the basket document or its name, which is what makes it recoverable-by-mistake in a way Delete deliberately is not.
-    if (interaction.isButton() && state.verb === 'resetarm') {
+    // NEW CALCULATION IS ONE PRESS (2026-10-19 00:12 EDT, his idea): no "click again"; what it clears is kept as `previous`, and the empty form offers Restore Calculation until the next Calculate. `resetarm` is a panel posted before this; it starts over the same way.
+    if (interaction.isButton() && (state.verb === 'reset' || state.verb === 'resetarm')) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        await renderPanel(interaction, { ...state, verb: 'resetarm' }, basket);
-        return true;
-    }
-    if (interaction.isButton() && state.verb === 'reset') {
-        const basket = await loadOwned(interaction, state, actingUserId);
-        if (!basket) return true;
-        // A SAVED calculation is never emptied by New Calculation (2026-10-14 16:51 EDT, Harkirat: "i clicked new calc, so why is it still saying viewing saved: test?"). Clearing it in place kept its name, so the fresh form claimed to be the saved one and the saved one lost its draws. A new, unnamed calculation starts instead, at the same region; the saved one stays in Saved untouched. A working copy of a saved one starts fresh too, and the copy is dropped (click-test 2026-10-14 18:58 EDT): cleared in place it kept its `sourceId`, so the empty form still read "Edited from Saved: test".
+        // A saved one is reopened, never copied; an empty form keeps the copy it already holds, so a second press loses nothing.
+        const previous = basket.name ? { savedId: String(basket._id) } : (basket.banners || []).length ? restorableCopy(basket) : (basket.previous || null);
+        // A SAVED calculation is never emptied by New Calculation (2026-10-14 16:51 EDT, Harkirat: "i clicked new calc, so why is it still saying viewing saved: test?"). A new, unnamed calculation starts instead, at the same region; the saved one stays in Saved untouched. A working copy of a saved one starts fresh too and the copy is dropped (click-test 2026-10-14 18:58 EDT): cleared in place it kept its `sourceId`, so the empty form still read "Edited from Saved: test". Its contents live on in `previous`.
         if (basket.name || basket.sourceId) {
             if (!basket.name) await basketStore.remove(actingUserId, String(basket._id));
-            const fresh = await basketStore.save(actingUserId, { banners: [], region: basket.region });
+            const fresh = await basketStore.save(actingUserId, { banners: [], region: basket.region, previous });
             await renderPanel(interaction, { ...state, basketId: String(fresh._id), page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, fresh);
             return true;
         }
-        // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form, which is what the button now says it does.
-        const updated = await writeTo(actingUserId, state, basket, { banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, submitted: false });
+        // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form.
+        const updated = await writeTo(actingUserId, state, basket, { banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, currency: null, submitted: false, previous });
         await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, updated);
+        return true;
+    }
+    // RESTORE CALCULATION: brings back what New Calculation cleared, as it was (a result reopens as a result), and drops the empty form it replaces.
+    if (interaction.isButton() && state.verb === 'restore') {
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const prev = basket.previous;
+        if (!prev) { await renderPanel(interaction, { ...state, page: 0 }, basket, 'There is nothing to restore.'); return true; }
+        const empty = !(basket.banners || []).length;
+        if (prev.savedId) {
+            const saved = await basketStore.load(actingUserId, prev.savedId);
+            if (!saved) {
+                const cleared = await basketStore.save(actingUserId, { _id: state.basketId, previous: null });
+                await renderPanel(interaction, { ...state, page: 0 }, cleared, 'That saved calculation was deleted, so there is nothing to restore.');
+                return true;
+            }
+            if (empty) await basketStore.remove(actingUserId, String(basket._id));
+            await renderPanel(interaction, { ...state, basketId: String(saved._id), page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, saved);
+            return true;
+        }
+        const restored = await basketStore.save(actingUserId, { ...prev });
+        if (empty) await basketStore.remove(actingUserId, String(basket._id));
+        else await basketStore.save(actingUserId, { _id: String(basket._id), previous: null });
+        await renderPanel(interaction, { ...state, basketId: String(restored._id), page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, restored);
         return true;
     }
 

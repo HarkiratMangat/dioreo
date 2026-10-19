@@ -31,7 +31,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Install Dioreo",
+              "label": "Invite Dioreo",
               "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
             }
           ]
@@ -728,7 +728,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Install Dioreo",
+              "label": "Invite Dioreo",
               "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
             }
           ]
@@ -873,7 +873,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Install Dioreo",
+              "label": "Invite Dioreo",
               "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
             }
           ]
@@ -1588,7 +1588,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Install Dioreo",
+              "label": "Invite Dioreo",
               "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
             }
           ]
@@ -1733,7 +1733,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Install Dioreo",
+              "label": "Invite Dioreo",
               "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
             }
           ]
@@ -2614,7 +2614,7 @@
         },
         {
           "type": 10,
-          "content": "-# <a:Guide:1532894836301238477> Jump straight to a `/manage` bulk format guide:"
+          "content": "-# <a:DB_Guide:1532894836301238477> Jump straight to a `/manage` bulk format guide:"
         },
         {
           "type": 1,
@@ -2723,7 +2723,7 @@
             {
               "type": 2,
               "style": 5,
-              "label": "Install Dioreo",
+              "label": "Invite Dioreo",
               "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
             }
           ]

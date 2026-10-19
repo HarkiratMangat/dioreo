@@ -75,6 +75,66 @@ check('draw.add validates successfully when payload.date already arrives as a re
     assert.strictEqual(r.ok, true, JSON.stringify(r.errors));
 });
 
+check('draw types: every /draw prices type has a unique bulk code (2026-10-18 11:06 EDT)', () => {
+    const { drawTypeOptions, DRAW_TYPE_CODES } = require('../utils/drawTypes');
+    const opts = drawTypeOptions();
+    assert.strictEqual(opts.length, 14, opts.map(o => o.key).join(', '));
+    assert.ok(opts.every(o => o.code), `no code for: ${opts.filter(o => !o.code).map(o => o.key).join(', ')}`);
+    const codes = Object.values(DRAW_TYPE_CODES);
+    assert.strictEqual(new Set(codes).size, codes.length, 'codes are unique');
+    assert.deepStrictEqual(Object.keys(DRAW_TYPE_CODES).sort(), opts.map(o => o.key).sort(), 'no code for a type /draw prices does not have');
+    // utils/drawTypes.js keeps its own copy so it requires nothing (hotpatch); this is what keeps the copy honest.
+    const dp = require('../commands/drawprices');
+    assert.deepStrictEqual(opts.map(o => [o.key, o.name, o.tier]), dp.JUMP_KEYS.map(k => [k, dp.jumpMeta(k).name, dp.jumpMeta(k).tier]), 'the same keys, names, tiers and order as /draw prices');
+    assert.deepStrictEqual(require('../utils/drawTypes').DRAW_TYPES.filter(x => x.armory).map(x => x.key), Object.keys(dp.SERIES_ARMORY));
+});
+
+check('draw types: a bulk line carries its type tag, the export writes it back, and an armory counts its own items', () => {
+    const { parseBulkDrawList, formatDrawsAsBulkText } = require('../utils/adminParser');
+    const { armoryItemCount, resolveDrawType } = require('../utils/drawTypes');
+    const [d] = parseBulkDrawList('Sky Armory, type: salw, l AK, l M4, -# a note, l DLQ, l Krig, July 15, https://x.com/a.png');
+    assert.strictEqual(d.priceType, 'armoryLegendaryWeapon');
+    assert.strictEqual(d.items.length, 5, 'the tag is not an item');
+    assert.strictEqual(armoryItemCount(d), 4, 'a -# note is not an item');
+    const [again] = parseBulkDrawList(formatDrawsAsBulkText([d]));
+    assert.strictEqual(again.priceType, 'armoryLegendaryWeapon', formatDrawsAsBulkText([d]));
+    assert.ok(!('priceType' in parseBulkDrawList('Plain Draw, l AK, July 15')[0]), 'no tag, no field: Replace Multiple must never wipe a stored type');
+    assert.strictEqual(resolveDrawType('Legendary Weapon Draw (Reactive)'), 'legendaryGunReactive');
+    assert.strictEqual(resolveDrawType('legendary weapon draw (non-reactive)'), 'legendaryGunNonReactive');
+    assert.strictEqual(resolveDrawType('Mythic Character Series Armory'), null, 'there is no Mythic Character armory');
+    const [unk] = parseBulkDrawList('Mystery Draw, type: unknown, l AK, July 15');
+    assert.strictEqual(unk.priceType, 'unknown', 'Unsure / Unknown is a storable flag');
+    assert.ok(formatDrawsAsBulkText([unk]).includes('type: unknown'));
+});
+
+check('draw types: an unknown tag is refused by add and by bulk add, never saved silently', () => {
+    const add = ops.resolveOp('draw.add').validate({ type: 'draw.add', payload: { title: 'X', category: 'new', items: [], priceType: '?zz' } });
+    assert.strictEqual(add.ok, false);
+    assert.ok(/Unknown draw type "zz"/.test(add.errors.join(' ')), add.errors.join(' '));
+    assert.ok(add.errors.join(' ').includes('`salw` Legendary Weapon Series Armory'), 'each code beside its full name');
+    const bulk = ops.resolveOp('draw.bulkAdd').validate({ type: 'draw.bulkAdd', target: { category: 'new' }, payload: { text: 'X, type: zz, l AK, July 15' } });
+    assert.strictEqual(bulk.ok, false);
+    assert.ok(/Unknown draw type "zz"/.test(bulk.errors.join(' ')), bulk.errors.join(' '));
+    assert.ok(ops.resolveOp('draw.add').validate({ type: 'draw.add', payload: { title: 'X', category: 'new', items: [], priceType: 'unknown' } }).ok, 'Unsure / Unknown saves');
+    const good = ops.resolveOp('draw.add').validate({ type: 'draw.add', payload: { title: 'X', category: 'new', items: [], priceType: 'armoryMythicWeapon' } });
+    assert.strictEqual(good.ok, true, JSON.stringify(good.errors));
+});
+
+check('Edit Draw: five Labels, and the Draw Type dropdown preselects the stored type', () => {
+    const m = require('../commands/manage').buildEditDrawModal({ title: 'Sky Armory', items: [{ tier: 'legendary', name: 'AK' }], date: new Date('2026-07-15'), thumbnailUrl: '', priceType: 'armoryLegendaryWeapon' }, '65abc', 'new').toJSON();
+    assert.strictEqual(m.components.length, 5, 'Discord allows five');
+    assert.ok(m.components.every(c => c.type === 18), 'every field is a Label');
+    const sel = m.components[4].component;
+    assert.strictEqual(sel.custom_id, 'price_type');
+    assert.strictEqual(sel.options.length, 15, 'Unsure / Unknown plus the 14 types');
+    assert.strictEqual(sel.options[0].value, 'unknown', 'Unsure / Unknown sits first');
+    assert.strictEqual(sel.required, true, 'a required field (his call, 2026-10-18 11:36 EDT)');
+    assert.strictEqual(sel.min_values, 1);
+    assert.deepStrictEqual(sel.options.filter(o => o.default).map(o => o.value), ['armoryLegendaryWeapon']);
+    assert.ok(sel.options.every(o => o.label.length <= 100 && (o.description || '').length <= 100));
+    assert.deepStrictEqual(m.components.slice(0, 4).map(c => c.component.custom_id), ['title', 'items', 'date', 'url'], 'the handler reads these ids');
+});
+
 check('draw.edit validates successfully when payload.date already arrives as a real Date', () => {
     const r = ops.resolveOp('draw.edit').validate({
         type: 'draw.edit', target: { elementId: '65abc', category: 'new' },

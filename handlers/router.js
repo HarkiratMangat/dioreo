@@ -256,8 +256,8 @@ async function handleInteractionInner(interaction) {
                 const doc = await SeasonalData.findOne({ docType: 'global' }).lean(); // read-only here
                 if (!doc || !doc.patchNotes) return await interaction.respond([]);
 
-                // displayTitle() strips the legacy "Balance Changes for..." prefix AND prefers a manual titleOverride (2026-07-24), same as the main render + history dropdown, so this stays consistent with what's actually shown everywhere else.
-                const filtered = doc.patchNotes
+                // displayTitle() strips the legacy "Balance Changes for..." prefix AND prefers a manual titleOverride (2026-07-24), same as the main render + history dropdown, so this stays consistent with what's actually shown everywhere else. Newest first (2026-10-19 00:30 EDT): every season is kept now, so the 25 shown should be the recent ones.
+                const filtered = doc.patchNotes.slice().reverse()
                     .filter(p => fuzzyMatch(focusedValue, displayTitle(p)))
                     .slice(0, 25);
 
