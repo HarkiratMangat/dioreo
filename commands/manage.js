@@ -654,23 +654,23 @@ function buildPatchUrlsModal(slot, currentEntry) {
     return modal;
 }
 
-// "Add New Season" (2026-07-24) -- pushes a brand-new entry onto patchNotes[], which becomes the new "current" entry (the old current entry automatically becomes a past season -- it's simply no longer the last item in the array, nothing else needs to change about it). Unlike Date/Info's 2 fields, this needs all 5 of a modal's field slots at once since there's no existing entry yet to spread the URLs input across separate dateinfo/urls1/urls2 actions -- so URLs 1/2 are collected here as multi-line paragraph fields (one URL per line) instead of 5 individually-addressable Short fields each, same shape Harkirat's own mockup called for.
-// `prefill` (added 2026-10-19 10:22 EDT, Add to Patch Notes): the right-click flow opens this same box with the post's date, extra text and images already in it. With no argument the box is blank, as /manage opens it.
+// "Add New Season" (2026-07-24) -- pushes a brand-new entry onto patchNotes[], which becomes the new "current" entry (the old current entry automatically becomes a past season -- it's simply no longer the last item in the array, nothing else needs to change about it). Unlike Date/Info's 2 fields, this needs all 5 of a modal's field slots at once since there's no existing entry yet to spread the URLs input across separate dateinfo/urls1/urls2 actions -- so URLs 1/2 are collected here as multi-line paragraph fields (one URL per line) instead of 5 individually-addressable Short fields each, same shape Harkirat's own mockup called for. `prefill` (added 2026-10-19 10:22 EDT, Add to Patch Notes): the right-click flow opens this same box with the post's date, extra text and images already in it. With no argument the box is blank, as /manage opens it.
 function buildPatchAddSeasonModal(prefill = {}) {
+    // A box gets a value only when there is one, so the blank box /manage opens keeps exactly its old shape (scripts/patchnotesHandlerSnapshot.test.js pins it).
+    const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId('modal_patch_addseason').setTitle('Add New Season');
     const images = prefill.images || [];
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setPlaceholder('Leave blank to use the Season Titles/Dates title').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setValue(prefill.releaseDate || '').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)').setValue(prefill.description || '').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue(images.slice(0, 5).join('\n')).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue(images.slice(5, 10).join('\n')).setRequired(false))
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)'), prefill.releaseDate).setRequired(true)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)'), prefill.description).setRequired(false)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph), images.slice(0, 5).join('\n')).setRequired(false)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph), images.slice(5, 10).join('\n')).setRequired(false))
     );
     return modal;
 }
 
-// "Past Seasons" edit (2026-07-24) -- same 5-field shape as Add New Season above, but pre-filled from and submitted back onto ONE SPECIFIC existing entry (picked via the page's `mng_patchseason_pick` select menu), addressed by its own `_id` in the custom_id -- never touches which entry is "current." `images` slices the same 0-4/5-9 way urls1/urls2 already do for the current entry.
-// `prefill` (added 2026-10-19 10:22 EDT, Add to Patch Notes): `images` and `description` replace the entry's own in the box, `releaseDateIfBlank` fills the date only when the entry has none, and `modalTitle` names what the right-click is doing. The submit is the same edit either way.
+// "Past Seasons" edit (2026-07-24) -- same 5-field shape as Add New Season above, but pre-filled from and submitted back onto ONE SPECIFIC existing entry (picked via the page's `mng_patchseason_pick` select menu), addressed by its own `_id` in the custom_id -- never touches which entry is "current." `images` slices the same 0-4/5-9 way urls1/urls2 already do for the current entry. `prefill` (added 2026-10-19 10:22 EDT, Add to Patch Notes): `images` and `description` replace the entry's own in the box, `releaseDateIfBlank` fills the date only when the entry has none, and `modalTitle` names what the right-click is doing. The submit is the same edit either way.
 function buildPatchEditSeasonModal(entry, userTimezone, prefill = {}) {
     const images = prefill.images || entry.images || [];
     const description = prefill.description ?? entry.description ?? '';

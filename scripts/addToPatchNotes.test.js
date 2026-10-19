@@ -1,4 +1,5 @@
 // scripts/addToPatchNotes.test.js
+//
 // The right-click "Add to Patch Notes" flow: what it reads off a message, how it merges into a season, the panel it draws and the editor boxes it opens. Messages are shaped the way discord.js hands them to a context-menu interaction (a forward's original lives in messageSnapshots; measured 2026-10-19 10:00 EDT on the dev bot).
 const assert = require('assert');
 const { extractSource, extraInfo, mergeImages, mergeInfo } = require('../utils/patchNoteSource');

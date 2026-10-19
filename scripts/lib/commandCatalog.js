@@ -98,6 +98,8 @@ function readBuilders(dir = COMMANDS_DIR) {
         if (!mod || !mod.data || typeof mod.data.toJSON !== 'function') continue;
         // A `devOnly` module (/embedtest, 2026-10-17) is registered only on the dev bot (bot/registry.js), so the public /commands page must never list it.
         if (mod.devOnly) continue;
+        // A right-click (context-menu) command (2026-10-19 10:28 EDT, Add to Patch Notes) is not a slash command: it has no options and nothing to type, so it has no place on a page of slash commands. Its application command type is 2 (user) or 3 (message); a slash command is 1, or unset.
+        if (mod.data.toJSON().type > 1) continue;
         for (const leaf of leavesOf(mod.data.toJSON())) {
             leaves.push({ ...leaf, options: leaf.options.map(normalizeOption), file });
         }

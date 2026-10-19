@@ -4,7 +4,9 @@
 // Answers the private panel commands/addToPatchNotes.js posts after a right-click (added 2026-10-19 10:22 EDT). The season dropdown redraws the panel; Add / Replace / Create open /manage's own Add New Season or Edit Season box, pre-filled, whose submit (modal_patch_addseason / modal_patch_editseason_{id}) is handled by handlers/manage/patchnotes.js like any /manage edit.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S. Awaited inside handlers/router.js's one try/catch: nothing here swallows, and every error reply is awaited in its own small try/catch. See .claude/rules/interaction-router.md.
+//
 // ⚠️ MIXED TYPES, SO EVERY BRANCH TYPE-TESTS: `ptn_season|` is a select, the rest are buttons.
+//
 // ⚠️ GATED HERE, NOT IN THE ROUTER'S ADMIN LOCK: every click checks the Patch Notes page itself (per-click, like utils/manageActions.js's resolveAction), which is stricter than the lock's 'manage' token. The lock's prefix list must equal what handlers/manage/, /autobuild and /bot declare (scripts/handlerRouting.test.js check 10), so `ptn_` stays out of it.
 
 const { hasManagePageAccess } = require('../utils/adminAccess');
