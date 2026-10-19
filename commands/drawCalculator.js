@@ -746,8 +746,8 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     const priced = lineFigures(basket).filter(f => f.priced);
     const rows = breakdownRows(priced, level >= 4 ? 4 : level >= 1 ? 1 : 0);
     const terms = key => (level >= 3 ? `across ${plural(priced.length, 'line')}` : rows.map(r => `\`${r.count > 1 && !r.byType ? `${r.count} × ` : ''}${fmt(r[key])} CP\``).join(' **+** ') || '`0 CP`');
-    // HIS LAYOUT FOR BOTH VIEWS (2026-10-17 18:28 EDT; the tree he tried first was dropped because "-# lines break the emoji tree illusion"). The simplified view: You Need in bold, then one quiet line naming the sum's terms. The Full Breakdown: the same headline, then the sum quoted, one term per line with its sign and a `-#` line of what it is made of. Colons for a label and its value, ⌇ for a thing and what it costs, the grammar /draw prices already uses.
-    const quiet = key => (detail ? [`> -# ${terms(key)}`] : []);
+    // HIS LAYOUT FOR BOTH VIEWS (2026-10-17 18:28 EDT; the tree he tried first was dropped because "-# lines break the emoji tree illusion"). The simplified view: You Need in bold, then one quiet line naming the sum's terms. The Full Breakdown: the same headline, then the sum quoted, one term per line with its sign and a `-#` line of what it is made of. Colons for a label and its value, ⌇ for a thing and what it costs, the grammar /draw prices already uses. Only with two or more priced lines (2026-10-18 22:02 EDT, his ask): with one, the line under Full Cost of Draws or Spent Already just repeats the figure beside it.
+    const quiet = key => (detail && priced.length > 1 ? [`> -# ${terms(key)}`] : []);
     const cost = ['## Cost Breakdown', `**You Need: \`${fmt(Math.max(shortfall, 0))} CP\`**`];
     if (!detail) {
         // Plain words, not code spans (2026-10-17 18:41 EDT, Harkirat on his phone: "Yeah it does wrap ... -# plain text?"): spans are wider and wrapped the line on a phone.

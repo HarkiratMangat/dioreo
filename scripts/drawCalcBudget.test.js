@@ -727,7 +727,11 @@ t('the cost breakdown LEADS with You Need; the simplified view names the terms, 
     assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], includeUpgrades: true }))).includes('-# Cost of Draws **+** Mythic Upgrades **−**'), 'Mythic Upgrades named only when set');
     const full = allText(render(basket, { detail: true })).split('\n');
     const f = full.indexOf('## Cost Breakdown');
-    assert.deepStrictEqual([full[f + 1], full[f + 2], full[f + 4], full[f + 6]], ['**You Need: `4,720 CP`**', '> **Full Cost of Draws: `5,810 CP`**', '> **− Spent Already: `90 CP`**', '> **− CP Balance: `1,000 CP`**'], '5,810 − 90 − 1,000 = 4,720, quoted, one term per line');
+    // One line: no working line under a term, it would only repeat the figure (2026-10-18 22:02 EDT, his ask).
+    assert.deepStrictEqual([full[f + 1], full[f + 2], full[f + 3], full[f + 4]], ['**You Need: `4,720 CP`**', '> **Full Cost of Draws: `5,810 CP`**', '> **− Spent Already: `90 CP`**', '> **− CP Balance: `1,000 CP`**'], '5,810 − 90 − 1,000 = 4,720, quoted, one term per line');
+    const two = allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }), { detail: true })).split('\n');
+    const g = two.indexOf('> **Full Cost of Draws: `10,760 CP`**');
+    assert.ok(g > 0 && /^> -# `[\d,]+ CP` \*\*\+\*\* `[\d,]+ CP`$/.test(two[g + 1]), 'two lines: the working line returns\n' + two.slice(g, g + 3).join('\n'));
     assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }), { detail: true })).includes('> **− CP Balance: `0 CP`**\n> -# *Not set* so 0 CP assumed'), 'an unset balance says so, on its own line (2026-10-18 19:48 EDT)');
 });
 
