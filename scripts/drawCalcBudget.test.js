@@ -310,6 +310,12 @@ t('Advanced draws are priced per set, and from a fresh line each strategy goal m
     const ex = { pullsDone: 4, bothSets: [2, 3] };
     assert.deepStrictEqual(['all4', 'everything', 'mid2'].map(g => r(ex, g)), [5440, 6578, 3200]);
     assert.deepStrictEqual(['mid2', 'everything'].map(g => r({}, g)), [3410, 6784]);
+    // 1 Legendary + 2 Epics is Reg 1-8 → Adv 9 → Reg 10; at 10 CP the Character draw's is 6,650 CP (draw-prices.md, verified 2026-08-07).
+    const w = require('../commands/drawprices').ADVANCED_DOUBLE_LEGENDARY.region_10;
+    assert.strictEqual(r({}, 'mid2_top1'), w.reg.slice(0, 8).reduce((x, y) => x + y, 0) + w.adv[8] + w.reg[9]);
+    assert.strictEqual(cost.remainingToFinish('region_10', 'advancedCharacter', 0, { goal: 'mid2_top1' }), 6650);
+    // 1 Epic only is Reg 1-9.
+    assert.strictEqual(r({}, 'mid1'), w.reg.slice(0, 9).reduce((x, y) => x + y, 0));
     // A finished line may still owe the second item of a wanted set; a goal can also finish before the last set.
     assert.ok(r({ pullsDone: 10 }, 'all4') > 0, 'sets 9 and 10 hold 1 item each');
     assert.strictEqual(r({ pullsDone: 9, bothSets: [9] }, 'mid2'), 0);
@@ -318,13 +324,13 @@ t('Advanced draws are priced per set, and from a fresh line each strategy goal m
     // The editor: progress counted in Sets, a grey Goal button naming the goal and the full sets.
     const ed = progress([{ drawKey: 'advancedWeapon', pullsDone: 4, bothSets: [2, 3] }, { drawKey: 'advancedCharacter', pullsDone: 0, goal: 'one_each' }]);
     const goals = buttons(ed).filter(b => verbOf(b) === 'goalset');
-    assert.deepStrictEqual(goals.map(b => [b.label, b.style]), [['Goal: All 4 Items · 2 Full Sets', 2], ['Goal: 2 Items', 2]]);
+    assert.deepStrictEqual(goals.map(b => [b.label, b.style]), [['Goal: All 4 Items · 2 Full Sets', 2], ['Goal: Regular Pulls Only', 2]]);
     assert.ok(JSON.stringify(ed).includes('#1 · Progress: 4/10 Sets'), 'the dropdown counts sets');
     const done = makeBasket({ banners: [{ drawKey: 'advancedWeapon', pullsDone: 9, goal: 'mid2', bothSets: [9] }, { drawKey: 'advancedWeapon', pullsDone: 10 }] });
     assert.ok(/Finished/.test(dc.lineHint(done, 0)) && !/Finished/.test(dc.lineHint(done, 1)), `${dc.lineHint(done, 0)} | ${dc.lineHint(done, 1)}`);
     // The pop-up: five goals with the current one picked, then the spun sets with the full ones picked.
     const modal = dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'advancedCharacter', pullsDone: 3, goal: 'top2', bothSets: [2] }] }), 0);
-    assert.deepStrictEqual(modal.components[0].component.options.map(o => [o.label, !!o.default]), [['Both Legendary Characters & Weapons', false], ['Both Characters + 1 Random Weapon', true], ['1 Random Character + 1 Random Weapon', false], ['Both Weapons', false], ['Everything (All 10 Sets)', false]]);
+    assert.deepStrictEqual(modal.components[0].component.options.map(o => [o.label, !!o.default]), [['Both Legendary Characters & Weapons', false], ['Both Characters + 1 Random Weapon', true], ['1 Random Character + Both Weapons', false], ['Regular Pulls Only: 1 Random Character + 1 Random Weapon', false], ['Both Weapons', false], ['1 Random Weapon', false], ['Everything (All 10 Sets)', false]]);
     assert.deepStrictEqual(modal.components[1].component.options.map(o => [o.label, !!o.default]), [['Set 1', false], ['Set 2', true], ['Set 3', false]]);
     assert.strictEqual(modal.components[1].component.max_values, 3);
     assert.ok(modal.components[0].component.options.every(o => o.description.length <= 100 && / CP Left$/.test(o.description)));

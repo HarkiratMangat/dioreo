@@ -1115,9 +1115,11 @@ function readRemovePicks(basket, values) {
 // THE GOAL POP-UP (2026-10-18 21:51 EDT; rebuilt per set 2026-10-18 22:31 EDT): what the line is bought for, each option with its path and what is still left for the line as it stands, then the spun sets it got both items from. His goals: /draw prices' three strategies, just the 2 items of the second-to-last set, and everything.
 const ADVANCED_GOAL_TEXT = {
     all4: { short: 'All 4 Items', path: 'Reg 1-8 → Adv 9-10', advancedWeapon: 'Both Weapons & Characters', advancedCharacter: 'Both Legendary Characters & Weapons' },
-    top2: { short: '3 Items', path: 'Reg 1-9 → Adv 10', advancedWeapon: 'Both Weapons + 1 Random Character', advancedCharacter: 'Both Characters + 1 Random Weapon' },
-    one_each: { short: '2 Items', path: 'Reg only 1-10', advancedWeapon: '1 Random Weapon + 1 Random Character', advancedCharacter: '1 Random Character + 1 Random Weapon' },
+    top2: { short: { advancedWeapon: 'Both Weapons + 1 Character', advancedCharacter: 'Both Characters + 1 Weapon' }, path: 'Reg 1-9 → Adv 10', advancedWeapon: 'Both Weapons + 1 Random Character', advancedCharacter: 'Both Characters + 1 Random Weapon' },
+    mid2_top1: { short: { advancedWeapon: 'Both Characters + 1 Weapon', advancedCharacter: 'Both Weapons + 1 Character' }, path: 'Reg 1-8 → Adv 9 → Reg 10', advancedWeapon: '1 Random Weapon + Both Characters', advancedCharacter: '1 Random Character + Both Weapons' },
+    one_each: { short: 'Regular Pulls Only', path: 'Reg only 1-10', advancedWeapon: 'Regular Pulls Only: 1 Random Weapon + 1 Random Character', advancedCharacter: 'Regular Pulls Only: 1 Random Character + 1 Random Weapon' },
     mid2: { short: { advancedWeapon: 'Both Epic Characters', advancedCharacter: 'Both Weapons' }, path: 'Reg 1-8 → Adv 9', advancedWeapon: 'Both Epic Characters', advancedCharacter: 'Both Weapons' },
+    mid1: { short: { advancedWeapon: '1 Random Epic Character', advancedCharacter: '1 Random Weapon' }, path: 'Reg 1-9', advancedWeapon: '1 Random Epic Character', advancedCharacter: '1 Random Weapon' },
     everything: { short: 'Everything', path: 'Adv 1-10', advancedWeapon: 'Everything (All 10 Sets)', advancedCharacter: 'Everything (All 10 Sets)' }
 };
 function goalShort(drawKey, goal) {

@@ -13,8 +13,8 @@ const { DRAW_DATA, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN
 // ==========================================
 // A set holds 2 items (rebuilt 2026-10-18 22:31 EDT, Harkirat: "what if someone had done 1/2 for set 1, 2/2 for set 2 ... purchasing the remaining part of the set later on costs as much as the regular spin"). A Regular spin gives 1 random item of the set, an Advanced spin both, and the other item bought later costs the set's Regular price again. A line stores `pullsDone` (sets spun) and `bothSets` (the spun sets it holds both items from). With no luck, the last set holds the draw's 2 headline items and the one before it the other 2, so a GOAL is the items wanted from those two sets, or every item of every set. Every set before the last one wanted must be spun to reach it. reg < adv < 2 x reg at every set in every region, so each set's cheapest choice is also the cheapest plan.
 const ADVANCED_KEYS = ['advancedWeapon', 'advancedCharacter'];
-// Items wanted from [second-to-last set, last set]; null is everything. 'all4' first: it is the default and is stored as absent.
-const ADVANCED_GOAL_WANTS = { all4: [2, 2], top2: [1, 2], one_each: [1, 1], mid2: [2, 0], everything: null };
+// Items wanted from [second-to-last set, last set]; null is everything. 'all4' first: it is the default and is stored as absent. mid2_top1 (2026-10-18 22:42 EDT, his yes): the tier dropped from /draw prices on 2026-08-07, Reg 1-8 → Adv 9 → Reg 10. one_each is Regular pulls only. mid1 (2026-10-18 22:43 EDT, his yes) is 1 random item of the second-to-last set, Reg 1-9.
+const ADVANCED_GOAL_WANTS = { all4: [2, 2], top2: [1, 2], mid2_top1: [2, 1], one_each: [1, 1], mid2: [2, 0], mid1: [1, 0], everything: null };
 const ADVANCED_GOALS = Object.keys(ADVANCED_GOAL_WANTS);
 // The first build's goals, still on lines saved before the rebuild.
 const LEGACY_GOALS = { all: 'all4', two: 'top2', one: 'one_each' };
