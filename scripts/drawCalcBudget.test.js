@@ -299,7 +299,7 @@ t('the 2X offers sit under the cost breakdown in his wording, each option giving
     const top = panel[0].components;
     const ent = top.findIndex(c => c.type === 1 && c.components[0].custom_id && verbOf(c.components[0]) === 'ent');
     assert.ok(ent > 0, 'the dropdown is there');
-    assert.ok(top[ent - 1].type === 10 && top[ent - 1].content === '-# 🎉 Double CP event is live!\n-# Select which 2X CP offers are still available for you to purchase.', top[ent - 1].content);
+    assert.ok(top[ent - 1].type === 10 && top[ent - 1].content === '-# 🎉 **Double CP** event is live!\n-# Select which 2X CP offers are still available for you to purchase.', top[ent - 1].content);
     assert.deepStrictEqual([top[ent - 2].type, top[ent - 2].divider, top[ent - 2].spacing], [14, false, 1], 'a small space with no line above it');
     assert.ok(top[ent - 3].type === 9 && /Full Breakdown|Simple Breakdown/.test(top[ent - 3].accessory.label), 'right under the cost breakdown');
     assert.ok(top.slice(ent + 1).some(c => c.type === 1 && c.components.some(b => b.label === 'Save Result')), 'above the action row');
