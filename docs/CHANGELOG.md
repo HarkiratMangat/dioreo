@@ -29,7 +29,16 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.93.0 — 2026-10-19 18:03 EDT (#202) — `/settings` opens on the page you ask for, and `/autobuild` reads DMZ builds
+## Pre-Release v3.94.0 — 2026-10-19 18:17 EDT (#PRNUM) — `/autobuild` moves to Gemini 3.8 Flash
+**`utils/visionExtract.js`, its two Vertex scripts and a new cost test.** Harkirat's ask 2026-10-19 18:09 EDT: the newest model in the tier already in use, the mid one, no Pro and no Flash-Lite. What is true now is `.claude/rules/autobuild.md` ("Vision model").
+
+- **gemini-3.5-flash → gemini-3.8-flash**, the newest Flash that is generally available on Google's Agent Platform (formerly Vertex AI): GA 2026-09-02 in its release notes, listed under the `us` multi-region the bot calls. 3.6 and 3.7 were skipped. The request needed no change: it sends none of the parameters 3.8 deprecates and leaves thinking at the `medium` default.
+- **Cheaper while the introductory rate lasts:** $0.825 in / $4.125 out per million tokens on `us` through 2026-12-31, against 3.5's $1.65 / $9.90, then $1.65 / $8.25 from 2027-01-01. The cost log carries both periods and picks by date.
+- **The cost log now counts thinking tokens**, which Google bills as output and the log used to leave out, and records them as `thinkingTokens`. `scripts/visionCost.test.js` pins the model, the rate switch and the thinking count.
+- **Still to do, on his Mac:** one live call, `node --env-file=.env.dev scripts/test-vertex-extract.js`, which now prints the model it used. A `GCP_MODEL` line in a `.env` overrides the new default, so the VM's `.env` is worth checking at deploy.
+
+
+## Pre-Release v3.93.0 — 2026-10-19 18:03 EDT (#202 · `5a62c59c`) — `/settings` opens on the page you ask for, and `/autobuild` reads DMZ builds
 **`/settings`, `/autobuild`, `/help` and two new test scripts.** Harkirat's picks 2026-10-19 17:45 EDT; what is true now is `.claude/rules/settings-and-expiry.md` and `.claude/rules/autobuild.md` ("DMZ detection").
 
 - **`/settings customize:`** opens Visibility, Preferences or View Colors directly. Colors follows the Settings visibility, the same as the dashboard's View Colors button.

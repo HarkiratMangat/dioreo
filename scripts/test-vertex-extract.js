@@ -3,7 +3,7 @@
 require('dotenv').config({ quiet: true }); // quiet: true suppresses dotenv's log line + its rotating promotional "tip"
 const mongoose = require('mongoose');
 const Loadout = require('../models/Loadout');
-const { extractLoadoutFromImage } = require('../utils/visionExtract');
+const { extractLoadoutFromImage, MODEL } = require('../utils/visionExtract');
 
 async function main() {
     console.log('🔄 Starting keyless Vertex AI extraction test...');
@@ -41,7 +41,8 @@ async function main() {
             : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${loadout.imageKey}`;
 
         console.log(`🖼️ Constructed Cloudinary Image URL: ${imageUrl}`);
-        console.log('🧠 Invoking Vertex AI Gemini 3.5 Flash Vision Extraction (Keyless ADC)...');
+        // Prints the model actually used, not a hardcoded name (2026-10-19): this line said "Gemini 3.5 Flash" as a literal, which would have kept saying so after the move to 3.8 and hidden a GCP_MODEL override in .env.
+        console.log(`🧠 Invoking Vertex AI ${process.env.GCP_MODEL || MODEL} vision extraction (keyless ADC)...`);
 
         const startTime = Date.now();
         const extracted = await extractLoadoutFromImage(imageUrl, { taskName: 'manual_test_script' });
