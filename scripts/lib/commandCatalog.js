@@ -26,7 +26,7 @@ const DELIBERATELY_ABSENT = Object.create(null);
 /**
  * Where a command goes when `CATEGORY_DEFS` has no opinion.
  *
- * ⚠️ NEITHER `/help` NOR `/invite` APPEARS IN `CATEGORY_DEFS`, AND NEITHER IS A BUG. `/invite`'s absence is a DELIBERATE, FILED decision — `docs/db-deferred-list.md` records Harkirat's own instruction during the `/invite` build ("exclude it from /help for now"), and states outright that `/help cmd:invite` returning the landing page "is therefore correct today, not a bug — do not 'fix' it as an oversight". The open question filed there is placement, and it forks three ways. `/help` omitting itself is simply sensible: you are already standing in it. Both are placed here because the WEBSITE has no equivalent reason to hide either — a page whose whole job is listing commands should list them — while the bot-side decision stays exactly where it was filed.
+ * ⚠️ `/help` DOES NOT APPEAR IN `CATEGORY_DEFS`, AND THAT IS NOT A BUG: you are already standing in it, so the bot's directory omits it, while a page whose whole job is listing commands should list it, so this is where it lands. `/invite` used to be the second such command, deliberately excluded at build time; Harkirat's pick (b) put it in Utilities in `7cda384` (merged with #176), so it is now placed by `CATEGORY_DEFS` like any other command (`buildCatalog` asks `CATEGORY_DEFS` first, and `public/commands.html` shows `/invite` under Utilities). Its entry below is now only a fallback for the day it leaves `CATEGORY_DEFS`, and it is kept for that. Corrected 2026-10-19 18:10 EDT in the deferred-list sweep, after this comment had gone on describing the exclusion for seven weeks.
  */
 const EXTRA_PLACEMENT = {
     '/help': 'start',
