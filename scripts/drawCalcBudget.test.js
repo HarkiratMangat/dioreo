@@ -579,6 +579,12 @@ t('Set Balance is disabled until a calculation exists to write it to; on the edi
     assert.deepStrictEqual(cur(kes).filter(o => o.default).map(o => o.value), ['EUR'], 'its own currency pre-picked');
     assert.ok(cur(kes).some(o => o.value === 'KES' && o.description === 'Your default'), 'a default outside the quick list is still offered, and marked');
     assert.ok(cur(kes).length <= 25 && new Set(cur(kes).map(o => o.value)).size === cur(kes).length, 'one dropdown, no repeats');
+    // 23 currencies, alphabetical (2026-10-18 21:33 EDT, his pick A); 25 once the calculation's own and the default are both outside them.
+    assert.strictEqual(cur(modal).length, 23);
+    assert.strictEqual(cur(kes).length, 24, 'KES (the default) joins; EUR is already in the 23');
+    const labels = cur(kes).map(o => o.label);
+    assert.deepStrictEqual(labels, [...labels].sort((a, b) => a.localeCompare(b)), 'alphabetical');
+    assert.ok(cur(dc.buildRegionBalanceModal(state(), { ...withCards, currency: 'NGN' }, { defaultCurrency: 'KES' })).length === 25, 'both extras: 25, the most a dropdown holds');
     assert.strictEqual(dc.calcCurrency({ currency: 'EUR' }, 'CAD'), 'EUR');
     assert.strictEqual(dc.calcCurrency({ currency: null }, 'CAD'), 'CAD');
     assert.strictEqual(dc.calcCurrency({ currency: 'XXX' }, 'CAD'), 'CAD', 'an unknown code falls back to the default');

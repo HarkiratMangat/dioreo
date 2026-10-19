@@ -877,6 +877,8 @@ function regionBalanceSection(state, basket) {
 }
 // The section under a divider, at the bottom of the landing and the editor.
 function regionBalanceBlock(state, basket) { return [{ type: 14, spacing: 2, divider: true }, regionBalanceSection(state, basket)]; }
+// The pop-up's currency list (2026-10-18 21:33 EDT, his pick A): /settings' 20 quick currencies plus three more, the Argentine, Chilean and Colombian pesos (my guess at the likeliest next, for Latin America's large CODM playerbase). With this calculation's own currency and the player's default added when outside it, that is at most 25, Discord's limit for one dropdown.
+const CALC_CURRENCIES = [...QUICK_CURRENCIES, 'ARS', 'CLP', 'COP'];
 // The currency a calculation prices in: its own, else the player's /settings default (2026-10-18 20:00 EDT).
 function calcCurrency(basket, defaultCurrency = 'USD') { return (basket && basket.currency && CURRENCIES.includes(basket.currency)) ? basket.currency : (defaultCurrency || 'USD'); }
 // THE REGION & BALANCE POP-UP: the region as a dropdown over the three balance boxes, each pre-filled (a blank box means 0). Submits to the same `nums` verb as Set Balance, which also reads `region` when the pop-up carries it.
@@ -884,7 +886,9 @@ function buildRegionBalanceModal(state, basket, { defaultCurrency = 'USD' } = {}
     const region = basket?.region || 'region_10';
     // THE CURRENCY, per calculation (2026-10-18 20:00 EDT, his ask): /settings' quick list, plus this calculation's currency and the player's default when either is outside it. A dropdown holds 25, and there are 41 currencies; the rest are reached by setting the default in /settings.
     const current = calcCurrency(basket, defaultCurrency);
-    const codes = [...new Set([...QUICK_CURRENCIES, current, defaultCurrency])].filter(c => CURRENCIES.includes(c)).slice(0, 25);
+    // Alphabetical by the label a player reads (2026-10-18 21:33 EDT, his ask).
+    const codes = [...new Set([...CALC_CURRENCIES, current, defaultCurrency])].filter(c => CURRENCIES.includes(c)).slice(0, 25)
+        .sort((a, b) => currencyLabel(a).localeCompare(currencyLabel(b)));
     const box = (id, label, placeholder, value) => ({ type: 18, label, component: { type: 4, custom_id: id, style: 1, required: false, placeholder, ...(value ? { value: String(value) } : {}) } });
     return { custom_id: encodeState('nums', state), title: 'Set Region & Balance', components: [
         { type: 18, label: 'CP Region', description: 'Not sure? Help shows how to find yours', component: {
