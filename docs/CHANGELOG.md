@@ -29,13 +29,23 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.94.0 — 2026-10-19 18:17 EDT (#204) — `/autobuild` moves to Gemini 3.8 Flash
+## Pre-Release v3.95.0 — 2026-10-19 18:22 EDT (#204) — `/autobuild` moves to Gemini 3.8 Flash
 **`utils/visionExtract.js`, its two Vertex scripts and a new cost test.** Harkirat's ask 2026-10-19 18:09 EDT: the newest model in the tier already in use, the mid one, no Pro and no Flash-Lite. What is true now is `.claude/rules/autobuild.md` ("Vision model").
 
 - **gemini-3.5-flash → gemini-3.8-flash**, the newest Flash that is generally available on Google's Agent Platform (formerly Vertex AI): GA 2026-09-02 in its release notes, listed under the `us` multi-region the bot calls. 3.6 and 3.7 were skipped. The request needed no change: it sends none of the parameters 3.8 deprecates and leaves thinking at the `medium` default.
 - **Cheaper while the introductory rate lasts:** $0.825 in / $4.125 out per million tokens on `us` through 2026-12-31, against 3.5's $1.65 / $9.90, then $1.65 / $8.25 from 2027-01-01. The cost log carries both periods and picks by date.
 - **The cost log now counts thinking tokens**, which Google bills as output and the log used to leave out, and records them as `thinkingTokens`. `scripts/visionCost.test.js` pins the model, the rate switch and the thinking count.
 - **Still to do, on his Mac:** one live call, `node --env-file=.env.dev scripts/test-vertex-extract.js`, which now prints the model it used. A `GCP_MODEL` line in a `.env` overrides the new default, so the VM's `.env` is worth checking at deploy.
+
+
+## Pre-Release v3.94.0 — 2026-10-19 18:10 EDT (#203 · `c508a9f3`) — the deferred list and roadmap swept for staleness, and Harkirat's 2026-10-19 decisions recorded
+**Records only, plus one code comment.** His ask 2026-10-19 18:00 EDT: clean the staleness and gaps out of the deferred list so everything is up to date. What is true now is `docs/db-deferred-list.md` and `docs/ROADMAP.md`.
+
+- **Ten entries closed into `docs/archive/resolved-list.md`**, each checked against code and git history first: `/bot analytics` Phase 2 (#173), disabling expired buttons on every command (`sendV2Payload`'s `schedulePanelExpiry`), `/invite` in `/help`, the Actions `@v5` bump, the prod DB rename off `test`, the `RENDER_API_KEY` revocation, the landing SPECS gap, the changelog gap for the four portal commits, a duplicate `/help` entry and orphaned calculator sub-bullets.
+- **His decisions recorded in his words:** View Colors' unset pages abandoned (the button and page stay hidden), different view options moved to v4, admin commands never listed on the public `/commands` page, the Troll Build badge deferred indefinitely, and the first-use welcome guide deferred out of the launch checklist.
+- **Stale claims corrected:** "not yet merged" on the `/server` → `/admin` rename (#125) and hotpatch (#162), guild install now done, the server-admin control surface shipped, the calculator passover done (#175, #197 to #199), and the `/settings` jump-to lines ticked now that #202 is in.
+- **New gaps filed, not fixed here:** `PRIVACY.md`'s §12.1 Revision history lacks 1.14 and 1.16, and the landing page's `/draw calculator` SPECS still types the unwired pulls and balance options.
+- **`scripts/lib/commandCatalog.js`:** a comment that said `/invite` was missing from `CATEGORY_DEFS` now says it lives in Utilities.
 
 
 ## Pre-Release v3.93.0 — 2026-10-19 18:03 EDT (#202 · `5a62c59c`) — `/settings` opens on the page you ask for, and `/autobuild` reads DMZ builds
