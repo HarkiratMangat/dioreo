@@ -6960,25 +6960,14 @@ const CMD_JS = `
      ⚠️ THE CHOICE LABELS ARE THE "name:" HALF OF addChoices, NEVER THE "value:".
      Discord renders the name — /draws is offered as "New Draws", not "new" — so
      using the value here would put a string on the page no reader ever sees. */
-  /* /gunsmiths search's pool is every MP weapon combined -- unlike the old
+  /* /gunsmiths mp's pool is every MP weapon combined -- unlike the old
      per-category commands, one search command covers all of them, so its
      option pool is the union rather than one category's slice. */
   var MP_ALL=[].concat(WEAPONS.ar,WEAPONS.smg,WEAPONS.lmg,WEAPONS.marksman,WEAPONS.sniper,WEAPONS.shotgun,WEAPONS.secondaries);
 
-  /* /gunsmiths list's scope: option has no free-typed value -- it's a static
-     10-choice picker (bot/registry.js's applyGunsmithsScopeChoices()), so its
-     pairs are declared directly rather than built from a p:/o: pool, same
-     shape as /draws' page pairs below. Labels are the real choice NAMES
-     (utils/loadoutScopes.js's scopeChoices, reordered with one META
-     choice 2026-10-19 19:39 EDT). */
-  var GUNSMITHS_LIST_PAIRS=[['scope','All META builds'],['scope','All DMZ builds'],['scope','All MP builds'],
-    ['scope','All AR builds [MP]'],['scope','All LMG builds [MP]'],['scope','All MARKSMAN builds [MP]'],
-    ['scope','All SECONDARY builds [MP]'],['scope','All SHOTGUN builds [MP]'],['scope','All SMG builds [MP]'],
-    ['scope','All SNIPER builds [MP]']];
-
   var SPECS=[
-    {c:'/gunsmiths search', o:'weapon', p:MP_ALL, w:1},
-    {c:'/gunsmiths list',   pairs:GUNSMITHS_LIST_PAIRS},
+    {c:'/gunsmiths mp',  o:'weapon', p:MP_ALL,      w:1},
+    {c:'/gunsmiths dmz', o:'weapon', p:WEAPONS.dmz, w:1},
     {c:'/dmz',         o:'weapon',   p:WEAPONS.dmz,         w:1},
     {c:'/timestamp',   o:'datetime', p:WHEN},
     {c:'/draws',       pairs:[['page','New Draws'],['page','Returning Draws']]},

@@ -41,15 +41,20 @@ const FIXED_SCOPES = [
     { value: 'DMZ.*.std',  label: 'DMZ',           mode: 'DMZ', category: null, metaOnly: false },
 ];
 
-// The /gunsmiths list dropdown, in Harkirat's order (2026-10-19 19:38 EDT): "All META builds", "All DMZ builds", "All MP builds", then each class as "All AR builds [MP]". Meta is ONE choice: it opens the MP meta, and a toggle under the panel switches to the DMZ meta (utils/loadoutRender.js, `gsb~meta~`). Earlier the same evening the names became "All ... builds" (18:59 EDT). Every value is still the token a gsb~ custom_id carries, so old panels keep paging; DMZ.*.meta is no longer a choice but is still a valid token. The panel's own heading still uses FIXED_SCOPES' `label`.
-function scopeChoices(categories) {
+// The browse rows at the top of /gunsmiths mp and /gunsmiths dmz's weapon suggestions (Harkirat, 2026-10-19 19:43 EDT: "lets just remove gunsmith list, instead put the 'all mp builds, all ar, all lmg, etc' at the top of the /gunsmiths mp command"). Their earlier order and the single META entry came from the same evening (19:38 EDT): META first, then everything in the mode, then each MP class. META opens that mode's meta, and the switch under the panel moves to the other mode's (utils/loadoutRender.js, `gsb~meta~`). A row's value is its scope token; commands/gunsmiths.js reads it back as `~scope~<token>`.
+function browseRows(mode, categories = []) {
     const { displayCategoryLabel } = require('./loadoutRender');
+    if (mode === 'DMZ') {
+        return [
+            { label: 'All META builds', value: 'DMZ.*.meta' },
+            { label: 'All DMZ builds', value: 'DMZ.*.std' },
+        ];
+    }
     return [
-        { name: 'All META builds', value: 'MP.*.meta' },
-        { name: 'All DMZ builds', value: 'DMZ.*.std' },
-        { name: 'All MP builds', value: 'MP.*.std' },
-        ...categories.map(c => ({ name: `All ${displayCategoryLabel(c)} builds [MP]`, value: `MP.${c}.std` })),
+        { label: 'All META builds', value: 'MP.*.meta' },
+        { label: 'All MP builds', value: 'MP.*.std' },
+        ...categories.map(c => ({ label: `All ${displayCategoryLabel(c)} builds`, value: `MP.${c}.std` })),
     ];
 }
 
-module.exports = { formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition, FIXED_SCOPES, scopeChoices };
+module.exports = { formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition, FIXED_SCOPES, browseRows };

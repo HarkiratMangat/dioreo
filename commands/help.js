@@ -3,7 +3,7 @@
 // ==========================================
 // ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups (local/landingPageUI.json, local/gunsmithsUI.json), then revised again 21:31 EDT the same day from his direct review feedback. Landing page is a Section+thumbnail "hero" (mascot + tagline), two Link buttons (Website/Install), a flat command DIRECTORY grouped by category, then a category select menu. Picking a category (or using the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/ Examples breakdown per command, options split under whichever command actually has them (never merged across commands with different option sets -- `/gunsmiths search` and `/dmz` share one options block since their shapes are identical (weapon/build/visibility); `/gunsmiths list` gets its own, since a `scope` choice replaces weapon+build. Consolidated from `/all` + the eight per-category MP commands 2026-08-15 -- see docs/superpowers/specs/2026-08-15-gunsmiths-command- consolidation-design.md.
 //
-// Categories: Gunsmiths (/gunsmiths search, /gunsmiths list, /dmz) / Draws / Seasonal Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin (whitelist-gated, hidden entirely from everyone else).
+// Categories: Gunsmiths (/gunsmiths mp, /gunsmiths dmz, /dmz) / Draws / Seasonal Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin (whitelist-gated, hidden entirely from everyone else).
 //
 // The `hidden` boolean option was renamed BOT-WIDE to `visibility` (every command, not just this one), and its TYPE changed from boolean to a 2-choice string (Hidden/Public) -- "visibility: True/False" doesn't read sensibly, "visibility: Hidden/Public" does. /help carries the SAME option itself now too (2026-08-08 21:29 EDT review pass) -- it's the one command that had been hardcoded ephemeral-only with no way to make it public, an inconsistency with every other command in the bot. No "Show Everyone" button here anymore (removed same pass, Harkirat's direct request) -- the visibility option already covers that case up front.
 //
@@ -93,16 +93,19 @@ const CATEGORY_DEFS = [
         // staticCommands stays [/gunsmiths, /dmz] -- the directory/dropdown/autocomplete mention `/gunsmiths` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way. ⚠️ CORRECTED 2026-10-17 23:51 EDT: the landing directory used to mention bare `/gunsmiths`, and Discord renders a mention of a command that has subcommands as plain text, never a link (Harkirat: "the /gunsmith command link seems to be broken in the /help command landing"). The landing now lists detailCommands when a category has them, so it reads `/gunsmiths search` · `/gunsmiths list` · `/dmz`, each a real link. staticCommands keeps `/gunsmiths` for `cmd:` lookup and its aliases.
         staticCommands: [cmd('/gunsmiths'), cmd('/dmz')],
         detailCommands: [
-            cmd('/gunsmiths search', {
-                description: "Find a specific MP weapon's loadout",
+            cmd('/gunsmiths mp', {
+                description: "Find an MP weapon's loadout, or browse a whole class, Meta or every MP build",
                 options: [
-                    { name: 'weapon', required: true, desc: 'Select weapon (supports autocomplete & partial word matching)' },
+                    { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' },
                     { name: 'build', required: false, desc: 'Specify build number' }
                 ]
             }),
-            cmd('/gunsmiths list', {
-                description: 'Browse a whole set of builds -- a weapon category, all MP builds, Meta (MP or DMZ), or DMZ',
-                options: [{ name: 'scope', required: true, desc: 'Pick what to browse' }]
+            cmd('/gunsmiths dmz', {
+                description: "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
+                options: [
+                    { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' },
+                    { name: 'build', required: false, desc: 'Specify build number' }
+                ]
             }),
             cmd('/dmz', {
                 description: 'Search for DMZ specific loadouts',
@@ -244,7 +247,7 @@ async function getAllHelpCommandNames(perms = {}) {
 // Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmiths) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below.
 function buildGunsmithsBody(commands, client) {
     return commands.map(c => renderCommandBlock(c, client)).join('')
-        + `\n-# **Examples**\n-# 🔸 **/gunsmiths search** weapon:\`AK117\`\n-# 🔸 **/gunsmiths search** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\`\n-# 🔸 **/gunsmiths list** scope:\`SMG\`\n-# 🔸 **/gunsmiths list** scope:\`Meta — MP\`\n-# 🔸 **/dmz** weapon:\`Fennec\``;
+        + `\n-# **Examples**\n-# 🔸 **/gunsmiths mp** weapon:\`AK117\`\n-# 🔸 **/gunsmiths mp** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\`\n-# 🔸 **/gunsmiths mp** weapon:\`All SMG builds\`\n-# 🔸 **/gunsmiths mp** weapon:\`All META builds\`\n-# 🔸 **/gunsmiths dmz** weapon:\`Fennec\``;
 }
 
 // Returns PARTS, not one string (2026-10-17 23:51 EDT): the /draw calculator block is a Section whose button opens the calculator's full Help (Harkirat: "add a button in the /help draws page, as a section+accessory for the /draw calc section, to view the full help panel"). The button reuses the calculator's own `help` verb, so it opens the same private panel the calculator's Help button does; with no author on the state, anyone may press it.

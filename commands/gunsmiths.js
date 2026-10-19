@@ -1,30 +1,27 @@
 // ==========================================
-// COMMAND: /gunsmiths — search + list (consolidates /all + the 8 per-category MP commands)
+// COMMAND: /gunsmiths — mp + dmz (was search + list until 2026-10-19 19:43 EDT; consolidated /all + the 8 per-category MP commands before that)
 // ==========================================
 // Two subcommands, two doors onto one engine (see utils/loadoutScopes.js's scope descriptor): `search` is "I know the weapon" (MP-only — DMZ stays reachable via `list scope:DMZ` and the standalone /dmz), `list` is "show me a set" (11 named scopes: 7 categories + All MP + Meta MP + Meta DMZ + DMZ). Discord forbids a command from mixing top-level options with subcommands, which is why there is no shared `category:`/`mode:` option anywhere -- every browsable set is one whole named `scope:` choice instead, so no invalid combination can ever be assembled.
 const { SlashCommandBuilder } = require('discord.js');
-const { FIXED_SCOPES, formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition, scopeChoices } = require('../utils/loadoutScopes');
+const { FIXED_SCOPES, formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition } = require('../utils/loadoutScopes');
 const { buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel } = require('../utils/loadoutRender');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
-// Static default so `data.toJSON()` is a valid, fully-shaped command at require time (no DB round trip needed to import this module, or to run scripts/gunsmithsCommandShape.test.js standalone). bot/registry.js's applyGunsmithsScopeChoices() overwrites these with the live DB-derived list post-ClientReady, the same 7 categories today per the spec's measured facts -- this list only matters as a fallback/default and to keep this module deterministically testable.
-const DEFAULT_CATEGORIES = ['AR', 'LMG', 'MARKSMAN', 'SECONDARIES', 'SHOTGUN', 'SMG', 'SNIPER'];
-const DEFAULT_SCOPE_CHOICES = scopeChoices(DEFAULT_CATEGORIES);
+// Two subcommands since 2026-10-19 19:43 EDT (Harkirat: "change /gunsmiths search to /gunsmiths MP, and a new /gunsmiths DMZ ... lets just remove gunsmith list"). Discord requires lower-case names, so they register as `mp` and `dmz`. Each takes a weapon, and its suggestions open with the browse rows (utils/loadoutScopes.js's browseRows) that /gunsmiths list used to offer as choices. The standalone /dmz is unchanged.
+const visibilityOption = o => o.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.')
+    .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' });
+const weaponSub = (name, mode, desc) => sub => sub.setName(name).setDescription(desc)
+    .addStringOption(o => o.setName('weapon').setDescription(`A ${mode} weapon, or All META / All ${mode} builds to browse them`).setRequired(true).setAutocomplete(true))
+    .addIntegerOption(o => o.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
+    .addStringOption(visibilityOption);
 
 const data = new SlashCommandBuilder()
     .setName('gunsmiths')
-    .setDescription('Look up or browse MP weapon loadouts')
+    .setDescription('Look up or browse MP and DMZ weapon loadouts')
     .setIntegrationTypes([0, 1]).setContexts([0, 1, 2])
-    .addSubcommand(sub => sub.setName('search').setDescription('Find a specific MP weapon\'s loadout')
-        .addStringOption(o => o.setName('weapon').setDescription('The MP weapon you want a build for').setRequired(true).setAutocomplete(true))
-        .addIntegerOption(o => o.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
-        .addStringOption(o => o.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.')
-            .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
-    .addSubcommand(sub => sub.setName('list').setDescription('Browse a set of builds — a category, meta, or all of DMZ')
-        .addStringOption(o => o.setName('scope').setDescription('Which set of builds to browse').setRequired(true).addChoices(...DEFAULT_SCOPE_CHOICES))
-        .addStringOption(o => o.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.')
-            .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })));
+    .addSubcommand(weaponSub('mp', 'MP', 'Find an MP weapon\'s loadout, or browse a whole class, Meta or every MP build'))
+    .addSubcommand(weaponSub('dmz', 'DMZ', 'Find a DMZ weapon\'s loadout, or browse Meta or every DMZ build'));
 
 // Matches a scope descriptor back to its human label -- a FIXED_SCOPES entry's own label for the 4 fixed scopes, or the display-cased category name for one of the 7 category scopes.
 function labelForScope(scope) {
@@ -76,23 +73,22 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
 }
 
 async function execute(interaction) {
-    const sub = interaction.options.getSubcommand();
-    if (sub === 'search') {
-        const raw = interaction.options.getString('weapon');
-        // A `~cat~<CATEGORY>` value came from a category row in the autocomplete list (removed 2026-10-19 18:57 EDT, Harkirat: those belong in /gunsmiths list; kept so an old open autocomplete still resolves); `~` can never appear in a weaponKey (checked against all 70), so this cannot collide.
-        if (raw.startsWith('~cat~')) {
-            // `build:` is deliberately IGNORED on a category row -- it means "build N of this weapon", and a scope browse has no single weapon. Silently starting at flat index N-1 would be a different, surprising meaning.
-            return renderScopeBrowse(interaction, { mode: 'MP', category: raw.slice(5), metaOnly: false }, 0);
-        }
-        const { lookupAndRenderWeapon } = require('../utils/loadoutLookup');
-        return lookupAndRenderWeapon(interaction, {
-            mode: 'MP',
-            rawQuery: raw,
-            requestedBuild: interaction.options.getInteger('build'),
-            visibilityChoice: interaction.options.getString('visibility'),
-        });
+    const mode = interaction.options.getSubcommand() === 'dmz' ? 'DMZ' : 'MP';
+    const raw = interaction.options.getString('weapon');
+    // A browse row from the suggestions carries `~scope~<token>`; `~` can never appear in a weaponKey. `build:` is ignored on one: it means "build N of this weapon", and a browse has no single weapon.
+    if (raw.startsWith('~scope~')) {
+        const scope = parseScopeToken(raw.slice(7));
+        if (scope.mode === 'MP' || scope.mode === 'DMZ') return renderScopeBrowse(interaction, scope, 0);
     }
-    return renderScopeBrowse(interaction, parseScopeToken(interaction.options.getString('scope')), 0);
+    // The old `~cat~<CATEGORY>` rows (removed 2026-10-19 18:57 EDT) still resolve, for a suggestion list a client kept open.
+    if (raw.startsWith('~cat~')) return renderScopeBrowse(interaction, { mode: 'MP', category: raw.slice(5), metaOnly: false }, 0);
+    const { lookupAndRenderWeapon } = require('../utils/loadoutLookup');
+    return lookupAndRenderWeapon(interaction, {
+        mode,
+        rawQuery: raw,
+        requestedBuild: interaction.options.getInteger('build'),
+        visibilityChoice: interaction.options.getString('visibility'),
+    });
 }
 
 module.exports = { data, execute, renderScopeBrowse };

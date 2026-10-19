@@ -52,7 +52,7 @@ async function route(interaction) {
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
         }
 
-        // /gunsmiths list SCOPE JUMP dropdown -- a SELECT. Type-tested because `gsb~jump~...` would otherwise fall through to the button branch below if this file ever lost the explicit isStringSelectMenu() test -- the exact dead-branch bug this file's header documents (a select handler written under isButton() becomes dead code with no error).
+        // /gunsmiths browse-row SCOPE JUMP dropdown -- a SELECT. Type-tested because `gsb~jump~...` would otherwise fall through to the button branch below if this file ever lost the explicit isStringSelectMenu() test -- the exact dead-branch bug this file's header documents (a select handler written under isButton() becomes dead code with no error).
         if (interaction.isStringSelectMenu() && interaction.customId.startsWith('gsb~jump~')) {
             const scopeToken = interaction.customId.split('~')[2];
             const { parseScopeToken, resolveScopeBuilds } = require('../utils/loadoutScopes');
@@ -64,7 +64,7 @@ async function route(interaction) {
             return await renderScopeBrowse(interaction, scope, target, { isUpdate: true });
         }
 
-        // /gunsmiths list SCOPE PAGING + COPY + META SWITCH -- a BUTTON. `action` outside {next,prev,copy,copyatt,meta} guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
+        // /gunsmiths browse-row SCOPE PAGING + COPY + META SWITCH -- a BUTTON. `action` outside {next,prev,copy,copyatt,meta} guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
         if (interaction.isButton() && interaction.customId.startsWith('gsb~')) {
             const [, action, scopeToken, flatIndexRaw] = interaction.customId.split('~');
             const { parseScopeToken, resolveScopeBuilds, flatIndexToPosition } = require('../utils/loadoutScopes');

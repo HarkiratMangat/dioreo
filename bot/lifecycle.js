@@ -13,7 +13,7 @@ const { sendAlert } = require('../utils/alertWebhook');
 const { createGatewayRecovery } = require('../utils/gatewayRecovery');
 const { pruneExpiredThumbnails } = require('../utils/cloudinaryCache');
 const { pruneOrphanedPatchFolders } = require('../utils/patchNotesCache');
-const { applyGunsmithsScopeChoices, registerApplicationCommands } = require('./registry');
+const { registerApplicationCommands } = require('./registry');
 
 // --- DRAW THUMBNAIL CLOUDINARY CACHE: SCHEDULED CLEANUP (2026-07-12) --- Cloudinary has no native per-asset TTL (confirmed against the current cloudinary_npm docs before building this feature) -- so "auto-delete after 45 days" only happens because THIS runs on a schedule, not because Cloudinary does it on its own. Deletes only assets that are BOTH 45+ days old AND no longer referenced by any current draw (Harkirat's confirmed rule), so a long-lived draw's cached image is never at risk just because it's been up a while. Wrapped in its own try/catch since this runs unawaited from handleBotReady -- a failure here must never be able to crash the bot (matches the crash-resilience convention documented in CLAUDE.md).
 async function runCloudinaryCleanup() {
@@ -142,13 +142,7 @@ function registerLifecycle(client, commands) {
             console.log(`😀 Emoji ids: ${emojiSync.synced} re-pointed to this app, ${emojiSync.overridden} dev-overridden, ${emojiSync.missing.length} unmatched${emojiSync.missing.length ? ` (${emojiSync.missing.join(', ')})` : ''}`);
         }
 
-        // Split into two independent try/catches (v3-pre-release review, finding #4) -- these were previously one unguarded `await` pair, so a throw in the FIRST call (unbounded choices, a renamed sub-option) silently skipped the SECOND, meaning no commands reached Discord at all with no loud signal beyond a generic client 'error' alert. Each failure is now independently alerted and neither can cancel the other.
-        try {
-            await applyGunsmithsScopeChoices(commands);
-        } catch (scopeChoicesError) {
-            console.error('❌ /gunsmiths scope choices failed to apply (registering commands anyway):', scopeChoicesError);
-            sendAlert('/gunsmiths scope choices failed', scopeChoicesError, 'error');
-        }
+        // /gunsmiths list's DB-derived scope choices were filled in here (applyGunsmithsScopeChoices) until /gunsmiths list was removed on 2026-10-19 19:43 EDT; its browse rows are now computed per keystroke in the autocomplete (handlers/router.js).
         try {
             await registerApplicationCommands(client, commands);
         } catch (registrationError) {

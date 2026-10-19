@@ -318,16 +318,16 @@ async function handleInteractionInner(interaction) {
                 return interaction.respond(changed.filter(f => f.toLowerCase().includes(typed)).slice(0, 25).map(f => ({ name: f, value: f })));
             }
 
-            // Standard Loadout Dictionary Autocomplete Mapping (/dmz, /gunsmiths search)
+            // Standard Loadout Dictionary Autocomplete Mapping (/dmz, /gunsmiths mp, /gunsmiths dmz)
             const Loadout = require('../models/Loadout');
             let queryFilter = {};
 
             if (commandName === 'dmz') {
                 queryFilter.mode = 'DMZ';
             } else if (commandName === 'gunsmiths') {
-                // `list` uses static choices (injected at registration by bot/registry.js's applyGunsmithsScopeChoices) and must never reach here -- only `search` autocompletes.
-                if (interaction.options.getSubcommand() !== 'search') return await interaction.respond([]);
-                queryFilter.mode = 'MP';
+                const sub = interaction.options.getSubcommand();
+                if (sub !== 'mp' && sub !== 'dmz') return await interaction.respond([]);
+                queryFilter.mode = sub === 'dmz' ? 'DMZ' : 'MP';
             } else {
                 return await interaction.respond([]);
             }
@@ -345,12 +345,18 @@ async function handleInteractionInner(interaction) {
 
             const { displayCategoryLabel } = require('../utils/loadoutRender');
 
-            // /gunsmiths search lists WEAPONS only. It used to put "▸ All AR builds (17 weapons)" rows ahead of them; Harkirat, 2026-10-19 18:57 EDT: "remove these 'all xxx builds' from /gunsmith search. those belong in /gunsmith list". commands/gunsmiths.js still opens a `~cat~` value, so a stale client's old row keeps working.
+            // /gunsmiths mp and dmz open with their browse rows (All META, All MP / All DMZ, then each MP class), then the weapons (Harkirat, 2026-10-19 19:43 EDT). The rows filter with the same fuzzyMatch as the weapons, so typing "ak" leaves only weapons; their budget comes off the 25 first, so a row can never push every weapon out of view.
             if (commandName === 'gunsmiths') {
+                const { browseRows } = require('../utils/loadoutScopes');
+                const mode = queryFilter.mode;
+                const cats = mode === 'MP' ? [...new Set(distinctChoices.map(w => w.category))].sort() : [];
+                const rows = browseRows(mode, cats)
+                    .filter(r => !focusedValue || fuzzyMatch(focusedValue, r.label))
+                    .map(r => ({ name: `▸ ${r.label}`, value: `~scope~${r.value}` }));
                 const weaponRows = findWeaponMatches(focusedValue, distinctChoices)
-                    .slice(0, 25)
-                    .map(w => ({ name: `[${displayCategoryLabel(w.category)}] ${w.weaponName}`, value: w.weaponKey }));
-                return await interaction.respond(weaponRows);
+                    .slice(0, 25 - rows.length)
+                    .map(w => ({ name: mode === 'MP' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName, value: w.weaponKey }));
+                return await interaction.respond([...rows, ...weaponRows]);
             }
 
             // /dmz: unchanged -- plain weapon names, no category prefix (that's gunsmiths-only, and /dmz has no per-category split -- see models/Loadout.js on categoryRank/DMZ). findWeaponMatches (2026-07-18) also expands recognized category synonyms (e.g. "pistol"/"smg"/"assault rifle") so typing a weapon-class term surfaces every weapon in that category, not just weapons whose own name happens to contain that word -- see utils/search.js's own comment for the full reasoning + the synonym list.

@@ -149,8 +149,8 @@ check('/help and /invite are placed despite CATEGORY_DEFS not knowing them', () 
 // ── order, which carries decisions ─────────────────────────────────────────────────────────────
 check('within a group, order follows CATEGORY_DEFS then the builder', () => {
     const gunsmiths = catalog.groups.find(g => g.key === 'gunsmiths').commands.map(c => c.path);
-    // CATEGORY_DEFS declares `/gunsmiths` before `/dmz`; the builder declares `search` before `list`. One entry covers both subcommands, so only the builder can order those two.
-    assert.deepStrictEqual(gunsmiths, ['/gunsmiths search', '/gunsmiths list', '/dmz']);
+    // CATEGORY_DEFS declares `/gunsmiths` before `/dmz`; the builder declares `mp` before `dmz`. One entry covers both subcommands, so only the builder can order those two.
+    assert.deepStrictEqual(gunsmiths, ['/gunsmiths mp', '/gunsmiths dmz', '/dmz']);
 
     const draws = catalog.groups.find(g => g.key === 'draws').commands.map(c => c.path);
     assert.deepStrictEqual(draws, ['/draws', '/draw prices', '/draw calculator']);
@@ -167,13 +167,13 @@ check('options carry required, autocomplete and choice NAMES', () => {
     const datetime = timestamp.options.find(o => o.name === 'datetime');
     assert.strictEqual(datetime.required, true, 'datetime is required on /timestamp');
 
-    const weapon = byPath.get('/gunsmiths search').options.find(o => o.name === 'weapon');
+    const weapon = byPath.get('/gunsmiths mp').options.find(o => o.name === 'weapon');
     assert.strictEqual(weapon.autocomplete, true, 'weapon is an autocomplete option');
 
     // Discord shows a choice's NAME and never its value, so a value on the page would be a string the reader never sees in the client.
-    const scope = byPath.get('/gunsmiths list').options.find(o => o.name === 'scope');
-    assert.ok(scope.choices.includes('All MP builds'), 'choice NAMES, not values');
-    assert.ok(!scope.choices.includes('all'), 'a choice VALUE must never reach the page');
+    const page = byPath.get('/draws').options.find(o => o.name === 'page');
+    assert.ok(page.choices.includes('New Draws'), 'choice NAMES, not values');
+    assert.ok(!page.choices.includes('new'), 'a choice VALUE must never reach the page');
 });
 
 check('every anchor id is unique across the whole page', () => {

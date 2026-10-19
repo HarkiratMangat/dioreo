@@ -63,7 +63,7 @@ const ACCENT_SOURCE = {
 };
 
 /** The six that derive an accent per render, so the page can SAY so rather than invent one. */
-const DERIVED = new Set(['/settings', '/colors', '/dmz', '/gunsmiths search', '/gunsmiths list', '/draw calculator']);
+const DERIVED = new Set(['/settings', '/colors', '/dmz', '/gunsmiths mp', '/gunsmiths dmz', '/draw calculator']);
 
 const REPO = path.resolve(__dirname, '..', '..');
 const intToHex = n => '#' + Number(n).toString(16).toUpperCase().padStart(6, '0');
@@ -890,7 +890,7 @@ function badges(option, required) {
 
 /** Which weapon list an option searches, or '' when it is not a weapon option. */
 const weaponMode = (command, option) =>
-    option.name !== 'weapon' ? '' : (command.path === '/dmz' ? 'DMZ' : 'MP');
+    option.name !== 'weapon' ? '' : (command.path === '/dmz' || command.path === '/gunsmiths dmz' ? 'DMZ' : 'MP');
 
 function choiceBlock(option, tints, chosen) {
     const pills = option.choices.map((choice, i) => {
@@ -1011,7 +1011,8 @@ function renderPanel(command, group, C, accents, cats, scopes) {
     const options = ownOptions(command);
     const derived = DERIVED.has(command.path);
 
-    const tintOpt = command.path === '/gunsmiths list' ? 'scope' : '';
+    // /gunsmiths list's scope picker was the one choice option tinted per choice; it was removed 2026-10-19 19:43 EDT and its browse rows now live in the weapon suggestions, so nothing sets this today.
+    const tintOpt = '';
     const tuple = hex => [hex, solveOn(hex), solveText(hex, GROUND_DARK), solveText(hex, GROUND_LIGHT)];
     const tintTable = tintOpt
         ? Object.fromEntries(Object.entries(scopes).map(([k, v]) => [k, tuple(v)]))

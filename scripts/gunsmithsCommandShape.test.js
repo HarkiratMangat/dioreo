@@ -6,17 +6,23 @@ const json = data.toJSON();
 assert.deepStrictEqual([...new Set(json.options.map(o => o.type))], [1],
     'top-level options must be subcommands (type 1) ONLY — Discord rejects a mix');
 assert.strictEqual(json.options.length, 2, 'expected exactly 2 subcommands');
-assert.deepStrictEqual(json.options.map(o => o.name).sort(), ['list', 'search']);
+// mp and dmz since 2026-10-19 19:43 EDT (Harkirat: search became MP, a new DMZ, list removed). Discord names are lower case.
+assert.deepStrictEqual(json.options.map(o => o.name), ['mp', 'dmz']);
 assert.deepStrictEqual(json.integration_types, [0, 1], 'must be guild + user installable (v3)');
 
-// Discord's own limits, asserted here so a violation is a TEST failure rather than a registration rejection at boot: descriptions cap at 100 chars, choice names at 100.
+// Discord's own limits, asserted here so a violation is a TEST failure rather than a registration rejection at boot: descriptions cap at 100 chars.
 const allDescs = [json.description, ...json.options.flatMap(o => [o.description, ...(o.options || []).map(x => x.description)])];
 allDescs.forEach(dsc => assert.ok(dsc.length <= 100, `description over 100 chars: "${dsc}"`));
-const scopeOpt = json.options.find(o => o.name === 'list').options.find(o => o.name === 'scope');
-scopeOpt.choices.forEach(c => assert.ok(c.name.length <= 100, `choice name too long: ${c.name}`));
-// 10 since 2026-10-19 19:39 EDT: Meta MP and Meta DMZ merged into one "All META builds" choice with an MP / DMZ switch on the panel (Harkirat).
-assert.strictEqual(scopeOpt.choices.length, 10, 'expected 10 scope choices (3 fixed + 7 categories)');
-assert.deepStrictEqual(scopeOpt.choices.slice(0, 4).map(c => c.name), ['All META builds', 'All DMZ builds', 'All MP builds', 'All AR builds [MP]'], 'his order: META, DMZ, MP, then each class tagged [MP]');
+for (const sub of json.options) {
+    const weapon = sub.options.find(o => o.name === 'weapon');
+    assert.ok(weapon && weapon.autocomplete && weapon.required, `${sub.name} takes a required, autocompleted weapon`);
+}
+{
+    // The browse rows that open each one's suggestions, in his order: META first, then the mode's whole set, then each MP class.
+    const { browseRows } = require('../utils/loadoutScopes');
+    assert.deepStrictEqual(browseRows('MP', ['AR', 'SMG']).map(r => r.label), ['All META builds', 'All MP builds', 'All AR builds', 'All SMG builds']);
+    assert.deepStrictEqual(browseRows('DMZ').map(r => [r.label, r.value]), [['All META builds', 'DMZ.*.meta'], ['All DMZ builds', 'DMZ.*.std']]);
+}
 {
     // The meta switch: under a meta browse only, the side on screen disabled and the other one live.
     const { buildLoadoutCard } = require('../utils/loadoutRender');
