@@ -293,6 +293,21 @@ t('a NAMED basket\'s manage row reads Rename, not Save', () => {
 // ==========================================
 // REGION SWITCHING PRESERVES PROGRESS
 // ==========================================
+// THE 2X OFFERS (2026-10-18 20:34 EDT, his asks): under the cost breakdown after a small space, two lines of his wording, and options that say what the offer gives against the bundle's normal CP.
+t('the 2X offers sit under the cost breakdown in his wording, each option giving its 2X and normal CP', () => {
+    const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], entitlementMask: 0 }), {}, { liveDoubleCPEntry: { isDoubleCP: true } });
+    const top = panel[0].components;
+    const ent = top.findIndex(c => c.type === 1 && c.components[0].custom_id && verbOf(c.components[0]) === 'ent');
+    assert.ok(ent > 0, 'the dropdown is there');
+    assert.ok(top[ent - 1].type === 10 && top[ent - 1].content === '-# 🎉 A **Double CP** event is live right now.\n-# Select which 2X CP offers are still available for you to purchase.', top[ent - 1].content);
+    assert.deepStrictEqual([top[ent - 2].type, top[ent - 2].divider, top[ent - 2].spacing], [14, false, 1], 'a small space with no line above it');
+    assert.ok(top[ent - 3].type === 9 && /Full Breakdown|Simple Breakdown/.test(top[ent - 3].accessory.label), 'right under the cost breakdown');
+    assert.ok(top.slice(ent + 1).some(c => c.type === 1 && c.components.some(b => b.label === 'Save Result')), 'above the action row');
+    const opts = top[ent].components[0].options;
+    assert.deepStrictEqual([opts[0].label, opts[0].description], ['160 CP bundle (80+80 CP)', 'Normally gives only 80 CP']);
+    assert.deepStrictEqual([opts[1].label, opts[1].description], ['800 CP bundle (400+400 CP)', 'Normally gives only 420 CP'], 'the normal figure carries the bundle\'s bonus');
+});
+
 // SET REGION & BALANCE on every screen (2026-10-18 17:25 EDT, his ask: "moving away from the 4 button row"), in his two-line layout and his placement (2026-10-18 19:24 EDT): the bottom of the landing and the editor, right under the list of draws on the result.
 t('Set Region & Balance sits at the bottom of the landing and the editor and under the result\'s list, in his layout', () => {
     const basket = { region: 'region_20', balance: 3000, mythicCards: 300 };

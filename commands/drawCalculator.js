@@ -601,9 +601,10 @@ function entitlementSelectRow(state, basket) {
             type: 3, custom_id: encodeState('ent', state), placeholder: 'Unused 2X entitlements (optional)...',
             min_values: 0, max_values: CP_PACKAGES.length,
             options: CP_PACKAGES.map((p, i) => ({
-                label: `${fmt(p.baseCp)} CP bundle`,
+                // What the offer gives and what the bundle normally gives (2026-10-18 20:34 EDT, his wording): "160 CP bundle (80+80 CP)", "Normally gives only 80 CP". The normal figure includes the bundle's usual bonus (400 base gives 420).
+                label: `${fmt(p.baseCp * 2)} CP bundle (${fmt(p.baseCp)}+${fmt(p.baseCp)} CP)`,
                 value: p.id,
-                description: `Gives ${fmt(p.baseCp * 2)} CP during a 2X event`,
+                description: `Normally gives only ${fmt(normalCp(p))} CP`,
                 default: (basket.entitlementMask & (1 << i)) !== 0
             }))
         }]
@@ -1343,14 +1344,15 @@ function buildCostPage(state, basket, accentColor, options = {}) {
 
 // The rows under the cost, shared by the compact view and the Full Breakdown. Region and balance sit under the list of draws (regionBalanceSection).
 function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntry) {
-    components.push({ type: 14, spacing: 2, divider: true }, resultActionRow(state));
-
+    // THE 2X OFFERS sit under the cost breakdown, after a small space with no line, and above the action row (2026-10-18 20:34 EDT, his ask: "move the 2x cp section into the bottom of the 'cost breakdown' section"). The event line and the ask are two lines; "is live", not "looks live" (his wording).
     if (liveDoubleCPEntry || basket.entitlementMask) {
-        components.push({ type: 10, content: liveDoubleCPEntry
-            ? `-# 🎉 A **Double CP** event looks live right now${liveDoubleCPEntry.endDate ? ` (ends <t:${Math.floor(new Date(liveDoubleCPEntry.endDate).getTime() / 1000)}:R>)` : ''}. Tell the optimizer which bundles you still have a 2X entitlement on.`
-            : `-# Select which bundles you still have an unused 2X entitlement on, if the event is running.` });
+        const ends = liveDoubleCPEntry && liveDoubleCPEntry.endDate ? ` (ends <t:${Math.floor(new Date(liveDoubleCPEntry.endDate).getTime() / 1000)}:R>)` : '';
+        components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: liveDoubleCPEntry
+            ? `-# 🎉 A **Double CP** event is live right now${ends}.\n-# Select which 2X CP offers are still available for you to purchase.`
+            : '-# Select which 2X CP offers are still available for you to purchase, if a Double CP event is running.' });
         components.push(entitlementSelectRow(state, basket));
     }
+    components.push({ type: 14, spacing: 2, divider: true }, resultActionRow(state));
     return { type: 17, accent_color: accentColor, components };
 }
 
