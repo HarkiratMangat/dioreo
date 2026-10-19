@@ -8,6 +8,9 @@
 //   node scripts/syncMissingDevEmojis.js --replace-broken  # delete and re-upload every copy the check flags
 //   node scripts/syncMissingDevEmojis.js --replace Name1,Name2
 //   node scripts/syncMissingDevEmojis.js --replace-all   # re-upload every copy from prod
+//   node scripts/syncMissingDevEmojis.js --app admin --file 10CP=local/emoji-originals/cp-coin-10cp-128.avif
+//       # upload YOUR ORIGINAL file under that name (replacing any copy), then check it. The way around Discord's re-compression
+//       # of a heavy emoji: a file already under 256 KB goes up untouched (Harkirat, 2026-10-19 14:01 EDT: "what if you try uploading the original version").
 //
 // WHY THE REBUILD (Harkirat, 2026-10-19 13:26 EDT: "the earlier dev bot script kind of bugged out a few of the emojis during the transfer"). The first version downloaded every animated emoji as `.gif` and every static one as `.png`. A GIF has one bit of transparency, so a soft or glowing edge comes back hard, and the CDN's GIF is a conversion rather than the uploaded file. This version downloads WebP at the emoji's NATIVE size (animated when the emoji is), lossless when that fits, and falls back to default-quality WebP and then GIF/PNG only when a candidate is over Discord's limit or refused. Then it CHECKS: each copy is fetched back the same way as its prod original and compared on what can actually differ after Discord re-encodes an upload (animated or not, width, height, frame count, and a file that shrank a lot), so a bad copy is named by measurement instead of noticed in a panel.
 //
@@ -44,13 +47,14 @@ function readEnvFile(file) {
 }
 
 function parseArgs(argv) {
-    const args = { app: 'public', check: false, replaceBroken: false, replaceAll: false, replace: [] };
+    const args = { app: 'public', check: false, replaceBroken: false, replaceAll: false, replace: [], files: [] };
     for (let i = 0; i < argv.length; i++) {
         const a = argv[i];
         if (a === '--app') args.app = argv[++i];
         else if (a === '--check') args.check = true;
         else if (a === '--replace-broken') args.replaceBroken = true;
         else if (a === '--replace-all') args.replaceAll = true;
+        else if (a === '--file') args.files = String(argv[++i] || '').split(',').map(pair => { const eq = pair.indexOf('='); return { name: pair.slice(0, eq).trim(), file: pair.slice(eq + 1).trim() }; }).filter(f => f.name && f.file);
         else if (a === '--replace') args.replace = String(argv[++i] || '').split(',').map(s => s.trim()).filter(Boolean);
         else throw new Error(`Unknown argument: ${a}`);
     }
@@ -173,6 +177,28 @@ async function main() {
         return new Map((res.json.items || res.json || []).map(e => [e.name, e]));
     };
     let existing = await list();
+
+    if (args.files.length) {
+        const MIME = { '.avif': 'image/avif', '.webp': 'image/webp', '.gif': 'image/gif', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' };
+        for (const { name, file } of args.files) {
+            const s = sources.get(name);
+            const mime = MIME[path.extname(file).toLowerCase()];
+            if (!s) { console.error(`   ❌ :${name}: not in utils/emojiMap.js`); continue; }
+            if (!mime) { console.error(`   ❌ :${name}: unknown file type ${file}`); continue; }
+            const buf = fs.readFileSync(path.resolve(REPO_ROOT, file));
+            if (buf.length > MAX_UPLOAD_BYTES) { console.error(`   ❌ :${name}: ${Math.round(buf.length / 1024)} KB, over 256`); continue; }
+            const old = existing.get(name);
+            if (old) {
+                const del = await discord(token, 'DELETE', `/applications/${appId}/emojis/${old.id}`);
+                if (!del.ok) { console.error(`   ❌ :${name}: delete failed ${del.status}`); continue; }
+            }
+            const res = await discord(token, 'POST', `/applications/${appId}/emojis`, { name, image: `data:${mime};base64,${buf.toString('base64')}` });
+            if (!res.ok) { console.error(`   ❌ :${name}: ${res.status} ${typeof res.json === 'string' ? res.json : JSON.stringify(res.json)}`); continue; }
+            const problems = await compare(s, res.json).catch(err => [`could not compare: ${err.message}`]);
+            console.log(problems.length ? `   ⚠️  :${name}: uploaded from ${path.basename(file)}, differs from prod: ${problems.join(', ')}` : `   ✅ :${name}: uploaded from ${path.basename(file)}, matches prod`);
+        }
+        return;
+    }
 
     if (!args.check) {
         const missing = [...sources.values()].filter(s => !existing.has(s.name));
