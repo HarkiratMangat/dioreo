@@ -29,7 +29,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.91.0 — 2026-10-19 12:39 EDT (#200) — right-click a post to add it to patch notes, draws or the calendar, and right-click a person to see their colours
+## Pre-Release v3.92.0 — 2026-10-19 15:43 EDT (#201) — Dioreo Admin, a second app for the admin commands, and View Colors from a message
+**A second Discord application, a message right-click, `/patch notes` and the emoji copy script.** Harkirat's asks on this branch; what is true now is `bot/clients.js` and `docs/db-deferred-list.md` ("Dioreo Admin").
+
+- **Dioreo Admin:** with `ADMIN_BOT_TOKEN` set, `/manage`, `/bot`, `/autobuild`, the four admin right-clicks and the dev-only `/embedtest` leave the public app for a user-install-only admin app, so they stop showing in every user's command list. One process logs in twice, with the same router and database; each app shows its own emoji copies, and command links work across both. `/admin` stays on Dioreo. Without the token nothing changes.
+- **View Colors** (everyone, on a message): the same panel as on a person, for the message's author.
+- **`/patch notes`:** the released line shows the date only.
+- **Emojis:** `scripts/syncMissingDevEmojis.js` copies, checks and repairs a non-prod app's emojis (`--app admin`, `--check`, `--file`). Discord re-compresses any upload over 256 KB, which is what blurred the dev bot's copies, so heavy emojis come from Harkirat's originals. Checkmark is his current final on every app.
+- **At deploy, on his word:** the VM's `.env` gains `ADMIN_BOT_TOKEN`, together with the prod admin app's emojis.
+
+
+## Pre-Release v3.91.0 — 2026-10-19 12:39 EDT (#200 · `da8b6358`) — right-click a post to add it to patch notes, draws or the calendar, and right-click a person to see their colours
 **Six right-click commands, `/colors`, `/calendar`, `/patch notes`, `/draw calculator`, a new `ColorCache` model and PRIVACY.md.** Harkirat's asks on this branch; what is true now is `.claude/rules/commands-overview.md`.
 
 - **Add to Patch Notes** (admin, on a post or a forward of it). A private panel shows the post's images and a season dropdown (New season + the 24 newest); Add images, Replace images or Create season opens /manage's own Season box pre-filled. The post's date fills Release Date only when it is blank, its extra text is added to Additional Info, and its title line and "final patchnotes are subject to change" are left out.
