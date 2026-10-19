@@ -37,6 +37,8 @@ const DrawBasketSchema = new mongoose.Schema({
     submitted: { type: Boolean, default: false },
     // A SAVED calculation stays exactly as it was saved (2026-10-14 17:28 EDT, Harkirat: "a saved calc should remain in its saved state. so that means a user needs to press save and select that previous saved result to override it"). The first change made to one opens an unnamed working copy instead, and this is the saved calculation it came from: the title says so, and Save offers to save over it.
     sourceId: { type: String },
+    // This calculation's own price currency (2026-10-18 20:00 EDT, Harkirat: "allow currency to be changed in the Set region balance button modal. This change can be per calculation. whereas the /settings one is the default"). Null follows the player's /settings default (UserPreference.cpCurrency); a code here overrides it for this calculation only.
+    currency: { type: String, default: null },
     createdAt: { type: Date, default: Date.now },
     // When the calculation last changed (2026-10-13 12:40 EDT). Running /draw calculator again reopens the most recently changed one -- before this an unsaved calculation could not be reached again once its message was gone. Written by utils/drawBasketStore.js on every save and rename. Older documents lack it and fall back to createdAt.
     updatedAt: { type: Date, default: Date.now }

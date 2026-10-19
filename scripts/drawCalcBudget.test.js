@@ -546,9 +546,21 @@ t('Set Balance is disabled until a calculation exists to write it to; on the edi
     const withCards = makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], region: 'region_20', balance: 3000, mythicCards: 300 });
     const modal = dc.buildRegionBalanceModal(state(), withCards);
     assert.strictEqual(modal.title, 'Set Region & Balance');
-    assert.deepStrictEqual(modal.components.map(l => l.component.custom_id), ['region', 'amount', 'cards', 'coins']);
+    assert.deepStrictEqual(modal.components.map(l => l.component.custom_id), ['region', 'currency', 'amount', 'cards', 'coins'], 'five fields, Discord\'s most');
     assert.deepStrictEqual(modal.components[0].component.options.filter(o => o.default).map(o => o.value), ['region_20'], 'the current region pre-picked');
-    assert.deepStrictEqual(modal.components.slice(1).map(l => l.component.value), ['3000', '300', undefined], 'set balances pre-filled, a blank box means 0');
+    assert.deepStrictEqual(modal.components.slice(2).map(l => l.component.value), ['3000', '300', undefined], 'set balances pre-filled, a blank box means 0');
+    // THE CURRENCY, per calculation (2026-10-18 20:00 EDT, his ask): the calculation's own, else the /settings default, pre-picked; the default is marked.
+    const cur = m => m.components[1].component.options;
+    assert.deepStrictEqual(cur(modal).filter(o => o.default).map(o => o.value), ['USD'], 'no currency of its own: the default');
+    const kes = dc.buildRegionBalanceModal(state(), { ...withCards, currency: 'EUR' }, { defaultCurrency: 'KES' });
+    assert.deepStrictEqual(cur(kes).filter(o => o.default).map(o => o.value), ['EUR'], 'its own currency pre-picked');
+    assert.ok(cur(kes).some(o => o.value === 'KES' && o.description === 'Your default'), 'a default outside the quick list is still offered, and marked');
+    assert.ok(cur(kes).length <= 25 && new Set(cur(kes).map(o => o.value)).size === cur(kes).length, 'one dropdown, no repeats');
+    assert.strictEqual(dc.calcCurrency({ currency: 'EUR' }, 'CAD'), 'EUR');
+    assert.strictEqual(dc.calcCurrency({ currency: null }, 'CAD'), 'CAD');
+    assert.strictEqual(dc.calcCurrency({ currency: 'XXX' }, 'CAD'), 'CAD', 'an unknown code falls back to the default');
+    const { ModalBuilder } = require('discord.js');
+    assert.doesNotThrow(() => new ModalBuilder(kes).toJSON(), 'discord.js accepts the five-field pop-up');
     assert.ok(verbOf({ custom_id: modal.custom_id }) === 'nums', 'submits to the Set Balance verb');
     assert.ok(modal.components.every(l => l.type === 18 && l.label.length <= 45));
     assert.strictEqual(Boolean(buttonLabelled(form([{ drawKey: 'mythicWeapon', pullsDone: 0 }]), 'Upgrade: None').disabled), false, 'Upgrade beside its line');
@@ -751,7 +763,7 @@ t('the purchase is his layout: the total for its price, what is left over, then 
     const bundles = lines.filter(l => l.startsWith('> **'));
     assert.ok(bundles.length >= 1 && bundles.every(l => /^> \*\*\d+× `[\d,]+ CP`\*\* bundle ⌇ \*\*`CA\$[\d,.]+`\*\*( each)?$/.test(l)), bundles.join('\n'));
     assert.ok(bundles.every(l => /^> \*\*1×/.test(l) ? !/ each$/.test(l) : / each$/.test(l)), '"each" only on a count above one');
-    assert.ok(/^-# \*Prices in \*\*CAD\*\* · Change in .+\*$/.test(lines[lines.length - 1]) && !/Cheapest/.test(block), 'the currency line, in italics');
+    assert.ok(/^-# \*Prices in \*\*CAD\*\* \(Tip: Set default in .+\)\*$/.test(lines[lines.length - 1]) && !/Cheapest/.test(block), 'the currency line, in italics, his wording (2026-10-18 20:00 EDT)');
 });
 
 t('the simplified list is his draft: a bold line per draw, in a Section with Edit Selection as its button; Price and attempts only in the Full Breakdown (2026-10-18 19:31 EDT)', () => {

@@ -14,11 +14,11 @@ const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
     findLiveDoubleCPEntry, buildExportText, readBalanceFields, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
     buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName,
-    buildAddDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal
+    buildAddDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency
 } = require('../commands/drawCalculator');
 const { pullCount, upgradeKeyOf, isArmoryKey, armorySize } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
-const { CP_PACKAGES } = require('../utils/cpPackages');
+const { CP_PACKAGES, CURRENCIES } = require('../utils/cpPackages');
 const basketStore = require('../utils/drawBasketStore');
 const { resolvePanelActor } = require('../utils/interactionContext');
 
@@ -76,7 +76,8 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
         liveDoubleCPEntry,
         // This season's draws for the form's first dropdown, read on every render so a draw added in /manage shows on the next click.
         seasonDraws: await listSeasonDraws(),
-        currency: prefs?.cpCurrency || 'USD',
+        // The calculation's own currency, else the /settings default (2026-10-18 20:00 EDT).
+        currency: calcCurrency(basket, prefs?.cpCurrency || 'USD'),
         timezone: prefs?.timezone || null,
         client: interaction.client,
         savedBaskets,
@@ -97,7 +98,7 @@ async function writeTo(userId, state, basket, fields) {
         if (Object.entries(fields).every(([k, v]) => JSON.stringify(v) === JSON.stringify(basket[k]))) return basket;
         const copy = await basketStore.save(userId, {
             banners: basket.banners, region: basket.region, balance: basket.balance, includeUpgrades: basket.includeUpgrades,
-            mythicCards: basket.mythicCards || 0, mythicCoins: basket.mythicCoins || 0,
+            mythicCards: basket.mythicCards || 0, mythicCoins: basket.mythicCoins || 0, currency: basket.currency || null,
             entitlementMask: basket.entitlementMask, submitted: basket.submitted, sourceId: String(basket._id), ...fields
         });
         state.basketId = String(copy._id);
@@ -152,7 +153,8 @@ async function route(interaction) {
     // SET REGION & BALANCE (2026-10-18 16:17 EDT): the editor's one pop-up for the region and the balances.
     if (interaction.isButton() && state.verb === 'rbmodal') {
         const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
-        return await interaction.showModal(buildRegionBalanceModal(state, basket));
+        const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+        return await interaction.showModal(buildRegionBalanceModal(state, basket, { defaultCurrency: prefs?.cpCurrency || 'USD' }));
     }
     // The upgrade pop-up (2026-10-17 13:17 EDT): from the one-line button (`upgset`, the line in `f`) or the Mythic-lines dropdown (`upgpick`, the line as its value). A direct response like every showModal, so it comes before the generic defer.
     if ((interaction.isButton() && state.verb === 'upgset') || (interaction.isStringSelectMenu() && state.verb === 'upgpick')) {
@@ -280,6 +282,14 @@ async function route(interaction) {
         let region = null;
         try { region = interaction.fields.getStringSelectValues('region')[0] || null; } catch { region = null; }
         if (region && REGION_ORDER.includes(region) && region !== basket.region) fields.region = region;
+        // The currency, per calculation (2026-10-18 20:00 EDT). Picking the /settings default stores null, so the calculation keeps following the default if it changes later.
+        let cur = null;
+        try { cur = interaction.fields.getStringSelectValues('currency')[0] || null; } catch { cur = null; }
+        if (cur && CURRENCIES.includes(cur)) {
+            const prefs = await UserPreference.findOne({ discordId: actingUserId });
+            const want = cur === (prefs?.cpCurrency || 'USD') ? null : cur;
+            if ((basket.currency || null) !== want) fields.currency = want;
+        }
         const updated = Object.keys(fields).length ? await writeTo(actingUserId, state, basket, fields) : basket;
         await renderPanel(interaction, state, updated);
         if (warning) {
@@ -313,7 +323,7 @@ async function route(interaction) {
             const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
             if (!basket || !basket.banners.length) { await interaction.editReply({ content: 'That calculation no longer exists, so there is nothing to export.' }); return true; }
             const prefs = await UserPreference.findOne({ discordId: actingUserId });
-            await interaction.editReply({ content: `Copy the block below and paste it anywhere in Discord:\n\`\`\`md\n${buildExportText(basket, prefs?.cpCurrency || 'USD')}\n\`\`\`` });
+            await interaction.editReply({ content: `Copy the block below and paste it anywhere in Discord:\n\`\`\`md\n${buildExportText(basket, calcCurrency(basket, prefs?.cpCurrency || 'USD'))}\n\`\`\`` });
         } catch (notifyError) { console.error('Failed to send the calculator export (interaction likely expired):', notifyError); }
         return true;
     }
@@ -329,7 +339,7 @@ async function route(interaction) {
         } else {
             // Help draws its price ladder from the open calculation's region and first draw (2026-10-14 18:33 EDT), so it shows the player their own numbers.
             const open = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
-            panel = buildHelpPanel(accentColor, { region: open?.region || 'region_10', drawKey: open?.banners?.[0]?.drawKey || 'mythicWeapon', currency: prefs?.cpCurrency || 'USD', client: interaction.client });
+            panel = buildHelpPanel(accentColor, { region: open?.region || 'region_10', drawKey: open?.banners?.[0]?.drawKey || 'mythicWeapon', currency: calcCurrency(open, prefs?.cpCurrency || 'USD'), client: interaction.client });
         }
         try {
             await interaction.deferReply({ flags: 64 });
@@ -533,7 +543,7 @@ async function route(interaction) {
         const working = await currentBasket(actingUserId, state);
         const target = state.target ? await basketStore.load(actingUserId, state.target) : null;
         if (!working || !target || !target.name) { await renderPanel(interaction, { ...state, page: 3, target: null }, working, 'Nothing was saved: the calculation or the saved one is gone.'); return true; }
-        const saved = await basketStore.save(actingUserId, { _id: String(target._id), banners: working.banners, region: working.region, balance: working.balance, includeUpgrades: working.includeUpgrades, mythicCards: working.mythicCards || 0, mythicCoins: working.mythicCoins || 0, entitlementMask: working.entitlementMask, submitted: working.submitted });
+        const saved = await basketStore.save(actingUserId, { _id: String(target._id), banners: working.banners, region: working.region, balance: working.balance, includeUpgrades: working.includeUpgrades, mythicCards: working.mythicCards || 0, mythicCoins: working.mythicCoins || 0, currency: working.currency || null, entitlementMask: working.entitlementMask, submitted: working.submitted });
         // The working copy has done its job; a saved one picked as the open calculation is never removed here.
         if (!working.name && String(working._id) !== String(target._id)) await basketStore.remove(actingUserId, String(working._id));
         await renderPanel(interaction, { ...state, basketId: String(target._id), page: 0, target: null, verb: 'load' }, saved, `Replaced "${target.name}".`);
@@ -684,7 +694,7 @@ async function route(interaction) {
             return true;
         }
         // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form, which is what the button now says it does.
-        const updated = await writeTo(actingUserId, state, basket, { banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, submitted: false });
+        const updated = await writeTo(actingUserId, state, basket, { banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, currency: null, submitted: false });
         await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, updated);
         return true;
     }

@@ -15,7 +15,8 @@ const UserPreference = require('../models/UserPreference');
 const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP } = require('./drawprices');
 const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE } = require('../utils/drawCost');
 const crypto = require('crypto');
-const { CP_PACKAGES, STOCK_UP_RULES, PURCHASE_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
+const { CP_PACKAGES, CURRENCIES, STOCK_UP_RULES, PURCHASE_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
+const { QUICK_CURRENCIES, currencyLabel } = require('../utils/cpCurrencyData');
 const { buildTitleBlock, toBoldItalicUnicode } = require('../utils/titleBlock');
 
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
@@ -791,8 +792,8 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
         const costWord = stockUp.extraCents > 0 ? `**${money(stockUp.extraCents)} more**` : stockUp.extraCents === 0 ? '**the same**' : `**${money(-stockUp.extraCents)} less**`;
         purchase.push(`> -# Costs ${costWord} · Buys **${fmt(stockUp.extraCp)} extra CP** at a better rate`);
     }
-    // The currency line stays (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it. Italic, his draft. The estimates disclaimer moved to Help's footer (2026-10-18 19:44 EDT, his ask: "this thing is more like a disclaimer and clutters the real info").
-    purchase.push(`-# *Prices in **${currency}** · Change in ${settingsMention}*`);
+    // The currency line stays (2026-10-13 12:40 EDT): a player outside the US must see which currency these are, and where to change it. Italic, his draft. The estimates disclaimer moved to Help's footer (2026-10-18 19:44 EDT, his ask: "this thing is more like a disclaimer and clutters the real info"). His wording (2026-10-18 20:00 EDT): the currency is set per calculation in Set Region & Balance now; /settings holds the default.
+    purchase.push(`-# *Prices in **${currency}** (Tip: Set default in ${settingsMention})*`);
     return { cost, purchase, buying: true };
 }
 
@@ -874,14 +875,23 @@ function regionBalanceSection(state, basket) {
 }
 // The section under a divider, at the bottom of the landing and the editor.
 function regionBalanceBlock(state, basket) { return [{ type: 14, spacing: 2, divider: true }, regionBalanceSection(state, basket)]; }
+// The currency a calculation prices in: its own, else the player's /settings default (2026-10-18 20:00 EDT).
+function calcCurrency(basket, defaultCurrency = 'USD') { return (basket && basket.currency && CURRENCIES.includes(basket.currency)) ? basket.currency : (defaultCurrency || 'USD'); }
 // THE REGION & BALANCE POP-UP: the region as a dropdown over the three balance boxes, each pre-filled (a blank box means 0). Submits to the same `nums` verb as Set Balance, which also reads `region` when the pop-up carries it.
-function buildRegionBalanceModal(state, basket) {
+function buildRegionBalanceModal(state, basket, { defaultCurrency = 'USD' } = {}) {
     const region = basket?.region || 'region_10';
+    // THE CURRENCY, per calculation (2026-10-18 20:00 EDT, his ask): /settings' quick list, plus this calculation's currency and the player's default when either is outside it. A dropdown holds 25, and there are 41 currencies; the rest are reached by setting the default in /settings.
+    const current = calcCurrency(basket, defaultCurrency);
+    const codes = [...new Set([...QUICK_CURRENCIES, current, defaultCurrency])].filter(c => CURRENCIES.includes(c)).slice(0, 25);
     const box = (id, label, placeholder, value) => ({ type: 18, label, component: { type: 4, custom_id: id, style: 1, required: false, placeholder, ...(value ? { value: String(value) } : {}) } });
     return { custom_id: encodeState('nums', state), title: 'Set Region & Balance', components: [
         { type: 18, label: 'CP Region', description: 'Not sure? Help shows how to find yours', component: {
             type: 3, custom_id: 'region', required: true, min_values: 1, max_values: 1,
             options: REGION_ORDER.map(key => ({ label: regionLabel(key), value: key, emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]]), ...(key === region ? { default: true } : {}) }))
+        } },
+        { type: 18, label: 'Currency', description: 'This calculation only; your default is set in /settings', component: {
+            type: 3, custom_id: 'currency', required: true, min_values: 1, max_values: 1,
+            options: codes.map(code => ({ label: currencyLabel(code), value: code, ...(code === defaultCurrency ? { description: 'Your default' } : {}), ...(code === current ? { default: true } : {}) }))
         } },
         box('amount', 'CP You Already Have', 'e.g. 3,000 or 3k', basket?.balance),
         box('cards', 'Mythic Cards You Hold', 'e.g. 300 or 2k', basket?.mythicCards),
@@ -1537,5 +1547,5 @@ module.exports = {
     buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,
     setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages,
     CALC_KEYS, metaOf, unitOf, lineName, freshLine, buildProgressPanel, buildSpinsInModal, readSpinsIn, listSeasonDraws, selectionSummary,
-    buildAddDrawsModal, buildRemoveModal, readRemovePicks, progressTitle, buildRegionBalanceModal, regionBalanceSection, lineHint
+    buildAddDrawsModal, buildRemoveModal, readRemovePicks, progressTitle, buildRegionBalanceModal, regionBalanceSection, lineHint, calcCurrency
 };

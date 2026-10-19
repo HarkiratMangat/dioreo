@@ -32,6 +32,7 @@ async function save(discordId, basket) {
             entitlementMask: basket.entitlementMask || 0,
             submitted: Boolean(basket.submitted),
             ...(basket.sourceId ? { sourceId: String(basket.sourceId) } : {}),
+            currency: basket.currency || null,
             updatedAt: new Date()
         });
         return created.toObject();
@@ -50,6 +51,8 @@ async function save(discordId, basket) {
             entitlementMask: basket.entitlementMask !== undefined ? basket.entitlementMask : existing.entitlementMask,
             // 🔴 A field missing from BOTH the schema and this whitelist is the silent-revert bug CLAUDE.md names: it would set in memory, save without error, and be gone on the next read.
             submitted: basket.submitted !== undefined ? basket.submitted : existing.submitted,
+            // Null is a real value here (follow the /settings default), so only `undefined` keeps the stored one.
+            currency: basket.currency !== undefined ? basket.currency : (existing.currency || null),
             updatedAt: new Date()
         } },
         { new: true }
