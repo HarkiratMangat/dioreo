@@ -39,7 +39,7 @@ This closes the September conferral item's core complaint: the bot and the porta
 
 Each /manage button runs exactly one op, so **the button's tier is its op's tier**, and `OP_TIERS` is the whole button list. Two consequences made this the right unit rather than a table of button ids:
 
-- `core/changeset.js`'s `commitSet` is the one place every Discord and portal mutation passes through. It now authorizes every commit (`checkOps` in `utils/adminAccess.js`) before validating or applying anything. A handler that forgot its own check, a modal submitted after a grant was narrowed, or a portal route that only knew pages, still cannot write past a missing tier. This also closes the deferred list's P3 "modal submits are not re-checked" item for every write that goes through the core.
+- `core/changeset.js`'s `commitSet` is the one place every Discord and portal mutation passes through. It now authorizes every commit (`checkOps`, in the same file) before validating or applying anything. A handler that forgot its own check, a modal submitted after a grant was narrowed, or a portal route that only knew pages, still cannot write past a missing tier. This also closes the deferred list's P3 "modal submits are not re-checked" item for every write that goes through the core.
 - An op with no entry in `OP_TIERS` is refused for everyone but the owner, and `scripts/permissions.test.js` fails if a registered op has no tier or a tier names a retired op. A new op cannot silently ship ungated.
 
 Two kinds of write do not go through `commitSet` and are gated where they happen: `/autobuild`'s Confirm (a direct `Loadout` save) and the announcement row buttons. Those are `OUTSIDE_ACTIONS`.
@@ -48,7 +48,7 @@ A revert is gated by the Undo rule on the reverted row's page, not by the invers
 
 ### Loadout modes come from the build
 
-MP and DMZ share one op set, and `loadout.delete { target: { id } }` names a build by id only. `pageForOp` falls back to MP for those, which would have refused a DMZ-only admin their own delete and let an MP-only admin through on a DMZ build. The gate reads each named build's mode from the database instead (`pagesForOp` in `utils/adminAccess.js`), never trusting a mode the client sends. An edit that moves a build to the other mode needs the tier on both pages. The Discord delete now also sends the mode, so its ChangeLog row is stamped with the right page.
+MP and DMZ share one op set, and `loadout.delete { target: { id } }` names a build by id only. `pageForOp` falls back to MP for those, which would have refused a DMZ-only admin their own delete and let an MP-only admin through on a DMZ build. The gate reads each named build's mode from the database instead (`pagesForOp` in `core/changeset.js`), never trusting a mode the client sends. An edit that moves a build to the other mode needs the tier on both pages. The Discord delete now also sends the mode, so its ChangeLog row is stamped with the right page.
 
 ## 4 · The grant on Discord
 
@@ -75,9 +75,9 @@ Rows written before this model carry `permissions: [...]` and no `grants`. Until
 ## 6 · What the bot side changed
 
 - `core/permissions.js` (new) — the table.
-- `utils/adminAccess.js` — `can`, `canAction`, `canDo`, `checkOps`, `checkRevert`, `effectiveTiers`, `getBotPages`; the 60-second cache now holds `grants`. `hasCommandAccess` keeps its name for its callers: `manage` = any admin, `bot` = any /bot page, `autobuild` = Create on /autobuild. A legacy block (`ADMIN_COMMANDS`, `NOT_IN_ALL`, `parsePermissionsInput`, `getAdminPermissionsMap`, and the `destructive` case of `hasCommandAccess`) stays only for the portal until its swap, and nothing in the bot uses it.
+- `utils/adminAccess.js` — `can`, `canAction`, `canDo`, `checkRevert`, `effectiveTiers`, `getBotPages`; the 60-second cache now holds `grants`. `hasCommandAccess` keeps its name for its callers: `manage` = any admin, `bot` = any /bot page, `autobuild` = Create on /autobuild. A legacy block (`ADMIN_COMMANDS`, `NOT_IN_ALL`, `parsePermissionsInput`, `getAdminPermissionsMap`, and the `destructive` case of `hasCommandAccess`) stays only for the portal until its swap, and nothing in the bot uses it.
 - `models/AdminUser.js` — `grants: [{ scope, tiers }]`; `permissions` is no longer required.
-- `core/changeset.js` + `core/revert.js` — every commit authorized; reverts by the Undo rule.
+- `core/changeset.js` + `core/revert.js` — `checkOps` and `pagesForOp`, every commit authorized, reverts by the Undo rule. `checkOps` sits here rather than in `adminAccess.js` because it needs `pageForOp`, whose require chain reaches discord.js, and `adminAccess.js` must stay light enough for any process to require (`scripts/ownerModule.test.js`).
 - /manage — buttons via `resolveAction` (the tier, named in the warning); the dropdown offers every page; the two Season entries gated; purge and delete confirms re-check Destructive; Past Seasons and the announcement row buttons through `canDo`.
 - /bot — each analytics page re-checked on every click and only held pages offered; Revert via `checkRevert`; the grant boxes as in §4.
 - The four admin right-clicks and /autobuild's Confirm through `canDo`.

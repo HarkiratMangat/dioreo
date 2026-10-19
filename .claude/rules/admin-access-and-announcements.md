@@ -23,7 +23,7 @@ paths:
 - **`core/changeset.js`'s `commitSet` authorizes every commit**, Discord and portal alike, before validating. The checks in handlers (`resolveAction`, the confirm re-checks, `canDo`) exist to answer early with a named warning; the one in `commitSet` is the one that cannot be skipped. That is also what closed the old "modal submits are not re-checked" gap for every write through the core.
 - **Writes that bypass `commitSet` are gated where they happen**, through `OUTSIDE_ACTIONS` + `canDo`: `/autobuild`'s Confirm (a direct `Loadout` save), the four admin right-clicks, Patch Notes' Past Seasons pick, and the announcement row buttons.
 - **Browsing is free.** Any admin opens every /manage page; the dropdown is not filtered. A button pressed without its tier gets a warning naming the tier and page. The two Season entries (`POPUP_FIRST_ENTRIES`) are the exception, because opening one is pressing its button.
-- **Loadout modes come from the build.** For `loadout.edit`/`delete`/`bulkDelete`, `pagesForOp` reads each build's mode from Mongo; the op's mode is never trusted.
+- **Loadout modes come from the build.** For `loadout.edit`/`delete`/`bulkDelete`, `core/changeset.js`'s `pagesForOp` reads each build's mode from Mongo; the op's mode is never trusted.
 - ⏳ **Undo/Revert = Destructive on the change's page is PROVISIONAL** (`UNDO_TIER`), and a revert is gated by that rule rather than the inverse op's own tier.
 
 ⚠️ **`/bot access` has NO scope at all, ever.** Owner-only, checked with `isOwner()` at every site (`commands/bot.js`'s `execute()`, every `bot_admin_*`/`bot_adminmodal_*` branch). No string can grant it; `scripts/botAccessPermissions.test.js` pins that. Hotpatch, Health → Restart and the portal's end-session are owner-only the same way.
@@ -34,7 +34,7 @@ paths:
 - `can(id, scope, tier)` — the real gate; `tier` is `'create'`, `'destructive'` or `'any'`.
 - `canAction(id, page, actionId)` — a /manage registry button, by its op's tier (`resolveAction` calls it). An action that writes nothing (Export, Guide) needs only `isAdmin`.
 - `canDo(id, key)` / `denyDo(key)` — an `OUTSIDE_ACTIONS` entry and its warning.
-- `checkOps(id, ops)` / `checkRevert(id, row)` — a whole changeset / one revert.
+- `checkRevert(id, row)` — one revert. ⚠️ **`checkOps(id, ops)`, the gate for a whole changeset, lives in `core/changeset.js`**, not here: it needs `pageForOp`, whose require chain reaches discord.js, and this file must stay requireable without it (`scripts/ownerModule.test.js` fails otherwise).
 - `hasCommandAccess(id, cmd)` — kept by name for the router, `/help` and the portal: `manage` = any admin, `bot` = any /bot page, `autobuild` = Create on /autobuild.
 - `getBotPages(id)` — the /bot analytics pages offered and re-checked per click. `getManagePages`/`hasManagePageAccess` = any tier on a page; used for a change's detail panel and by the portal until its swap.
 

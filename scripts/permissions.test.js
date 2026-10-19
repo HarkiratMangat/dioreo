@@ -32,6 +32,7 @@ require.cache[loadoutPath] = {
 const P = require('../core/permissions');
 const A = require('../utils/adminAccess');
 const ops = require('../core/ops');
+const { checkOps } = require('../core/changeset');
 const { ACTIONS_BY_PAGE, resolveAction, resolvePopupEntry } = require('../utils/manageActions');
 const { ALLOWED_ADMIN_ID } = require('../utils/owner');
 
@@ -257,23 +258,23 @@ async function run() {
     });
 
     await check('checkOps: each op needs its tier on its page; an unclassified op is owner-only', async () => {
-        assert.strictEqual((await A.checkOps(ID.manageC, [{ type: 'draw.add', payload: {} }])).ok, true);
-        const purge = await A.checkOps(ID.manageC, [{ type: 'draw.add' }, { type: 'calendar.purge' }]);
+        assert.strictEqual((await checkOps(ID.manageC, [{ type: 'draw.add', payload: {} }])).ok, true);
+        const purge = await checkOps(ID.manageC, [{ type: 'draw.add' }, { type: 'calendar.purge' }]);
         assert.strictEqual(purge.ok, false);
         assert.deepStrictEqual(purge.denied.map((d) => [d.index, d.scope, d.tier]), [[1, 'manage.calendar', 'destructive']]);
-        assert.strictEqual((await A.checkOps(ID.manageCD, [{ type: 'calendar.purge' }])).ok, true);
-        assert.strictEqual((await A.checkOps(ID.manageCD, [{ type: 'made.up' }])).ok, false);
-        assert.strictEqual((await A.checkOps(ALLOWED_ADMIN_ID, [{ type: 'made.up' }])).ok, true);
-        assert.strictEqual((await A.checkOps(ID.manageCD, [[{ type: 'draw.delete' }]])).ok, true, 'nested inverse arrays are flattened');
+        assert.strictEqual((await checkOps(ID.manageCD, [{ type: 'calendar.purge' }])).ok, true);
+        assert.strictEqual((await checkOps(ID.manageCD, [{ type: 'made.up' }])).ok, false);
+        assert.strictEqual((await checkOps(ALLOWED_ADMIN_ID, [{ type: 'made.up' }])).ok, true);
+        assert.strictEqual((await checkOps(ID.manageCD, [[{ type: 'draw.delete' }]])).ok, true, 'nested inverse arrays are flattened');
     });
 
     await check('🔴 checkOps reads a loadout\'s mode from the build, never from the op', async () => {
         fakeLoadouts = [{ _id: 'mp1', mode: 'MP' }, { _id: 'dmz1', mode: 'DMZ' }];
-        assert.strictEqual((await A.checkOps(ID.dmzC, [{ type: 'loadout.delete', target: { id: 'dmz1' } }])).ok, true, 'a DMZ admin deletes a DMZ build');
-        assert.strictEqual((await A.checkOps(ID.dmzC, [{ type: 'loadout.delete', target: { id: 'mp1', mode: 'DMZ' } }])).ok, false, 'claiming DMZ for an MP build does not pass');
-        assert.strictEqual((await A.checkOps(ID.dmzC, [{ type: 'loadout.bulkDelete', payload: { ids: ['dmz1', 'mp1'] } }])).ok, false, 'one MP build in a bulk delete needs the MP page');
-        assert.strictEqual((await A.checkOps(ID.dmzC, [{ type: 'loadout.edit', target: { id: 'dmz1' }, payload: { mode: 'MP' } }])).ok, false, 'moving a build to MP needs MP too');
-        assert.strictEqual((await A.checkOps(ID.autobuild, [{ type: 'loadout.add', payload: { mode: 'DMZ' } }])).ok, true, '/autobuild carries create to DMZ Loadouts');
+        assert.strictEqual((await checkOps(ID.dmzC, [{ type: 'loadout.delete', target: { id: 'dmz1' } }])).ok, true, 'a DMZ admin deletes a DMZ build');
+        assert.strictEqual((await checkOps(ID.dmzC, [{ type: 'loadout.delete', target: { id: 'mp1', mode: 'DMZ' } }])).ok, false, 'claiming DMZ for an MP build does not pass');
+        assert.strictEqual((await checkOps(ID.dmzC, [{ type: 'loadout.bulkDelete', payload: { ids: ['dmz1', 'mp1'] } }])).ok, false, 'one MP build in a bulk delete needs the MP page');
+        assert.strictEqual((await checkOps(ID.dmzC, [{ type: 'loadout.edit', target: { id: 'dmz1' }, payload: { mode: 'MP' } }])).ok, false, 'moving a build to MP needs MP too');
+        assert.strictEqual((await checkOps(ID.autobuild, [{ type: 'loadout.add', payload: { mode: 'DMZ' } }])).ok, true, '/autobuild carries create to DMZ Loadouts');
         fakeLoadouts = [];
     });
 

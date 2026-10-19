@@ -52,8 +52,7 @@ const SCOPES = [...Object.keys(COMMANDS), ...MANAGE_PAGES.map(manageScope), ...B
 const scopeLabel = (scope) => COMMANDS[scope]?.label || PAGE_LABELS[scope] || scope;
 const scopeKind = (scope) => (COMMANDS[scope] ? 'command' : 'page');
 
-// Every op type in core/ops -> the one tier it needs. The approved button list (2026-10-19 19:11 EDT) says which button needs which tier; each button runs exactly one op, so the button's tier IS its op's tier and this table is the whole of it. scripts/permissions.test.js fails if an op is registered without an entry here, or an entry names an op that no longer exists.
-// ⚠️ The five ops reachable ONLY as another op's inverse (patchnote.removeSeason/restoreSeason/restore, season.restoreSnapshot/restoreDraft) are DESTRUCTIVE because Undo and Revert are. Discord never stages them directly; the portal could, which is why they are in the table at all.
+// Every op type in core/ops -> the one tier it needs. The approved button list (2026-10-19 19:11 EDT) says which button needs which tier; each button runs exactly one op, so the button's tier IS its op's tier and this table is the whole of it. scripts/permissions.test.js fails if an op is registered without an entry here, or an entry names an op that no longer exists. ⚠️ The five ops reachable ONLY as another op's inverse (patchnote.removeSeason/restoreSeason/restore, season.restoreSnapshot/restoreDraft) are DESTRUCTIVE because Undo and Revert are. Discord never stages them directly; the portal could, which is why they are in the table at all.
 const OP_TIERS = {
     // Draws
     'draw.add': 'create',
@@ -191,8 +190,7 @@ function tierForAction(page, actionId) {
     return op ? tierForOp(op) : null;
 }
 
-// ── The /bot access text format ────────────────────────────────────────────
-// One grant per line (or comma): `scope: tiers`, where tiers is c, d, cd, or the words. For example:
+// ── The /bot access text format ──────────────────────────────────────────── One grant per line (or comma): `scope: tiers`, where tiers is c, d, cd, or the words. For example:
 //   manage: c
 //   manage.calendar: d
 //   bot.health: c

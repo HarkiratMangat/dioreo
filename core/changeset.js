@@ -49,10 +49,44 @@ async function previewSet(ops, live) {
     }));
 }
 
-// ⚠️ `source` DEFAULTS TO 'discord' BECAUSE EVERY EXISTING CALLER IS ONE -- handlers/manage/* and core/revert.js reached from /bot. The portal passes 'portal' explicitly (portal/api/changesets.js). A new non-Discord caller that forgets will be mislabelled, which is why the portal's own path is asserted in scripts/portalApi.test.js rather than left to prose.
-// 🔴 EVERY COMMIT IS AUTHORIZED HERE, for Discord and the portal alike (permission restructure, 2026-10-19 19:24 EDT). Each op needs its tier (core/permissions.js's OP_TIERS) on the page it writes to, checked by utils/adminAccess.js's checkOps. This is the one place every mutation passes through, so a Discord handler that forgot its own check, or a portal route that only knew pages, still cannot write past a missing tier. `revertOf` is core/revert.js's: a revert is gated by the Undo rule on the reverted row's page (checkRevert) instead of by the inverse ops' own tiers -- the inverse of a delete is an add, and a destructive-only admin must still be able to undo their delete. A denial returns { ok: false, denied, error } with nothing applied; `error` is written for the person, so every handler's existing `result.error` message shows it as-is.
+// ── Authorization (the permission restructure, 2026-10-19 19:40 EDT) ───────── checkOps lives HERE rather than in utils/adminAccess.js because it needs pageForOp, and this file's require closure reaches discord.js. adminAccess must stay requireable without it (scripts/ownerModule.test.js), so the gate that needs both sits with the op machinery and asks adminAccess only for the tiers.
+
+// The /manage page(s) an op writes to. pageForOp answers from the op itself, which is right for every op whose page is fixed by its type -- and wrong for a loadout op that names an EXISTING build only by id. MP and DMZ share one op set, so `loadout.delete { target: { id } }` carries no mode and pageForOp falls back to MP: a DMZ-only admin would be refused their own delete, and an MP-only admin let through on a DMZ build. So for the three ops that act on existing builds, the mode is read from the builds themselves, never from the op (a portal client could send any mode it likes). An edit that would MOVE a build to the other mode needs the tier on both pages. A build that no longer exists falls back to pageForOp; apply() then fails it as 'missing'.
+const LOADOUT_OPS_BY_ID = new Set(['loadout.edit', 'loadout.delete', 'loadout.bulkDelete']);
+const pageForLoadoutMode = (mode) => (mode === 'MP' ? 'loadouts_mp' : mode === 'DMZ' ? 'loadouts_dmz' : null);
+async function pagesForOp(op) {
+    if (!LOADOUT_OPS_BY_ID.has(op?.type)) return [pageForOp(op)];
+    const ids = [op.target?.id, ...(op.payload?.ids || [])].filter(Boolean).map(String);
+    const Loadout = require('../models/Loadout');
+    const docs = ids.length ? await Loadout.find({ _id: { $in: ids } }).select('mode').lean() : [];
+    const pages = new Set(docs.map(d => pageForLoadoutMode(d.mode)).filter(Boolean));
+    if (op.type === 'loadout.edit' && pageForLoadoutMode(op.payload?.mode)) pages.add(pageForLoadoutMode(op.payload.mode));
+    return pages.size ? [...pages] : [pageForOp(op)];
+}
+
+// THE GATE FOR A SET OF OPS -- the replacement for portal/api/changesets.js's assertOpsAccess, which only knew pages. Same return shape that function had ({ ok, reason }), plus `denied` naming each op that failed, the scope and the tier it needed. commitSet runs it on EVERY commit, so the portal is gated even before it calls this itself. An op type with no tier in core/permissions.js is DENIED for everyone but the owner: a new op that nobody classified must fail closed, not open.
+async function checkOps(userId, ops) {
+    const { isOwner, effectiveTiers, denialMessage } = require('../utils/adminAccess');
+    const P = require('./permissions');
+    if (isOwner(userId)) return { ok: true, denied: [] };
+    const tiers = await effectiveTiers(userId);
+    const denied = [];
+    for (const [index, op] of (ops || []).flat().entries()) {
+        const tier = P.tierForOp(op?.type);
+        for (const page of await pagesForOp(op)) {
+            const scope = P.manageScope(page);
+            if (!tier || !tiers.get(scope)?.has(tier)) denied.push({ index, type: op?.type, scope, tier });
+        }
+    }
+    if (!denied.length) return { ok: true, denied };
+    const first = denied[0];
+    const reason = first.tier ? denialMessage(first.scope, first.tier) : `🔒 **"${first.type}" has no permission rule yet, so only the bot owner can run it.**`;
+    return { ok: false, reason, denied };
+}
+
+// ⚠️ `source` DEFAULTS TO 'discord' BECAUSE EVERY EXISTING CALLER IS ONE -- handlers/manage/* and core/revert.js reached from /bot. The portal passes 'portal' explicitly (portal/api/changesets.js). A new non-Discord caller that forgets will be mislabelled, which is why the portal's own path is asserted in scripts/portalApi.test.js rather than left to prose. 🔴 EVERY COMMIT IS AUTHORIZED HERE, for Discord and the portal alike (permission restructure, 2026-10-19 19:24 EDT). Each op needs its tier (core/permissions.js's OP_TIERS) on the page it writes to, checked by checkOps above. This is the one place every mutation passes through, so a Discord handler that forgot its own check, or a portal route that only knew pages, still cannot write past a missing tier. `revertOf` is core/revert.js's: a revert is gated by the Undo rule on the reverted row's page (checkRevert) instead of by the inverse ops' own tiers -- the inverse of a delete is an add, and a destructive-only admin must still be able to undo their delete. A denial returns { ok: false, denied, error } with nothing applied; `error` is written for the person, so every handler's existing `result.error` message shows it as-is.
 async function commitSet(ops, { actorId, source = 'discord', revertOf = null }) {
-    const { checkOps, checkRevert } = require('../utils/adminAccess');
+    const { checkRevert } = require('../utils/adminAccess');
     const gate = revertOf ? await checkRevert(actorId, revertOf) : await checkOps(actorId, ops.flat());
     if (!gate.ok) return { ok: false, denied: gate.denied || [], error: gate.reason };
 
@@ -107,4 +141,4 @@ async function commitSet(ops, { actorId, source = 'discord', revertOf = null }) 
     return { ok: true, changeIds, results };
 }
 
-module.exports = { validateSet, previewSet, commitSet, pageForOp };
+module.exports = { validateSet, previewSet, commitSet, pageForOp, pagesForOp, checkOps };

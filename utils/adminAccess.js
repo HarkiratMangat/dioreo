@@ -9,7 +9,7 @@
 //   isAdmin(id)                  "any admin at all": may open /manage and browse its pages, sees the admin /help category.
 //   can(id, scope, tier)         the real gate. tier is 'create', 'destructive' or 'any'.
 //   canAction(id, page, action)  a /manage registry button, by its op's tier.
-//   checkOps(id, ops)            a whole changeset, before it commits. core/changeset.js calls it for every commit, Discord and portal alike.
+//   checkOps(id, ops)            a whole changeset, before it commits -- lives in core/changeset.js (it needs pageForOp, which reaches discord.js; this file must stay requireable without it, scripts/ownerModule.test.js).
 //   checkRevert(id, row)         Undo / Revert of one ChangeLog row.
 //   hasCommandAccess(id, cmd)    may this person open the command at all. Kept by name because the router, /help and the portal call it.
 //
@@ -115,40 +115,6 @@ async function canDo(userId, actionKey) {
 const denialFor = (scope, tier) => `🔒 **You don't have ${P.TIER_LABELS[tier].toLowerCase()} permission on ${P.scopeLabel(scope)}.** Ask the bot owner to grant it if you need it.`;
 const denyDo = (actionKey) => denialFor(P.OUTSIDE_ACTIONS[actionKey].scope, P.OUTSIDE_ACTIONS[actionKey].tier);
 
-// The /manage page(s) an op writes to, for the permission check. core/changeset.js's pageForOp answers from the op itself, which is right for every op whose page is fixed by its type -- and wrong for a loadout op that names an EXISTING build only by id. MP and DMZ share one op set, so `loadout.delete { target: { id } }` carries no mode and pageForOp falls back to MP: a DMZ-only admin would be refused their own delete, and an MP-only admin let through on a DMZ build. So for the three ops that act on existing builds, the mode is read from the builds themselves, never from the op (a portal client could send any mode it likes). An edit that would MOVE a build to the other mode needs the tier on both pages. A build that no longer exists falls back to pageForOp; apply() then fails it as 'missing'.
-const LOADOUT_OPS_BY_ID = new Set(['loadout.edit', 'loadout.delete', 'loadout.bulkDelete']);
-async function pagesForOp(op) {
-    const { pageForOp } = require('../core/changeset');
-    if (!LOADOUT_OPS_BY_ID.has(op?.type)) return [pageForOp(op)];
-    const { pageForLoadoutMode } = require('./manageActions');
-    const ids = [op.target?.id, ...(op.payload?.ids || [])].filter(Boolean).map(String);
-    const Loadout = require('../models/Loadout');
-    const docs = ids.length ? await Loadout.find({ _id: { $in: ids } }).select('mode').lean() : [];
-    const pages = new Set(docs.map(d => pageForLoadoutMode(d.mode)).filter(Boolean));
-    if (op.type === 'loadout.edit' && op.payload?.mode && pageForLoadoutMode(op.payload.mode)) pages.add(pageForLoadoutMode(op.payload.mode));
-    return pages.size ? [...pages] : [pageForOp(op)];
-}
-
-// THE GATE FOR A SET OF OPS -- the bot-side replacement for portal/api/changesets.js's assertOpsAccess, which only knew pages. Same return shape that function had ({ ok, reason }), plus `denied` naming each op that failed and the tier it needed, so a caller can say exactly what is missing. core/changeset.js's commitSet runs this on EVERY commit, so the portal is gated even before it calls this itself.
-// An op type with no entry in the table is DENIED for everyone but the owner: a new op that nobody classified must fail closed, not open.
-async function checkOps(userId, ops) {
-    if (isOwner(userId)) return { ok: true, denied: [] };
-    const tiers = await effectiveTiers(userId);
-    const denied = [];
-    for (const [index, op] of (ops || []).flat().entries()) {
-        const tier = P.tierForOp(op?.type);
-        // eslint-disable-next-line no-await-in-loop
-        for (const page of await pagesForOp(op)) {
-            const scope = P.manageScope(page);
-            if (!tier || !tiers.get(scope)?.has(tier)) denied.push({ index, type: op?.type, scope, tier });
-        }
-    }
-    if (!denied.length) return { ok: true, denied };
-    const first = denied[0];
-    const reason = first.tier ? denialFor(first.scope, first.tier) : `🔒 **"${first.type}" has no permission rule yet, so only the bot owner can run it.**`;
-    return { ok: false, reason, denied };
-}
-
 // Undo / Revert of one ChangeLog row: UNDO_TIER (destructive, ⏳ provisional) on the page the change belongs to, whatever the reverted op's own tier was.
 async function checkRevert(userId, row) {
     if (!row) return { ok: false, reason: 'That change no longer exists.' };
@@ -160,8 +126,7 @@ async function checkRevert(userId, row) {
 // The /manage page keys, under the name the bot, the portal and several tests already import. Not legacy: the same list as core/permissions.js's MANAGE_PAGES, re-exported rather than restated.
 const MANAGE_PAGE_SCOPES = [...P.MANAGE_PAGES];
 
-// ── 🔴 LEGACY, FOR THE PORTAL ONLY ──────────────────────────────────────────
-// portal/api/access.js still reads and writes the retired token list (it builds its grid from ADMIN_COMMANDS/MANAGE_PAGE_SCOPES/NOT_IN_ALL and parses grants with parsePermissionsInput), and portal/** belongs to pins2. Nothing in the bot uses these any more. The hand-off proposal (the portal's switch to core/permissions.js's describe() and `grants`) deletes this block; until then it keeps the portal's Access realm working, and core/permissions.js's legacyToGrants() makes what it writes count.
+// ── 🔴 LEGACY, FOR THE PORTAL ONLY ────────────────────────────────────────── portal/api/access.js still reads and writes the retired token list (it builds its grid from ADMIN_COMMANDS/MANAGE_PAGE_SCOPES/NOT_IN_ALL and parses grants with parsePermissionsInput), and portal/** belongs to pins2. Nothing in the bot uses these any more. The hand-off proposal (the portal's switch to core/permissions.js's describe() and `grants`) deletes this block; until then it keeps the portal's Access realm working, and core/permissions.js's legacyToGrants() makes what it writes count.
 const ADMIN_COMMANDS = ['manage', 'autobuild', 'bot', 'destructive'];
 const NOT_IN_ALL = ['destructive'];
 
@@ -184,7 +149,7 @@ function parsePermissionsInput(raw) {
 }
 
 module.exports = {
-    isOwner, isAdmin, can, canAction, canDo, checkOps, checkRevert, effectiveTiers, getGrants,
+    isOwner, isAdmin, can, canAction, canDo, checkRevert, effectiveTiers, getGrants,
     denialMessage: denialFor, denyDo,
     hasCommandAccess, hasManagePageAccess, getManagePages, getBotPages,
     invalidateAdminCache, formatGrants: P.formatGrants, MANAGE_PAGE_SCOPES,

@@ -288,8 +288,7 @@ function listSlashActions(page) {
     return listActions(page).filter(a => a.slash);
 }
 
-// ⚠️ THE ONE CHOKE POINT. Both the panel's `mng_act_` dispatch and the slash path resolve through here, which is what makes permissions hold PER CLICK rather than only at page-view time — the gap filed 2026-08-13 and closed by this registry. Returns a discriminated result instead of throwing so both callers handle "no such action" and "not allowed" the same way.
-// Since the permission restructure (2026-10-19 19:24 EDT) the check is the action's TIER on its page (core/permissions.js: the tier of the op the button runs), not page access: any admin can browse every page, and pressing a button they lack the tier for gets the warning (his decision, 2026-10-19 18:17 EDT). An action that writes nothing (Export, Guide) needs only admin access. `message` names the missing tier and page.
+// ⚠️ THE ONE CHOKE POINT. Both the panel's `mng_act_` dispatch and the slash path resolve through here, which is what makes permissions hold PER CLICK rather than only at page-view time — the gap filed 2026-08-13 and closed by this registry. Returns a discriminated result instead of throwing so both callers handle "no such action" and "not allowed" the same way. Since the permission restructure (2026-10-19 19:24 EDT) the check is the action's TIER on its page (core/permissions.js: the tier of the op the button runs), not page access: any admin can browse every page, and pressing a button they lack the tier for gets the warning (his decision, 2026-10-19 18:17 EDT). An action that writes nothing (Export, Guide) needs only admin access. `message` names the missing tier and page.
 async function resolveAction(page, actionId, userId) {
     const entry = getAction(page, actionId);
     if (!entry) return { ok: false, reason: 'unknown' };
