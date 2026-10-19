@@ -772,3 +772,11 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (mid-run) "/workstyle:handoff fyi you're near context window limit so after your current steps, prep for a compact and then continue working autonomously."
 - (on the 102 local commits) "Sure push, no PR. Then continue woeking" — pushed `docs/portal-pins2-standardize` to origin at `8d02f205`, no PR.
 - Built since: spec v117 Tiles (proposed), v118 the stepper `field-L-step` (proposed) and New build's MP / DMZ as an open block; Answer Shots asks `tiles`, `tilekey`, `stepper`, `moderail`.
+
+## His 2026-10-19 15:42–15:46 EDT, verbatim, written 2026-10-19 15:47 EDT
+- (tiles: adopt as drawn?) "change something": "idk doesnt seem right/nice"
+- (an unpicked key in the picker) "B" (dashed, --pending)
+- (the stepper) "adopt": "yeah but realm colored buttons"
+- (MP / DMZ) "A" (a rail)
+- (to the coordinator) "whenever session 4's auto compact happens, tell it to use /workstyle:continue-session"
+- Built in spec v119: the stepper's − and + `button-M-icon.tint-realm`; MP / DMZ `rail-L-box>toggle-M-box.paint-mode`; the unpicked key `toggle-M-box.paint-cat--mark--pending`; three tile lettering variants on the Answer Shots page (`tilevar`).
