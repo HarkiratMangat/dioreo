@@ -266,6 +266,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-01 18:33 EDT — CI and the test queue, rebuilt from a measurement, then re-measured after the merge (v3.86.0-pre)
 - 2026-10-01 20:33 EDT — The first hook-free PR is this one, so it can watch itself (v3.87.0-pre)
 - 2026-10-18 00:11 EDT — The draw calculator, rebuilt from 56 batches of his click-tests (v3.88.0-pre)
+- 2026-10-19 00:54 EDT — Series Armory and the Advanced draws join the calculator, priced set by set (v3.89.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4570,6 +4571,14 @@ Seven weeks after the first saved-basket build (2026-08-27), the calculator was 
 **What the sweep found that no test had.** His report was one case: 8,730 CP short in CAD, the panel suggested five purchases for CA$125.95 over one 10,800 bundle for CA$129.99. The first fix he picked (1.5% per purchase saved) looked right on that case and was wrong across the table: swept over all 41 currencies it picked MORE purchases than the old 3% rule in 880 of 16,154 cases. Rule H, the larger of the two allowances, never picks more, and the same sweep, by asserting things about the whole result rather than only the rule being changed, found an older modelling bug: with 2X bundles available, about 15% of picks bought a bundle at the normal rate while its own 2X sat unused, which the game cannot do. Lesson kept as a test: sweep every optimizer threshold across the price table, and check whole-result invariants, before proposing it.
 
 **What the merge prep found.** Only the calculator suites had been run after each batch. The full suite, run before the push, found the reflow gates failing on comments and prose written that evening. They would have turned CI red. The full `npm test` is now the step before any push, not the step after review.
+
+## 2026-10-19 00:54 EDT — Series Armory and the Advanced draws join the calculator, priced set by set (v3.89.0-pre)
+
+Series Armory was the branch's stated job: three armories priced per item on `/draw prices` and in the calculator, and this season's draws offered first in the calculator by a Draw Type set in `/manage`. It grew, at Harkirat's asks, into a round of calculator polish (the Set Region & Balance section, a currency per calculation, Resume a Saved Calculation on the landing, the 2X offers in his wording), the two Advanced Double Legendary draws, and `/patch notes` keeping every season.
+
+**The Advanced draws were built twice.** The first build priced each draw as one ten-spin path along /draw prices' three strategies. Harkirat broke it with one example: set 1 at 1/2, sets 2 and 3 at 2/2, set 4 at 1/2, the rest untouched, and "purchasing the remaining part of the set later on costs as much as the regular spin". He also asked for goals the path model could not express (just the two Epics, everything). After a think-pass he asked for, the model became per set: which sets are spun, which of those are full, and a goal as the items wanted from the last two sets. Because a set's Advanced price is always above its Regular price and below twice it, the cheapest choice per set is the cheapest plan, so pricing stays a simple loop. His follow-up question exposed one more gap: Spent could not tell an Advanced set from one finished later, so the pop-up now asks for both.
+
+**The click-test ran in a separate session.** Computer use cannot be granted from a Remote Control thread (the dialog never shows), so a worker session he started in the desktop app drove Discord from a fifteen-case brief. Thirteen passed. The one failure was the brief's own expected figure, carried by hand from the state after the next step; the bot was right. Expected values in a brief now come from a script that sets each case's exact state.
 
 # Part B — Lessons Ledger (thematic)
 
