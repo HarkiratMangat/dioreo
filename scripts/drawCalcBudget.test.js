@@ -283,11 +283,11 @@ t('the Saved view puts the delete warning right above its red button (2026-10-19
     const panel = dc.buildCalculatorPanel(state({ page: 3 }), makeBasket(), ACCENT, { savedBaskets: list, savedConfirm: { mask: 1, count: 1, check: 'abc' } });
     const flat = c => [c, ...((c.components || []).flatMap(flat)), ...(c.accessory ? flat(c.accessory) : [])];
     const all = panel.flatMap(flat);
-    const warn = all.findIndex(c => c.type === 10 && /⚠️ Delete this calculation\? This cannot be undone\./.test(c.content));
+    const warn = all.findIndex(c => c.type === 10 && /^### <a:Warn:\d+> Delete this calculation\? This cannot be undone\.$/.test(c.content));
     const red = all.findIndex(c => c.type === 2 && c.label === 'Delete 1 Calculation');
     const head = all.findIndex(c => c.type === 10 && /^### Delete/.test(c.content));
     assert.ok(head < warn && warn < red, `heading ${head}, warning ${warn}, button ${red}`);
-    assert.strictEqual(all.filter(c => c.type === 10 && /⚠️ Delete/.test(c.content)).length, 1, 'said once');
+    assert.strictEqual(all.filter(c => c.type === 10 && /<a:Warn:\d+> Delete/.test(c.content)).length, 1, 'said once');
 });
 
 t('Delete Calculation is two-step the same way', () => {

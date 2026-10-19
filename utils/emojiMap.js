@@ -66,6 +66,7 @@ const emojis = {
     deleteAll: '<a:DeleteAll:1561138182681133247>',
     // The draw calculator's Keep It / Keep Them buttons (2026-10-19 12:09 EDT, Harkirat).
     keep: '<a:Keep:1561770923760033880>',
+    warn: '<a:Warn:1561783059228139530>',
     mythicCard: '<:MythicCard:1542258676889288794>',   // mythicWeapon's upgrade -- "Weapon Upgrade"
     mythicCoin: '<:MythicCoin:1542258675706757150>',   // mythicCharacter's upgrade -- "Character Upgrade"
     // COST BREAKDOWN's own inline bullet + field-separator glyphs (added 2026-08-26 23:03 EDT, matching Harkirat's own exported mockup verbatim) -- smallDot prefixes each field line, blueDash joins two fields sharing one line (Balance/Region, CP Spent/CP Needed). Both static, not animated. The toggle button's two states (added same pass): simplify shows once the breakdown is expanded, expand shows while it is collapsed -- see actionRow() in commands/drawCalculator.js.

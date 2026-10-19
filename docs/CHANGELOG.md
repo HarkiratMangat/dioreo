@@ -37,7 +37,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 - **Convert Times** (everyone): every date and time in a message as Discord timestamps, privately, read in your /settings zone when the text gives none.
 - **View Colors** (everyone, on a person): their palette, public by default, paged like `/colors` and accented by their avatar, with no timeout. Anyone may press its pages; it always shows that person. Pages they lack are left off with a "No custom … detected." line.
 - **`/colors`:** Avatar and Banner link buttons on every page, before Refresh; the open page is green.
-- **Smaller:** the calendar's section toggles turn green and the footer row blurple; `/patch notes`' hint reads "View **previous balance changes**" and it no longer breaks when the dev bot cannot upload to Cloudinary; `/draw calculator`'s Delete All warns first with Keep Them, the single delete hides Delete All, and both use new Delete and Keep icons.
+- **Smaller:** the calendar's section toggles turn green and the footer row blurple; `/patch notes`' hint reads "View **previous balance changes**" and it no longer breaks when the dev bot cannot upload to Cloudinary; `/draw calculator`'s Delete All warns first with Keep Them, the single delete hides Delete All, and both use his new Warn, Delete and Keep icons.
 - **Data:** new `ColorCache` holds the colours of people who have never used Dioreo, keyed by a hash of the image with no user id, and deleted 30 days after first seen. PRIVACY.md §2.2, §7 and Appendix A say so, in the pending v1.11.
 
 
