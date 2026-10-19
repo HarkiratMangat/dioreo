@@ -11,31 +11,67 @@ const { DRAW_DATA, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN
 // ==========================================
 // ADVANCED DOUBLE LEGENDARY DRAWS (2026-10-18 21:51 EDT, his go)
 // ==========================================
-// Each pull has a Regular and an Advanced price, so a line is priced along a GOAL: the /draw prices page's three strategies, Regular for the early pulls then Advanced for the last one or two. 'all' (every item: Reg 1-8, Adv 9-10) is the default, as every draw is priced to completion; 'two' is Reg 1-9, Adv 10; 'one' is Regular for all ten. Progress counts pulls along that path, assuming no lucky early pull, as the page does. The Character draw's Regular prices are the Legendary Character draw's own (its page reads them from there too), so nothing is copied.
+// A set holds 2 items (rebuilt 2026-10-18 22:31 EDT, Harkirat: "what if someone had done 1/2 for set 1, 2/2 for set 2 ... purchasing the remaining part of the set later on costs as much as the regular spin"). A Regular spin gives 1 random item of the set, an Advanced spin both, and the other item bought later costs the set's Regular price again. A line stores `pullsDone` (sets spun) and `bothSets` (the spun sets it holds both items from). With no luck, the last set holds the draw's 2 headline items and the one before it the other 2, so a GOAL is the items wanted from those two sets, or every item of every set. Every set before the last one wanted must be spun to reach it. reg < adv < 2 x reg at every set in every region, so each set's cheapest choice is also the cheapest plan.
 const ADVANCED_KEYS = ['advancedWeapon', 'advancedCharacter'];
-const ADVANCED_GOALS = ['all', 'two', 'one'];
+// Items wanted from [second-to-last set, last set]; null is everything. 'all4' first: it is the default and is stored as absent.
+const ADVANCED_GOAL_WANTS = { all4: [2, 2], top2: [1, 2], one_each: [1, 1], mid2: [2, 0], everything: null };
+const ADVANCED_GOALS = Object.keys(ADVANCED_GOAL_WANTS);
+// The first build's goals, still on lines saved before the rebuild.
+const LEGACY_GOALS = { all: 'all4', two: 'top2', one: 'one_each' };
 function isAdvancedKey(key) { return ADVANCED_KEYS.includes(key); }
-function advancedGoal(line) { return ADVANCED_GOALS.includes(line && line.goal) ? line.goal : 'all'; }
+function advancedGoal(line) {
+    const g = line && line.goal;
+    const goal = LEGACY_GOALS[g] || g;
+    return ADVANCED_GOALS.includes(goal) ? goal : 'all4';
+}
 function advancedArrays(region, key) {
     if (key === 'advancedWeapon') { const d = ADVANCED_DOUBLE_LEGENDARY[region]; return d ? { reg: d.reg, adv: d.adv } : null; }
     const a = ADVANCED_DOUBLE_LEGENDARY_CHARACTER[region];
     const reg = DRAW_DATA[region] && DRAW_DATA[region].legendaryCharacterWeapon && DRAW_DATA[region].legendaryCharacterWeapon.draws;
     return a && reg ? { reg, adv: a.adv } : null;
 }
-function advancedPath(reg, adv, goal) {
-    if (goal === 'one') return reg.slice();
-    if (goal === 'two') return [...reg.slice(0, 9), adv[9]];
-    return [...reg.slice(0, 8), adv[8], adv[9]];
+// The line's sets with both items: whole numbers from 1 to the sets spun, so lowering the progress drops the rest.
+function advancedBoth(line, pullsDone) {
+    const done = Math.max(0, Math.floor(Number(pullsDone) || 0));
+    const sets = ((line && line.bothSets) || []).map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= done);
+    return [...new Set(sets)].sort((a, b) => a - b);
 }
-function advancedEntry(region, key, line) {
+// A pull of the line is a set; its Regular price is what one set costs to spin, which is what the progress dropdown counts.
+function advancedEntry(region, key) {
     const arr = advancedArrays(region, key);
-    return arr ? { draws: advancedPath(arr.reg, arr.adv, advancedGoal(line)) } : null;
+    return arr ? { draws: arr.reg } : null;
 }
-// Every goal's full price at a region, for the Goal pop-up.
-function advancedGoalTotals(region, key) {
+// What is still to buy for a goal, set by set: an unspun set wanted whole is one Advanced spin, any other unspun set up to the last one wanted is one Regular spin, and a spun set holding 1 item that is wanted whole costs a Regular price for its other item.
+function advancedRemaining(region, key, pullsDone, line, goal = advancedGoal(line)) {
     const arr = advancedArrays(region, key);
     if (!arr) return null;
-    return Object.fromEntries(ADVANCED_GOALS.map(g => [g, advancedPath(arr.reg, arr.adv, g).reduce((x, y) => x + y, 0)]));
+    const n = arr.reg.length;
+    const done = Math.min(n, Math.max(0, Math.floor(Number(pullsDone) || 0)));
+    const both = new Set(advancedBoth(line, done));
+    const wants = ADVANCED_GOAL_WANTS[goal];
+    const last = !wants ? n : wants[1] > 0 ? n : wants[0] > 0 ? n - 1 : 0;
+    let total = 0;
+    for (let i = 1; i <= last; i++) {
+        const want = !wants ? 2 : i === n ? wants[1] : i === n - 1 ? wants[0] : 0;
+        if (i > done) total += want === 2 ? arr.adv[i - 1] : arr.reg[i - 1];
+        else if (want === 2 && !both.has(i)) total += arr.reg[i - 1];
+    }
+    return total;
+}
+// What the spun sets cost: a set with both items is counted as an Advanced spin and any other as a Regular one. Only the remainder decides what to buy, so a set completed later is not told apart.
+function advancedSpent(region, key, pullsDone, line) {
+    const arr = advancedArrays(region, key);
+    if (!arr) return null;
+    const done = Math.min(arr.reg.length, Math.max(0, Math.floor(Number(pullsDone) || 0)));
+    const both = new Set(advancedBoth(line, done));
+    let total = 0;
+    for (let i = 1; i <= done; i++) total += both.has(i) ? arr.adv[i - 1] : arr.reg[i - 1];
+    return total;
+}
+// Every goal's remainder for the line as it stands, for the Goal pop-up.
+function advancedGoalTotals(region, key, line = {}) {
+    if (!advancedArrays(region, key)) return null;
+    return Object.fromEntries(ADVANCED_GOALS.map(g => [g, advancedRemaining(region, key, (line && line.pullsDone) || 0, line, g)]));
 }
 
 // ==========================================
@@ -74,7 +110,7 @@ function upgradeKeyOf(key) {
 
 function entryFor(region, key, line = null) {
     if (isArmoryKey(key)) return armoryEntry(region, key, line);
-    if (isAdvancedKey(key)) return advancedEntry(region, key, line);
+    if (isAdvancedKey(key)) return advancedEntry(region, key);
     const regionData = DRAW_DATA[region];
     if (!regionData) return null;
     return regionData[key] || null;
@@ -92,12 +128,14 @@ function sumRange(draws, from, to) {
 }
 
 function spentSoFar(region, key, pullsDone, line = null) {
+    if (isAdvancedKey(key)) return advancedSpent(region, key, pullsDone, line);
     const entry = entryFor(region, key, line);
     if (!entry) return null;
     return sumRange(entry.draws, 0, Math.min(pullsDone, entry.draws.length)) + spinsInCp(region, key, line, pullsDone);
 }
 
 function remainingToFinish(region, key, pullsDone, line = null) {
+    if (isAdvancedKey(key)) return advancedRemaining(region, key, pullsDone, line);
     const entry = entryFor(region, key, line);
     if (!entry) return null;
     return sumRange(entry.draws, Math.min(pullsDone, entry.draws.length), entry.draws.length) - spinsInCp(region, key, line, pullsDone);
@@ -273,4 +311,4 @@ function basketCost(region, banners, includeUpgrades, held = {}) {
     return { total: drawTotal + upgrades.cp, drawTotal, perBanner, upgrades };
 }
 
-module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, upgradeCost, reachableWithBudget, basketCost, upgradePlan, upgradeState, upgradeNeed, upgradeShape, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals };
+module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, upgradeCost, reachableWithBudget, basketCost, upgradePlan, upgradeState, upgradeNeed, upgradeShape, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals, advancedBoth };

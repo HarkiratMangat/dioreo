@@ -293,29 +293,46 @@ t('a NAMED basket\'s manage row reads Rename, not Save', () => {
 // ==========================================
 // REGION SWITCHING PRESERVES PROGRESS
 // ==========================================
-// THE ADVANCED DOUBLE LEGENDARY DRAWS (2026-10-18 21:51 EDT, his go): priced along a goal, each goal exactly /draw prices' own strategy figure.
-t('Advanced draws are priced along their goal, and every goal matches /draw prices\' strategy at every region', () => {
+// THE ADVANCED DOUBLE LEGENDARY DRAWS (2026-10-18 21:51 EDT; per set 2026-10-18 22:32 EDT): progress is per set, a half set finished later costs a Regular price, and a goal is the items wanted. From a fresh line each of /draw prices' strategies is its own figure.
+t('Advanced draws are priced per set, and from a fresh line each strategy goal matches /draw prices at every region', () => {
     const cost = require('../utils/drawCost');
     const flatAll = c => [c, ...((c.components || []).flatMap(flatAll)), ...(c.accessory ? flatAll(c.accessory) : [])];
     for (const region of REGION_ORDER) for (const key of ['advancedWeapon', 'advancedCharacter']) {
         const page = require('../commands/drawprices').buildContainer(region, 0, true, `f${key}`, null).flatMap(flatAll).filter(c => c.type === 10).map(c => c.content).join('\n');
         const figs = [...page.matchAll(/(?:Reg 1-8 → Adv 9-10|Reg 1-9 → Adv 10|Reg only 1-10) ⌇ <a?:\w+:\d+> \*\*`([\d,]+) CP`\*\*/g)].map(m => Number(m[1].replace(/,/g, '')));
-        const totals = cost.advancedGoalTotals(region, key);
-        assert.deepStrictEqual([totals.all, totals.two, totals.one], figs, `${region} ${key}: the page reads ${figs}`);
-        for (const goal of ['all', 'two', 'one']) assert.strictEqual(cost.remainingToFinish(region, key, 0, goal === 'all' ? {} : { goal }), totals[goal]);
+        const totals = cost.advancedGoalTotals(region, key, {});
+        assert.deepStrictEqual([totals.all4, totals.top2, totals.one_each], figs, `${region} ${key}: the page reads ${figs}`);
+        // The first build's goals still read on a saved line.
+        for (const [old, now] of [['all', 'all4'], ['two', 'top2'], ['one', 'one_each']]) assert.strictEqual(cost.remainingToFinish(region, key, 0, { goal: old }), totals[now]);
     }
+    // His example (2026-10-18 22:00 EDT): 4 sets spun, both items from sets 2 and 3.
+    const r = (line, goal) => cost.remainingToFinish('region_10', 'advancedWeapon', line.pullsDone || 0, { ...line, goal });
+    const ex = { pullsDone: 4, bothSets: [2, 3] };
+    assert.deepStrictEqual(['all4', 'everything', 'mid2'].map(g => r(ex, g)), [5440, 6578, 3200]);
+    assert.deepStrictEqual(['mid2', 'everything'].map(g => r({}, g)), [3410, 6784]);
+    // A finished line may still owe the second item of a wanted set; a goal can also finish before the last set.
+    assert.ok(r({ pullsDone: 10 }, 'all4') > 0, 'sets 9 and 10 hold 1 item each');
+    assert.strictEqual(r({ pullsDone: 9, bothSets: [9] }, 'mid2'), 0);
+    assert.deepStrictEqual(cost.advancedBoth({ bothSets: [3, 2, 9, 'x', 3] }, 4), [2, 3], 'only spun sets, once each');
     assert.ok(dc.CALC_KEYS.includes('advancedWeapon') && dc.CALC_KEYS.includes('advancedCharacter'), 'both pickable');
-    // The editor: a Goal button, grey, opening a pop-up of the three strategies with the current one picked.
-    const ed = progress([{ drawKey: 'advancedWeapon', pullsDone: 2 }, { drawKey: 'advancedCharacter', pullsDone: 0, goal: 'one' }]);
+    // The editor: progress counted in Sets, a grey Goal button naming the goal and the full sets.
+    const ed = progress([{ drawKey: 'advancedWeapon', pullsDone: 4, bothSets: [2, 3] }, { drawKey: 'advancedCharacter', pullsDone: 0, goal: 'one_each' }]);
     const goals = buttons(ed).filter(b => verbOf(b) === 'goalset');
-    assert.deepStrictEqual(goals.map(b => [b.label, b.style]), [['Goal: All 4 Items', 2], ['Goal: 2 Items', 2]]);
-    const basket = makeBasket({ banners: [{ drawKey: 'advancedCharacter', pullsDone: 0, goal: 'two' }] });
-    const modal = dc.buildGoalModal(state(), basket, 0);
-    assert.deepStrictEqual(modal.components[0].component.options.map(o => [o.label, !!o.default]), [['Both Legendary Characters & Weapons', false], ['Both Characters + 1 Random Weapon', true], ['1 Random Character + 1 Random Weapon', false]]);
+    assert.deepStrictEqual(goals.map(b => [b.label, b.style]), [['Goal: All 4 Items · 2 Full Sets', 2], ['Goal: 2 Items', 2]]);
+    assert.ok(JSON.stringify(ed).includes('#1 · Progress: 4/10 Sets'), 'the dropdown counts sets');
+    const done = makeBasket({ banners: [{ drawKey: 'advancedWeapon', pullsDone: 9, goal: 'mid2', bothSets: [9] }, { drawKey: 'advancedWeapon', pullsDone: 10 }] });
+    assert.ok(/Finished/.test(dc.lineHint(done, 0)) && !/Finished/.test(dc.lineHint(done, 1)), `${dc.lineHint(done, 0)} | ${dc.lineHint(done, 1)}`);
+    // The pop-up: five goals with the current one picked, then the spun sets with the full ones picked.
+    const modal = dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'advancedCharacter', pullsDone: 3, goal: 'top2', bothSets: [2] }] }), 0);
+    assert.deepStrictEqual(modal.components[0].component.options.map(o => [o.label, !!o.default]), [['Both Legendary Characters & Weapons', false], ['Both Characters + 1 Random Weapon', true], ['1 Random Character + 1 Random Weapon', false], ['Both Weapons', false], ['Everything (All 10 Sets)', false]]);
+    assert.deepStrictEqual(modal.components[1].component.options.map(o => [o.label, !!o.default]), [['Set 1', false], ['Set 2', true], ['Set 3', false]]);
+    assert.strictEqual(modal.components[1].component.max_values, 3);
+    assert.ok(modal.components[0].component.options.every(o => o.description.length <= 100 && / CP Left$/.test(o.description)));
+    assert.strictEqual(dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'advancedWeapon', pullsDone: 0 }] }), 0).components.length, 1, 'no spun set, no second field');
     assert.strictEqual(dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), 0), null, 'only an Advanced line has a goal');
-    assert.deepStrictEqual([dc.readGoal('two'), dc.readGoal('nope')], ['two', null]);
-    // Two lines of one Advanced draw with different goals never merge into one row on the result.
-    const res = allText(render(makeBasket({ banners: [{ drawKey: 'advancedWeapon', pullsDone: 0 }, { drawKey: 'advancedWeapon', pullsDone: 0, goal: 'one' }] })));
+    assert.deepStrictEqual([dc.readGoal('top2'), dc.readGoal('nope')], ['top2', null]);
+    // Lines with different goals or full sets never merge into one row on the result.
+    const res = allText(render(makeBasket({ banners: [{ drawKey: 'advancedWeapon', pullsDone: 2 }, { drawKey: 'advancedWeapon', pullsDone: 2, bothSets: [1] }] })));
     assert.ok(/#1 · Advanced Double Legendary Weapon/.test(res) && /#2 · Advanced Double Legendary Weapon/.test(res), res.slice(0, 400));
 });
 

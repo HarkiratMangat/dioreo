@@ -13,7 +13,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const emojis = require('../utils/emojiMap');
 const UserPreference = require('../models/UserPreference');
 const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP } = require('./drawprices');
-const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals } = require('../utils/drawCost');
+const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals, advancedBoth } = require('../utils/drawCost');
 const crypto = require('crypto');
 const { CP_PACKAGES, CURRENCIES, STOCK_UP_RULES, PURCHASE_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 const { QUICK_CURRENCIES, currencyLabel } = require('../utils/cpCurrencyData');
@@ -28,8 +28,8 @@ const ADVANCED_META = {
 };
 const CALC_KEYS = [...DRAW_KEYS, ...Object.keys(SERIES_ARMORY), ...ADVANCED_KEYS];
 function metaOf(key) { return DRAW_META[key] || SERIES_ARMORY[key] || ADVANCED_META[key] || null; }
-// What one "pull" of a line is: a spin, or for an armory the item it holds.
-function unitOf(drawKey) { return SERIES_ARMORY[drawKey] ? `${SERIES_ARMORY[drawKey].noun}s` : 'Spins'; }
+// What one "pull" of a line is: a spin, or for an armory the item it holds. An Advanced line counts SETS (2026-10-18 22:31 EDT): each holds 2 items and its progress is per set.
+function unitOf(drawKey) { return SERIES_ARMORY[drawKey] ? `${SERIES_ARMORY[drawKey].noun}s` : isAdvancedKey(drawKey) ? 'Sets' : 'Spins'; }
 // A line picked from this season's draws reads as that draw; any other line as its draw type.
 function lineName(b) { return (b && b.title) || shortName(b && b.drawKey); }
 // Five lines per page (2026-10-14 00:15 EDT). He asked for six; six measured past Discord's message SIZE cap, not the 40-component one: each line's dropdown carries 11-13 labelled options, and seven different draws at six per page came to ~13,800 characters against a cap measured between 13,100 and 13,412 on the dev bot. Five fits every draw mix under SETUP_JSON_BUDGET; buildSetupPanel still drops further when the saved list needs the room.
@@ -456,7 +456,7 @@ function usedTypes(banners) {
 function groupForDisplay(banners) {
     const groups = [];
     // Lines with different upgrade plans never merge (2026-10-17 13:17 EDT); `first` is the index of the group's first line.
-    const upKey = b => JSON.stringify([b.upHave || null, b.upWant || null, b.title || null, b.size || null, b.spinsIn || 0]);
+    const upKey = b => JSON.stringify([b.upHave || null, b.upWant || null, b.title || null, b.size || null, b.spinsIn || 0, isAdvancedKey(b.drawKey) ? [advancedGoal(b), advancedBoth(b, b.pullsDone)] : null]);
     (banners || []).forEach((b, i) => {
         const last = groups[groups.length - 1];
         if (last && last.drawKey === b.drawKey && last.pullsDone === b.pullsDone && last.upKey === upKey(b)) last.count++;
@@ -525,7 +525,7 @@ function bannerPullsRow(state, basket, index, { removable = false } = {}) {
                 // The draw's name rides in the LABEL of the chosen value only (2026-10-13 12:40 EDT): a closed select shows only that label. Progress first (2026-10-13 23:10 EDT): a phone shows about 30 characters. "#1 · Progress: 0/10 Spins" (2026-10-18 13:05 EDT, Harkirat: "it doesnt really make sense including the draw name inside the dropdown"): the line's name sits right above it now.
                 label: chosen ? `#${index + 1} · Progress: ${n}/${size} ${unit}` : `${n}/${size} ${unit}`,
                 value: sizes.length > 1 ? `${size}:${n}` : String(n),
-                description: `${fmt(spentSoFar(basket.region, banner.drawKey, n, line))} CP Spent · ${n === size ? 'Finished' : `${fmt(left)} CP to Completion`}`,
+                description: `${fmt(spentSoFar(basket.region, banner.drawKey, n, line))} CP Spent · ${left === 0 ? 'Finished' : `${fmt(left)} CP to Completion`}`,
                 // The tier icon and `default` only on the chosen value: each costs every line characters of Discord's size cap (2026-10-14 00:12 EDT).
                 ...(icon && chosen ? { emoji: icon } : {}),
                 ...(chosen ? { default: true } : {})
@@ -821,7 +821,7 @@ function compactSelectionText(basket, level, detail = false) {
         if (!r.priced) { out.push(`> -# No sourced price at ${regionLabel(basket.region)}, so it is left out of the totals.`); continue; }
         // A per-type row carries its lines' sums, so it never says "each".
         const each = many && !r.byType ? ' each' : '';
-        const unit = isArmoryKey(r.drawKey) ? unitOf(r.drawKey) : 'Attempts';
+        const unit = isArmoryKey(r.drawKey) || isAdvancedKey(r.drawKey) ? unitOf(r.drawKey) : 'Attempts';
         // The Price line is the Full Breakdown's only too (2026-10-18 19:31 EDT, Harkirat: "with the '> Price: 28,800 CP · 0/3 Weapons' line removed? only appearing when 'full breakdown' is toggled").
         if (detail) out.push(`> **Price: \`${fmt(r.drawFull)} CP\`**${each} · \`${r.pullsDone}/${r.total ?? '?'}\` ${unit}${r.spinsIn && !r.byType ? ` + ${r.spinsIn} spins` : ''}`);
         // The spent / to-complete line is the Full Breakdown's only (2026-10-17 17:41 EDT, Harkirat: "for the simplified view, we should drop the '0 CP Spent · 4,950 CP To Complete' lines ... And show them during full breakdown view").
@@ -986,8 +986,11 @@ function lineExtraButtons(state, basket, index) {
         const label = size === null ? 'Set Up Armory' : done ? `${sizable ? `${size} ${unitOf(b.drawKey)} · ` : ''}Finished` : `${sizable ? `${size} ${unitOf(b.drawKey)} · ` : ''}Spins In: ${b.spinsIn || 0}`;
         out.push({ type: 2, style: size === null ? 1 : b.spinsIn && !done ? 3 : 2, label, custom_id: encodeState('spinsin', { ...state, focus: index }), disabled: done && !sizable });
     }
-    // THE GOAL (2026-10-18 21:51 EDT): an Advanced line's button, opening a pop-up of /draw prices' three strategies. Grey like Spins In; green on this screen means a set Upgrade.
-    if (isAdvancedKey(b.drawKey)) out.push({ type: 2, style: 2, label: `Goal: ${ADVANCED_GOAL_TEXT[advancedGoal(b)].short}`, custom_id: encodeState('goalset', { ...state, focus: index }) });
+    // THE GOAL (2026-10-18 21:51 EDT; per set 2026-10-18 22:31 EDT): an Advanced line's button, opening its goal and the sets it holds both items from; the label counts those full sets. Grey like Spins In; green on this screen means a set Upgrade.
+    if (isAdvancedKey(b.drawKey)) {
+        const full = advancedBoth(b, b.pullsDone).length;
+        out.push({ type: 2, style: 2, label: `Goal: ${goalShort(b.drawKey, advancedGoal(b))}${full ? ` · ${full} Full Set${full > 1 ? 's' : ''}` : ''}`.slice(0, 80), custom_id: encodeState('goalset', { ...state, focus: index }) });
+    }
     if (upgradeKeyOf(b.drawKey)) {
         const line = upgradePlan(basket).lines.find(l => l.index === index);
         const set = upgradeIsSet(line);
@@ -1005,7 +1008,8 @@ function lineHint(basket, index) {
     else {
         const done = Math.min(b.pullsDone || 0, total);
         // The figures in code (2026-10-18 17:25 EDT, his layout): "`0 CP` Spent · `10,075 CP` to Completion".
-        parts.push(`\`${fmt(spentSoFar(basket.region, b.drawKey, done, b))} CP\` Spent`, done >= total ? 'Finished' : `\`${fmt(remainingToFinish(basket.region, b.drawKey, done, b))} CP\` to Completion`);
+        const left = remainingToFinish(basket.region, b.drawKey, done, b);
+        parts.push(`\`${fmt(spentSoFar(basket.region, b.drawKey, done, b))} CP\` Spent`, left === 0 ? 'Finished' : `\`${fmt(left)} CP\` to Completion`);
     }
     return parts.join(' · ');
 }
@@ -1108,21 +1112,35 @@ function readRemovePicks(basket, values) {
     return drop;
 }
 
-// THE GOAL POP-UP (2026-10-18 21:51 EDT): /draw prices' three strategies for an Advanced draw, each with its path and full price at this region. Its words are the page's own.
+// THE GOAL POP-UP (2026-10-18 21:51 EDT; rebuilt per set 2026-10-18 22:31 EDT): what the line is bought for, each option with its path and what is still left for the line as it stands, then the spun sets it got both items from. His goals: /draw prices' three strategies, just the 2 items of the second-to-last set, and everything.
 const ADVANCED_GOAL_TEXT = {
-    all: { short: 'All 4 Items', path: 'Reg 1-8 → Adv 9-10', advancedWeapon: 'Both Weapons & Characters', advancedCharacter: 'Both Legendary Characters & Weapons' },
-    two: { short: '3 Items', path: 'Reg 1-9 → Adv 10', advancedWeapon: 'Both Weapons + 1 Random Character', advancedCharacter: 'Both Characters + 1 Random Weapon' },
-    one: { short: '2 Items', path: 'Reg only 1-10', advancedWeapon: '1 Random Weapon + 1 Random Character', advancedCharacter: '1 Random Character + 1 Random Weapon' }
+    all4: { short: 'All 4 Items', path: 'Reg 1-8 → Adv 9-10', advancedWeapon: 'Both Weapons & Characters', advancedCharacter: 'Both Legendary Characters & Weapons' },
+    top2: { short: '3 Items', path: 'Reg 1-9 → Adv 10', advancedWeapon: 'Both Weapons + 1 Random Character', advancedCharacter: 'Both Characters + 1 Random Weapon' },
+    one_each: { short: '2 Items', path: 'Reg only 1-10', advancedWeapon: '1 Random Weapon + 1 Random Character', advancedCharacter: '1 Random Character + 1 Random Weapon' },
+    mid2: { short: { advancedWeapon: 'Both Epic Characters', advancedCharacter: 'Both Weapons' }, path: 'Reg 1-8 → Adv 9', advancedWeapon: 'Both Epic Characters', advancedCharacter: 'Both Weapons' },
+    everything: { short: 'Everything', path: 'Adv 1-10', advancedWeapon: 'Everything (All 10 Sets)', advancedCharacter: 'Everything (All 10 Sets)' }
 };
+function goalShort(drawKey, goal) {
+    const s = ADVANCED_GOAL_TEXT[goal].short;
+    return typeof s === 'string' ? s : s[drawKey];
+}
 function buildGoalModal(state, basket, index) {
     const b = basket?.banners?.[index];
     if (!b || !isAdvancedKey(b.drawKey)) return null;
-    const totals = advancedGoalTotals(basket.region, b.drawKey);
+    const done = Math.min(b.pullsDone || 0, pullCount(basket.region, b.drawKey, b) ?? 0);
+    const totals = advancedGoalTotals(basket.region, b.drawKey, { ...b, pullsDone: done });
     const current = advancedGoal(b);
-    return { custom_id: encodeState('goalsave', { ...state, focus: index }), title: 'Set Goal', components: [{ type: 18, label: 'Goal', component: {
+    const both = advancedBoth(b, done);
+    const components = [{ type: 18, label: 'Goal', component: {
         type: 3, custom_id: 'goal', required: true, min_values: 1, max_values: 1,
-        options: ADVANCED_GOALS.map(g => ({ label: ADVANCED_GOAL_TEXT[g][b.drawKey], value: g, description: `${ADVANCED_GOAL_TEXT[g].path}${totals ? ` · ${fmt(totals[g])} CP` : ''}`, ...(g === current ? { default: true } : {}) }))
-    } }] };
+        options: ADVANCED_GOALS.map(g => ({ label: ADVANCED_GOAL_TEXT[g][b.drawKey], value: g, description: `${ADVANCED_GOAL_TEXT[g].path}${totals ? ` · ${fmt(totals[g])} CP Left` : ''}`, ...(g === current ? { default: true } : {}) }))
+    } }];
+    // Only the sets already spun can hold both items, so a line with none spun has no second field.
+    if (done > 0) components.push({ type: 18, label: 'Sets You Got Both Items From', description: 'From an Advanced spin, or a Regular spin you finished later.', component: {
+        type: 3, custom_id: 'both', required: false, min_values: 0, max_values: done,
+        options: Array.from({ length: done }, (_, i) => ({ label: `Set ${i + 1}`, value: String(i + 1), ...(both.includes(i + 1) ? { default: true } : {}) }))
+    } });
+    return { custom_id: encodeState('goalsave', { ...state, focus: index }), title: 'Set Goal', components };
 }
 // Reads the Goal pop-up back: a known goal, or null.
 function readGoal(value) { return ADVANCED_GOALS.includes(value) ? value : null; }
@@ -1317,7 +1335,7 @@ function lineFigures(basket) {
         // The draw and its Mythic upgrade are kept apart (2026-10-16 14:32 EDT, Harkirat's layout states the upgrade on its own). Since 2026-10-17 13:17 EDT a line's upgrade is what it still needs in CARDS or COINS (`upNeed`), because both are pooled across lines and only the pool becomes CP; `full`/`left` are the draw alone.
         const up = plan.lines.find(l => l.index === i) || null;
         const upNeed = upgradeIsSet(up) ? up.need : 0;
-        return { n: i + 1, drawKey: b.drawKey, title: b.title || null, spinsIn, pullsDone: b.pullsDone, total, priced, spent, left: leftAll, full: spent + leftAll, drawLeft: leftAll, drawFull: spent + leftAll, up: upNeed ? up : null, upNeed, upKey: JSON.stringify([up ? up.have : null, up ? up.want : null, b.title || null, total, spinsIn, isAdvancedKey(b.drawKey) ? advancedGoal(b) : null]) };
+        return { n: i + 1, drawKey: b.drawKey, title: b.title || null, spinsIn, pullsDone: b.pullsDone, total, priced, spent, left: leftAll, full: spent + leftAll, drawLeft: leftAll, drawFull: spent + leftAll, up: upNeed ? up : null, upNeed, upKey: JSON.stringify([up ? up.have : null, up ? up.want : null, b.title || null, total, spinsIn, isAdvancedKey(b.drawKey) ? [advancedGoal(b), advancedBoth(b, b.pullsDone)] : null]) };
     });
 }
 function breakdownRows(figs, level) {

@@ -16,7 +16,7 @@ const {
     buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName,
     buildAddDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency, buildGoalModal, readGoal
 } = require('../commands/drawCalculator');
-const { pullCount, upgradeKeyOf, isArmoryKey, armorySize } = require('../utils/drawCost');
+const { pullCount, upgradeKeyOf, isArmoryKey, armorySize, isAdvancedKey, advancedBoth } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES, CURRENCIES } = require('../utils/cpPackages');
 const basketStore = require('../utils/drawBasketStore');
@@ -204,9 +204,17 @@ async function route(interaction) {
         const line = index !== null ? basket.banners[index] : null;
         let picked = null;
         try { picked = readGoal(interaction.fields.getStringSelectValues('goal')[0]); } catch { picked = null; }
+        // The full sets field exists only once a set is spun; a missing field leaves them as they were.
+        let bothPicked = null;
+        try { bothPicked = interaction.fields.getStringSelectValues('both'); } catch { bothPicked = null; }
         if (!line || !buildGoalModal(state, basket, index) || !picked) { await renderPanel(interaction, { ...state, focus: null }, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
-        // 'all' is the default, so it is stored as absent.
-        const banners = basket.banners.map((b, i) => (i === index ? { ...b, goal: picked === 'all' ? undefined : picked } : b));
+        // 'all4' is the default, so it is stored as absent; so is an empty list of full sets.
+        const banners = basket.banners.map((b, i) => {
+            if (i !== index) return b;
+            const next = { ...b, goal: picked === 'all4' ? undefined : picked };
+            if (bothPicked !== null) { const both = advancedBoth({ bothSets: bothPicked }, b.pullsDone); next.bothSets = both.length ? both : undefined; }
+            return next;
+        });
         const updated = await writeTo(actingUserId, state, basket, { banners });
         await renderPanel(interaction, { ...state, focus: null }, updated);
         return true;
@@ -513,6 +521,8 @@ async function route(interaction) {
                 if (pullsDone === 0 && next.upHave) delete next.upHave;
                 return { ...next, pullsDone };
             }
+            // An Advanced line keeps only the full sets it has still spun.
+            if (isAdvancedKey(next.drawKey) && next.bothSets) { const both = advancedBoth(next, pullsDone); next.bothSets = both.length ? both : undefined; }
             if (total !== null && pullsDone < total && next.upHave) { const { upHave, ...rest } = next; return { ...rest, pullsDone }; }
             return { ...next, pullsDone };
         });
