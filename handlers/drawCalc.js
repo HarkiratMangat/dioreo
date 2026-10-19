@@ -408,6 +408,15 @@ async function route(interaction) {
         return true;
     }
 
+    // Draws opens /draws as its OWN private message (2026-10-19 09:24 EDT, his ask), the same shape as Draw Prices above. draws' execute() sees an already-deferred, non-slash interaction, so it neither re-defers nor reads slash options, and its sendV2Payload patches this new message.
+    if (interaction.isButton() && state.verb === 'seasondraws') {
+        try {
+            await interaction.deferReply({ flags: 64 });
+            await interaction.client.commands.get('draws').execute(interaction, null, 0);
+        } catch (notifyError) { console.error('Failed to open Draws from the calculator (interaction likely expired):', notifyError); }
+        return true;
+    }
+
     // Everything below edits @original -- defer up front.
     await ackUpdate(interaction);
 

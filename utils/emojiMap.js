@@ -124,7 +124,7 @@ const emojis = {
     // The Calculate button's icon (2026-10-16 14:31 EDT, Harkirat's Calculate emoji replaces Sparkles; the key was `sparkles`).
     calculate: '<a:Calculate:1560700164103217263>',
     // New Calculation's icon (2026-10-16 14:31 EDT).
-    newCalc: '<a:NewCalc:1560694028608081961>',
+    newCalc: '<a:NewCalc:1561738375352946770>',   // re-uploaded 2026-10-19 09:51 EDT (Harkirat), was 1560694028608081961
     // The calculator's Save buttons (2026-10-14 17:28 EDT, Harkirat uploaded to both apps): prod id here; the dev bot re-points to its 1560041353185075250 by name at boot.
     saveStar: '<a:Save:1560682840692105346>',   // re-uploaded 2026-10-16 14:31 EDT   // Harkirat's new Save icon, 2026-10-16 09:59 EDT (was SaveStar 1560041207177023519); the key keeps its name so every Save button follows
     // The calculator's View Saved button (2026-10-16 09:59 EDT): prod id here; the dev bot re-points by name at boot.
@@ -158,6 +158,7 @@ async function refreshEmojiIds(client) {
         const res = await client.rest.get(`/applications/${appId}/emojis`);
         const live = res?.items ?? res ?? [];
         const byName = new Map(live.map(e => [e.name, e]));
+        liveByName = byName;
 
         for (const [key, value] of Object.entries(emojis)) {
             if (typeof value !== 'string') continue;
@@ -195,7 +196,18 @@ async function refreshEmojiIds(client) {
     return result;
 }
 
+// The live app's emojis by name, kept from the last refreshEmojiIds() run, for repoint() below.
+let liveByName = null;
+
+// Re-points ONE stored mention at the booted app's own copy, matching on name, the same rule refreshEmojiIds applies to the map above. For a mention that lives in the database rather than in this file: a season emoji typed into /manage on prod carries prod's id, and the dev bot's clone of that data would show it as broken text. Unknown name, or before the first sync: the mention comes back unchanged.
+function repoint(mention) {
+    const parsed = typeof mention === 'string' ? parseEmoji(mention) : undefined;
+    const match = parsed && liveByName?.get(parsed.name);
+    return match ? `<${match.animated ? 'a' : ''}:${match.name}:${match.id}>` : mention;
+}
+
 emojis.parseEmoji = parseEmoji;
 emojis.refreshEmojiIds = refreshEmojiIds;
+emojis.repoint = repoint;
 
 module.exports = emojis;

@@ -34,8 +34,8 @@ function unitOf(drawKey) { return SERIES_ARMORY[drawKey] ? `${SERIES_ARMORY[draw
 function lineName(b) { return (b && b.title) || shortName(b && b.drawKey); }
 // Five lines per page (2026-10-14 00:15 EDT). He asked for six; six measured past Discord's message SIZE cap, not the 40-component one: each line's dropdown carries 11-13 labelled options, and seven different draws at six per page came to ~13,800 characters against a cap measured between 13,100 and 13,412 on the dev bot. Five fits every draw mix under SETUP_JSON_BUDGET; buildSetupPanel still drops further when the saved list needs the room.
 const SETUP_LINES_PER_PAGE = 5;
-// The setup form's own budget (container included): 40, minus the Show Everyone row (2) and the form's bottom nav row (1 + 2 buttons: Draw Prices · Help; Saved and New Calculation sit in the form's own Calculate row since 2026-10-14 16:51 EDT). Was 33 with four nav buttons, 2026-10-14 13:13 EDT). buildSetupPanel drops lines per page until it fits. 37 since 2026-10-14 18:34 EDT: the Show Everyone row (2) is gone from this command.
-const SETUP_CONTAINER_BUDGET = 37;
+// The setup form's own budget (container included): 40, minus the Show Everyone row (2) and the form's bottom nav row (1 + 3 buttons since 2026-10-19 09:24 EDT: Draws · Draw Prices · Help; Saved and New Calculation sit in the form's own Calculate row since 2026-10-14 16:51 EDT). Was 33 with four nav buttons, 2026-10-14 13:13 EDT). buildSetupPanel drops lines per page until it fits. 37 since 2026-10-14 18:34 EDT: the Show Everyone row (2) is gone from this command. 36 since 2026-10-19 09:24 EDT (his ask: "In all the screens, in the outside footer action row, let's also add 'Draws' as a button"): every nav row carries one more button, so every container gets one fewer.
+const SETUP_CONTAINER_BUDGET = 36;
 // Discord ALSO caps a message's size, separately from the 40 components (40005 "Message size exceeds maximum allowed"). Measured 2026-10-14 00:12 EDT on the dev bot: a form serialising to 13,687 characters of JSON posted, one at 16,634 was refused (six lines plus 25 saved calculations). 12,000 leaves margin; buildSetupPanel drops lines per page until both budgets hold.
 const SETUP_JSON_BUDGET = 12000;
 // One calculation holds at most this many lines; the add picker disables itself at the cap and the handler stops there too.
@@ -646,7 +646,7 @@ function newCalculationButton(state) {
     // NewCalc icon (2026-10-16 14:31 EDT). One press since 2026-10-19 00:12 EDT (his idea): what it clears can be restored from the empty form.
     return { type: 2, style: 2, label: 'New Calculation', custom_id: encodeState('reset', state), emoji: emojis.parseEmoji(emojis.newCalc) };
 }
-// `inForm`: on the form, Saved and New Calculation sit in its own Calculate row (2026-10-14 16:51 EDT, Harkirat: "move calculate down to its own action row, with a divider above it. Move New calculation and saved into that same row"), so the nav keeps only Draw Prices and Help there. The Saved view's and the Save step's footer (2026-10-16 11:19 EDT, Harkirat: "put the 'back' button inside of the embed as a footer button. reworded to 'Back to Calculation'. With a button beside it for 'New Calculation'", and "use the left arrow we use for pagination").
+// `inForm`: on the form, Saved and New Calculation sit in its own Calculate row (2026-10-14 16:51 EDT, Harkirat: "move calculate down to its own action row, with a divider above it. Move New calculation and saved into that same row"), so the nav keeps only Draws, Draw Prices and Help there. The Saved view's and the Save step's footer (2026-10-16 11:19 EDT, Harkirat: "put the 'back' button inside of the embed as a footer button. reworded to 'Back to Calculation'. With a button beside it for 'New Calculation'", and "use the left arrow we use for pagination").
 function savedFooterRow(state) {
     return { type: 1, components: [
         { type: 2, style: 2, label: 'Back to Calculation', custom_id: encodeState('back', state), emoji: emojis.parseEmoji(emojis.left) },
@@ -654,15 +654,22 @@ function savedFooterRow(state) {
     ] };
 }
 function bottomNavRow(state, { showReset = true, savedCount = 0, onSaved = false, inForm = false } = {}) {
-    // Its own private message (2026-10-13 12:40 EDT) -- it used to be the global nav's `nav_prices`, which turned THIS panel into /draw prices in place.
-    const components = [{ type: 2, style: 2, label: 'Draw Prices', custom_id: encodeState('prices', state) }];
-    // Saved calculations are their own view of this same message (2026-10-14 13:19 EDT, Harkirat's "surface switch"). On that view the slot reads Back. On the Saved view and the Save step the way back lives INSIDE the panel as a footer row (2026-10-16 11:19 EDT, savedFooterRow), so the nav keeps only Draw Prices and Help there.
+    const components = [];
+    // Saved calculations are their own view of this same message (2026-10-14 13:19 EDT, Harkirat's "surface switch"). On the Saved view and the Save step the way back lives INSIDE the panel as a footer row (2026-10-16 11:19 EDT, savedFooterRow), so the nav keeps only Draws, Draw Prices and Help there. View Saved LEADS the editor's row (2026-10-19 09:21 EDT, his ask: "move the 'view saved' before the 'draw prices' button").
     if (!onSaved && !inForm) {
         components.push(savedButton(state));
         if (showReset) components.push(newCalculationButton(state));
     }
-    components.push({ type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) });
+    components.push(...seasonLinkButtons(state), { type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) });
     return { type: 1, components };
+}
+
+// Draws · Draw Prices, in every nav row (2026-10-19 09:24 EDT, his ask: "add 'Draws' as a button. Positioned infront of the draw prices button"). Each opens its own private message, the calculator stays put. Draw Prices used to be the global nav's `nav_prices`, which turned THIS panel into /draw prices in place (replaced 2026-10-13 12:40 EDT); Draws follows the same shape. `seasondraws`, not `draws`: that verb is the setup form's draw picker.
+function seasonLinkButtons(state) {
+    return [
+        { type: 2, style: 2, label: 'Draws', custom_id: encodeState('seasondraws', state) },
+        { type: 2, style: 2, label: 'Draw Prices', custom_id: encodeState('prices', state) }
+    ];
 }
 
 // Order New Calculation · View Saved · Calculate (2026-10-14 17:58 EDT, Harkirat: "move new calc button to the front of the row. saved in middle. calculate last"). The form's last row, under its own divider (2026-10-14 16:51 EDT): Calculate (the ONLY Primary button in this command, with his Sparkles emoji), then New Calculation once there is something to clear, then Saved.
@@ -678,10 +685,11 @@ function setupSubmitRow(state, basket, savedCount) {
 // The result ends with the same row, Save Result in Calculate's place with his SaveStar emoji (2026-10-14 17:58 EDT, Harkirat: "leave them in their current row. just replace calculate with Save result"). It opens the Save step: save as new, or save over a saved one.
 function resultActionRow(state) {
     return { type: 1, components: [
+        // Order New Calculation · Export · View Saved · Save Result (2026-10-19 09:20 EDT, his ask: "new calc then export then view saved then save result").
         newCalculationButton(state),
-        savedButton(state),
         // Export (2026-10-14 18:23 EDT, Harkirat: "an export button which outputs the result into a simple copy-able markdown for the user to share"). It answers privately with the result as plain markdown in a code block, so it copies cleanly and renders when pasted anywhere in Discord. The Show Everyone icon (2026-10-14 18:34 EDT, Harkirat), since Export is now how a result is shared.
         { type: 2, style: 2, label: 'Export', custom_id: encodeState('export', state), emoji: emojis.parseEmoji(emojis.copyExport) },
+        savedButton(state),
         { type: 2, style: 1, label: 'Save Result', custom_id: encodeState('savepick', state), emoji: emojis.parseEmoji(emojis.saveStar) }
     ] };
 }
@@ -1065,7 +1073,7 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
     for (let perPage = SETUP_LINES_PER_PAGE; perPage >= 1; perPage--) if (fitsAll(perPage)) { chosen = perPage; break; }
     for (let perPage = chosen; perPage >= chosen; perPage--) {
         out = build(perPage);
-        // The editor's nav row carries four buttons (5 components) where the form's carried two, so its container gets 2 fewer (2026-10-18 15:13 EDT, measured: 41 at 5 lines otherwise). The editor's nav row is 4 components since New Calculation moved into the footer (2026-10-18 21:18 EDT), so the container gets 1 fewer than the form's budget (it was 2 fewer with 5).
+        // The editor's nav row carries four buttons (5 components) where the form's carried two, so its container gets 2 fewer (2026-10-18 15:13 EDT, measured: 41 at 5 lines otherwise). The editor's nav row is 4 components since New Calculation moved into the footer (2026-10-18 21:18 EDT), so the container gets 1 fewer than the form's budget (it was 2 fewer with 5). 5 components again since Draws joined every nav row (2026-10-19 09:24 EDT), still 1 more than the form's 4, so the -1 holds against the lowered budget.
         if (1 + countComponents(out) <= SETUP_CONTAINER_BUDGET - 1 && JSON.stringify(out).length <= SETUP_JSON_BUDGET) break;
     }
     return { type: 17, accent_color: accentColor, components: out };
@@ -1426,7 +1434,8 @@ function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntr
     if (liveDoubleCPEntry || basket.entitlementMask) {
         const ends = liveDoubleCPEntry && liveDoubleCPEntry.endDate ? ` (ends <t:${Math.floor(new Date(liveDoubleCPEntry.endDate).getTime() / 1000)}:R>)` : '';
         components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: liveDoubleCPEntry
-            ? `-# 🎉 **Double CP** event is live${ends}!\n-# Select which 2X CP offers are still available for you to purchase.`
+            // The whole event line bold (2026-10-19 09:22 EDT, his ask), the ask under it plain.
+            ? `-# 🎉 **Double CP event is live${ends}!**\n-# Select which 2X CP offers are still available for you to purchase.`
             : '-# Select which 2X CP offers are still available for you to purchase, if a Double CP event is running.' });
         components.push(entitlementSelectRow(state, basket));
     }
@@ -1549,7 +1558,7 @@ function buildCalculatorPanel(state, basket, accentColor, options = {}) {
     // 🔴 `submitted` is what separates a draft from a result, and it lives on the DOCUMENT, not the customId -- that is the whole reason a result survives a restart and "persists until reset / new calculation". Page 5 is Set Draw Progress, for a draft and a submitted calculation alike. ONE EDITOR (2026-10-18 15:13 EDT, his "yes"): the landing form shows only before the first pick; any draft with lines, Edit Selections (page 5), and an older panel's form view (page 2) all open Adjust Draws. Its nav row carries View Saved and New Calculation, which the landing's Calculate row used to. From a result, the nav row is Back to Result · Draw Prices · Help, with no View Saved (2026-10-18 15:48 EDT, his order); New Calculation moved into the editor's own footer row (2026-10-18 21:18 EDT). From the landing it is the usual nav.
     const editorNav = () => (state.fromResult && basket.submitted ? { type: 1, components: [
         { type: 2, style: 2, label: 'Back to Result', custom_id: encodeState('progresult', state), emoji: emojis.parseEmoji(emojis.left) },
-        { type: 2, style: 2, label: 'Draw Prices', custom_id: encodeState('prices', state) },
+        ...seasonLinkButtons(state),
         { type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) }
     ] } : nav({ showReset: false }));
     const editor = () => [buildProgressPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm }), editorNav()];

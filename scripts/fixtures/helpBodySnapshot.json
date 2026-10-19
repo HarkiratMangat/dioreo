@@ -37,6 +37,29 @@
           ]
         },
         {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Credits",
+              "url": "https://dioreo.app/notice"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Terms",
+              "url": "https://dioreo.app/terms"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Privacy Policy",
+              "url": "https://dioreo.app/privacy"
+            }
+          ]
+        },
+        {
           "type": 14,
           "spacing": 2,
           "divider": true
@@ -734,6 +757,29 @@
           ]
         },
         {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Credits",
+              "url": "https://dioreo.app/notice"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Terms",
+              "url": "https://dioreo.app/terms"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Privacy Policy",
+              "url": "https://dioreo.app/privacy"
+            }
+          ]
+        },
+        {
           "type": 14,
           "spacing": 2,
           "divider": true
@@ -875,6 +921,29 @@
               "style": 5,
               "label": "Invite Dioreo",
               "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+            }
+          ]
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Credits",
+              "url": "https://dioreo.app/notice"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Terms",
+              "url": "https://dioreo.app/terms"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Privacy Policy",
+              "url": "https://dioreo.app/privacy"
             }
           ]
         },
@@ -1594,6 +1663,29 @@
           ]
         },
         {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Credits",
+              "url": "https://dioreo.app/notice"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Terms",
+              "url": "https://dioreo.app/terms"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Privacy Policy",
+              "url": "https://dioreo.app/privacy"
+            }
+          ]
+        },
+        {
           "type": 14,
           "spacing": 2,
           "divider": true
@@ -1735,6 +1827,29 @@
               "style": 5,
               "label": "Invite Dioreo",
               "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+            }
+          ]
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Credits",
+              "url": "https://dioreo.app/notice"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Terms",
+              "url": "https://dioreo.app/terms"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Privacy Policy",
+              "url": "https://dioreo.app/privacy"
             }
           ]
         },
@@ -2725,6 +2840,29 @@
               "style": 5,
               "label": "Invite Dioreo",
               "url": "https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+            }
+          ]
+        },
+        {
+          "type": 1,
+          "components": [
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Credits",
+              "url": "https://dioreo.app/notice"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Terms",
+              "url": "https://dioreo.app/terms"
+            },
+            {
+              "type": 2,
+              "style": 5,
+              "label": "Privacy Policy",
+              "url": "https://dioreo.app/privacy"
             }
           ]
         },

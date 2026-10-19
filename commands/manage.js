@@ -689,6 +689,11 @@ function buildWipeSeasonModal() {
     return modal;
 }
 
+// The season title box shows the season's emoji in front of its title (2026-10-19 09:30 EDT), so deleting it from the box clears it -- core/ops/season.js splits it back off on submit.
+function withEmoji(emoji, title) {
+    return [emoji, title].filter(Boolean).join(' ');
+}
+
 function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
     // Each deadline field combines its title and end date on one line ("Battle Pass, August 28") — pre-filled so re-submitting without touching a field preserves it — see adminParser.js's splitTitleDate() for how handlers/manage.js parses these back apart.
     const bpLine = [seasonalDoc?.bpTitle || 'Battle Pass', formatAdminDate(seasonalDoc?.bpEnd)].filter(Boolean).join(', ');
@@ -697,7 +702,7 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
 
     const modal = new ModalBuilder().setCustomId('modal_season_titles_deadlines').setTitle('Edit Season Titles & Deadlines');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(seasonalDoc?.currentSeasonTitle || '')),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(withEmoji(seasonalDoc?.currentSeasonEmoji, seasonalDoc?.currentSeasonTitle))),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, End Date').setStyle(TextInputStyle.Short).setValue(bpLine)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, End Date').setStyle(TextInputStyle.Short).setValue(rankLine)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, End Date').setStyle(TextInputStyle.Short).setValue(dmzLine))
@@ -733,7 +738,7 @@ function buildDraftTitlesDatesModal(seasonalDoc) {
 
     const modal = new ModalBuilder().setCustomId('modal_draft_titles_dates').setTitle('Draft: Season Titles & Deadlines');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(draft.currentSeasonTitle || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(withEmoji(draft.currentSeasonEmoji, draft.currentSeasonTitle)).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, End Date').setStyle(TextInputStyle.Short).setValue(bpLine).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, End Date').setStyle(TextInputStyle.Short).setValue(rankLine).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, End Date').setStyle(TextInputStyle.Short).setValue(dmzLine).setRequired(false))
