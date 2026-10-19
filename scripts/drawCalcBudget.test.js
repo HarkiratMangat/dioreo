@@ -849,7 +849,7 @@ t('each line\'s dropdown OPENS with Remove, then the values; Move Up is gone', (
     const lines = selects(progress([{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 3 }])).filter(s => verbOf(s) === 'bpulls');
     for (const line of lines) assert.strictEqual(line.options[0].value, '0', 'progress values only (2026-10-18 13:38 EDT)');
     assert.strictEqual(lines.some(s => s.options.some(o => o.value === 'up')), false, 'no Move Up option on any line (2026-10-14, his call)');
-    const rm = buttonLabelled(progress([{ drawKey: 'mythicWeapon', pullsDone: 0 }]), 'Remove Selections');
+    const rm = buttonLabelled(progress([{ drawKey: 'mythicWeapon', pullsDone: 0 }]), 'Remove Draws');
     assert.ok(rm && rm.style === 4 && verbOf(rm) === 'rmopen' && rm.emoji && rm.emoji.name === 'DeleteBin', 'Remove is a red button with his DeleteBin, opening the pop-up');
     assert.ok(lines.every(s => s.options.length <= 25));
 });
@@ -957,7 +957,7 @@ t('removing a line with progress asks first; Keep stays on the page it was asked
 
 t('batch 8 (2026-10-14 16:47 EDT): plural selections on the result, the DeleteBin on Remove, and no "·" before an upgrade', () => {
     assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 0 }] }))).includes('## Your Draw Selections'));
-    const remove = buttonLabelled(progress([{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }]), 'Remove Selections');
+    const remove = buttonLabelled(progress([{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicWeapon', pullsDone: 0 }]), 'Remove Draws');
     assert.strictEqual(remove.emoji.name, 'DeleteBin');
     const fresh = dc.buildAddDrawsModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), []).components[0].component.options.find(o => o.value === 'mythicCharacter').description;
     assert.ok(/CP Total \+ [\d,]+ CP Upgrade$/.test(fresh) && !/· \+/.test(fresh), fresh);
@@ -1362,7 +1362,7 @@ t('the result names a season draw without its Draw Type line (2026-10-18 13:08 E
 t('his Mock 2 (2026-10-18 13:38 EDT): Add Draws and Remove open pop-ups, his two footer rows, and Remove reads back only lines that still match', () => {
     const draft = progress([{ drawKey: 'mythicWeapon', pullsDone: 2 }, { drawKey: 'armoryLegendaryWeapon', pullsDone: 0, size: 4 }]);
     const footer = rows(draft).slice(-2, -1).map(r => r.components.map(b => b.label));
-    assert.deepStrictEqual(footer, [['New Calculation', 'Add Draws', 'Remove Selections', 'Calculate']], 'New Calculation leads the row (2026-10-18 21:18 EDT, his ask); a draft has no result to go back to');
+    assert.deepStrictEqual(footer, [['New Calculation', 'Add Draws', 'Remove Draws', 'Calculate']], 'New Calculation leads the row (2026-10-18 21:18 EDT, his ask); a draft has no result to go back to');
     const done = dc.buildCalculatorPanel(state({ page: 5, fromResult: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
     messageCount(done); // every custom_id unique: a duplicated Back to Result made Discord refuse this screen (2026-10-18 16:05 EDT)
     assert.strictEqual(buttons(done).filter(b => b.label === 'Back to Result').length, 1);
