@@ -1016,6 +1016,8 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
     const tweak = regionBalanceBlock(state, basket);
     const back = [...tweak, { type: 14, spacing: 2, divider: true },
         { type: 1, components: [
+            // New Calculation leads the row (2026-10-18 21:18 EDT, his ask: "New calc / add draws / remove / calculate"), so it left the nav row below: one button in both would be a duplicate id, which Discord refuses outright.
+            newCalculationButton(state),
             // Grey, not green (2026-10-18 21:16 EDT, his ask): green on this screen means a set Upgrade.
             { type: 2, style: 2, label: 'Add Draws', custom_id: encodeState('addopen', state), emoji: emojis.parseEmoji(emojis.plus), disabled: banners.length >= MAX_LINES },
             { type: 2, style: 4, label: 'Remove', custom_id: encodeState('rmopen', state), emoji: emojis.parseEmoji(emojis.deleteBin) },
@@ -1036,13 +1038,13 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
     // Fewer lines per page until it fits (the same two budgets as the form): a Series Armory's 22-value dropdown is about twice a ladder line's size.
     let out = [];
     // ONE page size for EVERY page (2026-10-18 15:48 EDT, his bug: "the 1st page says 1/3. i click right. then it says 2/2"). Each page used to pick its own size, so a page of Mythic lines (heavier) split the list into 3 while a lighter page split it into 2, and the page number meant different lines on each. The size is now the largest that fits on every page.
-    const fitsAll = perPage => linePages(banners, perPage).every((_, p) => { const o = build(perPage, p); return 1 + countComponents(o) <= SETUP_CONTAINER_BUDGET - 2 && JSON.stringify(o).length <= SETUP_JSON_BUDGET; });
+    const fitsAll = perPage => linePages(banners, perPage).every((_, p) => { const o = build(perPage, p); return 1 + countComponents(o) <= SETUP_CONTAINER_BUDGET - 1 && JSON.stringify(o).length <= SETUP_JSON_BUDGET; });
     let chosen = 1;
     for (let perPage = SETUP_LINES_PER_PAGE; perPage >= 1; perPage--) if (fitsAll(perPage)) { chosen = perPage; break; }
     for (let perPage = chosen; perPage >= chosen; perPage--) {
         out = build(perPage);
-        // The editor's nav row carries four buttons (5 components) where the form's carried two, so its container gets 2 fewer (2026-10-18 15:13 EDT, measured: 41 at 5 lines otherwise).
-        if (1 + countComponents(out) <= SETUP_CONTAINER_BUDGET - 2 && JSON.stringify(out).length <= SETUP_JSON_BUDGET) break;
+        // The editor's nav row carries four buttons (5 components) where the form's carried two, so its container gets 2 fewer (2026-10-18 15:13 EDT, measured: 41 at 5 lines otherwise). The editor's nav row is 4 components since New Calculation moved into the footer (2026-10-18 21:18 EDT), so the container gets 1 fewer than the form's budget (it was 2 fewer with 5).
+        if (1 + countComponents(out) <= SETUP_CONTAINER_BUDGET - 1 && JSON.stringify(out).length <= SETUP_JSON_BUDGET) break;
     }
     return { type: 17, accent_color: accentColor, components: out };
 }
@@ -1470,13 +1472,12 @@ function buildCalculatorPanel(state, basket, accentColor, options = {}) {
             : buildSetupPanel(state, null, accentColor, { region: options.region, notice: options.notice, savedCount, seasonDraws: options.seasonDraws, savedBaskets: options.savedBaskets });
         return [container, nav({ inForm: true })];
     }
-    // 🔴 `submitted` is what separates a draft from a result, and it lives on the DOCUMENT, not the customId -- that is the whole reason a result survives a restart and "persists until reset / new calculation". Page 5 is Set Draw Progress, for a draft and a submitted calculation alike. ONE EDITOR (2026-10-18 15:13 EDT, his "yes"): the landing form shows only before the first pick; any draft with lines, Edit Selections (page 5), and an older panel's form view (page 2) all open Adjust Draws. Its nav row carries View Saved and New Calculation, which the landing's Calculate row used to. From a result, the nav row is Back to Result · New Calculation · Draw Prices · Help, with no View Saved (2026-10-18 15:48 EDT, his order). From the landing it is the usual nav.
+    // 🔴 `submitted` is what separates a draft from a result, and it lives on the DOCUMENT, not the customId -- that is the whole reason a result survives a restart and "persists until reset / new calculation". Page 5 is Set Draw Progress, for a draft and a submitted calculation alike. ONE EDITOR (2026-10-18 15:13 EDT, his "yes"): the landing form shows only before the first pick; any draft with lines, Edit Selections (page 5), and an older panel's form view (page 2) all open Adjust Draws. Its nav row carries View Saved and New Calculation, which the landing's Calculate row used to. From a result, the nav row is Back to Result · Draw Prices · Help, with no View Saved (2026-10-18 15:48 EDT, his order); New Calculation moved into the editor's own footer row (2026-10-18 21:18 EDT). From the landing it is the usual nav.
     const editorNav = () => (state.fromResult && basket.submitted ? { type: 1, components: [
         { type: 2, style: 2, label: 'Back to Result', custom_id: encodeState('progresult', state), emoji: emojis.parseEmoji(emojis.left) },
-        newCalculationButton(state),
         { type: 2, style: 2, label: 'Draw Prices', custom_id: encodeState('prices', state) },
         { type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) }
-    ] } : nav({}));
+    ] } : nav({ showReset: false }));
     const editor = () => [buildProgressPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm }), editorNav()];
     if (!basket.banners.length) return [buildSetupPanel(state, basket, accentColor, { notice: options.notice, dropConfirm: options.dropConfirm, savedCount, seasonDraws: options.seasonDraws, savedBaskets: options.savedBaskets }), nav({ inForm: true })];
     if (state.page === 5 || state.page === 2 || !basket.submitted) return editor();

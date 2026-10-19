@@ -461,7 +461,7 @@ t('a legacy calc~ id from the OLD single-draw codec decodes to a SAFE state rath
 // ==========================================
 
 t('the bottom nav row is a SIBLING of the Container, never one of its children, and Draw Info is gone', () => {
-    for (const [panel, labels] of [[render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })), ['Draw Prices', 'Help']], [form([{ drawKey: 'mythicWeapon', pullsDone: 3 }]), ['Draw Prices', 'View Saved', 'New Calculation', 'Help']]]) {
+    for (const [panel, labels] of [[render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] })), ['Draw Prices', 'Help']], [form([{ drawKey: 'mythicWeapon', pullsDone: 3 }]), ['Draw Prices', 'View Saved', 'Help']]]) {
         // The result keeps New Calculation and View Saved in its own last row (2026-10-14 17:58 EDT); the editor has no such row, so its nav carries them (his one editor (2026-10-18 15:15 EDT)).
         const nav = panel.filter(x => x && x.type === 1);
         assert.strictEqual(nav.length, 1, 'exactly one top-level action row (the nav)');
@@ -1354,11 +1354,11 @@ t('the result names a season draw without its Draw Type line (2026-10-18 13:08 E
 t('his Mock 2 (2026-10-18 13:38 EDT): Add Draws and Remove open pop-ups, his two footer rows, and Remove reads back only lines that still match', () => {
     const draft = progress([{ drawKey: 'mythicWeapon', pullsDone: 2 }, { drawKey: 'armoryLegendaryWeapon', pullsDone: 0, size: 4 }]);
     const footer = rows(draft).slice(-2, -1).map(r => r.components.map(b => b.label));
-    assert.deepStrictEqual(footer, [['Add Draws', 'Remove', 'Calculate']], 'a draft has no result to go back to, and no selections screen any more');
+    assert.deepStrictEqual(footer, [['New Calculation', 'Add Draws', 'Remove', 'Calculate']], 'New Calculation leads the row (2026-10-18 21:18 EDT, his ask); a draft has no result to go back to');
     const done = dc.buildCalculatorPanel(state({ page: 5, fromResult: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
     messageCount(done); // every custom_id unique: a duplicated Back to Result made Discord refuse this screen (2026-10-18 16:05 EDT)
     assert.strictEqual(buttons(done).filter(b => b.label === 'Back to Result').length, 1);
-    assert.deepStrictEqual(done.filter(x => x.type === 1)[0].components.map(b => b.label), ['Back to Result', 'New Calculation', 'Draw Prices', 'Help'], 'his nav order from a result, no View Saved (2026-10-18 15:48 EDT)');
+    assert.deepStrictEqual(done.filter(x => x.type === 1)[0].components.map(b => b.label), ['Back to Result', 'Draw Prices', 'Help'], 'his nav order from a result, no View Saved (2026-10-18 15:48 EDT); New Calculation is in the footer since 2026-10-18 21:18 EDT');
     const dirty = dc.buildCalculatorPanel(state({ page: 5, fromResult: true, dirty: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
     assert.ok(buttonLabelled(dirty, 'Recalculate') && !buttonLabelled(dirty, 'Calculate'), 'a change after Edit Selections offers Recalculate');
     assert.ok(buttonLabelled(draft, 'Calculate'), 'a fresh draft keeps Calculate');
