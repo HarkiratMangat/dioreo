@@ -740,8 +740,8 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     const priced = lineFigures(basket).filter(f => f.priced);
     const rows = breakdownRows(priced, level >= 4 ? 4 : level >= 1 ? 1 : 0);
     const terms = key => (level >= 3 ? `across ${plural(priced.length, 'line')}` : rows.map(r => `\`${r.count > 1 && !r.byType ? `${r.count} × ` : ''}${fmt(r[key])} CP\``).join(' **+** ') || '`0 CP`');
-    // HIS LAYOUT FOR BOTH VIEWS (2026-10-17 18:28 EDT; the tree he tried first was dropped because "-# lines break the emoji tree illusion"). The simplified view: You Need in bold, then one quiet line naming the sum's terms. The Full Breakdown: the same headline, then the sum quoted, one term per line with its sign and a `-#` line of what it is made of. Colons for a label and its value, ⌇ for a thing and what it costs, the grammar /draw prices already uses.
-    const quiet = key => (detail ? [`> -# ${terms(key)}`] : []);
+    // HIS LAYOUT FOR BOTH VIEWS (2026-10-17 18:28 EDT; the tree he tried first was dropped because "-# lines break the emoji tree illusion"). The simplified view: You Need in bold, then one quiet line naming the sum's terms. The Full Breakdown: the same headline, then the sum quoted, one term per line with its sign and a `-#` line of what it is made of. Colons for a label and its value, ⌇ for a thing and what it costs, the grammar /draw prices already uses. The :b1: emoji leads each of the Full Breakdown's working lines (2026-10-18 21:41 EDT, his ask): the terms under Full Cost of Draws and Spent Already, each upgrade line, the unset balance and the left-over line.
+    const quiet = key => (detail ? [`> -# ${emojis.b1} ${terms(key)}`] : []);
     const cost = ['## Cost Breakdown', `**You Need: \`${fmt(Math.max(shortfall, 0))} CP\`**`];
     if (!detail) {
         // Plain words, not code spans (2026-10-17 18:41 EDT, Harkirat on his phone: "Yeah it does wrap ... -# plain text?"): spans are wider and wrapped the line on a phone.
@@ -754,12 +754,12 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
             for (const p of upgrades.pools.filter(x => x.need)) {
                 const icon = p.drawKey === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
                 // The icon, then the amount (icon first again 2026-10-18 21:37 EDT, his correction); ⌇ for "comes to" and ~ for "about" (2026-10-18 21:34 EDT, his ask): "about" wrapped the line once the per-spin price reached four digits.
-                cost.push(`> -# ${icon} \`${fmt(p.need)}\` ${p.currency}${p.held ? ` − \`${fmt(p.held)}\` held` : ''} ⌇ ~${p.spins} spins × \`${fmt(p.perDraw)} CP\``);
+                cost.push(`> -# ${emojis.b1} ${icon} \`${fmt(p.need)}\` ${p.currency}${p.held ? ` − \`${fmt(p.held)}\` held` : ''} ⌇ ~${p.spins} spins × \`${fmt(p.perDraw)} CP\``);
             }
         }
         cost.push(`> **− Spent Already: \`${fmt(spent)} CP\`**`, ...quiet('spent'));
         // "Not set" so a balance nobody entered does not read as one set to 0. An unset balance says so on its own line (2026-10-18 19:48 EDT, his wording).
-        cost.push(`> **− CP Balance: \`${fmt(balance)} CP\`**`, ...(balance ? [] : ['> -# *Not set* so 0 CP assumed']));
+        cost.push(`> **− CP Balance: \`${fmt(balance)} CP\`**`, ...(balance ? [] : [`> -# ${emojis.b1} *Not set* so 0 CP assumed`]));
     }
     // An armory not set up yet is left out with its own reason (2026-10-18 15:13 EDT), not "no pricing".
     const notSetUp = (basket.banners || []).map((b, i) => (isArmoryKey(b.drawKey) && armorySize(b) === null ? `#${i + 1}` : null)).filter(Boolean);
@@ -785,7 +785,7 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     // One option: the total for its price (labelled only when two options show, 2026-10-14 16:47 EDT), what is left over, then each bundle quoted with ⌇ before its price.
     const option = (r, label) => [
         `**${label ? `${label}: ` : ''}\`${fmt(r.totalCp)} CP\`** for **\`${money(r.totalCents)}\`**`,
-        `-# **\`${fmt(r.leftoverCp)} CP\` left over**${detail ? afterWhat : ''}`,
+        `-# ${detail ? `${emojis.b1} ` : ''}**\`${fmt(r.leftoverCp)} CP\` left over**${detail ? afterWhat : ''}`,
         ...r.combo.map(c => `> **${c.count}× \`${fmt(c.cpEach)} CP\`** bundle${c.mode === 'double' ? ' (2X)' : ''}${BREAK}**\`${money(c.priceCents)}\`**${c.count > 1 ? ' each' : ''}`)
     ];
     const purchase = ['## Suggested Purchase', ...option(result.cheapest, stockUp ? 'Just Enough' : null)]; // "Just Enough" (2026-10-17 21:33 EDT, Harkirat: "sure sounds good"): the pick is no longer always the cheapest, and "Best Pick" would read as better than Stock Up

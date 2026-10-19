@@ -504,7 +504,7 @@ t('Cheapest and Stock Up are separated, and no heading is preceded by a stacked 
     const lines = texts(render(makeBasket({ banners: [{ drawKey: 'legendaryGunReactive', pullsDone: 0 }, { drawKey: 'legendaryGunReactive', pullsDone: 1 }, { drawKey: 'mythicWeapon', pullsDone: 0 }] }), { detail: true }, { currency: 'CAD' })).join('\n').split('\n');
     const stockUp = lines.findIndex(l => l.startsWith('**Stock Up: '));
     assert.ok(stockUp !== -1 && lines.some(l => l.startsWith('**Just Enough: ')) && lines.includes('## Suggested Purchase'), 'two options, each labelled in its total line, under the one heading');
-    assert.ok(lines[stockUp - 1] === '' && lines[stockUp + 1].startsWith('-# **`') && lines[stockUp + 2].startsWith('> **'), 'a blank line, the labelled total, what is left over, then the quoted bundles');
+    assert.ok(lines[stockUp - 1] === '' && lines[stockUp + 1].startsWith(`-# ${require('../utils/emojiMap').b1} **\``) && lines[stockUp + 2].startsWith('> **'), 'a blank line, the labelled total, what is left over, then the quoted bundles');
     lines.forEach((l, i) => {
         if (l.startsWith('## ') && i > 0) {
             assert.notStrictEqual(lines[i - 1], '', `"${l}" is preceded by an explicit blank line -- headings carry their own top margin, so the two stack`);
@@ -702,7 +702,7 @@ t('the cost breakdown LEADS with You Need; the simplified view names the terms, 
     const full = allText(render(basket, { detail: true })).split('\n');
     const f = full.indexOf('## Cost Breakdown');
     assert.deepStrictEqual([full[f + 1], full[f + 2], full[f + 4], full[f + 6]], ['**You Need: `4,720 CP`**', '> **Full Cost of Draws: `5,810 CP`**', '> **− Spent Already: `90 CP`**', '> **− CP Balance: `1,000 CP`**'], '5,810 − 90 − 1,000 = 4,720, quoted, one term per line');
-    assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }), { detail: true })).includes('> **− CP Balance: `0 CP`**\n> -# *Not set* so 0 CP assumed'), 'an unset balance says so, on its own line (2026-10-18 19:48 EDT)');
+    assert.ok(allText(render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }), { detail: true })).includes(`> **− CP Balance: \`0 CP\`**\n> -# ${require('../utils/emojiMap').b1} *Not set* so 0 CP assumed`), 'an unset balance says so, on its own line (2026-10-18 19:48 EDT)');
 });
 
 t('Set Balance accepts the amount the way the panel prints it -- "3000 CP", "3,000 cp", "3k CP"', () => {
@@ -1048,7 +1048,7 @@ t('the Full Breakdown is the simplified layout with its working shown, and the s
     assert.ok(/#2 · Legendary Weapon \(Reactive\)\*\*\n> \*\*Price: `4,950 CP`\*\* · `1\/10` Attempts\n> -# `10 CP` Spent · `4,940 CP` To Complete/.test(t), 'the same list as the simplified view');
     assert.ok(t.includes('**You Need: `15,700 CP`**') && t.includes('> **Full Cost of Draws: `15,710 CP`**') && t.includes('> **− Spent Already: `10 CP`**'), '15,710 − 10 − 0 = 15,700');
     assert.ok(t.includes('`4,950 CP` **+** `4,950 CP` **+** `5,810 CP`') && t.includes('`0 CP` **+** `10 CP` **+** `0 CP`'), 'each sum shows its terms');
-    assert.ok(t.includes('**Just Enough: `15,800 CP`** for **`CA$199.98`**') && t.includes('-# **`100 CP` left over** after completing your draws'));
+    assert.ok(t.includes('**Just Enough: `15,800 CP`** for **`CA$199.98`**') && t.includes(`-# ${require('../utils/emojiMap').b1} **\`100 CP\` left over** after completing your draws`));
     assert.ok(t.includes('**`CA$129.99`** each') && !/web store prices/.test(t), 'the estimates disclaimer is Help\'s footer now (2026-10-18 19:44 EDT)');
     assert.ok(/Estimates only; not financial advice\. .*CoD: Mobile web store prices, and any sales or discounts, are not included\./.test(allText(dc.buildHelpPanel(ACCENT))), 'Help carries it, in his wording (2026-10-18 19:54 EDT)');
     const compact = allText(render(makeBasket({ banners }), {}, { currency: 'CAD' }));
