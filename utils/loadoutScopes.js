@@ -41,4 +41,18 @@ const FIXED_SCOPES = [
     { value: 'DMZ.*.std',  label: 'DMZ',           mode: 'DMZ', category: null, metaOnly: false },
 ];
 
-module.exports = { formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition, FIXED_SCOPES };
+// The /gunsmiths list `scope` dropdown: each choice says it opens ALL of something (Harkirat, 2026-10-19 18:59 EDT: "improve gunsmith list's options to be better labeled, such 'all ar' etc"), All MP first, then each category, then Meta MP, then DMZ and Meta DMZ. Only the choice NAMES changed; every value stays the token a gsb~ custom_id carries, so old panels keep paging. The panel's own heading still uses FIXED_SCOPES' `label`.
+const CHOICE_NAME = { 'MP.*.std': 'All MP builds', 'MP.*.meta': 'All Meta MP builds', 'DMZ.*.std': 'All DMZ builds', 'DMZ.*.meta': 'All Meta DMZ builds' };
+function scopeChoices(categories) {
+    const { displayCategoryLabel } = require('./loadoutRender');
+    const fixed = (value) => ({ name: CHOICE_NAME[value], value });
+    return [
+        fixed('MP.*.std'),
+        ...categories.map(c => ({ name: `All ${displayCategoryLabel(c)} builds`, value: `MP.${c}.std` })),
+        fixed('MP.*.meta'),
+        fixed('DMZ.*.std'),
+        fixed('DMZ.*.meta'),
+    ];
+}
+
+module.exports = { formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition, FIXED_SCOPES, scopeChoices };

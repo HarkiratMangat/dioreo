@@ -98,14 +98,11 @@ function loadCommandModules(client) {
  */
 async function applyGunsmithsScopeChoices(commands) {
     const Loadout = require('../models/Loadout');
-    const { FIXED_SCOPES } = require('../utils/loadoutScopes');
+    const { scopeChoices } = require('../utils/loadoutScopes');
     const dbCategories = await Loadout.distinct('category', { mode: 'MP' });
     // SECONDARIES is merged in (not appended) so it is ready the moment Harkirat adds one, and so re-running this after real data exists cannot register it twice. Sorted for a stable, predictable choice order in the Discord picker.
     const cats = Array.from(new Set([...dbCategories, 'SECONDARIES'])).sort();
-    const allChoices = [
-        ...cats.map(c => ({ name: c, value: `MP.${c}.std` })),
-        ...FIXED_SCOPES.map(s => ({ name: s.label, value: s.value })),
-    ];
+    const allChoices = scopeChoices(cats);
     // Capped + null-guarded (v3-pre-release review, finding #4) -- setChoices() throws past 25 entries, and this used to be awaited with no try/catch anywhere above it in the ClientReady handler, so a 22nd+ MP category (nothing stops one -- Loadout.category has no enum) skipped command registration ENTIRELY: no commands reached Discord at all, with only a generic client 'error' alert as the symptom.
     const choices = allChoices.slice(0, 25);
     if (allChoices.length > 25) {

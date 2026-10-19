@@ -3,17 +3,14 @@
 // ==========================================
 // Two subcommands, two doors onto one engine (see utils/loadoutScopes.js's scope descriptor): `search` is "I know the weapon" (MP-only — DMZ stays reachable via `list scope:DMZ` and the standalone /dmz), `list` is "show me a set" (11 named scopes: 7 categories + All MP + Meta MP + Meta DMZ + DMZ). Discord forbids a command from mixing top-level options with subcommands, which is why there is no shared `category:`/`mode:` option anywhere -- every browsable set is one whole named `scope:` choice instead, so no invalid combination can ever be assembled.
 const { SlashCommandBuilder } = require('discord.js');
-const { FIXED_SCOPES, formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition } = require('../utils/loadoutScopes');
+const { FIXED_SCOPES, formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition, scopeChoices } = require('../utils/loadoutScopes');
 const { buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel } = require('../utils/loadoutRender');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
 // Static default so `data.toJSON()` is a valid, fully-shaped command at require time (no DB round trip needed to import this module, or to run scripts/gunsmithsCommandShape.test.js standalone). bot/registry.js's applyGunsmithsScopeChoices() overwrites these with the live DB-derived list post-ClientReady, the same 7 categories today per the spec's measured facts -- this list only matters as a fallback/default and to keep this module deterministically testable.
 const DEFAULT_CATEGORIES = ['AR', 'LMG', 'MARKSMAN', 'SECONDARIES', 'SHOTGUN', 'SMG', 'SNIPER'];
-const DEFAULT_SCOPE_CHOICES = [
-    ...DEFAULT_CATEGORIES.map(c => ({ name: c, value: `MP.${c}.std` })),
-    ...FIXED_SCOPES.map(s => ({ name: s.label, value: s.value })),
-];
+const DEFAULT_SCOPE_CHOICES = scopeChoices(DEFAULT_CATEGORIES);
 
 const data = new SlashCommandBuilder()
     .setName('gunsmiths')

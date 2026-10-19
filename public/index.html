@@ -3228,10 +3228,13 @@ h1 em{font-style:normal;color:var(--accent-t)}
   /* /gunsmiths list's scope: option has no free-typed value -- it's a static
      11-choice picker (bot/registry.js's applyGunsmithsScopeChoices()), so its
      pairs are declared directly rather than built from a p:/o: pool, same
-     shape as /draws' page pairs below. Labels are the real choice NAMES. */
-  var GUNSMITHS_LIST_PAIRS=[['scope','AR'],['scope','LMG'],['scope','MARKSMAN'],['scope','SECONDARIES'],
-    ['scope','SHOTGUN'],['scope','SMG'],['scope','SNIPER'],['scope','All MP builds'],
-    ['scope','Meta — MP'],['scope','Meta — DMZ'],['scope','DMZ']];
+     shape as /draws' page pairs below. Labels are the real choice NAMES
+     (utils/loadoutScopes.js's scopeChoices, relabelled "All ... builds"
+     2026-10-19 19:00 EDT). */
+  var GUNSMITHS_LIST_PAIRS=[['scope','All MP builds'],['scope','All AR builds'],['scope','All LMG builds'],
+    ['scope','All MARKSMAN builds'],['scope','All SECONDARY builds'],['scope','All SHOTGUN builds'],
+    ['scope','All SMG builds'],['scope','All SNIPER builds'],['scope','All Meta MP builds'],
+    ['scope','All DMZ builds'],['scope','All Meta DMZ builds']];
 
   var SPECS=[
     {c:'/gunsmiths search', o:'weapon', p:MP_ALL, w:1},
