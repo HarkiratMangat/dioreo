@@ -141,6 +141,18 @@ check('View Colors is accented with the avatar\'s First Impression (its palette\
     assert.strictEqual(first.label, 'First Impression', 'slot 0 is First Impression');
     assert.strictEqual(viewColors.firstImpression({ avatar: palette }), typeof first.hex === 'number' ? first.hex : parseInt(String(first.hex).replace('#', ''), 16));
 });
+check('View Colors is also a public right-click on a message, routed by name and type', () => {
+    const json = require('../commands/viewColorsMessage').data.toJSON();
+    assert.strictEqual(json.type, 3);
+    assert.strictEqual(json.name, 'View Colors');
+    assert.deepStrictEqual(json.integration_types, [0, 1]);
+    const client = { commands: new (require('discord.js').Collection)() };
+    require('../bot/registry').loadCommandModules(client);
+    assert.strictEqual(client.commands.get('View Colors#2'), viewColors, 'the user right-click');
+    assert.strictEqual(client.commands.get('View Colors#3'), require('../commands/viewColorsMessage'), 'the message right-click');
+    const router = fs.readFileSync(path.join(__dirname, '..', 'handlers', 'router.js'), 'utf8');
+    assert.ok(router.includes('`${interaction.commandName}#${interaction.commandType}`'), 'the router looks up name#type');
+});
 check('View Colors registers as a public right-click on a user', () => {
     const json = viewColors.data.toJSON();
     assert.strictEqual(json.type, 2);
@@ -148,11 +160,19 @@ check('View Colors registers as a public right-click on a user', () => {
 });
 
 // ---- registration ----
-check('five message right-clicks, Discord\'s cap; the admin ones are user-install only and kept out of /admin\'s rules', () => {
+check('at most five message right-clicks per app, Discord\'s cap, with Dioreo Admin on or off; the admin ones are user-install only and kept out of /admin\'s rules', () => {
     const dir = path.join(__dirname, '..', 'commands');
     const messageCommands = fs.readdirSync(dir).filter(f => f.endsWith('.js'))
         .map(f => require(path.join(dir, f))).filter(m => m.data?.toJSON?.().type === 3).map(m => m.data.toJSON());
-    assert.ok(messageCommands.length <= 5, `${messageCommands.length} message commands; Discord allows 5`);
+    const { loadCommandModules, splitCommands } = require('../bot/registry');
+    const client = { commands: new (require('discord.js').Collection)() };
+    const all = loadCommandModules(client);
+    const count = list => list.filter(c => c.toJSON().type === 3).length;
+    const on = splitCommands(all, client.commands, { adminApp: true });
+    assert.ok(count(on.publicCommands) <= 5 && count(on.adminCommands) <= 5, `admin on: public ${count(on.publicCommands)}, admin ${count(on.adminCommands)}; Discord allows 5 each`);
+    const off = splitCommands(all, client.commands, { adminApp: false });
+    assert.ok(count(off.publicCommands) <= 5, `admin off: ${count(off.publicCommands)} message commands on one app; Discord allows 5`);
+    for (const name of ['Convert Times', 'View Colors']) assert.ok(off.publicCommands.some(c => c.toJSON().name === name && c.toJSON().type === 3), `admin off keeps the public ${name}`);
     const byName = Object.fromEntries(messageCommands.map(c => [c.name, c]));
     for (const name of ['Add to Patch Notes', 'Autobuild Loadout', 'Add to Draws', 'Add to Calendar']) {
         assert.deepStrictEqual(byName[name].integration_types, [1], `${name} is admin-only`);

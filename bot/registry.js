@@ -29,13 +29,26 @@ function belongsOnAdminApp(name, module) {
 }
 
 // Splits the one staging array into the two apps' lists. With the admin app off, everything stays public -- today's behaviour. `modules` is client.commands, which carries each module's devOnly/adminApp flags.
+// Discord's cap: an app registers at most 5 message right-clicks, and one over the cap fails the WHOLE registration PUT. With Dioreo Admin on, each app is well under it (public 2, admin 4). With it OFF every command lands on the public app (6 since View Colors gained a message right-click, 2026-10-19 15:22 EDT), so the ones that would live on the admin app are left out first, loudly, rather than the public app losing every command.
+const MESSAGE_COMMAND_CAP = 5;
+function capMessageCommands(commands, modules) {
+    const messages = commands.filter(c => (c.toJSON?.().type ?? c.type) === 3);
+    if (messages.length <= MESSAGE_COMMAND_CAP) return commands;
+    const ranked = [...messages].sort((a, b) => Number(belongsOnAdminApp(commandName(a), modules?.get?.(`${commandName(a)}#3`))) - Number(belongsOnAdminApp(commandName(b), modules?.get?.(`${commandName(b)}#3`))));
+    const dropped = new Set(ranked.slice(MESSAGE_COMMAND_CAP));
+    console.warn(`⚠️ ${messages.length} message right-clicks on one app, Discord allows ${MESSAGE_COMMAND_CAP}; left out: ${[...dropped].map(commandName).join(', ')}. Set ADMIN_BOT_TOKEN to register them on Dioreo Admin.`);
+    return commands.filter(c => !dropped.has(c));
+}
+
 function splitCommands(commands, modules, { adminApp }) {
-    if (!adminApp) return { publicCommands: commands, adminCommands: [] };
+    if (!adminApp) return { publicCommands: capMessageCommands(commands, modules), adminCommands: [] };
     const publicCommands = [];
     const adminCommands = [];
     for (const c of commands) {
         const name = commandName(c);
-        (belongsOnAdminApp(name, modules?.get?.(name)) ? adminCommands : publicCommands).push(c);
+        const type = c.toJSON?.().type ?? c.type;
+        const module = (type === 2 || type === 3) ? (modules?.get?.(`${name}#${type}`) ?? modules?.get?.(name)) : modules?.get?.(name);
+        (belongsOnAdminApp(name, module) ? adminCommands : publicCommands).push(c);
     }
     return { publicCommands, adminCommands };
 }
@@ -61,7 +74,10 @@ function loadCommandModules(client) {
             if (command.devOnly && process.env.NODE_ENV !== 'development') continue;
 
             if ('data' in command && 'execute' in command) {
-                client.commands.set(command.data.name, command);
+                // A right-click is ALSO stored under `name#type` (2026-10-19 15:22 EDT): "View Colors" is both a user and a message right-click, Discord allows one name per type, and the router looks the typed key up first. The plain name keeps the first module with it, so slash commands are unaffected.
+                const type = command.data.toJSON?.().type;
+                if (type === 2 || type === 3) client.commands.set(`${command.data.name}#${type}`, command);
+                if (!client.commands.has(command.data.name)) client.commands.set(command.data.name, command);
                 commands.push(command.data);
             }
         }
@@ -118,9 +134,10 @@ async function applyGunsmithsScopeChoices(commands) {
 async function registerApplicationCommands(client, commands, { token = process.env.BOT_TOKEN, gateable = true } = {}) {
     // The names /admin's "always hidden commands" menu offers. Derived from `commands` -- the SAME array that is about to be registered -- rather than a hand-maintained list, which would silently go stale the first time a command is added or removed. Only the public app's list feeds it: /admin is a public command, and an admin-app command is never gateable.
     if (gateable) {
-        client.gateableCommandNames = commands
+        // A Set: "View Colors" is two commands (user and message right-click) with one name, and /admin's menu lists it once.
+        client.gateableCommandNames = [...new Set(commands
             .map(commandName)
-            .filter(name => name && !ADMIN_COMMAND_NAMES.has(name));
+            .filter(name => name && !ADMIN_COMMAND_NAMES.has(name)))];
     }
 
     const rest = new REST({ version: '10' }).setToken(token);
@@ -144,4 +161,4 @@ async function registerApplicationCommands(client, commands, { token = process.e
     }
 }
 
-module.exports = { loadCommandModules, applyGunsmithsScopeChoices, registerApplicationCommands, splitCommands, belongsOnAdminApp, ADMIN_COMMAND_NAMES, ADMIN_APP_COMMAND_NAMES };
+module.exports = { loadCommandModules, applyGunsmithsScopeChoices, registerApplicationCommands, splitCommands, capMessageCommands, belongsOnAdminApp, ADMIN_COMMAND_NAMES, ADMIN_APP_COMMAND_NAMES, MESSAGE_COMMAND_CAP };

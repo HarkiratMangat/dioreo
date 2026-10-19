@@ -416,7 +416,8 @@ async function handleInteractionInner(interaction) {
     // ==========================================
     // One entry point for every right-click command (2026-10-19 09:49 EDT, Add to Patch Notes). A context-menu command's name is its label ("Add to Patch Notes"), and loadCommandModules keys client.commands by that same name, so the lookup is the slash route's. Errors fall through to the outer try/catch, the crash net; the fallback reply is awaited for the reason the slash route's comment gives.
     if (interaction.isContextMenuCommand()) {
-        const command = interaction.client.commands.get(interaction.commandName);
+        // `name#type` first: "View Colors" is both a user and a message right-click (2026-10-19 15:22 EDT, bot/registry.js loadCommandModules).
+        const command = interaction.client.commands.get(`${interaction.commandName}#${interaction.commandType}`) ?? interaction.client.commands.get(interaction.commandName);
         if (command) {
             markHandler(interaction.commandName);
             try {
