@@ -1001,9 +1001,10 @@ function progressLineBlocks(state, basket, index) {
     const text = `### ${icon} #${index + 1} · ${lineName(b)}\n-# ${lineHint(basket, index)}`;
     const extra = lineExtraButtons(state, basket, index);
     const head = extra.length === 1 ? { type: 9, components: [{ type: 10, content: text }], accessory: extra[0] } : { type: 10, content: text };
-    // No Remove option in the line's dropdown: Remove is one pop-up for every selection now (his Mock 2).
-    const out = [head, bannerPullsRow(state, basket, index)];
+    // No Remove option in the line's dropdown: Remove is one pop-up for every selection now (his Mock 2). Two buttons (the Mythic Weapon armory's Spins In and Upgrade) sit ABOVE the dropdown (2026-10-18 21:22 EDT, his ask), matching a line whose one button sits beside its heading, above the dropdown too.
+    const out = [head];
     if (extra.length > 1) out.push({ type: 1, components: extra });
+    out.push(bannerPullsRow(state, basket, index));
     return out;
 }
 function buildProgressPanel(state, basket, accentColor, { notice = null, dropConfirm = null } = {}) {

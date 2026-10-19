@@ -293,6 +293,14 @@ t('a NAMED basket\'s manage row reads Rename, not Save', () => {
 // ==========================================
 // REGION SWITCHING PRESERVES PROGRESS
 // ==========================================
+// A line's buttons sit above its dropdown whether there is one (beside the heading) or two (their own row): 2026-10-18 21:22 EDT, his ask.
+t('the Mythic Weapon armory\'s Spins In and Upgrade row sits above its dropdown', () => {
+    const top = progress([{ drawKey: 'armoryMythicWeapon', pullsDone: 1 }])[0].components;
+    const row = top.findIndex(c => c.type === 1 && c.components.some(b => /^Spins In|^Upgrade/.test(b.label || '')));
+    const sel = top.findIndex(c => c.type === 1 && c.components[0].type === 3 && verbOf(c.components[0]) === 'bpulls');
+    assert.ok(row > 0 && sel > 0 && row === sel - 1, `buttons at ${row}, dropdown at ${sel}`);
+});
+
 // THE 2X OFFERS (2026-10-18 20:34 EDT, his asks): under the cost breakdown after a small space, two lines of his wording, and options that say what the offer gives against the bundle's normal CP.
 t('the 2X offers sit under the cost breakdown in his wording, each option giving its 2X and normal CP', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], entitlementMask: 0 }), {}, { liveDoubleCPEntry: { isDoubleCP: true } });
