@@ -5,7 +5,7 @@
 //   node --env-file=.env.dev scripts/autobuildDmzCheck.js            every DMZ build + the MP builds of the same weapons
 //   node --env-file=.env.dev scripts/autobuildDmzCheck.js --limit 4  the first four of each, for a cheap first look
 //
-// READ-ONLY: it reads Loadout documents and fetches each build's public Cloudinary image, and writes nothing anywhere. It refuses any database whose name lacks "dev" unless --any-db is passed, because the dev database is a copy of prod's loadouts and is the right thing to test against. ⚠️ IT SPENDS VERTEX TOKENS: one gemini-3.5-flash call per screenshot, logged as `vision_call_cost` with taskName `autobuild_dmz_check`. At the volumes in utils/visionExtract.js's own cost note that is cents for the whole set, but it is a real charge on the GCP project, so it is never part of `npm test`.
+// READ-ONLY: it reads Loadout documents and fetches each build's public Cloudinary image, and writes nothing anywhere. It refuses any database whose name lacks "dev" unless --any-db is passed, because the dev database is a copy of prod's loadouts and is the right thing to test against. ⚠️ IT SPENDS VERTEX TOKENS: one call per screenshot to utils/visionExtract.js's MODEL (gemini-3.8-flash since 2026-10-19), logged as `vision_call_cost` with taskName `autobuild_dmz_check`. At the volumes in utils/visionExtract.js's own cost note that is cents for the whole set, but it is a real charge on the GCP project, so it is never part of `npm test`.
 require('dotenv').config({ quiet: true });
 const mongoose = require('mongoose');
 const Loadout = require('../models/Loadout');
