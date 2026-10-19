@@ -29,7 +29,15 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.95.0 — 2026-10-19 18:22 EDT (#204) — `/autobuild` moves to Gemini 3.8 Flash
+## Pre-Release v3.96.0 — 2026-10-19 19:15 EDT (#205) — the Privacy Policy's two change-history tables now list the same versions
+**`docs/legal/PRIVACY.md`, `public/privacy.html` and two records.** Harkirat, 2026-10-19 18:21 EDT: "Yeah, you can fix the privacy.md gap if you want."
+
+- **§12.1 Revision history gains 1.16 and 1.14**, written for a reader from Appendix B's text and §2.1d. It had jumped from 1.15 to a 1.16 it never described.
+- **Appendix B's 1.14 is a table row now**, marked *(pending)* for the v3 release like its neighbours; it sat as a loose paragraph above the table, dated as if in effect. `colorsVisibility` ships with v3. Nothing about what the Bot collects changes.
+- **Deferred list:** the calculator Delete click-test is dropped on his word, the history-gap entry is closed, and his Public Bot check is recorded on the Dioreo Admin entry.
+
+
+## Pre-Release v3.95.0 — 2026-10-19 18:22 EDT (#204 · `29dacb1c`) — `/autobuild` moves to Gemini 3.8 Flash
 **`utils/visionExtract.js`, its two Vertex scripts and a new cost test.** Harkirat's ask 2026-10-19 18:09 EDT: the newest model in the tier already in use, the mid one, no Pro and no Flash-Lite. What is true now is `.claude/rules/autobuild.md` ("Vision model").
 
 - **gemini-3.5-flash → gemini-3.8-flash**, the newest Flash that is generally available on Google's Agent Platform (formerly Vertex AI): GA 2026-09-02 in its release notes, listed under the `us` multi-region the bot calls. 3.6 and 3.7 were skipped. The request needed no change: it sends none of the parameters 3.8 deprecates and leaves thinking at the `medium` default.
