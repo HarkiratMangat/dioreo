@@ -9,6 +9,7 @@ const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { buildTitleBlock } = require('../utils/titleBlock');
+const { fuzzyMatch } = require('../utils/search');
 const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
@@ -101,14 +102,41 @@ function formatAdditionalInfo(text) {
     return parts.join('\n\n');
 }
 
-function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT, isEphemeral = false) {
-    // Array Trimming: Prevent dropdown menu overload by grabbing only the 5 most recent records
-    const recentPatches = seasonalDoc.patchNotes.slice(-5).reverse();
+// A season's own emoji (2026-10-19 00:30 EDT, Harkirat), picked by the season number in its title; a title with no number, or a season with no emoji yet, gets none.
+function seasonEmoji(patch) {
+    const m = /season\s*(\d+)/i.exec(displayTitle(patch));
+    return m ? emojis[`season${m[1]}`] || null : null;
+}
 
-    // Determine target state: Either the user-requested ID or the latest default entry
-    const activePatch = patchId
-        ? seasonalDoc.patchNotes.find(p => p._id.toString() === patchId)
-        : recentPatches[0];
+// EVERY SEASON IS KEPT (2026-10-19 00:30 EDT, Harkirat, superseding "only the previous 5"): the dropdown lists the 12 newest, and Search Older Seasons (a pop-up, past 12) finds any other. A select holds 25 options, so 12 leaves room for the open season when it is older.
+const HISTORY_SHOWN = 12;
+
+// The newest season whose title matches what was typed: a bare number matches "Season N" exactly, anything else the same fuzzy match as the slash command's season search.
+function findPatchByQuery(patchNotes, query) {
+    const q = String(query || '').trim();
+    if (!q) return null;
+    const newest = (patchNotes || []).slice().reverse();
+    const num = /^\D*?(\d+)\D*$/.exec(q);
+    if (num) {
+        const hit = newest.find(p => new RegExp(`season\\s*${num[1]}\\b`, 'i').test(displayTitle(p)));
+        if (hit) return hit;
+    }
+    return newest.find(p => fuzzyMatch(q, displayTitle(p))) || null;
+}
+
+function buildSearchModal() {
+    return {
+        custom_id: 'patch_search_submit', title: 'Search Seasons',
+        components: [{ type: 18, label: 'Season Name or Number', component: { type: 4, custom_id: 'q', style: 1, required: true, max_length: 60, placeholder: 'e.g. 7 or Terminated' } }]
+    };
+}
+
+function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT, isEphemeral = false) {
+    const newestFirst = seasonalDoc.patchNotes.slice().reverse();
+    const recentPatches = newestFirst.slice(0, HISTORY_SHOWN);
+
+    // Determine target state: the requested entry, else the newest (also when the requested one is gone).
+    const activePatch = (patchId && seasonalDoc.patchNotes.find(p => p._id.toString() === patchId)) || newestFirst[0];
 
     const releaseUnix = Math.floor(new Date(activePatch.releaseDate).getTime() / 1000);
 
@@ -125,6 +153,9 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
         // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
         buildTitleBlock(cleanTitle, emojis.patchNotes, 'Balance Changes', 2)
     ];
+    // The season's emoji sits in front of its name, outside the bold-italic lettering (which would mangle an emoji).
+    const titleEmoji = seasonEmoji(activePatch);
+    if (titleEmoji) components[0].content = components[0].content.replace('\n', `\n${titleEmoji} `);
 
     if (hasInfo) {
         components.push(
@@ -149,10 +180,12 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
         components: components
     };
 
-    // Build historical dropdown options
-    const historyOptions = recentPatches.map((patch, index) => ({
+    // Build historical dropdown options A season opened from search that is older than the 12 shown joins the list, so the dropdown still shows it picked.
+    const listed = recentPatches.some(p => p._id.toString() === activePatch._id.toString()) ? recentPatches : [...recentPatches, activePatch];
+    const historyOptions = listed.map(patch => ({
         label: displayTitle(patch),
         value: `patch_${patch._id}`,
+        ...(seasonEmoji(patch) ? { emoji: emojis.parseEmoji(seasonEmoji(patch)) } : {}),
         default: activePatch._id.toString() === patch._id.toString() // Pre-select current view
     }));
 
@@ -163,6 +196,9 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
             type: 3, custom_id: "select_patch_history", placeholder: "View Previous Seasons...", options: historyOptions
         }]
     });
+    if (seasonalDoc.patchNotes.length > HISTORY_SHOWN) {
+        containerPayload.components.push({ type: 1, components: [{ type: 2, style: 2, label: 'Search Older Seasons', custom_id: 'patch_search_open' }] });
+    }
 
     const globalNavigationRow = buildGlobalNavRow('nav_patchnotes');
 
@@ -173,6 +209,10 @@ module.exports = {
     cleanPatchTitle,
     displayTitle,
     formatAdditionalInfo,
+    seasonEmoji,
+    findPatchByQuery,
+    buildSearchModal,
+    HISTORY_SHOWN,
 
     // COMMAND DEFINITION: Base 'patch', Subcommand 'notes'
     data: new SlashCommandBuilder()

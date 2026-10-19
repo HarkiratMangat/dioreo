@@ -52,6 +52,11 @@ const emojis = {
     newDraws: '<a:NewDraws:1523837409211453613>',
     returningDraws: '<a:ReturningDraws:1523838126596817016>',
     patchNotes: '<a:PatchNotes:1523762216954888286>',
+    // One per season (2026-10-19 00:30 EDT, Harkirat), beside the season's title on /patch notes and in its history dropdown (commands/patchnotes.js seasonEmoji, keyed by the season number). Seasons 8 and 9 have no patch notes yet; theirs are here for when they do.
+    season6: '<a:S6TakeYourHeart:1561594930542018611>',
+    season7: '<a:S7Terminated:1561595008807735447>',
+    season8: '<a:S8AgainstAllFate:1561595098767163496>',
+    season9: '<a:S9VampiresVsWerewolves:1561595142425550898>',
     settings: '<a:Settings:1523762203537309696>',
     timestamp: '<a:Timestamps:1523762211103969420>',
     drawPrices: '<a:DrawPrices:1525864071776305163>',

@@ -30,11 +30,11 @@ async function runCloudinaryCleanup() {
             console.log(`🧹 Cloudinary cleanup: pruned ${result.deletedCount} expired, unused draw thumbnail(s).`);
         }
 
-        // PATCH NOTES: season-based retention, not age-based -- keep exactly the same set of patch note `_id`s that /patch notes' own history dropdown shows (the last 5 entries, matching patchnotes.js's `recentPatches = seasonalDoc.patchNotes.slice(-5)`). A season that rolls off the back of that list gets its whole Cloudinary folder pruned on the very next sweep, regardless of how many days it's been cached -- see utils/patchNotesCache.js.
-        const keepPatchIds = new Set((seasonalDoc?.patchNotes || []).slice(-5).map(p => p._id.toString()));
+        // PATCH NOTES: every season stays reachable now (2026-10-19 00:30 EDT, Harkirat, superseding "only the previous 5": the dropdown lists 12 and search finds the rest), so every entry's images are kept. Only a folder whose patch note entry was deleted is pruned -- see utils/patchNotesCache.js.
+        const keepPatchIds = new Set((seasonalDoc?.patchNotes || []).map(p => p._id.toString()));
         const patchResult = await pruneOrphanedPatchFolders(keepPatchIds);
         if (patchResult.deletedCount > 0) {
-            console.log(`🧹 Cloudinary cleanup: pruned ${patchResult.deletedCount} patch-notes image(s) from seasons no longer in the history dropdown.`);
+            console.log(`🧹 Cloudinary cleanup: pruned ${patchResult.deletedCount} patch-notes image(s) from deleted seasons.`);
         }
     } catch (error) {
         // SECURITY: never fall back to logging the raw `error` object here -- a Cloudinary error's shape can carry the account's API key/secret in a nested `request_options.auth` field (see utils/cloudinaryCache.js's safeErrorMessage note). This should be unreachable in practice now (pruneExpiredThumbnails sanitizes everything it catches internally), but this is the last line of defense for a SeasonalData/Mongoose error from the same block, so it stays just as strict rather than assuming the callee always behaves.
