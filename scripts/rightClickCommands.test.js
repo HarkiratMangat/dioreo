@@ -101,6 +101,38 @@ check('Autobuild Loadout: several images ask which one, with a select the /autob
     assert.deepStrictEqual(select.options.map(o => o.value), ['0', '1', '2']);
 });
 
+// ---- View Colors ----
+const viewColors = require('../commands/viewColors');
+const { cacheKey, entriesToCache, candidateKeys } = require('../utils/colorCache');
+check('View Colors is read-only: every row and button accessory is taken off, text and thumbnails stay', () => {
+    const panel = [{ type: 17, components: [
+        { type: 10, content: 'swatches' },
+        { type: 9, components: [{ type: 10, content: 'heading' }], accessory: { type: 2, custom_id: 'colors_refresh|1' } },
+        { type: 9, components: [{ type: 10, content: 'with a picture' }], accessory: { type: 11, media: { url: 'u' } } },
+        { type: 1, components: [{ type: 2, custom_id: 'colors_page|1' }] },
+    ] }, { type: 1, components: [{ type: 2, custom_id: 'share_public' }] }];
+    const out = viewColors.stripControls(panel);
+    const flat = JSON.stringify(out);
+    assert.ok(!/custom_id/.test(flat), flat);
+    assert.ok(/swatches/.test(flat) && /heading/.test(flat) && /with a picture/.test(flat) && /"type":11/.test(flat));
+});
+check('the colour cache keys each image by a fingerprint with no user id, and never caches a default avatar', () => {
+    const doc = { avatarPalette: ['#fff'], avatarPaletteSource: 'a_123', avatarColorHex: 255, avatarColorSource: 'a_123', bannerPalette: ['#000'], bannerPaletteSource: 'default', discordId: '42' };
+    const entries = entriesToCache(doc, ['avatarPalette', 'avatarPaletteSource', 'avatarColorHex', 'avatarColorSource', 'bannerPalette', 'bannerPaletteSource', 'avatarPalette.0']);
+    assert.deepStrictEqual(entries.map(e => Object.keys(e.data).sort()), [['avatarPalette', 'avatarPaletteSource'], ['avatarColorHex', 'avatarColorSource']]);
+    assert.ok(entries.every(e => !('discordId' in e.data) && !JSON.stringify(e.data).includes('42')), 'nothing about the person, only the image');
+    assert.deepStrictEqual(candidateKeys({ avatar: 'a_123' }), [cacheKey('avatarPalette', 'a_123'), cacheKey('avatarColor', 'a_123')], 'what is written is what is looked up');
+    assert.strictEqual(candidateKeys({ avatar: 'a_123', guildAvatar: 'g_9' }).length, 4);
+    const ColorCache = require('../models/ColorCache');
+    assert.ok(!Object.keys(ColorCache.schema.paths).some(p => /discord|user/i.test(p)), 'the model has no user field');
+    assert.strictEqual(ColorCache.schema.path('createdAt').options.expires, 30 * 24 * 60 * 60, 'deleted 30 days after first seen');
+});
+check('View Colors registers as a public right-click on a user', () => {
+    const json = viewColors.data.toJSON();
+    assert.strictEqual(json.type, 2);
+    assert.deepStrictEqual(json.integration_types, [0, 1]);
+});
+
 // ---- registration ----
 check('five message right-clicks, Discord\'s cap; the admin ones are user-install only and kept out of /admin\'s rules', () => {
     const dir = path.join(__dirname, '..', 'commands');
