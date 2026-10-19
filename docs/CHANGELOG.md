@@ -29,7 +29,16 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.92.0 — 2026-10-19 15:43 EDT (#201) — Dioreo Admin, a second app for the admin commands, and View Colors from a message
+## Pre-Release v3.93.0 — 2026-10-19 18:03 EDT (#202) — `/settings` opens on the page you ask for, and `/autobuild` reads DMZ builds
+**`/settings`, `/autobuild`, `/help` and two new test scripts.** Harkirat's picks 2026-10-19 17:45 EDT; what is true now is `.claude/rules/settings-and-expiry.md` and `.claude/rules/autobuild.md` ("DMZ detection").
+
+- **`/settings customize:`** opens Visibility, Preferences or View Colors directly. Colors follows the Settings visibility, the same as the dashboard's View Colors button.
+- **`/autobuild` tells MP from DMZ** by the Gunsmith screen itself (Pen stats and the Equip/Customize tabs vs Select Blueprints and a code in the title), needing two signals that agree. When it can't tell, the review card says so and Confirm waits for the new `mode:` option or the Edit modal's `Category | Mode` box.
+- **Up to nine attachments are read**, so DMZ builds come through whole. An MP read over five gets a warning instead of being cut. DMZ builds are saved with DMZ badges (`dmzRangeRank`), a `DMZ-WEAPON-N` image, no code and blank slots, since DMZ prints no slot label. Duplicates, badge inheritance and Open Loadout compare within the same mode.
+- **Still to do, on his Mac:** `node --env-file=.env.dev scripts/autobuildDmzCheck.js` runs the DMZ screenshots already in the bot through the real vision call, read-only. It could not run from the cloud session that built this.
+
+
+## Pre-Release v3.92.0 — 2026-10-19 15:43 EDT (#201 · `606fbd1f`) — Dioreo Admin, a second app for the admin commands, and View Colors from a message
 **A second Discord application, a message right-click, `/patch notes` and the emoji copy script.** Harkirat's asks on this branch; what is true now is `bot/clients.js` and `docs/db-deferred-list.md` ("Dioreo Admin").
 
 - **Dioreo Admin:** with `ADMIN_BOT_TOKEN` set, `/manage`, `/bot`, `/autobuild`, the four admin right-clicks and the dev-only `/embedtest` leave the public app for a user-install-only admin app, so they stop showing in every user's command list. One process logs in twice, with the same router and database; each app shows its own emoji copies, and command links work across both. `/admin` stays on Dioreo. Without the token nothing changes.

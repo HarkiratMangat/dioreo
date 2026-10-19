@@ -273,10 +273,12 @@ function buildUtilitiesBody(commands, client) {
 // Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason. `commands` is the category's own visibleCommands(category, perms) result (v3-pre-release review finding #49) -- whether /admin is present is derived from THAT list rather than re-checking perms.serverAdmin directly, so this page's admin filtering can never drift from the directory/ dropdown/autocomplete, which already filter through the exact same CATEGORY_DEFS `requires`.
 function buildPreferencesBody(commands, client) {
     const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)`;
+    // `[customize]` (2026-10-19 17:49 EDT) is /settings' jump-to option -- see commands/settings.js. Written once here because both branches below print the /settings options.
+    const customizeBullet = '-# 🔹 `[customize]` Open straight on Visibility, Preferences, or your Colors';
     const hasAdmin = commands.some(c => c.name === '/admin');
 
     if (!hasAdmin) {
-        return `${settings}\n\n-# **Options**\n${VISIBILITY_BULLET}\n\n-# **Examples**\n-# 🔸 **/settings**`;
+        return `${settings}\n\n-# **Options**\n${customizeBullet}\n${VISIBILITY_BULLET}\n\n-# **Examples**\n-# 🔸 **/settings**\n-# 🔸 **/settings** customize:\`Preferences\``;
     }
 
     return settings
@@ -293,9 +295,10 @@ function buildPreferencesBody(commands, client) {
         + `-# 🔸 Each menu takes **25 picks** — Discord's cap, and a sign you want a different default instead\n`
         + `-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**`
         + SECTION_BREAK
-        + `-# **Options** · /settings only, /admin has none\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Options** · /settings only, /admin has none\n${customizeBullet}\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n`
         + `-# 🔸 **/settings** visibility:\`Public\`\n`
+        + `-# 🔸 **/settings** customize:\`Colors\`\n`
         + `-# 🔸 **/admin** → **Overview** → *Switch default to Hidden*, then **Channels** → allow \`#bot-spam\`\n`
         + `-# 🔸 **/admin** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
         + `-# 🔸 **/admin** → **Commands** → mark \`/colors\` always-hidden, everything else stays public`;
@@ -320,11 +323,12 @@ function buildBotAdminBody(commands, client) {
             + `-# 🔹 \`[file]\` Limit to one changed file (default: everything the pull brought in)`);
     }
     if (has('/autobuild')) {
-        sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
+        sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
             + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
             + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
             + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`MARKSMAN\` · \`SNIPER\` · \`SHOTGUN\` · \`SECONDARIES\` — looked up from the weapon, or asked for, if left blank\n`
-            + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon\n`
+            + `-# 🔹 \`[mode]\` \`MP\` · \`DMZ\` — read from the screenshot if left blank, and asked for when the screenshot can't tell\n`
+            + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon in the same mode\n`
             + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure`);
     }
     if (has('/manage')) {
