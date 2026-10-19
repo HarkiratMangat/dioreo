@@ -144,8 +144,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
     const releaseUnix = Math.floor(new Date(activePatch.releaseDate).getTime() / 1000);
 
-    // Map raw Cloudinary Strings into the Type 12 Media Array standard
-    // Blank entries are skipped and a season with no images gets no gallery (2026-10-19 10:32 EDT): Discord rejects a gallery item without a URL, and a gallery with no items, so either one failed the whole command. Found click-testing Add to Patch Notes, after a dev-bot save had stored nulls.
+    // Map raw Cloudinary Strings into the Type 12 Media Array standard. Blank entries are skipped and a season with no images gets no gallery (2026-10-19 10:32 EDT): Discord rejects a gallery item without a URL, and a gallery with no items, so either one failed the whole command. Found click-testing Add to Patch Notes, after a dev-bot save had stored nulls.
     const carouselItems = (activePatch.images || []).filter(Boolean).map(imgUrl => ({ media: { url: imgUrl } }));
 
     // NOTE (redesigned during review): activePatch.title now holds just the season # & name (e.g. "Season 6: Take Your Heart") rather than a full "Balance Changes for..." string. Two-line title (season/patch name on top, command header below) — shared pattern, matches the calendar_update_ui.json redesign; see utils/titleBlock.js. Older entries that still have the full legacy sentence stored get it stripped by cleanPatchTitle() rather than rendering "Balance Changes — Balance Changes for...".
