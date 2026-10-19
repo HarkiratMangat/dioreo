@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.92.0 — 2026-10-19 15:43 EDT (#201) — Dioreo Admin, a second app for the admin commands, and View Colors from a message
+## Pre-Release v3.92.0 — 2026-10-19 15:43 EDT (#201 · `606fbd1f`) — Dioreo Admin, a second app for the admin commands, and View Colors from a message
 **A second Discord application, a message right-click, `/patch notes` and the emoji copy script.** Harkirat's asks on this branch; what is true now is `bot/clients.js` and `docs/db-deferred-list.md` ("Dioreo Admin").
 
 - **Dioreo Admin:** with `ADMIN_BOT_TOKEN` set, `/manage`, `/bot`, `/autobuild`, the four admin right-clicks and the dev-only `/embedtest` leave the public app for a user-install-only admin app, so they stop showing in every user's command list. One process logs in twice, with the same router and database; each app shows its own emoji copies, and command links work across both. `/admin` stays on Dioreo. Without the token nothing changes.
