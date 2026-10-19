@@ -1,13 +1,14 @@
 // ==========================================
 // INVITE — INTERACTION HANDLER
 // ==========================================
-// One branch: `/invite`'s "Share Link" button, added 2026-08-17 09:24 EDT with the design pass from Harkirat's own mockup (`local/invite_ui.json`). It answers with an EPHEMERAL copy of the install link so the clicker can pass it on to someone else, rather than installing it themselves.
+// One branch: `/invite`'s "Share Link" button, added 2026-08-17 09:24 EDT with the design pass from Harkirat's own mockup (`local/invite_ui.json`). It posts the invite link to the channel as one hyperlinked line (public since 2026-10-18 20:15 EDT; it was an ephemeral bare link before), so the clicker can pass the bot on rather than installing it themselves.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleInviteInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch. A bare `return interaction.reply(...)` can reject after the try has exited and escape the net. See .claude/rules/interaction-router.md.
 //
-// WHY THE RAW discord.com/oauth2 URL AND NOT `dioreo.app/install` (Harkirat, 2026-08-17 09:18 EDT: "use the raw discord invite link instead of /install, since discord will render its raw link uniquely on the platform"): Discord unfurls its OWN authorization links into a rich application card wherever they are pasted. The short site route would paste as an ordinary dead-looking URL, which is worse precisely in the case this button exists for -- sharing inside Discord. The site route is still the right thing for sharing OUTSIDE Discord and is not being retired. ⚠️ It is sent as a BARE link on its own line, deliberately NOT inside a code fence: a fenced block suppresses the unfurl, which would throw away the entire reason the raw URL was chosen. The trade-off is that copying is a long-press/selection rather than a one-tap copy button.
+// WHY THE discord.com/oauth2 URL AND NOT `dioreo.app/install` (it is masked behind "Add Dioreo" since 2026-10-18; the reasoning below is from when it was sent bare) (Harkirat, 2026-08-17 09:18 EDT: "use the raw discord invite link instead of /install, since discord will render its raw link uniquely on the platform"): Discord unfurls its OWN authorization links into a rich application card wherever they are pasted. The short site route would paste as an ordinary dead-looking URL, which is worse precisely in the case this button exists for -- sharing inside Discord. The site route is still the right thing for sharing OUTSIDE Discord and is not being retired. ⚠️ It is sent as a BARE link on its own line, deliberately NOT inside a code fence: a fenced block suppresses the unfurl, which would throw away the entire reason the raw URL was chosen. The trade-off is that copying is a long-press/selection rather than a one-tap copy button.
 
 const { buildInviteUrls } = require('../utils/inviteLinks');
+const emojis = require('../utils/emojiMap');
 
 const OWNED_PREFIXES = ['invite_share'];
 
@@ -16,11 +17,11 @@ function ownsCustomId(customId) {
 }
 
 async function route(interaction) {
-    // "SHARE LINK" — hands the clicker a copyable install link, privately.
+    // "SHARE LINK" — posts the invite link to the channel (since 2026-10-18 20:15 EDT; it was private before).
     if (interaction.customId === 'invite_share') {
-        // Ephemeral on purpose: the button sits on a PUBLIC panel that anyone scrolling past can click, so a public answer would let one mis-click post to the channel, and would duplicate what the panel itself already shows. ⚠️ THE LINK AND NOTHING ELSE -- no label, no emoji, no surrounding sentence (Harkirat, 2026-08-17 09:26 EDT: "Don't include any extra text in the ephemeral message, just the link."). Two reasons it matters beyond taste: a bare URL as the entire message body is what Discord unfurls most reliably into its application card, and "copy message text" then yields exactly the URL rather than a sentence someone has to trim before pasting. Do not "improve" this by adding a helpful prefix -- that is precisely what was removed.
+        // PUBLIC, AS ONE HYPERLINKED LINE (2026-10-18 20:15 EDT, Harkirat: "can we change the 'share link''s output to be as a public message (unless public bot messages are restricted via admin commands or other ways)? and also hide the invite link as a hyperlink?"). This reverses two of his earlier calls (2026-08-17): the reply was ephemeral, so a mis-click on a public panel could not post to the channel, and it was the bare URL alone, so Discord unfurled it into its app card and copying gave exactly the link. Now it is public, and the link is masked behind "Add Dioreo". Where a server's /admin policy makes the bot private in this channel, attachGuildPolicy has already forced every reply ephemeral (utils/guildPolicy.js), so nothing here checks it; where Discord itself bars an app from posting publicly, Discord makes the reply ephemeral.
         const url = buildInviteUrls(interaction.client).chooser;
-        return await interaction.reply({ content: url, ephemeral: true });
+        return await interaction.reply({ content: `### ${emojis.dioreoKawaii}  [Add Dioreo](${url}) — the COD:M companion bot!`, ephemeral: false });
     }
 }
 

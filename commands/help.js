@@ -398,7 +398,8 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
             type: 1,
             components: [
                 { type: 2, style: 5, label: 'Website', url: WEBSITE_URL },
-                { type: 2, style: 5, label: 'Install Dioreo', url: buildInviteUrls(client).chooser }
+                // "Invite Dioreo" (2026-10-18 20:15 EDT, Harkirat), the same word /invite uses.
+                { type: 2, style: 5, label: 'Invite Dioreo', url: buildInviteUrls(client).chooser }
             ]
         });
         components.push({ type: 14, spacing: 2, divider: true });
