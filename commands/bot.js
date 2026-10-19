@@ -146,6 +146,8 @@ function buildVitalsBlock({ gatewayStatus, uptimeSec, rssMb, boots24h, boots7d }
 }
 
 async function buildHealthBody(client) {
+    // Bot-wide facts come from the PUBLIC client: on a Dioreo Admin click, interaction.client is the admin app's own connection (2026-10-19 13:44 EDT, bot/clients.js).
+    client = require('../bot/clients').publicClient(client);
     const stats = await computeHealthStats(client);
     const s = stats.summary;
     const line = (t) => `🟢 ${t.info} · 🟡 ${t.caution} · 🟠 ${t.warn} · 🔴 ${t.error}`;

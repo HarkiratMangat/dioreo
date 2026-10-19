@@ -268,6 +268,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-18 00:11 EDT — The draw calculator, rebuilt from 56 batches of his click-tests (v3.88.0-pre)
 - 2026-10-19 00:54 EDT — Series Armory and the Advanced draws join the calculator, priced set by set (v3.89.0-pre)
 - 2026-10-19 12:39 EDT — Right-clicking a post or a person: six context-menu commands, and the colours of people who never used Dioreo kept anonymous (v3.91.0-pre)
+- 2026-10-19 15:43 EDT — Dioreo Admin: a second app for the admin commands (v3.92.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4590,6 +4591,14 @@ Right-click commands were the branch's whole job, and they arrived in the order 
 **View Colors had to store colours for people who never agreed to anything.** Harkirat's answer was a 30-day cache with no person attached: the key is a hash of Discord's own image hash, so the same avatar returns the same palette for anyone, and nothing in it names whose it was. His own users keep their saved preferences as before.
 
 **The first public click errored.** The open page's button and the pager's page-1 arrow had the same custom id, and Discord rejects a duplicate. The test now walks every page and sub-page in both modes, and fails on the old ids.
+
+## 2026-10-19 15:43 EDT — Dioreo Admin: a second app for the admin commands (v3.92.0-pre)
+
+Harkirat's admin commands showed in every user's command list and refused on the click, because Discord has no per-user visibility for user-install commands. He picked a second application, Dioreo Admin, over registering them in one server with role overrides, which would have lost DMs.
+
+The split itself was small. What a second login breaks was not: the emoji map was one shared object re-pointed to "the" app's ids at boot, and an application emoji only renders for the app that owns it. The router already ran each click inside an AsyncLocalStorage context for logging, so the app id rides there and the emoji export answers from that app's own ids, with every call site unchanged. The same pass found `/bot`'s health panel would have read the admin connection's zero servers, and the slim admin lifecycle keeps the heartbeat, cleanup and restart marker from running twice.
+
+The emoji copy taught the session's lesson. Copies made through the API came back blurred or refused, and the cause was Discord, not the script: any upload over 256 KB is re-compressed, dropping frames on heavy animated emojis. Asking the CDN for a bigger file made it worse, because it upscales. Harkirat's originals, under the limit, went up untouched, so 77 of 85 were matched to prod by image content and copied into a gitignored folder for the next app.
 
 # Part B — Lessons Ledger (thematic)
 
