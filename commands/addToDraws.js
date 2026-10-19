@@ -3,7 +3,7 @@
 // ==========================================
 // Right-click a draw announcement (a post, or a forward of one) and /manage's Add Draw box opens with the post's title, its date and its first image filled in (Harkirat, 2026-10-19 11:11 EDT). Built 2026-10-19 11:16 EDT. The submit is /manage's own (`add_draw_new`), which re-hosts the image to Cloudinary and is gated by the router's /manage lock; the right-click itself is gated here, on the Draws page.
 const { ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } = require('discord.js');
-const { hasManagePageAccess } = require('../utils/adminAccess');
+const { canDo, denyDo } = require('../utils/adminAccess');
 const { extractSource } = require('../utils/patchNoteSource');
 const { formatAdminDate } = require('../utils/adminParser');
 
@@ -25,8 +25,9 @@ module.exports = {
     drawPrefill,
 
     async execute(interaction) {
-        if (!(await hasManagePageAccess(interaction.user.id, 'draws'))) {
-            return await interaction.reply({ content: "🔒 **This one's admin-only.** It edits Dioreo's draws directly.", flags: MessageFlags.Ephemeral });
+        // Create on the Draws page (core/permissions.js's OUTSIDE_ACTIONS): the box it opens is /manage's Add Draw.
+        if (!(await canDo(interaction.user.id, 'rightclick.addToDraws'))) {
+            return await interaction.reply({ content: denyDo('rightclick.addToDraws'), flags: MessageFlags.Ephemeral });
         }
         const manage = interaction.client.commands.get('manage');
         return await interaction.showModal(manage.buildAddDrawModal('new', drawPrefill(extractSource(interaction.targetMessage))));

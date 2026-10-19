@@ -50,7 +50,12 @@ async function previewSet(ops, live) {
 }
 
 // ⚠️ `source` DEFAULTS TO 'discord' BECAUSE EVERY EXISTING CALLER IS ONE -- handlers/manage/* and core/revert.js reached from /bot. The portal passes 'portal' explicitly (portal/api/changesets.js). A new non-Discord caller that forgets will be mislabelled, which is why the portal's own path is asserted in scripts/portalApi.test.js rather than left to prose.
-async function commitSet(ops, { actorId, source = 'discord' }) {
+// 🔴 EVERY COMMIT IS AUTHORIZED HERE, for Discord and the portal alike (permission restructure, 2026-10-19 19:24 EDT). Each op needs its tier (core/permissions.js's OP_TIERS) on the page it writes to, checked by utils/adminAccess.js's checkOps. This is the one place every mutation passes through, so a Discord handler that forgot its own check, or a portal route that only knew pages, still cannot write past a missing tier. `revertOf` is core/revert.js's: a revert is gated by the Undo rule on the reverted row's page (checkRevert) instead of by the inverse ops' own tiers -- the inverse of a delete is an add, and a destructive-only admin must still be able to undo their delete. A denial returns { ok: false, denied, error } with nothing applied; `error` is written for the person, so every handler's existing `result.error` message shows it as-is.
+async function commitSet(ops, { actorId, source = 'discord', revertOf = null }) {
+    const { checkOps, checkRevert } = require('../utils/adminAccess');
+    const gate = revertOf ? await checkRevert(actorId, revertOf) : await checkOps(actorId, ops.flat());
+    if (!gate.ok) return { ok: false, denied: gate.denied || [], error: gate.reason };
+
     // 🔴 FLATTEN BEFORE VALIDATING, not just before applying. A single-element `ops` array whose one element is ITSELF an array (any op's invert() may return an array -- draw.bulkDelete/purge and loadout.bulkAdd/bulkReplace all do) used to reach validateSet un-flattened: resolveOp(op.type) on an array has op.type === undefined, throws "unknown op type", and commitSet returned {ok:false} before the apply loop's own .flat() call ever ran -- so reverting any of those ops always failed. Found by the plan-1-range code review, confirmed by tracing revertChange's `commitSet([row.inverse], ...)` call against those invert() shapes.
     const v = validateSet(ops.flat());
     if (!v.ok) return { ok: false, failures: v.failures };

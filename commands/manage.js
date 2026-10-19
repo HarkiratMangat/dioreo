@@ -330,7 +330,7 @@ function buildPastSeasonsOptions(seasonalDoc) {
     }));
 }
 
-// `allowedPages` (added 2026-08-13, per-page /manage permissions) -- an array of PAGES keys (+ the 'season' pseudo-key) this caller may reach, from utils/adminAccess.js's getManagePages(), or `null` for "unrestricted" (the owner, or any not-yet-updated caller). A scoped admin's dropdown only ever OFFERS pages they can open -- they are never shown a page just to be denied on click. Turns a registry action id into the rendered panel button. Label and style come from utils/manageActions.js (2026-08-14) rather than being written inline in buildPagesTable above -- that table now names only WHICH actions a group offers, and the registry owns what each one looks like and what it does. buttonFor() throws on an unregistered id, so a button that no handler can serve fails loudly at render instead of shipping as a dead button.
+// `allowedPages` (added 2026-08-13, per-page /manage permissions) -- an array of PAGES keys (+ the 'season' pseudo-key) to limit the dropdown to, or `null` for every page. ⚠️ Every caller passes null since the permission restructure (2026-10-19 19:25 EDT): any admin browses every page and a button checks its own tier on the press (his decision, 2026-10-19 18:17 EDT). The parameter is kept so a future view-limited caller does not have to re-thread it. Turns a registry action id into the rendered panel button. Label and style come from utils/manageActions.js (2026-08-14) rather than being written inline in buildPagesTable above -- that table now names only WHICH actions a group offers, and the registry owns what each one looks like and what it does. buttonFor() throws on an unregistered id, so a button that no handler can serve fails loudly at render instead of shipping as a dead button.
 function actionButton(pageKey, id) {
     const b = buttonFor(pageKey, id);
     return { type: 2, style: b.style, label: b.label, custom_id: `mng_act_${pageKey}_${b.id}` };
@@ -839,31 +839,24 @@ module.exports = {
     buildAnnouncementModal, buildAnnouncementListBlocks,
 
     async execute(interaction) {
-        const { hasCommandAccess, getManagePages } = require('../utils/adminAccess');
+        const { hasCommandAccess } = require('../utils/adminAccess');
         if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {
             // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of handlers/manage.js's centralized button/select/modal guard for this same panel (see interactionCreate).
             return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
         }
-        // Per-page scoping (2026-08-13) -- computed once, threaded through every branch below. A scoped admin (e.g. Calendar-only) reaching `manage` at all via hasCommandAccess above does NOT mean every section is theirs; each one is checked against this list.
-        const allowedPages = await getManagePages(interaction.user.id);
-
-        const section = interaction.options.getString('content') || (allowedPages.includes('draws') ? 'draws' : allowedPages[0]);
+        // Every admin may open every section (the permission restructure, 2026-10-19 19:25 EDT); what they may DO there is checked per button by resolveAction's tier check, and again by core/changeset.js's commitSet on the write.
+        const section = interaction.options.getString('content') || 'draws';
 
         // Season: Titles & Deadlines is reachable directly from this option now (2026-07-12) — skips rendering the panel entirely, same as picking it from the in-panel mng_pagesel dropdown does. showModal() must be the FIRST response to the interaction (can't follow a deferReply()), so this has to branch before the deferReply() below runs at all.
         if (section === 'season_titlesdeadlines') {
-            if (!allowedPages.includes('season')) {
-                return interaction.reply({ content: "🔒 **You don't have access to Season Titles & Deadlines.** Ask the bot owner to grant it if you need it.", ephemeral: true });
-            }
+            // Opens its pop-up straight away, so it is gated like the button it is (create on Season).
+            const { resolvePopupEntry } = require('../utils/manageActions');
+            const gate = await resolvePopupEntry(section, interaction.user.id);
+            if (!gate.ok) return interaction.reply({ content: gate.message, ephemeral: true });
             // Shared lookup, not a hand-rolled one (v3-pre-release review, finding #38).
             const { loadSeasonalDoc } = require('../utils/manageActions');
             const seasonalDoc = await loadSeasonalDoc();
             return interaction.showModal(buildSeasonTitlesDeadlinesModal(seasonalDoc));
-        }
-
-        if (section !== 'guide' && !allowedPages.includes(section)) {
-            // DENIAL_MESSAGE.denied, not a restated copy (v3-pre-release review, finding #43).
-            const { DENIAL_MESSAGE } = require('../utils/manageActions');
-            return interaction.reply({ content: DENIAL_MESSAGE.denied, ephemeral: true });
         }
 
         // Stage 3 (2026-08-14 18:04 EDT) -- action: opens one of the section's own actions directly. Must run BEFORE deferReply(): a kind:'modal' entry's run() calls showModal(), which has to be the interaction's FIRST response (same constraint season_titlesdeadlines works around above). Mirrors handlers/manage/index.js's mng_act_ button dispatch exactly -- resolveAction() is the one choke point (it also re-checks the per-page permission just verified above, so a scoped admin can't reach another section's action by typing its id directly) and run() is trusted to manage its OWN response completely: kind:'file' calls reply(), kind:'view' defers itself, kind:'modal' shows a modal. Do NOT deferReply() before calling it -- a kind:'file' entry's run() calls interaction.reply(), which throws if this has already acknowledged.
@@ -882,7 +875,7 @@ module.exports = {
             }
             if (resolved.ok && !resolved.entry.slash) resolved.reason = 'unknown';
             // An unknown/unpermitted action falls through to the normal page render below with a short note instead of erroring out the whole invocation -- a typo shouldn't cost the page the user actually asked for. (guide/season_titlesdeadlines have no registry entries at all, so a stray action there also resolves 'unknown' and is silently dropped on the guide/modal branches below -- not worth threading the note through two more send sites for an edge case autocomplete never suggests in the first place.)
-            actionFallbackNote = `${DENIAL_MESSAGE[resolved.reason]}\n\n`;
+            actionFallbackNote = `${resolved.message || DENIAL_MESSAGE[resolved.reason]}\n\n`;
         }
 
         // Default ephemeral (true) unless explicitly set to public — matches the "default private" convention Harkirat asked for on this specific command (every OTHER command defaults public; this one is the admin panel, so it flips the default).
@@ -890,7 +883,7 @@ module.exports = {
         const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
-        // Bulk Format Guide, reached directly (2026-07-31 17:20 EDT) -- sends the SAME rich guide panel the in-page "Guide" buttons open (utils/manageGuides.js), skipping the normal page-panel render entirely. Defaults to the Draws topic (first in the dropdown) -- there's no page context to infer a topic from when jumping straight here via the slash option. Read-only reference material, not data-mutating -- available to anyone with ANY manage access at all (allowedPages is non-empty, guaranteed by the hasCommandAccess check above), not gated per-page like the real data pages below.
+        // Bulk Format Guide, reached directly (2026-07-31 17:20 EDT) -- sends the SAME rich guide panel the in-page "Guide" buttons open (utils/manageGuides.js), skipping the normal page-panel render entirely. Defaults to the Draws topic (first in the dropdown) -- there's no page context to infer a topic from when jumping straight here via the slash option. Read-only reference material, not data-mutating -- available to any admin (guaranteed by the hasCommandAccess check above), not gated per-page like the real data pages below.
         if (section === 'guide') {
             const { buildGuideContainer } = require('../utils/manageGuides');
             return sendV2Payload(interaction, buildGuideContainer('draws'));
@@ -898,6 +891,6 @@ module.exports = {
 
         // buildDynamicData(), not a hand-rolled table (v3-pre-release review, finding #44) -- only fetched when actually landing on a page that needs it; every other page renders from PAGES alone.
         const dynamicData = await buildDynamicData(section);
-        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client, allowedPages), { content: actionFallbackNote });
+        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client), { content: actionFallbackNote });
     }
 };

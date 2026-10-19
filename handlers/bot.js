@@ -24,11 +24,17 @@ function respondText(interaction, text, components = []) {
     return sendV2Payload(interaction, body);
 }
 
+// Each /bot page is its own permission scope since the permission restructure (2026-10-19 19:28 EDT): the router's `bot_` guard proves only that this person holds SOME /bot page, so the page itself is re-checked here, on every click, against the pages they hold.
 async function renderAnalyticsPage(interaction, page, subState = {}) {
+    const { getBotPages } = require('../utils/adminAccess');
+    const pages = await getBotPages(interaction.user.id);
+    if (!pages.includes(page)) {
+        return await interaction.reply({ content: "🔒 **You don't have permission for that page.** Ask the bot owner to grant it if you need it.", ephemeral: true });
+    }
     await interaction.deferUpdate();
     const { buildAnalyticsPanel } = require('../commands/bot');
     const { sendV2Payload } = require('../utils/sendV2Payload');
-    const components = await buildAnalyticsPanel({ page, client: interaction.client, ...subState });
+    const components = await buildAnalyticsPanel({ page, client: interaction.client, pages, ...subState });
     return sendV2Payload(interaction, components);
 }
 
@@ -79,9 +85,10 @@ async function route(interaction) {
     if (interaction.isButton() && customId.startsWith('bot_changedetail_')) {
         const changeId = customId.replace('bot_changedetail_', '');
         const { getChange } = require('../utils/changeStore');
-        const { hasManagePageAccess } = require('../utils/adminAccess');
+        const { hasManagePageAccess, can } = require('../utils/adminAccess');
         const row = await getChange(changeId);
-        if (!row || !(await hasManagePageAccess(interaction.user.id, row.page))) {
+        // Any tier on the change's page opens its detail, and the Changes page itself must be held too: the detail panel is part of that page.
+        if (!row || !(await can(interaction.user.id, 'bot.changes')) || !(await hasManagePageAccess(interaction.user.id, row.page))) {
             return await interaction.reply({ content: "🔒 You don't have access to the section that change belongs to.", ephemeral: true });
         }
         // A SEPARATE ephemeral message, never a re-render of the panel -- the analytics page stays put behind it, so reading one row's detail does not cost you the glance you were looking at.
@@ -95,10 +102,13 @@ async function route(interaction) {
     if (interaction.isButton() && customId.startsWith('bot_revert_')) {
         const changeId = customId.replace('bot_revert_', '');
         const { getChange } = require('../utils/changeStore');
-        const { hasManagePageAccess } = require('../utils/adminAccess');
+        const { checkRevert, can } = require('../utils/adminAccess');
         const row = await getChange(changeId);
-        if (!row || !(await hasManagePageAccess(interaction.user.id, row.page))) {
-            return await interaction.reply({ content: "🔒 You don't have access to the section that change belongs to.", ephemeral: true });
+        if (!row) return await interaction.reply({ content: '❌ That change no longer exists.', ephemeral: true });
+        // Revert needs the Undo tier (core/permissions.js's UNDO_TIER, Destructive and provisional) on the change's OWN page, plus the Changes page the button sits on. core/changeset.js's commitSet re-runs the same checkRevert, so this early check only exists to answer before deferring.
+        const gate = await checkRevert(interaction.user.id, row);
+        if (!gate.ok || !(await can(interaction.user.id, 'bot.changes'))) {
+            return await interaction.reply({ content: gate.ok ? "🔒 **You don't have permission for the Changes page.**" : gate.reason, ephemeral: true });
         }
         await interaction.deferReply({ ephemeral: true });
         const { revertChange } = require('../core/revert');
@@ -193,7 +203,8 @@ async function route(interaction) {
     }
 
     if (interaction.isModalSubmit() && customId === 'bot_adminmodal_grant') {
-        const { isOwner, invalidateAdminCache, parsePermissionsInput, formatPermissions } = require('../utils/adminAccess');
+        const { isOwner, invalidateAdminCache } = require('../utils/adminAccess');
+        const { parseGrantsInput, formatGrants } = require('../core/permissions');
         if (!isOwner(interaction.user.id)) {
             return interaction.reply({ content: '🔒 **Only the bot owner can manage the admin list.**', ephemeral: true });
         }
@@ -204,46 +215,48 @@ async function route(interaction) {
         if (!/^\d{17,20}$/.test(discordId)) {
             return interaction.reply({ content: `❌ "${rawId}" doesn't look like a valid Discord user ID or mention.`, ephemeral: true });
         }
-        const rawPermissions = interaction.fields.getTextInputValue('permissions');
-        const permissions = parsePermissionsInput(rawPermissions);
-        if (!permissions) {
-            return interaction.reply({ content: `❌ Couldn't understand "${rawPermissions}". Use \`all\`, \`manage\`, \`bot\`, \`autobuild\`, or specific pages like \`manage.calendar, manage.draws\` (comma-separated).`, ephemeral: true });
+        const parsed = parseGrantsInput(interaction.fields.getTextInputValue('permissions'));
+        if (!parsed.ok) {
+            return interaction.reply({ content: `❌ ${parsed.error}`, ephemeral: true });
         }
+        const { grants } = parsed;
         await interaction.deferReply({ ephemeral: true });
         const AdminUser = require('../models/AdminUser');
         const { recordChange } = require('../utils/changeStore');
+        // `permissions: []` clears any legacy token list on a re-grant, so the row reads by its grants alone (utils/adminAccess.js only falls back to `permissions` when `grants` is empty).
         await AdminUser.findOneAndUpdate(
             { discordId },
-            { $set: { discordId, grantedBy: interaction.user.id, grantedAt: new Date(), note, permissions } },
+            { $set: { discordId, grantedBy: interaction.user.id, grantedAt: new Date(), note, grants, permissions: [] } },
             { upsert: true },
         );
         invalidateAdminCache();
-        recordChange({ actorId: interaction.user.id, page: 'access', action: 'grant', model: 'AdminUser', target: discordId, summary: `Granted admin access to <@${discordId}> — ${formatPermissions(permissions)}` });
+        recordChange({ actorId: interaction.user.id, page: 'access', action: 'grant', model: 'AdminUser', target: discordId, summary: `Granted admin access to <@${discordId}> — ${formatGrants(grants)}` });
         // editReply, not followUp (v3-pre-release review, finding #7) -- followUp posts a NEW message (leaving the deferReply({ephemeral:true}) placeholder hanging forever) and, with no ephemeral flag of its own, lands publicly -- disclosing who holds bot admin and at what scope to the whole channel.
-        return interaction.editReply({ content: `✅ Granted admin access to <@${discordId}> — ${formatPermissions(permissions)}.${note ? ` (${note})` : ''}` });
+        return interaction.editReply({ content: `✅ Granted admin access to <@${discordId}> — ${formatGrants(grants)}.${note ? ` (${note})` : ''}` });
     }
 
     if (interaction.isModalSubmit() && customId.startsWith('bot_adminmodal_editperms_')) {
-        const { isOwner, invalidateAdminCache, parsePermissionsInput, formatPermissions } = require('../utils/adminAccess');
+        const { isOwner, invalidateAdminCache } = require('../utils/adminAccess');
+        const { parseGrantsInput, formatGrants } = require('../core/permissions');
         if (!isOwner(interaction.user.id)) {
             return interaction.reply({ content: '🔒 **Only the bot owner can manage the admin list.**', ephemeral: true });
         }
         const discordId = customId.replace('bot_adminmodal_editperms_', '');
-        const rawPermissions = interaction.fields.getTextInputValue('permissions');
-        const permissions = parsePermissionsInput(rawPermissions);
-        if (!permissions) {
-            return interaction.reply({ content: `❌ Couldn't understand "${rawPermissions}". Use \`all\`, \`manage\`, \`bot\`, \`autobuild\`, or specific pages like \`manage.calendar, manage.draws\` (comma-separated).`, ephemeral: true });
+        const parsed = parseGrantsInput(interaction.fields.getTextInputValue('permissions'));
+        if (!parsed.ok) {
+            return interaction.reply({ content: `❌ ${parsed.error}`, ephemeral: true });
         }
+        const { grants } = parsed;
         await interaction.deferReply({ ephemeral: true });
         const AdminUser = require('../models/AdminUser');
         const { recordChange } = require('../utils/changeStore');
-        const updated = await AdminUser.findOneAndUpdate({ discordId }, { $set: { permissions } }, { new: true });
+        const updated = await AdminUser.findOneAndUpdate({ discordId }, { $set: { grants, permissions: [] } }, { new: true });
         if (!updated) {
             return interaction.editReply({ content: '❌ That admin no longer exists (they may have just been revoked).' });
         }
         invalidateAdminCache();
-        recordChange({ actorId: interaction.user.id, page: 'access', action: 'edit', model: 'AdminUser', target: discordId, summary: `Updated <@${discordId}>'s permissions — ${formatPermissions(permissions)}` });
-        return interaction.editReply({ content: `✅ Updated <@${discordId}>'s permissions — ${formatPermissions(permissions)}.` });
+        recordChange({ actorId: interaction.user.id, page: 'access', action: 'edit', model: 'AdminUser', target: discordId, summary: `Updated <@${discordId}>'s permissions — ${formatGrants(grants)}` });
+        return interaction.editReply({ content: `✅ Updated <@${discordId}>'s permissions — ${formatGrants(grants)}.` });
     }
 }
 

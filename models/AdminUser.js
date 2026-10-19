@@ -13,8 +13,26 @@ const adminUserSchema = new mongoose.Schema({
     // 🔴 TWO FIELDS, NOT ONE, AND `note` USED TO DO BOTH JOBS BADLY. `title` is the OFFICIAL label — it is what the portal's Access grid prints under the avatar and username, so it is public to anyone who can read that grid and it is required at grant time. `note` is private: a reminder to the owner about who this person is, shown only inside the drawer. Split on Harkirat's instruction, 2026-09-11 16:40 EDT. ⚠️ THERE IS NO DATABASE MIGRATION AND THERE DELIBERATELY IS NOT ONE. A row granted before the split carries a `note` and no `title`, so every reader falls back to `title || note` and the Edit drawer seeds its Title field from the old note — the rename happens on the next save, per row, rather than as a one-shot script against live permissions.
     title: { type: String, default: '' },
     note: { type: String, default: '' }, // private; was the grid label until the 2026-09-11 split above
-    // Per-command access (added 2026-08-13) -- subset of utils/adminAccess.js's ADMIN_COMMANDS ('manage'/'bot'/'autobuild'/'destructive'), plus 'manage.<page>' scopes. Always non-empty -- an admin with zero permissions should be revoked, not left in a zero-permission limbo state. ⚠️ 'destructive' (2026-08-25) is the odd one: it names no surface, it grants the right to run operations that cannot be undone on ALL of them. `all` deliberately does not expand to it (see NOT_IN_ALL in utils/adminAccess.js), so it can only arrive here by being typed.
-    permissions: { type: [String], required: true }
+    // 🔴 THE GRANT, since the permission restructure (2026-10-19 19:23 EDT, docs/superpowers/specs/2026-10-19-permission-restructure-design.md). One entry per scope (a command like 'manage', or a page like 'manage.calendar' / 'bot.health'), each holding the tiers granted there: 'create', 'destructive' or both. core/permissions.js is the table that says what a scope carries and what each action needs; this is only what was granted. Written by /bot access (owner-only). Non-empty for every admin -- someone with nothing granted should be revoked, not left in a zero-permission limbo.
+    grants: {
+        type: [{
+            _id: false,
+            scope: { type: String, required: true },
+            tiers: { type: [String], required: true },
+        }],
+        default: [],
+    },
+    // ⚠️ LEGACY, read only when `grants` is empty. The retired flat token list ('manage', 'manage.<page>', 'bot', 'autobuild', 'destructive'). The portal's Access realm still writes it until the pins2 hand-off lands, so core/permissions.js's legacyToGrants() bridges it rather than ignoring it. No longer required: a row granted by /bot access has `grants` and an empty list here. scripts/purgeLegacyAdminGrants.js removes the rows that still depend on it (dry run by default; the prod run waits for Harkirat's word).
+    permissions: { type: [String], default: [] }
+});
+
+// 🔴 A WRITE OF THE OLD `permissions` LIST CLEARS `grants`, until the portal hand-off lands (2026-10-19 19:36 EDT). The portal's Access realm still saves the old token list and knows nothing of `grants`. core/permissions.js's grantsOf() reads `grants` whenever it is non-empty, so without this an owner editing in the portal an admin who had been granted from /bot access would save, see the grid update, and change nothing at all: the old grants would keep winning. Clearing them makes the portal's write the one that counts, read through the legacy bridge. A write that sets `grants` itself (/bot access) is left alone. Delete this with the bridge.
+adminUserSchema.pre(['findOneAndUpdate', 'updateOne'], function clearGrantsOnLegacyWrite() {
+    const update = this.getUpdate() || {};
+    const set = update.$set || {};
+    const touchesPermissions = 'permissions' in update || 'permissions' in set;
+    const touchesGrants = 'grants' in update || 'grants' in set;
+    if (touchesPermissions && !touchesGrants) this.set('grants', []);
 });
 
 module.exports = mongoose.model('AdminUser', adminUserSchema);

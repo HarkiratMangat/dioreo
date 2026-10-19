@@ -1,6 +1,6 @@
 // scripts/settingsJumpTo.test.js
 //
-// `/settings customize:` (2026-10-19 17:52 EDT, docs/ROADMAP.md's "/settings jump-to options"): Visibility lands on page 1, Preferences on page 2, Colors opens the View Colors panel through /colors' own execute() under settingsVisibility. The database, the accent lookup and the Discord send are stubbed through require.cache so the real commands/settings.js runs end to end with no connection; the assertions read the payload it would have sent.
+// `/settings open:` (2026-10-19 17:52 EDT, named `customize:` until 2026-10-19 19:33 EDT; docs/ROADMAP.md's "/settings jump-to options"): Visibility lands on page 1, Preferences on page 2, Colors opens the View Colors panel through /colors' own execute() under settingsVisibility. The database, the accent lookup and the Discord send are stubbed through require.cache so the real commands/settings.js runs end to end with no connection; the assertions read the payload it would have sent.
 const assert = require('assert');
 const path = require('path');
 const Module = require('module');
@@ -36,7 +36,7 @@ stub('commands/colors.js', { execute: async (interaction, opts) => { colorsCalls
 
 const settings = require('../commands/settings');
 
-function fakeInteraction({ customize = null, slash = true } = {}) {
+function fakeInteraction({ open = null, slash = true } = {}) {
     const user = {
         id: '42', username: 'tester', createdAt: new Date('2020-01-01T00:00:00Z'),
         displayAvatarURL: () => 'https://cdn.discordapp.com/avatars/42/a.png'
@@ -45,7 +45,7 @@ function fakeInteraction({ customize = null, slash = true } = {}) {
         user, member: null, guildId: null,
         deferred: false, replied: false,
         isChatInputCommand: () => slash,
-        options: { getString: (name) => (name === 'customize' ? customize : null) },
+        options: { getString: (name) => (name === 'open' ? open : null) },
         deferReply: async function () { this.deferred = true; },
         client: { users: { fetch: async () => ({ bannerURL: () => null }) } }
     };
@@ -69,22 +69,22 @@ function textOf(components) {
 (async () => {
     await check('the option is registered before `visibility`, with exactly the three roadmap choices', () => {
         const opts = settings.data.toJSON().options;
-        assert.deepStrictEqual(opts.map(o => o.name), ['customize', 'visibility']);
+        assert.deepStrictEqual(opts.map(o => o.name), ['open', 'visibility']);
         assert.deepStrictEqual(opts[0].choices.map(c => c.value), ['visibility', 'preferences', 'colors']);
-        assert.ok(!opts[0].required, 'customize is optional');
+        assert.ok(!opts[0].required, 'open is optional');
     });
 
-    await check('customize:preferences lands on page 2 even though the page argument says page 1', async () => {
+    await check('open:preferences lands on page 2 even though the page argument says page 1', async () => {
         sent.length = 0;
-        await settings.execute(fakeInteraction({ customize: 'preferences' }), 0);
+        await settings.execute(fakeInteraction({ open: 'preferences' }), 0);
         const text = textOf(sent[0].components);
         assert.ok(text.includes('Default Preferences'), 'the Preferences heading renders');
         assert.ok(!text.includes('Default Visibility'), 'the Visibility page does not');
     });
 
-    await check('customize:visibility lands on page 1', async () => {
+    await check('open:visibility lands on page 1', async () => {
         sent.length = 0;
-        await settings.execute(fakeInteraction({ customize: 'visibility' }), 1);
+        await settings.execute(fakeInteraction({ open: 'visibility' }), 1);
         assert.ok(textOf(sent[0].components).includes('Default Visibility'));
     });
 
@@ -92,15 +92,15 @@ function textOf(components) {
         sent.length = 0;
         await settings.execute(fakeInteraction(), 0);
         assert.ok(textOf(sent[0].components).includes('Default Visibility'));
-        // A set_page_ click arrives as a button: isChatInputCommand() is false, so `customize` is never read, and the page the handler asked for is the one drawn.
-        const button = fakeInteraction({ customize: 'visibility', slash: false });
+        // A set_page_ click arrives as a button: isChatInputCommand() is false, so `open` is never read, and the page the handler asked for is the one drawn.
+        const button = fakeInteraction({ open: 'visibility', slash: false });
         await settings.execute(button, 1);
         assert.ok(textOf(sent[1].components).includes('Default Preferences'), 'a re-render is not hijacked by the option');
     });
 
-    await check('customize:colors opens /colors under settingsVisibility, the same field the dashboard button reads, and draws no dashboard', async () => {
+    await check('open:colors opens /colors under settingsVisibility, the same field the dashboard button reads, and draws no dashboard', async () => {
         sent.length = 0; colorsCalls.length = 0;
-        await settings.execute(fakeInteraction({ customize: 'colors' }), 0);
+        await settings.execute(fakeInteraction({ open: 'colors' }), 0);
         assert.deepStrictEqual(colorsCalls, [{ prefsField: 'settingsVisibility' }]);
         assert.strictEqual(sent.length, 0, 'the settings dashboard itself is not sent');
     });

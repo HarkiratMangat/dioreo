@@ -74,6 +74,14 @@ async function handleButton(interaction) {
     const customId = interaction.customId;
     const Announcement = require('../../models/Announcement');
 
+    // The per-row buttons carry a Mongo _id, so they live outside the registry and check their own tier on the press (core/permissions.js's OUTSIDE_ACTIONS). commitSet checks it again on the write.
+    const { canDo, denyDo } = require('../../utils/adminAccess');
+    const rowAction = customId.startsWith('mng_announce_edit_') ? 'manage.announcementEdit'
+        : (customId.startsWith('mng_announce_delete_') || customId.startsWith('mng_announce_delconfirm_')) ? 'manage.announcementDelete' : null;
+    if (rowAction && !(await canDo(interaction.user.id, rowAction))) {
+        return interaction.reply({ content: denyDo(rowAction), ephemeral: true });
+    }
+
     if (customId.startsWith('mng_announce_edit_')) {
         const id = customId.replace('mng_announce_edit_', '');
         const doc = await Announcement.findById(id).lean();

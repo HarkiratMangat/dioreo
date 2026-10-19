@@ -194,25 +194,19 @@ async function renderManagePage(interaction) {
     const targetPage = interaction.values[0];
     const manageCommand = interaction.client.commands.get('manage');
 
-    // Re-checked here even though the dropdown itself only ever OFFERS pages this user is allowed on, for the same defense-in-depth reasoning as every other re-check in this handler: a stale panel message from before a permission change could still carry an option no longer theirs.
-    const { getManagePages } = require('../../utils/adminAccess');
-    const allowedPages = await getManagePages(interaction.user.id);
-    // DENIAL_MESSAGE.denied, not a restated copy (v3-pre-release review, finding #43) -- three variants of this one string existed; a scoped admin got different guidance depending on which of the three paths denied them for the identical reason.
-    const { DENIAL_MESSAGE } = require('../../utils/manageActions');
-    const deniedReply = { content: DENIAL_MESSAGE.denied, ephemeral: true };
-
+    // Since the permission restructure (2026-10-19 19:25 EDT) any admin may browse every page -- the router's prefix guard already proved this is an admin -- and each button checks its own tier on the press. The two Season entries open a pop-up straight away, so picking one IS the action and is gated here like a button (utils/manageActions.js's resolvePopupEntry).
+    if (targetPage === 'season_titlesdeadlines' || targetPage === 'season_wipe') {
+        const { resolvePopupEntry } = require('../../utils/manageActions');
+        const gate = await resolvePopupEntry(targetPage, interaction.user.id);
+        if (!gate.ok) return interaction.reply({ content: gate.message, ephemeral: true });
+    }
     if (targetPage === 'season_titlesdeadlines') {
-        if (!allowedPages.includes('season')) return interaction.reply(deniedReply);
         const SeasonalData = require('../../models/SeasonalData');
         const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
         return await interaction.showModal(manageCommand.buildSeasonTitlesDeadlinesModal(seasonalDoc));
     }
     if (targetPage === 'season_wipe') {
-        if (!allowedPages.includes('season')) return interaction.reply(deniedReply);
         return await interaction.showModal(manageCommand.buildWipeSeasonModal());
-    }
-    if (targetPage !== 'guide' && !allowedPages.includes(targetPage)) {
-        return interaction.reply(deniedReply);
     }
 
     await interaction.deferUpdate();
@@ -220,7 +214,7 @@ async function renderManagePage(interaction) {
 
     // manageCommand.buildDynamicData(), not a hand-rolled table (v3-pre-release review, finding #44) -- see commands/manage.js's own comment on this function for why the duplication mattered.
     const dynamicData = await manageCommand.buildDynamicData(targetPage);
-    return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData, interaction.client, allowedPages));
+    return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData, interaction.client));
 }
 
 // Bulk Format Guide's own topic-switcher dropdown (utils/manageGuides.js) -- re-renders the SAME guide message in place, same deferUpdate + sendV2Payload shape as renderManagePage above, just editing a standalone guide message instead of the panel.
