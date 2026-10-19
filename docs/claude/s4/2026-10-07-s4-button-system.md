@@ -784,3 +784,7 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 ## His 2026-10-19 15:56 EDT, verbatim, written 2026-10-19 16:00 EDT
 - (the three tile lettering variants) "they;re the same?"
 - Built in spec v120: three different tile shapes instead (A today's card · B a row, the colour a bar on the left · C a coloured head), asked on the Answer Shots page as `tiledir`.
+
+## His 2026-10-19 16:15 EDT, verbatim, written 2026-10-19 16:16 EDT
+- (tile shape: A today's card · B a row · C a coloured head) "A"
+- Built in spec v121: Tiles Decided as drawn (the card); the shape options removed; ledger tileframe; conventions C29. The lettering and shape variants and the unused MP / DMZ tab cleared; every Spec-vs-Builder-2 row reads "Spec".
