@@ -82,7 +82,7 @@ async function execute(interaction) {
     const sub = interaction.options.getSubcommand();
     if (sub === 'search') {
         const raw = interaction.options.getString('weapon');
-        // A `~cat~<CATEGORY>` value comes from a category row in the autocomplete list; `~` can never appear in a weaponKey (checked against all 70), so this cannot collide.
+        // A `~cat~<CATEGORY>` value came from a category row in the autocomplete list (removed 2026-10-19 18:57 EDT, Harkirat: those belong in /gunsmiths list; kept so an old open autocomplete still resolves); `~` can never appear in a weaponKey (checked against all 70), so this cannot collide.
         if (raw.startsWith('~cat~')) {
             // `build:` is deliberately IGNORED on a category row -- it means "build N of this weapon", and a scope browse has no single weapon. Silently starting at flat index N-1 would be a different, surprising meaning.
             return renderScopeBrowse(interaction, { mode: 'MP', category: raw.slice(5), metaOnly: false }, 0);

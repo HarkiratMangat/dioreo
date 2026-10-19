@@ -345,21 +345,12 @@ async function handleInteractionInner(interaction) {
 
             const { displayCategoryLabel } = require('../utils/loadoutRender');
 
-            // /gunsmiths search gets "sticky" category rows ahead of weapon matches -- WE author every slot on every keystroke (Discord has no real pinning). Filtered by the same fuzzyMatch as weapons, so a typed "ak" spends all 25 slots on weapons and an empty box shows all seven categories -- the discovery surface that replaces losing /smg. `~` can never appear in a weaponKey (checked against all 70), so the `~cat~` sentinel this produces cannot collide with a real weapon value.
+            // /gunsmiths search lists WEAPONS only. It used to put "▸ All AR builds (17 weapons)" rows ahead of them; Harkirat, 2026-10-19 18:57 EDT: "remove these 'all xxx builds' from /gunsmith search. those belong in /gunsmith list". commands/gunsmiths.js still opens a `~cat~` value, so a stale client's old row keeps working.
             if (commandName === 'gunsmiths') {
-                const categoryCounts = new Map();
-                for (const w of distinctChoices) categoryCounts.set(w.category, (categoryCounts.get(w.category) || 0) + 1);
-                // Fixed per-list budgets, not a cap on the concatenated union (v3-pre-release review, finding #26) -- catRows is unfiltered when focusedValue is falsy, so the old union-then-slice(0,25) let categories crowd out every weapon slot once enough categories exist (7 today -> 18 weapon slots left; each new DB category takes another), and a short query fuzzy-matching several category names could push the intended weapon off the list entirely.
-                const CATEGORY_BUDGET = 5;
-                const catRows = Array.from(categoryCounts.keys())
-                    .sort()
-                    .filter(c => !focusedValue || fuzzyMatch(focusedValue, c))
-                    .slice(0, CATEGORY_BUDGET)
-                    .map(c => ({ name: `▸ All ${displayCategoryLabel(c)} builds (${categoryCounts.get(c)} weapons)`, value: `~cat~${c}` }));
                 const weaponRows = findWeaponMatches(focusedValue, distinctChoices)
-                    .slice(0, 25 - catRows.length)
+                    .slice(0, 25)
                     .map(w => ({ name: `[${displayCategoryLabel(w.category)}] ${w.weaponName}`, value: w.weaponKey }));
-                return await interaction.respond([...catRows, ...weaponRows]);
+                return await interaction.respond(weaponRows);
             }
 
             // /dmz: unchanged -- plain weapon names, no category prefix (that's gunsmiths-only, and /dmz has no per-category split -- see models/Loadout.js on categoryRank/DMZ). findWeaponMatches (2026-07-18) also expands recognized category synonyms (e.g. "pistol"/"smg"/"assault rifle") so typing a weapon-class term surfaces every weapon in that category, not just weapons whose own name happens to contain that word -- see utils/search.js's own comment for the full reasoning + the synonym list.
