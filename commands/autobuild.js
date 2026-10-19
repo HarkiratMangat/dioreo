@@ -1,4 +1,4 @@
-// commands/autobuild.js Screenshot -> Gemini vision extraction -> review/edit -> Cloudinary upload -> Loadout doc, gated behind an explicit admin Confirm step. Full design: docs/superpowers/specs/2026-07-19-loadout- automation-poc-design.md. Admin-only (same ALLOWED_ADMIN_ID as /manage), MP-only for this PoC. Extraction/state/write logic lives in utils/autobuildPipeline.js, shared with handlers/autobuild.js's button/ modal handlers for Confirm/Edit/Cancel/retry -- this file only does option parsing + admin gating.
+// commands/autobuild.js Screenshot -> Gemini vision extraction -> review/edit -> Cloudinary upload -> Loadout doc, gated behind an explicit admin Confirm step. Full design: docs/superpowers/specs/2026-07-19-loadout- automation-poc-design.md. Admin-only (same ALLOWED_ADMIN_ID as /manage). MP-only until 2026-10-19 17:54 EDT; it now reads DMZ builds too, telling the two apart from the screenshot (utils/visionExtract.js's classifyMode) unless `mode:` says which. Extraction/state/write logic lives in utils/autobuildPipeline.js, shared with handlers/autobuild.js's button/ modal handlers for Confirm/Edit/Cancel/retry -- this file only does option parsing + admin gating.
 const { SlashCommandBuilder } = require('discord.js');
 const { hasCommandAccess } = require('../utils/adminAccess'); // owner OR Mongo-allowlisted admin scoped to 'autobuild'
 const { runExtraction } = require('../utils/autobuildPipeline');
@@ -8,11 +8,13 @@ const CATEGORY_CHOICES = ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN', '
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('autobuild')
-        .setDescription('Extract an MP loadout from a Gunsmith screenshot (admin-only PoC)')
+        .setDescription('Extract an MP or DMZ loadout from a Gunsmith screenshot (admin-only PoC)')
         .setDefaultMemberPermissions(0)
         .addAttachmentOption(option => option.setName('screenshot').setDescription('The Gunsmith screenshot (or use the url option instead)'))
         .addStringOption(option => option.setName('url').setDescription('A URL to the screenshot, instead of an attachment'))
         .addStringOption(option => option.setName('category').setDescription('Weapon category (optional -- will look up or ask if omitted)').addChoices(...CATEGORY_CHOICES.map(c => ({ name: c, value: c }))))
+        // Optional override for the mode the screenshot's UI chrome would decide. Left blank, a screenshot whose chrome is ambiguous gets a review card that asks, never a guess.
+        .addStringOption(option => option.setName('mode').setDescription('MP or DMZ (optional -- read from the screenshot if omitted)').addChoices({ name: 'MP', value: 'MP' }, { name: 'DMZ', value: 'DMZ' }))
         .addStringOption(option => option.setName('badges').setDescription('meta,best,top5,toxic (optional -- blank inherits from an existing build of this weapon)'))
         .addStringOption(option => option.setName('retry_token').setDescription('Only used when re-submitting an image after a Cloudinary upload failure'))
         // Renamed `private` (boolean) -> `visibility` (Hidden/Public string) 2026-08-10 19:28 EDT. The bot-wide rename landed in v3.1.0 for every other command and missed this one, so this was the last `private` left in the bot -- see .claude/rules/commands-overview.md.
@@ -50,6 +52,7 @@ module.exports = {
         await interaction.deferReply({ ephemeral: isEphemeral });
         const category = interaction.options.getString('category');
         const badges = interaction.options.getString('badges');
-        return runExtraction(interaction, imageUrl, category, badges);
+        const mode = interaction.options.getString('mode');
+        return runExtraction(interaction, imageUrl, category, badges, mode);
     }
 };

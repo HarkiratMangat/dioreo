@@ -38,20 +38,30 @@ const DEFAULT_PROJECT_ID = 'gen-lang-client-0549308254';
 // 'us' is a Vertex AI Multi-Region endpoint (aiplatform.us.rep.googleapis.com) -- confirmed live this is where gemini-3.5-flash is actually available; the original 'us-central1' single-region guess 404'd. This is only the FALLBACK default (a real .env's GCP_LOCATION always wins, see below) but it must itself be a working value -- a wrong fallback here would silently break the moment .env is missing this var (e.g. a fresh VM .env that hasn't been re-synced since this variable was added).
 const DEFAULT_LOCATION = 'us';
 
-// Prompt is parameterized by how many attachment slots to expect (up to `maxAttachments`). /autobuild passes the default 5 (MP); the DMZ slot backfill (scripts/backfillLoadoutSlots.js) passes 9 (DMZ equips up to 9). Rewritten 2026-07-21 after live v2 testing surfaced two real misreads:
+// Prompt is parameterized by how many attachment slots to expect (up to `maxAttachments`, default 9 -- see MAX_ATTACHMENTS below). Rewritten 2026-07-21 after live v2 testing surfaced two real misreads:
 //   - weaponName was grabbing the equipped SKIN's stylized title (e.g. "R9-0 - Death's Voice") instead of the base weapon ("R9-0"), which cascaded into a wrong weaponKey/imageKey and a brand-new "weapon" being created instead of a build added to the existing one. Now asks for the base weapon only (a structural backstop, adminParser.js's normalizeWeaponName, strips a skin suffix too).
 //   - a RESTRICTED slot (a slot locked by another attachment, shown with a crossed-out/prohibited icon) was being emitted as if the slot LABEL were an attachment (J358's "Trigger Action"). Now explicitly told to skip restricted AND empty slots, and never to output a slot label as an attachment name.
-// The old "exactly 5" wording is gone -- forcing a count is what made a restricted-slot weapon hallucinate a 5th attachment; the pipeline pads/filters for the review card instead.
+// The old "exactly 5" wording is gone -- forcing a count is what made a restricted-slot weapon hallucinate a 5th attachment; the pipeline pads/filters for the review card instead. DMZ DETECTION (2026-10-19 17:53 EDT, docs/db-deferred-list.md's "/autobuild: recognise DMZ builds, not just MP"). The model is NOT asked which mode the screen is. It reports four pieces of UI chrome as plain yes/no facts, and classifyMode() below decides, so the rule lives in code that can be tested without a Vertex call and cannot drift between prompt wordings. The four are the text-bearing discriminators from .claude/rules/autobuild.md's "MP vs DMZ" table, strongest first. ⚠️ Deliberately NOT asked: slot COUNT (a DMZ SVD has five slots), slot POSITION (renames and moves), the `ATTACHMENTS ● ● ● ● ●` dot row (Harkirat: "i wouldnt fixate on those dot elements" -- a miscounted glyph would silently flip the mode), and the top-right MAX/GOLD badge (a weapon-levelling display, not rarity or mode).
+//
+// The slot label: MP prints one above each attachment, DMZ prints none at all (Harkirat, 2026-09-16 11:31 EDT), so the model is told to copy a printed label verbatim -- including weapon-specific renames like Bowstring or Limb -- and to leave it blank rather than guess one from a position or an icon. A guessed DMZ slot would land in Cloudinary's per-slot metadata as fact.
 function buildPrompt(maxAttachments) {
     return `You are looking at a screenshot of a Call of Duty Mobile (CODM) "Gunsmith" weapon customization screen. Extract exactly this information and respond with ONLY a JSON object, no markdown code fences, no extra text:
 
 {
   "weaponName": "the BASE weapon's name ONLY, e.g. 'R9-0', 'AK117', 'Fennec'. Do NOT include any weapon SKIN, blueprint, or camo name. The screen often shows the equipped skin's stylized title joined to the weapon by a spaced dash (e.g. it may display 'R9-0 - Death's Voice', but the weapon is just 'R9-0'). Return only the underlying weapon name -- never the skin name, never a 'weapon - skin' combination.",
-  "gunsmithCode": "ONLY the short alphanumeric share code itself (usually labeled 'Code' or similar), alternating numbers and letters, e.g. '1B2A4B8C9C'. Do NOT include the weapon name, a hyphen, or any other prefix/suffix -- return the code characters only, nothing else.",
+  "gunsmithCode": "ONLY the short alphanumeric share code itself (usually labeled 'Code' or similar, or appended to the weapon name in the title), alternating numbers and letters, e.g. '1B2A4B8C9C'. Do NOT include the weapon name, a hyphen, or any other prefix/suffix -- return the code characters only, nothing else. If no such code is shown anywhere on the screen, use an empty string.",
+  "screen": {
+    "penStats": "true if the stats include a stat labelled 'PEN.' or 'PEN. MULTI', otherwise false",
+    "selectBlueprints": "true if a 'SELECT BLUEPRINTS' button or label is visible, otherwise false",
+    "equipCustomizeTabs": "true if tabs labelled 'EQUIP' and 'CUSTOMIZE' are visible, otherwise false",
+    "codeInTitle": "true if the weapon's title has an alphanumeric code joined to it, e.g. 'Dobvra-1D2C5F7B8B', otherwise false"
+  },
   "attachments": [
-    {"slot": "the attachment slot's on-screen label, e.g. Muzzle, Barrel, Optic, Stock, Underbarrel, Rear Grip, Ammunition, Perk, Laser, Trigger Action", "name": "the equipped attachment's name in that slot"}
+    {"slot": "the slot's label EXACTLY as printed on screen, e.g. Muzzle, Barrel, Optic, Stock, Underbarrel, Rear Grip, Ammunition, Perk, Laser, Trigger Action -- some weapons print their own names instead, such as Bowstring, Limb, Bolt, Foregrip, Mag, Guard or Smoothbore, and those must be copied as printed. If no label is printed for the slot, use an empty string; never guess a slot from its position or its icon", "name": "the equipped attachment's name in that slot"}
   ]
 }
+
+Answer each "screen" field with a JSON boolean (true or false), judged only from text you can actually read on the screen.
 
 Include one object per slot that ACTUALLY HAS AN ATTACHMENT EQUIPPED, in the order they appear on screen -- up to ${maxAttachments}. IMPORTANT: skip any slot that is EMPTY, and skip any slot showing a crossed-out or prohibited icon (a slashed circle, or a struck-through symbol) -- that icon means the slot is RESTRICTED (locked by another equipped attachment) and has nothing equipped, so it must NOT appear in the array at all. Never invent an attachment for a restricted or empty slot, and never output a slot's label as if it were the attachment name. If you genuinely cannot read a value for a field that IS equipped, use an empty string for that field rather than omitting the key.`;
 }
@@ -93,8 +103,21 @@ async function getGcpAccessToken() {
     throw new Error('GCP credentials missing: Instance metadata server unreachable and local gcloud ADC is unauthenticated. Please run "gcloud auth application-default login" locally.');
 }
 
-// `maxAttachments` (default 5) -- how many attachment slots to extract. /autobuild always uses the default 5 (MP), so its behavior is unchanged; the DMZ slot backfill passes 9. Kept as an option rather than a separate function so there's still ONE extraction path to maintain.
-async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5, taskName } = {}) {
+// Nine is the most slot positions either mode shows (Muzzle, Barrel, Optic, Stock, Perk, Laser, Underbarrel, Ammunition, Rear Grip). It was 5 until 2026-10-19 17:53 EDT, and that was the bug Harkirat's note names: "DMZ partials are the 5-attachment prompt cap". 5 is MP's EQUIP cap, not its slot count, so it was right for MP and cut every DMZ build short. One cap now serves both, because the mode is only known once the model has answered: an MP screen cannot show more than five equipped, and the prompt's skip-empty-and-restricted wording is what stops a nine-slot cap inventing attachments on a short weapon. ⚠️ Keep that wording whenever this prompt is edited.
+const MAX_ATTACHMENTS = 9;
+
+// The mode from the four `screen` facts the model reported. Two agreeing signals and no conflicting one, or null: a build filed under the wrong mode is worse than one the review card asks about (.claude/rules/autobuild.md, "Prefer two agreeing signals, and if they conflict, return the mode as unknown rather than guessing"). A missing or non-boolean field counts as not seen, never as a vote, so a malformed answer degrades to null instead of to a mode. A string "true" is not true: the prompt asks for JSON booleans, and accepting strings would make "false" truthy.
+function classifyMode(screen) {
+    const seen = (key) => screen != null && screen[key] === true;
+    const dmz = ['penStats', 'equipCustomizeTabs'].filter(seen).length;
+    const mp = ['selectBlueprints', 'codeInTitle'].filter(seen).length;
+    if (dmz >= 2 && mp === 0) return 'DMZ';
+    if (mp >= 2 && dmz === 0) return 'MP';
+    return null;
+}
+
+// `maxAttachments` (default MAX_ATTACHMENTS) -- how many attachment slots to extract. Kept as an option rather than a separate function so there's still ONE extraction path to maintain; scripts/backfillLoadoutSlots.js passes 9 explicitly.
+async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHMENTS, taskName } = {}) {
     const accessToken = await getGcpAccessToken();
     const gcpProjectId = process.env.GCP_PROJECT_ID || DEFAULT_PROJECT_ID;
     const gcpLocation = process.env.GCP_LOCATION || DEFAULT_LOCATION;
@@ -167,11 +190,16 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5, taskName 
         throw new Error(`Gemini response was not valid JSON: ${rawText.slice(0, 300)}`);
     }
 
-    if (typeof parsed.weaponName !== 'string' || typeof parsed.gunsmithCode !== 'string' || !Array.isArray(parsed.attachments)) {
+    return shapeExtraction(parsed, maxAttachments);
+}
+
+// The model's parsed JSON -> what callers get. Pulled out of extractLoadoutFromImage (2026-10-19 17:52 EDT) so scripts/autobuildDmz.test.js can drive real response shapes through it with no Vertex call.
+function shapeExtraction(parsed, maxAttachments = MAX_ATTACHMENTS) {
+    if (!parsed || typeof parsed.weaponName !== 'string' || typeof parsed.gunsmithCode !== 'string' || !Array.isArray(parsed.attachments)) {
         throw new Error(`Gemini response missing required fields: ${JSON.stringify(parsed).slice(0, 300)}`);
     }
 
-    // Attachments are now {slot, name} objects (added 2026-07-20 for Cloudinary structured metadata -- see this file's top comment). Accept a plain string too for robustness (a model response that drops the object wrapper on an empty/unclear slot) rather than throwing on a partially-shaped item. Pad/truncate to exactly `maxAttachments` (5 for /autobuild's review card, which always shows 5 slots; a short array would leave later slots as `undefined` rather than an editable empty string).
+    // Attachments are now {slot, name} objects (added 2026-07-20 for Cloudinary structured metadata -- see this file's top comment). Accept a plain string too for robustness (a model response that drops the object wrapper on an empty/unclear slot) rather than throwing on a partially-shaped item. Pad/truncate to exactly `maxAttachments` so every index is a string rather than `undefined`; utils/autobuildPipeline.js's cleanAttachmentPairs drops the empty ones before anything is shown or stored.
     const slotIndexes = Array.from({ length: maxAttachments }, (_, i) => i);
     const attachments = slotIndexes.map(i => {
         const item = parsed.attachments[i];
@@ -184,7 +212,14 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5, taskName 
         return (item && typeof item.slot === 'string') ? item.slot : '';
     });
 
-    return { weaponName: parsed.weaponName, gunsmithCode: parsed.gunsmithCode, attachments, attachmentSlots };
+    // `screen` is optional on the way in: a response without it (an older prompt, a model that dropped it) classifies as null and the review card asks, rather than the whole extraction failing.
+    const modeSignals = {
+        penStats: parsed.screen?.penStats === true,
+        selectBlueprints: parsed.screen?.selectBlueprints === true,
+        equipCustomizeTabs: parsed.screen?.equipCustomizeTabs === true,
+        codeInTitle: parsed.screen?.codeInTitle === true
+    };
+    return { weaponName: parsed.weaponName, gunsmithCode: parsed.gunsmithCode, attachments, attachmentSlots, mode: classifyMode(parsed.screen), modeSignals };
 }
 
-module.exports = { extractLoadoutFromImage };
+module.exports = { extractLoadoutFromImage, shapeExtraction, classifyMode, buildPrompt, MAX_ATTACHMENTS };
