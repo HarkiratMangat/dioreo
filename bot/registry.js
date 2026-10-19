@@ -29,6 +29,7 @@ function belongsOnAdminApp(name, module) {
 }
 
 // Splits the one staging array into the two apps' lists. With the admin app off, everything stays public -- today's behaviour. `modules` is client.commands, which carries each module's devOnly/adminApp flags.
+//
 // Discord's cap: an app registers at most 5 message right-clicks, and one over the cap fails the WHOLE registration PUT. With Dioreo Admin on, each app is well under it (public 2, admin 4). With it OFF every command lands on the public app (6 since View Colors gained a message right-click, 2026-10-19 15:22 EDT), so the ones that would live on the admin app are left out first, loudly, rather than the public app losing every command.
 const MESSAGE_COMMAND_CAP = 5;
 function capMessageCommands(commands, modules) {
@@ -129,8 +130,7 @@ async function applyGunsmithsScopeChoices(commands) {
 // PUSH TO DISCORD
 // ==========================================
 
-// Coordinates secure synchronization of compiled structures directly over to active Discord cloud endpoints, then caches the two derived lookups that can only exist AFTER registration.
-// Called once per application: the public client with its list and BOT_TOKEN, and (when on) the admin client with its list and ADMIN_BOT_TOKEN. A PUT replaces the app's whole list, so the admin commands leave the public app on the first boot after the split.
+// Coordinates secure synchronization of compiled structures directly over to active Discord cloud endpoints, then caches the two derived lookups that can only exist AFTER registration. Called once per application: the public client with its list and BOT_TOKEN, and (when on) the admin client with its list and ADMIN_BOT_TOKEN. A PUT replaces the app's whole list, so the admin commands leave the public app on the first boot after the split.
 async function registerApplicationCommands(client, commands, { token = process.env.BOT_TOKEN, gateable = true } = {}) {
     // The names /admin's "always hidden commands" menu offers. Derived from `commands` -- the SAME array that is about to be registered -- rather than a hand-maintained list, which would silently go stale the first time a command is added or removed. Only the public app's list feeds it: /admin is a public command, and an admin-app command is never gateable.
     if (gateable) {

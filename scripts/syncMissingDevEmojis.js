@@ -14,8 +14,7 @@
 //
 // WHY THE REBUILD (Harkirat, 2026-10-19 13:26 EDT: "the earlier dev bot script kind of bugged out a few of the emojis during the transfer"). The first version downloaded every animated emoji as `.gif` and every static one as `.png`. A GIF has one bit of transparency, so a soft or glowing edge comes back hard, and the CDN's GIF is a conversion rather than the uploaded file. This version downloads WebP at the emoji's NATIVE size (animated when the emoji is), lossless when that fits, and falls back to default-quality WebP and then GIF/PNG only when a candidate is over Discord's limit or refused. Then it CHECKS: each copy is fetched back the same way as its prod original and compared on what can actually differ after Discord re-encodes an upload (animated or not, width, height, frame count, and a file that shrank a lot), so a bad copy is named by measurement instead of noticed in a panel.
 //
-// ⚠️ Measured 2026-10-19 13:47 EDT on the first run of this rebuild: never ask the CDN for `size=4096`. It UPSCALES (a 128px emoji came back at ~400KB), and Discord then refuses the upload ("Failed to resize asset below the maximum size: 262144", or over 2048 KB). An app emoji upload must be at most 256 KB.
-// ⚠️ And measured at 13:51 EDT: several prod emojis are LARGE at their native size (DeleteAll is 4,130 KB as lossless WebP, 1,107 KB as GIF), so no native rendition fits. For those the CDN is asked to scale DOWN (`size=128`, then 96, then 64; Discord shows an emoji at 48px at most), still WebP, still animated. A copy made that way is smaller than prod by design, so the check compares its frames and shape, not its pixel size.
+// ⚠️ Measured 2026-10-19 13:47 EDT on the first run of this rebuild: never ask the CDN for `size=4096`. It UPSCALES (a 128px emoji came back at ~400KB), and Discord then refuses the upload ("Failed to resize asset below the maximum size: 262144", or over 2048 KB). An app emoji upload must be at most 256 KB. ⚠️ And measured at 13:51 EDT: several prod emojis are LARGE at their native size (DeleteAll is 4,130 KB as lossless WebP, 1,107 KB as GIF), so no native rendition fits. For those the CDN is asked to scale DOWN (`size=128`, then 96, then 64; Discord shows an emoji at 48px at most), still WebP, still animated. A copy made that way is smaller than prod by design, so the check compares its frames and shape, not its pixel size.
 //
 // ⚠️ Tokens are read from `.env.dev` OFF DISK, never from process.env: dotenv backfills a key `.env.dev` omits from prod's `.env` (CLAUDE.md, the local dev bot), so trusting process.env could hand this script a PROD token. It also refuses a token equal to one in `.env`, the same backstop scripts/devCommands.js uses. This script never writes to a prod application; the prod Dioreo Admin copy waits for Harkirat's word at deploy.
 
@@ -111,8 +110,7 @@ function probe(buffer) {
 
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex').slice(0, 12);
 
-// What differs between a prod original and its copy, as short phrases; empty when they match.
-// Bytes are never compared for equality: Discord re-encodes every upload, so a perfect copy still differs by a few bytes. A copy under 80% of the original's size is reported, since that is what a lossy fallback or a dropped frame looks like.
+// What differs between a prod original and its copy, as short phrases; empty when they match. Bytes are never compared for equality: Discord re-encodes every upload, so a perfect copy still differs by a few bytes. A copy under 80% of the original's size is reported, since that is what a lossy fallback or a dropped frame looks like.
 async function compare(source, copy) {
     const problems = [];
     if (Boolean(source.animated) !== Boolean(copy.animated)) problems.push(`animated ${source.animated} → ${copy.animated}`);
@@ -128,7 +126,6 @@ async function compare(source, copy) {
     return problems;
 }
 
-// Uploads the prod original under its name: lossless WebP first, then the CDN's GIF/PNG if Discord refuses WebP.
 // Uploads the prod original under its name, best candidate first: lossless WebP, default-quality WebP, then the CDN's GIF/PNG. A candidate over the 256 KB limit is skipped without a request.
 async function upload(token, appId, source) {
     const fallbackExt = source.animated ? 'gif' : 'png';
