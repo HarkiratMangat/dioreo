@@ -1138,8 +1138,8 @@ function buildGoalModal(state, basket, index) {
         options: ADVANCED_GOALS.map(g => ({ label: ADVANCED_GOAL_TEXT[g][b.drawKey], value: g, description: `${ADVANCED_GOAL_TEXT[g].desc ? `${ADVANCED_GOAL_TEXT[g].desc[b.drawKey]} · ` : ''}${ADVANCED_GOAL_TEXT[g].path}${totals ? ` · ${fmt(totals[g])} CP Left` : ''}`, ...(g === current ? { default: true } : {}) }))
     } }];
     // Only the sets already spun can hold both items, so a line with none spun has no second field.
-    if (done > 0) components.push({ type: 18, label: 'Sets You Got Both Items From', description: 'From an Advanced spin, or a Regular spin you finished later.', component: {
-        type: 3, custom_id: 'both', required: false, min_values: 0, max_values: done,
+    if (done > 0) components.push({ type: 18, label: 'Sets You Got Both Items From', description: 'Multiple selections allowed · From an Advanced spin, or a Regular spin you finished later.', component: {
+        type: 3, custom_id: 'both', required: false, min_values: 0, max_values: done, placeholder: 'Make your selections',
         options: Array.from({ length: done }, (_, i) => ({ label: `Set ${i + 1}`, value: String(i + 1), ...(both.includes(i + 1) ? { default: true } : {}) }))
     } });
     return { custom_id: encodeState('goalsave', { ...state, focus: index }), title: 'Set Goal', components };

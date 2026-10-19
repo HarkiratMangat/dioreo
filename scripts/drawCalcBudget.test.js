@@ -333,6 +333,7 @@ t('Advanced draws are priced per set, and from a fresh line each strategy goal m
     assert.deepStrictEqual(modal.components[0].component.options.map(o => [o.label, !!o.default]), [['Both Legendary Characters & Weapons', false], ['Both Characters + 1 Random Weapon', true], ['1 Random Character + Both Weapons', false], ['Regular Pulls Only: 1 Item Per Set', false], ['Both Weapons (No Characters)', false], ['1 Random Weapon Only (No Characters)', false], ['Advanced Pulls Only: All 20 Items', false]]);
     assert.deepStrictEqual(modal.components[1].component.options.map(o => [o.label, !!o.default]), [['Set 1', false], ['Set 2', true], ['Set 3', false]]);
     assert.strictEqual(modal.components[1].component.max_values, 3);
+    assert.deepStrictEqual([modal.components[1].component.placeholder, modal.components[1].description.startsWith('Multiple selections allowed · ')], ['Make your selections', true], 'his wording, 2026-10-18 23:16 EDT');
     assert.ok(modal.components[0].component.options.every(o => o.description.length <= 100 && / CP Left$/.test(o.description)));
     // Regular only, 3 sets spun: the Regular price of sets 4 to 10.
     const regLeft = require('../commands/drawprices').DRAW_DATA.region_10.legendaryCharacterWeapon.draws.slice(3).reduce((x, y) => x + y, 0);
