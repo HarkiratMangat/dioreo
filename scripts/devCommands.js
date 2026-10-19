@@ -6,6 +6,7 @@
 //
 //   node scripts/devCommands.js list    # show what the dev app currently has registered
 //   node scripts/devCommands.js clear   # register an empty list -> commands vanish from the picker
+//   add `--app admin` to either for the dev Dioreo Admin app (ADMIN_BOT_TOKEN, 2026-10-19 13:51 EDT)
 //
 // ⚠️ This script reads `.env.dev` DIRECTLY off disk and never consults process.env. That's deliberate: `dotenv.config()` does not override variables that are already set (the documented backfill gotcha in CLAUDE.md), so a script that trusted process.env could silently end up holding the PROD token and wipe the real bot's commands. Parsing the file itself makes that impossible, and the prod-token comparison below is a second, independent backstop.
 
@@ -50,18 +51,22 @@ async function main() {
         process.exit(1);
     }
 
+    const appFlag = process.argv.indexOf('--app');
+    const appName = appFlag === -1 ? 'public' : process.argv[appFlag + 1];
+    if (appName !== 'public' && appName !== 'admin') { console.error('❌ --app must be public or admin'); process.exit(1); }
+    const tokenKey = appName === 'admin' ? 'ADMIN_BOT_TOKEN' : 'BOT_TOKEN';
     const devEnv = readEnvFile(path.join(REPO_ROOT, '.env.dev'));
-    const devToken = devEnv.BOT_TOKEN;
+    const devToken = devEnv[tokenKey];
     if (!devToken) {
-        console.error('❌ No BOT_TOKEN found in .env.dev — is the dev bot set up on this machine?');
+        console.error(`❌ No ${tokenKey} found in .env.dev — is the dev bot set up on this machine?`);
         console.error('   (See docs/reference/deployment-and-ops.md, "The local dev bot".)');
         process.exit(1);
     }
 
     // Backstop: refuse outright if .env.dev somehow carries the PRODUCTION token. Clearing prod's commands would take every command away from every user of the real bot until someone noticed and restarted the VM -- a genuinely bad, user-visible outage from a one-word mistake.
-    const prodToken = readEnvFile(path.join(REPO_ROOT, '.env')).BOT_TOKEN;
-    if (prodToken && prodToken === devToken) {
-        console.error('❌ Refusing to run: .env.dev\'s BOT_TOKEN is identical to .env\'s (the PROD token).');
+    const prodEnv = readEnvFile(path.join(REPO_ROOT, '.env'));
+    if ([prodEnv.BOT_TOKEN, prodEnv.ADMIN_BOT_TOKEN].filter(Boolean).includes(devToken)) {
+        console.error(`❌ Refusing to run: .env.dev's ${tokenKey} is identical to a token in .env (PROD).`);
         console.error('   This script only ever touches the dev application. Fix .env.dev first.');
         process.exit(1);
     }

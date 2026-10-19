@@ -14,6 +14,32 @@ const fs = require('fs');
 const path = require('path');
 const { REST, Routes, SlashCommandBuilder, Collection } = require('discord.js');
 
+// The names /admin's "always hidden commands" menu never offers (2026-08-10 15:48 EDT, v3 server-admin visibility policy): a server rule has no business quieting Harkirat's own owner-level commands, and /admin must never be able to hide its own answer from the admin trying to undo a rule. 'Add to Patch Notes' (the right-click command, 2026-10-19 10:22 EDT) is /manage's patch-notes editor by another door, so it is excluded with it.
+const ADMIN_COMMAND_NAMES = new Set(['admin', 'manage', 'autobuild', 'bot', 'Add to Patch Notes', 'Autobuild Loadout', 'Add to Draws', 'Add to Calendar']);
+
+// The commands that live on DIOREO ADMIN when it is on (2026-10-19 13:44 EDT, his design; /admin stays public, his "yes." 13:26 EDT, because it is a SERVER command gated by Manage Server and already hidden from everyone without it). Plus, per his "yes." at 13:35 EDT, every `devOnly` module and any module exporting `adminApp: true` -- the experimental ones. Nothing is on both apps.
+const ADMIN_APP_COMMAND_NAMES = new Set([...ADMIN_COMMAND_NAMES].filter(name => name !== 'admin'));
+
+function commandName(c) {
+    return typeof c.toJSON === 'function' ? c.toJSON().name : c.name;
+}
+
+function belongsOnAdminApp(name, module) {
+    return ADMIN_APP_COMMAND_NAMES.has(name) || Boolean(module?.devOnly) || Boolean(module?.adminApp);
+}
+
+// Splits the one staging array into the two apps' lists. With the admin app off, everything stays public -- today's behaviour. `modules` is client.commands, which carries each module's devOnly/adminApp flags.
+function splitCommands(commands, modules, { adminApp }) {
+    if (!adminApp) return { publicCommands: commands, adminCommands: [] };
+    const publicCommands = [];
+    const adminCommands = [];
+    for (const c of commands) {
+        const name = commandName(c);
+        (belongsOnAdminApp(name, modules?.get?.(name)) ? adminCommands : publicCommands).push(c);
+    }
+    return { publicCommands, adminCommands };
+}
+
 // ==========================================
 // STATIC + ON-DISK COMMAND MODULES
 // ==========================================
@@ -88,14 +114,16 @@ async function applyGunsmithsScopeChoices(commands) {
 // ==========================================
 
 // Coordinates secure synchronization of compiled structures directly over to active Discord cloud endpoints, then caches the two derived lookups that can only exist AFTER registration.
-async function registerApplicationCommands(client, commands) {
-    // The names /admin's "always hidden commands" menu offers (2026-08-10 15:48 EDT, v3 server-admin visibility policy). Derived from `commands` -- the SAME array that is about to be registered -- rather than a hand-maintained list, which would silently go stale the first time a command is added or removed. (Until the 2026-08-15 /gunsmiths consolidation, this also covered `/all` + the eight per-category commands, which lived only in this array and not in commands/*.js -- deriving from the array rather than a readdir was what made that safe.) The four admin surfaces are excluded: a server rule has no business quieting Harkirat's own owner-level commands, and /admin must never be able to hide its own answer from the admin trying to undo a rule. 'Add to Patch Notes' (the right-click command, 2026-10-19 10:22 EDT) is /manage's patch-notes editor by another door, so it is excluded with it.
-    const ADMIN_COMMAND_NAMES = new Set(['admin', 'manage', 'autobuild', 'bot', 'Add to Patch Notes', 'Autobuild Loadout', 'Add to Draws', 'Add to Calendar']);
-    client.gateableCommandNames = commands
-        .map(c => (typeof c.toJSON === 'function' ? c.toJSON().name : c.name))
-        .filter(name => name && !ADMIN_COMMAND_NAMES.has(name));
+// Called once per application: the public client with its list and BOT_TOKEN, and (when on) the admin client with its list and ADMIN_BOT_TOKEN. A PUT replaces the app's whole list, so the admin commands leave the public app on the first boot after the split.
+async function registerApplicationCommands(client, commands, { token = process.env.BOT_TOKEN, gateable = true } = {}) {
+    // The names /admin's "always hidden commands" menu offers. Derived from `commands` -- the SAME array that is about to be registered -- rather than a hand-maintained list, which would silently go stale the first time a command is added or removed. Only the public app's list feeds it: /admin is a public command, and an admin-app command is never gateable.
+    if (gateable) {
+        client.gateableCommandNames = commands
+            .map(commandName)
+            .filter(name => name && !ADMIN_COMMAND_NAMES.has(name));
+    }
 
-    const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
+    const rest = new REST({ version: '10' }).setToken(token);
     try {
         const payload = commands.map(c => typeof c.toJSON === 'function' ? c.toJSON() : c);
         const registered = await rest.put(Routes.applicationCommands(client.user.id), { body: payload });
@@ -103,6 +131,8 @@ async function registerApplicationCommands(client, commands) {
 
         // Real clickable slash-command mentions (</name:id>, see utils/commandMentions.js) need each command's live id -- `registered` IS that data, straight off this same PUT response, so no extra API call is needed. Keyed by top-level command name only; a subcommand mention still resolves off its PARENT's id. Refreshed every boot, same as gateableCommandNames above and refreshEmojiIds -- a value that only exists post- registration must never be frozen at require() time, and it differs between the dev and prod applications for the identical command name.
         client.commandIds = new Map(registered.map(c => [c.name, c.id]));
+        // Also into the process-wide list, so a mention in one app's message resolves a command that lives on the other (/help on Dioreo linking /bot on Dioreo Admin).
+        require('../utils/commandMentions').recordCommandIds(client.commandIds);
         client.registeredCommandCount = registered.length; // read by the boot record in bot/lifecycle.js
     } catch (error) {
         console.error('--- DISCORD SYSTEM REGISTRATION FAULT LOG ---');
@@ -114,4 +144,4 @@ async function registerApplicationCommands(client, commands) {
     }
 }
 
-module.exports = { loadCommandModules, applyGunsmithsScopeChoices, registerApplicationCommands };
+module.exports = { loadCommandModules, applyGunsmithsScopeChoices, registerApplicationCommands, splitCommands, belongsOnAdminApp, ADMIN_COMMAND_NAMES, ADMIN_APP_COMMAND_NAMES };

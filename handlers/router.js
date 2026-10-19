@@ -90,6 +90,8 @@ const INTERACTION_COOLDOWN_MS = 600;
 function buildInteractionContext(interaction) {
     return {
         interactionId: interaction.id,
+        // Which application this click is for (Dioreo or Dioreo Admin, 2026-10-19 13:44 EDT). utils/emojiMap.js reads it to answer with that app's emoji ids. An application id, never a user's.
+        appId: interaction.applicationId ?? null,
         command: interaction.commandName || interaction.customId || null,
         handler: null,
         userHash: hashUserId(interaction.user?.id),

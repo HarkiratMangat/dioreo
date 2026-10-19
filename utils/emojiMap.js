@@ -152,30 +152,35 @@ const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');
  * @param {import('discord.js').Client} client a logged-in client
  * @returns {Promise<{synced: number, missing: string[], overridden: number}>}
  */
-async function refreshEmojiIds(client) {
+async function refreshEmojiIds(client, { secondary = false } = {}) {
     const result = { synced: 0, missing: [], overridden: 0 };
     const appId = client.application?.id ?? client.user?.id;
+    // The public app (the default) rewrites the map above in place, as it always has. A SECONDARY app (Dioreo Admin, 2026-10-19 13:44 EDT) gets its own copy instead, so neither app's sync clobbers the other's ids; the export below answers from it while an admin-app interaction is running.
+    const target = secondary ? { ...emojis } : emojis;
 
     try {
         // Raw route string rather than `Routes.applicationEmojis(...)` -- the helper's availability varies across discord.js minors, the endpoint itself doesn't.
         const res = await client.rest.get(`/applications/${appId}/emojis`);
         const live = res?.items ?? res ?? [];
         const byName = new Map(live.map(e => [e.name, e]));
-        liveByName = byName;
+        if (secondary) secondaryLiveByName.set(appId, byName);
+        else liveByName = byName;
 
-        for (const [key, value] of Object.entries(emojis)) {
+        for (const [key, value] of Object.entries(target)) {
             if (typeof value !== 'string') continue;
             const parsed = parseEmoji(value);
             if (!parsed) continue;
             const match = byName.get(parsed.name);
             if (!match) { result.missing.push(`${key} (:${parsed.name}:)`); continue; }
             const next = `<${match.animated ? 'a' : ''}:${match.name}:${match.id}>`;
-            if (next !== value) { emojis[key] = next; result.synced++; }
+            if (next !== value) { target[key] = next; result.synced++; }
         }
+        if (secondary) secondaryMaps.set(appId, target);
     } catch (err) {
         console.error('⚠️  Emoji id sync skipped, keeping hardcoded ids:', err?.message || err);
         return result;
     }
+    if (secondary) return result;   // the dev overlay below is for the default app's map only
 
     // Dev-only overlay, applied AFTER the name sync so it wins. Lets a dev-bot session point individual keys at throwaway test emojis that don't exist on prod at all, without editing (and risking committing) the tracked map above. Gitignored; absent in normal operation.
     if (process.env.NODE_ENV === 'development') {
@@ -202,10 +207,18 @@ async function refreshEmojiIds(client) {
 // The live app's emojis by name, kept from the last refreshEmojiIds() run, for repoint() below.
 let liveByName = null;
 
+// A SECONDARY app's map and live emojis, keyed by application id (Dioreo Admin, 2026-10-19 13:44 EDT). Application emojis render only for the app that owns them, so an admin-app panel needs the admin app's ids. Which app is answering comes from the router's per-interaction context (utils/requestContext.js, `appId` = interaction.applicationId), which follows every await of the click, including passiveExpiry's timer, which is created inside the render. Outside an interaction, or for the public app, the default map answers.
+const secondaryMaps = new Map();
+const secondaryLiveByName = new Map();
+function currentAppId() {
+    try { return require('./requestContext').getContext()?.appId ?? null; } catch { return null; }
+}
+
 // Re-points ONE stored mention at the booted app's own copy, matching on name, the same rule refreshEmojiIds applies to the map above. For a mention that lives in the database rather than in this file: a season emoji typed into /manage on prod carries prod's id, and the dev bot's clone of that data would show it as broken text. Unknown name, or before the first sync: the mention comes back unchanged.
 function repoint(mention) {
     const parsed = typeof mention === 'string' ? parseEmoji(mention) : undefined;
-    const match = parsed && liveByName?.get(parsed.name);
+    const live = secondaryLiveByName.get(currentAppId()) || liveByName;
+    const match = parsed && live?.get(parsed.name);
     return match ? `<${match.animated ? 'a' : ''}:${match.name}:${match.id}>` : mention;
 }
 
@@ -213,4 +226,13 @@ emojis.parseEmoji = parseEmoji;
 emojis.refreshEmojiIds = refreshEmojiIds;
 emojis.repoint = repoint;
 
-module.exports = emojis;
+// Every consumer reads `emojis.foo` at render time, so answering from the current app's map here reaches all of them with no call-site change. Writes and key listings go to the default map, as before.
+module.exports = new Proxy(emojis, {
+    get(target, key, receiver) {
+        if (typeof key === 'string' && secondaryMaps.size) {
+            const map = secondaryMaps.get(currentAppId());
+            if (map && typeof map[key] === 'string') return map[key];
+        }
+        return Reflect.get(target, key, receiver);
+    },
+});

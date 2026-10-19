@@ -7,11 +7,17 @@
 //
 // Fail-soft: an unknown or not-yet-populated id falls back to the exact backtick text this replaced, so a cold boot or a registration failure degrades to plain text, never a broken panel.
 
+// Every registered command id across BOTH applications (2026-10-19 13:44 EDT, Dioreo Admin). A command lives on exactly one app, so names never collide; the public app's /help can then link /bot, which Dioreo Admin owns. Filled by bot/registry.js after each app's registration.
+const allCommandIds = new Map();
+function recordCommandIds(ids) {
+    for (const [name, id] of ids) allCommandIds.set(name, id);
+}
+
 function mentionCommand(client, path) {
     const clean = path.replace(/^\//, '');
     const base = clean.split(' ')[0];
-    const id = client?.commandIds?.get(base);
+    const id = client?.commandIds?.get(base) ?? allCommandIds.get(base);
     return id ? `</${clean}:${id}>` : `\`/${clean}\``;
 }
 
-module.exports = { mentionCommand };
+module.exports = { mentionCommand, recordCommandIds };

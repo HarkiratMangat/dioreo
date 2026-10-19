@@ -82,6 +82,7 @@ function restartContext() {
 // THE ONE ENTRY POINT
 // ==========================================
 function registerLifecycle(client, commands) {
+    // `commands` is the PUBLIC app's list. With Dioreo Admin on, the admin and experimental commands were split out before this call (bot/registry.js splitCommands) and register from registerAdminLifecycle below.
     // --- THE CLIENT `error` NET --- CRASH FIX (found live on Railway, 2026-07-07): discord.js's BaseClient constructs itself with `super({ captureRejections: true })` (node_modules/discord.js/src/client/BaseClient.js) -- this is a Node EventEmitter option that reroutes a rejected promise from an async event listener (e.g. the interactionCreate handler in handlers/router.js) into an `error` event emitted ON THE CLIENT ITSELF, instead of surfacing through Node's normal global `process.on('unhandledRejection')` mechanism. Since nothing was listening for a plain `error` event on the client, and EventEmitter's default behavior for an unhandled `error` event is to throw synchronously, ANY interaction handler code that ever let a rejection escape (even somewhere the router's top-level try/catch doesn't cover, or in a future edit that misses it) would crash the whole process — completely bypassing the `process.on('unhandledRejection')` net in index.js, since captureRejections intercepts it before it ever becomes a "global" unhandled rejection. This IS the standard discord.js gotcha their own guide warns about; the fix is simply to always have a listener here so EventEmitter's default "throw when no listener" never triggers. ⚠️ THIS IS NOT OPTIONAL AND IS NOT COVERED BY THE ROUTER'S try/catch. Removing it re-opens the crash. See .claude/rules/interaction-router.md.
     client.on('error', (error) => {
         console.error('Discord client error (bot stays alive):', error);
@@ -215,4 +216,32 @@ function registerLifecycle(client, commands) {
     });
 }
 
-module.exports = { registerLifecycle, runCloudinaryCleanup, formatPing, formatUptime, readRestartReason, restartContext };
+// ==========================================
+// DIOREO ADMIN — THE SECOND APPLICATION'S SLIM LIFECYCLE (2026-10-19 13:44 EDT)
+// ==========================================
+// Only what the second login needs: the `error` net (NOT optional -- same captureRejections crash as above, on this client's own emitter), loud alerts for its own disconnects, and on ready its emoji sync and its command registration. The heartbeat, the Cloudinary cleanup, the boot record, the restart marker and the hotpatch signal stay on the public client, once per process -- registering them twice would double every alert and consume the restart marker before the public client reads it.
+function registerAdminLifecycle(client, commands, token) {
+    client.on('error', (error) => {
+        console.error('Dioreo Admin client error (bot stays alive):', error);
+        sendAlert('Dioreo Admin client error', error, 'error');
+    });
+    client.on('shardDisconnect', (event, id) => { console.log(`🔌 Dioreo Admin shard ${id} disconnected (code ${event?.code})`); sendAlert('Dioreo Admin gateway disconnected', `Shard ${id} disconnected (close code ${event?.code}).`, 'warn', { ping: true }); });
+    client.on('shardError', (error, id) => { console.error(`🔌 Dioreo Admin shard ${id} error (bot stays alive):`, error); sendAlert('Dioreo Admin gateway shard error', error, 'error'); });
+
+    client.once(Events.ClientReady, async (c) => {
+        console.log(`✅ Dioreo Admin instance fully authenticated as ${c.user?.tag}!`);
+        const { refreshEmojiIds } = require('../utils/emojiMap');
+        const emojiSync = await refreshEmojiIds(client, { secondary: true });
+        if (emojiSync.synced || emojiSync.missing.length) {
+            console.log(`😀 Dioreo Admin emoji ids: ${emojiSync.synced} re-pointed to this app, ${emojiSync.missing.length} unmatched${emojiSync.missing.length ? ` (${emojiSync.missing.join(', ')})` : ''}`);
+        }
+        try {
+            await registerApplicationCommands(client, commands, { token, gateable: false });
+        } catch (registrationError) {
+            console.error('❌ Dioreo Admin command registration failed:', registrationError);
+            sendAlert('Dioreo Admin command registration failed', registrationError, 'error');
+        }
+    });
+}
+
+module.exports = { registerLifecycle, registerAdminLifecycle, runCloudinaryCleanup, formatPing, formatUptime, readRestartReason, restartContext };
