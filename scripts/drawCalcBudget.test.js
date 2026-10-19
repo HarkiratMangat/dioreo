@@ -1362,7 +1362,7 @@ t('his Mock 2 (2026-10-18 13:38 EDT): Add Draws and Remove open pop-ups, his two
     const dirty = dc.buildCalculatorPanel(state({ page: 5, fromResult: true, dirty: true }), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }] }), ACCENT, { savedBaskets: [] });
     assert.ok(buttonLabelled(dirty, 'Recalculate') && !buttonLabelled(dirty, 'Calculate'), 'a change after Edit Selections offers Recalculate');
     assert.ok(buttonLabelled(draft, 'Calculate'), 'a fresh draft keeps Calculate');
-    assert.strictEqual(buttonLabelled(draft, 'Add Draws').style, 3, 'Add Draws is green');
+    assert.strictEqual(buttonLabelled(draft, 'Add Draws').style, 2, 'Add Draws is grey: green means a set Upgrade (2026-10-18 21:16 EDT)');
     assert.deepStrictEqual(dc.decodeState(dc.encodeState('x', { ...dc.defaultState(), fromResult: true, dirty: true })).fromResult, true);
     assert.ok(allText(done).includes('## Adjust Draws, Progress, & Upgrades'), 'his name for the screen');
     assert.ok(allText(progress([{ drawKey: 'legendaryGunReactive', pullsDone: 0 }])).includes('## Adjust Draws & Progress'));

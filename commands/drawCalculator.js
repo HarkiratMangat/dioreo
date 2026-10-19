@@ -1016,7 +1016,8 @@ function buildProgressPanel(state, basket, accentColor, { notice = null, dropCon
     const tweak = regionBalanceBlock(state, basket);
     const back = [...tweak, { type: 14, spacing: 2, divider: true },
         { type: 1, components: [
-            { type: 2, style: 3, label: 'Add Draws', custom_id: encodeState('addopen', state), emoji: emojis.parseEmoji(emojis.plus), disabled: banners.length >= MAX_LINES },
+            // Grey, not green (2026-10-18 21:16 EDT, his ask): green on this screen means a set Upgrade.
+            { type: 2, style: 2, label: 'Add Draws', custom_id: encodeState('addopen', state), emoji: emojis.parseEmoji(emojis.plus), disabled: banners.length >= MAX_LINES },
             { type: 2, style: 4, label: 'Remove', custom_id: encodeState('rmopen', state), emoji: emojis.parseEmoji(emojis.deleteBin) },
             { type: 2, style: 1, label: state.fromResult && state.dirty ? 'Recalculate' : 'Calculate', custom_id: encodeState('submit', state), emoji: emojis.parseEmoji(emojis.calculate) }
         ] },
