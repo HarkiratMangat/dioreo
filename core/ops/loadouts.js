@@ -19,6 +19,7 @@ const { fuzzyMatch } = require('../../utils/search');
 const { checkImageExists } = require('../../utils/loadoutRender');
 const { syncLoadoutMetadata, uploadLoadoutImage } = require('../../utils/loadoutImageCache');
 const { RANK_MODES } = require('../../utils/rankModes');
+const { slotsFor } = require('../../utils/catalogue');
 const Loadout = require('../../models/Loadout');
 
 const MODES = ['MP', 'DMZ'];
@@ -87,6 +88,10 @@ async function upsertBulkBlocks(parsed, mode, session) {
         touchedKeys.add(weaponKey);
         touchedBuilds.push({ weaponKey, buildName });
         const existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
+        // Slots for a pasted build: an unchanged, already-slotted build keeps its own; anything else gets the catalogue's. Before this, an update that changed the attachments left the OLD slots in place, aligned to the wrong names.
+        const sameList = existing && (existing.attachments || []).length === (entry.attachments || []).length
+            && (existing.attachments || []).every((a, i) => a === entry.attachments[i]);
+        if (!(sameList && existing.attachmentSlots?.length)) entry.attachmentSlots = await slotsFor(entry.attachments);
         if (existing) {
             const { _id, __v, ...prior } = existing.toObject();
             updatedPriors.push({ id: String(existing._id), prior });
@@ -117,6 +122,11 @@ registerEntity('loadouts', {
         apply: async (op, { session }) => {
             // imageSourceUrl is portal-only staging (spec §10.1 row 14, uploadStagingScreenshot) or a pasted link -- never a real Loadout field, so it is stripped before it ever reaches Mongo (Mongoose would silently drop it anyway per the schema, but leaving it in `doc` would also leak it into every preview/diff downstream of this payload).
             const { imageSourceUrl, ...doc } = op.payload;
+            // A typed build has no slot labels of its own; the catalogue supplies them (deferred-list "Copy the attachment slots ... into Loadout.attachmentSlots": until 2026-10-19 16:19 EDT only /autobuild ever wrote slots). An /autobuild payload that carries its own keeps them.
+            if (!doc.attachmentSlots?.length) {
+                const slots = await slotsFor(doc.attachments);
+                if (slots.length) doc.attachmentSlots = slots;
+            }
             const res = await createDocument({ Model: Loadout, doc, session });
             const saved = await Loadout.findById(res.id).session(session);
             // Best-effort, same tolerance as /autobuild's own Confirm step: a failed image upload never fails the build itself -- coverageFlags already has 'missing-image' to catch the result, and the admin can retry via Edit. Runs after the commit (core/changeset.js afterCommit), so an aborted changeset never leaves an uploaded image behind a build that does not exist.
@@ -153,7 +163,10 @@ registerEntity('loadouts', {
             const newAttachments = payload.attachments || [];
             const attachmentsUnchanged = newAttachments.length === existingAttachments.length
                 && newAttachments.every((a, i) => a === existingAttachments[i]);
-            const set = { ...payload, attachmentSlots: attachmentsUnchanged ? (cur.attachmentSlots || []) : [] };
+            // Kept when the list is unchanged and already slotted; otherwise read from the catalogue, so an edit fills a build that had none and never carries old slots onto a different list.
+            let attachmentSlots = attachmentsUnchanged ? (cur.attachmentSlots || []) : [];
+            if (!attachmentSlots.length) attachmentSlots = await slotsFor(newAttachments);
+            const set = { ...payload, attachmentSlots };
             const prior = Object.fromEntries(Object.keys(set).map(k => [k, cur[k]]));
             const res = await updateDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, set, session });
             if (!res.ok) return res;

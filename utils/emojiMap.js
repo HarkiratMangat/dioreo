@@ -87,6 +87,9 @@ const emojis = {
     best: '<a:Best:1524235235070312488>',
     top: '<a:Top:1524183479997169714>',
     toxic: '<a:Toxic:1524535298380402859>',
+    // PLACEHOLDERS for the Ass and Capable badges (Harkirat, 2026-10-19 16:13 EDT: "use placeholders for now. i'll give you emojis for them later on."). Plain unicode, so refreshEmojiIds() skips them and they render on every app. utils/loadoutRender.js prefers an app emoji named `Ass` / `Capable` the moment one is uploaded, so swapping in his emojis is an upload, or a mention here.
+    ass: '🫏',
+    capable: '✔️',
     blank: '<:blank:1524243739206352906>',
     // "View Colors" button in /settings (utils/colorPaletteView.js, handlers/colors.js's colors_view/ colors_page_ handlers) -- blurple-recolored, background-removed eyedropper icon, per Harkirat's own design pass (2026-07-13). Uploaded by Harkirat directly, not via this bot.
     eyedropper: '<a:Eyedropper:1526293991166054541>',

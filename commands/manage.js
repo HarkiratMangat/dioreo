@@ -791,7 +791,20 @@ async function buildDynamicData(page) {
     return {};
 }
 
+// Fills a modal's text inputs from typed values, by input id: how /manage's catalogue warning reopens the box someone just submitted (Back to edit) with everything they typed. A blank or missing value leaves the input as built.
+function prefillModal(modal, values) {
+    for (const row of modal.components || []) {
+        for (const input of row.components || []) {
+            const id = input.data?.custom_id;
+            const v = values?.[id];
+            if (typeof v === 'string' && v.length) input.setValue(v.slice(0, input.data.max_length || 4000));
+        }
+    }
+    return modal;
+}
+
 module.exports = {
+    prefillModal,
     ALLOWED_ADMIN_ID, // Exposed so handlers/router.js's centralized panel-interaction guard (button/select/
                       // modal-submit) can check against the same single source of truth instead of a second hardcoded literal drifting out of sync — see the guard right after the anti-spam block in interactionCreate.
     data: new SlashCommandBuilder()

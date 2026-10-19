@@ -42,7 +42,17 @@ const DEFAULT_LOCATION = 'us';
 //   - weaponName was grabbing the equipped SKIN's stylized title (e.g. "R9-0 - Death's Voice") instead of the base weapon ("R9-0"), which cascaded into a wrong weaponKey/imageKey and a brand-new "weapon" being created instead of a build added to the existing one. Now asks for the base weapon only (a structural backstop, adminParser.js's normalizeWeaponName, strips a skin suffix too).
 //   - a RESTRICTED slot (a slot locked by another attachment, shown with a crossed-out/prohibited icon) was being emitted as if the slot LABEL were an attachment (J358's "Trigger Action"). Now explicitly told to skip restricted AND empty slots, and never to output a slot label as an attachment name.
 // The old "exactly 5" wording is gone -- forcing a count is what made a restricted-slot weapon hallucinate a 5th attachment; the pipeline pads/filters for the review card instead.
-function buildPrompt(maxAttachments) {
+function buildPrompt(maxAttachments, knownWeapons = []) {
+    return buildBasePrompt(maxAttachments) + weaponVocabulary(knownWeapons);
+}
+
+// The CODM catalogue's weapon names (utils/catalogue.js), so the model spells a known weapon the way the game does instead of guessing from a stylised skin title. Names only, never attachments: the attachment list runs to hundreds of names and is corrected after extraction instead (correctAttachmentName against the same catalogue).
+function weaponVocabulary(knownWeapons) {
+    if (!knownWeapons?.length) return '';
+    return `\n\nKnown CODM weapon names. When the screenshot's weapon is one of these, use this exact spelling for weaponName: ${knownWeapons.join(', ')}.`;
+}
+
+function buildBasePrompt(maxAttachments) {
     return `You are looking at a screenshot of a Call of Duty Mobile (CODM) "Gunsmith" weapon customization screen. Extract exactly this information and respond with ONLY a JSON object, no markdown code fences, no extra text:
 
 {
@@ -94,7 +104,7 @@ async function getGcpAccessToken() {
 }
 
 // `maxAttachments` (default 5) -- how many attachment slots to extract. /autobuild always uses the default 5 (MP), so its behavior is unchanged; the DMZ slot backfill passes 9. Kept as an option rather than a separate function so there's still ONE extraction path to maintain.
-async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5, taskName } = {}) {
+async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5, taskName, knownWeapons = [] } = {}) {
     const accessToken = await getGcpAccessToken();
     const gcpProjectId = process.env.GCP_PROJECT_ID || DEFAULT_PROJECT_ID;
     const gcpLocation = process.env.GCP_LOCATION || DEFAULT_LOCATION;
@@ -129,7 +139,7 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5, taskName 
         contents: [{
             role: 'user',
             parts: [
-                { text: buildPrompt(maxAttachments) },
+                { text: buildPrompt(maxAttachments, knownWeapons) },
                 { inline_data: { mime_type: contentType, data: base64Image } }
             ]
         }],

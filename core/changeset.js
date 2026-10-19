@@ -12,7 +12,15 @@ const { recordChangeIn } = require('../utils/changeStore');
 function pageForOp(op) {
     const actions = actionForOpType(op.type);
     // An action-less op declares its own page (see core/ops/index.js's OP_TO_PAGE). The namespace split stays as a last resort so a not-yet-registered op still records SOMETHING truthful mid-transaction rather than throwing -- but scripts/coreOps.test.js now fails the suite if any registered op reaches it, because what it produces is a page key no scope list contains.
-    if (!actions?.length) return pageForOpType(op.type) || op.type.split('.')[0];
+    if (!actions?.length) {
+        const declared = pageForOpType(op.type);
+        // An array is one page per mode (core/ops/catalogue.js serves both loadout pages); pick the op's own, the same rule the action path below applies.
+        if (Array.isArray(declared)) {
+            const mode = (op.target?.mode || op.payload?.mode || '').toLowerCase();
+            return (mode && declared.find(p => p.endsWith(mode))) || declared[0];
+        }
+        return declared || op.type.split('.')[0];
+    }
     if (actions.length > 1) {
         const mode = (op.target?.mode || op.payload?.mode || '').toLowerCase();
         const match = mode && actions.find(a => a.split(':')[0].endsWith(mode));

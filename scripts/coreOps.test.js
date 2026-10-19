@@ -56,8 +56,11 @@ check('every op type maps back to a registry action, except the documented inter
         'patchnote.removeSeason',  // internal -- addSeason's inverse target only
         'patchnote.restoreSeason', // internal -- removeSeason's inverse target only
         'patchnote.restore',       // internal -- purge's inverse target only
-        'patchnote.editSeason'     // real, but reached via a Mongo-_id-embedding custom_id the
+        'patchnote.editSeason',    // real, but reached via a Mongo-_id-embedding custom_id the
                                     // registry's group/action split can't represent
+        'catalogue.learn',         // rides in the same changeset as a loadout save (Save anyway,
+                                    // /autobuild Confirm); no page button of its own
+        'catalogue.forget'         // internal -- catalogue.learn's inverse target only
     ]);
     for (const type of ops.listOpTypes()) {
         if (exempt.has(type)) continue;

@@ -48,6 +48,67 @@ async function resolveImageInput({ raw, weaponName, mode, existingKey = null }) 
                  : `\n-# 🖼️ Image uploaded to Cloudinary as \`${imageKey}\`.` };
 }
 
+// --- CATALOGUE WARNING (Harkirat, 2026-10-19 16:13 EDT: "warn. but if warn, allow a confirm overwrite or a go back to edit") --- A save that meets a weapon or attachment name the catalogue does not know stops before anything is written and says so, privately, with two buttons: Save anyway (saves it as typed AND adds the names to the catalogue in the same changeset, so they never warn again) and Back to edit (reopens the same box with everything typed). What was typed waits here for 30 minutes; nothing stores it anywhere else.
+const { findUnknownNames, learnItems, describeUnknown, normKey } = require('../../utils/catalogue');
+const LOADOUT_FIELDS = ['weapon', 'build', 'attachments', 'image', 'meta'];
+const PENDING_MS = 30 * 60 * 1000;
+const pendingCatalogue = new Map(); // token -> { customId, values, userId }
+
+const fieldReader = (interaction, preset) => (k) => preset ? (preset.values[k] ?? '') : interaction.fields.getTextInputValue(k);
+const readValues = (field, ids) => Object.fromEntries(ids.map(id => [id, field(id)]));
+// A replay comes from a button, which failWithRetry's modal rebuild cannot answer; it gets a plain private note instead.
+const failer = (interaction, preset) => (msg) => preset
+    ? interaction.followUp({ content: `❌ ${msg}`, ephemeral: true })
+    : failWithRetry(interaction, msg);
+const learnOps = (unknown, { category, mode }) => unknown.count
+    ? [{ type: 'catalogue.learn', payload: { items: learnItems(unknown, { category }), mode } }]
+    : [];
+
+async function warnUnknownNames(interaction, pending, unknown) {
+    const token = require('crypto').randomBytes(6).toString('hex');
+    pendingCatalogue.set(token, { ...pending, userId: interaction.user.id });
+    setTimeout(() => pendingCatalogue.delete(token), PENDING_MS).unref();
+    return interaction.followUp({
+        content: `⚠️ **Not in the catalogue yet:** ${describeUnknown(unknown)}\n-# A typo, or a new item? **Save anyway** saves it as typed and adds these names, so they won't warn again. **Back to edit** reopens the box with what you typed.`,
+        components: [{ type: 1, components: [
+            { type: 2, style: 3, label: 'Save anyway', custom_id: `mng_catok|${token}` },
+            { type: 2, style: 2, label: 'Back to edit', custom_id: `mng_catedit|${token}` }
+        ] }],
+        ephemeral: true
+    });
+}
+
+// custom_ids: mng_catok|{token} · mng_catedit|{token}. Only the admin who submitted may press them; the router's /manage admin lock has already run.
+async function handleCatalogueWarning(interaction) {
+    const [kind, token] = interaction.customId.split('|');
+    const pending = pendingCatalogue.get(token);
+    if (!pending) return await interaction.reply({ content: '⏳ That save expired. Open it again from /manage.', ephemeral: true });
+    if (pending.userId !== interaction.user.id) return await interaction.reply({ content: '❌ Only the admin who made this save can finish it.', ephemeral: true });
+    const manage = require('../../commands/manage');
+    const { customId } = pending;
+
+    if (kind === 'mng_catedit') {
+        let modal;
+        if (customId.startsWith('add_loadout_')) modal = manage.buildAddLoadoutModal(customId.replace('add_loadout_', ''));
+        else if (customId.startsWith('modal_loadouts_bulk_add_')) modal = manage.buildLoadoutsBulkAddModal(customId.replace('modal_loadouts_bulk_add_', ''));
+        else {
+            const Loadout = require('../../models/Loadout');
+            const id = customId.replace('edit_loadout_', '');
+            const current = await Loadout.findById(id).lean();
+            if (!current) return await interaction.reply({ content: '❌ That build no longer exists -- it may have been deleted or edited elsewhere. Search again.', ephemeral: true });
+            modal = manage.buildEditLoadoutModal(current, id);
+        }
+        return await interaction.showModal(manage.prefillModal(modal, pending.values));
+    }
+
+    pendingCatalogue.delete(token);
+    await interaction.update({ content: '⏳ Saving it as typed, and adding the new names…', components: [] });
+    const preset = { customId, values: pending.values };
+    if (customId.startsWith('add_loadout_')) return await addLoadout(interaction, preset);
+    if (customId.startsWith('modal_loadouts_bulk_add_')) return await bulkAddLoadouts(interaction, preset);
+    return await editLoadout(interaction, preset);
+}
+
 // The badge lines under an add or edit confirmation: tokens that matched nothing, then tokens that were understood but changed or left off (top4 read as top5, Ass beside a tier, a rank mode on DMZ), each with its reason.
 function badgeNotes(unrecognized, warnings) {
     let out = '';
@@ -58,13 +119,16 @@ function badgeNotes(unrecognized, warnings) {
     return out;
 }
 
-// --- SAVE EDITED LOADOUT --- custom_id: edit_loadout_{id}
-async function editLoadout(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+// --- SAVE EDITED LOADOUT --- custom_id: edit_loadout_{id}. `preset` is a Save anyway replay (handleCatalogueWarning below): the typed values come from the warning's pending store instead of a modal, and the catalogue check is skipped because the admin already saw it.
+async function editLoadout(interaction, preset = null) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const { parseLoadoutBadges } = require('../../utils/adminParser');
     const { checkImageExists } = require('../../utils/loadoutRender');
     const Loadout = require('../../models/Loadout');
-    const targetId = interaction.customId.replace('edit_loadout_', '');
+    const field = fieldReader(interaction, preset);
+    const customId = preset ? preset.customId : interaction.customId;
+    const fail = failer(interaction, preset);
+    const targetId = customId.replace('edit_loadout_', '');
 
     // Mode is not editable through this modal at all (MP/DMZ are separate panel pages) -- read straight off the existing document, same as before the refactor.
     const existingLoadout = await Loadout.findById(targetId).lean();
@@ -73,8 +137,8 @@ async function editLoadout(interaction) {
     const mode = existingLoadout.mode || 'MP';
 
     // Field is "Category | Badges" (2 segments).
-    const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
-    const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    const metaParts = field('meta').split('|').map(s => s.trim());
+    const attachmentsArray = field('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
     let { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings } = parseLoadoutBadges(metaParts[1], mode);
 
     // DMZ never uses the per-category Best/TopN system -- a bare "best"/"topN" token (no -close/-midlong suffix) still parses into categoryRank since the parser doesn't know the mode, so move it over to dmzRangeRank here instead.
@@ -83,18 +147,21 @@ async function editLoadout(interaction) {
         categoryRank = null;
     }
 
-    const weaponName = interaction.fields.getTextInputValue('weapon');
+    const weaponName = field('weapon');
     // "Build Name | Share Code" -- pipe optional. No `|` at all omits shareCode from the payload entirely (preserves whatever's already saved, e.g. an /autobuild-set code); `|` with an empty tail explicitly clears it to ''; `|` with real text sets it (core/ops/loadouts.js normalizes via correctGunsmithCode()).
-    const buildRaw = interaction.fields.getTextInputValue('build');
+    const buildRaw = field('build');
     const buildPipeIndex = buildRaw.indexOf('|');
     const buildName = (buildPipeIndex === -1 ? buildRaw : buildRaw.slice(0, buildPipeIndex)).trim();
     if (buildName.length > BUILD_NAME_MAX) {
-        return await failWithRetry(interaction, `A build name can be at most ${BUILD_NAME_MAX} characters — this one is ${buildName.length}. Shorten it and submit again.`);
+        return await fail(`A build name can be at most ${BUILD_NAME_MAX} characters — this one is ${buildName.length}. Shorten it and submit again.`);
     }
+    // Checked BEFORE the image step, so Back to edit never leaves an uploaded image behind a build that was not saved.
+    const unknown = await findUnknownNames({ weaponName, attachments: attachmentsArray });
+    if (unknown.count && !preset) return await warnUnknownNames(interaction, { customId, values: readValues(field, LOADOUT_FIELDS) }, unknown);
     const hasShareCodeSegment = buildPipeIndex !== -1;
     const shareCodeInput = hasShareCodeSegment ? buildRaw.slice(buildPipeIndex + 1).trim() : null;
     const image = await resolveImageInput({
-        raw: interaction.fields.getTextInputValue('image'),
+        raw: field('image'),
         weaponName, mode, existingKey: existingLoadout.imageKey
     });
     const imageKey = image.imageKey;
@@ -103,15 +170,17 @@ async function editLoadout(interaction) {
         [{ type: 'loadout.edit', target: { id: targetId },
            payload: { weaponName, buildName, mode, attachments: attachmentsArray, imageKey,
                       category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes,
-                      ...(hasShareCodeSegment ? { shareCode: shareCodeInput } : {}) } }],
+                      ...(hasShareCodeSegment ? { shareCode: shareCodeInput } : {}) } },
+         ...learnOps(unknown, { category: metaParts[0], mode })],
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        return await failWithRetry(interaction, extractCommitError(result));
+        return await fail(extractCommitError(result));
     }
 
     let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
     if (image.note) confirmation += image.note;
+    if (unknown.count) confirmation += `\n-# Added to the catalogue: ${describeUnknown(unknown)}.`;
     // States what happened to the Share Code explicitly (sequential-thinking audit finding, 2026-08-22 20:15 EDT) -- the omit/clear/set distinction is exactly the kind of non-obvious field behavior this session's other confirmation-message additions exist to surface, and this field in particular can silently wipe an /autobuild-set code if a future edit gets this wrong.
     if (hasShareCodeSegment) {
         confirmation += shareCodeInput ? `\n-# Share Code: set to \`${shareCodeInput}\`.` : '\n-# Share Code: cleared.';
@@ -127,16 +196,19 @@ async function editLoadout(interaction) {
     return interaction.followUp({ content: confirmation });
 }
 
-// --- SAVE NEW SINGLE LOADOUT --- custom_id: add_loadout_{MP|DMZ}
-async function addLoadout(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+// --- SAVE NEW SINGLE LOADOUT --- custom_id: add_loadout_{MP|DMZ}. `preset`: see editLoadout.
+async function addLoadout(interaction, preset = null) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
     const { parseLoadoutBadges } = require('../../utils/adminParser');
     const { checkImageExists } = require('../../utils/loadoutRender');
-    const pageMode = interaction.customId.replace('add_loadout_', '');
+    const field = fieldReader(interaction, preset);
+    const customId = preset ? preset.customId : interaction.customId;
+    const fail = failer(interaction, preset);
+    const pageMode = customId.replace('add_loadout_', '');
 
     // Field is "Category | Badges" (2 segments) -- Mode has no modal field since the Add button itself is already MP/DMZ-scoped by which page it's on.
-    const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
-    const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    const metaParts = field('meta').split('|').map(s => s.trim());
+    const attachmentsArray = field('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
     // Badges are per build (Harkirat, 2026-10-19 15:59 EDT): what is typed here lands on this new build only, and the weapon's other builds keep their own.
     let { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings } = parseLoadoutBadges(metaParts[1], pageMode);
     if (pageMode === 'DMZ' && categoryRank && !dmzRangeRank) {
@@ -144,18 +216,20 @@ async function addLoadout(interaction) {
         categoryRank = null;
     }
 
-    const weaponName = interaction.fields.getTextInputValue('weapon');
+    const weaponName = field('weapon');
     // Same "Build Name | Share Code" convention as editLoadout -- see that function's comment.
-    const buildRaw = interaction.fields.getTextInputValue('build');
+    const buildRaw = field('build');
     const buildPipeIndex = buildRaw.indexOf('|');
     const buildName = (buildPipeIndex === -1 ? buildRaw : buildRaw.slice(0, buildPipeIndex)).trim();
     if (buildName.length > BUILD_NAME_MAX) {
-        return await failWithRetry(interaction, `A build name can be at most ${BUILD_NAME_MAX} characters — this one is ${buildName.length}. Shorten it and submit again.`);
+        return await fail(`A build name can be at most ${BUILD_NAME_MAX} characters — this one is ${buildName.length}. Shorten it and submit again.`);
     }
+    const unknown = await findUnknownNames({ weaponName, attachments: attachmentsArray });
+    if (unknown.count && !preset) return await warnUnknownNames(interaction, { customId, values: readValues(field, LOADOUT_FIELDS) }, unknown);
     const hasShareCodeSegment = buildPipeIndex !== -1;
     const shareCodeInput = hasShareCodeSegment ? buildRaw.slice(buildPipeIndex + 1).trim() : null;
     const image = await resolveImageInput({
-        raw: interaction.fields.getTextInputValue('image'),
+        raw: field('image'),
         weaponName, mode: pageMode
     });
     const imageKey = image.imageKey;
@@ -164,15 +238,17 @@ async function addLoadout(interaction) {
         [{ type: 'loadout.add',
            payload: { weaponName, buildName, mode: pageMode, attachments: attachmentsArray, imageKey,
                       category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes,
-                      ...(hasShareCodeSegment ? { shareCode: shareCodeInput } : {}) } }],
+                      ...(hasShareCodeSegment ? { shareCode: shareCodeInput } : {}) } },
+         ...learnOps(unknown, { category: metaParts[0], mode: pageMode })],
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        return await failWithRetry(interaction, extractCommitError(result));
+        return await fail(extractCommitError(result));
     }
 
     let confirmation = `✅ **Successfully saved Loadout: ${weaponName} (${buildName}, ${pageMode})!**`;
     if (image.note) confirmation += image.note;
+    if (unknown.count) confirmation += `\n-# Added to the catalogue: ${describeUnknown(unknown)}.`;
     // Only worth a line when a code was actually typed -- unlike editLoadout there's no prior state to report on a brand-new build, so staying silent when the field was left as a bare build name (the common case) avoids cluttering every single Add confirmation with a non-event.
     if (hasShareCodeSegment && shareCodeInput) {
         confirmation += `\n-# Share Code: \`${shareCodeInput}\`.`;
@@ -186,21 +262,45 @@ async function addLoadout(interaction) {
 }
 
 // --- BULK ADD/REPLACE LOADOUTS (upsert, never wholesale-replaces) --- custom_id: modal_loadouts_bulk_add_{MP|DMZ}. "Replace" also routes into this exact modal/handler (see manageActions.js's comment on why). Parsing now happens INSIDE the op (core/ops/loadouts.js), which upserts by {weaponKey, mode, buildName} -- this handler just relays the raw pasted text and `mode`.
-async function bulkAddLoadouts(interaction) {
-    await interaction.deferReply({ ephemeral: true });
-    const pageMode = interaction.customId.replace('modal_loadouts_bulk_add_', '');
-    const bulkText = interaction.fields.getTextInputValue('bulk_text');
+async function bulkAddLoadouts(interaction, preset = null) {
+    if (!interaction.deferred && !interaction.replied) await interaction.deferReply({ ephemeral: true });
+    const field = fieldReader(interaction, preset);
+    const customId = preset ? preset.customId : interaction.customId;
+    const fail = failer(interaction, preset);
+    const pageMode = customId.replace('modal_loadouts_bulk_add_', '');
+    const bulkText = field('bulk_text');
+
+    // The catalogue check over every pasted block, merged into one list; each unknown weapon keeps the category its own block gave.
+    const { parseBulkLoadoutList } = require('../../utils/adminParser');
+    const unknown = { weapon: null, attachments: [], count: 0, weapons: [] };
+    const seen = new Set();
+    for (const p of parseBulkLoadoutList(bulkText).parsed) {
+        const u = await findUnknownNames({ weaponName: p.weaponName, attachments: p.attachments });
+        if (u.weapon && !seen.has(`w|${normKey(u.weapon)}`)) { seen.add(`w|${normKey(u.weapon)}`); unknown.weapons.push({ name: u.weapon, category: p.category }); }
+        for (const a of u.attachments) if (!seen.has(`a|${normKey(a)}`)) { seen.add(`a|${normKey(a)}`); unknown.attachments.push(a); }
+    }
+    unknown.count = unknown.weapons.length + unknown.attachments.length;
+    if (unknown.count && !preset) {
+        return await warnUnknownNames(interaction, { customId, values: readValues(field, ['bulk_text']) },
+            { ...unknown, weapon: unknown.weapons.map(w => w.name).join('`, `') || null });
+    }
+    const learn = [
+        ...unknown.weapons.flatMap(w => learnItems({ weapon: w.name, attachments: [] }, { category: w.category })),
+        ...learnItems({ weapon: null, attachments: unknown.attachments })
+    ];
 
     const result = await commitSet(
-        [{ type: 'loadout.bulkAdd', target: { mode: pageMode }, payload: { text: bulkText } }],
+        [{ type: 'loadout.bulkAdd', target: { mode: pageMode }, payload: { text: bulkText } },
+         ...(learn.length ? [{ type: 'catalogue.learn', payload: { items: learn, mode: pageMode } }] : [])],
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
-        return await failWithRetry(interaction, extractCommitError(result));
+        return await fail(extractCommitError(result));
     }
     const { applied } = result.results[0];
 
     let confirmation = `✅ **Bulk Loadout Import Complete!**\n${applied.created} new build(s) added, ${applied.updated} existing build(s) updated.`;
+    if (learn.length) confirmation += `\n-# Added to the catalogue: ${learn.map(i => `\`${i.name}\``).join(', ')}.`;
     if (applied.parseErrors.length > 0) {
         confirmation += `\n⚠️ ${applied.parseErrors.length} block(s) skipped:\n${applied.parseErrors.map(e => `- ${e}`).join('\n')}`;
     }
@@ -324,4 +424,4 @@ async function deleteItem(match, actorId) {
     return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
 }
 
-module.exports = { editLoadout, addLoadout, bulkAddLoadouts, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };
+module.exports = { editLoadout, addLoadout, bulkAddLoadouts, handleCatalogueWarning, bulkDeleteLoadouts, exportUpTo5, exportCategory, deleteItem };

@@ -4,6 +4,7 @@ const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = req
 const Loadout = require('../models/Loadout');
 const { extractLoadoutFromImage } = require('./visionExtract');
 const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges, normalizeWeaponName, orderAttachmentsBySlot } = require('./adminParser');
+const { getCatalogueIndex, findUnknownNames, learnItems, describeUnknown } = require('./catalogue');
 const { sendV2Payload } = require('./sendV2Payload');
 const { computeWeaponKeyAndBuild, buildLoadoutCard, getMpCategoryAccent, findDuplicateLoadouts } = require('./loadoutRender');
 const { uploadLoadoutImage, syncLoadoutMetadata } = require('./loadoutImageCache');
@@ -34,6 +35,18 @@ function refreshReviewWarnings(data, allMpBuilds) {
     } else {
         data.duplicateWarning = null;
     }
+}
+
+// The stored builds' attachment names plus the catalogue's, so a misread snaps onto a real name even when no build has used it yet.
+async function knownAttachmentNames(allMpBuilds) {
+    const catIndex = await getCatalogueIndex();
+    return [...new Set([...allMpBuilds.flatMap(l => l.attachments), ...(catIndex ? [...catIndex.attachments.values()].map(i => i.name) : [])])];
+}
+
+// The same warning /manage gives (Harkirat, 2026-10-19 16:13 EDT: warn, then confirm or go back to edit): the review card's Confirm is the "save anyway", and Edit is the way back.
+async function catalogueWarningFor(data) {
+    const unknown = await findUnknownNames({ weaponName: data.weaponName, attachments: data.attachments });
+    return unknown.count ? `⚠️ **Not in the catalogue yet:** ${describeUnknown(unknown)}\n-# A typo, or a new item? **Confirm** saves it and adds these names; **Edit** lets you fix them first.` : null;
 }
 
 // Canonically orders the parallel attachments[]/slots[] arrays (adminParser.orderAttachmentsBySlot) and drops empty/blank entries -- a restricted or unread slot pads to '' during extraction, and a slot the vision model was (now) told to skip simply isn't there. Keeps the two arrays ALIGNED so per-slot Cloudinary metadata never maps an attachment name onto the wrong slot. Shared by runExtraction (for the review card + the stored data) and writeLoadoutDoc (defense-in-depth for the retry path).
@@ -72,6 +85,9 @@ function buildReviewCard(token, data) {
     if (data.duplicateWarning) {
         components.push({ type: 10, content: data.duplicateWarning });
     }
+    if (data.catalogueWarning) {
+        components.push({ type: 10, content: data.catalogueWarning });
+    }
     components.push({ type: 12, items: [{ media: { url: data.sourceImageUrl } }] });
     components.push({ type: 14, spacing: 1, divider: true });
     components.push({
@@ -108,7 +124,9 @@ async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOpti
 async function runExtraction(interaction, sourceImageUrl, explicitCategory, badgesOption) {
     let extracted;
     try {
-        extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live' });
+        // The catalogue's weapon names ride in the prompt; its attachment names join the stored ones the corrector below snaps a misread onto.
+        const catIndex = await getCatalogueIndex();
+        extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live', knownWeapons: catIndex ? [...catIndex.weapons.values()].map(w => w.name) : [] });
     } catch (err) {
         console.error('Autobuild extraction failed:', err.message);
         return interaction.followUp({ content: `❌ Couldn't extract loadout data from that image: ${err.message}`, ephemeral: true });
@@ -116,7 +134,7 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
 
     // One fetch, reused for BOTH the attachment-name corrector's known-vocabulary set AND the duplicate/category-conflict warnings (refreshReviewWarnings) -- richer field select than the old attachments-only projection so those checks have shareCode/category/weaponName to work with.
     const allMpBuilds = await Loadout.find({ mode: 'MP' }).select('weaponKey weaponName category buildName shareCode attachments').lean();
-    const knownAttachments = [...new Set(allMpBuilds.flatMap(l => l.attachments))];
+    const knownAttachments = await knownAttachmentNames(allMpBuilds);
     const correctedAttachments = extracted.attachments.map(a => correctAttachmentName(a, knownAttachments));
     const correctedCode = correctGunsmithCode(extracted.gunsmithCode);
     // Strip skin suffix + normalize casing so the weaponKey/imageKey/display value all resolve to the real weapon (see normalizeWeaponName) -- this is the fix for the v2-test "new weapon created from the skin name" cascade. Everything below uses the normalized name, not the raw extraction.
@@ -140,6 +158,7 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
         adminId: interaction.user.id
     };
     refreshReviewWarnings(data, allMpBuilds);
+    data.catalogueWarning = await catalogueWarningFor(data);
     pendingAutobuilds.set(token, data);
     setTimeout(() => pendingAutobuilds.delete(token), 10 * 60 * 1000).unref();
 
@@ -184,6 +203,17 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
         rankModes
     });
     await doc.save();
+
+    // Confirm is the review card's "save anyway": names the catalogue did not know are added, through the op core so /bot analytics logs them. Best-effort -- the build is already saved, and a failure here only means the names warn again next time.
+    try {
+        const unknown = await findUnknownNames({ weaponName: data.weaponName, attachments });
+        if (unknown.count) {
+            const { commitSet } = require('../core/changeset');
+            await commitSet([{ type: 'catalogue.learn', payload: { items: learnItems(unknown, { category: data.category }), mode: 'MP' } }], { actorId: data.adminId });
+        }
+    } catch (err) {
+        console.error('Could not add /autobuild names to the catalogue:', err?.message || err);
+    }
 
     // Badges are per build (2026-10-19 15:59 EDT), so nothing is copied to the weapon's other builds and only this build's metadata is synced. Best-effort, never throws; the new build gets its per-slot data too, since only /autobuild has the slot-to-attachment mapping from the vision extraction.
     await syncLoadoutMetadata(doc, attachmentSlots);
@@ -324,7 +354,7 @@ async function applyEditSubmission(interaction, token) {
 
     // Same richer select as runExtraction -- reused for the attachment corrector AND the recomputed duplicate/category-conflict warnings (an Edit is exactly what changes whether either applies).
     const allMpBuilds = await Loadout.find({ mode: 'MP' }).select('weaponKey weaponName category buildName shareCode attachments').lean();
-    const knownAttachments = [...new Set(allMpBuilds.flatMap(l => l.attachments))];
+    const knownAttachments = await knownAttachmentNames(allMpBuilds);
     // Variable length now (was force-padded to exactly 5) -- a restricted-slot weapon legitimately has fewer, and blank lines were already filtered out above.
     const correctedAttachments = rawAttachments.map(a => correctAttachmentName(a, knownAttachments));
     const correctedCode = correctGunsmithCode(rawCode);
@@ -344,6 +374,7 @@ async function applyEditSubmission(interaction, token) {
         badgesRaw
     };
     refreshReviewWarnings(updated, allMpBuilds);
+    updated.catalogueWarning = await catalogueWarningFor(updated);
     pendingAutobuilds.set(token, updated);
 
     const card = buildReviewCard(token, updated);

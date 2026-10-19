@@ -136,8 +136,7 @@ async function maybeSendAnnouncement(interaction) {
     try {
         await interaction.followUp({ embeds, ephemeral: true });
     } catch (err) {
-        // Interaction likely expired -- don't mark as seen/delivered, so it's retried on their next command instead of silently lost.
-        // The real Discord code, so a refusal (50035, invalid form body) reads differently from an expired interaction (10062).
+        // Interaction likely expired -- don't mark as seen/delivered, so it's retried on their next command instead of silently lost. The real Discord code, so a refusal (50035, invalid form body) reads differently from an expired interaction (10062).
         console.error(`Failed to deliver announcement follow-up (Discord ${err?.code ?? 'no code'}):`, err?.message || err);
         return;
     }

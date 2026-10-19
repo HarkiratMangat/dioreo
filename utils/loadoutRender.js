@@ -107,9 +107,9 @@ async function checkImageExists(imageKey) {
     }
 }
 
-// An emoji that may not be on the app yet (Ass, Capable, the Rank Mode marks): the live one by name, or nothing, so the word still renders alone.
-function optionalEmoji(name) {
-    const e = emojis.byName ? emojis.byName(name) : null;
+// An emoji that may not be on the app yet (Ass, Capable, the Rank Mode marks): the live one by name, else the placeholder given, else nothing, so the word still renders alone.
+function optionalEmoji(name, placeholder = null) {
+    const e = (emojis.byName ? emojis.byName(name) : null) || placeholder;
     return e ? `${e} ` : '';
 }
 
@@ -126,7 +126,7 @@ function buildBadgesLine(build) {
             if (build.dmzRangeRank.startsWith('best')) {
                 badges.push(`${emojis.best} Best ${rangeLabel}`);
             } else if (build.dmzRangeRank.startsWith('capable')) {
-                badges.push(`${optionalEmoji('Capable')}Capable ${rangeLabel}`);
+                badges.push(`${optionalEmoji('Capable', emojis.capable)}Capable ${rangeLabel}`);
             } else {
                 const topMatch = build.dmzRangeRank.match(/^top(\d+)/);
                 if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${rangeLabel}`);
@@ -136,14 +136,14 @@ function buildBadgesLine(build) {
         badges.push(`${emojis.best} Best ${displayCategoryLabel(build.category)}`);
     } else if (build.categoryRank === 'capable') {
         // The tier always names its category in the bot ("Capable AR"); the portal may leave the word off (his ruling, 2026-09-24).
-        badges.push(`${optionalEmoji('Capable')}Capable ${displayCategoryLabel(build.category)}`);
+        badges.push(`${optionalEmoji('Capable', emojis.capable)}Capable ${displayCategoryLabel(build.category)}`);
     } else if (build.categoryRank) {
         const topMatch = build.categoryRank.match(/^top(\d+)$/);
         if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${displayCategoryLabel(build.category)}`);
     }
     // "Toxic" is independent of Meta/Best/TopN (a build can be unbalanced/cheese without being the objectively best in its category, or vice versa) -- see models/Loadout.js's isToxic field.
     if (build.isToxic) badges.push(`${emojis.toxic} Toxic`);
-    if (build.isAss) badges.push(`${optionalEmoji('Ass')}Ass`);
+    if (build.isAss) badges.push(`${optionalEmoji('Ass', emojis.ass)}Ass`);
     if (badges.length === 0) return null;
     return `**${badges.join(`${emojis.blank} `)}**`;
 }
