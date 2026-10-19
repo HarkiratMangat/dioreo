@@ -440,6 +440,8 @@ module.exports = {
     // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads"). buildDrawEntries/UPGRADE_LABEL/formatCP exported 2026-08-26 17:25 EDT so the calculator's own per-draw summary block can reuse THIS command's exact rendering -- Harkirat's own mockup for the redesign was built by pasting a real /draw prices entry in verbatim, so the two must never drift apart into two similar-looking but independently-maintained copies.
     DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
     buildDrawEntries, SERIES_ARMORY, ARMORY_SPIN_CP, JUMP_KEYS, jumpMeta, UPGRADE_LABEL, upgradeEmoji, formatCP, MYTHIC_UPGRADE, upgradeFullAmount,
+    // The two Advanced pages' per-pull arrays, for /draw calculator (2026-10-18 21:51 EDT): priced from these same numbers, never a copy.
+    ADVANCED_DOUBLE_LEGENDARY, ADVANCED_DOUBLE_LEGENDARY_CHARACTER,
 
     // COMMAND DEFINITION: Base command 'draw' with subcommand 'prices'
     data: new SlashCommandBuilder()

@@ -13,7 +13,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const emojis = require('../utils/emojiMap');
 const UserPreference = require('../models/UserPreference');
 const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP } = require('./drawprices');
-const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE } = require('../utils/drawCost');
+const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals } = require('../utils/drawCost');
 const crypto = require('crypto');
 const { CP_PACKAGES, CURRENCIES, STOCK_UP_RULES, PURCHASE_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 const { QUICK_CURRENCIES, currencyLabel } = require('../utils/cpCurrencyData');
@@ -21,9 +21,13 @@ const { buildTitleBlock, toBoldItalicUnicode } = require('../utils/titleBlock');
 
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
 const DRAW_KEYS = Object.keys(DRAW_META);
-// Every draw a calculation can hold: the nine ladder draws, then the three Series Armories (2026-10-18 12:15 EDT). Advanced draws stay out (deferred). The order is also the bit order of the untick confirm's mask.
-const CALC_KEYS = [...DRAW_KEYS, ...Object.keys(SERIES_ARMORY)];
-function metaOf(key) { return DRAW_META[key] || SERIES_ARMORY[key] || null; }
+// Every draw a calculation can hold: the nine ladder draws, the three Series Armories (2026-10-18 12:15 EDT), then the two Advanced draws (2026-10-18 21:51 EDT). The order is also the bit order of the untick confirm's mask. The two Advanced Double Legendary draws join after the armories (2026-10-18 21:51 EDT, his go), in /draw prices' page order.
+const ADVANCED_META = {
+    advancedWeapon: { name: 'Advanced Double Legendary Weapon Draw', tier: 'legendary' },
+    advancedCharacter: { name: 'Advanced Double Legendary Character Draw', tier: 'legendary' }
+};
+const CALC_KEYS = [...DRAW_KEYS, ...Object.keys(SERIES_ARMORY), ...ADVANCED_KEYS];
+function metaOf(key) { return DRAW_META[key] || SERIES_ARMORY[key] || ADVANCED_META[key] || null; }
 // What one "pull" of a line is: a spin, or for an armory the item it holds.
 function unitOf(drawKey) { return SERIES_ARMORY[drawKey] ? `${SERIES_ARMORY[drawKey].noun}s` : 'Spins'; }
 // A line picked from this season's draws reads as that draw; any other line as its draw type.
@@ -66,7 +70,9 @@ const SHORT_NAME = {
     doubleEpicCharacters: 'Double Epic Characters',
     armoryMythicWeapon: 'Mythic Weapon Armory',
     armoryLegendaryWeapon: 'Legendary Weapon Armory',
-    armoryLegendaryCharacter: 'Legendary Character Armory'
+    armoryLegendaryCharacter: 'Legendary Character Armory',
+    advancedWeapon: 'Advanced Double Legendary Weapon',
+    advancedCharacter: 'Advanced Double Legendary Character'
 };
 function shortName(drawKey) { return SHORT_NAME[drawKey] || drawName(drawKey); }
 
@@ -980,6 +986,8 @@ function lineExtraButtons(state, basket, index) {
         const label = size === null ? 'Set Up Armory' : done ? `${sizable ? `${size} ${unitOf(b.drawKey)} · ` : ''}Finished` : `${sizable ? `${size} ${unitOf(b.drawKey)} · ` : ''}Spins In: ${b.spinsIn || 0}`;
         out.push({ type: 2, style: size === null ? 1 : b.spinsIn && !done ? 3 : 2, label, custom_id: encodeState('spinsin', { ...state, focus: index }), disabled: done && !sizable });
     }
+    // THE GOAL (2026-10-18 21:51 EDT): an Advanced line's button, opening a pop-up of /draw prices' three strategies. Grey like Spins In; green on this screen means a set Upgrade.
+    if (isAdvancedKey(b.drawKey)) out.push({ type: 2, style: 2, label: `Goal: ${ADVANCED_GOAL_TEXT[advancedGoal(b)].short}`, custom_id: encodeState('goalset', { ...state, focus: index }) });
     if (upgradeKeyOf(b.drawKey)) {
         const line = upgradePlan(basket).lines.find(l => l.index === index);
         const set = upgradeIsSet(line);
@@ -1099,6 +1107,25 @@ function readRemovePicks(basket, values) {
     }
     return drop;
 }
+
+// THE GOAL POP-UP (2026-10-18 21:51 EDT): /draw prices' three strategies for an Advanced draw, each with its path and full price at this region. Its words are the page's own.
+const ADVANCED_GOAL_TEXT = {
+    all: { short: 'All 4 Items', path: 'Reg 1-8 → Adv 9-10', advancedWeapon: 'Both Weapons & Characters', advancedCharacter: 'Both Legendary Characters & Weapons' },
+    two: { short: '3 Items', path: 'Reg 1-9 → Adv 10', advancedWeapon: 'Both Weapons + 1 Random Character', advancedCharacter: 'Both Characters + 1 Random Weapon' },
+    one: { short: '2 Items', path: 'Reg only 1-10', advancedWeapon: '1 Random Weapon + 1 Random Character', advancedCharacter: '1 Random Character + 1 Random Weapon' }
+};
+function buildGoalModal(state, basket, index) {
+    const b = basket?.banners?.[index];
+    if (!b || !isAdvancedKey(b.drawKey)) return null;
+    const totals = advancedGoalTotals(basket.region, b.drawKey);
+    const current = advancedGoal(b);
+    return { custom_id: encodeState('goalsave', { ...state, focus: index }), title: 'Set Goal', components: [{ type: 18, label: 'Goal', description: 'Priced as if no early pull gets lucky, as on /draw prices', component: {
+        type: 3, custom_id: 'goal', required: true, min_values: 1, max_values: 1,
+        options: ADVANCED_GOALS.map(g => ({ label: ADVANCED_GOAL_TEXT[g][b.drawKey], value: g, description: `${ADVANCED_GOAL_TEXT[g].path}${totals ? ` · ${fmt(totals[g])} CP` : ''}`, ...(g === current ? { default: true } : {}) }))
+    } }] };
+}
+// Reads the Goal pop-up back: a known goal, or null.
+function readGoal(value) { return ADVANCED_GOALS.includes(value) ? value : null; }
 
 // SPINS IN (2026-10-18 12:15 EDT): spins already done toward a Series Armory's next item, one optional box. Blank is 0.
 function buildSpinsInModal(state, basket, index) {
@@ -1290,7 +1317,7 @@ function lineFigures(basket) {
         // The draw and its Mythic upgrade are kept apart (2026-10-16 14:32 EDT, Harkirat's layout states the upgrade on its own). Since 2026-10-17 13:17 EDT a line's upgrade is what it still needs in CARDS or COINS (`upNeed`), because both are pooled across lines and only the pool becomes CP; `full`/`left` are the draw alone.
         const up = plan.lines.find(l => l.index === i) || null;
         const upNeed = upgradeIsSet(up) ? up.need : 0;
-        return { n: i + 1, drawKey: b.drawKey, title: b.title || null, spinsIn, pullsDone: b.pullsDone, total, priced, spent, left: leftAll, full: spent + leftAll, drawLeft: leftAll, drawFull: spent + leftAll, up: upNeed ? up : null, upNeed, upKey: JSON.stringify([up ? up.have : null, up ? up.want : null, b.title || null, total, spinsIn]) };
+        return { n: i + 1, drawKey: b.drawKey, title: b.title || null, spinsIn, pullsDone: b.pullsDone, total, priced, spent, left: leftAll, full: spent + leftAll, drawLeft: leftAll, drawFull: spent + leftAll, up: upNeed ? up : null, upNeed, upKey: JSON.stringify([up ? up.have : null, up ? up.want : null, b.title || null, total, spinsIn, isAdvancedKey(b.drawKey) ? advancedGoal(b) : null]) };
     });
 }
 function breakdownRows(figs, level) {
@@ -1561,5 +1588,5 @@ module.exports = {
     buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,
     setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages,
     CALC_KEYS, metaOf, unitOf, lineName, freshLine, buildProgressPanel, buildSpinsInModal, readSpinsIn, listSeasonDraws, selectionSummary,
-    buildAddDrawsModal, buildRemoveModal, readRemovePicks, progressTitle, buildRegionBalanceModal, regionBalanceSection, lineHint, calcCurrency
+    buildAddDrawsModal, buildRemoveModal, readRemovePicks, progressTitle, buildRegionBalanceModal, regionBalanceSection, lineHint, calcCurrency, buildGoalModal, readGoal, ADVANCED_GOAL_TEXT
 };

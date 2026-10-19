@@ -14,7 +14,7 @@ const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
     findLiveDoubleCPEntry, buildExportText, readBalanceFields, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
     buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName,
-    buildAddDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency
+    buildAddDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency, buildGoalModal, readGoal
 } = require('../commands/drawCalculator');
 const { pullCount, upgradeKeyOf, isArmoryKey, armorySize } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
@@ -184,6 +184,32 @@ async function route(interaction) {
             return true;
         }
         return await interaction.showModal(modal);
+    }
+    // THE GOAL of an Advanced line (2026-10-18 21:51 EDT): its button opens the pop-up, a direct response like every showModal.
+    if (interaction.isButton() && state.verb === 'goalset') {
+        const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
+        const modal = basket ? buildGoalModal(state, basket, state.focus) : null;
+        if (!modal) {
+            try { await interaction.reply({ content: 'That draw is no longer in this calculation.', ephemeral: true }); }
+            catch (notifyError) { console.error('Failed to notify user of a missing Advanced line (interaction likely expired):', notifyError); }
+            return true;
+        }
+        return await interaction.showModal(modal);
+    }
+    if (interaction.isModalSubmit() && state.verb === 'goalsave') {
+        await interaction.deferUpdate();
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const index = state.focus;
+        const line = index !== null ? basket.banners[index] : null;
+        let picked = null;
+        try { picked = readGoal(interaction.fields.getStringSelectValues('goal')[0]); } catch { picked = null; }
+        if (!line || !buildGoalModal(state, basket, index) || !picked) { await renderPanel(interaction, { ...state, focus: null }, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
+        // 'all' is the default, so it is stored as absent.
+        const banners = basket.banners.map((b, i) => (i === index ? { ...b, goal: picked === 'all' ? undefined : picked } : b));
+        const updated = await writeTo(actingUserId, state, basket, { banners });
+        await renderPanel(interaction, { ...state, focus: null }, updated);
+        return true;
     }
     // ADD DRAWS and REMOVE (2026-10-18 13:37 EDT, his Mock 2): two pop-ups from the Adjust Draws screen's footer.
     if (interaction.isButton() && (state.verb === 'addopen' || state.verb === 'rmopen')) {

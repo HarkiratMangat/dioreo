@@ -293,6 +293,32 @@ t('a NAMED basket\'s manage row reads Rename, not Save', () => {
 // ==========================================
 // REGION SWITCHING PRESERVES PROGRESS
 // ==========================================
+// THE ADVANCED DOUBLE LEGENDARY DRAWS (2026-10-18 21:51 EDT, his go): priced along a goal, each goal exactly /draw prices' own strategy figure.
+t('Advanced draws are priced along their goal, and every goal matches /draw prices\' strategy at every region', () => {
+    const cost = require('../utils/drawCost');
+    const flatAll = c => [c, ...((c.components || []).flatMap(flatAll)), ...(c.accessory ? flatAll(c.accessory) : [])];
+    for (const region of REGION_ORDER) for (const key of ['advancedWeapon', 'advancedCharacter']) {
+        const page = require('../commands/drawprices').buildContainer(region, 0, true, `f${key}`, null).flatMap(flatAll).filter(c => c.type === 10).map(c => c.content).join('\n');
+        const figs = [...page.matchAll(/(?:Reg 1-8 → Adv 9-10|Reg 1-9 → Adv 10|Reg only 1-10) ⌇ <a?:\w+:\d+> \*\*`([\d,]+) CP`\*\*/g)].map(m => Number(m[1].replace(/,/g, '')));
+        const totals = cost.advancedGoalTotals(region, key);
+        assert.deepStrictEqual([totals.all, totals.two, totals.one], figs, `${region} ${key}: the page reads ${figs}`);
+        for (const goal of ['all', 'two', 'one']) assert.strictEqual(cost.remainingToFinish(region, key, 0, goal === 'all' ? {} : { goal }), totals[goal]);
+    }
+    assert.ok(dc.CALC_KEYS.includes('advancedWeapon') && dc.CALC_KEYS.includes('advancedCharacter'), 'both pickable');
+    // The editor: a Goal button, grey, opening a pop-up of the three strategies with the current one picked.
+    const ed = progress([{ drawKey: 'advancedWeapon', pullsDone: 2 }, { drawKey: 'advancedCharacter', pullsDone: 0, goal: 'one' }]);
+    const goals = buttons(ed).filter(b => verbOf(b) === 'goalset');
+    assert.deepStrictEqual(goals.map(b => [b.label, b.style]), [['Goal: All 4 Items', 2], ['Goal: 2 Items', 2]]);
+    const basket = makeBasket({ banners: [{ drawKey: 'advancedCharacter', pullsDone: 0, goal: 'two' }] });
+    const modal = dc.buildGoalModal(state(), basket, 0);
+    assert.deepStrictEqual(modal.components[0].component.options.map(o => [o.label, !!o.default]), [['Both Legendary Characters & Weapons', false], ['Both Characters + 1 Random Weapon', true], ['1 Random Character + 1 Random Weapon', false]]);
+    assert.strictEqual(dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), 0), null, 'only an Advanced line has a goal');
+    assert.deepStrictEqual([dc.readGoal('two'), dc.readGoal('nope')], ['two', null]);
+    // Two lines of one Advanced draw with different goals never merge into one row on the result.
+    const res = allText(render(makeBasket({ banners: [{ drawKey: 'advancedWeapon', pullsDone: 0 }, { drawKey: 'advancedWeapon', pullsDone: 0, goal: 'one' }] })));
+    assert.ok(/#1 · Advanced Double Legendary Weapon/.test(res) && /#2 · Advanced Double Legendary Weapon/.test(res), res.slice(0, 400));
+});
+
 // A line's buttons sit above its dropdown whether there is one (beside the heading) or two (their own row): 2026-10-18 21:22 EDT, his ask.
 t('the Mythic Weapon armory\'s Spins In and Upgrade row sits above its dropdown', () => {
     const top = progress([{ drawKey: 'armoryMythicWeapon', pullsDone: 1 }])[0].components;

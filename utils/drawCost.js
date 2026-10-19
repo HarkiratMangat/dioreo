@@ -6,7 +6,37 @@
 // ⚠️ PULL COUNTS ARE NOT UNIFORMLY TEN. sevenSpinLegendaryWeapon and pickYourRewardCard have SEVEN pulls. Every bound below derives from draws.length for that reason; a hardcoded 10 would pass testing on the seven common draws and silently overcount on the other two.
 //
 // ⚠️ ABSENT DATA RETURNS null, NEVER AN ESTIMATE. doubleEpicCharacters has no data at region_20 or region_30, and the two mythic draws have no upgrade figure at region_20. Both gaps are deliberate -- Harkirat refused to ship a speculative estimate as real pricing -- so callers render the existing "haven't done the research yet" placeholder rather than computing around them.
-const { DRAW_DATA, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP } = require('../commands/drawprices');
+const { DRAW_DATA, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP, ADVANCED_DOUBLE_LEGENDARY, ADVANCED_DOUBLE_LEGENDARY_CHARACTER } = require('../commands/drawprices');
+
+// ==========================================
+// ADVANCED DOUBLE LEGENDARY DRAWS (2026-10-18 21:51 EDT, his go)
+// ==========================================
+// Each pull has a Regular and an Advanced price, so a line is priced along a GOAL: the /draw prices page's three strategies, Regular for the early pulls then Advanced for the last one or two. 'all' (every item: Reg 1-8, Adv 9-10) is the default, as every draw is priced to completion; 'two' is Reg 1-9, Adv 10; 'one' is Regular for all ten. Progress counts pulls along that path, assuming no lucky early pull, as the page does. The Character draw's Regular prices are the Legendary Character draw's own (its page reads them from there too), so nothing is copied.
+const ADVANCED_KEYS = ['advancedWeapon', 'advancedCharacter'];
+const ADVANCED_GOALS = ['all', 'two', 'one'];
+function isAdvancedKey(key) { return ADVANCED_KEYS.includes(key); }
+function advancedGoal(line) { return ADVANCED_GOALS.includes(line && line.goal) ? line.goal : 'all'; }
+function advancedArrays(region, key) {
+    if (key === 'advancedWeapon') { const d = ADVANCED_DOUBLE_LEGENDARY[region]; return d ? { reg: d.reg, adv: d.adv } : null; }
+    const a = ADVANCED_DOUBLE_LEGENDARY_CHARACTER[region];
+    const reg = DRAW_DATA[region] && DRAW_DATA[region].legendaryCharacterWeapon && DRAW_DATA[region].legendaryCharacterWeapon.draws;
+    return a && reg ? { reg, adv: a.adv } : null;
+}
+function advancedPath(reg, adv, goal) {
+    if (goal === 'one') return reg.slice();
+    if (goal === 'two') return [...reg.slice(0, 9), adv[9]];
+    return [...reg.slice(0, 8), adv[8], adv[9]];
+}
+function advancedEntry(region, key, line) {
+    const arr = advancedArrays(region, key);
+    return arr ? { draws: advancedPath(arr.reg, arr.adv, advancedGoal(line)) } : null;
+}
+// Every goal's full price at a region, for the Goal pop-up.
+function advancedGoalTotals(region, key) {
+    const arr = advancedArrays(region, key);
+    if (!arr) return null;
+    return Object.fromEntries(ADVANCED_GOALS.map(g => [g, advancedPath(arr.reg, arr.adv, g).reduce((x, y) => x + y, 0)]));
+}
 
 // ==========================================
 // SERIES ARMORY LINES (2026-10-18 12:13 EDT)
@@ -44,6 +74,7 @@ function upgradeKeyOf(key) {
 
 function entryFor(region, key, line = null) {
     if (isArmoryKey(key)) return armoryEntry(region, key, line);
+    if (isAdvancedKey(key)) return advancedEntry(region, key, line);
     const regionData = DRAW_DATA[region];
     if (!regionData) return null;
     return regionData[key] || null;
@@ -242,4 +273,4 @@ function basketCost(region, banners, includeUpgrades, held = {}) {
     return { total: drawTotal + upgrades.cp, drawTotal, perBanner, upgrades };
 }
 
-module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, upgradeCost, reachableWithBudget, basketCost, upgradePlan, upgradeState, upgradeNeed, upgradeShape, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE, MYTHIC_ARMORY_SIZE };
+module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, upgradeCost, reachableWithBudget, basketCost, upgradePlan, upgradeState, upgradeNeed, upgradeShape, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals };

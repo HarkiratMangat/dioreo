@@ -17,7 +17,9 @@ const BannerSchema = new mongoose.Schema({
     size: { type: Number, default: undefined },
     spinsIn: { type: Number, default: undefined },
     // A line picked from this season's draws (2026-10-18 12:13 EDT) keeps that draw's title, so the line reads as the draw and a saved calculation never moves when the draw is later renamed. `drawKey` is the draw's Draw Type at the time it was picked.
-    title: { type: String, default: undefined }
+    title: { type: String, default: undefined },
+    // An Advanced Double Legendary line's goal (2026-10-18 21:51 EDT): 'all', 'two' or 'one' of /draw prices' strategies; absent is 'all' (utils/drawCost.js advancedGoal).
+    goal: { type: String, default: undefined }
 }, { _id: false });
 
 const DrawBasketSchema = new mongoose.Schema({
