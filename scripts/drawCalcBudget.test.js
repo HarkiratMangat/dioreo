@@ -262,12 +262,32 @@ t('a NEW line starts at 0 -- no inherited default from a sibling line of the sam
 // ==========================================
 // TWO-STEP CONFIRMS -- Reset and Delete
 // ==========================================
-t('New Calculation is two-step: armed shows Danger style + "click again", unarmed shows the plain button', () => {
-    const basket = makeBasket();
-    const plain = buttonLabelled(render(basket), 'New Calculation');
-    assert.ok(plain && plain.style !== 4, 'unarmed New Calculation must not be Danger-styled');
-    const armed = buttonLabelled(render(basket, { verb: 'resetarm' }), 'New Calculation — click again');
-    assert.ok(armed && armed.style === 4, 'armed New Calculation must be Danger-styled and re-labelled');
+t('New Calculation is one press, and the empty form offers Restore Calculation while a copy is kept (2026-10-19 00:13 EDT)', () => {
+    const plain = buttonLabelled(render(makeBasket()), 'New Calculation');
+    assert.ok(plain && plain.style !== 4 && verbOf(plain) === 'reset', 'one press, never Danger');
+    assert.strictEqual(buttonLabelled(render(makeBasket(), { verb: 'resetarm' }), 'New Calculation — click again'), undefined, 'no click again');
+    const empty = { banners: [], submitted: false };
+    // In the form's bottom row, in New Calculation's place, with its icon (his ask, 2026-10-19 00:14 EDT).
+    const kept = render(makeBasket({ ...empty, previous: { banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }], submitted: true } }));
+    const restore = buttonLabelled(kept, 'Restore Calculation');
+    assert.ok(restore && verbOf(restore) === 'restore' && restore.style === 2 && restore.emoji, 'grey, with an icon');
+    const flatAll = c => [c, ...((c.components || []).flatMap(flatAll)), ...(c.accessory ? flatAll(c.accessory) : [])];
+    const row = kept.flatMap(flatAll).find(c => c.type === 1 && (c.components || []).some(b => b.label === 'Restore Calculation'));
+    assert.deepStrictEqual(row.components.map(b => b.label), ['Restore Calculation', 'View Saved', 'Calculate']);
+    assert.ok(!allText(kept).includes('Started over'), 'no line, just the button');
+    assert.strictEqual(buttonLabelled(render(makeBasket(empty)), 'Restore Calculation'), undefined, 'nothing kept, no button');
+});
+
+t('the Saved view puts the delete warning right above its red button (2026-10-19 00:12 EDT)', () => {
+    const list = Array.from({ length: 3 }, (_, i) => ({ _id: String(i + 1).padStart(24, '0'), name: `calc ${i + 1}`, banners: [], region: 'region_10', updatedAt: new Date('2026-10-18T12:00:00Z') }));
+    const panel = dc.buildCalculatorPanel(state({ page: 3 }), makeBasket(), ACCENT, { savedBaskets: list, savedConfirm: { mask: 1, count: 1, check: 'abc' } });
+    const flat = c => [c, ...((c.components || []).flatMap(flat)), ...(c.accessory ? flat(c.accessory) : [])];
+    const all = panel.flatMap(flat);
+    const warn = all.findIndex(c => c.type === 10 && /⚠️ Delete this calculation\? This cannot be undone\./.test(c.content));
+    const red = all.findIndex(c => c.type === 2 && c.label === 'Delete 1 Calculation');
+    const head = all.findIndex(c => c.type === 10 && /^### Delete/.test(c.content));
+    assert.ok(head < warn && warn < red, `heading ${head}, warning ${warn}, button ${red}`);
+    assert.strictEqual(all.filter(c => c.type === 10 && /⚠️ Delete/.test(c.content)).length, 1, 'said once');
 });
 
 t('Delete Calculation is two-step the same way', () => {

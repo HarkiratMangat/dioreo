@@ -90,7 +90,14 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
     return sendV2Payload(interaction, panel, { skipExpiry: true });
 }
 
-// 🔴 COPY-ON-WRITE FOR SAVED CALCULATIONS (2026-10-14 17:28 EDT, Harkirat: "a saved calc should remain in it's saved state. so that means a user needs to press save and select that previous saved result to override it. otherwise selecting that saved calc again should bring you to it's result"). Every change to a calculation goes through here. On a SAVED one, the first real change opens an unnamed working copy carrying `sourceId`, applies the change there, and points this message at the copy (it mutates `state.basketId`, so every render after it follows); the saved one is untouched until the Save step saves over it. A change that changes nothing (Calculate on an already-calculated one) writes nothing and forks nothing.
+// 🔴 COPY-ON-WRITE FOR SAVED CALCULATIONS (2026-10-14 17:28 EDT, Harkirat: "a saved calc should remain in it's saved state. so that means a user needs to press save and select that previous saved result to override it. otherwise selecting that saved calc again should bring you to it's result"). Every change to a calculation goes through here. On a SAVED one, the first real change opens an unnamed working copy carrying `sourceId`, applies the change there, and points this message at the copy (it mutates `state.basketId`, so every render after it follows); the saved one is untouched until the Save step saves over it. A change that changes nothing (Calculate on an already-calculated one) writes nothing and forks nothing. What Restore Calculation brings back: every field the calculation's own result depends on.
+function restorableCopy(basket) {
+    return {
+        banners: basket.banners, region: basket.region, balance: basket.balance || 0, includeUpgrades: Boolean(basket.includeUpgrades),
+        mythicCards: basket.mythicCards || 0, mythicCoins: basket.mythicCoins || 0, currency: basket.currency || null,
+        entitlementMask: basket.entitlementMask || 0, submitted: Boolean(basket.submitted), ...(basket.sourceId ? { sourceId: String(basket.sourceId) } : {})
+    };
+}
 async function writeTo(userId, state, basket, fields) {
     // Any change marks the view dirty, so Adjust Draws opened from a result offers Recalculate (2026-10-18 14:57 EDT). The handlers render from this same state object after writing.
     state.dirty = true;
@@ -606,7 +613,8 @@ async function route(interaction) {
         const mask = list.reduce((m, b, i) => (picked.has(String(b._id)) ? m | (1 << i) : m), 0);
         const count = list.filter(b => picked.has(String(b._id))).length;
         if (!count) { await renderPanel(interaction, { ...state, page: 3 }, await currentBasket(actingUserId, state), 'Those calculations are already gone.'); return true; }
-        await renderPanel(interaction, { ...state, page: 3 }, await currentBasket(actingUserId, state), `⚠️ Delete ${count === 1 ? 'this calculation' : `these ${count} calculations`}? This cannot be undone.`, null, { mask, count, check: savedChecksum(list) });
+        // The warning sits beside its red button now (2026-10-19 00:12 EDT, his ask), not at the top of the view.
+        await renderPanel(interaction, { ...state, page: 3 }, await currentBasket(actingUserId, state), null, null, { mask, count, check: savedChecksum(list) });
         return true;
     }
     if (interaction.isButton() && state.verb === 'savedelok') {
@@ -678,7 +686,8 @@ async function route(interaction) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
         if (!basket.banners.length) { await renderPanel(interaction, state, basket); return true; }
-        const updated = await writeTo(actingUserId, state, basket, { submitted: true });
+        // Calculate is where the Restore copy ends (his rule: kept "until the moment they click calculate again").
+        const updated = await writeTo(actingUserId, state, basket, { submitted: true, ...(basket.previous ? { previous: null } : {}) });
         await renderPanel(interaction, { ...state, page: 0, bpage: 0, focus: null, fromResult: false, dirty: false }, updated);
         return true;
     }
@@ -725,26 +734,46 @@ async function route(interaction) {
         return true;
     }
 
-    // New Calculation (verb still `reset`) is also two-step. Clears the contents, the transient view state (spec §9) AND the submitted flag -- but never the basket document or its name, which is what makes it recoverable-by-mistake in a way Delete deliberately is not.
-    if (interaction.isButton() && state.verb === 'resetarm') {
+    // NEW CALCULATION IS ONE PRESS (2026-10-19 00:12 EDT, his idea): no "click again"; what it clears is kept as `previous`, and the empty form offers Restore Calculation until the next Calculate. `resetarm` is a panel posted before this; it starts over the same way.
+    if (interaction.isButton() && (state.verb === 'reset' || state.verb === 'resetarm')) {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        await renderPanel(interaction, { ...state, verb: 'resetarm' }, basket);
-        return true;
-    }
-    if (interaction.isButton() && state.verb === 'reset') {
-        const basket = await loadOwned(interaction, state, actingUserId);
-        if (!basket) return true;
-        // A SAVED calculation is never emptied by New Calculation (2026-10-14 16:51 EDT, Harkirat: "i clicked new calc, so why is it still saying viewing saved: test?"). Clearing it in place kept its name, so the fresh form claimed to be the saved one and the saved one lost its draws. A new, unnamed calculation starts instead, at the same region; the saved one stays in Saved untouched. A working copy of a saved one starts fresh too, and the copy is dropped (click-test 2026-10-14 18:58 EDT): cleared in place it kept its `sourceId`, so the empty form still read "Edited from Saved: test".
+        // A saved one is reopened, never copied; an empty form keeps the copy it already holds, so a second press loses nothing.
+        const previous = basket.name ? { savedId: String(basket._id) } : (basket.banners || []).length ? restorableCopy(basket) : (basket.previous || null);
+        // A SAVED calculation is never emptied by New Calculation (2026-10-14 16:51 EDT, Harkirat: "i clicked new calc, so why is it still saying viewing saved: test?"). A new, unnamed calculation starts instead, at the same region; the saved one stays in Saved untouched. A working copy of a saved one starts fresh too and the copy is dropped (click-test 2026-10-14 18:58 EDT): cleared in place it kept its `sourceId`, so the empty form still read "Edited from Saved: test". Its contents live on in `previous`.
         if (basket.name || basket.sourceId) {
             if (!basket.name) await basketStore.remove(actingUserId, String(basket._id));
-            const fresh = await basketStore.save(actingUserId, { banners: [], region: basket.region });
+            const fresh = await basketStore.save(actingUserId, { banners: [], region: basket.region, previous });
             await renderPanel(interaction, { ...state, basketId: String(fresh._id), page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, fresh);
             return true;
         }
-        // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form, which is what the button now says it does.
-        const updated = await writeTo(actingUserId, state, basket, { banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, currency: null, submitted: false });
+        // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form.
+        const updated = await writeTo(actingUserId, state, basket, { banners: [], balance: 0, mythicCards: 0, mythicCoins: 0, currency: null, submitted: false, previous });
         await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, updated);
+        return true;
+    }
+    // RESTORE CALCULATION: brings back what New Calculation cleared, as it was (a result reopens as a result), and drops the empty form it replaces.
+    if (interaction.isButton() && state.verb === 'restore') {
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        const prev = basket.previous;
+        if (!prev) { await renderPanel(interaction, { ...state, page: 0 }, basket, 'There is nothing to restore.'); return true; }
+        const empty = !(basket.banners || []).length;
+        if (prev.savedId) {
+            const saved = await basketStore.load(actingUserId, prev.savedId);
+            if (!saved) {
+                const cleared = await basketStore.save(actingUserId, { _id: state.basketId, previous: null });
+                await renderPanel(interaction, { ...state, page: 0 }, cleared, 'That saved calculation was deleted, so there is nothing to restore.');
+                return true;
+            }
+            if (empty) await basketStore.remove(actingUserId, String(basket._id));
+            await renderPanel(interaction, { ...state, basketId: String(saved._id), page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, saved);
+            return true;
+        }
+        const restored = await basketStore.save(actingUserId, { ...prev });
+        if (empty) await basketStore.remove(actingUserId, String(basket._id));
+        else await basketStore.save(actingUserId, { _id: String(basket._id), previous: null });
+        await renderPanel(interaction, { ...state, basketId: String(restored._id), page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, restored);
         return true;
     }
 

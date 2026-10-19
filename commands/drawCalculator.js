@@ -643,9 +643,8 @@ function savedButton(state) {
     return { type: 2, style: 2, label: 'View Saved', custom_id: encodeState('saved', state), emoji: emojis.parseEmoji(emojis.viewSaved) };
 }
 function newCalculationButton(state) {
-    const armed = state.verb === 'resetarm';
-    // NewCalc icon (2026-10-16 14:31 EDT).
-    return { type: 2, style: armed ? 4 : 2, label: armed ? 'New Calculation — click again' : 'New Calculation', custom_id: encodeState(armed ? 'reset' : 'resetarm', state), emoji: emojis.parseEmoji(emojis.newCalc) };
+    // NewCalc icon (2026-10-16 14:31 EDT). One press since 2026-10-19 00:12 EDT (his idea): what it clears can be restored from the empty form.
+    return { type: 2, style: 2, label: 'New Calculation', custom_id: encodeState('reset', state), emoji: emojis.parseEmoji(emojis.newCalc) };
 }
 // `inForm`: on the form, Saved and New Calculation sit in its own Calculate row (2026-10-14 16:51 EDT, Harkirat: "move calculate down to its own action row, with a divider above it. Move New calculation and saved into that same row"), so the nav keeps only Draw Prices and Help there. The Saved view's and the Save step's footer (2026-10-16 11:19 EDT, Harkirat: "put the 'back' button inside of the embed as a footer button. reworded to 'Back to Calculation'. With a button beside it for 'New Calculation'", and "use the left arrow we use for pagination").
 function savedFooterRow(state) {
@@ -670,7 +669,8 @@ function bottomNavRow(state, { showReset = true, savedCount = 0, onSaved = false
 function setupSubmitRow(state, basket, savedCount) {
     const lines = basket?.banners?.length || 0;
     return { type: 1, components: [
-        lines ? newCalculationButton(state) : null,
+        // RESTORE CALCULATION (2026-10-19 00:14 EDT, his ask: "just make it a button in the bottom action row and reuse the new calculations icon"): on the empty form while New Calculation's copy is kept, where New Calculation would sit.
+        lines ? newCalculationButton(state) : basket?.previous ? { type: 2, style: 2, label: 'Restore Calculation', custom_id: encodeState('restore', state), emoji: emojis.parseEmoji(emojis.newCalc) } : null,
         savedButton(state),
         { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), disabled: lines === 0, emoji: emojis.parseEmoji(emojis.calculate) }
     ].filter(Boolean) };
@@ -1305,6 +1305,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `### Delete\n-# Pick the ones you no longer need. Nothing is deleted until you confirm.` });
         if (savedConfirm) {
+            components.push({ type: 10, content: `-# ⚠️ Delete ${savedConfirm.count === 1 ? 'this calculation' : `these ${savedConfirm.count} calculations`}? This cannot be undone.` });
             components.push({ type: 1, components: [
                 { type: 2, style: 4, label: `Delete ${plural(savedConfirm.count, 'Calculation')}`, custom_id: encodeState('savedelok', { ...view, mask: savedConfirm.mask, check: savedConfirm.check }) },
                 { type: 2, style: 2, label: savedConfirm.count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view) }

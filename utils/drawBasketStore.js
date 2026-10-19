@@ -33,6 +33,7 @@ async function save(discordId, basket) {
             submitted: Boolean(basket.submitted),
             ...(basket.sourceId ? { sourceId: String(basket.sourceId) } : {}),
             currency: basket.currency || null,
+            ...(basket.previous ? { previous: basket.previous } : {}),
             updatedAt: new Date()
         });
         return created.toObject();
@@ -53,6 +54,8 @@ async function save(discordId, basket) {
             submitted: basket.submitted !== undefined ? basket.submitted : existing.submitted,
             // Null is a real value here (follow the /settings default), so only `undefined` keeps the stored one.
             currency: basket.currency !== undefined ? basket.currency : (existing.currency || null),
+            // Null clears it (Calculate, or a restore).
+            previous: basket.previous !== undefined ? basket.previous : (existing.previous || null),
             updatedAt: new Date()
         } },
         { new: true }
@@ -72,8 +75,8 @@ async function rename(discordId, basketId, name) {
     const existing = await load(discordId, basketId);
     if (!existing) return null;
     const trimmed = typeof name === 'string' ? name.trim().slice(0, 80) : '';
-    // Naming a working copy makes it a saved calculation of its own, so it stops pointing at the one it was opened from (2026-10-14 17:28 EDT).
-    const update = trimmed ? { $set: { name: trimmed, updatedAt: new Date() }, $unset: { sourceId: 1 } } : { $unset: { name: 1 }, $set: { updatedAt: new Date() } };
+    // Naming a working copy makes it a saved calculation of its own, so it stops pointing at the one it was opened from (2026-10-14 17:28 EDT). A saved calculation keeps no Restore copy either: Restore belongs to the empty form that New Calculation left.
+    const update = trimmed ? { $set: { name: trimmed, updatedAt: new Date() }, $unset: { sourceId: 1, previous: 1 } } : { $unset: { name: 1 }, $set: { updatedAt: new Date() } };
     return DrawBasket.findByIdAndUpdate(basketId, update, { new: true }).lean();
 }
 

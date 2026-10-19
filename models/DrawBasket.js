@@ -36,6 +36,8 @@ const DrawBasketSchema = new mongoose.Schema({
     // Mythic Cards and Mythic Coins the player already holds (2026-10-17 13:17 EDT): one shared pool each, in steps of 5, taken off the pooled upgrade need.
     mythicCards: { type: Number, default: 0 },
     mythicCoins: { type: Number, default: 0 },
+    // RESTORE CALCULATION (2026-10-19 00:13 EDT, his idea): what New Calculation cleared, kept so the empty form can bring it back, through relaunches, until the next Calculate. Either the cleared contents (banners, region, balance, cards, coins, currency, upgrade toggle, 2X selections, submitted, sourceId) or { savedId } when the one left was a saved calculation. It lives on an unnamed calculation, so the 30-day TTL removes it with that calculation.
+    previous: { type: mongoose.Schema.Types.Mixed, default: undefined },
     // The existing 6-bit mask over CP_PACKAGES (cp80...cp8000), snapshotted onto the basket -- there is no live entitlement source to read, only what the player told us they still hold.
     entitlementMask: { type: Number, default: 0 },
     // FALSE while the player is still filling in the setup form; TRUE once they have pressed Calculate. This is what makes a result "persist until reset / new calculation" (Harkirat, 2026-08-27) across restarts -- a draft has to survive the same way a finished calculation does, so it cannot live in memory or in the customId. Existing docs predate the field and read as false, which correctly reopens them on the form with their draws intact.
