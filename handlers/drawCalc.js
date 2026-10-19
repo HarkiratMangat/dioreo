@@ -16,7 +16,7 @@ const {
     buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName,
     buildAddDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency, buildGoalModal, readGoal
 } = require('../commands/drawCalculator');
-const { pullCount, upgradeKeyOf, isArmoryKey, armorySize, isAdvancedKey, advancedBoth } = require('../utils/drawCost');
+const { pullCount, upgradeKeyOf, isArmoryKey, armorySize, isAdvancedKey, advancedBoth, advancedLater } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES, CURRENCIES } = require('../utils/cpPackages');
 const basketStore = require('../utils/drawBasketStore');
@@ -204,15 +204,23 @@ async function route(interaction) {
         const line = index !== null ? basket.banners[index] : null;
         let picked = null;
         try { picked = readGoal(interaction.fields.getStringSelectValues('goal')[0]); } catch { picked = null; }
-        // The full sets field exists only once a set is spun; a missing field leaves them as they were.
-        let bothPicked = null;
-        try { bothPicked = interaction.fields.getStringSelectValues('both'); } catch { bothPicked = null; }
+        // The full sets fields exist only once a set is spun; missing fields leave them as they were. 'both' is the single field of a pop-up opened before the split, read as Advanced.
+        const setsPicked = id => { try { return interaction.fields.getStringSelectValues(id); } catch { return null; } };
+        const advPicked = setsPicked('adv') ?? setsPicked('both');
+        const laterPicked = setsPicked('later');
         if (!line || !buildGoalModal(state, basket, index) || !picked) { await renderPanel(interaction, { ...state, focus: null }, basket, 'That draw is no longer in this calculation, so nothing changed.'); return true; }
         // 'all4' is the default, so it is stored as absent; so is an empty list of full sets.
         const banners = basket.banners.map((b, i) => {
             if (i !== index) return b;
             const next = { ...b, goal: picked === 'all4' ? undefined : picked };
-            if (bothPicked !== null) { const both = advancedBoth({ bothSets: bothPicked }, b.pullsDone); next.bothSets = both.length ? both : undefined; }
+            if (advPicked !== null || laterPicked !== null) {
+                // A set picked in both counts as Advanced.
+                const adv = advancedBoth({ bothSets: advPicked || [] }, b.pullsDone);
+                const later = advancedBoth({ bothSets: laterPicked || [] }, b.pullsDone).filter(n => !adv.includes(n));
+                const both = [...adv, ...later].sort((x, y) => x - y);
+                next.bothSets = both.length ? both : undefined;
+                next.laterSets = later.length ? later : undefined;
+            }
             return next;
         });
         const updated = await writeTo(actingUserId, state, basket, { banners });
@@ -522,7 +530,12 @@ async function route(interaction) {
                 return { ...next, pullsDone };
             }
             // An Advanced line keeps only the full sets it has still spun.
-            if (isAdvancedKey(next.drawKey) && next.bothSets) { const both = advancedBoth(next, pullsDone); next.bothSets = both.length ? both : undefined; }
+            if (isAdvancedKey(next.drawKey) && (next.bothSets || next.laterSets)) {
+                const both = advancedBoth(next, pullsDone);
+                const later = advancedLater(next, pullsDone);
+                next.bothSets = both.length ? both : undefined;
+                next.laterSets = later.length ? later : undefined;
+            }
             if (total !== null && pullsDone < total && next.upHave) { const { upHave, ...rest } = next; return { ...rest, pullsDone }; }
             return { ...next, pullsDone };
         });

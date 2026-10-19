@@ -20,7 +20,9 @@ const BannerSchema = new mongoose.Schema({
     title: { type: String, default: undefined },
     // An Advanced Double Legendary line's goal (2026-10-18 21:51 EDT; per set 2026-10-18 22:31 EDT): 'all4', 'top2', 'mid2_top1', 'one_each', 'mid2', 'mid1' or 'everything'; absent is 'all4', and the first build's 'all'/'two'/'one' still read (utils/drawCost.js advancedGoal). `bothSets` are the spun sets it got both items from, each 1 to `pullsDone`.
     goal: { type: String, default: undefined },
-    bothSets: { type: [Number], default: undefined }
+    bothSets: { type: [Number], default: undefined },
+    // The full sets finished the long way, a Regular pull then the other item bought (2026-10-18 23:24 EDT): always within `bothSets`, and only for the Spent figure.
+    laterSets: { type: [Number], default: undefined }
 }, { _id: false });
 
 const DrawBasketSchema = new mongoose.Schema({

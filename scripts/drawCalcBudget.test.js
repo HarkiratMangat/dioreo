@@ -330,6 +330,7 @@ t('Advanced draws are priced per set, and from a fresh line each strategy goal m
     assert.ok(/Finished/.test(dc.lineHint(done, 0)) && !/Finished/.test(dc.lineHint(done, 1)), `${dc.lineHint(done, 0)} | ${dc.lineHint(done, 1)}`);
     // The pop-up: five goals with the current one picked, then the spun sets with the full ones picked.
     const modal = dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'advancedCharacter', pullsDone: 3, goal: 'top2', bothSets: [2] }] }), 0);
+    assert.strictEqual(modal.components.length, 3);
     assert.deepStrictEqual(modal.components[0].component.options.map(o => [o.label, !!o.default]), [['Both Legendary Characters & Weapons', false], ['Both Characters + 1 Random Weapon', true], ['1 Random Character + Both Weapons', false], ['Regular Pulls Only: 1 Item Per Set', false], ['Both Weapons (No Characters)', false], ['1 Random Weapon Only (No Characters)', false], ['Advanced Pulls Only: All 20 Items', false]]);
     assert.deepStrictEqual(modal.components[1].component.options.map(o => [o.label, !!o.default]), [['Set 1', false], ['Set 2', true], ['Set 3', false]]);
     assert.strictEqual(modal.components[1].component.max_values, 3);
@@ -338,7 +339,19 @@ t('Advanced draws are priced per set, and from a fresh line each strategy goal m
     // Regular only, 3 sets spun: the Regular price of sets 4 to 10.
     const regLeft = require('../commands/drawprices').DRAW_DATA.region_10.legendaryCharacterWeapon.draws.slice(3).reduce((x, y) => x + y, 0);
     assert.strictEqual(modal.components[0].component.options[3].description, `Gets you 1 Random Character + 1 Random Weapon · Reg only 1-10 · ${regLeft.toLocaleString('en-US')} CP Left`);
-    assert.strictEqual(dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'advancedWeapon', pullsDone: 0 }] }), 0).components.length, 1, 'no spun set, no second field');
+    assert.strictEqual(dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'advancedWeapon', pullsDone: 0 }] }), 0).components.length, 1, 'no spun set, no set fields');
+    // His case (2026-10-18 23:24 EDT): sets 1 and 4 Advanced, set 3 a Regular pull finished later. Spent counts set 3 as two Regular prices; what is left does not change.
+    const W = require('../commands/drawprices').ADVANCED_DOUBLE_LEGENDARY.region_10;
+    const his = { drawKey: 'advancedWeapon', pullsDone: 4, bothSets: [1, 3, 4], laterSets: [3] };
+    assert.strictEqual(cost.spentSoFar('region_10', 'advancedWeapon', 4, his), W.adv[0] + W.reg[1] + 2 * W.reg[2] + W.adv[3]);
+    assert.strictEqual(cost.remainingToFinish('region_10', 'advancedWeapon', 4, his), cost.remainingToFinish('region_10', 'advancedWeapon', 4, { ...his, laterSets: undefined }));
+    assert.deepStrictEqual(cost.advancedLater({ bothSets: [1], laterSets: [1, 2] }, 4), [1], 'a later set is always a full set');
+    const split = dc.buildGoalModal(state(), makeBasket({ banners: [his] }), 0);
+    assert.deepStrictEqual(split.components.slice(1).map(f => [f.label, f.component.custom_id, f.component.options.filter(o => o.default).map(o => o.label)]), [['Sets You Pulled with Advanced', 'adv', ['Set 1', 'Set 4']], ['Sets You Finished Later', 'later', ['Set 3']]]);
+    // The Full Breakdown states the goal and how each spun set was bought.
+    const fb = allText(render(makeBasket({ banners: [his] }), { detail: true }));
+    assert.ok(fb.includes('-# Goal: All 4 Items · Advanced: Sets 1, 4 · Finished Later: Set 3 · 1 of 2 Items: Set 2'), fb.slice(0, 600));
+    assert.ok(!allText(render(makeBasket({ banners: [his] }))).includes('Finished Later'), 'not on the simplified view');
     assert.strictEqual(dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), 0), null, 'only an Advanced line has a goal');
     assert.deepStrictEqual([dc.readGoal('top2'), dc.readGoal('nope')], ['top2', null]);
     // Lines with different goals or full sets never merge into one row on the result.

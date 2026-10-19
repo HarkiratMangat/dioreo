@@ -36,6 +36,11 @@ function advancedBoth(line, pullsDone) {
     const sets = ((line && line.bothSets) || []).map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= done);
     return [...new Set(sets)].sort((a, b) => a - b);
 }
+// The full sets finished the long way, a Regular pull then the other item bought (2026-10-18 23:24 EDT, his yes): only sets that are also in bothSets.
+function advancedLater(line, pullsDone) {
+    const both = advancedBoth(line, pullsDone);
+    return advancedBoth({ bothSets: (line && line.laterSets) || [] }, pullsDone).filter(n => both.includes(n));
+}
 // A pull of the line is a set; its Regular price is what one set costs to spin, which is what the progress dropdown counts.
 function advancedEntry(region, key) {
     const arr = advancedArrays(region, key);
@@ -58,14 +63,15 @@ function advancedRemaining(region, key, pullsDone, line, goal = advancedGoal(lin
     }
     return total;
 }
-// What the spun sets cost: a set with both items is counted as an Advanced spin and any other as a Regular one. Only the remainder decides what to buy, so a set completed later is not told apart.
+// What the spun sets cost: a full set is one Advanced pull, or two Regular prices when it was finished later; any other spun set is one Regular pull.
 function advancedSpent(region, key, pullsDone, line) {
     const arr = advancedArrays(region, key);
     if (!arr) return null;
     const done = Math.min(arr.reg.length, Math.max(0, Math.floor(Number(pullsDone) || 0)));
     const both = new Set(advancedBoth(line, done));
+    const later = new Set(advancedLater(line, done));
     let total = 0;
-    for (let i = 1; i <= done; i++) total += both.has(i) ? arr.adv[i - 1] : arr.reg[i - 1];
+    for (let i = 1; i <= done; i++) total += !both.has(i) ? arr.reg[i - 1] : later.has(i) ? 2 * arr.reg[i - 1] : arr.adv[i - 1];
     return total;
 }
 // Every goal's remainder for the line as it stands, for the Goal pop-up.
@@ -311,4 +317,4 @@ function basketCost(region, banners, includeUpgrades, held = {}) {
     return { total: drawTotal + upgrades.cp, drawTotal, perBanner, upgrades };
 }
 
-module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, upgradeCost, reachableWithBudget, basketCost, upgradePlan, upgradeState, upgradeNeed, upgradeShape, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals, advancedBoth };
+module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, upgradeCost, reachableWithBudget, basketCost, upgradePlan, upgradeState, upgradeNeed, upgradeShape, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals, advancedBoth, advancedLater };

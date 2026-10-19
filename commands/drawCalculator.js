@@ -13,7 +13,7 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const emojis = require('../utils/emojiMap');
 const UserPreference = require('../models/UserPreference');
 const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP } = require('./drawprices');
-const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals, advancedBoth } = require('../utils/drawCost');
+const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals, advancedBoth, advancedLater } = require('../utils/drawCost');
 const crypto = require('crypto');
 const { CP_PACKAGES, CURRENCIES, STOCK_UP_RULES, PURCHASE_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 const { QUICK_CURRENCIES, currencyLabel } = require('../utils/cpCurrencyData');
@@ -456,7 +456,7 @@ function usedTypes(banners) {
 function groupForDisplay(banners) {
     const groups = [];
     // Lines with different upgrade plans never merge (2026-10-17 13:17 EDT); `first` is the index of the group's first line.
-    const upKey = b => JSON.stringify([b.upHave || null, b.upWant || null, b.title || null, b.size || null, b.spinsIn || 0, isAdvancedKey(b.drawKey) ? [advancedGoal(b), advancedBoth(b, b.pullsDone)] : null]);
+    const upKey = b => JSON.stringify([b.upHave || null, b.upWant || null, b.title || null, b.size || null, b.spinsIn || 0, isAdvancedKey(b.drawKey) ? [advancedGoal(b), advancedBoth(b, b.pullsDone), advancedLater(b, b.pullsDone)] : null]);
     (banners || []).forEach((b, i) => {
         const last = groups[groups.length - 1];
         if (last && last.drawKey === b.drawKey && last.pullsDone === b.pullsDone && last.upKey === upKey(b)) last.count++;
@@ -824,7 +824,8 @@ function compactSelectionText(basket, level, detail = false) {
         const unit = isArmoryKey(r.drawKey) || isAdvancedKey(r.drawKey) ? unitOf(r.drawKey) : 'Attempts';
         // The Price line is the Full Breakdown's only too (2026-10-18 19:31 EDT, Harkirat: "with the '> Price: 28,800 CP · 0/3 Weapons' line removed? only appearing when 'full breakdown' is toggled").
         if (detail) out.push(`> **Price: \`${fmt(r.drawFull)} CP\`**${each} · \`${r.pullsDone}/${r.total ?? '?'}\` ${unit}${r.spinsIn && !r.byType ? ` + ${r.spinsIn} spins` : ''}`);
-        // The spent / to-complete line is the Full Breakdown's only (2026-10-17 17:41 EDT, Harkirat: "for the simplified view, we should drop the '0 CP Spent · 4,950 CP To Complete' lines ... And show them during full breakdown view").
+        // The spent / to-complete line is the Full Breakdown's only (2026-10-17 17:41 EDT, Harkirat: "for the simplified view, we should drop the '0 CP Spent · 4,950 CP To Complete' lines ... And show them during full breakdown view"). An Advanced line's goal and how each spun set was bought, the Full Breakdown's only (2026-10-18 23:24 EDT, his ask: "improve the hint line below the draw type heading to better state this info").
+        if (detail && level < 2 && r.adv && !r.byType) out.push(`> -# ${advancedSetsLine(r.adv)}`);
         if (detail && level < 2) out.push(`> -# \`${fmt(r.spent)} CP\` Spent · \`${fmt(r.drawLeft)} CP\` To Complete${each}`);
         if (r.up || r.upNeed) {
             const u = MYTHIC_UPGRADE[upgradeKeyOf(r.drawKey)];
@@ -1122,6 +1123,14 @@ const ADVANCED_GOAL_TEXT = {
     mid1: { short: { advancedWeapon: '1 Random Character Only', advancedCharacter: '1 Random Weapon Only' }, path: 'Reg 1-9', advancedWeapon: '1 Random Character Only (No Weapons)', advancedCharacter: '1 Random Weapon Only (No Characters)' },
     everything: { short: 'All 20 Items', path: 'Adv 1-10', advancedWeapon: 'Advanced Pulls Only: All 20 Items', advancedCharacter: 'Advanced Pulls Only: All 20 Items' }
 };
+// The Full Breakdown's line for an Advanced draw: its goal, then the spun sets by how they were bought.
+function advancedSetsLine(a) {
+    const advanced = a.both.filter(n => !a.later.includes(n));
+    const one = [];
+    for (let i = 1; i <= a.done; i++) if (!a.both.includes(i)) one.push(i);
+    const list = (label, sets) => (sets.length ? `${label}: ${sets.length > 1 ? 'Sets' : 'Set'} ${sets.join(', ')}` : null);
+    return [`Goal: ${goalShort(a.key, a.goal)}`, list('Advanced', advanced), list('Finished Later', a.later), list('1 of 2 Items', one)].filter(Boolean).join(' · ');
+}
 function goalShort(drawKey, goal) {
     const s = ADVANCED_GOAL_TEXT[goal].short;
     return typeof s === 'string' ? s : s[drawKey];
@@ -1137,11 +1146,16 @@ function buildGoalModal(state, basket, index) {
         type: 3, custom_id: 'goal', required: true, min_values: 1, max_values: 1,
         options: ADVANCED_GOALS.map(g => ({ label: ADVANCED_GOAL_TEXT[g][b.drawKey], value: g, description: `${ADVANCED_GOAL_TEXT[g].desc ? `${ADVANCED_GOAL_TEXT[g].desc[b.drawKey]} · ` : ''}${ADVANCED_GOAL_TEXT[g].path}${totals ? ` · ${fmt(totals[g])} CP Left` : ''}`, ...(g === current ? { default: true } : {}) }))
     } }];
-    // Only the sets already spun can hold both items, so a line with none spun has no second field.
-    if (done > 0) components.push({ type: 18, label: 'Sets You Got Both Items From', description: 'Multiple selections allowed · From an Advanced spin, or a Regular spin you finished later.', component: {
-        type: 3, custom_id: 'both', required: false, min_values: 0, max_values: done, placeholder: 'Make your selections',
-        options: Array.from({ length: done }, (_, i) => ({ label: `Set ${i + 1}`, value: String(i + 1), ...(both.includes(i + 1) ? { default: true } : {}) }))
+    // Only the sets already spun can hold both items, so a line with none spun has neither field. Split by how the set was finished (2026-10-18 23:24 EDT, his yes) so Spent is exact; a set picked in both counts as Advanced.
+    const later = advancedLater(b, done);
+    const setField = (id, label, hint, picked) => ({ type: 18, label, description: `Multiple selections allowed · ${hint}`, component: {
+        type: 3, custom_id: id, required: false, min_values: 0, max_values: done, placeholder: 'Make your selections',
+        options: Array.from({ length: done }, (_, i) => ({ label: `Set ${i + 1}`, value: String(i + 1), ...(picked.includes(i + 1) ? { default: true } : {}) }))
     } });
+    if (done > 0) components.push(
+        setField('adv', 'Sets You Pulled with Advanced', 'Both items from one Advanced pull.', both.filter(n => !later.includes(n))),
+        setField('later', 'Sets You Finished Later', 'A Regular pull, then the other item bought.', later)
+    );
     return { custom_id: encodeState('goalsave', { ...state, focus: index }), title: 'Set Goal', components };
 }
 // Reads the Goal pop-up back: a known goal, or null.
@@ -1337,7 +1351,8 @@ function lineFigures(basket) {
         // The draw and its Mythic upgrade are kept apart (2026-10-16 14:32 EDT, Harkirat's layout states the upgrade on its own). Since 2026-10-17 13:17 EDT a line's upgrade is what it still needs in CARDS or COINS (`upNeed`), because both are pooled across lines and only the pool becomes CP; `full`/`left` are the draw alone.
         const up = plan.lines.find(l => l.index === i) || null;
         const upNeed = upgradeIsSet(up) ? up.need : 0;
-        return { n: i + 1, drawKey: b.drawKey, title: b.title || null, spinsIn, pullsDone: b.pullsDone, total, priced, spent, left: leftAll, full: spent + leftAll, drawLeft: leftAll, drawFull: spent + leftAll, up: upNeed ? up : null, upNeed, upKey: JSON.stringify([up ? up.have : null, up ? up.want : null, b.title || null, total, spinsIn, isAdvancedKey(b.drawKey) ? [advancedGoal(b), advancedBoth(b, b.pullsDone)] : null]) };
+        const adv = isAdvancedKey(b.drawKey) ? { key: b.drawKey, goal: advancedGoal(b), done: Math.min(b.pullsDone || 0, total ?? 0), both: advancedBoth(b, b.pullsDone), later: advancedLater(b, b.pullsDone) } : null;
+        return { n: i + 1, drawKey: b.drawKey, adv, title: b.title || null, spinsIn, pullsDone: b.pullsDone, total, priced, spent, left: leftAll, full: spent + leftAll, drawLeft: leftAll, drawFull: spent + leftAll, up: upNeed ? up : null, upNeed, upKey: JSON.stringify([up ? up.have : null, up ? up.want : null, b.title || null, total, spinsIn, isAdvancedKey(b.drawKey) ? [advancedGoal(b), advancedBoth(b, b.pullsDone), advancedLater(b, b.pullsDone)] : null]) };
     });
 }
 function breakdownRows(figs, level) {
