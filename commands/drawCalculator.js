@@ -973,7 +973,7 @@ function buildSetupPanel(state, basket, accentColor, { region, notice = null, dr
     return { type: 17, accent_color: accentColor, components };
 }
 
-// SET DRAW PROGRESS (2026-10-18 12:15 EDT): every line's progress in one place (his ask, "a single button for 'Set Draw Progress' that changes the panel"). The rule for every kind of draw, now and later: the line's DROPDOWN is its main progress, and a BUTTON beside the line's name opens everything else it has. A Mythic draw's button is its Upgrade; a Series Armory's is Spins In; a Mythic Weapon armory has both, so its two buttons sit in a row under the dropdown. Advanced draws, when they come, get the same shape.
+// SET DRAW PROGRESS (2026-10-18 12:15 EDT): every line's progress in one place (his ask, "a single button for 'Set Draw Progress' that changes the panel"). The rule for every kind of draw, now and later: the line's DROPDOWN is its main progress, and a BUTTON beside the line's name opens everything else it has. A Mythic draw's button is its Upgrade; a Series Armory's is Spins In; a Mythic Weapon armory has both, so its two buttons sit in a row under the dropdown. The Advanced draws (2026-10-18 21:51 EDT) do: their button is the Goal.
 function lineExtraButtons(state, basket, index) {
     const b = basket.banners[index];
     const out = [];
@@ -1151,7 +1151,7 @@ function readSpinsIn(drawKey, raw) {
     return Number.isInteger(v) && v >= 0 && v < a.spins ? v : null;
 }
 
-// THIS SEASON'S DRAWS, read from the database (2026-10-18 12:15 EDT, Harkirat's rule): every draw stored this season, past, live and upcoming. The list is wiped at the season's end (`bpEnd`): after it, a draw stays only while it still runs, its calendar end date later than now, and a draw with no calendar end date ends with the season. "only remove previous season's draws automatically; basically linking the draw calc dropdown wipe to season end date". Left out: a draw with no Draw Type or Unsure / Unknown (nothing to price), and the Advanced draws (not in the calculator yet).
+// THIS SEASON'S DRAWS, read from the database (2026-10-18 12:15 EDT, Harkirat's rule): every draw stored this season, past, live and upcoming. The list is wiped at the season's end (`bpEnd`): after it, a draw stays only while it still runs, its calendar end date later than now, and a draw with no calendar end date ends with the season. "only remove previous season's draws automatically; basically linking the draw calc dropdown wipe to season end date". Left out: a draw with no Draw Type or Unsure / Unknown (nothing to price).
 async function listSeasonDraws(nowMs = Date.now()) {
     const SeasonalData = require('../models/SeasonalData');
     const { isPricedDrawType, armoryItemCount } = require('../utils/drawTypes');
