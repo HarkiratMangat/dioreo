@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.94.0 — 2026-10-19 18:17 EDT (#PRNUM) — `/autobuild` moves to Gemini 3.8 Flash
+## Pre-Release v3.94.0 — 2026-10-19 18:17 EDT (#204) — `/autobuild` moves to Gemini 3.8 Flash
 **`utils/visionExtract.js`, its two Vertex scripts and a new cost test.** Harkirat's ask 2026-10-19 18:09 EDT: the newest model in the tier already in use, the mid one, no Pro and no Flash-Lite. What is true now is `.claude/rules/autobuild.md` ("Vision model").
 
 - **gemini-3.5-flash → gemini-3.8-flash**, the newest Flash that is generally available on Google's Agent Platform (formerly Vertex AI): GA 2026-09-02 in its release notes, listed under the `us` multi-region the bot calls. 3.6 and 3.7 were skipped. The request needed no change: it sends none of the parameters 3.8 deprecates and leaves thinking at the `medium` default.
