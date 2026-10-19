@@ -133,5 +133,11 @@ check('it is kept out of /admin\'s server rules and registers as a user-install 
     assert.ok(require('fs').readFileSync(require('path').join(__dirname, '..', 'bot', 'registry.js'), 'utf8').includes("'Add to Patch Notes'"));
 });
 
+check('on the dev bot a blocked Cloudinary upload keeps the source URL, never null (a null broke /patch notes)', () => {
+    const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'utils', 'patchNotesCache.js'), 'utf8');
+    const blocked = src.slice(src.indexOf("isCloudinaryWriteBlocked('upload'"), src.indexOf('try {', src.indexOf("isCloudinaryWriteBlocked('upload'")));
+    assert.ok(/url:\s*sourceUrl/.test(blocked) && !/url:\s*null/.test(blocked), blocked);
+});
+
 console.log(failed ? `\n${failed} check(s) FAILED.` : '\nAll Add to Patch Notes checks passed.');
 process.exit(failed ? 1 : 0);
