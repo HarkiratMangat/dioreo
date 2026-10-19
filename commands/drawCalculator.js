@@ -1113,14 +1113,14 @@ function readRemovePicks(basket, values) {
     return drop;
 }
 
-// THE GOAL POP-UP (2026-10-18 21:51 EDT; rebuilt per set 2026-10-18 22:31 EDT): what the line is bought for, each option with its path and what is still left for the line as it stands, then the spun sets it got both items from. His goals: /draw prices' three strategies, just the 2 items of the second-to-last set, and everything. His option names (2026-10-18 22:58 EDT): the (No …) and Pulls Only wording, the Regular goal's items in its description.
+// THE GOAL POP-UP (2026-10-18 21:51 EDT; rebuilt per set 2026-10-18 22:31 EDT): what the line is bought for, each option with its path and what is still left for the line as it stands, then the spun sets it got both items from. His goals: /draw prices' three strategies, just the 2 items of the second-to-last set, and everything. His option names (2026-10-18 22:58 EDT): the (No …) and Pulls Only wording, the Regular goal's items in its description. The Goal button's short names say Char and Wep (2026-10-19 00:08 EDT, his ask); the options keep the full words.
 const ADVANCED_GOAL_TEXT = {
     all4: { short: 'All 4 Items', path: 'Reg 1-8 → Adv 9-10', advancedWeapon: 'Both Weapons & Characters', advancedCharacter: 'Both Legendary Characters & Weapons' },
-    top2: { short: { advancedWeapon: 'Both Weapons + 1 Character', advancedCharacter: 'Both Characters + 1 Weapon' }, path: 'Reg 1-9 → Adv 10', advancedWeapon: 'Both Weapons + 1 Random Character', advancedCharacter: 'Both Characters + 1 Random Weapon' },
-    mid2_top1: { short: { advancedWeapon: 'Both Characters + 1 Weapon', advancedCharacter: 'Both Weapons + 1 Character' }, path: 'Reg 1-8 → Adv 9 → Reg 10', advancedWeapon: '1 Random Weapon + Both Characters', advancedCharacter: '1 Random Character + Both Weapons' },
+    top2: { short: { advancedWeapon: 'Both Weps + 1 Char', advancedCharacter: 'Both Chars + 1 Wep' }, path: 'Reg 1-9 → Adv 10', advancedWeapon: 'Both Weapons + 1 Random Character', advancedCharacter: 'Both Characters + 1 Random Weapon' },
+    mid2_top1: { short: { advancedWeapon: 'Both Chars + 1 Wep', advancedCharacter: 'Both Weps + 1 Char' }, path: 'Reg 1-8 → Adv 9 → Reg 10', advancedWeapon: '1 Random Weapon + Both Characters', advancedCharacter: '1 Random Character + Both Weapons' },
     one_each: { short: 'Regular Pulls Only', path: 'Reg only 1-10', advancedWeapon: 'Regular Pulls Only: 1 Item Per Set', advancedCharacter: 'Regular Pulls Only: 1 Item Per Set', desc: { advancedWeapon: 'Gets you 1 Random Weapon + 1 Random Character', advancedCharacter: 'Gets you 1 Random Character + 1 Random Weapon' } },
-    mid2: { short: { advancedWeapon: 'Both Epic Characters', advancedCharacter: 'Both Weapons' }, path: 'Reg 1-8 → Adv 9', advancedWeapon: 'Both Epic Characters (No Weapons)', advancedCharacter: 'Both Weapons (No Characters)' },
-    mid1: { short: { advancedWeapon: '1 Random Character Only', advancedCharacter: '1 Random Weapon Only' }, path: 'Reg 1-9', advancedWeapon: '1 Random Character Only (No Weapons)', advancedCharacter: '1 Random Weapon Only (No Characters)' },
+    mid2: { short: { advancedWeapon: 'Both Epic Chars', advancedCharacter: 'Both Weps' }, path: 'Reg 1-8 → Adv 9', advancedWeapon: 'Both Epic Characters (No Weapons)', advancedCharacter: 'Both Weapons (No Characters)' },
+    mid1: { short: { advancedWeapon: '1 Random Char Only', advancedCharacter: '1 Random Wep Only' }, path: 'Reg 1-9', advancedWeapon: '1 Random Character Only (No Weapons)', advancedCharacter: '1 Random Weapon Only (No Characters)' },
     everything: { short: 'All 20 Items', path: 'Adv 1-10', advancedWeapon: 'Advanced Pulls Only: All 20 Items', advancedCharacter: 'Advanced Pulls Only: All 20 Items' }
 };
 // The Full Breakdown's line for an Advanced draw: its goal, then the spun sets by how they were bought.
@@ -1128,7 +1128,9 @@ function advancedSetsLine(a) {
     const advanced = a.both.filter(n => !a.later.includes(n));
     const one = [];
     for (let i = 1; i <= a.done; i++) if (!a.both.includes(i)) one.push(i);
-    const list = (label, sets) => (sets.length ? `${label}: ${sets.length > 1 ? 'Sets' : 'Set'} ${sets.join(', ')}` : null);
+    // Runs of three or more read as a range (2026-10-19 00:08 EDT, his yes): 'Sets 1–4, 6', never 'Sets 1, 2, 3, 4, 6'.
+    const runs = sets => sets.reduce((out, n) => { const last = out[out.length - 1]; if (last && n === last[1] + 1) last[1] = n; else out.push([n, n]); return out; }, []).flatMap(([a, b]) => (b - a >= 2 ? [`${a}–${b}`] : b > a ? [a, b] : [a])).join(', ');
+    const list = (label, sets) => (sets.length ? `${label}: ${sets.length > 1 ? 'Sets' : 'Set'} ${runs(sets)}` : null);
     return [`Goal: ${goalShort(a.key, a.goal)}`, list('Advanced', advanced), list('Finished Later', a.later), list('1 of 2 Items', one)].filter(Boolean).join(' · ');
 }
 function goalShort(drawKey, goal) {
