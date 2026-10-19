@@ -106,7 +106,7 @@ const emojis = {
     // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
     guide: '<a:DB_Guide:1532894836301238477>',
     // The calculator's "covered" and "finished" lines (2026-10-18 13:05 EDT, Harkirat: "swap the icon used beside the 'your balance covers this' line").
-    checkmark: '<a:Checkmark:1561412941004406955>',
+    checkmark: '<a:Checkmark:1561819906205290496>',   // the CURRENT final (checkmark-icon/checkmark-clean-128.avif), swapped on prod 2026-10-19 15:14 EDT (Harkirat: "Use the current final everywhere"); was the old final 1561412941004406955
     // The calculator's Add Draws and Remove buttons (2026-10-18 13:36 EDT, Harkirat supplied both).
     plus: '<a:Plus:1560408706233933845>',
     deleteBin: '<a:DeleteBin:1560788313508683807>',
