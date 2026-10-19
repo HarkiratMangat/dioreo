@@ -29,7 +29,18 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.89.0 — 2026-10-19 00:54 EDT (#198) — Series Armory and the Advanced draws join the calculator, and /patch notes keeps every season
+## Pre-Release v3.90.0 — 2026-10-19 09:51 EDT (#199) — the calculator's buttons rearranged, season emojis on every season title, and a Credits row in /help
+**`/draw calculator`, `/draws`, `/calendar`, `/patch notes`, `/manage` season titles, `/help` and NOTICE.** Harkirat's eight comments on `claude/draw-calc-tweaks-kxm17f`; what is true now is `.claude/rules/draw-prices.md` § CURRENT STATE.
+
+- **The calculator's rows.** The result's row reads New Calculation · Export · View Saved · Save Result; the editor's nav row puts View Saved first; and every nav row gains **Draws** in front of Draw Prices, opening `/draws` as its own private message. The whole "Double CP event is live" line is bold. New Calculation and Restore Calculation use his re-uploaded NewCalc icon.
+- **Season emojis.** `/draws` and `/calendar` show the season's emoji in front of the season title, as `/patch notes` already did.
+- **`/manage` takes the emoji.** A custom emoji typed in front of the season title (live or Next Season Draft) is kept as the season's emoji, the title stays plain, and Promote to Live and the current patch-notes entry carry it. The dev bot re-points it by name.
+- **Credit.** NOTICE §4A.4 credits Leakers on Duty (CC BY), and `/patch notes` carries a small Source line.
+- **`/help`:** a Credits · Terms · Privacy Policy row under Website and Invite Dioreo, linking to dioreo.app.
+- **Data:** `SeasonalData` gains `currentSeasonEmoji`, `draft.currentSeasonEmoji` and `patchNotes[].emoji`. No user data, so PRIVACY is unchanged.
+
+
+## Pre-Release v3.89.0 — 2026-10-19 00:54 EDT (#198 · `3fe201a7`) — Series Armory and the Advanced draws join the calculator, and /patch notes keeps every season
 **`/draw calculator`, `/draw prices`, `/manage` Draws, `/patch notes`, `/help` and `/invite`.** Built on the dev bot from Harkirat's click-tests on `feat/series-armory`; what is true now is `.claude/rules/draw-prices.md` § CURRENT STATE.
 
 - **Series Armory.** `/draw prices` gains the three armories (Legendary Weapon, Legendary Character, Mythic Weapon), priced per item and per full armory, and the calculator prices them per item with the spins already in; the Mythic Weapon armory's weapons upgrade from the same Mythic Cards as the Mythic Weapon draw.

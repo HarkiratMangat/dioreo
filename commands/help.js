@@ -402,6 +402,15 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
                 { type: 2, style: 5, label: 'Invite Dioreo', url: buildInviteUrls(client).chooser }
             ]
         });
+        // Credits · Terms · Privacy Policy, under Website and Invite (2026-10-19 09:41 EDT, Harkirat: "a button to 'Credits' that links to the notice page on the dioreo.app website. ToS and Privacy Policy as well"; "Terms", short, 09:42 EDT). NOTICE carries every third-party credit, hence its button's name.
+        components.push({
+            type: 1,
+            components: [
+                { type: 2, style: 5, label: 'Credits', url: `${WEBSITE_URL}/notice` },
+                { type: 2, style: 5, label: 'Terms', url: `${WEBSITE_URL}/terms` },
+                { type: 2, style: 5, label: 'Privacy Policy', url: `${WEBSITE_URL}/privacy` }
+            ]
+        });
         components.push({ type: 14, spacing: 2, divider: true });
         components.push({
             type: 10,
