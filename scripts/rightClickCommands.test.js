@@ -138,6 +138,20 @@ check('View Colors\' page row always points at the person right-clicked, whoever
     const cmd = fs.readFileSync(path.join(__dirname, '..', 'commands', 'viewColors.js'), 'utf8');
     assert.ok(/skipExpiry: true/.test(cmd) && !/flags: 64|isEphemeral/.test(cmd), 'public by default and no idle timeout');
 });
+check('View Colors: a banner, name color, nameplate or deco the person lacks is red and disabled, and the hint names only those', () => {
+    const row = viewColors.pageRow('1', 'avatar', 'g', ['avatar', 'banner', 'nameplate']);
+    const byLabel = Object.fromEntries(row.components.map(b => [b.label, b]));
+    assert.ok(byLabel.Name.style === 4 && byLabel.Name.disabled);
+    assert.ok(byLabel.Deco.style === 4 && byLabel.Deco.disabled);
+    assert.ok(byLabel.Nameplate.style === 2 && !byLabel.Nameplate.disabled, 'one they have stays pressable');
+    assert.ok(byLabel.Banner.style === 2 && !byLabel.Banner.disabled, 'a banner they have stays pressable');
+    assert.ok(viewColors.pageRow('1', 'avatar', 'g', ['avatar']).components.find(b => b.label === 'Banner').style === 4, 'and one they lack is red');
+    assert.strictEqual(viewColors.missingHint(['avatar', 'banner']), '-# **No custom name color, nameplate, or deco detected.**', 'his wording');
+    assert.strictEqual(viewColors.missingHint(['avatar']), '-# **No custom banner, name color, nameplate, or deco detected.**');
+    assert.strictEqual(viewColors.missingHint(['avatar', 'banner', 'name']), '-# **No custom nameplate or deco detected.**');
+    assert.strictEqual(viewColors.missingHint(['avatar', 'banner', 'name', 'nameplate']), '-# **No custom deco detected.**');
+    assert.strictEqual(viewColors.missingHint(['avatar', 'banner', 'name', 'nameplate', 'decoration']), null);
+});
 check('View Colors registers as a public right-click on a user', () => {
     const json = viewColors.data.toJSON();
     assert.strictEqual(json.type, 2);

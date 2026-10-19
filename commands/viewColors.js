@@ -15,7 +15,7 @@
 const { ContextMenuCommandBuilder, ApplicationCommandType } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
 const { getPalettePanelData } = require('../utils/colorPalette');
-const { buildColorPalettePanel } = require('../utils/colorPaletteView');
+const { buildColorPalettePanel, getAvailableSources } = require('../utils/colorPaletteView');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildSyntheticInteraction } = require('../utils/interactionContext');
 const { entriesToCache, candidateKeys } = require('../utils/colorCache');
@@ -47,12 +47,24 @@ async function throwawayPrefs(target, guildAvatar) {
 
 const PAGES = [['avatar', 'Avatar'], ['banner', 'Banner'], ['name', 'Name'], ['nameplate', 'Nameplate'], ['decoration', 'Deco']];
 
-// The page row: the open page green and disabled (the in-panel switcher convention, rendering-and-ui.md), the rest grey. The subject's id rides in every custom_id.
-function pageRow(targetId, page, variantFlag) {
-    return { type: 1, components: PAGES.map(([key, label]) => ({
-        type: 2, style: key === page ? 3 : 2, label, disabled: key === page,
-        custom_id: `vc_page|${targetId}|${key}|${variantFlag}`,
-    })) };
+// The page row: the open page green and disabled (the in-panel switcher convention, rendering-and-ui.md), the rest grey, and a Banner / Name / Nameplate / Deco the person does not have red and disabled (Banner added at his "similarly with the banner as well") (2026-10-19 11:52 EDT, Harkirat: "keep those buttons in disabled red state"). The subject's id rides in every custom_id.
+const OPTIONAL = [['banner', 'banner'], ['name', 'name color'], ['nameplate', 'nameplate'], ['decoration', 'deco']];
+function pageRow(targetId, page, variantFlag, available = PAGES.map(([key]) => key)) {
+    return { type: 1, components: PAGES.map(([key, label]) => {
+        const missing = OPTIONAL.some(([k]) => k === key) && !available.includes(key);
+        return {
+            type: 2, style: missing ? 4 : key === page ? 3 : 2, label, disabled: missing || key === page,
+            custom_id: `vc_page|${targetId}|${key}|${variantFlag}`,
+        };
+    }) };
+}
+
+// "-# **No custom name color, nameplate, or deco detected.**" (his words), naming only what is missing; null when nothing is.
+function missingHint(available) {
+    const missing = OPTIONAL.filter(([k]) => !available.includes(k)).map(([, word]) => word);
+    if (!missing.length) return null;
+    const list = missing.length === 1 ? missing[0] : missing.length === 2 ? `${missing[0]} or ${missing[1]}` : `${missing.slice(0, -1).join(', ')}, or ${missing[missing.length - 1]}`;
+    return `-# **No custom ${list} detected.**`;
 }
 
 // Draws one page of `target`'s colours. `member` is their server profile when there is one to read (the right-click's own targetMember, or a REST fetch on a page click).
@@ -68,10 +80,21 @@ async function renderPanel(interaction, target, member, page) {
         avatarThumbnailUrl: data.avatarThumbnailUrl || target.displayAvatarURL({ extension: 'png', size: 256 }),
     });
     const panel = stripControls(components);
+    const available = getAvailableSources(data);
     const name = (member?.nick || target.globalName || target.username || 'this user').replace(/[*_`~|]/g, '');
     if (panel[0]?.components) {
-        panel[0].components.unshift({ type: 10, content: `-# Colors from **${name}**'s profile` });
-        panel[0].components.push(pageRow(target.id, page, variant === 'server' ? 's' : 'g'));
+        const parts = panel[0].components;
+        parts.unshift({ type: 10, content: `-# Colors from **${name}**'s profile` });
+        // The "Updated your profile? Refresh Colors" tip goes (Harkirat: "remove the "refresh color" hint line"): there is no Refresh here. What the person lacks is named in its place, above the row.
+        const hint = parts.find(c => c.type === 10 && /Refresh Colors/.test(c.content || ''));
+        const kept = hint ? hint.content.split('\n').filter(line => !/Refresh Colors/.test(line)) : [];
+        const missing = missingHint(available);
+        if (missing) kept.push(missing);
+        if (hint) {
+            if (kept.length) hint.content = kept.join('\n');
+            else parts.splice(parts.indexOf(hint), 1);
+        } else if (missing) parts.push({ type: 10, content: missing });
+        parts.push(pageRow(target.id, page, variant === 'server' ? 's' : 'g', available));
     }
     return { panel, files };
 }
@@ -84,6 +107,7 @@ module.exports = {
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]),
     stripControls,
     pageRow,
+    missingHint,
     renderPanel,
     PAGES,
 
