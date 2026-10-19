@@ -462,15 +462,17 @@ function drawTypeLabel(current = '') {
 // A Label holding a text input. interaction.fields.getTextInputValue() reads it exactly as it read an action row's.
 const drawTextLabel = (id, label, input) => new LabelBuilder().setLabel(label).setTextInputComponent(input.setCustomId(id));
 
-function buildAddDrawModal(drawType) {
+// `prefill` (added 2026-10-19 11:16 EDT, the Add to Draws right-click): title, date and url come from the post. A box gets a value only when there is one, so the blank box /manage opens keeps its exact shape.
+function buildAddDrawModal(drawType, prefill = {}) {
+    const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId(`add_draw_${drawType}`).setTitle(`Add ${drawType === 'new' ? 'New' : 'Returning'} Draw`);
     // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone.
     modal.addLabelComponents(
-        drawTextLabel('title', 'Draw Title', new TextInputBuilder().setStyle(TextInputStyle.Short)),
+        drawTextLabel('title', 'Draw Title', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short), prefill.title)),
         drawTextLabel('items', 'Items (Shorthand)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note")),
-        drawTextLabel('date', 'Release Date', new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15")),
+        drawTextLabel('date', 'Release Date', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15"), prefill.date)),
         // Optional (2026-07-12, Cloudinary-cache feature): blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js).
-        drawTextLabel('url', 'Thumbnail URL (blank = reuse cached image)', new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false)),
+        drawTextLabel('url', 'Thumbnail URL (blank = reuse cached image)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false), prefill.url)),
         drawTypeLabel()
     );
     return modal;
@@ -513,12 +515,14 @@ function buildCalendarBulkRemoveModal() {
     return modal;
 }
 
-function buildCalendarAddModal() {
+// `prefill` (added 2026-10-19 11:16 EDT, the Add to Calendar right-click): title, startDate and endDate come from the post. Same set-only-when-present rule as the Add Draw box.
+function buildCalendarAddModal(prefill = {}) {
+    const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId('modal_calendar_add').setTitle('Add Calendar Event');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 2').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5').setRequired(false)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short), prefill.title).setRequired(true)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 2'), prefill.startDate).setRequired(true)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5'), prefill.endDate).setRequired(false)),
         // Added for the 3-section calendar redesign (2026-07-31 12:10 EDT) -- blank auto-detects from the title's own wording (adminParser.js's guessCalendarCategory), same as an un-prefixed bulk-import line.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('blank = auto-detect from title').setRequired(false)),
         // Double CP event flag (added 2026-08-15 for /draw calculator) -- a plain Y/N text field rather than a real checkbox (Discord modals have none). Blank/anything not starting with Y is treated as No, matching the lenient parsing handlers/manage/calendar.js already uses.
@@ -654,28 +658,34 @@ function buildPatchUrlsModal(slot, currentEntry) {
     return modal;
 }
 
-// "Add New Season" (2026-07-24) -- pushes a brand-new entry onto patchNotes[], which becomes the new "current" entry (the old current entry automatically becomes a past season -- it's simply no longer the last item in the array, nothing else needs to change about it). Unlike Date/Info's 2 fields, this needs all 5 of a modal's field slots at once since there's no existing entry yet to spread the URLs input across separate dateinfo/urls1/urls2 actions -- so URLs 1/2 are collected here as multi-line paragraph fields (one URL per line) instead of 5 individually-addressable Short fields each, same shape Harkirat's own mockup called for.
-function buildPatchAddSeasonModal() {
+// "Add New Season" (2026-07-24) -- pushes a brand-new entry onto patchNotes[], which becomes the new "current" entry (the old current entry automatically becomes a past season -- it's simply no longer the last item in the array, nothing else needs to change about it). Unlike Date/Info's 2 fields, this needs all 5 of a modal's field slots at once since there's no existing entry yet to spread the URLs input across separate dateinfo/urls1/urls2 actions -- so URLs 1/2 are collected here as multi-line paragraph fields (one URL per line) instead of 5 individually-addressable Short fields each, same shape Harkirat's own mockup called for. `prefill` (added 2026-10-19 10:22 EDT, Add to Patch Notes): the right-click flow opens this same box with the post's date, extra text and images already in it. With no argument the box is blank, as /manage opens it.
+function buildPatchAddSeasonModal(prefill = {}) {
+    // A box gets a value only when there is one, so the blank box /manage opens keeps exactly its old shape (scripts/patchnotesHandlerSnapshot.test.js pins it).
+    const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId('modal_patch_addseason').setTitle('Add New Season');
+    const images = prefill.images || [];
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setPlaceholder('Leave blank to use the Season Titles/Dates title').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setRequired(false))
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)'), prefill.releaseDate).setRequired(true)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)'), prefill.description).setRequired(false)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph), images.slice(0, 5).join('\n')).setRequired(false)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph), images.slice(5, 10).join('\n')).setRequired(false))
     );
     return modal;
 }
 
-// "Past Seasons" edit (2026-07-24) -- same 5-field shape as Add New Season above, but pre-filled from and submitted back onto ONE SPECIFIC existing entry (picked via the page's `mng_patchseason_pick` select menu), addressed by its own `_id` in the custom_id -- never touches which entry is "current." `images` slices the same 0-4/5-9 way urls1/urls2 already do for the current entry.
-function buildPatchEditSeasonModal(entry, userTimezone) {
-    const modal = new ModalBuilder().setCustomId(`modal_patch_editseason_${entry._id}`).setTitle('Edit Past Season');
+// "Past Seasons" edit (2026-07-24) -- same 5-field shape as Add New Season above, but pre-filled from and submitted back onto ONE SPECIFIC existing entry (picked via the page's `mng_patchseason_pick` select menu), addressed by its own `_id` in the custom_id -- never touches which entry is "current." `images` slices the same 0-4/5-9 way urls1/urls2 already do for the current entry. `prefill` (added 2026-10-19 10:22 EDT, Add to Patch Notes): `images` and `description` replace the entry's own in the box, `releaseDateIfBlank` fills the date only when the entry has none, and `modalTitle` names what the right-click is doing. The submit is the same edit either way.
+function buildPatchEditSeasonModal(entry, userTimezone, prefill = {}) {
+    const images = prefill.images || entry.images || [];
+    const description = prefill.description ?? entry.description ?? '';
+    const releaseDate = formatReleaseDateTime(entry.releaseDate, userTimezone) || prefill.releaseDateIfBlank || '';
+    const modal = new ModalBuilder().setCustomId(`modal_patch_editseason_${entry._id}`).setTitle(prefill.modalTitle || 'Edit Past Season');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setValue(entry.titleOverride || '').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(formatReleaseDateTime(entry.releaseDate, userTimezone)).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)').setValue(entry.description || '').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(0, 5).join('\n')).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(5, 10).join('\n')).setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(releaseDate).setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)').setValue(description).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue(images.slice(0, 5).join('\n')).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue(images.slice(5, 10).join('\n')).setRequired(false))
     );
     return modal;
 }

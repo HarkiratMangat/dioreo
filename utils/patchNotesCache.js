@@ -79,9 +79,9 @@ function publicIdFor(patchId, imageIndex) {
 
 // Uploads a REMOTE url straight into Cloudinary (server-side fetch, the bot never downloads the image itself) -- never throws, a Cloudinary hiccup must fall back to the raw URL rather than blocking the admin's save, same philosophy as utils/cloudinaryCache.js's cacheThumbnail(). `meta` (optional): { season, releaseDate } -- the patch's title + release date, so the cached image carries its structured metadata immediately. Set in a SEPARATE best-effort step after the upload (setPatchImageMetadata swallows its own errors), same decoupling as the loadout side: a metadata hiccup must never turn a successful image cache into a fallback-to-raw-URL.
 async function cachePatchImage(patchId, imageIndex, sourceUrl, meta = {}) {
-    // Same shape as the catch block below, so a dev save falls back to the raw URL exactly as it does for a real Cloudinary hiccup -- the admin's save still succeeds, the image just isn't re-hosted.
+    // Same shape as the catch block below, so a dev save falls back to the raw URL exactly as it does for a real Cloudinary hiccup -- the admin's save still succeeds, the image just isn't re-hosted. ⚠️ It returned `url: null` until 2026-10-19 10:31 EDT, contradicting this comment: every dev-bot patch-notes save stored nulls in images[], and /patch notes then failed outright (Discord rejects a gallery item with no media.url). Found click-testing Add to Patch Notes.
     if (isCloudinaryWriteBlocked('upload', publicIdFor(patchId, imageIndex))) {
-        return { url: null, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
+        return { url: sourceUrl, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {

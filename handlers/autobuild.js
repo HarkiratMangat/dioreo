@@ -17,6 +17,23 @@ function ownsCustomId(customId) {
 
 async function route(interaction) {
     const { customId } = interaction;
+        // --- AUTOBUILD LOADOUT: WHICH SCREENSHOT --- the right-click's picker when a message has several images (2026-10-19 11:16 EDT). The images are held by commands/autobuildLoadout.js; after a restart or 30 minutes they are gone and the click says so.
+        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('autobuild_pick|')) {
+            const key = interaction.customId.split('|')[1];
+            const source = interaction.client.commands.get('Autobuild Loadout')?.heldFor(key);
+            if (!source) {
+                try {
+                    await interaction.reply({ content: "These images aren't held any more (the bot restarted, or 30 minutes passed). Right-click the message again.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Autobuild Loadout: could not explain an expired picker (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+            await interaction.deferUpdate();
+            const { runExtraction } = require('../utils/autobuildPipeline');
+            return await runExtraction(interaction, source.images[Number(interaction.values[0])], null, null);
+        }
+
         // --- AUTOBUILD: CONFIRM ---
         if (interaction.isButton() && interaction.customId.startsWith('autobuild_confirm_')) {
             const token = interaction.customId.replace('autobuild_confirm_', '');

@@ -28,6 +28,8 @@ const HANDLER_BINDINGS = [
     ['help', 'handleHelpInteraction'],
     ['invite', 'handleInviteInteraction'],
     ['embedTest', 'handleEmbedTestInteraction'],
+    ['addToPatchNotes', 'handleAddToPatchNotesInteraction'],
+    ['viewColors', 'handleViewColorsInteraction'],
     ['patchnotes', 'handlePatchnotesInteraction'],
     ['settings', 'handleSettingsInteraction'],
     ['loadouts', 'handleLoadoutsInteraction'],
@@ -51,6 +53,8 @@ const handleTimestampInteraction = late('timestamp', 'handleTimestampInteraction
 const handleHelpInteraction = late('help', 'handleHelpInteraction');
 const handleInviteInteraction = late('invite', 'handleInviteInteraction');
 const handleEmbedTestInteraction = late('embedTest', 'handleEmbedTestInteraction');
+const handleAddToPatchNotesInteraction = late('addToPatchNotes', 'handleAddToPatchNotesInteraction');
+const handleViewColorsInteraction = late('viewColors', 'handleViewColorsInteraction');
 const handlePatchnotesInteraction = late('patchnotes', 'handlePatchnotesInteraction');
 const handleSettingsInteraction = late('settings', 'handleSettingsInteraction');
 const handleLoadoutsInteraction = late('loadouts', 'handleLoadoutsInteraction');
@@ -207,6 +211,10 @@ async function handleInteractionInner(interaction) {
         if (await handleInviteInteraction(interaction)) return;
         markHandler('embedTest');
         if (await handleEmbedTestInteraction(interaction)) return;
+        markHandler('addToPatchNotes');
+        if (await handleAddToPatchNotesInteraction(interaction)) return;
+        markHandler('viewColors');
+        if (await handleViewColorsInteraction(interaction)) return;
         markHandler('patchnotes');
         if (await handlePatchnotesInteraction(interaction)) return;
         markHandler('settings');
@@ -399,6 +407,32 @@ async function handleInteractionInner(interaction) {
             }
         }
 
+    }
+
+    // ==========================================
+    // --- CONTEXT MENU ROUTE (right-click → Apps) ---
+    // ==========================================
+    // One entry point for every right-click command (2026-10-19 09:49 EDT, Add to Patch Notes). A context-menu command's name is its label ("Add to Patch Notes"), and loadCommandModules keys client.commands by that same name, so the lookup is the slash route's. Errors fall through to the outer try/catch, the crash net; the fallback reply is awaited for the reason the slash route's comment gives.
+    if (interaction.isContextMenuCommand()) {
+        const command = interaction.client.commands.get(interaction.commandName);
+        if (command) {
+            markHandler(interaction.commandName);
+            try {
+                await command.execute(interaction);
+            } catch (error) {
+                console.error(`Error executing context menu command ${interaction.commandName}:`, error);
+                try {
+                    if (interaction.deferred || interaction.replied) {
+                        await interaction.editReply({ content: 'There was an error running this!' });
+                    } else {
+                        await interaction.reply({ content: 'There was an error running this!', ephemeral: true });
+                    }
+                } catch (notifyError) {
+                    console.error(`Failed to notify user of context menu error for ${interaction.commandName}:`, notifyError);
+                }
+            }
+            return;
+        }
     }
 
     // ==========================================

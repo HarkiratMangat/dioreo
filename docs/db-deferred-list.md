@@ -1117,6 +1117,14 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### Dioreo Admin — a second Discord application that holds only the admin commands `[P1 · M]`
+
+*(filed 2026-10-19 12:37 EDT, Harkirat: "yeah dioreo admin seems logical then. we can build it in a new branch.")* **The problem:** `/manage`, `/bot`, `/autobuild` and the four admin right-clicks (Add to Patch Notes, Autobuild Loadout, Add to Draws, Add to Calendar) register as user-install commands, so they show in the command list and the right-click menu of anyone who adds Dioreo to their account, and refuse on the click. Discord has no per-user visibility for user-install commands; `/admin` hides itself only because it is a server command with `ManageGuild`.
+- **The design he chose (of three):** a second application, **Dioreo Admin**, user-install only, its install link shared only with admins. Same code, same database, same `/bot access` checks on every click. The one process logs in twice; `bot/registry.js`'s `ADMIN_COMMAND_NAMES` decides which app gets each command (the public app gets everything not on the list), and a test fails on an admin-locked command missing from the list. Rejected: registering the admin commands only in dioreoland with role overrides (loses DMs, which he asked for on 2026-07-12), and leaving it as is.
+- **What changes for him:** admin panels and `/autobuild` results post as Dioreo Admin; the admin app needs its own copy of the emojis (the dev bot's sync script does this by name); each admin adds the app once. Deploy is unchanged (`deploy.sh` restarts both); the VM's `.env` gains one admin token line, on his word.
+- 🔴 **The dotenv backfill trap applies:** `index.js`'s `dotenv.config()` backfills any key `.env.dev` omits from the prod `.env`, so if the prod admin token is ever in the Mac's `.env`, a dev bot without its own admin key logs in as PROD Dioreo Admin. `.env.dev` must carry the key, set to the dev admin token or explicitly blank.
+- **Verify done:** a non-admin account that has added Dioreo sees none of the seven admin commands; an admin sees all seven under Dioreo Admin and each works in a DM; the public app's command list no longer contains them.
+
 ### The Rank Mode badge family — designed on Board 4 (2026-09-25/26), the port pending: Session 5 `[P1 · M]`
 
 > ✅ **2026-09-30 21:05 EDT: the DESIGN is done; only the PORT is open.** The family (`Modes`: HP · S&D · DOM · TDM · FTL · Control), its rules (MP only, several allowed — his 2026-09-26 16:26 EDT), its look and motion (pick C, 2026-09-26 15:02 EDT) and his SVG icons (`docs/pins2/data/`) are all settled and built on Board 4, signed off at Version 81. What remains is **The port (Session 5)** below. The title read "design on Board 4, then implement" and the last paragraph "Not yet defined" until today — both from before his spec arrived.

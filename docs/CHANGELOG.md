@@ -29,7 +29,19 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.90.0 — 2026-10-19 09:51 EDT (#199) — the calculator's buttons rearranged, season emojis on every season title, and a Credits row in /help
+## Pre-Release v3.91.0 — 2026-10-19 12:39 EDT (#200) — right-click a post to add it to patch notes, draws or the calendar, and right-click a person to see their colours
+**Six right-click commands, `/colors`, `/calendar`, `/patch notes`, `/draw calculator`, a new `ColorCache` model and PRIVACY.md.** Harkirat's asks on this branch; what is true now is `.claude/rules/commands-overview.md`.
+
+- **Add to Patch Notes** (admin, on a post or a forward of it). A private panel shows the post's images and a season dropdown (New season + the 24 newest); Add images, Replace images or Create season opens /manage's own Season box pre-filled. The post's date fills Release Date only when it is blank, its extra text is added to Additional Info, and its title line and "final patchnotes are subject to change" are left out.
+- **Autobuild Loadout, Add to Draws, Add to Calendar** (admin): `/autobuild` on the post's image (a picker for several), and /manage's Add Draw and Add Calendar Event boxes pre-filled from the post. Each checks the same /manage page or command access on every click.
+- **Convert Times** (everyone): every date and time in a message as Discord timestamps, privately, read in your /settings zone when the text gives none.
+- **View Colors** (everyone, on a person): their palette, public by default, paged like `/colors` and accented by their avatar, with no timeout. Anyone may press its pages; it always shows that person. Pages they lack are left off with a "No custom … detected." line.
+- **`/colors`:** Avatar and Banner link buttons on every page, before Refresh; the open page is green.
+- **Smaller:** the calendar's section toggles turn green and the footer row blurple; `/patch notes`' hint reads "View **previous balance changes**" and it no longer breaks when the dev bot cannot upload to Cloudinary; `/draw calculator`'s Delete All warns first with Keep Them, the single delete hides Delete All, and both use his new Warn, Delete and Keep icons.
+- **Data:** new `ColorCache` holds the colours of people who have never used Dioreo, keyed by a hash of the image with no user id, and deleted 30 days after first seen. PRIVACY.md §2.2, §7 and Appendix A say so, in the pending v1.11.
+
+
+## Pre-Release v3.90.0 — 2026-10-19 09:51 EDT (#199 · `40724c97`) — the calculator's buttons rearranged, season emojis on every season title, and a Credits row in /help
 **`/draw calculator`, `/draws`, `/calendar`, `/patch notes`, `/manage` season titles, `/help` and NOTICE.** Harkirat's eight comments on `claude/draw-calc-tweaks-kxm17f`; what is true now is `.claude/rules/draw-prices.md` § CURRENT STATE.
 
 - **The calculator's rows.** The result's row reads New Calculation · Export · View Saved · Save Result; the editor's nav row puts View Saved first; and every nav row gains **Draws** in front of Draw Prices, opening `/draws` as its own private message. The whole "Double CP event is live" line is bold. New Calculation and Restore Calculation use his re-uploaded NewCalc icon.

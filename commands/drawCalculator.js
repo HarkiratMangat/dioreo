@@ -632,7 +632,7 @@ function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
         components: [
             { type: 2, style: 4, label: label || `Remove ${plural(count, 'line')}`, custom_id: encodeState(verb, { ...state, mask }) },
             // Title Case like every other button (click-test 2026-10-14 18:58 EDT).
-            { type: 2, style: 2, label: count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('page', { ...state, mask: 0 }) }
+            { type: 2, style: 2, label: count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('page', { ...state, mask: 0 }), emoji: emojis.parseEmoji(emojis.keep) }
         ]
     };
 }
@@ -1285,7 +1285,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         if (overwriteConfirm) {
             components.push({ type: 1, components: [
                 { type: 2, style: 4, label: `Replace "${String(overwriteConfirm.name).slice(0, 60)}"`, custom_id: encodeState('owok', { ...view, target: overwriteConfirm.target }) },
-                { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('saved', view) }
+                { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }
             ] });
         } else {
             components.push({ type: 1, components: [{ type: 2, style: 1, label: 'Save as New', custom_id: encodeState('modal_name', view), emoji: emojis.parseEmoji(emojis.saveStar) }] });
@@ -1313,10 +1313,11 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `### Delete\n-# Pick the ones you no longer need. Nothing is deleted until you confirm.` });
         if (savedConfirm) {
-            components.push({ type: 10, content: `-# ⚠️ Delete ${savedConfirm.count === 1 ? 'this calculation' : `these ${savedConfirm.count} calculations`}? This cannot be undone.` });
+            // A heading, not small print (2026-10-19 11:00 EDT, Harkirat: "### :emoji: Delete this calculation? This cannot be undone."); the emoji is his Warn, sent 2026-10-19 12:53 EDT.
+            components.push({ type: 10, content: `### ${emojis.warn} Delete ${savedConfirm.count === 1 ? 'this calculation' : `these ${savedConfirm.count} calculations`}? This cannot be undone.` });
             components.push({ type: 1, components: [
-                { type: 2, style: 4, label: `Delete ${plural(savedConfirm.count, 'Calculation')}`, custom_id: encodeState('savedelok', { ...view, mask: savedConfirm.mask, check: savedConfirm.check }) },
-                { type: 2, style: 2, label: savedConfirm.count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view) }
+                { type: 2, style: 4, label: `Delete ${plural(savedConfirm.count, 'Calculation')}`, custom_id: encodeState('savedelok', { ...view, mask: savedConfirm.mask, check: savedConfirm.check }), emoji: emojis.parseEmoji(emojis.deleteBin) }, // Remove Draws' bin (2026-10-19 10:46 EDT, his ask)
+                { type: 2, style: 2, label: savedConfirm.count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }
             ] });
         } else {
             components.push({ type: 1, components: [{
@@ -1326,7 +1327,15 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
             }] });
         }
         const armed = state.verb === 'delallarm';
-        components.push({ type: 1, components: [{ type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) }] });
+        // No Delete All while a single delete is being confirmed (2026-10-19 10:46 EDT, Harkirat: "remove the "delete all" button from the single deletion's confirmation phase"): the confirm row is the only choice then.
+        if (!savedConfirm) {
+        // Armed Delete All carries the same warning and the same way out as a single delete (2026-10-19 10:45 EDT, Harkirat: "can that warning also appear after clicking "delete all" ... As well as a "keep them" button appearing beside it").
+        if (armed) components.push({ type: 10, content: `### ${emojis.warn} Delete ${list.length === 1 ? 'this calculation' : `all ${list.length} calculations`}? This cannot be undone.` });
+        components.push({ type: 1, components: [
+            { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
+            ...(armed ? [{ type: 2, style: 2, label: list.length === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }] : []),
+        ] });
+        }
     }
     // "An unsaved calculation is cleared 30 days after it was started" left this view for Help, which already says it under Saving.
     components.push({ type: 14, spacing: 2, divider: true }, savedFooterRow(state));

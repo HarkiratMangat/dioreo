@@ -144,8 +144,8 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
     const releaseUnix = Math.floor(new Date(activePatch.releaseDate).getTime() / 1000);
 
-    // Map raw Cloudinary Strings into the Type 12 Media Array standard
-    const carouselItems = activePatch.images.map(imgUrl => ({ media: { url: imgUrl } }));
+    // Map raw Cloudinary Strings into the Type 12 Media Array standard. Blank entries are skipped and a season with no images gets no gallery (2026-10-19 10:32 EDT): Discord rejects a gallery item without a URL, and a gallery with no items, so either one failed the whole command. Found click-testing Add to Patch Notes, after a dev-bot save had stored nulls.
+    const carouselItems = (activePatch.images || []).filter(Boolean).map(imgUrl => ({ media: { url: imgUrl } }));
 
     // NOTE (redesigned during review): activePatch.title now holds just the season # & name (e.g. "Season 6: Take Your Heart") rather than a full "Balance Changes for..." string. Two-line title (season/patch name on top, command header below) — shared pattern, matches the calendar_update_ui.json redesign; see utils/titleBlock.js. Older entries that still have the full legacy sentence stored get it stripped by cleanPatchTitle() rather than rendering "Balance Changes — Balance Changes for...".
     const cleanTitle = displayTitle(activePatch);
@@ -171,11 +171,11 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
     components.push(
         { type: 14, spacing: 2, divider: true },
-        { type: 12, items: carouselItems }, // NATIVE MEDIA CAROUSEL INJECTION
+        ...(carouselItems.length ? [{ type: 12, items: carouselItems }] : []), // NATIVE MEDIA CAROUSEL INJECTION
         // Credit where the content is shown (2026-10-19 09:39 EDT, Harkirat: "let's just do it for good faith"): Leakers on Duty publish under CC BY, which asks for attribution in the medium, and their watermark does not come along when the content is retyped. NOTICE §4A.4 carries the full credit.
         { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>\n-# Source: [Leakers on Duty](${LEAKERS_ON_DUTY_URL})` },
         { type: 14, spacing: 2, divider: true },
-        { type: 10, content: `-# Select from the list below to view **previous balance changes**` }
+        { type: 10, content: `-# View **previous balance changes**` }
     );
 
     const containerPayload = {
