@@ -100,7 +100,7 @@ const source = extractSource(forward());
 const KEY = '1561600000000000000';
 
 check('panel on the current season: Add + Replace aimed at it, the newest season selected, New season offered first', () => {
-    const all = flat(command.buildPanel(KEY, source, seasons(3)));
+    const all = flat(command.buildPanel(KEY, source, seasons(3, 2)));
     const select = all.find(c => c.type === 3);
     assert.strictEqual(select.options[0].value, 'new');
     assert.strictEqual(select.options[1].value, 'id2');
@@ -109,6 +109,11 @@ check('panel on the current season: Add + Replace aimed at it, the newest season
     assert.deepStrictEqual(ids, [`ptn_add|${KEY}|id2`, `ptn_replace|${KEY}|id2`]);
     assert.ok(all.every(c => !c.custom_id || c.custom_id.length <= 100), 'a custom_id over Discord\'s 100 characters');
     assert.ok(all.length <= 40, `${all.length} components`);
+});
+
+check('a season with no images gets only Add images (Add and Replace would open the same box)', () => {
+    const all = flat(command.buildPanel(KEY, source, seasons(3, 0)));
+    assert.deepStrictEqual(all.filter(c => c.type === 2).map(b => b.custom_id), [`ptn_add|${KEY}|id2`]);
 });
 
 check('panel on New season: one Create button; with no seasons at all it starts there', () => {

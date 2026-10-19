@@ -67,11 +67,17 @@ function buildPanel(key, source, seasonalDoc, selected) {
     if (entry) {
         const { dropped } = mergeImages(entry.images, source.images, 'add');
         const have = (entry.images || []).length;
-        components.push({ type: 10, content: `-# This season has ${have} image${have === 1 ? '' : 's'}.${dropped ? ` **Add** fits only ${source.images.length - dropped} of the ${source.images.length} (10 is the limit); **Replace** fits them all.` : ''}` });
-        components.push({ type: 1, components: [
-            { type: 2, style: 1, label: 'Add images', custom_id: `ptn_add|${key}|${pick}` },
-            { type: 2, style: 2, label: 'Replace images', custom_id: `ptn_replace|${key}|${pick}` },
-        ] });
+        // A season with no images gets only Add (2026-10-19 10:35 EDT, Harkirat: "yes" to one button), since Add and Replace would open the same box.
+        if (!have) {
+            components.push({ type: 10, content: '-# This season has no images yet.' });
+            components.push({ type: 1, components: [{ type: 2, style: 1, label: 'Add images', custom_id: `ptn_add|${key}|${pick}` }] });
+        } else {
+            components.push({ type: 10, content: `-# This season has ${have} image${have === 1 ? '' : 's'}.${dropped ? ` **Add** fits only ${source.images.length - dropped} of the ${source.images.length} (10 is the limit); **Replace** fits them all.` : ''}` });
+            components.push({ type: 1, components: [
+                { type: 2, style: 1, label: 'Add images', custom_id: `ptn_add|${key}|${pick}` },
+                { type: 2, style: 2, label: 'Replace images', custom_id: `ptn_replace|${key}|${pick}` },
+            ] });
+        }
     } else {
         components.push({ type: 1, components: [{ type: 2, style: 3, label: 'Create season', custom_id: `ptn_new|${key}` }] });
     }
