@@ -29,6 +29,14 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
+## Pre-Release v3.95.0 — 2026-10-19 18:24 EDT (#205) — the Privacy Policy's two change-history tables now list the same versions
+**`docs/legal/PRIVACY.md`, `public/privacy.html` and two records.** Harkirat, 2026-10-19 18:21 EDT: "Yeah, you can fix the privacy.md gap if you want."
+
+- **§12.1 Revision history gains 1.16 and 1.14**, written for a reader from Appendix B's text and §2.1d. It had jumped from 1.15 to a 1.16 it never described.
+- **Appendix B's 1.14 is a table row now**, marked *(pending)* for the v3 release like its neighbours; it sat as a loose paragraph above the table, dated as if in effect. `colorsVisibility` ships with v3. Nothing about what the Bot collects changes.
+- **Deferred list:** the calculator Delete click-test is dropped on his word, the history-gap entry is closed, and his Public Bot check is recorded on the Dioreo Admin entry.
+
+
 ## Pre-Release v3.94.0 — 2026-10-19 18:10 EDT (#203 · `c508a9f3`) — the deferred list and roadmap swept for staleness, and Harkirat's 2026-10-19 decisions recorded
 **Records only, plus one code comment.** His ask 2026-10-19 18:00 EDT: clean the staleness and gaps out of the deferred list so everything is up to date. What is true now is `docs/db-deferred-list.md` and `docs/ROADMAP.md`.
 
