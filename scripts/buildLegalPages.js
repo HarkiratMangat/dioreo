@@ -6966,15 +6966,15 @@ const CMD_JS = `
   var MP_ALL=[].concat(WEAPONS.ar,WEAPONS.smg,WEAPONS.lmg,WEAPONS.marksman,WEAPONS.sniper,WEAPONS.shotgun,WEAPONS.secondaries);
 
   /* /gunsmiths list's scope: option has no free-typed value -- it's a static
-     11-choice picker (bot/registry.js's applyGunsmithsScopeChoices()), so its
+     10-choice picker (bot/registry.js's applyGunsmithsScopeChoices()), so its
      pairs are declared directly rather than built from a p:/o: pool, same
      shape as /draws' page pairs below. Labels are the real choice NAMES
-     (utils/loadoutScopes.js's scopeChoices, relabelled "All ... builds"
-     2026-10-19 19:00 EDT). */
-  var GUNSMITHS_LIST_PAIRS=[['scope','All MP builds'],['scope','All AR builds'],['scope','All LMG builds'],
-    ['scope','All MARKSMAN builds'],['scope','All SECONDARY builds'],['scope','All SHOTGUN builds'],
-    ['scope','All SMG builds'],['scope','All SNIPER builds'],['scope','All Meta MP builds'],
-    ['scope','All DMZ builds'],['scope','All Meta DMZ builds']];
+     (utils/loadoutScopes.js's scopeChoices, reordered with one META
+     choice 2026-10-19 19:39 EDT). */
+  var GUNSMITHS_LIST_PAIRS=[['scope','All META builds'],['scope','All DMZ builds'],['scope','All MP builds'],
+    ['scope','All AR builds [MP]'],['scope','All LMG builds [MP]'],['scope','All MARKSMAN builds [MP]'],
+    ['scope','All SECONDARY builds [MP]'],['scope','All SHOTGUN builds [MP]'],['scope','All SMG builds [MP]'],
+    ['scope','All SNIPER builds [MP]']];
 
   var SPECS=[
     {c:'/gunsmiths search', o:'weapon', p:MP_ALL, w:1},

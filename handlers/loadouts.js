@@ -64,7 +64,7 @@ async function route(interaction) {
             return await renderScopeBrowse(interaction, scope, target, { isUpdate: true });
         }
 
-        // /gunsmiths list SCOPE PAGING + COPY -- a BUTTON. `action` outside {next,prev,copy,copyatt} guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
+        // /gunsmiths list SCOPE PAGING + COPY + META SWITCH -- a BUTTON. `action` outside {next,prev,copy,copyatt,meta} guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
         if (interaction.isButton() && interaction.customId.startsWith('gsb~')) {
             const [, action, scopeToken, flatIndexRaw] = interaction.customId.split('~');
             const { parseScopeToken, resolveScopeBuilds, flatIndexToPosition } = require('../utils/loadoutScopes');
@@ -92,6 +92,11 @@ async function route(interaction) {
                 return;
             }
 
+            // META MP / DMZ SWITCH (2026-10-19 19:38 EDT): one meta choice, two modes; opens the other mode's meta browse in place, from its first build.
+            if (action === 'meta') {
+                const { renderScopeBrowse } = require('../commands/gunsmiths');
+                return await renderScopeBrowse(interaction, scope, 0, { isUpdate: true });
+            }
             if (action !== 'next' && action !== 'prev') return;
             const { renderScopeBrowse } = require('../commands/gunsmiths');
             const builds = await resolveScopeBuilds(scope);

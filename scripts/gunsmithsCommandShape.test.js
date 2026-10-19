@@ -14,7 +14,18 @@ const allDescs = [json.description, ...json.options.flatMap(o => [o.description,
 allDescs.forEach(dsc => assert.ok(dsc.length <= 100, `description over 100 chars: "${dsc}"`));
 const scopeOpt = json.options.find(o => o.name === 'list').options.find(o => o.name === 'scope');
 scopeOpt.choices.forEach(c => assert.ok(c.name.length <= 100, `choice name too long: ${c.name}`));
-assert.strictEqual(scopeOpt.choices.length, 11, 'expected 11 scope choices (7 live categories + 4 fixed)');
+// 10 since 2026-10-19 19:39 EDT: Meta MP and Meta DMZ merged into one "All META builds" choice with an MP / DMZ switch on the panel (Harkirat).
+assert.strictEqual(scopeOpt.choices.length, 10, 'expected 10 scope choices (3 fixed + 7 categories)');
+assert.deepStrictEqual(scopeOpt.choices.slice(0, 4).map(c => c.name), ['All META builds', 'All DMZ builds', 'All MP builds', 'All AR builds [MP]'], 'his order: META, DMZ, MP, then each class tagged [MP]');
+{
+    // The meta switch: under a meta browse only, the side on screen disabled and the other one live.
+    const { buildLoadoutCard } = require('../utils/loadoutRender');
+    const build = { weaponName: 'AK117', weaponKey: 'ak117', category: 'AR', mode: 'MP', attachments: ['a'], lastUpdated: new Date(0) };
+    const ids = (token) => JSON.stringify(buildLoadoutCard([build], 0, { color: 0, idPrefix: 'mp', browse: { scopeToken: token, flatIndex: 0, flatTotal: 1, scopeLabel: 'x' } }).components);
+    assert.ok(ids('MP.*.meta').includes('"custom_id":"gsb~meta~DMZ.*.meta","disabled":false'), 'an MP meta panel offers DMZ');
+    assert.ok(ids('DMZ.*.meta').includes('"custom_id":"gsb~meta~MP.*.meta","disabled":false'), 'a DMZ meta panel offers MP');
+    assert.ok(!ids('MP.AR.std').includes('gsb~meta~'), 'no switch outside a meta browse');
+}
 
 // The falsifier: a builder that mixes a top-level option MUST trip the first assertion.
 const { SlashCommandBuilder } = require('discord.js');

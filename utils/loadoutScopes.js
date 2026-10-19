@@ -41,17 +41,14 @@ const FIXED_SCOPES = [
     { value: 'DMZ.*.std',  label: 'DMZ',           mode: 'DMZ', category: null, metaOnly: false },
 ];
 
-// The /gunsmiths list `scope` dropdown: each choice says it opens ALL of something (Harkirat, 2026-10-19 18:59 EDT: "improve gunsmith list's options to be better labeled, such 'all ar' etc"), All MP first, then each category, then Meta MP, then DMZ and Meta DMZ. Only the choice NAMES changed; every value stays the token a gsb~ custom_id carries, so old panels keep paging. The panel's own heading still uses FIXED_SCOPES' `label`.
-const CHOICE_NAME = { 'MP.*.std': 'All MP builds', 'MP.*.meta': 'All Meta MP builds', 'DMZ.*.std': 'All DMZ builds', 'DMZ.*.meta': 'All Meta DMZ builds' };
+// The /gunsmiths list dropdown, in Harkirat's order (2026-10-19 19:38 EDT): "All META builds", "All DMZ builds", "All MP builds", then each class as "All AR builds [MP]". Meta is ONE choice: it opens the MP meta, and a toggle under the panel switches to the DMZ meta (utils/loadoutRender.js, `gsb~meta~`). Earlier the same evening the names became "All ... builds" (18:59 EDT). Every value is still the token a gsb~ custom_id carries, so old panels keep paging; DMZ.*.meta is no longer a choice but is still a valid token. The panel's own heading still uses FIXED_SCOPES' `label`.
 function scopeChoices(categories) {
     const { displayCategoryLabel } = require('./loadoutRender');
-    const fixed = (value) => ({ name: CHOICE_NAME[value], value });
     return [
-        fixed('MP.*.std'),
-        ...categories.map(c => ({ name: `All ${displayCategoryLabel(c)} builds`, value: `MP.${c}.std` })),
-        fixed('MP.*.meta'),
-        fixed('DMZ.*.std'),
-        fixed('DMZ.*.meta'),
+        { name: 'All META builds', value: 'MP.*.meta' },
+        { name: 'All DMZ builds', value: 'DMZ.*.std' },
+        { name: 'All MP builds', value: 'MP.*.std' },
+        ...categories.map(c => ({ name: `All ${displayCategoryLabel(c)} builds [MP]`, value: `MP.${c}.std` })),
     ];
 }
 

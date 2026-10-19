@@ -297,6 +297,14 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
 
     const outerComponents = [containerPayload];
     if (browseRow) outerComponents.push(browseRow);
+    // A meta browse carries its own MP / DMZ switch, outside the panel at its foot (Harkirat, 2026-10-19 19:38 EDT: "Merge meta into a single list, with a button outside at the foot of the embed to toggle between MP/DMZ metas"). The side on screen is green and disabled, the other grey; a click re-opens the meta browse in that mode from its first build.
+    if (browse && browse.scopeToken.endsWith('.*.meta')) {
+        const onDmz = browse.scopeToken.startsWith('DMZ');
+        outerComponents.push({ type: 1, components: [
+            { type: 2, style: onDmz ? 2 : 3, label: 'MP Meta', custom_id: 'gsb~meta~MP.*.meta', disabled: !onDmz },
+            { type: 2, style: onDmz ? 3 : 2, label: 'DMZ Meta', custom_id: 'gsb~meta~DMZ.*.meta', disabled: onDmz }
+        ] });
+    }
 
     // "Share Publicly" stays its own row OUTSIDE the container too — same convention as every other command in the bot, see utils/shareButton.js.
     const components = withShareButton(outerComponents, isEphemeral);
