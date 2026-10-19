@@ -7,7 +7,7 @@ const NAV_ITEMS = [
     { label: 'Season End', custom_id: 'nav_seasonend' }
 ];
 
-// `activeCustomId` gets style 3 (Success/green) + disabled; every other button stays style 2 (Secondary/gray). Green since 2026-10-15 18:14 EDT (Harkirat: "let's change the season command's outside action row to green-disabled, instead of red-disabled"), the same green-means-selected rule /draw prices' region switcher took on 2026-10-14; it was style 4 (red) before.
+// `activeCustomId` gets style 1 (Primary/blurple) + disabled; every other button stays style 2 (Secondary/gray). Blurple since 2026-10-19 09:57 EDT (Harkirat: "swap green-disabled in the outside footer action row to blurple-disabled", in the same ask that moved /calendar's Draws/Events/Modes toggles to green-disabled, so the in-panel switcher and this footer no longer share a colour). It was style 3 (green) from 2026-10-15 18:14 EDT and style 4 (red) before that.
 //
 // `overrides` (added 2026-08-26 23:03 EDT, the /draw prices <-> /draw calculator cross-link) lets a caller replace one slot's label/custom_id/emoji entirely -- keyed by the slot's ORIGINAL custom_id, so /draw prices can swap its own disabled-and-useless "Draw Prices" button for an active "Draw Calculator" link without a duplicate copy of NAV_ITEMS. An overridden item is never treated as the active/disabled slot, regardless of `activeCustomId` -- it points somewhere else now, so it must stay clickable.
 function buildGlobalNavRow(activeCustomId, overrides = {}) {
@@ -19,7 +19,7 @@ function buildGlobalNavRow(activeCustomId, overrides = {}) {
             const isActive = !override && item.custom_id === activeCustomId;
             return {
                 type: 2,
-                style: isActive ? 3 : 2,
+                style: isActive ? 1 : 2,
                 label: resolved.label,
                 custom_id: resolved.custom_id,
                 ...(resolved.emoji ? { emoji: resolved.emoji } : {}),
