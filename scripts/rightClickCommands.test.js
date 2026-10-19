@@ -129,6 +129,9 @@ check('View Colors: the hint names what the person lacks, in his wording', () =>
     assert.strictEqual(viewColors.missingHint(['avatar']), '-# **No custom banner, name color, nameplate, or deco detected.**');
     assert.strictEqual(viewColors.missingHint(['avatar', 'banner', 'name', 'nameplate']), '-# **No custom deco detected.**');
     assert.strictEqual(viewColors.missingHint(['avatar', 'banner', 'name', 'nameplate', 'decoration']), null);
+    // The profile line sits at the bottom, directly above the missing-pages hint, and stands alone when nothing is missing.
+    assert.strictEqual(viewColors.footerHint('dior', ['avatar', 'banner']), "-# Colors from **dior**'s profile\n-# **No custom name color, nameplate, or deco detected.**");
+    assert.strictEqual(viewColors.footerHint('dior', ['avatar', 'banner', 'name', 'nameplate', 'decoration']), "-# Colors from **dior**'s profile");
 });
 check('View Colors is accented with the avatar\'s First Impression (its palette\'s first swatch)', () => {
     assert.strictEqual(viewColors.firstImpression({ avatar: null }), null);

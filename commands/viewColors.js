@@ -37,6 +37,11 @@ async function throwawayPrefs(target, guildAvatar) {
 // What a person can lack, in the hint's order and wording ("-# **No custom name color, nameplate, or deco detected.**", his; banner added at "similarly with the banner as well"). A page they lack has no button at all, as on /colors (2026-10-19 12:07 EDT: "instead of the red disabled buttons, let's stick to how the /color command does it by just removing the button ... But let's keep the "no banner, etc..." hint line").
 const OPTIONAL = [['banner', 'banner'], ['name', 'name color'], ['nameplate', 'nameplate'], ['decoration', 'deco']];
 
+// Whose colours these are, at the bottom just above the missing-pages hint (2026-10-19 13:04 EDT, Harkirat: "move the 'Colors from dior's profile' line to the bottom. above the 'No custom name color detected.' hint").
+function footerHint(name, available) {
+    return [`-# Colors from **${name}**'s profile`, missingHint(available)].filter(Boolean).join('\n');
+}
+
 function missingHint(available) {
     const missing = OPTIONAL.filter(([k]) => !available.includes(k)).map(([, word]) => word);
     if (!missing.length) return null;
@@ -63,15 +68,14 @@ async function renderPanel(interaction, target, member, page, subpage = 0) {
     const data = await getPalettePanelData(subject, prefs, page, false, 'server');
     const variant = data.hasServerProfile ? 'server' : 'global';
     const ids = pageId(target.id, variant === 'server' ? 's' : 'g');
+    const name = (member?.nick || target.globalName || target.username || 'this user').replace(/[*_`~|]/g, '');
     const { components, files } = await buildColorPalettePanel({
         source: page, subpage, data, targetUserId: target.id, variant,
         avatarThumbnailUrl: data.avatarThumbnailUrl || target.displayAvatarURL({ extension: 'png', size: 256 }),
         // A page button ends in `p`, a pager button in its number: the open page's button and the pager's "page 1" arrow both meant `{page}|0` once, and Discord refuses a message with two identical custom_ids (2026-10-19 12:20 EDT, his first right-click on himself). The handler reads `p` as page 1.
         readOnly: true, makePageId: key => ids(key, 'p'), makeSubpageId: (key, sub) => ids(key, sub),
-        accentColor: firstImpression(data), extraHint: missingHint(getAvailableSources(data)),
+        accentColor: firstImpression(data), extraHint: footerHint(name, getAvailableSources(data)),
     });
-    const name = (member?.nick || target.globalName || target.username || 'this user').replace(/[*_`~|]/g, '');
-    components[0].components.unshift({ type: 10, content: `-# Colors from **${name}**'s profile` });
     return { panel: components, files };
 }
 
@@ -82,6 +86,7 @@ module.exports = {
         // PUBLIC, like /colors: guild and user install, every context.
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]),
     missingHint,
+    footerHint,
     firstImpression,
     pageId,
     renderPanel,
