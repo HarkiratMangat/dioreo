@@ -299,7 +299,7 @@ t('the 2X offers sit under the cost breakdown in his wording, each option giving
     const top = panel[0].components;
     const ent = top.findIndex(c => c.type === 1 && c.components[0].custom_id && verbOf(c.components[0]) === 'ent');
     assert.ok(ent > 0, 'the dropdown is there');
-    assert.ok(top[ent - 1].type === 10 && top[ent - 1].content === '-# 🎉 A **Double CP** event is live right now.\n-# Select which 2X CP offers are still available for you to purchase.', top[ent - 1].content);
+    assert.ok(top[ent - 1].type === 10 && top[ent - 1].content === '-# 🎉 Double CP event is live!\n-# Select which 2X CP offers are still available for you to purchase.', top[ent - 1].content);
     assert.deepStrictEqual([top[ent - 2].type, top[ent - 2].divider, top[ent - 2].spacing], [14, false, 1], 'a small space with no line above it');
     assert.ok(top[ent - 3].type === 9 && /Full Breakdown|Simple Breakdown/.test(top[ent - 3].accessory.label), 'right under the cost breakdown');
     assert.ok(top.slice(ent + 1).some(c => c.type === 1 && c.components.some(b => b.label === 'Save Result')), 'above the action row');
@@ -317,7 +317,7 @@ t('Set Region & Balance sits at the bottom of the landing and the editor and und
         result: render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 6 }], ...basket }))
     };
     const e = require('../utils/emojiMap');
-    const his = `-# **${e.region20Cp} Region: \`20 CP\` · ${e.cp} Balance: \`3,000 CP\`**\n-# **${e.mythicCard} Mythic Cards: \`300\` · ${e.mythicCoin} Mythic Coins: \`0\`**`;
+    const his = `-# **${e.region20Cp} Region: \`20 CP\`${e.blank}${e.cp} Balance: \`3,000 CP\`**\n-# **${e.mythicCard} Mythic Cards: \`300\`${e.blank}${e.mythicCoin} Mythic Coins: \`0\`**`;
     const at = {};
     for (const [name, panel] of Object.entries(screens)) {
         assert.strictEqual(buttons(panel).filter(b => verbOf(b) === 'region' || b.label === 'Set Balance').length, 0, `${name}: no region buttons, no Set Balance`);

@@ -598,7 +598,8 @@ function entitlementSelectRow(state, basket) {
     return {
         type: 1,
         components: [{
-            type: 3, custom_id: encodeState('ent', state), placeholder: 'Unused 2X entitlements (optional)...',
+            // "Entitlements" was the code's word, not a player's (2026-10-18 21:09 EDT, his ask to rephrase it).
+            type: 3, custom_id: encodeState('ent', state), placeholder: 'Pick your available 2X offers (optional)',
             min_values: 0, max_values: CP_PACKAGES.length,
             options: CP_PACKAGES.map((p, i) => ({
                 // What the offer gives and what the bundle normally gives (2026-10-18 20:34 EDT, his wording): "160 CP bundle (80+80 CP)", "Normally gives only 80 CP". The normal figure includes the bundle's usual bonus (400 base gives 420).
@@ -867,9 +868,9 @@ function progressTitle(basket) { return (basket?.banners || []).some(b => upgrad
 function regionBalanceSection(state, basket) {
     const region = basket?.region || 'region_10';
     const content = [
-        // The word before its value, with a colon (2026-10-18 19:40 EDT, his ask: "like **Region: `20 CP`**"): a label joined to its value, the /draw prices grammar.
-        `-# **${emojis[REGION_EMOJI_KEY[region]]} Region: \`${regionLabel(region)}\` · ${emojis.cp} Balance: \`${fmt(basket?.balance || 0)} CP\`**`,
-        `-# **${emojis.mythicCard} Mythic Cards: \`${fmt(basket?.mythicCards || 0)}\` · ${emojis.mythicCoin} Mythic Coins: \`${fmt(basket?.mythicCoins || 0)}\`**`
+        // The word before its value, with a colon (2026-10-18 19:40 EDT, his ask: "like **Region: `20 CP`**"): a label joined to its value, the /draw prices grammar. The :blank: emoji between the pair, no spaces and no dot (2026-10-18 21:09 EDT, his ask).
+        `-# **${emojis[REGION_EMOJI_KEY[region]]} Region: \`${regionLabel(region)}\`${emojis.blank}${emojis.cp} Balance: \`${fmt(basket?.balance || 0)} CP\`**`,
+        `-# **${emojis.mythicCard} Mythic Cards: \`${fmt(basket?.mythicCards || 0)}\`${emojis.blank}${emojis.mythicCoin} Mythic Coins: \`${fmt(basket?.mythicCoins || 0)}\`**`
     ].join('\n');
     return { type: 9, components: [{ type: 10, content }],
         accessory: { type: 2, style: 2, label: 'Set Region & Balance', custom_id: encodeState('rbmodal', state), emoji: emojis.parseEmoji(emojis.cp2), ...(basket && basket._id ? {} : { disabled: true }) } };
@@ -1348,7 +1349,7 @@ function finishCostPage(state, basket, accentColor, components, liveDoubleCPEntr
     if (liveDoubleCPEntry || basket.entitlementMask) {
         const ends = liveDoubleCPEntry && liveDoubleCPEntry.endDate ? ` (ends <t:${Math.floor(new Date(liveDoubleCPEntry.endDate).getTime() / 1000)}:R>)` : '';
         components.push({ type: 14, spacing: 1, divider: false }, { type: 10, content: liveDoubleCPEntry
-            ? `-# 🎉 A **Double CP** event is live right now${ends}.\n-# Select which 2X CP offers are still available for you to purchase.`
+            ? `-# 🎉 Double CP event is live${ends}!\n-# Select which 2X CP offers are still available for you to purchase.`
             : '-# Select which 2X CP offers are still available for you to purchase, if a Double CP event is running.' });
         components.push(entitlementSelectRow(state, basket));
     }
