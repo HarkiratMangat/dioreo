@@ -173,8 +173,9 @@ async function resolveManagePanelAction(interaction, group, action, match) {
         pendingManageDeletes.set(token, { group, match });
         setTimeout(() => pendingManageDeletes.delete(token), 10 * 60 * 1000).unref();
 
+        // The prompt used to promise "an Undo button right after" -- that inline button was retired when Undo moved to /bot's Changes page (plan 2 Task 7), and since the permission restructure (2026-10-19 19:38 EDT) a /manage-only admin cannot open that page at all, so the promise was false for exactly the person reading it.
         return interaction.reply({
-            content: `⚠️ **Are you sure you want to delete ${match.label}?** You'll get an Undo button right after, in case you change your mind.`,
+            content: `⚠️ **Are you sure you want to delete ${match.label}?** Every change is recorded, and it can be reverted from \`/bot\`'s Changes page.`,
             components: [{
                 type: 1, components: [
                     { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_delconfirm_${token}` },

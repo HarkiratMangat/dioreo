@@ -38,6 +38,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 - **Undo and Revert need Destructive on the change's page.** Provisional on his word; it is one constant, `UNDO_TIER`.
 - **`/bot access` grants per tier**, one `scope: c|d|cd` per line, and each admin card lists every grant by name.
 - **Old grants keep their old meaning** until the purge, and a portal edit in the old shape replaces the new one rather than being outranked. `scripts/purgeLegacyAdminGrants.js` is a dry run unless given `--apply`; **running it on prod waits for his word.**
+- **/manage's delete prompt stops promising an Undo button.** That button was retired when Undo moved to `/bot`'s Changes page; the prompt now says where a revert lives.
 - **`/settings customize:` is now `/settings open:`** (his ask 2026-10-19 19:31 EDT), in the command, `/help`, the rules and the site's commands page.
 - **The portal half is a hand-off**, written for the portal workstream in the project files (`permission-restructure/proposals/pins2-portal-permissions.md`). `portal/**` is untouched and keeps working through the bridge.
 
