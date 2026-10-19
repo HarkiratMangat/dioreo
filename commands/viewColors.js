@@ -8,28 +8,17 @@
 // - Anyone else: a throwaway UserPreference that is NEVER saved. What the panel works out is written to the anonymous ColorCache (models/ColorCache.js: keyed by an image fingerprint, no user id, deleted 30 days after first seen), so a second look at the same picture is quick ("just do a 30 day ttl" / "anonymize it if possible").
 //
 // THE PANEL BELONGS TO THE PERSON RIGHT-CLICKED, NOT TO WHOEVER PRESSES ITS BUTTONS (2026-10-19 11:39 EDT, Harkirat: "linked just for the user it was invoked upon. shows publicly by default, unless channel/server/admin settings restrict the messages. it's publicly clickable, no timeout. and it only keeps showing that invoked user's palette. never changes when someone else clicks it."):
-// - /colors' own controls are taken off (`stripControls`): they are locked to their owner and save into a UserPreference, creating one for a non-user.
-// - Its own page row (`vc_page|{id}|{page}|{s|g}`, handlers/viewColors.js) carries the subject's id, so any click redraws THAT person's colours; there is no Refresh.
+// - /colors' own controls are not used: they are locked to their owner and save into a UserPreference, creating one for a non-user. buildColorPalettePanel's readOnly mode draws this panel's own instead.
+// - Its own page and pager buttons (`vc_page|{id}|{page}|{s|g}|{subpage}`, handlers/viewColors.js) carry the subject's id, so any click redraws THAT person's colours; there is no Refresh.
 // - Public by default: the reply is not made private here, and a server's /admin rule still makes it private through attachGuildPolicy.
 // - No idle timeout (skipExpiry): every button reads the subject from its own custom_id and answers with its own fresh token, so nothing on the panel can go stale.
 const { ContextMenuCommandBuilder, ApplicationCommandType } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
 const { getPalettePanelData } = require('../utils/colorPalette');
-const { buildColorPalettePanel, getAvailableSources } = require('../utils/colorPaletteView');
+const { buildColorPalettePanel, getAvailableSources, buildSwatchEntries } = require('../utils/colorPaletteView');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildSyntheticInteraction } = require('../utils/interactionContext');
 const { entriesToCache, candidateKeys } = require('../utils/colorCache');
-
-// Takes every control off a panel: action rows go, and a Section whose accessory is a button becomes its text. Thumbnails stay.
-function stripControls(nodes) {
-    const out = [];
-    for (const n of nodes || []) {
-        if (!n || n.type === 1) continue;
-        if (n.type === 9 && n.accessory?.type === 2) { out.push(...stripControls(n.components)); continue; }
-        out.push(n.components ? { ...n, components: stripControls(n.components) } : n);
-    }
-    return out;
-}
 
 // A UserPreference for someone who is not a user: loaded from the anonymous cache, and whose save() writes only there.
 async function throwawayPrefs(target, guildAvatar) {
@@ -45,21 +34,9 @@ async function throwawayPrefs(target, guildAvatar) {
     return prefs;
 }
 
-const PAGES = [['avatar', 'Avatar'], ['banner', 'Banner'], ['name', 'Name'], ['nameplate', 'Nameplate'], ['decoration', 'Deco']];
-
-// The page row: the open page green and disabled (the in-panel switcher convention, rendering-and-ui.md), the rest grey, and a Banner / Name / Nameplate / Deco the person does not have red and disabled (Banner added at his "similarly with the banner as well") (2026-10-19 11:52 EDT, Harkirat: "keep those buttons in disabled red state"). The subject's id rides in every custom_id.
+// What a person can lack, in the hint's order and wording ("-# **No custom name color, nameplate, or deco detected.**", his; banner added at "similarly with the banner as well"). A page they lack has no button at all, as on /colors (2026-10-19 12:07 EDT: "instead of the red disabled buttons, let's stick to how the /color command does it by just removing the button ... But let's keep the "no banner, etc..." hint line").
 const OPTIONAL = [['banner', 'banner'], ['name', 'name color'], ['nameplate', 'nameplate'], ['decoration', 'deco']];
-function pageRow(targetId, page, variantFlag, available = PAGES.map(([key]) => key)) {
-    return { type: 1, components: PAGES.map(([key, label]) => {
-        const missing = OPTIONAL.some(([k]) => k === key) && !available.includes(key);
-        return {
-            type: 2, style: missing ? 4 : key === page ? 3 : 2, label, disabled: missing || key === page,
-            custom_id: `vc_page|${targetId}|${key}|${variantFlag}`,
-        };
-    }) };
-}
 
-// "-# **No custom name color, nameplate, or deco detected.**" (his words), naming only what is missing; null when nothing is.
 function missingHint(available) {
     const missing = OPTIONAL.filter(([k]) => !available.includes(k)).map(([, word]) => word);
     if (!missing.length) return null;
@@ -67,37 +44,34 @@ function missingHint(available) {
     return `-# **No custom ${list} detected.**`;
 }
 
-// /colors' hint block above its buttons goes entirely here: "Updated your profile? Refresh Colors" (there is no Refresh) and "Tap a button below to view colors from a different part of your profile" (it is someone else's profile). Harkirat: "remove the "refresh color" hint line", then 2026-10-19 11:58 EDT: "just remove it altogether for this variant of the panel". What the person lacks is named in its place, above the row.
-function rewriteHint(parts, available) {
-    const hint = parts.find(c => c.type === 10 && /Refresh Colors|different part of your profile/.test(c.content || ''));
-    if (hint) parts.splice(parts.indexOf(hint), 1);
-    const missing = missingHint(available);
-    if (missing) parts.push({ type: 10, content: missing });
-    return parts;
+// The panel's accent on every page: the avatar's "First Impression", which is always the palette's first swatch (colorPaletteView.js's assignDynamicLabels claims slot 0 for it). Harkirat, 2026-10-19 12:09 EDT: "accent this panel (all sub-pages included) with the avatar's "First Impression"". Null when no avatar palette has been worked out yet.
+function firstImpression(data) {
+    const first = buildSwatchEntries(data.avatar, 'avatar')[0];
+    if (!first) return null;
+    return typeof first.hex === 'number' ? first.hex : parseInt(String(first.hex).replace('#', ''), 16);
 }
 
+// The page and pager ids. The person right-clicked rides in every one, so a click by anyone redraws THEIR colours: vc_page|{id}|{page}|{s|g}|{subpage}.
+const pageId = (targetId, variantFlag) => (key, sub = 0) => `vc_page|${targetId}|${key}|${variantFlag}|${sub}`;
+
 // Draws one page of `target`'s colours. `member` is their server profile when there is one to read (the right-click's own targetMember, or a REST fetch on a page click).
-async function renderPanel(interaction, target, member, page) {
+async function renderPanel(interaction, target, member, page, subpage = 0) {
     const own = await UserPreference.findOne({ discordId: target.id });
     const prefs = own || await throwawayPrefs(target, member?.avatar || null);
     // The panel reads whose colours to show off interaction.user and .member, so it is handed the subject's.
     const subject = buildSyntheticInteraction(interaction, { user: target, member });
     const data = await getPalettePanelData(subject, prefs, page, false, 'server');
     const variant = data.hasServerProfile ? 'server' : 'global';
+    const ids = pageId(target.id, variant === 'server' ? 's' : 'g');
     const { components, files } = await buildColorPalettePanel({
-        source: page, data, targetUserId: target.id, variant,
+        source: page, subpage, data, targetUserId: target.id, variant,
         avatarThumbnailUrl: data.avatarThumbnailUrl || target.displayAvatarURL({ extension: 'png', size: 256 }),
+        readOnly: true, makePageId: key => ids(key, 0), makeSubpageId: (key, sub) => ids(key, sub),
+        accentColor: firstImpression(data), extraHint: missingHint(getAvailableSources(data)),
     });
-    const panel = stripControls(components);
-    const available = getAvailableSources(data);
     const name = (member?.nick || target.globalName || target.username || 'this user').replace(/[*_`~|]/g, '');
-    if (panel[0]?.components) {
-        const parts = panel[0].components;
-        parts.unshift({ type: 10, content: `-# Colors from **${name}**'s profile` });
-        rewriteHint(parts, available);
-        parts.push(pageRow(target.id, page, variant === 'server' ? 's' : 'g', available));
-    }
-    return { panel, files };
+    components[0].components.unshift({ type: 10, content: `-# Colors from **${name}**'s profile` });
+    return { panel: components, files };
 }
 
 module.exports = {
@@ -106,12 +80,10 @@ module.exports = {
         .setType(ApplicationCommandType.User)
         // PUBLIC, like /colors: guild and user install, every context.
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]),
-    stripControls,
-    pageRow,
     missingHint,
-    rewriteHint,
+    firstImpression,
+    pageId,
     renderPanel,
-    PAGES,
 
     async execute(interaction) {
         await interaction.deferReply();

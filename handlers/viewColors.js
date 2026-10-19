@@ -25,15 +25,15 @@ async function subjectMember(interaction, targetId, variantFlag) {
 }
 
 async function route(interaction) {
-    // A PAGE BUTTON -- `vc_page|{id}|{page}|{s|g}`.
+    // A PAGE OR PAGER BUTTON -- `vc_page|{id}|{page}|{s|g}|{subpage}`.
     if (interaction.isButton() && interaction.customId.startsWith('vc_page|')) {
-        const [, targetId, page, variantFlag] = interaction.customId.split('|');
+        const [, targetId, page, variantFlag, sub] = interaction.customId.split('|');
         const command = interaction.client.commands.get('View Colors');
-        if (!command || !command.PAGES.some(([key]) => key === page)) return await interaction.deferUpdate().catch(() => {});
+        if (!command || !['avatar', 'banner', 'name', 'nameplate', 'decoration'].includes(page)) return await interaction.deferUpdate().catch(() => {});
         await interaction.deferUpdate();
         const target = await interaction.client.users.fetch(targetId, { force: true });
         const member = await subjectMember(interaction, targetId, variantFlag);
-        const { panel, files } = await command.renderPanel(interaction, target, member, page);
+        const { panel, files } = await command.renderPanel(interaction, target, member, page, Number(sub) || 0);
         // Keeps the message's own privacy: a reply a server rule made private stays private.
         const flags = 32768 | ((interaction.message?.flags?.bitfield ?? 0) & 64);
         return await sendV2Payload(interaction, panel, { flags, allowedMentions: { users: [] }, files, skipExpiry: true });

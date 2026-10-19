@@ -65,12 +65,12 @@ t('there is real headroom left, not a page sitting on the line', async () => {
 });
 
 // --- The placements themselves. Each was a deliberate decision and each is invisible from the outside.
-t('Download Avatar sits in the bottom action row, not inside the container', async () => {
-    // ⚠️ IT WAS MOVED INSIDE FOR ONE EVENING (2026-08-12 22:15 EDT) AND REVERTED AT 23:41 on Harkirat's call after seeing it rendered. Asserted in this direction so the move cannot creep back in unnoticed -- and the finding that came out of it still stands: a Section carries exactly ONE accessory, thumbnail OR button, so it could never have joined the avatar heading anyway.
+t('the Avatar image link sits in the bottom action row, not inside the container', async () => {
+    // ⚠️ IT WAS MOVED INSIDE FOR ONE EVENING (2026-08-12 22:15 EDT) AND REVERTED AT 23:41 on Harkirat's call after seeing it rendered. Asserted in this direction so the move cannot creep back in unnoticed -- and the finding that came out of it still stands: a Section carries exactly ONE accessory, thumbnail OR button, so it could never have joined the avatar heading anyway. Labelled "Avatar" since 2026-10-19 12:11 EDT (Harkirat: "drop the "download" from the button's word").
     const { components } = await render('avatar', { avatar: palette, avatarFullUrl: CDN });
     const [container, actionRow] = components;
-    assert.ok(actionRow.components.some(b => b.label === 'Download Avatar'), 'Download Avatar is missing from the bottom row');
-    assert.ok(!JSON.stringify(container).includes('Download'), 'a download button is back inside the container');
+    assert.ok(actionRow.components.some(b => b.label === 'Avatar' && b.style === 5 && b.url === CDN), 'the Avatar link is missing from the bottom row');
+    assert.ok(!JSON.stringify(container).includes('"style":5'), 'an image link is back inside the container');
     const hint = container.components.find(c => c.type === 10 && /HEX/.test(c.content || ''));
     assert.ok(hint, 'the copy hint is no longer a plain text component');
 });
@@ -82,11 +82,40 @@ t('the heading keeps its thumbnail — the download button never displaces it', 
     assert.ok(heading, 'the avatar heading lost its thumbnail accessory');
 });
 
-t('a page with no full-res original shows no download button at all', async () => {
-    // Name/Nameplate/Deco have nothing worth downloading -- the button is per-source, not per-panel.
-    const { components } = await render('nameplate', { nameplate: palette.slice(0, 4), nameplateUrl: CDN });
-    assert.ok(!JSON.stringify(components).includes('Download'), 'a download button rendered on a page with no full-res original');
-    assert.ok(JSON.stringify(components[0]).includes('HEX'), 'the copy hint vanished');
+t('the Avatar and Banner links show on EVERY page, and Banner only when there is one', async () => {
+    // Reversed 2026-10-19 12:11 EDT (Harkirat: "the buttons show regardless of which sub-page you're viewing ... make that feature change in the main /color command as well"); it used to be each source's own page only.
+    const both = await render('nameplate', { nameplate: palette.slice(0, 4), nameplateUrl: CDN, avatarFullUrl: CDN, bannerFullUrl: CDN });
+    assert.deepStrictEqual(both.components[1].components.filter(b => b.style === 5).map(b => b.label), ['Avatar', 'Banner']);
+    const noBanner = await render('nameplate', { nameplate: palette.slice(0, 4), nameplateUrl: CDN, avatarFullUrl: CDN });
+    assert.deepStrictEqual(noBanner.components[1].components.filter(b => b.style === 5).map(b => b.label), ['Avatar']);
+    assert.ok(JSON.stringify(both.components[0]).includes('HEX'), 'the copy hint vanished');
+});
+
+t('the open page is green and disabled', async () => {
+    // Was red (style 4) until 2026-10-19 12:11 EDT (Harkirat: "set the main /color command's active selection to green-disabled").
+    const { components } = await render('avatar', { avatar: palette, avatarFullUrl: CDN, banner: palette, bannerUrl: CDN });
+    const pageRow = components[0].components.filter(c => c.type === 1).pop();
+    const open = pageRow.components.find(b => b.label === 'Avatar');
+    assert.ok(open.style === 3 && open.disabled, JSON.stringify(open));
+});
+
+t('read-only (the View Colors right-click): its own ids, no Refresh, switch or hint block, an accent, the extra hint, lacking pages absent, under budget', async () => {
+    const { components } = await buildColorPalettePanel({
+        source: 'avatar', subpage: 1,
+        data: { avatar: palette, avatarFullUrl: CDN, hasServerProfile: true, inGuild: true },
+        targetUserId: '1', avatarThumbnailUrl: CDN, variant: 'global',
+        readOnly: true, makePageId: k => `vc_page|1|${k}|g|0`, makeSubpageId: (k, n) => `vc_page|1|${k}|g|${n}`,
+        accentColor: 0x123456, extraHint: '-# **No custom banner detected.**'
+    });
+    const flat = JSON.stringify(components);
+    assert.ok(!/colors_/.test(flat), 'a /colors id leaked into the read-only panel');
+    assert.ok(!/Refresh Colors|different part of your profile/.test(flat), 'the hint block or Refresh is back');
+    assert.strictEqual(components[0].accent_color, 0x123456);
+    assert.ok(/No custom banner detected/.test(flat));
+    assert.ok(!/"label":"Banner"/.test(flat.replace(/"style":5[^}]*/g, '')), 'a page the person lacks has a button');
+    assert.ok(/vc_page\|1\|avatar\|g\|0/.test(flat), 'the pager does not use the right-click ids');
+    assert.deepStrictEqual(components[1].components.map(b => b.label), ['Avatar'], 'only the image link under it');
+    assert.ok(countComponents(components) <= LIMIT);
 });
 
 t('Refresh is the row\'s only PRIMARY, and both interactive buttons carry icons', async () => {
@@ -94,7 +123,8 @@ t('Refresh is the row\'s only PRIMARY, and both interactive buttons carry icons'
     const { components } = await render('avatar', { avatar: palette, avatarFullUrl: CDN });
     const buttons = components[1].components;
     assert.strictEqual(buttons.filter(b => b.style === 1).length, 1, 'the row no longer has exactly one primary action');
-    assert.strictEqual(buttons[0].label, 'Refresh Colors', 'Refresh Colors is no longer the leading button');
+    // The Avatar / Banner links lead the row since 2026-10-19 12:11 EDT (Harkirat), then Refresh Colors.
+    assert.deepStrictEqual(buttons.slice(0, 2).map(b => b.label), ['Avatar', 'Refresh Colors'], 'the row is no longer Avatar, then Refresh Colors');
     const swtch = buttons.find(b => String(b.custom_id || '').startsWith('colors_variant_'));
     assert.strictEqual(swtch?.style, 2, 'the global/server switch is no longer secondary/grey');
     for (const b of buttons.filter(b => b.custom_id)) assert.ok(b.emoji?.id, `"${b.label}" lost its emoji`);

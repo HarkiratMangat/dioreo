@@ -104,18 +104,6 @@ check('Autobuild Loadout: several images ask which one, with a select the /autob
 // ---- View Colors ----
 const viewColors = require('../commands/viewColors');
 const { cacheKey, entriesToCache, candidateKeys } = require('../utils/colorCache');
-check('View Colors is read-only: every row and button accessory is taken off, text and thumbnails stay', () => {
-    const panel = [{ type: 17, components: [
-        { type: 10, content: 'swatches' },
-        { type: 9, components: [{ type: 10, content: 'heading' }], accessory: { type: 2, custom_id: 'colors_refresh|1' } },
-        { type: 9, components: [{ type: 10, content: 'with a picture' }], accessory: { type: 11, media: { url: 'u' } } },
-        { type: 1, components: [{ type: 2, custom_id: 'colors_page|1' }] },
-    ] }, { type: 1, components: [{ type: 2, custom_id: 'share_public' }] }];
-    const out = viewColors.stripControls(panel);
-    const flat = JSON.stringify(out);
-    assert.ok(!/custom_id/.test(flat), flat);
-    assert.ok(/swatches/.test(flat) && /heading/.test(flat) && /with a picture/.test(flat) && /"type":11/.test(flat));
-});
 check('the colour cache keys each image by a fingerprint with no user id, and never caches a default avatar', () => {
     const doc = { avatarPalette: ['#fff'], avatarPaletteSource: 'a_123', avatarColorHex: 255, avatarColorSource: 'a_123', bannerPalette: ['#000'], bannerPaletteSource: 'default', discordId: '42' };
     const entries = entriesToCache(doc, ['avatarPalette', 'avatarPaletteSource', 'avatarColorHex', 'avatarColorSource', 'bannerPalette', 'bannerPaletteSource', 'avatarPalette.0']);
@@ -127,39 +115,28 @@ check('the colour cache keys each image by a fingerprint with no user id, and ne
     assert.ok(!Object.keys(ColorCache.schema.paths).some(p => /discord|user/i.test(p)), 'the model has no user field');
     assert.strictEqual(ColorCache.schema.path('createdAt').options.expires, 30 * 24 * 60 * 60, 'deleted 30 days after first seen');
 });
-check('View Colors\' page row always points at the person right-clicked, whoever presses it', () => {
-    const row = viewColors.pageRow('111122223333444455', 'banner', 's');
-    assert.deepStrictEqual(row.components.map(b => b.label), ['Avatar', 'Banner', 'Name', 'Nameplate', 'Deco']);
-    assert.ok(row.components.every(b => b.custom_id.startsWith('vc_page|111122223333444455|') && b.custom_id.length <= 100));
-    const open = row.components.find(b => b.label === 'Banner');
-    assert.ok(open.disabled && open.style === 3, 'the open page is green and disabled');
+check('View Colors\' ids always point at the person right-clicked, whoever presses them', () => {
+    const ids = viewColors.pageId('111122223333444455', 's');
+    assert.strictEqual(ids('banner', 1), 'vc_page|111122223333444455|banner|s|1');
+    assert.ok(ids('decoration', 9).length <= 100);
     const src = fs.readFileSync(path.join(__dirname, '..', 'handlers', 'viewColors.js'), 'utf8');
     assert.ok(!/interaction\.user\.id/.test(src), 'the click handler never reads the clicker as the subject');
     const cmd = fs.readFileSync(path.join(__dirname, '..', 'commands', 'viewColors.js'), 'utf8');
     assert.ok(/skipExpiry: true/.test(cmd) && !/flags: 64|isEphemeral/.test(cmd), 'public by default and no idle timeout');
 });
-check('View Colors: a banner, name color, nameplate or deco the person lacks is red and disabled, and the hint names only those', () => {
-    const row = viewColors.pageRow('1', 'avatar', 'g', ['avatar', 'banner', 'nameplate']);
-    const byLabel = Object.fromEntries(row.components.map(b => [b.label, b]));
-    assert.ok(byLabel.Name.style === 4 && byLabel.Name.disabled);
-    assert.ok(byLabel.Deco.style === 4 && byLabel.Deco.disabled);
-    assert.ok(byLabel.Nameplate.style === 2 && !byLabel.Nameplate.disabled, 'one they have stays pressable');
-    assert.ok(byLabel.Banner.style === 2 && !byLabel.Banner.disabled, 'a banner they have stays pressable');
-    assert.ok(viewColors.pageRow('1', 'avatar', 'g', ['avatar']).components.find(b => b.label === 'Banner').style === 4, 'and one they lack is red');
-    assert.strictEqual(viewColors.missingHint(['avatar', 'banner']), '-# **No custom name color, nameplate, or deco detected.**', 'his wording');
+check('View Colors: the hint names what the person lacks, in his wording', () => {
+    assert.strictEqual(viewColors.missingHint(['avatar', 'banner']), '-# **No custom name color, nameplate, or deco detected.**');
     assert.strictEqual(viewColors.missingHint(['avatar']), '-# **No custom banner, name color, nameplate, or deco detected.**');
-    assert.strictEqual(viewColors.missingHint(['avatar', 'banner', 'name']), '-# **No custom nameplate or deco detected.**');
     assert.strictEqual(viewColors.missingHint(['avatar', 'banner', 'name', 'nameplate']), '-# **No custom deco detected.**');
     assert.strictEqual(viewColors.missingHint(['avatar', 'banner', 'name', 'nameplate', 'decoration']), null);
 });
-check('View Colors drops /colors\' hint block (both lines) and puts the missing-pages hint in its place', () => {
-    const parts = [{ type: 10, content: 'swatches' }, { type: 10, content: '-# Tap a button below to view colors from a different part of your profile.\n-# (Tip: Updated your profile? `Refresh Colors`)' }];
-    viewColors.rewriteHint(parts, ['avatar', 'banner']);
-    const text = parts.map(p => p.content).join('\n');
-    assert.ok(!/Refresh Colors|your profile/.test(text), text);
-    assert.ok(/No custom name color, nameplate, or deco detected/.test(text));
-    const full = viewColors.rewriteHint([{ type: 10, content: '-# Tap a button below to view colors from a different part of your profile.\n-# (Tip: Updated your profile? `Refresh Colors`)' }], ['avatar', 'banner', 'name', 'nameplate', 'decoration']);
-    assert.strictEqual(full.length, 0, 'nothing missing, no hint at all');
+check('View Colors is accented with the avatar\'s First Impression (its palette\'s first swatch)', () => {
+    assert.strictEqual(viewColors.firstImpression({ avatar: null }), null);
+    const { buildSwatchEntries } = require('../utils/colorPaletteView');
+    const palette = Array.from({ length: 8 }, (_, i) => ({ hex: 0x112233 + i * 0x101010, percent: 20 - i, origin: 'structure' }));
+    const first = buildSwatchEntries(palette, 'avatar')[0];
+    assert.strictEqual(first.label, 'First Impression', 'slot 0 is First Impression');
+    assert.strictEqual(viewColors.firstImpression({ avatar: palette }), typeof first.hex === 'number' ? first.hex : parseInt(String(first.hex).replace('#', ''), 16));
 });
 check('View Colors registers as a public right-click on a user', () => {
     const json = viewColors.data.toJSON();

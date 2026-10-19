@@ -632,7 +632,7 @@ function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
         components: [
             { type: 2, style: 4, label: label || `Remove ${plural(count, 'line')}`, custom_id: encodeState(verb, { ...state, mask }) },
             // Title Case like every other button (click-test 2026-10-14 18:58 EDT).
-            { type: 2, style: 2, label: count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('page', { ...state, mask: 0 }) }
+            { type: 2, style: 2, label: count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('page', { ...state, mask: 0 }), emoji: emojis.parseEmoji(emojis.keep) }
         ]
     };
 }
@@ -1285,7 +1285,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         if (overwriteConfirm) {
             components.push({ type: 1, components: [
                 { type: 2, style: 4, label: `Replace "${String(overwriteConfirm.name).slice(0, 60)}"`, custom_id: encodeState('owok', { ...view, target: overwriteConfirm.target }) },
-                { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('saved', view) }
+                { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }
             ] });
         } else {
             components.push({ type: 1, components: [{ type: 2, style: 1, label: 'Save as New', custom_id: encodeState('modal_name', view), emoji: emojis.parseEmoji(emojis.saveStar) }] });
@@ -1317,7 +1317,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
             components.push({ type: 10, content: `### ⚠️ Delete ${savedConfirm.count === 1 ? 'this calculation' : `these ${savedConfirm.count} calculations`}? This cannot be undone.` });
             components.push({ type: 1, components: [
                 { type: 2, style: 4, label: `Delete ${plural(savedConfirm.count, 'Calculation')}`, custom_id: encodeState('savedelok', { ...view, mask: savedConfirm.mask, check: savedConfirm.check }), emoji: emojis.parseEmoji(emojis.deleteBin) }, // Remove Draws' bin (2026-10-19 10:46 EDT, his ask)
-                { type: 2, style: 2, label: savedConfirm.count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view) }
+                { type: 2, style: 2, label: savedConfirm.count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }
             ] });
         } else {
             components.push({ type: 1, components: [{
@@ -1333,7 +1333,7 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         if (armed) components.push({ type: 10, content: `### ⚠️ Delete ${list.length === 1 ? 'this calculation' : `all ${list.length} calculations`}? This cannot be undone.` });
         components.push({ type: 1, components: [
             { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
-            ...(armed ? [{ type: 2, style: 2, label: list.length === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view) }] : []),
+            ...(armed ? [{ type: 2, style: 2, label: list.length === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }] : []),
         ] });
         }
     }
