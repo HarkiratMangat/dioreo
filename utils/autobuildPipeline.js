@@ -146,8 +146,7 @@ function badgeTokensOf(build) {
     return [build.isMeta ? 'meta' : null, rank || null, build.isToxic ? 'toxic' : null].filter(Boolean).join(',');
 }
 
-// Category: explicit option > an existing sibling build's category > unresolved (null). Badges: explicit option > (if blank) an existing sibling's badges, reconstructed as a token string > empty (per the design spec's "blank inherits from an existing build if one exists" rule).
-// Mode-aware since 2026-10-19 17:52 EDT. The category may come from a sibling in EITHER mode (it describes the weapon), preferring one in this build's own mode; badges only ever come from the same mode, because MP and DMZ rank on different scales (categoryRank vs dmzRangeRank) and a weapon's MP badges say nothing about its DMZ build. An unresolved mode inherits a category but no badges.
+// Category: explicit option > an existing sibling build's category > unresolved (null). Badges: explicit option > (if blank) an existing sibling's badges, reconstructed as a token string > empty (per the design spec's "blank inherits from an existing build if one exists" rule). Mode-aware since 2026-10-19 17:52 EDT. The category may come from a sibling in EITHER mode (it describes the weapon), preferring one in this build's own mode; badges only ever come from the same mode, because MP and DMZ rank on different scales (categoryRank vs dmzRangeRank) and a weapon's MP badges say nothing about its DMZ build. An unresolved mode inherits a category but no badges.
 async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOption, mode = 'MP') {
     const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
     let category = explicitCategory || null;
