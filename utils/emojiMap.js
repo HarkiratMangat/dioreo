@@ -226,6 +226,14 @@ emojis.parseEmoji = parseEmoji;
 emojis.refreshEmojiIds = refreshEmojiIds;
 emojis.repoint = repoint;
 
+// The booted app's emoji with this exact name, or null when the app has none. For an emoji that may not exist on an app yet (the Rank Mode marks, utils/rankModes.js): a missing one renders as plain text at its call site instead of a dead mention, and appears the moment it is uploaded, after the next boot's sync.
+function byName(name) {
+    const live = secondaryLiveByName.get(currentAppId()) || liveByName;
+    const match = live?.get(name);
+    return match ? `<${match.animated ? 'a' : ''}:${match.name}:${match.id}>` : null;
+}
+emojis.byName = byName;
+
 // Every consumer reads `emojis.foo` at render time, so answering from the current app's map here reaches all of them with no call-site change. Writes and key listings go to the default map, as before.
 module.exports = new Proxy(emojis, {
     get(target, key, receiver) {

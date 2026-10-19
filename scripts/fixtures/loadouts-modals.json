@@ -64,7 +64,7 @@
             "custom_id": "meta",
             "label": "Category | Badges",
             "style": 1,
-            "placeholder": "AR | meta,best,toxic  (or top3/top5/etc.)",
+            "placeholder": "AR | meta, best, hp, s&d  (or ass, capable, top3, toxic)",
             "required": true
           }
         ]
@@ -136,7 +136,7 @@
             "custom_id": "meta",
             "label": "Category | Badges",
             "style": 1,
-            "placeholder": "AR | meta,best,toxic  (or top3/top5/etc.)",
+            "placeholder": "AR | meta, best, hp, s&d  (or ass, capable, top3, toxic)",
             "required": true
           }
         ]

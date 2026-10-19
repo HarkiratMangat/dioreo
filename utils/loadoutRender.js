@@ -107,7 +107,13 @@ async function checkImageExists(imageKey) {
     }
 }
 
-// "Badges" shown under the weapon name (Meta / Best-in-category / Top-N-in-category) -- only rendered when actually granted (see models/Loadout.js), joined by the `blank` spacer emoji rather than a visible separator character when both are present. `categoryRank` is free-form ('best' or 'top{N}', not a fixed "top3" enum) since not every category tops out at exactly 3 -- see adminParser.js's parseLoadoutBadges(). Returns null (render nothing) if the build has no badges at all.
+// An emoji that may not be on the app yet (Ass, Capable, the Rank Mode marks): the live one by name, or nothing, so the word still renders alone.
+function optionalEmoji(name) {
+    const e = emojis.byName ? emojis.byName(name) : null;
+    return e ? `${e} ` : '';
+}
+
+// "Badges" shown under the weapon name (Meta / Best-in-category / Top-N-in-category / Capable, Toxic, Ass) -- only rendered when actually granted (see models/Loadout.js), joined by the `blank` spacer emoji rather than a visible separator character when both are present. `categoryRank` is free-form ('best' or 'top{N}', not a fixed "top3" enum) since not every category tops out at exactly 3 -- see adminParser.js's parseLoadoutBadges(). Returns null (render nothing) if the build has no badges at all.
 function buildBadgesLine(build) {
     const badges = [];
     if (build.isMeta) badges.push(`${emojis.meta} Meta`);
@@ -119,6 +125,8 @@ function buildBadgesLine(build) {
                 : 'DMZ';
             if (build.dmzRangeRank.startsWith('best')) {
                 badges.push(`${emojis.best} Best ${rangeLabel}`);
+            } else if (build.dmzRangeRank.startsWith('capable')) {
+                badges.push(`${optionalEmoji('Capable')}Capable ${rangeLabel}`);
             } else {
                 const topMatch = build.dmzRangeRank.match(/^top(\d+)/);
                 if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${rangeLabel}`);
@@ -126,14 +134,26 @@ function buildBadgesLine(build) {
         }
     } else if (build.categoryRank === 'best') {
         badges.push(`${emojis.best} Best ${displayCategoryLabel(build.category)}`);
+    } else if (build.categoryRank === 'capable') {
+        // The tier always names its category in the bot ("Capable AR"); the portal may leave the word off (his ruling, 2026-09-24).
+        badges.push(`${optionalEmoji('Capable')}Capable ${displayCategoryLabel(build.category)}`);
     } else if (build.categoryRank) {
         const topMatch = build.categoryRank.match(/^top(\d+)$/);
         if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${displayCategoryLabel(build.category)}`);
     }
     // "Toxic" is independent of Meta/Best/TopN (a build can be unbalanced/cheese without being the objectively best in its category, or vice versa) -- see models/Loadout.js's isToxic field.
     if (build.isToxic) badges.push(`${emojis.toxic} Toxic`);
+    if (build.isAss) badges.push(`${optionalEmoji('Ass')}Ass`);
     if (badges.length === 0) return null;
     return `**${badges.join(`${emojis.blank} `)}**`;
+}
+
+// "Recommended Rank Mode: HP | S&D" (Harkirat's wording, 2026-09-25 23:28 EDT), each name after its own mark, in utils/rankModes.js's order. MP only: a DMZ build never shows the line, even if old data carried a mode.
+function buildRankModeLine(build) {
+    if (build.mode === 'DMZ' || !build.rankModes?.length) return null;
+    const { RANK_MODES, RANK_MODE_EMOJI } = require('./rankModes');
+    const names = RANK_MODES.filter(m => build.rankModes.includes(m)).map(m => `${optionalEmoji(RANK_MODE_EMOJI[m])}${m}`);
+    return names.length ? `**Recommended Rank Mode:** ${names.join(' | ')}` : null;
 }
 
 // Capitalizes just the first letter (sentence case), leaving everything else untouched -- unlike toTitleCase (adminParser.js), which capitalizes every word. Descriptions come from freeform admin text (originally builds.xlsx's flavor-text column) that isn't always typed starting with a capital, so this is applied at render time rather than trusting the stored casing.
@@ -203,6 +223,8 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     // hideBadges is set for a meta scope browse -- "Meta" is implied by the view itself there, per Harkirat's call to hide the WHOLE badge line rather than just the redundant Meta badge. Category browses keep badges ("Best AR" is still informative in an AR list).
     const badgesLine = hideBadges ? null : buildBadgesLine(activeBuild);
     if (badgesLine) titleContent += `\n${badgesLine}`;
+    const rankModeLine = hideBadges ? null : buildRankModeLine(activeBuild);
+    if (rankModeLine) titleContent += `\n${rankModeLine}`;
 
     const containerComponents = [
         { type: 10, content: titleContent }

@@ -86,11 +86,11 @@ check('loadout.bulkDelete refuses an empty selection', () => {
 });
 
 // Second-pass audit finding: the first draft collected touchedKeys but never actually synced Cloudinary metadata for them -- the real handler syncs once per weaponKey after a bulk add/replace. Structural check (source-string, matching the sibling check above) rather than a live DB assertion, consistent with this file's other pure-logic checks.
-check('bulk add/replace sync Cloudinary metadata for every touched weapon, not just single add/edit', () => {
+check('bulk add/replace sync Cloudinary metadata for every build they wrote, not just single add/edit', () => {
     const fs = require('fs');
     const src = fs.readFileSync(require.resolve('../core/ops/loadouts.js'), 'utf8');
     const upsertBody = src.slice(src.indexOf('async function upsertBulkBlocks'), src.indexOf('registerEntity('));
-    assert.ok(upsertBody.includes('syncSiblings'), 'upsertBulkBlocks must sync every touched weaponKey');
+    assert.ok(upsertBody.includes('syncLoadoutMetadata') && upsertBody.includes('touchedBuilds'), 'upsertBulkBlocks must sync every build it wrote');
 });
 
 check('loadout.add requires MP or DMZ to be registered on BOTH pages, not just MP', () => {

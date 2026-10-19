@@ -73,6 +73,8 @@ export const TESTS = [
     {"cmd": "node scripts/calendarHandlerSnapshot.test.js", "lane": "unit"},
     {"cmd": "node scripts/loadoutOps.test.js", "lane": "unit"},
     {"cmd": "node scripts/loadoutBulkFormat.test.js", "lane": "unit"},
+    {"cmd": "node scripts/loadoutBadges.test.js", "lane": "unit"},
+    {"cmd": "node scripts/announcementBudget.test.js", "lane": "unit"},
     {"cmd": "node scripts/loadoutsHandlerSnapshot.test.js", "lane": "unit"},
     {"cmd": "node scripts/patchnoteOps.test.js", "lane": "unit"},
     {"cmd": "node scripts/patchnotesHandlerSnapshot.test.js", "lane": "unit"},

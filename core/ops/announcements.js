@@ -18,6 +18,8 @@ function truncate(text) {
     return text.length > 60 ? `${text.slice(0, 57)}...` : text;
 }
 
+const ANNOUNCEMENT_TEXT_MAX = 4000;
+
 function validatePost(payload) {
     const errors = [];
     const text = (payload?.text || '').trim();
@@ -39,6 +41,9 @@ function validatePost(payload) {
         if (!parsed) errors.push(`Could not read the start date "${startsAt}".`);
         startsAt = parsed;
     }
+
+    // An announcement goes out as one embed description, which Discord caps at 4,096 characters; the delivery adds a "Posted" line, so the text itself stops at 4,000. Past that, Discord refused the follow-up on every command and the announcement never reached anyone (found 2026-09-13 by the pins-batch-2 harden pass).
+    if (text.length > ANNOUNCEMENT_TEXT_MAX) errors.push(`An announcement can be at most ${ANNOUNCEMENT_TEXT_MAX} characters; this one is ${text.length}.`);
 
     // Optional banner image (added 2026-09-13 17:34 EDT, portal pins batch 2, spec section 7) -- an https URL string, or null for "no image". No upload pipeline here: the composer decides how a URL is produced, this op only ever validates the string it is handed. The raw shape (a string or null/blank) never differs between a fresh submission and a replayed invert, so this needs no alreadyNormalized-style branch.
     let bannerImageUrl = payload?.bannerImageUrl;

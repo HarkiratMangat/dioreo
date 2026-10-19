@@ -7,7 +7,7 @@
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and .claude/rules/interaction-router.md.
 //
-// ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 3 (2026-08-21 13:01 EDT). Badge parsing (utils/adminParser.js's parseLoadoutBadges) and the DMZ categoryRank->dmzRangeRank swap stay HERE, same as before -- the op expects already-parsed badge fields, not raw modal text. Cloudinary structured-metadata sync, badge propagation to sibling builds, and the attachmentSlots byte-identity check all moved INTO core/ops/loadouts.js's apply() (see that file's own header for the real defects found integrating this: weaponKey must be a plain normalize, not /autobuild's auto-namer; "Add"/"Replace Multiple" share ONE upsert body since there is no wholesale-replace for loadouts; a shareCode key must be OMITTED entirely on edit or it silently wipes an /autobuild-set gunsmith code). Undo now lives on /bot analytics' Changes page (core/revert.js) -- the old in-memory Undo button is GONE from every mutation here (see handlers/manage/shared.js's own header for where it used to live). Export flows (exportUpTo5/exportCategory) are read-only and untouched.
+// ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 3 (2026-08-21 13:01 EDT). Badge parsing (utils/adminParser.js's parseLoadoutBadges) and the DMZ categoryRank->dmzRangeRank swap stay HERE, same as before -- the op expects already-parsed badge fields, not raw modal text. Cloudinary structured-metadata sync and the attachmentSlots byte-identity check moved INTO core/ops/loadouts.js's apply() (badge propagation to sibling builds lived there too until 2026-10-19, when every badge became per build) (see that file's own header for the real defects found integrating this: weaponKey must be a plain normalize, not /autobuild's auto-namer; "Add"/"Replace Multiple" share ONE upsert body since there is no wholesale-replace for loadouts; a shareCode key must be OMITTED entirely on edit or it silently wipes an /autobuild-set gunsmith code). Undo now lives on /bot analytics' Changes page (core/revert.js) -- the old in-memory Undo button is GONE from every mutation here (see handlers/manage/shared.js's own header for where it used to live). Export flows (exportUpTo5/exportCategory) are read-only and untouched.
 
 const { commitSet } = require('../../core/changeset');
 const { extractCommitError } = require('./shared');
@@ -48,6 +48,16 @@ async function resolveImageInput({ raw, weaponName, mode, existingKey = null }) 
                  : `\n-# 🖼️ Image uploaded to Cloudinary as \`${imageKey}\`.` };
 }
 
+// The badge lines under an add or edit confirmation: tokens that matched nothing, then tokens that were understood but changed or left off (top4 read as top5, Ass beside a tier, a rank mode on DMZ), each with its reason.
+function badgeNotes(unrecognized, warnings) {
+    let out = '';
+    if (unrecognized.length > 0) {
+        out += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`toxic\`, \`ass\`, \`best\`, \`top3\`, \`top5\`, \`capable\`, a rank mode (\`hp\`, \`s&d\`, \`dom\`, \`tdm\`, \`ftl\`, \`control\`; MP only), or a DMZ range badge (\`bestclose\`, \`top3midlong\`, \`capableclose\`).`;
+    }
+    for (const w of warnings) out += `\n⚠️ ${w}`;
+    return out;
+}
+
 // --- SAVE EDITED LOADOUT --- custom_id: edit_loadout_{id}
 async function editLoadout(interaction) {
     await interaction.deferReply({ ephemeral: true });
@@ -65,7 +75,7 @@ async function editLoadout(interaction) {
     // Field is "Category | Badges" (2 segments).
     const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
     const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
-    let { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[1]);
+    let { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings } = parseLoadoutBadges(metaParts[1], mode);
 
     // DMZ never uses the per-category Best/TopN system -- a bare "best"/"topN" token (no -close/-midlong suffix) still parses into categoryRank since the parser doesn't know the mode, so move it over to dmzRangeRank here instead.
     if (mode === 'DMZ' && categoryRank && !dmzRangeRank) {
@@ -92,14 +102,13 @@ async function editLoadout(interaction) {
     const result = await commitSet(
         [{ type: 'loadout.edit', target: { id: targetId },
            payload: { weaponName, buildName, mode, attachments: attachmentsArray, imageKey,
-                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic,
+                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes,
                       ...(hasShareCodeSegment ? { shareCode: shareCodeInput } : {}) } }],
         { actorId: interaction.user.id }
     );
     if (!result.ok) {
         return await failWithRetry(interaction, extractCommitError(result));
     }
-    const { applied } = result.results[0];
 
     let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
     if (image.note) confirmation += image.note;
@@ -109,12 +118,7 @@ async function editLoadout(interaction) {
     } else if (existingLoadout.shareCode) {
         confirmation += `\n-# Share Code: unchanged (\`${existingLoadout.shareCode}\` preserved).`;
     }
-    if (applied.propagatedCount > 0) {
-        confirmation += `\n-# Badges also synced to ${applied.propagatedCount} other build(s) of this weapon.`;
-    }
-    if (unrecognized.length > 0) {
-        confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, \`topN\` (e.g. \`top3\`), or a DMZ range badge (\`bestclose\`, \`bestmidlong\`, \`top3close\`, \`top5midlong\`).`;
-    }
+    confirmation += badgeNotes(unrecognized, warnings);
     // Real Cloudinary existence check -- catches the exact silent-failure mode where a mismatched key saves fine and only shows up as a broken card image later. Advisory only -- never blocks the save, which already happened above. Skipped when this submission just uploaded the image itself -- the HEAD probe would be racing Cloudinary's own CDN propagation and could report a freshly-uploaded asset as missing.
     if (!image.uploaded && !(await checkImageExists(imageKey))) {
         confirmation += `\n⚠️ **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
@@ -133,8 +137,8 @@ async function addLoadout(interaction) {
     // Field is "Category | Badges" (2 segments) -- Mode has no modal field since the Add button itself is already MP/DMZ-scoped by which page it's on.
     const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
     const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
-    // Unlike editLoadout above, this does NOT propagate badges to sibling builds of the same weapon (the op's loadout.add never calls propagateBadges) -- this modal has nothing pre-filled, so a blank badges field here (the common case when just adding another build variant) would silently wipe any badges already set on the weapon's existing builds. Re-editing an existing build is the supported way to (re)sync badges.
-    let { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[1]);
+    // Badges are per build (Harkirat, 2026-10-19 15:59 EDT): what is typed here lands on this new build only, and the weapon's other builds keep their own.
+    let { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings } = parseLoadoutBadges(metaParts[1], pageMode);
     if (pageMode === 'DMZ' && categoryRank && !dmzRangeRank) {
         dmzRangeRank = categoryRank;
         categoryRank = null;
@@ -159,7 +163,7 @@ async function addLoadout(interaction) {
     const result = await commitSet(
         [{ type: 'loadout.add',
            payload: { weaponName, buildName, mode: pageMode, attachments: attachmentsArray, imageKey,
-                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic,
+                      category: metaParts[0], isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes,
                       ...(hasShareCodeSegment ? { shareCode: shareCodeInput } : {}) } }],
         { actorId: interaction.user.id }
     );
@@ -173,9 +177,7 @@ async function addLoadout(interaction) {
     if (hasShareCodeSegment && shareCodeInput) {
         confirmation += `\n-# Share Code: \`${shareCodeInput}\`.`;
     }
-    if (unrecognized.length > 0) {
-        confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, \`topN\` (e.g. \`top3\`), or a DMZ range badge (\`bestclose\`, \`bestmidlong\`, \`top3close\`, \`top5midlong\`).`;
-    }
+    confirmation += badgeNotes(unrecognized, warnings);
     // Skipped when this submission just uploaded the image itself -- the HEAD probe would be racing Cloudinary's own CDN propagation and could report a freshly-uploaded asset as missing.
     if (!image.uploaded && !(await checkImageExists(imageKey))) {
         confirmation += `\n⚠️ **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;

@@ -156,6 +156,8 @@ check('deriveImageKey skips keys already taken instead of overwriting them', () 
     assert.strictEqual(deriveImageKey('BAL-27', 'MP', ['BAL-27-1', 'BAL-27-2']), 'BAL-27-3');
     // Case-insensitive, because a hand-named legacy asset may differ in case from what we mint.
     assert.strictEqual(deriveImageKey('BAL-27', 'MP', ['bal-27-1']), 'BAL-27-2');
+    // Stored keys carry their extension; a taken AK117-1.png must still make the next key -2.
+    assert.strictEqual(deriveImageKey('AK117', 'MP', ['AK117-1.png']), 'AK117-2');
 });
 
 check('a multi-word weapon name hyphenates, and DMZ keys are prefixed so they cannot collide with MP', () => {

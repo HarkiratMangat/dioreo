@@ -91,20 +91,15 @@ function buildReviewCard(token, data) {
     return { components: [container], flags: 32768 };
 }
 
-// Category: explicit option > an existing sibling build's category > unresolved (null). Badges: explicit option > (if blank) an existing sibling's badges, reconstructed as a token string > empty (per the design spec's "blank inherits from an existing build if one exists" rule).
+// Category: explicit option > an existing sibling build's category > unresolved (null). Badges: the explicit option only. They used to inherit a sibling's badges when blank (the design spec's "blank inherits from an existing build" rule), which made sense while badges described the weapon; since 2026-10-19 15:59 EDT every badge is per build (Harkirat: "move all badge types to per build instead per weapon"), so a new build starts with none unless the admin gives some.
 async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOption) {
     const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
     let category = explicitCategory || null;
     let badgesRaw = badgesOption || '';
 
-    if (!category || !badgesRaw.trim()) {
+    if (!category) {
         const sibling = await Loadout.findOne({ weaponKey, mode: 'MP' }).lean();
-        if (sibling) {
-            if (!category) category = sibling.category;
-            if (!badgesRaw.trim()) {
-                badgesRaw = [sibling.isMeta ? 'meta' : null, sibling.categoryRank, sibling.isToxic ? 'toxic' : null].filter(Boolean).join(',');
-            }
-        }
+        if (sibling) category = sibling.category;
     }
     return { category, badgesRaw };
 }
@@ -169,7 +164,7 @@ async function replaceWithV2Card(interaction, card) {
 }
 
 async function writeLoadoutDoc(data, imageKeyOverride) {
-    const { isMeta, categoryRank, isToxic } = parseLoadoutBadges(data.badgesRaw);
+    const { isMeta, categoryRank, isToxic, isAss, rankModes } = parseLoadoutBadges(data.badgesRaw, 'MP');
     // Final safety pass: never persist an empty/blank attachment (a restricted/unread slot), and keep the parallel slot labels aligned for the metadata sync below. Idempotent for the normal path (runExtraction already cleaned these); the point is to also cover the retry path.
     const { attachments, attachmentSlots } = cleanAttachmentPairs(data.attachments, data.attachmentSlots);
     const doc = new Loadout({
@@ -184,25 +179,14 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
         shareCode: data.gunsmithCode,
         isMeta,
         categoryRank,
-        isToxic
+        isToxic,
+        isAss,
+        rankModes
     });
     await doc.save();
 
-    // Badges describe the WEAPON, not one build variant -- sync them to every sibling build so a badge set here (e.g. Meta added during review) shows on the weapon's OTHER builds too (live-test 3: the badge only landed on the new build). Mirrors handlers/manage.js's edit_loadout_ propagation. Guarded on "at least one badge is actually set" so a blank never WIPES siblings -- and because /autobuild already RESOLVES blank badges by inheriting from an existing sibling (resolveCategoryAndBadges), a still-blank value here genuinely means no weapon-level badge exists, so skipping propagation in that case is correct, not a gap.
-    const badgesSet = isMeta || categoryRank || isToxic;
-    if (badgesSet) {
-        await Loadout.updateMany(
-            { weaponKey: data.weaponKey, mode: 'MP', _id: { $ne: doc._id } },
-            { isMeta, categoryRank, isToxic }
-        );
-    }
-
-    // Cloudinary structured metadata (best-effort, never throws). The new build gets its per-slot data too (only the /autobuild path has the slot->attachment mapping from the vision extraction). If badges just propagated, re-sync the affected siblings so their Cloudinary badge metadata matches.
+    // Badges are per build (2026-10-19 15:59 EDT), so nothing is copied to the weapon's other builds and only this build's metadata is synced. Best-effort, never throws; the new build gets its per-slot data too, since only /autobuild has the slot-to-attachment mapping from the vision extraction.
     await syncLoadoutMetadata(doc, attachmentSlots);
-    if (badgesSet) {
-        const siblings = await Loadout.find({ weaponKey: data.weaponKey, mode: 'MP', _id: { $ne: doc._id } });
-        for (const sibling of siblings) await syncLoadoutMetadata(sibling);
-    }
     return doc;
 }
 

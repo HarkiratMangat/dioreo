@@ -9,7 +9,7 @@
 //   2. "Add Multiple" is ALREADY an upsert by {weaponKey, mode, buildName} in the real handler (existing = Loadout.findOne(...); updateOne if found, else insert) -- a blind createDocument() per parsed block would create duplicate documents on every re-run of the same paste.
 //   3. "Replace Multiple" reuses the EXACT SAME modal and handler function as "Add Multiple" (manageActions.js's loadoutsActions() opens buildLoadoutsBulkAddModal for BOTH ids) -- there is no wholesale-replace behaviour for loadouts at all, unlike draws/calendar. A first draft that implemented bulkReplace as `deleteMany({mode})` + recreate would have wiped every loadout of that mode not mentioned in the paste -- the exact class of bug already found once for draws. loadout.bulkReplace therefore has the SAME apply() body as loadout.bulkAdd (kept as a distinct op type only so utils/manageActions.js's separate `bulkreplace` action id has something to resolve to -- see core/ops/index.js's registry, which forbids two actions claiming one type but allows two types sharing an apply body).
 //   4. "Delete Multiple" fuzzy-matches pasted WEAPON NAMES (optionally "Weapon | Build Name" for one specific build) via utils/search.js's fuzzyMatch -- never element ids.
-//   5. Both add and edit run Cloudinary structured-metadata sync (utils/loadoutImageCache.js's syncLoadoutMetadata) and edit additionally PROPAGATES badges (isMeta/categoryRank/ dmzRangeRank/isToxic) to every sibling build sharing weaponKey+mode -- badges describe the WEAPON, not one build variant. Propagation is deliberately NOT done on add (a blank badges field there is the common case and would silently wipe existing siblings' badges).
+//   5. Both add and edit run Cloudinary structured-metadata sync (utils/loadoutImageCache.js's syncLoadoutMetadata). 🔴 BADGES ARE PER BUILD since 2026-10-19 15:59 EDT (Harkirat: "move all badge types to per build instead per weapon"). Edit and bulk paste used to copy isMeta/categoryRank/dmzRangeRank/isToxic onto every sibling build of the same weapon (propagateBadges, removed). That copy was also never reverted: an edit's inverse restored the one edited build and left the siblings changed. Now each op writes, and re-syncs metadata for, only the builds it names.
 // ⚠️ MODE IS NOT PARSED FROM THE BULK TEXT, and never really was. upsertBulkBlocks() below does `{ ...rawEntry, mode }` -- the page's mode, unconditionally. The bulk format used to REQUIRE a Mode segment anyway, so a block typed `DMZ` and pasted on the MP page parsed with zero errors and saved as MP (verified live 2026-08-22). The format dropped the field on 2026-08-22 rather than the override; do not "restore" a per-block mode here without also deciding what an MP page creating DMZ builds should mean.
 //   6. attachments are stored EXACTLY as typed, in the order typed -- the plan's own Interfaces line named utils/adminParser.js's orderAttachmentsBySlot as a consumed function, but it is never called anywhere in handlers/manage/loadouts.js (it belongs to /autobuild's vision-extraction pipeline). Calling it here would silently REORDER every admin-typed attachment list. Real editLoadout only carries `attachmentSlots` forward when the attachment array is BYTE-FOR-BYTE unchanged from the existing document (slot identity is otherwise meaningless) -- that comparison needs the existing doc, so it lives in loadout.edit's apply(), not this pure validator.
 const { registerEntity } = require('./index');
@@ -18,6 +18,7 @@ const { parseBulkLoadoutList, correctGunsmithCode } = require('../../utils/admin
 const { fuzzyMatch } = require('../../utils/search');
 const { checkImageExists } = require('../../utils/loadoutRender');
 const { syncLoadoutMetadata, uploadLoadoutImage } = require('../../utils/loadoutImageCache');
+const { RANK_MODES } = require('../../utils/rankModes');
 const Loadout = require('../../models/Loadout');
 
 const MODES = ['MP', 'DMZ'];
@@ -27,6 +28,8 @@ function validateBuild(payload) {
     const errors = [];
     if (!payload?.weaponName?.trim()) errors.push('A build needs a weapon name.');
     if (!MODES.includes(payload?.mode)) errors.push(`Mode must be one of ${MODES.join(' or ')}.`);
+    // Ass excludes Meta and every tier (his ruling, 2026-09-24). The parsers already drop the clash with a warning; this refuses a payload that reaches here with both, from any surface.
+    if (payload?.isAss && (payload.isMeta || payload.categoryRank || payload.dmzRangeRank)) errors.push("A build can't be Ass and also Meta or ranked.");
     if (errors.length) return { ok: false, errors };
 
     const weaponName = payload.weaponName.trim();
@@ -45,24 +48,28 @@ function validateBuild(payload) {
                     : {}),
                 attachments: payload.attachments || [],
                 isMeta: !!payload.isMeta, isToxic: !!payload.isToxic,
-                categoryRank: payload.categoryRank ?? null, dmzRangeRank: payload.dmzRangeRank ?? null
+                categoryRank: payload.categoryRank ?? null, dmzRangeRank: payload.dmzRangeRank ?? null,
+                // The two newer badge fields are written only when the caller sent them, the same must-omit rule as shareCode above: a surface that does not know them yet (the portal, until pins2 Session 5 ports them) would otherwise clear a build's Ass flag and rank modes on every edit.
+                ...(payload.isAss !== undefined ? { isAss: !!payload.isAss } : {}),
+                ...(payload.rankModes !== undefined
+                    ? { rankModes: payload.mode === 'DMZ' ? [] : RANK_MODES.filter(m => (payload.rankModes || []).includes(m)) }
+                    : {})
             }
         }
     };
 }
 
-async function propagateBadges({ weaponKey, mode, excludeId, isMeta, categoryRank, dmzRangeRank, isToxic, session }) {
-    return await Loadout.updateMany(
-        { weaponKey, mode, ...(excludeId ? { _id: { $ne: excludeId } } : {}) },
-        { isMeta, categoryRank, dmzRangeRank, isToxic },
-        { session }
-    );
-}
-
-// ⚠️ MUST read WITH the transaction's own session -- a read with no session against a document inside an in-flight transaction does not see that transaction's own uncommitted writes (Mongo transactions use snapshot isolation outside the session), so this would otherwise sync Cloudinary metadata from PRE-edit data every time. Found during a second-pass audit, not the first.
-async function syncSiblings(weaponKey, mode, session) {
-    // Promise.all is safe here specifically because syncLoadoutMetadata is a pure Cloudinary HTTP call -- it never touches `session`, so there's no MongoDB ClientSession concurrent-use hazard (a session must not have 2+ in-flight operations at once; that constraint is why the DB-session-bound loops elsewhere in this file stay sequential).
-    await Promise.all((await Loadout.find({ weaponKey, mode }).session(session)).map(sib => syncLoadoutMetadata(sib, sib.attachmentSlots)));
+// A bulk paste is parsed before its page's mode is known, so the mode-dependent half of the badge rules runs here, once the op carries the mode: on DMZ a bare tier moves to dmzRangeRank (the same swap handlers/manage/loadouts.js applies to a single add or edit; before this a bulk DMZ "best" was stored on categoryRank, which a DMZ card never reads), and rank modes, MP only, are dropped with a note.
+function applyModeToParsed(parsed, mode, errors) {
+    if (mode !== 'DMZ') return;
+    for (const p of parsed) {
+        if (p.categoryRank && !p.dmzRangeRank) p.dmzRangeRank = p.categoryRank;
+        p.categoryRank = null;
+        if (p.rankModes?.length) {
+            errors.push(`${p.weaponName} (${p.buildName}) -- rank modes are MP only, so ${p.rankModes.join(', ')} was left off.`);
+            p.rankModes = [];
+        }
+    }
 }
 
 // The real "Add Multiple"/"Replace Multiple" upsert -- shared by both op types (see header note #3).
@@ -73,10 +80,12 @@ async function upsertBulkBlocks(parsed, mode, session) {
     const missingImages = [];
     // 🔴 Every doc UPDATED in place (not created) needs its PRE-update state captured here, or a bulk invert can only delete the newly-created docs and silently leaves every in-place overwrite un-reverted -- the same class of bug draws/calendar's bulk ops already solved by replaying the whole prior array.
     const updatedPriors = [];
+    const touchedBuilds = [];
     for (const rawEntry of parsed) {
         const entry = { ...rawEntry, mode };
         const { weaponKey, buildName, imageKey } = entry;
         touchedKeys.add(weaponKey);
+        touchedBuilds.push({ weaponKey, buildName });
         const existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
         if (existing) {
             const { _id, __v, ...prior } = existing.toObject();
@@ -87,15 +96,12 @@ async function upsertBulkBlocks(parsed, mode, session) {
             await Loadout.create([entry], { session });
             created++;
         }
-        await propagateBadges({
-            weaponKey, mode, session,
-            isMeta: entry.isMeta, categoryRank: entry.categoryRank, dmzRangeRank: entry.dmzRangeRank, isToxic: entry.isToxic
-        });
         if (!(await checkImageExists(imageKey))) missingImages.push({ label: `${entry.weaponName} (${buildName})`, imageKey });
     }
-    // Synced once per weaponKey after the whole loop (not per-block), same as the real handler -- a paste with several builds of one weapon shouldn't re-sync the same siblings repeatedly. MISSING from the first draft of this function: touchedKeys was collected and returned but never actually used to sync anything -- found in a second-pass audit, not the first.
-    for (const weaponKey of touchedKeys) {
-        await syncSiblings(weaponKey, mode, session);
+    // Metadata for exactly the builds this paste wrote, once, after the loop. Read WITH the session: outside it a transaction's own uncommitted writes are invisible, so the sync would publish the pre-paste data. Promise.all is safe because syncLoadoutMetadata is a Cloudinary HTTP call that never touches the session.
+    if (touchedBuilds.length) {
+        const docs = await Loadout.find({ mode, $or: touchedBuilds }).session(session);
+        await Promise.all(docs.map(d => syncLoadoutMetadata(d, d.attachmentSlots)));
     }
     return { created, updated, touchedKeys, missingImages, updatedPriors };
 }
@@ -151,11 +157,9 @@ registerEntity('loadouts', {
             const prior = Object.fromEntries(Object.keys(set).map(k => [k, cur[k]]));
             const res = await updateDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, set, session });
             if (!res.ok) return res;
-            const propagateResult = await propagateBadges({
-                weaponKey: payload.weaponKey, mode: payload.mode, excludeId: op.target.id, session,
-                isMeta: payload.isMeta, categoryRank: payload.categoryRank, dmzRangeRank: payload.dmzRangeRank, isToxic: payload.isToxic
-            });
-            await syncSiblings(payload.weaponKey, payload.mode, session);
+            // Read WITH the session, or the sync publishes the pre-edit data (snapshot isolation outside the transaction).
+            const saved = await Loadout.findById(op.target.id).session(session);
+            if (saved) await syncLoadoutMetadata(saved, saved.attachmentSlots);
             return {
                 ok: true,
                 // 🔴 AFTER THE COMMIT: this key already has a live image, and overwrite:true would replace it even if this changeset later rolls back.
@@ -164,9 +168,8 @@ registerEntity('loadouts', {
                     return up.success ? null : `Image upload failed: ${up.error}.`;
                 } : undefined,
                 change: { action: 'edit', model: 'Loadout', target: `${cur.weaponName} (${cur.buildName})`,
-                          summary: `Edited loadout "${cur.weaponName} (${cur.buildName})"`,
-                          detail: propagateResult.modifiedCount ? `Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.` : undefined },
-                applied: { id: op.target.id, prior, version: res.version, propagatedCount: propagateResult.modifiedCount }
+                          summary: `Edited loadout "${cur.weaponName} (${cur.buildName})"` },
+                applied: { id: op.target.id, prior, version: res.version }
             };
         },
         invert: (c) => ({ type: 'loadout.edit', target: { id: c.applied.id }, payload: c.applied.prior })
@@ -199,6 +202,7 @@ registerEntity('loadouts', {
             if (op.payload?.parsed) return { ok: true, errors: [], normalized: op }; // an inverse -- do not re-parse
             const { parsed, errors } = parseBulkLoadoutList(op.payload.text || '');
             if (!parsed?.length) return { ok: false, errors: errors.length ? errors : ['Nothing in that text parsed as a loadout.'] };
+            applyModeToParsed(parsed, op.target.mode, errors);
             return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed, parseErrors: errors } } };
         },
         preview: async (op) => ({ before: { builds: await Loadout.countDocuments({ mode: op.target.mode }) }, after: { touching: op.payload.parsed.length } }),
@@ -233,6 +237,7 @@ registerEntity('loadouts', {
             if (op.payload?.parsed) return { ok: true, errors: [], normalized: op };
             const { parsed, errors } = parseBulkLoadoutList(op.payload.text || '');
             if (!parsed?.length) return { ok: false, errors: errors.length ? errors : ['Nothing in that text parsed as a loadout.'] };
+            applyModeToParsed(parsed, op.target.mode, errors);
             return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed, parseErrors: errors } } };
         },
         preview: async (op) => ({ before: { builds: await Loadout.countDocuments({ mode: op.target.mode }) }, after: { touching: op.payload.parsed.length } }),

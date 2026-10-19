@@ -604,7 +604,7 @@ function buildAddLoadoutModal(mode) {
         // Label + placeholder rewritten (2026-07-18) -- the old placeholder (`bp50_flex_v1`) wasn't even the convention actually used anywhere in the live collection (real Cloudinary keys are `WeaponKey-BuildNum`, all-caps-with-hyphens, e.g. `BAL-27-1`/`FSS-HURRICANE-1` -- confirmed by querying the live Cloudinary account, not guessed). 2026-08-22: this field now takes EITHER a Public ID or a pasted http(s) image URL, which is why it is no longer "the ONE field in this modal that depends on a step happening OUTSIDE the bot first" -- a URL is uploaded to Cloudinary under a derived `WEAPON-N` key on submit (handlers/manage/loadouts.js's resolveImageInput). The two forms are told apart by the URL scheme, so this costs no extra modal slot -- which matters, since Discord caps a modal at 5 and this one uses all 5.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('image').setLabel('Cloudinary Image Key, or an Image URL').setStyle(TextInputStyle.Short).setPlaceholder('e.g. BP50-1 -- or paste an image URL to upload it').setRequired(true)),
         // NOTE: Discord modals cap at 5 fields, and this one already used all 5 — so Category and the Meta/Best/Top-N/DMZ-range "badges" ride along as pipe-delimited segments here rather than getting their own fields. Mode itself no longer needs a slot (it's baked into which button/page you clicked), unlike the pre-2026-07-12 single-modal-for-both-modes version.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category | Badges').setStyle(TextInputStyle.Short).setPlaceholder('AR | meta,best,toxic  (or top3/top5/etc.)').setRequired(true))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category | Badges').setStyle(TextInputStyle.Short).setPlaceholder('AR | meta, best, hp, s&d  (or ass, capable, top3, toxic)').setRequired(true))
     );
     return modal;
 }
@@ -613,12 +613,7 @@ function buildEditLoadoutModal(targetLoadout, targetId) {
     const modal = new ModalBuilder().setCustomId(`edit_loadout_${targetId}`).setTitle('Edit Loadout');
 
     // Reconstruct the badges token list from what's currently saved, so re-opening this modal to tweak something else doesn't silently clear existing badges. `dmzRangeRank` is stored hyphenated ("best-close") but the parser's token format has no hyphen ("bestclose") — strip it back out for reconstruction.
-    const existingBadges = [
-        targetLoadout.isMeta ? 'meta' : null,
-        targetLoadout.categoryRank,
-        targetLoadout.dmzRangeRank ? targetLoadout.dmzRangeRank.replace('-', '') : null,
-        targetLoadout.isToxic ? 'toxic' : null
-    ].filter(Boolean).join(',');
+    const existingBadges = require('../utils/adminParser').loadoutBadgeTokens(targetLoadout).join(',');
 
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setValue(targetLoadout.weaponName)),
