@@ -753,8 +753,8 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
             cost.push(`> **+ Mythic Upgrades: \`${fmt(upgrades.cp)} CP\`**`);
             for (const p of upgrades.pools.filter(x => x.need)) {
                 const icon = p.drawKey === 'mythicWeapon' ? emojis.mythicCard : emojis.mythicCoin;
-                // The amount first, ⌇ for "comes to" and ~ for "about" (2026-10-18 21:34 EDT, his ask): "about" wrapped the line once the per-spin price reached four digits.
-                cost.push(`> -# \`${fmt(p.need)}\` ${icon} ${p.currency}${p.held ? ` − \`${fmt(p.held)}\` held` : ''} ⌇ ~${p.spins} spins × \`${fmt(p.perDraw)} CP\``);
+                // The icon, then the amount (icon first again 2026-10-18 21:37 EDT, his correction); ⌇ for "comes to" and ~ for "about" (2026-10-18 21:34 EDT, his ask): "about" wrapped the line once the per-spin price reached four digits.
+                cost.push(`> -# ${icon} \`${fmt(p.need)}\` ${p.currency}${p.held ? ` − \`${fmt(p.held)}\` held` : ''} ⌇ ~${p.spins} spins × \`${fmt(p.perDraw)} CP\``);
             }
         }
         cost.push(`> **− Spent Already: \`${fmt(spent)} CP\`**`, ...quiet('spent'));
