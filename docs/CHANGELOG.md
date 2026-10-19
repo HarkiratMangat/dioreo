@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.90.0 — 2026-10-19 09:51 EDT (#PR) — the calculator's buttons rearranged, season emojis on every season title, and a Credits row in /help
+## Pre-Release v3.90.0 — 2026-10-19 09:51 EDT (#199) — the calculator's buttons rearranged, season emojis on every season title, and a Credits row in /help
 **`/draw calculator`, `/draws`, `/calendar`, `/patch notes`, `/manage` season titles, `/help` and NOTICE.** Harkirat's eight comments on `claude/draw-calc-tweaks-kxm17f`; what is true now is `.claude/rules/draw-prices.md` § CURRENT STATE.
 
 - **The calculator's rows.** The result's row reads New Calculation · Export · View Saved · Save Result; the editor's nav row puts View Saved first; and every nav row gains **Draws** in front of Draw Prices, opening `/draws` as its own private message. The whole "Double CP event is live" line is bold. New Calculation and Restore Calculation use his re-uploaded NewCalc icon.
