@@ -759,3 +759,10 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (name the dashed flag --empty?) "another name": "--pending ? and wouldnt the screenshot one also have the --dualtext flag?"
 - (Add another build 44 or 52) "44"
 - Built in spec v115: the seats are `meter-L-cells--dualtext` in the rails' black well, a free seat an unlit ring (the grey was static's fill and ring, lighter than the near-black he chose on 2026-10-14 21:43 EDT); `--pending` replaces `--empty` on every name; Add another build 44 (ledger morebtn); the readouts drawn in their row at S 24 with the track options. Asked on the page: the track (flush or rounded), the slots as cells, the drop field's word order for --dualtext (its bright part comes last), and whether staged things wear --pending too (the portal already calls an unsaved Access change "pending").
+
+## His 2026-10-19 14:10–14:12 EDT answers on the Answer Shots page (round 2), verbatim, written 2026-10-19 14:14 EDT
+- (the track: A flush or B rounded) "use cells for 2 of 10 slots. use the flush fill-bar, but with the taller thickness for the character budget."
+- ("2 of 10 slots used" as cells) "cells"
+- (the drop field's word order) "confusing wording. just pick whichever one you want."
+- (staged things wear --pending too) "yes"
+- Built in spec v116: the readouts `meter-S-cells--icon--dualtext` (slots) and `meter-S-track--icon--dualtext` (characters, flush, 6 tall); the drop field's words swapped ("Choose a file, or drop a screenshot"); the Staged tag `tag-S-box.static-staged--pending`; Meters and Pending places marked Decided. Ledger slotcells, budgettrack, dropwords, stagedtag. His "confusing wording" is a lesson for the page: one plain sentence per question, no flag mechanics.
