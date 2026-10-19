@@ -267,6 +267,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-01 20:33 EDT — The first hook-free PR is this one, so it can watch itself (v3.87.0-pre)
 - 2026-10-18 00:11 EDT — The draw calculator, rebuilt from 56 batches of his click-tests (v3.88.0-pre)
 - 2026-10-19 00:54 EDT — Series Armory and the Advanced draws join the calculator, priced set by set (v3.89.0-pre)
+- 2026-10-19 12:39 EDT — Right-clicking a post or a person: six context-menu commands, and the colours of people who never used Dioreo kept anonymous (v3.91.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4579,6 +4580,16 @@ Series Armory was the branch's stated job: three armories priced per item on `/d
 **The Advanced draws were built twice.** The first build priced each draw as one ten-spin path along /draw prices' three strategies. Harkirat broke it with one example: set 1 at 1/2, sets 2 and 3 at 2/2, set 4 at 1/2, the rest untouched, and "purchasing the remaining part of the set later on costs as much as the regular spin". He also asked for goals the path model could not express (just the two Epics, everything). After a think-pass he asked for, the model became per set: which sets are spun, which of those are full, and a goal as the items wanted from the last two sets. Because a set's Advanced price is always above its Regular price and below twice it, the cheapest choice per set is the cheapest plan, so pricing stays a simple loop. His follow-up question exposed one more gap: Spent could not tell an Advanced set from one finished later, so the pop-up now asks for both.
 
 **The click-test ran in a separate session.** Computer use cannot be granted from a Remote Control thread (the dialog never shows), so a worker session he started in the desktop app drove Discord from a fifteen-case brief. Thirteen passed. The one failure was the brief's own expected figure, carried by hand from the state after the next step; the bot was right. Expected values in a brief now come from a script that sets each case's exact state.
+
+## 2026-10-19 12:39 EDT — Right-clicking a post or a person: six context-menu commands, and the colours of people who never used Dioreo kept anonymous (v3.91.0-pre)
+
+Right-click commands were the branch's whole job, and they arrived in the order Harkirat thought of them: Add to Patch Notes first, then "what about expanding the right click feature?", which became Autobuild Loadout, Add to Draws, Add to Calendar, Convert Times and View Colors in one pass.
+
+**A forward hides its post from the bot, except in one place.** Without the Message Content intent, reading a message over REST returns it blank. A message right-click is different: Discord hands the command the message, and a forward's original in its snapshots, with the snapshot's id giving the original post time. So the images exist for the bot only at the moment of the right-click, and are held in memory between it and the button.
+
+**View Colors had to store colours for people who never agreed to anything.** Harkirat's answer was a 30-day cache with no person attached: the key is a hash of Discord's own image hash, so the same avatar returns the same palette for anyone, and nothing in it names whose it was. His own users keep their saved preferences as before.
+
+**The first public click errored.** The open page's button and the pager's page-1 arrow had the same custom id, and Discord rejects a duplicate. The test now walks every page and sub-page in both modes, and fails on the old ids.
 
 # Part B — Lessons Ledger (thematic)
 
