@@ -175,7 +175,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
         // Credit where the content is shown (2026-10-19 09:39 EDT, Harkirat: "let's just do it for good faith"): Leakers on Duty publish under CC BY, which asks for attribution in the medium, and their watermark does not come along when the content is retyped. NOTICE §4A.4 carries the full credit.
         { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>\n-# Source: [Leakers on Duty](${LEAKERS_ON_DUTY_URL})` },
         { type: 14, spacing: 2, divider: true },
-        { type: 10, content: `-# Select from the list below to view **previous balance changes**` }
+        { type: 10, content: `-# View **previous balance changes**` }
     );
 
     const containerPayload = {
