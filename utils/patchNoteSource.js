@@ -40,10 +40,19 @@ function postedAt(message) {
     return Number.isFinite(ts) ? new Date(ts) : null;
 }
 
+// The post's own title: its first line when that line is a heading or wrapped in bold/underline, with the markdown taken off. Used to pre-fill a title box (Add to Draws, Add to Calendar; 2026-10-19 11:16 EDT). Empty when the first line is plain text, since that is a sentence, not a title.
+function titleLine(content) {
+    const first = String(content || '').split('\n').find(l => l.trim()) || '';
+    if (!TITLE_LINE.test(first)) return '';
+    return first.replace(/^\s*#{1,3}\s+/, '').replace(/\*\*|__/g, '').trim();
+}
+
 function extractSource(message) {
     const src = sourceMessage(message);
     return {
         images: imageUrls(src),
+        title: titleLine(src?.content),
+        content: String(src?.content || ''),
         info: extraInfo(src?.content),
         postedAt: postedAt(message),
         isForward: src !== message,
@@ -64,4 +73,4 @@ function mergeInfo(existing, extra) {
     return own ? `${own}\n${extra}` : extra;
 }
 
-module.exports = { extractSource, extraInfo, mergeImages, mergeInfo, MAX_IMAGES };
+module.exports = { extractSource, extraInfo, titleLine, mergeImages, mergeInfo, MAX_IMAGES };

@@ -43,6 +43,7 @@ export const TESTS = [
     {"cmd": "node scripts/guildPolicyEnforcement.test.js", "lane": "unit"},
     {"cmd": "node scripts/embedTester.test.js", "lane": "unit"},
     {"cmd": "node scripts/addToPatchNotes.test.js", "lane": "unit"},
+    {"cmd": "node scripts/rightClickCommands.test.js", "lane": "unit"},
     {"cmd": "node scripts/passiveExpiry.test.js", "lane": "unit"},
     {"cmd": "node scripts/paletteAlgoVersion.test.js", "lane": "unit"},
     {"cmd": "node scripts/paletteShape.test.js", "lane": "unit"},

@@ -462,15 +462,17 @@ function drawTypeLabel(current = '') {
 // A Label holding a text input. interaction.fields.getTextInputValue() reads it exactly as it read an action row's.
 const drawTextLabel = (id, label, input) => new LabelBuilder().setLabel(label).setTextInputComponent(input.setCustomId(id));
 
-function buildAddDrawModal(drawType) {
+// `prefill` (added 2026-10-19 11:16 EDT, the Add to Draws right-click): title, date and url come from the post. A box gets a value only when there is one, so the blank box /manage opens keeps its exact shape.
+function buildAddDrawModal(drawType, prefill = {}) {
+    const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId(`add_draw_${drawType}`).setTitle(`Add ${drawType === 'new' ? 'New' : 'Returning'} Draw`);
     // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone.
     modal.addLabelComponents(
-        drawTextLabel('title', 'Draw Title', new TextInputBuilder().setStyle(TextInputStyle.Short)),
+        drawTextLabel('title', 'Draw Title', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short), prefill.title)),
         drawTextLabel('items', 'Items (Shorthand)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note")),
-        drawTextLabel('date', 'Release Date', new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15")),
+        drawTextLabel('date', 'Release Date', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15"), prefill.date)),
         // Optional (2026-07-12, Cloudinary-cache feature): blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js).
-        drawTextLabel('url', 'Thumbnail URL (blank = reuse cached image)', new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false)),
+        drawTextLabel('url', 'Thumbnail URL (blank = reuse cached image)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false), prefill.url)),
         drawTypeLabel()
     );
     return modal;
@@ -513,12 +515,14 @@ function buildCalendarBulkRemoveModal() {
     return modal;
 }
 
-function buildCalendarAddModal() {
+// `prefill` (added 2026-10-19 11:16 EDT, the Add to Calendar right-click): title, startDate and endDate come from the post. Same set-only-when-present rule as the Add Draw box.
+function buildCalendarAddModal(prefill = {}) {
+    const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId('modal_calendar_add').setTitle('Add Calendar Event');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 2').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5').setRequired(false)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short), prefill.title).setRequired(true)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 2'), prefill.startDate).setRequired(true)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5'), prefill.endDate).setRequired(false)),
         // Added for the 3-section calendar redesign (2026-07-31 12:10 EDT) -- blank auto-detects from the title's own wording (adminParser.js's guessCalendarCategory), same as an un-prefixed bulk-import line.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('blank = auto-detect from title').setRequired(false)),
         // Double CP event flag (added 2026-08-15 for /draw calculator) -- a plain Y/N text field rather than a real checkbox (Discord modals have none). Blank/anything not starting with Y is treated as No, matching the lenient parsing handlers/manage/calendar.js already uses.
