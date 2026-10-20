@@ -5,6 +5,44 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ Both exposed Cloudflare credentials rolled — closed 2026-10-19 22:07 EDT `[DONE · 2026-10-19 22:07 EDT]`
+
+Harkirat rolled both in the dashboard on 2026-10-19 and verified each: the **"claude code"** account token (`.env`'s `CLOUDFLARE_API_TOKEN`) returns `success: true` from the ACCOUNT verify endpoint, and the **"Cloudflare Tunnel API Token for dioreo.app"** was replaced by a fresh `cloudflared tunnel login` (old `cert.pem` moved aside first), after which `cloudflared tunnel list` lists the tunnel. "github/.env Cloudflare Pages Access" (the GitHub Actions deploy secret) was never exposed and was left alone. The old `~/.cloudflared/cert.pem.old` holds a dead token and can be deleted. The main checkout's `.env` comment that says "TREAT AS EXPOSED AND REROLL" is now stale.
+
+#### Reroll the two Cloudflare credentials that were exposed in a chat transcript `[P2 · XS · Sonnet5-Medium]`
+
+*Filed 2026-08-28 12:0x EDT. Harkirat's call, in his words: **"we'll reroll it in the future, I'm fine with the security concern for now."** Filed so "in the future" has somewhere to live.*
+
+Two separate credentials went through the transcript on 2026-08-28 and both should be rolled:
+
+1. **The Argo Tunnel token inside `~/.cloudflared/cert.pem`.** The file was uploaded so its contents could be installed, and reading it put the embedded `apiToken`, the zone id and the account id into the transcript. ⚠️ **Revoking it does NOT stop the running dev tunnel** — `cert.pem` authenticates `tunnel create` and `tunnel route dns`, while `tunnel run` uses the per-tunnel `<uuid>.json`. Roll it in the dashboard under **My Profile → API Tokens** (it appears as an Argo Tunnel token); re-run `cloudflared tunnel login` only when a new tunnel or route is next needed.
+2. **The account API token now in `.env` as `CLOUDFLARE_API_TOKEN`** — verified active 2026-08-28 12:2x EDT and used the same minute to delete the abandoned `dev.portal.dioreo.app` record.
+
+🔴 **AND A CORRECTION WORTH KEEPING, because the reasoning was wrong even where the verdict was right.** An earlier token was declared dead in two documents on the strength of `/user/tokens/verify` returning `1000 Invalid API Token`. **That is a USER endpoint and it cannot verify an ACCOUNT-owned token** — a `cfat_` token answers exactly that error while being perfectly valid, which is what happened to the replacement. Verify an account token against `GET /accounts/$CLOUDFLARE_ACCOUNT_ID/tokens/verify` instead. *(The first token was in fact dead — re-tested against the correct endpoint it still fails — so the verdict survived and the method did not. That is the worse of the two failures: a method that will condemn the next valid token too.)*
+
+**Verify:** `curl -s -H "Authorization: Bearer $TOKEN" https://api.cloudflare.com/client/v4/user/tokens/verify` returns `success: true` for the new token, and the old one returns `Invalid API Token`.
+
+⚠️ **Nothing in this repo reads either at runtime** — the bot does not talk to Cloudflare and the site deploy uses its own GitHub Actions secret — so rolling them breaks no running thing. The only cost is that DNS/tunnel work from this machine needs the new value.
+
+
+## ✅ Prod app's `/manage` emojis carry the `DB_` prefix — closed 2026-10-19 21:57 EDT `[DONE · 2026-10-19 21:57 EDT]`
+
+Checked read-only against the prod application (Dioreo, 149 emojis) 2026-10-19 21:57 EDT: all twelve `DB_` names `utils/emojiMap.js` uses are present (Database, Add, Edit, Delete, BulkAdd, BulkReplace, BulkDelete, Export, Purge, Info, URLs, Guide). One leftover, `MngAnnouncements`, is named by no code and is harmless. No Rank Mode (`RM_*`) emojis on prod yet; that upload is its own step at deploy.
+
+#### `[P3 · XS]` Check the PROD app's emoji names carry the `DB_` prefix before v3 deploys — filed 2026-10-18 12:04 EDT
+
+Harkirat renamed twelve `/manage` emojis with a `DB_` prefix (Database, Add, Edit, Delete, BulkAdd, BulkReplace, BulkDelete, Export, Purge, Info, URLs, Guide; names only, same images), and `utils/emojiMap.js` now uses the `DB_` names (`feat/series-armory`, 108e1812). The dev app was checked: 0 unmatched. The prod app was not, because the Dioreo-Bot worktree has no prod `.env`. If prod still has the old names, `refreshEmojiIds()` lists those twelve as missing at boot and keeps the hardcoded prod ids, which still render, so nothing breaks; only the boot log's unmatched count says so. **Amended 2026-10-18 13:39 EDT:** six more emojis joined `utils/emojiMap.js` on the same branch with the ids he supplied: `Checkmark`, `Plus`, `DeleteBin`, `PN_Buff`, `PN_Nerf`, `PN_Fix` (the last three replace patch notes' Buff, Nerf and Fix). All six are on the dev app; the prod app was not checked. **Do:** on the first prod boot of v3, read the "Emoji ids: … unmatched" line. **Verify:** it reads `0 unmatched`, or rename the twelve on the prod app in the Developer Portal (his action). Also confirm the prod app holds `S6TakeYourHeart`, `S7Terminated`, `S8AgainstAllFate`, `S9VampiresVsWerewolves` (the /patch notes season emoji) and `DioreoKawaii3B` (/invite's Share Link) at the ids in `utils/emojiMap.js`; the dev app holds them under other ids, re-pointed by name (amended 2026-10-19 00:50 EDT).
+
+## ✅ Seven unused helpers in `utils/` — closed 2026-10-19 21:51 EDT `[DONE · 2026-10-19 21:51 EDT]`
+
+Deleted in Pre-Release v3.99.0 on Harkirat's word (2026-10-19 21:44 EDT: "delete the extra codes"). Each name was re-searched across the whole repo, portal and hidden paths included, and had no caller: `parseAlertId`, `buildAlertExport`, `buildChangeExport`, `extractStillFrame`, `capBannerPreviewWidth`, `pageForLoadoutMode` (the `utils/manageActions.js` copy; `core/changeset.js` keeps its own) and `buttonsFor`, plus the two `fmtUtc` helpers only the exports used.
+
+#### `[P3 · XS]` SEVEN FUNCTIONS IN `utils/` ARE DEFINED AND NEVER USED
+
+*Filed 2026-09-14 23:08 EDT, found while measuring codebase-memory's dead-code filter.* The graph's no-caller query over `utils/` returned 115 candidates; checked one by one against every reference in the code, these seven have none outside their own definition or export line: `parseAlertId` and `buildAlertExport` (`utils/alertStore.js`), `extractStillFrame` (`utils/stillFrame.js`), `pageForLoadoutMode` and `buttonsFor` (`utils/manageActions.js`), `buildChangeExport` (`utils/changeStore.js`), `capBannerPreviewWidth` (`utils/calendarBannerCache.js`). ⚠️ A test, a script outside `utils/`, or a portal module could still reach one by a dynamic name, so check each with `search_code` for the bare name before deleting it.
+
+**Verify by:** each name either deleted with its export and `npm test` green, or kept with a comment naming what reaches it.
+
 ## ✅ Update the bot's Discord Developer Portal listing — closed 2026-10-19 21:34 EDT `[DONE · 2026-10-19 21:34 EDT]`
 
 Done by Harkirat. Description and banner were reported updated at 2026-10-19 21:27 EDT; at 2026-10-19 21:32 EDT he confirmed the production application's name is **Dioreo** and that Discord has officially verified the app. Nothing remained on the listing. The original item, kept whole:

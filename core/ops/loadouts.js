@@ -1,6 +1,6 @@
 // core/ops/loadouts.js
 //
-// Six loadout mutations, as ops. MP and DMZ share this one file (mirroring utils/manageActions.js's loadoutModeFor/pageForLoadoutMode) so the two pages cannot drift apart.
+// Six loadout mutations, as ops. MP and DMZ share this one file (mirroring utils/manageActions.js's loadoutModeFor) so the two pages cannot drift apart.
 //
 // ⚠️ Loadouts are THEIR OWN DOCUMENTS. This file uses core/mongo/document.js, never core/mongo/positional.js -- pointing the positional helper at a top-level document matches nothing and returns { ok:false, reason:'missing' }, indistinguishable from a legitimate outcome.
 //

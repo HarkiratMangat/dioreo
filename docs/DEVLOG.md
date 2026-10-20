@@ -270,6 +270,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-19 12:39 EDT — Right-clicking a post or a person: six context-menu commands, and the colours of people who never used Dioreo kept anonymous (v3.91.0-pre)
 - 2026-10-19 15:43 EDT — Dioreo Admin: a second app for the admin commands (v3.92.0-pre)
 - 2026-10-19 21:36 EDT — Renaming a command is a grep with a history problem: /gunsmiths becomes /gunsmith (v3.98.0-pre)
+- 2026-10-19 22:12 EDT — seven dead helpers deleted, launch checks folded in (v3.99.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4610,6 +4611,15 @@ The records stay as written, which is the repo's rule, and the cost of that rule
 One file could not be fixed from here. The portal's Armory share icon copies `/gunsmiths search weapon:… build:N`, and `scripts/armoryRealm.test.js` exists to prove that text resolves through the real weapon lookup. The portal belongs to another workstream, so the test keeps the portal's stale string on purpose, with a comment saying to change it in the same commit as the portal, and the change is a written hand-off instead of an edit.
 
 The landing page animation was a smaller version of the same lesson. Its option lists were measured against the command set once and then drifted, and `fit()` filters a value that is too long rather than trimming it, so a stale or oversized entry simply never appears.
+
+## 2026-10-19 22:12 EDT — seven dead helpers deleted, launch checks folded in (v3.99.0)
+
+Harkirat asked to delete the seven helpers the codebase-memory dead-code pass had found on 2026-09-14, and to hold the merge until the small launch checks were folded in.
+
+- **The deletion was checked name by name**, not trusted from the old filed list: each was searched across the repo, `portal/` and hidden paths before it went. `core/changeset.js` has its own `pageForLoadoutMode`, which stays; only the unused `manageActions` copy went.
+- **Two prod checks were read-only and came back clean:** `img2webp` is still on the VM, and the prod app carries all twelve `DB_` emojis the code names.
+- **Two prod writes waited for his word:** he rolled both exposed Cloudflare tokens himself (line 72 of `.env` was "claude code"; the tunnel token lived in `cert.pem`), and the six animated Rank Mode emojis went up to the prod app on his "sure upload and then merge".
+- **A lesson about the CI relay:** two "syntax-check failed" reports in a row were runs cancelled by the next push, not real failures. Read the run's job list before treating a red aggregate as a defect.
 
 # Part B — Lessons Ledger (thematic)
 

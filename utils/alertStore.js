@@ -1,10 +1,10 @@
 // utils/alertStore.js The persistence + query layer behind the Discord alert system (see utils/alertWebhook.js). Kept in its own module so alertWebhook.js stays lean and the "monitors the bot, must never hurt it" contract is obvious in one place: recordAlert()/pruneAlerts() are fully swallowed and are called fire-and-forget (never awaited) from sendAlert(), completely INDEPENDENT of the webhook POST. Added 2026-07-20.
 //
-// Read helpers (getRecentAlerts/getAlertSummary/buildAlertExport) back the admin-only /alerts command.
+// Read helpers (getRecentAlerts/getAlertSummary) back the admin-only /alerts command.
 const AlertLog = require('../models/AlertLog');
 const AlertCounter = require('../models/AlertCounter');
 
-// Explicitly encodes chronological order: index 0 = Jan (first) ... index 11 = Dec (last). Used both to build the "MMMDD" id/counter key AND by parseAlertId() to sort ids on their own (Harkirat's ask that month order be coded, not left implicit).
+// Explicitly encodes chronological order: index 0 = Jan (first) ... index 11 = Dec (last). Used to build the "MMMDD" id/counter key (Harkirat's ask that month order be coded, not left implicit).
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const RETENTION_DAYS = 30;   // delete alerts older than this...
@@ -17,15 +17,6 @@ function pad2(n) { return String(n).padStart(2, '0'); }
 // UTC date key, e.g. "Jul20". UTC deliberately (repo-wide "stored dates are always UTC" rule; DST-proof; host-TZ-independent). The counter rolls at UTC midnight.
 function dateKey(date) {
     return `${MONTHS[date.getUTCMonth()]}${pad2(date.getUTCDate())}`;
-}
-
-// parseAlertId("Jul20-03") -> { monthIndex, day, seq }, for chronological ordering independent of a stored timestamp. Returns null on anything malformed.
-function parseAlertId(id) {
-    const m = /^([A-Za-z]{3})(\d{2})-(\d+)$/.exec(String(id || '').trim());
-    if (!m) return null;
-    const monthIndex = MONTHS.indexOf(m[1]);
-    if (monthIndex === -1) return null;
-    return { monthIndex, day: parseInt(m[2], 10), seq: parseInt(m[3], 10) };
 }
 
 // Escalating uptime — ALWAYS the top two adjacent units, except <60min which is minutes only (Harkirat's exact spec, 2026-07-20). Units: Min/H/D/W/M/Y; minutes use "Min" so a bare "M" is unambiguously months. Fuzzy units are fixed: week=7d, month=30d, year=365d.
@@ -126,47 +117,12 @@ async function getAlertSummary() {
     };
 }
 
-function fmtUtc(d) {
-    return d ? new Date(d).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC') : '?';
-}
-
-// The downloadable .txt body — the fuller record beyond what the Discord embed shows. Newest first.
-async function buildAlertExport() {
-    const rows = await AlertLog.find().sort({ createdAt: -1 }).lean();
-    const lines = [
-        `Dioreo — alert log export`,
-        `Generated: ${fmtUtc(new Date())}`,
-        `Total alerts: ${rows.length}`,
-        `Severity legend: info=🟢 caution=🟡 warn=🟠 error=🔴  (details in /bot analytics → "What alerts mean?")`,
-        '='.repeat(72),
-        '',
-    ];
-    for (const r of rows) {
-        const meta = [
-            (r.level || '?').toUpperCase(),
-            r.pinged ? 'pinged' : 'no-ping',
-            r.host || '?',
-            r.rssMb != null ? `RSS ${r.rssMb}MB` : '',
-            r.uptimeSec != null ? `up ${formatUptime(r.uptimeSec)}` : '',
-        ].filter(Boolean).join(' | ');
-        lines.push(`[${r.alertId || '??????'}] ${fmtUtc(r.createdAt)} | ${meta}`);
-        lines.push(`Title:  ${r.title || ''}`);
-        if (r.detail) lines.push(`Detail: ${r.detail}`);
-        lines.push('─'.repeat(72));
-        lines.push('');
-    }
-    if (!rows.length) lines.push('(no alerts recorded yet)');
-    return lines.join('\n');
-}
-
 module.exports = {
     MONTHS,
-    parseAlertId,
     formatUptime,
     nextDailyAlertId,
     recordAlert,
     pruneAlerts,
     getRecentAlerts,
     getAlertSummary,
-    buildAlertExport,
 };
