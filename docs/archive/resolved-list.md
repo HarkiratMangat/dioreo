@@ -5,6 +5,14 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ Prod app's `/manage` emojis carry the `DB_` prefix — closed 2026-10-19 21:57 EDT `[DONE · 2026-10-19 21:57 EDT]`
+
+Checked read-only against the prod application (Dioreo, 149 emojis) 2026-10-19 21:57 EDT: all twelve `DB_` names `utils/emojiMap.js` uses are present (Database, Add, Edit, Delete, BulkAdd, BulkReplace, BulkDelete, Export, Purge, Info, URLs, Guide). One leftover, `MngAnnouncements`, is named by no code and is harmless. No Rank Mode (`RM_*`) emojis on prod yet; that upload is its own step at deploy.
+
+#### `[P3 · XS]` Check the PROD app's emoji names carry the `DB_` prefix before v3 deploys — filed 2026-10-18 12:04 EDT
+
+Harkirat renamed twelve `/manage` emojis with a `DB_` prefix (Database, Add, Edit, Delete, BulkAdd, BulkReplace, BulkDelete, Export, Purge, Info, URLs, Guide; names only, same images), and `utils/emojiMap.js` now uses the `DB_` names (`feat/series-armory`, 108e1812). The dev app was checked: 0 unmatched. The prod app was not, because the Dioreo-Bot worktree has no prod `.env`. If prod still has the old names, `refreshEmojiIds()` lists those twelve as missing at boot and keeps the hardcoded prod ids, which still render, so nothing breaks; only the boot log's unmatched count says so. **Amended 2026-10-18 13:39 EDT:** six more emojis joined `utils/emojiMap.js` on the same branch with the ids he supplied: `Checkmark`, `Plus`, `DeleteBin`, `PN_Buff`, `PN_Nerf`, `PN_Fix` (the last three replace patch notes' Buff, Nerf and Fix). All six are on the dev app; the prod app was not checked. **Do:** on the first prod boot of v3, read the "Emoji ids: … unmatched" line. **Verify:** it reads `0 unmatched`, or rename the twelve on the prod app in the Developer Portal (his action). Also confirm the prod app holds `S6TakeYourHeart`, `S7Terminated`, `S8AgainstAllFate`, `S9VampiresVsWerewolves` (the /patch notes season emoji) and `DioreoKawaii3B` (/invite's Share Link) at the ids in `utils/emojiMap.js`; the dev app holds them under other ids, re-pointed by name (amended 2026-10-19 00:50 EDT).
+
 ## ✅ Seven unused helpers in `utils/` — closed 2026-10-19 21:51 EDT `[DONE · 2026-10-19 21:51 EDT]`
 
 Deleted in Pre-Release v3.99.0 on Harkirat's word (2026-10-19 21:44 EDT: "delete the extra codes"). Each name was re-searched across the whole repo, portal and hidden paths included, and had no caller: `parseAlertId`, `buildAlertExport`, `buildChangeExport`, `extractStillFrame`, `capBannerPreviewWidth`, `pageForLoadoutMode` (the `utils/manageActions.js` copy; `core/changeset.js` keeps its own) and `buttonsFor`, plus the two `fmtUtc` helpers only the exports used.
