@@ -1103,6 +1103,18 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 *🏷️ **`/gunsmiths` became `/gunsmith` on 2026-10-19 21:17 EDT** (Harkirat: "let's use gunsmith singular"). Entries anywhere in this file that were filed earlier keep the name they were written under, and so do the changelogs and the devlog: a record is never backdated. Read `/gunsmiths` in an older entry as `/gunsmith`, and remember `search` and `list` there are `mp` and `dmz` now.*
 
+### `/timestamp` ranges — "8pm to 10pm" gives a start and an end `[P2 · S]`
+
+*Filed 2026-10-20 18:46 EDT. Harkirat, 2026-10-20 18:30 EDT: "ranges is actually a really good idea ... if it can, that would be a really good thing to implement."* Checked the same day: chrono returns a start and an end for "8pm to 10pm", "tomorrow 8-10pm", "oct 24 to oct 27", "fri 9am - sun 11pm" and "from 6pm until 9pm", read through `zoneReference`/`componentInstant`.
+
+- **Waiting on his layout pick** from the mock-ups in Dioreoland #testing-spam: **A** (one line per format, `<start> – <end>`, one code copying the whole range; a same-day range shows the end as a time only) or **B** (a START block and an END block).
+- **Do:** in `utils/timestampHelper.js` return the end too when chrono has one; in `commands/timestamp.js` draw the picked layout; carry the end in the `tsmenu|` custom_id (mind the 100-character cap). Add cases to `scripts/timestampLayout.test.js` and `scripts/timestampZone.test.js`.
+- **Verify:** `/timestamp datetime:tomorrow 8pm to 10pm` on the dev bot shows both times; a plain time still shows one.
+
+### `/commands` page: describe the saved timezone and relative times once both PRs land `[P3 · XS]`
+
+*Filed 2026-10-20 18:46 EDT.* PR #209's `/commands` page deliberately does not claim `/timestamp` uses the saved `/settings` timezone or that "in 2 hours" is right, because both were bugs. `fix/timestamp-timezone` fixes them. **Do:** once both are merged, word the page's `/timestamp` entry to say so and mention Short List, then rebuild `public/`. **Verify:** the page's `/timestamp` text matches `/help`.
+
 ### Your Stats — per-user usage stats on a /settings page `[P2 · M]`
 
 > ✅ **BUILT 2026-10-20 18:46 EDT** on `fix/timestamp-timezone` (`419c8fd6`): counting, the page, Your Stats button, `open:Stats`, Reset, PRIVACY §2.1e. Still open below: milestone messages and a season-end Dioreo Wrapped. Not yet merged.
