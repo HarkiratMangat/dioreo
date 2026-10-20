@@ -317,16 +317,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ins:hover .ins-ic{transform:none}}
 }/* ── the way into /commands: .cmdb ──────────────────────────────────────────
    The Source capsule's look with its word held open: a hairline pill, the label in the capsule's mono small caps, the border warming and the cursor light following on hover. ⚠️ ITS HEIGHT IS INSTALL'S, declared twice on purpose (37px here, 38px in the 620px block with .ins) and not inherited from the shared 32px rule, because the whole point of the second pass was that the pair read as one height. Change .ins and change this with it.
-   The label is --ink2 at rest and --ink on hover, the pairing the capsule and the footer nav links already use on this ground. No mark inside, by instruction. Trailing letter-spacing is taken off the right padding so the word sits centred rather than a tracking-width left of centre. */
+   The label is --ink2 at rest and --ink on hover, the pairing the capsule and the footer nav links already use on this ground. No mark inside, by instruction. Trailing letter-spacing is taken off the right padding so the word sits centred rather than a tracking-width left of centre.
+   ⚠️ THE LABEL IS INSTALL'S LABEL, METRIC FOR METRIC, AND BUILT THE SAME WAY: the pill carries .66rem and the .14em tracking (which inherits as the absolute 1.48px, not as .14em of the label), the word inside is .7rem / 800. Setting .7rem on the pill instead gives 1.57px tracking and a 700 weight, a hair off Install on the desktop. The first build kept the capsule's .65rem/.13em, and the second guessed Install's phone size from a rule that never applies (see the phone block), so the pair read as two different type sizes (Harkirat, 2026-10-19 23:40 EDT: "their sizing and alignment is off"). */
 
 .cmdb{display:inline-flex;align-items:center;justify-content:center;
   position:relative;isolation:isolate;overflow:hidden;
-  height:37px;padding-inline:1.05rem calc(1.05rem - .13em);border-radius:999px;
+  height:37px;padding-inline:1.05rem calc(1.05rem - .14em);border-radius:999px;
   text-decoration:none;white-space:nowrap;color:var(--ink2);
   border:1px solid var(--rule2);background:transparent;
-  font-family:var(--mono);font-size:.68rem;font-weight:600;letter-spacing:.13em;
+  font-family:var(--mono);font-size:.66rem;font-weight:700;letter-spacing:.14em;
   text-transform:uppercase;transition:color .22s,border-color .22s}
-.cmdb-t{position:relative;z-index:1}
+.cmdb-t{position:relative;z-index:1;font-size:.7rem;font-weight:800}
 .cmdb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
   opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
     var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
@@ -402,9 +403,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
-  .ins-ar{display:none}/* Commands keeps Install's height on a phone too (38px), and its word, which is the whole button. */
+  .ins-ar{display:none}/* Commands follows Install on a phone too: its height (38px), its horizontal padding and its label tracking (.11em on the label, as .ins-t above). ⚠️ IT COPIES WHAT INSTALL RENDERS, NOT WHAT THE RULE ABOVE SAYS: .ins-t's font-size:.6rem is beaten by the base rule for .ins .ins-t, which sets .7rem (higher specificity), so Install's label is still .7rem on a phone and only its .11em tracking lands. The first fix followed the rule and set Commands to .6rem, which left it visibly smaller than Install (measured 9.6px against 11.2px). Making Install .6rem would shrink a live button and is its own change. The right padding gives up .077rem, the .11em tracking on a .7rem label, so the word sits centred. */
   
-  .cmdb{height:38px;padding-inline:.9rem calc(.9rem - .13em)}
+  .cmdb{height:38px;padding-inline:.82rem calc(.82rem - .077rem)}
+  .cmdb-t{letter-spacing:.11em}
 }/* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
    This is the one place the design spends its boldness, so it is the one place
    with real depth. It is a sky you carry the sun and moon across:
