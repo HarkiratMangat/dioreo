@@ -168,6 +168,19 @@ async function main() {
         if (p && !sources.has(p.name)) sources.set(p.name, { ...p, key: k });
     }
 
+    // Emojis looked up BY NAME at render time are not in emojiMap, so the loop above never saw them, and Dioreo Admin never got a copy: found 2026-10-20 14:20 EDT when the Adjust modal's Rank Mode options showed no icons (Harkirat: "rank mode icons not included?"). Their source is the dev bot's own app, which holds them. RANK_MODE_EMOJI is the list today; add any new by-name family here.
+    const byName = Object.values(require('../utils/rankModes').RANK_MODE_EMOJI).filter(n => !sources.has(n));
+    if (byName.length && dev.BOT_TOKEN && dev.BOT_TOKEN !== token) {
+        const pub = await discord(dev.BOT_TOKEN, 'GET', '/oauth2/applications/@me');
+        const res = pub.ok ? await discord(dev.BOT_TOKEN, 'GET', `/applications/${pub.json.id}/emojis`) : null;
+        const have = new Map(((res && res.ok && (res.json.items || res.json)) || []).map(e => [e.name, e]));
+        for (const n of byName) {
+            const e = have.get(n);
+            if (e) sources.set(n, { name: n, id: e.id, animated: !!e.animated, key: `byName:${n}` });
+            else console.error(`   ❌ :${n}: is looked up by name but the dev bot's app has no copy to take it from`);
+        }
+    }
+
     const list = async () => {
         const res = await discord(token, 'GET', `/applications/${appId}/emojis`);
         if (!res.ok) throw new Error(`Could not list emojis: ${res.status}`);
