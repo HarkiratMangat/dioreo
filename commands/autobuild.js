@@ -42,7 +42,7 @@ module.exports = {
         // retry_token path (Task 7 adds retryImageUpload) -- Discord modals can't accept file attachments, so "ask for the image again" after a Cloudinary failure has to be a fresh slash-command invocation, not a button/modal round-trip. See the design spec's "Image retry mechanism" decision.
         if (retryToken) {
             if (!imageUrl) {
-                return interaction.reply({ content: '❌ Provide `screenshot` or `url` with a retry_token.', ephemeral: true });
+                return interaction.reply({ content: require('../utils/emojiMap').glyphs('❌ Provide `screenshot` or `url` with a retry_token.'), ephemeral: true });
             }
             await interaction.deferReply({ ephemeral: isEphemeral });
             const { retryImageUpload } = require('../utils/autobuildPipeline');
@@ -51,7 +51,7 @@ module.exports = {
 
         // Several screenshots: the bulk review. `url` stays a single-screenshot option, and `category`, `badges` and `mode` apply to every screenshot in the batch (Edit changes any one build).
         if (extra.length) {
-            if (url) return interaction.reply({ content: '❌ `url` reads one screenshot. Attach the screenshots instead when sending several.', ephemeral: true });
+            if (url) return interaction.reply({ content: require('../utils/emojiMap').glyphs('❌ `url` reads one screenshot. Attach the screenshots instead when sending several.'), ephemeral: true });
             await interaction.deferReply({ ephemeral: isEphemeral });
             const { runBulk } = require('../utils/autobuildBulk');
             return runBulk(interaction, [attachment, ...extra].filter(Boolean).map(a => a.url), {
@@ -62,14 +62,16 @@ module.exports = {
         }
 
         if ((attachment && url) || (!attachment && !url)) {
-            return interaction.reply({ content: '❌ Provide exactly one of `screenshot` or `url`.', ephemeral: true });
+            return interaction.reply({ content: require('../utils/emojiMap').glyphs('❌ Provide exactly one of `screenshot` or `url`.'), ephemeral: true });
         }
 
         await interaction.deferReply({ ephemeral: isEphemeral });
         const category = interaction.options.getString('category');
         const badges = interaction.options.getString('badges');
         const mode = interaction.options.getString('mode');
-        return runExtraction(interaction, imageUrl, category, badges, mode);
+        // One screenshot is a batch of one (2026-10-20 12:43 EDT), so a single review and a bulk review are the same surface and cannot drift apart: Save and Discard stay on the page, Discard can be undone. A batch of one has no pager or Save All.
+        const { runBulk } = require('../utils/autobuildBulk');
+        return runBulk(interaction, [imageUrl], { explicitCategory: category, badgesOption: badges, explicitMode: mode });
     }
 };
 

@@ -69,7 +69,7 @@ function overview(batch, index) {
             return flags.length ? `${n} ${warn} ${flags.join(', ')}` : `${n} ${emojis.checkmark} ready to save`;
         }
         if (it.status === 'saved') return `${n} saved as ${it.doc.buildName}`;
-        if (it.status === 'cancelled') return `${n} ❌ discarded`;
+        if (it.status === 'cancelled') return `${n} ${emojis.cross} discarded`;
         if (it.status === 'failed') return `${n} ${warn} couldn't read`;
         return `${n} ${warn} image upload failed`;
     });
@@ -87,6 +87,8 @@ function nextPendingIndex(items, from) {
 }
 
 const id = (action, key, index = '') => `autobuild_b|${action}|${key}|${index}`;
+// Button icons from the bot's own set, read at render time, as the draw calculator's buttons do.
+const icon = (key) => emojis.parseEmoji(emojis[key]);
 
 // The rows under every page: the bot's usual arrow pager, then the batch actions, then Add more when the right-click message has screenshots this batch has not read.
 function batchRows(batch, key, index, heldImages) {
@@ -96,8 +98,8 @@ function batchRows(batch, key, index, heldImages) {
     const pending = batch.items.filter(it => it.status === 'pending').length;
     if (pending > 1) {
         rows.push({ type: 1, components: [
-            { type: 2, style: 3, label: `Save All ${pending}`, custom_id: id('all', key) },
-            { type: 2, style: 4, label: `Discard All ${pending}`, custom_id: id('none', key) },
+            { type: 2, style: 3, label: `Save All ${pending}`, custom_id: id('all', key), emoji: icon('saveStar') },
+            { type: 2, style: 4, label: `Discard All ${pending}`, custom_id: id('none', key), emoji: icon('deleteBin') },
         ] });
     }
     const saved = batch.items.filter(it => it.status === 'saved');
@@ -146,9 +148,9 @@ function renderPage(batch, key, index, heldImages = null) {
             notes: [batchDuplicateNote(batch.items, index)],
             rows: [
                 { type: 1, components: [
-                    { type: 2, style: 3, label: `Save Build ${n}`, custom_id: id('confirm', key, index) },
-                    { type: 2, style: 1, label: 'Adjust', custom_id: id('edit', key, index) },
-                    { type: 2, style: 4, label: `Discard Build ${n}`, custom_id: id('cancel', key, index) },
+                    { type: 2, style: 3, label: `Save Build ${n}`, custom_id: id('confirm', key, index), emoji: icon('saveStar') },
+                    { type: 2, style: 1, label: 'Adjust', custom_id: id('edit', key, index), emoji: icon('mngEdit') },
+                    { type: 2, style: 4, label: `Discard Build ${n}`, custom_id: id('cancel', key, index), emoji: icon('deleteBin') },
                 ] },
                 ...rows,
             ],
@@ -182,8 +184,15 @@ function render(batch, key, heldImages) {
     return renderPage(batch, key, batch.page, heldImages);
 }
 
+// Every text block goes through emojiMap.glyphs on the way out, so no Unicode status glyph reaches a batch page whichever line composed it.
+function withGlyphs(components) {
+    const walk = (c) => { if (c.type === 10 && c.content) c.content = emojis.glyphs(c.content); (c.components || []).forEach(walk); };
+    components.forEach(walk);
+    return components;
+}
+
 async function show(interaction, batch, key) {
-    return sendV2Payload(interaction, render(batch, key, heldImagesFor(interaction, batch)));
+    return sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))));
 }
 
 // Saves every build still to review, in order (one at a time, so two builds of one weapon get different build names). Stops at the first build that is missing a category or a mode and returns its index; a failed image upload is recorded and the run carries on. `confirm` is confirmCore, passed in so the stop rule can be tested without a database.
@@ -263,7 +272,7 @@ function parse(customId) {
 
 async function expired(interaction) {
     try {
-        await interaction.reply({ content: '❌ This batch has expired (30 minutes) or the bot restarted. Run it again.', ephemeral: true });
+        await interaction.reply({ content: emojis.glyphs('❌ This batch has expired (30 minutes) or the bot restarted. Run it again.'), ephemeral: true });
     } catch (notifyError) {
         console.error('Bulk autobuild: could not explain an expired batch (interaction likely expired):', notifyError);
     }
@@ -363,5 +372,5 @@ async function applyBatchEdit(interaction) {
 module.exports = {
     runBulk, handleBatchComponent, showBatchEditModal, applyBatchEdit, MAX_SCREENSHOTS,
     // Exported for scripts/autobuildBulk.test.js.
-    batches, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, applyResult, unreadImages,
+    batches, withGlyphs, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, applyResult, unreadImages,
 };

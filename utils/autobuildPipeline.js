@@ -8,6 +8,7 @@ const { getCatalogueIndex, findUnknownNames, learnItems, describeUnknown } = req
 const { sendV2Payload } = require('./sendV2Payload');
 const { computeWeaponKeyAndBuild, buildLoadoutCard, getMpCategoryAccent, findDuplicateLoadouts } = require('./loadoutRender');
 const { uploadLoadoutImage, syncLoadoutMetadata, deriveImageKey } = require('./loadoutImageCache');
+const { glyphs } = require('./emojiMap');
 const { mentionCommand } = require('./commandMentions');
 
 // token -> { weaponName, gunsmithCode, attachments[], attachmentSlots[], category, badgesRaw, mode: 'MP'|'DMZ'|null, modeSignals, sourceImageUrl, adminId } Same short-lived-token pattern as handlers/manage.js's pendingManageEdits (10 min TTL, set at insertion time by whichever function stashes a new entry).
@@ -112,6 +113,9 @@ function cleanAttachmentPairs(attachments, slots) {
     return { attachments: outA, attachmentSlots: outS };
 }
 
+// A button icon from the bot's own set, read at render time (the draw calculator's buttons are the reference: saveStar on Save, deleteBin on delete).
+function emojiIcon(key) { const e = require('./emojiMap'); return e.parseEmoji(e[key]); }
+
 // Ephemeral review card: weapon/code/attachments/category/badges as extracted so far, plus the RAW source screenshot as the preview image (not yet uploaded to Cloudinary -- see the design spec for why: an edited weapon name during review must never orphan an upload under the wrong key). `opts` (bulk /autobuild, 2026-10-20 10:33 EDT): `header` adds a line under the title, `notes` adds warnings after the standard ones, `rows` replaces the Confirm/Edit/Cancel row. A single review passes none of them and renders exactly as before.
 function buildReviewCard(token, data, opts = {}) {
     const categoryLine = data.category ? data.category : '⚠️ unknown (use **Adjust** to set one)';
@@ -154,15 +158,15 @@ function buildReviewCard(token, data, opts = {}) {
     components.push(...(opts.rows || [{
         type: 1,
         components: [
-            { type: 2, style: 3, label: 'Save Build', custom_id: `autobuild_confirm_${token}` },
-            { type: 2, style: 1, label: 'Adjust', custom_id: `autobuild_editbtn_${token}` },
-            { type: 2, style: 4, label: 'Discard', custom_id: `autobuild_cancel_${token}` }
+            { type: 2, style: 3, label: 'Save Build', custom_id: `autobuild_confirm_${token}`, emoji: emojiIcon('saveStar') },
+            { type: 2, style: 1, label: 'Adjust', custom_id: `autobuild_editbtn_${token}`, emoji: emojiIcon('mngEdit') },
+            { type: 2, style: 4, label: 'Discard', custom_id: `autobuild_cancel_${token}`, emoji: emojiIcon('deleteBin') }
         ]
     }]));
 
     // The bot's own animated warn emoji in place of ⚠️ (Harkirat, 2026-10-20 12:10 EDT), swapped here at RENDER time: the warnings are composed at extraction time, and an emoji id read then would be the prod id frozen into a dev review (memory project_emoji_require_time_capture).
-    const warn = require('./emojiMap').warn;
-    for (const c of components) if (c.type === 10 && c.content) c.content = c.content.replace(/⚠️/g, warn);
+    const { glyphs } = require('./emojiMap');
+    for (const c of components) if (c.type === 10 && c.content) c.content = glyphs(c.content);
 
     const container = {
         type: 17,
@@ -381,12 +385,12 @@ async function confirmCore(token) {
 // What a single review says for each confirmCore status other than `saved`. The wording is the one confirmAndWrite always used.
 function confirmMessage(client, result) {
     switch (result.status) {
-        case 'expired': return `❌ This review has expired (10 minute window) or was already handled. Run ${mentionCommand(client, '/autobuild')} again.`;
-        case 'nocategory': return '❌ Category is still unresolved -- click **Adjust** and set one before saving.';
-        case 'nomode': return "❌ MP or DMZ is still unresolved -- click **Adjust** and put `| MP` or `| DMZ` after the category before saving.";
-        case 'busy': return '⏳ Already processing this Confirm click -- give it a moment.';
-        case 'retry': return `⚠️ Image upload to Cloudinary failed (${result.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${result.retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`;
-        default: return '❌ Something went wrong confirming this review.';
+        case 'expired': return glyphs(`❌ This review has expired or was already handled. Run ${mentionCommand(client, '/autobuild')} again.`);
+        case 'nocategory': return glyphs('❌ Category is still unresolved -- click **Adjust** and set one before saving.');
+        case 'nomode': return glyphs("❌ MP or DMZ is still unresolved -- click **Adjust** and put `| MP` or `| DMZ` after the category before saving.");
+        case 'busy': return '⏳ Already saving this build -- give it a moment.';
+        case 'retry': return glyphs(`⚠️ Image upload to Cloudinary failed (${result.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${result.retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`);
+        default: return glyphs('❌ Something went wrong saving this build.');
     }
 }
 
@@ -434,7 +438,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
 
 async function cancelReview(interaction, token) {
     pendingAutobuilds.delete(token);
-    return interaction.followUp({ content: '❌ Discarded -- nothing was saved or uploaded.', ephemeral: true });
+    return interaction.followUp({ content: glyphs('❌ Discarded -- nothing was saved or uploaded.'), ephemeral: true });
 }
 
 // Edit modal -- ALL fields in one modal (per the design spec's decision), pre-filled from the pending token's current data. Discord caps a modal at 5 fields; attachments share ONE Paragraph field (one per line, matching every other loadout modal's convention in commands/manage.js) so weapon/code/attachments/category/badges all fit.

@@ -326,7 +326,7 @@ function buildBotAdminBody(commands, client) {
             + `-# 🔹 \`[file]\` Limit to one changed file (default: everything the pull brought in)`);
     }
     if (has('/autobuild')) {
-        sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
+        sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save\n`
             + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
             + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
             + `-# 🔹 \`[screenshot2]\` to \`[screenshot10]\` More screenshots, read as one batch with a review page per build\n`

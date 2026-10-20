@@ -163,6 +163,23 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.ok(countComponents(page) <= 40, `${countComponents(page)} components`);
     });
 
+    await check('no Unicode status glyph (⚠️ ❌ ✅) reaches any batch page, whichever state it is in -- the class, not one string', () => {
+        const doc = { weaponName: 'AK117', buildName: 'Build 3', category: 'AR', mode: 'MP', _id: 'd1' };
+        const warned = mp('PKM', '1A', FIVE); warned.duplicateWarning = '⚠️ dup'; warned.catalogueWarning = '⚠️ cat'; warned.category = null;
+        const items = [item(warned), item(mp('M4', '', FIVE), 'saved', { doc }), item(mp('X', '', FIVE), 'cancelled'), item(null, 'failed', { error: 'blurry' }), item(null, 'retry', { retryToken: 'r', error: 'e' })];
+        for (let i = 0; i < items.length; i++) {
+            const page = bulk.withGlyphs(renderPage({ items, page: i, skipped: 0 }, 'kg', i));
+            const text = JSON.stringify(page);
+            assert.ok(!/⚠|❌|✅/.test(text), `page ${i + 1} still carries a Unicode status glyph`);
+        }
+    });
+
+    await check('every batch button that acts carries one of the bot\'s own icons', () => {
+        const page = renderPage({ items: [item(mp('A', '', FIVE)), item(mp('B', '', ['X']))], page: 0, skipped: 0 }, 'ki', 0);
+        const buttons = page.flatMap(c => c.components).filter(c => c.type === 1).flatMap(r => r.components).filter(c => c.type === 2 && !/\|(page|ind)\|/.test(c.custom_id));
+        for (const b of buttons) assert.ok(b.emoji && b.emoji.id, `${b.label} has no icon`);
+    });
+
     if (failed) { console.log(`\n${failed} bulk /autobuild check(s) failed.`); process.exit(1); }
     console.log('\nAll bulk /autobuild checks passed.');
     process.exit(0);

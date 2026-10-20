@@ -237,6 +237,14 @@ function byName(name) {
 }
 emojis.byName = byName;
 
+// The bot's own status glyphs in place of the Unicode ones (Harkirat, 2026-10-20 12:41 EDT, "dont patch the instance. figure out the class!": ⚠️ ❌ ✅ kept reappearing one string at a time). Call it on text at the moment it is SENT, never when it is composed, so the id is the running app's (memory project_emoji_require_time_capture). Only these three have a bot equivalent; anything else passes through.
+function glyphs(text) {
+    if (typeof text !== 'string') return text;
+    const m = module.exports;
+    return text.replace(/⚠️|⚠/g, m.warn).replace(/❌/g, m.cross).replace(/✅/g, m.checkmark);
+}
+emojis.glyphs = glyphs;
+
 // Every consumer reads `emojis.foo` at render time, so answering from the current app's map here reaches all of them with no call-site change. Writes and key listings go to the default map, as before.
 module.exports = new Proxy(emojis, {
     get(target, key, receiver) {

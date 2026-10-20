@@ -59,8 +59,9 @@ module.exports = {
         }
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         if (images.length === 1) {
-            const { runExtraction } = require('../utils/autobuildPipeline');
-            return await runExtraction(interaction, images[0], null, null);
+            // A batch of one, like /autobuild's single screenshot (2026-10-20 12:43 EDT): one review surface.
+            const { runBulk } = require('../utils/autobuildBulk');
+            return await runBulk(interaction, [images[0]]);
         }
         hold(interaction.id, images);
         return await sendV2Payload(interaction, buildPicker(interaction.id, images));

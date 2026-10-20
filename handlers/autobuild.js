@@ -21,7 +21,7 @@ async function openLoadout(interaction, loadoutId) {
     const { buildLoadoutCard, getMpCategoryAccent } = require('../utils/loadoutRender');
     const doc = await Loadout.findById(loadoutId).lean();
     if (!doc) {
-        return interaction.reply({ content: '❌ That loadout no longer exists.', ephemeral: true });
+        return interaction.reply({ content: require('../utils/emojiMap').glyphs('❌ That loadout no longer exists.'), ephemeral: true });
     }
     // Render the weapon's FULL build set (not just this one doc) so the Prev/Next pagination and the correct "Build N of M" footer render, opening ON the just-created build. The PoC passed [doc] alone (found in live testing 2026-07-20): builds.length === 1, so buildPaginationRow returned null and the footer wrongly read "Build 1 of 1" even for a weapon that has several builds. Same weaponKey scope /gunsmith mp's own lookup uses. openIndex falls back to 0 if the doc somehow isn't in its own result set. Mode-aware since 2026-10-19 17:54 EDT, when /autobuild began writing DMZ builds: the same scopes /dmz uses (utils/loadoutLookup.js) -- the weapon's DMZ builds, every DMZ build for the browse dropdown, and the `dmz` id prefix so its pagination routes to the DMZ handler.
     const mode = doc.mode === 'DMZ' ? 'DMZ' : 'MP';
@@ -122,7 +122,7 @@ async function route(interaction) {
             const { pendingAutobuilds, buildEditModal } = require('../utils/autobuildPipeline');
             const data = pendingAutobuilds.get(token);
             if (!data) {
-                return await interaction.reply({ content: '❌ This review has expired. Run `/autobuild` again.', ephemeral: true });
+                return await interaction.reply({ content: require('../utils/emojiMap').glyphs('❌ This review has expired. Run `/autobuild` again.'), ephemeral: true });
             }
             return await interaction.showModal(buildEditModal(token, data));
         }
