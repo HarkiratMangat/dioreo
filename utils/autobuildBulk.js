@@ -13,8 +13,9 @@ const { buildPaginationRow } = require('./paginationRow');
 const emojis = require('./emojiMap');
 
 const MAX_SCREENSHOTS = 10;
-// A batch stays usable for 30 minutes after its LAST click, not 30 from when it was read. Found 2026-10-20 13:49 EDT: his panel went dead after 14 minutes because every page send went through sendV2Payload, which schedules the bot-wide 10-minute idle disable (utils/passiveExpiry.js). Batch pages now skip that, and `touch` slides one timer that drops the batch and its reviews together.
-const BATCH_MS = 30 * 60 * 1000;
+// How long a batch idles before it closes, counted from its LAST click (Harkirat, 2026-10-20 13:57 EDT, pick "B"): a private (ephemeral) panel closes after 14 idle minutes and greys its buttons out, which has to happen inside the 15-minute life of the last click's token, the only thing that can edit an ephemeral message; a PUBLIC panel ("visibility: public") stays open 30 idle minutes. Found 13:49 EDT: the panel had been dying at 10 minutes because every send went through sendV2Payload's bot-wide idle disable.
+const PRIVATE_IDLE_MS = 14 * 60 * 1000;
+const PUBLIC_IDLE_MS = 30 * 60 * 1000;
 const READ_AT_ONCE = 3;
 
 // key -> { items: [{ url, token, data, status, error, doc, retryToken, sourceIndex }], page, skipped, adminId, source } status: pending (to review) · saved · cancelled (discarded) · failed (couldn't read) · retry (image upload failed on Save) source: { key, total } when the batch came from the right-click's picker, so Add more can offer that message's other screenshots.
@@ -196,10 +197,11 @@ function withGlyphs(components) {
     return components;
 }
 
-// ⚠️ The buttons are NOT disabled when the 30 minutes run out: the panel is ephemeral, so only an interaction token can edit it, and a token lives 15 minutes. A click after that answers "This batch has expired" instead.
+// A private batch greys out at 14 idle minutes through the bot-wide expiry, given that idle length. A public one is not greyed out: 30 minutes is past the token's 15, so a click after it answers "This batch has expired" instead.
 async function show(interaction, batch, key) {
     touch(key, batch);
-    return sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), { skipExpiry: true });
+    const idle = batch.public ? PUBLIC_IDLE_MS : PRIVATE_IDLE_MS;
+    return sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), batch.public ? { skipExpiry: true } : { expiryMs: idle });
 }
 
 function touch(key, batch) {
@@ -207,7 +209,7 @@ function touch(key, batch) {
     batch.timer = setTimeout(() => {
         batches.delete(key);
         for (const it of batch.items) if (it.token) pendingAutobuilds.delete(it.token);
-    }, BATCH_MS);
+    }, batch.public ? PUBLIC_IDLE_MS : PRIVATE_IDLE_MS);
     batch.timer.unref?.();
 }
 
@@ -263,14 +265,15 @@ async function readInto(interaction, newItems, { explicitCategory = null, badges
 }
 
 // Starts a batch. The caller has already deferred (deferReply for /autobuild, deferUpdate for the right-click's picker), exactly like runExtraction. `source` ({ key, indices }) is the right-click's held message and which of its images these are.
-async function runBulk(interaction, urls, { explicitCategory = null, badgesOption = null, explicitMode = null, skipped = 0, source = null } = {}) {
+async function runBulk(interaction, urls, { explicitCategory = null, badgesOption = null, explicitMode = null, skipped = 0, source = null, ephemeral = true } = {}) {
     const list = urls.slice(0, MAX_SCREENSHOTS);
     skipped += urls.length - list.length;
     const items = list.map((url, i) => ({ url, status: 'pending', sourceIndex: source ? source.indices[i] : null }));
     await readInto(interaction, items, { explicitCategory, badgesOption, explicitMode });
 
     const key = crypto.randomBytes(6).toString('hex');
-    const batch = { items, page: 0, skipped, adminId: interaction.user.id, source: source ? { key: source.key } : null };
+    // Public only when the reply really is public: a server policy can force it private after `visibility: public` was asked for.
+    const batch = { items, page: 0, skipped, adminId: interaction.user.id, source: source ? { key: source.key } : null, public: !ephemeral && interaction.ephemeral !== true };
     const first = items.findIndex(it => it.status === 'pending');
     batch.page = first === -1 ? 0 : first;
     batches.set(key, batch);
@@ -286,7 +289,7 @@ function parse(customId) {
 
 async function expired(interaction) {
     try {
-        await interaction.reply({ content: emojis.glyphs(BOT_EMOJI.cross + ' This batch has expired (30 minutes) or the bot restarted. Run it again.'), ephemeral: true });
+        await interaction.reply({ content: emojis.glyphs(BOT_EMOJI.cross + ' This batch closed after sitting idle, or the bot restarted. Run it again.'), ephemeral: true });
     } catch (notifyError) {
         console.error('Bulk autobuild: could not explain an expired batch (interaction likely expired):', notifyError);
     }
@@ -386,5 +389,5 @@ async function applyBatchEdit(interaction) {
 module.exports = {
     runBulk, handleBatchComponent, showBatchEditModal, applyBatchEdit, MAX_SCREENSHOTS,
     // Exported for scripts/autobuildBulk.test.js.
-    batches, withGlyphs, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, applyResult, unreadImages,
+    batches, withGlyphs, PRIVATE_IDLE_MS, PUBLIC_IDLE_MS, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, applyResult, unreadImages,
 };

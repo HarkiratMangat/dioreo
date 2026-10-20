@@ -59,6 +59,7 @@ module.exports = {
                 explicitCategory: interaction.options.getString('category'),
                 badgesOption: interaction.options.getString('badges'),
                 explicitMode: interaction.options.getString('mode'),
+                ephemeral: isEphemeral,
             });
         }
 
@@ -72,7 +73,7 @@ module.exports = {
         const mode = interaction.options.getString('mode');
         // One screenshot is a batch of one (2026-10-20 12:43 EDT), so a single review and a bulk review are the same surface and cannot drift apart: Save and Discard stay on the page, Discard can be undone. A batch of one has no pager or Save All.
         const { runBulk } = require('../utils/autobuildBulk');
-        return runBulk(interaction, [imageUrl], { explicitCategory: category, badgesOption: badges, explicitMode: mode });
+        return runBulk(interaction, [imageUrl], { explicitCategory: category, badgesOption: badges, explicitMode: mode, ephemeral: isEphemeral });
     }
 };
 

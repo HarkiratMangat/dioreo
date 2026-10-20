@@ -239,6 +239,11 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.ok(flat.includes(`"name":"Edit"`) && flat.includes(`"name":"DeleteAll"`), 'Adjust uses Edit, Discard All uses DeleteAll');
     });
 
+    await check('a private batch idles out inside the 15-minute token life; a public one gets 30 minutes (his 13:57 EDT pick)', () => {
+        assert.ok(bulk.PRIVATE_IDLE_MS < 15 * 60 * 1000, 'must grey out while the last token can still edit the panel');
+        assert.strictEqual(bulk.PUBLIC_IDLE_MS, 30 * 60 * 1000);
+    });
+
     if (failed) { console.log(`\n${failed} bulk /autobuild check(s) failed.`); process.exit(1); }
     console.log('\nAll bulk /autobuild checks passed.');
     process.exit(0);
