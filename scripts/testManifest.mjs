@@ -60,6 +60,7 @@ export const TESTS = [
     {"cmd": "node scripts/manageActions.test.js", "lane": "unit"},
     {"cmd": "node scripts/botAnalyticsBody.test.js", "lane": "unit"},
     {"cmd": "node scripts/botAccessPermissions.test.js", "lane": "unit"},
+    {"cmd": "node scripts/permissions.test.js", "lane": "unit"},
     {"cmd": "node scripts/ownerModule.test.js", "lane": "unit"},
     {"cmd": "node scripts/changeInverse.test.js", "lane": "unit"},
     {"cmd": "node scripts/positionalWrite.test.js", "lane": "unit"},

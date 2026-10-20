@@ -5,7 +5,7 @@
 //
 // One image runs at once. Several ask which one first: the picker is held in memory for 30 minutes, because a forward cannot be re-read later (its snapshot comes back blank over REST without the Message Content intent), and its select (`autobuild_pick|`) is answered in handlers/autobuild.js, under the router's own /autobuild lock.
 const { ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } = require('discord.js');
-const { hasCommandAccess } = require('../utils/adminAccess');
+const { canDo, denyDo } = require('../utils/adminAccess');
 const { extractSource } = require('../utils/patchNoteSource');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
@@ -47,8 +47,9 @@ module.exports = {
     heldFor,
 
     async execute(interaction) {
-        if (!(await hasCommandAccess(interaction.user.id, 'autobuild'))) {
-            return await interaction.reply({ content: "🔒 **This one's admin-only.** Try any of the bot's public commands instead!", flags: MessageFlags.Ephemeral });
+        // Create on /autobuild (core/permissions.js's OUTSIDE_ACTIONS), the tier its Confirm needs to save the build.
+        if (!(await canDo(interaction.user.id, 'rightclick.autobuildLoadout'))) {
+            return await interaction.reply({ content: denyDo('rightclick.autobuildLoadout'), flags: MessageFlags.Ephemeral });
         }
         const { images } = extractSource(interaction.targetMessage);
         if (!images.length) {

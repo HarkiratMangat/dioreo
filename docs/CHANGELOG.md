@@ -29,7 +29,29 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.95.0 — 2026-10-19 18:22 EDT (#204) — `/autobuild` moves to Gemini 3.8 Flash
+## Pre-Release v3.97.0 — 2026-10-19 19:43 EDT (#206) — admin permissions become two tiers, Create and Destructive, checked on every write
+**`core/permissions.js` (new), `core/changeset.js`, `utils/adminAccess.js`, `models/AdminUser.js`, /manage, /bot, the admin right-clicks, `/autobuild`, `/settings`.** Harkirat, 2026-10-19 19:13 EDT: "yeah start the bot side build and prep so the only thing a portal session needs to do is link the portal realm to the perms that exist in the bot". Design: `docs/superpowers/specs/2026-10-19-permission-restructure-design.md`.
+
+- **Two tiers per scope, one per button.** Create (edit counts as create) and Destructive, granted on a command or a page. `/manage` carries to its 8 pages, `/autobuild` to MP and DMZ Loadouts, and `/bot` to every /bot and /manage page. The global `destructive` token and the `all` shorthand are retired.
+- **Browse freely, warn on press.** Any admin opens every /manage page, Next Season Draft included; a button pressed without its tier gets a warning naming the tier and page. Season's Titles & Deadlines and Start New Season need their tier to open, because opening one is pressing it.
+- **Every commit is authorized.** `commitSet` checks each op's tier before it writes, for Discord and the portal alike, so a modal submitted after a grant was narrowed is refused. An op with no tier is refused for everyone but the owner, and a test fails if one ships without one. Loadout deletes and edits read the build's own mode.
+- **Undo and Revert need Destructive on the change's page.** Provisional on his word; it is one constant, `UNDO_TIER`.
+- **`/bot access` grants per tier**, one `scope: c|d|cd` per line, and each admin card lists every grant by name.
+- **Old grants keep their old meaning** until the purge, and a portal edit in the old shape replaces the new one rather than being outranked. `scripts/purgeLegacyAdminGrants.js` is a dry run unless given `--apply`; **running it on prod waits for his word.**
+- **/manage's delete prompt stops promising an Undo button.** That button was retired when Undo moved to `/bot`'s Changes page; the prompt now says where a revert lives.
+- **`/settings customize:` is now `/settings open:`** (his ask 2026-10-19 19:31 EDT), in the command, `/help`, the rules and the site's commands page.
+- **The portal half is a hand-off**, written for the portal workstream in the project files (`permission-restructure/proposals/pins2-portal-permissions.md`). `portal/**` is untouched and keeps working through the bridge.
+
+
+## Pre-Release v3.96.0 — 2026-10-19 19:15 EDT (#205 · `74e0f088`) — the Privacy Policy's two change-history tables now list the same versions
+**`docs/legal/PRIVACY.md`, `public/privacy.html` and two records.** Harkirat, 2026-10-19 18:21 EDT: "Yeah, you can fix the privacy.md gap if you want."
+
+- **§12.1 Revision history gains 1.16 and 1.14**, written for a reader from Appendix B's text and §2.1d. It had jumped from 1.15 to a 1.16 it never described.
+- **Appendix B's 1.14 is a table row now**, marked *(pending)* for the v3 release like its neighbours; it sat as a loose paragraph above the table, dated as if in effect. `colorsVisibility` ships with v3. Nothing about what the Bot collects changes.
+- **Deferred list:** the calculator Delete click-test is dropped on his word, the history-gap entry is closed, and his Public Bot check is recorded on the Dioreo Admin entry.
+
+
+## Pre-Release v3.95.0 — 2026-10-19 18:22 EDT (#204 · `29dacb1c`) — `/autobuild` moves to Gemini 3.8 Flash
 **`utils/visionExtract.js`, its two Vertex scripts and a new cost test.** Harkirat's ask 2026-10-19 18:09 EDT: the newest model in the tier already in use, the mid one, no Pro and no Flash-Lite. What is true now is `.claude/rules/autobuild.md` ("Vision model").
 
 - **gemini-3.5-flash → gemini-3.8-flash**, the newest Flash that is generally available on Google's Agent Platform (formerly Vertex AI): GA 2026-09-02 in its release notes, listed under the `us` multi-region the bot calls. 3.6 and 3.7 were skipped. The request needed no change: it sends none of the parameters 3.8 deprecates and leaves thinking at the `medium` default.

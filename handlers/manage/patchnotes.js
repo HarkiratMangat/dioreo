@@ -133,6 +133,11 @@ async function purge(actorId) {
 async function handlePatchSeasonPick(interaction) {
     const pickedId = interaction.values[0];
     if (pickedId === 'none') return await interaction.deferUpdate(); // the disabled placeholder option -- shouldn't normally fire, but no-op if it somehow does
+    // Picking a season opens its edit box, so this is the Past Seasons "button" and needs its tier now, not only at submit (core/permissions.js's OUTSIDE_ACTIONS 'manage.patchseasonPick').
+    const { canDo, denyDo } = require('../../utils/adminAccess');
+    if (!(await canDo(interaction.user.id, 'manage.patchseasonPick'))) {
+        return await interaction.reply({ content: denyDo('manage.patchseasonPick'), ephemeral: true });
+    }
     const { loadSeasonalDoc } = require('../../utils/manageActions');
     const seasonalDoc = await loadSeasonalDoc();
     const entry = seasonalDoc?.patchNotes?.find(p => p._id.toString() === pickedId);

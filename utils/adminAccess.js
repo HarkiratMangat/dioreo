@@ -1,40 +1,31 @@
 // utils/adminAccess.js
 //
-// Single source of truth for "is this user an admin" -- checks the hardcoded ALLOWED_ADMIN_ID (utils/owner.js, the ultimate owner) OR the Mongo-backed AdminUser allowlist.
+// The runtime half of the permission model: who holds what, read from Mongo and checked against core/permissions.js. The owner (utils/owner.js) always holds everything; everyone else holds exactly the grants on their AdminUser row.
 //
-// ⚠️ EXPANDED 2026-08-13, TWICE THE SAME DAY -- first to per-COMMAND permissions (/manage vs /alerts vs /autobuild individually), then to per-PAGE scoping WITHIN /manage itself (Harkirat: "not just the 3 admin commands, each command... such as editing /manage calendar data"). The owner always has everything implicitly; a Mongo-granted admin's access is exactly the tokens on their AdminUser.permissions array.
+// ⚠️ REBUILT 2026-10-19 (permission restructure, docs/superpowers/specs/2026-10-19-permission-restructure-design.md). The flat token list (`manage`, `manage.<page>`, `bot`, `autobuild`, plus a global `destructive` token that `all` refused to expand into) is retired. A grant is now `{ scope, tiers }` with two tiers, create and destructive, and a command's tiers carry down to its pages. Every rule lives in core/permissions.js as data; this file never restates one.
 //
-// Permission token vocabulary (validated by parsePermissionsInput):
-//   'bot' / 'autobuild'      -- full access to that command, no finer scope exists for either
-//                                ('bot' replaced the retired 'alerts'/'audit' tokens 2026-08-16,
-//                                observability stage 3, when those commands became /bot analytics)
-//   'manage'                 -- full access to EVERY /manage page (shorthand, Harkirat's choice:
-//                                bare "manage" means "all pages", not "invalid without naming pages")
-//   'manage.<page>'          -- one specific /manage page, <page> from MANAGE_PAGE_SCOPES
-//   'all'                    -- input-only convenience, expands to ['manage','autobuild','bot']
+// Which function to use where:
+//   isOwner(id)                  owner-only surfaces: /bot access, hotpatch, Restart. Never a grant.
+//   isAdmin(id)                  "any admin at all": may open /manage and browse its pages, sees the admin /help category.
+//   can(id, scope, tier)         the real gate. tier is 'create', 'destructive' or 'any'.
+//   canAction(id, page, action)  a /manage registry button, by its op's tier.
+//   checkOps(id, ops)            a whole changeset, before it commits -- lives in core/changeset.js (it needs pageForOp, which reaches discord.js; this file must stay requireable without it, scripts/ownerModule.test.js).
+//   checkRevert(id, row)         Undo / Revert of one ChangeLog row.
+//   hasCommandAccess(id, cmd)    may this person open the command at all. Kept by name because the router, /help and the portal call it.
 //
-// /bot access -- the runtime admin allowlist itself (moved out of /manage's former owner-only `manageadmins` page 2026-08-16) -- has NO permission token at all, ever: it is OWNER-ONLY VISIBILITY, checked directly via isOwner(), never grantable to anyone at any scope.
+// /bot access has no scope at all, ever: it is owner-only visibility, checked with isOwner() at every site.
 const AdminUser = require('../models/AdminUser');
 const { isOwnerId } = require('./owner');
+const P = require('../core/permissions');
 
-// 'destructive' (added 2026-08-25) is NOT a command. It grants nothing on any surface; it grants the right to run the operations that CANNOT BE UNDONE -- every purge, season.startNew, season.promoteDraft -- across every realm, whatever page scopes the holder does or does not have. Tier-3 is owner-only by default (Harkirat, 2026-08-25); this is the one way to delegate it. It lives in ADMIN_COMMANDS because it is a top-level token like 'manage'/'bot'/'autobuild' rather than a 'manage.<page>' scope -- MANAGE_PAGE_SCOPES is for real /manage pages and this is not one.
-const ADMIN_COMMANDS = ['manage', 'autobuild', 'bot', 'destructive'];
-
-// 🔴 'all' MUST NOT EXPAND TO 'destructive'. A convenience that quietly hands out irreversibility is the opposite of a convenience: the owner typing "all" is asking for broad access, not for somebody else to be able to purge the season. Anything listed here is grantable only by naming it explicitly. Kept as a separate list rather than a flag on the token so the exclusion is visible at the point `all` is expanded, which is the only place it matters.
-const NOT_IN_ALL = ['destructive'];
-
-// One entry per REAL /manage page a permission can name, EXCEPT 'guide' (the Bulk Format Guide is read-only reference material, not data-mutating, so it's available to anyone with ANY manage access at all rather than needing its own grantable scope). 'season' is a PSEUDO-page -- it covers the two flat dropdown entries ("Season: Titles & Deadlines" / "Start New Season") that aren't a key in commands/manage.js's PAGES table at all, kept distinct from 'seasondraft' (the real "Next Season Draft" staging page) since editing what's LIVE right now and staging what's NEXT are different blast radii.
-const MANAGE_PAGE_SCOPES = ['draws', 'calendar', 'loadouts_mp', 'loadouts_dmz', 'patchnotes', 'seasondraft', 'season', 'announcement'];
-
-let cachedDocs = null; // Map<discordId, string[]> | null
+let cachedDocs = null; // Map<discordId, { permissions, grants }> | null
 let cacheLoadedAt = 0;
-const CACHE_TTL_MS = 60_000; // 1 min -- admin-gated interactions are low-volume and the allowlist
-// changes rarely, so a TTL cache avoids a Mongo round-trip on every panel click while keeping revoke/permission-edit responsive. This is a convenience allowlist under an already-hardcoded owner, not a security boundary against untrusted actors, so a ≤60s window is an acceptable tradeoff.
+const CACHE_TTL_MS = 60_000; // 1 min -- admin-gated interactions are low-volume and grants change rarely, so a TTL cache avoids a Mongo round-trip on every panel click while keeping a revoke responsive. This is a convenience allowlist under a hardcoded owner, not a security boundary against untrusted actors, so a ≤60s window is an acceptable tradeoff.
 
-async function getAdminPermissionsMap() {
+async function getAdminDocs() {
     if (cachedDocs && Date.now() - cacheLoadedAt < CACHE_TTL_MS) return cachedDocs;
-    const docs = await AdminUser.find({}).select('discordId permissions').lean();
-    cachedDocs = new Map(docs.map(d => [d.discordId, d.permissions || []]));
+    const docs = await AdminUser.find({}).select('discordId permissions grants').lean();
+    cachedDocs = new Map(docs.map(d => [d.discordId, { permissions: d.permissions || [], grants: d.grants || [] }]));
     cacheLoadedAt = Date.now();
     return cachedDocs;
 }
@@ -48,92 +39,120 @@ function isOwner(userId) {
     return isOwnerId(userId);
 }
 
-// "Is this person an admin in ANY capacity" -- owner, or a Mongo-granted admin with at least one permission token. Correct for coarse checks (does the Bot Admin category show up at all in /help; may this person admin-override someone else's /settings panel) but NOT for gating one specific command's own surface -- use hasCommandAccess for that, or hasManagePageAccess for a specific /manage page.
+// The grants a user holds, legacy rows bridged (core/permissions.js's grantsOf). Empty for a non-admin.
+async function getGrants(userId) {
+    const docs = await getAdminDocs();
+    return P.grantsOf(docs.get(userId));
+}
+
+// Map<scope, Set<tier>> with carry-down applied. The owner gets every tier on every scope.
+async function effectiveTiers(userId) {
+    if (isOwner(userId)) return P.fullTiers();
+    return P.expandGrants(await getGrants(userId));
+}
+
+async function can(userId, scope, tier = 'any') {
+    if (isOwner(userId)) return true;
+    const held = (await effectiveTiers(userId)).get(scope);
+    if (!held) return false;
+    return tier === 'any' ? held.size > 0 : held.has(tier);
+}
+
+// Owner, or anyone holding at least one tier anywhere. A row whose grants confer nothing is not an admin.
 async function isAdmin(userId) {
     if (isOwner(userId)) return true;
-    const map = await getAdminPermissionsMap();
-    return (map.get(userId) || []).length > 0;
+    for (const tiers of (await effectiveTiers(userId)).values()) if (tiers.size) return true;
+    return false;
 }
 
-// Command-level gate. For 'bot'/'autobuild' this is an exact match. For 'manage' it means "has ANY manage access at all" -- full ('manage') or any single page ('manage.xxx') -- because that's what decides whether the /manage SLASH COMMAND itself may even be opened; which PAGES they can then reach is a separate, finer question answered by hasManagePageAccess/getManagePages below.
+// "May this person open the command at all", by name, for the callers that ask it that way.
+//   manage    -> any admin (every admin may browse /manage's pages; buttons check their own tier)
+//   bot       -> any tier on /bot or on one of its pages (a page grant alone opens /bot analytics on that page)
+//   autobuild -> CREATE on /autobuild, the only tier any of its actions uses (Confirm and the right-click both save a build). A destructive-only /autobuild grant still carries to the two Loadouts pages, it just has nothing to do here.
+//   destructive -> 🔴 LEGACY, for portal/auth.js's `canDestroy` until the portal hand-off lands: holds destructive anywhere. It is not a command and no grant names it.
 async function hasCommandAccess(userId, commandName) {
     if (isOwner(userId)) return true;
-    const map = await getAdminPermissionsMap();
-    const perms = map.get(userId) || [];
-    if (commandName === 'manage') return perms.includes('manage') || perms.some(p => p.startsWith('manage.'));
-    return perms.includes(commandName);
+    if (commandName === 'manage') return isAdmin(userId);
+    const tiers = await effectiveTiers(userId);
+    if (commandName === 'destructive') return [...tiers.values()].some(t => t.has('destructive'));
+    if (commandName === 'bot') return ['bot', ...P.BOT_PAGES.map(P.botScope)].some(s => tiers.get(s)?.size);
+    if (commandName === 'autobuild') return Boolean(tiers.get('autobuild')?.has('create'));
+    return Boolean(tiers.get(commandName)?.size);
 }
 
-// The real per-PAGE gate inside /manage. `pageKey` is a real PAGES table key (draws/calendar/ loadouts_mp/loadouts_dmz/patchnotes/seasondraft/announcement), or the pseudo-key 'season' (the two flat Season dropdown entries). 'manageadmins' is RETIRED (moved to /bot access, 2026-08-16) -- if you see it passed here, that call site is stale.
+// Any tier on one /manage page. Used where a page's CONTENT is shown (a change's detail) and by the portal until its swap; a button must ask can() or canAction() for its own tier instead.
 async function hasManagePageAccess(userId, pageKey) {
-    if (isOwner(userId)) return true;
-    const map = await getAdminPermissionsMap();
-    const perms = map.get(userId) || [];
-    return perms.includes('manage') || perms.includes(`manage.${pageKey}`);
+    return can(userId, P.manageScope(pageKey), 'any');
 }
 
-// Every /manage page (+ the 'season' pseudo-page) this user may reach -- drives the panel's own page-select dropdown, so a scoped admin is never even OFFERED a page they can't open (not just blocked after clicking into it). 'manageadmins' retired from this table 2026-08-16 -- see /bot access, which is owner-only by its own isOwner() check, not by anything returned here.
+// The /manage pages this user holds any tier on. ⚠️ No longer drives the /manage dropdown -- every admin browses every page now (his decision 2026-10-19 18:17 EDT). Kept for the portal's realm rail until the portal hand-off reads effectiveTiers() directly.
 async function getManagePages(userId) {
-    if (isOwner(userId)) return [...MANAGE_PAGE_SCOPES];
-    const map = await getAdminPermissionsMap();
-    const perms = map.get(userId) || [];
-    if (perms.includes('manage')) return [...MANAGE_PAGE_SCOPES];
-    return MANAGE_PAGE_SCOPES.filter(page => perms.includes(`manage.${page}`));
+    const tiers = await effectiveTiers(userId);
+    return P.MANAGE_PAGES.filter(p => tiers.get(P.manageScope(p))?.size);
 }
 
-// Parses the Grant/Edit Permissions modal's comma-separated field into a validated, deduped permissions array -- or `null` if any token wasn't recognized, so the caller can reject with a clear error instead of silently granting a partial/wrong set.
+// The /bot analytics pages this user may open: any tier on the page (the approved list, 2026-10-19 19:11 EDT: "any tier on that page").
+async function getBotPages(userId) {
+    const tiers = await effectiveTiers(userId);
+    return P.BOT_PAGES.filter(p => tiers.get(P.botScope(p))?.size);
+}
+
+// A /manage registry action (utils/manageActions.js) -> { ok, tier }. An action that writes nothing (Export, Guide) needs no tier, only admin access.
+async function canAction(userId, page, actionId) {
+    const tier = P.tierForAction(page, actionId);
+    if (!tier) return { ok: await isAdmin(userId), tier: null };
+    return { ok: await can(userId, P.manageScope(page), tier), tier };
+}
+
+// An action outside the /manage registry, by its key in core/permissions.js's OUTSIDE_ACTIONS (the right-clicks, Past Seasons, the announcement row buttons).
+async function canDo(userId, actionKey) {
+    const rule = P.OUTSIDE_ACTIONS[actionKey];
+    if (!rule) throw new Error(`core/permissions.js has no OUTSIDE_ACTIONS entry "${actionKey}"`);
+    return can(userId, rule.scope, rule.tier);
+}
+
+// The warning a press without the tier gets, naming what is missing.
+const denialFor = (scope, tier) => `🔒 **You don't have ${P.TIER_LABELS[tier].toLowerCase()} permission on ${P.scopeLabel(scope)}.** Ask the bot owner to grant it if you need it.`;
+const denyDo = (actionKey) => denialFor(P.OUTSIDE_ACTIONS[actionKey].scope, P.OUTSIDE_ACTIONS[actionKey].tier);
+
+// Undo / Revert of one ChangeLog row: UNDO_TIER (destructive) on the page the change belongs to, whatever the reverted op's own tier was.
+async function checkRevert(userId, row) {
+    if (!row) return { ok: false, reason: 'That change no longer exists.' };
+    const scope = P.manageScope(row.page);
+    if (await can(userId, scope, P.UNDO_TIER)) return { ok: true };
+    return { ok: false, reason: denialFor(scope, P.UNDO_TIER) };
+}
+
+// The /manage page keys, under the name the bot, the portal and several tests already import. Not legacy: the same list as core/permissions.js's MANAGE_PAGES, re-exported rather than restated.
+const MANAGE_PAGE_SCOPES = [...P.MANAGE_PAGES];
+
+// ── 🔴 LEGACY, FOR THE PORTAL ONLY ────────────────────────────────────────── portal/api/access.js still reads and writes the retired token list (it builds its grid from ADMIN_COMMANDS/MANAGE_PAGE_SCOPES/NOT_IN_ALL and parses grants with parsePermissionsInput), and portal/** belongs to pins2. Nothing in the bot uses these any more. The hand-off proposal (the portal's switch to core/permissions.js's describe() and `grants`) deletes this block; until then it keeps the portal's Access realm working, and core/permissions.js's legacyToGrants() makes what it writes count.
+const ADMIN_COMMANDS = ['manage', 'autobuild', 'bot', 'destructive'];
+const NOT_IN_ALL = ['destructive'];
+
+async function getAdminPermissionsMap() {
+    const docs = await getAdminDocs();
+    return new Map([...docs].map(([id, d]) => [id, d.permissions]));
+}
+
 function parsePermissionsInput(raw) {
     const tokens = (raw || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
     if (tokens.length === 0) return null;
     if (tokens.length === 1 && tokens[0] === 'all') return ADMIN_COMMANDS.filter(c => !NOT_IN_ALL.includes(c));
     const result = new Set();
     for (const token of tokens) {
-        if (ADMIN_COMMANDS.includes(token)) {
-            result.add(token);
-            continue;
-        }
-        if (token.startsWith('manage.') && MANAGE_PAGE_SCOPES.includes(token.slice('manage.'.length))) {
-            result.add(token);
-            continue;
-        }
-        return null; // one bad token invalidates the whole submission -- a partial grant from a typo is worse than an error
+        if (ADMIN_COMMANDS.includes(token)) { result.add(token); continue; }
+        if (token.startsWith('manage.') && MANAGE_PAGE_SCOPES.includes(token.slice('manage.'.length))) { result.add(token); continue; }
+        return null; // one bad token invalidates the whole submission
     }
     return [...result];
 }
 
-// Human-readable rendering of a permissions array for the Manage Admins list cards -- 'manage' alone reads as "Full /manage access" rather than the literal token, and 'manage.xxx' tokens get their page's real display label instead of the raw scope key.
-const MANAGE_PAGE_LABELS = {
-    draws: 'Draws', calendar: 'Calendar', loadouts_mp: 'MP Loadouts', loadouts_dmz: 'DMZ Loadouts',
-    patchnotes: 'Patch Notes', seasondraft: 'Next Season Draft', season: 'Season Titles/Wipe', announcement: 'Announcement'
-};
-function formatPermissions(perms) {
-    if (!perms || perms.length === 0) return '*(none)*';
-    const parts = [];
-    if (perms.includes('bot')) parts.push('/bot analytics');
-    if (perms.includes('autobuild')) parts.push('/autobuild');
-    if (perms.includes('manage')) {
-        parts.push('/manage (full)');
-    } else {
-        const pages = perms.filter(p => p.startsWith('manage.')).map(p => MANAGE_PAGE_LABELS[p.slice('manage.'.length)] || p);
-        if (pages.length > 0) parts.push(`/manage: ${pages.join(', ')}`);
-    }
-    // 🔴 THE ONE TOKEN THAT MUST NEVER BE OMITTED FROM A SUMMARY. formatPermissions() enumerated 'bot', 'autobuild' and 'manage' by name, so 'destructive' rendered as nothing at all -- ['destructive','manage'] read back as "/manage (full)" and the owner reviewing an admin's access could not see that they hold the right to purge. A permission that is granted and invisible is worse than one that is not granted. Last, and marked, because it is not a surface: it modifies what the tokens before it are allowed to do.
-    if (perms.includes('destructive')) parts.push('**one-way ops** (purges, season rollover)');
-    return parts.join(' · ') || '*(none)*';
-}
-
-// 🔴 A HAND-MAINTAINED FORMATTER SILENTLY DROPS WHAT IT DOES NOT KNOW. `formatPermissions` names each token explicitly, which is right for readable output and wrong the moment a token is added -- exactly what happened above. This reports any grantable token the formatter cannot render, so the next one is caught by a test rather than by somebody noticing a gap in a summary.
-function unformattablePermissions() {
-    const every = [...ADMIN_COMMANDS, ...MANAGE_PAGE_SCOPES.map(p => `manage.${p}`)];
-    return every.filter(t => {
-        const out = formatPermissions([t]);
-        return out === '*(none)*' || out === '';
-    });
-}
-
 module.exports = {
-    isAdmin, hasCommandAccess, hasManagePageAccess, getManagePages, isOwner,
-    invalidateAdminCache, getAdminPermissionsMap, parsePermissionsInput, formatPermissions,
-    ADMIN_COMMANDS, MANAGE_PAGE_SCOPES,
-    NOT_IN_ALL, unformattablePermissions,
+    isOwner, isAdmin, can, canAction, canDo, checkRevert, effectiveTiers, getGrants,
+    denialMessage: denialFor, denyDo,
+    hasCommandAccess, hasManagePageAccess, getManagePages, getBotPages,
+    invalidateAdminCache, formatGrants: P.formatGrants, MANAGE_PAGE_SCOPES,
+    // legacy, portal-only (see the block above)
+    getAdminPermissionsMap, parsePermissionsInput, ADMIN_COMMANDS, NOT_IN_ALL,
 };

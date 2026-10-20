@@ -27,7 +27,7 @@ module.exports = {
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
-    // `prefsField` (2026-10-19 17:48 EDT) lets `/settings customize:colors` open this panel under settingsVisibility, the field the dashboard's own View Colors button uses -- see commands/settings.js's execute(). Omitted, as on every real /colors call, it is colorsVisibility.
+    // `prefsField` (2026-10-19 17:48 EDT) lets `/settings open:colors` open this panel under settingsVisibility, the field the dashboard's own View Colors button uses -- see commands/settings.js's execute(). Omitted, as on every real /colors call, it is colorsVisibility.
     async execute(interaction, { prefsField = 'colorsVisibility' } = {}) {
         const userId = interaction.user.id;
         let prefs = await UserPreference.findOne({ discordId: userId });

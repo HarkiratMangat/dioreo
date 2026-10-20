@@ -11,7 +11,7 @@ paths:
 
 ## 🔴 An op that has no `/manage` action MUST declare `page:` — a missing one silently breaks a permission check
 
-Added 2026-08-23 13:05 EDT (v3.66.0-pre). `core/changeset.js`'s `pageForOp()` stamps every `ChangeLog` row with a page key, and **that key is used as a permission SCOPE**: `handlers/bot.js` and `portal/api/changesets.js` both gate revert and change-detail on `hasManagePageAccess(userId, row.page)`. When an op has no registered action, `pageForOp()` used to fall back to `op.type.split('.')[0]` — the op's own namespace — which is not the same vocabulary as `utils/adminAccess.js`'s `MANAGE_PAGE_SCOPES`.
+Added 2026-08-23 13:05 EDT (v3.66.0-pre). `core/changeset.js`'s `pageForOp()` stamps every `ChangeLog` row with a page key, and **that key is used as a permission SCOPE**: `handlers/bot.js` and `portal/api/changesets.js` both gate revert and change-detail on it (`checkRevert(userId, row)` / `hasManagePageAccess(userId, row.page)` since the 2026-10-19 permission restructure, and `commitSet` itself runs `checkOps` on every op's page). When an op has no registered action, `pageForOp()` used to fall back to `op.type.split('.')[0]` — the op's own namespace — which is not the same vocabulary as `utils/adminAccess.js`'s `MANAGE_PAGE_SCOPES`.
 
 **Six ops have no action by design.** They are reachable only as another op's `invert()` target, so there is no `/manage` button for them and there must not be one — `scripts/coreOps.test.js`'s exemption list has said so for months. The namespace fallback therefore fired on all six, and produced two different failures:
 

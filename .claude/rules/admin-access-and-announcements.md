@@ -5,6 +5,7 @@ paths:
   - "utils/adminAccess.js"
   - "utils/announcement.js"
   - "models/AdminUser.js"
+  - "core/permissions.js"
   - "models/Announcement.js"
 ---
 
@@ -12,30 +13,39 @@ paths:
 
 *Loads when you touch `utils/adminAccess.js`, `utils/announcement.js`, `models/AdminUser.js`, or `models/Announcement.js`. Both shipped 2026-08-13 (PR #123), and the announcement side was rebuilt TWICE the same day — the first design is recorded below as the mistake to not repeat, not as history for its own sake. `/manage`'s "Manage Admins"/"Announcement" pages themselves are documented in `.claude/rules/manage-panel.md`; this file covers the permission/data model underneath them.*
 
-## Admin access — per-page, not per-command
+## Admin access — two tiers, carried down (rebuilt 2026-10-19 19:38 EDT)
 
-`ALLOWED_ADMIN_ID` (declared in `utils/owner.js` as of the portal operation core, 2026-08-21 00:09 EDT — `commands/manage.js` re-exports it so no other call site broke) is the hardcoded owner and always has everything implicitly. Everyone else's access is a flat array of permission tokens on `AdminUser.permissions`:
+⚠️ **The flat token list is RETIRED** (`manage`, `manage.<page>`, `bot`, `autobuild`, the global `destructive` token, and the `all` shorthand that refused to expand into it). If you see those described as the live model anywhere, it is stale. Design: `docs/superpowers/specs/2026-10-19-permission-restructure-design.md`.
 
-- `bot` / `autobuild` — full access to that command, no finer scope exists for either (`bot` replaced the retired `alerts`/`audit` tokens 2026-08-16, observability stage 3, when those commands became `/bot analytics`)
-- `manage` — full access to EVERY `/manage` page (bare "manage" is a deliberate shorthand for "all pages", not an error — Harkirat's explicit call)
-- `manage.<page>` — one specific `/manage` page, `<page>` from `MANAGE_PAGE_SCOPES` (`draws`/`calendar`/`loadouts_mp`/`loadouts_dmz`/`patchnotes`/`seasondraft`/`season`/`announcement`)
-- `all` — input-only convenience (Grant/Edit Permissions modal), expands to `['manage','autobuild','bot']`
+**Every rule is data in `core/permissions.js`, once.** Two tiers, Create and Destructive; every action needs exactly one, and edit counts as create. A grant is `{ scope, tiers }` on `AdminUser.grants`, where a scope is a command (`manage`, `autobuild`, `bot`) or a page (`manage.<page>`, `bot.<page>`). A command's tiers carry down: `/manage` → its 8 pages, `/autobuild` → MP and DMZ Loadouts, `/bot` → every /bot page and every /manage page. The owner (`utils/owner.js`) holds everything and has no row.
 
-⚠️ **`/bot access` has NO permission token at all, ever.** The admin allowlist page — extracted out of `/manage`'s former owner-only `manageadmins` page on 2026-08-16 (observability stage 3), see `commands/bot.js` + `handlers/bot.js` — is owner-only visibility, checked directly via `isOwner()` in `commands/bot.js`'s `execute()`, never derived from anything `getManagePages()`/`hasCommandAccess()` return. No string an admin types can ever grant it. `season` is a pseudo-page (the two flat "Season: Titles & Deadlines"/"Start New Season" dropdown entries, which aren't a key in `commands/manage.js`'s `PAGES` table at all), kept distinct from `seasondraft` (the real "Next Season Draft" staging page) since editing what's live and staging what's next are different blast radii. `guide` (Bulk Format Guide) needs no permission at all — read-only reference material, available to anyone with ANY manage access.
+- **The op is the unit.** Each /manage button runs one op, so `OP_TIERS` (every op in `core/ops` → its tier) IS the button list. `scripts/permissions.test.js` fails if a registered op has no tier, and `checkOps` refuses an unclassified op for everyone but the owner. **A new op needs a line in `OP_TIERS` in the same change.**
+- **`core/changeset.js`'s `commitSet` authorizes every commit**, Discord and portal alike, before validating. The checks in handlers (`resolveAction`, the confirm re-checks, `canDo`) exist to answer early with a named warning; the one in `commitSet` is the one that cannot be skipped. That is also what closed the old "modal submits are not re-checked" gap for every write through the core.
+- **Writes that bypass `commitSet` are gated where they happen**, through `OUTSIDE_ACTIONS` + `canDo`: `/autobuild`'s Confirm (a direct `Loadout` save), the four admin right-clicks, Patch Notes' Past Seasons pick, and the announcement row buttons.
+- **Browsing is free.** Any admin opens every /manage page; the dropdown is not filtered. A button pressed without its tier gets a warning naming the tier and page. The two Season entries (`POPUP_FIRST_ENTRIES`) are the exception, because opening one is pressing its button.
+- **Loadout modes come from the build.** For `loadout.edit`/`delete`/`bulkDelete`, `core/changeset.js`'s `pagesForOp` reads each build's mode from Mongo; the op's mode is never trusted.
+- **Undo/Revert = Destructive on the change's page** (`UNDO_TIER`, decided 2026-10-19 20:17 EDT: *"yeah leave it as destructive"*), and a revert is gated by that rule rather than the inverse op's own tier.
 
-### The four functions, and which one to use where
-- `isAdmin(userId)` — "any admin access at all." Correct for coarse checks: does the Bot Admin category show up in `/help`, may this person admin-override someone else's `/settings` panel. **Wrong for gating one command's own surface** — a `/bot analytics`-only admin passes this.
-- `hasCommandAccess(userId, commandName)` — exact match for `bot`/`autobuild`; for `manage` means "has `manage` OR any `manage.*` token." Gates the slash command itself and the shared button/modal prefix guard in `handlers/router.js`. **Never used to gate `/bot access`** — see the `isOwner()` note above.
-- `hasManagePageAccess(userId, pageKey)` — the real per-page gate inside `/manage`. `manageadmins` retired 2026-08-16 — it is no longer a real `pageKey` anywhere in `commands/manage.js`'s `PAGES` table.
-- `getManagePages(userId)` — every page (+ `season`) this user may reach. Drives `buildManagePage`'s dropdown filter (`commands/manage.js`) so a scoped admin is never OFFERED a page they can't open, not just blocked after clicking into it. `manageadmins` retired from this table 2026-08-16 — see `/bot access` above.
+⚠️ **`/bot access` has NO scope at all, ever.** Owner-only, checked with `isOwner()` at every site (`commands/bot.js`'s `execute()`, every `bot_admin_*`/`bot_adminmodal_*` branch). No string can grant it; `scripts/botAccessPermissions.test.js` pins that. Hotpatch, Health → Restart and the portal's end-session are owner-only the same way.
 
-⚠️ **Enforcement is at PAGE-VIEW time, not click-time within an already-open page.** The `/manage` slash command, `mng_pagesel`, and the dropdown filter all correctly restrict which page a scoped admin can reach — but once a page has rendered, its individual `mng_act_{group}_{action}` buttons and page-specific modal submits (`modal_calendar_bulk_add`, etc.) are gated only by the coarse `hasCommandAccess(id,'manage')` guard, not re-checked per page. Safe today by construction (the panel never renders a page they can't reach), but it's render-time protection, not the click-time re-check every other owner-gated mutation here uses (Grant/Revoke/Edit Permissions all re-check at the point of mutation). Filed in `docs/db-deferred-list.md` → Someday, with the exact `pageKey`-threading fix if it's ever picked up. **Deliberately not built now — Harkirat's call:** "document it for a future implementation someday but not needed right now."
+### Which function to use where (`utils/adminAccess.js`)
+- `isOwner(id)` — owner-only surfaces. Never a grant.
+- `isAdmin(id)` — any tier anywhere. May open /manage, sees the admin /help category, may admin-override a `/settings` panel.
+- `can(id, scope, tier)` — the real gate; `tier` is `'create'`, `'destructive'` or `'any'`.
+- `canAction(id, page, actionId)` — a /manage registry button, by its op's tier (`resolveAction` calls it). An action that writes nothing (Export, Guide) needs only `isAdmin`.
+- `canDo(id, key)` / `denyDo(key)` — an `OUTSIDE_ACTIONS` entry and its warning.
+- `checkRevert(id, row)` — one revert. ⚠️ **`checkOps(id, ops)`, the gate for a whole changeset, lives in `core/changeset.js`**, not here: it needs `pageForOp`, whose require chain reaches discord.js, and this file must stay requireable without it (`scripts/ownerModule.test.js` fails otherwise).
+- `hasCommandAccess(id, cmd)` — kept by name for the router, `/help` and the portal: `manage` = any admin, `bot` = any /bot page, `autobuild` = Create on /autobuild.
+- `getBotPages(id)` — the /bot analytics pages offered and re-checked per click. `getManagePages`/`hasManagePageAccess` = any tier on a page; used for a change's detail panel and by the portal until its swap.
+
+### The legacy bridge (temporary)
+A row with `permissions` and no `grants` reads through `legacyToGrants()` with each token's OLD meaning (`bot` → the /bot pages only, never the new /bot scope that carries /manage). The portal still writes that shape until the pins2 hand-off (`/mnt/project-files/permission-restructure/proposals/pins2-portal-permissions.md`), and `models/AdminUser.js`'s `clearGrantsOnLegacyWrite` hook clears `grants` on such a write so it is not outranked. `scripts/purgeLegacyAdminGrants.js` (dry run unless `--apply`; prod needs Harkirat's word) removes legacy rows. The legacy block at the bottom of `adminAccess.js`, the bridge and the hook go together once both have landed.
 
 ### The 60s cache
-`getAdminPermissionsMap()` (`Map<discordId, string[]>`) is TTL-cached for 60s to avoid a Mongo round-trip on every admin-gated interaction. `invalidateAdminCache()` runs synchronously right after every grant/revoke/edit-permissions write, so the owner's own next click always sees the fresh list — the 60s window only matters for someone else's already-open session. This is a convenience allowlist under an already-hardcoded owner, not a security boundary against untrusted actors, so that window is an accepted tradeoff, not an oversight.
+`getAdminDocs()` (`Map<discordId, { permissions, grants }>`) is TTL-cached for 60s to avoid a Mongo round-trip on every admin-gated interaction. `invalidateAdminCache()` runs right after every grant/revoke/edit write, so the owner's own next click sees the fresh state; the 60s window only matters for someone else's already-open session. A convenience allowlist under a hardcoded owner, not a security boundary against untrusted actors.
 
 ### The admin allowlist UI — now `/bot access`, not a `/manage` page
-**Moved out of `/manage` entirely 2026-08-16** (observability stage 3) — see `commands/bot.js`'s `buildAccessPanel()`/`buildAdminListBlocks()` and `handlers/bot.js`'s routing. The rendering and interaction shape is unchanged from the retired `manageadmins` page: each admin renders as a Section+thumbnail (live avatar via `client.users.fetch(discordId)`, one REST call per card — falls back to a plain Text Display if the fetch fails, e.g. a deleted account) followed by an Action Row: **Edit Permissions** (reopens the same Grant modal shape, prefilled with the current comma-joined permission list) and **Revoke** (a 2-step confirm flow). Only the custom_id prefixes changed (`mng_admin_*`/`modal_admin_*` → `bot_admin_*`/`bot_adminmodal_*`, matching `/bot`'s single owned prefix) and the `recordChange()` page tag (`'manageadmins'` → `'access'`).
+**Moved out of `/manage` entirely 2026-08-16** (observability stage 3) — see `commands/bot.js`'s `buildAccessPanel()`/`buildAdminListBlocks()` and `handlers/bot.js`'s routing. The rendering and interaction shape is unchanged from the retired `manageadmins` page: each admin renders as a Section+thumbnail (live avatar via `client.users.fetch(discordId)`, one REST call per card — falls back to a plain Text Display if the fetch fails, e.g. a deleted account) followed by an Action Row: **Edit Permissions** (reopens the same Grant modal shape, prefilled with the current grants, one `scope: c|d|cd` per line) and **Revoke** (a 2-step confirm flow). Only the custom_id prefixes changed (`mng_admin_*`/`modal_admin_*` → `bot_admin_*`/`bot_adminmodal_*`, matching `/bot`'s single owned prefix) and the `recordChange()` page tag (`'manageadmins'` → `'access'`).
 
 ## Announcement — a collection, not a singleton
 
