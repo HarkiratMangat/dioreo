@@ -956,7 +956,7 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
    ⚠️ --ink3 AGAINST THE GROUND IS THE BINDING CONSTRAINT — not --ink, which has
    three times the headroom and will happily pass while --ink3 fails. Darkening the
    ground eats that margin fastest; a plum tried during this work measured 4.29
-   against the 4.5 floor and would have failed the build. Measure before darkening. */
+   against the 4.5 floor and would have failed the build. Measure before darkening.
    Specificity is deliberately above body's own shorthand so it survives it; the
    warm pages restate the whole background later and keep their accent wash. */
 :root[data-theme=light] body{background-image:
@@ -967,6 +967,13 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 }
 ::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
+/* TOUCH HYGIENE (Harkirat, 2026-10-20 17:40 EDT: buttons "kind of seem to be triggering that even on mobile... like if you kind of like hold over a button... it doesn't feel like a natural like touch surface mobile button tap"). The :hover rules were already guarded, so what read as hover on a phone was the browser's own: the grey tap-highlight box flashed over every control, a long press selected the label or raised the link callout, and a press waited out the double-tap-zoom delay. All three go, and the press feedback a control does want is its own :active, which snaps in fast and eases out instead of running the full hover transition both ways. */
+html{-webkit-tap-highlight-color:transparent}
+a,button,summary,label,input,[role=switch]{touch-action:manipulation}
+@media (hover:none){
+  button,summary,[role=switch],[data-spot],.hmb-a,.tab,.rx-hit,.rx-tq{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+  button:active,summary:active,[data-spot]:active,.hmb-a:active{transition-duration:.07s}
+}
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--ink3);font-weight:500}
 `;
@@ -1324,7 +1331,7 @@ const navSwitcher = cur => {
 const MENU_GROUP_LABELS = ['Use', 'Documents', 'Community', 'Releases'];
 const barMenu = cur => {
     const row = p => `<a class="hmb-a" href="${hrefTo(p, cur || p)}"${isHere(p, cur) ? ' aria-current="page"' : ''}` +
-        ` style="--row:${p.accent}"><i aria-hidden="true"></i>${esc(p.short)}</a>`;
+        ` style="--row:${p.accent}">${esc(p.short)}</a>`;
     const groups = navSetFor(cur).map((grp, gi) =>
         `<p class="hmb-h">${esc(MENU_GROUP_LABELS[gi] || 'More')}</p><div class="hmb-g">${grp.map(row).join('')}</div>`).join('');
     // ⚠️ The list is a div with role=navigation, NOT a <nav>: it sits inside the bar's own <nav>, and every `.bar nav` rule (display:flex, margin-left:auto, the gaps) matched it too and outranked the classes that hide it on a desktop.
@@ -2817,6 +2824,8 @@ const THEME_JS = `
      without this script the controls simply light from their centre. */
   Array.prototype.forEach.call(document.querySelectorAll('[data-spot]'),function(el){
     el.addEventListener('pointermove',function(e){
+      /* A finger is not a light source: on touch this moved a held light around under the thumb, which is half of what made a press feel like a hover. */
+      if(e.pointerType==='touch')return;
       var r=el.getBoundingClientRect();
       el.style.setProperty('--px',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
       el.style.setProperty('--py',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
@@ -4108,30 +4117,37 @@ const SWITCHER_CSS = `
 
   /* The panel drops from under the bar and scrolls on its own if a short phone
      cannot hold it. It is a box only here; see the desktop rules above. */
-  .hmb-p{display:none;position:fixed;left:0;right:0;top:var(--bar-h,58px);z-index:70;
+  /* It opens and closes on a curtain rather than appearing (Harkirat, 2026-10-20 17:40 EDT: "more of a smoother animation instead of it just being like instant open, instant close"): the panel is always laid out and a clip-path wipes it down from under the bar while the rows settle in a beat behind it, and the scrim fades. visibility rides the same timing so a closed menu is out of the tab order and the accessibility tree, which display:none used to do. The bottom inset goes NEGATIVE when open so the drop shadow is not clipped. */
+  .hmb-p{display:block;position:fixed;left:0;right:0;top:var(--bar-h,58px);z-index:70;
     max-height:calc(100dvh - var(--bar-h,58px));overflow-y:auto;overscroll-behavior:contain;
     padding:.35rem .9rem 1.05rem;background:var(--paper);
-    border-bottom:1px solid var(--rule);box-shadow:0 22px 40px -22px rgba(0,0,0,.55)}
-  .hmb-p.open{display:block}
+    border-bottom:1px solid var(--rule);box-shadow:0 22px 40px -22px rgba(0,0,0,.55);
+    visibility:hidden;clip-path:inset(0 0 100% 0);
+    transition:clip-path .3s cubic-bezier(.4,0,.2,1),visibility 0s .3s}
+  .hmb-p.open{visibility:visible;clip-path:inset(0 0 -48px 0);
+    transition:clip-path .42s cubic-bezier(.2,.8,.2,1),visibility 0s}
+  .hmb-list,.hmb-th{opacity:0;transform:translateY(-8px);transition:opacity .16s ease,transform .3s ease}
+  .hmb-p.open .hmb-list,.hmb-p.open .hmb-th{opacity:1;transform:none;
+    transition:opacity .3s ease .1s,transform .44s cubic-bezier(.2,.8,.2,1) .05s}
   /* ⚠️ A HEIGHT, NOT bottom:0. The bar's backdrop-filter makes IT the containing block
      for these fixed elements, so bottom:0 meant the bar's own bottom edge and the scrim
      came out 0px tall: taps outside the menu went straight through it. */
-  .hmb-s{position:fixed;left:0;right:0;top:var(--bar-h,58px);height:100dvh;z-index:69;
-    background:rgba(8,6,14,.42)}
-  .hmb-s.open{display:block}
+  .hmb-s{display:block;position:fixed;left:0;right:0;top:var(--bar-h,58px);height:100dvh;z-index:69;
+    background:rgba(8,6,14,.42);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s .3s}
+  .hmb-s.open{opacity:1;visibility:visible;transition:opacity .3s ease,visibility 0s}
+  @media (prefers-reduced-motion:reduce){
+    .hmb-p,.hmb-p.open,.hmb-s,.hmb-s.open,.hmb-list,.hmb-th,.hmb-p.open .hmb-list,.hmb-p.open .hmb-th{transition:none}
+  }
   .hmb-list{display:block}
   .hmb-h{margin:.8rem 0 .35rem .15rem;font-family:var(--mono);font-size:.58rem;
     letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
   .hmb-g{display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
   .hmb-g:has(> :only-child){grid-template-columns:1fr}
-  /* Each page keeps its own colour as a dot, the way the strip's pills did, and the
-     page you are on is outlined and washed in it. No hover rules: on touch a hover
-     latches, which is what made earlier phone menus feel stuck. */
+  /* Each page's colour is its OUTLINE now, not a dot (Harkirat, 2026-10-20 17:40 EDT: "remove the dots... maybe like displaying just the outline color"): a muted ring in its own hue at rest, and the page you are on takes the full colour and a wash. No hover rules: on touch a hover latches, which is what made earlier phone menus feel stuck. */
   .hmb-a{display:flex;align-items:center;gap:.6rem;min-height:46px;padding:0 .85rem;
-    border-radius:12px;border:1px solid var(--rule);text-decoration:none;
+    border-radius:12px;border:1px solid color-mix(in srgb,var(--row) 42%,var(--rule));text-decoration:none;
     font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
     color:var(--ink2)}
-  .hmb-a i{flex:0 0 auto;width:7px;height:7px;border-radius:50%;background:var(--row)}
   .hmb-a[aria-current]{color:var(--ink);font-weight:700;border-color:var(--row);
     background:color-mix(in srgb,var(--row) 13%,transparent)}
   .hmb-a:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
@@ -5791,8 +5807,9 @@ const MORPH_JS = `
     }
     function kick(){if(!raf)raf=requestAnimationFrame(loop);}
     function setHover(h){hovering=h;kick();}
-    sum.addEventListener('pointerenter',function(){setHover(true);});
-    sum.addEventListener('pointerleave',function(){setHover(false);});
+    /* A tap fires pointerenter and then pointerleave, so ungated this woke the goo for a beat on every touch. */
+    sum.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')setHover(true);});
+    sum.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')setHover(false);});
     sum.addEventListener('focus',function(){setHover(true);});
     sum.addEventListener('blur',function(){setHover(false);});
     det.addEventListener('toggle',kick);

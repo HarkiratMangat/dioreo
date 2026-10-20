@@ -94,10 +94,10 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
    ⚠️ --ink3 AGAINST THE GROUND IS THE BINDING CONSTRAINT — not --ink, which has
    three times the headroom and will happily pass while --ink3 fails. Darkening the
    ground eats that margin fastest; a plum tried during this work measured 4.29
-   against the 4.5 floor and would have failed the build. Measure before darkening. */
-
+   against the 4.5 floor and would have failed the build. Measure before darkening.
    Specificity is deliberately above body's own shorthand so it survives it; the
    warm pages restate the whole background later and keep their accent wash. */
+
 :root[data-theme=light] body{background-image:
   radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
 @media (prefers-color-scheme:light){
@@ -105,13 +105,18 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
     radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
 }
 ::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}/* TOUCH HYGIENE (Harkirat, 2026-10-20 17:40 EDT: buttons "kind of seem to be triggering that even on mobile... like if you kind of like hold over a button... it doesn't feel like a natural like touch surface mobile button tap"). The :hover rules were already guarded, so what read as hover on a phone was the browser's own: the grey tap-highlight box flashed over every control, a long press selected the label or raised the link callout, and a press waited out the double-tap-zoom delay. All three go, and the press feedback a control does want is its own :active, which snaps in fast and eases out instead of running the full hover transition both ways. */
+
+html{-webkit-tap-highlight-color:transparent}
+a,button,summary,label,input,[role=switch]{touch-action:manipulation}
+@media (hover:none){
+  button,summary,[role=switch],[data-spot],.hmb-a,.tab,.rx-hit,.rx-tq{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+  button:active,summary:active,[data-spot]:active,.hmb-a:active{transition-duration:.07s}
+}
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--ink3);font-weight:500}
 
-:root{--accent:#FF7D5C}
-
-/* ── skip link ────────────────────────────────────────────────────────
+:root{--accent:#FF7D5C}/* ── skip link ────────────────────────────────────────────────────────
    WCAG 2.4.1 Bypass Blocks is Level A, and this site failed it on every page:
    the bar carries nine nav tabs plus the source, install and theme controls, so
    a keyboard or switch user tabbed through about thirteen widgets before
@@ -120,18 +125,20 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
    Hidden by CLIPPING rather than by display:none or visibility:hidden, both of
    which remove an element from the focus order entirely and would make this a
    link nobody can ever reach. It is the first focusable thing in the body. */
+
+
 .skip{position:absolute;left:.5rem;top:.5rem;z-index:200;
   padding:.55rem .9rem;border-radius:6px;
   background:var(--accent);color:#0F0C16;font-family:var(--mono);font-size:.62rem;
   letter-spacing:.14em;text-transform:uppercase;text-decoration:none;font-weight:700;
   clip-path:inset(50%);white-space:nowrap}
-.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}
-
-/* ── shared reset for the label buttons ───────────────────────────────
+.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
    desktop path got the element change with none of the styling. */
+
+
 button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}/* ── wordmark ─────────────────────────────────────────────────────────
    Three bars = attachment slots on a Gunsmith spec sheet, the same motif as the
@@ -1960,6 +1967,8 @@ h1 em{font-style:normal;color:var(--accent-t)}
      without this script the controls simply light from their centre. */
   Array.prototype.forEach.call(document.querySelectorAll('[data-spot]'),function(el){
     el.addEventListener('pointermove',function(e){
+      /* A finger is not a light source: on touch this moved a held light around under the thumb, which is half of what made a press feel like a hover. */
+      if(e.pointerType==='touch')return;
       var r=el.getBoundingClientRect();
       el.style.setProperty('--px',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
       el.style.setProperty('--py',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
@@ -2207,8 +2216,9 @@ h1 em{font-style:normal;color:var(--accent-t)}
     }
     function kick(){if(!raf)raf=requestAnimationFrame(loop);}
     function setHover(h){hovering=h;kick();}
-    sum.addEventListener('pointerenter',function(){setHover(true);});
-    sum.addEventListener('pointerleave',function(){setHover(false);});
+    /* A tap fires pointerenter and then pointerleave, so ungated this woke the goo for a beat on every touch. */
+    sum.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')setHover(true);});
+    sum.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')setHover(false);});
     sum.addEventListener('focus',function(){setHover(true);});
     sum.addEventListener('blur',function(){setHover(false);});
     det.addEventListener('toggle',kick);

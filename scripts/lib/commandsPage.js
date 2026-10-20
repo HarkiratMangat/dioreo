@@ -58,12 +58,19 @@ const LINE = 'color-mix(in srgb,var(--ink) 12%,transparent)';
  */
 const ACCENT_SOURCE = {
     '/help': 'help', '/invite': 'invite', '/calendar': 'calendar',
+    // The calculator has no constant of its own: commands/drawCalculator.js imports /draw prices' PRESET_ACCENT and answers in it, so that module is the source.
+    '/draw calculator': 'drawprices',
     '/draw prices': 'drawprices', '/season end': 'seasonend',
     '/patch notes': 'patchnotes', '/draws': 'draws', '/timestamp': 'timestamp',
 };
 
-/** The six that derive an accent per render, so the page can SAY so rather than invent one. */
-const DERIVED = new Set(['/settings', '/colors', '/dmz', '/gunsmith mp', '/gunsmith dmz', '/draw calculator']);
+/**
+ * The commands whose REPLY colour is chosen per render, so no single PRESET_ACCENT describes them. Three of them still have an identity on this page (see modeAccents): /gunsmith mp and /dmz/gunsmith dmz wear their mode's colour, the one the bot's own /manage pages already use. Only /settings and /colors, which answer in the reader's own profile colour, fall back to DERIVED_NEUTRAL. /draw calculator left this set 2026-10-20: it answers in /draw prices' fixed accent.
+ */
+const DERIVED = new Set(['/settings', '/colors', '/dmz', '/gunsmith mp', '/gunsmith dmz']);
+
+/** The page colour for the mode-scoped commands, read from the same per-mode accents loadScopeAccents takes from commands/manage.js (Harkirat, 2026-10-20 17:40 EDT: "give Gunsmith DMZ and DMZ its respective color... same thing for the MP"). */
+const modeAccents = scopes => ({ '/gunsmith mp': scopes['ALL MP BUILDS'], '/gunsmith dmz': scopes.DMZ, '/dmz': scopes.DMZ });
 
 const REPO = path.resolve(__dirname, '..', '..');
 const intToHex = n => '#' + Number(n).toString(16).toUpperCase().padStart(6, '0');
@@ -280,6 +287,8 @@ const RECEIVER_CSS = `
 .rx-scroll{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
 /* The phone's way into the list; see THE PICKER under NARROW. Never drawn on a desktop, where the wrapped rail already shows everything. */
 .rx-pick{display:none}
+/* The picker's shell and its drop are layout-neutral on a desktop, so the wrapped rail is exactly what it was. */
+.rx-box,.rx-drop{display:contents}
 /* The group labels were pure --ink3 and read as abandoned beside the coloured chips. They
    now carry a tint of the PAGE accent, which is what they belong to — they label the index,
    not any one command. */
@@ -306,11 +315,12 @@ const RECEIVER_CSS = `
 .rx-chip.on{border-color:var(--cc);color:var(--ink);font-weight:600}
 .rx-chip.on::before{opacity:1}
 .rx-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.rx-dot{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none}
+.rx-dot{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none;
+  box-shadow:0 0 0 2.5px color-mix(in srgb,var(--cc) 20%,transparent),0 0 9px 1px color-mix(in srgb,var(--cc) 55%,transparent)}
 /* The home chip belongs to the PAGE, so it wears the page accent rather than white. */
 .rx-home-chip{--cc:var(--accent);font-weight:600;color:var(--accent-t);
   border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
-.rx-home-chip .rx-dot{background:var(--accent)}
+.rx-home-chip .rx-dot{--cc:var(--accent);background:var(--accent)}
 
 /* ── THE STAGE ─────────────────────────────────────────────────────────────── */
 .rx-stage{margin:1.1rem 0 0}
@@ -663,25 +673,42 @@ const RECEIVER_CSS = `
   .rx-gl{flex:0 0 100%;border-left:0;margin:.35rem 0 0;padding:0 .1rem;font-size:.58rem}
   .rx-scroll > .rx-gl:first-of-type{margin-top:.2rem}
   .rx-chip{min-height:40px}
-  .rx-rail.rx-js .rx-pick{display:flex}
-  .rx-rail.rx-js .rx-scroll{display:none}
-  .rx-rail.rx-js.open .rx-scroll{display:flex;position:absolute;left:0;right:0;top:calc(100% - .2rem);
-    z-index:5;max-height:calc(100dvh - var(--bar-h,58px) - 6rem);overflow-y:auto;overscroll-behavior:contain;
-    padding:.6rem .8rem .9rem;border-radius:16px;border:1px solid var(--rule2);background:var(--paper);
-    box-shadow:0 22px 44px -20px rgba(0,0,0,.6)}
-  .rx-pick{--cc:var(--accent);--ci:var(--accent-t);align-items:center;gap:.6rem;width:100%;height:48px;
-    padding:0 1rem 0 19px;border-radius:999px;cursor:pointer;-webkit-appearance:none;appearance:none;
+  /* 🔴 THE PILL IS THE MENU (Harkirat, 2026-10-20 17:40 EDT: "instead of it being like that pop-up box, the actual all commands pill actually transitions into the entire menu", and it must open and close smoothly). .rx-box carries the pill's border and tint; opening grows it downward into the list (grid rows 0fr to 1fr) while the tint gives way to paper and a shadow, so it is visibly the same object.
+     ⚠️ AND THE PAGE KEEPS SCROLLING PAST IT ("if I reach the bottom of that pop-up and I still continue swiping, it'll actually scroll down on the page"). The list is 697px at 390px wide, so it used to scroll inside itself with overscroll-behavior:contain, which is what trapped the swipe. Now nothing inside scrolls: the rail keeps its CLOSED height in the flow (so the page below never jumps), the box overflows it, and while open the script holds the rail position:relative where it was stuck, so the box rides with the page and a swipe past its end is just the page scrolling. */
+  .rx-rail.rx-js{height:calc(48px + 1.1rem)}
+  .rx-rail.rx-js.held{position:relative}
+  .rx-rail.rx-js .rx-box{--cc:var(--accent);--ci:var(--accent-t);display:block;position:relative;border-radius:24px;
     border:1px solid color-mix(in srgb,var(--cc) 70%,transparent);
-    background:color-mix(in srgb,var(--cc) 10%,var(--paper));color:var(--ink);text-align:left}
+    background:color-mix(in srgb,var(--cc) 10%,var(--paper));
+    transition:background-color .34s ease,border-color .34s ease,box-shadow .34s ease}
+  .rx-rail.rx-js.open .rx-box{background:var(--paper);border-color:color-mix(in srgb,var(--cc) 50%,var(--rule2));
+    box-shadow:0 24px 48px -22px rgba(0,0,0,.65)}
+  .rx-rail.rx-js .rx-pick{display:flex}
+  .rx-rail.rx-js .rx-drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.4,0,.2,1)}
+  .rx-rail.rx-js.open .rx-drop{grid-template-rows:1fr;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1)}
+  .rx-rail.rx-js .rx-scroll{min-height:0;overflow:hidden;visibility:hidden;opacity:0;transform:translateY(-6px);
+    padding:0 .8rem;transition:opacity .16s ease,transform .3s ease,padding .36s cubic-bezier(.4,0,.2,1),visibility 0s .36s}
+  .rx-rail.rx-js.open .rx-scroll{visibility:visible;opacity:1;transform:none;padding:.1rem .8rem .9rem;
+    transition:opacity .28s ease .08s,transform .42s cubic-bezier(.2,.8,.2,1),padding .42s cubic-bezier(.2,.8,.2,1),visibility 0s}
+  /* Concentric: the 8px dot centred in the 46px button that sits inside the 1px border, (46 - 8) / 2 = 19. */
+  .rx-pick{align-items:center;gap:.6rem;width:100%;height:46px;
+    padding:0 1rem 0 19px;border-radius:24px;cursor:pointer;-webkit-appearance:none;appearance:none;
+    border:0;background:none;color:var(--ink);text-align:left}
   .rx-pick:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  .rx-pick:active{background:color-mix(in srgb,var(--cc) 18%,var(--paper))}
-  .rx-pick .rx-dot{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none}
+  .rx-pick:active{background:color-mix(in srgb,var(--cc) 12%,transparent)}
   .rx-pick-n{flex:1;min-width:0;font-family:var(--mono);font-size:.86rem;font-weight:600;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .rx-pick-g{flex:none;font-family:var(--mono);font-size:.58rem;letter-spacing:.15em;
     text-transform:uppercase;color:var(--ink3)}
-  .rx-pick svg{flex:none;width:12px;height:12px;color:var(--ink2);transition:transform .22s ease}
+  .rx-pick svg{flex:none;width:12px;height:12px;color:var(--ink2);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
   .rx-rail.open .rx-pick svg{transform:rotate(180deg)}
+  /* In the menu every chip shows its colour (Harkirat, same message: "when they're not selected, can we at least show their outline color, but when they're selected, then it actually does the proper inner glow"). At rest a ring in its own hue; the chosen one the full hue plus the held light and an inset glow, since no finger moves the light on a phone. */
+  .rx-chip{border-color:color-mix(in srgb,var(--cc) 55%,var(--rule2));color:var(--ink)}
+  .rx-chip.on{border-color:var(--cc);box-shadow:inset 0 0 14px -3px color-mix(in srgb,var(--cc) 60%,transparent)}
+  @media (prefers-reduced-motion:reduce){
+    .rx-rail.rx-js .rx-box,.rx-rail.rx-js .rx-drop,.rx-rail.rx-js .rx-scroll,
+    .rx-rail.rx-js.open .rx-drop,.rx-rail.rx-js.open .rx-scroll{transition:none}
+  }
   .rx-card{padding:1.2rem 1.1rem 1.3rem 1.4rem;border-radius:14px}
   .rx-why{font-size:1rem}
   .rx-slots,.rx-inst{grid-template-columns:minmax(0,1fr)}
@@ -793,15 +820,11 @@ const RECEIVER_JS = [
     '     ⚠️ ALL ELEVEN scopes are in the table, not just the seven categories — four of them',
     '       used to fall through to removeProperty, which made the card lose its colour',
     '       entirely and read as though the panel had vanished. */',
+    '  /* 🔴 THE RAIL CHIP KEEPS ITS COMMAND\'S COLOUR and only the card follows the live tint (changed 2026-10-20 17:55 EDT). The chip used to follow too, because it was grey and stayed grey while the card changed; now /gunsmith mp and /gunsmith dmz wear their mode colours, and following the tint painted the MP chip Crimson Pop from the example weapon (Harkirat asked for "its MP colour"). And with no tint the card goes BACK to its own colour rather than losing it: removeProperty dropped the inline identity too, so both DMZ chips came out in the page green. */',
+    '  var TK=["--cc","--con","--ct","--ctl"];',
     '  function tintFrom(p,hex){',
-    '    var chip=document.querySelector(\'.rx-chip[data-for="\'+p.id+\'"]\');',
-    '    if(hex){ p.style.setProperty("--cc",hex[0]); p.style.setProperty("--con",hex[1]);',
-    '      p.style.setProperty("--ct",hex[2]); p.style.setProperty("--ctl",hex[3]);',
-    '      /* the rail chip follows the live tint too; it used to stay grey while the card changed */',
-    '      if(chip){ chip.style.setProperty("--cc",hex[0]); chip.style.setProperty("--con",hex[1]);',
-    '        chip.style.setProperty("--ct",hex[2]); chip.style.setProperty("--ctl",hex[3]); } }',
-    '    else { ["--cc","--con","--ct","--ctl"].forEach(function(k){ p.style.removeProperty(k);',
-    '      if(chip) chip.style.removeProperty(k); }); }',
+    '    if(!p._base){ p._base={}; TK.forEach(function(k){ p._base[k]=p.style.getPropertyValue(k); }); }',
+    '    TK.forEach(function(k,i){ var v=hex?hex[i]:p._base[k]; if(v) p.style.setProperty(k,v); else p.style.removeProperty(k); });',
     '  }',
     '  function retintChoice(p,slot){',
     '    var map=p.getAttribute("data-tint"); if(!map) return;',
@@ -922,7 +945,8 @@ const RECEIVER_JS = [
     '    chips.forEach(function(c){',
     '      var on=c.getAttribute("data-for")===id;',
     '      c.classList.toggle("on",on);',
-    '      if(on){ c.setAttribute("aria-current","true"); if(c.scrollIntoView) c.scrollIntoView({block:"nearest",inline:"center"}); }',
+    '      /* Not on a phone: there the list is clipped shut, and scrolling a chip into view would scroll the clipped list itself. */',
+    '      if(on){ c.setAttribute("aria-current","true"); if(c.scrollIntoView&&!(pick&&pick.offsetParent)) c.scrollIntoView({block:"nearest",inline:"center"}); }',
     '      else c.removeAttribute("aria-current");',
     '    });',
     '    var home=document.getElementById("rx-homechip");',
@@ -931,22 +955,48 @@ const RECEIVER_JS = [
     '  }',
     '  /* THE PICKER (phone). The button names the command you are on, in its colour, and',
     '     the dropdown closes itself on every navigation and on any tap outside it. */',
-    '  var rail=document.getElementById("rx-rail"), pick=document.getElementById("rx-pick");',
-    '  function setPick(on){ if(!rail||!pick) return; rail.classList.toggle("open",on); pick.setAttribute("aria-expanded",on?"true":"false"); }',
+    '  var rail=document.getElementById("rx-rail"), pick=document.getElementById("rx-pick"), box=rail&&rail.querySelector(".rx-box");',
+    '  /* Opening HOLDS the rail where it is: measured stuck, then made position:relative at the offset that keeps it on that exact pixel, so the open box scrolls with the page instead of staying pinned. Closing lets the box shrink first and only then returns the rail to sticky, then runs after(). */',
+    '  var still=matchMedia("(prefers-reduced-motion:reduce)"), SHUT=360;',
+    '  function setPick(on,after){',
+    '    if(!rail||!pick||on===rail.classList.contains("open")){ if(after) after(); return; }',
+    '    clearTimeout(rail._t);',
+    '    if(on){',
+    '      var v=rail.getBoundingClientRect().top;',
+    '      rail.style.top="0px"; rail.classList.add("held");',
+    '      rail.style.top=(v-rail.getBoundingClientRect().top)+"px";',
+    '      rail.classList.add("open");',
+    '    } else {',
+    '      rail.classList.remove("open");',
+    '      rail._t=setTimeout(function(){ rail.classList.remove("held"); rail.style.top=""; if(after) after(); },still.matches?0:SHUT);',
+    '    }',
+    '    pick.setAttribute("aria-expanded",on?"true":"false");',
+    '  }',
     '  function paintPick(){',
     '    if(!pick) return;',
     '    var on=document.querySelector(".rx-chip.on[data-for]");',
     '    pick.querySelector(".rx-pick-n").textContent=on?on.textContent:"All commands";',
     '    pick.querySelector(".rx-pick-g").textContent=on?(on.getAttribute("data-group")||""):(chips.length+" commands");',
-    '    ["--cc","--con","--ct","--ctl"].forEach(function(k){ var v=on&&on.style.getPropertyValue(k); if(v) pick.style.setProperty(k,v); else pick.style.removeProperty(k); });',
-    '    if(on) pick.style.setProperty("--ci","var(--ct)"); else pick.style.removeProperty("--ci");',
+    '    /* The colour goes on the box, so the pill AND the open menu around the list both wear it. */',
+    '    var sk=box||pick;',
+    '    ["--cc","--con","--ct","--ctl"].forEach(function(k){ var v=on&&on.style.getPropertyValue(k); if(v) sk.style.setProperty(k,v); else sk.style.removeProperty(k); });',
+    '    if(on) sk.style.setProperty("--ci","var(--ct)"); else sk.style.removeProperty("--ci");',
     '    setPick(false);',
     '  }',
     '  if(rail&&pick){',
     '    rail.classList.add("rx-js");',
     '    pick.addEventListener("click",function(){ setPick(!rail.classList.contains("open")); });',
     '    document.addEventListener("click",function(e){ if(rail.classList.contains("open")&&!rail.contains(e.target)) setPick(false); });',
-    '    rail.addEventListener("click",function(e){ if(e.target.closest(".rx-chip")) setPick(false); });',
+    '    /* A chip picked from the open menu waits for the menu to fold before it navigates: the fragment jump measures the page, and measured mid-fold it would land a list-height off. */',
+    '    rail.addEventListener("click",function(e){',
+    '      var a=e.target.closest(".rx-chip"); if(!a||!rail.classList.contains("open")) return;',
+    '      e.preventDefault();',
+    '      var h=a.getAttribute("href")||"#";',
+    '      setPick(false,function(){',
+    '        if(h===(location.hash||"#")){ var t=h.length>1&&document.getElementById(h.slice(1)); if(t&&t.scrollIntoView) t.scrollIntoView(); }',
+    '        else location.hash=h.slice(1);',
+    '      });',
+    '    });',
     '  }',
     '  addEventListener("hashchange",mark); mark();',
     '',
@@ -1328,9 +1378,9 @@ function commandsShell({ page, catalog, C }) {
             'Install button in two different shades. Change BRAND.signal, not this constant.');
     }
     const { esc } = C;
-    const accents = loadAccents();
     const cats = loadCategoryAccents();
     const scopes = loadScopeAccents(cats);
+    const accents = { ...loadAccents(), ...modeAccents(scopes) };
     const weapons = loadWeaponIndex();
     const findIndex = findIndexFor(catalog, weapons);
     assertSearchCoverage(catalog, findIndex);
@@ -1438,16 +1488,16 @@ ${C.mobileNav(page, '')}
     <div class="rx-tries"><span>Try</span>${tries}</div>
   </div>
 
-  <div class="rx-rail" id="rx-rail">
+  <div class="rx-rail" id="rx-rail"><div class="rx-box">
     <button type="button" class="rx-pick" id="rx-pick" aria-expanded="false" aria-controls="rx-scroll">
       <i class="rx-dot" aria-hidden="true"></i><span class="rx-pick-n">All commands</span><span class="rx-pick-g">${catalog.groups.reduce((n, g) => n + g.commands.length, 0)} commands</span>
       <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <nav class="rx-scroll" id="rx-scroll" aria-label="Command list">
+    <div class="rx-drop"><nav class="rx-scroll" id="rx-scroll" aria-label="Command list">
       <a class="rx-chip rx-home-chip" id="rx-homechip" href="#" data-spot><i class="rx-dot" aria-hidden="true"></i>All commands</a>
       ${rail.join('')}
-    </nav>
-  </div>
+    </nav></div>
+  </div></div>
 
   <div class="rx-bench" id="rx-bench">
 
