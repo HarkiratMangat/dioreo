@@ -7,7 +7,7 @@
 const { ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } = require('discord.js');
 const chrono = require('chrono-node');
 const { extractSource } = require('../utils/patchNoteSource');
-const { zoneReference, componentInstant } = require('../utils/timestampHelper');
+const { zoneReference, componentInstant, rangeText } = require('../utils/timestampHelper');
 
 const MAX_SHOWN = 10;
 const DEFAULT_ZONE = 'America/Toronto'; // UserPreference.timezone's own default
@@ -33,9 +33,11 @@ function convertText(text, zone = DEFAULT_ZONE, reference = new Date()) {
         if (seen.has(id)) continue;
         seen.add(id);
         if ((!start.exact && start.hasTime) || (end && !end.exact && end.hasTime)) guessed = true;
-        const fmt = p => (p.hasTime ? `<t:${p.unix}:F>` : `<t:${p.unix}:D>`);
-        const quoted = r.text.replace(/\s+/g, ' ').slice(0, 80);
-        lines.push(`> ${quoted}\n${fmt(start)}${end ? ` → ${fmt(end)}` : ` · <t:${start.unix}:R>`}`);
+        // The /timestamp label style (2026-10-20 19:14 EDT, Harkirat: "match label style"): what the message said as the ALL-CAPS label, the time, then one code that copies it (a range is one code too, same rules as /timestamp).
+        const c = start.hasTime ? 'F' : 'D';
+        const text = rangeText(start.unix, end ? end.unix : null, c, zone);
+        const label = r.text.replace(/\s+/g, ' ').replace(/[*_`~|]/g, '').slice(0, 80).toUpperCase();
+        lines.push(`-# **${label}**\n**${text}**${end ? '' : ` · <t:${start.unix}:R>`}\n-# \`${text}\``);
         if (lines.length === MAX_SHOWN) break;
     }
     return { lines, guessed };

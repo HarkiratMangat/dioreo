@@ -181,11 +181,12 @@ module.exports = {
 
     // NOTE (de-duplicated during review): this used to have a full second copy of both view layouts living in handlers/timestamp.js's 'tsmenu|' select handler, because that handler needed to re-render the SAME already-parsed timestamp under a different style without re-running chrono (a relative input like "tomorrow" would resolve to a different date if re-parsed later). The two copies had already drifted out of sync twice across earlier redesigns. Fixed properly now via the same synthetic-interaction pattern every other command uses: `overrideState` lets handlers/timestamp.js pass in the already-known { unix, tz, queryInput, style } instead of re-deriving them from slash command options, while both code paths still share this single render implementation below.
     async execute(interaction, overrideState = null) {
-        let queryInput, tz, style, unix, ephemeral, accentColor, isTextMode;
+        let queryInput, tz, style, unix, endUnix = null, ephemeral, accentColor, isTextMode;
 
         if (overrideState) {
             // Invoked from handlers/timestamp.js's tsmenu dropdown handler — reuse the exact original parse instead of re-parsing. Never ephemeral here since the dropdown-driven re-render path never applied the ephemeral flag (matches prior behavior).
             ({ unix, tz, queryInput, style } = overrideState);
+            endUnix = overrideState.endUnix || null;
             // Preserve whatever ephemeral state the message already had (Discord can't change it via edit anyway) — needed so the "Share Publicly" button doesn't disappear the moment someone switches timestamp styles. handlers/timestamp.js passes this in from the message being edited since overrideState skips the normal ephemeral-resolution logic entirely.
             ephemeral = Boolean(overrideState.ephemeral);
             // accentColor is precomputed by handlers/timestamp.js's tsmenu handler (it already needs to fetch prefs there to decide this) and passed through the same way ephemeral is — this render path skips the normal option-resolution logic entirely, so there's no `prefs` available here to resolve it from directly.
@@ -236,14 +237,17 @@ module.exports = {
             }
 
             unix = timestampsBase.unix;
+            endUnix = timestampsBase.endUnix;
         }
 
         // A saved /settings zone can be any IANA zone, not only the 15 in tzLabels; fall back to its id so the label never reads "undefined".
         const currentFullTzLabel = getTimezoneLabel(tz, tzLabels[tz] || tz);
 
-        // STATE STORAGE ID DESIGN: We encode critical query context properties inside the string key. Using a pipe (|) delimiter completely prevents crashes with timezone names containing underscores (e.g., Asia/Hong_Kong).
-        const cleanQueryText = queryInput.substring(0, 40).replace(/\|/g, ' ');
-        const statelessCustomId = `tsmenu|${unix}|${tz}|${cleanQueryText}`;
+        // STATE STORAGE ID DESIGN: We encode critical query context properties inside the string key. Using a pipe (|) delimiter completely prevents crashes with timezone names containing underscores (e.g., Asia/Hong_Kong). A range carries its end after a `~` in the time segment (2026-10-20 19:14 EDT); an old message without one still parses. The query is trimmed to whatever room is left under Discord's 100-character custom_id cap.
+        const timeSegment = endUnix ? `${unix}~${endUnix}` : `${unix}`;
+        const idHead = `tsmenu|${timeSegment}|${tz}|`;
+        const cleanQueryText = queryInput.substring(0, Math.min(40, 100 - idHead.length)).replace(/\|/g, ' ');
+        const statelessCustomId = `${idHead}${cleanQueryText}`;
         const parsedLine = `-# Parsed \`${queryInput}\` using timezone \`${currentFullTzLabel}\``;
 
         // One dropdown for every view (the overview, Short List and each single format), selected value pre-marked.
@@ -257,7 +261,12 @@ module.exports = {
         // LAYOUT (Harkirat's, approved on the #testing-spam mock-ups 2026-10-20 18:23 EDT): a title that says what the panel is, then one row per format -- its name as an ALL-CAPS label, the time as each reader sees it, and the copyable code -- so neither the time nor the code wraps mid-line on a phone. The single-format view is this same panel with one row, so the two views cannot drift apart again (they did twice when each had its own layout). An unknown saved style falls back to the overview.
         const codes = style === 'short_list' ? SHORT_LIST_CODES : (style && STYLE_CHAR[style] ? [STYLE_CHAR[style]] : ALL_CODES);
         const headingLine = `## ${emojis.timestamp} Timestamp Codes\n-# Everyone sees these in their own time zone.\n-# **Tap a \`<code>\` to copy it.**`;
-        const rowsBlock = codes.map(c => `-# **${FORMAT_LABELS[c]}**\n**<t:${unix}:${c}>**\n-# \`<t:${unix}:${c}>\``).join('\n\n');
+        const { rangeText } = require('../utils/timestampHelper');
+        const rowsBlock = codes.map(c => {
+            const text = rangeText(Number(unix), endUnix ? Number(endUnix) : null, c, tz);
+            const label = endUnix && c === 'R' ? `${FORMAT_LABELS[c]} (STARTS)` : FORMAT_LABELS[c];
+            return `-# **${label}**\n**${text}**\n-# \`${text}\``;
+        }).join('\n\n');
         const hintLine = `-# Switch views or pick a format`; // Harkirat's wording, 2026-10-20 18:30 EDT
 
         let componentPayload;

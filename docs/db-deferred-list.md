@@ -1105,6 +1105,8 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ### `/timestamp` ranges — "8pm to 10pm" gives a start and an end `[P2 · S]`
 
+> ✅ **BUILT 2026-10-20 19:15 EDT** on `fix/timestamp-timezone`, his pick A (2026-10-20 18:57 EDT). Not yet merged.
+
 *Filed 2026-10-20 18:46 EDT. Harkirat, 2026-10-20 18:30 EDT: "ranges is actually a really good idea ... if it can, that would be a really good thing to implement."* Checked the same day: chrono returns a start and an end for "8pm to 10pm", "tomorrow 8-10pm", "oct 24 to oct 27", "fri 9am - sun 11pm" and "from 6pm until 9pm", read through `zoneReference`/`componentInstant`.
 
 - **Waiting on his layout pick** from the mock-ups in Dioreoland #testing-spam: **A** (one line per format, `<start> – <end>`, one code copying the whole range; a same-day range shows the end as a time only) or **B** (a START block and an END block).

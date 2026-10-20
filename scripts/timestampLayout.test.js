@@ -55,5 +55,22 @@ async function check(name, fn) { try { await fn(); console.log(`  ok   ${name}`)
     await check('the hint line reads "Switch views or pick a format"', async () => {
         assert.ok(textOf(await render(null)).includes('-# Switch views or pick a format'));
     });
+    await check('a same-day range: one code per format, the end as a time, relative shows the start', async () => {
+        sent.length = 0;
+        const a = 1792638000, b = a + 7200; // Wed Oct 21 8-10pm Pacific
+        await timestamp.execute({}, { unix: a, endUnix: b, tz: 'America/Vancouver', queryInput: 'tomorrow 8pm to 10pm', style: null, ephemeral: false, isTextMode: false, accentColor: 1 });
+        const t = textOf(sent[0]);
+        assert.ok(t.includes(`\`<t:${a}:F> – <t:${b}:t>\``), 'F pairs with the end time');
+        assert.ok(t.includes(`**<t:${a}:D>**`), 'a date-only format shows once on one day');
+        assert.ok(t.includes('RELATIVE TIME (STARTS)') && t.includes(`\`<t:${a}:R>\``));
+        const id = sent[0].components[0].components.at(-1).components[0].custom_id;
+        assert.ok(id.startsWith(`tsmenu|${a}~${b}|`) && id.length <= 100, id);
+    });
+    await check('a range across days keeps both dates', async () => {
+        sent.length = 0;
+        const a = 1792771200, b = a + 3 * 86400;
+        await timestamp.execute({}, { unix: a, endUnix: b, tz: 'America/Vancouver', queryInput: 'fri to mon', style: 'longDate', ephemeral: false, isTextMode: false, accentColor: 1 });
+        assert.ok(textOf(sent[0]).includes(`<t:${a}:D> – <t:${b}:D>`));
+    });
     process.exit(failures ? 1 : 0);
 })();

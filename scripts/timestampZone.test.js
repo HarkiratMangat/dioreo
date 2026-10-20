@@ -41,6 +41,13 @@ check('a time that names its zone is read on that zone\'s clock', () => {
     assert.strictEqual(ts('tomorrow 2am UTC', 'America/Toronto'), at('2026-10-20T02:00:00Z'));
 });
 
+check('a range gives an end, two hours after the start, on any host', () => {
+    const r = generateTimestamps('tomorrow 8pm to 10pm', 'America/Toronto', NOW);
+    assert.strictEqual(r.unix, at('2026-10-21T00:00:00Z'));
+    assert.strictEqual(r.endUnix, r.unix + 7200);
+    assert.strictEqual(generateTimestamps('tomorrow 9am', 'America/Toronto', NOW).endUnix, null);
+});
+
 check('Convert Times: "tomorrow 8 PM" counts from the reader\'s day', () => {
     const { lines } = convertText('Event tomorrow 8 PM', 'America/Toronto', NOW);
     assert.strictEqual(Number(/<t:(\d+):/.exec(lines[0])[1]), at('2026-10-21T00:00:00Z'));

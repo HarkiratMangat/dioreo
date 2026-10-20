@@ -38,10 +38,14 @@ function generateTimestamps(textString, userTimezone = 'America/Toronto', now = 
     if (!parseResults || parseResults.length === 0) return null;
 
     const unixSeconds = Math.floor(componentInstant(parseResults[0].start, userTimezone).valueOf() / 1000);
+    // A range ("8pm to 10pm", "oct 24 to oct 27") also has an end (2026-10-20 19:14 EDT); `endUnix` is null otherwise.
+    const end = parseResults[0].end;
+    const endUnix = end ? Math.floor(componentInstant(end, userTimezone).valueOf() / 1000) : null;
 
     // 5. Structure every format option Discord supports
     return {
         unix: unixSeconds,
+        endUnix,
         shortTime: `<t:${unixSeconds}:t>`,
         longTime: `<t:${unixSeconds}:T>`,
         shortDate: `<t:${unixSeconds}:d>`,
@@ -52,4 +56,15 @@ function generateTimestamps(textString, userTimezone = 'America/Toronto', now = 
     };
 }
 
-module.exports = { generateTimestamps, zoneReference, componentInstant };
+// One format of a range as Discord markdown, start and end together, so ONE code copies the whole range (Harkirat's layout A, 2026-10-20 19:14 EDT). On a single day in `zone` the end drops its date: a date-and-time format ends on the time alone, a date-only format shows once. Relative time shows the start only. `end` null means a single time.
+const TIME_OF = { F: 't', f: 't', s: 't', S: 'T' };
+function rangeText(start, end, c, zone = 'America/Toronto') {
+    if (!end || end === start) return `<t:${start}:${c}>`;
+    if (c === 'R') return `<t:${start}:R>`;
+    const sameDay = dayjs.unix(start).tz(zone || 'America/Toronto').format('YYYY-MM-DD') === dayjs.unix(end).tz(zone || 'America/Toronto').format('YYYY-MM-DD');
+    if (sameDay && (c === 'D' || c === 'd')) return `<t:${start}:${c}>`;
+    const endFormat = sameDay && TIME_OF[c] ? TIME_OF[c] : c;
+    return `<t:${start}:${c}> – <t:${end}:${endFormat}>`;
+}
+
+module.exports = { generateTimestamps, zoneReference, componentInstant, rangeText };
