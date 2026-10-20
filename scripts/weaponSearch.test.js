@@ -2,7 +2,7 @@
 //
 // /gunsmiths' weapon suggestions: a class typed in plain words finds that class, and a half-typed class word finds it too (Harkirat, 2026-10-19 20:09 EDT: "i typed assault, which should have showed all AR ... and i typed 'snipe' but that only showed 'all snipers' and didn't list the other sniper builds").
 const assert = require('assert');
-const { resolveCategorySynonyms, findWeaponMatches } = require('../utils/search');
+const { resolveCategorySynonyms, findWeaponMatches, isGenericWeaponQuery } = require('../utils/search');
 
 let failures = 0;
 function check(name, fn) {
@@ -36,6 +36,25 @@ check('a half-typed class lists every weapon in it, plus names that match the le
     assert.deepStrictEqual(findWeaponMatches('assault', pool).map(w => w.weaponKey), ['ak117']);
     assert.deepStrictEqual(findWeaponMatches('rifle', pool).map(w => w.weaponKey), ['locus', 'dlq33', 'ak117']);
     assert.deepStrictEqual(findWeaponMatches('shot', pool).map(w => w.weaponKey), ['striker'], 'the class, and SHORTY only if its own letters matched');
+});
+
+check('a typo one letter off still finds the class (Harkirat, 2026-10-19 20:34 EDT: "also consider typos/nearest relevant")', () => {
+    for (const [q, cat] of [['shoty', 'SHOTGUN'], ['snipr', 'SNIPER'], ['asault', 'AR'], ['marksmen', 'MARKSMAN'], ['pistl', 'SECONDARIES'], ['shotgn', 'SHOTGUN'], ['lmgg', 'LMG']]) {
+        assert.deepStrictEqual(resolveCategorySynonyms(q), [cat], q);
+    }
+    for (const q of ['xyzq', 'shy']) assert.deepStrictEqual(resolveCategorySynonyms(q), [], q);
+});
+
+check('a typo in a weapon name finds the weapon; gun or weapon shows every weapon', () => {
+    const pool = [
+        { weaponKey: 'locus', weaponName: 'LOCUS', category: 'SNIPER' },
+        { weaponKey: 'ak117', weaponName: 'AK117', category: 'AR' },
+        { weaponKey: 'striker', weaponName: 'STRIKER', category: 'SHOTGUN' },
+    ];
+    assert.deepStrictEqual(findWeaponMatches('lokus', pool).map(w => w.weaponKey), ['locus']);
+    assert.deepStrictEqual(findWeaponMatches('stirker', pool).map(w => w.weaponKey), ['striker']);
+    assert.deepStrictEqual(findWeaponMatches('gun', pool).map(w => w.weaponKey), ['locus', 'ak117', 'striker']);
+    assert.ok(isGenericWeaponQuery('Weapons') && !isGenericWeaponQuery('shotgun'));
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
