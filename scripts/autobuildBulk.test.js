@@ -114,6 +114,33 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.ok(JSON.stringify(picker).includes('Only the first 10'));
     });
 
+    await check('the overview names every build and what needs a look (his 12:10 EDT click-test: #1 a duplicate, #2 no category)', () => {
+        const a = mp('PKM', '1A4A', FIVE); a.duplicateWarning = 'dup';
+        const b = mp('S36', '1A2A', FIVE); b.category = null;
+        const text = bulk.overview({ items: [item(a), item(b)], skipped: 0 }, 1);
+        assert.match(text, /1\. PKM\*\* — .*possible duplicate/);
+        assert.match(text, /▸ \*\*2\. S36\*\* — .*category unknown/);
+    });
+
+    await check('the pager is the shared arrow row, and the buttons say Save / Adjust / Discard with the build number', () => {
+        const items = [item(mp('A', '', FIVE)), item(mp('B', '', ['X']))];
+        const page = renderPage({ items, page: 1, skipped: 0 }, 'k5', 1);
+        const flat = JSON.stringify(page);
+        assert.ok(flat.includes('"label":"2 / 2"'), 'indicator from utils/paginationRow.js');
+        for (const l of ['Save Build 2', 'Adjust', 'Discard Build 2', 'Save All 2', 'Discard All 2']) assert.ok(flat.includes(`"label":"${l}"`), `missing ${l}`);
+        assert.ok(!/"label":"(Confirm|Edit|Cancel)/.test(flat));
+    });
+
+    await check('Add more offers only the source message screenshots the batch has not read, and only from the right-click', () => {
+        const held = ['u0', 'u1', 'u2', 'u3'];
+        const items = [item(mp('A', '', FIVE), 'pending', { sourceIndex: 0 }), item(mp('B', '', ['X']), 'pending', { sourceIndex: 2 })];
+        assert.deepStrictEqual(bulk.unreadImages({ items, source: { key: 'h' } }, held), [1, 3]);
+        assert.deepStrictEqual(bulk.unreadImages({ items, source: null }, held), [], 'a /autobuild batch has no source message');
+        const select = renderPage({ items, page: 0, skipped: 0, source: { key: 'h' } }, 'k6', 0, held).flatMap(c => c.components).filter(c => c.type === 1).flatMap(r => r.components).find(c => c.type === 3);
+        assert.deepStrictEqual(select.options.map(o => o.value), ['1', '3']);
+        assert.strictEqual(select.custom_id, 'autobuild_b|more|k6|');
+    });
+
     if (failed) { console.log(`\n${failed} bulk /autobuild check(s) failed.`); process.exit(1); }
     console.log('\nAll bulk /autobuild checks passed.');
     process.exit(0);

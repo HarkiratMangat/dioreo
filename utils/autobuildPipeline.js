@@ -34,13 +34,13 @@ function refreshReviewWarnings(data, allBuilds) {
         ? findDmzDuplicates(weaponKey, data.attachments, sameMode)
         : findDuplicateLoadouts({ gunsmithCode: data.gunsmithCode, attachments: data.attachments }, sameMode);
     data.equipCapWarning = data.mode === 'MP' && data.attachments.length > 5
-        ? `⚠️ **${data.attachments.length} attachments on an MP build:** MP equips at most 5, so one is probably misread -- or this is a DMZ screenshot. Use **Edit** to fix the list or the mode.`
+        ? `⚠️ **${data.attachments.length} attachments on an MP build:** MP equips at most 5, so one is probably misread -- or this is a DMZ screenshot. Use **Adjust** to fix the list or the mode.`
         : null;
     if (dupes.length > 0) {
         const d = dupes[0];
         const extra = dupes.length > 1 ? ` _(+${dupes.length - 1} more)_` : '';
         const basis = data.mode === 'DMZ' ? 'the same weapon with the same attachments' : `matching Gunsmith code + ${d.overlap}/${d.total} attachments`;
-        data.duplicateWarning = `⚠️ **Possible duplicate:** this looks like **${d.weaponName} — ${d.buildName}**, already in the database (${basis})${extra}. Only Confirm if it's genuinely a new build.`;
+        data.duplicateWarning = `⚠️ **Possible duplicate:** this looks like **${d.weaponName} — ${d.buildName}**, already in the database (${basis})${extra}. Only save it if it's genuinely a new build.`;
     } else {
         data.duplicateWarning = null;
     }
@@ -55,7 +55,7 @@ async function knownAttachmentNames(allMpBuilds) {
 // The same warning /manage gives (Harkirat, 2026-10-19 16:13 EDT: warn, then confirm or go back to edit): the review card's Confirm is the "save anyway", and Edit is the way back.
 async function catalogueWarningFor(data) {
     const unknown = await findUnknownNames({ weaponName: data.weaponName, attachments: data.attachments });
-    return unknown.count ? `⚠️ **Not in the catalogue yet:** ${describeUnknown(unknown)}\n-# A typo, or a new item? **Confirm** saves it and adds these names; **Edit** lets you fix them first.` : null;
+    return unknown.count ? `⚠️ **Not in the catalogue yet:** ${describeUnknown(unknown)}\n-# A typo, or a new item? **Save Build** saves it and adds these names; **Adjust** lets you fix them first.` : null;
 }
 
 // DMZ builds carry no Gunsmith code (the DMZ screen shows none), so findDuplicateLoadouts' code-based rules can never match one. A DMZ duplicate is the same weapon with the same attachment SET, order ignored, compared the way that function compares names (trimmed, case-folded). Kept here rather than in utils/loadoutRender.js so this change stays out of the loadout renderer.
@@ -104,18 +104,18 @@ function cleanAttachmentPairs(attachments, slots) {
 
 // Ephemeral review card: weapon/code/attachments/category/badges as extracted so far, plus the RAW source screenshot as the preview image (not yet uploaded to Cloudinary -- see the design spec for why: an edited weapon name during review must never orphan an upload under the wrong key). `opts` (bulk /autobuild, 2026-10-20 10:33 EDT): `header` adds a line under the title, `notes` adds warnings after the standard ones, `rows` replaces the Confirm/Edit/Cancel row. A single review passes none of them and renders exactly as before.
 function buildReviewCard(token, data, opts = {}) {
-    const categoryLine = data.category ? data.category : '⚠️ needs review (use Edit to set one)';
+    const categoryLine = data.category ? data.category : '⚠️ unknown (use **Adjust** to set one)';
     // The mode line says WHY when it was detected, so a wrong guess is visible at a glance rather than discovered after Confirm. "set by you" when /autobuild's `mode:` decided it; nothing to explain when the screenshot was ambiguous, because the line already asks.
     const modeLine = data.mode
         ? `${data.mode}${data.modeSource === 'detected' ? ' _(detected from the screenshot)_' : data.modeSource === 'explicit' ? ' _(set by you)_' : ''}`
-        : "⚠️ couldn't tell MP from DMZ (use Edit: `Category | MP` or `Category | DMZ`)";
+        : "⚠️ couldn't tell MP from DMZ (use **Adjust**: `Category | MP` or `Category | DMZ`)";
     const codeLine = data.gunsmithCode
         ? `\`${data.gunsmithCode}\``
         : (data.mode === 'DMZ' ? '_(none -- DMZ builds have no code)_' : '`(empty)`');
     const attachmentsLines = data.attachments.map((a, i) => `${i + 1}. \`${a || '(empty)'}\``).join('\n');
     const badgesLine = data.badgesRaw && data.badgesRaw.trim()
         ? data.badgesRaw.trim()
-        : '_(none entered -- will inherit from an existing build of this weapon if one exists)_';
+        : '_(none -- badges are per build, so add any with **Adjust**)_';
 
     const components = [
         { type: 10, content: `# Review Extracted Loadout` },
@@ -127,7 +127,7 @@ function buildReviewCard(token, data, opts = {}) {
     ];
     // Advisory warnings (never block Confirm) -- see refreshReviewWarnings above.
     if (data.categoryConflict) {
-        components.push({ type: 10, content: `⚠️ **Category mismatch:** this weapon is already saved as **${data.categoryConflict}**. Saving it as **${data.category}** will register it under two categories — double-check the category before confirming (use **Edit** to change it).` });
+        components.push({ type: 10, content: `⚠️ **Category mismatch:** this weapon is already saved as **${data.categoryConflict}**. Saving it as **${data.category}** will register it under two categories — double-check the category before saving (use **Adjust** to change it).` });
     }
     if (data.duplicateWarning) {
         components.push({ type: 10, content: data.duplicateWarning });
@@ -146,11 +146,15 @@ function buildReviewCard(token, data, opts = {}) {
     components.push(...(opts.rows || [{
         type: 1,
         components: [
-            { type: 2, style: 3, label: 'Confirm', custom_id: `autobuild_confirm_${token}` },
-            { type: 2, style: 1, label: 'Edit', custom_id: `autobuild_editbtn_${token}` },
-            { type: 2, style: 4, label: 'Cancel', custom_id: `autobuild_cancel_${token}` }
+            { type: 2, style: 3, label: 'Save Build', custom_id: `autobuild_confirm_${token}` },
+            { type: 2, style: 1, label: 'Adjust', custom_id: `autobuild_editbtn_${token}` },
+            { type: 2, style: 4, label: 'Discard', custom_id: `autobuild_cancel_${token}` }
         ]
     }]));
+
+    // The bot's own animated warn emoji in place of ⚠️ (Harkirat, 2026-10-20 12:10 EDT), swapped here at RENDER time: the warnings are composed at extraction time, and an emoji id read then would be the prod id frozen into a dev review (memory project_emoji_require_time_capture).
+    const warn = require('./emojiMap').warn;
+    for (const c of components) if (c.type === 10 && c.content) c.content = c.content.replace(/⚠️/g, warn);
 
     const container = {
         type: 17,
@@ -177,6 +181,12 @@ async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOpti
         const sameMode = mode ? siblings.find(b => (b.mode || 'MP') === mode) : null;
         const anyMode = sameMode || siblings[0];
         if (anyMode) category = anyMode.category;
+    }
+    // No build of this weapon yet: the CODM catalogue knows its class (seeded from his weapons-and-attachments screenshot, utils/catalogue.js). Found 2026-10-20 12:10 EDT: an S36 came back "category unknown" while the catalogue had it as an LMG.
+    if (!category) {
+        const catIndex = await getCatalogueIndex();
+        const known = catIndex?.weapons.get(require('./catalogue').normKey(weaponName));
+        if (known?.category) category = known.category;
     }
     return { category, badgesRaw };
 }
@@ -364,8 +374,8 @@ async function confirmCore(token) {
 function confirmMessage(client, result) {
     switch (result.status) {
         case 'expired': return `❌ This review has expired (10 minute window) or was already handled. Run ${mentionCommand(client, '/autobuild')} again.`;
-        case 'nocategory': return '❌ Category is still unresolved -- click **Edit** and set one before confirming.';
-        case 'nomode': return "❌ MP or DMZ is still unresolved -- click **Edit** and put `| MP` or `| DMZ` after the category before confirming.";
+        case 'nocategory': return '❌ Category is still unresolved -- click **Adjust** and set one before saving.';
+        case 'nomode': return "❌ MP or DMZ is still unresolved -- click **Adjust** and put `| MP` or `| DMZ` after the category before saving.";
         case 'busy': return '⏳ Already processing this Confirm click -- give it a moment.';
         case 'retry': return `⚠️ Image upload to Cloudinary failed (${result.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${result.retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`;
         default: return '❌ Something went wrong confirming this review.';
@@ -416,12 +426,12 @@ async function retryImageUpload(interaction, token, newImageUrl) {
 
 async function cancelReview(interaction, token) {
     pendingAutobuilds.delete(token);
-    return interaction.followUp({ content: '❌ Cancelled -- nothing was saved or uploaded.', ephemeral: true });
+    return interaction.followUp({ content: '❌ Discarded -- nothing was saved or uploaded.', ephemeral: true });
 }
 
 // Edit modal -- ALL fields in one modal (per the design spec's decision), pre-filled from the pending token's current data. Discord caps a modal at 5 fields; attachments share ONE Paragraph field (one per line, matching every other loadout modal's convention in commands/manage.js) so weapon/code/attachments/category/badges all fit.
 function buildEditModal(token, data, customId = `autobuild_editmodal_${token}`) {
-    const modal = new ModalBuilder().setCustomId(customId).setTitle('Edit Extracted Loadout');
+    const modal = new ModalBuilder().setCustomId(customId).setTitle('Adjust Extracted Loadout');
     modal.addComponents(
         // `|| ''` fallback on both -- TextInputBuilder.setValue(undefined) throws SYNCHRONOUSLY, which would throw inside showModal() before the interaction is ever acknowledged (the exact production incident documented in CLAUDE.md's `/manage` batch-refinement-pass section: buildEditDrawModal's .setValue(targetDraw.thumbnailUrl) on a legacy doc missing that field). Gemini extraction can genuinely leave weaponName/gunsmithCode undefined on a bad read, so this can't assume they're set the way category/badgesRaw two lines below already correctly don't assume.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setValue(data.weaponName || '').setRequired(true)),

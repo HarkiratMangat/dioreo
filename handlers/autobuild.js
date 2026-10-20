@@ -53,15 +53,12 @@ async function route(interaction) {
                 return;
             }
             await interaction.deferUpdate();
-            const picked = interaction.isButton()
-                ? source.images
-                : interaction.values.map(Number).sort((a, b) => a - b).map(i => source.images[i]);
-            if (picked.length === 1) {
-                const { runExtraction } = require('../utils/autobuildPipeline');
-                return await runExtraction(interaction, picked[0], null, null);
-            }
+            // Every pick from this picker goes through the batch, even one, so Add more can bring in the message's other screenshots afterwards (Harkirat, 2026-10-20 12:10 EDT: "what if i change my mind and want to select the remaining ones as well?").
+            const indices = interaction.isButton()
+                ? source.images.map((_, i) => i)
+                : interaction.values.map(Number).sort((a, b) => a - b);
             const { runBulk } = require('../utils/autobuildBulk');
-            return await runBulk(interaction, picked);
+            return await runBulk(interaction, indices.map(i => source.images[i]), { source: { key, indices } });
         }
 
         // --- BULK AUTOBUILD: EDIT BUTTON --- a button, so it may answer with showModal(); its modal submit is the separate isModalSubmit() branch below, never this one (the same placement rule as autobuild_editbtn_).
@@ -79,6 +76,12 @@ async function route(interaction) {
         // --- BULK AUTOBUILD: OPEN A SAVED LOADOUT --- the summary's menu, opened with the single review's own code.
         if (interaction.isStringSelectMenu() && interaction.customId.startsWith('autobuild_b|open|')) {
             return await openLoadout(interaction, interaction.values[0]);
+        }
+
+        // --- BULK AUTOBUILD: ADD MORE --- more of the right-click message's screenshots, read into the same batch.
+        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('autobuild_b|more|')) {
+            const { handleBatchComponent } = require('../utils/autobuildBulk');
+            return await handleBatchComponent(interaction);
         }
 
         // --- BULK AUTOBUILD: PAGER, CONFIRM, CANCEL, CONFIRM ALL, CANCEL ALL --- utils/autobuildBulk.js checks the Confirm tier itself, like the single Confirm below.

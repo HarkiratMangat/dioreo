@@ -214,8 +214,8 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
 //
 // NOTE (redesigned during review, per Harkirat's loadouts_ui.json reference): weapon name is now the top heading with optional Meta/Best/Top-3 badges directly below it (see buildBadgesLine above), rather than a small category overline -- the category moved down into the footer line instead ("{category} • Build N of M • Last updated..."). The divider between Gunsmith Code and the image was removed. "Attachments"/"Gunsmith Code" are now real H3 headings (### ) rather than bold text, and each attachment line is backtick-wrapped to match the Gunsmith Code code-block styling. V2 still has no equivalent to an embed's *inline fields*, so those two sections stack vertically rather than sitting side-by-side. THE CONTENT HALF, WITHOUT THE CHROME. Split out 2026-08-23 12:55 EDT so a build can be drawn somewhere that is not /gunsmith -- /bot analytics' change-detail panel renders a loadout's before/after through this, per the record-view contract (docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md §2 rule D: never RE-DESCRIBE a record, draw it with its own renderer).
 //
-// ⚠️ WHAT IS DELIBERATELY NOT IN HERE: the Container (type 17) wrapper, the trailing divider, the pagination/Copy row, the browse dropdown and the Share button. Every one of those is a LIVE control whose custom_id routes to handlers/loadouts.js and resolves an index against a query only /gunsmith has made -- embedded in a change panel they would either mislead or misfire, and the Container would nest inside another Container. buildLoadoutCard() below still owns all of it, so its output is byte-identical to before (scripts/loadoutRenderSnapshot.test.js is the proof and must not move).
-function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = false } = {}) {
+// ⚠️ WHAT IS DELIBERATELY NOT IN HERE: the Container (type 17) wrapper, the trailing divider, the pagination/Copy row, the browse dropdown and the Share button. Every one of those is a LIVE control whose custom_id routes to handlers/loadouts.js and resolves an index against a query only /gunsmith has made -- embedded in a change panel they would either mislead or misfire, and the Container would nest inside another Container. buildLoadoutCard() below still owns all of it, so its output is byte-identical to before (scripts/loadoutRenderSnapshot.test.js is the proof and must not move). `copyIds` (2026-10-20 12:12 EDT, Harkirat: "move the copy attachment and copy code buttons so they're inline with their respective sections as accessory buttons"): when given, the Attachments and Gunsmith Code headings become Sections with their Copy button as the accessory. Only buildLoadoutCard passes it; a change panel draws the body with no live controls, exactly as before.
+function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = false, copyIds = null } = {}) {
     const attachmentLines = (activeBuild.attachments || []).map(att => `• \`${att}\``).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
 
@@ -237,12 +237,22 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
         containerComponents.push({ type: 10, content: toBlockquote(toSentenceCase(activeBuild.description)) });
     }
 
-    containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
+    if (copyIds) {
+        containerComponents.push({ type: 9, components: [{ type: 10, content: '### Attachments' }], accessory: { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyIds.attachments } });
+        containerComponents.push({ type: 10, content: attachmentLines });
+    } else {
+        containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
+    }
 
     // Prefers the real in-game Gunsmith code (shareCode) when present, falling back to buildName — see models/Loadout.js for why these are two separate fields. DMZ builds never have a real code (confirmed by Harkirat — the DMZ Gunsmith screen doesn't expose one the way MP's does), so this whole section (and the Copy Code button below) is skipped entirely for DMZ rather than showing the buildName as if it were a real copyable code.
     const codeText = activeBuild.mode !== 'DMZ' && (activeBuild.shareCode || activeBuild.buildName);
     if (codeText) {
-        containerComponents.push({ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` });
+        if (copyIds) {
+            containerComponents.push({ type: 9, components: [{ type: 10, content: '### Gunsmith Code' }], accessory: { type: 2, style: 3, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.copyExport) } });
+            containerComponents.push({ type: 10, content: `\`${codeText}\`` });
+        } else {
+            containerComponents.push({ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` });
+        }
     }
 
     // NOTE (removed during review, per Harkirat's request): there used to be a divider here between Gunsmith Code and the image -- dropped so the image sits directly under the text above it. 🔴 GUARDED, and NOT defensively -- found live 2026-08-23 12:58 EDT while wiring the change-detail panel. buildImageUrl() calls imageKey.startsWith(), which THROWS on a build with no imageKey. Every stored Loadout has one, so /gunsmith never hit it; a change panel does, because it reconstructs a BEFORE state as {...current, ...inversePayload} and renders delete payloads that may carry only the fields the op touched. renderRecord()'s try/catch would have swallowed the throw and quietly fallen back to a field list -- the budget fallback firing for the wrong reason, which is the "a guard that never fires is decoration" failure inverted. Omitting the gallery is the honest render of a build with no image.
@@ -257,12 +267,14 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
 // Shared Components V2 card builder for /dmz and /gunsmith (mp + dmz, and their scoped browse) -- same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs 'mp') so handlers/loadouts.js can tell a click apart and query the right mode. The card's CONTENT comes from buildLoadoutCardBody above; everything this function adds is chrome (container, controls, share).
 function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null, hideBadges = false, browse = null }) {
     const activeBuild = builds[index];
-    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges });
+    const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
+    const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
+    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, copyIds: { attachments: copyAttCustomId, code: copyCustomId } });
 
     // NOTE (moved during review): buttons live INSIDE the container now (were a separate row outside it), with a divider between them and the image/caption above — per Harkirat's request. Prev/Next also switched from plain "Back"/"Next" text buttons to the same Left/Right-emoji + numbers-only pagination style used everywhere else in the bot (utils/paginationRow.js), for consistency.
     containerComponents.push({ type: 14, spacing: 1, divider: true });
 
-    // Pagination + Copy Attachments + Copy Code all share one row -- exactly 5 buttons in the worst case (Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap. "Copy Attachments" replies with the plain attachment list (one per line, no bullets/backticks/ formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see handlers/loadouts.js's dmz/mp-prefixed button handler's `copyatt` action. Copy Code is skipped for DMZ (see the Gunsmith Code section above) -- no real code to copy, so the row is 4 buttons max there. Loadout cards use the LEGACY prev/next-string form of buildPaginationRow (not makeCustomId): the id encodes a DIRECTION + the current index, and the dmz/mp button handler in handlers/loadouts.js already does the modulo wrap on click ((index ± 1) % builds.length). So looping here needs nothing beyond buildPaginationRow no longer disabling the end buttons (2026-07-21) -- the handler already sends you from the last build to the first and vice-versa. A browse card pages across the whole SCOPE, so its ids carry the scope token + flat index and its indicator counts the scope. A normal card is untouched -- same ids, same totals as before.
+    // (History: until 2026-10-20 12:12 EDT the Copy buttons shared this row.) Pagination + Copy Attachments + Copy Code all share one row -- exactly 5 buttons in the worst case (Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap. "Copy Attachments" replies with the plain attachment list (one per line, no bullets/backticks/ formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see handlers/loadouts.js's dmz/mp-prefixed button handler's `copyatt` action. Copy Code is skipped for DMZ (see the Gunsmith Code section above) -- no real code to copy, so the row is 4 buttons max there. Loadout cards use the LEGACY prev/next-string form of buildPaginationRow (not makeCustomId): the id encodes a DIRECTION + the current index, and the dmz/mp button handler in handlers/loadouts.js already does the modulo wrap on click ((index ± 1) % builds.length). So looping here needs nothing beyond buildPaginationRow no longer disabling the end buttons (2026-07-21) -- the handler already sends you from the last build to the first and vice-versa. A browse card pages across the whole SCOPE, so its ids carry the scope token + flat index and its indicator counts the scope. A normal card is untouched -- same ids, same totals as before.
     const paginationRow = browse
         ? buildPaginationRow({
             totalChunks: browse.flatTotal,
@@ -279,14 +291,9 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
             indicatorCustomId: `${idPrefix}_page_indicator`
         });
     const buttonComponents = paginationRow ? [...paginationRow.components] : [];
-    // Scope-aware ids for a browse card (v3-pre-release review, finding #1): `index` here is relative to the FILTERED, RE-SORTED scope subset (see utils/loadoutScopes.js's resolveScopeBuilds), not to Loadout.find({weaponKey,mode})'s unfiltered/unsorted result the way a normal card's index is -- these two buttons used the old `${idPrefix}copy(att)_<weaponKey>_<index>` shape regardless, and handlers/loadouts.js resolved that index against the unfiltered query, so Copy Code could hand back a DIFFERENT build's share code than the card actually on screen (matters more once badges become per-BUILD, not per-weapon). A normal (non-browse) card is untouched -- same ids as before.
-    const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
-    const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
-    buttonComponents.push({ type: 2, style: 2, label: 'Copy Attachments', custom_id: copyAttCustomId });
-    if (activeBuild.mode !== 'DMZ') {
-        buttonComponents.push({ type: 2, style: 3, label: 'Copy Code', custom_id: copyCustomId, emoji: emojis.parseEmoji(emojis.copyExport) });
-    }
-    containerComponents.push({ type: 1, components: buttonComponents });
+    // Scope-aware ids for a browse card (v3-pre-release review, finding #1): `index` here is relative to the FILTERED, RE-SORTED scope subset (see utils/loadoutScopes.js's resolveScopeBuilds), not to Loadout.find({weaponKey,mode})'s unfiltered/unsorted result the way a normal card's index is -- these two buttons used the old `${idPrefix}copy(att)_<weaponKey>_<index>` shape regardless, and handlers/loadouts.js resolved that index against the unfiltered query, so Copy Code could hand back a DIFFERENT build's share code than the card actually on screen (matters more once badges become per-BUILD, not per-weapon). A normal (non-browse) card is untouched -- same ids as before. The Copy buttons moved up beside their headings (buildLoadoutCardBody's copyIds, 2026-10-20 12:12 EDT), so this row is the pager alone, and a single-build card has no row at all.
+    if (buttonComponents.length) containerComponents.push({ type: 1, components: buttonComponents });
+    else containerComponents.pop(); // the divider above it has nothing left to separate
 
     const containerPayload = { type: 17, accent_color: color, components: containerComponents };
 
