@@ -126,6 +126,26 @@ async function compare(source, copy) {
     return problems;
 }
 
+// The real files, when they exist, beat any CDN rendition (Harkirat, 2026-10-20 14:48 EDT: "Why use the script when you have the real renders and can just upload via the api"). The first by-name copy took the dev app's CDN copies and lost about a sixth of each rank mode emoji's frames, while the originals sitting in local/ went up untouched and matched prod. So an upload looks for `<name>.<ext>` in this checkout's local/emoji-originals, then the main checkout's (a worktree shares its git dir, so `--git-common-dir` finds it), and only falls back to the CDN when no original is on disk.
+const ORIGINAL_DIRS = (() => {
+    const dirs = [path.join(REPO_ROOT, 'local', 'emoji-originals')];
+    try {
+        const common = require('child_process').execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: REPO_ROOT, encoding: 'utf8' }).trim();
+        dirs.push(path.join(path.dirname(common), 'local', 'emoji-originals'));
+    } catch { /* not a git checkout: this checkout's folder only */ }
+    return [...new Set(dirs)];
+})();
+const ORIGINAL_MIME = { '.avif': 'image/avif', '.webp': 'image/webp', '.gif': 'image/gif', '.png': 'image/png' };
+function findOriginal(name) {
+    for (const dir of ORIGINAL_DIRS) {
+        for (const [ext, mime] of Object.entries(ORIGINAL_MIME)) {
+            const file = path.join(dir, name + ext);
+            if (fs.existsSync(file) && fs.statSync(file).size <= MAX_UPLOAD_BYTES) return { file, mime };
+        }
+    }
+    return null;
+}
+
 // Uploads the prod original under its name, best candidate first: lossless WebP, default-quality WebP, then the CDN's GIF/PNG. A candidate over the 256 KB limit is skipped without a request.
 async function upload(token, appId, source) {
     const fallbackExt = source.animated ? 'gif' : 'png';
@@ -136,6 +156,8 @@ async function upload(token, appId, source) {
         candidates.push({ label: `webp${at}`, get: () => fetchRendition(source.id, source.animated, { lossless: false, size }), mime: 'image/webp' });
     }
     candidates.push({ label: fallbackExt, get: () => fetchRendition(source.id, source.animated, { ext: fallbackExt, size: 128 }), mime: `image/${fallbackExt}` });
+    const original = findOriginal(source.name);
+    if (original) candidates.unshift({ label: `original ${path.basename(original.file)}`, get: async () => fs.readFileSync(original.file), mime: original.mime });
     const tried = [];
     for (const c of candidates) {
         let buf;
