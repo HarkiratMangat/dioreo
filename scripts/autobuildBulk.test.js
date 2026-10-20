@@ -141,6 +141,23 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.strictEqual(select.custom_id, 'autobuild_b|more|k6|');
     });
 
+    await check('a worst-case page stays under Discord\'s 4000-character text cap and 40 components (measured 3331 / 23 on 2026-10-20 12:16 EDT)', () => {
+        const nine = Array.from({ length: 9 }, (_, i) => `Monolithic Suppressor Extended Name ${i}`);
+        const worst = (n) => Object.assign(mp(`COMPAGNIE WEAPON ${n}`, '1A2A3A5D8A', nine), {
+            category: null, mode: null, badgesRaw: 'meta,best,toxic',
+            duplicateWarning: '⚠️ **Possible duplicate:** this looks like **AK117 — Build 2**, already in the database (matching Gunsmith code + 5/5 attachments) _(+2 more)_. Only save it if it is genuinely a new build.',
+            equipCapWarning: '⚠️ **9 attachments on an MP build:** MP equips at most 5, so one is probably misread -- or this is a DMZ screenshot. Use **Adjust** to fix the list or the mode.',
+            catalogueWarning: `⚠️ **Not in the catalogue yet:** ${nine.join(', ')}\n-# A typo, or a new item? **Save Build** saves it and adds these names; **Adjust** lets you fix them first.`,
+        });
+        const items = Array.from({ length: 10 }, (_, i) => item(worst(i), 'pending', { sourceIndex: i }));
+        const page = renderPage({ items, page: 9, skipped: 3, source: { key: 'h' } }, 'k7', 9, Array.from({ length: 12 }, () => 'u'));
+        let chars = 0;
+        const walk = (c) => { if (c.type === 10) chars += c.content.length; (c.components || []).forEach(walk); };
+        page.forEach(walk);
+        assert.ok(chars < 4000, `${chars} text characters`);
+        assert.ok(countComponents(page) <= 40, `${countComponents(page)} components`);
+    });
+
     if (failed) { console.log(`\n${failed} bulk /autobuild check(s) failed.`); process.exit(1); }
     console.log('\nAll bulk /autobuild checks passed.');
     process.exit(0);
