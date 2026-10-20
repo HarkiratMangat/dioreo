@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { data } = require('../commands/gunsmiths');
+const { data } = require('../commands/gunsmith');
 const json = data.toJSON();
 
 // The constraint that forced this whole design: a command with subcommands may have NO top-level options.
@@ -41,4 +41,4 @@ assert.throws(() => {
     const bj = bad.toJSON();
     assert.deepStrictEqual([...new Set(bj.options.map(o => o.type))], [1]);
 }, 'the shape assertion is vacuous — it did not reject a mixed builder');
-console.log('✓ gunsmiths command shape');
+console.log('✓ gunsmith command shape');

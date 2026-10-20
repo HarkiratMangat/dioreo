@@ -66,7 +66,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths mp` · `/gunsmiths dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -97,8 +97,8 @@
                   "default": true
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -166,7 +166,7 @@
         }
       ]
     },
-    "gunsmiths": {
+    "gunsmith": {
       "type": 17,
       "accent_color": 16743772,
       "components": [
@@ -181,7 +181,7 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmiths mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmiths dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmiths mp** weapon:`AK117`\n-# 🔸 **/gunsmiths mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmiths mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmiths mp** weapon:`All META builds`\n-# 🔸 **/gunsmiths dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
         },
         {
           "type": 14,
@@ -212,8 +212,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -342,8 +342,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -448,8 +448,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -554,8 +554,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -660,8 +660,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -786,7 +786,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths mp` · `/gunsmiths dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -817,8 +817,8 @@
                   "default": true
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -954,7 +954,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths mp` · `/gunsmiths dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -985,8 +985,8 @@
                   "default": true
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -1054,7 +1054,7 @@
         }
       ]
     },
-    "gunsmiths": {
+    "gunsmith": {
       "type": 17,
       "accent_color": 16743772,
       "components": [
@@ -1069,7 +1069,7 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmiths mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmiths dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmiths mp** weapon:`AK117`\n-# 🔸 **/gunsmiths mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmiths mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmiths mp** weapon:`All META builds`\n-# 🔸 **/gunsmiths dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
         },
         {
           "type": 14,
@@ -1100,8 +1100,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -1230,8 +1230,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -1336,8 +1336,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -1442,8 +1442,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -1566,8 +1566,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -1692,7 +1692,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths mp` · `/gunsmiths dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -1723,8 +1723,8 @@
                   "default": true
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -1860,7 +1860,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths mp` · `/gunsmiths dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:ServerSettings:1536468904996774008> **PREFERENCES**\n**`/settings` · `/admin` *(server)***\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics` · `/bot access` · `/bot hotpatch` · `/autobuild` · `/manage`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -1891,8 +1891,8 @@
                   "default": true
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -1971,7 +1971,7 @@
         }
       ]
     },
-    "gunsmiths": {
+    "gunsmith": {
       "type": 17,
       "accent_color": 16743772,
       "components": [
@@ -1986,7 +1986,7 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmiths mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmiths dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmiths mp** weapon:`AK117`\n-# 🔸 **/gunsmiths mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmiths mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmiths mp** weapon:`All META builds`\n-# 🔸 **/gunsmiths dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
         },
         {
           "type": 14,
@@ -2017,8 +2017,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -2158,8 +2158,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -2275,8 +2275,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -2392,8 +2392,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -2527,8 +2527,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -2653,8 +2653,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -2873,7 +2873,7 @@
         },
         {
           "type": 10,
-          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITHS**\n**`/gunsmiths mp` · `/gunsmiths dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
+          "content": "### <a:Loadouts:1535779248982335618> **GUNSMITH**\n**`/gunsmith mp` · `/gunsmith dmz` · `/dmz`**\n### <a:NewDraws:1523837409211453613> **DRAWS**\n**`/draws` · `/draw prices` · `/draw calculator`**\n### <a:Calendar:1523762208050385107> **SEASONAL INFO**\n**`/calendar` · `/patch notes` · `/season end`**\n### <a:Eyedropper:1526293991166054541> **UTILITIES**\n**`/colors` · `/timestamp` · `/invite`**\n### <a:Settings:1523762203537309696> **PREFERENCES**\n**`/settings`**\n### <a:BotAccess:1540915865506160660> **BOT ADMIN**\n**`/bot analytics`**\n\n-# 💠 **Learn more about a command:** **`/help <command>`**\n-# 💠 e.g: **/help** cmd:`draws`\n-# 💠 Or use the Dropdown below!\n\n-# Report bugs & suggestions to <@1139845545754632283>."
         },
         {
           "type": 14,
@@ -2904,8 +2904,8 @@
                   "default": true
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -2984,7 +2984,7 @@
         }
       ]
     },
-    "gunsmiths": {
+    "gunsmith": {
       "type": 17,
       "accent_color": 16743772,
       "components": [
@@ -2999,7 +2999,7 @@
         },
         {
           "type": 10,
-          "content": "### `/gunsmiths mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmiths dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmiths mp** weapon:`AK117`\n-# 🔸 **/gunsmiths mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmiths mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmiths mp** weapon:`All META builds`\n-# 🔸 **/gunsmiths dmz** weapon:`Fennec`"
+          "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class, Meta or every MP build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/dmz`\nSearch for DMZ specific loadouts\n-# **Options**\n-# 🔹 `<weapon>` Select weapon (supports autocomplete & partial word matching)\n-# 🔹 `[build]` Specify build number\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` build:`2` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
         },
         {
           "type": 14,
@@ -3030,8 +3030,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -3171,8 +3171,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -3288,8 +3288,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -3405,8 +3405,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -3522,8 +3522,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,
@@ -3648,8 +3648,8 @@
                   "default": false
                 },
                 {
-                  "label": "Gunsmiths",
-                  "value": "gunsmiths",
+                  "label": "Gunsmith",
+                  "value": "gunsmith",
                   "description": "Search MP and DMZ weapon loadouts",
                   "emoji": {
                     "animated": true,

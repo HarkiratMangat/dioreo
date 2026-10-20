@@ -3220,40 +3220,48 @@ h1 em{font-style:normal;color:var(--accent-t)}
      ⚠️ THE CHOICE LABELS ARE THE "name:" HALF OF addChoices, NEVER THE "value:".
      Discord renders the name — /draws is offered as "New Draws", not "new" — so
      using the value here would put a string on the page no reader ever sees. */
-  /* /gunsmiths mp's pool is every MP weapon combined -- unlike the old
+  /* /gunsmith mp's pool is every MP weapon combined -- unlike the old
      per-category commands, one search command covers all of them, so its
      option pool is the union rather than one category's slice. */
   var MP_ALL=[].concat(WEAPONS.ar,WEAPONS.smg,WEAPONS.lmg,WEAPONS.marksman,WEAPONS.sniper,WEAPONS.shotgun,WEAPONS.secondaries);
 
   var SPECS=[
-    {c:'/gunsmiths mp',  o:'weapon', p:MP_ALL,      w:1},
-    {c:'/gunsmiths dmz', o:'weapon', p:WEAPONS.dmz, w:1},
+    {c:'/gunsmith mp',  o:'weapon', p:MP_ALL,      w:1},
+    {c:'/gunsmith dmz', o:'weapon', p:WEAPONS.dmz, w:1},
     {c:'/dmz',         o:'weapon',   p:WEAPONS.dmz,         w:1},
     {c:'/timestamp',   o:'datetime', p:WHEN},
     {c:'/draws',       pairs:[['page','New Draws'],['page','Returning Draws']]},
-    {c:'/draw prices', pairs:[['region','10 CP Region'],['region','30 CP Region']]},
+    {c:'/draw prices', pairs:[['region','10 CP Region'],['region','20 CP Region'],['region','30 CP Region']]},
     /* ⚠️ ITS PAIRS ARE PICKED FOR THE CAP, NOT FOR VARIETY. render() gives a
        spec room = MAXLEN - command.length - 1, so this 16-character command has
-       15 characters for an option name plus its value. The draw option (4) leaves
-       11, which every real DRAW_META name overruns, and region (6) plus its
-       '10 CP Region' value (12) is 18 and would be filtered out SILENTLY -- the
-       exact failure the cap comment above describes. pulls and balance are the
-       two that fit, and they are also the two a player actually types.
+       15 characters for an option name plus its value. Its one live option is
+       page (4), which leaves 11: View Saved (10) and Help (4) fit, while Start a
+       Calculation (19) would be filtered out SILENTLY -- the exact failure the
+       cap comment above describes -- so it is left out on purpose.
+       ⚠️ pulls, balance, draw and region were unwired from the slash command on
+       2026-10-17 (Harkirat), and this line kept typing pulls and balance until
+       2026-10-19: the page invited a reader to type options Discord would
+       refuse. Check every option here against the registered command.
        ⚠️ AND NO BACKTICKS IN HERE: CMD_JS is a template literal, so one inside a
        comment closes it. An odd count is a parse error and an EVEN count renders
-       wrong while every gate stays green. Added 2026-09-09 16:50 EDT.
-       The pulls values were 25 and 60 until 2026-10-13 12:47 EDT: the option allows 0 to
-       10, so the page typed two values Discord would refuse. */
-    {c:'/draw calculator', pairs:[['pulls','3'],['pulls','7'],['balance','1200']]},
+       wrong while every gate stays green. Added 2026-09-09 16:50 EDT. */
+    {c:'/draw calculator', pairs:[['page','View Saved'],['page','Help']]},
     {c:'/calendar',    pairs:[['page','Draws'],['page','Events'],['page','Playlists & Modes'],
                               ['view','All Events'],['view','Active/Upcoming Only']]},
-    {c:'/patch notes'},
+    /* season is an autocomplete, so there is no choice list to copy: the real
+       value is what the command accepts, and a bare season number matches
+       Season N exactly (commands/patchnotes.js). 6 and 7 are seasons the bot
+       already holds. */
+    {c:'/patch notes', pairs:[['season','6'],['season','7']]},
     {c:'/season end'},
-    {c:'/colors'},
+    /* ⚠️ source has two choices and only the first fits: room is 24, and
+       source (6) + From Main Profile (17) is 23, while From Server Profile (19)
+       is 25 and would be filtered out silently. It is left out on purpose. */
+    {c:'/colors', pairs:[['page','Avatar'],['page','Banner'],['page','Name'],['page','Nameplate'],['page','Deco'],['source','From Main Profile']]},
     {c:'/settings'},
     /* The cmd option is a real autocomplete on /help and these are real command
        names, so the line stays honest rather than decorative. */
-    {c:'/help', pairs:[['cmd','/gunsmiths'],['cmd','/calendar'],['cmd','/dmz']]},
+    {c:'/help', pairs:[['cmd','/gunsmith'],['cmd','/calendar'],['cmd','/dmz']]},
     /* Bare, like /colors and /settings: its only option is visibility, which no
        spec here decorates with -- it says nothing about what the command does. */
     {c:'/invite'}
@@ -3370,7 +3378,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
     return true;
   }
 
-  /* Rejection sampling: with sixteen commands a valid order turns up almost at
+  /* Rejection sampling: with fourteen commands a valid order turns up almost at
      once. The attempt cap exists only so a pathological run cannot hang the
      page — accepting one slightly-too-close order is a far smaller failure than
      a frozen tab, so the loop gives up rather than spinning forever. */

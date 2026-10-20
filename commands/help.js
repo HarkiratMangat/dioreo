@@ -1,9 +1,9 @@
 // ==========================================
 // COMMAND: PLAYER GUIDE / HELP
 // ==========================================
-// ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups (local/landingPageUI.json, local/gunsmithsUI.json), then revised again 21:31 EDT the same day from his direct review feedback. Landing page is a Section+thumbnail "hero" (mascot + tagline), two Link buttons (Website/Install), a flat command DIRECTORY grouped by category, then a category select menu. Picking a category (or using the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/ Examples breakdown per command, options split under whichever command actually has them (never merged across commands with different option sets -- `/gunsmiths search` and `/dmz` share one options block since their shapes are identical (weapon/build/visibility); `/gunsmiths list` gets its own, since a `scope` choice replaces weapon+build. Consolidated from `/all` + the eight per-category MP commands 2026-08-15 -- see docs/superpowers/specs/2026-08-15-gunsmiths-command- consolidation-design.md.
+// ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups (local/landingPageUI.json, local/gunsmithsUI.json), then revised again 21:31 EDT the same day from his direct review feedback. Landing page is a Section+thumbnail "hero" (mascot + tagline), two Link buttons (Website/Install), a flat command DIRECTORY grouped by category, then a category select menu. Picking a category (or using the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/ Examples breakdown per command, options split under whichever command actually has them (never merged across commands with different option sets -- `/gunsmith search` and `/dmz` share one options block since their shapes are identical (weapon/build/visibility); `/gunsmith list` gets its own, since a `scope` choice replaces weapon+build. Consolidated from `/all` + the eight per-category MP commands 2026-08-15 -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-consolidation-design.md.
 //
-// Categories: Gunsmiths (/gunsmiths mp, /gunsmiths dmz, /dmz) / Draws / Seasonal Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin (whitelist-gated, hidden entirely from everyone else).
+// Categories: Gunsmith (/gunsmith mp, /gunsmith dmz, /dmz) / Draws / Seasonal Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin (whitelist-gated, hidden entirely from everyone else).
 //
 // The `hidden` boolean option was renamed BOT-WIDE to `visibility` (every command, not just this one), and its TYPE changed from boolean to a 2-choice string (Hidden/Public) -- "visibility: True/False" doesn't read sensibly, "visibility: Hidden/Public" does. /help carries the SAME option itself now too (2026-08-08 21:29 EDT review pass) -- it's the one command that had been hardcoded ephemeral-only with no way to make it public, an inconsistency with every other command in the bot. No "Show Everyone" button here anymore (removed same pass, Harkirat's direct request) -- the visibility option already covers that case up front.
 //
@@ -31,7 +31,7 @@ const COMMAND_ALIASES = {
     '/invite': ['add', 'install', 'addbot', 'share', 'link'],
     '/colors': ['color', 'accent', 'palette', 'avatar'],
     '/timestamp': ['time', 'clock', 'date'],
-    '/gunsmiths': ['loadout', 'loadouts', 'gunsmith', 'gunsmiths', 'weapon', 'weapons', 'build', 'builds', 'meta', 'category', 'all', 'ar', 'smg', 'lmg', 'sniper', 'marksman', 'shotgun', 'secondaries'],
+    '/gunsmith': ['loadout', 'loadouts', 'gunsmith', 'gunsmiths', 'weapon', 'weapons', 'build', 'builds', 'meta', 'category', 'all', 'ar', 'smg', 'lmg', 'sniper', 'marksman', 'shotgun', 'secondaries'],
     '/dmz': ['dmzloadout', 'dmzloadouts'],
     '/draws': ['draw', 'luckydraw', 'luckydraws'],
     '/draw prices': ['prices', 'price', 'cp', 'cost', 'costs'],
@@ -65,7 +65,7 @@ const SECTION_BREAK = '\n<<<SECTION_BREAK>>>\n';
 //   · `requires` on a CATEGORY hides the whole section (Bot Admin).
 //   · `requires` on a COMMAND hides just that line, leaving its category visible (`/admin` inside
 //     Preferences), which is the shape Harkirat asked for on 2026-08-10 18:57 EDT.
-// Every surface -- dropdown, landing directory, `cmd:` autocomplete, and the detail pages -- reads these same fields, so a new restricted command is one entry and cannot be half-added. `description`/`options` (v3-pre-release review finding #49) carry a command's DETAIL-PAGE body as data instead of hand-concatenated markdown -- only the four categories whose commands render a per-command "-# **Options**" block inline (gunsmiths/draws/seasonal/utilities) use them; the two admin categories keep bespoke prose (see buildPreferencesBody/buildBotAdminBody below) since their shape genuinely isn't "one command, one options list". An option's `desc` (or a command's `description`) may be a plain string or a `(client) => string` function, for the one case (/timestamp's `[timezone]`) that needs a live mentionCommand() call -- see resolveText() below.
+// Every surface -- dropdown, landing directory, `cmd:` autocomplete, and the detail pages -- reads these same fields, so a new restricted command is one entry and cannot be half-added. `description`/`options` (v3-pre-release review finding #49) carry a command's DETAIL-PAGE body as data instead of hand-concatenated markdown -- only the four categories whose commands render a per-command "-# **Options**" block inline (gunsmith/draws/seasonal/utilities) use them; the two admin categories keep bespoke prose (see buildPreferencesBody/buildBotAdminBody below) since their shape genuinely isn't "one command, one options list". An option's `desc` (or a command's `description`) may be a plain string or a `(client) => string` function, for the one case (/timestamp's `[timezone]`) that needs a live mentionCommand() call -- see resolveText() below.
 const cmd = (name, { requires = null, suffix = null, description = null, options = [] } = {}) => ({ name, requires, suffix, description, options });
 
 const permitted = (item, perms) => !item.requires || perms[item.requires] === true;
@@ -77,7 +77,7 @@ const categoryDescription = (c, perms) => (perms.serverAdmin && c.dropdownDescri
 
 const resolveText = (value, client) => typeof value === 'function' ? value(client) : value;
 
-// The ONE renderer every per-command "-# **Options**" detail block parameterizes into (v3-pre-release review finding #49) -- replaces four hand-built escaped-markdown concatenations. Reproduces the exact pre-rewrite shape byte-for-byte, pinned by scripts/helpBodySnapshot.test.js: a header, the description, an Options block (bulleted if the command has any, otherwise just the shared visibility bullet), always ending in VISIBILITY_BULLET -- the shape gunsmiths/draws/seasonal/ utilities all already shared before this rewrite, just typed out by hand each time.
+// The ONE renderer every per-command "-# **Options**" detail block parameterizes into (v3-pre-release review finding #49) -- replaces four hand-built escaped-markdown concatenations. Reproduces the exact pre-rewrite shape byte-for-byte, pinned by scripts/helpBodySnapshot.test.js: a header, the description, an Options block (bulleted if the command has any, otherwise just the shared visibility bullet), always ending in VISIBILITY_BULLET -- the shape gunsmith/draws/seasonal/ utilities all already shared before this rewrite, just typed out by hand each time.
 function renderCommandBlock(command, client) {
     const optionLines = command.options.map(o =>
         `-# 🔹 \`${o.required ? '<' : '['}${o.name}${o.required ? '>' : ']'}\` ${resolveText(o.desc, client)}`
@@ -89,18 +89,18 @@ function renderCommandBlock(command, client) {
 
 const CATEGORY_DEFS = [
     {
-        key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts',
-        // staticCommands stays [/gunsmiths, /dmz] -- the directory/dropdown/autocomplete mention `/gunsmiths` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way. ⚠️ CORRECTED 2026-10-17 23:51 EDT: the landing directory used to mention bare `/gunsmiths`, and Discord renders a mention of a command that has subcommands as plain text, never a link (Harkirat: "the /gunsmith command link seems to be broken in the /help command landing"). The landing now lists detailCommands when a category has them, so it reads `/gunsmiths search` · `/gunsmiths list` · `/dmz`, each a real link. staticCommands keeps `/gunsmiths` for `cmd:` lookup and its aliases.
-        staticCommands: [cmd('/gunsmiths'), cmd('/dmz')],
+        key: 'gunsmith', label: 'Gunsmith', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts',
+        // staticCommands stays [/gunsmith, /dmz] -- the directory/dropdown/autocomplete mention `/gunsmith` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way. ⚠️ CORRECTED 2026-10-17 23:51 EDT: the landing directory used to mention bare `/gunsmith`, and Discord renders a mention of a command that has subcommands as plain text, never a link (Harkirat: "the /gunsmith command link seems to be broken in the /help command landing"). The landing now lists detailCommands when a category has them, so it reads `/gunsmith mp` · `/gunsmith dmz` · `/dmz`, each a real link (it read `/gunsmith search` · `/gunsmith list` · `/dmz` until 2026-10-19 19:43 EDT). staticCommands keeps `/gunsmith` for `cmd:` lookup and its aliases.
+        staticCommands: [cmd('/gunsmith'), cmd('/dmz')],
         detailCommands: [
-            cmd('/gunsmiths mp', {
+            cmd('/gunsmith mp', {
                 description: "Find an MP weapon's loadout, or browse a whole class, Meta or every MP build",
                 options: [
                     { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' },
                     { name: 'build', required: false, desc: 'Specify build number' }
                 ]
             }),
-            cmd('/gunsmiths dmz', {
+            cmd('/gunsmith dmz', {
                 description: "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                 options: [
                     { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' },
@@ -197,7 +197,7 @@ const CATEGORY_DEFS = [
 ];
 
 const DETAIL_HEADERS = {
-    gunsmiths: 'Gunsmith Commands',
+    gunsmith: 'Gunsmith Commands',
     draws: 'Draws Commands',
     seasonal: 'Seasonal Info Commands',
     utilities: 'Utility Commands',
@@ -239,15 +239,15 @@ async function suggestHelpCommandNames(query, perms = {}) {
     return [...new Set([...direct, ...aliasMatched])].slice(0, 25);
 }
 
-// Every real command name this bot has, for /help's `cmd:` autocomplete -- static entries plus the live per-category Gunsmiths commands. `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third of the three places the Server Admin category has to be filtered -- suggesting `/admin` to someone and then handing them the directory when they pick it is worse than never offering it.
+// Every real command name this bot has, for /help's `cmd:` autocomplete -- static entries plus the live per-category Gunsmith commands. `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third of the three places the Server Admin category has to be filtered -- suggesting `/admin` to someone and then handing them the directory when they pick it is worse than never offering it.
 async function getAllHelpCommandNames(perms = {}) {
     return visibleCategories(perms).flatMap(c => visibleCommands(c, perms)).map(c => c.name);
 }
 
-// Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmiths) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below.
-function buildGunsmithsBody(commands, client) {
+// Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below.
+function buildGunsmithBody(commands, client) {
     return commands.map(c => renderCommandBlock(c, client)).join('')
-        + `\n-# **Examples**\n-# 🔸 **/gunsmiths mp** weapon:\`AK117\`\n-# 🔸 **/gunsmiths mp** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\`\n-# 🔸 **/gunsmiths mp** weapon:\`All SMG builds\`\n-# 🔸 **/gunsmiths mp** weapon:\`All META builds\`\n-# 🔸 **/gunsmiths dmz** weapon:\`Fennec\``;
+        + `\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:\`AK117\`\n-# 🔸 **/gunsmith mp** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\`\n-# 🔸 **/gunsmith mp** weapon:\`All SMG builds\`\n-# 🔸 **/gunsmith mp** weapon:\`All META builds\`\n-# 🔸 **/gunsmith dmz** weapon:\`Fennec\``;
 }
 
 // Returns PARTS, not one string (2026-10-17 23:51 EDT): the /draw calculator block is a Section whose button opens the calculator's full Help (Harkirat: "add a button in the /help draws page, as a section+accessory for the /draw calc section, to view the full help panel"). The button reuses the calculator's own `help` verb, so it opens the same private panel the calculator's Help button does; with no author on the state, anyone may press it.
@@ -273,7 +273,7 @@ function buildUtilitiesBody(commands, client) {
         + `\n-# **Examples**\n-# 🔸 **/colors** page:\`Nameplate\` source:\`From Server Profile\`\n-# 🔸 **/timestamp** datetime:\`this saturday 7pm\` timezone:\`Pacific Time\`\n-# 🔸 **/timestamp** datetime:\`august 20\` style:\`Short Date (d)\`\n-# 🔸 **/timestamp** datetime:\`in 45 minutes\` view:\`Text\``;
 }
 
-// Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason. `commands` is the category's own visibleCommands(category, perms) result (v3-pre-release review finding #49) -- whether /admin is present is derived from THAT list rather than re-checking perms.serverAdmin directly, so this page's admin filtering can never drift from the directory/ dropdown/autocomplete, which already filter through the exact same CATEGORY_DEFS `requires`.
+// Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmith already used the shared-options shape for the same reason. `commands` is the category's own visibleCommands(category, perms) result (v3-pre-release review finding #49) -- whether /admin is present is derived from THAT list rather than re-checking perms.serverAdmin directly, so this page's admin filtering can never drift from the directory/ dropdown/autocomplete, which already filter through the exact same CATEGORY_DEFS `requires`.
 function buildPreferencesBody(commands, client) {
     const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)`;
     // `[open]` (2026-10-19 17:49 EDT, named `[customize]` until 2026-10-19 19:33 EDT) is /settings' jump-to option -- see commands/settings.js. Written once here because both branches below print the /settings options.
@@ -359,7 +359,7 @@ function buildBotAdminBody(commands, client) {
 }
 
 const BODY_BUILDERS = {
-    gunsmiths: buildGunsmithsBody,
+    gunsmith: buildGunsmithBody,
     draws: buildDrawsBody,
     seasonal: buildSeasonalBody,
     utilities: buildUtilitiesBody,
@@ -440,7 +440,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
         components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${HARKIRAT_ID}>` });
     } else {
-        // `requested` is the already-permission-checked category from the guard above. detailCommands (gunsmiths only) or visibleCommands(requested, perms) -- see each builder's own comment for why membership drives filtering instead of raw `perms`.
+        // `requested` is the already-permission-checked category from the guard above. detailCommands (gunsmith only) or visibleCommands(requested, perms) -- see each builder's own comment for why membership drives filtering instead of raw `perms`.
         const detailSource = requested.detailCommands || visibleCommands(requested, perms);
         const body = BODY_BUILDERS[selectedKey](detailSource, client);
 

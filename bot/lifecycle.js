@@ -142,7 +142,7 @@ function registerLifecycle(client, commands) {
             console.log(`😀 Emoji ids: ${emojiSync.synced} re-pointed to this app, ${emojiSync.overridden} dev-overridden, ${emojiSync.missing.length} unmatched${emojiSync.missing.length ? ` (${emojiSync.missing.join(', ')})` : ''}`);
         }
 
-        // /gunsmiths list's DB-derived scope choices were filled in here (applyGunsmithsScopeChoices) until /gunsmiths list was removed on 2026-10-19 19:43 EDT; its browse rows are now computed per keystroke in the autocomplete (handlers/router.js).
+        // /gunsmith list's DB-derived scope choices were filled in here (applyGunsmithsScopeChoices) until /gunsmith list was removed on 2026-10-19 19:43 EDT; its browse rows are now computed per keystroke in the autocomplete (handlers/router.js).
         try {
             await registerApplicationCommands(client, commands);
         } catch (registrationError) {

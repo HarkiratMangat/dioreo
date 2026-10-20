@@ -274,7 +274,7 @@ async function handleInteractionInner(interaction) {
                 return await interaction.respond(filtered.map(p => ({ name: displayTitle(p), value: p._id.toString() })));
             }
 
-            // === ROUTE B2: /help's cmd: option -- suggests every real command, including the live per-category Gunsmiths commands (/ar, /lmg, etc.), not just the static entries ===
+            // === ROUTE B2: /help's cmd: option -- suggests every real command, including the live per-category Gunsmith commands (/ar, /lmg, etc.), not just the static entries ===
             if (commandName === 'help') {
                 const { suggestHelpCommandNames } = require('../commands/help');
                 // Restricted entries (/admin for server admins, /manage//alerts//autobuild for the bot's own whitelist) are suggested only to someone who could use them -- see commands/help.js's note on filtering all surfaces, not just the visible menu.
@@ -316,13 +316,13 @@ async function handleInteractionInner(interaction) {
                 return interaction.respond(changed.filter(f => f.toLowerCase().includes(typed)).slice(0, 25).map(f => ({ name: f, value: f })));
             }
 
-            // Standard Loadout Dictionary Autocomplete Mapping (/dmz, /gunsmiths mp, /gunsmiths dmz)
+            // Standard Loadout Dictionary Autocomplete Mapping (/dmz, /gunsmith mp, /gunsmith dmz)
             const Loadout = require('../models/Loadout');
             let queryFilter = {};
 
             if (commandName === 'dmz') {
                 queryFilter.mode = 'DMZ';
-            } else if (commandName === 'gunsmiths') {
+            } else if (commandName === 'gunsmith') {
                 const sub = interaction.options.getSubcommand();
                 if (sub !== 'mp' && sub !== 'dmz') return await interaction.respond([]);
                 queryFilter.mode = sub === 'dmz' ? 'DMZ' : 'MP';
@@ -343,8 +343,8 @@ async function handleInteractionInner(interaction) {
 
             const { displayCategoryLabel } = require('../utils/loadoutRender');
 
-            // /gunsmiths mp and dmz open with their browse rows (All META, All MP / All DMZ, then each MP class), then the weapons (Harkirat, 2026-10-19 19:43 EDT). The rows filter with the same fuzzyMatch as the weapons, so typing "ak" leaves only weapons; their budget comes off the 25 first, so a row can never push every weapon out of view.
-            if (commandName === 'gunsmiths') {
+            // /gunsmith mp and dmz open with their browse rows (All META, All MP / All DMZ, then each MP class), then the weapons (Harkirat, 2026-10-19 19:43 EDT). The rows filter with the same fuzzyMatch as the weapons, so typing "ak" leaves only weapons; their budget comes off the 25 first, so a row can never push every weapon out of view.
+            if (commandName === 'gunsmith') {
                 const { browseRows } = require('../utils/loadoutScopes');
                 const mode = queryFilter.mode;
                 const cats = mode === 'MP' ? [...new Set(distinctChoices.map(w => w.category))].sort() : [];
@@ -361,7 +361,7 @@ async function handleInteractionInner(interaction) {
                 return await interaction.respond([...rows, ...weaponRows]);
             }
 
-            // /dmz: unchanged -- plain weapon names, no category prefix (that's gunsmiths-only, and /dmz has no per-category split -- see models/Loadout.js on categoryRank/DMZ). findWeaponMatches (2026-07-18) also expands recognized category synonyms (e.g. "pistol"/"smg"/"assault rifle") so typing a weapon-class term surfaces every weapon in that category, not just weapons whose own name happens to contain that word -- see utils/search.js's own comment for the full reasoning + the synonym list.
+            // /dmz: unchanged -- plain weapon names, no category prefix (that's gunsmith-only, and /dmz has no per-category split -- see models/Loadout.js on categoryRank/DMZ). findWeaponMatches (2026-07-18) also expands recognized category synonyms (e.g. "pistol"/"smg"/"assault rifle") so typing a weapon-class term surfaces every weapon in that category, not just weapons whose own name happens to contain that word -- see utils/search.js's own comment for the full reasoning + the synonym list.
             const filteredChoices = findWeaponMatches(focusedValue, distinctChoices)
                 .slice(0, 25); // Hard Discord API limit of 25 choices maximum
             return await interaction.respond(filteredChoices.map(w => ({ name: w.weaponName, value: w.weaponKey })));

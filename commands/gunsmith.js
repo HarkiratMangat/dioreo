@@ -1,14 +1,14 @@
 // ==========================================
-// COMMAND: /gunsmiths — mp + dmz (was search + list until 2026-10-19 19:43 EDT; consolidated /all + the 8 per-category MP commands before that)
+// COMMAND: /gunsmith — mp + dmz (renamed from /gunsmiths 2026-10-19 21:20 EDT; was search + list until 2026-10-19 19:43 EDT; consolidated /all + the 8 per-category MP commands before that)
 // ==========================================
-// Two subcommands, two doors onto one engine (see utils/loadoutScopes.js's scope descriptor): `search` is "I know the weapon" (MP-only — DMZ stays reachable via `list scope:DMZ` and the standalone /dmz), `list` is "show me a set" (11 named scopes: 7 categories + All MP + Meta MP + Meta DMZ + DMZ). Discord forbids a command from mixing top-level options with subcommands, which is why there is no shared `category:`/`mode:` option anywhere -- every browsable set is one whole named `scope:` choice instead, so no invalid combination can ever be assembled.
+// Two subcommands, two doors onto one engine (see utils/loadoutScopes.js's scope descriptor): `mp` and `dmz` each take a weapon, or a browse row (All META builds, All MP / All DMZ builds, each MP class) that opens a whole set. Discord forbids a command from mixing top-level options with subcommands, which is why there is no shared `category:`/`mode:` option anywhere -- every browsable set is one whole named scope token (`gsb~` / `~scope~`) instead, so no invalid combination can ever be assembled. ⚠️ THE NAME IS SINGULAR ON PURPOSE (Harkirat, "let's use gunsmith singular"). It was /gunsmiths, a plural players never write; /loadouts and /builds were weighed against it in a naming pass and he chose /gunsmith. The description carries the word "loadout" so a player who types that into Discord's command picker still finds it. A command's registered name keys anything stored against it -- /admin visibility rules, analytics rows, the permission tables -- so the rename was done before v3 reached prod, while none of that exists yet under the old name.
 const { SlashCommandBuilder } = require('discord.js');
 const { FIXED_SCOPES, formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition } = require('../utils/loadoutScopes');
 const { buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel } = require('../utils/loadoutRender');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
-// Two subcommands since 2026-10-19 19:43 EDT (Harkirat: "change /gunsmiths search to /gunsmiths MP, and a new /gunsmiths DMZ ... lets just remove gunsmith list"). Discord requires lower-case names, so they register as `mp` and `dmz`. Each takes a weapon, and its suggestions open with the browse rows (utils/loadoutScopes.js's browseRows) that /gunsmiths list used to offer as choices. The standalone /dmz is unchanged.
+// Two subcommands since 2026-10-19 19:43 EDT (Harkirat: "change /gunsmiths search to /gunsmiths MP, and a new /gunsmiths DMZ ... lets just remove gunsmith list"). Discord requires lower-case names, so they register as `mp` and `dmz`. Each takes a weapon, and its suggestions open with the browse rows (utils/loadoutScopes.js's browseRows) that /gunsmith list used to offer as choices. The standalone /dmz is unchanged.
 const visibilityOption = o => o.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.')
     .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' });
 const weaponSub = (name, mode, desc) => sub => sub.setName(name).setDescription(desc)
@@ -17,8 +17,8 @@ const weaponSub = (name, mode, desc) => sub => sub.setName(name).setDescription(
     .addStringOption(visibilityOption);
 
 const data = new SlashCommandBuilder()
-    .setName('gunsmiths')
-    .setDescription('Look up or browse MP and DMZ weapon loadouts')
+    .setName('gunsmith')
+    .setDescription('Best weapon loadouts and gunsmith builds for MP and DMZ')
     .setIntegrationTypes([0, 1]).setContexts([0, 1, 2])
     .addSubcommand(weaponSub('mp', 'MP', 'Find an MP weapon\'s loadout, or browse a whole class, Meta or every MP build'))
     .addSubcommand(weaponSub('dmz', 'DMZ', 'Find a DMZ weapon\'s loadout, or browse Meta or every DMZ build'));
@@ -31,7 +31,7 @@ function labelForScope(scope) {
     return displayCategoryLabel(scope.category);
 }
 
-// Shared by execute()'s `list` branch, a `~cat~` search row, and every gsb~ next/prev/jump click in handlers/loadouts.js -- the single render path for every scoped browse view.
+// Shared by execute()'s browse-row branch (`~scope~`), the legacy `~cat~` row, and every gsb~ next/prev/jump click in handlers/loadouts.js -- the single render path for every scoped browse view.
 async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = false } = {}) {
     let isEphemeral;
     if (isUpdate) {
@@ -53,7 +53,7 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
         try {
             await interaction.followUp({ content: '❌ That scope has no builds saved yet.' });
         } catch (notifyError) {
-            console.error('Failed to notify user of an empty gunsmiths scope (interaction likely expired):', notifyError);
+            console.error('Failed to notify user of an empty gunsmith scope (interaction likely expired):', notifyError);
         }
         return;
     }

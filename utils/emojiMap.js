@@ -113,7 +113,7 @@ const emojis = {
     // The calculator's Add Draws and Remove buttons (2026-10-18 13:36 EDT, Harkirat supplied both).
     plus: '<a:Plus:1560408706233933845>',
     deleteBin: '<a:DeleteBin:1560788313508683807>',
-    // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmiths category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmiths now covers /all + every per-category command too, not just DMZ).
+    // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmith category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmith now covers /all + every per-category command too, not just DMZ).
     dioreoCombo: '<:DioreoCombo:1534640183230730470>',
     // /invite's Share Link line (2026-10-18 20:15 EDT, Harkirat supplied the prod id).
     dioreoKawaii: '<:DioreoKawaii3B:1534640190491070599>',

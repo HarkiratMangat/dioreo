@@ -45,7 +45,7 @@ check('leavesOf: a subcommand GROUP nests one level deeper', () => {
 });
 
 check('idFor: an anchor is the path, spaces to hyphens', () => {
-    assert.strictEqual(idFor('/gunsmiths search'), 'gunsmiths-search');
+    assert.strictEqual(idFor('/gunsmith mp'), 'gunsmith-mp');
     assert.strictEqual(idFor('/settings'), 'settings');
 });
 
@@ -69,26 +69,26 @@ check('readHelpPlacement: detailCommands WINS over staticCommands, so a finer `r
     // The failure this guards: #154 gave CATEGORY_DEFS a second, finer list that help.js treats as authoritative. If the catalog read only the coarse list, `gated` would come from the PARENT -- a restricted subcommand would be hidden in /help and PUBLISHED on the website, with every other gate still green. Reading staticCommands only, this assertion fails.
     const placement = readHelpPlacement([
         {
-            key: 'gunsmiths',
-            staticCommands: [{ name: '/gunsmiths' }],
-            detailCommands: [{ name: '/gunsmiths search' }, { name: '/gunsmiths secret', requires: 'botAdmin' }],
+            key: 'gunsmith',
+            staticCommands: [{ name: '/gunsmith' }],
+            detailCommands: [{ name: '/gunsmith mp' }, { name: '/gunsmith secret', requires: 'botAdmin' }],
         },
     ]);
-    assert.strictEqual(placement.has('/gunsmiths'), false, 'the coarse entry must not be declared once a finer list exists');
-    assert.strictEqual(placement.get('/gunsmiths search').gated, false);
-    assert.strictEqual(placement.get('/gunsmiths secret').gated, true);
+    assert.strictEqual(placement.has('/gunsmith'), false, 'the coarse entry must not be declared once a finer list exists');
+    assert.strictEqual(placement.get('/gunsmith mp').gated, false);
+    assert.strictEqual(placement.get('/gunsmith secret').gated, true);
 });
 
 check('readHelpPlacement: ORDER comes from detailCommands when the two lists disagree', () => {
     // Order drives how the page lists a group. If the lists disagree the site must follow the one /help's detail page follows, or the two disagree on screen.
     const placement = readHelpPlacement([
         {
-            key: 'gunsmiths',
-            staticCommands: [{ name: '/gunsmiths' }, { name: '/dmz' }],
-            detailCommands: [{ name: '/dmz' }, { name: '/gunsmiths search' }],
+            key: 'gunsmith',
+            staticCommands: [{ name: '/gunsmith' }, { name: '/dmz' }],
+            detailCommands: [{ name: '/dmz' }, { name: '/gunsmith mp' }],
         },
     ]);
-    assert.ok(placement.get('/dmz').order < placement.get('/gunsmiths search').order);
+    assert.ok(placement.get('/dmz').order < placement.get('/gunsmith mp').order);
 });
 
 check('placementFor: the LONGEST declared prefix wins', () => {
@@ -148,9 +148,9 @@ check('/help and /invite are placed despite CATEGORY_DEFS not knowing them', () 
 
 // ── order, which carries decisions ─────────────────────────────────────────────────────────────
 check('within a group, order follows CATEGORY_DEFS then the builder', () => {
-    const gunsmiths = catalog.groups.find(g => g.key === 'gunsmiths').commands.map(c => c.path);
-    // CATEGORY_DEFS declares `/gunsmiths` before `/dmz`; the builder declares `mp` before `dmz`. One entry covers both subcommands, so only the builder can order those two.
-    assert.deepStrictEqual(gunsmiths, ['/gunsmiths mp', '/gunsmiths dmz', '/dmz']);
+    const gunsmith = catalog.groups.find(g => g.key === 'gunsmith').commands.map(c => c.path);
+    // CATEGORY_DEFS declares `/gunsmith` before `/dmz`; the builder declares `mp` before `dmz`. One entry covers both subcommands, so only the builder can order those two.
+    assert.deepStrictEqual(gunsmith, ['/gunsmith mp', '/gunsmith dmz', '/dmz']);
 
     const draws = catalog.groups.find(g => g.key === 'draws').commands.map(c => c.path);
     assert.deepStrictEqual(draws, ['/draws', '/draw prices', '/draw calculator']);
@@ -167,7 +167,7 @@ check('options carry required, autocomplete and choice NAMES', () => {
     const datetime = timestamp.options.find(o => o.name === 'datetime');
     assert.strictEqual(datetime.required, true, 'datetime is required on /timestamp');
 
-    const weapon = byPath.get('/gunsmiths mp').options.find(o => o.name === 'weapon');
+    const weapon = byPath.get('/gunsmith mp').options.find(o => o.name === 'weapon');
     assert.strictEqual(weapon.autocomplete, true, 'weapon is an autocomplete option');
 
     // Discord shows a choice's NAME and never its value, so a value on the page would be a string the reader never sees in the client.
@@ -251,7 +251,7 @@ check('solveOn picks the BETTER of the two inks, so the case above is not vacuou
 
 check('the seven weapon-category accents are read from the bot, not from a copy', () => {
     const cats = loadCategoryAccents();
-    // These six are the scope choices /gunsmiths list actually offers. If the map is ever renamed or moved, this fails loudly rather than the page quietly falling back to a grey dot.
+    // These six are the class browse rows /gunsmith mp offers (they were /gunsmith list's scope choices until 2026-10-19 19:43 EDT). If the map is ever renamed or moved, this fails loudly rather than the page quietly falling back to a grey dot.
     for (const key of ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN']) {
         assert.ok(/^#[0-9A-F]{6}$/.test(cats[key] || ''), `no accent parsed for category ${key}`);
     }

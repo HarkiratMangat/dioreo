@@ -1,6 +1,6 @@
 // scripts/weaponSearch.test.js
 //
-// /gunsmiths' weapon suggestions: a class typed in plain words finds that class, and a half-typed class word finds it too (Harkirat, 2026-10-19 20:09 EDT: "i typed assault, which should have showed all AR ... and i typed 'snipe' but that only showed 'all snipers' and didn't list the other sniper builds").
+// /gunsmith' weapon suggestions: a class typed in plain words finds that class, and a half-typed class word finds it too (Harkirat, 2026-10-19 20:09 EDT: "i typed assault, which should have showed all AR ... and i typed 'snipe' but that only showed 'all snipers' and didn't list the other sniper builds").
 const assert = require('assert');
 const { resolveCategorySynonyms, findWeaponMatches, isGenericWeaponQuery } = require('../utils/search');
 

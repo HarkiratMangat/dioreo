@@ -114,7 +114,7 @@ export const TESTS = [
     {"cmd": "node utils/discordCdnAssetIndex.test.js", "lane": "unit"},
     {"cmd": "node scripts/loadoutScopes.test.js", "lane": "unit"},
     {"cmd": "node scripts/loadoutRenderSnapshot.test.js", "lane": "unit"},
-    {"cmd": "node scripts/gunsmithsCommandShape.test.js", "lane": "unit"},
+    {"cmd": "node scripts/gunsmithCommandShape.test.js", "lane": "unit"},
     {"cmd": "node scripts/commandCatalog.test.js", "lane": "unit"},
     {"cmd": "node scripts/weaponIndex.test.js", "lane": "unit"},
     {"cmd": "node scripts/instanceLock.test.js", "lane": "unit"},

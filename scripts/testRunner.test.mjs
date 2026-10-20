@@ -37,8 +37,11 @@ try {
     await check('the manifest still runs every command the pre-rebuild && chain ran, at every commit it was re-based onto', () => {
         // 8c5e8a90 is the chain this suite was generated from; ec4f581f is pins batch 2's (#194), two tests longer. Add a commit here each time the branch merges a v3-pre-release that changed the chain.
         const ANCHORS = ['8c5e8a90', 'ec4f581f'];
-        // A command deliberately retired from the suite goes here, with the date and the reason. Empty on purpose.
-        const RETIRED = [];
+        // A command deliberately retired from the suite goes here, with the date and the reason. Nearly empty on purpose -- a rename is the only thing that belongs here.
+        const RETIRED = [
+            // Renamed, not dropped: the same test now runs as scripts/gunsmithCommandShape.test.js (the command became /gunsmith, 2026-10-19).
+            'node scripts/gunsmithsCommandShape.test.js',
+        ];
         const cmds = new Set(TESTS.map((t) => t.cmd));
         for (const ref of ANCHORS) {
             const before = JSON.parse(execFileSync('git', ['show', `${ref}:package.json`], { cwd: ROOT, encoding: 'utf8' })).scripts.test.split(' && ');

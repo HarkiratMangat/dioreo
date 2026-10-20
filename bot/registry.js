@@ -3,12 +3,12 @@
 // ==========================================
 // Everything that decides WHICH slash commands exist and pushes them to Discord. Split out of index.js on 2026-08-13 17:20 EDT; the logic is unchanged, only its address.
 //
-// Three stages, deliberately kept separate because they run at different TIMES and that timing is load-bearing:
-//   1. loadCommandModules(client)  -- at boot, synchronous. Reads commands/*.js off disk, including commands/gunsmiths.js.
-//   2. applyGunsmithsScopeChoices(commands) -- after ClientReady, async. Needs a live MongoDB query for the 7 category scope choices, so it CANNOT run at require time.
-//   3. registerApplicationCommands(client, commands) -- one REST PUT, after the two above.
+// Two stages, deliberately kept separate because they run at different TIMES and that timing is load-bearing:
+//   1. loadCommandModules(client)  -- at boot, synchronous. Reads commands/*.js off disk, including commands/gunsmith.js.
+//   2. registerApplicationCommands(client, commands) -- one REST PUT, after ClientReady.
+// (A middle stage, applyGunsmithsScopeChoices, filled /gunsmiths list's category choices from a live MongoDB query until that subcommand was removed on 2026-10-19 19:43 EDT; the list header above counted it as step 2 and went stale. Nothing in boot needs the database before the PUT now.)
 //
-// The /gunsmiths consolidation (2026-08-15) removed the nine commands (/all + 8 per-category) that used to be built here -- see docs/superpowers/specs/2026-08-15-gunsmiths-command- consolidation-design.md. This file's own ⚠️ used to warn that a commands/ readdir misses those nine; that trap is why the consolidation happened, and it no longer applies -- /gunsmiths is a normal commands/*.js module, found by the same readdir as everything else.
+// The /gunsmith consolidation (2026-08-15) removed the nine commands (/all + 8 per-category) that used to be built here -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-consolidation-design.md. This file's own ⚠️ used to warn that a commands/ readdir misses those nine; that trap is why the consolidation happened, and it no longer applies -- /gunsmith is a normal commands/*.js module, found by the same readdir as everything else.
 
 const fs = require('fs');
 const path = require('path');
@@ -58,7 +58,7 @@ function splitCommands(commands, modules, { adminApp }) {
 // STATIC + ON-DISK COMMAND MODULES
 // ==========================================
 
-// Initializes client.commands and returns the staging array that applyGunsmithsScopeChoices() and registerApplicationCommands() go on to fill and serialize. The array and the Collection are deliberately BOTH maintained: the Collection is what the router dispatches through (`interaction.client.commands.get(name)`), the array is what gets serialized to Discord and what /admin derives its gateable-command list from.
+// Initializes client.commands and returns the staging array that registerApplicationCommands() goes on to serialize. The array and the Collection are deliberately BOTH maintained: the Collection is what the router dispatches through (`interaction.client.commands.get(name)`), the array is what gets serialized to Discord and what /admin derives its gateable-command list from.
 function loadCommandModules(client) {
     client.commands = new Collection();
     const commands = [];

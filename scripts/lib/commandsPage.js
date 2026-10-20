@@ -17,7 +17,7 @@
  *
  * ⚠️ SIGNAL GREEN REMAINS THE PAGE'S OWN ACCENT (nav tab, Install button, focus rings). It must not be replaced by a command colour; the two do different jobs.
  *
- * ⚠️ THE SIX "COLOURLESS" COMMANDS ARE THE MOST ALIVE ONES NOW. Six commands derive an accent per render rather than carrying a fixed one, and the previous page drew that as a hollow outlined dot, which reads as unfinished rather than as a fact — "why are all of these commands missing unique colors??". They now carry a conic sweep of the SEVEN REAL weapon-category colours read out of utils/loadoutRender.js, and /gunsmiths list goes further: picking a scope re-tints the whole panel to that category's actual accent, because that is precisely what the bot will do. The page demonstrates its own sentence instead of asserting it.
+ * ⚠️ THE SIX "COLOURLESS" COMMANDS ARE THE MOST ALIVE ONES NOW. Six commands derive an accent per render rather than carrying a fixed one, and the previous page drew that as a hollow outlined dot, which reads as unfinished rather than as a fact — "why are all of these commands missing unique colors??". They now carry a conic sweep of the SEVEN REAL weapon-category colours read out of utils/loadoutRender.js, and the class browse rows in /gunsmith mp go further: picking one re-tints the whole panel to that category's actual accent, because that is precisely what the bot will do. The page demonstrates its own sentence instead of asserting it.
  *
  * ⚠️ NO BACKTICKS ANYWHERE INSIDE THE CSS AND JS CONSTANTS BELOW, and no braces inside a CSS comment. They are template literals: a backtick — including one inside a comment — ends the string and fails the build with a SyntaxError pointing at prose, and a brace in a comment is destroyed by the hover-guard transform. Quote with " instead.
  *
@@ -63,7 +63,7 @@ const ACCENT_SOURCE = {
 };
 
 /** The six that derive an accent per render, so the page can SAY so rather than invent one. */
-const DERIVED = new Set(['/settings', '/colors', '/dmz', '/gunsmiths mp', '/gunsmiths dmz', '/draw calculator']);
+const DERIVED = new Set(['/settings', '/colors', '/dmz', '/gunsmith mp', '/gunsmith dmz', '/draw calculator']);
 
 const REPO = path.resolve(__dirname, '..', '..');
 const intToHex = n => '#' + Number(n).toString(16).toUpperCase().padStart(6, '0');
@@ -84,7 +84,7 @@ function loadAccents() {
 /**
  * The seven weapon-category accents, read out of utils/loadoutRender.js's MP_CATEGORY_ACCENT.
  *
- * These are the colours /gunsmiths and /dmz actually answer in — the bot looks a weapon's own category up in this exact map at render time. They are why the "derived" commands are not colourless: their colour is real, it just is not fixed. Keyed by the uppercase category string, which is also verbatim what /gunsmiths list offers as its `scope` choices, so a scope pill can be tinted with the colour that choice will genuinely produce.
+ * These are the colours /gunsmith and /dmz actually answer in — the bot looks a weapon's own category up in this exact map at render time. They are why the "derived" commands are not colourless: their colour is real, it just is not fixed. Keyed by the uppercase category string, which is also verbatim what the class browse rows in /gunsmith mp are named after (they were /gunsmith list's `scope` choices until 2026-10-19 19:43 EDT), so a scope pill can be tinted with the colour that choice will genuinely produce.
  */
 function loadCategoryAccents() {
     const src = fs.readFileSync(path.join(REPO, 'utils', 'loadoutRender.js'), 'utf8');
@@ -200,7 +200,7 @@ function darken(hex, amount) {
 /**
  * The seven weapon-category accents, read out of utils/loadoutRender.js's MP_CATEGORY_ACCENT.
  *
- * These are the colours the bot actually answers in — it looks a weapon's own category up in this exact map at render time. Keyed by the uppercase category string, which is verbatim what /gunsmiths list offers as its `scope` choices.
+ * These are the colours the bot actually answers in — it looks a weapon's own category up in this exact map at render time. Keyed by the uppercase category string, which is verbatim what /gunsmith list offers as its `scope` choices.
  */
 function loadCategoryAccents() {
     const src = fs.readFileSync(path.join(REPO, 'utils', 'loadoutRender.js'), 'utf8');
@@ -217,7 +217,7 @@ function loadCategoryAccents() {
 }
 
 /**
- * Every `scope` choice /gunsmiths list offers, mapped to the colour its answer comes back in.
+ * Every class browse row `/gunsmith mp` offers (they were `/gunsmith list`'s `scope` choices until 2026-10-19 19:43 EDT), mapped to the colour its answer comes back in.
  *
  * ⚠️ FOUR OF THE ELEVEN ARE NOT CATEGORIES, and leaving them out was a real defect: `retint()` fell through to removeProperty, so picking "All MP builds" made the whole card lose its colour — "where tf did the card go???". MP and DMZ have identity colours the bot already uses (commands/manage.js's per-page accents, sampled from the real emoji assets); the two meta scopes are the sharp end of those modes rather than a colour of their own, so they are the same hue held darker.
  */
@@ -890,7 +890,7 @@ function badges(option, required) {
 
 /** Which weapon list an option searches, or '' when it is not a weapon option. */
 const weaponMode = (command, option) =>
-    option.name !== 'weapon' ? '' : (command.path === '/dmz' || command.path === '/gunsmiths dmz' ? 'DMZ' : 'MP');
+    option.name !== 'weapon' ? '' : (command.path === '/dmz' || command.path === '/gunsmith dmz' ? 'DMZ' : 'MP');
 
 function choiceBlock(option, tints, chosen) {
     const pills = option.choices.map((choice, i) => {
@@ -1011,7 +1011,7 @@ function renderPanel(command, group, C, accents, cats, scopes) {
     const options = ownOptions(command);
     const derived = DERIVED.has(command.path);
 
-    // /gunsmiths list's scope picker was the one choice option tinted per choice; it was removed 2026-10-19 19:43 EDT and its browse rows now live in the weapon suggestions, so nothing sets this today.
+    // /gunsmith list's scope picker was the one choice option tinted per choice; it was removed 2026-10-19 19:43 EDT and its browse rows now live in the weapon suggestions, so nothing sets this today.
     const tintOpt = '';
     const tuple = hex => [hex, solveOn(hex), solveText(hex, GROUND_DARK), solveText(hex, GROUND_LIGHT)];
     const tintTable = tintOpt

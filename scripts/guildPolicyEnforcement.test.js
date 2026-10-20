@@ -368,7 +368,7 @@ t('a non-admin reaching a restricted page is returned to the directory, not refu
     const help = require('../commands/help');
     await withNoLoadouts(async () => {
         const page = JSON.stringify(await help.buildContainer('botadmin', 0, NOBODY));
-        assert.ok(page.includes('GUNSMITHS'), 'expected the landing directory');
+        assert.ok(page.includes('GUNSMITH'), 'expected the landing directory');
         assert.ok(!page.includes('/manage'), 'the restricted body must not render');
     });
 });

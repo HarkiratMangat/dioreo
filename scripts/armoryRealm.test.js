@@ -247,7 +247,7 @@ check('copyCodeText copies the real code, and is blank for DMZ (no code by desig
     assert.strictEqual(copyCodeText(B({ mode: 'DMZ', shareCode: undefined })), '');
 });
 
-// 🔴 THIS IS THE PROOF, NOT AN ASSERTION BY INSPECTION. commands/gunsmiths.js's `search` subcommand feeds whatever text a user typed to utils/loadoutLookup.js's lookupAndRenderWeapon(), which resolves it with `weaponKey = rawQuery.toLowerCase().replace(/\s+/g, '')` -- reproduced verbatim below rather than required, because the real function opens a live Mongo connection and does I/O this test must not perform. What is checked against the SOURCE, not just against this copy, is that both normalizes are textually identical -- so if either file's regex ever drifts from the other, this test fails instead of silently passing on two normalizes that happen to still agree today.
+// 🔴 THIS IS THE PROOF, NOT AN ASSERTION BY INSPECTION. commands/gunsmith.js's `mp` subcommand (`search` until 2026-10-19, `/gunsmiths` until 2026-10-19 21:17 EDT) feeds whatever text a user typed to utils/loadoutLookup.js's lookupAndRenderWeapon(), which resolves it with `weaponKey = rawQuery.toLowerCase().replace(/\s+/g, '')` -- reproduced verbatim below rather than required, because the real function opens a live Mongo connection and does I/O this test must not perform. What is checked against the SOURCE, not just against this copy, is that both normalizes are textually identical -- so if either file's regex ever drifts from the other, this test fails instead of silently passing on two normalizes that happen to still agree today.
 const REAL_NORMALIZE = /weaponKey = rawQuery\.toLowerCase\(\)\.replace\(\/\\s\+\/g, ''\)/;
 function resolverWeaponKey(rawQuery) { return rawQuery.toLowerCase().replace(/\s+/g, ''); }
 
@@ -261,6 +261,7 @@ check('shareCommandText\'s weapon token resolves through /gunsmiths search\'s re
 
     const build = B({ weaponName: 'Holger 26', mode: 'MP' });
     const text = shareCommandText(build, 2);
+    // ⚠️ THIS IS THE PORTAL'S STALE TEXT ON PURPOSE: portal/ui/armory.logic.js (pins2's file, off limits to the bot project) still copies the command as /gunsmiths search, which the bot no longer registers (it is /gunsmith mp since the 2026-10-19 21:17 EDT rename). The hand-off asking pins2 to change it sits in the bot project's files (gunsmith-rename/proposals/). When pins2 changes the portal, change this string in the same commit -- it fails loudly the moment they do.
     assert.strictEqual(text, '/gunsmiths search weapon:Holger 26 build:2 visibility:Public');
     // Pull the weapon token back out of the command text exactly the way a human would type it in, then run it through the SAME normalize the real resolver uses -- it must land on the build's own weaponKey.
     const typedWeapon = text.slice(text.indexOf('weapon:') + 7, text.indexOf(' build:'));

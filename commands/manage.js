@@ -810,7 +810,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('manage')
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- the old 68-char version truncated on Discord mobile's command picker row.
-        .setDescription('Manage gunsmiths and seasonal bot data')
+        .setDescription('Manage gunsmith builds and seasonal bot data')
         .setDefaultMemberPermissions(0)
         // ADMIN-ONLY: stays user-install [1] deliberately -- the 10 public commands moved to [0, 1] (guild install) for v3, but an admin command advertised in every server's command list is noise plus needless surface. Harkirat still reaches it anywhere via his own user install.
         .setIntegrationTypes([1]).setContexts([0, 1, 2])

@@ -39,7 +39,7 @@ const around = (median, spread) => Math.max(20, Math.round(median * Math.exp((R(
 
 // Weight = relative popularity; ack/dur = median ms. `drawprices` is the slow one and `colors` the heavy renderer, which is what production shows.
 const COMMANDS = [
-    { command: 'gunsmiths', subs: ['search', 'list'], w: 30, ack: 260, dur: 900, deps: ['mongo'], search: { field: 'weapon', terms: ['kilo', 'krig 6', 'ak117', 'dl q33', 'cbr4', 'maddox', 'hvk', 'qq9', 'rus-79u', 'fennec', 'kilo 141', 'bp50', 'xyz rifle'] } },
+    { command: 'gunsmith', subs: ['mp', 'dmz'], w: 30, ack: 260, dur: 900, deps: ['mongo'], search: { field: 'weapon', terms: ['kilo', 'krig 6', 'ak117', 'dl q33', 'cbr4', 'maddox', 'hvk', 'qq9', 'rus-79u', 'fennec', 'kilo 141', 'bp50', 'xyz rifle'] } },
     { command: 'draws', subs: ['current', 'upcoming'], w: 22, ack: 180, dur: 320, deps: ['mongo', 'cloudinary'] },
     { command: 'calendar', subs: [null], w: 12, ack: 200, dur: 420, deps: ['mongo'] },
     { command: 'timestamp', subs: [null], w: 10, ack: 90, dur: 120, deps: [] },

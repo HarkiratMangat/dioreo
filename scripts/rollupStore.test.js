@@ -76,7 +76,7 @@ check('daysBetweenInclusive returns a single-element array for a same-day range'
 // --- buildRollupDoc ---------------------------------------------------------------------------
 check('buildRollupDoc tallies outcome and entry rows into the fixed key sets', () => {
     const doc = S.buildRollupDoc('2026-08-16', {
-        command: 'gunsmiths', subcommand: 'search', invocations: 5,
+        command: 'gunsmith', subcommand: 'search', invocations: 5,
         userHashes: ['a', 'b', 'a'],
         outcomeRows: [{ _id: 'ok', c: 4 }, { _id: 'error', c: 1 }],
         entryRows: [{ _id: 'slash', c: 5 }],

@@ -27,7 +27,7 @@ const COMMANDS = {
         keywords: 'add install link server account guild user install setup',
     },
 
-    '/gunsmiths mp': {
+    '/gunsmith mp': {
         purpose: 'The attachment build for one MP weapon, or every build in a class, the meta, or all of MP.',
         facts: ['Discord searches as you type, and partial words match — "hol" finds Holger 26.',
                 'The top of the list opens a whole set: All META builds, All MP builds, then each class.',
@@ -35,7 +35,7 @@ const COMMANDS = {
         sample: { weapon: 'AK117' },
         keywords: 'loadout loadouts build builds attachment attachments gunsmith class setup weapon gun mp meta category browse',
     },
-    '/gunsmiths dmz': {
+    '/gunsmith dmz': {
         purpose: 'The attachment build for one DMZ weapon, or the DMZ meta, or all of DMZ.',
         facts: ['The top of the list opens All META builds and All DMZ builds.',
                 'A meta browse has an MP Meta / DMZ Meta switch under it.'],
@@ -120,9 +120,9 @@ const ASKS = [
     { q: 'How much CP am I short', to: '/draw calculator' },
     { q: 'What a draw costs, spin by spin', to: '/draw prices' },
     { q: "What's in the draws this season", to: '/draws' },
-    { q: 'The build for one weapon', to: '/gunsmiths mp' },
-    { q: 'Builds for a category, or the meta', to: '/gunsmiths mp' },
-    { q: 'The same, but for DMZ', to: '/gunsmiths dmz' },
+    { q: 'The build for one weapon', to: '/gunsmith mp' },
+    { q: 'Builds for a category, or the meta', to: '/gunsmith mp' },
+    { q: 'The same, but for DMZ', to: '/gunsmith dmz' },
     { q: 'A DMZ build, the old way', to: '/dmz' },
     { q: 'When the season ends', to: '/season end' },
     { q: "What's on this season, and when", to: '/calendar' },
@@ -140,8 +140,8 @@ const ASKS = [
  * Each case is a query a real reader would type and the FULL set of commands that must come back — full, not "at least", because a search that returns everything is as useless as one that returns nothing and only an exact set catches both.
  */
 const SEARCH_CASES = [
-    { q: 'loadout', hit: ['/gunsmiths mp', '/gunsmiths dmz', '/dmz'] },
-    { q: 'attachment', hit: ['/gunsmiths mp', '/gunsmiths dmz', '/dmz'] },
+    { q: 'loadout', hit: ['/gunsmith mp', '/gunsmith dmz', '/dmz'] },
+    { q: 'attachment', hit: ['/gunsmith mp', '/gunsmith dmz', '/dmz'] },
     { q: 'cp', hit: ['/draw prices', '/draw calculator'] },
     { q: 'timezone', hit: ['/timestamp', '/settings'] },
     { q: 'countdown', hit: ['/season end', '/timestamp'] },
