@@ -843,22 +843,6 @@ Context7's tools were missing from the tool surface at session start and arrived
 
   ✅ **DONE 2026-08-30 23:44 EDT.** Harkirat rotated the token, updated it in the Mac's `.env`, propagated it to the VM's `.env`, and restarted. Verified this session: a sha256 hash comparison confirms the Mac's and VM's `BOT_TOKEN` values are byte-identical (never printed either), exactly one `BOT_TOKEN=` line on the VM (no stray duplicate from the edit), and the VM's own logs show the expected signature of a clean rotation -- the OLD token got killed with a `4004 Authentication failed` at 03:36:27 UTC the moment it was revoked, then the bot restarted at 03:44:03 UTC and fully re-authenticated (`Shard 0 ready`, `Dioreo instance fully authenticated!`).
 
-### Reroll the two Cloudflare credentials that were exposed in a chat transcript `[P2 · XS · Sonnet5-Medium]`
-
-*Filed 2026-08-28 12:0x EDT. Harkirat's call, in his words: **"we'll reroll it in the future, I'm fine with the security concern for now."** Filed so "in the future" has somewhere to live.*
-
-Two separate credentials went through the transcript on 2026-08-28 and both should be rolled:
-
-1. **The Argo Tunnel token inside `~/.cloudflared/cert.pem`.** The file was uploaded so its contents could be installed, and reading it put the embedded `apiToken`, the zone id and the account id into the transcript. ⚠️ **Revoking it does NOT stop the running dev tunnel** — `cert.pem` authenticates `tunnel create` and `tunnel route dns`, while `tunnel run` uses the per-tunnel `<uuid>.json`. Roll it in the dashboard under **My Profile → API Tokens** (it appears as an Argo Tunnel token); re-run `cloudflared tunnel login` only when a new tunnel or route is next needed.
-2. **The account API token now in `.env` as `CLOUDFLARE_API_TOKEN`** — verified active 2026-08-28 12:2x EDT and used the same minute to delete the abandoned `dev.portal.dioreo.app` record.
-
-🔴 **AND A CORRECTION WORTH KEEPING, because the reasoning was wrong even where the verdict was right.** An earlier token was declared dead in two documents on the strength of `/user/tokens/verify` returning `1000 Invalid API Token`. **That is a USER endpoint and it cannot verify an ACCOUNT-owned token** — a `cfat_` token answers exactly that error while being perfectly valid, which is what happened to the replacement. Verify an account token against `GET /accounts/$CLOUDFLARE_ACCOUNT_ID/tokens/verify` instead. *(The first token was in fact dead — re-tested against the correct endpoint it still fails — so the verdict survived and the method did not. That is the worse of the two failures: a method that will condemn the next valid token too.)*
-
-**Verify:** `curl -s -H "Authorization: Bearer $TOKEN" https://api.cloudflare.com/client/v4/user/tokens/verify` returns `success: true` for the new token, and the old one returns `Invalid API Token`.
-
-⚠️ **Nothing in this repo reads either at runtime** — the bot does not talk to Cloudflare and the site deploy uses its own GitHub Actions secret — so rolling them breaks no running thing. The only cost is that DNS/tunnel work from this machine needs the new value.
-
-
 ### ✅ Home — the staged fact was stated three times, and a masthead figure was missing `[P2 · S · Opus5-High]`
 *Item I of the completion plan's Task 1.5, closed 2026-08-27. His complaint was* "its all over the place… i feel like i'd never utilize it."
 
