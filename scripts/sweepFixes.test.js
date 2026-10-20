@@ -125,8 +125,7 @@ check('core/ is in the graph: its edges count, and a core file resolves', () => 
     assert.notStrictEqual(direct.verdict, 'ALLOW', 'core/ops/index.js holds the op registry, so a core op patch must refuse rather than half-apply');
 });
 
-// ── #9 Undo claims the change before applying it ─────────────────────────
-// Stubbed BEFORE core/revert.js is required, because it destructures both modules at require time.
+// ── #9 Undo claims the change before applying it ───────────────────────── Stubbed BEFORE core/revert.js is required, because it destructures both modules at require time.
 const changeStore = require('../utils/changeStore');
 const changeset = require('../core/changeset');
 const claimed = new Set();
