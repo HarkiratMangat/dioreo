@@ -111,7 +111,7 @@ nodes:
     layer: implementation
     statement: index.js is an entrypoint; handlers/router.js dispatches every interaction inside one crash net.
     status: active
-    note: The bot holds ZERO standing guild permissions; it answers through interaction webhooks.
+    note: The bot uses no standing guild permissions (the install asks for message permissions for v4's text commands, unused so far); it answers through interaction webhooks.
 
     reality:
       path: handlers/router.js
