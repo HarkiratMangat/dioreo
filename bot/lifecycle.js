@@ -20,6 +20,11 @@ async function runCloudinaryCleanup() {
     try {
         const SeasonalData = require('../models/SeasonalData');
         const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+        // 🔴 NO DOCUMENT, NO PRUNE (2026-10-20, v3 sweep). Both keep-sets below are built from this document, so a missing one (a fresh database, a failed read that returned null) used to hand the pruners EMPTY keep-sets -- every thumbnail over 45 days old and every patch-notes folder would have been deleted as "unreferenced". Skipping one daily pass costs nothing.
+        if (!seasonalDoc) {
+            console.warn('🧹 Cloudinary cleanup skipped: no global SeasonalData document to tell in-use images from unused ones.');
+            return;
+        }
         const currentUrls = new Set([
             ...(seasonalDoc?.newDraws || []).map(d => d.thumbnailUrl),
             ...(seasonalDoc?.returningDraws || []).map(d => d.thumbnailUrl)
@@ -39,6 +44,16 @@ async function runCloudinaryCleanup() {
     } catch (error) {
         // SECURITY: never fall back to logging the raw `error` object here -- a Cloudinary error's shape can carry the account's API key/secret in a nested `request_options.auth` field (see utils/cloudinaryCache.js's safeErrorMessage note). This should be unreachable in practice now (pruneExpiredThumbnails sanitizes everything it catches internally), but this is the last line of defense for a SeasonalData/Mongoose error from the same block, so it stays just as strict rather than assuming the callee always behaves.
         console.error(`Cloudinary cleanup pass failed (bot stays alive): ${error?.message || 'Unknown error'}`);
+    }
+}
+
+async function runBasketExpiry() {
+    try {
+        const { pruneExpiredBaskets } = require('../utils/drawBasketStore');
+        const deleted = await pruneExpiredBaskets();
+        if (deleted > 0) console.log(`🧹 Draw calculator: deleted ${deleted} unnamed calculation(s) older than 30 days.`);
+    } catch (error) {
+        console.error(`Draw calculator expiry pass failed (bot stays alive): ${error?.message || 'Unknown error'}`);
     }
 }
 
@@ -153,6 +168,9 @@ function registerLifecycle(client, commands) {
         // Kick off the Cloudinary temp-draws cleanup on boot, then every 24h -- not awaited, since a slow/failing Cloudinary call has no business delaying command registration above. NOTE: deliberately NOT .unref()'d, matching the pre-split behaviour exactly. The heartbeat timer below is unref'd; this one never was. Left as-is so this move stays a pure move -- if it should be unref'd for consistency, that is its own change with its own reasoning.
         runCloudinaryCleanup();
         setInterval(runCloudinaryCleanup, 24 * 60 * 60 * 1000);
+        // Unnamed draw calculations expire 30 days after creation (PRIVACY §2.1d) -- enforced HERE, daily, because the partial TTL index that was meant to do it can never be built (see models/DrawBasket.js). Never awaited and never throws, same as the cleanup above.
+        runBasketExpiry();
+        setInterval(runBasketExpiry, 24 * 60 * 60 * 1000).unref();
 
         // One row per hotpatch since boot. In memory only, and deliberately: a restart clears it because a restart is exactly when it stops being true -- the process is back on its boot commit.
         client.hotpatches = [];
@@ -239,4 +257,4 @@ function registerAdminLifecycle(client, commands, token) {
     });
 }
 
-module.exports = { registerLifecycle, registerAdminLifecycle, runCloudinaryCleanup, formatPing, formatUptime, readRestartReason, restartContext };
+module.exports = { registerLifecycle, registerAdminLifecycle, runCloudinaryCleanup, runBasketExpiry, formatPing, formatUptime, readRestartReason, restartContext };

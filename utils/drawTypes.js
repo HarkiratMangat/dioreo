@@ -64,10 +64,9 @@ function isPricedDrawType(key) { return Boolean(byKey(key)); }
 function isDrawType(key) { return key === UNKNOWN_TYPE.key || isPricedDrawType(key); }
 function drawTypeCode(key) { return key === UNKNOWN_TYPE.key ? UNKNOWN_TYPE.code : DRAW_TYPE_CODES[key] || null; }
 function drawTypeName(key) { return key === UNKNOWN_TYPE.key ? UNKNOWN_TYPE.name : byKey(key) ? byKey(key).name : null; }
-function isArmory(key) { return Boolean(byKey(key) && byKey(key).armory); }
 // An armory's item count is its own item list, "-#" note lines excluded (they are free text, never an item).
 function armoryItemCount(draw) { return ((draw && draw.items) || []).filter(i => i && i.tier !== 'comment').length; }
 // The refusal the op validators show for a tag that names no draw type. utils/adminParser.js marks an unresolved tag with a leading "?" so it reaches the validator instead of being dropped silently. Each code beside its full name (2026-10-18 11:21 EDT, Harkirat: "full form stated beside the list of codes? so its understood what each code belongs to?").
 function unknownDrawTypeError(raw) { return `Unknown draw type "${String(raw).replace(/^\?/, '')}". Use one of:\n${drawTypeChoices().map(o => `\`${o.code}\` ${o.name}`).join('\n')}`; }
 
-module.exports = { DRAW_TYPES, DRAW_TYPE_CODES, UNKNOWN_TYPE, drawTypeOptions, drawTypeChoices, resolveDrawType, isDrawType, isPricedDrawType, drawTypeCode, drawTypeName, isArmory, armoryItemCount, unknownDrawTypeError };
+module.exports = { DRAW_TYPES, DRAW_TYPE_CODES, UNKNOWN_TYPE, drawTypeOptions, drawTypeChoices, resolveDrawType, isDrawType, isPricedDrawType, drawTypeCode, drawTypeName, armoryItemCount, unknownDrawTypeError };

@@ -190,6 +190,13 @@ async function listCachedAssets() {
     return assets;
 }
 
+// 🔴 COMPARE IN ONE URL FORM (fixed 2026-10-20, v3 sweep). A stored thumbnailUrl went through withDeliveryDefaults() (cacheThumbnail above), so it carries `/upload/f_auto,q_auto/`; Cloudinary's own listing returns the bare `secure_url`, which never does. Compared raw, the two never matched, so every in-use thumbnail looked unreferenced and was deleted once it turned 45 days old -- the exact case the "AND no longer referenced" half of the rule exists to protect. Both sides go through the same normalizer, which is idempotent, so a stored URL from before the f_auto,q_auto convention still matches too. Pure, so scripts/sweepFixes.test.js can pin it without Cloudinary.
+function selectExpiredThumbnails(assets, currentUrls, now = Date.now()) {
+    const cutoff = now - EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+    const inUse = new Set([...currentUrls].filter(Boolean).map(u => withDeliveryDefaults(u)));
+    return assets.filter(a => new Date(a.created_at).getTime() < cutoff && !inUse.has(withDeliveryDefaults(a.secure_url)));
+}
+
 /**
  * Deletes cached thumbnails that are BOTH 45+ days old AND no longer referenced by any current draw -- Harkirat's confirmed rule (not a strict age-only cutoff), so a long-lived draw's image never silently disappears from the command just because it's been up for a while. `currentUrls` is a Set of every thumbnailUrl actually in use right now (newDraws + returningDraws combined) -- callers build this from SeasonalData themselves, since this module stays model-agnostic (matches every other utils/ file's convention of not importing Mongoose models directly).
  */
@@ -197,8 +204,7 @@ async function pruneExpiredThumbnails(currentUrls) {
     // NOTE (fixed during review): the whole body is wrapped here now -- listCachedAssets() had no try/catch of its own, so a Cloudinary error from IT used to propagate all the way up to bot/lifecycle.js's runCloudinaryCleanup(), which logged it with the same `error.message || error` anti-pattern this file's other catch blocks were just fixed for -- printing the raw error object (API key + secret in `request_options.auth`) straight to the console/log aggregator. Every Cloudinary call this module makes must have its error caught and sanitized IN this file, never left to escape to a caller that doesn't know to sanitize it.
     try {
         const assets = await listCachedAssets();
-        const cutoff = Date.now() - EXPIRY_DAYS * 24 * 60 * 60 * 1000;
-        const toDelete = assets.filter(a => new Date(a.created_at).getTime() < cutoff && !currentUrls.has(a.secure_url));
+        const toDelete = selectExpiredThumbnails(assets, currentUrls);
 
         if (toDelete.length === 0) return { deletedCount: 0, deleted: [] };
 
@@ -218,4 +224,4 @@ async function pruneExpiredThumbnails(currentUrls) {
     }
 }
 
-module.exports = { slugify, publicIdFor, cacheThumbnail, getCachedUrl, resolveThumbnail, listCachedAssets, pruneExpiredThumbnails, FOLDER, EXPIRY_DAYS };
+module.exports = { slugify, publicIdFor, cacheThumbnail, getCachedUrl, resolveThumbnail, listCachedAssets, pruneExpiredThumbnails, selectExpiredThumbnails, FOLDER, EXPIRY_DAYS };

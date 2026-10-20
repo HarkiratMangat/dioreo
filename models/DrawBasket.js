@@ -51,11 +51,6 @@ const DrawBasketSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-// 🔴 TTL ONLY ON UNNAMED BASKETS. A bare createdAt TTL would also delete a basket the player deliberately named and is actively planning around. `partialFilterExpression` scopes the expiry the same way models/Changeset.js's does for abandoned changesets. 30 days matches that precedent (Announcement uses 60, set explicitly by its own caller rather than as a schema default -- the better habit, followed here: nothing in this file sets `name` to a blank string as a default, so "unnamed" stays a true field-absence, not a stored empty value).
-DrawBasketSchema.index(
-    { createdAt: 1 },
-    { expireAfterSeconds: 30 * 24 * 60 * 60,
-      partialFilterExpression: { name: { $exists: false } } }
-);
+// 🔴 NO TTL INDEX HERE, AND THERE MUST NOT BE ONE (2026-10-20, v3 sweep). Unnamed baskets expire 30 days after creation (PRIVACY §2.1d), and that was meant to be a TTL index with `partialFilterExpression: { name: { $exists: false } }`. MongoDB refuses that index: a partial filter accepts `$exists: true` but never `$exists: false`, and Mongoose swallows the index-build error, so the index was never built and nothing ever expired. There is no partial-filter form for "field absent". A bare createdAt TTL is wrong too, because it would also delete a basket the player deliberately named. So the expiry runs in code: utils/drawBasketStore.js's pruneExpiredBaskets(), daily from bot/lifecycle.js. "Unnamed" is still a true field-absence (rename() $unsets a blank name), and the prune also catches a stored '' in case one exists.
 
 module.exports = mongoose.model('DrawBasket', DrawBasketSchema);

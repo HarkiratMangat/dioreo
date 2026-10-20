@@ -73,6 +73,14 @@ function applyModeToParsed(parsed, mode, errors) {
     }
 }
 
+// What one parsed block writes. A new build takes the parser's defaults; an existing one keeps any field its block left out (`defaulted`), so re-pasting a build to fix its attachments no longer resets its image to the placeholder and blanks its share code (sweep finding #7, Harkirat 2026-10-20: keep the old values). An inverse's `parsed` comes from stored docs, carries no `defaulted`, and so still restores every field.
+function bulkEntryWrite(rawEntry, mode, existing) {
+    const { defaulted = [], ...rest } = rawEntry;
+    const entry = { ...rest, mode };
+    if (existing) for (const k of defaulted) delete entry[k];
+    return entry;
+}
+
 // The real "Add Multiple"/"Replace Multiple" upsert -- shared by both op types (see header note #3).
 async function upsertBulkBlocks(parsed, mode, session) {
     let created = 0, updated = 0;
@@ -83,11 +91,12 @@ async function upsertBulkBlocks(parsed, mode, session) {
     const updatedPriors = [];
     const touchedBuilds = [];
     for (const rawEntry of parsed) {
-        const entry = { ...rawEntry, mode };
-        const { weaponKey, buildName, imageKey } = entry;
+        const { weaponKey, buildName } = rawEntry;
         touchedKeys.add(weaponKey);
         touchedBuilds.push({ weaponKey, buildName });
         const existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
+        const entry = bulkEntryWrite(rawEntry, mode, existing);
+        const imageKey = entry.imageKey ?? existing?.imageKey;
         // Slots for a pasted build: an unchanged, already-slotted build keeps its own; anything else gets the catalogue's. Before this, an update that changed the attachments left the OLD slots in place, aligned to the wrong names.
         const sameList = existing && (existing.attachments || []).length === (entry.attachments || []).length
             && (existing.attachments || []).every((a, i) => a === entry.attachments[i]);
@@ -95,7 +104,8 @@ async function upsertBulkBlocks(parsed, mode, session) {
         if (existing) {
             const { _id, __v, ...prior } = existing.toObject();
             updatedPriors.push({ id: String(existing._id), prior });
-            await Loadout.updateOne({ _id: existing._id }, entry, { session });
+            // lastUpdated: the same stamp loadout.edit writes (2026-10-20, v3 sweep). `prior` above already holds the old date for the inverse.
+            await Loadout.updateOne({ _id: existing._id }, { ...entry, lastUpdated: new Date() }, { session });
             updated++;
         } else {
             await Loadout.create([entry], { session });
@@ -166,7 +176,8 @@ registerEntity('loadouts', {
             // Kept when the list is unchanged and already slotted; otherwise read from the catalogue, so an edit fills a build that had none and never carries old slots onto a different list.
             let attachmentSlots = attachmentsUnchanged ? (cur.attachmentSlots || []) : [];
             if (!attachmentSlots.length) attachmentSlots = await slotsFor(newAttachments);
-            const set = { ...payload, attachmentSlots };
+            // lastUpdated is stamped here (2026-10-20, v3 sweep) -- nothing wrote it after a build's creation, so every card's "Updated" date and the Cloudinary Last_Updated metadata showed the creation date forever. It goes in `set`, so `prior` keeps the old date for the inverse.
+            const set = { ...payload, attachmentSlots, lastUpdated: new Date() };
             const prior = Object.fromEntries(Object.keys(set).map(k => [k, cur[k]]));
             const res = await updateDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, set, session });
             if (!res.ok) return res;
@@ -335,3 +346,5 @@ registerEntity('loadouts', {
         invert: (c) => ({ type: 'loadout.bulkAdd', target: { mode: c.applied.mode }, payload: { parsed: c.applied.removed } })
     }
 });
+
+module.exports = { bulkEntryWrite };

@@ -87,7 +87,6 @@ function advancedGoalTotals(region, key, line = {}) {
 const ARMORY_SIZES = [3, 4, 5, 6];
 // NO DEFAULT SIZE (2026-10-18 15:12 EDT, Harkirat: "why did it assume 4 weapons as the default"). A Legendary armory picked as a draw type has no size until Set Up Armory sets one, and until then it is not priced. A season armory's size is its own item count. THE MYTHIC WEAPON ARMORY HOLDS 3 WEAPONS, ALWAYS (2026-10-18 15:12 EDT, Harkirat: "limit the mythic weapon armory to 3 weapons ... it was composed of 3 weapons only"), so its upgrade pop-up can give each weapon its own level.
 const MYTHIC_ARMORY_SIZE = 3;
-const ARMORY_DEFAULT_SIZE = null;
 function isArmoryKey(key) { return Boolean(SERIES_ARMORY[key]); }
 // A line's item count, or null when it has none yet. A season draw's count may fall outside 3–6, so only 1–25 is enforced.
 function armorySize(line) {
@@ -317,4 +316,4 @@ function basketCost(region, banners, includeUpgrades, held = {}) {
     return { total: drawTotal + upgrades.cp, drawTotal, perBanner, upgrades };
 }
 
-module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, upgradeCost, reachableWithBudget, basketCost, upgradePlan, upgradeState, upgradeNeed, upgradeShape, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, ARMORY_DEFAULT_SIZE, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals, advancedBoth, advancedLater };
+module.exports = { pullCount, spentSoFar, remainingToFinish, remainingToPull, upgradeCost, reachableWithBudget, basketCost, upgradePlan, upgradeState, upgradeNeed, upgradeShape, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals, advancedBoth, advancedLater };

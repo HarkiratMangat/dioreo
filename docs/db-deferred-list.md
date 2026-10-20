@@ -124,12 +124,6 @@ Found 2026-09-23 08:56 EDT. The manifest rows (Armory, Broadcast, History) now g
 
 **Verify condition:** ask him whether Repairs tickets count as manifest rows; if yes, hover a ticket on the local board and it glows in its own lifted hue, with no warn layer.
 
-### The docs audit fails on a v3.85.0 DEVLOG entry with no CHANGELOG heading `[P1 · XS]`
-
-✅ **Fixed 2026-10-01 15:14 EDT at Session 3's close, checked:** the check itself was the gap — the branch's heading sits under Unreleased as `## Proposed Pre-Release v3.85.0`, exactly where the workflow puts it, and `devlog-orphan` read only minted headings. It now counts a Proposed heading while its version is ahead of `package.json` (`10066a0d`, with a firing case for one left behind after the merge). `npm run docs:audit` exits 0 with every v3.85.0 DEVLOG entry still present. Found 2026-09-23 17:00 EDT in Session 3's compact prep 4, not caused by it: `npm run docs:audit` reports one ERROR, `[devlog-orphan] v3.85.0 has a DEVLOG entry but NO heading in CHANGELOG.md`, on `feat/portal-pins2-manifests`. It fails CI; the audit's own advice is to restore the heading, never to delete the DEVLOG entry.
-
-**Verify condition:** `npm run docs:audit` exits 0 on the branch, with the v3.85.0 DEVLOG entry still present and a matching CHANGELOG heading.
-
 ### Move the Board 4 kit into docs/pins2/ and retire Board 3-E from the plan — his calls of 2026-09-28 23:28 EDT `[P1 · M]`
 
 **✅ Done 2026-09-29 00:17 EDT, checked.** The kit is tracked at `docs/pins2/kit/` (121 files, 4.5 MB; `git ls-files` of the old kit repo and of the main repo are identical). `board4.html` renders from it with 0 page errors (`board4-menu-fit.cjs`: every list inside the drawer, gaps 9.8–10.2px) and `r22.cjs` passes 35 of 35 (three of its Compare checks were stale against Version 39 and are repaired). The spec generators moved beside their outputs and the spec was regenerated from the tracked kit — `split-spec.cjs` had been writing the Version 40 values into a folder nothing pointed at, so the live `C*.md` were from kit `ecc93ee`; that folder is removed. `paths-resolve.cjs` finds 0 dead paths in the live docs. Board 3-E is out of the plan's §5c, §5d, §10.5, §11 and §13, of `FINAL.md`, `HANDOFF.md` and the ledger as an input; `handoff-3e.md` stays as the inherited *structure* narrative (next entry). linksee anchors #47, #21, #22, #36, #40 and #51 are superseded by #66 and #67, and #13, #16, #41, #43, #45 and #48, whose replacements had never been linked, by #65, #49, #64 and #63. `npm test` exits 0 with the kit tracked (00:36 EDT; it failed twice first — `handoffCheck.test.mjs` because its plan pattern did not know `docs/pins2/plan/`, fixed, and `portal:states` once on the filed Season stall, which passed on a rerun with nothing else running); `docs:audit` is red only on the old `devlog-orphan`. **Not done, and his:** whether the kit may go on the online GitHub (second entry below).
@@ -191,9 +185,9 @@ Filed 2026-09-24 14:30 EDT (Board 4, his v19 intake items 7–10 and his 13:54 E
 
 **Verify condition:** no `top4` anywhere in models, bot, portal or stored data; a Capable and an Ass build render in Discord as "Capable AR" and ASS; a pasted `top4` stages as Top 5 with a warning.
 
-### `deriveNextImageKey` offers a key that is already taken `[P1 · XS]`
+### `deriveNextImageKey` offers a key that is already taken — portal half only, pins2 `[P1 · XS]`
 
-> 🔧 **BOT HALF FIXED 2026-10-19 16:45 EDT on `feat/loadout-catalogue-batch`**: `utils/loadoutImageCache.js` `deriveImageKey` had the same fault (104 of 133 dev keys carry `.png`); it now compares without the extension, with a test. The portal's `deriveNextImageKey` is pins2's.
+> 🔧 **BOT HALF FIXED 2026-10-19 16:45 EDT, merged in #207 (Pre-Release v3.98.0)**: `utils/loadoutImageCache.js` `deriveImageKey` had the same fault (104 of 133 dev keys carry `.png`); it now compares without the extension, with a test. The portal's `deriveNextImageKey` is pins2's.
 
 Filed 2026-09-24 14:30 EDT (his v19 item 13). `portal/ui/armory.logic.js` compares candidate keys against stored `imageKey`s, which carry `.png`, so no candidate ever matches and every weapon is offered `-1` (AK117 was offered AK117-1, which Build 1 holds). The kit's copy strips the extension and also skips unused uploads and the other builds in the same drawer (`reserved`). Check the bot's `utils/loadoutImageCache.js` `deriveImageKey` for the same fault.
 
@@ -223,7 +217,7 @@ Filed 2026-09-23 08:56 EDT. Session 3 writes no portal code (anchor #13), so the
 
 **Verify condition:** each behaviour, opened in the portal's own drawer and manifests after Session 5, matches the board.
 
-### Six unique attachment slots are missing from the slot vocabulary `[P1 · S]`
+### Six unique attachment slots are missing from the slot vocabulary — portal half only, pins2 `[P1 · S]`
 
 ✅ **THE CLOUDINARY HALF IS MOOT — 2026-10-19 23:22 EDT.** No metadata schema change is needed. Mongo's `attachmentSlots` is the source of truth, and since #207 the catalogue fills it for every typed or pasted build. Nothing at runtime reads the Cloudinary slot fields: their only reader is `scripts/backfillSlotsFromMetadata.js`, which has already run on prod, and `utils/loadoutImageCache.js:43` records the copy as lossy on purpose. **What stays open is the portal half** (the "Why it is a bug" and verify paragraphs below): `CANONICAL_SLOT_ORDER` in `portal/ui/armory.logic.js` still holds nine display slots, checked 2026-10-19 23:22 EDT. `portal/**` belongs to pins2, so that half is theirs. The 🔴 paragraph below about the sync direction is superseded by this one.
 
@@ -1129,6 +1123,17 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 - **Later, same data:** milestone messages (100th command, one year) and a season-end Dioreo Wrapped.
 - **Verify:** run three commands on the dev bot, open Your Stats, see the counts; Reset clears them; a click on someone else's panel counts nothing.
 
+### What the 2026-10-20 sweep left open — three items `[P2 · S]`
+
+Filed 2026-10-20 18:15 EDT from the v3 sweep (full report in the project files under `v3-sweep/`). Everything else it found is fixed in Pre-Release v3.103.0.
+
+- ~~**A bulk paste over an existing build wipes its image and share code** when the block has no `Image:` or `Share code` line.~~ ✅ **Fixed in Pre-Release v3.103.0 (#212)** on Harkirat's call, 2026-10-20: a re-paste keeps the stored values for any line it leaves out.
+- **`AnalyticsEvent` has no prune**; the 400k-document alert is its only safeguard. A prune of rolled-up events past 90 days deletes data, so it needs his word.
+- **Eight copies of `safeErrorMessage` / `errorHttpCode`** across the Cloudinary cache modules could move into `utils/cloudinaryClient.js`.
+- **Eleven hooks fall back to the main Diors-Builds checkout** when `CLAUDE_PROJECT_DIR` is unset; `git rev-parse --show-toplevel` would keep a hand-run hook inside its own worktree.
+
+**Verify condition:** each bullet is either fixed with a test or recorded as decided-no.
+
 ### Dioreo Admin — a second Discord application that holds only the admin commands `[P1 · M]`
 
 > ✅ **BUILT, Pre-Release v3.92.0 (#201), 2026-10-19 15:43 EDT.** Click-tested by Harkirat on the dev bot. What remains is the deploy-time steps below (the VM's `.env` line, the prod admin app's emojis, Public Bot stays off), then the **Verify done** line on prod. Close this entry when that line holds.
@@ -1186,34 +1191,6 @@ Filed 2026-09-25 10:49 EDT at Harkirat's direction: "we'll be creating a new set
 
 *Filed 2026-10-19 20:03 EDT.* Harkirat, 2026-10-20 00:03 UTC (20:03 EDT), asked whether to drop `/dmz` now that `/gunsmiths dmz` finds DMZ builds: *"no, keep /dmz because i want to utilize it for other dmz info such as secret rooms, maps, etc."* So `/dmz` stays, and today it still does exactly what `/gunsmiths dmz` does (a DMZ weapon lookup, `commands/dmz.js` over `utils/loadoutLookup.js`). **Do:** design what `/dmz` shows (secret rooms, maps, and whatever else he lists) and decide whether its build lookup stays beside them or moves fully to `/gunsmiths dmz`; his content and layout first, as a design session. **Verify:** `/dmz` answers at least one non-build DMZ topic, and nothing about DMZ builds is reachable only through it.
 
-### Integrate the CODM weapons and attachments catalogue into the prod and dev bot — BEFORE v3 LAUNCHES `[P1 · M]`
-
-> 🔧 **BUILT 2026-10-19 16:45 EDT on `feat/loadout-catalogue-batch`** (not merged). His calls: it WARNS, with Save anyway or Back to edit (16:13 EDT), and it lives in the DATABASE (`models/CatalogueItem.js`, edited through `core/ops/catalogue.js`), seeded from the JSON plus every stored name (`scripts/seedCatalogue.js`). ⚠️ **The verify condition below is wrong on the data**: the screenshot is the game's general table, missing 7 stored weapons (incl. "AK17" for AK117) and 311 of 684 stored attachments, so pickers listing exactly 122 weapons would refuse real builds. Dev seeded (541 names); prod seed waits for his word. Portal pickers: pins2.
-
-Filed 2026-09-25 01:30 EDT at Harkirat's direction ("File in deferred list to integrate the json into the prod and dev bot data and code, before v3 is launched"). A Haiku sub-agent transcribed his screenshot of the game's weapon and attachment table on 2026-09-25 01:18 EDT; the main session spot-checked it against the screenshot (no season notes, 122 unique weapons, the Stock weapon groups and Barrel's ASM10 / HVK-30 lines match).
-
-**The data (tracked copies; the originals sit in gitignored `local/codm-attachments/`):**
-- `docs/pins2/data/2026-09-25-codm-weapons-attachments.json` — `weapons[]` (`name`, `category`, `mode: "DMZ"` on MicroMG 9mm) and `attachments{slot: {general[], byWeapon{}, notes{}}}` across 14 slots (Muzzle, Barrel, Bowstring, Limb, Optic, Stock, Laser, Underbarrel, Trigger Action, Smoothbore, Guard, Bolt, Ammunition, Rear Grip)
-- `docs/pins2/data/2026-09-25-codm-weapons-attachments-source.png` — his full-resolution screenshot, to re-check any name
-
-**Code that holds or checks weapon, category, attachment or slot names today (each must read the catalogue or be reconciled with it):**
-- `models/Loadout.js` — `weaponName`, `category`, `attachments`, `attachmentSlots` (schema: a new field goes in the schema in the same change)
-- `core/ops/loadouts.js` — the op algebra's loadout validate/preview/apply (both `/manage` and the portal drive it)
-- `handlers/manage/loadouts.js` · `handlers/loadouts.js` · `utils/adminParser.js` (the bulk and single-build parsers — Session 5 also ports the board's Bulk format here)
-- `utils/search.js` · `models/SearchTerm.js` (weapon and category synonyms for autocomplete)
-- `utils/loadoutRender.js` (category labels and accents in Discord)
-- `utils/autobuildPipeline.js` · `utils/visionExtract.js` · `commands/autobuild.js` (the vision prompt's attachment and slot vocabulary — a known-name list sharply improves extraction)
-- `utils/manageGuides.js` · `utils/loadoutImageCache.js` (slot names in guides and image metadata)
-- `portal/ui/armory.js` · `portal/ui/armory.logic.js` · `portal/ui/harness/stub.js` (the portal's weapon and attachment pickers and their fixtures)
-- `scripts/backfillLoadoutSlots.js` · `scripts/backfillSlotsFromMetadata.js` (the slot backfills — a catalogue replaces their guessing)
-- The board's reference: `docs/pins2/kit/b4/form.js` (the attachment pickers), `docs/pins2/kit/b4/bulkformat.js`, `docs/pins2/kit/data/armory.js`
-
-**Data:** the dev database (`mongodb://localhost:27017/diors-builds-dev`, `.env.dev`) first, then prod Atlas (`MONGODB_URI` in `.env`) — every stored `Loadout` checked against the catalogue: weapon names spelled as the game spells them, every attachment placed in a slot, and a report of any stored attachment the catalogue lacks (a real game item the screenshot missed, or a typo in stored data). A prod write needs his approval restated at the time.
-
-**Decide when built:** where the catalogue lives in the repo (a tracked `data/` module the bot, the portal and the core ops all import, versus a Mongo collection admins can edit from the portal); how a new season's weapons are added (Discord `/manage`, the portal, or a file edit); and whether weapon-specific attachments (`byWeapon`) restrict what a picker offers for that weapon.
-
-**Verify condition:** the bot's and the portal's weapon and attachment pickers list exactly the catalogue's names (count match: 122 weapons; per-slot totals as in the JSON); `/autobuild`'s prompt carries the vocabulary; a script run on dev and on prod reports zero stored loadouts whose weapon or attachments are unknown to the catalogue, or lists each one for him to rule on.
-
 - **Portal setting: the selection bar's ground — mesh or solid** `[P3 · S]` — board 3 thread `bd09c832`, 2026-09-17 18:59 EDT. Harkirat: *"Mesh ground is the default; KEEP the solid styling in the files and document it as a future portal setting."* The board now defaults `p5bg` to `mesh` and keeps `html[data-b3-p5bg=solid]` in `docs/pins2/kit/b3/board.css` deliberately — it is a preference to expose later, not a losing fork to delete. **Verify:** a portal user can switch the selection bar between the mesh and the flat ground, and the flat one renders as `.b3-sd` without the four radial layers.
 
 ### Point the conformance instruments at the board that holds the live design `[P1 · S]`
@@ -1248,26 +1225,6 @@ Separate from `[P3 · L]` below, which is about staging a change from a sentence
 ### `[P2 · M]` Event and draw reminders when a player runs a command — needs a design session, after v3-pre-release launches
 
 Filed 2026-09-14 12:21 EDT from Harkirat's comment on pins-2 design board 2 (2026-09-14 12:01 EDT). A short reminder that can pop up when someone uses a bot command: a calendar event is live, a lucky draw is out or releasing alongside it, how many days are left. Players can turn it on or off. **Not designed yet** — it needs a full discussion and design session first: what triggers it, how often it may appear, where the on/off switch lives, and how it sits beside the existing announcement follow-up. **Timing:** after v3-pre-release launches. **Verify:** a dated design spec for it exists under `docs/superpowers/specs/`.
-
-### `[P2 · S · Sonnet5-Medium]` Copy the attachment slots from Cloudinary metadata into `Loadout.attachmentSlots` — filed 2026-09-14 00:35 EDT
-
-> ✅ **PROD VERIFIED 2026-10-19 16:45 EDT** (read-only): 132 of 135 builds carry slots, 0 blank entries, BAL-27 Build 1 reads Muzzle · Barrel · Laser · Ammunition · Rear Grip. The three without: PHARO's placeholder, and L-CAR 9 Build 2 and CROSSBOW Build 1, which the catalogue now slots (`seedCatalogue.js --fill-slots`; prod waits for his word). From `feat/loadout-catalogue-batch` on, every typed or pasted build gets slots from the catalogue, so this never re-opens. Close when the prod fill runs.
-
-The 2026-07-21 vision backfill (`scripts/backfillLoadoutSlots.js`) wrote each build's slots to Cloudinary structured metadata; the line that also writes Mongo (`:77-78`) was added 2026-07-24, after it ran. Measured 2026-09-14 00:35 EDT: `attachmentSlots` is empty on all 133 prod builds while 130 of 134 loadout images carry slot metadata (217 names, none under two slots). The New Build drawer's slot search and Compare's slot rows (plan `2026-09-13-portal-pins-batch-2.md` §10.1/§10.2 v4 notes) need the slots in Mongo or a catalogue read from Cloudinary.
-
-*Amended 2026-09-14 01:09 EDT:* the New Build drawer's gunsmith-code autofill (plan §10.1 v5 note) reads the same data — a per-weapon lookup from digit–letter pair to attachment name, which needs each build's slots aligned to its code — so this backfill is a prerequisite for that too. *Owned 2026-09-14 01:37 EDT:* the plan's §5.2 Step 9b (Session 2) builds it as a metadata-reading script — no Gemini call, dev write free, prod write on Harkirat's approval — and this entry closes when that step closes. **Do:** a dry-run-first script that reads each image's metadata and writes the aligned `attachmentSlots` array onto its build, never logging a raw Cloudinary error. **Verify by:** a count of prod builds with a non-empty `attachmentSlots` equals the images carrying slot metadata, and BAL-27 Build 1 reads Muzzle · Barrel · Laser · Ammunition · Rear Grip.
-
-*Amended 2026-09-16 09:51 EDT:* the script is written and the DEV write is done; only the PROD write is left, and Harkirat has now been shown the 16 builds it cannot fully place (dry run 2026-09-15 09:33 EDT: **130 builds change, 16 of them keep a blank at 34 attachment positions**). 🔴 **The 34 unplaceable names are their own small job and nobody owns it:** each is a name Cloudinary's metadata carries that none of `alignSlots`' three passes — exact-normalised, substring, near-typo edit distance — can seat, e.g. `Bandit Steady Stock`, `270mm VOZ Carbine`, `Hi-Accuracy Sniper Ammo`. **Do:** run the dry run, take the 34, and either add each to the slot vocabulary the passes match against or correct the name at its source; a blank is deliberate and safe, so this is quality, not breakage. **Verify:** a second dry run reports 0 builds with a blank slot. ⚠️ **And the dry run cannot be re-run from a Claude session** — see `docs/reference/platform-constraints.md`.
-
-*Amended 2026-09-16 11:09 EDT — **eight of them need no input from anyone.** Cloudinary's per-image metadata is the only record of which slot an attachment sits in (there is no catalogue in this repo, checked), but a name one image failed to identify is often identified on ANOTHER image. `docs/pins2/instruments/slot-lookup.cjs` builds name→slot from all 134 `gun-builds` images (217 distinct names) and looks the unplaced ones up using the same three passes `alignSlots` uses, so a hit there is a hit in the backfill. Run read-only on `.env.dev`, which reaches the same Cloudinary cloud as prod. **Resolved by exact match: Bandit Steady Stock → Stock · Tactical Suppressor → Muzzle · Agile Stock → Stock · FMJ → Perk · Steady Stock → Stock · Long Shot → Perk · Fast Reload Mag → Ammunition · BO Foregrip → Underbarrel.** **Twelve still need a human:** Fast Reload Reload Case, 270mm VOZ Carbine, Empress 514mm F01, Light Bolt, Classical Lever, Hi-Accuracy Sniper Ammo, Rapid Action, 2B Bowstring, Heavy Limb, Lightweight Single-Action, OWC Stable, MFT Heavy Smoothbore — mostly crossbow, revolver and shotgun parts the vision run never named on any image. **Do:** widen `alignSlots` with a corpus pass over every image's metadata (it closes 8 with no judgement), then take the remaining 12 from Harkirat. ⚠️ **A count in §5b does not add up:** it says *16 builds get blank slots for 34 names*, but its own table lists **21** occurrences across **20 distinct names**. Reconcile against a fresh dry run before quoting either number.*
-
-🔴 *Amended 2026-09-16 11:22 EDT — **THE TWELVE WERE NEVER A MATCHING PROBLEM, AND WIDENING THE MATCHER WOULD HAVE DONE NOTHING.** Harkirat supplied all twelve slots and six of them are labels `SLOT_TO_FIELD` (`utils/loadoutImageCache.js:44`) has no entry for — `smoothbore`, `bolt`, `trigger action`, `bowstring`, `limb`, `guard`. Its own comment says *"an unrecognized slot is skipped"*, silently, so `syncLoadoutMetadata` never wrote them to Cloudinary at all: the backfill reads an empty field and leaves a blank, exactly as designed. ⚠️ **And `scripts/armorySlotFill.test.js:38` PINS the loss as correct** — *"slotCatalogue skips a slot the label table does not recognise"*, asserting `{}` for a Trigger Action row. ⚠️ **`.claude/rules/autobuild.md:118` predicted this in August**: *"a fixed allow-list of nine slot names fails twice over … that is exactly the recorded `J358 … Trigger Action slot wasn't captured` miss from the 2026-07-26 backfill — the same bug, already paid for once."* This is its third occurrence.
-
-**His twelve, 2026-09-16 11:22 EDT, verbatim:** 270mm VOZ Carbine → `Barrel` · Empress 514mm F01 → `Barrel` · MFT Heavy Smoothbore → `Smoothbore` (unique to the R9-0) · Light Bolt → `Bolt` (also on the Crossbow) · Hi-Accuracy Sniper Ammo → `Ammunition` · Classical Lever → `Trigger Action` (also on the Dobvra and others) · 2B Bowstring → `Bowstring` (Crossbow) · Heavy Limb → `Limb` (Crossbow) · Lightweight Single-Action → `Trigger Action` · OWC Stable → `Guard` (Shorty) · Rapid Action → `Trigger Action` · Fast Reload Reload Case → `Ammunition`.
-
-**Do, in this order:** (1) `attachmentSlots` in Mongo is a plain array and already accepts any label, so write these twelve straight in — do NOT round-trip them through Cloudinary. (2) Add the six labels to `SLOT_TO_FIELD` so the next sync keeps them; four are renames with a canonical home (`bowstring`→Muzzle, `limb`→Barrel, `bolt`→Ammunition, `trigger action`→Underbarrel, per autobuild.md's alias table), but **`smoothbore` and `guard` are EXTRA slots with no canonical equivalent** and need either two new Cloudinary metadata fields or an explicit decision that Mongo is their only home. (3) Change `armorySlotFill.test.js:38` so it asserts the label SURVIVES rather than that it is dropped. **Verify:** a build with a `Guard` slot round-trips through `syncLoadoutMetadata` and back with the label intact, and a dry run reports 0 blanks.*
-
-✅ *2026-09-16 11:29 EDT — **BUILT and proven on dev; only the PROD write is left.** Three changes: `alignSlots` gained a **corpus pass** — its three existing passes only compare a build's attachments against ITS OWN image's metadata, so an attachment the vision run missed there stayed blank even when the same attachment was identified on another weapon's image; the corpus resolves eight of the twelve from the same 134-image source, exactly, with no judgement. `KNOWN_SLOTS` carries Harkirat's twelve for what the corpus cannot reach. And `utils/loadoutImageCache.js` now NAMES a slot label it cannot store instead of skipping it silently, with the schema gap and the do-not-alias reasoning written at the code. **Dev dry run before: 9 attachments unplaced across 5 builds. After: `unplacedCount: 0` across all 130 matched builds**, so the check can fail and did. The prod write is still `node --env-file=.env scripts/backfillSlotsFromMetadata.js --prod --write`, and no session can run it — see `docs/reference/platform-constraints.md`. **Left for Session 5:** `scripts/armorySlotFill.test.js:38` still asserts that an unrecognised label is DROPPED, and `slotCatalogue` is portal code this session does not touch.*
 
 ### `[P1 · L · Opus5-High]` The permission restructure — Portal tier, sub-tiers, /bot pages, the four-shape cell — PENDING DESIGN — filed 2026-09-13 11:37 EDT
 
