@@ -156,16 +156,21 @@ async function renderNameplateWebpCore(apngUrl, nameplateAsset, paletteName, bed
     }
 }
 
-// Patches a rendered resource's Cloudinary context with its Discord storage-channel url, same ONE-CALL rule the single-item path always followed (`context` REPLACES the whole map, so palette, discord_cdn_url and everything in `extra` must travel in the same `api.update`). Exported (2026-08-15 10:31 EDT) for scripts/bulkCacheCollectibles.js, which uploads several variants' files in ONE grouped Discord message and then has to patch each variant's OWN Cloudinary resource individually afterward.
+// Patches a rendered resource's Cloudinary context with its Discord storage-channel url, same ONE-CALL rule the single-item path always followed (`context` REPLACES the whole map, so palette, discord_cdn_url and everything in `extra` must travel in the same `api.update`). Exported (2026-08-15 10:31 EDT) for scripts/bulkCacheCollectibles.js, which since 2026-10-19 23:33 EDT uses it only to heal or repair a resource that already exists -- a fresh bulk render carries its context in the upload instead (uploadNameplateWebpForBulk).
 //
-// `extra` carries the render-source marker + (for the bulk path) the catalog metadata: `render_source` ('catalog'|'fallback'), and when known, `sku_id`/`base_sku_id`/`collection`/`group_name`/ `variant_label`/`variant_value`/`label`/`display_name`. Cloudinary context values are flat strings (`key=value|key=value` wire format, same as paletteContextFields' own encoding) -- undefined/null entries in `extra` are dropped rather than written as "undefined".
-async function attachNameplateDiscordCdnUrl(publicId, palette, discordCdnUrl, extra = {}) {
-    if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return;
+// `extra` carries the render-source marker + (for the bulk path) the catalog metadata: `render_source` ('catalog'|'fallback'), and when known, `sku_id`/`base_sku_id`/`collection`/`group_name`/ `variant_label`/`variant_value`/`label`/`display_name`. Cloudinary context values are flat strings (`key=value|key=value` wire format, same as paletteContextFields' own encoding) -- undefined/null entries in `extra` are dropped rather than written as "undefined". The context map every write of a cached render carries. Shared by the patch below and the bulk upload, so the two can never disagree about a field.
+function contextFor(palette, discordCdnUrl, extra = {}) {
     const context = { ...paletteContextFields(palette, FRAME_OPTS) };
     if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
     for (const [key, value] of Object.entries(extra)) {
         if (value !== undefined && value !== null && value !== '') context[key] = String(value);
     }
+    return context;
+}
+
+async function attachNameplateDiscordCdnUrl(publicId, palette, discordCdnUrl, extra = {}) {
+    if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return;
+    const context = contextFor(palette, discordCdnUrl, extra);
     if (!Object.keys(context).length) return;
     try {
         await cloudinary.api.update(publicId, { resource_type: 'image', context });
@@ -174,7 +179,7 @@ async function attachNameplateDiscordCdnUrl(publicId, palette, discordCdnUrl, ex
     }
 }
 
-// BULK hook (2026-08-15 10:31 EDT): core render + Cloudinary upload only -- no storage-channel post, no context patch. scripts/bulkCacheCollectibles.js calls this once per not-yet-cached variant of a design, collects the results across the whole design's variants, then posts them together as ONE grouped message and calls attachNameplateDiscordCdnUrl per variant afterward. Cloudinary caching happens immediately per-variant regardless (no reason to defer the part that doesn't need grouping).
+// BULK hook, render half (2026-08-15 10:31 EDT; split from the upload 2026-10-19 23:33 EDT): core render only -- nothing uploaded, nothing posted. scripts/bulkCacheCollectibles.js renders every not-yet-cached variant of a design, posts them together as ONE grouped cache-channel message, then calls uploadNameplateWebpForBulk per variant with that variant's Discord url. Uploading AFTER the post puts the url in the upload's own `context`, so no api.update is needed: the old upload-then-patch order spent one Admin API call per SKU (500 an hour, shared with the live bot) and lost all seven patches on the first prod sample once the hour ran out. The Upload API is not counted against that limit.
 //
 // `assetFolder`: Cloudinary's `asset_folder` (Media Library organization ONLY -- see publicIdFor's comment on why this must never affect `public_id`, the actual cache key). The bulk script passes `${FOLDER}/<collection-slug>`; omitted here it falls back to the flat `FOLDER`, matching what the live path has always used.
 async function renderNameplateWebpForBulk(apngUrl, nameplateAsset, paletteName, bedHex, assetFolder, catalog, nameplateName = null) {
@@ -183,15 +188,20 @@ async function renderNameplateWebpForBulk(apngUrl, nameplateAsset, paletteName, 
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
     const core = await renderNameplateWebpCore(apngUrl, nameplateAsset, paletteName, bedHex);
     if (!core) return null;
+    return { ...core, publicId, filename: filenameForPublicId(publicId), assetFolder: assetFolder || FOLDER };
+}
+
+// BULK hook, upload half (2026-10-19 23:33 EDT): ONE Upload API call that carries the whole context map -- palette, discord_cdn_url, render_source and the catalog metadata, built exactly as attachNameplateDiscordCdnUrl builds it, so a bulk-cached resource reads back the same. Never throws; returns the secure url, or null.
+async function uploadNameplateWebpForBulk(render, discordCdnUrl, extra = {}) {
+    if (isCloudinaryWriteBlocked('upload', render.publicId, { devNamespaceSafe: true })) return null;
     try {
         const uploadResult = await cloudinary.uploader.upload(
-            `data:image/webp;base64,${core.webpBuffer.toString('base64')}`,
-            { public_id: publicId, asset_folder: assetFolder || FOLDER, overwrite: true, invalidate: true, resource_type: 'image' }
+            `data:image/webp;base64,${render.webpBuffer.toString('base64')}`,
+            { public_id: render.publicId, asset_folder: render.assetFolder || FOLDER, overwrite: true, invalidate: true, resource_type: 'image', context: contextFor(render.palette, discordCdnUrl, extra) }
         );
-        const filename = filenameForPublicId(publicId);
-        return { ...core, publicId, filename, cloudinaryUrl: uploadResult.secure_url };
+        return uploadResult.secure_url;
     } catch (err) {
-        console.error(`Nameplate Cloudinary upload failed for "${nameplateAsset}"/"${paletteName}": ${safeErrorMessage(err)}`);
+        console.error(`Nameplate Cloudinary upload failed for "${render.publicId}": ${safeErrorMessage(err)}`);
         return null;
     }
 }
@@ -324,5 +334,5 @@ async function healPalette(cached, nameplateAsset, catalog, nameplateName, apngU
 
 module.exports = {
     resolveNameplateWebp, publicIdFor, FOLDER,
-    getCachedNameplateWebp, renderNameplateWebpForBulk, attachNameplateDiscordCdnUrl
+    getCachedNameplateWebp, renderNameplateWebpForBulk, uploadNameplateWebpForBulk, attachNameplateDiscordCdnUrl
 };

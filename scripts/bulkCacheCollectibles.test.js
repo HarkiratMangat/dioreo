@@ -1,7 +1,7 @@
 // scripts/bulkCacheCollectibles.test.js -- coverage for the previously-untested pure/near-pure pieces of the bulk-cache pipeline: sample selection, the Cloudinary context field mapping, the per-variant metadata text, and the grouped-message component tree. All were live-verified against the real dev bot this session (including a real 7-variant group), but had no automated regression coverage -- this pins that behavior so a future edit can't silently break it. Run: `node scripts/bulkCacheCollectibles.test.js` (also via `npm test`).
 const assert = require('assert');
 const {
-    pickDiverseSample, assetFolderFor, catalogExtra, buildGroupComponents, variantMetadataLines,
+    pickDiverseSample, limitGroups, parseArgs, assetFolderFor, catalogExtra, buildGroupComponents, variantMetadataLines,
     groupHeaderLines, variantHeadingLines
 } = require('./bulkCacheCollectibles');
 
@@ -277,6 +277,38 @@ check('buildGroupComponents: decoration accent falls back to the render\'s own f
     const renders = [{ doc: doc({ kind: 'decoration', paletteHex: undefined }), render: render({ palette: [{ hex: 0xabcdef }] }) }];
     const [container] = buildGroupComponents(group({ kind: 'decoration', variants: renders.map(r => r.doc) }), renders);
     assert.strictEqual(container.accent_color, 0xabcdef);
+});
+
+// --limit (2026-10-19 23:21 EDT): paces a prod run under Cloudinary's 500/hour Admin API limit. It must never split a design group, because a group posts as one channel message.
+function g(name, n) { return { kind: 'nameplate', parentCategory: 'C', groupName: name, variants: Array.from({ length: n }, (_, i) => ({ skuId: `${name}${i}` })) }; }
+
+check('limitGroups: keeps whole groups in order until the next would pass N', () => {
+    const out = limitGroups([g('a', 3), g('b', 4), g('c', 2)], 7);
+    assert.deepStrictEqual(out.map(x => x.groupName), ['a', 'b']);
+});
+
+check('limitGroups: never splits a group, so a run can end under N', () => {
+    const out = limitGroups([g('a', 3), g('b', 4)], 5);
+    assert.deepStrictEqual(out.map(x => x.groupName), ['a']);
+});
+
+check('limitGroups: a first group larger than N still runs alone, so every run makes progress', () => {
+    const out = limitGroups([g('big', 9), g('b', 1)], 5);
+    assert.deepStrictEqual(out.map(x => x.groupName), ['big']);
+});
+
+check('limitGroups: no limit, zero or NaN returns every group', () => {
+    const groups = [g('a', 3), g('b', 4)];
+    assert.strictEqual(limitGroups(groups, undefined).length, 2);
+    assert.strictEqual(limitGroups(groups, 0).length, 2);
+    assert.strictEqual(limitGroups(groups, NaN).length, 2);
+});
+
+check('parseArgs: reads --limit as a number and --repair-context as a flag', () => {
+    const a = parseArgs(['--limit', '200', '--repair-context', '--dry-run']);
+    assert.strictEqual(a.limit, 200);
+    assert.strictEqual(a.repairContext, true);
+    assert.strictEqual(a.dryRun, true);
 });
 
 run();
