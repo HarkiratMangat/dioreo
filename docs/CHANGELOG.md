@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.103.0 — 2026-10-20 18:15 EDT (#PR) — the v3 sweep's fixes: thumbnails kept, boot failures restart, long draws and notes page safely
+## Pre-Release v3.103.0 — 2026-10-20 18:15 EDT (#212) — the v3 sweep's fixes: thumbnails kept, boot failures restart, long draws and notes page safely
 **From the 2026-10-20 bug and housekeeping sweep.** Harkirat asked for every fix on one branch and one PR (2026-10-20 17:47 EDT). The full ranked report sits in the project files under `v3-sweep/`.
 
 - **Draw thumbnails in use are no longer deleted.** The daily cleanup compared Cloudinary's raw `secure_url` against stored URLs that carry `f_auto,q_auto/`, so nothing matched and every thumbnail past 45 days counted as unused. Both sides now go through `withDeliveryDefaults` (`selectExpiredThumbnails`), and the cleanup skips its run when the season document is missing instead of treating everything as unused.
