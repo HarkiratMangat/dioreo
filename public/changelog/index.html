@@ -374,7 +374,21 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}}.cmdb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
 .cmdb:hover::after{opacity:1}}/* The page you are on: the warm border stays on, so the control reads as current without a fill. A fill would need its own ink for the cursor swarm (an accent-filled control makes a same-coloured blob vanish, which is why Install is dark inside), and an outline needs none. */
 
-.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
+.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}/* ── Commands in the bar: .cmdr, a one-tab rail ─────────────────────────────
+   Harkirat, 2026-10-20 10:45 EDT: "keep 'commands' in the matching filled rail buttons style as the rest of the nav bar links". It is built the way the switcher's rails are, so it can not drift from them: the same hairline border, the same dark wash and inset shadow for the groove, 3px of padding, and inside it one tab with the SAME metrics as .tab (.66rem, 700, .1em, .42rem by 1.02rem). The switcher's indicator is script-driven and this control sits outside it, so its pill is plain CSS: with no pill the label is --ink2 (the state of a rail you are not in), the pill fades up on hover and focus, and it stays on when /commands is the page you are on, exactly as a rail's indicator does. The pill is the SOLID accent with the label inverted to #120E1C, the pair the .tab.lit rule measured for contrast. A solid accent fill also makes the liquid cursor read it as a chip and ink itself dark, which is the behaviour Harkirat asked for over Install. When the switcher tightens, the sibling selectors in SWITCHER_CSS tighten this tab with it. */
+
+.cmdr{position:relative;display:inline-flex;align-items:center;isolation:isolate;
+  border-radius:999px;border:1px solid var(--rule2);padding:3px;text-decoration:none;
+  background:color-mix(in srgb,#000 24%,transparent);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.32)}
+.cmdr-t{display:block;white-space:nowrap;font-family:var(--mono);font-size:.66rem;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:.42rem 1.02rem;border-radius:999px;color:var(--ink2);
+  transition:color .2s ease,background-color .22s ease}.cmdr:focus-visible .cmdr-t,.cmdr.on .cmdr-t{
+  background:var(--accent);color:#120E1C}@media (hover:hover) and (pointer:fine){
+.cmdr:hover .cmdr-t{
+  background:var(--accent);color:#120E1C}}
+.cmdr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
    eaten. The gap tightens below. Since 2026-10-20 10:00 EDT the controls are Commands, Install
    and the switch, and Commands leaves the BAR under 621px (it is the first tab of
@@ -413,7 +427,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      install link, and the word is what says so. It is 38px tall here and 34px on
      a desktop, because on a phone it is a thumb target. */
   
-  .bar .cmdb{display:none}
+  .bar .cmdb,.bar .cmdr{display:none}
   .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
@@ -445,7 +459,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
-  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
+  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}/* The bar's spacing, as Harkirat set it (2026-10-20 10:45 EDT): 10px between every control and between the switcher's rails, and 14px from Install to the theme switch, so the switch reads as the bar's own corner rather than a fourth button. The 10px is the nav's gap and .seg-gap; the extra 4px is this margin. Desktop only: the phone bar keeps its own .5rem gap. */
+
+@media (min-width:621px){ .bar nav .thm{margin-left:4px} }
 .thm-tr{display:block;position:relative;width:62px;height:34px;border-radius:999px;
   border:1px solid var(--rule2);overflow:hidden;
   background:linear-gradient(168deg,#171430,#2B2446 62%,#3A2F52);
@@ -1122,7 +1138,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .bar{position:fixed;inset:0 0 auto;height:var(--bar-h);z-index:60;display:flex;align-items:center;
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
-.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:10px}
 
 #prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--sig)}/* ── segmented page switcher ──────────────────────────────────────────
    Was three bordered boxes, which read as inert. Now one segmented control
@@ -1402,29 +1418,30 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 .seg[data-at="-1"] .seg-ink{opacity:0;transition:opacity .3s}
 .seg[data-at="-1"].hot .seg-ink{opacity:1}
-.seg-gap{width:.45rem;flex:0 0 auto}/* THE BAR COMES IN TWO SIZES, and each has its own MEASURED staging. Six tabs on
+.seg-gap{width:10px;flex:0 0 auto}/* THE BAR COMES IN TWO SIZES, and each has its own MEASURED staging. Six tabs on
    every page; nine on the three inside /changelog/, which keep their own group so a
    reader already in that section is not stranded there. The Commands group is not in
    the switcher (it is a button beside Install, see commandsBtn), so these counts are
    one lower than the ones this replaced (seven and ten). data-fit on .navwrap selects
    the regime — see navSwitcher(), which refuses to build an unmeasured one.
 
-   Measured 2026-10-20 10:14 EDT, in a browser, on the built pages. The method: load
+   Re-measured 2026-10-20 11:07 EDT (first measured 10:14 EDT), in a browser, on the built pages. The method: load
    the page at a 1700px viewport so the media queries sit on the FULL tier, constrain
    the bar's own width and step it down one pixel at a time until bar.scrollWidth
    exceeds bar.clientWidth; for the tightened and chips tiers the same rules are forced
    as plain CSS first. Reading the CSS cannot find these numbers, and neither can
-   arithmetic on the old ones: the bar gained a Commands button (34px tall, wider than
-   the 32px GitHub capsule it replaced) and lost a tab, and the controls and the
-   padding moved too.
+   arithmetic on the old ones: the bar gained a Commands control (a filled rail, wider
+   than the 32px GitHub capsule it replaced, and tightening with the tabs) and lost a
+   tab, the gaps between controls and rails became 10px with 14px before the theme
+   switch, and the controls and the padding moved too.
 
        tabs   full-size needs   tightened needs   chips-only needs
-        6           999               863                 -
-        9          1421              1212                842
+        6          1007               853                 -
+        9          1431              1203                833
 
    The nine-tab numbers are measured WITH the chronicle webfonts, which is the wider
    case: with the webfonts blocked (the fallback metrics the page first lays out in,
-   because they load with font-display:swap) the same tiers need 1328 / 1124 / 784. The
+   because they load with font-display:swap) the same tiers need 1339 / 1116 / 777. The
    six-tab numbers are identical either way, since the legal pages' tabs set in a
    system stack. The boundaries below are set against the wider figures.
 
@@ -1432,12 +1449,12 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
    earlier staging (1240/1100), which was wrong at both ends and shipped a nav running
    off the edge at two common laptop widths. Every boundary below is checked one pixel
    above as well as one below, in the real viewport and not only in the constrained bar:
-     · six tabs, 1030: full needs 999 above it (31px spare), tightened needs 863 below
+     · six tabs, 1030: full needs 1007 above it (23px spare), tightened needs 853 below
        it. Six tightened tabs still fit at 981, so this set needs NO chip tier at all.
-     · nine tabs, 1520: full needs 1421 above it (99px spare), tightened needs 1212
+     · nine tabs, 1520: full needs 1431 above it (89px spare), tightened needs 1203
        below it.
-     · nine tabs, 1310: tightened needs 1212 above it (98px spare), chips-only needs
-       842 below it, well inside the 981 desktop floor.
+     · nine tabs, 1310: tightened needs 1203 above it (107px spare), chips-only needs
+       833 below it, well inside the 981 desktop floor.
    The spare room is deliberate rather than tight, for the font-swap reason above.
 
    ⚠️ Why a chip rather than hiding the group. The two-group version hid the whole
@@ -1459,7 +1476,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   padding:.42rem .55rem;border-radius:7px;white-space:nowrap}@media (hover:hover) and (pointer:fine){
 .segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}}
 .segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── six tabs: tighten below 1030 ──
-   MEASURED 2026-10-20 10:14 EDT, see the table above. Verified in the real viewport
+   MEASURED 2026-10-20 11:07 EDT, see the table above. Verified in the real viewport
    afterwards, stepped across the desktop range on the built pages: the tab font
    changes between 1030 and 1029 and nowhere else, and bar.scrollWidth minus
    bar.clientWidth is 0 at every width from 1700 down to 981. ⚠️ THE MEASURE WAS
@@ -1472,6 +1489,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 @media (max-width:1029px){
   .navwrap[data-fit="6"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
   .navwrap[data-fit="6"] .seg{--gap:.6rem}
+  .navwrap[data-fit="6"] ~ .cmdr .cmdr-t{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
 }/* ── nine tabs (inside /changelog/, where the record group rejoins) ──
    Tighten below 1520, and swap the groups you are not in for chips below 1310. */
 
@@ -1479,6 +1497,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 @media (max-width:1519px){
   .navwrap[data-fit="9"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
   .navwrap[data-fit="9"] .seg{--gap:.6rem}
+  .navwrap[data-fit="9"] ~ .cmdr .cmdr-t{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
 }
 @media (min-width:981px) and (max-width:1309px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
      with them — .seg-ink measures real tab boxes, and there are none to measure. */
@@ -2016,7 +2035,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       <a class="segchip" href="./">Releases</a>
       <a class="tab on" href="./" data-accent="#FF9E3D" aria-current="page">What&#39;s New</a><a class="tab" href="./detailed.html" data-accent="#7CE38B">Changelog</a><a class="tab" href="./devlog.html" data-accent="#8FB8FF">Devlog</a>
     </div></div>
-    <a class="cmdb" href="../commands.html" data-spot data-tip="Every command, with examples"><span class="cmdb-t">Commands</span></a>
+    <a class="cmdr" href="../commands.html" data-tip="Every command, with examples"><span class="cmdr-t">Commands</span></a>
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"

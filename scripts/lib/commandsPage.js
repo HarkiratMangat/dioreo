@@ -286,12 +286,19 @@ const RECEIVER_CSS = `
   padding:0 .5rem 0 .7rem;white-space:nowrap;line-height:1.9;
   border-left:1px solid color-mix(in srgb,var(--accent) 22%,transparent);margin-left:.25rem}
 .rx-scroll > .rx-gl:first-of-type{border-left:0}
-.rx-chip{display:inline-flex;align-items:center;gap:.45rem;flex:none;
-  padding:.42rem .72rem;border-radius:999px;border:1px solid ${LINE};background:${BED};
+/* ⚠️ THE CHIPS ARE THE SITE'S HAIRLINE CAPSULE (Harkirat, 2026-10-20 10:45 EDT: "the same style that the landing Commands button uses"). The construction is .cmdb's in the shared CSS: no fill, a hairline border, the label --ink2 at rest and --ink on hover, the border warming and a cursor light following the pointer. What differs is on purpose: the chip's own colour (--cc, the command's) does the warming and the light instead of the page accent, so the colour coding survives; the label stays lowercase mono because it is a command name; and .on is still a FILL, because a rail that filters has to say which filter is active from across the screen. The light is a ::before at z-index -1 inside an isolated stacking context, so it paints above the border-box background and below the label and dot, with no wrapper span needed; the pointer position is the --px/--py that THEME_JS writes on every [data-spot] element. */
+.rx-chip{position:relative;isolation:isolate;overflow:hidden;
+  display:inline-flex;align-items:center;gap:.45rem;flex:none;
+  padding:.42rem .72rem;border-radius:999px;border:1px solid var(--rule2);background:transparent;
   font-family:var(--mono);font-size:.8rem;color:var(--ink2);text-decoration:none;
-  white-space:nowrap;transition:background .18s ease,border-color .18s ease,color .18s ease}
-.rx-chip:hover{color:var(--ink);border-color:color-mix(in srgb,var(--cc) 60%,transparent);
-  background:color-mix(in srgb,var(--cc) 10%,transparent)}
+  white-space:nowrap;transition:border-color .22s,color .22s}
+.rx-chip::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;
+  opacity:0;transition:opacity .3s;pointer-events:none;
+  background:radial-gradient(64% 150% at var(--px,50%) var(--py,50%),
+    color-mix(in srgb,var(--cc) 30%,transparent),transparent 72%)}
+.rx-chip:hover,.rx-chip:focus-visible{color:var(--ink);
+  border-color:color-mix(in srgb,var(--cc) 60%,var(--ink3))}
+.rx-chip:hover::before,.rx-chip:focus-visible::before{opacity:1}
 .rx-chip.on{background:var(--cc);border-color:var(--cc);color:var(--con);font-weight:600}
 .rx-chip.on .rx-dot{display:none}
 .rx-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -1146,7 +1153,7 @@ function commandsShell({ page, catalog, C }) {
             const derived = DERIVED.has(command.path);
             const vars = colourVars(command.path, accents, derived ? DERIVED_NEUTRAL : null);
             rail.push('<a class="rx-chip" href="#' + esc(command.id) + '" data-for="' + esc(command.id) + '" ' +
-                'data-find="' + esc(searchHaystack(command, group.label)) + '" style="' + vars + '">' +
+                'data-find="' + esc(searchHaystack(command, group.label)) + '" data-spot style="' + vars + '">' +
                 '<i class="rx-dot" aria-hidden="true"></i>' + esc(command.path) + '</a>');
             panels.push(renderPanel(command, group, C, accents, cats, scopes));
             cards.push(homeCard(command, C, accents));
@@ -1215,7 +1222,7 @@ ${C.mobileNav(page, '')}
 
   <div class="rx-rail">
     <nav class="rx-scroll" aria-label="Command list">
-      <a class="rx-chip rx-home-chip" id="rx-homechip" href="#"><i class="rx-dot" aria-hidden="true"></i>All commands</a>
+      <a class="rx-chip rx-home-chip" id="rx-homechip" href="#" data-spot><i class="rx-dot" aria-hidden="true"></i>All commands</a>
       ${rail.join('')}
     </nav>
   </div>

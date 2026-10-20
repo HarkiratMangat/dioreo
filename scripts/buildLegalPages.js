@@ -1147,7 +1147,11 @@ const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${
 const commandsBtn = cur => {
     const here = !!cur && isHere(TOOL_PAGES[0], cur);
     const from = cur || { out: 'index.html', dir: '' };
-    return `<a class="cmdb${here ? ' on' : ''}" href="${hrefTo(TOOL_PAGES[0], from)}"${here ? ' aria-current="page"' : ''} data-spot data-tip="Every command, with examples"><span class="cmdb-t">Commands</span></a>`;
+    // ⚠️ TWO LOOKS FOR ONE LINK, AND `cur` PICKS BETWEEN THEM (Harkirat, 2026-10-20 10:45 EDT). The landing header has no switcher beside it, so there it is the hairline capsule (.cmdb). In the bar of every other page it sits among the switcher's rails and has to read as one of them, so it is a filled rail holding a single tab (.cmdr), the same construction the Terms and Contributing rails use.
+    if (!cur) {
+        return `<a class="cmdb" href="${hrefTo(TOOL_PAGES[0], from)}" data-spot data-tip="Every command, with examples"><span class="cmdb-t">Commands</span></a>`;
+    }
+    return `<a class="cmdr${here ? ' on' : ''}" href="${hrefTo(TOOL_PAGES[0], from)}"${here ? ' aria-current="page"' : ''} data-tip="Every command, with examples"><span class="cmdr-t">Commands</span></a>`;
 };
 
 /**
@@ -1666,6 +1670,19 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .cmdb:hover::after,.cmdb:focus-visible::after{opacity:1}
 /* The page you are on: the warm border stays on, so the control reads as current without a fill. A fill would need its own ink for the cursor swarm (an accent-filled control makes a same-coloured blob vanish, which is why Install is dark inside), and an outline needs none. */
 .cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}
+/* ── Commands in the bar: .cmdr, a one-tab rail ─────────────────────────────
+   Harkirat, 2026-10-20 10:45 EDT: "keep 'commands' in the matching filled rail buttons style as the rest of the nav bar links". It is built the way the switcher's rails are, so it can not drift from them: the same hairline border, the same dark wash and inset shadow for the groove, 3px of padding, and inside it one tab with the SAME metrics as .tab (.66rem, 700, .1em, .42rem by 1.02rem). The switcher's indicator is script-driven and this control sits outside it, so its pill is plain CSS: with no pill the label is --ink2 (the state of a rail you are not in), the pill fades up on hover and focus, and it stays on when /commands is the page you are on, exactly as a rail's indicator does. The pill is the SOLID accent with the label inverted to #120E1C, the pair the .tab.lit rule measured for contrast. A solid accent fill also makes the liquid cursor read it as a chip and ink itself dark, which is the behaviour Harkirat asked for over Install. When the switcher tightens, the sibling selectors in SWITCHER_CSS tighten this tab with it. */
+.cmdr{position:relative;display:inline-flex;align-items:center;isolation:isolate;
+  border-radius:999px;border:1px solid var(--rule2);padding:3px;text-decoration:none;
+  background:color-mix(in srgb,#000 24%,transparent);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.32)}
+.cmdr-t{display:block;white-space:nowrap;font-family:var(--mono);font-size:.66rem;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:.42rem 1.02rem;border-radius:999px;color:var(--ink2);
+  transition:color .2s ease,background-color .22s ease}
+.cmdr:hover .cmdr-t,.cmdr:focus-visible .cmdr-t,.cmdr.on .cmdr-t{
+  background:var(--accent);color:#120E1C}
+.cmdr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
    eaten. The gap tightens below. Since 2026-10-20 10:00 EDT the controls are Commands, Install
@@ -1704,7 +1721,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      sign-in or an avatar, which is the opposite of what it does: it is an outbound
      install link, and the word is what says so. It is 38px tall here and 34px on
      a desktop, because on a phone it is a thumb target. */
-  .bar .cmdb{display:none}
+  .bar .cmdb,.bar .cmdr{display:none}
   .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
@@ -1737,6 +1754,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    the travel or the knob stops at the wrong end. */
 .thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
   cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
+/* The bar's spacing, as Harkirat set it (2026-10-20 10:45 EDT): 10px between every control and between the switcher's rails, and 14px from Install to the theme switch, so the switch reads as the bar's own corner rather than a fourth button. The 10px is the nav's gap and .seg-gap; the extra 4px is this margin. Desktop only: the phone bar keeps its own .5rem gap. */
+@media (min-width:621px){ .bar nav .thm{margin-left:4px} }
 .thm-tr{display:block;position:relative;width:62px;height:34px;border-radius:999px;
   border:1px solid var(--rule2);overflow:hidden;
   background:linear-gradient(168deg,#171430,#2B2446 62%,#3A2F52);
@@ -2449,7 +2468,7 @@ const BAR_CSS = `
 .bar{position:fixed;inset:0 0 auto;height:var(--bar-h);z-index:60;display:flex;align-items:center;
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
-.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:10px}
 `;
 
 /* .page centres and bounds the document column, and its top padding (the bar's height) is the
@@ -3945,7 +3964,7 @@ const SWITCHER_CSS = `
    it, so exactly one indicator on screen is ever "yours". */
 .seg[data-at="-1"] .seg-ink{opacity:0;transition:opacity .3s}
 .seg[data-at="-1"].hot .seg-ink{opacity:1}
-.seg-gap{width:.45rem;flex:0 0 auto}
+.seg-gap{width:10px;flex:0 0 auto}
 
 /* THE BAR COMES IN TWO SIZES, and each has its own MEASURED staging. Six tabs on
    every page; nine on the three inside /changelog/, which keep their own group so a
@@ -3954,22 +3973,23 @@ const SWITCHER_CSS = `
    one lower than the ones this replaced (seven and ten). data-fit on .navwrap selects
    the regime — see navSwitcher(), which refuses to build an unmeasured one.
 
-   Measured 2026-10-20 10:14 EDT, in a browser, on the built pages. The method: load
+   Re-measured 2026-10-20 11:07 EDT (first measured 10:14 EDT), in a browser, on the built pages. The method: load
    the page at a 1700px viewport so the media queries sit on the FULL tier, constrain
    the bar's own width and step it down one pixel at a time until bar.scrollWidth
    exceeds bar.clientWidth; for the tightened and chips tiers the same rules are forced
    as plain CSS first. Reading the CSS cannot find these numbers, and neither can
-   arithmetic on the old ones: the bar gained a Commands button (34px tall, wider than
-   the 32px GitHub capsule it replaced) and lost a tab, and the controls and the
-   padding moved too.
+   arithmetic on the old ones: the bar gained a Commands control (a filled rail, wider
+   than the 32px GitHub capsule it replaced, and tightening with the tabs) and lost a
+   tab, the gaps between controls and rails became 10px with 14px before the theme
+   switch, and the controls and the padding moved too.
 
        tabs   full-size needs   tightened needs   chips-only needs
-        6           999               863                 -
-        9          1421              1212                842
+        6          1007               853                 -
+        9          1431              1203                833
 
    The nine-tab numbers are measured WITH the chronicle webfonts, which is the wider
    case: with the webfonts blocked (the fallback metrics the page first lays out in,
-   because they load with font-display:swap) the same tiers need 1328 / 1124 / 784. The
+   because they load with font-display:swap) the same tiers need 1339 / 1116 / 777. The
    six-tab numbers are identical either way, since the legal pages' tabs set in a
    system stack. The boundaries below are set against the wider figures.
 
@@ -3977,12 +3997,12 @@ const SWITCHER_CSS = `
    earlier staging (1240/1100), which was wrong at both ends and shipped a nav running
    off the edge at two common laptop widths. Every boundary below is checked one pixel
    above as well as one below, in the real viewport and not only in the constrained bar:
-     · six tabs, 1030: full needs 999 above it (31px spare), tightened needs 863 below
+     · six tabs, 1030: full needs 1007 above it (23px spare), tightened needs 853 below
        it. Six tightened tabs still fit at 981, so this set needs NO chip tier at all.
-     · nine tabs, 1520: full needs 1421 above it (99px spare), tightened needs 1212
+     · nine tabs, 1520: full needs 1431 above it (89px spare), tightened needs 1203
        below it.
-     · nine tabs, 1310: tightened needs 1212 above it (98px spare), chips-only needs
-       842 below it, well inside the 981 desktop floor.
+     · nine tabs, 1310: tightened needs 1203 above it (107px spare), chips-only needs
+       833 below it, well inside the 981 desktop floor.
    The spare room is deliberate rather than tight, for the font-swap reason above.
 
    ⚠️ Why a chip rather than hiding the group. The two-group version hid the whole
@@ -4004,7 +4024,7 @@ const SWITCHER_CSS = `
 .segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── six tabs: tighten below 1030 ──
-   MEASURED 2026-10-20 10:14 EDT, see the table above. Verified in the real viewport
+   MEASURED 2026-10-20 11:07 EDT, see the table above. Verified in the real viewport
    afterwards, stepped across the desktop range on the built pages: the tab font
    changes between 1030 and 1029 and nowhere else, and bar.scrollWidth minus
    bar.clientWidth is 0 at every width from 1700 down to 981. ⚠️ THE MEASURE WAS
@@ -4015,6 +4035,7 @@ const SWITCHER_CSS = `
 @media (max-width:1029px){
   .navwrap[data-fit="6"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
   .navwrap[data-fit="6"] .seg{--gap:.6rem}
+  .navwrap[data-fit="6"] ~ .cmdr .cmdr-t{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
 }
 
 /* ── nine tabs (inside /changelog/, where the record group rejoins) ──
@@ -4022,6 +4043,7 @@ const SWITCHER_CSS = `
 @media (max-width:1519px){
   .navwrap[data-fit="9"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
   .navwrap[data-fit="9"] .seg{--gap:.6rem}
+  .navwrap[data-fit="9"] ~ .cmdr .cmdr-t{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
 }
 @media (min-width:981px) and (max-width:1309px){
   /* A group you are not in shows its chip instead of its tabs. The indicator goes
@@ -7861,7 +7883,7 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    document and the nav's hairline sits below it, separating site chrome from the
    letter rather than cutting the letter off from its own last line. */
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
-@media print{.bar,.thm,.ins,.cmdb,.cpy,.node,.mnav{display:none!important}
+@media print{.bar,.thm,.ins,.cmdb,.cmdr,.cpy,.node,.mnav{display:none!important}
   body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}
   .plate,.opt,.prom,.slip,.ldg{box-shadow:none;animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -8220,7 +8242,7 @@ ${cmdRoleCss('.cmd-line')}
    growing to meet the sig, so no flex-grow is needed on either child. Both
    children's own top margins move up to this wrapper. */
 .lfoot{display:flex;justify-content:space-between;align-items:flex-start;
-  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(2.4rem,7vh,3.6rem)}
+  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(1.8rem,5vh,2.8rem)}
 /* Right-aligned, not left — it sits on the RIGHT side of the row, and
    left-aligned text there just trails off into the same empty space .lfoot
    exists to reclaim. Harkirat's call 2026-08-05 08:53 EDT.
@@ -8243,8 +8265,9 @@ ${cmdRoleCss('.cmd-line')}
    the same ink edge). */
 @media (min-width:761px){ .sig.lsig .sig-cr{margin-inline-end:-.18em} }
 @media (max-width:760px){ .sig.lsig{text-align:left} }
+/* 84ch, not 74ch: at 74ch the disclaimer ran to four lines with "under licence." stranded alone on the last one (Harkirat, 2026-10-20 10:45 EDT: "fits within 3 lines on desktop"). It is capped, not fluid, so it stays a readable measure on a very wide screen. */
 .disc.fine{margin:0;font-size:.56rem;line-height:1.9;
-  letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
+  letter-spacing:.06em;max-width:84ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
   letter-spacing:.04em;color:var(--ink3);max-width:62ch}
 .contact a{color:var(--ink2)}

@@ -306,7 +306,21 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}}.cmdb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
 .cmdb:hover::after{opacity:1}}/* The page you are on: the warm border stays on, so the control reads as current without a fill. A fill would need its own ink for the cursor swarm (an accent-filled control makes a same-coloured blob vanish, which is why Install is dark inside), and an outline needs none. */
 
-.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
+.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}/* ── Commands in the bar: .cmdr, a one-tab rail ─────────────────────────────
+   Harkirat, 2026-10-20 10:45 EDT: "keep 'commands' in the matching filled rail buttons style as the rest of the nav bar links". It is built the way the switcher's rails are, so it can not drift from them: the same hairline border, the same dark wash and inset shadow for the groove, 3px of padding, and inside it one tab with the SAME metrics as .tab (.66rem, 700, .1em, .42rem by 1.02rem). The switcher's indicator is script-driven and this control sits outside it, so its pill is plain CSS: with no pill the label is --ink2 (the state of a rail you are not in), the pill fades up on hover and focus, and it stays on when /commands is the page you are on, exactly as a rail's indicator does. The pill is the SOLID accent with the label inverted to #120E1C, the pair the .tab.lit rule measured for contrast. A solid accent fill also makes the liquid cursor read it as a chip and ink itself dark, which is the behaviour Harkirat asked for over Install. When the switcher tightens, the sibling selectors in SWITCHER_CSS tighten this tab with it. */
+
+.cmdr{position:relative;display:inline-flex;align-items:center;isolation:isolate;
+  border-radius:999px;border:1px solid var(--rule2);padding:3px;text-decoration:none;
+  background:color-mix(in srgb,#000 24%,transparent);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.32)}
+.cmdr-t{display:block;white-space:nowrap;font-family:var(--mono);font-size:.66rem;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:.42rem 1.02rem;border-radius:999px;color:var(--ink2);
+  transition:color .2s ease,background-color .22s ease}.cmdr:focus-visible .cmdr-t,.cmdr.on .cmdr-t{
+  background:var(--accent);color:#120E1C}@media (hover:hover) and (pointer:fine){
+.cmdr:hover .cmdr-t{
+  background:var(--accent);color:#120E1C}}
+.cmdr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
    eaten. The gap tightens below. Since 2026-10-20 10:00 EDT the controls are Commands, Install
    and the switch, and Commands leaves the BAR under 621px (it is the first tab of
@@ -345,7 +359,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      install link, and the word is what says so. It is 38px tall here and 34px on
      a desktop, because on a phone it is a thumb target. */
   
-  .bar .cmdb{display:none}
+  .bar .cmdb,.bar .cmdr{display:none}
   .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
@@ -377,7 +391,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
-  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
+  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}/* The bar's spacing, as Harkirat set it (2026-10-20 10:45 EDT): 10px between every control and between the switcher's rails, and 14px from Install to the theme switch, so the switch reads as the bar's own corner rather than a fourth button. The 10px is the nav's gap and .seg-gap; the extra 4px is this margin. Desktop only: the phone bar keeps its own .5rem gap. */
+
+@media (min-width:621px){ .bar nav .thm{margin-left:4px} }
 .thm-tr{display:block;position:relative;width:62px;height:34px;border-radius:999px;
   border:1px solid var(--rule2);overflow:hidden;
   background:linear-gradient(168deg,#171430,#2B2446 62%,#3A2F52);
@@ -1316,7 +1332,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
 
 
 .lfoot{display:flex;justify-content:space-between;align-items:flex-start;
-  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(2.4rem,7vh,3.6rem)}/* Right-aligned, not left — it sits on the RIGHT side of the row, and
+  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(1.8rem,5vh,2.8rem)}/* Right-aligned, not left — it sits on the RIGHT side of the row, and
    left-aligned text there just trails off into the same empty space .lfoot
    exists to reclaim. Harkirat's call 2026-08-05 08:53 EDT.
    ⚠️ LEFT AGAIN BELOW 760px. .lfoot's flex-wrap folds the sig block onto its
@@ -1338,9 +1354,10 @@ h1 em{font-style:normal;color:var(--accent-t)}
    the same ink edge). */
 
 @media (min-width:761px){ .sig.lsig .sig-cr{margin-inline-end:-.18em} }
-@media (max-width:760px){ .sig.lsig{text-align:left} }
+@media (max-width:760px){ .sig.lsig{text-align:left} }/* 84ch, not 74ch: at 74ch the disclaimer ran to four lines with "under licence." stranded alone on the last one (Harkirat, 2026-10-20 10:45 EDT: "fits within 3 lines on desktop"). It is capped, not fluid, so it stays a readable measure on a very wide screen. */
+
 .disc.fine{margin:0;font-size:.56rem;line-height:1.9;
-  letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
+  letter-spacing:.06em;max-width:84ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
   letter-spacing:.04em;color:var(--ink3);max-width:62ch}
 .contact a{color:var(--ink2)}/* ── invitation cards: contributing / contributors ────────────────────
