@@ -5,6 +5,16 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ Seven unused helpers in `utils/` — closed 2026-10-19 21:51 EDT `[DONE · 2026-10-19 21:51 EDT]`
+
+Deleted in Pre-Release v3.99.0 on Harkirat's word (2026-10-19 21:44 EDT: "delete the extra codes"). Each name was re-searched across the whole repo, portal and hidden paths included, and had no caller: `parseAlertId`, `buildAlertExport`, `buildChangeExport`, `extractStillFrame`, `capBannerPreviewWidth`, `pageForLoadoutMode` (the `utils/manageActions.js` copy; `core/changeset.js` keeps its own) and `buttonsFor`, plus the two `fmtUtc` helpers only the exports used.
+
+#### `[P3 · XS]` SEVEN FUNCTIONS IN `utils/` ARE DEFINED AND NEVER USED
+
+*Filed 2026-09-14 23:08 EDT, found while measuring codebase-memory's dead-code filter.* The graph's no-caller query over `utils/` returned 115 candidates; checked one by one against every reference in the code, these seven have none outside their own definition or export line: `parseAlertId` and `buildAlertExport` (`utils/alertStore.js`), `extractStillFrame` (`utils/stillFrame.js`), `pageForLoadoutMode` and `buttonsFor` (`utils/manageActions.js`), `buildChangeExport` (`utils/changeStore.js`), `capBannerPreviewWidth` (`utils/calendarBannerCache.js`). ⚠️ A test, a script outside `utils/`, or a portal module could still reach one by a dynamic name, so check each with `search_code` for the bare name before deleting it.
+
+**Verify by:** each name either deleted with its export and `npm test` green, or kept with a comment naming what reaches it.
+
 ## ✅ Update the bot's Discord Developer Portal listing — closed 2026-10-19 21:34 EDT `[DONE · 2026-10-19 21:34 EDT]`
 
 Done by Harkirat. Description and banner were reported updated at 2026-10-19 21:27 EDT; at 2026-10-19 21:32 EDT he confirmed the production application's name is **Dioreo** and that Discord has officially verified the app. Nothing remained on the listing. The original item, kept whole:

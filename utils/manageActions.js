@@ -21,11 +21,6 @@ function loadoutModeFor(page) {
     return page === 'loadouts_mp' ? 'MP' : page === 'loadouts_dmz' ? 'DMZ' : null;
 }
 
-// The INVERSE of loadoutModeFor, co-located so the two directions can't drift apart (v3-pre-release review, finding #41) -- this mapping used to be re-derived inline at 7 separate sites, one of which (a page/group selector) disagreed with this function at the edges: loadoutModeFor returns null for an unknown page, while the inline copy silently defaulted to 'DMZ'. Mirrors loadoutModeFor's own null-safety instead.
-function pageForLoadoutMode(mode) {
-    return mode === 'MP' ? 'loadouts_mp' : mode === 'DMZ' ? 'loadouts_dmz' : null;
-}
-
 // ── Shared run() implementations ─────────────────────────────────────────── Edit/Delete can't autocomplete the way a slash option could, so they collect a search query through a one-field modal first; handlers/manage.js's `mng_search_` submit handler fuzzy-matches it. This is why 'delete' is safely slash-exposed: the button opens a SEARCH box, it deletes nothing on its own.
 const openSearchModal = (searchAction) => async ({ interaction, page, manageCommand }) =>
     await interaction.showModal(manageCommand.buildSearchModal(page, searchAction));
@@ -327,10 +322,6 @@ function buttonFor(page, id) {
     return { id: entry.id, label: entry.label, style: entry.style };
 }
 
-function buttonsFor(page, ...ids) {
-    return ids.map(id => buttonFor(page, id));
-}
-
 module.exports = {
     ACTIONS_BY_PAGE,
     getAction,
@@ -340,9 +331,7 @@ module.exports = {
     resolvePopupEntry,
     DENIAL_MESSAGE,
     buttonFor,
-    buttonsFor,
     loadoutModeFor,
-    pageForLoadoutMode,
     exportFileReply,
     // Exported (v3-pre-release review, finding #38) so the lean read-only SeasonalData lookups scattered across commands/manage.js and handlers/manage/patchnotes.js can share this one definition instead of re-deriving the same `.findOne({docType:'global'}).lean()` call by hand.
     loadSeasonalDoc

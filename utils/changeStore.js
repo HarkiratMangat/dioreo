@@ -129,35 +129,6 @@ async function getChangeSummary() {
     };
 }
 
-function fmtUtc(d) {
-    return d ? new Date(d).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC') : '?';
-}
-
-// The downloadable .txt body -- the fuller record beyond what fits in the Discord panel. Newest first.
-async function buildChangeExport({ filterPage = null, filterActor = null } = {}) {
-    const query = {};
-    if (filterPage) query.page = filterPage;
-    if (filterActor) query.actorId = filterActor;
-    const rows = await ChangeLog.find(query).sort({ createdAt: -1 }).lean();
-    const lines = [
-        `Dioreo -- /manage change log export`,
-        `Generated: ${fmtUtc(new Date())}`,
-        `Total changes: ${rows.length}${filterPage ? ` (filtered: page=${filterPage})` : ''}${filterActor ? ` (filtered: actor=${filterActor})` : ''}`,
-        '='.repeat(72),
-        '',
-    ];
-    for (const r of rows) {
-        lines.push(`[${r.changeId || '??????'}] ${fmtUtc(r.createdAt)} | actor <@${r.actorId}> | ${r.page || '?'} / ${r.action || '?'}${r.undone ? ' | UNDONE' : ''}`);
-        lines.push(`Target: ${r.target || '(n/a)'}`);
-        lines.push(`Summary: ${r.summary || ''}`);
-        if (r.detail) lines.push(`Detail: ${r.detail}`);
-        lines.push('─'.repeat(72));
-        lines.push('');
-    }
-    if (!rows.length) lines.push('(no changes recorded yet)');
-    return lines.join('\n');
-}
-
 
 // Every LATER change against the same record. Reverting an edit writes old values back over whatever came after it, so a panel offering a revert has to be able to say "two other changes have touched this since" -- silently clobbering a later edit is the one genuinely destructive outcome this whole surface can cause. Lives here rather than being queried from commands/bot.js: a ChangeLog read belongs behind the store, and reaching around an exported surface for one query is how a second, drifting access path starts.
 async function getLaterChangesTo({ page, target, after, excludeChangeId }) {
@@ -180,5 +151,4 @@ module.exports = {
     getRecentChanges,
     getLaterChangesTo,
     getChangeSummary,
-    buildChangeExport,
 };

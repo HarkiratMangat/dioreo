@@ -70,24 +70,4 @@ async function clearBannerImage(page) {
     }
 }
 
-// Caps the DISPLAYED width of a banner image for the inline preview, without touching whatever's actually stored (Harkirat's direct follow-up, 2026-07-31 17:20 EDT: the raw banner rendered unnecessarily wide on desktop).
-//
-// - **Cloudinary source (the only path every banner takes as of 2026-08-07 21:25 EDT):** splices a `c_limit,w_N` transform into the delivery URL (`.../upload/{transform}/v.../public_id`) -- verified live to correctly aspect-preserve from a SINGLE dimension (a 2048x1152 source capped to w_256 came back an exact 256x144). Discord shows exactly the URL it's given, both inline and on zoom, so the zoomed view is ALSO capped to this same width -- a Cloudinary-transformed derivative is a genuinely separate, smaller file with no path back to anything larger.
-// - **Discord CDN source (LEGACY/DEAD PATH -- do not extend, only exists for pre-2026-08-07 DB rows that haven't been re-saved yet):** `cacheBannerImage()` used to skip re-hosting for a Discord CDN source and rely on `media.discordapp.net`'s own `?width=N` resize proxy instead. Two real bugs found testing this branch, neither worth fixing since the branch itself is being phased out: (1) `?width=N` ALONE is silently ignored by Discord's proxy -- it requires `width` AND `height` together, confirmed via curl (`width=256` alone returned the full-size original; `width=256& height=144` together correctly returned 256x144). This function never sent `height`, so this branch has never actually resized anything. (2) Even fixed, a mismatched box isn't aspect-fit -- `width=256&height=256` on the 16:9 source came back a hard-cropped 256x256, not letterboxed -- so a correct fix would need the source's real aspect ratio, which this function doesn't have. Moot either way: the underlying URLs are Discord-signed and expire in ~24-48h (see isDiscordCdnUrl's comment), so any DB row still hitting this branch is almost certainly already a dead link regardless of what this does to it.
-function capBannerPreviewWidth(url, maxWidth) {
-    if (!url) return url;
-    if (isDiscordCdnUrl(url)) {
-        try {
-            const parsed = new URL(url);
-            parsed.hostname = 'media.discordapp.net';
-            parsed.searchParams.set('width', String(maxWidth));
-            return parsed.toString();
-        } catch {
-            return url;
-        }
-    }
-    if (url.includes('/upload/')) return url.replace('/upload/', `/upload/c_limit,w_${maxWidth}/`);
-    return url;
-}
-
-module.exports = { cacheBannerImage, clearBannerImage, capBannerPreviewWidth, isDiscordCdnUrl, VALID_PAGES, FOLDER };
+module.exports = { cacheBannerImage, clearBannerImage, isDiscordCdnUrl, VALID_PAGES, FOLDER };

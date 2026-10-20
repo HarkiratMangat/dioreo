@@ -1531,12 +1531,6 @@ Harkirat, 2026-09-11 18:42 EDT: *"i dont even see a point in the 'by permission'
 
 **Verify by:** a named trigger with a repro that links the callers when the trigger is removed and unlinks them when it is restored.
 
-### `[P3 · XS]` SEVEN FUNCTIONS IN `utils/` ARE DEFINED AND NEVER USED
-
-*Filed 2026-09-14 23:08 EDT, found while measuring codebase-memory's dead-code filter.* The graph's no-caller query over `utils/` returned 115 candidates; checked one by one against every reference in the code, these seven have none outside their own definition or export line: `parseAlertId` and `buildAlertExport` (`utils/alertStore.js`), `extractStillFrame` (`utils/stillFrame.js`), `pageForLoadoutMode` and `buttonsFor` (`utils/manageActions.js`), `buildChangeExport` (`utils/changeStore.js`), `capBannerPreviewWidth` (`utils/calendarBannerCache.js`). ⚠️ A test, a script outside `utils/`, or a portal module could still reach one by a dynamic name, so check each with `search_code` for the bare name before deleting it.
-
-**Verify by:** each name either deleted with its export and `npm test` green, or kept with a comment naming what reaches it.
-
 ### `[P2 · S · Opus5-Medium]` TWO PIECES OF THE CONTEXT-CARRIERS PLAN'S WP4 WERE DECIDED AND NEVER BUILT
 
 *Filed 2026-09-14 22:00 EDT, found while answering whether linksee is used to its full capabilities.* The plan (`~/.claude/plans/okay-so-i-want-majestic-yao.md`, 2026-09-08) measured that routing rules restated at session start do not change behaviour — `read_smart` 0 calls until 2026-08-31 while Bash ran 11,462 calls in one week, most of them `cat` and `sed -n` reads — and decided that routing lives at the call site. Its WP4 line reads `[~]`. Three pieces were never done; one is done now:
