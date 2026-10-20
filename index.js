@@ -31,8 +31,9 @@ const { Client, GatewayIntentBits, ActivityType } = require("discord.js");
 const { acquireInstanceLock } = require("./utils/instanceLock");
 
 // The three modules this file wires together. Everything that used to live inline here moved into them on 2026-08-13 17:20 EDT (docs/ROADMAP.md's index.js split) -- this file is the entrypoint again: connect, construct, wire, log in. Nothing else.
-const { loadCommandModules } = require("./bot/registry");
-const { registerLifecycle } = require("./bot/lifecycle");
+const { loadCommandModules, splitCommands } = require("./bot/registry");
+const { registerLifecycle, registerAdminLifecycle } = require("./bot/lifecycle");
+const { setClients, adminTokenFrom } = require("./bot/clients");
 const { handleInteraction } = require("./handlers/router");
 
 // CONNECT TO MONGO (Atlas in prod; a LOCAL mongodb://localhost database under `.env.dev`) The success line names the actual host rather than hardcoding "Atlas Cluster" -- it used to claim Atlas unconditionally, which reads like the DEV bot just connected to the PRODUCTION database when it did nothing of the sort (mis-read exactly that way 2026-07-26 21:04 EDT). Host only, never the full URI: that string carries the Atlas credentials.
@@ -68,8 +69,22 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds], presence: BOT_P
 //   3. register the interaction router.
 // ⚠️ registerLifecycle installs `client.on("error", ...)`, which is NOT optional and is NOT covered by the router's own try/catch -- discord.js's captureRejections reroutes a rejected async listener into a client `error` event that bypasses it entirely. See .claude/rules/interaction-router.md.
 const commands = loadCommandModules(client);
-registerLifecycle(client, commands);
+
+// DIOREO ADMIN (2026-10-19 13:44 EDT): with ADMIN_BOT_TOKEN set, a second Client logs in as the admin app and takes the admin and experimental commands, so they leave every user's command list. It shares the command Collection and the router, so a click runs the same code whichever app it came through. Without the token, nothing here runs and every command stays on the public app. See bot/clients.js.
+const ADMIN_TOKEN = adminTokenFrom(process.env);
+const { publicCommands, adminCommands } = splitCommands(commands, client.commands, { adminApp: Boolean(ADMIN_TOKEN) });
+
+registerLifecycle(client, publicCommands);
 client.on("interactionCreate", handleInteraction);
+
+let adminClient = null;
+if (ADMIN_TOKEN) {
+    adminClient = new Client({ intents: [GatewayIntentBits.Guilds] });
+    adminClient.commands = client.commands;
+    registerAdminLifecycle(adminClient, adminCommands, ADMIN_TOKEN);
+    adminClient.on("interactionCreate", handleInteraction);
+}
+setClients({ public: client, admin: adminClient });
 
 // ==========================================
 // LOGIN
@@ -80,5 +95,10 @@ client.on("interactionCreate", handleInteraction);
     if (!acquired) {
         process.exit(1);
     }
+    // The admin app gets its own lock: two processes with different public tokens must still never both log in as the same admin app.
+    if (adminClient && !(await acquireInstanceLock(ADMIN_TOKEN))) {
+        process.exit(1);
+    }
     client.login(process.env.BOT_TOKEN);
+    if (adminClient) adminClient.login(ADMIN_TOKEN);
 })();

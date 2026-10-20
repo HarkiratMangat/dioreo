@@ -9,6 +9,7 @@ const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { buildTitleBlock } = require('../utils/titleBlock');
+const { seasonEmojiFor, withCaptionEmoji } = require('../utils/seasonEmoji');
 const { buildPaginationRow } = require('../utils/paginationRow');
 const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
@@ -74,8 +75,8 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     // Two-line title (season title on top, command header below) — shared pattern, matches the calendar_update_ui.json redesign. See utils/titleBlock.js.
     const titleEmoji = isNewPage ? emojis.newDraws : emojis.returningDraws;
     const drawComponents = [
-        // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
-        buildTitleBlock(seasonTitle, titleEmoji, isNewPage ? 'New Draws' : 'Returning Draws', 2),
+        // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size. The season's emoji in front of the season title (2026-10-19 09:26 EDT, Harkirat), see utils/seasonEmoji.js.
+        withCaptionEmoji(buildTitleBlock(seasonTitle, titleEmoji, isNewPage ? 'New Draws' : 'Returning Draws', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji)),
         { type: 14, spacing: 2, divider: true } // Divider separating the title from the draws content
     ];
 

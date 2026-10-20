@@ -11,8 +11,10 @@ work, or the third-party attributions recorded below. LICENSE §18 states the
 position in full; both names are Brand Assets under LICENSE §1.5.
 
 This file records (1) the third-party software Dioreo depends on and the
-licenses that govern it, (2) third-party trademarks referenced by the project,
-and (3) a disclosure of AI assistance in authoring the project.
+licenses that govern it, (2) the third-party creative work and content the
+project uses, with credit to its creators, (3) third-party trademarks
+referenced by the project, and (4) a disclosure of AI assistance in authoring
+the project.
 
 This file is required reading alongside LICENSE. Nothing in LICENSE restricts,
 enlarges, or otherwise varies your rights in any third-party component listed
@@ -310,6 +312,22 @@ removal, should email harkirat117@gmail.com. Requests are actioned promptly.
 
 Game imagery, weapon renders, and screenshots displayed by the Bot are covered by
 Section 5 below and remain the property of their respective owners.
+
+4A.4  COMMUNITY CONTENT
+
+Some of the Call of Duty: Mobile content and information the Bot presents is
+sourced from material published by the Leakers on Duty community. With thanks:
+
+    Leakers on Duty             https://discord.gg/nicecat
+
+LICENSE — AS MARKED. Their material carries a Creative Commons Attribution
+(CC BY) mark, which does not state a license version. The Bot credits them here
+and alongside the content where it is shown. Their material is adapted, not
+reproduced as published: it is reformatted for the Bot's interface. No
+endorsement of Dioreo by Leakers on Duty is stated or implied.
+
+Creators whose work appears here and who want different attribution, or
+removal, should email harkirat117@gmail.com. Requests are actioned promptly.
 
 
 ================================================================================

@@ -90,7 +90,7 @@ function renderCommandBlock(command, client) {
 const CATEGORY_DEFS = [
     {
         key: 'gunsmiths', label: 'Gunsmiths', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts',
-        // staticCommands stays [/gunsmiths, /dmz] -- the directory/dropdown/autocomplete mention `/gunsmiths` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way.
+        // staticCommands stays [/gunsmiths, /dmz] -- the directory/dropdown/autocomplete mention `/gunsmiths` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way. ⚠️ CORRECTED 2026-10-17 23:51 EDT: the landing directory used to mention bare `/gunsmiths`, and Discord renders a mention of a command that has subcommands as plain text, never a link (Harkirat: "the /gunsmith command link seems to be broken in the /help command landing"). The landing now lists detailCommands when a category has them, so it reads `/gunsmiths search` · `/gunsmiths list` · `/dmz`, each a real link. staticCommands keeps `/gunsmiths` for `cmd:` lookup and its aliases.
         staticCommands: [cmd('/gunsmiths'), cmd('/dmz')],
         detailCommands: [
             cmd('/gunsmiths search', {
@@ -122,9 +122,15 @@ const CATEGORY_DEFS = [
             }),
             cmd('/draw prices', {
                 description: 'CP cost breakdown for every draw type, split by CP region',
-                options: [{ name: 'region', required: false, desc: 'Jump directly to the 10, 20, or 30 CP region' }]
+                options: [
+                    { name: 'type', required: false, desc: 'Open one draw type on its own' },
+                    { name: 'region', required: false, desc: 'Jump directly to the 10, 20, or 30 CP region' }
+                ]
             }),
-            cmd('/draw calculator', { description: 'How much more CP you need to finish a draw, and the cheapest way to buy it' })
+            cmd('/draw calculator', {
+                description: 'Work out the CP for your draws and Mythic upgrades, what you still need, and the bundles to buy',
+                options: [{ name: 'page', required: false, desc: 'Open on Start a Calculation, View Saved, or Help' }]
+            })
         ]
     },
     {
@@ -241,9 +247,17 @@ function buildGunsmithsBody(commands, client) {
         + `\n-# **Examples**\n-# 🔸 **/gunsmiths search** weapon:\`AK117\`\n-# 🔸 **/gunsmiths search** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\`\n-# 🔸 **/gunsmiths list** scope:\`SMG\`\n-# 🔸 **/gunsmiths list** scope:\`Meta — MP\`\n-# 🔸 **/dmz** weapon:\`Fennec\``;
 }
 
+// Returns PARTS, not one string (2026-10-17 23:51 EDT): the /draw calculator block is a Section whose button opens the calculator's full Help (Harkirat: "add a button in the /help draws page, as a section+accessory for the /draw calc section, to view the full help panel"). The button reuses the calculator's own `help` verb, so it opens the same private panel the calculator's Help button does; with no author on the state, anyone may press it.
 function buildDrawsBody(commands, client) {
-    return commands.map(c => renderCommandBlock(c, client)).join('')
-        + `\n-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\`\n-# 🔸 **/draw calculator**`;
+    const calc = commands.find(c => c.name === '/draw calculator');
+    const others = commands.filter(c => c !== calc);
+    const parts = [{ content: others.map(c => renderCommandBlock(c, client)).join('').trimEnd() }];
+    if (calc) {
+        const dc = require('./drawCalculator');
+        parts.push({ content: renderCommandBlock(calc, client).trimEnd(), accessory: { type: 2, style: 2, label: 'Calculator Guide', emoji: emojis.parseEmoji(emojis.calculator), custom_id: dc.encodeState('help', dc.defaultState()) } });
+    }
+    parts.push({ content: `-# **Examples**\n-# 🔸 **/draws** page:\`Returning Draws\`\n-# 🔸 **/draw prices** region:\`30 CP Region\`\n-# 🔸 **/draw prices** type:\`Mythic Weapon Draw\`\n-# 🔸 **/draw calculator** page:\`View Saved\`` });
+    return parts;
 }
 
 function buildSeasonalBody(commands, client) {
@@ -259,10 +273,12 @@ function buildUtilitiesBody(commands, client) {
 // Server admins get a second command appended rather than a page of their own. The `/admin` detail is the one place carrying the full precedence order and the two Discord limits, because the panel itself deliberately stays short -- see commands/admin.js's note on the wall-of-text draft that got rejected 2026-08-10 18:23 EDT. Harkirat's framing on the caps: they are not a real constraint in practice ("why is a server adding 25 role overrides"), so they read as guidance about the intended workflow -- set a default, hand-pick the exceptions -- not as a warning. TWO commands on one page, so they get a real divider between them and the shared `[visibility]` option is stated ONCE at the end rather than under each -- repeating it per command was Harkirat's call on 2026-08-10 19:28 EDT ("visibility is shared in all the commands so having it individually under each of them makes no sense"), and the same pass cut the /admin section roughly in half for being overwhelming to read. Gunsmiths already used the shared-options shape for the same reason. `commands` is the category's own visibleCommands(category, perms) result (v3-pre-release review finding #49) -- whether /admin is present is derived from THAT list rather than re-checking perms.serverAdmin directly, so this page's admin filtering can never drift from the directory/ dropdown/autocomplete, which already filter through the exact same CATEGORY_DEFS `requires`.
 function buildPreferencesBody(commands, client) {
     const settings = `### ${mentionCommand(client, '/settings')}\nYour own preferences, in two pages — **Visibility** (who sees your responses by default) and **Preferences** (timezone, timestamp style, accent style, and more)`;
+    // `[open]` (2026-10-19 17:49 EDT, named `[customize]` until 2026-10-19 19:33 EDT) is /settings' jump-to option -- see commands/settings.js. Written once here because both branches below print the /settings options.
+    const openBullet = '-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors';
     const hasAdmin = commands.some(c => c.name === '/admin');
 
     if (!hasAdmin) {
-        return `${settings}\n\n-# **Options**\n${VISIBILITY_BULLET}\n\n-# **Examples**\n-# 🔸 **/settings**`;
+        return `${settings}\n\n-# **Options**\n${openBullet}\n${VISIBILITY_BULLET}\n\n-# **Examples**\n-# 🔸 **/settings**\n-# 🔸 **/settings** open:\`Preferences\``;
     }
 
     return settings
@@ -279,9 +295,10 @@ function buildPreferencesBody(commands, client) {
         + `-# 🔸 Each menu takes **25 picks** — Discord's cap, and a sign you want a different default instead\n`
         + `-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**`
         + SECTION_BREAK
-        + `-# **Options** · both commands\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Options** · /settings only, /admin has none\n${openBullet}\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n`
         + `-# 🔸 **/settings** visibility:\`Public\`\n`
+        + `-# 🔸 **/settings** open:\`Colors\`\n`
         + `-# 🔸 **/admin** → **Overview** → *Switch default to Hidden*, then **Channels** → allow \`#bot-spam\`\n`
         + `-# 🔸 **/admin** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
         + `-# 🔸 **/admin** → **Commands** → mark \`/colors\` always-hidden, everything else stays public`;
@@ -306,17 +323,18 @@ function buildBotAdminBody(commands, client) {
             + `-# 🔹 \`[file]\` Limit to one changed file (default: everything the pull brought in)`);
     }
     if (has('/autobuild')) {
-        sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
+        sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
             + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
             + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
             + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`MARKSMAN\` · \`SNIPER\` · \`SHOTGUN\` · \`SECONDARIES\` — looked up from the weapon, or asked for, if left blank\n`
-            + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon\n`
+            + `-# 🔹 \`[mode]\` \`MP\` · \`DMZ\` — read from the screenshot if left blank, and asked for when the screenshot can't tell\n`
+            + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon in the same mode\n`
             + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure`);
     }
     if (has('/manage')) {
-        sections.push(`### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, admin access, announcements, and the next-season draft\n`
-            + `-# 🔹 \`[content]\` Open a section directly: \`Draws\` · \`Calendar\` · \`Patch Notes\` · \`MP Loadouts\` · \`DMZ Loadouts\` · \`Season: Titles & Deadlines\` · \`Season: Next Season Draft\` · \`Manage Admins\` · \`Announcement\` · \`Bulk Format Guide\`\n`
-            + `-# 🔹 On **Manage Admins**, Grant/Revoke are owner-only — every other whitelisted admin can still view the page and use Announcement.`);
+        sections.push(`### ${mentionCommand(client, '/manage')}\nThe data-entry panel — seasonal info, draws, calendar, patch notes, loadouts, banners, announcements, and the next-season draft\n`
+            + `-# 🔹 \`[content]\` Open a section directly: \`Draws\` · \`Calendar\` · \`Patch Notes\` · \`MP Loadouts\` · \`DMZ Loadouts\` · \`Season: Titles & Deadlines\` · \`Season: Next Season Draft\` · \`Announcement\` · \`Bulk Format Guide\`\n`
+            + `-# 🔹 \`[action]\` Jump straight to one of that section's own actions (pick \`content\` first)`);
     }
 
     const examples = [];
@@ -332,7 +350,7 @@ function buildBotAdminBody(commands, client) {
 
     return sections.join('\n')
         + SECTION_BREAK
-        + `-# **Options** · every command above\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Options** · every command above except /bot hotpatch\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n${examples.join('\n')}\n\n`
         + `-# 💠 These are gated on **Dioreo's own admin whitelist**, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all.`;
 }
@@ -384,7 +402,17 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
             type: 1,
             components: [
                 { type: 2, style: 5, label: 'Website', url: WEBSITE_URL },
-                { type: 2, style: 5, label: 'Install Dioreo', url: buildInviteUrls(client).chooser }
+                // "Invite Dioreo" (2026-10-18 20:15 EDT, Harkirat), the same word /invite uses.
+                { type: 2, style: 5, label: 'Invite Dioreo', url: buildInviteUrls(client).chooser }
+            ]
+        });
+        // Credits · Terms · Privacy Policy, under Website and Invite (2026-10-19 09:41 EDT, Harkirat: "a button to 'Credits' that links to the notice page on the dioreo.app website. ToS and Privacy Policy as well"; "Terms", short, 09:42 EDT). NOTICE carries every third-party credit, hence its button's name.
+        components.push({
+            type: 1,
+            components: [
+                { type: 2, style: 5, label: 'Credits', url: `${WEBSITE_URL}/notice` },
+                { type: 2, style: 5, label: 'Terms', url: `${WEBSITE_URL}/terms` },
+                { type: 2, style: 5, label: 'Privacy Policy', url: `${WEBSITE_URL}/privacy` }
             ]
         });
         components.push({ type: 14, spacing: 2, divider: true });
@@ -394,7 +422,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
             content: visibleCategories(perms)
                 .map(c => {
                     // A command's `suffix` rides here too -- that is how `/admin` announces itself as an admin command while sitting inside Preferences.
-                    const commands = visibleCommands(c, perms).map(x => `${mentionCommand(client, x.name)}${x.suffix ? ` *${x.suffix}*` : ''}`).join(' · ');
+                    const commands = (c.detailCommands || visibleCommands(c, perms)).map(x => `${mentionCommand(client, x.name)}${x.suffix ? ` *${x.suffix}*` : ''}`).join(' · ');
                     return `### ${emojis[categoryEmojiKey(c, perms)]} **${c.label.toUpperCase()}**\n**${commands}**\n`;
                 })
                 .join('')
@@ -415,10 +443,15 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
 
         components.push({ type: 10, content: `## ${emojis[categoryEmojiKey(CATEGORY_DEFS.find(c => c.key === selectedKey), perms)]} **${DETAIL_HEADERS[selectedKey]}**\n${USAGE_LEGEND}` });
         components.push({ type: 14, spacing: 2, divider: true });
-        body.split(SECTION_BREAK).forEach((chunk, i) => {
-            if (i > 0) components.push({ type: 14, spacing: 1, divider: true });
-            components.push({ type: 10, content: chunk });
-        });
+        // A builder returns either one string (split on SECTION_BREAK into Text Displays with dividers) or a list of parts, where a part with an `accessory` becomes a Section. Parts sit together with no divider, as one page.
+        if (Array.isArray(body)) {
+            body.forEach(p => components.push(p.accessory ? { type: 9, components: [{ type: 10, content: p.content }], accessory: p.accessory } : { type: 10, content: p.content }));
+        } else {
+            body.split(SECTION_BREAK).forEach((chunk, i) => {
+                if (i > 0) components.push({ type: 14, spacing: 1, divider: true });
+                components.push({ type: 10, content: chunk });
+            });
+        }
         components.push({ type: 14, spacing: 2, divider: true });
         // Detail pages DON'T already mention /help cmd: in their main content (unlike the landing page above), so it's worth surfacing here -- reworded from the landing hint rather than reused verbatim, since the two pages need different things said.
         components.push({ type: 10, content: `-# To see other commands, use the dropdown below or **\`/help <cmd>\`**` });

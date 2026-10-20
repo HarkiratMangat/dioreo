@@ -118,8 +118,8 @@ check('the DP agrees with brute force on small shortfalls, within the same trans
     for (const shortfall of [1, 79, 80, 81, 420, 900, 2401, 5000, 7500]) {
         const dp = optimizePurchase(shortfall, {});
         const bf = bruteForce(shortfall);
-        assert.strictEqual(dp.cheapest.totalCents, bf.cents,
-            `shortfall ${shortfall}: DP said ${dp.cheapest.totalCents}c, brute force found ${bf.cents}c`);
+        assert.strictEqual(dp.absoluteCheapest.totalCents, bf.cents,
+            `shortfall ${shortfall}: DP said ${dp.absoluteCheapest.totalCents}c, brute force found ${bf.cents}c`);
     }
 });
 
@@ -143,18 +143,94 @@ check('every result respects the default 6-transaction cap', () => {
     for (const shortfall of [130, 950, 4100, 11000, 29999]) {
         const r = optimizePurchase(shortfall, {});
         assert.ok(r.cheapest.transactions <= 6, `shortfall ${shortfall}: cheapest used ${r.cheapest.transactions} transactions`);
-        assert.ok(r.leastWaste.transactions <= 6, `shortfall ${shortfall}: least-waste used ${r.leastWaste.transactions} transactions`);
+        assert.ok(r.absoluteCheapest.transactions <= 6, `shortfall ${shortfall}: absolute cheapest used ${r.absoluteCheapest.transactions} transactions`);
+        if (r.stockUp) assert.ok(r.stockUp.transactions <= 3, `shortfall ${shortfall}: stock-up used ${r.stockUp.transactions} transactions`);
     }
 });
 
-check('least-waste never overshoots more than cheapest', () => {
-    for (const shortfall of [130, 950, 4100, 11000]) {
-        const r = optimizePurchase(shortfall, {});
-        assert.ok(r.leastWaste.leftoverCp <= r.cheapest.leftoverCp,
-            `shortfall ${shortfall}: least-waste wasted more than cheapest`);
-        assert.ok(r.leastWaste.totalCents >= r.cheapest.totalCents,
-            `shortfall ${shortfall}: least-waste was cheaper, so cheapest was not optimal`);
+// The retired LEAST_WASTE objective is pinned as ABSENT, not merely unused: it is exactly the kind of comparator a future session would "restore" as an obvious missing feature. See utils/cpPackages.js's own note for the measurement that killed it.
+check('the retired least-waste objective is gone from the public result', () => {
+    const r = optimizePurchase(11510, { currency: 'CAD' });
+    assert.strictEqual(r.leastWaste, undefined, 'leastWaste came back -- it optimizes the wrong quantity, see cpPackages.js');
+});
+
+// The bug this whole change exists to fix, pinned on the exact case Harkirat reported. The displayed recommendation must not spend four extra store transactions to save CA$2.04.
+check('the displayed cheapest prefers far fewer purchases over a trivial saving', () => {
+    const r = optimizePurchase(11510, { currency: 'CAD' });
+    assert.strictEqual(r.absoluteCheapest.transactions, 6, 'expected the arithmetic optimum to still be the 6-purchase combo');
+    assert.strictEqual(r.cheapest.transactions, 2, `displayed recommendation used ${r.cheapest.transactions} purchases`);
+    assert.ok(r.cheapest.totalCents > r.absoluteCheapest.totalCents, 'the practical pick should cost slightly more');
+    assert.ok(r.cheapest.totalCents - r.absoluteCheapest.totalCents < 500, 'but only slightly -- within the stated tolerance');
+    assert.ok(r.cheapest.totalCp > r.absoluteCheapest.totalCp, 'and it should bank MORE cp, not less');
+});
+
+// His case that retired the flat 3% rule (2026-10-17 20:09 EDT): 8,730 CP short in CAD, five purchases for CA$125.95 were shown over one 10,800 pack for CA$129.99 -- 26 cents a purchase saved, and about 2,000 CP less.
+check('one big pack beats five small ones that save a few cents each', () => {
+    const r = optimizePurchase(8730, { currency: 'CAD' });
+    assert.strictEqual(r.absoluteCheapest.transactions, 5, 'expected the arithmetic optimum to still be the 5-purchase combo');
+    assert.strictEqual(r.cheapest.transactions, 1, `displayed recommendation used ${r.cheapest.transactions} purchases`);
+    assert.strictEqual(r.cheapest.totalCp, 10800);
+});
+
+// The property the per-purchase allowance was chosen for, swept across currencies: it may only ever pick FEWER purchases than the old flat-3% rule, never more, and never pay past its own allowance.
+check('the per-purchase allowance never picks more purchases than the flat 3% rule', () => {
+    const { PURCHASE_RULES } = require('../utils/cpPackages');
+    for (const currency of ['CAD', 'USD', 'EUR', 'JPY', 'BRL', 'KWD']) {
+        for (let shortfall = 40; shortfall <= 24000; shortfall += 1993) {
+            const r = optimizePurchase(shortfall, { currency });
+            if (!r) continue;
+            const abs = r.absoluteCheapest;
+            const floor = Math.round(abs.totalCents * PURCHASE_RULES.tolerancePct);
+            let old = null;
+            for (let cap = 1; cap <= 6 && !old; cap++) {
+                const c = optimizePurchase(shortfall, { currency, maxTransactions: cap });
+                if (c && c.absoluteCheapest.totalCents <= abs.totalCents + floor) old = c.absoluteCheapest;
+            }
+            assert.ok(r.cheapest.transactions <= (old || abs).transactions, `${currency} ${shortfall}: ${r.cheapest.transactions} purchases, the 3% rule picked ${(old || abs).transactions}`);
+            const perPurchase = Math.max(priceCents(CP_PACKAGES[0], currency), Math.round(abs.totalCents * PURCHASE_RULES.perPurchasePct));
+            assert.ok(r.cheapest.totalCents <= abs.totalCents + Math.max(floor, (abs.transactions - r.cheapest.transactions) * perPurchase), `${currency} ${shortfall}: over its allowance`);
+        }
     }
+});
+
+// A pack's 2X applies to its first purchase in the game, so a result may never show that pack at the normal rate while its 2X is unused (2026-10-17 21:10 EDT; before the fix, 246 of 1,681 swept picks did).
+check('an available 2X is always used on its own pack before that pack is bought at the normal rate', () => {
+    const tiny = optimizePurchase(20, { currency: 'CAD', doubleCpAvailable: ['cp80'] });
+    assert.deepStrictEqual(tiny.cheapest.combo.map(c => `${c.count}x${c.cpEach}${c.mode === 'double' ? '(2X)' : ''}`), ['1x160(2X)']);
+    assert.strictEqual(tiny.cheapest.leftoverCp, 140);
+    const all = CP_PACKAGES.map(p => p.id);
+    for (const currency of ['CAD', 'EUR', 'JPY', 'AUD']) {
+        for (let shortfall = 20; shortfall <= 24000; shortfall += 1499) {
+            const r = optimizePurchase(shortfall, { currency, doubleCpAvailable: all });
+            for (const pick of [r.cheapest, r.absoluteCheapest]) {
+                const doubled = new Set(pick.combo.filter(c => c.mode === 'double').map(c => c.id));
+                const unused = pick.combo.filter(c => c.mode === 'normal' && !doubled.has(c.id));
+                assert.strictEqual(unused.length, 0, `${currency} ${shortfall}: ${unused.map(c => c.id).join(',')} bought at the normal rate with its 2X unused`);
+                assert.strictEqual(pick.totalCp, pick.combo.reduce((n, c) => n + c.count * c.cpEach, 0), `${currency} ${shortfall}: totalCp out of step with the combo`);
+            }
+        }
+    }
+});
+
+// Stock Up must never be the thing Least Waste was: a worse deal wearing a second label.
+check('stock-up, when shown, is genuinely better value and genuinely more CP', () => {
+    for (const shortfall of [130, 950, 4100, 5810, 11000, 11510, 15000]) {
+        const r = optimizePurchase(shortfall, { currency: 'CAD' });
+        if (!r.stockUp) continue;
+        const baseRate = r.cheapest.totalCp / r.cheapest.totalCents;
+        const upRate = r.stockUp.totalCp / r.stockUp.totalCents;
+        assert.ok(upRate > baseRate, `shortfall ${shortfall}: stock-up had a WORSE cp-per-cent rate than cheapest`);
+        assert.ok(r.stockUp.totalCp > r.cheapest.totalCp, `shortfall ${shortfall}: stock-up cost more without banking more CP`);
+        assert.strictEqual(r.stockUp.extraCp, r.stockUp.totalCp - r.cheapest.totalCp);
+        assert.strictEqual(r.stockUp.extraCents, r.stockUp.totalCents - r.cheapest.totalCents);
+    }
+});
+
+// A falsifier with teeth: stock-up must actually FIRE somewhere, or the check above passes vacuously on an always-null field.
+check('stock-up actually appears on at least one real shortfall', () => {
+    const hits = [130, 950, 4100, 5810, 11000, 11510, 15000, 20000]
+        .filter(sf => optimizePurchase(sf, { currency: 'CAD' }).stockUp);
+    assert.ok(hits.length > 0, 'stock-up never fired on any tested shortfall -- the check above would be vacuous');
 });
 
 check('a 2X entitlement is used at most once each', () => {
@@ -191,9 +267,11 @@ check('currency actually changes the recommendation -- the optimizer is not sile
 // Pins the spec's own motivating example (design doc, "The mathematically optimal combination can be absurd in practice"): UNCAPPED, a 5,000 CP shortfall in CAD is cheapest as 63 separate $0.99 purchases (5,040 CP for $62.37) rather than the single $69.99 pack. This is a KNOWN CASE that can fail both ways -- if the cap silently does nothing, the capped result matches this; if currency or the cap is broken some other way, neither total matches.
 check('uncapped, the CAD absurd-optimum matches the spec\'s worked example', () => {
     const uncapped = optimizePurchase(5000, { currency: 'CAD', maxTransactions: 63 });
-    assert.strictEqual(uncapped.cheapest.totalCents, 6237, `expected $62.37 (63 x $0.99), got ${uncapped.cheapest.totalCents}c`);
-    assert.strictEqual(uncapped.cheapest.totalCp, 5040);
-    assert.strictEqual(uncapped.cheapest.transactions, 63);
+    assert.strictEqual(uncapped.absoluteCheapest.totalCents, 6237, `expected $62.37 (63 x $0.99), got ${uncapped.absoluteCheapest.totalCents}c`);
+    assert.strictEqual(uncapped.absoluteCheapest.totalCp, 5040);
+    assert.strictEqual(uncapped.absoluteCheapest.transactions, 63);
+    // ...and the DISPLAYED recommendation must refuse it, because 63 purchases is the whole reason the practical search exists.
+    assert.ok(uncapped.cheapest.transactions < 10, `the displayed recommendation still asked for ${uncapped.cheapest.transactions} purchases`);
 });
 
 // The default cap must reject that absurd combo and fall back to something a human would do.
@@ -203,6 +281,42 @@ check('capped at the default of 6, CAD does NOT recommend 63 purchases', () => {
     assert.ok(capped.cheapest.totalCents > 6237, 'the capped result should not match the uncapped absurd optimum');
     assert.ok(capped.cheapest.totalCents <= capped.naive.totalCents,
         `capped cheapest (${capped.cheapest.totalCents}c) should never be worse than the naive single-pack baseline (${capped.naive.totalCents}c)`);
+});
+
+// 🔴 The ceiling bug, pinned on the exact realistic triggers. Before the fix these returned a combo covering 64,800 CP with a NEGATIVE leftoverCp and no error -- "select every draw" reaches both figures.
+check('a basket-sized shortfall is covered honestly, never with a negative leftover', () => {
+    for (const shortfall of [64801, 69625, 137980, 689900]) {
+        for (const currency of ['USD', 'CAD', 'JPY', 'NOK']) {
+            const r = optimizePurchase(shortfall, { currency });
+            assert.ok(r, `${currency} ${shortfall}: returned null instead of an answer`);
+            assert.ok(r.cheapest.totalCp >= shortfall, `${currency} ${shortfall}: only covered ${r.cheapest.totalCp}`);
+            assert.ok(r.cheapest.leftoverCp >= 0, `${currency} ${shortfall}: negative leftover ${r.cheapest.leftoverCp}`);
+            assert.ok(r.naive.totalCp >= shortfall, `${currency} ${shortfall}: naive baseline did not cover the shortfall`);
+            assert.ok(r.naive.leftoverCp >= 0, `${currency} ${shortfall}: naive leftover went negative`);
+            const cp = r.cheapest.combo.reduce((n, c) => n + c.count * c.cpEach, 0);
+            const cents = r.cheapest.combo.reduce((n, c) => n + c.count * c.priceCents, 0);
+            assert.strictEqual(cp, r.cheapest.totalCp, `${currency} ${shortfall}: combo CP does not sum to the reported total`);
+            assert.strictEqual(cents, r.cheapest.totalCents, `${currency} ${shortfall}: combo price does not sum to the reported total`);
+        }
+    }
+});
+
+// The falsifier for the guard itself: it must be able to REFUSE, or the check above passes on a function that simply never returns null.
+check('the honesty guard can actually refuse -- it is not vacuous', () => {
+    const impossible = optimizePurchase(50000, { currency: 'CAD', maxTransactions: 1 });
+    assert.strictEqual(impossible, null, 'a shortfall unreachable in one purchase must return null, not a short answer');
+});
+
+// The bulk package is currency-dependent: the top tier is best value in only 32 of 41 currencies. Hardcoding it would be wrong for nine storefronts, silently.
+check('bulk peeling follows the per-currency best-value package, not a hardcoded tier', () => {
+    const seen = new Set();
+    for (const currency of CURRENCIES) {
+        const r = optimizePurchase(200000, { currency });
+        assert.ok(r, `${currency}: no answer for a bulk-sized shortfall`);
+        const bulkLine = r.cheapest.combo.reduce((a, b) => (b.count > (a ? a.count : 0) ? b : a), null);
+        seen.add(bulkLine.id);
+    }
+    assert.ok(seen.size > 1, `every currency peeled the same package (${[...seen]}) -- the per-currency lookup is not doing anything`);
 });
 
 console.log(failures === 0 ? `\nAll CP package checks passed (${CP_PACKAGES.length} packages, ${CURRENCIES.length} currencies).` : `\n${failures} check(s) FAILED.`);

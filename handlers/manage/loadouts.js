@@ -317,7 +317,8 @@ async function exportCategory(interaction) {
 
 // --- DELETE (loadouts) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.
 async function deleteItem(match, actorId) {
-    const result = await commitSet([{ type: 'loadout.delete', target: { id: match.id } }], { actorId });
+    // `mode` rides on the target so core/changeset.js's pageForOp stamps the ChangeLog row with the RIGHT page: MP and DMZ share this op, and without it every DMZ delete was recorded as MP, which then gated its Revert on the wrong page.
+    const result = await commitSet([{ type: 'loadout.delete', target: { id: match.id, ...(match.doc?.mode ? { mode: match.doc.mode } : {}) } }], { actorId });
     if (!result.ok) throw new Error(extractCommitError(result));
     return null;   // Undo now lives on /bot analytics' Changes page (core/revert.js) -- no inline undo token.
 }

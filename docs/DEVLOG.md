@@ -265,6 +265,10 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-01 15:24 EDT — portal pins batch 2 — Board 4 signed off at Version 81, the readiness audit, and Session 3's close (v3.85.0-pre)
 - 2026-10-01 18:33 EDT — CI and the test queue, rebuilt from a measurement, then re-measured after the merge (v3.86.0-pre)
 - 2026-10-01 20:33 EDT — The first hook-free PR is this one, so it can watch itself (v3.87.0-pre)
+- 2026-10-18 00:11 EDT — The draw calculator, rebuilt from 56 batches of his click-tests (v3.88.0-pre)
+- 2026-10-19 00:54 EDT — Series Armory and the Advanced draws join the calculator, priced set by set (v3.89.0-pre)
+- 2026-10-19 12:39 EDT — Right-clicking a post or a person: six context-menu commands, and the colours of people who never used Dioreo kept anonymous (v3.91.0-pre)
+- 2026-10-19 15:43 EDT — Dioreo Admin: a second app for the admin commands (v3.92.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4561,6 +4565,40 @@ The pre-merge pass found one more premise that was false, in the plan, the PR an
 The CI rebuild left one check nobody had seen: a PR that touches no hook, so the macOS job is skipped and the aggregate has to pass anyway. The pre-merge pass of the rebuild filed it as a reminder, in the deferred list. Harkirat's question afterwards was the right one: would Session 4 or 5 ever open that list? They would not. The plan said only that the skip was allowed, and `CLAUDE.md`, which every session reads, did not mention it. So the note went into `CLAUDE.md`'s CI block, with where to fix it if it is red.
 
 His second point was sharper than the plan. A docs-only PR touches no hook, so this very PR is the first one on which GitHub skips the macOS job. The reminder did not have to wait for a portal session to stumble onto it: this PR's own CI is the observation, and the result is written down before it merges. It did what it should: the macOS job was skipped and the aggregate stayed green (run 36946454845). The same PR records his two calls on the other open CI items, that the sync commit's missing test is fine because `main` is paused until v3 merges, and that the macOS job stays advisory for now.
+
+## 2026-10-18 00:11 EDT — The draw calculator, rebuilt from 56 batches of his click-tests (v3.88.0-pre)
+
+Seven weeks after the first saved-basket build (2026-08-27), the calculator was rebuilt screen by screen from Harkirat's own click-tests on the dev bot: 56 batches, each logged verbatim with what was built (`docs/claude/2026-10-13-draw-calculator-intake.md`).
+
+**What the sweep found that no test had.** His report was one case: 8,730 CP short in CAD, the panel suggested five purchases for CA$125.95 over one 10,800 bundle for CA$129.99. The first fix he picked (1.5% per purchase saved) looked right on that case and was wrong across the table: swept over all 41 currencies it picked MORE purchases than the old 3% rule in 880 of 16,154 cases. Rule H, the larger of the two allowances, never picks more, and the same sweep, by asserting things about the whole result rather than only the rule being changed, found an older modelling bug: with 2X bundles available, about 15% of picks bought a bundle at the normal rate while its own 2X sat unused, which the game cannot do. Lesson kept as a test: sweep every optimizer threshold across the price table, and check whole-result invariants, before proposing it.
+
+**What the merge prep found.** Only the calculator suites had been run after each batch. The full suite, run before the push, found the reflow gates failing on comments and prose written that evening. They would have turned CI red. The full `npm test` is now the step before any push, not the step after review.
+
+## 2026-10-19 00:54 EDT — Series Armory and the Advanced draws join the calculator, priced set by set (v3.89.0-pre)
+
+Series Armory was the branch's stated job: three armories priced per item on `/draw prices` and in the calculator, and this season's draws offered first in the calculator by a Draw Type set in `/manage`. It grew, at Harkirat's asks, into a round of calculator polish (the Set Region & Balance section, a currency per calculation, Resume a Saved Calculation on the landing, the 2X offers in his wording), the two Advanced Double Legendary draws, and `/patch notes` keeping every season.
+
+**The Advanced draws were built twice.** The first build priced each draw as one ten-spin path along /draw prices' three strategies. Harkirat broke it with one example: set 1 at 1/2, sets 2 and 3 at 2/2, set 4 at 1/2, the rest untouched, and "purchasing the remaining part of the set later on costs as much as the regular spin". He also asked for goals the path model could not express (just the two Epics, everything). After a think-pass he asked for, the model became per set: which sets are spun, which of those are full, and a goal as the items wanted from the last two sets. Because a set's Advanced price is always above its Regular price and below twice it, the cheapest choice per set is the cheapest plan, so pricing stays a simple loop. His follow-up question exposed one more gap: Spent could not tell an Advanced set from one finished later, so the pop-up now asks for both.
+
+**The click-test ran in a separate session.** Computer use cannot be granted from a Remote Control thread (the dialog never shows), so a worker session he started in the desktop app drove Discord from a fifteen-case brief. Thirteen passed. The one failure was the brief's own expected figure, carried by hand from the state after the next step; the bot was right. Expected values in a brief now come from a script that sets each case's exact state.
+
+## 2026-10-19 12:39 EDT — Right-clicking a post or a person: six context-menu commands, and the colours of people who never used Dioreo kept anonymous (v3.91.0-pre)
+
+Right-click commands were the branch's whole job, and they arrived in the order Harkirat thought of them: Add to Patch Notes first, then "what about expanding the right click feature?", which became Autobuild Loadout, Add to Draws, Add to Calendar, Convert Times and View Colors in one pass.
+
+**A forward hides its post from the bot, except in one place.** Without the Message Content intent, reading a message over REST returns it blank. A message right-click is different: Discord hands the command the message, and a forward's original in its snapshots, with the snapshot's id giving the original post time. So the images exist for the bot only at the moment of the right-click, and are held in memory between it and the button.
+
+**View Colors had to store colours for people who never agreed to anything.** Harkirat's answer was a 30-day cache with no person attached: the key is a hash of Discord's own image hash, so the same avatar returns the same palette for anyone, and nothing in it names whose it was. His own users keep their saved preferences as before.
+
+**The first public click errored.** The open page's button and the pager's page-1 arrow had the same custom id, and Discord rejects a duplicate. The test now walks every page and sub-page in both modes, and fails on the old ids.
+
+## 2026-10-19 15:43 EDT — Dioreo Admin: a second app for the admin commands (v3.92.0-pre)
+
+Harkirat's admin commands showed in every user's command list and refused on the click, because Discord has no per-user visibility for user-install commands. He picked a second application, Dioreo Admin, over registering them in one server with role overrides, which would have lost DMs.
+
+The split itself was small. What a second login breaks was not: the emoji map was one shared object re-pointed to "the" app's ids at boot, and an application emoji only renders for the app that owns it. The router already ran each click inside an AsyncLocalStorage context for logging, so the app id rides there and the emoji export answers from that app's own ids, with every call site unchanged. The same pass found `/bot`'s health panel would have read the admin connection's zero servers, and the slim admin lifecycle keeps the heartbeat, cleanup and restart marker from running twice.
+
+The emoji copy taught the session's lesson. Copies made through the API came back blurred or refused, and the cause was Discord, not the script: any upload over 256 KB is re-compressed, dropping frames on heavy animated emojis. Asking the CDN for a bigger file made it worse, because it upscales. Harkirat's originals, under the limit, went up untouched, so 77 of 85 were matched to prod by image content and copied into a gitignored folder for the next app.
 
 # Part B — Lessons Ledger (thematic)
 

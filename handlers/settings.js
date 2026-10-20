@@ -102,6 +102,8 @@ async function route(interaction) {
             if (action === 'loadout_ephemeral') prefs.loadoutVisibility = 'ephemeral';
             if (action === 'seasonal_public') prefs.seasonalVisibility = 'public';
             if (action === 'seasonal_ephemeral') prefs.seasonalVisibility = 'ephemeral';
+            if (action === 'calculator_public') prefs.calculatorVisibility = 'public';
+            if (action === 'calculator_ephemeral') prefs.calculatorVisibility = 'ephemeral';
             if (action === 'timestamp_public') prefs.timestampVisibility = 'public';
             if (action === 'timestamp_ephemeral') prefs.timestampVisibility = 'ephemeral';
             if (action === 'settings_public') prefs.settingsVisibility = 'public';

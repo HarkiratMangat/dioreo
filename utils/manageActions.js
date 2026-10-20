@@ -288,24 +288,35 @@ function listSlashActions(page) {
     return listActions(page).filter(a => a.slash);
 }
 
-// ⚠️ THE ONE CHOKE POINT. Both the panel's `mng_act_` dispatch and the slash path resolve through here, which is what makes per-page permissions hold PER CLICK rather than only at page-view time — the gap filed 2026-08-13 and closed by this registry. Returns a discriminated result instead of throwing so both callers handle "no such action" and "not allowed" the same way.
+// ⚠️ THE ONE CHOKE POINT. Both the panel's `mng_act_` dispatch and the slash path resolve through here, which is what makes permissions hold PER CLICK rather than only at page-view time — the gap filed 2026-08-13 and closed by this registry. Returns a discriminated result instead of throwing so both callers handle "no such action" and "not allowed" the same way. Since the permission restructure (2026-10-19 19:24 EDT) the check is the action's TIER on its page (core/permissions.js: the tier of the op the button runs), not page access: any admin can browse every page, and pressing a button they lack the tier for gets the warning (his decision, 2026-10-19 18:17 EDT). An action that writes nothing (Export, Guide) needs only admin access. `message` names the missing tier and page.
 async function resolveAction(page, actionId, userId) {
     const entry = getAction(page, actionId);
     if (!entry) return { ok: false, reason: 'unknown' };
 
-    const { getManagePages, isOwner } = require('./adminAccess');
+    const { isOwner, canAction, denialMessage } = require('./adminAccess');
     if (entry.ownerOnly && !isOwner(userId)) return { ok: false, reason: 'owner', entry };
 
-    const allowedPages = await getManagePages(userId);
-    if (!allowedPages.includes(entry.page)) return { ok: false, reason: 'denied', entry };
+    const allowed = await canAction(userId, entry.page, entry.id);
+    if (!allowed.ok) return { ok: false, reason: 'denied', entry, message: allowed.tier ? denialMessage(`manage.${entry.page}`, allowed.tier) : DENIAL_MESSAGE.denied };
 
     return { ok: true, entry };
+}
+
+// A /manage dropdown entry that opens its pop-up straight away (core/permissions.js's POPUP_FIRST_ENTRIES: Season's Titles & Deadlines and Start New Season). Opening one IS pressing its button, so it is gated like one; every other dropdown entry is a page any admin may browse.
+async function resolvePopupEntry(value, userId) {
+    const { POPUP_FIRST_ENTRIES } = require('../core/permissions');
+    const key = POPUP_FIRST_ENTRIES[value];
+    if (!key) return { ok: true };
+    const [page, actionId] = key.split(':');
+    const { canAction, denialMessage } = require('./adminAccess');
+    const allowed = await canAction(userId, page, actionId);
+    return allowed.ok ? { ok: true } : { ok: false, message: denialMessage(`manage.${page}`, allowed.tier) };
 }
 
 const DENIAL_MESSAGE = {
     unknown: "❌ **That action doesn't exist.** It may have been renamed or removed — reopen the panel to see what's available.",
     owner: '🔒 **Only the bot owner can manage the admin list.**',
-    denied: "🔒 **You don't have access to that section.** Ask the bot owner to grant it if you need it."
+    denied: "🔒 **You don't have permission for that.** Ask the bot owner to grant it if you need it."
 };
 
 // ── Panel button construction ────────────────────────────────────────────── commands/manage.js's buildPagesTable() calls these instead of writing `{ id, label, style }` literals, so a button and the handler behind it cannot exist without each other.
@@ -326,6 +337,7 @@ module.exports = {
     listActions,
     listSlashActions,
     resolveAction,
+    resolvePopupEntry,
     DENIAL_MESSAGE,
     buttonFor,
     buttonsFor,

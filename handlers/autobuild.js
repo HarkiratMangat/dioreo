@@ -17,9 +17,31 @@ function ownsCustomId(customId) {
 
 async function route(interaction) {
     const { customId } = interaction;
+        // --- AUTOBUILD LOADOUT: WHICH SCREENSHOT --- the right-click's picker when a message has several images (2026-10-19 11:16 EDT). The images are held by commands/autobuildLoadout.js; after a restart or 30 minutes they are gone and the click says so.
+        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('autobuild_pick|')) {
+            const key = interaction.customId.split('|')[1];
+            const source = interaction.client.commands.get('Autobuild Loadout')?.heldFor(key);
+            if (!source) {
+                try {
+                    await interaction.reply({ content: "These images aren't held any more (the bot restarted, or 30 minutes passed). Right-click the message again.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Autobuild Loadout: could not explain an expired picker (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+            await interaction.deferUpdate();
+            const { runExtraction } = require('../utils/autobuildPipeline');
+            return await runExtraction(interaction, source.images[Number(interaction.values[0])], null, null);
+        }
+
         // --- AUTOBUILD: CONFIRM ---
         if (interaction.isButton() && interaction.customId.startsWith('autobuild_confirm_')) {
             const token = interaction.customId.replace('autobuild_confirm_', '');
+            // Confirm writes a Loadout straight to Mongo (doc.save(), not core/changeset.js's commitSet), so its tier is checked here: Create on /autobuild. The router's autobuild_ guard asks the same question today; this names the button's own rule so the two cannot drift apart unnoticed.
+            const { canDo, denyDo } = require('../utils/adminAccess');
+            if (!(await canDo(interaction.user.id, 'autobuild.confirm'))) {
+                return await interaction.reply({ content: denyDo('autobuild.confirm'), ephemeral: true });
+            }
             await interaction.deferUpdate();
             const { confirmAndWrite } = require('../utils/autobuildPipeline');
             return await confirmAndWrite(interaction, token);
@@ -42,12 +64,15 @@ async function route(interaction) {
             if (!doc) {
                 return interaction.reply({ content: '❌ That loadout no longer exists.', ephemeral: true });
             }
-            // Render the weapon's FULL build set (not just this one doc) so the Prev/Next pagination and the correct "Build N of M" footer render, opening ON the just-created build. The PoC passed [doc] alone (found in live testing 2026-07-20): builds.length === 1, so buildPaginationRow returned null and the footer wrongly read "Build 1 of 1" even for a weapon that has several builds. Same weaponKey scope /gunsmiths search's own lookup uses. openIndex falls back to 0 if the doc somehow isn't in its own result set.
-            const builds = await Loadout.find({ weaponKey: doc.weaponKey, mode: 'MP' }).lean();
+            // Render the weapon's FULL build set (not just this one doc) so the Prev/Next pagination and the correct "Build N of M" footer render, opening ON the just-created build. The PoC passed [doc] alone (found in live testing 2026-07-20): builds.length === 1, so buildPaginationRow returned null and the footer wrongly read "Build 1 of 1" even for a weapon that has several builds. Same weaponKey scope /gunsmiths search's own lookup uses. openIndex falls back to 0 if the doc somehow isn't in its own result set. Mode-aware since 2026-10-19 17:54 EDT, when /autobuild began writing DMZ builds: the same scopes /dmz uses (utils/loadoutLookup.js) -- the weapon's DMZ builds, every DMZ build for the browse dropdown, and the `dmz` id prefix so its pagination routes to the DMZ handler.
+            const mode = doc.mode === 'DMZ' ? 'DMZ' : 'MP';
+            const builds = await Loadout.find({ weaponKey: doc.weaponKey, mode }).lean();
             const openIndex = Math.max(0, builds.findIndex(b => String(b._id) === String(doc._id)));
-            const categoryBuilds = await Loadout.find({ category: doc.category, mode: 'MP' }).lean();
+            const categoryBuilds = mode === 'DMZ'
+                ? await Loadout.find({ mode: 'DMZ' }).lean()
+                : await Loadout.find({ category: doc.category, mode: 'MP' }).lean();
             const accentColor = getMpCategoryAccent(doc.category);
-            const cardPayload = buildLoadoutCard(builds, openIndex, { color: accentColor, idPrefix: 'mp', isEphemeral: false, categoryBuilds });
+            const cardPayload = buildLoadoutCard(builds, openIndex, { color: accentColor, idPrefix: mode === 'DMZ' ? 'dmz' : 'mp', isEphemeral: false, categoryBuilds });
             await interaction.deferReply({ ephemeral: false });
             const { sendV2Payload } = require('../utils/sendV2Payload');
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });

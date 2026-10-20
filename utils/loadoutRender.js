@@ -262,7 +262,7 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
     buttonComponents.push({ type: 2, style: 2, label: 'Copy Attachments', custom_id: copyAttCustomId });
     if (activeBuild.mode !== 'DMZ') {
-        buttonComponents.push({ type: 2, style: 3, label: 'Copy Code', custom_id: copyCustomId });
+        buttonComponents.push({ type: 2, style: 3, label: 'Copy Code', custom_id: copyCustomId, emoji: emojis.parseEmoji(emojis.copyExport) });
     }
     containerComponents.push({ type: 1, components: buttonComponents });
 

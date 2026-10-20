@@ -23,8 +23,12 @@ function isHolderAlive(existing) {
     }
 }
 
-async function acquireInstanceLock() {
-    const lockId = lockIdForToken(process.env.BOT_TOKEN);
+// Locks this process holds, one per token (the public app, and Dioreo Admin when it is on, 2026-10-19 13:44 EDT). One signal handler releases them all, installed once -- a handler per lock would each call process.exit() and the second release could be cut off.
+const heldLockIds = [];
+let releaseInstalled = false;
+
+async function acquireInstanceLock(token = process.env.BOT_TOKEN) {
+    const lockId = lockIdForToken(token);
     const existing = await BotInstance.findById(lockId);
     const heartbeatFresh = existing && Date.now() - existing.lastHeartbeat.getTime() < STALE_MS;
     if (heartbeatFresh && isHolderAlive(existing)) {
@@ -65,8 +69,11 @@ async function acquireInstanceLock() {
     // Races (bounded) the SAME analytics flush bot/lifecycle.js's installShutdownFlush does (v3-pre-release review, finding #12) -- process.exit() used to fire the instant the lock-delete above settled (~ms), which is registered EARLIER than installShutdownFlush (only installed once ClientReady fires), so on every `systemctl restart` this handler won a race installShutdownFlush's own 2-second bail couldn't protect against and discarded up to FLUSH_INTERVAL_MS of buffered analytics events. Can't simply stop exiting here and defer entirely to that other handler either -- a SIGTERM during a hung gateway handshake (this file's own header notes that can silently take 10+ minutes) would then have NO exit path until ClientReady, which may never come.
     //
     // ⚠️ flushEvents()/flushSearchSessions() being individually idempotent is NOT enough on its own (v3-pre-release review, finding #56). Both this handler and installShutdownFlush register on the SAME signal, and Node runs every listener for one signal synchronously, back-to-back -- so whichever one runs SECOND finds the buffers already spliced empty by the first and resolves via pure microtasks, ahead of the first handler's real (macrotask-bound) Mongo write. Calling eventStore.js's flushAllForShutdown() instead of flushSearchSessions()/flushEvents() directly fixes that: it memoizes the real flush into one shared promise, so whichever handler runs second awaits the SAME in-flight write rather than a hollow already-resolved one.
+    heldLockIds.push(lockId);
+    if (releaseInstalled) return true;
+    releaseInstalled = true;
     const releaseLock = () => {
-        const lockCleanup = BotInstance.deleteOne({ _id: lockId, pid: process.pid }).catch(() => {});
+        const lockCleanup = Promise.all(heldLockIds.map(id => BotInstance.deleteOne({ _id: id, pid: process.pid }).catch(() => {})));
         const { flushAllForShutdown } = require('./eventStore');
         const bail = new Promise((resolve) => {
             const t = setTimeout(resolve, 2000);

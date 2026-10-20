@@ -250,6 +250,8 @@ async function runHotpatch({ client, files = [], pull = false, dryRun = false })
         require('./logger').noteHotpatch(after);
         console.log(`🩹 HOTPATCH ${after.slice(0, 7)} · ${result.applied.length} module(s): ${result.applied.join(', ')}`);
         require('./alertWebhook').sendAlert('Hotpatch applied', `${result.applied.length} module(s) reloaded at commit \`${after.slice(0, 7)}\`\n${result.applied.map(f => `• \`${f}\``).join('\n')}`, 'info');
+        // Recorded on the PUBLIC client, which /bot's health panel reads; /bot hotpatch itself runs on Dioreo Admin when it is on (2026-10-19 13:44 EDT, bot/clients.js).
+        client = require('../bot/clients').publicClient(client);
         if (client) (client.hotpatches ||= []).push({ at: new Date(), commit: after.slice(0, 7), files: result.applied });
     }
     return { plan, result, commit: after, changed };

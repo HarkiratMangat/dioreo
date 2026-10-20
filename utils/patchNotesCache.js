@@ -4,7 +4,7 @@
 // ==========================================
 // Problem: patch notes screenshots are admin-typed external URLs (same failure mode draws' thumbnails had -- the source can go dark later, leaving a broken image in the carousel). This re-hosts every provided screenshot into this bot's own Cloudinary account so /patch notes keeps working even after the original source disappears.
 //
-// Distinct retention model from utils/cloudinaryCache.js's draws cache (45-day age + orphan check): patch notes retention is SEASON-based, not time-based -- an image stays cached for as long as its season is still reachable through /patch notes' own "previous 5 seasons" history dropdown (patchnotes.js's `recentPatches = seasonalDoc.patchNotes.slice(-5)`), and gets pruned once that season rolls off the back of that list, regardless of how many days have passed.
+// Distinct retention model from utils/cloudinaryCache.js's draws cache (45-day age + orphan check): patch notes retention is SEASON-based, not time-based -- an image stays cached for as long as its season's patch note entry exists. Every season is reachable now (2026-10-19 00:30 EDT: the dropdown lists the 12 newest and Search Older Seasons finds the rest), so only a deleted entry's folder is pruned, regardless of how many days have passed.
 //
 // Keyed by the patch note SUBDOCUMENT'S OWN `_id`, not its title -- titles can be renamed later (see handlers/manage.js's `modal_season_titles_deadlines`, which keeps the most recent patchNotes[] entry's title synced to `currentSeasonTitle`), and keying by a mutable title would either orphan already-cached images on a rename or require a folder-rename step. `_id` never changes.
 const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
@@ -79,9 +79,9 @@ function publicIdFor(patchId, imageIndex) {
 
 // Uploads a REMOTE url straight into Cloudinary (server-side fetch, the bot never downloads the image itself) -- never throws, a Cloudinary hiccup must fall back to the raw URL rather than blocking the admin's save, same philosophy as utils/cloudinaryCache.js's cacheThumbnail(). `meta` (optional): { season, releaseDate } -- the patch's title + release date, so the cached image carries its structured metadata immediately. Set in a SEPARATE best-effort step after the upload (setPatchImageMetadata swallows its own errors), same decoupling as the loadout side: a metadata hiccup must never turn a successful image cache into a fallback-to-raw-URL.
 async function cachePatchImage(patchId, imageIndex, sourceUrl, meta = {}) {
-    // Same shape as the catch block below, so a dev save falls back to the raw URL exactly as it does for a real Cloudinary hiccup -- the admin's save still succeeds, the image just isn't re-hosted.
+    // Same shape as the catch block below, so a dev save falls back to the raw URL exactly as it does for a real Cloudinary hiccup -- the admin's save still succeeds, the image just isn't re-hosted. ⚠️ It returned `url: null` until 2026-10-19 10:31 EDT, contradicting this comment: every dev-bot patch-notes save stored nulls in images[], and /patch notes then failed outright (Discord rejects a gallery item with no media.url). Found click-testing Add to Patch Notes.
     if (isCloudinaryWriteBlocked('upload', publicIdFor(patchId, imageIndex))) {
-        return { url: null, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
+        return { url: sourceUrl, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
@@ -119,7 +119,7 @@ async function listCachedPatchAssets() {
 }
 
 /**
- * Deletes every cached image belonging to a season whose patch note `_id` is NOT in `keepPatchIds` -- callers pass the exact same set patchnotes.js's own history dropdown is built from (the last 5 patchNotes[] entries' `_id`s), so retention here can never drift out of sync with what's actually still reachable in Discord. Whole-folder deletion, not age-based -- a season that's been live for months stays cached as long as it's still one of the 5 most recent; a season that rolled off the dropdown yesterday gets pruned on the very next sweep regardless of its own age.
+ * Deletes every cached image belonging to a season whose patch note `_id` is NOT in `keepPatchIds` -- callers pass every patchNotes[] entry's `_id`, since every season stays reachable in Discord, so only a deleted entry's folder goes. Whole-folder deletion, not age-based.
  */
 async function pruneOrphanedPatchFolders(keepPatchIds) {
     try {

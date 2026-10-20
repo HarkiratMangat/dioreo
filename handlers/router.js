@@ -27,6 +27,9 @@ const HANDLER_BINDINGS = [
     ['timestamp', 'handleTimestampInteraction'],
     ['help', 'handleHelpInteraction'],
     ['invite', 'handleInviteInteraction'],
+    ['embedTest', 'handleEmbedTestInteraction'],
+    ['addToPatchNotes', 'handleAddToPatchNotesInteraction'],
+    ['viewColors', 'handleViewColorsInteraction'],
     ['patchnotes', 'handlePatchnotesInteraction'],
     ['settings', 'handleSettingsInteraction'],
     ['loadouts', 'handleLoadoutsInteraction'],
@@ -49,6 +52,9 @@ const handleManageInteraction = late('manage', 'handleManageInteraction');
 const handleTimestampInteraction = late('timestamp', 'handleTimestampInteraction');
 const handleHelpInteraction = late('help', 'handleHelpInteraction');
 const handleInviteInteraction = late('invite', 'handleInviteInteraction');
+const handleEmbedTestInteraction = late('embedTest', 'handleEmbedTestInteraction');
+const handleAddToPatchNotesInteraction = late('addToPatchNotes', 'handleAddToPatchNotesInteraction');
+const handleViewColorsInteraction = late('viewColors', 'handleViewColorsInteraction');
 const handlePatchnotesInteraction = late('patchnotes', 'handlePatchnotesInteraction');
 const handleSettingsInteraction = late('settings', 'handleSettingsInteraction');
 const handleLoadoutsInteraction = late('loadouts', 'handleLoadoutsInteraction');
@@ -84,12 +90,16 @@ const INTERACTION_COOLDOWN_MS = 600;
 function buildInteractionContext(interaction) {
     return {
         interactionId: interaction.id,
+        // Which application this click is for (Dioreo or Dioreo Admin, 2026-10-19 13:44 EDT). utils/emojiMap.js reads it to answer with that app's emoji ids. An application id, never a user's.
+        appId: interaction.applicationId ?? null,
         command: interaction.commandName || interaction.customId || null,
         handler: null,
         userHash: hashUserId(interaction.user?.id),
         startedAt: Date.now(),
         outcome: null,     // set by the guards below and by the catch; first writer wins
         ackMs: null,       // stamped by instrumentAck() on the first defer/reply
+        ackDoneMs: null,   // when Discord confirmed that first defer/reply (dev-bot click log only)
+        createdTimestamp: interaction.createdTimestamp ?? null, // when the user clicked, from the interaction's own id
         deps: null,        // aggregated per dependency name by noteDep()
         detail: null,      // subsystem fields via mergeDetail() -- absorbs the retired RenderTiming
     };
@@ -109,8 +119,23 @@ async function handleInteraction(interaction) {
             return await handleInteractionInner(interaction);
         } finally {
             recordInteractionEvent(interaction, ctx, interaction.user?.id);
+            logClickTiming(interaction, ctx);
         }
     });
+}
+
+// DEV BOT ONLY: one line per click saying where its time went (2026-10-16 22:30 EDT, Harkirat: "Sure, go for it" to a log that shows whether an "interaction failed" is delivery or code). `arrived` is how long after the click the bot received it (Discord's clock vs this Mac's, so a few hundred ms of skew is normal); `sent` and `confirmed` are the first defer/reply leaving and Discord accepting it; `done` is the whole handler. Discord shows "interaction failed" when arrived + confirmed passes 3 s. Production stays quiet.
+function logClickTiming(interaction, ctx) {
+    try {
+        if (process.env.NODE_ENV !== 'development' || !ctx || !ctx.startedAt || interaction.isAutocomplete?.()) return;
+        const arrived = ctx.createdTimestamp ? ctx.startedAt - ctx.createdTimestamp : null;
+        const ms = v => (v == null ? '—' : `${v} ms`);
+        const total = arrived != null && ctx.ackDoneMs != null ? arrived + ctx.ackDoneMs : null;
+        const flag = total != null && total > 3000 ? '  ⚠️ past Discord\'s 3 s' : (ctx.outcome === 'expired' ? '  ⚠️ expired' : '');
+        const at = new Date(ctx.startedAt).toLocaleTimeString('en-US', { hour12: false });
+        const what = String(ctx.command || '').split('~').slice(0, 2).join('~');
+        console.log(`🕒 ${at} ${what} · arrived ${ms(arrived)} after the click · sent +${ms(ctx.ackMs)} · confirmed +${ms(ctx.ackDoneMs)} · done +${ms(Date.now() - ctx.startedAt)}${flag}`);
+    } catch { /* a diagnostic never breaks a click */ }
 }
 
 async function handleInteractionInner(interaction) {
@@ -186,6 +211,12 @@ async function handleInteractionInner(interaction) {
         if (await handleHelpInteraction(interaction)) return;
         markHandler('invite');
         if (await handleInviteInteraction(interaction)) return;
+        markHandler('embedTest');
+        if (await handleEmbedTestInteraction(interaction)) return;
+        markHandler('addToPatchNotes');
+        if (await handleAddToPatchNotesInteraction(interaction)) return;
+        markHandler('viewColors');
+        if (await handleViewColorsInteraction(interaction)) return;
         markHandler('patchnotes');
         if (await handlePatchnotesInteraction(interaction)) return;
         markHandler('settings');
@@ -235,8 +266,8 @@ async function handleInteractionInner(interaction) {
                 const doc = await SeasonalData.findOne({ docType: 'global' }).lean(); // read-only here
                 if (!doc || !doc.patchNotes) return await interaction.respond([]);
 
-                // displayTitle() strips the legacy "Balance Changes for..." prefix AND prefers a manual titleOverride (2026-07-24), same as the main render + history dropdown, so this stays consistent with what's actually shown everywhere else.
-                const filtered = doc.patchNotes
+                // displayTitle() strips the legacy "Balance Changes for..." prefix AND prefers a manual titleOverride (2026-07-24), same as the main render + history dropdown, so this stays consistent with what's actually shown everywhere else. Newest first (2026-10-19 00:30 EDT): every season is kept now, so the 25 shown should be the recent ones.
+                const filtered = doc.patchNotes.slice().reverse()
                     .filter(p => fuzzyMatch(focusedValue, displayTitle(p)))
                     .slice(0, 25);
 
@@ -265,11 +296,9 @@ async function handleInteractionInner(interaction) {
                 const page = interaction.options.getString('content');
                 // Was a bare `respond([])` -- Discord's autocomplete dropdown just showed nothing with no explanation, which read as "the command is broken" rather than "pick Content first" (real click-test feedback, 2026-08-22). A single non-selectable-in-spirit suggestion is a clearer signal than an empty list; its value can never match a real registry id, so picking it just falls through to resolveAction()'s 'unknown' branch below (commands/manage.js) -- normal page render, no error.
                 if (!page) return await interaction.respond([{ name: '⚠️ Pick a Content type first, then Action', value: '__pick_content_first__' }]);
-                // Same admin gate execute() itself opens with, checked here too so a non-admin (or an admin scoped away from this page) never even sees the action names -- an autocomplete interaction carries no customId, so the router's prefix guard doesn't cover this route the way it covers buttons/selects/modals.
-                const { hasCommandAccess, getManagePages } = require('../utils/adminAccess');
+                // Same admin gate execute() itself opens with, checked here too so a non-admin never even sees the action names -- an autocomplete interaction carries no customId, so the router's prefix guard doesn't cover this route the way it covers buttons/selects/modals. Every admin sees every page's actions (the permission restructure, 2026-10-19 19:25 EDT): picking one they lack the tier for gets the same warning the button would.
+                const { hasCommandAccess } = require('../utils/adminAccess');
                 if (!(await hasCommandAccess(interaction.user.id, 'manage'))) return await interaction.respond([]);
-                const allowedPages = await getManagePages(interaction.user.id);
-                if (!allowedPages.includes(page)) return await interaction.respond([]);
                 const { listSlashActions } = require('../utils/manageActions');
                 const filtered = listSlashActions(page)
                     .filter(a => fuzzyMatch(focusedValue, a.label))
@@ -378,6 +407,33 @@ async function handleInteractionInner(interaction) {
             }
         }
 
+    }
+
+    // ==========================================
+    // --- CONTEXT MENU ROUTE (right-click → Apps) ---
+    // ==========================================
+    // One entry point for every right-click command (2026-10-19 09:49 EDT, Add to Patch Notes). A context-menu command's name is its label ("Add to Patch Notes"), and loadCommandModules keys client.commands by that same name, so the lookup is the slash route's. Errors fall through to the outer try/catch, the crash net; the fallback reply is awaited for the reason the slash route's comment gives.
+    if (interaction.isContextMenuCommand()) {
+        // `name#type` first: "View Colors" is both a user and a message right-click (2026-10-19 15:22 EDT, bot/registry.js loadCommandModules).
+        const command = interaction.client.commands.get(`${interaction.commandName}#${interaction.commandType}`) ?? interaction.client.commands.get(interaction.commandName);
+        if (command) {
+            markHandler(interaction.commandName);
+            try {
+                await command.execute(interaction);
+            } catch (error) {
+                console.error(`Error executing context menu command ${interaction.commandName}:`, error);
+                try {
+                    if (interaction.deferred || interaction.replied) {
+                        await interaction.editReply({ content: 'There was an error running this!' });
+                    } else {
+                        await interaction.reply({ content: 'There was an error running this!', ephemeral: true });
+                    }
+                } catch (notifyError) {
+                    console.error(`Failed to notify user of context menu error for ${interaction.commandName}:`, notifyError);
+                }
+            }
+            return;
+        }
     }
 
     // ==========================================

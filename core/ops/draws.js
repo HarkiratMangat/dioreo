@@ -13,6 +13,7 @@ const { toTitleCase, parseBulkDrawList, parseAdminDate } = require('../../utils/
 const { resolveThumbnailsForDraws, upsertByTitle } = require('../../utils/bulkMerge');
 const { fuzzyMatch } = require('../../utils/search');
 const SeasonalData = require('../../models/SeasonalData');
+const { isDrawType, unknownDrawTypeError } = require('../../utils/drawTypes');
 
 const DOC = { docType: 'global' };
 const pathFor = (category) => (category === 'returning' ? 'returningDraws' : 'newDraws');
@@ -28,6 +29,8 @@ function validateOne(payload) {
     if (!['new', 'returning'].includes(payload?.category)) errors.push('Category must be "new" or "returning".');
     // Live bug, reproduced 2026-08-22 15:20 EDT: handlers/manage/draws.js's addDraw/editDraw already parse the modal's raw date string via parseAdminDate() before building the op payload, so payload.date always arrives here as a real Date instance, never a string -- re-running it through parseAdminDate() called dateStr.trim() on a Date and crashed uncaught, on every single draw add/edit. core/ops/calendar.js's validateEvent already guards this exact hazard (isAlreadyDated); mirrored here rather than re-parsing a value that's already valid by construction (a real Date instance can't be an unparseable date the way a string can).
     if (payload?.date && !(payload.date instanceof Date) && !parseAdminDate(payload.date)) errors.push(`Could not read the date "${payload.date}".`);
+    // Draw Type (2026-10-18 11:06 EDT): '' or null clears it; anything else must be a /draw prices type. The parser hands an unresolved tag through as "?<text>" precisely so it lands here.
+    if (payload?.priceType && !isDrawType(payload.priceType)) errors.push(unknownDrawTypeError(payload.priceType));
     if (errors.length) return { ok: false, errors };
     return {
         ok: true, errors: [],
@@ -114,8 +117,8 @@ registerEntity('draws', {
             const before = await SeasonalData.findOne(DOC).select(path).lean().session(session);
             const cur = before[path].find(d => String(d._id) === op.target.elementId);
             if (!cur) return { ok: false, reason: 'missing' };
-            // The prior-value assertion IS the conflict check — see core/mongo/positional.js.
-            const expect = Object.fromEntries(Object.keys(op.payload).map(k => [k, cur[k]]));
+            // The prior-value assertion IS the conflict check — see core/mongo/positional.js. A field the stored draw has never had reads `undefined` off this lean() fetch; it is asserted as null, which is what MongoDB matches a missing field with. Found 2026-10-18 11:06 EDT adding `priceType`: every draw saved before it lacks the field.
+            const expect = Object.fromEntries(Object.keys(op.payload).map(k => [k, cur[k] === undefined ? null : cur[k]]));
             const res = await updateElement({ Model: SeasonalData, docFilter: DOC, arrayPath: path,
                                               elementId: op.target.elementId, expect, set: op.payload, session });
             if (!res.ok) return res;
@@ -146,6 +149,8 @@ registerEntity('draws', {
             if (!parsed?.length) {
                 return { ok: false, errors: ['Nothing in that text parsed as a draw. Check the Bulk Format Guide.'] };
             }
+            const badType = parsed.find(d => d.priceType && !isDrawType(d.priceType));
+            if (badType) return { ok: false, errors: [`${badType.title}: ${unknownDrawTypeError(badType.priceType)}`] };
             return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed } } };
         },
         preview: (op, live) => ({
@@ -188,6 +193,8 @@ registerEntity('draws', {
             }
             const parsed = parseBulkDrawList(op.payload.text || '');
             if (!parsed) return { ok: false, errors: ['Nothing in that text parsed as a draw.'] };
+            const badType = parsed.find(d => d.priceType && !isDrawType(d.priceType));
+            if (badType) return { ok: false, errors: [`${badType.title}: ${unknownDrawTypeError(badType.priceType)}`] };
             return { ok: true, errors: [], normalized: { ...op, payload: { ...op.payload, parsed } } };
         },
         preview: (op, live) => ({

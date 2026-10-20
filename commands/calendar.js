@@ -9,6 +9,7 @@ const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { buildTitleBlock } = require('../utils/titleBlock');
+const { seasonEmojiFor, withCaptionEmoji } = require('../utils/seasonEmoji');
 const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
@@ -95,7 +96,7 @@ function buildSectionComponent(headingLine, entries, seasonalDoc) {
     return { type: 10, content: `${headingLine}\n${body}` };
 }
 
-// PAGE TOGGLE ROW (replaces the old Prev/Next pagination, 2026-07-31 14:00 EDT, per Harkirat's explicit request) -- 3 named buttons instead of arrows, since there are exactly 3 fixed sections, not a variable chunk count. The current page's button is styled Primary+disabled (matches the "active/current page" convention documented in rendering-and-ui.md); the other two are Secondary and clickable. Button label shortened "Gamemodes" -> "Modes" (2026-08-07 15:48 EDT, Harkirat's direct follow-up to the emoji addition below) -- the 3 buttons + their new emoji no longer fit on one row on mobile with "Gamemodes" spelled out (wrapped to its own 2nd row), and Harkirat wanted them to stay a single row. The footer hint line and the page-2 section heading both went "Playlists & Modes" -> "Gamemodes" -> "Game Modes" (2026-08-07 15:48-16:16 EDT, Harkirat's own correction -- "Gamemodes" isn't a real word; CODM's actual in-game terminology is the two-word "Game Modes"). The button label itself stays the shorter "Modes" (unaffected by this correction either way -- it's an abbreviation, not the fused misspelling). **The slash-command `data_for`-style choice list (`{ name: 'Playlists & Modes', value: 'playlists' }` below) is the ONE place still reading "Playlists & Modes" -- deliberately left alone, Harkirat's asks so far have named the button/hint/heading specifically, not that choice list.** Emoji added to each button 2026-08-07 13:10 EDT per Harkirat's request -- Draws reuses the SAME `newDraws` emoji /draws' own New Draws heading uses (his explicit call, rather than a separate generic "draw" icon), Events/Modes use emojiMap's own `events`/`modes` icons. `emojiKey` (a STRING NAME, not the emoji value itself) fixed 2026-08-07 13:59 EDT after CI's checkEmojiCaptures.js caught it: this table is module-level, so storing `emojis.newDraws` directly here would capture the PROD id at require() time, before `refreshEmojiIds()` ever runs on boot -- stale/broken on the dev bot exactly like the Guide emoji this same session already fixed elsewhere. `buildSectionToggleRow` looks the key up in `emojis` fresh on every render instead.
+// PAGE TOGGLE ROW (replaces the old Prev/Next pagination, 2026-07-31 14:00 EDT, per Harkirat's explicit request) -- 3 named buttons instead of arrows, since there are exactly 3 fixed sections, not a variable chunk count. The current page's button is styled Success (green) + disabled since 2026-10-19 09:57 EDT (Harkirat, with the footer nav row moving to blurple in the same ask; it was Primary+disabled before); the other two are Secondary and clickable. Button label shortened "Gamemodes" -> "Modes" (2026-08-07 15:48 EDT, Harkirat's direct follow-up to the emoji addition below) -- the 3 buttons + their new emoji no longer fit on one row on mobile with "Gamemodes" spelled out (wrapped to its own 2nd row), and Harkirat wanted them to stay a single row. The footer hint line and the page-2 section heading both went "Playlists & Modes" -> "Gamemodes" -> "Game Modes" (2026-08-07 15:48-16:16 EDT, Harkirat's own correction -- "Gamemodes" isn't a real word; CODM's actual in-game terminology is the two-word "Game Modes"). The button label itself stays the shorter "Modes" (unaffected by this correction either way -- it's an abbreviation, not the fused misspelling). **The slash-command `data_for`-style choice list (`{ name: 'Playlists & Modes', value: 'playlists' }` below) is the ONE place still reading "Playlists & Modes" -- deliberately left alone, Harkirat's asks so far have named the button/hint/heading specifically, not that choice list.** Emoji added to each button 2026-08-07 13:10 EDT per Harkirat's request -- Draws reuses the SAME `newDraws` emoji /draws' own New Draws heading uses (his explicit call, rather than a separate generic "draw" icon), Events/Modes use emojiMap's own `events`/`modes` icons. `emojiKey` (a STRING NAME, not the emoji value itself) fixed 2026-08-07 13:59 EDT after CI's checkEmojiCaptures.js caught it: this table is module-level, so storing `emojis.newDraws` directly here would capture the PROD id at require() time, before `refreshEmojiIds()` ever runs on boot -- stale/broken on the dev bot exactly like the Guide emoji this same session already fixed elsewhere. `buildSectionToggleRow` looks the key up in `emojis` fresh on every render instead.
 const PAGE_DEFS = [
     { page: 0, label: 'Draws', emojiKey: 'newDraws' },
     { page: 1, label: 'Events', emojiKey: 'events' },
@@ -109,7 +110,7 @@ function buildSectionToggleRow(currentPage) {
         type: 1,
         components: PAGE_DEFS.map(d => ({
             type: 2,
-            style: d.page === currentPage ? 1 : 2,
+            style: d.page === currentPage ? 3 : 2,
             label: d.label,
             emoji: emojis.parseEmoji(emojis[d.emojiKey]),
             custom_id: `calpage_${d.page}`,
@@ -145,8 +146,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         calendarComponents.push({ type: 12, items: [{ media: { url: bannerUrl } }] });
     }
 
-    // Two-line title (season title on top, command header below) — shared pattern, see utils/titleBlock.js. headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
-    calendarComponents.push(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2));
+    // Two-line title (season title on top, command header below) — shared pattern, see utils/titleBlock.js. headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size. The season's emoji in front of the season title (2026-10-19 09:26 EDT, Harkirat), see utils/seasonEmoji.js.
+    calendarComponents.push(withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji)));
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
     const noneScheduledText = filterMode === 'active' && totalEntryCount > 0

@@ -9,6 +9,8 @@ const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { buildTitleBlock } = require('../utils/titleBlock');
+const { splitSeasonEmoji, seasonEmojiFor, withCaptionEmoji } = require('../utils/seasonEmoji');
+const { fuzzyMatch } = require('../utils/search');
 const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
@@ -22,9 +24,9 @@ function cleanPatchTitle(title) {
     return title.replace(/^balance changes for\s*/i, '').trim();
 }
 
-// Resolves a patch entry's actual displayed title -- `titleOverride` (2026-07-24, /manage "Add New Season"/"Past Seasons") wins when set (an admin-typed placeholder, e.g. patch notes released before the new season's real name is announced), otherwise falls back to the auto-synced `title`. Every display site (here, handlers/router.js's autocomplete, the manage-panel dropdown) should call this instead of reading `patch.title` directly, so the override can never be silently ignored somewhere.
+// Resolves a patch entry's actual displayed title -- `titleOverride` (2026-07-24, /manage "Add New Season"/"Past Seasons") wins when set (an admin-typed placeholder, e.g. patch notes released before the new season's real name is announced), otherwise falls back to the auto-synced `title`. Every display site (here, handlers/router.js's autocomplete, the manage-panel dropdown) should call this instead of reading `patch.title` directly, so the override can never be silently ignored somewhere. An emoji typed in front of a patch entry's own title is left out of the title (2026-10-19 09:30 EDT): a select option's label is plain text and would show its raw <a:name:id>. seasonEmoji() below picks it up instead.
 function displayTitle(patch) {
-    return cleanPatchTitle(patch.titleOverride || patch.title);
+    return cleanPatchTitle(splitSeasonEmoji(patch.titleOverride || patch.title).title);
 }
 
 // Buff/nerf/fix shorthand for the additional-info field (2026-07-30 22:24 EDT, per Harkirat's request; "f:" fix alias added 2026-08-08 00:22 EDT) -- typing a standalone "b:"/"n:"/"f:" token gets swapped for the buff/nerf/fix emoji. Read INSIDE this function (render time), not captured into a module-level string -- emojiMap's ids get rewritten in place by refreshEmojiIds() on the dev bot, and anything that reads emojis.x at require time freezes the pre-sync prod id (see rendering-and-ui.md's emoji-capture rule). Word-boundary guarded (start-of-line/whitespace before, nothing glued on after the colon) so this only fires on the alias itself, not on a URL or some other "b:"/"n:"/"f:" substring inside real prose.
@@ -101,19 +103,49 @@ function formatAdditionalInfo(text) {
     return parts.join('\n\n');
 }
 
-function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT, isEphemeral = false) {
-    // Array Trimming: Prevent dropdown menu overload by grabbing only the 5 most recent records
-    const recentPatches = seasonalDoc.patchNotes.slice(-5).reverse();
+// A season's own emoji (2026-10-19 00:30 EDT, Harkirat), picked by the season number in its title; a title with no number, or a season with no emoji yet, gets none. The emoji synced onto the entry from /manage's season title wins, then one typed in front of the entry's own title (2026-10-19 09:30 EDT); utils/seasonEmoji.js holds the rule.
+function seasonEmoji(patch) {
+    const typed = splitSeasonEmoji(patch.titleOverride || patch.title).emoji;
+    return seasonEmojiFor(displayTitle(patch), patch.emoji || typed);
+}
 
-    // Determine target state: Either the user-requested ID or the latest default entry
-    const activePatch = patchId
-        ? seasonalDoc.patchNotes.find(p => p._id.toString() === patchId)
-        : recentPatches[0];
+// The Leakers on Duty Discord, as their own watermark gives it (2026-10-19 09:36 EDT).
+const LEAKERS_ON_DUTY_URL = 'https://discord.gg/nicecat';
+
+// EVERY SEASON IS KEPT (2026-10-19 00:30 EDT, Harkirat, superseding "only the previous 5"): the dropdown lists the 12 newest, and Search Older Seasons (a pop-up, past 12) finds any other. A select holds 25 options, so 12 leaves room for the open season when it is older.
+const HISTORY_SHOWN = 12;
+
+// The newest season whose title matches what was typed: a bare number matches "Season N" exactly, anything else the same fuzzy match as the slash command's season search.
+function findPatchByQuery(patchNotes, query) {
+    const q = String(query || '').trim();
+    if (!q) return null;
+    const newest = (patchNotes || []).slice().reverse();
+    const num = /^\D*?(\d+)\D*$/.exec(q);
+    if (num) {
+        const hit = newest.find(p => new RegExp(`season\\s*${num[1]}\\b`, 'i').test(displayTitle(p)));
+        if (hit) return hit;
+    }
+    return newest.find(p => fuzzyMatch(q, displayTitle(p))) || null;
+}
+
+function buildSearchModal() {
+    return {
+        custom_id: 'patch_search_submit', title: 'Search Seasons',
+        components: [{ type: 18, label: 'Season Name or Number', component: { type: 4, custom_id: 'q', style: 1, required: true, max_length: 60, placeholder: 'e.g. 7 or Terminated' } }]
+    };
+}
+
+function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT, isEphemeral = false) {
+    const newestFirst = seasonalDoc.patchNotes.slice().reverse();
+    const recentPatches = newestFirst.slice(0, HISTORY_SHOWN);
+
+    // Determine target state: the requested entry, else the newest (also when the requested one is gone).
+    const activePatch = (patchId && seasonalDoc.patchNotes.find(p => p._id.toString() === patchId)) || newestFirst[0];
 
     const releaseUnix = Math.floor(new Date(activePatch.releaseDate).getTime() / 1000);
 
-    // Map raw Cloudinary Strings into the Type 12 Media Array standard
-    const carouselItems = activePatch.images.map(imgUrl => ({ media: { url: imgUrl } }));
+    // Map raw Cloudinary Strings into the Type 12 Media Array standard. Blank entries are skipped and a season with no images gets no gallery (2026-10-19 10:32 EDT): Discord rejects a gallery item without a URL, and a gallery with no items, so either one failed the whole command. Found click-testing Add to Patch Notes, after a dev-bot save had stored nulls.
+    const carouselItems = (activePatch.images || []).filter(Boolean).map(imgUrl => ({ media: { url: imgUrl } }));
 
     // NOTE (redesigned during review): activePatch.title now holds just the season # & name (e.g. "Season 6: Take Your Heart") rather than a full "Balance Changes for..." string. Two-line title (season/patch name on top, command header below) — shared pattern, matches the calendar_update_ui.json redesign; see utils/titleBlock.js. Older entries that still have the full legacy sentence stored get it stripped by cleanPatchTitle() rather than rendering "Balance Changes — Balance Changes for...".
     const cleanTitle = displayTitle(activePatch);
@@ -125,6 +157,8 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
         // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
         buildTitleBlock(cleanTitle, emojis.patchNotes, 'Balance Changes', 2)
     ];
+    // The season's emoji sits in front of its name, outside the bold-italic lettering (which would mangle an emoji).
+    withCaptionEmoji(components[0], seasonEmoji(activePatch));
 
     if (hasInfo) {
         components.push(
@@ -137,10 +171,13 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
     components.push(
         { type: 14, spacing: 2, divider: true },
-        { type: 12, items: carouselItems }, // NATIVE MEDIA CAROUSEL INJECTION
-        { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>` },
+        ...(carouselItems.length ? [{ type: 12, items: carouselItems }] : []), // NATIVE MEDIA CAROUSEL INJECTION
+        // Credit where the content is shown (2026-10-19 09:39 EDT, Harkirat: "let's just do it for good faith"): Leakers on Duty publish under CC BY, which asks for attribution in the medium, and their watermark does not come along when the content is retyped. NOTICE §4A.4 carries the full credit.
+        //
+        // The release DATE only, `:D` ("September 23, 2026"), in each reader's own locale; the time of day was dropped (2026-10-19 15:27 EDT, Harkirat: "lets remove the time from the patch notes 'released' timestamp").
+        { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:D>\n-# Source: [Leakers on Duty](${LEAKERS_ON_DUTY_URL})` },
         { type: 14, spacing: 2, divider: true },
-        { type: 10, content: `-# Select from the list below to view **previous balance changes**` }
+        { type: 10, content: `-# View **previous balance changes**` }
     );
 
     const containerPayload = {
@@ -149,10 +186,12 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
         components: components
     };
 
-    // Build historical dropdown options
-    const historyOptions = recentPatches.map((patch, index) => ({
+    // Build historical dropdown options A season opened from search that is older than the 12 shown joins the list, so the dropdown still shows it picked.
+    const listed = recentPatches.some(p => p._id.toString() === activePatch._id.toString()) ? recentPatches : [...recentPatches, activePatch];
+    const historyOptions = listed.map(patch => ({
         label: displayTitle(patch),
         value: `patch_${patch._id}`,
+        ...(seasonEmoji(patch) ? { emoji: emojis.parseEmoji(seasonEmoji(patch)) } : {}),
         default: activePatch._id.toString() === patch._id.toString() // Pre-select current view
     }));
 
@@ -163,6 +202,9 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
             type: 3, custom_id: "select_patch_history", placeholder: "View Previous Seasons...", options: historyOptions
         }]
     });
+    if (seasonalDoc.patchNotes.length > HISTORY_SHOWN) {
+        containerPayload.components.push({ type: 1, components: [{ type: 2, style: 2, label: 'Search Older Seasons', custom_id: 'patch_search_open' }] });
+    }
 
     const globalNavigationRow = buildGlobalNavRow('nav_patchnotes');
 
@@ -173,6 +215,10 @@ module.exports = {
     cleanPatchTitle,
     displayTitle,
     formatAdditionalInfo,
+    seasonEmoji,
+    findPatchByQuery,
+    buildSearchModal,
+    HISTORY_SHOWN,
 
     // COMMAND DEFINITION: Base 'patch', Subcommand 'notes'
     data: new SlashCommandBuilder()

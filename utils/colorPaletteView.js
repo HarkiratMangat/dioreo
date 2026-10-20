@@ -329,8 +329,8 @@ function getAvailableSources(data) {
     });
 }
 
-// `data` is whatever utils/colorPalette.js's getPalettePanelData() returned. Banner/decoration/ nameplate are only present as KEYS at all when the user actually has that source equipped (colorPalette.js only sets them inside an `if (info.X)` guard) -- so key PRESENCE means "has it", while the palette VALUE can still be `null` if extraction genuinely failed on a source they do have. These two states stay distinguishable: "doesn't have a banner" (hide the button) is different from "has a banner, couldn't extract colors from it" (keep the button, show a failure message). `variant` is 'global' | 'server' and rides in every custom_id as a single letter (g/s) so a page/subpage/refresh click stays in whichever view the user is looking at. It is a THIRD pipe segment rather than another `_` token on purpose: the source/subpage parsers already split on `_`, so adding one there would have silently changed how existing ids parse.
-async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbnailUrl, subpage = 0, variant = 'global' }) {
+// `data` is whatever utils/colorPalette.js's getPalettePanelData() returned. Banner/decoration/ nameplate are only present as KEYS at all when the user actually has that source equipped (colorPalette.js only sets them inside an `if (info.X)` guard) -- so key PRESENCE means "has it", while the palette VALUE can still be `null` if extraction genuinely failed on a source they do have. These two states stay distinguishable: "doesn't have a banner" (hide the button) is different from "has a banner, couldn't extract colors from it" (keep the button, show a failure message). `variant` is 'global' | 'server' and rides in every custom_id as a single letter (g/s) so a page/subpage/refresh click stays in whichever view the user is looking at. It is a THIRD pipe segment rather than another `_` token on purpose: the source/subpage parsers already split on `_`, so adding one there would have silently changed how existing ids parse. `readOnly` (added 2026-10-19 12:09 EDT) is the View Colors right-click (commands/viewColors.js): its own ids for the page and pager buttons (`makePageId`, `makeSubpageId`, so a click always redraws the person right-clicked), no hint block and no Refresh / server-switch buttons, an `extraHint` above the page row, the open page green, and an `accentColor`. /colors passes none of these and renders as before.
+async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbnailUrl, subpage = 0, variant = 'global', readOnly = false, makePageId = null, makeSubpageId = null, accentColor = null, extraHint = null }) {
     const v = variant === 'server' ? 's' : 'g';
     const availableSources = getAvailableSources(data);
     const effectiveSource = availableSources.includes(source) ? source : 'avatar';
@@ -436,37 +436,40 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // Prev/Next WITHIN the current source (avatar/banner's 8 colors need this at 4-per-page; display name/nameplate/decoration's smaller counts fit on one page, so buildPaginationRow's own totalChunks<=1 check hides this row for them automatically -- no per-source special-casing needed). Same shared helper /calendar and /draws already use for their own sub-page nav.
     const subpageRow = buildPaginationRow({
         totalChunks: totalPages, currentPage: effectiveSubpage,
-        makeCustomId: (p) => `colors_subpage_${effectiveSource}_${p}|${targetUserId}|${v}`,
-        indicatorCustomId: 'colors_subpage_indicator'
+        makeCustomId: makeSubpageId ? (p) => makeSubpageId(effectiveSource, p) : (p) => `colors_subpage_${effectiveSource}_${p}|${targetUserId}|${v}`,
+        indicatorCustomId: readOnly ? 'vc_indicator' : 'colors_subpage_indicator'
     });
-    if (subpageRow) containerComponents.push(subpageRow);
+    // A small space above the pager, no line (2026-10-18 15:12 EDT, Harkirat: "add a divider:false small spacing ... anywhere else that pagination buttons appear").
+    if (subpageRow) containerComponents.push({ type: 14, spacing: 1, divider: false }, subpageRow);
 
     containerComponents.push({ type: 14, spacing: 2, divider: true });
     // Hint line (2026-07-14, Harkirat's request) above the source-switch row -- short, tells a user who's never clicked the other page buttons that they exist, plus a nudge toward Refresh Colors for the (real, and otherwise easy to miss) case where they've since updated their avatar/ banner/etc and the panel is still showing the old cached extraction.
-    containerComponents.push({ type: 10, content: "-# Tap a button below to view colors from a different part of your profile.\n-# (Tip: Updated your profile? `Refresh Colors`)" });
+    if (!readOnly) containerComponents.push({ type: 10, content: "-# Tap a button below to view colors from a different part of your profile.\n-# (Tip: Updated your profile? `Refresh Colors`)" });
+    if (extraHint) containerComponents.push({ type: 10, content: extraHint });
     containerComponents.push({
         type: 1,
         components: availableSources.map(key => ({
             type: 2,
-            style: key === effectiveSource ? 4 : 2,
+            // The open page is green and disabled on /colors too (2026-10-19 12:09 EDT, Harkirat: "set the main /color command's active selection to green-disabled instead of red-disabled"), the in-panel switcher convention in rendering-and-ui.md.
+            style: key === effectiveSource ? 3 : 2,
             label: SOURCE_META[key].label,
-            custom_id: `colors_page_${key}|${targetUserId}|${v}`,
+            custom_id: makePageId ? makePageId(key) : `colors_page_${key}|${targetUserId}|${v}`,
             disabled: key === effectiveSource
         }))
     });
 
-    // No accent_color at all (Harkirat's explicit request) -- omitting the field entirely gives Discord's default "no accent" look, unlike every other command's container which always sets one.
-    const containerPayload = { type: 17, components: containerComponents };
+    // No accent_color at all on /colors (Harkirat's explicit request) -- omitting the field entirely gives Discord's default "no accent" look, unlike every other command's container which always sets one. The View Colors right-click passes one: the avatar's "First Impression" (his ask, 2026-10-19 12:07 EDT).
+    const containerPayload = { type: 17, components: containerComponents, ...(accentColor != null ? { accent_color: accentColor } : {}) };
 
     // "Refresh Colors" -- moved OUTSIDE the container as its own top-level sibling row (Harkirat: "move the refresh button outside of the embed container"), same convention the global nav row and Share Publicly button already use elsewhere in this bot (a new top-level row, never packed into the container). Style 1 (blurple) + the eyedropper emoji to match the "View Colors" button itself. Encodes the current subpage so a refresh doesn't bounce back to page 1. Forces a real re-extraction, bypassing the cache -- see handlers/colors.js's colors_refresh_ handler (10s cooldown + change-detection message) and utils/colorPalette.js's forceRefresh param. Every other button/select re-render in this bot deliberately does NOT re-run extraction (that's the whole point of the cache), so this is a specific, deliberate exception for exactly this one explicit user action.
-    const refreshRowComponents = [{
+    const refreshRowComponents = readOnly ? [] : [{
         type: 2, style: 1, label: 'Refresh Colors',
         custom_id: `colors_refresh_${effectiveSource}_${effectiveSubpage}|${targetUserId}|${v}`,
         emoji: emojis.parseEmoji(emojis.eyedropper)
     }];
 
     // GLOBAL / SERVER switch (2026-08-09 17:05 EDT). Shown ONLY when the user actually has a server profile in THIS guild -- with no override the two views resolve to identical images, so the button would visibly do nothing, which reads as broken. Harkirat's spec: "only if both options/values exist, otherwise just dont show the button and display global colors." data.hasServerProfile is read from the interaction payload, so this costs no network call and is honest about the current server rather than "has a server profile somewhere".
-    if (data.hasServerProfile) {
+    if (data.hasServerProfile && !readOnly) {
         const goingTo = v === 's' ? 'g' : 's';
         refreshRowComponents.push({
             type: 2, style: 2,
@@ -479,15 +482,15 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // Download Avatar/Banner (2026-07-18, v2 quick-wins batch) -- full-res, bottom, outside the container, beside Refresh, matching /settings' existing avatar/banner download buttons (same style-5 Link button pointed straight at the 4096px CDN url -- Discord renders a Link button in grey same as a plain Secondary button, it just needs `url` instead of `custom_id` since it's not an interaction at all, only a direct CDN link). Only shown on that source's OWN page (Harkirat's spec: "on their respective color-menu pages"), not on every page -- Name/Nameplate/Deco have no equivalent full-res original worth downloading here.
     //
     // ⚠️ THEY WERE MOVED INSIDE THE CONTAINER FOR ONE EVENING (2026-08-12 22:15 EDT) AND REVERTED HERE AT 23:41, on Harkirat's call after seeing it rendered. Kept as a note because the finding on the way is real and the move will be proposed again: a Section carries exactly ONE accessory, a thumbnail OR a button, so these can never sit in the avatar/decoration heading -- that slot holds the source's own thumbnail, which is the subject of the page.
-    if (effectiveSource === 'avatar' && data.avatarFullUrl) {
-        refreshRowComponents.push({ type: 2, style: 5, label: 'Download Avatar', url: data.avatarFullUrl });
-    }
-    if (effectiveSource === 'banner' && data.bannerFullUrl) {
-        refreshRowComponents.push({ type: 2, style: 5, label: 'Download Banner', url: data.bannerFullUrl });
-    }
-    const refreshRow = { type: 1, components: refreshRowComponents };
+    //
+    // ⚠️ ON EVERY PAGE NOW, AND NAMED "Avatar" / "Banner" (2026-10-19 12:09 EDT, Harkirat: "the buttons show regardless of which sub-page you're viewing ... make that feature change in the main /color command as well", then "drop the "download" from the button's word"). This reverses the "only on its own page" rule above; a link button's ↗ already says it opens the image. Banner shows only when there is one. FIRST in the row, before Refresh (2026-10-19 12:11 EDT, Harkirat: "swap avatar/banner buttons before the "refresh" button").
+    const imageLinks = [];
+    if (data.avatarFullUrl) imageLinks.push({ type: 2, style: 5, label: 'Avatar', url: data.avatarFullUrl });
+    if (data.bannerFullUrl) imageLinks.push({ type: 2, style: 5, label: 'Banner', url: data.bannerFullUrl });
+    refreshRowComponents.unshift(...imageLinks);
+    const refreshRow = refreshRowComponents.length ? { type: 1, components: refreshRowComponents } : null;
 
-    return { components: [containerPayload, refreshRow], files };
+    return { components: refreshRow ? [containerPayload, refreshRow] : [containerPayload], files };
 }
 
 // `buildSwatchEntries` is exported for verification only -- it is the unit that turns extracted colours into the name+label pair a reader actually sees, and the label rules above are judged on real palettes rather than on the thresholds in isolation. Nothing in the bot calls it from outside this file. The ephemeral follow-up the "Refresh Colors" button sends. Lives here rather than inline in handlers/colors.js because it is presentation, and because every one of its branches is INVISIBLE until somebody presses the button on exactly the right combination of state -- three verdicts, two per-view lists and a trailing line that is mutually exclusive with them. That is untestable inline and trivially testable as a function of its inputs.

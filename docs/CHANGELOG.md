@@ -29,7 +29,112 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.87.0 — 2026-10-01 20:33 EDT (#195) — the first hook-free PR is watched for, and two CI decisions are recorded
+## Pre-Release v3.97.0 — 2026-10-19 19:43 EDT (#206) — admin permissions become two tiers, Create and Destructive, checked on every write
+**`core/permissions.js` (new), `core/changeset.js`, `utils/adminAccess.js`, `models/AdminUser.js`, /manage, /bot, the admin right-clicks, `/autobuild`, `/settings`.** Harkirat, 2026-10-19 19:13 EDT: "yeah start the bot side build and prep so the only thing a portal session needs to do is link the portal realm to the perms that exist in the bot". Design: `docs/superpowers/specs/2026-10-19-permission-restructure-design.md`.
+
+- **Two tiers per scope, one per button.** Create (edit counts as create) and Destructive, granted on a command or a page. `/manage` carries to its 8 pages, `/autobuild` to MP and DMZ Loadouts, and `/bot` to every /bot and /manage page. The global `destructive` token and the `all` shorthand are retired.
+- **Browse freely, warn on press.** Any admin opens every /manage page, Next Season Draft included; a button pressed without its tier gets a warning naming the tier and page. Season's Titles & Deadlines and Start New Season need their tier to open, because opening one is pressing it.
+- **Every commit is authorized.** `commitSet` checks each op's tier before it writes, for Discord and the portal alike, so a modal submitted after a grant was narrowed is refused. An op with no tier is refused for everyone but the owner, and a test fails if one ships without one. Loadout deletes and edits read the build's own mode.
+- **Undo and Revert need Destructive on the change's page.** Provisional on his word; it is one constant, `UNDO_TIER`.
+- **`/bot access` grants per tier**, one `scope: c|d|cd` per line, and each admin card lists every grant by name.
+- **Old grants keep their old meaning** until the purge, and a portal edit in the old shape replaces the new one rather than being outranked. `scripts/purgeLegacyAdminGrants.js` is a dry run unless given `--apply`; **running it on prod waits for his word.**
+- **/manage's delete prompt stops promising an Undo button.** That button was retired when Undo moved to `/bot`'s Changes page; the prompt now says where a revert lives.
+- **`/settings customize:` is now `/settings open:`** (his ask 2026-10-19 19:31 EDT), in the command, `/help`, the rules and the site's commands page.
+- **The portal half is a hand-off**, written for the portal workstream in the project files (`permission-restructure/proposals/pins2-portal-permissions.md`). `portal/**` is untouched and keeps working through the bridge.
+
+
+## Pre-Release v3.96.0 — 2026-10-19 19:15 EDT (#205 · `74e0f088`) — the Privacy Policy's two change-history tables now list the same versions
+**`docs/legal/PRIVACY.md`, `public/privacy.html` and two records.** Harkirat, 2026-10-19 18:21 EDT: "Yeah, you can fix the privacy.md gap if you want."
+
+- **§12.1 Revision history gains 1.16 and 1.14**, written for a reader from Appendix B's text and §2.1d. It had jumped from 1.15 to a 1.16 it never described.
+- **Appendix B's 1.14 is a table row now**, marked *(pending)* for the v3 release like its neighbours; it sat as a loose paragraph above the table, dated as if in effect. `colorsVisibility` ships with v3. Nothing about what the Bot collects changes.
+- **Deferred list:** the calculator Delete click-test is dropped on his word, the history-gap entry is closed, and his Public Bot check is recorded on the Dioreo Admin entry.
+
+
+## Pre-Release v3.95.0 — 2026-10-19 18:22 EDT (#204 · `29dacb1c`) — `/autobuild` moves to Gemini 3.8 Flash
+**`utils/visionExtract.js`, its two Vertex scripts and a new cost test.** Harkirat's ask 2026-10-19 18:09 EDT: the newest model in the tier already in use, the mid one, no Pro and no Flash-Lite. What is true now is `.claude/rules/autobuild.md` ("Vision model").
+
+- **gemini-3.5-flash → gemini-3.8-flash**, the newest Flash that is generally available on Google's Agent Platform (formerly Vertex AI): GA 2026-09-02 in its release notes, listed under the `us` multi-region the bot calls. 3.6 and 3.7 were skipped. The request needed no change: it sends none of the parameters 3.8 deprecates and leaves thinking at the `medium` default.
+- **Cheaper while the introductory rate lasts:** $0.825 in / $4.125 out per million tokens on `us` through 2026-12-31, against 3.5's $1.65 / $9.90, then $1.65 / $8.25 from 2027-01-01. The cost log carries both periods and picks by date.
+- **The cost log now counts thinking tokens**, which Google bills as output and the log used to leave out, and records them as `thinkingTokens`. `scripts/visionCost.test.js` pins the model, the rate switch and the thinking count.
+- **Still to do, on his Mac:** one live call, `node --env-file=.env.dev scripts/test-vertex-extract.js`, which now prints the model it used. A `GCP_MODEL` line in a `.env` overrides the new default, so the VM's `.env` is worth checking at deploy.
+
+
+## Pre-Release v3.94.0 — 2026-10-19 18:10 EDT (#203 · `c508a9f3`) — the deferred list and roadmap swept for staleness, and Harkirat's 2026-10-19 decisions recorded
+**Records only, plus one code comment.** His ask 2026-10-19 18:00 EDT: clean the staleness and gaps out of the deferred list so everything is up to date. What is true now is `docs/db-deferred-list.md` and `docs/ROADMAP.md`.
+
+- **Ten entries closed into `docs/archive/resolved-list.md`**, each checked against code and git history first: `/bot analytics` Phase 2 (#173), disabling expired buttons on every command (`sendV2Payload`'s `schedulePanelExpiry`), `/invite` in `/help`, the Actions `@v5` bump, the prod DB rename off `test`, the `RENDER_API_KEY` revocation, the landing SPECS gap, the changelog gap for the four portal commits, a duplicate `/help` entry and orphaned calculator sub-bullets.
+- **His decisions recorded in his words:** View Colors' unset pages abandoned (the button and page stay hidden), different view options moved to v4, admin commands never listed on the public `/commands` page, the Troll Build badge deferred indefinitely, and the first-use welcome guide deferred out of the launch checklist.
+- **Stale claims corrected:** "not yet merged" on the `/server` → `/admin` rename (#125) and hotpatch (#162), guild install now done, the server-admin control surface shipped, the calculator passover done (#175, #197 to #199), and the `/settings` jump-to lines ticked now that #202 is in.
+- **New gaps filed, not fixed here:** `PRIVACY.md`'s §12.1 Revision history lacks 1.14 and 1.16, and the landing page's `/draw calculator` SPECS still types the unwired pulls and balance options.
+- **`scripts/lib/commandCatalog.js`:** a comment that said `/invite` was missing from `CATEGORY_DEFS` now says it lives in Utilities.
+
+
+## Pre-Release v3.93.0 — 2026-10-19 18:03 EDT (#202 · `5a62c59c`) — `/settings` opens on the page you ask for, and `/autobuild` reads DMZ builds
+**`/settings`, `/autobuild`, `/help` and two new test scripts.** Harkirat's picks 2026-10-19 17:45 EDT; what is true now is `.claude/rules/settings-and-expiry.md` and `.claude/rules/autobuild.md` ("DMZ detection").
+
+- **`/settings customize:`** opens Visibility, Preferences or View Colors directly. Colors follows the Settings visibility, the same as the dashboard's View Colors button.
+- **`/autobuild` tells MP from DMZ** by the Gunsmith screen itself (Pen stats and the Equip/Customize tabs vs Select Blueprints and a code in the title), needing two signals that agree. When it can't tell, the review card says so and Confirm waits for the new `mode:` option or the Edit modal's `Category | Mode` box.
+- **Up to nine attachments are read**, so DMZ builds come through whole. An MP read over five gets a warning instead of being cut. DMZ builds are saved with DMZ badges (`dmzRangeRank`), a `DMZ-WEAPON-N` image, no code and blank slots, since DMZ prints no slot label. Duplicates, badge inheritance and Open Loadout compare within the same mode.
+- **Still to do, on his Mac:** `node --env-file=.env.dev scripts/autobuildDmzCheck.js` runs the DMZ screenshots already in the bot through the real vision call, read-only. It could not run from the cloud session that built this.
+
+
+## Pre-Release v3.92.0 — 2026-10-19 15:43 EDT (#201 · `606fbd1f`) — Dioreo Admin, a second app for the admin commands, and View Colors from a message
+**A second Discord application, a message right-click, `/patch notes` and the emoji copy script.** Harkirat's asks on this branch; what is true now is `bot/clients.js` and `docs/db-deferred-list.md` ("Dioreo Admin").
+
+- **Dioreo Admin:** with `ADMIN_BOT_TOKEN` set, `/manage`, `/bot`, `/autobuild`, the four admin right-clicks and the dev-only `/embedtest` leave the public app for a user-install-only admin app, so they stop showing in every user's command list. One process logs in twice, with the same router and database; each app shows its own emoji copies, and command links work across both. `/admin` stays on Dioreo. Without the token nothing changes.
+- **View Colors** (everyone, on a message): the same panel as on a person, for the message's author.
+- **`/patch notes`:** the released line shows the date only.
+- **Emojis:** `scripts/syncMissingDevEmojis.js` copies, checks and repairs a non-prod app's emojis (`--app admin`, `--check`, `--file`). Discord re-compresses any upload over 256 KB, which is what blurred the dev bot's copies, so heavy emojis come from Harkirat's originals. Checkmark is his current final on every app.
+- **At deploy, on his word:** the VM's `.env` gains `ADMIN_BOT_TOKEN`, together with the prod admin app's emojis.
+
+
+## Pre-Release v3.91.0 — 2026-10-19 12:39 EDT (#200 · `da8b6358`) — right-click a post to add it to patch notes, draws or the calendar, and right-click a person to see their colours
+**Six right-click commands, `/colors`, `/calendar`, `/patch notes`, `/draw calculator`, a new `ColorCache` model and PRIVACY.md.** Harkirat's asks on this branch; what is true now is `.claude/rules/commands-overview.md`.
+
+- **Add to Patch Notes** (admin, on a post or a forward of it). A private panel shows the post's images and a season dropdown (New season + the 24 newest); Add images, Replace images or Create season opens /manage's own Season box pre-filled. The post's date fills Release Date only when it is blank, its extra text is added to Additional Info, and its title line and "final patchnotes are subject to change" are left out.
+- **Autobuild Loadout, Add to Draws, Add to Calendar** (admin): `/autobuild` on the post's image (a picker for several), and /manage's Add Draw and Add Calendar Event boxes pre-filled from the post. Each checks the same /manage page or command access on every click.
+- **Convert Times** (everyone): every date and time in a message as Discord timestamps, privately, read in your /settings zone when the text gives none.
+- **View Colors** (everyone, on a person): their palette, public by default, paged like `/colors` and accented by their avatar, with no timeout. Anyone may press its pages; it always shows that person. Pages they lack are left off with a "No custom … detected." line.
+- **`/colors`:** Avatar and Banner link buttons on every page, before Refresh; the open page is green.
+- **Smaller:** the calendar's section toggles turn green and the footer row blurple; `/patch notes`' hint reads "View **previous balance changes**" and it no longer breaks when the dev bot cannot upload to Cloudinary; `/draw calculator`'s Delete All warns first with Keep Them, the single delete hides Delete All, and both use his new Warn, Delete and Keep icons.
+- **Data:** new `ColorCache` holds the colours of people who have never used Dioreo, keyed by a hash of the image with no user id, and deleted 30 days after first seen. PRIVACY.md §2.2, §7 and Appendix A say so, in the pending v1.11.
+
+
+## Pre-Release v3.90.0 — 2026-10-19 09:51 EDT (#199 · `40724c97`) — the calculator's buttons rearranged, season emojis on every season title, and a Credits row in /help
+**`/draw calculator`, `/draws`, `/calendar`, `/patch notes`, `/manage` season titles, `/help` and NOTICE.** Harkirat's eight comments on `claude/draw-calc-tweaks-kxm17f`; what is true now is `.claude/rules/draw-prices.md` § CURRENT STATE.
+
+- **The calculator's rows.** The result's row reads New Calculation · Export · View Saved · Save Result; the editor's nav row puts View Saved first; and every nav row gains **Draws** in front of Draw Prices, opening `/draws` as its own private message. The whole "Double CP event is live" line is bold. New Calculation and Restore Calculation use his re-uploaded NewCalc icon.
+- **Season emojis.** `/draws` and `/calendar` show the season's emoji in front of the season title, as `/patch notes` already did.
+- **`/manage` takes the emoji.** A custom emoji typed in front of the season title (live or Next Season Draft) is kept as the season's emoji, the title stays plain, and Promote to Live and the current patch-notes entry carry it. The dev bot re-points it by name.
+- **Credit.** NOTICE §4A.4 credits Leakers on Duty (CC BY), and `/patch notes` carries a small Source line.
+- **`/help`:** a Credits · Terms · Privacy Policy row under Website and Invite Dioreo, linking to dioreo.app.
+- **Data:** `SeasonalData` gains `currentSeasonEmoji`, `draft.currentSeasonEmoji` and `patchNotes[].emoji`. No user data, so PRIVACY is unchanged.
+
+
+## Pre-Release v3.89.0 — 2026-10-19 00:54 EDT (#198 · `3fe201a7`) — Series Armory and the Advanced draws join the calculator, and /patch notes keeps every season
+**`/draw calculator`, `/draw prices`, `/manage` Draws, `/patch notes`, `/help` and `/invite`.** Built on the dev bot from Harkirat's click-tests on `feat/series-armory`; what is true now is `.claude/rules/draw-prices.md` § CURRENT STATE.
+
+- **Series Armory.** `/draw prices` gains the three armories (Legendary Weapon, Legendary Character, Mythic Weapon), priced per item and per full armory, and the calculator prices them per item with the spins already in; the Mythic Weapon armory's weapons upgrade from the same Mythic Cards as the Mythic Weapon draw.
+- **This season's draws** come first in the calculator, each priced by a Draw Type set in `/manage` (or `type:` in a bulk paste).
+- **The Advanced Double Legendary draws, priced per set.** A line records the sets spun and which are full (from an Advanced pull or finished later), and seven goals run from one random Epic to all 20 items, each priced set by set at its cheapest.
+- **The calculator, polished.** Set Draw Progress with Add Draws and Remove Draws pop-ups, one Set Region & Balance section, a currency per calculation, Resume a Saved Calculation on the landing, the 2X offers under the Cost Breakdown, and a one-press New Calculation with **Restore Calculation** to undo it until the next Calculate.
+- **`/patch notes` keeps every season.** The dropdown lists the 12 newest with **Search Older Seasons** for the rest, and each season's title carries its emoji.
+- **`/help` and `/invite`:** the button reads Invite Dioreo, and Share Link posts publicly with the invite as a link.
+- **Data:** `DrawBasket` gains `currency`, `goal`, `bothSets`, `laterSets` and `previous`, and draws gain `priceType`; PRIVACY §2.1d and Appendix A cover them.
+
+
+## Pre-Release v3.88.0 — 2026-10-18 00:11 EDT (#197 · `bbd64dba`) — the draw calculator rebuilt from his click-tests: saved calculations, Mythic upgrades by tier, and a smarter bundle pick
+**`/draw calculator`, `/draw prices` and `/help`.** Built on the dev bot from Harkirat's click-tests and his screen-by-screen intake, 56 batches logged verbatim in `docs/claude/2026-10-13-draw-calculator-intake.md`; what is true now is `.claude/rules/draw-prices.md` § CURRENT STATE.
+
+- **The calculator is one live panel.** A landing to start a calculation, then a result with **Your Draw Selections** and **Cost Breakdown** + **Suggested Purchase**, toggled between **Simple Breakdown** and **Full Breakdown**. Calculations save (named ones until deleted, unnamed ones for 30 days), reopen on the next run, and live in **View Saved**. `page:` opens on Start a Calculation, View Saved or Help; the old `draw`/`pulls`/`balance`/`region` options are unwired and kept.
+- **Mythic upgrades by tier.** Weapon levels 1–5 in Mythic Cards and the character's three paths plus Final Form in Mythic Coins, from one shared pool each; one pop-up per Mythic draw; the balance pop-up takes CP, cards and coins, accepts `2k` and `250 cards`, and names any refused field privately.
+- **A bundle pick people would actually make.** The recommendation is the fewest purchases within the larger of 3% of the cheapest total and, per purchase saved, the smallest bundle's price or 1.5% (his case: 8,730 CP in CAD is now one 10,800 bundle, not five purchases saving 26 cents). Swept over all 41 currencies, it never picks more purchases than before. The sweep also found that about 15% of picks with 2X available showed a bundle at the normal rate while its own 2X sat unused; a bundle's 2X is now used on its first buy. The label beside Stock Up reads **Just Enough**.
+- **`/draw prices`:** a **Jump to a draw type** dropdown and `type:` option open one draw with **Show All Draws** in place of the pager; the Mythic upgrade ladders in his format; Legendary Character + Legendary Weapon moves to page 2.
+- **`/help`:** `/gunsmiths search` and `list` are real links on the landing, the Draws page has a **Calculator Guide** button, and four out-of-date pages are corrected. A new check in `scripts/helpBodySnapshot.test.js` fails when /help and the registered options disagree.
+- **Data:** `DrawBasket` gains upgrade levels and card/coin balances, covered by PRIVACY §2.1d and Appendix A. The dev-only `/embedtest` arrives with this branch and registers only on the dev bot.
+
+## Pre-Release v3.87.0 — 2026-10-01 20:33 EDT (#195 · `c40ce607`) — the first hook-free PR is watched for, and two CI decisions are recorded
 **Documentation only; no runtime change.** `CLAUDE.md`'s CI block now tells every session what to expect from the first PR that touches no hook: `hooks on macOS` skipped and `syntax-check` still green, with where to fix it if it is red. This PR changes no hook, so its own CI was that first case: `hooks on macOS` was skipped and `syntax-check` stayed green (run 36946454845), recorded in the resolved list. The deferred list also records Harkirat's two calls: the sync commit's missing test is accepted as is (`main` is paused until v3 merges), and the macOS job stays advisory for now. The CI plan's §7 points at the watch-for.
 
 ## Pre-Release v3.86.0 — 2026-10-01 18:32 EDT (#192 · `37f42959`) — CI and the test queue rebuilt: a parallel runner, deterministic browser walks, CI split into jobs

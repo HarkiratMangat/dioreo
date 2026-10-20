@@ -3249,8 +3249,10 @@ h1 em{font-style:normal;color:var(--accent-t)}
        two that fit, and they are also the two a player actually types.
        ⚠️ AND NO BACKTICKS IN HERE: CMD_JS is a template literal, so one inside a
        comment closes it. An odd count is a parse error and an EVEN count renders
-       wrong while every gate stays green. Added 2026-09-09 16:50 EDT. */
-    {c:'/draw calculator', pairs:[['pulls','25'],['pulls','60'],['balance','1200']]},
+       wrong while every gate stays green. Added 2026-09-09 16:50 EDT.
+       The pulls values were 25 and 60 until 2026-10-13 12:47 EDT: the option allows 0 to
+       10, so the page typed two values Discord would refuse. */
+    {c:'/draw calculator', pairs:[['pulls','3'],['pulls','7'],['balance','1200']]},
     {c:'/calendar',    pairs:[['page','Draws'],['page','Events'],['page','Playlists & Modes'],
                               ['view','All Events'],['view','Active/Upcoming Only']]},
     {c:'/patch notes'},

@@ -26,6 +26,12 @@ module.exports = {
         .setName('settings')
         // Trimmed 2026-07-18 (v2 quick-wins batch, mobile-width audit) -- the old 83-char version truncated to "..." on Discord mobile's command picker row; every top-level/subcommand description in this pass was checked against that same narrow row, not desktop.
         .setDescription('Customize your bot settings and preferences')
+        // Jump-to (2026-10-19 17:48 EDT, docs/ROADMAP.md's "/settings jump-to options"): land on page 1 (Visibility) or page 2 (Preferences) directly, or open the View Colors panel without going through the dashboard's button. Registered BEFORE `visibility` because Discord's option picker follows registration order, and the roadmap's own shape reads `/settings open:… visibility:…`. Named `customize:` when it shipped (v3.93.0) and renamed `open:` 2026-10-19 19:33 EDT at Harkirat's request: the choice says which page OPENS, it does not customize anything itself. Per-invocation only, never saved -- same shape as /timestamp's `view`.
+        .addStringOption(option => option.setName('open').setDescription('Open straight on one part of your settings.').addChoices(
+            { name: 'Visibility', value: 'visibility' },
+            { name: 'Preferences', value: 'preferences' },
+            { name: 'Colors', value: 'colors' }
+        ))
         // Added 2026-07-18 (v2 quick-wins batch) -- every other command already has this option; /settings was simply missed. Same name/description/priority pattern as everywhere else (explicit option > saved settingsVisibility preference > public default, see resolveEphemeral below) -- the in-panel Show/Hide toggle button still works exactly as before for changing the SAVED preference; this just lets one specific invocation override it.
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
@@ -33,7 +39,15 @@ module.exports = {
     // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region dropdown + hex-code lines + footer pushed the single-page layout close to Discord's 40-component cap -- see the `set_page_` button handler in handlers/settings.js for how page navigation re-invokes this with a target page.
     async execute(interaction, pageOverride = 0) {
         const userId = interaction.user.id;
-        const page = Math.min(Math.max(pageOverride, 0), 1);
+        // `open:` only exists on a real slash invocation. Every re-render (the toggle/set/set_page handlers in handlers/settings.js) calls this with a button or select interaction and its own pageOverride, so the guard keeps those exactly as they were.
+        const open = interaction.isChatInputCommand() ? interaction.options.getString('open') : null;
+        // `open:colors` opens the same panel the dashboard's "View Colors" button opens, through /colors' own execute() rather than a third copy of that render. It passes settingsVisibility, not colorsVisibility, because that button deliberately reads settingsVisibility (see handlers/colors.js's colors_view branch): this option is a shortcut to the button, so the two must agree. An explicit `visibility:` on this /settings call still wins, since /colors reads the option of the same name. /colors' own `page`/`source` options don't exist here and resolve to null, i.e. the Avatar page and the contextual server-or-main default.
+        if (open === 'colors') {
+            return require('./colors').execute(interaction, { prefsField: 'settingsVisibility' });
+        }
+        const page = open === 'preferences' ? 1
+            : open === 'visibility' ? 0
+            : Math.min(Math.max(pageOverride, 0), 1);
 
         // 1. DATA SYNCHRONIZATION
         let prefs = await UserPreference.findOne({ discordId: userId });
@@ -96,6 +110,7 @@ module.exports = {
         const timeVis = (prefs.timestampVisibility || 'public').toUpperCase();
         const settingsVis = (prefs.settingsVisibility || 'public').toUpperCase();
         const colorsVis = (prefs.colorsVisibility || 'public').toUpperCase();
+        const calcVis = (prefs.calculatorVisibility || 'public').toUpperCase();
         const tz = prefs.timezone || 'America/Toronto';
         const style = prefs.timestampStyle || 'all_formats';
 
@@ -176,6 +191,7 @@ module.exports = {
 
             containerComponents.push(buildToggleRow('Weapon Builds', loadoutVis, `toggle_loadout_public`, `toggle_loadout_ephemeral`));
             containerComponents.push(buildToggleRow('Seasonal Content', seasonVis, `toggle_seasonal_public`, `toggle_seasonal_ephemeral`));
+            containerComponents.push(buildToggleRow('Draw Calculator', calcVis, `toggle_calculator_public`, `toggle_calculator_ephemeral`));
             containerComponents.push(buildToggleRow('Timestamps', timeVis, `toggle_timestamp_public`, `toggle_timestamp_ephemeral`));
             containerComponents.push(buildToggleRow('Settings Dashboard', settingsVis, `toggle_settings_public`, `toggle_settings_ephemeral`));
             containerComponents.push(buildToggleRow('Colors', colorsVis, `toggle_colors_public`, `toggle_colors_ephemeral`));
@@ -293,7 +309,8 @@ module.exports = {
             makeCustomId: (p) => `set_page_${p}|${userId}`,
             indicatorCustomId: 'set_page_indicator'
         });
-        if (paginationRow) containerComponents.push(paginationRow);
+        // A small space above the pager, no line (2026-10-18 15:12 EDT, Harkirat: "add a divider:false small spacing ... anywhere else that pagination buttons appear").
+        if (paginationRow) containerComponents.push({ type: 14, spacing: 1, divider: false }, paginationRow);
         containerComponents.push({ type: 14, spacing: 2, divider: true });
 
         // FOOTER (2026-07-12) -- silent mention (doesn't ping Harkirat when someone else opens /settings) using the same `allowed_mentions: { users: [] }` suppression already applied to the header's own self-mention below; renders as a normal clickable mention either way. A Text Display can paste a raw emoji mention string directly (unlike a button's `label`, which needs the parsed { id, name, animated } shape -- see parseEmoji()'s own comment).

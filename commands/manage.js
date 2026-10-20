@@ -5,7 +5,7 @@
 //
 // NOTE on the deferred "search + multi-select" flow: the mockups describe "Delete Multiple" (all entities) and Loadouts' "Replace Multiple" as searching first, then picking which matches to act on from a list — a new interaction, different from today's paste-a-list-of-names bulk-remove. Per Harkirat's explicit direction, that real search+multi-select rebuild is intentionally NOT part of this pass — it's large enough on its own that bundling it here risked a usage-limit interruption mid-build. This pass keeps those specific actions on today's paste-based modals (renamed/re-styled to match the new buttons) as a deliberate placeholder, not an oversight.
 
-const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { formatAdminDate, formatReleaseDateTime } = require('../utils/adminParser');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const emojis = require('../utils/emojiMap');
@@ -330,7 +330,7 @@ function buildPastSeasonsOptions(seasonalDoc) {
     }));
 }
 
-// `allowedPages` (added 2026-08-13, per-page /manage permissions) -- an array of PAGES keys (+ the 'season' pseudo-key) this caller may reach, from utils/adminAccess.js's getManagePages(), or `null` for "unrestricted" (the owner, or any not-yet-updated caller). A scoped admin's dropdown only ever OFFERS pages they can open -- they are never shown a page just to be denied on click. Turns a registry action id into the rendered panel button. Label and style come from utils/manageActions.js (2026-08-14) rather than being written inline in buildPagesTable above -- that table now names only WHICH actions a group offers, and the registry owns what each one looks like and what it does. buttonFor() throws on an unregistered id, so a button that no handler can serve fails loudly at render instead of shipping as a dead button.
+// `allowedPages` (added 2026-08-13, per-page /manage permissions) -- an array of PAGES keys (+ the 'season' pseudo-key) to limit the dropdown to, or `null` for every page. ⚠️ Every caller passes null since the permission restructure (2026-10-19 19:25 EDT): any admin browses every page and a button checks its own tier on the press (his decision, 2026-10-19 18:17 EDT). The parameter is kept so a future view-limited caller does not have to re-thread it. Turns a registry action id into the rendered panel button. Label and style come from utils/manageActions.js (2026-08-14) rather than being written inline in buildPagesTable above -- that table now names only WHICH actions a group offers, and the registry owns what each one looks like and what it does. buttonFor() throws on an unregistered id, so a button that no handler can serve fails loudly at render instead of shipping as a dead button.
 function actionButton(pageKey, id) {
     const b = buttonFor(pageKey, id);
     return { type: 2, style: b.style, label: b.label, custom_id: `mng_act_${pageKey}_${b.id}` };
@@ -343,7 +343,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
     const fallbackKey = visibleKeys.includes('draws') ? 'draws' : visibleKeys[0];
     const pageKey = (PAGES[page] && visibleKeys.includes(page)) ? page : fallbackKey;
     const pageData = PAGES[pageKey];
-    // Guarded (v3-pre-release review, finding #17) -- 'season' is a real grant token (utils/adminAccess.js) but a PSEUDO-page: it is not a key in the PAGES table above. An admin scoped to EXACTLY 'season' (no other page) made visibleKeys=['season'], fallbackKey=undefined, pageData=undefined -- and the render threw on an already-deferred interaction, leaving a dead panel with no message. Fall back to the same "nothing to show" state a genuinely empty allowedPages would produce, rather than crashing.
+    // Guarded (v3-pre-release review, finding #17) -- 'season' was a grant token (retired with the flat token list 2026-10-19 19:38 EDT; the scope is now `manage.season`) but a PSEUDO-page: it is not a key in the PAGES table above. Unreachable while every caller passes `allowedPages = null`, and kept for the future view-limited caller that parameter exists for. An admin scoped to EXACTLY 'season' (no other page) made visibleKeys=['season'], fallbackKey=undefined, pageData=undefined -- and the render threw on an already-deferred interaction, leaving a dead panel with no message. Fall back to the same "nothing to show" state a genuinely empty allowedPages would produce, rather than crashing.
     if (!pageData) {
         return {
             components: [{ type: 10, content: `# ${emojis.database} Database Management\n${emojis.warning ?? '⚠️'} You have access to Season settings only, which isn't a standalone page here — use \`/manage command:season action:...\` instead.` }],
@@ -451,17 +451,29 @@ function buildBulkRemoveDrawsModal(drawType) {
     return modal;
 }
 
-function buildAddDrawModal(drawType) {
+// THE DRAW TYPE DROPDOWN, shared by Add and Edit Draw (2026-10-18 11:09 EDT, Harkirat: "a single dropdown for the collective 'draw type' selection and include the armory types within it"). /draw prices' own list in page order (utils/drawTypes.js); the stored type is preselected, and picking nothing leaves it unset. An armory's item count is read off the Items field, so there is no count to pick. A select lives in a modal only inside a Label, which is why both draw forms are built from Labels. REQUIRED, with Unsure / Unknown first (2026-10-18 11:37 EDT, Harkirat: "make it a required field and add the option for 'unsure/unknown' at the top of the list"), on Add and Edit alike so an untyped draw can only come from a bulk paste without a tag. Unknown is a stored flag the portal can list for fixing later.
+function drawTypeLabel(current = '') {
+    const { drawTypeChoices } = require('../utils/drawTypes');
+    return new LabelBuilder().setLabel('Draw Type').setDescription('How /draw prices and the calculator price this draw').setStringSelectMenuComponent(
+        new StringSelectMenuBuilder().setCustomId('price_type').setPlaceholder('Pick its Draw Type').setRequired(true).setMinValues(1).setMaxValues(1)
+            .addOptions(drawTypeChoices().map(o => ({ label: o.name, value: o.key, description: o.tier ? `Bulk tag: type: ${o.code}` : 'Flags it to set later. Bulk tag: type: unknown', emoji: o.tier ? emojis.parseEmoji(emojis[o.tier]) : { name: '❓' }, default: o.key === current })))
+    );
+}
+// A Label holding a text input. interaction.fields.getTextInputValue() reads it exactly as it read an action row's.
+const drawTextLabel = (id, label, input) => new LabelBuilder().setLabel(label).setTextInputComponent(input.setCustomId(id));
+
+// `prefill` (added 2026-10-19 11:16 EDT, the Add to Draws right-click): title, date and url come from the post. A box gets a value only when there is one, so the blank box /manage opens keeps its exact shape.
+function buildAddDrawModal(drawType, prefill = {}) {
+    const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId(`add_draw_${drawType}`).setTitle(`Add ${drawType === 'new' ? 'New' : 'Returning'} Draw`);
-    modal.addComponents(
-        // All 4 of these are now setRequired(false) (2026-07-12) — see the 5th field below. Discord validates required fields BEFORE the modal-submit handler ever runs, so if these stayed required, submitting with only the combined-line field filled would get rejected by Discord itself before handlers/manage.js's handler got a chance to fall back to it.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Draw Title').setStyle(TextInputStyle.Short).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('items').setLabel('Items (Shorthand)').setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note").setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15").setRequired(false)),
-        // Optional (2026-07-12, Cloudinary-cache feature) — leaving this blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js). Only fails if nothing has ever been cached for this title yet — handlers/manage.js's handler surfaces that as a clear error rather than silently saving a draw with no thumbnail at all.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('url').setLabel('Thumbnail URL (blank = reuse cached image)').setStyle(TextInputStyle.Short).setRequired(false)),
-        // 5th field (2026-07-12) — alternative to filling in the 4 fields above separately: paste the whole draw as one bulk-style line (same format as Bulk Add/Export: `Title, m Item 1, l Item 2, Date, URL`). handlers/manage.js's handler runs this through the same parseBulkDrawList() parser used everywhere else if it's non-empty, otherwise falls back to the 4 separate fields — so exactly one of "fill in the 4 fields" or "paste one line" needs to actually be used, not both.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('combined').setLabel('Or Paste As One Line (overrides fields above)').setStyle(TextInputStyle.Paragraph).setPlaceholder("Title, m Item 1, l Item 2, July 15, url.jpg").setRequired(false))
+    // The 5th field was "Or Paste As One Line" (2026-07-12) until 2026-10-18 11:09 EDT: Discord caps a modal at five, and the Draw Type dropdown took its place at Harkirat's pick ("B sounds fine"). A whole draw pasted as one line still goes in through Add Multiple, whose format carries the same `type:` tag. With it gone, Title, Items and Release Date are required again: they were optional only so a one-line paste could submit alone.
+    modal.addLabelComponents(
+        drawTextLabel('title', 'Draw Title', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short), prefill.title)),
+        drawTextLabel('items', 'Items (Shorthand)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note")),
+        drawTextLabel('date', 'Release Date', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15"), prefill.date)),
+        // Optional (2026-07-12, Cloudinary-cache feature): blank reuses whatever's already cached for this exact draw title (utils/cloudinaryCache.js).
+        drawTextLabel('url', 'Thumbnail URL (blank = reuse cached image)', withValue(new TextInputBuilder().setStyle(TextInputStyle.Short).setRequired(false), prefill.url)),
+        drawTypeLabel()
     );
     return modal;
 }
@@ -470,12 +482,15 @@ function buildEditDrawModal(targetDraw, targetId, drawType) {
     // 'comment' items (2026-07-30 22:24 EDT, "-# note" lines) reconstruct as "-# text", not their first-letter shorthand -- charAt(0) would produce "c", which round-trips through parseItemLine as an unrecognized tier instead of a comment.
     const itemsText = targetDraw.items.map(i => `${i.tier === 'comment' ? '-#' : i.tier.charAt(0).toLowerCase()} ${i.name}`).join('\n');
     const modal = new ModalBuilder().setCustomId(`edit_draw_${targetId}_${drawType}`).setTitle('Edit Lucky Draw');
-    modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Draw Title').setStyle(TextInputStyle.Short).setValue(targetDraw.title)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('items').setLabel('Items (Shorthand)').setStyle(TextInputStyle.Paragraph).setValue(itemsText)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(new Date(targetDraw.date).toISOString().split('T')[0])),
+    // LABELS (2026-10-18 11:06 EDT): every field is a Label so the Draw Type dropdown can sit beside them (see drawTypeLabel above).
+    const text = drawTextLabel;
+    modal.addLabelComponents(
+        text('title', 'Draw Title', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.title)),
+        text('items', 'Items (Shorthand)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(itemsText)),
+        text('date', 'Release Date', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(new Date(targetDraw.date).toISOString().split('T')[0])),
         // Pre-filled with the CURRENT thumbnail (already a Cloudinary URL if this draw was ever cached) — optional so clearing it and resubmitting re-resolves via the cache lookup instead of requiring a re-typed URL just to leave the image unchanged. BUG FIX (2026-07-12): setValue() throws a synchronous validation error if given `undefined`/non-string — discord.js requires a real string, even for an optional field. Any draw doc missing thumbnailUrl (legacy entries from before the Cloudinary-cache feature, or any doc that somehow saved without one) made this throw INSIDE resolveManagePanelAction's showModal() call, before the interaction was ever acknowledged — which is exactly what surfaced as Discord's generic "Something went wrong. Try again." toast on Edit Draws. Fall back to '' like every other optional field already does.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('url').setLabel('Thumbnail URL (blank = reuse cached image)').setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl || '').setRequired(false))
+        text('url', 'Thumbnail URL (blank = reuse cached image)', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl || '').setRequired(false)),
+        drawTypeLabel(targetDraw.priceType || '')
     );
     return modal;
 }
@@ -500,12 +515,14 @@ function buildCalendarBulkRemoveModal() {
     return modal;
 }
 
-function buildCalendarAddModal() {
+// `prefill` (added 2026-10-19 11:16 EDT, the Add to Calendar right-click): title, startDate and endDate come from the post. Same set-only-when-present rule as the Add Draw box.
+function buildCalendarAddModal(prefill = {}) {
+    const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId('modal_calendar_add').setTitle('Add Calendar Event');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 2').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5').setRequired(false)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short), prefill.title).setRequired(true)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 2'), prefill.startDate).setRequired(true)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5'), prefill.endDate).setRequired(false)),
         // Added for the 3-section calendar redesign (2026-07-31 12:10 EDT) -- blank auto-detects from the title's own wording (adminParser.js's guessCalendarCategory), same as an un-prefixed bulk-import line.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('blank = auto-detect from title').setRequired(false)),
         // Double CP event flag (added 2026-08-15 for /draw calculator) -- a plain Y/N text field rather than a real checkbox (Discord modals have none). Blank/anything not starting with Y is treated as No, matching the lenient parsing handlers/manage/calendar.js already uses.
@@ -641,28 +658,34 @@ function buildPatchUrlsModal(slot, currentEntry) {
     return modal;
 }
 
-// "Add New Season" (2026-07-24) -- pushes a brand-new entry onto patchNotes[], which becomes the new "current" entry (the old current entry automatically becomes a past season -- it's simply no longer the last item in the array, nothing else needs to change about it). Unlike Date/Info's 2 fields, this needs all 5 of a modal's field slots at once since there's no existing entry yet to spread the URLs input across separate dateinfo/urls1/urls2 actions -- so URLs 1/2 are collected here as multi-line paragraph fields (one URL per line) instead of 5 individually-addressable Short fields each, same shape Harkirat's own mockup called for.
-function buildPatchAddSeasonModal() {
+// "Add New Season" (2026-07-24) -- pushes a brand-new entry onto patchNotes[], which becomes the new "current" entry (the old current entry automatically becomes a past season -- it's simply no longer the last item in the array, nothing else needs to change about it). Unlike Date/Info's 2 fields, this needs all 5 of a modal's field slots at once since there's no existing entry yet to spread the URLs input across separate dateinfo/urls1/urls2 actions -- so URLs 1/2 are collected here as multi-line paragraph fields (one URL per line) instead of 5 individually-addressable Short fields each, same shape Harkirat's own mockup called for. `prefill` (added 2026-10-19 10:22 EDT, Add to Patch Notes): the right-click flow opens this same box with the post's date, extra text and images already in it. With no argument the box is blank, as /manage opens it.
+function buildPatchAddSeasonModal(prefill = {}) {
+    // A box gets a value only when there is one, so the blank box /manage opens keeps exactly its old shape (scripts/patchnotesHandlerSnapshot.test.js pins it).
+    const withValue = (input, value) => (value ? input.setValue(value) : input);
     const modal = new ModalBuilder().setCustomId('modal_patch_addseason').setTitle('Add New Season');
+    const images = prefill.images || [];
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setPlaceholder('Leave blank to use the Season Titles/Dates title').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setRequired(false))
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)'), prefill.releaseDate).setRequired(true)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)'), prefill.description).setRequired(false)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph), images.slice(0, 5).join('\n')).setRequired(false)),
+        new ActionRowBuilder().addComponents(withValue(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph), images.slice(5, 10).join('\n')).setRequired(false))
     );
     return modal;
 }
 
-// "Past Seasons" edit (2026-07-24) -- same 5-field shape as Add New Season above, but pre-filled from and submitted back onto ONE SPECIFIC existing entry (picked via the page's `mng_patchseason_pick` select menu), addressed by its own `_id` in the custom_id -- never touches which entry is "current." `images` slices the same 0-4/5-9 way urls1/urls2 already do for the current entry.
-function buildPatchEditSeasonModal(entry, userTimezone) {
-    const modal = new ModalBuilder().setCustomId(`modal_patch_editseason_${entry._id}`).setTitle('Edit Past Season');
+// "Past Seasons" edit (2026-07-24) -- same 5-field shape as Add New Season above, but pre-filled from and submitted back onto ONE SPECIFIC existing entry (picked via the page's `mng_patchseason_pick` select menu), addressed by its own `_id` in the custom_id -- never touches which entry is "current." `images` slices the same 0-4/5-9 way urls1/urls2 already do for the current entry. `prefill` (added 2026-10-19 10:22 EDT, Add to Patch Notes): `images` and `description` replace the entry's own in the box, `releaseDateIfBlank` fills the date only when the entry has none, and `modalTitle` names what the right-click is doing. The submit is the same edit either way.
+function buildPatchEditSeasonModal(entry, userTimezone, prefill = {}) {
+    const images = prefill.images || entry.images || [];
+    const description = prefill.description ?? entry.description ?? '';
+    const releaseDate = formatReleaseDateTime(entry.releaseDate, userTimezone) || prefill.releaseDateIfBlank || '';
+    const modal = new ModalBuilder().setCustomId(`modal_patch_editseason_${entry._id}`).setTitle(prefill.modalTitle || 'Edit Past Season');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setValue(entry.titleOverride || '').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(formatReleaseDateTime(entry.releaseDate, userTimezone)).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)').setValue(entry.description || '').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(0, 5).join('\n')).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(5, 10).join('\n')).setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(releaseDate).setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)').setValue(description).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue(images.slice(0, 5).join('\n')).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue(images.slice(5, 10).join('\n')).setRequired(false))
     );
     return modal;
 }
@@ -676,6 +699,11 @@ function buildWipeSeasonModal() {
     return modal;
 }
 
+// The season title box shows the season's emoji in front of its title (2026-10-19 09:30 EDT), so deleting it from the box clears it -- core/ops/season.js splits it back off on submit.
+function withEmoji(emoji, title) {
+    return [emoji, title].filter(Boolean).join(' ');
+}
+
 function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
     // Each deadline field combines its title and end date on one line ("Battle Pass, August 28") — pre-filled so re-submitting without touching a field preserves it — see adminParser.js's splitTitleDate() for how handlers/manage.js parses these back apart.
     const bpLine = [seasonalDoc?.bpTitle || 'Battle Pass', formatAdminDate(seasonalDoc?.bpEnd)].filter(Boolean).join(', ');
@@ -684,7 +712,7 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
 
     const modal = new ModalBuilder().setCustomId('modal_season_titles_deadlines').setTitle('Edit Season Titles & Deadlines');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(seasonalDoc?.currentSeasonTitle || '')),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(withEmoji(seasonalDoc?.currentSeasonEmoji, seasonalDoc?.currentSeasonTitle))),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, End Date').setStyle(TextInputStyle.Short).setValue(bpLine)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, End Date').setStyle(TextInputStyle.Short).setValue(rankLine)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, End Date').setStyle(TextInputStyle.Short).setValue(dmzLine))
@@ -720,7 +748,7 @@ function buildDraftTitlesDatesModal(seasonalDoc) {
 
     const modal = new ModalBuilder().setCustomId('modal_draft_titles_dates').setTitle('Draft: Season Titles & Deadlines');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(draft.currentSeasonTitle || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(withEmoji(draft.currentSeasonEmoji, draft.currentSeasonTitle)).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, End Date').setStyle(TextInputStyle.Short).setValue(bpLine).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, End Date').setStyle(TextInputStyle.Short).setValue(rankLine).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, End Date').setStyle(TextInputStyle.Short).setValue(dmzLine).setRequired(false))
@@ -811,31 +839,24 @@ module.exports = {
     buildAnnouncementModal, buildAnnouncementListBlocks,
 
     async execute(interaction) {
-        const { hasCommandAccess, getManagePages } = require('../utils/adminAccess');
+        const { hasCommandAccess } = require('../utils/adminAccess');
         if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {
             // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of handlers/manage.js's centralized button/select/modal guard for this same panel (see interactionCreate).
             return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
         }
-        // Per-page scoping (2026-08-13) -- computed once, threaded through every branch below. A scoped admin (e.g. Calendar-only) reaching `manage` at all via hasCommandAccess above does NOT mean every section is theirs; each one is checked against this list.
-        const allowedPages = await getManagePages(interaction.user.id);
-
-        const section = interaction.options.getString('content') || (allowedPages.includes('draws') ? 'draws' : allowedPages[0]);
+        // Every admin may open every section (the permission restructure, 2026-10-19 19:25 EDT); what they may DO there is checked per button by resolveAction's tier check, and again by core/changeset.js's commitSet on the write.
+        const section = interaction.options.getString('content') || 'draws';
 
         // Season: Titles & Deadlines is reachable directly from this option now (2026-07-12) — skips rendering the panel entirely, same as picking it from the in-panel mng_pagesel dropdown does. showModal() must be the FIRST response to the interaction (can't follow a deferReply()), so this has to branch before the deferReply() below runs at all.
         if (section === 'season_titlesdeadlines') {
-            if (!allowedPages.includes('season')) {
-                return interaction.reply({ content: "🔒 **You don't have access to Season Titles & Deadlines.** Ask the bot owner to grant it if you need it.", ephemeral: true });
-            }
+            // Opens its pop-up straight away, so it is gated like the button it is (create on Season).
+            const { resolvePopupEntry } = require('../utils/manageActions');
+            const gate = await resolvePopupEntry(section, interaction.user.id);
+            if (!gate.ok) return interaction.reply({ content: gate.message, ephemeral: true });
             // Shared lookup, not a hand-rolled one (v3-pre-release review, finding #38).
             const { loadSeasonalDoc } = require('../utils/manageActions');
             const seasonalDoc = await loadSeasonalDoc();
             return interaction.showModal(buildSeasonTitlesDeadlinesModal(seasonalDoc));
-        }
-
-        if (section !== 'guide' && !allowedPages.includes(section)) {
-            // DENIAL_MESSAGE.denied, not a restated copy (v3-pre-release review, finding #43).
-            const { DENIAL_MESSAGE } = require('../utils/manageActions');
-            return interaction.reply({ content: DENIAL_MESSAGE.denied, ephemeral: true });
         }
 
         // Stage 3 (2026-08-14 18:04 EDT) -- action: opens one of the section's own actions directly. Must run BEFORE deferReply(): a kind:'modal' entry's run() calls showModal(), which has to be the interaction's FIRST response (same constraint season_titlesdeadlines works around above). Mirrors handlers/manage/index.js's mng_act_ button dispatch exactly -- resolveAction() is the one choke point (it also re-checks the per-page permission just verified above, so a scoped admin can't reach another section's action by typing its id directly) and run() is trusted to manage its OWN response completely: kind:'file' calls reply(), kind:'view' defers itself, kind:'modal' shows a modal. Do NOT deferReply() before calling it -- a kind:'file' entry's run() calls interaction.reply(), which throws if this has already acknowledged.
@@ -854,7 +875,7 @@ module.exports = {
             }
             if (resolved.ok && !resolved.entry.slash) resolved.reason = 'unknown';
             // An unknown/unpermitted action falls through to the normal page render below with a short note instead of erroring out the whole invocation -- a typo shouldn't cost the page the user actually asked for. (guide/season_titlesdeadlines have no registry entries at all, so a stray action there also resolves 'unknown' and is silently dropped on the guide/modal branches below -- not worth threading the note through two more send sites for an edge case autocomplete never suggests in the first place.)
-            actionFallbackNote = `${DENIAL_MESSAGE[resolved.reason]}\n\n`;
+            actionFallbackNote = `${resolved.message || DENIAL_MESSAGE[resolved.reason]}\n\n`;
         }
 
         // Default ephemeral (true) unless explicitly set to public — matches the "default private" convention Harkirat asked for on this specific command (every OTHER command defaults public; this one is the admin panel, so it flips the default).
@@ -862,7 +883,7 @@ module.exports = {
         const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
-        // Bulk Format Guide, reached directly (2026-07-31 17:20 EDT) -- sends the SAME rich guide panel the in-page "Guide" buttons open (utils/manageGuides.js), skipping the normal page-panel render entirely. Defaults to the Draws topic (first in the dropdown) -- there's no page context to infer a topic from when jumping straight here via the slash option. Read-only reference material, not data-mutating -- available to anyone with ANY manage access at all (allowedPages is non-empty, guaranteed by the hasCommandAccess check above), not gated per-page like the real data pages below.
+        // Bulk Format Guide, reached directly (2026-07-31 17:20 EDT) -- sends the SAME rich guide panel the in-page "Guide" buttons open (utils/manageGuides.js), skipping the normal page-panel render entirely. Defaults to the Draws topic (first in the dropdown) -- there's no page context to infer a topic from when jumping straight here via the slash option. Read-only reference material, not data-mutating -- available to any admin (guaranteed by the hasCommandAccess check above), not gated per-page like the real data pages below.
         if (section === 'guide') {
             const { buildGuideContainer } = require('../utils/manageGuides');
             return sendV2Payload(interaction, buildGuideContainer('draws'));
@@ -870,6 +891,6 @@ module.exports = {
 
         // buildDynamicData(), not a hand-rolled table (v3-pre-release review, finding #44) -- only fetched when actually landing on a page that needs it; every other page renders from PAGES alone.
         const dynamicData = await buildDynamicData(section);
-        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client, allowedPages), { content: actionFallbackNote });
+        return sendV2Payload(interaction, buildManagePage(section, dynamicData, interaction.client), { content: actionFallbackNote });
     }
 };
