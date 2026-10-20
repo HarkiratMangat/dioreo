@@ -271,6 +271,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-19 15:43 EDT — Dioreo Admin: a second app for the admin commands (v3.92.0-pre)
 - 2026-10-19 21:36 EDT — Renaming a command is a grep with a history problem: /gunsmiths becomes /gunsmith (v3.98.0-pre)
 - 2026-10-19 22:12 EDT — seven dead helpers deleted, launch checks folded in (v3.99.0)
+- 2026-10-20 00:09 EDT — The bulk cache stops spending Cloudinary Admin calls (v3.101.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4620,6 +4621,14 @@ Harkirat asked to delete the seven helpers the codebase-memory dead-code pass ha
 - **Two prod checks were read-only and came back clean:** `img2webp` is still on the VM, and the prod app carries all twelve `DB_` emojis the code names.
 - **Two prod writes waited for his word:** he rolled both exposed Cloudflare tokens himself (line 72 of `.env` was "claude code"; the tunnel token lived in `cert.pem`), and the six animated Rank Mode emojis went up to the prod app on his "sure upload and then merge".
 - **A lesson about the CI relay:** two "syntax-check failed" reports in a row were runs cancelled by the next push, not real failures. Read the run's job list before treating a red aggregate as a defect.
+
+## 2026-10-20 00:09 EDT — The bulk cache stops spending Cloudinary Admin calls (v3.101.0)
+
+The first prod run of the nameplate and decoration bulk cache, on Harkirat's go at 23:12 EDT, ran into a limit nobody had written down. Cloudinary allows 500 Admin API calls an hour on this account, shared with the live bot, and the pipeline spent two per SKU: one lookup to ask whether a variant was cached, then one `api.update` to add its Discord url after the upload. The dry run alone made 986 lookups and spent the hour. The four-group sample straight after it uploaded and posted seven SKUs, and all seven context patches failed, silently, because the patch helper swallows its own error.
+
+The first fix was to pace the run: `--limit 200` an hour across five windows. Harkirat asked why it needed 2,000 calls at all, and that was the better question. Neither call was necessary. Every variant posted to a cache channel already gets a row in the Mongo asset index, so no row means never posted, and Cloudinary need not be asked. And if the variant is posted before it is uploaded, the Discord url can travel in the upload's own `context`, which goes through the Upload API that the Admin limit does not count. After the restructure a fresh SKU costs nothing. A dev run made while the hourly limit was still spent cached four SKUs with no errors, which proved the point better than any count. The 979 remaining prod SKUs then cached in one run, 23:36 to 00:00 EDT, with none failed.
+
+One more lesson came at the end. The `--repair-context` run that fixed the sample's seven checked every cached SKU to find them, 986 lookups again, and spent the next hour's budget. It is capped at 25 a run now. The general rule: before any prod run against Cloudinary, count the Admin calls it will make, because a cheap-looking dry run or repair is exactly what uses the budget up.
 
 # Part B — Lessons Ledger (thematic)
 
