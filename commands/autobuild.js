@@ -5,6 +5,8 @@ const { runExtraction } = require('../utils/autobuildPipeline');
 
 const CATEGORY_CHOICES = ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN', 'SECONDARIES'];
 
+const EXTRA_SCREENSHOTS = Array.from({ length: 9 }, (_, i) => `screenshot${i + 2}`);
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('autobuild')
@@ -21,6 +23,7 @@ module.exports = {
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         // ADMIN-ONLY: stays user-install [1] deliberately -- the 10 public commands moved to [0, 1] (guild install) for v3, but an admin command advertised in every server's command list is noise plus needless surface. Harkirat still reaches it anywhere via his own user install.
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
+    // Bulk /autobuild (2026-10-20 10:36 EDT): screenshot2..screenshot10 go in the same batch, one review page per build (utils/autobuildBulk.js). Added after `data` is built, below, so the option order stays readable.
 
     async execute(interaction) {
         if (!(await hasCommandAccess(interaction.user.id, 'autobuild'))) {
@@ -28,6 +31,7 @@ module.exports = {
         }
 
         const attachment = interaction.options.getAttachment('screenshot');
+        const extra = EXTRA_SCREENSHOTS.map(name => interaction.options.getAttachment(name)).filter(Boolean);
         const url = interaction.options.getString('url');
         const retryToken = interaction.options.getString('retry_token');
         const imageUrl = attachment ? attachment.url : (url ? url.trim() : null);
@@ -45,6 +49,18 @@ module.exports = {
             return retryImageUpload(interaction, retryToken, imageUrl);
         }
 
+        // Several screenshots: the bulk review. `url` stays a single-screenshot option, and `category`, `badges` and `mode` apply to every screenshot in the batch (Edit changes any one build).
+        if (extra.length) {
+            if (url) return interaction.reply({ content: '❌ `url` reads one screenshot. Attach the screenshots instead when sending several.', ephemeral: true });
+            await interaction.deferReply({ ephemeral: isEphemeral });
+            const { runBulk } = require('../utils/autobuildBulk');
+            return runBulk(interaction, [attachment, ...extra].filter(Boolean).map(a => a.url), {
+                explicitCategory: interaction.options.getString('category'),
+                badgesOption: interaction.options.getString('badges'),
+                explicitMode: interaction.options.getString('mode'),
+            });
+        }
+
         if ((attachment && url) || (!attachment && !url)) {
             return interaction.reply({ content: '❌ Provide exactly one of `screenshot` or `url`.', ephemeral: true });
         }
@@ -56,3 +72,7 @@ module.exports = {
         return runExtraction(interaction, imageUrl, category, badges, mode);
     }
 };
+
+for (const name of EXTRA_SCREENSHOTS) {
+    module.exports.data.addAttachmentOption(option => option.setName(name).setDescription('Another Gunsmith screenshot, read in the same batch'));
+}

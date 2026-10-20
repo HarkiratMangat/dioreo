@@ -103,7 +103,8 @@ function cleanAttachmentPairs(attachments, slots) {
 }
 
 // Ephemeral review card: weapon/code/attachments/category/badges as extracted so far, plus the RAW source screenshot as the preview image (not yet uploaded to Cloudinary -- see the design spec for why: an edited weapon name during review must never orphan an upload under the wrong key).
-function buildReviewCard(token, data) {
+// `opts` (bulk /autobuild, 2026-10-20 10:33 EDT): `header` adds a line under the title, `notes` adds warnings after the standard ones, `rows` replaces the Confirm/Edit/Cancel row. A single review passes none of them and renders exactly as before.
+function buildReviewCard(token, data, opts = {}) {
     const categoryLine = data.category ? data.category : '⚠️ needs review (use Edit to set one)';
     // The mode line says WHY when it was detected, so a wrong guess is visible at a glance rather than discovered after Confirm. "set by you" when /autobuild's `mode:` decided it; nothing to explain when the screenshot was ambiguous, because the line already asks.
     const modeLine = data.mode
@@ -119,6 +120,7 @@ function buildReviewCard(token, data) {
 
     const components = [
         { type: 10, content: `# Review Extracted Loadout` },
+        ...(opts.header ? [{ type: 10, content: opts.header }] : []),
         { type: 14, spacing: 1, divider: true },
         { type: 10, content: `**Weapon:** ${data.weaponName}\n**Mode:** ${modeLine}\n**Category:** ${categoryLine}\n**Gunsmith Code:** ${codeLine}` },
         { type: 10, content: `**Attachments:**\n${attachmentsLines}` },
@@ -137,16 +139,19 @@ function buildReviewCard(token, data) {
     if (data.equipCapWarning) {
         components.push({ type: 10, content: data.equipCapWarning });
     }
+    for (const note of opts.notes || []) {
+        if (note) components.push({ type: 10, content: note });
+    }
     components.push({ type: 12, items: [{ media: { url: data.sourceImageUrl } }] });
     components.push({ type: 14, spacing: 1, divider: true });
-    components.push({
+    components.push(...(opts.rows || [{
         type: 1,
         components: [
             { type: 2, style: 3, label: 'Confirm', custom_id: `autobuild_confirm_${token}` },
             { type: 2, style: 1, label: 'Edit', custom_id: `autobuild_editbtn_${token}` },
             { type: 2, style: 4, label: 'Cancel', custom_id: `autobuild_cancel_${token}` }
         ]
-    });
+    }]));
 
     const container = {
         type: 17,
@@ -177,21 +182,14 @@ async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOpti
     return { category, badgesRaw };
 }
 
-// Runs extraction + post-processing + stashes a pending token, then sends the review card as this interaction's own deferred reply. Caller must have already called interaction.deferReply() (ephemeral per the command's `visibility` option, default hidden). `explicitMode` is /autobuild's `mode:` option; the right-click and its picker pass nothing, so the screenshot decides.
-async function runExtraction(interaction, sourceImageUrl, explicitCategory, badgesOption, explicitMode = null) {
-    let extracted;
-    try {
-        // The catalogue's weapon names ride in the prompt; its attachment names join the stored ones the corrector below snaps a misread onto.
-        const catIndex = await getCatalogueIndex();
-        extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live', knownWeapons: catIndex ? [...catIndex.weapons.values()].map(w => w.name) : [] });
-    } catch (err) {
-        console.error('Autobuild extraction failed:', err.message);
-        return interaction.followUp({ content: `❌ Couldn't extract loadout data from that image: ${err.message}`, ephemeral: true });
-    }
-
+// The reading half of runExtraction, shared with utils/autobuildBulk.js (2026-10-20 10:33 EDT, bulk /autobuild): one screenshot in, one review's `data` out, nothing sent and nothing stashed. It THROWS when the vision call fails, so each caller words the failure its own way. `allBuilds` lets a caller reading several screenshots fetch the build list once instead of once per image.
+async function extractToData(sourceImageUrl, { explicitCategory = null, badgesOption = null, explicitMode = null, adminId, allBuilds = null } = {}) {
+    // The catalogue's weapon names ride in the prompt; its attachment names join the stored ones the corrector below snaps a misread onto.
+    const catIndex = await getCatalogueIndex();
+    const extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live', knownWeapons: catIndex ? [...catIndex.weapons.values()].map(w => w.name) : [] });
     // One fetch, reused for BOTH the attachment-name corrector's known-vocabulary set AND the duplicate/category-conflict warnings (refreshReviewWarnings) -- richer field select than the old attachments-only projection so those checks have shareCode/category/weaponName to work with. Both modes since 2026-10-19 17:52 EDT: DMZ uses the same attachment names (and adds some MP builds don't have), so the vocabulary is the union, and refreshReviewWarnings splits by mode where it matters.
-    const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
-    const knownAttachments = await knownAttachmentNames(allBuilds);
+    const builds = allBuilds || await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
+    const knownAttachments = await knownAttachmentNames(builds);
     const correctedAttachments = extracted.attachments.map(a => correctAttachmentName(a, knownAttachments));
     const correctedCode = correctGunsmithCode(extracted.gunsmithCode);
     // Strip skin suffix + normalize casing so the weaponKey/imageKey/display value all resolve to the real weapon (see normalizeWeaponName) -- this is the fix for the v2-test "new weapon created from the skin name" cascade. Everything below uses the normalized name, not the raw extraction.
@@ -204,7 +202,6 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
 
     const { category, badgesRaw } = await resolveCategoryAndBadges(weaponName, explicitCategory, badgesOption, mode);
 
-    const token = crypto.randomBytes(8).toString('hex');
     const data = {
         weaponName,
         gunsmithCode: correctedCode,
@@ -218,10 +215,24 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
         modeSource: explicitMode ? 'explicit' : (mode ? 'detected' : null),
         modeSignals: extracted.modeSignals,
         sourceImageUrl,
-        adminId: interaction.user.id
+        adminId
     };
-    refreshReviewWarnings(data, allBuilds);
+    refreshReviewWarnings(data, builds);
     data.catalogueWarning = await catalogueWarningFor(data);
+    return data;
+}
+
+// Runs extraction + post-processing + stashes a pending token, then sends the review card as this interaction's own deferred reply. Caller must have already called interaction.deferReply() (ephemeral per the command's `visibility` option, default hidden). `explicitMode` is /autobuild's `mode:` option; the right-click and its picker pass nothing, so the screenshot decides.
+async function runExtraction(interaction, sourceImageUrl, explicitCategory, badgesOption, explicitMode = null) {
+    let data;
+    try {
+        data = await extractToData(sourceImageUrl, { explicitCategory, badgesOption, explicitMode, adminId: interaction.user.id });
+    } catch (err) {
+        console.error('Autobuild extraction failed:', err.message);
+        return interaction.followUp({ content: `❌ Couldn't extract loadout data from that image: ${err.message}`, ephemeral: true });
+    }
+
+    const token = crypto.randomBytes(8).toString('hex');
     pendingAutobuilds.set(token, data);
     setTimeout(() => pendingAutobuilds.delete(token), 10 * 60 * 1000).unref();
 
@@ -304,23 +315,15 @@ function buildPostCreationCard(doc, imageWarning) {
     return { components: [container], flags: 32768 };
 }
 
-// Confirm click -- `interaction` is the BUTTON interaction. Caller (handlers/autobuild.js) must call interaction.deferUpdate() before calling this, since the review card is being replaced.
-async function confirmAndWrite(interaction, token) {
+// The saving half of confirmAndWrite, shared with utils/autobuildBulk.js (2026-10-20 10:33 EDT): validates, uploads the image and writes the build, and REPORTS what happened instead of answering an interaction, so a batch page can show the result in place. Statuses: saved (doc) · retry (retryToken, error) · expired · nocategory · nomode · busy.
+async function confirmCore(token) {
     const data = pendingAutobuilds.get(token);
-    if (!data) {
-        return interaction.followUp({ content: `❌ This review has expired (10 minute window) or was already handled. Run ${mentionCommand(interaction.client, '/autobuild')} again.`, ephemeral: true });
-    }
-    if (!data.category) {
-        return interaction.followUp({ content: '❌ Category is still unresolved -- click **Edit** and set one before confirming.', ephemeral: true });
-    }
-    if (!data.mode) {
-        return interaction.followUp({ content: "❌ MP or DMZ is still unresolved -- click **Edit** and put `| MP` or `| DMZ` after the category before confirming.", ephemeral: true });
-    }
+    if (!data) return { status: 'expired' };
+    if (!data.category) return { status: 'nocategory' };
+    if (!data.mode) return { status: 'nomode' };
 
     // Claim the token before any slow work starts -- see confirmInProgress's own comment above for why this exists. Checked AFTER the two cheap validation returns above (an unresolved-category click never reaches Cloudinary/Mongo, so it's not part of the race this guards against).
-    if (confirmInProgress.has(token)) {
-        return interaction.followUp({ content: '⏳ Already processing this Confirm click -- give it a moment.', ephemeral: true });
-    }
+    if (confirmInProgress.has(token)) return { status: 'busy' };
     confirmInProgress.add(token);
 
     try {
@@ -343,8 +346,7 @@ async function confirmAndWrite(interaction, token) {
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility: Mongoose validation, a dropped connection), the token must still be sitting in pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere. (Found in review: this used to delete first, which meant a save() failure here lost the data permanently -- no Loadout doc, no recoverable token.)
             const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
             pendingAutobuilds.delete(token);
-            const card = buildPostCreationCard(doc, null);
-            return await replaceWithV2Card(interaction, card);
+            return { status: 'saved', doc };
         }
 
         // First failure: do NOT write yet. Stash the confirmed data (with weaponKey/buildName/imageKey already computed) under a new retry token, ask for the image again.
@@ -352,15 +354,30 @@ async function confirmAndWrite(interaction, token) {
         pendingImageRetries.set(retryToken, { ...data, weaponKey, buildName, imageKey });
         setTimeout(() => pendingImageRetries.delete(retryToken), 10 * 60 * 1000).unref();
         pendingAutobuilds.delete(token);
-
-        return interaction.followUp({
-            content: `⚠️ Image upload to Cloudinary failed (${uploadResult.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`,
-            ephemeral: true
-        });
+        return { status: 'retry', retryToken, error: uploadResult.error };
     } finally {
         // Always released, whether this call finished normally (either branch above) or threw unexpectedly -- a genuine failure must not permanently block every later attempt on this token for the rest of its TTL.
         confirmInProgress.delete(token);
     }
+}
+
+// What a single review says for each confirmCore status other than `saved`. The wording is the one confirmAndWrite always used.
+function confirmMessage(client, result) {
+    switch (result.status) {
+        case 'expired': return `❌ This review has expired (10 minute window) or was already handled. Run ${mentionCommand(client, '/autobuild')} again.`;
+        case 'nocategory': return '❌ Category is still unresolved -- click **Edit** and set one before confirming.';
+        case 'nomode': return "❌ MP or DMZ is still unresolved -- click **Edit** and put `| MP` or `| DMZ` after the category before confirming.";
+        case 'busy': return '⏳ Already processing this Confirm click -- give it a moment.';
+        case 'retry': return `⚠️ Image upload to Cloudinary failed (${result.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${result.retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`;
+        default: return '❌ Something went wrong confirming this review.';
+    }
+}
+
+// Confirm click -- `interaction` is the BUTTON interaction. Caller (handlers/autobuild.js) must call interaction.deferUpdate() before calling this, since the review card is being replaced.
+async function confirmAndWrite(interaction, token) {
+    const result = await confirmCore(token);
+    if (result.status === 'saved') return await replaceWithV2Card(interaction, buildPostCreationCard(result.doc, null));
+    return interaction.followUp({ content: confirmMessage(interaction.client, result), ephemeral: true });
 }
 
 // Second attempt, via /autobuild's retry_token option (commands/autobuild.js calls this directly -- see the design spec's "Image retry mechanism" decision for why this can't be a button/modal).
@@ -404,8 +421,8 @@ async function cancelReview(interaction, token) {
 }
 
 // Edit modal -- ALL fields in one modal (per the design spec's decision), pre-filled from the pending token's current data. Discord caps a modal at 5 fields; attachments share ONE Paragraph field (one per line, matching every other loadout modal's convention in commands/manage.js) so weapon/code/attachments/category/badges all fit.
-function buildEditModal(token, data) {
-    const modal = new ModalBuilder().setCustomId(`autobuild_editmodal_${token}`).setTitle('Edit Extracted Loadout');
+function buildEditModal(token, data, customId = `autobuild_editmodal_${token}`) {
+    const modal = new ModalBuilder().setCustomId(customId).setTitle('Edit Extracted Loadout');
     modal.addComponents(
         // `|| ''` fallback on both -- TextInputBuilder.setValue(undefined) throws SYNCHRONOUSLY, which would throw inside showModal() before the interaction is ever acknowledged (the exact production incident documented in CLAUDE.md's `/manage` batch-refinement-pass section: buildEditDrawModal's .setValue(targetDraw.thumbnailUrl) on a legacy doc missing that field). Gemini extraction can genuinely leave weaponName/gunsmithCode undefined on a bad read, so this can't assume they're set the way category/badgesRaw two lines below already correctly don't assume.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setValue(data.weaponName || '').setRequired(true)),
@@ -419,14 +436,8 @@ function buildEditModal(token, data) {
     return modal;
 }
 
-// Modal submit -- re-runs the SAME post-processing (fuzzy-match + code-corrector) on whatever was typed, per the design spec. `interaction` is the ModalSubmitInteraction, not yet deferred by the caller -- this function defers itself (deferUpdate, since it's replacing the review card the modal was opened from).
-async function applyEditSubmission(interaction, token) {
-    const data = pendingAutobuilds.get(token);
-    if (!data) {
-        return interaction.reply({ content: `❌ This review has expired. Run ${mentionCommand(interaction.client, '/autobuild')} again.`, ephemeral: true });
-    }
-    await interaction.deferUpdate();
-
+// The modal's fields applied to a review's `data`, returning the updated copy -- shared with utils/autobuildBulk.js (2026-10-20 10:33 EDT). Re-runs the SAME post-processing (fuzzy-match + code-corrector) on whatever was typed, per the design spec. Neither stashes nor answers the interaction.
+async function applyEditFields(interaction, data) {
     // Same normalizer as the initial extraction: strip a skin suffix + force the all-caps convention, so a manually-typed "Machine Pistol" or "R9-0 - Death's Voice" is stored consistently too.
     const weaponName = normalizeWeaponName(interaction.fields.getTextInputValue('weapon'));
     const rawCode = interaction.fields.getTextInputValue('code').trim();
@@ -460,6 +471,17 @@ async function applyEditSubmission(interaction, token) {
     };
     refreshReviewWarnings(updated, allBuilds);
     updated.catalogueWarning = await catalogueWarningFor(updated);
+    return updated;
+}
+
+// Modal submit -- `interaction` is the ModalSubmitInteraction, not yet deferred by the caller -- this function defers itself (deferUpdate, since it's replacing the review card the modal was opened from).
+async function applyEditSubmission(interaction, token) {
+    const data = pendingAutobuilds.get(token);
+    if (!data) {
+        return interaction.reply({ content: `❌ This review has expired. Run ${mentionCommand(interaction.client, '/autobuild')} again.`, ephemeral: true });
+    }
+    await interaction.deferUpdate();
+    const updated = await applyEditFields(interaction, data);
     pendingAutobuilds.set(token, updated);
 
     const card = buildReviewCard(token, updated);
@@ -469,6 +491,8 @@ async function applyEditSubmission(interaction, token) {
 
 module.exports = {
     pendingAutobuilds, buildReviewCard, resolveCategoryAndBadges, runExtraction, confirmAndWrite, retryImageUpload, cancelReview, buildEditModal, applyEditSubmission,
+    // The shared halves bulk /autobuild (utils/autobuildBulk.js) drives.
+    extractToData, confirmCore, confirmMessage, applyEditFields,
     // Exported for scripts/autobuildDmz.test.js; nothing else calls them.
     resolveMode, parseCategoryAndMode, refreshReviewWarnings, findDmzDuplicates, badgeTokensOf, badgeFieldsFor, writeLoadoutDoc, cleanAttachmentPairs
 };
