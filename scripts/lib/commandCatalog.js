@@ -38,7 +38,8 @@ const EXTRA_PLACEMENT = {
  */
 const GROUPS = [
     { key: 'start', label: 'Start here', fromHelp: null },
-    { key: 'gunsmith', label: 'Gunsmith', fromHelp: 'gunsmith' },
+    // Harkirat, 2026-10-20 18:36 EDT: "change the gunsmith eyebrow to say loadouts". The page's label only; /help's own category keeps its name.
+    { key: 'gunsmith', label: 'Loadouts', fromHelp: 'gunsmith' },
     { key: 'draws', label: 'Draws', fromHelp: 'draws' },
     { key: 'seasonal', label: 'Seasonal', fromHelp: 'seasonal' },
     { key: 'utilities', label: 'Utilities', fromHelp: 'utilities' },

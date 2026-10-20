@@ -1328,7 +1328,8 @@ const navSwitcher = cur => {
  *
  * The strip's morph indicator went with it, by his word ("we would probably have to remove that like morph animation on those buttons, which I'm fine with"). The landing page has no strip and keeps its switch in the footer tray, so it does not use this.
  */
-const MENU_GROUP_LABELS = ['Use', 'Documents', 'Community', 'Releases'];
+// Harkirat, 2026-10-20 18:36 EDT: "change use to help and then documents to legal".
+const MENU_GROUP_LABELS = ['Help', 'Legal', 'Community', 'Releases'];
 const barMenu = cur => {
     const row = p => `<a class="hmb-a" href="${hrefTo(p, cur || p)}"${isHere(p, cur) ? ' aria-current="page"' : ''}` +
         ` style="--row:${p.accent}">${esc(p.short)}</a>`;
@@ -1338,8 +1339,8 @@ const barMenu = cur => {
     return `<button type="button" class="hmb" id="hmb" aria-expanded="false" aria-controls="hmb-p" aria-label="Menu">` +
         `<span class="hmb-i" aria-hidden="true"><i></i><i></i><i></i></span></button>
     <div class="hmb-p" id="hmb-p">
-      <div class="hmb-list" role="navigation" aria-label="Pages">${groups}</div>
       <div class="hmb-th"><span class="hmb-thl">Light or dark</span>${themeBtn()}</div>
+      <div class="hmb-list" role="navigation" aria-label="Pages">${groups}</div>
     </div>
     <div class="hmb-s" id="hmb-s" aria-hidden="true"></div>`;
 };
@@ -4141,19 +4142,22 @@ const SWITCHER_CSS = `
   .hmb-list{display:block}
   .hmb-h{margin:.8rem 0 .35rem .15rem;font-family:var(--mono);font-size:.58rem;
     letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
-  .hmb-g{display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
+  /* Gaps wide enough that each row reads as its own button, not a cell in one grid (Harkirat, 2026-10-20 18:36 EDT). */
+  .hmb-g{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
   .hmb-g:has(> :only-child){grid-template-columns:1fr}
   /* Each page's colour is its OUTLINE now, not a dot (Harkirat, 2026-10-20 17:40 EDT: "remove the dots... maybe like displaying just the outline color"): a muted ring in its own hue at rest, and the page you are on takes the full colour and a wash. No hover rules: on touch a hover latches, which is what made earlier phone menus feel stuck. */
-  .hmb-a{display:flex;align-items:center;gap:.6rem;min-height:46px;padding:0 .85rem;
-    border-radius:12px;border:1px solid color-mix(in srgb,var(--row) 42%,var(--rule));text-decoration:none;
-    font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
-    color:var(--ink2)}
-  .hmb-a[aria-current]{color:var(--ink);font-weight:700;border-color:var(--row);
+  /* The label is set a clear step above the .58rem group label and heavier, so the two stop blending ("they kind of feel small and tiny... they blend in with their like eyebrow label"). */
+  .hmb-a{display:flex;align-items:center;gap:.6rem;min-height:50px;padding:0 .95rem;
+    border-radius:13px;border:1px solid color-mix(in srgb,var(--row) 42%,var(--rule));text-decoration:none;
+    font-family:var(--mono);font-size:.78rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink)}
+  .hmb-a[aria-current]{color:var(--ink);font-weight:800;border-color:var(--row);
     background:color-mix(in srgb,var(--row) 13%,transparent)}
   .hmb-a:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
   .hmb-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  /* The theme row sits FIRST and tight, so the page buttons land lower in the panel, nearer the thumb (Harkirat, same message). */
   .hmb-th{display:flex;align-items:center;justify-content:space-between;gap:1rem;
-    margin-top:1rem;padding:.85rem .15rem 0;border-top:1px solid var(--rule)}
+    margin:.15rem 0 0;padding:.35rem .15rem .55rem;border-bottom:1px solid var(--rule)}
   .hmb-thl{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;
     text-transform:uppercase;color:var(--ink2)}
 

@@ -1562,20 +1562,23 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   }
   .hmb-list{display:block}
   .hmb-h{margin:.8rem 0 .35rem .15rem;font-family:var(--mono);font-size:.58rem;
-    letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
-  .hmb-g{display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
-  .hmb-g:has(> :only-child){grid-template-columns:1fr}/* Each page's colour is its OUTLINE now, not a dot (Harkirat, 2026-10-20 17:40 EDT: "remove the dots... maybe like displaying just the outline color"): a muted ring in its own hue at rest, and the page you are on takes the full colour and a wash. No hover rules: on touch a hover latches, which is what made earlier phone menus feel stuck. */
+    letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}/* Gaps wide enough that each row reads as its own button, not a cell in one grid (Harkirat, 2026-10-20 18:36 EDT). */
   
-  .hmb-a{display:flex;align-items:center;gap:.6rem;min-height:46px;padding:0 .85rem;
-    border-radius:12px;border:1px solid color-mix(in srgb,var(--row) 42%,var(--rule));text-decoration:none;
-    font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
-    color:var(--ink2)}
-  .hmb-a[aria-current]{color:var(--ink);font-weight:700;border-color:var(--row);
+  .hmb-g{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+  .hmb-g:has(> :only-child){grid-template-columns:1fr}/* Each page's colour is its OUTLINE now, not a dot (Harkirat, 2026-10-20 17:40 EDT: "remove the dots... maybe like displaying just the outline color"): a muted ring in its own hue at rest, and the page you are on takes the full colour and a wash. No hover rules: on touch a hover latches, which is what made earlier phone menus feel stuck. *//* The label is set a clear step above the .58rem group label and heavier, so the two stop blending ("they kind of feel small and tiny... they blend in with their like eyebrow label"). */
+  
+  
+  .hmb-a{display:flex;align-items:center;gap:.6rem;min-height:50px;padding:0 .95rem;
+    border-radius:13px;border:1px solid color-mix(in srgb,var(--row) 42%,var(--rule));text-decoration:none;
+    font-family:var(--mono);font-size:.78rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink)}
+  .hmb-a[aria-current]{color:var(--ink);font-weight:800;border-color:var(--row);
     background:color-mix(in srgb,var(--row) 13%,transparent)}
   .hmb-a:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
-  .hmb-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .hmb-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* The theme row sits FIRST and tight, so the page buttons land lower in the panel, nearer the thumb (Harkirat, same message). */
+  
   .hmb-th{display:flex;align-items:center;justify-content:space-between;gap:1rem;
-    margin-top:1rem;padding:.85rem .15rem 0;border-top:1px solid var(--rule)}
+    margin:.15rem 0 0;padding:.35rem .15rem .55rem;border-bottom:1px solid var(--rule)}
   .hmb-thl{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;
     text-transform:uppercase;color:var(--ink2)}/* The section index is no longer in a menu with the pages — it is not the
      same question. It sits with the document it indexes, closed by default. */
@@ -2206,7 +2209,6 @@ html{scroll-behavior:smooth}
 </a>
     <button type="button" class="hmb" id="hmb" aria-expanded="false" aria-controls="hmb-p" aria-label="Menu"><span class="hmb-i" aria-hidden="true"><i></i><i></i><i></i></span></button>
     <div class="hmb-p" id="hmb-p">
-      <div class="hmb-list" role="navigation" aria-label="Pages"><p class="hmb-h">Use</p><div class="hmb-g"><a class="hmb-a" href="./commands.html" style="--row:#58D05A">Commands</a></div><p class="hmb-h">Documents</p><div class="hmb-g"><a class="hmb-a" href="./terms.html" style="--row:#F2994A">Terms</a><a class="hmb-a" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="hmb-a" href="./license.html" style="--row:#9B6BE3">License</a><a class="hmb-a" href="./notice.html" style="--row:#FF5264">Notice</a></div><p class="hmb-h">Community</p><div class="hmb-g"><a class="hmb-a" href="./contributing.html" aria-current="page" style="--row:#8B9BFF">Contributing</a><a class="hmb-a" href="./contributors.html" style="--row:#F8FF4A">Contributors</a></div></div>
       <div class="hmb-th"><span class="hmb-thl">Light or dark</span><button id="th" class="thm " role="switch"
   aria-checked="false" aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
@@ -2251,6 +2253,7 @@ html{scroll-behavior:smooth}
     </span>
   </span>
 </button></div>
+      <div class="hmb-list" role="navigation" aria-label="Pages"><p class="hmb-h">Help</p><div class="hmb-g"><a class="hmb-a" href="./commands.html" style="--row:#58D05A">Commands</a></div><p class="hmb-h">Legal</p><div class="hmb-g"><a class="hmb-a" href="./terms.html" style="--row:#F2994A">Terms</a><a class="hmb-a" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="hmb-a" href="./license.html" style="--row:#9B6BE3">License</a><a class="hmb-a" href="./notice.html" style="--row:#FF5264">Notice</a></div><p class="hmb-h">Community</p><div class="hmb-g"><a class="hmb-a" href="./contributing.html" aria-current="page" style="--row:#8B9BFF">Contributing</a><a class="hmb-a" href="./contributors.html" style="--row:#F8FF4A">Contributors</a></div></div>
     </div>
     <div class="hmb-s" id="hmb-s" aria-hidden="true"></div>
   </nav>

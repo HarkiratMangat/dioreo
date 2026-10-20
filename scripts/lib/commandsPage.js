@@ -187,6 +187,7 @@ function solveOn(hex) {
  * ⚠️ BOTH text-safe values are emitted and the STYLESHEET picks between them into --ci. An inline style beats every stylesheet rule, so a single inline --ct could never be corrected for light theme — which is precisely the 1.69:1 failure this page shipped once already.
  */
 function colourVars(cmdPath, accents, fallback) {
+    if (TONED[cmdPath]) return TONED[cmdPath];
     const raw = accents[cmdPath] || fallback;
     if (!raw) return '--cc:var(--ink3);--con:var(--desk);--ct:var(--ink2);--ctl:var(--ink2)';
     return '--cc:' + raw + ';--con:' + solveOn(raw) +
@@ -197,6 +198,29 @@ function colourVars(cmdPath, accents, fallback) {
  * The neutral a derived command wears until it is told otherwise. It is a REAL colour, not var(--ink3): the previous page gave derived commands an ink token as their accent, so a selected chip tinted with it came out grey and read as unselected sitting beside a command whose chips tinted properly. "Blatant inconsistency in design", and correctly so.
  */
 const DERIVED_NEUTRAL = '#8A8494';
+
+/**
+ * The two commands with no fixed reply colour get a TONE instead of the neutral (Harkirat, 2026-10-20 18:36 EDT): /settings a steel off-white, and /colors "colorful... transition through colors with a subtle animation that genuinely gradient blends between colors". Each stop is set for the dark ground; its light-theme text twin is solveText's, so it is held to the same 4.5:1 as every other command. The /colors cycle is a registered <color> property animated on whatever element carries it, so the chip, the picker and the card all blend rather than step.
+ */
+const STEEL = '#C3CCD6';
+const RAINBOW = ['#FF7A8A', '#FFB86B', '#F2DC5D', '#7FE07A', '#6BD3F2', '#9C8CFF', '#E58CF2'];
+const TONED = {
+    '/settings': '--cc:var(--steel);--con:var(--steel-on);--ct:var(--steel);--ctl:var(--steel)',
+    '/colors': '--cc:var(--rainbow);--con:#000000;--ct:var(--rainbow);--ctl:var(--rainbow-l)',
+};
+const toneCss = () => {
+    const light = solveText(STEEL, GROUND_LIGHT);
+    const stops = RAINBOW.concat(RAINBOW[0]);
+    const keys = stops.map((h, i) => `${(i / (stops.length - 1) * 100).toFixed(2)}%{--rainbow:${h};--rainbow-l:${solveText(h, GROUND_LIGHT)}}`).join('');
+    return `:root{--steel:${STEEL};--steel-on:${solveOn(STEEL)}}
+:root[data-theme=light]{--steel:${light};--steel-on:${solveOn(light)}}
+@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--steel:${light};--steel-on:${solveOn(light)}}}
+@property --rainbow{syntax:"<color>";inherits:true;initial-value:${RAINBOW[0]}}
+@property --rainbow-l{syntax:"<color>";inherits:true;initial-value:${solveText(RAINBOW[0], GROUND_LIGHT)}}
+@keyframes rx-rainbow{${keys}}
+[style*="--rainbow"]{animation:rx-rainbow 14s linear infinite}
+@media (prefers-reduced-motion:reduce){[style*="--rainbow"]{animation:none}}`;
+};
 
 /** Nudges a hex darker by `amount` of lightness, keeping the hue. Used for the two "meta" scopes, which are the sharp end of a mode rather than a colour of their own. */
 function darken(hex, amount) {
@@ -268,6 +292,7 @@ function loadWeaponIndex() {
 }
 
 const RECEIVER_CSS = `
+${toneCss()}
 /* Page-scoped. Every selector is prefixed rx- so nothing can collide with the shared chrome,
    which this page draws from the same builders as every other page. */
 
@@ -314,6 +339,9 @@ const RECEIVER_CSS = `
 /* The chip you are on keeps the outline and takes its colour: a solid border in the command's own hue, the label at full ink, and the cursor light held on so it still reads as lit from across the screen (Harkirat, 2026-10-20 11:57 EDT: "when selected, dont do the filled style. keep the outline style, just with the color activated on it"). Its dot stays, because with no fill there is nothing for the dot to vanish into. */
 .rx-chip.on{border-color:var(--cc);color:var(--ink);font-weight:600}
 .rx-chip.on::before{opacity:1}
+/* An EVEN fill on the chosen chip, not the cursor light held still (Harkirat, 2026-10-20 18:36 EDT, on the selected All commands chip: "make it like the entire fill instead of those like dark like bubbles on the left and right side"). A radial light sized for hover left both ends dark on a long label; the wash covers the whole capsule and a soft inner glow keeps the edge lit. */
+.rx-chip.on::before{background:color-mix(in srgb,var(--cc) 20%,transparent)}
+.rx-chip.on{box-shadow:inset 0 0 12px -2px color-mix(in srgb,var(--cc) 55%,transparent)}
 .rx-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rx-dot{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none;
   box-shadow:0 0 0 2.5px color-mix(in srgb,var(--cc) 20%,transparent),0 0 9px 1px color-mix(in srgb,var(--cc) 55%,transparent)}
@@ -544,7 +572,8 @@ const RECEIVER_CSS = `
 .rx-cd:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rx-cd-n{display:flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.92rem;
   font-weight:600;color:var(--ci)}
-.rx-cd-n i{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none}
+.rx-cd-n i{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none;
+  box-shadow:0 0 0 2.5px color-mix(in srgb,var(--cc) 20%,transparent),0 0 9px 1px color-mix(in srgb,var(--cc) 55%,transparent)}
 .rx-cd-w{margin:.35rem 0 0;font-family:var(--serif);font-size:.94rem;line-height:1.4;color:var(--ink2)}
 .rx-cd-o{margin:.45rem 0 0;display:flex;flex-wrap:wrap;gap:.25rem}
 .rx-cd-o span{font-family:var(--mono);font-size:.64rem;padding:.13rem .38rem;border-radius:4px;
@@ -559,11 +588,13 @@ const RECEIVER_CSS = `
    invites a command name instead. ⚠️ The answers are prerendered, one row per command, so
    each carries its own colour from the build; the script only orders and shows them. */
 .rx-find{margin:1.3rem 0 0;max-width:52rem}
+/* It reads as the thing to use, not as a quiet input (Harkirat, 2026-10-20 18:36 EDT: "make the border... a bit thicker, just so it's more prominent"): a 1.5px border tinted with the page accent, a faint accent ring around it, and the search glass in the accent. */
 .rx-field{display:flex;align-items:center;gap:.65rem;height:54px;padding:0 .8rem 0 1rem;
-  border-radius:14px;border:1px solid var(--rule2);background:${BED};
+  border-radius:14px;border:1.5px solid color-mix(in srgb,var(--accent) 55%,var(--rule2));background:${BED};
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 9%,transparent);
   transition:border-color .2s ease,box-shadow .2s ease}
-.rx-field:focus-within{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.rx-field svg{flex:none;width:18px;height:18px;color:var(--ink3)}
+.rx-field:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 20%,transparent)}
+.rx-field svg{flex:none;width:18px;height:18px;color:var(--accent-t)}
 .rx-field:focus-within svg{color:var(--accent-t)}
 .rx-q{flex:1;min-width:0;height:100%;border:0;background:none;outline:none;padding:0;
   font-family:var(--serif);font-size:1.08rem;color:var(--ink);-webkit-appearance:none;appearance:none}
@@ -577,6 +608,8 @@ const RECEIVER_CSS = `
 .rx-field kbd{flex:none;font-family:var(--mono);font-size:.7rem;color:var(--ink3);
   padding:.12rem .42rem;border-radius:5px;border:1px solid var(--rule2)}
 .rx-field:focus-within kbd{display:none}
+@property --fl{syntax:"<length>";inherits:false;initial-value:0px}
+@property --fr{syntax:"<length>";inherits:false;initial-value:0px}
 .rx-tries{margin:.6rem 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:.35rem}
 .rx-tries > span{font-family:var(--mono);font-size:.63rem;letter-spacing:.15em;text-transform:uppercase;
   color:color-mix(in srgb,var(--accent-t) 74%,var(--ink3));margin-right:.2rem}
@@ -684,6 +717,11 @@ const RECEIVER_CSS = `
   .rx-rail.rx-js.open .rx-box{background:var(--paper);border-color:color-mix(in srgb,var(--cc) 50%,var(--rule2));
     box-shadow:0 24px 48px -22px rgba(0,0,0,.65)}
   .rx-rail.rx-js .rx-pick{display:flex}
+  /* 📌 THE PILL STAYS PINNED WHILE YOU SCROLL ITS LIST (Harkirat, 2026-10-20 18:38 EDT: "when you scroll down in the menu... the top part doesn't stick"). The box scrolls with the page, so the button inside it is sticky to where the rail sticks and the chips pass under it; its ::before paints the strip between it and the bar so nothing shows through that gap. It is sticky inside the BOX, so it lets go at the box's end and the page simply carries on. */
+  .rx-rail.rx-js.open .rx-pick{position:sticky;z-index:3;top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px) + .55rem + 1px);
+    background:var(--paper);border-radius:23px;box-shadow:0 10px 18px -14px rgba(0,0,0,.7)}
+  .rx-rail.rx-js.open .rx-pick::before{content:"";position:absolute;left:-2px;right:-2px;bottom:100%;height:calc(.55rem + 2px);
+    background:var(--desk);pointer-events:none}
   .rx-rail.rx-js .rx-drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.4,0,.2,1)}
   .rx-rail.rx-js.open .rx-drop{grid-template-rows:1fr;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1)}
   .rx-rail.rx-js .rx-scroll{min-height:0;overflow:hidden;visibility:hidden;opacity:0;transform:translateY(-6px);
@@ -704,7 +742,7 @@ const RECEIVER_CSS = `
   .rx-rail.open .rx-pick svg{transform:rotate(180deg)}
   /* In the menu every chip shows its colour (Harkirat, same message: "when they're not selected, can we at least show their outline color, but when they're selected, then it actually does the proper inner glow"). At rest a ring in its own hue; the chosen one the full hue plus the held light and an inset glow, since no finger moves the light on a phone. */
   .rx-chip{border-color:color-mix(in srgb,var(--cc) 55%,var(--rule2));color:var(--ink)}
-  .rx-chip.on{border-color:var(--cc);box-shadow:inset 0 0 14px -3px color-mix(in srgb,var(--cc) 60%,transparent)}
+  .rx-chip.on{border-color:var(--cc)}
   @media (prefers-reduced-motion:reduce){
     .rx-rail.rx-js .rx-box,.rx-rail.rx-js .rx-drop,.rx-rail.rx-js .rx-scroll,
     .rx-rail.rx-js.open .rx-drop,.rx-rail.rx-js.open .rx-scroll{transition:none}
@@ -716,7 +754,11 @@ const RECEIVER_CSS = `
   .rx-field{height:50px}
   .rx-field kbd{display:none}
   .rx-q{font-size:1rem}
-  .rx-tries{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:.1rem}
+  /* 🎚️ THE BOARD'S FADED EDGES, turned sideways (Harkirat, 2026-10-20 18:36 EDT: "the same faded side scroll system that the spec board and the portal stuff uses"). It is .b3-fady's mask: an edge fades only while there is more to scroll on that side, over the same eased stops (0, .3, .78, 1 at 0, 45%, 80% of the fade), and --fl/--fr are registered lengths so the fade eases in and out with the scroll instead of switching. The script sets them. */
+  .rx-tries{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:.1rem;
+    -webkit-mask-image:linear-gradient(90deg,rgb(0 0 0/0) 0,rgb(0 0 0/.3) calc(var(--fl)*.45),rgb(0 0 0/.78) calc(var(--fl)*.8),#000 var(--fl),#000 calc(100% - var(--fr)),rgb(0 0 0/.78) calc(100% - var(--fr)*.8),rgb(0 0 0/.3) calc(100% - var(--fr)*.45),rgb(0 0 0/0) 100%);
+    mask-image:linear-gradient(90deg,rgb(0 0 0/0) 0,rgb(0 0 0/.3) calc(var(--fl)*.45),rgb(0 0 0/.78) calc(var(--fl)*.8),#000 var(--fl),#000 calc(100% - var(--fr)),rgb(0 0 0/.78) calc(100% - var(--fr)*.8),rgb(0 0 0/.3) calc(100% - var(--fr)*.45),rgb(0 0 0/0) 100%);
+    transition:--fl .18s cubic-bezier(.2,.8,.2,1),--fr .18s cubic-bezier(.2,.8,.2,1)}
   .rx-tries::-webkit-scrollbar{display:none}
   .rx-hit-t{flex-direction:column;align-items:flex-start;gap:.1rem}
   /* No room for the "Best fit" tag beside a wrapped purpose, so the first row says it with a wash instead. */
@@ -735,7 +777,8 @@ const RECEIVER_CSS = `
   .rx-cd-w,.rx-cd-o{display:none}
   .rx-cd-n{font-size:.82rem}
   .rx-lead{margin-bottom:.8rem;font-size:.96rem}
-  .rx-p,.rx-home{scroll-margin-top:7.5rem}
+  /* The bar, the closed picker rail (48px + its .55rem padding top and bottom) and a 16px gap. A flat 7.5rem was 4px SHORT of the rail's bottom, so every opened card had its top edge tucked under it (Harkirat, 2026-10-20 18:38 EDT). */
+  .rx-p,.rx-home{scroll-margin-top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px) + 48px + 1.1rem + 16px)}
   .rx-bar{position:fixed;left:.6rem;right:.6rem;bottom:calc(.6rem + env(safe-area-inset-bottom,0px));
     top:auto;margin:0;border-radius:13px;
     box-shadow:0 6px 26px color-mix(in srgb,#000 42%,transparent)}
@@ -967,6 +1010,9 @@ const RECEIVER_JS = [
     '      rail.style.top=(v-rail.getBoundingClientRect().top)+"px";',
     '      rail.classList.add("open");',
     '    } else {',
+    '      /* If the list was scrolled while the pill stayed pinned, the box top is above the pill: move the rail down by that much first, so the fold closes up INTO the pill instead of dragging it away. */',
+    '      var bx=rail.querySelector(".rx-box"), gap=pick.getBoundingClientRect().top-(bx?bx.getBoundingClientRect().top:0)-1;',
+    '      if(bx&&gap>1) rail.style.top=((parseFloat(rail.style.top)||0)+gap)+"px";',
     '      rail.classList.remove("open");',
     '      rail._t=setTimeout(function(){ rail.classList.remove("held"); rail.style.top=""; if(after) after(); },still.matches?0:SHUT);',
     '    }',
@@ -1017,6 +1063,11 @@ const RECEIVER_JS = [
     '',
     '  /* THE ASK FIELD. rank() is commandProse.js findTools(), serialised into the page, so',
     '     what the build gate proves about a query is what the reader gets. */',
+    '  /* The Try row fades only on a side with more to scroll; see .rx-tries. */',
+    '  var tries=document.querySelector(".rx-tries");',
+    '  function fade(){ if(!tries) return; var l=tries.scrollLeft, r=tries.scrollWidth-tries.clientWidth-l;',
+    '    tries.style.setProperty("--fl",(l>1?28:0)+"px"); tries.style.setProperty("--fr",(r>1?28:0)+"px"); }',
+    '  if(tries){ tries.addEventListener("scroll",fade,{passive:true}); addEventListener("resize",fade); fade(); }',
     '  var q=document.getElementById("rx-q"), count=document.getElementById("rx-count");',
     '  var found=document.getElementById("rx-found"), none=document.getElementById("rx-nohit");',
     '  var IX=window.__RX_FIND, RANK=window.__RX_RANK;',
@@ -1535,5 +1586,5 @@ module.exports = {
     commandsShell, findIndexFor, CHROME_KEYS, SIGNAL, RECEIVER_CSS, RECEIVER_JS,
     VISIBLE_CHOICES, ownOptions, solveText, solveOn, darken, optionKind, badges, bareHint,
     loadAccents, loadCategoryAccents, loadScopeAccents, loadWeaponIndex,
-    DERIVED, DERIVED_NEUTRAL, GROUND_DARK, GROUND_LIGHT,
+    DERIVED, DERIVED_NEUTRAL, GROUND_DARK, GROUND_LIGHT, STEEL, RAINBOW, TONED,
 };

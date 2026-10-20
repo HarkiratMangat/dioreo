@@ -264,6 +264,19 @@ check('the derived six get a real colour, never an ink token', () => {
     assert.ok(contrast(solveOn(DERIVED_NEUTRAL), DERIVED_NEUTRAL) >= 4.5);
 });
 
+check('the /settings steel and every /colors stop read as text on both grounds', () => {
+    // The tones are not run through colourVars' hex path, so nothing else would notice a stop that fails. The dark ground takes the stop itself; the light ground takes solveText's twin, which is what the stylesheet emits.
+    const { STEEL, RAINBOW, TONED } = require('./lib/commandsPage');
+    const bad = [];
+    for (const hex of [STEEL, ...RAINBOW]) {
+        if (contrast(hex, GROUND_DARK) < 4.5) bad.push(hex + ' on dark');
+        const lt = solveText(hex, GROUND_LIGHT);
+        if (contrast(lt, GROUND_LIGHT) < 4.5) bad.push(lt + ' on light');
+    }
+    assert.deepStrictEqual(bad, [], 'a tone is unreadable');
+    assert.deepStrictEqual(Object.keys(TONED).sort(), ['/colors', '/settings'], 'only the two profile-coloured commands take a tone');
+});
+
 check('no command is both fixed-colour and derive-per-render', () => {
     const fixed = new Set(Object.keys(loadAccents()));
     const both = [...DERIVED].filter(p => fixed.has(p));
