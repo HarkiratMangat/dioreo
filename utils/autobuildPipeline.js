@@ -102,8 +102,7 @@ function cleanAttachmentPairs(attachments, slots) {
     return { attachments: outA, attachmentSlots: outS };
 }
 
-// Ephemeral review card: weapon/code/attachments/category/badges as extracted so far, plus the RAW source screenshot as the preview image (not yet uploaded to Cloudinary -- see the design spec for why: an edited weapon name during review must never orphan an upload under the wrong key).
-// `opts` (bulk /autobuild, 2026-10-20 10:33 EDT): `header` adds a line under the title, `notes` adds warnings after the standard ones, `rows` replaces the Confirm/Edit/Cancel row. A single review passes none of them and renders exactly as before.
+// Ephemeral review card: weapon/code/attachments/category/badges as extracted so far, plus the RAW source screenshot as the preview image (not yet uploaded to Cloudinary -- see the design spec for why: an edited weapon name during review must never orphan an upload under the wrong key). `opts` (bulk /autobuild, 2026-10-20 10:33 EDT): `header` adds a line under the title, `notes` adds warnings after the standard ones, `rows` replaces the Confirm/Edit/Cancel row. A single review passes none of them and renders exactly as before.
 function buildReviewCard(token, data, opts = {}) {
     const categoryLine = data.category ? data.category : '⚠️ needs review (use Edit to set one)';
     // The mode line says WHY when it was detected, so a wrong guess is visible at a glance rather than discovered after Confirm. "set by you" when /autobuild's `mode:` decided it; nothing to explain when the screenshot was ambiguous, because the line already asks.

@@ -15,8 +15,7 @@ function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
 }
 
-// --- AUTOBUILD: OPEN LOADOUT --- answers THIS button's own interaction with a brand-new PUBLIC message (not an edit of the ephemeral confirmation), same shape /dmz's execute() uses for its own initial send. See the design spec's "Open Loadout" section.
-// Shared by the single review's Open Loadout button and the bulk summary's Open a saved loadout menu (2026-10-20 10:36 EDT).
+// --- AUTOBUILD: OPEN LOADOUT --- answers THIS button's own interaction with a brand-new PUBLIC message (not an edit of the ephemeral confirmation), same shape /dmz's execute() uses for its own initial send. See the design spec's "Open Loadout" section. Shared by the single review's Open Loadout button and the bulk summary's Open a saved loadout menu (2026-10-20 10:36 EDT).
 async function openLoadout(interaction, loadoutId) {
     const Loadout = require('../models/Loadout');
     const { buildLoadoutCard, getMpCategoryAccent } = require('../utils/loadoutRender');

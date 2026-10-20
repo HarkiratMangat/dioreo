@@ -11,8 +11,7 @@ const MAX_SCREENSHOTS = 10;
 const BATCH_MS = 30 * 60 * 1000; // a single review keeps 10 minutes; ten reviews need longer
 const READ_AT_ONCE = 3;
 
-// key -> { items: [{ url, token, data, status, error, doc, retryToken }], page, skipped, adminId }
-// status: pending (to review) · saved · cancelled · failed (couldn't read) · retry (image upload failed on Confirm)
+// key -> { items: [{ url, token, data, status, error, doc, retryToken }], page, skipped, adminId } status: pending (to review) · saved · cancelled · failed (couldn't read) · retry (image upload failed on Confirm)
 const batches = new Map();
 
 const norm = (a) => String(a || '').trim().toLowerCase();
