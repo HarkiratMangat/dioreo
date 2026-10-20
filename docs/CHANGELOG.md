@@ -34,6 +34,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 - **Gone:** `parseAlertId`, `buildAlertExport`, `buildChangeExport`, `extractStillFrame`, `capBannerPreviewWidth`, `pageForLoadoutMode` (the `manageActions` copy; `core/changeset.js` keeps its own) and `buttonsFor`, plus the two `fmtUtc` formatters only those exports used. Each was searched across the repo, `portal/` and hidden paths included, before it went.
 - **No behaviour change.** Two comments that named them are reworded, and the deferred-list item that found them (filed 2026-09-14) moves to the resolved list.
+- **Launch checks folded in** (his ask 2026-10-19 21:55 EDT): `img2webp` re-confirmed on the prod VM; the prod app's twelve `DB_` emojis match the code; both exposed Cloudflare tokens rolled and verified by Harkirat; the six animated Rank Mode emojis uploaded to the prod app. The deferred and resolved lists record each.
 
 
 ## Pre-Release v3.98.0 — 2026-10-19 21:36 EDT (#207 · `edbe23c6`) — `/gunsmiths` becomes `/gunsmith`, and the CODM catalogue, Rank Modes, per-build badges and attachment slots ship with it
