@@ -2,7 +2,7 @@
 //
 // /gunsmiths' weapon suggestions: a class typed in plain words finds that class, and a half-typed class word finds it too (Harkirat, 2026-10-19 20:09 EDT: "i typed assault, which should have showed all AR ... and i typed 'snipe' but that only showed 'all snipers' and didn't list the other sniper builds").
 const assert = require('assert');
-const { resolveCategorySynonym, findWeaponMatches } = require('../utils/search');
+const { resolveCategorySynonyms, findWeaponMatches } = require('../utils/search');
 
 let failures = 0;
 function check(name, fn) {
@@ -11,13 +11,17 @@ function check(name, fn) {
 }
 
 check('a class word, whole or half typed, names its class', () => {
-    for (const [q, cat] of [['assault', 'AR'], ['assault rifle', 'AR'], ['snipe', 'SNIPER'], ['sniper', 'SNIPER'], ['sub', 'SMG'], ['light machine', 'LMG'], ['mark', 'MARKSMAN'], ['shot', 'SHOTGUN'], ['pist', 'SECONDARIES'], ['ar', 'AR'], ['dmr', 'MARKSMAN']]) {
-        assert.strictEqual(resolveCategorySynonym(q), cat, q);
+    for (const [q, cat] of [['assault', 'AR'], ['assault rifle', 'AR'], ['snipe', 'SNIPER'], ['sniper', 'SNIPER'], ['sub', 'SMG'], ['light machine', 'LMG'], ['mark', 'MARKSMAN'], ['shot', 'SHOTGUN'], ['pist', 'SECONDARIES'], ['ar', 'AR'], ['dmr', 'MARKSMAN'], ['mr', 'MARKSMAN'], ['sr', 'SNIPER'], ['sg', 'SHOTGUN'], ['shotty', 'SHOTGUN'], ['side arm', 'SECONDARIES'], ['sidearm', 'SECONDARIES'], ['launcher', 'SECONDARIES'], ['machine gun', 'LMG'], ['bolt', 'SNIPER']]) {
+        assert.deepStrictEqual(resolveCategorySynonyms(q), [cat], q);
     }
 });
 
 check('a weapon name, two letters, or nothing never names a class', () => {
-    for (const q of ['hol', 'ak117', 'sn', '', 'locus']) assert.strictEqual(resolveCategorySynonym(q), null, q);
+    for (const q of ['hol', 'ak117', 'sn', 'm', '', 'locus']) assert.deepStrictEqual(resolveCategorySynonyms(q), [], q);
+});
+
+check('rifle names every rifle class, whole or half typed', () => {
+    for (const q of ['rifle', 'rifles', 'rif']) assert.deepStrictEqual(resolveCategorySynonyms(q), ['AR', 'MARKSMAN', 'SNIPER'], q);
 });
 
 check('a half-typed class lists every weapon in it, plus names that match the letters', () => {
@@ -30,6 +34,7 @@ check('a half-typed class lists every weapon in it, plus names that match the le
     ];
     assert.deepStrictEqual(findWeaponMatches('snipe', pool).map(w => w.weaponKey), ['locus', 'dlq33']);
     assert.deepStrictEqual(findWeaponMatches('assault', pool).map(w => w.weaponKey), ['ak117']);
+    assert.deepStrictEqual(findWeaponMatches('rifle', pool).map(w => w.weaponKey), ['locus', 'dlq33', 'ak117']);
     assert.deepStrictEqual(findWeaponMatches('shot', pool).map(w => w.weaponKey), ['striker'], 'the class, and SHORTY only if its own letters matched');
 });
 
