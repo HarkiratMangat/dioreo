@@ -53,28 +53,28 @@ function flagsOf(items, index) {
     else if (d.categoryConflict) flags.push(`saved elsewhere as ${d.categoryConflict}`);
     if (!d.mode) flags.push('MP or DMZ unknown');
     if (d.equipCapWarning) flags.push('too many attachments');
-    if (d.catalogueWarning) flags.push('names not in the catalogue');
+    const cu = d.catalogueUnknown;
+    if (cu?.weapon) flags.push('weapon not in the catalogue');
+    if (cu?.attachments) flags.push(`${cu.attachments} unknown attachment${cu.attachments === 1 ? '' : 's'}`);
     return flags;
 }
 
-// The batch overview at the top of every page: one line per build, the one on screen marked, each with its state and what needs a look. Pure.
+// The batch line at the top of every page: where you are, then each build's state in a few words (Harkirat, 2026-10-20 12:10 EDT: say "#1 might be a duplicate, #2's category is unknown"; 12:36 EDT: the list version "looks so stupid", so it is one subtext line now). Pure.
 function overview(batch, index) {
     const warn = emojis.warn;
-    const lines = batch.items.map((it, i) => {
-        const name = it.data?.weaponName || it.doc?.weaponName || `Image ${it.sourceIndex != null ? it.sourceIndex + 1 : i + 1}`;
-        let state;
+    const parts = batch.items.map((it, i) => {
+        const n = `#${i + 1}`;
         if (it.status === 'pending') {
             const flags = flagsOf(batch.items, i);
-            state = flags.length ? `${warn} ${flags.join(' · ')}` : '⏳ ready to save';
-        } else if (it.status === 'saved') state = `✅ saved as ${it.doc.buildName}`;
-        else if (it.status === 'cancelled') state = '❌ discarded';
-        else if (it.status === 'failed') state = `${warn} couldn't read`;
-        else state = `${warn} image upload failed`;
-        const here = i === index ? '▸ ' : '';
-        return `${here}**${i + 1}. ${name}** — ${state}`;
+            return flags.length ? `${n} ${warn} ${flags.join(', ')}` : `${n} ${emojis.checkmark} ready to save`;
+        }
+        if (it.status === 'saved') return `${n} saved as ${it.doc.buildName}`;
+        if (it.status === 'cancelled') return `${n} ❌ discarded`;
+        if (it.status === 'failed') return `${n} ${warn} couldn't read`;
+        return `${n} ${warn} image upload failed`;
     });
-    const tail = batch.skipped ? `\n-# ${batch.skipped} not read (${MAX_SCREENSHOTS} at most)` : '';
-    return `${lines.join('\n')}${tail}`;
+    if (batch.skipped) parts.push(`${batch.skipped} not read (${MAX_SCREENSHOTS} at most)`);
+    return `-# Build ${index + 1} of ${batch.items.length} · ${parts.join(' · ')}`;
 }
 
 // The next build still to review after `from`, wrapping round; -1 when none is left. Pure.
@@ -99,6 +99,22 @@ function batchRows(batch, key, index, heldImages) {
             { type: 2, style: 3, label: `Save All ${pending}`, custom_id: id('all', key) },
             { type: 2, style: 4, label: `Discard All ${pending}`, custom_id: id('none', key) },
         ] });
+    }
+    const saved = batch.items.filter(it => it.status === 'saved');
+    if (saved.length) {
+        rows.push({ type: 1, components: [{
+            type: 3, custom_id: id('open', key), placeholder: 'Open a saved loadout',
+            options: saved.map(it => ({ label: `${it.doc.weaponName} — ${it.doc.buildName}`.slice(0, 100), value: String(it.doc._id) })),
+        }] });
+    }
+    // Undo a discard (Harkirat, 2026-10-20 12:36 EDT): the build comes back exactly as it was read, with no second vision call.
+    const discarded = batch.items.map((it, i) => ({ it, i })).filter(({ it }) => it.status === 'cancelled' && it.data);
+    if (discarded.length) {
+        rows.push({ type: 1, components: [{
+            type: 3, custom_id: id('undo', key), placeholder: 'Undo a discard',
+            min_values: 1, max_values: discarded.length,
+            options: discarded.map(({ it, i }) => ({ label: `#${i + 1} ${it.data.weaponName}`.slice(0, 100), value: String(i) })),
+        }] });
     }
     const more = unreadImages(batch, heldImages);
     if (more.length) {
@@ -147,7 +163,7 @@ function renderPage(batch, key, index, heldImages = null) {
         retry: () => `${warn} **Image upload failed** (${item.error}). Nothing was saved yet. Try the image again with\n\`/autobuild retry_token:${item.retryToken} screenshot:<new attachment>\``,
     }[item.status]();
     return [{ type: 17, accent_color: 2829617, components: [
-        { type: 10, content: '# Review Extracted Loadouts' },
+        { type: 10, content: '# Review Extracted Loadout' },
         { type: 10, content: header },
         { type: 14, spacing: 1, divider: true },
         { type: 10, content: line },
@@ -156,39 +172,14 @@ function renderPage(batch, key, index, heldImages = null) {
     ] }];
 }
 
-// The end of a batch: one line per build, and an Open loadout menu for the saved ones. Add more stays while the message has screenshots left. Pure.
-function renderSummary(batch, key, heldImages = null) {
-    const warn = emojis.warn;
-    const lines = batch.items.map((it, i) => {
-        if (it.status === 'saved') return `${i + 1}. ✅ ${it.doc.weaponName} — ${it.doc.buildName} (${it.doc.category}${it.doc.mode === 'DMZ' ? ', DMZ' : ''})`;
-        if (it.status === 'retry') return `${i + 1}. ${warn} image upload failed: \`/autobuild retry_token:${it.retryToken} screenshot:<new attachment>\``;
-        if (it.status === 'failed') return `${i + 1}. ${warn} couldn't read: ${it.error}`;
-        return `${i + 1}. ❌ discarded`;
-    });
-    const saved = batch.items.filter(it => it.status === 'saved');
-    const components = [
-        { type: 10, content: `# Batch done\n-# ✅ ${saved.length} saved of ${batch.items.length}${batch.skipped ? ` · ${batch.skipped} not read (${MAX_SCREENSHOTS} at most)` : ''}` },
-        { type: 14, spacing: 1, divider: true },
-        { type: 10, content: lines.join('\n') },
-    ];
-    if (saved.length) {
-        components.push({ type: 1, components: [{
-            type: 3, custom_id: id('open', key), placeholder: 'Open a saved loadout',
-            options: saved.map(it => ({ label: `${it.doc.weaponName} — ${it.doc.buildName}`.slice(0, 100), value: String(it.doc._id) })),
-        }] });
-    }
-    const more = batchRows(batch, key, 0, heldImages).filter(r => r.components[0].type === 3);
-    components.push(...more);
-    return [{ type: 17, accent_color: 2829617, components }];
-}
-
 function heldImagesFor(interaction, batch) {
     if (!batch.source) return null;
     return interaction.client.commands.get('Autobuild Loadout')?.heldFor(batch.source.key)?.images || null;
 }
 
+// Always the page you are on, even when nothing is left to review: a save, a discard or a failure stays in front of you (Harkirat, 2026-10-20 12:36 EDT: "leave me on that build's page, let me see the confirmation or problem"). The saved builds open from the menu under it.
 function render(batch, key, heldImages) {
-    return batch.items.some(it => it.status === 'pending') ? renderPage(batch, key, batch.page, heldImages) : renderSummary(batch, key, heldImages);
+    return renderPage(batch, key, batch.page, heldImages);
 }
 
 async function show(interaction, batch, key) {
@@ -307,10 +298,7 @@ async function handleBatchComponent(interaction) {
                     await interaction.followUp({ content: confirmMessage(interaction.client, result), ephemeral: true }).catch(() => {});
                 }
             }
-            if (item.status !== 'pending') {
-                const nxt = nextPendingIndex(batch.items, index);
-                if (nxt !== -1) batch.page = nxt;
-            }
+            batch.page = index;
         }
     } else if (action === 'all') {
         const { stoppedAt, result } = await confirmAllItems(batch);
@@ -324,6 +312,15 @@ async function handleBatchComponent(interaction) {
             pendingAutobuilds.delete(item.token);
             item.status = 'cancelled';
         }
+    } else if (action === 'undo') {
+        const restored = interaction.values.map(Number).filter(i => batch.items[i]?.status === 'cancelled' && batch.items[i].data).sort((a, b) => a - b);
+        for (const i of restored) {
+            const item = batch.items[i];
+            pendingAutobuilds.set(item.token, item.data);
+            setTimeout(() => pendingAutobuilds.delete(item.token), BATCH_MS).unref();
+            item.status = 'pending';
+        }
+        if (restored.length) batch.page = restored[0];
     } else if (action === 'more') {
         const held = heldImagesFor(interaction, batch);
         if (!held) {
@@ -366,5 +363,5 @@ async function applyBatchEdit(interaction) {
 module.exports = {
     runBulk, handleBatchComponent, showBatchEditModal, applyBatchEdit, MAX_SCREENSHOTS,
     // Exported for scripts/autobuildBulk.test.js.
-    batches, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, renderSummary, confirmAllItems, applyResult, unreadImages,
+    batches, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, applyResult, unreadImages,
 };

@@ -52,10 +52,20 @@ async function knownAttachmentNames(allMpBuilds) {
     return [...new Set([...allMpBuilds.flatMap(l => l.attachments), ...(catIndex ? [...catIndex.attachments.values()].map(i => i.name) : [])])];
 }
 
-// The same warning /manage gives (Harkirat, 2026-10-19 16:13 EDT: warn, then confirm or go back to edit): the review card's Confirm is the "save anyway", and Edit is the way back.
+// The same warning /manage gives (Harkirat, 2026-10-19 16:13 EDT: warn, then confirm or go back to edit): the review card's Confirm is the "save anyway", and Edit is the way back. It also records, on `data`, what the batch header needs (`catalogueUnknown`) and the slot shown beside each attachment (`slotLabels`): the screenshot's own label for MP, else the catalogue's slot, else nothing. Harkirat, 2026-10-20 12:36 EDT: "is the weapon name not in the catalogue or the attachments??" -- so the warning now names which.
 async function catalogueWarningFor(data) {
+    const index = await getCatalogueIndex();
+    const { normKey } = require('./catalogue');
+    data.slotLabels = (data.attachments || []).map((a, i) => (data.attachmentSlots || [])[i] || index?.attachments.get(normKey(a))?.slot || '');
     const unknown = await findUnknownNames({ weaponName: data.weaponName, attachments: data.attachments });
-    return unknown.count ? `⚠️ **Not in the catalogue yet:** ${describeUnknown(unknown)}\n-# A typo, or a new item? **Save Build** saves it and adds these names; **Adjust** lets you fix them first.` : null;
+    data.catalogueUnknown = unknown.count ? { weapon: !!unknown.weapon, attachments: unknown.attachments.length } : null;
+    if (!unknown.count) return null;
+    const list = (names) => names.map(a => `\`${a}\``).join(', ');
+    const n = unknown.attachments.length;
+    const what = unknown.weapon && n ? `**Weapon \`${unknown.weapon}\` and ${n} attachment${n === 1 ? '' : 's'} not in the catalogue yet:** ${list(unknown.attachments)}`
+        : unknown.weapon ? `**Weapon not in the catalogue yet:** \`${unknown.weapon}\``
+        : `**${n} attachment${n === 1 ? '' : 's'} not in the catalogue yet:** ${list(unknown.attachments)}`;
+    return `⚠️ ${what}\n-# A typo, or a new item? **Save Build** saves it and adds these names; **Adjust** lets you fix them first.`;
 }
 
 // DMZ builds carry no Gunsmith code (the DMZ screen shows none), so findDuplicateLoadouts' code-based rules can never match one. A DMZ duplicate is the same weapon with the same attachment SET, order ignored, compared the way that function compares names (trimmed, case-folded). Kept here rather than in utils/loadoutRender.js so this change stays out of the loadout renderer.
@@ -112,7 +122,11 @@ function buildReviewCard(token, data, opts = {}) {
     const codeLine = data.gunsmithCode
         ? `\`${data.gunsmithCode}\``
         : (data.mode === 'DMZ' ? '_(none -- DMZ builds have no code)_' : '`(empty)`');
-    const attachmentsLines = data.attachments.map((a, i) => `${i + 1}. \`${a || '(empty)'}\``).join('\n');
+    // The slot beside each attachment (Harkirat, 2026-10-20 12:36 EDT: "1. `Polarfire-S (MUZZLE)`"), from catalogueWarningFor's slotLabels.
+    const attachmentsLines = data.attachments.map((a, i) => {
+        const slot = (data.slotLabels || [])[i];
+        return `${i + 1}. \`${a || '(empty)'}${slot ? ` (${slot.toUpperCase()})` : ''}\``;
+    }).join('\n');
     const badgesLine = data.badgesRaw && data.badgesRaw.trim()
         ? data.badgesRaw.trim()
         : '_(none -- badges are per build, so add any with **Adjust**)_';
@@ -122,25 +136,19 @@ function buildReviewCard(token, data, opts = {}) {
         ...(opts.header ? [{ type: 10, content: opts.header }] : []),
         { type: 14, spacing: 1, divider: true },
         { type: 10, content: `**Weapon:** ${data.weaponName}\n**Mode:** ${modeLine}\n**Category:** ${categoryLine}\n**Gunsmith Code:** ${codeLine}` },
-        { type: 10, content: `**Attachments:**\n${attachmentsLines}` },
-        { type: 10, content: `**Badges:** ${badgesLine}` }
     ];
-    // Advisory warnings (never block Confirm) -- see refreshReviewWarnings above.
-    if (data.categoryConflict) {
-        components.push({ type: 10, content: `⚠️ **Category mismatch:** this weapon is already saved as **${data.categoryConflict}**. Saving it as **${data.category}** will register it under two categories — double-check the category before saving (use **Adjust** to change it).` });
+    // Advisory warnings (never block Save) -- see refreshReviewWarnings above. Their own block between dividers, ABOVE the attachments, so they are seen first (Harkirat, 2026-10-20 12:36 EDT).
+    const warnings = [
+        data.categoryConflict ? `⚠️ **Category mismatch:** this weapon is already saved as **${data.categoryConflict}**. Saving it as **${data.category}** will register it under two categories — double-check the category before saving (use **Adjust** to change it).` : null,
+        data.duplicateWarning, data.catalogueWarning, data.equipCapWarning, ...(opts.notes || []),
+    ].filter(Boolean);
+    if (warnings.length) {
+        components.push({ type: 14, spacing: 1, divider: true });
+        for (const w of warnings) components.push({ type: 10, content: w });
+        components.push({ type: 14, spacing: 1, divider: true });
     }
-    if (data.duplicateWarning) {
-        components.push({ type: 10, content: data.duplicateWarning });
-    }
-    if (data.catalogueWarning) {
-        components.push({ type: 10, content: data.catalogueWarning });
-    }
-    if (data.equipCapWarning) {
-        components.push({ type: 10, content: data.equipCapWarning });
-    }
-    for (const note of opts.notes || []) {
-        if (note) components.push({ type: 10, content: note });
-    }
+    components.push({ type: 10, content: `**Attachments:**\n${attachmentsLines}` });
+    components.push({ type: 10, content: `**Badges:** ${badgesLine}` });
     components.push({ type: 12, items: [{ media: { url: data.sourceImageUrl } }] });
     components.push({ type: 14, spacing: 1, divider: true });
     components.push(...(opts.rows || [{

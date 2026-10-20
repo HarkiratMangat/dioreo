@@ -78,8 +78,8 @@ async function route(interaction) {
             return await openLoadout(interaction, interaction.values[0]);
         }
 
-        // --- BULK AUTOBUILD: ADD MORE --- more of the right-click message's screenshots, read into the same batch.
-        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('autobuild_b|more|')) {
+        // --- BULK AUTOBUILD: ADD MORE / UNDO A DISCARD --- more of the right-click message's screenshots read into the same batch, or a discarded build brought back as it was read.
+        if (interaction.isStringSelectMenu() && (interaction.customId.startsWith('autobuild_b|more|') || interaction.customId.startsWith('autobuild_b|undo|'))) {
             const { handleBatchComponent } = require('../utils/autobuildBulk');
             return await handleBatchComponent(interaction);
         }

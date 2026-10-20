@@ -11,7 +11,7 @@ async function check(name, fn) {
 
 const bulk = require('../utils/autobuildBulk');
 const { buildPicker } = require('../commands/autobuildLoadout');
-const { batchDuplicateNote, nextPendingIndex, renderPage, renderSummary, confirmAllItems } = bulk;
+const { batchDuplicateNote, nextPendingIndex, renderPage, confirmAllItems } = bulk;
 
 // Discord counts every component, nested ones included, against a 40-per-message cap (root CLAUDE.md's platform cheat-sheet).
 function countComponents(list) {
@@ -76,15 +76,16 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.ok(!ids(page).includes('autobuild_b|all|k2|'));
     });
 
-    await check('the summary lists every build and offers the saved ones to open', () => {
+    await check('a batch with nothing left to review stays on its page, with Open a saved loadout and Undo a discard', () => {
         const doc = { weaponName: 'AK117', buildName: 'Build 3', category: 'AR', mode: 'MP', _id: 'd1' };
-        const items = [item(null, 'saved', { doc }), item(null, 'cancelled'), item(null, 'failed', { error: 'blurry' }), item(null, 'retry', { retryToken: 'rt', error: 'x' })];
-        const sum = renderSummary({ items, skipped: 2 }, 'k3');
-        const text = JSON.stringify(sum);
-        assert.ok(text.includes('1 saved of 4') && text.includes('2 not read') && text.includes('retry_token:rt') && text.includes("couldn't read: blurry"));
-        const select = sum[0].components.find(c => c.type === 1).components[0];
-        assert.strictEqual(select.custom_id, 'autobuild_b|open|k3|');
-        assert.deepStrictEqual(select.options.map(o => o.value), ['d1']);
+        const items = [item(mp('AK117', '', FIVE), 'saved', { doc }), item(mp('M4', '', FIVE), 'cancelled'), item(null, 'failed', { error: 'blurry' })];
+        const page = renderPage({ items, page: 1, skipped: 0 }, 'k3', 1);
+        const selects = page.flatMap(c => c.components).filter(c => c.type === 1).flatMap(r => r.components).filter(c => c.type === 3);
+        const open = selects.find(c => c.custom_id === 'autobuild_b|open|k3|');
+        const undo = selects.find(c => c.custom_id === 'autobuild_b|undo|k3|');
+        assert.deepStrictEqual(open.options.map(o => o.value), ['d1']);
+        assert.deepStrictEqual(undo.options.map(o => [o.value, o.label]), [['1', '#2 M4']], 'only the discarded build, which still has its data');
+        assert.ok(JSON.stringify(page).includes('Discarded:'), 'the page shown is the build you were on');
     });
 
     await check('Confirm All saves in order, carries on past a failed upload, and stops at a build with no category', async () => {
@@ -114,12 +115,13 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.ok(JSON.stringify(picker).includes('Only the first 10'));
     });
 
-    await check('the overview names every build and what needs a look (his 12:10 EDT click-test: #1 a duplicate, #2 no category)', () => {
+    await check('the header is ONE subtext line naming each build\'s state (his 12:36 EDT: the list "looks so stupid")', () => {
         const a = mp('PKM', '1A4A', FIVE); a.duplicateWarning = 'dup';
-        const b = mp('S36', '1A2A', FIVE); b.category = null;
-        const text = bulk.overview({ items: [item(a), item(b)], skipped: 0 }, 1);
-        assert.match(text, /1\. PKM\*\* — .*possible duplicate/);
-        assert.match(text, /▸ \*\*2\. S36\*\* — .*category unknown/);
+        const b = mp('S36', '1A2A', FIVE);
+        const c = mp('CRONEN SQUALL', '1C2B', FIVE); c.catalogueUnknown = { weapon: false, attachments: 2 };
+        const text = bulk.overview({ items: [item(a), item(b), item(c)], skipped: 0 }, 2);
+        assert.ok(!text.includes('\n'), 'one line');
+        assert.match(text, /^-# Build 3 of 3 · #1 .*possible duplicate · #2 .*ready to save · #3 .*2 unknown attachments$/);
     });
 
     await check('the pager is the shared arrow row, and the buttons say Save / Adjust / Discard with the build number', () => {
@@ -141,7 +143,7 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.strictEqual(select.custom_id, 'autobuild_b|more|k6|');
     });
 
-    await check('a worst-case page stays under Discord\'s 4000-character text cap and 40 components (measured 3331 / 23 on 2026-10-20 12:16 EDT)', () => {
+    await check('a worst-case page stays under Discord\'s 4000-character text cap and 40 components (measured 3098 / 32 on 2026-10-20 12:40 EDT, with every warning, every flag and all three menus)', () => {
         const nine = Array.from({ length: 9 }, (_, i) => `Monolithic Suppressor Extended Name ${i}`);
         const worst = (n) => Object.assign(mp(`COMPAGNIE WEAPON ${n}`, '1A2A3A5D8A', nine), {
             category: null, mode: null, badgesRaw: 'meta,best,toxic',
@@ -150,7 +152,10 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
             catalogueWarning: `⚠️ **Not in the catalogue yet:** ${nine.join(', ')}\n-# A typo, or a new item? **Save Build** saves it and adds these names; **Adjust** lets you fix them first.`,
         });
         const items = Array.from({ length: 10 }, (_, i) => item(worst(i), 'pending', { sourceIndex: i }));
-        const page = renderPage({ items, page: 9, skipped: 3, source: { key: 'h' } }, 'k7', 9, Array.from({ length: 12 }, () => 'u'));
+        items[0].status = 'saved'; items[0].doc = { weaponName: 'COMPAGNIE WEAPON 0', buildName: 'Build 12', category: 'AR', mode: 'MP', _id: 'x' };
+        items[1].status = 'cancelled';
+        items.length = 9; // room left for Add more
+        const page = renderPage({ items, page: 8, skipped: 3, source: { key: 'h' } }, 'k7', 8, Array.from({ length: 12 }, () => 'u'));
         let chars = 0;
         const walk = (c) => { if (c.type === 10) chars += c.content.length; (c.components || []).forEach(walk); };
         page.forEach(walk);
