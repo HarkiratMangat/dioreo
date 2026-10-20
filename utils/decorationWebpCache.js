@@ -159,8 +159,7 @@ async function renderDecorationWebpCore(decorationUrl, decorationAsset) {
     }
 }
 
-// Patches a rendered resource's Cloudinary context -- mirrors utils/nameplateWebpCache.js's attachNameplateDiscordCdnUrl exactly (same ONE-CALL rule, same `extra` shape for the render-source marker + catalog metadata). Exported (2026-08-15 10:31 EDT) for scripts/bulkCacheCollectibles.js.
-// The context map every write of a cached render carries. Shared by the patch below and the bulk upload, so the two can never disagree about a field.
+// Patches a rendered resource's Cloudinary context -- mirrors utils/nameplateWebpCache.js's attachNameplateDiscordCdnUrl exactly (same ONE-CALL rule, same `extra` shape for the render-source marker + catalog metadata). Exported (2026-08-15 10:31 EDT) for scripts/bulkCacheCollectibles.js. The context map every write of a cached render carries. Shared by the patch below and the bulk upload, so the two can never disagree about a field.
 function contextFor(palette, discordCdnUrl, extra = {}) {
     const context = { ...paletteContextFields(palette, FRAME_OPTS) };
     if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
