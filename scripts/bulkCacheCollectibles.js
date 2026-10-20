@@ -380,7 +380,8 @@ async function main() {
     if (!docs.length) { await mongoose.disconnect(); return; }
 
     if (args.repairContext) {
-        const targets = args.limit > 0 ? docs.slice(0, args.limit) : docs;
+        // Capped at 25 unless --limit says otherwise (2026-10-20 00:04 EDT): every SKU checked costs one Admin lookup, and the first prod repair, run uncapped over all 986 cached SKUs to fix seven, spent the next hour's 500-call budget by itself. Point it at the broken ones with --sku where you can.
+        const targets = docs.slice(0, args.limit > 0 ? args.limit : 25);
         console.log(`Repairing Cloudinary context on ${targets.length} cached SKU(s)${args.dryRun ? ' (DRY RUN)' : ''}.`);
         const stats = { cached: 0, healed: 0, skipped: 0, failed: 0 };
         await repairContext(targets, args, stats);
