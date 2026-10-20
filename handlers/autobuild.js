@@ -37,6 +37,11 @@ async function route(interaction) {
         // --- AUTOBUILD: CONFIRM ---
         if (interaction.isButton() && interaction.customId.startsWith('autobuild_confirm_')) {
             const token = interaction.customId.replace('autobuild_confirm_', '');
+            // Confirm writes a Loadout straight to Mongo (doc.save(), not core/changeset.js's commitSet), so its tier is checked here: Create on /autobuild. The router's autobuild_ guard asks the same question today; this names the button's own rule so the two cannot drift apart unnoticed.
+            const { canDo, denyDo } = require('../utils/adminAccess');
+            if (!(await canDo(interaction.user.id, 'autobuild.confirm'))) {
+                return await interaction.reply({ content: denyDo('autobuild.confirm'), ephemeral: true });
+            }
             await interaction.deferUpdate();
             const { confirmAndWrite } = require('../utils/autobuildPipeline');
             return await confirmAndWrite(interaction, token);

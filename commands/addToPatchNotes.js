@@ -8,7 +8,7 @@
 // ⚠️ THE IMAGES LIVE IN MEMORY BETWEEN THE RIGHT-CLICK AND THE BUTTON. A forward cannot be re-read later: over REST its snapshot comes back blank without the Message Content intent (measured 2026-10-19 00:38 EDT), so the right-click is the only moment the bot sees them. They are held by key for 30 minutes; a click after a restart or past that answers "right-click it again" instead of hanging.
 
 const { ContextMenuCommandBuilder, ApplicationCommandType, MessageFlags } = require('discord.js');
-const { hasManagePageAccess } = require('../utils/adminAccess');
+const { canDo, denyDo } = require('../utils/adminAccess');
 const { extractSource, mergeImages } = require('../utils/patchNoteSource');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const emojis = require('../utils/emojiMap');
@@ -97,8 +97,9 @@ module.exports = {
     listedSeasons,
 
     async execute(interaction) {
-        if (!(await hasManagePageAccess(interaction.user.id, 'patchnotes'))) {
-            return await interaction.reply({ content: "🔒 **This one's admin-only.** It edits Dioreo's patch notes directly.", flags: MessageFlags.Ephemeral });
+        // Create on the Patch Notes page (core/permissions.js's OUTSIDE_ACTIONS): every button on its panel adds or edits a season, and edit is create.
+        if (!(await canDo(interaction.user.id, 'rightclick.addToPatchNotes'))) {
+            return await interaction.reply({ content: denyDo('rightclick.addToPatchNotes'), flags: MessageFlags.Ephemeral });
         }
         const source = extractSource(interaction.targetMessage);
         if (!source.images.length) {

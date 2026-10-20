@@ -5,14 +5,15 @@
 //
 // This file builds every panel; handlers/bot.js owns all `bot_`-prefixed button/select/modal routing, mirroring the commands/*.js-builds + handlers/*.js-routes split every other admin surface in this bot uses.
 //
-// 🔴 `/bot access` is NOT gated by a permission token, on purpose — same invariant `manageadmins` always had ("no permission token at all, ever," see utils/adminAccess.js's header): the allowlist page itself is owner-only visibility, checked directly via isOwner() in execute() below and re-checked at every mutation in handlers/bot.js. `/bot analytics` IS token-gated (`hasCommandAccess`, the 'bot' token replacing the retired 'alerts'/'audit' tokens) — any admin analytics ships to should be viewable without being the owner.
+// 🔴 `/bot access` is NOT a grantable scope, on purpose — same invariant `manageadmins` always had: the allowlist page itself is owner-only visibility, checked directly via isOwner() in execute() below and re-checked at every mutation in handlers/bot.js. `/bot analytics` is grant-gated PER PAGE since the permission restructure (2026-10-19 19:27 EDT): each of Health · Alerts · Changes · Usage · Timing opens with any tier on that page (`bot.<page>`), and a grant on /bot itself carries to all five (core/permissions.js).
 const { SlashCommandBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
 const { getAlertSummary, getRecentAlerts, formatUptime } = require('../utils/alertStore');
 const { getChangeSummary, getRecentChanges } = require('../utils/changeStore');
 const { displayTitle } = require('../utils/alertExplain');
-const { hasCommandAccess, isOwner, formatPermissions, MANAGE_PAGE_SCOPES } = require('../utils/adminAccess');
+const { hasCommandAccess, isOwner, getBotPages, MANAGE_PAGE_SCOPES } = require('../utils/adminAccess');
+const { formatGrants, grantsOf, grantsToInput } = require('../core/permissions');
 const { mentionCommand } = require('../utils/commandMentions');
 const emojis = require('../utils/emojiMap');
 
@@ -67,12 +68,13 @@ function unix(d) { return Math.floor(new Date(d).getTime() / 1000); }
 function truncate(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 function fmtMs(ms) { return ms == null ? '—' : `${Math.round(ms)}ms`; }
 
-function pageSelectRow(current) {
+// `pages`: the pages this viewer may open (utils/adminAccess.js's getBotPages), or null for all five. An admin granted only some /bot pages is only OFFERED those; handlers/bot.js re-checks the pick.
+function pageSelectRow(current, pages = null) {
     return {
         type: 1,
         components: [{
             type: 3, custom_id: 'bot_pagesel', placeholder: 'Switch page…',
-            options: Object.entries(PAGE_META).map(([key, meta]) => ({
+            options: Object.entries(PAGE_META).filter(([key]) => !pages || pages.includes(key)).map(([key, meta]) => ({
                 label: meta.label, value: key, description: meta.question, default: key === current,
             })),
         }],
@@ -851,7 +853,7 @@ async function buildTimingExport(stats) {
 }
 
 // Shared render entry point — used by execute() (slash) AND handlers/bot.js's re-render branches, so there's one render path, not a drifting copy per page (same convention /alerts and /audit each already followed on their own).
-async function buildAnalyticsPanel({ page = 'health', client, alertsState = {} } = {}) {
+async function buildAnalyticsPanel({ page = 'health', client, alertsState = {}, pages = null } = {}) {
     const meta = PAGE_META[page] || PAGE_META.health;
     let body;
     if (page === 'alerts') body = await buildAlertsBody(alertsState);
@@ -866,7 +868,7 @@ async function buildAnalyticsPanel({ page = 'health', client, alertsState = {} }
         components: [
             { type: 10, content: `## ${meta.label}` },
             { type: 14, spacing: 2 },
-            pageSelectRow(page),
+            pageSelectRow(page, pages),
             { type: 14, spacing: 2 },
             ...body,
         ],
@@ -889,7 +891,9 @@ async function buildAdminListBlocks(adminDocs, client) {
             console.error(`Failed to fetch Discord user ${a.discordId} for Bot Access card:`, fetchError?.message || fetchError);
         }
         const grantedTs = unix(a.grantedAt);
-        const content = `### <@${a.discordId}>\n-# ID: \`${a.discordId}\` — granted by <@${a.grantedBy}> <t:${grantedTs}:R>\n**Permissions:** ${formatPermissions(a.permissions)}\n**Note:** ${a.note || '*(none)*'}`;
+        // grantsOf() reads a row's `grants`, or bridges its legacy token list (core/permissions.js) -- a legacy row is marked so the owner can see which admins the purge would remove.
+        const legacy = !(a.grants && a.grants.length) && (a.permissions || []).length;
+        const content = `### <@${a.discordId}>\n-# ID: \`${a.discordId}\` — granted by <@${a.grantedBy}> <t:${grantedTs}:R>\n**Permissions:** ${formatGrants(grantsOf(a))}${legacy ? '\n-# ⚠️ Old-style grant. Edit Permissions to move it to the new tiers.' : ''}\n**Note:** ${a.note || '*(none)*'}`;
         blocks.push(avatarUrl
             ? { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url: avatarUrl } } }
             : { type: 10, content });
@@ -904,11 +908,15 @@ async function buildAdminListBlocks(adminDocs, client) {
     return blocks;
 }
 
+// The grant box (permission restructure, 2026-10-19 19:27 EDT): one `scope: tiers` per line, c = create, d = destructive, cd = both (core/permissions.js's parseGrantsInput). A command's tiers carry down to its pages; a page line adds on top. A modal has no checkboxes, so this text IS the grant UI on Discord.
+const GRANT_FIELD_LABEL = 'Grants: scope: c / d / cd, one per line';
+const GRANT_FIELD_PLACEHOLDER = 'manage: c\nmanage.calendar: d\nbot.health: c';
+
 function buildAdminGrantModal() {
     const modal = new ModalBuilder().setCustomId('bot_adminmodal_grant').setTitle('Grant Admin Access');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('discord_id').setLabel('Discord User ID or @mention').setStyle(TextInputStyle.Short).setPlaceholder('e.g. 123456789012345678 or @username').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('permissions').setLabel('Permissions').setStyle(TextInputStyle.Paragraph).setPlaceholder('all | manage | bot | autobuild | manage.calendar, manage.draws, ...').setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('permissions').setLabel(GRANT_FIELD_LABEL).setStyle(TextInputStyle.Paragraph).setPlaceholder(GRANT_FIELD_PLACEHOLDER).setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('note').setLabel('Note (optional)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. their name, why they were granted').setRequired(false)),
     );
     return modal;
@@ -917,7 +925,8 @@ function buildAdminGrantModal() {
 function buildAdminEditPermissionsModal(adminDoc) {
     const modal = new ModalBuilder().setCustomId(`bot_adminmodal_editperms_${adminDoc.discordId}`).setTitle('Edit Permissions');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('permissions').setLabel('Permissions').setStyle(TextInputStyle.Paragraph).setPlaceholder('all | manage | bot | autobuild | manage.calendar, manage.draws, ...').setValue((adminDoc.permissions || []).join(', ')).setRequired(true)),
+        // Pre-filled from what the row actually confers, a legacy row included, so saving it unchanged moves it to the new shape without losing anything.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('permissions').setLabel(GRANT_FIELD_LABEL).setStyle(TextInputStyle.Paragraph).setPlaceholder(GRANT_FIELD_PLACEHOLDER).setValue(grantsToInput(grantsOf(adminDoc)) || 'manage: c').setRequired(true)),
     );
     return modal;
 }
@@ -1048,10 +1057,13 @@ module.exports = {
         if (!(await hasCommandAccess(interaction.user.id, 'bot'))) {
             return interaction.reply({ content: `🔒 **This one's admin-only.** ${mentionCommand(interaction.client, '/bot analytics')} shows the bot's own usage and health data — try any of the bot's public commands instead!`, ephemeral: true });
         }
-        const page = interaction.options.getString('page') || 'health';
+        // Per page: any tier on bot.<page>. A page they don't hold falls back to the first one they do, with a note, rather than a dead end.
+        const pages = await getBotPages(interaction.user.id);
+        const asked = interaction.options.getString('page') || 'health';
+        const page = pages.includes(asked) ? asked : pages[0];
         const visibilityChoice = interaction.options.getString('visibility');
         const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
-        return sendV2Payload(interaction, await buildAnalyticsPanel({ page, client: interaction.client }));
+        return sendV2Payload(interaction, await buildAnalyticsPanel({ page, client: interaction.client, pages }), page === asked ? {} : { content: `🔒 You don't have permission on ${PAGE_META[asked]?.label || asked}, so this opened on ${PAGE_META[page].label}.` });
     },
 };

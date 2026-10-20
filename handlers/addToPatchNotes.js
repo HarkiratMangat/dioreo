@@ -9,7 +9,7 @@
 //
 // ⚠️ GATED HERE, NOT IN THE ROUTER'S ADMIN LOCK: every click checks the Patch Notes page itself (per-click, like utils/manageActions.js's resolveAction), which is stricter than the lock's 'manage' token. The lock's prefix list must equal what handlers/manage/, /autobuild and /bot declare (scripts/handlerRouting.test.js check 10), so `ptn_` stays out of it.
 
-const { hasManagePageAccess } = require('../utils/adminAccess');
+const { canDo, denyDo } = require('../utils/adminAccess');
 const { mergeImages, mergeInfo } = require('../utils/patchNoteSource');
 const { formatReleaseDateTime } = require('../utils/adminParser');
 const { sendV2Payload } = require('../utils/sendV2Payload');
@@ -29,8 +29,8 @@ async function notify(interaction, content) {
 }
 
 async function route(interaction) {
-    if (!(await hasManagePageAccess(interaction.user.id, 'patchnotes'))) {
-        return await notify(interaction, "🔒 **This one's admin-only.** It edits Dioreo's patch notes directly.");
+    if (!(await canDo(interaction.user.id, 'rightclick.addToPatchNotes'))) {
+        return await notify(interaction, denyDo('rightclick.addToPatchNotes'));
     }
     const command = interaction.client.commands.get('Add to Patch Notes');
     const [, key, seasonId] = interaction.customId.split('|');

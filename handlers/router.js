@@ -296,11 +296,9 @@ async function handleInteractionInner(interaction) {
                 const page = interaction.options.getString('content');
                 // Was a bare `respond([])` -- Discord's autocomplete dropdown just showed nothing with no explanation, which read as "the command is broken" rather than "pick Content first" (real click-test feedback, 2026-08-22). A single non-selectable-in-spirit suggestion is a clearer signal than an empty list; its value can never match a real registry id, so picking it just falls through to resolveAction()'s 'unknown' branch below (commands/manage.js) -- normal page render, no error.
                 if (!page) return await interaction.respond([{ name: '⚠️ Pick a Content type first, then Action', value: '__pick_content_first__' }]);
-                // Same admin gate execute() itself opens with, checked here too so a non-admin (or an admin scoped away from this page) never even sees the action names -- an autocomplete interaction carries no customId, so the router's prefix guard doesn't cover this route the way it covers buttons/selects/modals.
-                const { hasCommandAccess, getManagePages } = require('../utils/adminAccess');
+                // Same admin gate execute() itself opens with, checked here too so a non-admin never even sees the action names -- an autocomplete interaction carries no customId, so the router's prefix guard doesn't cover this route the way it covers buttons/selects/modals. Every admin sees every page's actions (the permission restructure, 2026-10-19 19:25 EDT): picking one they lack the tier for gets the same warning the button would.
+                const { hasCommandAccess } = require('../utils/adminAccess');
                 if (!(await hasCommandAccess(interaction.user.id, 'manage'))) return await interaction.respond([]);
-                const allowedPages = await getManagePages(interaction.user.id);
-                if (!allowedPages.includes(page)) return await interaction.respond([]);
                 const { listSlashActions } = require('../utils/manageActions');
                 const filtered = listSlashActions(page)
                     .filter(a => fuzzyMatch(focusedValue, a.label))

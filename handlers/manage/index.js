@@ -65,7 +65,7 @@ async function routeManage(interaction) {
             const resolved = await resolveAction(group, action, interaction.user.id);
             if (!resolved.ok) {
                 require('../../utils/eventStore').markOutcome('rejected_admin');
-                return await interaction.reply({ content: DENIAL_MESSAGE[resolved.reason], ephemeral: true });
+                return await interaction.reply({ content: resolved.message || DENIAL_MESSAGE[resolved.reason], ephemeral: true });
             }
             // Every action decides its own response mode (see the registry's `kind` note) -- nothing is deferred here, because a modal-opening action needs showModal() to be the FIRST response and cannot follow a deferReply().
             return await resolved.entry.run({
@@ -78,10 +78,9 @@ async function routeManage(interaction) {
         // PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation the registry's 'confirm' kind opens. Each group purges only its OWN data.
         if (customId.startsWith('mng_purgeconfirm_')) {
             const [group, scope] = parseMngId(customId.replace('mng_purgeconfirm_', ''));
-            // Per-page permission re-check (v3-pre-release review, finding #8) -- resolveAction (the registry's documented "ONE choke point") only guards the FIRST click, the mng_act_ that opened this confirmation. Up to 10 minutes can pass before this second click, and an owner narrowing a scoped admin's grant in that window went unnoticed: the purge still ran against a page the admin no longer has, because nothing past the first click re-checked utils/adminAccess.js's getManagePages().
-            const { getManagePages } = require('../../utils/adminAccess');
-            const allowedPages = await getManagePages(interaction.user.id);
-            if (!allowedPages.includes(group)) {
+            // Permission re-check (v3-pre-release review, finding #8) -- resolveAction (the registry's documented "ONE choke point") only guards the FIRST click, the mng_act_ that opened this confirmation. Up to 10 minutes can pass before this second click, and an owner narrowing a scoped admin's grant in that window went unnoticed: the purge still ran. Since the permission restructure this asks for DESTRUCTIVE on the page (a purge's tier), and core/changeset.js's commitSet checks it again at write time.
+            const { can } = require('../../utils/adminAccess');
+            if (!(await can(interaction.user.id, `manage.${group}`, 'destructive'))) {
                 require('../../utils/eventStore').markOutcome('rejected_admin');
                 try {
                     await prompt(interaction, { text: "🔒 **You don't have access to that section anymore.** Nothing was deleted." });
@@ -140,10 +139,9 @@ async function routeManage(interaction) {
                 return;
             }
             const { group, match } = pending;
-            // Per-page permission re-check (v3-pre-release review, finding #8) -- same reasoning as the purge branch above: this is the second, destructive step of a two-tap confirmation, and the grant could have narrowed in the (up to 10-minute) window since the first tap opened it.
-            const { getManagePages } = require('../../utils/adminAccess');
-            const allowedPages = await getManagePages(interaction.user.id);
-            if (!allowedPages.includes(group)) {
+            // Permission re-check (v3-pre-release review, finding #8) -- same reasoning as the purge branch above: this is the second, destructive step of a two-tap confirmation, and the grant could have narrowed in the (up to 10-minute) window since the first tap opened it. A delete is DESTRUCTIVE on its page.
+            const { can } = require('../../utils/adminAccess');
+            if (!(await can(interaction.user.id, `manage.${group}`, 'destructive'))) {
                 require('../../utils/eventStore').markOutcome('rejected_admin');
                 try {
                     await prompt(interaction, { text: "🔒 **You don't have access to that section anymore.** Nothing was deleted." });
@@ -194,8 +192,10 @@ async function routeManage(interaction) {
                 });
             } catch (applyError) {
                 console.error(`Failed to apply bulk delete (${pending.description}):`, applyError);
+                // A permission denial from commitSet (the grant narrowed since the paste was submitted) is a clear answer, not "something went wrong": nothing was deleted, and the message says which tier is missing.
+                const denied = String(applyError?.message || '').startsWith('🔒');
                 try {
-                    await prompt(interaction, { text: '❌ Something went wrong while deleting -- check the data manually.' });
+                    await prompt(interaction, { text: denied ? `${applyError.message}\nNothing was deleted.` : '❌ Something went wrong while deleting -- check the data manually.' });
                 } catch (notifyError) {
                     console.error('Failed to notify user of bulk-delete apply failure:', notifyError);
                 }

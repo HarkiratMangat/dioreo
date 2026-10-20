@@ -26,8 +26,8 @@ module.exports = {
         .setName('settings')
         // Trimmed 2026-07-18 (v2 quick-wins batch, mobile-width audit) -- the old 83-char version truncated to "..." on Discord mobile's command picker row; every top-level/subcommand description in this pass was checked against that same narrow row, not desktop.
         .setDescription('Customize your bot settings and preferences')
-        // Jump-to (2026-10-19 17:48 EDT, docs/ROADMAP.md's "/settings jump-to options"): land on page 1 (Visibility) or page 2 (Preferences) directly, or open the View Colors panel without going through the dashboard's button. Registered BEFORE `visibility` because Discord's option picker follows registration order, and the roadmap's own shape reads `/settings customize:… visibility:…`. Per-invocation only, never saved -- same shape as /timestamp's `view`.
-        .addStringOption(option => option.setName('customize').setDescription('Open straight on one part of your settings.').addChoices(
+        // Jump-to (2026-10-19 17:48 EDT, docs/ROADMAP.md's "/settings jump-to options"): land on page 1 (Visibility) or page 2 (Preferences) directly, or open the View Colors panel without going through the dashboard's button. Registered BEFORE `visibility` because Discord's option picker follows registration order, and the roadmap's own shape reads `/settings open:… visibility:…`. Named `customize:` when it shipped (v3.93.0) and renamed `open:` 2026-10-19 19:33 EDT at Harkirat's request: the choice says which page OPENS, it does not customize anything itself. Per-invocation only, never saved -- same shape as /timestamp's `view`.
+        .addStringOption(option => option.setName('open').setDescription('Open straight on one part of your settings.').addChoices(
             { name: 'Visibility', value: 'visibility' },
             { name: 'Preferences', value: 'preferences' },
             { name: 'Colors', value: 'colors' }
@@ -39,14 +39,14 @@ module.exports = {
     // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region dropdown + hex-code lines + footer pushed the single-page layout close to Discord's 40-component cap -- see the `set_page_` button handler in handlers/settings.js for how page navigation re-invokes this with a target page.
     async execute(interaction, pageOverride = 0) {
         const userId = interaction.user.id;
-        // `customize:` only exists on a real slash invocation. Every re-render (the toggle/set/set_page handlers in handlers/settings.js) calls this with a button or select interaction and its own pageOverride, so the guard keeps those exactly as they were.
-        const customize = interaction.isChatInputCommand() ? interaction.options.getString('customize') : null;
-        // `customize:colors` opens the same panel the dashboard's "View Colors" button opens, through /colors' own execute() rather than a third copy of that render. It passes settingsVisibility, not colorsVisibility, because that button deliberately reads settingsVisibility (see handlers/colors.js's colors_view branch): this option is a shortcut to the button, so the two must agree. An explicit `visibility:` on this /settings call still wins, since /colors reads the option of the same name. /colors' own `page`/`source` options don't exist here and resolve to null, i.e. the Avatar page and the contextual server-or-main default.
-        if (customize === 'colors') {
+        // `open:` only exists on a real slash invocation. Every re-render (the toggle/set/set_page handlers in handlers/settings.js) calls this with a button or select interaction and its own pageOverride, so the guard keeps those exactly as they were.
+        const open = interaction.isChatInputCommand() ? interaction.options.getString('open') : null;
+        // `open:colors` opens the same panel the dashboard's "View Colors" button opens, through /colors' own execute() rather than a third copy of that render. It passes settingsVisibility, not colorsVisibility, because that button deliberately reads settingsVisibility (see handlers/colors.js's colors_view branch): this option is a shortcut to the button, so the two must agree. An explicit `visibility:` on this /settings call still wins, since /colors reads the option of the same name. /colors' own `page`/`source` options don't exist here and resolve to null, i.e. the Avatar page and the contextual server-or-main default.
+        if (open === 'colors') {
             return require('./colors').execute(interaction, { prefsField: 'settingsVisibility' });
         }
-        const page = customize === 'preferences' ? 1
-            : customize === 'visibility' ? 0
+        const page = open === 'preferences' ? 1
+            : open === 'visibility' ? 0
             : Math.min(Math.max(pageOverride, 0), 1);
 
         // 1. DATA SYNCHRONIZATION
