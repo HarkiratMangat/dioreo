@@ -795,3 +795,10 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 ## His 2026-10-19 20:22 and 20:37 EDT, verbatim, written 2026-10-19 20:38 EDT
 - (20:22) "also, do we have any flags or styles which would keep the dark button full but use the lighter outline/icon color?" → answered: none; tint rests dark with the colour's full ink and a 55% outline, and the lighter outline (75%) and ink (80% on white) are tint's and paint's hover only.
 - (20:37, which button) "yeah the color picks shuffle and copy button" · "but it's fine, keep it as tint current is" → the colour picker's copy stays `button-M-icon.tint-realm--quiet--borderless` and New colour `button-L-icon.tint-realm`, as drawn in spec v122; no new flag.
+
+## His 2026-10-19 20:19–22:34 EDT, verbatim, written 2026-10-19 22:38 EDT
+- (20:19, Answer Shots, date picker: change) "no, keep the dark full. keep the arc. adjust the outside outline and glow to match how we did it for the pop-ups."
+- (20:21, Answer Shots, swatches: A) "also correct the spacing all around to be 14px."
+- Built in spec v123: the date picker in the pop-ups' own frame (C15's 1px edge at 55% and 5px halo at 16%, the arc) on the pop-ups' black (`#04070A` 40% on sunk, Builder-2's own); the colour picker with S 24 swatches and 14 all round (padding and gaps), the colour area 190. Pickers Decided; ledger 150 (pickday, picknav, pickoff, pickpop, acxblock, acxswatch, acxhex, acxcopy, acxnew, acxempty, acxknob); conventions C30.
+- (22:11, side ask) "hey side note, could you render out each of the badges we currently use as lossless webp? meta, top 3/5, best, etc etc" · (22:34) "can you also render \"best\" without any extra label beside it." → `local/badges-webp/` (22 badges and their icon-only variants in `bare/`, 4x, transparent, lossless), zipped as `local/badges-webp-2026-10-19.zip`; script `local/pins2/s4/work/lead/badges-render.cjs`.
+
