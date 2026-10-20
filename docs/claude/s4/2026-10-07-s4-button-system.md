@@ -842,3 +842,8 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - (14:15, `ddwell`) "11" → the well's corner 11.
 - (14:16, `ddav`) choice 16, "and add it as a flag --avatar, similar to how we have --dot/--icon, etc. with avatars being slightly larger than the typical size we use for dot,icon, etc." → C21's new flag `--avatar`, the row's icon + 2; the who filter is `toggle-M-pill.neutral--avatar--count`.
 - Data display **Decided** in v126; C31 Rows written; 12 ledger rows (`ddrow` … `ddwell`).
+
+## Drawers, proposed in spec v127 (2026-10-20 14:46 EDT)
+- The last family (his 2026-10-11 22:58 EDT: drawers come last "because the drawers HOLD each of those elements"), measured on board4.html: New build 980, Post 910, Export 560 and its picker 1100; corner 10, a 1px rule2 edge, a deep shadow, the realm's glow in the lower left, a scrim of ink-black 66% with a 3px blur.
+- Drawn as the drawer's own parts, everything it holds being decided already: corner 18 (C16) · the head with a rule line under every head (Export has none today), New build's eyebrow and mode rail, the title 21 (C5), the close `button-M-icon.neutral--ghost--reveal-left` (ncx) · a section head `body-l-600` with its tag and a rule line · a field label `body-m-400` with its Optional tag, 6 above its field · the side column's label `label-s-600.ink3` and its checks card at corner 8, padding 14 (C16) · Cancel and Stage build in the corner (q3, stagebtn).
+- His one question, on Answer Shots v22 (`drroom`): the room inside the edge and between the columns, 20 or 26 (24 today, 16 in Export, columns 28 apart); my pick 26. Builder-2 commit `21ca07e`.
