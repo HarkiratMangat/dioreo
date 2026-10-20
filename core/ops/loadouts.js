@@ -73,6 +73,14 @@ function applyModeToParsed(parsed, mode, errors) {
     }
 }
 
+// What one parsed block writes. A new build takes the parser's defaults; an existing one keeps any field its block left out (`defaulted`), so re-pasting a build to fix its attachments no longer resets its image to the placeholder and blanks its share code (sweep finding #7, Harkirat 2026-10-20: keep the old values). An inverse's `parsed` comes from stored docs, carries no `defaulted`, and so still restores every field.
+function bulkEntryWrite(rawEntry, mode, existing) {
+    const { defaulted = [], ...rest } = rawEntry;
+    const entry = { ...rest, mode };
+    if (existing) for (const k of defaulted) delete entry[k];
+    return entry;
+}
+
 // The real "Add Multiple"/"Replace Multiple" upsert -- shared by both op types (see header note #3).
 async function upsertBulkBlocks(parsed, mode, session) {
     let created = 0, updated = 0;
@@ -83,11 +91,12 @@ async function upsertBulkBlocks(parsed, mode, session) {
     const updatedPriors = [];
     const touchedBuilds = [];
     for (const rawEntry of parsed) {
-        const entry = { ...rawEntry, mode };
-        const { weaponKey, buildName, imageKey } = entry;
+        const { weaponKey, buildName } = rawEntry;
         touchedKeys.add(weaponKey);
         touchedBuilds.push({ weaponKey, buildName });
         const existing = await Loadout.findOne({ weaponKey, mode, buildName }).session(session);
+        const entry = bulkEntryWrite(rawEntry, mode, existing);
+        const imageKey = entry.imageKey ?? existing?.imageKey;
         // Slots for a pasted build: an unchanged, already-slotted build keeps its own; anything else gets the catalogue's. Before this, an update that changed the attachments left the OLD slots in place, aligned to the wrong names.
         const sameList = existing && (existing.attachments || []).length === (entry.attachments || []).length
             && (existing.attachments || []).every((a, i) => a === entry.attachments[i]);
@@ -337,3 +346,5 @@ registerEntity('loadouts', {
         invert: (c) => ({ type: 'loadout.bulkAdd', target: { mode: c.applied.mode }, payload: { parsed: c.applied.removed } })
     }
 });
+
+module.exports = { bulkEntryWrite };

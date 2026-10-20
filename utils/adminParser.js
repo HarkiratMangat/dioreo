@@ -527,6 +527,8 @@ function parseBulkLoadoutList(bulkText) {
             attachments: cleanAttachments,
             imageKey: fields.imageKey || PLACEHOLDER_IMAGE,
             shareCode: fields.shareCode || '',
+            // Which of those two the block left out, so a paste over an EXISTING build keeps its stored value instead of writing the default (2026-10-20, Harkirat's call in the v3 sweep). A new build still gets the default. core/ops/loadouts.js's bulkEntryWrite reads this and never stores it.
+            defaulted: [!fields.imageKey && 'imageKey', !fields.shareCode && 'shareCode'].filter(Boolean),
             isMeta,
             categoryRank,
             dmzRangeRank,

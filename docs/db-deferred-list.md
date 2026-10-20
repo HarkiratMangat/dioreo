@@ -1097,11 +1097,11 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 *🏷️ **`/gunsmiths` became `/gunsmith` on 2026-10-19 21:17 EDT** (Harkirat: "let's use gunsmith singular"). Entries anywhere in this file that were filed earlier keep the name they were written under, and so do the changelogs and the devlog: a record is never backdated. Read `/gunsmiths` in an older entry as `/gunsmith`, and remember `search` and `list` there are `mp` and `dmz` now.*
 
-### What the 2026-10-20 sweep left open — four items, one needing his call `[P2 · S]`
+### What the 2026-10-20 sweep left open — three items `[P2 · S]`
 
 Filed 2026-10-20 18:15 EDT from the v3 sweep (full report in the project files under `v3-sweep/`). Everything else it found is fixed in Pre-Release v3.103.0.
 
-- **A bulk paste over an existing build wipes its image and share code** when the block has no `Image:` or `Share code` line (`utils/adminParser.js`, `core/ops/loadouts.js` bulk). ⏳ **Needs Harkirat's call:** if a re-paste is meant to replace the whole build, this is by design. Otherwise leave those two fields out of the update when the block omits them.
+- ~~**A bulk paste over an existing build wipes its image and share code** when the block has no `Image:` or `Share code` line.~~ ✅ **Fixed in Pre-Release v3.103.0 (#212)** on Harkirat's call, 2026-10-20: a re-paste keeps the stored values for any line it leaves out.
 - **`AnalyticsEvent` has no prune**; the 400k-document alert is its only safeguard. A prune of rolled-up events past 90 days deletes data, so it needs his word.
 - **Eight copies of `safeErrorMessage` / `errorHttpCode`** across the Cloudinary cache modules could move into `utils/cloudinaryClient.js`.
 - **Eleven hooks fall back to the main Diors-Builds checkout** when `CLAUDE_PROJECT_DIR` is unset; `git rev-parse --show-toplevel` would keep a hand-run hook inside its own worktree.

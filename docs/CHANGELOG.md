@@ -39,6 +39,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 - **Hotpatch sees `core/`.** It was missing from the scan list and the runtime pattern, so a `core/`-only commit reported nothing to patch. ⚠️ The sweep report said a patch could half-apply; it was already refused, so the real defect was the missed commit.
 - **Edits and bulk updates set a loadout's `lastUpdated`.** It never changed after creation.
 - **`/calendar view:Active` survives a page click**, and the empty-view hint no longer points at the removed `/settings` control.
+- **Re-pasting an existing build keeps its image and share code** when the block leaves out `Image:` or `Code:`. Before, they reset to the placeholder and blank (Harkirat's call, 2026-10-20 18:41 EDT: keep the old values). A new build still gets the defaults.
 - **Undo claims the change before applying it**, so a double click applies the inverse once, and a failed revert hands the claim back.
 - **Smaller:** Copy Code on a stale card replies instead of throwing · the large-analytics alert uses the real `warn` level · alerts read `GCP VM` unless `NODE_ENV=development` · analytics events record the hotpatched commit · timeouts on the `gcloud`, `ffprobe`, `ffmpeg` and image-fetch calls · a new user's first two commands no longer race on `UserPreference` · the hotpatch autocomplete awaits its responds.
 - **Dead code removed:** `isArmory` (a duplicate of `isArmoryKey`), `ARMORY_DEFAULT_SIZE`, `isDiscordCdnUrl`, and the `calfilter_*` branches nothing sends.

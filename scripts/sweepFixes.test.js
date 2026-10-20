@@ -125,6 +125,31 @@ check('core/ is in the graph: its edges count, and a core file resolves', () => 
     assert.notStrictEqual(direct.verdict, 'ALLOW', 'core/ops/index.js holds the op registry, so a core op patch must refuse rather than half-apply');
 });
 
+// ── #7 a re-paste keeps what its block left out ───────────────────────────
+const { parseBulkLoadoutList } = require('../utils/adminParser');
+const { bulkEntryWrite } = require('../core/ops/loadouts');
+
+check('a bulk paste over an existing build keeps its image and share code when the block omits them', () => {
+    const { parsed } = parseBulkLoadoutList('BAL-27 | AR\nBuild: Stealth\n- Gauge-9 Mono');
+    assert.deepStrictEqual(parsed[0].defaulted, ['imageKey', 'shareCode']);
+    const update = bulkEntryWrite(parsed[0], 'MP', { imageKey: 'BAL-27-1.png', shareCode: 'ABC123' });
+    assert.ok(!('imageKey' in update) && !('shareCode' in update), JSON.stringify(update));
+    assert.ok(!('defaulted' in update), 'the marker must never reach Mongo');
+    assert.deepStrictEqual(update.attachments, ['Gauge-9 Mono']);
+});
+
+check('a new build still gets the defaults, and a block that gives the lines still writes them', () => {
+    const { parsed } = parseBulkLoadoutList('BAL-27 | AR\nBuild: Stealth\n- Gauge-9 Mono');
+    const create = bulkEntryWrite(parsed[0], 'MP', null);
+    assert.strictEqual(create.shareCode, '');
+    assert.ok(create.imageKey, 'a new build needs its placeholder image');
+    const given = parseBulkLoadoutList('BAL-27 | AR\nBuild: Stealth\nImage: BAL-27-2.png\nCode: XYZ\n- Gauge-9 Mono').parsed[0];
+    assert.deepStrictEqual(given.defaulted, []);
+    const update = bulkEntryWrite(given, 'MP', { imageKey: 'old.png', shareCode: 'OLD' });
+    assert.strictEqual(update.imageKey, 'BAL-27-2.png');
+    assert.strictEqual(update.shareCode, 'XYZ');
+});
+
 // ── #9 Undo claims the change before applying it ───────────────────────── Stubbed BEFORE core/revert.js is required, because it destructures both modules at require time.
 const changeStore = require('../utils/changeStore');
 const changeset = require('../core/changeset');
