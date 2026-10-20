@@ -29,7 +29,20 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.101.0 — 2026-10-19 23:22 EDT (#210) — the bulk cache spends no Cloudinary Admin calls on a fresh SKU
+## Pre-Release v3.102.0 — 2026-10-20 15:04 EDT (#211) — `/autobuild` reads up to ten screenshots into one batch panel, and the guild install asks for text-command permissions
+**Harkirat's three launch extras.** He click-tested the bulk panel on the dev bot over several rounds and approved it 2026-10-20 14:58 EDT: "alright autobuild bulk is fine and done".
+
+- **Bulk `/autobuild`:** `screenshot` plus `screenshot2`–`screenshot10`, and the right-click (renamed **Autobuild Gunsmith**) can pick several images. One batch panel, a page per build: Save, Adjust, Discard, Save All / Discard All, Undo a discard, Open a saved loadout, Add more. The single-image path runs through the same panel (`utils/autobuildBulk.js`).
+- **Review card:** warnings first (catalogue gaps, a duplicate with its `/gunsmith` check line, a taken build label), then weapon, label, build, mode, badges, attachments with their slots, and the Gunsmith Code.
+- **Build labels:** the label is the build's name, numbered per weapon by default; a taken one is warned about before saving.
+- **The panel's timeout:** every batch idles out after **14 minutes**, renewed by any press, with a live `<t:…:R>` countdown, and greys out before Discord's 15-minute interaction-token limit.
+- **Adjust's Badges** is a multi-pick dropdown, with the Rank Mode icons.
+- **The bot's own status emoji** replace Unicode ⚠️ ❌ ✅ bot-wide, applied at send time (`emojiMap.glyphs`) and pinned by `scripts/botGlyphs.test.js`.
+- **Guild install permissions:** View Channels, Send Messages, Send Messages in Threads, Embed Links, Attach Files, Read Message History, Use External Emojis, Add Reactions (`274878286912`) in `utils/inviteLinks.js`. No code uses them yet; they are for v4's text commands, since a permission added later reaches only servers that re-authorize. Intents stay `Guilds`. The dev apps were switched by Harkirat; prod's is a launch-day step.
+- **NOTICE** credits Flaticon UIcons.
+- **`scripts/syncMissingDevEmojis.js`** also copies the by-name rank mode emojis to Dioreo Admin, and uploads the original file before any CDN rendition (the CDN copies had lost about a sixth of their frames).
+
+## Pre-Release v3.101.0 — 2026-10-19 23:22 EDT (#210 · `8b16f533`) — the bulk cache spends no Cloudinary Admin calls on a fresh SKU
 **`scripts/bulkCacheCollectibles.js`.** Harkirat, 2026-10-19 23:18 EDT, choosing how to pace the prod run: "A."
 
 - **`--limit N`** stops a run after about N SKUs. It keeps whole design groups, because a group posts as one channel message, so a run can end a few SKUs under N.
