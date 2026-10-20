@@ -111,10 +111,8 @@ async function route(interaction) {
             if (action === 'settings_ephemeral') prefs.settingsVisibility = 'ephemeral';
             if (action === 'colors_public') prefs.colorsVisibility = 'public';
             if (action === 'colors_ephemeral') prefs.colorsVisibility = 'ephemeral';
-            // Calendar's Active/All Events filter moved here from an in-page /calendar toggle (2026-07-31 14:00 EDT, per Harkirat's explicit request) -- lives on /settings' page 1 (Preferences), so the re-render below needs page 1, not the page-0 default every other toggle here uses.
-            if (action === 'calfilter_active') prefs.calendarEventFilter = 'active';
-            if (action === 'calfilter_all') prefs.calendarEventFilter = 'all';
-            const targetPage = (action === 'calfilter_active' || action === 'calfilter_all') ? 1 : 0;
+            // (The calfilter_active/calfilter_all branches that sat here were removed 2026-10-20, v3 sweep: nothing has rendered those buttons since the Active/All Events default was silenced 2026-08-15 -- see commands/settings.js. Every toggle left here lives on page 0.)
+            const targetPage = 0;
             // NOTE (removed 2026-07-12): region_10/region_30 toggle actions used to live here as a binary button. Replaced by a 3-option dropdown ("Show Last Viewed Region" / "10 CP" / "30 CP") writing to the new `defaultRegionMode` field instead -- see the `set_region_mode` branch in the generic `set_` dropdown handler above. All 4 of these visibility toggles stay on /settings' page 0 (Visibility), so no page param is needed here.
 
             await prefs.save(); // Write preferences live to the Atlas cluster

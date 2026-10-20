@@ -14,7 +14,8 @@ const fs = require('fs');
 const path = require('path');
 
 const REPO_ROOT = path.join(__dirname, '..');
-const SCANNED_DIRS = ['commands', 'handlers', 'utils', 'bot', 'models'];
+// `core` added 2026-10-20 (v3 sweep): the operation algebra holds references into utils/ (core/ops/loadouts.js destructures loadoutImageCache's functions at require time), so leaving it out of the graph dropped those edges -- a utils/ patch came back ALLOW while core kept the old functions, and a core-only commit reported "nothing to patch" over a process still running the old code. With it in, both now refuse or apply honestly.
+const SCANNED_DIRS = ['commands', 'handlers', 'utils', 'bot', 'models', 'core'];
 
 // Boundaries: never members, never reloaded.
 const BOUNDARIES = new Set(['handlers/router.js']);
@@ -212,7 +213,7 @@ async function applyHotpatchInner(plan, { client }) {
     }
 }
 
-const RUNTIME_RE = /^(index\.js|(commands|handlers|utils|bot|models)\/.*\.js)$/;
+const RUNTIME_RE = /^(index\.js|(commands|handlers|utils|bot|models|core)\/.*\.js)$/;
 
 function git(args) {
     return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 30000 }).trim();

@@ -308,9 +308,19 @@ async function getAccentColorForCommand(interaction, prefs, presetHex) {
     const UserPreference = require('../models/UserPreference');
 
     // A user's very first interaction with the bot (any command, not just /settings) has no saved prefs doc yet at all -- create one now so the accentColorStyle schema default ('preset') can actually be read AND its computed color cached. Without this, `prefs` would just be null and the whole accent-color system would silently never engage until the user happened to run /settings first (the only command that used to create this doc).
+    //
+    // An UPSERT, not new()+save() (2026-10-20, v3 sweep): a new user's first two commands at once both saw no doc, both inserted, and the second threw E11000 on the unique discordId. The E11000 fallback covers the narrow window where two upserts race too.
     if (!prefs) {
-        prefs = new UserPreference({ discordId: interaction.user.id });
-        await prefs.save();
+        try {
+            prefs = await UserPreference.findOneAndUpdate(
+                { discordId: interaction.user.id },
+                { $setOnInsert: { discordId: interaction.user.id } },
+                { upsert: true, new: true, setDefaultsOnInsert: true }
+            );
+        } catch (err) {
+            if (err?.code !== 11000) throw err;
+            prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+        }
     }
 
     if (prefs.accentColorStyle === 'default' || prefs.accentColorStyle === 'preset') {

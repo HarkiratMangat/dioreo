@@ -24,19 +24,11 @@ function publicIdFor(page) {
     return `${FOLDER}/${page}`;
 }
 
-// ⚠️ CORRECTED 2026-08-07 21:23 EDT -- this used to say "a real Discord CDN link doesn't expire the way an external host can," which is FALSE for the URLs this bot actually receives. A `media.discordapp.net` link (the "Copy Link" a user gets from Discord's own image viewer) is SIGNED (`?ex=`/`is=`/`hm=`), and the `ex=` param is a real expiry -- decoding it on a banner set 2026-07-29 (exact time unknown -- an admin-set field, not a logged event) showed an expiry of 2026-08-01, confirmed dead (404) 2026-08-07 21:25 EDT. Forging a later `ex=` doesn't work either (`hm=` is a real signature over `ex`+`is`+path -- tested, still 404). Kept here only to distinguish a Discord CDN host for logging/diagnostics; NOT used to skip Cloudinary re-hosting anymore -- see cacheBannerImage() below, which now re-hosts every source unconditionally.
-function isDiscordCdnUrl(url) {
-    try {
-        const { hostname } = new URL(url);
-        return hostname === 'cdn.discordapp.com' || hostname === 'media.discordapp.net';
-    } catch {
-        return false;
-    }
-}
+// ⚠️ CORRECTED 2026-08-07 21:23 EDT -- this used to say "a real Discord CDN link doesn't expire the way an external host can," which is FALSE for the URLs this bot actually receives. A `media.discordapp.net` link (the "Copy Link" a user gets from Discord's own image viewer) is SIGNED (`?ex=`/`is=`/`hm=`), and the `ex=` param is a real expiry -- decoding it on a banner set 2026-07-29 (exact time unknown -- an admin-set field, not a logged event) showed an expiry of 2026-08-01, confirmed dead (404) 2026-08-07 21:25 EDT. Forging a later `ex=` doesn't work either (`hm=` is a real signature over `ex`+`is`+path -- tested, still 404). Kept here only to distinguish a Discord CDN host for logging/diagnostics; NOT used to skip Cloudinary re-hosting anymore -- see cacheBannerImage() below, which now re-hosts every source unconditionally. (isDiscordCdnUrl, which this note sat on, was deleted 2026-10-20 in the v3 sweep: nothing had called it since the skip-the-upload branch was reverted. The note stays because cacheBannerImage's comment below points at it.)
 
 // Uploads a REMOTE url straight into Cloudinary (server-side fetch, the bot never downloads the image itself) -- never throws, a Cloudinary hiccup falls back to the raw URL rather than blocking the admin's save, same philosophy as cacheThumbnail()/cachePatchImage().
 //
-// ⚠️ Discord CDN sources used to skip this upload entirely, on the theory that re-hosting was pure downside (an extra copy of an "already-durable" asset). REVERTED 2026-08-07 21:25 EDT -- that premise was wrong (see isDiscordCdnUrl's comment: Discord CDN links are signed and expire), so a banner set from a Discord link was silently going dead within ~24-48h with no way to detect or repair it from the stored URL alone. Every source now re-hosts unconditionally, same as every other cached image in this bot. Verified live 2026-08-07: uploading a real Discord CDN banner URL to Cloudinary and capping it via capBannerPreviewWidth's Cloudinary branch (c_limit,w_N) correctly returned an aspect-preserved 256x144 derivative from a 2048x1152 source -- that branch also sidesteps capBannerPreviewWidth's Discord-CDN-branch bug (below) for free, since Cloudinary's `c_limit` only ever needs ONE dimension to preserve aspect ratio, unlike Discord's proxy.
+// ⚠️ Discord CDN sources used to skip this upload entirely, on the theory that re-hosting was pure downside (an extra copy of an "already-durable" asset). REVERTED 2026-08-07 21:25 EDT -- that premise was wrong (see the CORRECTED note above: Discord CDN links are signed and expire), so a banner set from a Discord link was silently going dead within ~24-48h with no way to detect or repair it from the stored URL alone. Every source now re-hosts unconditionally, same as every other cached image in this bot. Verified live 2026-08-07: uploading a real Discord CDN banner URL to Cloudinary and capping it via capBannerPreviewWidth's Cloudinary branch (c_limit,w_N) correctly returned an aspect-preserved 256x144 derivative from a 2048x1152 source -- that branch also sidesteps capBannerPreviewWidth's Discord-CDN-branch bug (below) for free, since Cloudinary's `c_limit` only ever needs ONE dimension to preserve aspect ratio, unlike Discord's proxy.
 async function cacheBannerImage(page, sourceUrl) {
     if (!VALID_PAGES.includes(page)) throw new Error(`Invalid calendar banner page: ${page}`);
     if (isCloudinaryWriteBlocked('upload', publicIdFor(page))) {
@@ -70,4 +62,4 @@ async function clearBannerImage(page) {
     }
 }
 
-module.exports = { cacheBannerImage, clearBannerImage, isDiscordCdnUrl, VALID_PAGES, FOLDER };
+module.exports = { cacheBannerImage, clearBannerImage, VALID_PAGES, FOLDER };

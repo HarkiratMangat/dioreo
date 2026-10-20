@@ -106,7 +106,8 @@ const PAGE_DEFS = [
 
 // Per-page banner fields (added 2026-07-31 17:20 EDT, the notes file follow-up) -- indexed by the same numeric page used everywhere else in this file. Blank/'' = show nothing for that page, not a placeholder -- see utils/calendarBannerCache.js + /manage's "Banners" action.
 const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBannerUrl'];
-function buildSectionToggleRow(currentPage) {
+// `filterMode` rides in the id as a `_a` suffix (2026-10-20, v3 sweep). `view:Active/Upcoming` is a one-off slash option, saved nowhere, so a toggle id without it re-rendered with filterMode 'all' and the first click brought every ended event back.
+function buildSectionToggleRow(currentPage, filterMode = 'all') {
     return {
         type: 1,
         components: PAGE_DEFS.map(d => ({
@@ -114,7 +115,7 @@ function buildSectionToggleRow(currentPage) {
             style: d.page === currentPage ? 3 : 2,
             label: d.label,
             emoji: emojis.parseEmoji(emojis[d.emojiKey]),
-            custom_id: `calpage_${d.page}`,
+            custom_id: `calpage_${d.page}${filterMode === 'active' ? '_a' : ''}`,
             disabled: d.page === currentPage
         }))
     };
@@ -152,7 +153,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
     const noneScheduledText = filterMode === 'active' && totalEntryCount > 0
-        ? `*No active or upcoming events right now — every event this season has already ended. Change this under \`/settings\`'s Preferences page.*`
+        // The pointer used to send players to /settings' Preferences page, where the default this toggled was removed 2026-08-15 -- `view` is the only control left (2026-10-20, v3 sweep).
+        ? `*No active or upcoming events right now — every event this season has already ended. Run ${mentionCommand(client, '/calendar')} with **view: All Events** to see them.*`
         : `*There are currently no events scheduled for this season.*`;
 
     if (safePage === 0) {
@@ -179,7 +181,7 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     // PAGE NAV: divider -> hint -> toggle row (reworked 2026-07-31 16:55 EDT, direct follow-up) -- was divider/row/divider/hint; Harkirat wanted the hint directly under the content with the toggle row below it, and only ONE divider total separating the section content above from this whole nav block.
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
     calendarComponents.push({ type: 10, content: `-# Switch between this season's **Draws**, **Events**, and **Game Modes**. (Tip: check out ${mentionCommand(client, '/settings')})` });
-    calendarComponents.push(buildSectionToggleRow(safePage));
+    calendarComponents.push(buildSectionToggleRow(safePage, filterMode));
 
     const containerPayload = {
         type: 17,
@@ -212,7 +214,8 @@ module.exports = {
     buildEntryLine,
     isEventEnded,
 
-    async execute(interaction, pageOverride = null) {
+    // filterOverride: the `view` a page-toggle button carries (see buildSectionToggleRow); a slash `view` still wins.
+    async execute(interaction, pageOverride = null, filterOverride = null) {
         const userId = interaction.user.id;
 
         // NOTE (added during review): kicked off alongside `prefs` instead of after it -- the seasonal document doesn't depend on prefs at all, so it resolves concurrently with the deferReply() ack below rather than only starting once that's done. Only `prefs` is actually awaited before deferReply (keeps the 3-second ack window fast). .lean() since this doc is only ever read here, never saved (unlike /manage's and /update's copies).
@@ -235,7 +238,7 @@ module.exports = {
 
         // The Active/All Events filter's /settings default preference was SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request) -- `prefs.calendarEventFilter` is no longer read here (or written anywhere; see commands/settings.js). `view` is now the ONLY way to pick Active/Upcoming for a given invocation, a genuine one-off, defaulting to 'all' when omitted. Never saved, only ever read on a real slash-command launch (a button/select re-render always passes pageOverride explicitly and never carries a `view` option to read here anyway).
         const viewChoice = interaction.isChatInputCommand() ? interaction.options.getString('view') : null;
-        const filterMode = viewChoice || 'all';
+        const filterMode = viewChoice || filterOverride || 'all';
 
         // `page` (added 2026-07-31 14:20 EDT) is the same kind of one-off override -- only consulted when pageOverride wasn't already supplied by a button click (buildSyntheticInteraction callers always pass an explicit numeric page). Maps the option's word value to the numeric page index buildContainer expects.
         const PAGE_OPTION_TO_INDEX = { draws: 0, events: 1, playlists: 2 };

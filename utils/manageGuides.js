@@ -110,7 +110,7 @@ function loadoutsSections() {
             '-# Badges belong to the one build they are typed on. `ass` can\'t sit with `meta` or a tier; `top4` is retired and reads as `top5`.'),
         section('✨ What Gets Auto-Formatted',
             '• **Mode** is not a field at all -- the page/button you clicked (MP or DMZ) decides it. It used to be a required 3rd pipe segment that the save then overwrote anyway, which meant a `DMZ` block pasted on the MP page saved as MP with no warning; removing it removed the lie, not the behaviour.\n' +
-            '• **Build**, **Image**, **Code** and **Badges** are all optional -- omit the whole line if it doesn\'t apply. Build defaults to `Standard Build`.\n' +
+            '• **Build**, **Image**, **Code** and **Badges** are all optional -- omit the whole line if it doesn\'t apply. Build defaults to `Standard Build`. Re-pasting a build that already exists keeps its stored Image and Code when you leave those lines out.\n' +
             '• **Image** takes a Cloudinary key here; the single Add/Edit modals additionally accept a pasted image URL and upload it for you.\n' +
             '• Attachment names are kept **exactly as typed** -- no auto-casing, since these must match the real in-game names precisely. A `-` bullet is optional, and is how you force a line containing a colon to be read as an attachment.'),
         section('🖼️ Example',
