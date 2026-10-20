@@ -145,25 +145,26 @@ function buildReviewCard(token, data, opts = {}) {
         ? (data.modeSource === 'explicit' ? 'Set by you' : 'Detected from the screenshot')
         : "Couldn't tell MP from DMZ; set it with **Adjust**";
     const badges = String(data.badgesRaw || '').trim();
+    // Below the attachment list as its own ### line (Harkirat, 2026-10-20 13:53 EDT).
     const codeLine = data.gunsmithCode
-        ? `> **Gunsmith Code:** \`${data.gunsmithCode}\``
-        : `> **Gunsmith Code:** \`—\`${data.mode === 'DMZ' ? '\n> -# *DMZ builds have no code*' : ''}`;
+        ? `### Gunsmith Code: \`${data.gunsmithCode}\``
+        : `### Gunsmith Code: \`—\`${data.mode === 'DMZ' ? '\n-# *DMZ builds have no code*' : ''}`;
     const attachmentLines = data.attachments.map((a, i) => {
         const slot = (data.slotLabels || [])[i];
         return `${i + 1}. **\`${a || '(empty)'}\`**${slot ? ` · \`(${slot.toUpperCase()})\`` : ''}`;
     });
     const body = [
         `### Weapon: \`${data.weaponName}\` — \`${data.category || 'unknown'}\``,
-        `> **Label:** \`${label || '—'}\``,
-        label ? null : '> -# *Set custom build label using **Adjust***',
+        `**Label:** \`${label || '—'}\``,
+        label ? null : '-# *Set custom build label using **Adjust***',
         `**Build:** \`Build ${data.ordinal || 1}\``,
         `**Mode:** \`${data.mode || 'unknown'}\``,
         `-# *${modeHint}*`,
         `**Badges:** \`${badges || '—'}\``,
         badges ? null : '-# *Badges are per build; add using **Adjust***',
         '### Attachments:',
-        codeLine,
         ...attachmentLines,
+        codeLine,
     ].filter(l => l !== null).join('\n');
 
     const components = [

@@ -220,7 +220,9 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         const flat = JSON.stringify(pipe.buildReviewCard('t', d).components);
         const at = (s) => flat.indexOf(s);
         assert.ok(at('Possible duplicate') !== -1 && at('Possible duplicate') < at('## Weapon: `PKM` — `LMG`'), 'warning first');
-        for (const s of ['> **Label:** `—`', '**Build:** `Build 3`', '**Mode:** `MP`', '### Attachments:', '> **Gunsmith Code:** `1A4A5E7E9A`', '1. **`Tactical Suppressor`** · `(MUZZLE)`']) assert.ok(at(s) !== -1, `missing ${s}`);
+        for (const s of ['**Label:** `—`', '**Build:** `Build 3`', '**Mode:** `MP`', '### Attachments:', '### Gunsmith Code: `1A4A5E7E9A`', '1. **`Tactical Suppressor`** · `(MUZZLE)`']) assert.ok(at(s) !== -1, `missing ${s}`);
+        assert.ok(!flat.includes('> **Label:**'), 'Label is not quoted (13:53 EDT)');
+        assert.ok(at('(MUZZLE)') < at('### Gunsmith Code:'), 'the code sits below the attachment list (13:53 EDT)');
     });
 
     await check('Add more sits outside the panel; a small gap before the pager and a small divider before Save All', () => {
