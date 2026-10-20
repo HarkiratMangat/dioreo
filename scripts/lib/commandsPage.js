@@ -28,7 +28,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { assertProseCoverage, assertAskCoverage, assertSearchCoverage, searchHaystack, ASKS, COMMANDS } = require('./commandProse');
+const { assertProseCoverage, assertAskCoverage, assertSearchCoverage, findTools, buildFindIndex, ASKS, COMMANDS } = require('./commandProse');
 
 const CHROME_KEYS = [
     'esc', 'TOKENS', 'COMPONENT_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS', 'MORPH_JS', 'GOO_SVG',
@@ -367,6 +367,21 @@ const RECEIVER_CSS = `
 .rx-line{flex:1;min-width:0;overflow-x:auto;display:flex;align-items:center;gap:.34rem;
   font-family:var(--mono);font-size:.86rem;scrollbar-width:none;padding:.1rem 0}
 .rx-line::-webkit-scrollbar{display:none}
+/* ── TRY IT ─────────────────────────────────────────────────────────────────────
+   The line used to read as a printed label with a Copy button beside it (Harkirat,
+   2026-10-20 16:27 EDT: "feels a bit too static... imply that like, oh, try out the
+   command"). Four things now say it is something you work: a "Try it" tag, a caret at the
+   end of the line the way Discord's own box has one, the line typing itself in when the
+   panel opens, and any option Discord will demand pulsing twice to say "tap me".
+   ⚠️ The intro plays ONCE per page load: paint() drops data-intro on the first real change,
+   because it rebuilds every token and a rebuilt token would replay its entrance. */
+.rx-try{flex:none;display:inline-flex;align-items:center;gap:.4rem;padding:0 .7rem 0 .1rem;
+  margin-right:.05rem;border-right:1px solid color-mix(in srgb,var(--ink) 16%,transparent);
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.15em;text-transform:uppercase;
+  font-weight:600;color:var(--ci);white-space:nowrap}
+.rx-try svg{width:15px;height:15px;flex:none}
+.rx-line::after{content:"";flex:none;width:2px;height:1.15em;margin-left:.05rem;border-radius:1px;
+  background:var(--ink)}
 .rx-cmd{flex:none;padding:.2rem .44rem;border-radius:5px;background:var(--cc);color:var(--con);
   font-weight:600;transition:background .45s ease,color .45s ease}
 /* Every token in the line is a BUTTON that opens its own option, the way clicking an option
@@ -384,6 +399,8 @@ const RECEIVER_CSS = `
 .rx-tok[data-state=filled]{background:color-mix(in srgb,var(--cc) 30%,transparent)}
 .rx-tok[data-state=empty]{opacity:.5;background:none;border:1px dashed ${LINE}}
 .rx-tok[data-state=empty] .rx-o::after{content:""}
+/* "+ page" reads as something you can add, where a bare faded "page" read as a label. */
+.rx-tok[data-state=empty] .rx-o::before{content:"+";margin-right:.22rem}
 .rx-tok[data-state=need]{background:none;
   border:1px dashed color-mix(in srgb,var(--cc) 75%,transparent)}
 .rx-tok[data-state=need] .rx-o{color:var(--ink2)}
@@ -522,19 +539,56 @@ const RECEIVER_CSS = `
   background:color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink3)}
 .rx-cd-o span.req{background:color-mix(in srgb,var(--cc) 26%,transparent);color:var(--ink)}
 
-.rx-asks-h{margin:1.7rem 0 .2rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.15em;
-  text-transform:uppercase;color:color-mix(in srgb,var(--accent-t) 74%,var(--ink3))}
-.rx-asks-s{margin:0 0 .7rem;font-family:var(--serif);font-size:.96rem;color:var(--ink2)}
-.rx-asks{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:.1rem 2rem}
-.rx-ask{display:flex;align-items:center;gap:.6rem;padding:.6rem .4rem .6rem .1rem;
-  min-height:44px;text-decoration:none;border-bottom:1px solid ${LINE};
-  transition:padding-left .16s ease}
-.rx-ask:hover{padding-left:.45rem}
-.rx-ask span{flex:1;font-family:var(--serif);font-size:.96rem;color:var(--ink)}
-.rx-ask em{font-family:var(--mono);font-style:normal;font-size:.72rem;color:var(--ink3);flex:none}
-.rx-ask i{width:6px;height:6px;border-radius:50%;background:var(--cc);flex:none}
-.rx-ask:hover em{color:var(--ci)}
-.rx-ask:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:5px}
+/* ── THE ASK FIELD ─────────────────────────────────────────────────────────────
+   Above the rail, because it is the way in for anyone who does not know a command's name
+   (Harkirat, 2026-10-20 16:27 EDT, replacing the "Or start from what you want to do" list
+   at the foot of the landing card). ⚠️ IT IS DELIBERATELY NOT A COMMAND LINE: no mono, no
+   slash, a serif placeholder. It takes a sentence, and a field that looks like a terminal
+   invites a command name instead. ⚠️ The answers are prerendered, one row per command, so
+   each carries its own colour from the build; the script only orders and shows them. */
+.rx-find{margin:1.3rem 0 0;max-width:52rem}
+.rx-field{display:flex;align-items:center;gap:.65rem;height:54px;padding:0 .8rem 0 1rem;
+  border-radius:14px;border:1px solid var(--rule2);background:${BED};
+  transition:border-color .2s ease,box-shadow .2s ease}
+.rx-field:focus-within{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.rx-field svg{flex:none;width:18px;height:18px;color:var(--ink3)}
+.rx-field:focus-within svg{color:var(--accent-t)}
+.rx-q{flex:1;min-width:0;height:100%;border:0;background:none;outline:none;padding:0;
+  font-family:var(--serif);font-size:1.08rem;color:var(--ink);-webkit-appearance:none;appearance:none}
+.rx-q::placeholder{color:var(--ink3);opacity:1}
+/* The browser's own clear button is a fixed blue on WebKit; this redraws it as an --ink3 cross. */
+.rx-q::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;width:15px;height:15px;cursor:pointer;
+  background:var(--ink3);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 3l10 10M13 3L3 13' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 3l10 10M13 3L3 13' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.rx-q::-webkit-search-cancel-button:hover{background:var(--ink)}
+.rx-field kbd{flex:none;font-family:var(--mono);font-size:.7rem;color:var(--ink3);
+  padding:.12rem .42rem;border-radius:5px;border:1px solid var(--rule2)}
+.rx-field:focus-within kbd{display:none}
+.rx-tries{margin:.6rem 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:.35rem}
+.rx-tries > span{font-family:var(--mono);font-size:.63rem;letter-spacing:.15em;text-transform:uppercase;
+  color:color-mix(in srgb,var(--accent-t) 74%,var(--ink3));margin-right:.2rem}
+.rx-tq{flex:none;font-family:var(--serif);font-size:.92rem;color:var(--ink2);cursor:pointer;
+  padding:.3rem .75rem;border-radius:999px;border:1px solid var(--rule2);background:none;
+  transition:color .2s ease,border-color .2s ease}
+.rx-tq:hover{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+.rx-tq:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rx-found{margin:.55rem 0 0;border-radius:14px;border:1px solid ${LINE};background:${BED};overflow:hidden}
+.rx-found[hidden],.rx-hit[hidden]{display:none}
+.rx-hit{display:flex;align-items:center;gap:.75rem;padding:.72rem 1rem;min-height:44px;
+  text-decoration:none;border-top:1px solid ${LINE};transition:background .16s ease}
+.rx-hit.rx-first{border-top:0}
+.rx-hit:hover,.rx-hit:focus-visible{background:color-mix(in srgb,var(--cc) 9%,transparent)}
+.rx-hit:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.rx-hit i{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none}
+.rx-hit-t{flex:1;min-width:0;display:flex;align-items:baseline;gap:.2rem .8rem;flex-wrap:wrap}
+.rx-hit b{font-family:var(--mono);font-size:.9rem;font-weight:600;color:var(--ci);white-space:nowrap}
+.rx-hit-t span{font-family:var(--serif);font-size:.94rem;line-height:1.4;color:var(--ink2)}
+.rx-hit em{flex:none;font-family:var(--mono);font-style:normal;font-size:.62rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink3);display:none}
+.rx-hit.rx-first em{display:inline}
+.rx-nohit{margin:0;padding:.85rem 1rem;font-family:var(--serif);font-size:.94rem;color:var(--ink2)}
+.rx-nohit[hidden]{display:none}
 
 /* The install explainer lives inside /invite now, where a reader who wants it already is.
    It used to sit on the landing card, which is a page about commands. */
@@ -543,7 +597,6 @@ const RECEIVER_CSS = `
 .rx-inst b{display:block;font-family:var(--mono);font-size:.78rem;font-weight:600;color:var(--ci)}
 .rx-inst p{margin:.4rem 0 0;font-family:var(--serif);font-size:.95rem;line-height:1.45;color:var(--ink2)}
 
-.rx-none{margin:.7rem 0 0;font-family:var(--mono);font-size:.76rem;color:var(--ink3)}
 .rx-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ── MOTION ────────────────────────────────────────────────────────────────────
@@ -553,6 +606,16 @@ const RECEIVER_CSS = `
    every fixed descendant. With translateY on the card the pinned line was measured at
    top:1268px in an 812px window. */
 @media (prefers-reduced-motion:no-preference){
+  .rx-line::after{animation:rx-blink 1.05s steps(1) infinite}
+  /* The caret arrives with the last token. The tokens hold their space while they wait to land, so a caret shown from the start blinked out at the far end of an empty line. ⚠️ rx-fade is LISTED LAST so its held first frame wins over the blink's opacity. */
+  .rx-p:target .rx-line[data-intro]::after{
+    animation:rx-blink 1.05s steps(1) infinite,rx-fade .01s linear calc(.46s + var(--n,8) * 26ms + var(--k,0) * 80ms) backwards}
+  .rx-p:target .rx-line[data-intro] .rx-cmd{animation:rx-type calc(var(--n,8) * 26ms) steps(var(--n,8)) .18s backwards}
+  .rx-p:target .rx-line[data-intro] .rx-tok{
+    animation:rx-land .24s cubic-bezier(.2,.8,.3,1) calc(.22s + var(--n,8) * 26ms + var(--i,0) * 80ms) backwards}
+  .rx-p:target .rx-line[data-intro] .rx-tok[data-state=need]{
+    animation:rx-land .24s cubic-bezier(.2,.8,.3,1) calc(.22s + var(--n,8) * 26ms + var(--i,0) * 80ms) backwards,
+      rx-beckon 1.1s ease-in-out calc(.7s + var(--n,8) * 26ms + var(--i,0) * 80ms) 2}
   .rx-p:target .rx-card{animation:rx-fade .26s ease backwards}
   .rx-p:target .rx-card::before{animation:rx-wipe .42s cubic-bezier(.2,.7,.3,1) backwards}
   .rx-p:target .rx-eyebrow,.rx-p:target .rx-name,.rx-p:target .rx-why{
@@ -575,6 +638,11 @@ const RECEIVER_CSS = `
 @keyframes rx-open{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @keyframes rx-slash{0%,72%,100%{transform:none}78%{transform:translateY(-2px) rotate(-9deg)}86%{transform:translateY(1px) rotate(3deg)}}
 @keyframes rx-hue{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
+@keyframes rx-blink{0%{opacity:1}50%{opacity:0}}
+/* The name types itself in left to right; clip-path, not width, so the pill's own padding and background are revealed with it. */
+@keyframes rx-type{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+/* A wash, never a ring: an outside glow is exactly what was taken off the landing Commands button. */
+@keyframes rx-beckon{0%,100%{background:none}50%{background:color-mix(in srgb,var(--cc) 30%,transparent)}}
 
 /* ── NARROW ──────────────────────────────────────────────────────────────────── */
 @media (max-width:900px){
@@ -589,7 +657,16 @@ const RECEIVER_CSS = `
   .rx-card{padding:1.2rem 1.1rem 1.3rem 1.4rem;border-radius:14px}
   .rx-why{font-size:1rem}
   .rx-slots,.rx-inst{grid-template-columns:minmax(0,1fr)}
-  .rx-asks{grid-template-columns:minmax(0,1fr);gap:0}
+  .rx-find{margin-top:1rem}
+  .rx-field{height:50px}
+  .rx-field kbd{display:none}
+  .rx-q{font-size:1rem}
+  .rx-tries{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:.1rem}
+  .rx-tries::-webkit-scrollbar{display:none}
+  .rx-hit-t{flex-direction:column;align-items:flex-start;gap:.1rem}
+  /* No room for the "Best fit" tag beside a wrapped purpose, so the first row says it with a wash instead. */
+  .rx-hit.rx-first em{display:none}
+  .rx-hit.rx-first{background:color-mix(in srgb,var(--cc) 7%,transparent)}
   /* 🔴 THE COMMAND CARDS COLLAPSE TO NAMES ON A PHONE, AND THAT IS DELIBERATE. The full
      card — name, purpose, option chips — is 115px, and fourteen of them made the landing
      state 3292px, 4.1 screenfuls, on the device most of these readers are using. Harkirat,
@@ -612,11 +689,18 @@ const RECEIVER_CSS = `
 }
 @media (pointer:coarse){
   .rx-chip,.rx-pill,.rx-btn,.rx-ac-hit{min-height:44px}
-  .rx-ask,.rx-sum{min-height:48px}
+  .rx-hit,.rx-sum{min-height:48px}
+  .rx-tq{min-height:40px}
 }
 @media (max-width:520px){
   .rx-name{font-size:1.05rem}
   .rx-line{font-size:.8rem}
+  /* The tag keeps its icon and drops its words on a phone, where the line needs the room. */
+  .rx-try{padding-right:.55rem}
+  .rx-try span{display:none}
+  /* Clear shrinks to a cross for the same reason; its aria-label still says Clear. */
+  .rx-clear{font-size:0;letter-spacing:0;padding-left:.8rem;padding-right:.8rem}
+  .rx-clear::before{content:"\\2715";font-size:.8rem}
 }
 `;
 
@@ -641,19 +725,20 @@ const RECEIVER_JS = [
     '     set of values the reader has picked. That is the fix for a shipped defect: a free-text',
     '     required option can never be in the picked set, so touching anything optional deleted',
     '     it and the page handed out a command Discord rejects. */',
-    '  function paint(p,landed){',
+    '  function paint(p,landed,intro){',
     '    var line=p.querySelector(".rx-line"); if(!line) return;',
+    '    if(!intro) line.removeAttribute("data-intro");',
     '    var btn=p.querySelector(".rx-copy"), clear=p.querySelector(".rx-clear");',
     '    line.textContent="";',
     '    line.appendChild(el("span","rx-cmd",p.getAttribute("data-cmd")));',
-    '    var plain=p.getAttribute("data-cmd"), set=0;',
+    '    var plain=p.getAttribute("data-cmd"), set=0, idx=0;',
     '    [].slice.call(p.querySelectorAll("[data-opt]")).forEach(function(o){',
     '      var name=o.getAttribute("data-opt"), val=value(o), req=o.getAttribute("data-req")==="1";',
     '      var tok=document.createElement("button");',
     '      tok.type="button";',
     '      tok.className="rx-tok"+(landed===name?" rx-land":"");',
     '      tok.setAttribute("data-state", val?"filled":(req?"need":"empty"));',
-    '      tok.setAttribute("data-goto",name);',
+    '      tok.setAttribute("data-goto",name); tok.style.setProperty("--i",idx++);',
     '      tok.setAttribute("aria-label",(val?("Change "+name+" "+val):("Set "+name)));',
     '      tok.appendChild(el("span","rx-o",name));',
     '      if(val){ tok.appendChild(el("span","rx-v",val)); plain+=" "+name+":"+val; set++; }',
@@ -801,7 +886,7 @@ const RECEIVER_JS = [
     '      paint(p,null);',
     '    });',
     '    [].slice.call(p.querySelectorAll("[data-opt]")).forEach(summarise);',
-    '    paint(p,null);',
+    '    paint(p,null,true);',
     '  });',
     '',
     '  function mark(){',
@@ -829,17 +914,72 @@ const RECEIVER_JS = [
     '    mark();',
     '  });',
     '',
+    '  /* THE ASK FIELD. rank() is commandProse.js findTools(), serialised into the page, so',
+    '     what the build gate proves about a query is what the reader gets. */',
     '  var q=document.getElementById("rx-q"), count=document.getElementById("rx-count");',
-    '  function filter(){',
-    '    var v=q.value.trim().toLowerCase(), hits=0;',
-    '    chips.forEach(function(c){',
-    '      var on=!v||(c.getAttribute("data-find")||"").toLowerCase().indexOf(v)>-1;',
-    '      c.hidden=!on; if(on) hits++;',
+    '  var found=document.getElementById("rx-found"), none=document.getElementById("rx-nohit");',
+    '  var IX=window.__RX_FIND, RANK=window.__RX_RANK;',
+    '  var hits=found?[].slice.call(found.querySelectorAll(".rx-hit")):[];',
+    '  function search(){',
+    '    var v=q.value.trim();',
+    '    if(!v){ found.hidden=true; count.textContent=""; return; }',
+    '    var got=RANK(v,IX);',
+    '    hits.forEach(function(h){ h.hidden=true; h.classList.remove("rx-first"); });',
+    '    got.forEach(function(o,n){',
+    '      var h=document.getElementById("rx-hit-"+IX.cmds[o.i].id); if(!h) return;',
+    '      h.hidden=false; if(!n) h.classList.add("rx-first"); found.appendChild(h);',
     '    });',
-    '    [].slice.call(document.querySelectorAll(".rx-gl")).forEach(function(s){ s.hidden=!!v; });',
-    '    count.textContent=!v?"":(hits?hits+" of "+chips.length+" match":"Nothing matches "+q.value.trim());',
+    '    found.insertBefore(none,found.firstChild); none.hidden=got.length>0;',
+    '    found.hidden=false;',
+    '    count.textContent=got.length?(got.length===1?"1 command fits":got.length+" commands fit"):"No command fits that yet";',
     '  }',
-    '  if(q){ q.addEventListener("input",filter); filter(); }',
+    '  if(q && found && IX && RANK){',
+    '    q.addEventListener("input",search);',
+    '    q.addEventListener("focus",function(){ if(q.value.trim()) search(); });',
+    '    q.addEventListener("keydown",function(e){',
+    '      if(e.key==="Enter"){ var top=found.querySelector(".rx-hit.rx-first:not([hidden])");',
+    '        if(top){ e.preventDefault(); location.hash=top.getAttribute("href").slice(1); } }',
+    '      else if(e.key==="ArrowDown"){ var first=found.querySelector(".rx-hit:not([hidden])");',
+    '        if(first){ e.preventDefault(); first.focus(); } }',
+    '      else if(e.key==="Escape" && q.value){ q.value=""; search(); }',
+    '    });',
+    '    found.addEventListener("keydown",function(e){',
+    '      if(e.key!=="ArrowDown"&&e.key!=="ArrowUp") return;',
+    '      var vis=hits.filter(function(h){ return !h.hidden; }).sort(function(a,b){',
+    '        return a.compareDocumentPosition(b)&4?-1:1; });',
+    '      var at=vis.indexOf(document.activeElement); if(at<0) return;',
+    '      e.preventDefault();',
+    '      if(e.key==="ArrowUp"&&at===0){ q.focus(); return; }',
+    '      var next=vis[at+(e.key==="ArrowDown"?1:-1)]; if(next) next.focus();',
+    '    });',
+    '    /* An answer opens its panel and folds the list away; the words stay, so focusing the',
+    '       field again brings the same answers back. */',
+    '    addEventListener("hashchange",function(){ if(document.querySelector(".rx-p:target")) found.hidden=true; });',
+    '    [].slice.call(document.querySelectorAll(".rx-tq")).forEach(function(b){',
+    '      b.addEventListener("click",function(){ q.value=b.getAttribute("data-q"); q.focus(); search(); });',
+    '    });',
+    '    /* "/" puts you in the field from anywhere on the page, the shortcut Discord and most',
+    '       docs sites already taught. Never while typing somewhere else. */',
+    '    addEventListener("keydown",function(e){',
+    '      if(e.key!=="/"||e.metaKey||e.ctrlKey||e.altKey) return;',
+    '      var a=document.activeElement, tag=a&&a.tagName;',
+    '      if(tag==="INPUT"||tag==="TEXTAREA"||(a&&a.isContentEditable)) return;',
+    '      e.preventDefault(); q.focus();',
+    '    });',
+    '    /* On a wide screen the placeholder carries an example and walks through the asks, so',
+    '       the field shows it takes a sentence. ⚠️ A phone keeps the short one: at 390px the',
+    '       example was cut off mid-word, and the Try row under the field already shows three. */',
+    '    var asks=IX.asks||[], turn=0;',
+    '    function eg(){ q.setAttribute("placeholder","Describe what you need, like “"+asks[turn].toLowerCase()+"”"); }',
+    '    if(asks.length && matchMedia("(min-width:901px)").matches){',
+    '      eg();',
+    '      if(matchMedia("(prefers-reduced-motion:no-preference)").matches) setInterval(function(){',
+    '        if(q.value || document.activeElement===q) return;',
+    '        turn=(turn+1)%asks.length; eg();',
+    '      },3200);',
+    '    }',
+    '    if(q.value.trim()) search();',
+    '  }',
     '',
     '  var live=document.getElementById("rx-live");',
     '  if(live && window.Intl){',
@@ -1010,21 +1150,23 @@ function runLine(command, C) {
     const sample = (COMMANDS[command.path] || {}).sample || {};
     const options = ownOptions(command);
     const parts = ['<span class="rx-cmd">' + slashName(command.path, C) + '</span>'];
-    let plain = command.path, set = 0;
+    let plain = command.path, set = 0, idx = 0;
     for (const option of options) {
         const value = option.required
             ? (sample[option.name] || (option.choices.length ? splitChoice(option.choices[0]).label : ''))
             : '';
         const state = value ? 'filled' : (option.required ? 'need' : 'empty');
-        parts.push('<button type="button" class="rx-tok" data-state="' + state + '" ' +
+        parts.push('<button type="button" class="rx-tok" style="--i:' + (idx++) + '" data-state="' + state + '" ' +
             'data-goto="' + esc(option.name) + '" aria-label="' + (value ? 'Change ' : 'Set ') + esc(option.name) + (value ? ' ' + esc(value) : '') + '">' +
             '<span class="rx-o">' + esc(option.name) + '</span>' +
             (value ? '<span class="rx-v">' + esc(value) + '</span>' : '') + '</button>');
         if (value) { plain += ' ' + option.name + ':' + value; set++; }
     }
     return '<div class="rx-bar">' +
-        '<code class="rx-line">' + parts.join('') + '</code>' +
-        '<button type="button" class="rx-btn rx-clear"' + (set ? '' : ' hidden') + '>Clear</button>' +
+        '<span class="rx-try"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" ' +
+        'stroke="currentColor" stroke-width="1.4"/><path d="M6.4 5.2v5.6L10.9 8z" fill="currentColor"/></svg><span>Try it</span></span>' +
+        '<code class="rx-line" data-intro style="--n:' + command.path.length + ';--k:' + options.length + '">' + parts.join('') + '</code>' +
+        '<button type="button" class="rx-btn rx-clear" aria-label="Clear"' + (set ? '' : ' hidden') + '>Clear</button>' +
         '<button type="button" class="rx-btn rx-copy" data-plain="' + esc(plain) + '" ' +
         'aria-label="Copy ' + esc(plain) + '">Copy</button></div>';
 }
@@ -1116,6 +1258,12 @@ function homeCard(command, C, accents) {
         '</a>';
 }
 
+/** The ask field's index, built from the same weapon lists the weapon options search; exported so the catalog test gates the index the page ships. */
+function findIndexFor(catalog, weapons = loadWeaponIndex()) {
+    const modeOf = command => (command.options.find(o => weaponMode(command, o)) ? weaponMode(command, { name: 'weapon' }) : '');
+    return buildFindIndex(catalog, weapons, modeOf);
+}
+
 /**
  * Renders the whole page. `catalog` is scripts/lib/commandCatalog.js's output; `page` is the entry from buildLegalPages.js's page table.
  */
@@ -1123,7 +1271,6 @@ function commandsShell({ page, catalog, C }) {
     requireChrome(C);
     assertProseCoverage(catalog);
     assertAskCoverage(catalog);
-    assertSearchCoverage(catalog);
     if (page.accent.toUpperCase() !== SIGNAL.dark.toUpperCase()) {
         throw new Error('commandsPage.js: TOOL_PAGES declares accent ' + page.accent + ' but SIGNAL.dark is ' +
             SIGNAL.dark + '. These feed the SAME colour by two routes, so a mismatch renders a pill and an ' +
@@ -1134,6 +1281,8 @@ function commandsShell({ page, catalog, C }) {
     const cats = loadCategoryAccents();
     const scopes = loadScopeAccents(cats);
     const weapons = loadWeaponIndex();
+    const findIndex = findIndexFor(catalog, weapons);
+    assertSearchCoverage(catalog, findIndex);
 
     if (!page.lede.includes(page.ledeEm)) {
         throw new Error('commandsPage.js: TOOL_PAGES ledeEm ' + JSON.stringify(page.ledeEm) +
@@ -1144,6 +1293,7 @@ function commandsShell({ page, catalog, C }) {
     const rail = [];
     const panels = [];
     const cards = [];
+    const hits = [];
     const byPath = new Map();
 
     for (const group of catalog.groups) {
@@ -1154,21 +1304,21 @@ function commandsShell({ page, catalog, C }) {
             const derived = DERIVED.has(command.path);
             const vars = colourVars(command.path, accents, derived ? DERIVED_NEUTRAL : null);
             rail.push('<a class="rx-chip" href="#' + esc(command.id) + '" data-for="' + esc(command.id) + '" ' +
-                'data-find="' + esc(searchHaystack(command, group.label)) + '" data-spot style="' + vars + '">' +
+                'data-spot style="' + vars + '">' +
                 '<i class="rx-dot" aria-hidden="true"></i>' + esc(command.path) + '</a>');
             panels.push(renderPanel(command, group, C, accents, cats, scopes));
             cards.push(homeCard(command, C, accents));
+            hits.push('<a class="rx-hit" id="rx-hit-' + esc(command.id) + '" href="#' + esc(command.id) + '" hidden style="' + vars + '">' +
+                '<i aria-hidden="true"></i><span class="rx-hit-t"><b>' + esc(command.path) + '</b><span>' +
+                esc((COMMANDS[command.path] || {}).purpose || command.description) + '</span></span><em>Best fit</em></a>');
         }
     }
 
-    const asks = ASKS.map(a => {
-        const command = byPath.get(a.to);
-        if (!command) throw new Error('commandsPage.js: the ask "' + a.q + '" points at ' + a.to + ', which the bot no longer registers.');
-        const derived = DERIVED.has(a.to);
-        return '<a class="rx-ask" href="#' + esc(command.id) + '" style="' +
-            colourVars(a.to, accents, derived ? DERIVED_NEUTRAL : null) + '">' +
-            '<i aria-hidden="true"></i><span>' + esc(a.q) + '</span><em>' + esc(a.to) + '</em></a>';
-    }).join('');
+    // The three "Try" examples are asks, so every one is a sentence the gate has already proved lands on its own command first.
+    const tries = [0, 3, 7].map(i => ASKS[i]).filter(Boolean).map(a =>
+        '<button type="button" class="rx-tq" data-q="' + esc(a.q) + '">' + esc(a.q) + '</button>').join('');
+    const findPayload = JSON.stringify({ cmds: findIndex.cmds, weapons: findIndex.weapons, asks: ASKS.map(a => a.q) })
+        .replace(/</g, '\\u003C');
 
     /* ⚠️ THIS SITE IS DARK-FIRST, and getting the polarity backwards is silent. The bare
        :root block IS the dark theme; light arrives as an override, BOTH as an explicit
@@ -1181,11 +1331,11 @@ function commandsShell({ page, catalog, C }) {
         ';--accent-on:' + solveOn(page.accent) + '}' +
         ':root[data-theme=light]{' + lightVars + '}' +
         '@media (prefers-color-scheme:light){:root:not([data-theme=dark]){' + lightVars + '}}' +
-        '.rx-p,.rx-chip,.rx-ask,.rx-cd{--ci:var(--ct)}' +
+        '.rx-p,.rx-chip,.rx-hit,.rx-cd{--ci:var(--ct)}' +
         ':root[data-theme=light] .rx-p,:root[data-theme=light] .rx-chip,' +
-        ':root[data-theme=light] .rx-ask,:root[data-theme=light] .rx-cd{--ci:var(--ctl)}' +
+        ':root[data-theme=light] .rx-hit,:root[data-theme=light] .rx-cd{--ci:var(--ctl)}' +
         '@media (prefers-color-scheme:light){:root:not([data-theme=dark]) .rx-p,' +
-        ':root:not([data-theme=dark]) .rx-chip,:root:not([data-theme=dark]) .rx-ask,' +
+        ':root:not([data-theme=dark]) .rx-chip,:root:not([data-theme=dark]) .rx-hit,' +
         ':root:not([data-theme=dark]) .rx-cd{--ci:var(--ctl)}}';
 
     // Only the fields the page's autocomplete uses, so the inlined payload stays a few KB.
@@ -1221,6 +1371,22 @@ ${C.mobileNav(page, '')}
     <p class="rx-sub">${ledeHtml}</p>
   </header>
 
+  <div class="rx-find" role="search">
+    <label class="rx-sr" for="rx-q">Describe what you need</label>
+    <div class="rx-field">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <input class="rx-q" id="rx-q" type="search" placeholder="What do you need help with?" autocomplete="off" spellcheck="false" enterkeyhint="go" aria-controls="rx-found" aria-describedby="rx-count">
+      <kbd aria-hidden="true">/</kbd>
+    </div>
+    <!-- WCAG 4.1.3. Polite, and EMPTY at rest, so it speaks only when the answers change. -->
+    <p class="rx-sr" id="rx-count" role="status"></p>
+    <div class="rx-found" id="rx-found" hidden>
+      <p class="rx-nohit" id="rx-nohit" hidden>Nothing fits that yet. Try a word like build, CP, time or season, or pick from the list below.</p>
+      ${hits.join('')}
+    </div>
+    <div class="rx-tries"><span>Try</span>${tries}</div>
+  </div>
+
   <div class="rx-rail">
     <nav class="rx-scroll" aria-label="Command list">
       <a class="rx-chip rx-home-chip" id="rx-homechip" href="#" data-spot><i class="rx-dot" aria-hidden="true"></i>All commands</a>
@@ -1229,11 +1395,6 @@ ${C.mobileNav(page, '')}
   </div>
 
   <div class="rx-bench" id="rx-bench">
-    <label class="rx-sr" for="rx-q">Search commands</label>
-    <input class="rx-sr" id="rx-q" type="search" placeholder="Search" autocomplete="off" spellcheck="false">
-    <!-- WCAG 4.1.3. Filtering hides rail chips, and without a status region a screen-reader
-         user gets no signal that the strip changed. Polite, and EMPTY at rest. -->
-    <p class="rx-none" id="rx-count" role="status"></p>
 
     <div class="rx-stage">
       ${panels.join('')}
@@ -1242,9 +1403,6 @@ ${C.mobileNav(page, '')}
           <h2>All commands</h2>
           <p class="rx-lead">Pick one, fill in what it takes, and copy the line into Discord.</p>
           <div class="rx-cards">${cards.join('')}</div>
-          <p class="rx-asks-h">Or start from what you want to do</p>
-          <p class="rx-asks-s">Each one opens the command that does it.</p>
-          <div class="rx-asks">${asks}</div>
         </div>
       </section>
     </div>
@@ -1257,6 +1415,7 @@ ${C.mobileNav(page, '')}
      script tag fails the gate with "Unexpected token ':'" — correctly, since the gate cannot
      know the type attribute changes the language. -->
 <script>window.__RX_WEAPONS=${weaponPayload};</script>
+<script>window.__RX_FIND=${findPayload};window.__RX_RANK=(${findTools.toString()})().rank;</script>
 <!-- Outside .page: a fixed element is trapped by any ancestor with a transform or a filter. -->
 ${C.TOTOP_HTML}
 <script>${C.THEME_JS}</script>
@@ -1268,7 +1427,7 @@ ${C.TOTOP_HTML}
 }
 
 module.exports = {
-    commandsShell, CHROME_KEYS, SIGNAL, RECEIVER_CSS, RECEIVER_JS,
+    commandsShell, findIndexFor, CHROME_KEYS, SIGNAL, RECEIVER_CSS, RECEIVER_JS,
     VISIBLE_CHOICES, ownOptions, solveText, solveOn, darken, optionKind, badges, bareHint,
     loadAccents, loadCategoryAccents, loadScopeAccents, loadWeaponIndex,
     DERIVED, DERIVED_NEUTRAL, GROUND_DARK, GROUND_LIGHT,

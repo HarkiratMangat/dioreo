@@ -321,10 +321,18 @@ check('bareHint: a number says its bounds, a search says Discord suggests, anyth
 });
 
 const { assertSearchCoverage } = require('./lib/commandProse');
+const { findIndexFor } = require('./lib/commandsPage');
 
 check('the search answers the queries a reader actually types', () => {
     // The oracle lives in commandProse.js beside the keywords it tests, and it fails on an exact set rather than a superset — "loadout" must return the three loadout commands and nothing else. The previous page returned exactly one of them and nothing reported it.
-    assert.doesNotThrow(() => assertSearchCoverage({ groups: catalog.groups }));
+    assert.doesNotThrow(() => assertSearchCoverage({ groups: catalog.groups }, findIndexFor({ groups: catalog.groups })));
+});
+
+check('the search gate can fail: an index that has lost /calendar\'s words is caught', () => {
+    // Without this the case above could pass because the gate checks nothing. Blanking one command's fields must break the ask that points at it.
+    const index = findIndexFor({ groups: catalog.groups });
+    const blind = { ...index, cmds: index.cmds.map(c => (c.path === '/calendar' ? { ...c, f: [] } : c)) };
+    assert.throws(() => assertSearchCoverage({ groups: catalog.groups }, blind), /\/calendar/);
 });
 
 run();
