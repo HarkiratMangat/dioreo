@@ -308,12 +308,12 @@ async function handleInteractionInner(interaction) {
 
             if (interaction.commandName === 'bot' && interaction.options.getSubcommand() === 'hotpatch') {
                 const { isOwner } = require('../utils/adminAccess');
-                if (!isOwner(interaction.user.id)) return interaction.respond([]);
+                if (!isOwner(interaction.user.id)) return await interaction.respond([]);
                 // Offers the CHANGED set, which is the only thing `file` may name -- so the option is self-documenting rather than something to memorise. ⚠️ changedRuntimeFiles(), NOT runHotpatch(): this fires per KEYSTROKE inside Discord's 3s autocomplete budget. One `git diff` is fine; building the require graph reads 128 files and is exactly the kind of event-loop block that produced 10062s here before (commands/settings.js:54).
                 const { changedRuntimeFiles } = require('../utils/hotpatch');
                 const changed = changedRuntimeFiles();
                 const typed = (interaction.options.getFocused() || '').toLowerCase();
-                return interaction.respond(changed.filter(f => f.toLowerCase().includes(typed)).slice(0, 25).map(f => ({ name: f, value: f })));
+                return await interaction.respond(changed.filter(f => f.toLowerCase().includes(typed)).slice(0, 25).map(f => ({ name: f, value: f })));
             }
 
             // Standard Loadout Dictionary Autocomplete Mapping (/dmz, /gunsmith mp, /gunsmith dmz)

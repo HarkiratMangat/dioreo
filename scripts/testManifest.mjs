@@ -69,6 +69,7 @@ export const TESTS = [
     {"cmd": "node scripts/changeset.test.js", "lane": "unit"},
     {"cmd": "node scripts/drawsHandlerSnapshot.test.js", "lane": "unit"},
     {"cmd": "node scripts/revert.test.js", "lane": "unit"},
+    {"cmd": "node scripts/sweepFixes.test.js", "lane": "unit", "lock": "tree:read"},
     {"cmd": "node scripts/documentWrite.test.js", "lane": "unit"},
     {"cmd": "node scripts/calendarOps.test.js", "lane": "unit"},
     {"cmd": "node scripts/calendarHandlerSnapshot.test.js", "lane": "unit"},

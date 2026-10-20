@@ -95,7 +95,8 @@ async function upsertBulkBlocks(parsed, mode, session) {
         if (existing) {
             const { _id, __v, ...prior } = existing.toObject();
             updatedPriors.push({ id: String(existing._id), prior });
-            await Loadout.updateOne({ _id: existing._id }, entry, { session });
+            // lastUpdated: the same stamp loadout.edit writes (2026-10-20, v3 sweep). `prior` above already holds the old date for the inverse.
+            await Loadout.updateOne({ _id: existing._id }, { ...entry, lastUpdated: new Date() }, { session });
             updated++;
         } else {
             await Loadout.create([entry], { session });
@@ -166,7 +167,8 @@ registerEntity('loadouts', {
             // Kept when the list is unchanged and already slotted; otherwise read from the catalogue, so an edit fills a build that had none and never carries old slots onto a different list.
             let attachmentSlots = attachmentsUnchanged ? (cur.attachmentSlots || []) : [];
             if (!attachmentSlots.length) attachmentSlots = await slotsFor(newAttachments);
-            const set = { ...payload, attachmentSlots };
+            // lastUpdated is stamped here (2026-10-20, v3 sweep) -- nothing wrote it after a build's creation, so every card's "Updated" date and the Cloudinary Last_Updated metadata showed the creation date forever. It goes in `set`, so `prior` keeps the old date for the inverse.
+            const set = { ...payload, attachmentSlots, lastUpdated: new Date() };
             const prior = Object.fromEntries(Object.keys(set).map(k => [k, cur[k]]));
             const res = await updateDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, set, session });
             if (!res.ok) return res;

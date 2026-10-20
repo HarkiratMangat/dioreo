@@ -12,7 +12,7 @@ const AlertLogSchema = new mongoose.Schema({
     pinged: { type: Boolean },  // did this alert actively @-mention Harkirat (warn/error, or opts.ping)
     // silent (2026-07-20): logged to the store but deliberately NOT posted to Discord — routine, self- recovering gateway churn (reconnect/resume). Kept queryable so a future /status can pull exactly the reconnect history without those events ever cluttering the channel. Always false for posted alerts.
     silent: { type: Boolean, default: false },
-    host: { type: String },    // 'GCP VM' | 'local' — from NODE_ENV, same derivation as the embed footer
+    host: { type: String },    // 'GCP VM' | 'local' — from NODE_ENV ('development' = local), same derivation as the embed footer. Rows written before 2026-10-20 say 'local' for prod too (the footer tested === 'production', which prod never sets)
     rssMb: { type: Number },   // process RSS at send time (MB) — surfaces leak/OOM trends across the log
     uptimeSec: { type: Number }, // RAW process uptime seconds; formatted for display via formatUptime()
     // Authoritative ordering + retention key. Indexed: every /alerts read sorts by it, and pruneAlerts() filters on it. (Not using Mongoose `timestamps` because we only need createdAt, never updatedAt.)

@@ -2,7 +2,7 @@
 //
 // The ONLY module that touches the DrawBasket collection directly (see .claude/rules/models.md). Every read is scoped to the caller's own discordId -- there is no "load someone else's basket" path here. Deciding WHO is allowed to act on a panel is the author-lock's job (resolvePanelActor, used by commands/drawCalculator.js and handlers/drawCalc.js); this store decides WHAT that action can see once they are allowed to act at all.
 //
-// 🔴 EVERY READ HANDLES "NOT FOUND". A basket can be deleted, expire (unnamed, 30-day TTL -- see models/DrawBasket.js), or simply never have existed (a stale/forged basketId surviving from an old customId). The old fully-stateless panel made a missing-state path structurally impossible; the store makes it a real, permanent possibility, so every function here returns a typed absence (null / empty array / false) rather than throwing. Callers render a "this basket no longer exists" message instead of crashing -- see docs/superpowers/specs/2026-08-27-draw-calculator-multi-draw-design.md §5.
+// 🔴 EVERY READ HANDLES "NOT FOUND". A basket can be deleted, expire (unnamed, 30 days -- pruneExpiredBaskets below), or simply never have existed (a stale/forged basketId surviving from an old customId). The old fully-stateless panel made a missing-state path structurally impossible; the store makes it a real, permanent possibility, so every function here returns a typed absence (null / empty array / false) rather than throwing. Callers render a "this basket no longer exists" message instead of crashing -- see docs/superpowers/specs/2026-08-27-draw-calculator-multi-draw-design.md §5.
 const DrawBasket = require('../models/DrawBasket');
 
 // Never throws on a malformed/stale id -- a customId surviving a schema change, or hand-edited, can carry a string that is not a valid Mongo ObjectId at all (Mongoose throws a CastError for that); that must decode to "not found", not a 500 that takes the whole panel down with it.
@@ -100,10 +100,20 @@ async function removeMany(discordId, basketIds) {
     const res = await DrawBasket.deleteMany({ discordId, _id: { $in: ids } });
     return res?.deletedCount || 0;
 }
-// Every NAMED one, the same set listForUser shows; an unnamed calculation is not "saved" and is left to its TTL.
+// Every NAMED one, the same set listForUser shows; an unnamed calculation is not "saved" and is left to its 30-day expiry (pruneExpiredBaskets below).
 async function removeAllNamed(discordId) {
     const res = await DrawBasket.deleteMany({ discordId, name: { $exists: true, $ne: '' } });
     return res?.deletedCount || 0;
 }
 
-module.exports = { load, save, listForUser, rename, remove, latestForUser, removeMany, removeAllNamed };
+// The 30-day expiry for UNNAMED calculations (PRIVACY §2.1d: "automatically deleted 30 days after creation"), run daily by bot/lifecycle.js. It replaces a partial TTL index that MongoDB can never build -- see models/DrawBasket.js. A named basket is never matched: naming is what exempts it.
+const BASKET_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
+function expiredBasketFilter(now = Date.now()) {
+    return { $or: [{ name: { $exists: false } }, { name: '' }], createdAt: { $lt: new Date(now - BASKET_EXPIRY_MS) } };
+}
+async function pruneExpiredBaskets(now = Date.now()) {
+    const res = await DrawBasket.deleteMany(expiredBasketFilter(now));
+    return res?.deletedCount || 0;
+}
+
+module.exports = { load, save, listForUser, rename, remove, latestForUser, removeMany, removeAllNamed, pruneExpiredBaskets, expiredBasketFilter, BASKET_EXPIRY_MS };

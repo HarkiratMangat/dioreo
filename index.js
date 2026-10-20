@@ -90,15 +90,23 @@ setClients({ public: client, admin: adminClient });
 // LOGIN
 // ==========================================
 // Gated on the single-instance lock so a stray leftover local `node index.js` can't silently race an already-running instance (VM or another local process) the way it did in the 2026-07-14 incident (see .claude/rules/accent-and-colors.md). The acquireInstanceLock() query is issued via Mongoose, which buffers commands until the mongoose.connect() call above actually finishes -- no extra wait-for-connection logic needed here.
+//
+// 🔴 A FAILED BOOT EXITS NON-ZERO (2026-10-20, v3 sweep). This block used to have no catch and left login() un-awaited, so a lock query that timed out (Atlas unreachable at a restart) or a rejected login (bad token, network) became an unhandled rejection -- which the net at the top of this file deliberately LOGS AND SURVIVES. The process then sat alive but never logged in, and systemd, seeing it running, never restarted it. Exiting lets systemd retry. The delay gives sendAlert()'s fire-and-forget webhook POST time to leave; the lock needs no release, because the next boot reads a dead pid on this host as an abandoned lock (utils/instanceLock.js isHolderAlive).
 (async () => {
-    const acquired = await acquireInstanceLock();
-    if (!acquired) {
-        process.exit(1);
+    try {
+        const acquired = await acquireInstanceLock();
+        if (!acquired) {
+            process.exit(1);
+        }
+        // The admin app gets its own lock: two processes with different public tokens must still never both log in as the same admin app.
+        if (adminClient && !(await acquireInstanceLock(ADMIN_TOKEN))) {
+            process.exit(1);
+        }
+        await client.login(process.env.BOT_TOKEN);
+        if (adminClient) await adminClient.login(ADMIN_TOKEN);
+    } catch (err) {
+        console.error('❌ Boot failed before the bot could log in; exiting so systemd restarts it:', err);
+        sendAlert('Boot failed', err, 'error');
+        setTimeout(() => process.exit(1), 3000);
     }
-    // The admin app gets its own lock: two processes with different public tokens must still never both log in as the same admin app.
-    if (adminClient && !(await acquireInstanceLock(ADMIN_TOKEN))) {
-        process.exit(1);
-    }
-    client.login(process.env.BOT_TOKEN);
-    if (adminClient) adminClient.login(ADMIN_TOKEN);
 })();

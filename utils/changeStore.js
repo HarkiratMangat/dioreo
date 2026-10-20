@@ -84,6 +84,20 @@ async function pruneChanges() {
     } catch { /* swallow -- pruning is best-effort housekeeping */ }
 }
 
+// Claims a change for reverting, ATOMICALLY (2026-10-20, v3 sweep). revertChange used to read the row, check `undone`, apply the inverse, and only THEN flag it -- two concurrent Undo clicks (a double click, or two admins) both passed the check and applied the inverse twice, so undoing a delete re-created the item twice. The filter on `undone` makes exactly one caller win. Returns the claimed row, or null when it was already claimed or does not exist. releaseUndo() hands it back when the revert then fails.
+async function claimUndo(changeId) {
+    if (!changeId) return null;
+    return await ChangeLog.findOneAndUpdate({ changeId, undone: { $ne: true } }, { $set: { undone: true } }, { new: true }).lean();
+}
+async function releaseUndo(changeId) {
+    if (!changeId) return;
+    try {
+        await ChangeLog.updateOne({ changeId }, { $set: { undone: false } });
+    } catch (err) {
+        console.error('Failed to release a revert claim (non-fatal; the change now reads as undone):', err);
+    }
+}
+
 // Flips the `undone` flag on a change row when a registered Undo consumes it. Best-effort: an undo action must never fail just because its audit row couldn't be found or updated.
 async function markUndone(changeId) {
     if (!changeId) return;
@@ -148,6 +162,8 @@ module.exports = {
     getChange,
     pruneChanges,
     markUndone,
+    claimUndo,
+    releaseUndo,
     getRecentChanges,
     getLaterChangesTo,
     getChangeSummary,

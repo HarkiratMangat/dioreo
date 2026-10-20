@@ -29,7 +29,23 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.102.0 — 2026-10-20 15:04 EDT (#211) — `/autobuild` reads up to ten screenshots into one batch panel, and the guild install asks for text-command permissions
+## Pre-Release v3.103.0 — 2026-10-20 18:15 EDT (#PR) — the v3 sweep's fixes: thumbnails kept, boot failures restart, long draws and notes page safely
+**From the 2026-10-20 bug and housekeeping sweep.** Harkirat asked for every fix on one branch and one PR (2026-10-20 17:47 EDT). The full ranked report sits in the project files under `v3-sweep/`.
+
+- **Draw thumbnails in use are no longer deleted.** The daily cleanup compared Cloudinary's raw `secure_url` against stored URLs that carry `f_auto,q_auto/`, so nothing matched and every thumbnail past 45 days counted as unused. Both sides now go through `withDeliveryDefaults` (`selectExpiredThumbnails`), and the cleanup skips its run when the season document is missing instead of treating everything as unused.
+- **A failed boot exits, so systemd restarts it.** The boot block now catches, alerts, and exits 1; both `login()` calls are awaited.
+- **Unnamed draw calculations expire in code.** MongoDB refuses a partial TTL index on `$exists: false`, so the index never existed. A daily prune now deletes unnamed baskets 30 days after creation, which is what PRIVACY §2.1d already says.
+- **`/draws` and `/patch` stay under Discord's 4,000-character text cap.** `/draws` pages by text length as well as by component count, and trims one oversized draw with a "…and N more" line. A very long patch-note Additional Info is cut at a line break with a note.
+- **Hotpatch sees `core/`.** It was missing from the scan list and the runtime pattern, so a `core/`-only commit reported nothing to patch. ⚠️ The sweep report said a patch could half-apply; it was already refused, so the real defect was the missed commit.
+- **Edits and bulk updates set a loadout's `lastUpdated`.** It never changed after creation.
+- **`/calendar view:Active` survives a page click**, and the empty-view hint no longer points at the removed `/settings` control.
+- **Undo claims the change before applying it**, so a double click applies the inverse once, and a failed revert hands the claim back.
+- **Smaller:** Copy Code on a stale card replies instead of throwing · the large-analytics alert uses the real `warn` level · alerts read `GCP VM` unless `NODE_ENV=development` · analytics events record the hotpatched commit · timeouts on the `gcloud`, `ffprobe`, `ffmpeg` and image-fetch calls · a new user's first two commands no longer race on `UserPreference` · the hotpatch autocomplete awaits its responds.
+- **Dead code removed:** `isArmory` (a duplicate of `isArmoryKey`), `ARMORY_DEFAULT_SIZE`, `isDiscordCdnUrl`, and the `calfilter_*` branches nothing sends.
+- **Records:** stale rows closed in `docs/ROADMAP.md`'s launch checklist; three finished deferred entries moved to `docs/archive/resolved-list.md`.
+- **Tests:** `scripts/sweepFixes.test.js`, 13 checks, each failing on the old code.
+
+## Pre-Release v3.102.0 — 2026-10-20 15:04 EDT (#211 · `0c7b979f`) — `/autobuild` reads up to ten screenshots into one batch panel, and the guild install asks for text-command permissions
 **Harkirat's three launch extras.** He click-tested the bulk panel on the dev bot over several rounds and approved it 2026-10-20 14:58 EDT: "alright autobuild bulk is fine and done".
 
 - **Bulk `/autobuild`:** `screenshot` plus `screenshot2`–`screenshot10`, and the right-click (renamed **Autobuild Gunsmith**) can pick several images. One batch panel, a page per build: Save, Adjust, Discard, Save All / Discard All, Undo a discard, Open a saved loadout, Add more. The single-image path runs through the same panel (`utils/autobuildBulk.js`).
