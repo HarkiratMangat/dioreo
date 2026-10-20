@@ -46,6 +46,7 @@ export const TESTS = [
     {"cmd": "node scripts/rightClickCommands.test.js", "lane": "unit"},
     {"cmd": "node scripts/timestampZone.test.js", "lane": "unit"},
     {"cmd": "node scripts/firstCommand.test.js", "lane": "unit"},
+    {"cmd": "node scripts/timestampLayout.test.js", "lane": "unit"},
     {"cmd": "node scripts/dioreoAdmin.test.js", "lane": "unit"},
     {"cmd": "node scripts/passiveExpiry.test.js", "lane": "unit"},
     {"cmd": "node scripts/paletteAlgoVersion.test.js", "lane": "unit"},

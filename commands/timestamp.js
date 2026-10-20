@@ -14,6 +14,7 @@ const PRESET_ACCENT = 1548962; // Cyber Teal (#17A2A2)
 // Shared option list for the style-switch dropdown, used by both view modes below. handlers/timestamp.js's 'tsmenu|' select handler calls back into this file's execute() (see overrideState below) rather than duplicating this list, so there's only ever one copy to keep in sync.
 const STYLE_SELECT_OPTIONS = [
     { label: "All Formats Overview", value: "all_formats", description: "Shows every format together as a summary" },
+    { label: "Short List", value: "short_list", description: "The 6 most used formats" },
     { label: "Full Date, Short Time (F)", value: "fullDateTime", description: "e.g., Tuesday, April 20, 2021 at 16:20" },
     { label: "Long Date, Short Time (f)", value: "longDateTime", description: "e.g., April 20, 2021 at 16:20" },
     { label: "Long Date (D)", value: "longDate", description: "e.g., April 20, 2021" },
@@ -24,6 +25,19 @@ const STYLE_SELECT_OPTIONS = [
     { label: "Short Date, Medium Time (S)", value: "shortDateTimeMedium", description: "e.g., 20/04/2021, 16:20:30" },
     { label: "Relative Time (R)", value: "relative", description: "e.g., 4 years ago" }
 ];
+
+// The format each style value stands for, and the label shown above it: Discord's own names, the words the dropdown already uses. The overview shows ALL_CODES; Short List (added 2026-10-20 18:23 EDT, Harkirat) shows the six people paste most, longest first.
+const STYLE_CHAR = {
+    fullDateTime: 'F', longDateTime: 'f', longDate: 'D', shortDate: 'd',
+    mediumTime: 'T', shortTime: 't', shortDateTimeShort: 's',
+    shortDateTimeMedium: 'S', relative: 'R'
+};
+const FORMAT_LABELS = {
+    F: 'FULL DATE, SHORT TIME', f: 'LONG DATE, SHORT TIME', D: 'LONG DATE', d: 'SHORT DATE',
+    T: 'MEDIUM TIME', t: 'SHORT TIME', s: 'SHORT DATE, SHORT TIME', S: 'SHORT DATE, MEDIUM TIME', R: 'RELATIVE TIME'
+};
+const ALL_CODES = ['F', 'f', 'D', 'd', 'T', 't', 's', 'S', 'R'];
+const SHORT_LIST_CODES = ['F', 'f', 'D', 'd', 't', 'R'];
 
 // Shorthand-day/relative-word expansions for the chrono parser, compiled once here at module load instead of being rebuilt (10 `new RegExp(...)` calls) on every single /timestamp invocation -- this data never depends on anything per-call, so there's no reason to recreate it each time.
 const SHORTHAND_EXPANSIONS = Object.entries({
@@ -127,6 +141,7 @@ module.exports = {
             option.setName('style')
                 .setDescription('Select a specific style, or leave blank for all formats')
                 .addChoices(
+                    { name: 'Short List — the 6 most used formats', value: 'short_list' },
                     { name: 'Full Date, Short Time (F) — e.g., Tuesday, April 20, 2021 at 16:20', value: 'fullDateTime' },
                     { name: 'Long Date, Short Time (f) — e.g., April 20, 2021 at 16:20', value: 'longDateTime' },
                     { name: 'Long Date (D) — e.g., April 20, 2021', value: 'longDate' },
@@ -216,93 +231,46 @@ module.exports = {
         // A saved /settings zone can be any IANA zone, not only the 15 in tzLabels; fall back to its id so the label never reads "undefined".
         const currentFullTzLabel = getTimezoneLabel(tz, tzLabels[tz] || tz);
 
-        const styleCharMap = {
-            fullDateTime: 'F', longDateTime: 'f', longDate: 'D', shortDate: 'd',
-            mediumTime: 'T', shortTime: 't', shortDateTimeShort: 's',
-            shortDateTimeMedium: 'S', relative: 'R'
-        };
-
         // STATE STORAGE ID DESIGN: We encode critical query context properties inside the string key. Using a pipe (|) delimiter completely prevents crashes with timezone names containing underscores (e.g., Asia/Hong_Kong).
         const cleanQueryText = queryInput.substring(0, 40).replace(/\|/g, ' ');
         const statelessCustomId = `tsmenu|${unix}|${tz}|${cleanQueryText}`;
         const parsedLine = `-# Parsed \`${queryInput}\` using timezone \`${currentFullTzLabel}\``;
 
-        // Shared dropdown component (2026-07-14) -- built once here instead of inline per-branch below, since text mode and embed mode both need the exact same select menu, just wrapped differently (nested inside the container vs. a top-level sibling row).
+        // One dropdown for every view (the overview, Short List and each single format), selected value pre-marked.
         const dropdownComponent = {
             type: 3,
             custom_id: statelessCustomId,
-            placeholder: "Switch to a singular layout style...",
+            placeholder: "Choose a view or one format…",
             options: STYLE_SELECT_OPTIONS.map(opt => ({ ...opt, default: opt.value === (style || 'all_formats') }))
         };
 
-        let componentPayload = [];
+        // LAYOUT (Harkirat's, approved on the #testing-spam mock-ups 2026-10-20 18:23 EDT): a title that says what the panel is, then one row per format -- its name as an ALL-CAPS label, the time as each reader sees it, and the copyable code -- so neither the time nor the code wraps mid-line on a phone. The single-format view is this same panel with one row, so the two views cannot drift apart again (they did twice when each had its own layout). An unknown saved style falls back to the overview.
+        const codes = style === 'short_list' ? SHORT_LIST_CODES : (style && STYLE_CHAR[style] ? [STYLE_CHAR[style]] : ALL_CODES);
+        const headingLine = `## ${emojis.timestamp} Timestamp Codes\n-# Everyone sees these in their own time zone.\n-# **Tap a \`<code>\` to copy it.**`;
+        const rowsBlock = codes.map(c => `-# **${FORMAT_LABELS[c]}**\n**<t:${unix}:${c}>**\n-# \`<t:${unix}:${c}>\``).join('\n\n');
+        const hintLine = `-# Switch views or pick one format below`;
+
+        let componentPayload;
         // Plain message content for text mode (2026-07-14) -- undefined in embed mode, where the container's own Text Display components carry everything instead. See sendV2Payload's `content` param.
         let textContent;
-
-        if (style) {
-            // VIEW MODE: SINGULAR TARGET LAYOUT NOTE (redesigned during review): this view previously told users to "use the dropdown below" without actually including one — the only place a dropdown ever appeared for this view was if you arrived here via the all-formats select menu (see handlers/timestamp.js's 'tsmenu|' handler, which reuses the incoming select component). Landing here directly via `/timestamp style:...` showed no dropdown at all. Now always included, nested at the bottom of the container per the redesign, with the selected style pre-marked.
-            const char = styleCharMap[style];
-            const headingLine = `### \`<t:${unix}:${char}>\` — <t:${unix}:${char}>`;
-            const hintLine = `-# Use the dropdown below to change timestamp style`;
-
-            if (isTextMode) {
-                // Text mode (2026-07-14): same content, no container/accent-color/divider chrome -- a blank line stands in for the divider since plain message content has no real divider component. Dropdown becomes a top-level sibling row instead of nested.
-                textContent = [headingLine, parsedLine, hintLine].join('\n\n');
-                componentPayload = [{ type: 1, components: [dropdownComponent] }];
-            } else {
-                // Layout per redesign: timestamp > divider > parsed line > "use dropdown" line > dropdown (parsed line moved back above the divider, under the timestamp itself).
-                componentPayload = [
-                    {
-                        type: 17, // Components v2: Section Container
-                        accent_color: accentColor,
-                        components: [
-                            { type: 10, content: headingLine }, // Type 10: Text Block
-                            { type: 14, spacing: 2, divider: true }, // Type 14: Interactive Separator/Divider
-                            { type: 10, content: parsedLine },
-                            { type: 10, content: hintLine },
-                            { type: 1, components: [dropdownComponent] }
-                        ]
-                    }
-                ];
-            }
+        if (isTextMode) {
+            // Text mode: the same strings with no container chrome; a blank line stands in for each divider, and the dropdown becomes a top-level row.
+            textContent = [headingLine, rowsBlock, parsedLine, hintLine].join('\n\n');
+            componentPayload = [{ type: 1, components: [dropdownComponent] }];
         } else {
-            // VIEW MODE: ALL FORMATS OVERVIEW (DEFAULT)
-            const lines = [
-                `\`<t:${unix}:F>\` — <t:${unix}:F>`,
-                `\`<t:${unix}:f>\` — <t:${unix}:f>`,
-                `\`<t:${unix}:D>\` — <t:${unix}:D>`,
-                `\`<t:${unix}:d>\` — <t:${unix}:d>`,
-                `\`<t:${unix}:T>\` — <t:${unix}:T>`,
-                `\`<t:${unix}:t>\` — <t:${unix}:t>`,
-                `\`<t:${unix}:s>\` — <t:${unix}:s>`,
-                `\`<t:${unix}:S>\` — <t:${unix}:S>`,
-                `\`<t:${unix}:R>\` — <t:${unix}:R>`
-            ].join('\n');
-            const headingLine = `## ${emojis.timestamp} Time Converted to Each User’s Local Timezone`;
-            const linesBlock = lines + `\n\n-# ✦ Tap on any \`<t:###:F>\` text above to instantly copy it`;
-            const hintLine = `-# Select a specific layout below to change views`;
-
-            if (isTextMode) {
-                textContent = [headingLine, linesBlock, parsedLine, hintLine].join('\n\n');
-                componentPayload = [{ type: 1, components: [dropdownComponent] }];
-            } else {
-                // Layout per redesign: title > divider > timestamps+tap-on-any > divider > parsed line > "select a specific layout" line > dropdown (parsed line moved back down below the timestamps list, not directly under the title).
-                componentPayload = [
-                    {
-                        type: 17, // Components v2: Section Container
-                        accent_color: accentColor,
-                        components: [
-                            { type: 10, content: headingLine },
-                            { type: 14, spacing: 2, divider: true },
-                            { type: 10, content: linesBlock },
-                            { type: 14, spacing: 2, divider: true },
-                            { type: 10, content: parsedLine },
-                            { type: 10, content: hintLine },
-                            { type: 1, components: [dropdownComponent] } // Action Row — nested inside the container, not a sibling
-                        ]
-                    }
-                ];
-            }
+            componentPayload = [{
+                type: 17, // Components v2: Container
+                accent_color: accentColor,
+                components: [
+                    { type: 10, content: headingLine },
+                    { type: 14, spacing: 2, divider: true },
+                    { type: 10, content: rowsBlock },
+                    { type: 14, spacing: 2, divider: true },
+                    { type: 10, content: parsedLine },
+                    { type: 10, content: hintLine },
+                    { type: 1, components: [dropdownComponent] } // Action Row nested inside the container, not a sibling
+                ]
+            }];
         }
 
         // --- LIBRARY SERIALIZATION BYPASS --- 32768 (1 << 15) forces Discord's gateway API to open the Components V2 engine route -- OMITTED entirely in text mode (2026-07-14) so the message renders as a classic plain-text response instead (content field + non-V2 action rows, which Discord supports identically in both systems). `flags` explicitly re-ORs in the ephemeral bit (64) rather than relying on sendV2Payload's plain 32768 default -- this render path (via overrideState, see the dropdown-driven re-render at the top of this function) doesn't go through a normal deferReply() that would set ephemeral state on its own, so it has to be preserved here. `flags: 0` (public + text mode) is intentional, not a bug -- sendV2Payload's default param only triggers on `undefined`, not on falsy values, so 0 is never silently overridden.

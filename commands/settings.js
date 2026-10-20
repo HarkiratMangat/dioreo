@@ -117,6 +117,7 @@ module.exports = {
         // NOTE (redesigned during review): aligned these value keys to match the exact style options /timestamp itself already offers (fullDateTime/longDateTime/longDate/shortDate/ mediumTime/shortTime/shortDateTimeShort/shortDateTimeMedium/relative). Discord's docs (docs.discord.com/developers/reference#message-formatting-timestamp-styles) confirm 's' and 'S' ARE real native styles ("Short Date, Short Time" / "Short Date, Medium Time") — the older CLAUDE.md note claiming they don't exist was wrong/stale; /timestamp.js already renders them correctly, so they belong here too.
         const styleDisplayMap = {
             all_formats: 'All Formats',
+            short_list: 'Short List',
             fullDateTime: 'Full Date, Short Time (F)',
             longDateTime: 'Long Date, Short Time (f)',
             longDate: 'Long Date (D)',
@@ -130,6 +131,7 @@ module.exports = {
         // Canonical example text per style — shown as the dropdown option's description line
         const styleExampleMap = {
             all_formats: 'Shows every format together as a summary',
+            short_list: 'The 6 most used formats',
             fullDateTime: 'e.g. Tuesday, April 20, 2021 at 16:20',
             longDateTime: 'e.g. April 20, 2021 at 16:20',
             longDate: 'e.g. April 20, 2021',
