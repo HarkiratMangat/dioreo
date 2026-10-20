@@ -1,5 +1,4 @@
-// scripts/timestampZone.test.js -- relative and absolute dates must not depend on the HOST's time zone (added 2026-10-20 16:50 EDT).
-// chrono reads a plain Date reference in the host's local fields, so /timestamp, Convert Times and patch-notes release times used to shift by the gap between the machine's zone and the user's: on the prod VM (Etc/UTC) "in 2 hours" for a Toronto user came out +6 h. scripts/tzIndependence.test.mjs runs this file under TZ=UTC, Asia/Tokyo and America/Toronto, so the UTC case runs whatever zone CI or the Mac is in.
+// scripts/timestampZone.test.js -- relative and absolute dates must not depend on the HOST's time zone (added 2026-10-20 16:50 EDT). chrono reads a plain Date reference in the host's local fields, so /timestamp, Convert Times and patch-notes release times used to shift by the gap between the machine's zone and the user's: on the prod VM (Etc/UTC) "in 2 hours" for a Toronto user came out +6 h. scripts/tzIndependence.test.mjs runs this file under TZ=UTC, Asia/Tokyo and America/Toronto, so the UTC case runs whatever zone CI or the Mac is in.
 const assert = require('assert');
 const { generateTimestamps } = require('../utils/timestampHelper');
 const { convertText } = require('../commands/convertTimes');
@@ -55,6 +54,10 @@ check('release time: a typed wall-clock time is read in the admin\'s zone', () =
 });
 check('release time: an ISO string with its own offset round-trips untouched', () => {
     assert.strictEqual(parseReleaseDateTime('2026-07-06T16:27:56.919Z', 'America/Toronto', NOW).toISOString(), '2026-07-06T16:27:56.919Z');
+});
+
+check('release time: a null zone falls back to Toronto instead of throwing', () => {
+    assert.strictEqual(parseReleaseDateTime('tomorrow 7pm', null, NOW).toISOString(), '2026-10-20T23:00:00.000Z');
 });
 
 process.exit(failures ? 1 : 0);
