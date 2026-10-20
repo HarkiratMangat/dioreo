@@ -1115,7 +1115,7 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ### `/commands` page: describe the saved timezone and relative times once both PRs land `[P3 · XS]`
 
-*Filed 2026-10-20 18:46 EDT.* PR #209's `/commands` page deliberately does not claim `/timestamp` uses the saved `/settings` timezone or that "in 2 hours" is right, because both were bugs. `fix/timestamp-timezone` fixes them. **Do:** once both are merged, word the page's `/timestamp` entry to say so and mention Short List, then rebuild `public/`. **Verify:** the page's `/timestamp` text matches `/help`.
+*Filed 2026-10-20 18:46 EDT.* PR #209's `/commands` page deliberately does not claim `/timestamp` uses the saved `/settings` timezone or that "in 2 hours" is right, because both were bugs. `fix/timestamp-timezone` fixes them. **Do:** once both are merged, word the page's `/timestamp` entry to say so and mention Short List, then rebuild `public/`. Also mark #209's two `/timestamp` bug rows ("ignores the timezone saved in `/settings`" and the relative-phrase one) fixed by this branch, since they only exist on #209's branch until it merges. **Verify:** the page's `/timestamp` text matches `/help`.
 
 ### Your Stats — per-user usage stats on a /settings page `[P2 · M]`
 

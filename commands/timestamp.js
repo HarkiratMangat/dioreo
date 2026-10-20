@@ -8,7 +8,7 @@ const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 
-// Repalette (2026-07-12, Section 5 of the batch) -- /timestamp was NOT part of the avatar/banner accent-color system at all before this (accent_color was hardcoded to Persimmon on every render, regardless of the user's /settings Accent Color Style preference). Harkirat's rule: the "All Formats" overview -- this command's own default, branded view -- keeps this fixed teal regardless of accent preference, same as Loadouts' fixed per-category colors are never personalized either. Only once a user has set a SPECIFIC default style in /settings (i.e. `prefs.timestampStyle` is anything other than the schema default 'all_formats') does this command start respecting avatar/banner personalization like Calendar/Draws/Draw Prices/Patch Notes/Season End already do. A one-off `/timestamp style:...` invocation does NOT trigger this -- only the user's SAVED default does (Harkirat's explicit confirmation) -- so this always checks `prefs.timestampStyle`, never the `style` actually being rendered on this particular call.
+// Repalette (2026-07-12, Section 5 of the batch) -- /timestamp was NOT part of the avatar/banner accent-color system at all before this (accent_color was hardcoded to Persimmon on every render, regardless of the user's /settings Accent Color Style preference). Harkirat's rule: the "All Formats" overview -- this command's own default, branded view -- keeps this fixed teal regardless of accent preference, same as Loadouts' fixed per-category colors are never personalized either. Only once a user has set a SPECIFIC default style in /settings (i.e. `prefs.timestampStyle` is a single format, not one of the two overviews in OVERVIEW_STYLES, All Formats and Short List; Short List became the default 2026-10-20 18:31 EDT) does this command start respecting avatar/banner personalization like Calendar/Draws/Draw Prices/Patch Notes/Season End already do. A one-off `/timestamp style:...` invocation does NOT trigger this -- only the user's SAVED default does (Harkirat's explicit confirmation) -- so this always checks `prefs.timestampStyle`, never the `style` actually being rendered on this particular call.
 const PRESET_ACCENT = 1548962; // Cyber Teal (#17A2A2)
 
 // Shared option list for the style-switch dropdown, used by both view modes below. handlers/timestamp.js's 'tsmenu|' select handler calls back into this file's execute() (see overrideState below) rather than duplicating this list, so there's only ever one copy to keep in sync.
@@ -148,7 +148,7 @@ module.exports = {
                 ))
         .addStringOption(option =>
             option.setName('style')
-                .setDescription('Select a specific style, or leave blank for all formats')
+                .setDescription('Pick a view or one format (blank = your saved view)')
                 .addChoices(
                     { name: 'Short List — the 6 most used formats', value: 'short_list' },
                     { name: 'All Formats — every format', value: 'all_formats' },
@@ -210,7 +210,7 @@ module.exports = {
             const argEphemeral = visibilityChoice === null ? null : visibilityChoice === 'hidden';
             ephemeral = argEphemeral !== null ? argEphemeral : (prefs ? prefs.timestampVisibility === 'ephemeral' : false);
 
-            // Accent color: fixed teal UNLESS the user has saved a specific default style in /settings (i.e. `prefs.timestampStyle` isn't the schema default 'all_formats') -- checks the SAVED preference, not `style` above, so a one-off `style:` option on this particular call never triggers personalization by itself (Harkirat's explicit call).
+            // Accent color: fixed teal UNLESS the user has saved a specific default style in /settings (i.e. `prefs.timestampStyle` is a single format, not an overview in OVERVIEW_STYLES) -- checks the SAVED preference, not `style` above, so a one-off `style:` option on this particular call never triggers personalization by itself (Harkirat's explicit call).
             const usesPersonalizedAccent = Boolean(savedStyle) && !OVERVIEW_STYLES.includes(savedStyle);
             accentColor = usesPersonalizedAccent ? await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT) : PRESET_ACCENT;
 

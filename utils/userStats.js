@@ -31,7 +31,7 @@ async function noteCommand(userId, commandKey, at = new Date(), model = UserPref
     const before = await model.findOneAndUpdate(
         { discordId: userId },
         { $inc: { 'stats.total': 1, [`stats.commands.${keyOf(commandKey)}`]: 1 }, $set: { 'stats.lastUsedAt': at }, $min: { 'stats.since': at } },
-        { upsert: true, new: false, projection: { timezone: 1, 'stats.lastDay': 1, 'stats.streak': 1, 'stats.bestStreak': 1 } }
+        { upsert: true, returnDocument: 'before', projection: { timezone: 1, 'stats.lastDay': 1, 'stats.streak': 1, 'stats.bestStreak': 1 } }
     );
     const { set, inc } = dayUpdate(before?.stats, at, before?.timezone);
     await model.updateOne({ discordId: userId }, { $inc: inc, ...(Object.keys(set).length ? { $set: set } : {}) });

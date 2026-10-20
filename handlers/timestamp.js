@@ -32,7 +32,7 @@ async function route(interaction) {
             const timestampCommand = interaction.client.commands.get('timestamp');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
 
-            // Resolve the same accent color the initial render would have used (2026-07-12) -- fixed teal unless the user's SAVED default style (prefs.timestampStyle) isn't 'all_formats', same rule timestamp.js's own execute() applies. Computed here since overrideState skips the normal option-resolution logic entirely.
+            // Resolve the same accent color the initial render would have used (2026-07-12) -- fixed teal unless the user's SAVED default style (prefs.timestampStyle) is a single format rather than one of the two overviews (OVERVIEW_STYLES), same rule timestamp.js's own execute() applies. Computed here since overrideState skips the normal option-resolution logic entirely.
             const UserPreference = require('../models/UserPreference');
             const { getAccentColorForCommand } = require('../utils/accentColor');
             const tsPrefs = await UserPreference.findOne({ discordId: interaction.user.id });

@@ -167,9 +167,9 @@ const CATEGORY_DEFS = [
             cmd('/timestamp', {
                 description: 'Convert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone\'s own timezone',
                 options: [
-                    { name: 'datetime', required: true, desc: 'e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "19:30", "next monday"' },
+                    { name: 'datetime', required: true, desc: 'e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "8pm to 10pm", "19:30"' },
                     { name: 'timezone', required: false, desc: (client) => `Defaults to your saved ${mentionCommand(client, '/settings')} timezone` },
-                    { name: 'style', required: false, desc: 'Pick one format, or leave blank for all formats' },
+                    { name: 'style', required: false, desc: 'Short List, All Formats, or one format; blank uses your saved view' },
                     { name: 'view', required: false, desc: 'Embed or plain Text, one-off only' }
                 ]
             }),
