@@ -29,7 +29,20 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.99.0 — 2026-10-19 21:54 EDT (#208) — seven helpers nothing called are deleted
+## Pre-Release v3.100.0 — 2026-10-19 22:51 EDT (#209) — the `/commands` page's six open items are settled, and the landing header gets a Commands button
+**`scripts/lib/commandCatalog.js`, `scripts/lib/commandsPage.js`, `scripts/lib/commandProse.js`, `scripts/buildLegalPages.js`, `commands/gunsmith.js`, `commands/calendar.js`, `scripts/commandCatalog.test.js`, `public/`.** The six items were filed as one collective deferred item on 2026-09-09 17:04 EDT; Harkirat, 2026-10-19 22:22 EDT: "let's start a fresh thread to handle all 6."
+
+- **The landing header holds Install and Commands, and Source moved to the footer.** Harkirat's layout, after three mocked placements: he moved the GitHub capsule under the "All rights reserved" line and asked for the two header actions to look like Install. `Commands` is `.ins.sec`, Install's own anatomy (disc, label, hover arrow, cursor light, one edge pass) in a quieter ink-tint material, with a slash in an accent disc and a right-pointing arrow because it stays on the site. The Source capsule keeps its design and grows leftward on hover now that it is right-aligned. Below 340px Commands drops its disc so the mascot keeps its room; at 320px the mascot measured about 30px wide before that.
+- **Whole-number options read "whole number", not "text".** `normalizeOption` carries Discord's option type, `min` and `max`; every type in use is labelled, and a type with no label throws instead of falling back to text. The open `build` slot says "A whole number, 1 or higher." rather than repeating its description under itself.
+- **The wording was re-checked against the command definitions, and the lines that disagreed with the code are fixed.** `/help`, `/gunsmith`, `/dmz`, `/draw prices`, `/draw calculator`, `/calendar`, `/season end`, `/colors`, `/timestamp` and `/settings` each lost a claim the code did not back, and two ask lines were reworded. The `/timestamp` example "in 2 hours" is gone because it returns the wrong time on a UTC host. What still needs a person in Discord is listed in the deferred list's `/commands` item.
+- **The copy pass landed.** The page's blurb and share description are scoped ("Every slash command a player can use"), the home panel has a heading and lead, and the rail and command-line aria-labels say what they do. The group labels and the lede were reviewed and kept.
+- **Print and the `/colors` swatch are decided.** No print stylesheet (nobody prints a command list), and the swatch stays a cycling demo (his word: "keep it"). Both are in the deferred list's Decided-no.
+- **Two bot-side one-liners.** `/gunsmith`'s weapon option said "A MP weapon" and now says "An MP weapon" (the registered text changes on the next command registration). `/calendar`'s empty state pointed at a `/settings` option removed on 2026-08-15 13:01 EDT and now says "Set `view` to All Events to see them."
+- **Two `/timestamp` bugs found and filed, not fixed:** it ignores the timezone saved in `/settings`, and its relative phrases depend on the host's timezone (measured: "in 2 hours" is +6 h on a UTC host; the prod VM's timezone is not recorded).
+- **No new dependency, no schema change, nothing deployed.** The page ships with the v3 deploy.
+
+
+## Pre-Release v3.99.0 — 2026-10-19 21:54 EDT (#208 · `af2a73c8`) — seven helpers nothing called are deleted
 **`utils/alertStore.js`, `utils/changeStore.js`, `utils/stillFrame.js`, `utils/calendarBannerCache.js`, `utils/manageActions.js`.** Harkirat, 2026-10-19 21:44 EDT: "delete the extra codes".
 
 - **Gone:** `parseAlertId`, `buildAlertExport`, `buildChangeExport`, `extractStillFrame`, `capBannerPreviewWidth`, `pageForLoadoutMode` (the `manageActions` copy; `core/changeset.js` keeps its own) and `buttonsFor`, plus the two `fmtUtc` formatters only those exports used. Each was searched across the repo, `portal/` and hidden paths included, before it went.
