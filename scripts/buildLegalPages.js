@@ -1451,23 +1451,91 @@ const styleDisclaimer = html => html.replace(DISCLAIMER_RE,
  *
  * ⚠️ THE REPO LINK IS HERE AND NOWHERE ELSE. The GitHub capsule left the bar and the landing page's Source link left its sign-off; this is the only repo link on the site, still a navigation affordance and not a citation (a citation inside a legal document must resolve, and the repo's visibility can change, per TERMS §7.1; a nav link that stops working is a dead link, not a defective instrument). TERMS §20 still withholds the repo as a *contact* route, which this does not change.
  *
- * `cur` is null on the landing page, which is why every href is built from a root-page fallback there. The page you are on is left out of its own row, as the old single row did. Install and GitHub are outbound, so they open in a new tab and carry the hint the bar's controls carry.
+ * `cur` is null on the landing page, which is why every href is built from a root-page fallback there. Every link stays on every page, the page you are on included (Harkirat, 2026-10-20 15:05 EDT, on the /commands footer missing Commands: "i told you to keep them there regardless of what page"). The current one carries aria-current and full ink instead of disappearing. Install and GitHub are outbound, so they open in a new tab and carry the hint the bar's controls carry.
  */
 const footNav = cur => {
     const from = cur || { out: 'index.html', dir: '' };
     const sep = '<span>&middot;</span>';
-    const pg = p => `<a href="${hrefTo(p, from)}">${esc(p.short)}</a>`;
+    const pg = p => `<a href="${hrefTo(p, from)}"${isHere(p, cur) ? ' aria-current="page"' : ''}>${esc(p.short)}</a>`;
     const out = (href, label, tip) =>
         `<a href="${href}" target="_blank" rel="noopener noreferrer" data-tip="${tip}">${label}</a>`;
-    const docs = deskSetFor(cur).flat().filter(p => !isHere(p, cur)).map(pg);
+    const docs = deskSetFor(cur).flat().map(pg);
     const tools = [
-        ...(isHere(TOOL_PAGES[0], cur) ? [] : [pg(TOOL_PAGES[0])]),
+        pg(TOOL_PAGES[0]),
         out(REPO_URL, 'GitHub', 'Source on GitHub'),
         out(INSTALL_URL, 'Install', 'Add to Discord'),
     ];
     return `<nav class="endnav" aria-label="Footer"><div class="en-row">${docs.join(sep)}</div>`
         + `<div class="en-row">${tools.join(sep)}</div></nav>`;
 };
+
+/* The landing page's footer, shared since 2026-10-20 15:06 EDT with the /commands page (Harkirat: "commands page also doesn't hold the disclaimer so it actually needs the footer styling from the landing page"). A legal or warm page closes its own text with the trademark notice; /commands has no source text to close, so it carries the notice here, set the way the landing sets it: a ruled tray with the link block, then the notice and the sign-off side by side. */
+const TRAY_CSS = `
+/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
+   request: on a landing page the masthead should be the only thing competing for
+   the top of the screen.
+   The label that used to sit far left of it ("Appearance") is gone (Harkirat,
+   2026-10-20 10:00 EDT: "kind of dumb"), and the footer's two-row link block takes
+   that place, so the switch is the only thing on the right. The block is the SAME
+   markup every other page's footer carries (footNav), left-aligned here because
+   nothing else in this row is. */
+.tray{margin-top:clamp(1.8rem,5vh,2.8rem);padding-top:1.4rem;border-top:1px solid var(--rule);
+  display:flex;align-items:center;gap:.7rem}
+.tray .endnav{align-self:center;align-items:flex-start;margin-right:auto}
+.tray .en-row{justify-content:flex-start}
+/* ⚠️ ON A PHONE THE LINK BLOCK LEADS AND THE SWITCH FOLLOWS, STACKED. The shared footer rule gives .endnav order:2 below 760px (it belongs after the disclaimer on a document page), which in this one-row tray put the switch first and squeezed the links into a 280px column to its right (seen on a phone screenshot, 2026-10-20 10:20 EDT). */
+@media (max-width:760px){
+  .tray{flex-direction:column;align-items:flex-start;gap:1rem}
+  .tray .endnav{order:0;margin-right:0;align-self:stretch}
+}
+/* The shared .sig carries grid placement for the document footer's two-column
+   layout; here it is a flex child of .lfoot instead, so only the spacing needs
+   restating. */
+/* .lfoot puts the disclaimer and the sign-off side by side instead of each
+   taking a full-width line with nothing beside it. space-between is enough on
+   its own with exactly two children — .disc's own max-width already stops it
+   growing to meet the sig, so no flex-grow is needed on either child. Both
+   children's own top margins move up to this wrapper. */
+.lfoot{display:flex;justify-content:space-between;align-items:flex-start;
+  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(1.8rem,5vh,2.8rem)}
+/* Right-aligned, not left — it sits on the RIGHT side of the row, and
+   left-aligned text there just trails off into the same empty space .lfoot
+   exists to reclaim. Harkirat's call 2026-08-05 08:53 EDT.
+   ⚠️ LEFT AGAIN BELOW 760px. .lfoot's flex-wrap folds the sig block onto its
+   own full-width row there — it is no longer sitting beside anything on the
+   right, so right-aligning it just floats short lines oddly rather than
+   flush against the same edge the disclaimer above it starts from.
+   Reported same session, 08:56 EDT, with a phone screenshot showing exactly
+   that. 760px matches this template's other mobile breakpoints. */
+.sig.lsig{margin:0;flex:0 0 auto;text-align:right}
+/* ⚠️ THE COPYRIGHT LINE ENDS ON A FULL STOP, THE SIGN-OFF ON AN r. The text boxes
+   of the two lines end at the same edge but the ink does not: a full stop in a
+   monospace face sits in the middle of its cell, so its dot stopped about 2px
+   short of the r above it. Measured on the rendered pixels at 1440px (sign-off
+   ink ends 1169.16, copyright 1167.16, box 1170) and reported by Harkirat
+   2026-10-20 10:00 EDT as the "all rights reserved" line not being perfectly
+   right-aligned with its neighbours. A negative end margin pushes only that
+   line's box out by the missing 2px, so its ink lands on the same edge. Right-aligned
+   layout only: the left-aligned one below already matches (both lines start at
+   the same ink edge). */
+@media (min-width:761px){ .sig.lsig .sig-cr{margin-inline-end:-.18em} }
+@media (max-width:760px){ .sig.lsig{text-align:left} }
+/* 84ch, not 74ch: at 74ch the disclaimer ran to four lines with "under licence." stranded alone on the last one (Harkirat, 2026-10-20 10:45 EDT: "fits within 3 lines on desktop"). It is capped, not fluid, so it stays a readable measure on a very wide screen. */
+.disc.fine{margin:0;font-size:.56rem;line-height:1.9;
+  letter-spacing:.06em;max-width:84ch;color:var(--ink3)}
+/* On /commands the tray is the footer's first row, so the landing's margin above it becomes the footer's own padding. Still a .foot, so the back-to-top keeps parking against it; display:block retires the document footer's grid, which these children were never placed in. */
+.foot.trayfoot{display:block;padding:2.2rem 0 3.4rem}
+.foot.trayfoot .tray{margin-top:0}
+@media (max-width:760px){ .foot.trayfoot{display:block;padding-bottom:.7rem} }
+`;
+
+const trayFoot = cur => `<footer class="foot trayfoot">
+    <div class="tray">${footNav(cur)}</div>
+    <div class="lfoot">
+      <p class="disc fine">${TRADEMARK_NOTE}</p>
+      <p class="sig lsig">${DIOR_SIG}${SIG_COPYRIGHT}</p>
+    </div>
+  </footer>`;
 
 const pageFoot = (cur, sig, disc = true) => `<footer class="foot${disc ? '' : ' nodisc'}">
     <p class="sig">${sig || DIOR_SIG}${SIG_COPYRIGHT}</p>
@@ -2092,17 +2160,19 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}
 /* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
    the one you are pointing at. */
-.endnav{grid-column:2;grid-row:1/span 2;align-self:start;
-  display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;
+.endnav{grid-column:1;grid-row:2;align-self:start;
+  display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
   text-transform:uppercase}
 /* Two rows (documents, then Commands · GitHub · Install), each wrapping on its own so a narrow footer folds the long row without dragging the short one with it. */
-.en-row{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
+.en-row{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;
   gap:.15rem .75rem}
 .endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;
   transition:color .22s,border-color .22s}
 .endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}
+/* The page you are on keeps its link, in full ink, so the row reads the same on every page. */
+.endnav a[aria-current]{color:var(--ink)}
 .endnav span{color:var(--ink3);opacity:.45}
 /* ⚠️ A DOT THAT ENDS A WRAPPED ROW IS A DEFECT, AND NO SELECTOR CAN TELL A ROW'S LAST ITEM FROM ITS LAST *ON THE LINE*. Seen on the phone and at 800px on 2026-10-20 10:20 EDT: "TERMS · PRIVACY · LICENSE ·" with the dot dangling at the end of the line it broke on. Below 1000px a row can fold (the Commands page's, whose footer sits beside a wide column, still folded at 960px), so the dots go and the gap widens to carry the separation alone; above it every row fits on one line (measured 1001 to 1440px, every page) and the dots stay. */
 @media (max-width:1000px){
@@ -2122,7 +2192,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    together; both belong to the site rather than to the navigation. On the four
    legal pages the notice is gone entirely, so grid row 1 collapses to nothing and
    this is simply the bottom-left line. */
-.sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
+/* SWAPPED 2026-10-20 15:06 EDT (Harkirat: "swap the made with love section and the footer links sections: so the links are on the left side, the made with love and rights reserved on right side"). The links now sit in column one under the notice, and the sign-off takes the right column the links used to hold, right-aligned. */
+.sig{grid-column:2;grid-row:1/span 2;text-align:right;justify-self:end;margin:0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}
 /* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
    copyright line, not a second mark. Inherits .sig's own colour/size and just
@@ -2137,6 +2208,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    inherit that pill's border/background by accident. Never reuse .cpy for
    anything that is not that button. */
 .sig-cr{display:block;margin-top:.4rem;opacity:.6}
+/* Right-aligned, the copyright line's full stop leaves its ink about 2px short of the sign-off's r above it; see the landing's .sig.lsig note. */
+/* Scoped to .nodisc: the record pages' footer runs edge to edge of the viewport, where the 2px push made the page scroll sideways. */
+@media (min-width:761px){ .foot.nodisc .sig .sig-cr{margin-inline-end:-.18em} }
 /* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
@@ -2177,7 +2251,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .disc{order:1;max-width:none}
   .endnav{order:2;align-items:flex-start}
   .en-row{justify-content:flex-start}
-  .sig{order:3;margin:0}
+  .sig{order:3;margin:0;text-align:left}
 }
 .sig b{color:var(--ink2);font-weight:600}
 /* The name itself carries the page's own accent, not the neutral ink-family
@@ -7545,12 +7619,13 @@ body{min-height:100vh;background:
    structured blocks (tiles, ledger, plates, promise cards) all want the extra
    width — they are auto-fit grids and simply gain a column. Running PROSE does
    not, so it is capped below; the ragged right on paragraphs is deliberate and
-   is what keeps a 950px card readable. */
+   is what keeps a wide card readable.
+   1070px, up from 950 (Harkirat, 2026-10-20 15:08 EDT: "give contributing/contributor the same widening treatment that the landing recieved"): the landing went 780 to 900, about 60px less margin each side, and these pages take the same 120px. */
 /* Bottom padding trimmed 4rem -> 2.6rem 2026-08-05 11:31 EDT, paired with the
    legal shell's own .page trim above it — too much dead space below the
    footer on Contributing/Contributors, reported against the same complaint
    on the four legal pages. */
-.wrap{max-width:950px;margin:0 auto;padding:calc(var(--bar-h,58px) + clamp(2.6rem,9vh,5rem)) clamp(1.2rem,5vw,2rem) 2.6rem}
+.wrap{max-width:1070px;margin:0 auto;padding:calc(var(--bar-h,58px) + clamp(2.6rem,9vh,5rem)) clamp(1.2rem,5vw,2rem) 2.6rem}
 
 .hero{text-align:center;margin-bottom:clamp(2.4rem,7vh,3.6rem)}
 .chip{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.63rem;
@@ -8325,41 +8400,7 @@ ${cmdRoleCss('.cmd-line')}
 .foot{margin-top:clamp(2.5rem,8vh,4rem);display:flex;flex-direction:column;gap:.5rem;
   align-items:flex-start;text-align:left;padding:0}
 .foot .disc{max-width:66ch}
-/* The shared .sig carries grid placement for the document footer's two-column
-   layout; here it is a flex child of .lfoot instead, so only the spacing needs
-   restating. */
-/* .lfoot puts the disclaimer and the sign-off side by side instead of each
-   taking a full-width line with nothing beside it. space-between is enough on
-   its own with exactly two children — .disc's own max-width already stops it
-   growing to meet the sig, so no flex-grow is needed on either child. Both
-   children's own top margins move up to this wrapper. */
-.lfoot{display:flex;justify-content:space-between;align-items:flex-start;
-  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(1.8rem,5vh,2.8rem)}
-/* Right-aligned, not left — it sits on the RIGHT side of the row, and
-   left-aligned text there just trails off into the same empty space .lfoot
-   exists to reclaim. Harkirat's call 2026-08-05 08:53 EDT.
-   ⚠️ LEFT AGAIN BELOW 760px. .lfoot's flex-wrap folds the sig block onto its
-   own full-width row there — it is no longer sitting beside anything on the
-   right, so right-aligning it just floats short lines oddly rather than
-   flush against the same edge the disclaimer above it starts from.
-   Reported same session, 08:56 EDT, with a phone screenshot showing exactly
-   that. 760px matches this template's other mobile breakpoints. */
-.sig.lsig{margin:0;flex:0 0 auto;text-align:right}
-/* ⚠️ THE COPYRIGHT LINE ENDS ON A FULL STOP, THE SIGN-OFF ON AN r. The text boxes
-   of the two lines end at the same edge but the ink does not: a full stop in a
-   monospace face sits in the middle of its cell, so its dot stopped about 2px
-   short of the r above it. Measured on the rendered pixels at 1440px (sign-off
-   ink ends 1169.16, copyright 1167.16, box 1170) and reported by Harkirat
-   2026-10-20 10:00 EDT as the "all rights reserved" line not being perfectly
-   right-aligned with its neighbours. A negative end margin pushes only that
-   line's box out by the missing 2px, so its ink lands on the same edge. Right-aligned
-   layout only: the left-aligned one below already matches (both lines start at
-   the same ink edge). */
-@media (min-width:761px){ .sig.lsig .sig-cr{margin-inline-end:-.18em} }
-@media (max-width:760px){ .sig.lsig{text-align:left} }
-/* 84ch, not 74ch: at 74ch the disclaimer ran to four lines with "under licence." stranded alone on the last one (Harkirat, 2026-10-20 10:45 EDT: "fits within 3 lines on desktop"). It is capped, not fluid, so it stays a readable measure on a very wide screen. */
-.disc.fine{margin:0;font-size:.56rem;line-height:1.9;
-  letter-spacing:.06em;max-width:84ch;color:var(--ink3)}
+${TRAY_CSS}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
   letter-spacing:.04em;color:var(--ink3);max-width:62ch}
 .contact a{color:var(--ink2)}
@@ -8615,23 +8656,6 @@ ${cmdRoleCss('.cmd-line')}
    sentence, and at the hero's size it competed with it. */
 .lede.sub{font-size:.97rem;max-width:54ch;margin-bottom:1.1rem}
 
-/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
-   request: on a landing page the masthead should be the only thing competing for
-   the top of the screen.
-   The label that used to sit far left of it ("Appearance") is gone (Harkirat,
-   2026-10-20 10:00 EDT: "kind of dumb"), and the footer's two-row link block takes
-   that place, so the switch is the only thing on the right. The block is the SAME
-   markup every other page's footer carries (footNav), left-aligned here because
-   nothing else in this row is. */
-.tray{margin-top:clamp(1.8rem,5vh,2.8rem);padding-top:1.4rem;border-top:1px solid var(--rule);
-  display:flex;align-items:center;gap:.7rem}
-.tray .endnav{align-self:center;align-items:flex-start;margin-right:auto}
-.tray .en-row{justify-content:flex-start}
-/* ⚠️ ON A PHONE THE LINK BLOCK LEADS AND THE SWITCH FOLLOWS, STACKED. The shared footer rule gives .endnav order:2 below 760px (it belongs after the disclaimer on a document page), which in this one-row tray put the switch first and squeezed the links into a 280px column to its right (seen on a phone screenshot, 2026-10-20 10:20 EDT). */
-@media (max-width:760px){
-  .tray{flex-direction:column;align-items:flex-start;gap:1rem}
-  .tray .endnav{order:0;margin-right:0;align-self:stretch}
-}
 </style></head><body>
 <!-- ⚠️ THE LANDING PAGE HAD NO FILTER DEFS AT ALL until the morph port — it is the
      one template that never carried GOO_SVG, because it is also the one without a
@@ -8773,6 +8797,7 @@ const CHROME = {
     MORPH_JS,
     wordmark, commandsBtn, installBtn, themeBtn, navSwitcher, mobileNav, pageFoot,
     BAR_CSS, PAGE_CSS, SLOT_CSS, TOTOP_HTML, TOTOP_TRACK_JS, cmdRoleCss,
+    TRAY_CSS, trayFoot,
 };
 
 function build() {

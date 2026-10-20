@@ -710,17 +710,19 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
    the one you are pointing at. */
 
-.endnav{grid-column:2;grid-row:1/span 2;align-self:start;
-  display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;
+.endnav{grid-column:1;grid-row:2;align-self:start;
+  display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
   text-transform:uppercase}/* Two rows (documents, then Commands · GitHub · Install), each wrapping on its own so a narrow footer folds the long row without dragging the short one with it. */
 
-.en-row{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
+.en-row{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;
   gap:.15rem .75rem}
 .endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;
   transition:color .22s,border-color .22s}@media (hover:hover) and (pointer:fine){
-.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}}
+.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}}/* The page you are on keeps its link, in full ink, so the row reads the same on every page. */
+
+.endnav a[aria-current]{color:var(--ink)}
 .endnav span{color:var(--ink3);opacity:.45}/* ⚠️ A DOT THAT ENDS A WRAPPED ROW IS A DEFECT, AND NO SELECTOR CAN TELL A ROW'S LAST ITEM FROM ITS LAST *ON THE LINE*. Seen on the phone and at 800px on 2026-10-20 10:20 EDT: "TERMS · PRIVACY · LICENSE ·" with the dot dangling at the end of the line it broke on. Below 1000px a row can fold (the Commands page's, whose footer sits beside a wide column, still folded at 960px), so the dots go and the gap widens to carry the separation alone; above it every row fits on one line (measured 1001 to 1440px, every page) and the dots stay. */
 
 @media (max-width:1000px){
@@ -737,10 +739,11 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    which put the two mono lines on opposite corners with nothing tying them
    together; both belong to the site rather than to the navigation. On the four
    legal pages the notice is gone entirely, so grid row 1 collapses to nothing and
-   this is simply the bottom-left line. */
+   this is simply the bottom-left line. *//* SWAPPED 2026-10-20 15:06 EDT (Harkirat: "swap the made with love section and the footer links sections: so the links are on the left side, the made with love and rights reserved on right side"). The links now sit in column one under the notice, and the sign-off takes the right column the links used to hold, right-aligned. */
 
 
-.sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
+
+.sig{grid-column:2;grid-row:1/span 2;text-align:right;justify-self:end;margin:0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
    copyright line, not a second mark. Inherits .sig's own colour/size and just
    dims further, so it reads as one quiet line rather than a competing element.
@@ -754,7 +757,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    inherit that pill's border/background by accident. Never reuse .cpy for
    anything that is not that button. */
 
-.sig-cr{display:block;margin-top:.4rem;opacity:.6}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+.sig-cr{display:block;margin-top:.4rem;opacity:.6}/* Right-aligned, the copyright line's full stop leaves its ink about 2px short of the sign-off's r above it; see the landing's .sig.lsig note. *//* Scoped to .nodisc: the record pages' footer runs edge to edge of the viewport, where the 2px push made the page scroll sideways. */
+
+
+@media (min-width:761px){ .foot.nodisc .sig .sig-cr{margin-inline-end:-.18em} }/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
    with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
@@ -795,7 +801,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .disc{order:1;max-width:none}
   .endnav{order:2;align-items:flex-start}
   .en-row{justify-content:flex-start}
-  .sig{order:3;margin:0}
+  .sig{order:3;margin:0;text-align:left}
 }
 .sig b{color:var(--ink2);font-weight:600}/* The name itself carries the page's own accent, not the neutral ink-family
    colour every other bold word in the sig line gets — Harkirat's call
@@ -1748,7 +1754,64 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   .msec .slot.on{border-left-color:var(--accent);
     background:color-mix(in srgb,var(--accent) 16%,transparent)}
   .msec .slot:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
-}
+}/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
+   request: on a landing page the masthead should be the only thing competing for
+   the top of the screen.
+   The label that used to sit far left of it ("Appearance") is gone (Harkirat,
+   2026-10-20 10:00 EDT: "kind of dumb"), and the footer's two-row link block takes
+   that place, so the switch is the only thing on the right. The block is the SAME
+   markup every other page's footer carries (footNav), left-aligned here because
+   nothing else in this row is. */
+
+
+.tray{margin-top:clamp(1.8rem,5vh,2.8rem);padding-top:1.4rem;border-top:1px solid var(--rule);
+  display:flex;align-items:center;gap:.7rem}
+.tray .endnav{align-self:center;align-items:flex-start;margin-right:auto}
+.tray .en-row{justify-content:flex-start}/* ⚠️ ON A PHONE THE LINK BLOCK LEADS AND THE SWITCH FOLLOWS, STACKED. The shared footer rule gives .endnav order:2 below 760px (it belongs after the disclaimer on a document page), which in this one-row tray put the switch first and squeezed the links into a 280px column to its right (seen on a phone screenshot, 2026-10-20 10:20 EDT). */
+
+@media (max-width:760px){
+  .tray{flex-direction:column;align-items:flex-start;gap:1rem}
+  .tray .endnav{order:0;margin-right:0;align-self:stretch}
+}/* The shared .sig carries grid placement for the document footer's two-column
+   layout; here it is a flex child of .lfoot instead, so only the spacing needs
+   restating. *//* .lfoot puts the disclaimer and the sign-off side by side instead of each
+   taking a full-width line with nothing beside it. space-between is enough on
+   its own with exactly two children — .disc's own max-width already stops it
+   growing to meet the sig, so no flex-grow is needed on either child. Both
+   children's own top margins move up to this wrapper. */
+
+
+.lfoot{display:flex;justify-content:space-between;align-items:flex-start;
+  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(1.8rem,5vh,2.8rem)}/* Right-aligned, not left — it sits on the RIGHT side of the row, and
+   left-aligned text there just trails off into the same empty space .lfoot
+   exists to reclaim. Harkirat's call 2026-08-05 08:53 EDT.
+   ⚠️ LEFT AGAIN BELOW 760px. .lfoot's flex-wrap folds the sig block onto its
+   own full-width row there — it is no longer sitting beside anything on the
+   right, so right-aligning it just floats short lines oddly rather than
+   flush against the same edge the disclaimer above it starts from.
+   Reported same session, 08:56 EDT, with a phone screenshot showing exactly
+   that. 760px matches this template's other mobile breakpoints. */
+
+.sig.lsig{margin:0;flex:0 0 auto;text-align:right}/* ⚠️ THE COPYRIGHT LINE ENDS ON A FULL STOP, THE SIGN-OFF ON AN r. The text boxes
+   of the two lines end at the same edge but the ink does not: a full stop in a
+   monospace face sits in the middle of its cell, so its dot stopped about 2px
+   short of the r above it. Measured on the rendered pixels at 1440px (sign-off
+   ink ends 1169.16, copyright 1167.16, box 1170) and reported by Harkirat
+   2026-10-20 10:00 EDT as the "all rights reserved" line not being perfectly
+   right-aligned with its neighbours. A negative end margin pushes only that
+   line's box out by the missing 2px, so its ink lands on the same edge. Right-aligned
+   layout only: the left-aligned one below already matches (both lines start at
+   the same ink edge). */
+
+@media (min-width:761px){ .sig.lsig .sig-cr{margin-inline-end:-.18em} }
+@media (max-width:760px){ .sig.lsig{text-align:left} }/* 84ch, not 74ch: at 74ch the disclaimer ran to four lines with "under licence." stranded alone on the last one (Harkirat, 2026-10-20 10:45 EDT: "fits within 3 lines on desktop"). It is capped, not fluid, so it stays a readable measure on a very wide screen. */
+
+.disc.fine{margin:0;font-size:.56rem;line-height:1.9;
+  letter-spacing:.06em;max-width:84ch;color:var(--ink3)}/* On /commands the tray is the footer's first row, so the landing's margin above it becomes the footer's own padding. Still a .foot, so the back-to-top keeps parking against it; display:block retires the document footer's grid, which these children were never placed in. */
+
+.foot.trayfoot{display:block;padding:2.2rem 0 3.4rem}
+.foot.trayfoot .tray{margin-top:0}
+@media (max-width:760px){ .foot.trayfoot{display:block;padding-bottom:.7rem} }
 :root{--accent:#58D05A;--glow:#A8E8AA;--accent-on:#000000}:root[data-theme=light]{--accent-t:#1E6B1F}@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--accent-t:#1E6B1F}}.rx-p,.rx-chip,.rx-ask,.rx-cd{--ci:var(--ct)}:root[data-theme=light] .rx-p,:root[data-theme=light] .rx-chip,:root[data-theme=light] .rx-ask,:root[data-theme=light] .rx-cd{--ci:var(--ctl)}@media (prefers-color-scheme:light){:root:not([data-theme=dark]) .rx-p,:root:not([data-theme=dark]) .rx-chip,:root:not([data-theme=dark]) .rx-ask,:root:not([data-theme=dark]) .rx-cd{--ci:var(--ctl)}}/* Page-scoped. Every selector is prefixed rx- so nothing can collide with the shared chrome,
    which this page draws from the same builders as every other page. *//* ── THE HEAD ──────────────────────────────────────────────────────────────────
    No kicker. It read "DIOREO · 14 COMMANDS" above a page titled Commands, on a site
@@ -2280,10 +2343,12 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     </div>
   </div>
 </main>
-  <footer class="foot nodisc">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
-    
-    <nav class="endnav" aria-label="Footer"><div class="en-row"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></div><div class="en-row"><a href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer" data-tip="Source on GitHub">GitHub</a><span>&middot;</span><a href="https://discord.com/oauth2/authorize?client_id=1491474871778021550" target="_blank" rel="noopener noreferrer" data-tip="Add to Discord">Install</a></div></nav>
+  <footer class="foot trayfoot">
+    <div class="tray"><nav class="endnav" aria-label="Footer"><div class="en-row"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></div><div class="en-row"><a href="./commands.html" aria-current="page">Commands</a><span>&middot;</span><a href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer" data-tip="Source on GitHub">GitHub</a><span>&middot;</span><a href="https://discord.com/oauth2/authorize?client_id=1491474871778021550" target="_blank" rel="noopener noreferrer" data-tip="Add to Discord">Install</a></div></nav></div>
+    <div class="lfoot">
+      <p class="disc fine">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+      <p class="sig lsig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
+    </div>
   </footer>
 </div>
 <!-- ⚠️ A REAL JS ASSIGNMENT, NOT type="application/json". The build parses every inline

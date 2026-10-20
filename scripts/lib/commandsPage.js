@@ -21,7 +21,7 @@
  *
  * ⚠️ NO BACKTICKS ANYWHERE INSIDE THE CSS AND JS CONSTANTS BELOW, and no braces inside a CSS comment. They are template literals: a backtick — including one inside a comment — ends the string and fails the build with a SyntaxError pointing at prose, and a brace in a comment is destroyed by the hover-guard transform. Quote with " instead.
  *
- * ⚠️ THIS PAGE OPTS OUT OF TWO PIECES OF SHARED CHROME, deliberately, and neither is an oversight. It passes NO section slots to mobileNav(), so the "On this page" accordion does not render — the rail already is that navigation, and stacking a second one cost 107px above the fold on a phone. And it calls pageFoot() with disc=false, so the trademark disclaimer does not repeat here; it earns its place under a legal instrument and is noise under a command reference. Two other templates already do the same.
+ * ⚠️ THIS PAGE OPTS OUT OF ONE PIECE OF SHARED CHROME, deliberately. It passes NO section slots to mobileNav(), so the "On this page" accordion does not render — the rail already is that navigation, and stacking a second one cost 107px above the fold on a phone. 🔴 IT USED TO OPT OUT OF THE TRADEMARK NOTICE TOO, AND NO LONGER DOES (Harkirat, 2026-10-20 15:06 EDT: "commands page also doesn't hold the disclaimer so it actually needs the footer styling from the landing page"). Every other page carries the notice, the legal and warm pages inside their own text, so this was the one page without it. It now closes with trayFoot(), the landing page's footer: the link block in a ruled tray, then the notice and the sign-off side by side.
  *
  * Everything the page says about a command is read from the bot's own registered builders at build time (scripts/lib/commandCatalog.js) plus a prose layer (scripts/lib/commandProse.js), so the page cannot drift from what the bot actually does.
  */
@@ -34,7 +34,7 @@ const CHROME_KEYS = [
     'esc', 'TOKENS', 'COMPONENT_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS', 'MORPH_JS', 'GOO_SVG',
     'wordmark', 'navSwitcher', 'commandsBtn', 'installBtn', 'themeBtn',
     'mobileNav', 'pageFoot', 'BAR_CSS', 'PAGE_CSS', 'SLOT_CSS', 'TOTOP_HTML', 'TOTOP_TRACK_JS', 'cmdRoleCss',
-    'SWITCHER_CSS',
+    'SWITCHER_CSS', 'TRAY_CSS', 'trayFoot',
 ];
 
 function requireChrome(C) {
@@ -1200,7 +1200,7 @@ function commandsShell({ page, catalog, C }) {
 <title>${esc(page.title)} — Dioreo</title>
 <meta name="description" content="${esc(page.desc)}">
 ${C.THEME_BOOT}
-<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SLOT_CSS}${C.SWITCHER_CSS}${accent}${RECEIVER_CSS}</style>
+<style>${C.TOKENS}${C.COMPONENT_CSS}${C.BAR_CSS}${C.PAGE_CSS}${C.SLOT_CSS}${C.SWITCHER_CSS}${C.TRAY_CSS}${accent}${RECEIVER_CSS}</style>
 </head><body>
 <a class="skip" href="#main">Skip to content</a>
 ${C.GOO_SVG}
@@ -1250,7 +1250,7 @@ ${C.mobileNav(page, '')}
     </div>
   </div>
 </main>
-  ${C.pageFoot(page, null, false)}
+  ${C.trayFoot(page)}
 </div>
 <!-- ⚠️ A REAL JS ASSIGNMENT, NOT type="application/json". The build parses every inline
      script as JavaScript, and a bare object literal reads as a labelled block, so a JSON

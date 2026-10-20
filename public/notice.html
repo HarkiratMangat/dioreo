@@ -721,17 +721,19 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
    the one you are pointing at. */
 
-.endnav{grid-column:2;grid-row:1/span 2;align-self:start;
-  display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;
+.endnav{grid-column:1;grid-row:2;align-self:start;
+  display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
   text-transform:uppercase}/* Two rows (documents, then Commands · GitHub · Install), each wrapping on its own so a narrow footer folds the long row without dragging the short one with it. */
 
-.en-row{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
+.en-row{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;
   gap:.15rem .75rem}
 .endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;
   transition:color .22s,border-color .22s}@media (hover:hover) and (pointer:fine){
-.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}}
+.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}}/* The page you are on keeps its link, in full ink, so the row reads the same on every page. */
+
+.endnav a[aria-current]{color:var(--ink)}
 .endnav span{color:var(--ink3);opacity:.45}/* ⚠️ A DOT THAT ENDS A WRAPPED ROW IS A DEFECT, AND NO SELECTOR CAN TELL A ROW'S LAST ITEM FROM ITS LAST *ON THE LINE*. Seen on the phone and at 800px on 2026-10-20 10:20 EDT: "TERMS · PRIVACY · LICENSE ·" with the dot dangling at the end of the line it broke on. Below 1000px a row can fold (the Commands page's, whose footer sits beside a wide column, still folded at 960px), so the dots go and the gap widens to carry the separation alone; above it every row fits on one line (measured 1001 to 1440px, every page) and the dots stay. */
 
 @media (max-width:1000px){
@@ -748,10 +750,11 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    which put the two mono lines on opposite corners with nothing tying them
    together; both belong to the site rather than to the navigation. On the four
    legal pages the notice is gone entirely, so grid row 1 collapses to nothing and
-   this is simply the bottom-left line. */
+   this is simply the bottom-left line. *//* SWAPPED 2026-10-20 15:06 EDT (Harkirat: "swap the made with love section and the footer links sections: so the links are on the left side, the made with love and rights reserved on right side"). The links now sit in column one under the notice, and the sign-off takes the right column the links used to hold, right-aligned. */
 
 
-.sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
+
+.sig{grid-column:2;grid-row:1/span 2;text-align:right;justify-self:end;margin:0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
    copyright line, not a second mark. Inherits .sig's own colour/size and just
    dims further, so it reads as one quiet line rather than a competing element.
@@ -765,7 +768,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    inherit that pill's border/background by accident. Never reuse .cpy for
    anything that is not that button. */
 
-.sig-cr{display:block;margin-top:.4rem;opacity:.6}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+.sig-cr{display:block;margin-top:.4rem;opacity:.6}/* Right-aligned, the copyright line's full stop leaves its ink about 2px short of the sign-off's r above it; see the landing's .sig.lsig note. *//* Scoped to .nodisc: the record pages' footer runs edge to edge of the viewport, where the 2px push made the page scroll sideways. */
+
+
+@media (min-width:761px){ .foot.nodisc .sig .sig-cr{margin-inline-end:-.18em} }/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
    with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
@@ -806,7 +812,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .disc{order:1;max-width:none}
   .endnav{order:2;align-items:flex-start}
   .en-row{justify-content:flex-start}
-  .sig{order:3;margin:0}
+  .sig{order:3;margin:0;text-align:left}
 }
 .sig b{color:var(--ink2);font-weight:600}/* The name itself carries the page's own accent, not the neutral ink-family
    colour every other bold word in the sig line gets — Harkirat's call
@@ -2632,7 +2638,7 @@ Claude(TM), Anthropic(R)
   <footer class="foot nodisc">
     <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
     
-    <nav class="endnav" aria-label="Footer"><div class="en-row"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></div><div class="en-row"><a href="./commands.html">Commands</a><span>&middot;</span><a href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer" data-tip="Source on GitHub">GitHub</a><span>&middot;</span><a href="https://discord.com/oauth2/authorize?client_id=1491474871778021550" target="_blank" rel="noopener noreferrer" data-tip="Add to Discord">Install</a></div></nav>
+    <nav class="endnav" aria-label="Footer"><div class="en-row"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html" aria-current="page">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></div><div class="en-row"><a href="./commands.html">Commands</a><span>&middot;</span><a href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer" data-tip="Source on GitHub">GitHub</a><span>&middot;</span><a href="https://discord.com/oauth2/authorize?client_id=1491474871778021550" target="_blank" rel="noopener noreferrer" data-tip="Add to Discord">Install</a></div></nav>
   </footer>
 </div>
 
