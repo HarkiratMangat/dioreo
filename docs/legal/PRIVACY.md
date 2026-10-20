@@ -14,11 +14,11 @@ published: true
 
 ## 0. The short version
 
-We store **your Discord user ID** and **your display preferences** — timezone, visibility toggles, region, and colour settings. That's essentially it.
+We store **your Discord user ID**, **your display preferences** — timezone, visibility toggles, region, and colour settings — and *(from v3)* **counts of how you use the Bot**, which only you see on `/settings`' Your Stats page and can reset at any time. That's essentially it.
 
 **We cannot read your messages.** The Bot doesn't have Discord's Message Content permission, so message text is technically inaccessible to us, not merely unused.
 
-**Your data is stored in Canada.** No advertising, no ad-tech tracking, no cookies, no third-party analytics service, and no profiling — nothing is sold or shared for marketing, and nothing is ever used to personalise what you individually see. We *do* keep our own record of how the Bot is used — which commands are run, how fast they were, whether they worked — identified by a **keyed hash** rather than your Discord ID. That is described in full in §2.4b.
+**Your data is stored in Canada.** No advertising, no ad-tech tracking, no cookies, no third-party analytics service, and no profiling — nothing is sold or shared for marketing, and nothing is ever used to personalise what you individually see, apart from showing you your own counts on Your Stats (§2.1e). We *do* keep our own record of how the Bot is used — which commands are run, how fast they were, whether they worked — identified by a **keyed hash** rather than your Discord ID. That is described in full in §2.4b.
 
 **This website stores exactly one thing on your device:** whether you chose light or dark mode. It never leaves your browser and identifies nobody — see §2.6.
 
@@ -67,6 +67,7 @@ Everything below lives in a single `UserPreference` record keyed to your Discord
 | **Announcement delivery counts** *(pending, v3)* | For a bot-wide announcement configured to repeat, how many times you've been shown it and when you were last shown it | So a repeating announcement stops once you've seen it enough times, with at least a day between showings |
 | **CP currency preference** | Which storefront `/draw calculator` quotes prices from | Shows the right purchase recommendation for your currency without re-selecting |
 | **First command date** *(pending, v3)* | When you first ran a command yourself (a slash command or a right-click). Clicking a button on someone else's message doesn't count | Shown in `/settings` as "Dioreo User Since" |
+| **Your Stats** *(pending, v3)* | Counts of your own use of the Bot — see §2.1e | Shown back to you on `/settings`' Your Stats page |
 
 **Is a Discord user ID personal data?** Yes — we treat it as such. It's a persistent unique identifier that can be linked back to you, which brings it within GDPR Art. 4(1) and PIPEDA's definition of personal information. We say so rather than arguing otherwise.
 
@@ -124,6 +125,22 @@ The Bot's owner and any admin granted access can sign into a browser-based manag
 
 **An unnamed calculation is temporary — it is automatically deleted 30 days after creation.** Naming it exempts it from that expiry, on the theory that giving something a name is the signal you intend to keep coming back to it. Deleting a calculation yourself (via the calculator's own delete control) removes it immediately, no 30-day wait required. You can read the schema yourself: [`models/DrawBasket.js`](../../models/DrawBasket.js).
 
+### 2.1e Your Stats *(pending, v3)*
+
+From the v3 release, your `UserPreference` record also keeps a small set of counts about **your own** use of the Bot, so `/settings` can show them back to you on its **Your Stats** page:
+
+- how many commands you've run, and how many times each one
+- which weapon builds you've opened, and how often
+- the total CP of the draw calculations you've calculated, and the biggest one
+- which hours of the day you use the Bot, in your own time zone; how many days you've used it; your current and best streak of days in a row
+- how many panels you've shared with Show Everyone, and when you last used the Bot
+
+**Who sees it:** you. The page shows only your own counts, publicly only if your `/settings` replies are public. It also says which number user you are by first command and what share of counted users you've out-used; that comparison reads everyone's totals but shows nobody else's.
+
+**What it does not do:** it decides nothing and changes nothing the Bot does for you. It is a **separate record**, never built from the interaction records in §2.4b, which stay keyed by a hash. Counting started with v3; nothing earlier was counted.
+
+**Reset or delete:** the **Reset My Stats** button on the page clears every count at once (Dioreo User Since stays). Deleting your data (§9) deletes it with the rest of your record.
+
 ### 2.2 About the colour data specifically
 
 If you use the accent-colour or "View Colors" features, the Bot downloads your Discord **avatar, banner, avatar decoration, or nameplate image** and analyses it to extract dominant colours.
@@ -171,7 +188,7 @@ Since **16 August 2026** the Bot keeps a record of each interaction with it — 
 
 **Your identifier is a keyed hash, not your Discord ID.** Before anything is written, your Discord user ID is put through **HMAC-SHA256** with a secret key that lives only on the server and never in the database. What is stored is the 64-character result. The same person always produces the same hash, so we can tell that one person ran five commands, without the record containing anything that names them. Being honest about what this does and does not protect: it defeats someone who obtains the database alone, because there is nothing in it to reverse. It does **not** defeat someone holding both the database **and** the key, who could hash candidate IDs and match them. We do not consider that a reason to overstate it. The server ID is stored as-is, because a server is not a person.
 
-**What it is for:** understanding which features are actually used, finding what is slow, and seeing what breaks and how often. **It is never used to personalise what you individually see, never used to build a profile of you, never used for advertising, and never shared.** The Bot behaves identically for everyone regardless of what these records say.
+**What it is for:** understanding which features are actually used, finding what is slow, and seeing what breaks and how often. **It is never used to personalise what you individually see, never used to build a profile of you, never used for advertising, and never shared.** Your Stats (§2.1e) is a separate record and is never built from these. The Bot behaves identically for everyone regardless of what these records say.
 
 **Search text is included, and here is exactly what that means.** When you type into one of the Bot's own search fields — a weapon name in `/gunsmith`, for instance — the text you typed is recorded, **once per search rather than once per keystroke**, lowercased and cut off at 100 characters. This is how we find out that people type `kilo` when the weapon is called `KILO 141` and nothing came back, which is the only way that gets fixed. A separate summary table counts how often each term was searched and how often it found nothing, and that table holds **no user identifier at all**, not even a hash.
 
@@ -232,7 +249,7 @@ The one place the Site reads that setting in code, it does so only to keep the s
 | **Cookies** | None, anywhere. The Bot runs inside Discord and has no web surface at all. This documentation website sets no cookies either; it stores a single light/dark preference in your browser, which is described in full in §2.6 and is never transmitted. |
 | **Voice data, location, contacts, or biometrics** | Not applicable, not collected. |
 
-We do **no** profiling of individuals, no behavioural advertising, and **no automated decision-making producing legal or similarly significant effects** (GDPR Art. 22). Nothing in §2.4b changes this: those records are read in aggregate to improve the Bot, and no output of them is ever applied back to an individual person.
+We do **no** profiling of individuals, no behavioural advertising, and **no automated decision-making producing legal or similarly significant effects** (GDPR Art. 22). Nothing in §2.4b changes this: those records are read in aggregate to improve the Bot, and no output of them is ever applied back to an individual person. Your Stats (§2.1e) only counts your own use and shows it back to you; it decides nothing about you, and you can reset it.
 
 
 
@@ -471,7 +488,7 @@ Kept here as well as in git, because the repository's visibility can change and 
 
 | Version | Effective | What changed |
 |---|---|---|
-| 1.17 *(pending)* | on the v3 release | **Not yet in effect.** Your `UserPreference` record gains `firstCommandAt`, the date you first ran a command yourself, shown in `/settings` as "Dioreo User Since" (§2.1, Appendix A). Records that already existed get the record's own creation date instead. Running a command now also creates your record if you didn't have one, which §2.1 already says happens once you use the Bot. **No new recipient, no longer retention.** |
+| 1.17 *(pending)* | on the v3 release | **Not yet in effect.** Your `UserPreference` record gains `firstCommandAt`, the date you first ran a command yourself, shown in `/settings` as "Dioreo User Since" (§2.1, Appendix A). Records that already existed get the record's own creation date instead. Running a command now also creates your record if you didn't have one, which §2.1 already says happens once you use the Bot. It also gains **Your Stats** (new §2.1e): counts of your own use, shown only back to you and resettable. §0, §2.4b and §3 were reworded so their "never applied back to you" promises stay true about the hashed records while saying plainly that Your Stats is a separate record shown to you. **No new recipient, no longer retention.** |
 | 1.16 *(pending)* | on the v3 release | **Not yet in effect.** `/draw calculator` can now save a calculation so you can come back to it. New §2.1d describes the record (also in Appendix A, §5's MongoDB Atlas row and §7): your Discord user ID, an optional name, the calculator's setup (region, balances, upgrades and 2X entitlements), and the ordered list of draws you were pricing, plus when it last changed so running the command again reopens your latest one. An unnamed calculation is deleted 30 days after creation; a named one is kept until you delete it or ask us to. A list entry can also hold a Series Armory's item count and spins toward its next item, and the title of a draw you picked from this season's list, which is game data you chose, nothing about you. `/draw calculator` also gets **its own response-visibility preference** (`calculatorVisibility`, public by default) instead of sharing the Seasonal Content one. **View Colors** (right-click a user): for a person who doesn't use the Bot, the colours worked out from their image are cached for 30 days keyed only by a fingerprint of the image, with no user identifier (§2.2, §7, Appendix A). **No new recipient and no new category of data.** |
 | 1.15 *(pending)* | on the v3 release | **Not yet in effect.** This announcement can now also be configured to REPEAT, up to a whole number of times set by whoever posts it, at least 24 hours apart. To make that possible, your `UserPreference` record gains one new field, `announcementDeliveries` — for a repeating announcement only, how many times you've been shown it and when you were last shown it. A non-repeating announcement (the existing, unconfigured behaviour) is completely unaffected and writes nothing to this new field. The announcement record itself (§2.1b) can now also optionally carry a banner image URL and a repeat count, set by whoever posts it — neither is personal data about anyone reading the announcement. **No new recipient** — both live in the same MongoDB Atlas database §5 already names — **and no longer retention**: the new per-user field is deleted along with the rest of your `UserPreference` record under the same conditions as everything else in it, described in §7. |
 | 1.14 *(pending)* | on the v3 release | **Not yet in effect.** `/colors` gets its own response-visibility preference, separate from `/settings`, so your `UserPreference` record gains one more visibility field, `colorsVisibility` (Appendix A). It is one more value of a kind §2 already describes. **No new category of data, no new recipient, and no longer retention.** |
@@ -546,6 +563,7 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 **Account history**
 - `firstCommandAt` *(pending, v3)* — when you first ran a command of your own. For records that existed before this was tracked, it was filled in from the record's own creation date
+- `stats` *(pending, v3)* — Your Stats (§2.1e): `since`, `lastUsedAt`, `total`, `commands` (count per command), `builds` (count per build opened), `hours` (count per hour of day), `days`, `streak`, `bestStreak`, `lastDay`, `cpPriced`, `biggestCp`, `shares`
 
 **That's the whole list.** It mirrors the schema in the source code rather than paraphrasing it, so it can be checked line-by-line against the software itself. If you have access to the repository you can verify it directly; if you don't, ask and we will show you the relevant file.
 
@@ -569,7 +587,7 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 | Version | Date | Change |
 |---|---|---|
-| **1.17** *(pending)* | on the v3 release | **Not yet in effect.** Added `firstCommandAt` to §2.1 and Appendix A: the date you first ran a command yourself, shown in `/settings` as "Dioreo User Since"; existing records are filled from their own creation date. **No new recipient, no longer retention.** |
+| **1.17** *(pending)* | on the v3 release | **Not yet in effect.** Added `firstCommandAt` to §2.1 and Appendix A: the date you first ran a command yourself, shown in `/settings` as "Dioreo User Since"; existing records are filled from their own creation date. New §2.1e and Appendix A `stats`: Your Stats, counts of your own use shown back to you with a Reset button (Harkirat's go, 2026-10-20 18:16 EDT); §0, §2.4b and §3 reworded to match. **No new recipient, no longer retention.** |
 | **1.16** *(pending)* | on the v3 release | **Not yet in effect.** `/draw calculator` gained saved, named baskets — new §2.1d describes the record, listed in Appendix A, named in §5's MongoDB Atlas row, and given retention in §7 (unnamed: 30-day TTL; named: kept until deleted). **No new recipient, no new category of data** — it's the same discordId/region/balance/entitlement shape §2.1 already describes, plus an ordered banner list, stored so a session can be resumed instead of starting over. A list entry can also hold a Series Armory's item count and spins toward its next item, and the title of a draw picked from this season's list — game data you chose, nothing about you. The record also keeps **when it last changed**, so running the command again reopens your most recent calculation; and `/draw calculator` has **its own response-visibility preference** (`calculatorVisibility`, public by default) instead of sharing the Seasonal Content one. **View Colors** (right-click a user): for a person who doesn't use the Bot, the colours worked out from their image are cached for 30 days keyed only by a fingerprint of the image, with no user identifier (§2.2, §7, Appendix A). |
 | **1.15** *(pending)* | on the v3 release | **Not yet in effect.** A bot-wide announcement can now optionally REPEAT (a whole number of times, at least 24h apart) and optionally carry a banner image. Your `UserPreference` record gains `announcementDeliveries` — for a repeating announcement only, how many times shown and when last shown; a non-repeating announcement writes nothing new. **No new recipient, no longer retention.** |
 | **1.14** *(pending)* | on the v3 release | **Not yet in effect.** Added `colorsVisibility` to Appendix A: `/colors` gets its own response-visibility preference, detached from `/settings`, so the record stores one more per-user visibility field. **No new category of data** — it is one more value of a kind already described in §2. Written 2026-08-31, when `docs-audit`'s `privacy-inventory` check found the field missing from Appendix A, which claims to be a complete transcription of the schema. |

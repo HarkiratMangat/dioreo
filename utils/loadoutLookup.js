@@ -65,6 +65,7 @@ async function lookupAndRenderWeapon(interaction, { mode, rawQuery, requestedBui
         : await Loadout.find({ category: builds[0].category, mode: 'MP' }).lean();
     const accentColor = getMpCategoryAccent(builds[0].category);
     const cardPayload = buildLoadoutCard(builds, buildIndex, { color: accentColor, idPrefix, isEphemeral, categoryBuilds });
+    require('./userStats').noteBuildOpenedSafely(interaction.user?.id, builds[buildIndex]?._id); // Your Stats: a build this user opened
     await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
 }
 

@@ -42,3 +42,10 @@ Harkirat (`ALLOWED_ADMIN_ID`) was getting the same "not your panel" denial as an
 - **After, not before:** a first-time user's command may create their record with find-then-save, and an upsert racing that save would fail it with a duplicate key.
 - **`$min`, never `$set`:** the date only moves earlier, so the backfill (`scripts/backfillFirstCommandAt.js`, from each record's ObjectId time, an approximation either way) and live writes can run in any order.
 - On someone's very first `/settings` the field is not written yet, so a slash invocation shows "now"; a button re-render with no date shows no line.
+
+## Your Stats — page 2 (2026-10-20 18:38 EDT)
+Harkirat approved it 2026-10-20 18:16 EDT: a **Your Stats** button in the header row (`set_page_2|{userId}`) and `/settings open:Stats`, counting from v3. `utils/userStats.js` writes and summarises, `utils/statsPanel.js` draws, `UserPreference.stats` holds it (PRIVACY §2.1e).
+- 🔴 **Never built from `AnalyticsEvent`.** Those rows are HMAC-hashed so they can't be tied back to a person; this is a separate identified record.
+- **What counts:** an own slash or right-click command (after it runs, with Dioreo User Since, in `noteOwnCommand`), a build card drawn for the clicker, Calculate on `/draw calculator` (the calculation's CP), a Show Everyone share. Re-renders don't count again.
+- **Reset** is `set_stats_reset` (asks) → `set_stats_resetok` (unsets `stats`; `firstCommandAt` stays). Both type-tested buttons in `handlers/settings.js`.
+- User # counts records with an earlier `firstCommandAt`; the percentile appears only once 5 users have counts. Covered by `scripts/userStats.test.js`.

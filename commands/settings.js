@@ -30,14 +30,15 @@ module.exports = {
         .addStringOption(option => option.setName('open').setDescription('Open straight on one part of your settings.').addChoices(
             { name: 'Visibility', value: 'visibility' },
             { name: 'Preferences', value: 'preferences' },
-            { name: 'Colors', value: 'colors' }
+            { name: 'Colors', value: 'colors' },
+            { name: 'Your Stats', value: 'stats' }
         ))
         // Added 2026-07-18 (v2 quick-wins batch) -- every other command already has this option; /settings was simply missed. Same name/description/priority pattern as everywhere else (explicit option > saved settingsVisibility preference > public default, see resolveEphemeral below) -- the in-panel Show/Hide toggle button still works exactly as before for changing the SAVED preference; this just lets one specific invocation override it.
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region dropdown + hex-code lines + footer pushed the single-page layout close to Discord's 40-component cap -- see the `set_page_` button handler in handlers/settings.js for how page navigation re-invokes this with a target page.
-    async execute(interaction, pageOverride = 0) {
+    async execute(interaction, pageOverride = 0, { resetArmed = false } = {}) {
         const userId = interaction.user.id;
         // `open:` only exists on a real slash invocation. Every re-render (the toggle/set/set_page handlers in handlers/settings.js) calls this with a button or select interaction and its own pageOverride, so the guard keeps those exactly as they were.
         const open = interaction.isChatInputCommand() ? interaction.options.getString('open') : null;
@@ -45,9 +46,11 @@ module.exports = {
         if (open === 'colors') {
             return require('./colors').execute(interaction, { prefsField: 'settingsVisibility' });
         }
+        // Page 2 is Your Stats (2026-10-20 18:36 EDT): the header's Your Stats button and `open:Stats` land there.
         const page = open === 'preferences' ? 1
             : open === 'visibility' ? 0
-            : Math.min(Math.max(pageOverride, 0), 1);
+            : open === 'stats' ? 2
+            : Math.min(Math.max(pageOverride, 0), 2);
 
         // 1. DATA SYNCHRONIZATION
         let prefs = await UserPreference.findOne({ discordId: userId });
@@ -103,6 +106,16 @@ module.exports = {
             });
 
         const userCreatedAt = Math.floor(interaction.user.createdAt.getTime() / 1000);
+
+        // YOUR STATS (page 2): its own panel, tinted like the dashboard, with Back to Settings and Reset My Stats. Drawn by utils/statsPanel.js from utils/userStats.js's summary.
+        if (page === 2) {
+            const { loadStatsView } = require('../utils/userStats');
+            const { buildStatsComponents } = require('../utils/statsPanel');
+            const summary = await loadStatsView(prefs);
+            const statsComponents = buildStatsComponents({ userId, avatarUrl: userAvatarUrl, summary, firstCommandAt: prefs.firstCommandAt, resetArmed, titleEmoji: emojis.settings });
+            const statsPayload = withShareButton([{ type: 17, accent_color: panelColorHex, components: statsComponents }], isEphemeral);
+            return sendV2Payload(interaction, statsPayload, { allowedMentions: { users: [] } });
+        }
 
         // 4. BULLETPROOF STATE SYNCING
         const loadoutVis = (prefs.loadoutVisibility || 'public').toUpperCase();
@@ -173,6 +186,8 @@ module.exports = {
             type: 2, style: 1, label: "View Colors", custom_id: `colors_view|${userId}`,
             emoji: emojis.parseEmoji(emojis.eyedropper)
         });
+        // Your Stats (2026-10-20 18:36 EDT, Harkirat: "a button up where the settings dashboard section is"): page 2 of this same panel, via the ordinary set_page_ handler.
+        profileLinkButtons.push({ type: 2, style: 1, label: "Your Stats", custom_id: `set_page_2|${userId}` });
         containerComponents.push({ type: 1, components: profileLinkButtons });
 
         containerComponents.push({ type: 14, spacing: 2, divider: true });

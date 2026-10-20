@@ -62,6 +62,7 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
     const { weaponKey, weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndex);
     const scopeToken = formatScopeToken(scope);
     const scopeLabel = labelForScope(scope);
+    require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, weaponBuilds[indexWithinWeapon]?._id); // Your Stats: a build this user opened
     const cardPayload = buildLoadoutCard(weaponBuilds, indexWithinWeapon, {
         color: getMpCategoryAccent(weaponBuilds[indexWithinWeapon].category),
         idPrefix: scope.mode === 'DMZ' ? 'dmz' : 'mp',
