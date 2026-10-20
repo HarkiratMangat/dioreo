@@ -1103,6 +1103,16 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 *🏷️ **`/gunsmiths` became `/gunsmith` on 2026-10-19 21:17 EDT** (Harkirat: "let's use gunsmith singular"). Entries anywhere in this file that were filed earlier keep the name they were written under, and so do the changelogs and the devlog: a record is never backdated. Read `/gunsmiths` in an older entry as `/gunsmith`, and remember `search` and `list` there are `mp` and `dmz` now.*
 
+### Your Stats — per-user usage stats on a /settings page `[P2 · M]`
+
+*Filed 2026-10-20 18:25 EDT, approved by Harkirat 2026-10-20 18:16 EDT ("I like your ideas… let's make it a button… counting starts on V3"). Being built in the timestamp-fix thread on `fix/timestamp-timezone`; mock-ups (Stats button, Stats page) posted in Dioreoland #testing-spam, his OK on them pending.*
+
+- **What:** a separate per-user stats record, counted from v3 only (no backfill): commands and subcommands run, builds opened, CP priced and biggest draw priced, hour of day used, days active and streaks, panels shared, last used. Inferred at render: Dioreo user #N (from `firstCommandAt`), percentile, favourite command, go-to build and class. A **Your Stats** button in the /settings header row and `/settings open:Stats`; a **Reset my stats** button with a confirm.
+- ⚠️ **Never derive it from `AnalyticsEvent`**: those rows are keyed by an HMAC hash so they cannot be tied back to a person (PRIVACY §2.4b).
+- **Privacy:** §0, §2.4b and §3 promise usage records are "never applied back to an individual" and "no profiling"; rewrite all three, plus §2.1 and Appendix A rows.
+- **Later, same data:** milestone messages (100th command, one year) and a season-end Dioreo Wrapped.
+- **Verify:** run three commands on the dev bot, open Your Stats, see the counts; Reset clears them; a click on someone else's panel counts nothing.
+
 ### Dioreo Admin — a second Discord application that holds only the admin commands `[P1 · M]`
 
 > ✅ **BUILT, Pre-Release v3.92.0 (#201), 2026-10-19 15:43 EDT.** Click-tested by Harkirat on the dev bot. What remains is the deploy-time steps below (the VM's `.env` line, the prod admin app's emojis, Public Bot stays off), then the **Verify done** line on prod. Close this entry when that line holds.
