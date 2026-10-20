@@ -4786,12 +4786,15 @@ html{scroll-behavior:smooth}
   var tt=document.getElementById('gotop');
   if(!tt)return;
   var bar=tt.querySelector('.tt-bar'), foot=document.querySelector('.foot');
+  var tray=foot&&foot.querySelector('.tray');
   /* Cached: getComputedStyle forces a style resolve, and both values change only
      with the viewport. Re-measured on resize for the same reason. */
-  var base=0, pad=0;
+  var base=0, pad=0, tpad=0, bh=0;
   function measure(){
     base=parseFloat(getComputedStyle(tt).bottom)||0;
     pad=foot?parseFloat(getComputedStyle(foot).paddingTop)||0:0;
+    tpad=tray?parseFloat(getComputedStyle(tray).paddingTop)||0:0;
+    bh=tt.offsetHeight;
   }
   measure();
   var queued=false;
@@ -4810,6 +4813,15 @@ html{scroll-behavior:smooth}
          feed back on itself. */
       var ft=foot.getBoundingClientRect().top+pad;
       var over=(h.clientHeight-base)-ft+12;
+      /* A footer that opens with the landing's ruled tray (/commands) parks the
+         button INSIDE the tray, centred on the link block, in the empty right half
+         the landing gives its theme switch. Parked above the rule instead, it sat
+         on the corner of the card above (Harkirat, 2026-10-20 16:04 EDT: "to-top
+         button is oddly placed when at the base of the commands page"). */
+      if(tray){
+        var tr=tray.getBoundingClientRect(), mid=tr.top+tpad+(tr.height-tpad)/2;
+        over=(h.clientHeight-base)-(mid+bh/2);
+      }
       tt.style.setProperty('--lift',(over>0?over:0).toFixed(1)+'px');
     }
   }
