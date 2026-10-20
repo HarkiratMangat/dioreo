@@ -160,13 +160,19 @@ async function renderDecorationWebpCore(decorationUrl, decorationAsset) {
 }
 
 // Patches a rendered resource's Cloudinary context -- mirrors utils/nameplateWebpCache.js's attachNameplateDiscordCdnUrl exactly (same ONE-CALL rule, same `extra` shape for the render-source marker + catalog metadata). Exported (2026-08-15 10:31 EDT) for scripts/bulkCacheCollectibles.js.
-async function attachDecorationDiscordCdnUrl(publicId, palette, discordCdnUrl, extra = {}) {
-    if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return;
+// The context map every write of a cached render carries. Shared by the patch below and the bulk upload, so the two can never disagree about a field.
+function contextFor(palette, discordCdnUrl, extra = {}) {
     const context = { ...paletteContextFields(palette, FRAME_OPTS) };
     if (discordCdnUrl) context.discord_cdn_url = discordCdnUrl;
     for (const [key, value] of Object.entries(extra)) {
         if (value !== undefined && value !== null && value !== '') context[key] = String(value);
     }
+    return context;
+}
+
+async function attachDecorationDiscordCdnUrl(publicId, palette, discordCdnUrl, extra = {}) {
+    if (isCloudinaryWriteBlocked('update', publicId, { devNamespaceSafe: true })) return;
+    const context = contextFor(palette, discordCdnUrl, extra);
     if (!Object.keys(context).length) return;
     try {
         await cloudinary.api.update(publicId, { resource_type: 'image', context });
@@ -175,21 +181,26 @@ async function attachDecorationDiscordCdnUrl(publicId, palette, discordCdnUrl, e
     }
 }
 
-// BULK hook (2026-08-15 10:31 EDT): core render + Cloudinary upload only -- see utils/nameplateWebpCache.js's renderNameplateWebpForBulk for the full reasoning, identical shape here. `assetFolder`: Cloudinary's `asset_folder` (Media Library organization only -- never affects `public_id`, the actual cache key, for the same reason documented on the nameplate side).
+// BULK hook, render half (2026-08-15 10:31 EDT; split from the upload 2026-10-19 23:33 EDT): core render only -- see utils/nameplateWebpCache.js's renderNameplateWebpForBulk for the full reasoning (post first, then uploadDecorationWebpForBulk with the url in `context`, no Admin API call), identical shape here. `assetFolder`: Cloudinary's `asset_folder` (Media Library organization only -- never affects `public_id`, the actual cache key, for the same reason documented on the nameplate side).
 async function renderDecorationWebpForBulk(decorationUrl, decorationAsset, assetFolder, catalog) {
     const publicId = publicIdFor(decorationAsset, catalog);
     if (isCloudinaryWriteBlocked('upload', publicId, { devNamespaceSafe: true })) return null;
     const core = await renderDecorationWebpCore(decorationUrl, decorationAsset);
     if (!core) return null;
+    return { ...core, publicId, filename: filenameForPublicId(publicId), assetFolder: assetFolder || FOLDER };
+}
+
+// BULK hook, upload half (2026-10-19 23:33 EDT): ONE Upload API call that carries the whole context map -- palette, discord_cdn_url, render_source and the catalog metadata, built exactly as attachDecorationDiscordCdnUrl builds it, so a bulk-cached resource reads back the same. Never throws; returns the secure url, or null.
+async function uploadDecorationWebpForBulk(render, discordCdnUrl, extra = {}) {
+    if (isCloudinaryWriteBlocked('upload', render.publicId, { devNamespaceSafe: true })) return null;
     try {
         const uploadResult = await cloudinary.uploader.upload(
-            `data:image/webp;base64,${core.webpBuffer.toString('base64')}`,
-            { public_id: publicId, asset_folder: assetFolder || FOLDER, overwrite: true, invalidate: true, resource_type: 'image' }
+            `data:image/webp;base64,${render.webpBuffer.toString('base64')}`,
+            { public_id: render.publicId, asset_folder: render.assetFolder || FOLDER, overwrite: true, invalidate: true, resource_type: 'image', context: contextFor(render.palette, discordCdnUrl, extra) }
         );
-        const filename = filenameForPublicId(publicId);
-        return { ...core, publicId, filename, cloudinaryUrl: uploadResult.secure_url };
+        return uploadResult.secure_url;
     } catch (err) {
-        console.error(`Decoration Cloudinary upload failed for "${decorationAsset}": ${safeErrorMessage(err)}`);
+        console.error(`Decoration Cloudinary upload failed for "${render.publicId}": ${safeErrorMessage(err)}`);
         return null;
     }
 }
@@ -321,5 +332,5 @@ async function healPalette(cached, decorationAsset, catalog, decorationUrl) {
 
 module.exports = {
     resolveDecorationWebp, publicIdFor, FOLDER,
-    getCachedDecorationWebp, renderDecorationWebpForBulk, attachDecorationDiscordCdnUrl
+    getCachedDecorationWebp, renderDecorationWebpForBulk, uploadDecorationWebpForBulk, attachDecorationDiscordCdnUrl
 };

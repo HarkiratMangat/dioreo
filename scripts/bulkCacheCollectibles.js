@@ -14,6 +14,7 @@
 //   node scripts/bulkCacheCollectibles.js --repair-context        # re-patch cached SKUs whose Cloudinary context lost its Discord url
 //
 // 🔴 Cloudinary's Admin API allows 500 calls an HOUR on this account, shared with the live bot. A real run spends about TWO per SKU (the cache lookup and the context patch; uploads use the separate Upload API), and --dry-run spends ONE per SKU. A dry run over the whole 986-SKU catalogue on 2026-10-19 23:13 EDT spent the hour by itself, and the prod sample run straight after it lost all seven context patches to `Rate Limit Exceeded` while its uploads and channel posts succeeded. So a full run is paced with --limit (about 200 SKUs an hour leaves room for the bot), and --repair-context fixes any SKU whose patch failed anyway: attach*DiscordCdnUrl swallows the error, so this script cannot tell at the time.
+// ✅ Since 2026-10-19 23:33 EDT a fresh SKU costs ZERO Admin calls: the "already cached?" check reads the Mongo asset index first, and the Discord url rides in the upload's own context (posted first, uploaded second), so there is no api.update. Only a variant that was already posted pays one lookup, and a heal one patch. --limit and --repair-context stay for the cases that still spend them.
 //
 // Rate-limiting: uploadToStorageChannel/uploadMultipleToStorageChannel already go through
 // @discordjs/rest's REST client, which implements exactly what Discord's own docs recommend -- per-bucket header parsing and automatic backoff on 429 ("rate limits should not be hard coded into your app" -- checked directly against Discord's rate-limits documentation, there is no published fixed number for the message-create route). Real protection against hitting the limit therefore already exists underneath this pipeline for free. --batch-size/--delay-ms below are a deliberate COURTESY pacing measure on top of that (predictable CPU load, readable progress, avoiding a burst that queues hundreds of requests into the REST bucket manager at once) -- not the primary defense.
@@ -23,11 +24,11 @@ const CollectibleCatalog = require('../models/CollectibleCatalog');
 const { groupCatalogDocs, chunkVariants } = require('./catalogGrouping');
 const { slugify } = require('../utils/cloudinaryCache');
 const {
-    getCachedNameplateWebp, renderNameplateWebpForBulk, attachNameplateDiscordCdnUrl,
+    getCachedNameplateWebp, renderNameplateWebpForBulk, uploadNameplateWebpForBulk, attachNameplateDiscordCdnUrl,
     publicIdFor: nameplatePublicIdFor, FOLDER: NAMEPLATE_FOLDER
 } = require('../utils/nameplateWebpCache');
 const {
-    getCachedDecorationWebp, renderDecorationWebpForBulk, attachDecorationDiscordCdnUrl,
+    getCachedDecorationWebp, renderDecorationWebpForBulk, uploadDecorationWebpForBulk, attachDecorationDiscordCdnUrl,
     publicIdFor: decorationPublicIdFor, FOLDER: DECORATION_FOLDER
 } = require('../utils/decorationWebpCache');
 const { uploadMultipleToStorageChannel } = require('../utils/discordCdnStorage');
@@ -90,6 +91,12 @@ async function attachFor(doc, publicId, palette, discordCdnUrl, extra) {
     return doc.kind === 'nameplate'
         ? attachNameplateDiscordCdnUrl(publicId, palette, discordCdnUrl, extra)
         : attachDecorationDiscordCdnUrl(publicId, palette, discordCdnUrl, extra);
+}
+
+async function uploadFor(doc, render, discordCdnUrl, extra) {
+    return doc.kind === 'nameplate'
+        ? uploadNameplateWebpForBulk(render, discordCdnUrl, extra)
+        : uploadDecorationWebpForBulk(render, discordCdnUrl, extra);
 }
 
 function publicIdFor(doc) {
@@ -267,7 +274,11 @@ async function processGroup(group, args, stats) {
     const toSkip = [];
 
     // Promise.all across the group's variants, not sequential awaits (v3-pre-release review, finding #54) -- groups are already parallelized across args.batchSize, so the WITHIN-group serialization here was pure added latency, paid on every invocation including --dry-run.
-    const cachedResults = await Promise.all(group.variants.map(async (doc) => ({ doc, cached: await getCachedFor(doc) })));
+    // The asset index first (2026-10-19 23:33 EDT): every variant posted to a cache channel, by this script or the live path, gets a row, so no row means never posted and the variant renders without asking Cloudinary. Only a posted variant pays for the Admin API lookup that tells skip from heal -- that lookup was half of the two Admin calls per SKU that ran the first prod run out of its 500-an-hour budget. ⚠️ A live-path render cached BEFORE the index existed (2026-08-17) has no row and re-renders here; prod never ran the live path, so this only touches old dev caches.
+    const cachedResults = await Promise.all(group.variants.map(async (doc) => {
+        const record = await getDiscordCdnAsset(publicIdFor(doc));
+        return { doc, cached: record ? await getCachedFor(doc) : null };
+    }));
     for (const { doc, cached } of cachedResults) {
         if (cached && cached.discordCdnUrl) {
             // 'recovered' (2026-08-17 19:09 EDT, see utils/discordCdnAssetIndex.js) is treated the same as 'fallback' here: a resource restored from the durable Discord-message index after its Cloudinary resource was deleted out-of-band never had its catalog metadata (sku_id/collection/etc) re-attached, since the recovery path deliberately doesn't try to remember that -- this branch is what closes the loop.
@@ -326,13 +337,23 @@ async function processGroup(group, args, stats) {
         for (let i = 0; i < chunk.length; i++) {
             const { doc, render } = chunk[i];
             const url = urls ? urls[i] : null;
-            await attachFor(doc, render.publicId, render.palette, url, { ...catalogExtra(doc), discord_message_id: messageId });
-            // Durable secondary index (2026-08-17 19:09 EDT) -- see utils/discordCdnAssetIndex.js's header. One row per variant, all sharing this grouped message's id, so a LATER deletion of just one variant's Cloudinary resource can recover that variant alone without touching the others still sharing this message.
-            if (url && messageId) {
-                await recordDiscordCdnAsset({
-                    publicId: render.publicId, kind: doc.kind, channelId, messageId,
-                    discordCdnUrl: url, filename: render.filename
-                });
+            if (!url || !messageId) {
+                // No channel post, so nothing is uploaded either: --retry-failed renders and posts it fresh.
+                stats.failed++;
+                await CollectibleCatalog.updateOne({ skuId: doc.skuId }, { cacheStatus: 'failed', lastAttemptAt: new Date(), lastError: 'cache-channel post failed -- see console output above' });
+                continue;
+            }
+            // Durable secondary index (2026-08-17 19:09 EDT) -- see utils/discordCdnAssetIndex.js's header. One row per variant, all sharing this grouped message's id, so a LATER deletion of just one variant's Cloudinary resource can recover that variant alone without touching the others still sharing this message. Written BEFORE the upload so a failed upload still leaves the row: --retry-failed then finds it and recovers the image from Discord instead of posting the variant twice.
+            await recordDiscordCdnAsset({
+                publicId: render.publicId, kind: doc.kind, channelId, messageId,
+                discordCdnUrl: url, filename: render.filename
+            });
+            // Posted first, uploaded second, so the Discord url rides in the upload's own context and no api.update is needed.
+            const uploaded = await uploadFor(doc, render, url, { ...catalogExtra(doc), discord_message_id: messageId });
+            if (!uploaded) {
+                stats.failed++;
+                await CollectibleCatalog.updateOne({ skuId: doc.skuId }, { cacheStatus: 'failed', lastAttemptAt: new Date(), lastError: 'Cloudinary upload failed after the channel post -- --retry-failed recovers it from the asset index' });
+                continue;
             }
             await markCached(doc);
             stats.cached++;
