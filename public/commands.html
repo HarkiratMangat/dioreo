@@ -304,29 +304,26 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ins:hover::after{animation:none}}.ins:focus-visible,.ins:active{transform:none}@media (hover:hover) and (pointer:fine){
   .ins:hover{transform:none}}.ins:focus-visible .ins-ic{transform:none}@media (hover:hover) and (pointer:fine){
   .ins:hover .ins-ic{transform:none}}
-}/* ── the quiet sibling of Install: .ins.sec ───────────────────────────────
-   Same anatomy, same size, same hover behaviour; only the MATERIAL differs. An ink tint over the page is the site's idiom for a recessed bed (the landing command line's option chip uses it) and inverts per theme with no second declaration. The disc keeps the accent so the pair stays one family.
-   A color-mix() surface is invisible to contrastAudit(), so the label pairing was worked out by hand: --ink on a 9% ink bed measures about 12:1 in both themes, the same pairing the command line's option chip records (12.04 dark, 11.88 light). The disc's slash is #141021 on the accent fill, which is Install's own label pairing. */
+}/* ── the way into /commands: .cmdb ──────────────────────────────────────────
+   The Source capsule's look with its word held open: a hairline pill, the label in the capsule's mono small caps, the border warming and the cursor light following on hover. ⚠️ ITS HEIGHT IS INSTALL'S, declared twice on purpose (37px here, 38px in the 620px block with .ins) and not inherited from the shared 32px rule, because the whole point of the second pass was that the pair read as one height. Change .ins and change this with it.
+   The label is --ink2 at rest and --ink on hover, the pairing the capsule and the footer nav links already use on this ground. No mark inside, by instruction. Trailing letter-spacing is taken off the right padding so the word sits centred rather than a tracking-width left of centre. */
 
-.ins.sec{color:var(--ink);box-shadow:none;
-  background:color-mix(in srgb,var(--ink) 9%,transparent);
-  border-color:color-mix(in srgb,var(--ink) 18%,transparent)}
-.ins.sec .ins-ic{color:#141021;background:var(--accent);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
-.ins.sec .ins-gl{background:radial-gradient(58% 150% at var(--px,50%) var(--py,50%),
-  color-mix(in srgb,var(--ink) 16%,transparent),transparent 68%)}
-.ins.sec::after{background:linear-gradient(90deg,transparent,
-  color-mix(in srgb,var(--ink) 22%,transparent),transparent)}.ins.sec:focus-visible{
-  border-color:color-mix(in srgb,var(--accent) 60%,transparent);
-  box-shadow:0 8px 22px -9px color-mix(in srgb,var(--accent) 55%,transparent)}@media (hover:hover) and (pointer:fine){
-.ins.sec:hover{
-  border-color:color-mix(in srgb,var(--accent) 60%,transparent);
-  box-shadow:0 8px 22px -9px color-mix(in srgb,var(--accent) 55%,transparent)}}/* ⚠️ AT 320px THE HEADER HAS NO ROOM FOR TWO LABELLED KEYS AND THE MASCOT: with both discs the mascot measured about 30px wide, a blob. Commands drops its disc below 340px (the word and the arrow carry it), which hands back about 30px; Install keeps its mark because the Discord glyph is what says it is an outbound install link. */
-
-@media (max-width:340px){
-  .ins.sec .ins-ic{display:none}
-  .ins.sec{padding:0 .75rem}
-}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
+.cmdb{display:inline-flex;align-items:center;justify-content:center;
+  position:relative;isolation:isolate;overflow:hidden;
+  height:37px;padding-inline:1.05rem calc(1.05rem - .13em);border-radius:999px;
+  text-decoration:none;white-space:nowrap;color:var(--ink2);
+  border:1px solid var(--rule2);background:transparent;
+  font-family:var(--mono);font-size:.68rem;font-weight:600;letter-spacing:.13em;
+  text-transform:uppercase;transition:color .22s,border-color .22s}
+.cmdb-t{position:relative;z-index:1}
+.cmdb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
+  opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
+    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
+    transparent 72%)}.cmdb:focus-visible{color:var(--ink);
+  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}@media (hover:hover) and (pointer:fine){
+.cmdb:hover{color:var(--ink);
+  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}}.cmdb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
+.cmdb:hover::after{opacity:1}}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
    eaten. The install button collapses to its mark and the gap tightens, which
    brings it to ~315px. The GitHub button deliberately survives instead: it is the
@@ -394,7 +391,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
-  .ins-ar{display:none}
+  .ins-ar{display:none}/* Commands keeps Install's height on a phone too (38px), and its word, which is the whole button. */
+  
+  .cmdb{height:38px;padding-inline:.9rem calc(.9rem - .13em)}
 }/* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
    This is the one place the design spends its boldness, so it is the one place
    with real depth. It is a sky you carry the sun and moon across:
@@ -723,10 +722,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
   gap:.15rem .75rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
   text-transform:uppercase}
-.endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
+.endnav a,.srcln{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;
   transition:color .22s,border-color .22s}@media (hover:hover) and (pointer:fine){
-.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}}
+.endnav a:hover,.srcln:hover{color:var(--ink);border-bottom-color:var(--accent)}}/* .srcln is the landing footer's Source link, a lone link outside any .endnav, so it carries the nav's type itself. */
+
+.srcln{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase}
 .endnav span{color:var(--ink3);opacity:.45}/* ⚠️ The sign-off is FIRST in the footer's DOM and LAST on screen, and the split
    is deliberate. On the warm pages this line is lifted straight out of the
    source, where it runs on from the last paragraph ("Thanks for being here —

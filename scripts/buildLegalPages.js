@@ -1135,17 +1135,11 @@ const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${
 </a>`;
 
 /**
- * The way into the /commands page, built from Install's own anatomy (the disc, the label, the arrow that opens on hover, the cursor light and the single edge pass) so the two read as a pair of keys, with Install the filled one and this the quiet one: an ink-tint bed instead of the accent fill, and the accent kept for the disc, so the coral still says "Dioreo" on both. The slash is the mark because a slash is how every command on the page starts.
+ * The way into the /commands page, drawn the way the Source capsule was drawn, because that is the look Harkirat picked for it (2026-10-19 23:11 EDT, after the first build in Install's own anatomy read as "ugly"): a hairline pill on the page, the label in the capsule's mono small caps, and the accent held back for the hover, when the border warms and the cursor light follows. It is the capsule held OPEN. The capsule only showed its word on hover, and a way into a page has to say where it goes before anyone hovers.
  *
- * Its arrow points right, not up and out, because this link stays on the site: Install's diagonal arrow means "leaves for Discord" and this one must not borrow that meaning. Only the landing page carries it (the document pages reach /commands through their nav), and its href is built with hrefTo from the landing page's own position.
+ * Its height is Install's (37px, 38px under 620px) so the two read as a pair; the capsule's 32px read as the smaller of them. There is no mark inside it, by his instruction: the word is the whole button. It stays a link on the site (no outbound arrow), and only the landing page carries it, since the document pages reach /commands through their nav. Its href is built with hrefTo from the landing page's own position.
  */
-const SLASH_MARK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M8.3 1.4 3.7 10.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>';
-const commandsBtn = `<a class="ins sec" href="${hrefTo(TOOL_PAGES[0], { out: 'index.html', dir: '' })}" data-spot data-tip="Every command, with examples">
-  <span class="ins-gl" aria-hidden="true"></span>
-  <span class="ins-ic" aria-hidden="true">${SLASH_MARK}</span>
-  <span class="ins-t">Commands</span>
-  <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2 5h6M5.4 2.4 8 5 5.4 7.6"/></svg></span>
-</a>`;
+const commandsBtn = `<a class="cmdb" href="${hrefTo(TOOL_PAGES[0], { out: 'index.html', dir: '' })}" data-spot data-tip="Every command, with examples"><span class="cmdb-t">Commands</span></a>`;
 
 /**
  * The wordmark. It was previously a static accent bar plus text, and the first thing Harkirat said about the live site was that he could not tell whether it was clickable. So it now carries a permanent, slow idle animation — a highlight that sweeps the three bars every few seconds — because a hover state cannot advertise interactivity to someone who has not hovered yet. The three bars are the same motif as the favicon and stand for attachment slots on a spec sheet.
@@ -1174,12 +1168,15 @@ const wordmark = (href, cur) => {
   </div>`;
 };
 
-// Collapsed to the mark alone, expanding to reveal the label on hover/focus. NOTE: this is the ONLY repo link on the site (in the bar on the document pages, and in the landing page's footer under the copyright since 2026-10-19 22:45 EDT, where Harkirat asked for it so the header holds just Install and Commands), and it is a navigation affordance, not a citation. That distinction is deliberate — a citation inside a legal document must resolve (the repo's visibility can change at any time, per TERMS §7.1), whereas a nav button that stops working is a dead button and not a defective legal instrument. TERMS §20 still deliberately withholds the repo as a *contact* route, which this does not change.
+// Collapsed to the mark alone, expanding to reveal the label on hover/focus. NOTE: this is the ONLY repo link on the site (in the bar on the document pages, and as a plain text link, `repoLink` below, in the landing page's footer under the copyright since 2026-10-19 23:11 EDT: Harkirat moved it out of the header on 22:45 EDT and then took it out of its button design altogether), and it is a navigation affordance, not a citation. That distinction is deliberate — a citation inside a legal document must resolve (the repo's visibility can change at any time, per TERMS §7.1), whereas a nav button that stops working is a dead button and not a defective legal instrument. TERMS §20 still deliberately withholds the repo as a *contact* route, which this does not change.
 const repoBtn = `<a class="ghb" href="${REPO_URL}" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>`;
+
+// The landing footer's way to the repo: a text link in the footer nav's own style (.endnav a), under the copyright line. Harkirat, 2026-10-19 23:11 EDT: "remove it from its button design ... make it a text link under the all rights reserved line, styled like the footer nav links on the legal pages." It is the same destination as repoBtn and carries the same hover hint.
+const repoLink = `<a class="srcln" href="${REPO_URL}" target="_blank" rel="noopener noreferrer" data-tip="Source on GitHub">Source</a>`;
 
 /**
  * The light/dark switch. Replaces a ◐ glyph in a box.
@@ -1655,26 +1652,24 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ins:hover,.ins:focus-visible,.ins:active{transform:none}
   .ins:hover .ins-ic,.ins:focus-visible .ins-ic{transform:none}
 }
-/* ── the quiet sibling of Install: .ins.sec ───────────────────────────────
-   Same anatomy, same size, same hover behaviour; only the MATERIAL differs. An ink tint over the page is the site's idiom for a recessed bed (the landing command line's option chip uses it) and inverts per theme with no second declaration. The disc keeps the accent so the pair stays one family.
-   A color-mix() surface is invisible to contrastAudit(), so the label pairing was worked out by hand: --ink on a 9% ink bed measures about 12:1 in both themes, the same pairing the command line's option chip records (12.04 dark, 11.88 light). The disc's slash is #141021 on the accent fill, which is Install's own label pairing. */
-.ins.sec{color:var(--ink);box-shadow:none;
-  background:color-mix(in srgb,var(--ink) 9%,transparent);
-  border-color:color-mix(in srgb,var(--ink) 18%,transparent)}
-.ins.sec .ins-ic{color:#141021;background:var(--accent);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
-.ins.sec .ins-gl{background:radial-gradient(58% 150% at var(--px,50%) var(--py,50%),
-  color-mix(in srgb,var(--ink) 16%,transparent),transparent 68%)}
-.ins.sec::after{background:linear-gradient(90deg,transparent,
-  color-mix(in srgb,var(--ink) 22%,transparent),transparent)}
-.ins.sec:hover,.ins.sec:focus-visible{
-  border-color:color-mix(in srgb,var(--accent) 60%,transparent);
-  box-shadow:0 8px 22px -9px color-mix(in srgb,var(--accent) 55%,transparent)}
-/* ⚠️ AT 320px THE HEADER HAS NO ROOM FOR TWO LABELLED KEYS AND THE MASCOT: with both discs the mascot measured about 30px wide, a blob. Commands drops its disc below 340px (the word and the arrow carry it), which hands back about 30px; Install keeps its mark because the Discord glyph is what says it is an outbound install link. */
-@media (max-width:340px){
-  .ins.sec .ins-ic{display:none}
-  .ins.sec{padding:0 .75rem}
-}
+/* ── the way into /commands: .cmdb ──────────────────────────────────────────
+   The Source capsule's look with its word held open: a hairline pill, the label in the capsule's mono small caps, the border warming and the cursor light following on hover. ⚠️ ITS HEIGHT IS INSTALL'S, declared twice on purpose (37px here, 38px in the 620px block with .ins) and not inherited from the shared 32px rule, because the whole point of the second pass was that the pair read as one height. Change .ins and change this with it.
+   The label is --ink2 at rest and --ink on hover, the pairing the capsule and the footer nav links already use on this ground. No mark inside, by instruction. Trailing letter-spacing is taken off the right padding so the word sits centred rather than a tracking-width left of centre. */
+.cmdb{display:inline-flex;align-items:center;justify-content:center;
+  position:relative;isolation:isolate;overflow:hidden;
+  height:37px;padding-inline:1.05rem calc(1.05rem - .13em);border-radius:999px;
+  text-decoration:none;white-space:nowrap;color:var(--ink2);
+  border:1px solid var(--rule2);background:transparent;
+  font-family:var(--mono);font-size:.68rem;font-weight:600;letter-spacing:.13em;
+  text-transform:uppercase;transition:color .22s,border-color .22s}
+.cmdb-t{position:relative;z-index:1}
+.cmdb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
+  opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
+    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
+    transparent 72%)}
+.cmdb:hover,.cmdb:focus-visible{color:var(--ink);
+  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}
+.cmdb:hover::after,.cmdb:focus-visible::after{opacity:1}
 /* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
    eaten. The install button collapses to its mark and the gap tightens, which
@@ -1743,6 +1738,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
   .ins-ar{display:none}
+  /* Commands keeps Install's height on a phone too (38px), and its word, which is the whole button. */
+  .cmdb{height:38px;padding-inline:.9rem calc(.9rem - .13em)}
 }
 
 /* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
@@ -2069,10 +2066,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
   gap:.15rem .75rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
   text-transform:uppercase}
-.endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
+.endnav a,.srcln{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;
   transition:color .22s,border-color .22s}
-.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}
+.endnav a:hover,.srcln:hover{color:var(--ink);border-bottom-color:var(--accent)}
+/* .srcln is the landing footer's Source link, a lone link outside any .endnav, so it carries the nav's type itself. */
+.srcln{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase}
 .endnav span{color:var(--ink3);opacity:.45}
 /* ⚠️ The sign-off is FIRST in the footer's DOM and LAST on screen, and the split
    is deliberate. On the warm pages this line is lifted straight out of the
@@ -7808,7 +7807,7 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    document and the nav's hairline sits below it, separating site chrome from the
    letter rather than cutting the letter off from its own last line. */
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
-@media print{.bar,.thm,.ghb,.ins,.cpy,.node,.mnav{display:none!important}
+@media print{.bar,.thm,.ghb,.ins,.cmdb,.cpy,.node,.mnav{display:none!important}
   body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}
   .plate,.opt,.prom,.slip,.ldg{box-shadow:none;animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -7979,7 +7978,7 @@ body{min-height:100vh;display:flex;align-items:center;padding:clamp(1.4rem,5.5vh
    on the page now, some of that reclaimed space goes back in here rather
    than leaving it all at the very top. */
 .top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.6rem,9.5vh,4.8rem)}
-.top .ins.sec{margin-left:auto}/* The Commands button takes the push to the right edge that the Source capsule used to carry (Source now lives in the footer), so the two actions sit together at the end of the header. */
+.top .cmdb{margin-left:auto}/* The Commands button takes the push to the right edge that the Source capsule used to carry (Source now lives in the footer), so the two actions sit together at the end of the header. */
 /* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
    The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
    at -.05em on a ~66px display size the tracking pulled unrelated pairs into
@@ -8177,8 +8176,8 @@ ${cmdRoleCss('.cmd-line')}
    Reported same session, 08:56 EDT, with a phone screenshot showing exactly
    that. 760px matches this template's other mobile breakpoints. */
 .sig.lsig{margin:0;flex:0 0 auto;text-align:right}
-/* The Source capsule sits under the copyright line, on the sign-off's own alignment: right on a wide screen, left once .lsig turns left below. Harkirat's placement, 2026-10-19 22:45 EDT (he drew a circle there). It left the header so the two actions up there are Install and Commands. */
-.lsig .ghb{margin-top:.9rem}
+/* The Source link sits under the copyright line, on the sign-off's own alignment: right on a wide screen, left once .lsig turns left below. Harkirat's placement, 2026-10-19 22:45 EDT (he drew a circle there); at 23:11 EDT he turned it from a capsule into a text link in the footer nav's style. It left the header so the two actions up there are Install and Commands. It is an inline link, so it needs its own line: inline-block plus a top margin puts it under the block-level copyright span. */
+.lsig .srcln{display:inline-block;margin-top:.55rem}
 @media (max-width:760px){ .sig.lsig{text-align:left} }
 .disc.fine{margin:0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
@@ -8517,7 +8516,7 @@ ${cmdRoleCss('.cmd-line')}
     <!-- The sign-off closes the landing page as it closes every other one. It was
          the only page without it, which made the site look like it ended twice:
          every document signed off and the front door did not. -->
-    <p class="sig lsig">${DIOR_SIG}${SIG_COPYRIGHT}${repoBtn}</p>
+    <p class="sig lsig">${DIOR_SIG}${SIG_COPYRIGHT}${repoLink}</p>
   </div>
 </main>
 <script>${THEME_JS}${MORPH_JS}${CMD_JS}</script>
