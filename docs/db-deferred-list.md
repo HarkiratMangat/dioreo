@@ -1105,6 +1105,8 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ### Your Stats — per-user usage stats on a /settings page `[P2 · M]`
 
+> ✅ **BUILT 2026-10-20 18:46 EDT** on `fix/timestamp-timezone` (`419c8fd6`): counting, the page, Your Stats button, `open:Stats`, Reset, PRIVACY §2.1e. Still open below: milestone messages and a season-end Dioreo Wrapped. Not yet merged.
+
 *Filed 2026-10-20 18:25 EDT, approved by Harkirat 2026-10-20 18:16 EDT ("I like your ideas… let's make it a button… counting starts on V3"). Being built in the timestamp-fix thread on `fix/timestamp-timezone`; mock-ups (Stats button, Stats page) posted in Dioreoland #testing-spam, his OK on them pending.*
 
 - **What:** a separate per-user stats record, counted from v3 only (no backfill): commands and subcommands run, builds opened, CP priced and biggest draw priced, hour of day used, days active and streaks, panels shared, last used. Inferred at render: Dioreo user #N (from `firstCommandAt`), percentile, favourite command, go-to build and class. A **Your Stats** button in the /settings header row and `/settings open:Stats`; a **Reset my stats** button with a confirm.
