@@ -1099,7 +1099,7 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ### `/timestamp` ranges — "8pm to 10pm" gives a start and an end `[P2 · S]`
 
-> ✅ **BUILT 2026-10-20 19:15 EDT** on `fix/timestamp-timezone`, his pick A (2026-10-20 18:57 EDT). Not yet merged.
+> ✅ **BUILT 2026-10-20 19:15 EDT** on `fix/timestamp-timezone`, his pick A (2026-10-20 18:57 EDT); ships in Pre-Release v3.104.0 (#213).
 
 *Filed 2026-10-20 18:46 EDT. Harkirat, 2026-10-20 18:30 EDT: "ranges is actually a really good idea ... if it can, that would be a really good thing to implement."* Checked the same day: chrono returns a start and an end for "8pm to 10pm", "tomorrow 8-10pm", "oct 24 to oct 27", "fri 9am - sun 11pm" and "from 6pm until 9pm", read through `zoneReference`/`componentInstant`.
 
@@ -1113,7 +1113,7 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ### Your Stats — per-user usage stats on a /settings page `[P2 · M]`
 
-> ✅ **BUILT 2026-10-20 18:46 EDT** on `fix/timestamp-timezone` (`419c8fd6`): counting, the page, Your Stats button, `open:Stats`, Reset, PRIVACY §2.1e. Still open below: milestone messages and a season-end Dioreo Wrapped. Not yet merged.
+> ✅ **BUILT 2026-10-20 18:46 EDT** on `fix/timestamp-timezone` (`419c8fd6`): counting, the page, Your Stats button, `open:Stats`, Reset, PRIVACY §2.1e; ships in Pre-Release v3.104.0 (#213). Still open below: milestone messages and a season-end Dioreo Wrapped.
 
 *Filed 2026-10-20 18:25 EDT, approved by Harkirat 2026-10-20 18:16 EDT ("I like your ideas… let's make it a button… counting starts on V3"). Being built in the timestamp-fix thread on `fix/timestamp-timezone`; mock-ups (Stats button, Stats page) posted in Dioreoland #testing-spam, his OK on them pending.*
 
