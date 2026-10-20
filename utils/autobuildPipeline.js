@@ -1,4 +1,5 @@
 // utils/autobuildPipeline.js Shared state + logic for /autobuild, required from BOTH commands/autobuild.js's execute() (initial invocation) and handlers/autobuild.js's button/modal handlers (Confirm/Edit/Cancel/retry, added in Tasks 7/8). Kept out of commands/autobuild.js itself so handlers/autobuild.js can reach the same pendingAutobuilds Map without a circular require -- the router imports handlers, not the reverse; every command file already requires shared logic FROM utils/, never the reverse. Full design: docs/superpowers/specs/2026-07-19-loadout-automation-poc-design.md.
+const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const crypto = require('crypto');
 const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const Loadout = require('../models/Loadout');
@@ -35,13 +36,13 @@ function refreshReviewWarnings(data, allBuilds) {
         ? findDmzDuplicates(weaponKey, data.attachments, sameMode)
         : findDuplicateLoadouts({ gunsmithCode: data.gunsmithCode, attachments: data.attachments }, sameMode);
     data.equipCapWarning = data.mode === 'MP' && data.attachments.length > 5
-        ? `⚠️ **${data.attachments.length} attachments on an MP build:** MP equips at most 5, so one is probably misread -- or this is a DMZ screenshot. Use **Adjust** to fix the list or the mode.`
+        ? `${BOT_EMOJI.warn} **${data.attachments.length} attachments on an MP build:** MP equips at most 5, so one is probably misread -- or this is a DMZ screenshot. Use **Adjust** to fix the list or the mode.`
         : null;
     if (dupes.length > 0) {
         const d = dupes[0];
         const extra = dupes.length > 1 ? ` _(+${dupes.length - 1} more)_` : '';
         const basis = data.mode === 'DMZ' ? 'the same weapon with the same attachments' : `matching Gunsmith code + ${d.overlap}/${d.total} attachments`;
-        data.duplicateWarning = `⚠️ **Possible duplicate:** this looks like **${d.weaponName} — ${d.buildName}**, already in the database (${basis})${extra}. Only save it if it's genuinely a new build.`;
+        data.duplicateWarning = `${BOT_EMOJI.warn} **Possible duplicate:** this looks like **${d.weaponName} — ${d.buildName}**, already in the database (${basis})${extra}. Only save it if it's genuinely a new build.`;
     } else {
         data.duplicateWarning = null;
     }
@@ -66,7 +67,7 @@ async function catalogueWarningFor(data) {
     const what = unknown.weapon && n ? `**Weapon \`${unknown.weapon}\` and ${n} attachment${n === 1 ? '' : 's'} not in the catalogue yet:** ${list(unknown.attachments)}`
         : unknown.weapon ? `**Weapon not in the catalogue yet:** \`${unknown.weapon}\``
         : `**${n} attachment${n === 1 ? '' : 's'} not in the catalogue yet:** ${list(unknown.attachments)}`;
-    return `⚠️ ${what}\n-# A typo, or a new item? **Save Build** saves it and adds these names; **Adjust** lets you fix them first.`;
+    return `${BOT_EMOJI.warn} ${what}\n-# A typo, or a new item? **Save Build** saves it and adds these names; **Adjust** lets you fix them first.`;
 }
 
 // DMZ builds carry no Gunsmith code (the DMZ screen shows none), so findDuplicateLoadouts' code-based rules can never match one. A DMZ duplicate is the same weapon with the same attachment SET, order ignored, compared the way that function compares names (trimmed, case-folded). Kept here rather than in utils/loadoutRender.js so this change stays out of the loadout renderer.
@@ -118,11 +119,11 @@ function emojiIcon(key) { const e = require('./emojiMap'); return e.parseEmoji(e
 
 // Ephemeral review card: weapon/code/attachments/category/badges as extracted so far, plus the RAW source screenshot as the preview image (not yet uploaded to Cloudinary -- see the design spec for why: an edited weapon name during review must never orphan an upload under the wrong key). `opts` (bulk /autobuild, 2026-10-20 10:33 EDT): `header` adds a line under the title, `notes` adds warnings after the standard ones, `rows` replaces the Confirm/Edit/Cancel row. A single review passes none of them and renders exactly as before.
 function buildReviewCard(token, data, opts = {}) {
-    const categoryLine = data.category ? data.category : '⚠️ unknown (use **Adjust** to set one)';
+    const categoryLine = data.category ? data.category : BOT_EMOJI.warn + ' unknown (use **Adjust** to set one)';
     // The mode line says WHY when it was detected, so a wrong guess is visible at a glance rather than discovered after Confirm. "set by you" when /autobuild's `mode:` decided it; nothing to explain when the screenshot was ambiguous, because the line already asks.
     const modeLine = data.mode
         ? `${data.mode}${data.modeSource === 'detected' ? ' _(detected from the screenshot)_' : data.modeSource === 'explicit' ? ' _(set by you)_' : ''}`
-        : "⚠️ couldn't tell MP from DMZ (use **Adjust**: `Category | MP` or `Category | DMZ`)";
+        : BOT_EMOJI.warn + " couldn't tell MP from DMZ (use **Adjust**: `Category | MP` or `Category | DMZ`)";
     const codeLine = data.gunsmithCode
         ? `\`${data.gunsmithCode}\``
         : (data.mode === 'DMZ' ? '_(none -- DMZ builds have no code)_' : '`(empty)`');
@@ -143,7 +144,7 @@ function buildReviewCard(token, data, opts = {}) {
     ];
     // Advisory warnings (never block Save) -- see refreshReviewWarnings above. Their own block between dividers, ABOVE the attachments, so they are seen first (Harkirat, 2026-10-20 12:36 EDT).
     const warnings = [
-        data.categoryConflict ? `⚠️ **Category mismatch:** this weapon is already saved as **${data.categoryConflict}**. Saving it as **${data.category}** will register it under two categories — double-check the category before saving (use **Adjust** to change it).` : null,
+        data.categoryConflict ? `${BOT_EMOJI.warn} **Category mismatch:** this weapon is already saved as **${data.categoryConflict}**. Saving it as **${data.category}** will register it under two categories — double-check the category before saving (use **Adjust** to change it).` : null,
         data.duplicateWarning, data.catalogueWarning, data.equipCapWarning, ...(opts.notes || []),
     ].filter(Boolean);
     if (warnings.length) {
@@ -250,7 +251,7 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
         data = await extractToData(sourceImageUrl, { explicitCategory, badgesOption, explicitMode, adminId: interaction.user.id });
     } catch (err) {
         console.error('Autobuild extraction failed:', err.message);
-        return interaction.followUp({ content: `❌ Couldn't extract loadout data from that image: ${err.message}`, ephemeral: true });
+        return interaction.followUp({ content: `${BOT_EMOJI.cross} Couldn't extract loadout data from that image: ${err.message}`, ephemeral: true });
     }
 
     const token = crypto.randomBytes(8).toString('hex');
@@ -323,8 +324,8 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
 
 function buildPostCreationCard(doc, imageWarning) {
     const accentColor = getMpCategoryAccent(doc.category);
-    let content = `✅ **Loadout created:** ${doc.weaponName} (${doc.buildName}, ${doc.category}${doc.mode === 'DMZ' ? ', DMZ' : ''})`;
-    if (imageWarning) content += `\n⚠️ ${imageWarning}`;
+    let content = `${BOT_EMOJI.checkmark} **Loadout created:** ${doc.weaponName} (${doc.buildName}, ${doc.category}${doc.mode === 'DMZ' ? ', DMZ' : ''})`;
+    if (imageWarning) content += `\n${BOT_EMOJI.warn} ${imageWarning}`;
     const container = {
         type: 17,
         accent_color: accentColor,
@@ -385,12 +386,12 @@ async function confirmCore(token) {
 // What a single review says for each confirmCore status other than `saved`. The wording is the one confirmAndWrite always used.
 function confirmMessage(client, result) {
     switch (result.status) {
-        case 'expired': return glyphs(`❌ This review has expired or was already handled. Run ${mentionCommand(client, '/autobuild')} again.`);
-        case 'nocategory': return glyphs('❌ Category is still unresolved -- click **Adjust** and set one before saving.');
-        case 'nomode': return glyphs("❌ MP or DMZ is still unresolved -- click **Adjust** and put `| MP` or `| DMZ` after the category before saving.");
+        case 'expired': return glyphs(`${BOT_EMOJI.cross} This review has expired or was already handled. Run ${mentionCommand(client, '/autobuild')} again.`);
+        case 'nocategory': return glyphs(BOT_EMOJI.cross + ' Category is still unresolved -- click **Adjust** and set one before saving.');
+        case 'nomode': return glyphs(BOT_EMOJI.cross + " MP or DMZ is still unresolved -- click **Adjust** and put `| MP` or `| DMZ` after the category before saving.");
         case 'busy': return '⏳ Already saving this build -- give it a moment.';
-        case 'retry': return glyphs(`⚠️ Image upload to Cloudinary failed (${result.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${result.retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`);
-        default: return glyphs('❌ Something went wrong saving this build.');
+        case 'retry': return glyphs(`${BOT_EMOJI.warn} Image upload to Cloudinary failed (${result.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${result.retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`);
+        default: return glyphs(BOT_EMOJI.cross + ' Something went wrong saving this build.');
     }
 }
 
@@ -405,7 +406,7 @@ async function confirmAndWrite(interaction, token) {
 async function retryImageUpload(interaction, token, newImageUrl) {
     const data = pendingImageRetries.get(token);
     if (!data) {
-        return interaction.followUp({ content: `❌ That retry token has expired or was already used. Run ${mentionCommand(interaction.client, '/autobuild')} again from scratch.`, ephemeral: true });
+        return interaction.followUp({ content: `${BOT_EMOJI.cross} That retry token has expired or was already used. Run ${mentionCommand(interaction.client, '/autobuild')} again from scratch.`, ephemeral: true });
     }
     // NOTE: deletion moved to AFTER each write below actually succeeds (was deleted here, before either write attempt) -- same class of bug as confirmAndWrite's success path. If writeLoadoutDoc throws (Mongoose validation/connection error) on either branch, the token must still be in pendingImageRetries so the confirmed data isn't silently lost with no Loadout doc written.
 
@@ -438,7 +439,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
 
 async function cancelReview(interaction, token) {
     pendingAutobuilds.delete(token);
-    return interaction.followUp({ content: glyphs('❌ Discarded -- nothing was saved or uploaded.'), ephemeral: true });
+    return interaction.followUp({ content: glyphs(BOT_EMOJI.cross + ' Discarded -- nothing was saved or uploaded.'), ephemeral: true });
 }
 
 // Edit modal -- ALL fields in one modal (per the design spec's decision), pre-filled from the pending token's current data. Discord caps a modal at 5 fields; attachments share ONE Paragraph field (one per line, matching every other loadout modal's convention in commands/manage.js) so weapon/code/attachments/category/badges all fit.
@@ -499,7 +500,7 @@ async function applyEditFields(interaction, data) {
 async function applyEditSubmission(interaction, token) {
     const data = pendingAutobuilds.get(token);
     if (!data) {
-        return interaction.reply({ content: `❌ This review has expired. Run ${mentionCommand(interaction.client, '/autobuild')} again.`, ephemeral: true });
+        return interaction.reply({ content: `${BOT_EMOJI.cross} This review has expired. Run ${mentionCommand(interaction.client, '/autobuild')} again.`, ephemeral: true });
     }
     await interaction.deferUpdate();
     const updated = await applyEditFields(interaction, data);

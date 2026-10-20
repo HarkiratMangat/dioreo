@@ -7,6 +7,7 @@
 // ✅ RESOLVED 2026-08-10 12:08 EDT: also uploads once to a dedicated Discord storage channel (utils/discordCdnStorage.js, DECORATION_CACHE_CHANNEL_ID -- Harkirat's own "dioreoland" server, bot invited there with real channel permissions, a genuine exception to this bot's usual zero-standing- permissions rule) and persists the resulting cdn.discordapp.com url in this Cloudinary resource's `context` metadata. Discord's OWN CDN is never proxied this way, so `utils/colorPaletteView.js` prefers that url when present -- a plain, fast, cacheable URL reference, no per-render fetch+ reattach needed at all -- and only falls back to fetching+reattaching this module's Cloudinary bytes when the Discord CDN url isn't available yet (channel not configured, or that one upload failed).
 //
 // ⚠️ SPLIT INTO A "CORE" RENDER STEP + A CALLER-OWNED UPLOAD STEP (2026-08-15 10:31 EDT), mirroring the identical restructure in utils/nameplateWebpCache.js (see that file's header for the full reasoning) so scripts/bulkCacheCollectibles.js can render every variant of one design and post them together as ONE grouped Discord message. `renderDecorationWebpCore` does fetch -> extract -> resize-if-needed -> palette -> encode and touches neither Cloudinary nor Discord. `renderAndCacheDecorationWebp` (the live per-user path via resolveDecorationWebp) calls it and does exactly what it always did -- Cloudinary + Discord storage-channel upload, context patch, memoize -- unchanged except its context now also carries `render_source: 'fallback'` (this path renders a design not yet in the bulk-cache catalog snapshot). `renderDecorationWebpForBulk` is the bulk script's hook: core + Cloudinary upload only, no storage-channel post, no context patch.
+const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
 if (!process.env.CLOUDINARY_URL) {
@@ -224,7 +225,7 @@ async function renderAndCacheDecorationWebp(decorationUrl, decorationAsset, skuI
             skuId ? `-# **SKU:** \`${skuId}\`` : null,
             `-# Rendered <t:${Math.floor(Date.now() / 1000)}:R> in \`${renderMs}ms\``,
             // 2026-08-15 10:31 EDT: this path only ever renders a design NOT (yet) in the bulk-cache catalog -- see this file's header. Flags it so a catalog refresh can find + reconcile it.
-            `-# ⚠️ Fallback render — not in the catalog snapshot yet`
+            `-# ${BOT_EMOJI.warn} Fallback render — not in the catalog snapshot yet`
         ].filter(Boolean);
         const components = [
             {

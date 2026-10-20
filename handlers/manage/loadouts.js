@@ -9,6 +9,7 @@
 //
 // ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 3 (2026-08-21 13:01 EDT). Badge parsing (utils/adminParser.js's parseLoadoutBadges) and the DMZ categoryRank->dmzRangeRank swap stay HERE, same as before -- the op expects already-parsed badge fields, not raw modal text. Cloudinary structured-metadata sync and the attachmentSlots byte-identity check moved INTO core/ops/loadouts.js's apply() (badge propagation to sibling builds lived there too until 2026-10-19, when every badge became per build) (see that file's own header for the real defects found integrating this: weaponKey must be a plain normalize, not /autobuild's auto-namer; "Add"/"Replace Multiple" share ONE upsert body since there is no wholesale-replace for loadouts; a shareCode key must be OMITTED entirely on edit or it silently wipes an /autobuild-set gunsmith code). Undo now lives on /bot analytics' Changes page (core/revert.js) -- the old in-memory Undo button is GONE from every mutation here (see handlers/manage/shared.js's own header for where it used to live). Export flows (exportUpTo5/exportCategory) are read-only and untouched.
 
+const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { commitSet } = require('../../core/changeset');
 const { extractCommitError } = require('./shared');
 const { failWithRetry } = require('./retry');
@@ -40,7 +41,7 @@ async function resolveImageInput({ raw, weaponName, mode, existingKey = null }) 
     const result = await uploadLoadoutImage(value, imageKey);
     if (!result.success) {
         return { imageKey: value, uploaded: false,
-                 note: `\n⚠️ Couldn't upload that image to Cloudinary (${result.error}) -- the raw URL was saved as the image instead, so the card still renders but the image isn't re-hosted.` };
+                 note: `\n${BOT_EMOJI.warn} Couldn't upload that image to Cloudinary (${result.error}) -- the raw URL was saved as the image instead, so the card still renders but the image isn't re-hosted.` };
     }
     return { imageKey, uploaded: true,
              note: existingKey === imageKey
@@ -58,7 +59,7 @@ const fieldReader = (interaction, preset) => (k) => preset ? (preset.values[k] ?
 const readValues = (field, ids) => Object.fromEntries(ids.map(id => [id, field(id)]));
 // A replay comes from a button, which failWithRetry's modal rebuild cannot answer; it gets a plain private note instead.
 const failer = (interaction, preset) => (msg) => preset
-    ? interaction.followUp({ content: `❌ ${msg}`, ephemeral: true })
+    ? interaction.followUp({ content: `${BOT_EMOJI.cross} ${msg}`, ephemeral: true })
     : failWithRetry(interaction, msg);
 const learnOps = (unknown, { category, mode }) => unknown.count
     ? [{ type: 'catalogue.learn', payload: { items: learnItems(unknown, { category }), mode } }]
@@ -69,7 +70,7 @@ async function warnUnknownNames(interaction, pending, unknown) {
     pendingCatalogue.set(token, { ...pending, userId: interaction.user.id });
     setTimeout(() => pendingCatalogue.delete(token), PENDING_MS).unref();
     return interaction.followUp({
-        content: `⚠️ **Not in the catalogue yet:** ${describeUnknown(unknown)}\n-# A typo, or a new item? **Save anyway** saves it as typed and adds these names, so they won't warn again. **Back to edit** reopens the box with what you typed.`,
+        content: `${BOT_EMOJI.warn} **Not in the catalogue yet:** ${describeUnknown(unknown)}\n-# A typo, or a new item? **Save anyway** saves it as typed and adds these names, so they won't warn again. **Back to edit** reopens the box with what you typed.`,
         components: [{ type: 1, components: [
             { type: 2, style: 3, label: 'Save anyway', custom_id: `mng_catok|${token}` },
             { type: 2, style: 2, label: 'Back to edit', custom_id: `mng_catedit|${token}` }
@@ -83,7 +84,7 @@ async function handleCatalogueWarning(interaction) {
     const [kind, token] = interaction.customId.split('|');
     const pending = pendingCatalogue.get(token);
     if (!pending) return await interaction.reply({ content: '⏳ That save expired. Open it again from /manage.', ephemeral: true });
-    if (pending.userId !== interaction.user.id) return await interaction.reply({ content: '❌ Only the admin who made this save can finish it.', ephemeral: true });
+    if (pending.userId !== interaction.user.id) return await interaction.reply({ content: BOT_EMOJI.cross + ' Only the admin who made this save can finish it.', ephemeral: true });
     const manage = require('../../commands/manage');
     const { customId } = pending;
 
@@ -95,7 +96,7 @@ async function handleCatalogueWarning(interaction) {
             const Loadout = require('../../models/Loadout');
             const id = customId.replace('edit_loadout_', '');
             const current = await Loadout.findById(id).lean();
-            if (!current) return await interaction.reply({ content: '❌ That build no longer exists -- it may have been deleted or edited elsewhere. Search again.', ephemeral: true });
+            if (!current) return await interaction.reply({ content: BOT_EMOJI.cross + ' That build no longer exists -- it may have been deleted or edited elsewhere. Search again.', ephemeral: true });
             modal = manage.buildEditLoadoutModal(current, id);
         }
         return await interaction.showModal(manage.prefillModal(modal, pending.values));
@@ -113,9 +114,9 @@ async function handleCatalogueWarning(interaction) {
 function badgeNotes(unrecognized, warnings) {
     let out = '';
     if (unrecognized.length > 0) {
-        out += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`toxic\`, \`ass\`, \`best\`, \`top3\`, \`top5\`, \`capable\`, a rank mode (\`hp\`, \`s&d\`, \`dom\`, \`tdm\`, \`ftl\`, \`control\`; MP only), or a DMZ range badge (\`bestclose\`, \`top3midlong\`, \`capableclose\`).`;
+        out += `\n${BOT_EMOJI.warn} Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`toxic\`, \`ass\`, \`best\`, \`top3\`, \`top5\`, \`capable\`, a rank mode (\`hp\`, \`s&d\`, \`dom\`, \`tdm\`, \`ftl\`, \`control\`; MP only), or a DMZ range badge (\`bestclose\`, \`top3midlong\`, \`capableclose\`).`;
     }
-    for (const w of warnings) out += `\n⚠️ ${w}`;
+    for (const w of warnings) out += `\n${BOT_EMOJI.warn} ${w}`;
     return out;
 }
 
@@ -133,7 +134,7 @@ async function editLoadout(interaction, preset = null) {
     // Mode is not editable through this modal at all (MP/DMZ are separate panel pages) -- read straight off the existing document, same as before the refactor.
     const existingLoadout = await Loadout.findById(targetId).lean();
     // A stale search result (the build was deleted/edited elsewhere between the search modal and this submit) still needs a reply -- deferReply() already ran above, so a bare `return` here leaves the interaction "thinking..." until the token expires. The pre-core handler always replied on this path too (confirmed via git history); a prior comment here claiming otherwise was wrong.
-    if (!existingLoadout) return await interaction.followUp({ content: '❌ That build no longer exists -- it may have been deleted or edited elsewhere. Search again.' });
+    if (!existingLoadout) return await interaction.followUp({ content: BOT_EMOJI.cross + ' That build no longer exists -- it may have been deleted or edited elsewhere. Search again.' });
     const mode = existingLoadout.mode || 'MP';
 
     // Field is "Category | Badges" (2 segments).
@@ -178,7 +179,7 @@ async function editLoadout(interaction, preset = null) {
         return await fail(extractCommitError(result));
     }
 
-    let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
+    let confirmation = `${BOT_EMOJI.checkmark} **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
     if (image.note) confirmation += image.note;
     if (unknown.count) confirmation += `\n-# Added to the catalogue: ${describeUnknown(unknown)}.`;
     // States what happened to the Share Code explicitly (sequential-thinking audit finding, 2026-08-22 20:15 EDT) -- the omit/clear/set distinction is exactly the kind of non-obvious field behavior this session's other confirmation-message additions exist to surface, and this field in particular can silently wipe an /autobuild-set code if a future edit gets this wrong.
@@ -190,7 +191,7 @@ async function editLoadout(interaction, preset = null) {
     confirmation += badgeNotes(unrecognized, warnings);
     // Real Cloudinary existence check -- catches the exact silent-failure mode where a mismatched key saves fine and only shows up as a broken card image later. Advisory only -- never blocks the save, which already happened above. Skipped when this submission just uploaded the image itself -- the HEAD probe would be racing Cloudinary's own CDN propagation and could report a freshly-uploaded asset as missing.
     if (!image.uploaded && !(await checkImageExists(imageKey))) {
-        confirmation += `\n⚠️ **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
+        confirmation += `\n${BOT_EMOJI.warn} **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
     }
 
     return interaction.followUp({ content: confirmation });
@@ -246,7 +247,7 @@ async function addLoadout(interaction, preset = null) {
         return await fail(extractCommitError(result));
     }
 
-    let confirmation = `✅ **Successfully saved Loadout: ${weaponName} (${buildName}, ${pageMode})!**`;
+    let confirmation = `${BOT_EMOJI.checkmark} **Successfully saved Loadout: ${weaponName} (${buildName}, ${pageMode})!**`;
     if (image.note) confirmation += image.note;
     if (unknown.count) confirmation += `\n-# Added to the catalogue: ${describeUnknown(unknown)}.`;
     // Only worth a line when a code was actually typed -- unlike editLoadout there's no prior state to report on a brand-new build, so staying silent when the field was left as a bare build name (the common case) avoids cluttering every single Add confirmation with a non-event.
@@ -256,7 +257,7 @@ async function addLoadout(interaction, preset = null) {
     confirmation += badgeNotes(unrecognized, warnings);
     // Skipped when this submission just uploaded the image itself -- the HEAD probe would be racing Cloudinary's own CDN propagation and could report a freshly-uploaded asset as missing.
     if (!image.uploaded && !(await checkImageExists(imageKey))) {
-        confirmation += `\n⚠️ **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
+        confirmation += `\n${BOT_EMOJI.warn} **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
     }
     return interaction.followUp({ content: confirmation });
 }
@@ -299,13 +300,13 @@ async function bulkAddLoadouts(interaction, preset = null) {
     }
     const { applied } = result.results[0];
 
-    let confirmation = `✅ **Bulk Loadout Import Complete!**\n${applied.created} new build(s) added, ${applied.updated} existing build(s) updated.`;
+    let confirmation = `${BOT_EMOJI.checkmark} **Bulk Loadout Import Complete!**\n${applied.created} new build(s) added, ${applied.updated} existing build(s) updated.`;
     if (learn.length) confirmation += `\n-# Added to the catalogue: ${learn.map(i => `\`${i.name}\``).join(', ')}.`;
     if (applied.parseErrors.length > 0) {
-        confirmation += `\n⚠️ ${applied.parseErrors.length} block(s) skipped:\n${applied.parseErrors.map(e => `- ${e}`).join('\n')}`;
+        confirmation += `\n${BOT_EMOJI.warn} ${applied.parseErrors.length} block(s) skipped:\n${applied.parseErrors.map(e => `- ${e}`).join('\n')}`;
     }
     if (applied.missingImages.length > 0) {
-        confirmation += `\n⚠️ No Cloudinary image found for ${applied.missingImages.length} build(s) -- these will show broken until uploaded there with the exact Public ID typed:\n${applied.missingImages.map(m => `- ${m.label}: \`${m.imageKey}\``).join('\n')}`;
+        confirmation += `\n${BOT_EMOJI.warn} No Cloudinary image found for ${applied.missingImages.length} build(s) -- these will show broken until uploaded there with the exact Public ID typed:\n${applied.missingImages.map(m => `- ${m.label}: \`${m.imageKey}\``).join('\n')}`;
     }
     return interaction.followUp({ content: confirmation });
 }
@@ -344,11 +345,11 @@ async function bulkDeleteLoadouts(interaction) {
     }
 
     if (toDelete.length === 0) {
-        return interaction.reply({ content: `❌ Nothing matched -- nothing to delete.${notFound.length ? `\n⚠️ Not found: ${notFound.join(', ')}` : ''}`, ephemeral: true });
+        return interaction.reply({ content: `${BOT_EMOJI.cross} Nothing matched -- nothing to delete.${notFound.length ? `\n${BOT_EMOJI.warn} Not found: ${notFound.join(', ')}` : ''}`, ephemeral: true });
     }
 
     const summary = [`Removed: ${toDelete.map(t => t.label).join(', ')}`];
-    if (notFound.length) summary.push(`⚠️ Not found: ${notFound.join(', ')}`);
+    if (notFound.length) summary.push(`${BOT_EMOJI.warn} Not found: ${notFound.join(', ')}`);
     const ids = toDelete.flatMap(t => t.ids);
 
     return registerBulkDelete(interaction, {
@@ -384,12 +385,12 @@ async function exportUpTo5(interaction) {
     }
 
     if (matched.length === 0) {
-        return interaction.followUp({ content: `❌ No matches found for: ${requested.join(', ')}` });
+        return interaction.followUp({ content: `${BOT_EMOJI.cross} No matches found for: ${requested.join(', ')}` });
     }
 
     const text = formatLoadoutsAsBulkText(matched);
     let content = `📤 **Exported ${matched.length} ${mode} loadout(s)** in Bulk Add format. Paste this back into the Bulk Add action.`;
-    if (notFound.length) content += `\n⚠️ Not found: ${notFound.join(', ')}`;
+    if (notFound.length) content += `\n${BOT_EMOJI.warn} Not found: ${notFound.join(', ')}`;
     const { exportFileReply } = require('../../utils/manageActions');
     return exportFileReply(interaction, content, `${mode.toLowerCase()}_loadouts_export.txt`, text);
 }
@@ -404,7 +405,7 @@ async function exportCategory(interaction) {
     const loadouts = await Loadout.find({ mode, category }).lean();
 
     if (loadouts.length === 0) {
-        return interaction.followUp({ content: `❌ No ${mode} loadouts found in category "${category}".` });
+        return interaction.followUp({ content: `${BOT_EMOJI.cross} No ${mode} loadouts found in category "${category}".` });
     }
 
     const text = formatLoadoutsAsBulkText(loadouts);

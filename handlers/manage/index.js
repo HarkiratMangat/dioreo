@@ -12,6 +12,7 @@ const {
     pendingManageDeletes, pendingBulkDeletes,
     renderManagePage, renderGuidePick, handlePick, handleSearchSubmit, handleEditButton
 } = require('./shared');
+const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const draws = require('./draws');
 const calendar = require('./calendar');
 const loadouts = require('./loadouts');
@@ -135,7 +136,7 @@ async function routeManage(interaction) {
             pendingManageDeletes.delete(token);
             if (!pending) {
                 try {
-                    await prompt(interaction, { text: '❌ This confirmation has expired -- please search again.' });
+                    await prompt(interaction, { text: BOT_EMOJI.cross + ' This confirmation has expired -- please search again.' });
                 } catch (notifyError) {
                     console.error('Failed to notify user of expired delete confirmation:', notifyError);
                 }
@@ -182,7 +183,7 @@ async function routeManage(interaction) {
             pendingBulkDeletes.delete(token);
             if (!pending) {
                 try {
-                    await prompt(interaction, { text: '❌ This confirmation has expired -- please submit the bulk delete again.' });
+                    await prompt(interaction, { text: BOT_EMOJI.cross + ' This confirmation has expired -- please submit the bulk delete again.' });
                 } catch (notifyError) {
                     console.error('Failed to notify user of expired bulk-delete confirmation:', notifyError);
                 }
@@ -198,7 +199,7 @@ async function routeManage(interaction) {
                 // A permission denial from commitSet (the grant narrowed since the paste was submitted) is a clear answer, not "something went wrong": nothing was deleted, and the message says which tier is missing.
                 const denied = String(applyError?.message || '').startsWith('🔒');
                 try {
-                    await prompt(interaction, { text: denied ? `${applyError.message}\nNothing was deleted.` : '❌ Something went wrong while deleting -- check the data manually.' });
+                    await prompt(interaction, { text: denied ? `${applyError.message}\nNothing was deleted.` : BOT_EMOJI.cross + ' Something went wrong while deleting -- check the data manually.' });
                 } catch (notifyError) {
                     console.error('Failed to notify user of bulk-delete apply failure:', notifyError);
                 }

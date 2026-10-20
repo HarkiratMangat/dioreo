@@ -3,6 +3,7 @@
 // ==========================================
 // ARCHITECTURE: 3 separate pages (Draws / Events / Playlists-Modes), switched via named toggle buttons rather than Prev/Next -- see buildSectionToggleRow below. Includes a defensive char-budget safety net per section (SECTION_CHAR_BUDGET) since a bulk-imported list could otherwise overflow a single Text Display's 4000-char cap.
 
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder } = require('discord.js');
 const SeasonalData = require('../models/SeasonalData');
 const UserPreference = require('../models/UserPreference');
@@ -229,7 +230,7 @@ module.exports = {
         const seasonalDoc = await seasonalDocPromise;
 
         if (!seasonalDoc) {
-            return interaction.followUp({ content: '❌ The global seasonal database document has not been initialized yet.' });
+            return interaction.followUp({ content: BOT_EMOJI.cross + ' The global seasonal database document has not been initialized yet.' });
         }
 
         // The Active/All Events filter's /settings default preference was SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request) -- `prefs.calendarEventFilter` is no longer read here (or written anywhere; see commands/settings.js). `view` is now the ONLY way to pick Active/Upcoming for a given invocation, a genuine one-off, defaulting to 'all' when omitted. Never saved, only ever read on a real slash-command launch (a button/select re-render always passes pageOverride explicitly and never carries a `view` option to read here anyway).

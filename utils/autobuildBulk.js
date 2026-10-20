@@ -5,6 +5,7 @@
 // Custom ids are `autobuild_b|<action>|<batchKey>|<index>`. The `autobuild_` prefix routes them to handlers/autobuild.js and puts them behind handlers/router.js's /autobuild access check, the same as the single review's buttons.
 //
 // After his first click-test (2026-10-20 12:10 EDT): the overview lists every build with what needs a look, the pager is the bot's usual arrows (utils/paginationRow.js), the buttons say Save / Adjust / Discard and name the build, and a batch started from the right-click can take more of that message's screenshots (Add more).
+const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const crypto = require('crypto');
 const { pendingAutobuilds, buildReviewCard, extractToData, confirmCore, confirmMessage, buildEditModal, applyEditFields } = require('./autobuildPipeline');
 const { sendV2Payload } = require('./sendV2Payload');
@@ -39,7 +40,7 @@ function batchDuplicateOf(items, index) {
 
 function batchDuplicateNote(items, index) {
     const n = batchDuplicateOf(items, index);
-    return n ? `⚠️ **Same as Build ${n} in this batch:** two screenshots of one build. Discard one of them unless they really are different builds.` : null;
+    return n ? `${BOT_EMOJI.warn} **Same as Build ${n} in this batch:** two screenshots of one build. Discard one of them unless they really are different builds.` : null;
 }
 
 // What a build still to review needs looked at, in a few words each, for the overview. Pure.
@@ -159,8 +160,8 @@ function renderPage(batch, key, index, heldImages = null) {
     }
     const warn = emojis.warn;
     const line = {
-        saved: () => `✅ **Saved:** ${item.doc.weaponName} — ${item.doc.buildName} (${item.doc.category}${item.doc.mode === 'DMZ' ? ', DMZ' : ''})`,
-        cancelled: () => '❌ **Discarded:** nothing saved or uploaded.',
+        saved: () => `${BOT_EMOJI.checkmark} **Saved:** ${item.doc.weaponName} — ${item.doc.buildName} (${item.doc.category}${item.doc.mode === 'DMZ' ? ', DMZ' : ''})`,
+        cancelled: () => BOT_EMOJI.cross + ' **Discarded:** nothing saved or uploaded.',
         failed: () => `${warn} **Couldn't read this screenshot:** ${item.error}`,
         retry: () => `${warn} **Image upload failed** (${item.error}). Nothing was saved yet. Try the image again with\n\`/autobuild retry_token:${item.retryToken} screenshot:<new attachment>\``,
     }[item.status]();
@@ -272,7 +273,7 @@ function parse(customId) {
 
 async function expired(interaction) {
     try {
-        await interaction.reply({ content: emojis.glyphs('❌ This batch has expired (30 minutes) or the bot restarted. Run it again.'), ephemeral: true });
+        await interaction.reply({ content: emojis.glyphs(BOT_EMOJI.cross + ' This batch has expired (30 minutes) or the bot restarted. Run it again.'), ephemeral: true });
     } catch (notifyError) {
         console.error('Bulk autobuild: could not explain an expired batch (interaction likely expired):', notifyError);
     }

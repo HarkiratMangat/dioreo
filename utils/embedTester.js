@@ -1,3 +1,4 @@
+const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 // ==========================================
 // EMBED TESTER — pure helpers behind the dev-only /embedtest
 // ==========================================
@@ -269,7 +270,7 @@ function formatReport(report, dummies) {
     if (report.named.length) parts.push(`Matched by name: ${report.named.map(n => `\`:${n}:\``).join(' ')}`);
     if (report.remapped.length) parts.push(`Not this bot's id, swapped by name: ${report.remapped.map(n => `\`${n}\``).join(' ')}`);
     if (report.fixed.length) parts.push(`Animated flag corrected: ${report.fixed.map(n => `\`${n}\``).join(' ')}`);
-    if (report.unresolved.length) parts.push(`⚠️ Not found on this bot, left as written: ${report.unresolved.map(n => `\`:${n}:\``).join(' ')}`);
+    if (report.unresolved.length) parts.push(`${BOT_EMOJI.warn} Not found on this bot, left as written: ${report.unresolved.map(n => `\`:${n}:\``).join(' ')}`);
     if (!parts.length) return null;
     if (dummies) parts.push(`-# ${dummies} dummy control${dummies === 1 ? '' : 's'} — clicking does nothing.`);
     return parts.join('\n');

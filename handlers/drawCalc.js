@@ -6,6 +6,7 @@
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleDrawCalcInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch.
 //
 // 🔴 EVERY BRANCH THAT TOUCHES A BASKET GOES THROUGH THE STORE, AND EVERY LOAD CAN COME BACK NULL. The old single-draw panel recomputed everything from the customId alone and could never go stale; this one persists to Mongo, so a basket can be deleted, expire, or belong to someone else's forged id by the time a click lands. `loadOwned()` below is the one place that happens, and every branch routes through it before touching `basket.*`.
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { getAccentColorForCommand } = require('../utils/accentColor');
@@ -445,7 +446,7 @@ async function route(interaction) {
             const mask = [...selected].reduce((m, key) => { const i = DRAW_KEY_ORDER.indexOf(key); return i === -1 ? m : m | (1 << i); }, 0);
             const names = [...new Set(removing.map(b => DRAW_META_NAMES(b.drawKey)))].join(', ');
             const lines = n => `${n} line${n === 1 ? '' : 's'}`;
-            await renderPanel(interaction, state, basket, `⚠️ Unticking removes ${lines(removing.length)} of ${names}, ${losing.length === removing.length ? (removing.length === 1 ? 'which has' : 'all with') : `${losing.length} with`} pulls already entered. Remove ${removing.length === 1 ? 'it' : 'them'}?`, { mask, count: removing.length });
+            await renderPanel(interaction, state, basket, `${BOT_EMOJI.warn} Unticking removes ${lines(removing.length)} of ${names}, ${losing.length === removing.length ? (removing.length === 1 ? 'which has' : 'all with') : `${losing.length} with`} pulls already entered. Remove ${removing.length === 1 ? 'it' : 'them'}?`, { mask, count: removing.length });
             return true;
         }
         const updated = await writeTo(actingUserId, state, basket, { banners: applySelection(basket.banners, selected) });
@@ -523,7 +524,7 @@ async function route(interaction) {
         // Remove opens the list, so a slipped tap must not cost entered progress: a line with pulls asks first; an empty line goes at once.
         if (interaction.values[0] === 'del' && basket.banners[index].pullsDone > 0) {
             const b = basket.banners[index];
-            await renderPanel(interaction, { ...state, focus: index }, basket, `⚠️ Remove #${index + 1} ${lineName(b)} and its ${b.pullsDone} ${unitOf(b.drawKey).toLowerCase()} of progress?`, { mask: 0, count: 1, verb: 'dellineok', label: `Remove #${index + 1}` });
+            await renderPanel(interaction, { ...state, focus: index }, basket, `${BOT_EMOJI.warn} Remove #${index + 1} ${lineName(b)} and its ${b.pullsDone} ${unitOf(b.drawKey).toLowerCase()} of progress?`, { mask: 0, count: 1, verb: 'dellineok', label: `Remove #${index + 1}` });
             return true;
         }
         if (interaction.values[0] === 'del') {
@@ -601,7 +602,7 @@ async function route(interaction) {
         const target = await basketStore.load(actingUserId, interaction.values[0]);
         const current = await currentBasket(actingUserId, state);
         if (!target || !target.name) { await renderPanel(interaction, { ...state, page: 3 }, current, 'That saved calculation is gone.'); return true; }
-        await renderPanel(interaction, { ...state, page: 3 }, current, `⚠️ Replace **${target.name}**? Its draws, spins, region, balance and upgrade setting are overwritten with this calculation's.`, null, null, { target: String(target._id), name: target.name });
+        await renderPanel(interaction, { ...state, page: 3 }, current, `${BOT_EMOJI.warn} Replace **${target.name}**? Its draws, spins, region, balance and upgrade setting are overwritten with this calculation's.`, null, null, { target: String(target._id), name: target.name });
         return true;
     }
     if (interaction.isButton() && state.verb === 'owok') {

@@ -1,3 +1,4 @@
+const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 // ==========================================
 // /manage — THE ACTION REGISTRY
 // ==========================================
@@ -37,7 +38,7 @@ const openFormatGuide = async ({ interaction, page }) => {
 const confirmPurge = (scope) => async ({ interaction, page, manageCommand }) => {
     const label = manageCommand.PURGE_LABELS[page][scope];
     return await interaction.reply({
-        content: `⚠️ **Are you sure?** This will permanently delete ${label}. This cannot be undone.`,
+        content: `${BOT_EMOJI.warn} **Are you sure?** This will permanently delete ${label}. This cannot be undone.`,
         components: [{
             type: 1, components: [
                 { type: 2, style: 4, label: 'Yes, Purge', custom_id: `mng_purgeconfirm_${page}_${scope}` },
@@ -195,7 +196,7 @@ const PATCHNOTES_ACTIONS = [
 const draftGuard = (verb) => async (interaction) => {
     const doc = await loadSeasonalDoc();
     if (!doc?.draft?.active) {
-        await interaction.reply({ content: `❌ No draft in progress — nothing to ${verb}.`, ephemeral: true });
+        await interaction.reply({ content: `${BOT_EMOJI.cross} No draft in progress — nothing to ${verb}.`, ephemeral: true });
         return null;
     }
     return doc;
@@ -214,7 +215,7 @@ const SEASONDRAFT_ACTIONS = [
           if (!doc) return;
           const d = doc.draft;
           return await interaction.reply({
-              content: `⚠️ **Promote the staged draft to live?** This swaps in the draft's title, deadlines, ${d.newDraws?.length || 0} New draw(s), ${d.returningDraws?.length || 0} Returning draw(s), and ${d.calendar?.length || 0} calendar event(s) as what's live RIGHT NOW, and clears the draft. Undo is available after.`,
+              content: `${BOT_EMOJI.warn} **Promote the staged draft to live?** This swaps in the draft's title, deadlines, ${d.newDraws?.length || 0} New draw(s), ${d.returningDraws?.length || 0} Returning draw(s), and ${d.calendar?.length || 0} calendar event(s) as what's live RIGHT NOW, and clears the draft. Undo is available after.`,
               components: [{
                   type: 1, components: [
                       { type: 2, style: 3, label: 'Yes, Promote', custom_id: 'mng_draftpromoteconfirm' },
@@ -229,7 +230,7 @@ const SEASONDRAFT_ACTIONS = [
           const doc = await draftGuard('discard')(interaction);
           if (!doc) return;
           return await interaction.reply({
-              content: '⚠️ **Discard the staged draft?** This erases everything staged for next season. What\'s currently live is untouched. Cannot be undone.',
+              content: BOT_EMOJI.warn + ' **Discard the staged draft?** This erases everything staged for next season. What\'s currently live is untouched. Cannot be undone.',
               components: [{
                   type: 1, components: [
                       { type: 2, style: 4, label: 'Yes, Discard', custom_id: 'mng_draftdiscardconfirm' },
@@ -309,7 +310,8 @@ async function resolvePopupEntry(value, userId) {
 }
 
 const DENIAL_MESSAGE = {
-    unknown: "❌ **That action doesn't exist.** It may have been renamed or removed — reopen the panel to see what's available.",
+    // A getter, not a value: this table is built at require time, and an emoji read then is frozen to the prod id (scripts/checkEmojiCaptures.js caught it on 2026-10-20 12:50 EDT during the bot-wide glyph sweep).
+    get unknown() { return BOT_EMOJI.cross + " **That action doesn't exist.** It may have been renamed or removed — reopen the panel to see what's available."; },
     owner: '🔒 **Only the bot owner can manage the admin list.**',
     denied: "🔒 **You don't have permission for that.** Ask the bot owner to grant it if you need it."
 };

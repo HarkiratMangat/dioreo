@@ -7,6 +7,7 @@
 //
 // ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 4 (2026-08-21 13:06 EDT). core/ops/patchnotes.js's setDateInfo/setUrls1/setUrls2 all require an EXISTING entry (element-identity, matching draws.edit/calendar.edit) -- they cannot create one on demand the way the pre-core getOrCreateCurrentPatch() did. So when no entry exists yet (fresh install, or right after Wipe Season), this handler routes the SAME submission into a single patchnote.addSeason op instead -- addSeason's own payload already accepts titleOverride/description/releaseDate/urls1/urls2, so folding one action's fields into it needs no chaining across two ops (commitSet validates every op BEFORE any of them apply, so a later op can never target an id an earlier op in the same batch just minted). The confirmation wording always matches which BUTTON was clicked, not which op actually ran underneath. Undo now lives on /bot analytics' Changes page (core/revert.js) -- the old in-memory Undo mechanism is GONE from every mutation here (see handlers/manage/shared.js's own header for where it used to live), except purge, which still returns a confirmMsg the same shape as every other page's purge().
 
+const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { commitSet } = require('../../core/changeset');
 const { loadOrCreateSeasonalDoc, prompt, extractCommitError } = require('./shared');
 // The "current entry" is simply the last item in patchNotes[] -- null when the array is empty.
@@ -35,9 +36,9 @@ async function setDateInfo(interaction) {
     const result = await commitSet([op], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
     }
-    return interaction.followUp({ content: `✅ **Patch Notes Date/Info Updated!** ${result.results[0].change.target}` });
+    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Patch Notes Date/Info Updated!** ${result.results[0].change.target}` });
 }
 
 // --- URLS 1 / URLS 2 --- custom_id: modal_patch_urls_{1|2} Each of the 5 URLs is its own field -- a blank field means "no image in this slot". URLs 1 owns images[0..4], URLs 2 owns images[5..9] -- each submit only replaces its own half, preserving whatever the other slot has saved.
@@ -55,10 +56,10 @@ async function setUrls(interaction) {
     const result = await commitSet([op], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
     }
     const { title, imageCount } = result.results[0].applied;
-    return interaction.followUp({ content: `✅ **Patch Notes URLs ${slot} Updated!** ${title} now has ${imageCount} image(s) total.` });
+    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Patch Notes URLs ${slot} Updated!** ${title} now has ${imageCount} image(s) total.` });
 }
 
 // --- ADD NEW SEASON --- custom_id: modal_patch_addseason Always PUSHES a brand-new patchNotes[] entry, becoming the new "current" entry (the old current entry automatically becomes a past season). URLs come in as two multi-line fields instead of 5 individually-addressable Short fields, matching the original mockup shape.
@@ -82,10 +83,10 @@ async function addSeason(interaction) {
     );
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
     }
     const { title, imageCount } = result.results[0].applied;
-    return interaction.followUp({ content: `✅ **New Season Added!** "${title}" is now the Current Season (${imageCount} image(s)). The previous entry has moved to Past Seasons.` });
+    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **New Season Added!** "${title}" is now the Current Season (${imageCount} image(s)). The previous entry has moved to Past Seasons.` });
 }
 
 // --- PAST SEASONS: EDIT --- custom_id: modal_patch_editseason_{id} Updates ONE SPECIFIC existing entry in place (picked via handlePatchSeasonPick below), never touches which entry is "current".
@@ -110,23 +111,23 @@ async function editSeason(interaction) {
     if (!result.ok) {
         // Matches the pre-core handler's own wording for a stale/removed target.
         if (result.failedAt?.reason === 'missing') {
-            return await interaction.followUp({ content: '❌ That season no longer exists -- it may have been changed or removed since this modal opened.' });
+            return await interaction.followUp({ content: BOT_EMOJI.cross + ' That season no longer exists -- it may have been changed or removed since this modal opened.' });
         }
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
     }
     const { title, imageCount } = result.results[0].applied;
-    return interaction.followUp({ content: `✅ **Past Season Updated!** "${title}" now has ${imageCount} image(s).` });
+    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Past Season Updated!** "${title}" now has ${imageCount} image(s).` });
 }
 
 // --- PURGE (patch notes) --- called from index.js's mng_purgeconfirm_ dispatch. Only scope 'all' -- the one place patch notes HISTORY can actually be cleared (distinct from "Wipe Season", which deliberately keeps patch notes forever).
 async function purge(actorId) {
     const result = await commitSet([{ type: 'patchnote.purge' }], { actorId });
     if (!result.ok) {
-        return { confirmMsg: `❌ ${extractCommitError(result)}` };
+        return { confirmMsg: `${BOT_EMOJI.cross} ${extractCommitError(result)}` };
     }
     const { applied } = result.results[0];
-    return { confirmMsg: `✅ Purged the patch notes history (${applied.entries.length} entry(s) removed).` };
+    return { confirmMsg: `${BOT_EMOJI.checkmark} Purged the patch notes history (${applied.entries.length} entry(s) removed).` };
 }
 
 // --- PAST SEASONS PICK --- custom_id: mng_patchseason_pick (select menu, rendered on the Patch Notes page itself). Its options ARE the full list already, so picking one goes straight to its edit modal -- no search step, unlike the generic mng_pick_ disambiguation select. Read-only -- unchanged by the operation-core migration.
@@ -143,7 +144,7 @@ async function handlePatchSeasonPick(interaction) {
     const entry = seasonalDoc?.patchNotes?.find(p => p._id.toString() === pickedId);
     if (!entry) {
         try {
-            await prompt(interaction, { text: '❌ That season no longer exists -- it may have been changed or removed since this panel loaded.' });
+            await prompt(interaction, { text: BOT_EMOJI.cross + ' That season no longer exists -- it may have been changed or removed since this panel loaded.' });
         } catch (notifyError) {
             console.error('Failed to notify user of stale patch-season pick (interaction likely expired):', notifyError);
         }

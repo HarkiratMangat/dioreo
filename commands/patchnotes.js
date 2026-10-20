@@ -3,6 +3,7 @@
 // ==========================================
 // ARCHITECTURE: Subcommands (/patch notes). Leverages Discord's native V2 Media Carousel Component (Type 12) to create swipable image galleries.
 
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder } = require('discord.js');
 const SeasonalData = require('../models/SeasonalData');
 const UserPreference = require('../models/UserPreference');
@@ -258,7 +259,7 @@ module.exports = {
         const seasonalDoc = await seasonalDocPromise;
 
         if (!seasonalDoc || !seasonalDoc.patchNotes || seasonalDoc.patchNotes.length === 0) {
-            return interaction.followUp({ content: '❌ No patch notes have been logged in the database yet.' });
+            return interaction.followUp({ content: BOT_EMOJI.cross + ' No patch notes have been logged in the database yet.' });
         }
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);

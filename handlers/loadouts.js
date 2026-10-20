@@ -1,3 +1,4 @@
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 // ==========================================
 // LOADOUTS — INTERACTION HANDLER
 // ==========================================
@@ -35,7 +36,7 @@ async function route(interaction) {
             if (!matchingBuilds || matchingBuilds.length === 0) {
                 // Shouldn't happen (the option came from a live DB query moments ago), but guard against a build being deleted via /manage in the gap between render and click rather than throwing on `matchingBuilds[0].category` below.
                 try {
-                    await interaction.followUp({ content: '❌ That weapon no longer has any builds saved.', ephemeral: true });
+                    await interaction.followUp({ content: BOT_EMOJI.cross + ' That weapon no longer has any builds saved.', ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of missing browse-target builds (interaction likely expired):', notifyError);
                 }
@@ -75,7 +76,7 @@ async function route(interaction) {
                 const builds = await resolveScopeBuilds(scope);
                 if (!builds.length) {
                     try {
-                        await interaction.reply({ content: '❌ That build no longer exists.', ephemeral: true });
+                        await interaction.reply({ content: BOT_EMOJI.cross + ' That build no longer exists.', ephemeral: true });
                     } catch (replyError) {
                         console.error(`Failed to reply to gunsmith ${action} action (interaction likely expired):`, replyError);
                     }
@@ -124,7 +125,7 @@ async function route(interaction) {
             // Guard BEFORE the modulo/index -- mirrors the gsb~ browse branch's own guard below (v3-pre-release review, finding #6). /manage can purge a weapon's builds between render and click: `(cur ± 1) % matchingBuilds.length` is NaN on an empty array, and matchingBuilds[newIndex] is undefined for copy/copyatt too -- every branch past this point (category lookup, shareCode, attachments) would throw on an already-acked interaction.
             if (!matchingBuilds.length) {
                 try {
-                    await interaction.reply({ content: '❌ That build no longer exists.', ephemeral: true });
+                    await interaction.reply({ content: BOT_EMOJI.cross + ' That build no longer exists.', ephemeral: true });
                 } catch (replyError) {
                     console.error(`Failed to notify user of an empty ${mode} build list (interaction likely expired):`, replyError);
                 }

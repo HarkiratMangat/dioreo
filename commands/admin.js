@@ -3,6 +3,7 @@
 // /admin -- the SERVER-ADMIN control panel. Deliberately distinct from /manage, which is Harkirat's owner-level panel gated on ALLOWED_ADMIN_ID and stays user-install-only. This one belongs to whoever administers the server the command was run in.
 //
 // It configures exactly one thing: the RESPONSE-VISIBILITY POLICY (utils/guildPolicy.js). Nothing here refuses a command or touches a channel, because the bot holds no moderation permission and never acts on a channel outside an interaction (root CLAUDE.md), so it could not enforce either. Design + the rejected alternatives: docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 // ⚠️ Required as the whole module and read INSIDE the render functions below, never destructured or captured at module level. refreshEmojiIds() rewrites this object in place at boot, long after this file is require()d, so a module-level capture freezes the pre-sync id and renders broken on the dev bot -- four sites shipped exactly that bug on 2026-07-26. See .claude/rules/rendering-and-ui.md.
@@ -206,7 +207,7 @@ function buildCommands(settings, gateable) {
                 { type: 14, spacing: 2 },
                 // Said plainly because an admin will otherwise expect the command to disappear, and then read its continued presence as a bug rather than a platform limit.
                 { type: 10, content: '-# Hides the **answer**, not the command. To remove a command from the list entirely, use **Server Settings → Integrations**.' },
-                ...(omitted.length ? [{ type: 10, content: `-# ⚠️ Discord allows 25 options per menu, so ${omitted.length} command(s) are missing from the list below: ${omitted.map(n => `\`/${n}\``).join(', ')}. Please report this.` }] : []),
+                ...(omitted.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord allows 25 options per menu, so ${omitted.length} command(s) are missing from the list below: ${omitted.map(n => `\`/${n}\``).join(', ')}. Please report this.` }] : []),
             ],
         },
         {

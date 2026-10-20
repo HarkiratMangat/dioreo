@@ -6,6 +6,7 @@
 // ⚠️ FIFTH PASS, 2026-08-27 11:48 EDT -- rebuilt around the saved-basket redesign (docs/superpowers/specs/2026-08-27-draw-calculator-multi-draw-design.md, revision 3). The whole prior single-draw model (drawKey/pullsDone/target/targetValue living in the customId) is GONE. 🔴 THE BASKET IS A FLAT LIST OF BANNERS -- "quantity" does not exist as a concept. Three Mythic Weapon banners are three separate, independently-orderable rows in `basket.banners`, each with its own `pullsDone`. Budget mode and per-banner goals other than "finish" are explicitly out of scope (spec §10) -- there is no goal select any more, every banner is always priced to completion.
 //
 // ⚠️ STATE NOW LIVES IN TWO PLACES ON PURPOSE. The customId carries only a reference plus transient VIEW state (which page, detail on/off, the reorder focus pointer, the author lock) -- `calc~<verb>~<basketId>~g<page>~x<detail>~f<focus>~a<authorId base36>`. The basket itself (banners/region/balance/includeUpgrades/entitlementMask/name) lives in the DrawBasket collection via utils/drawBasketStore.js, and is looked up fresh on every render. 🔴 THAT MEANS THE PANEL CAN NOW GO STALE -- a basket can be deleted, or an unnamed one can expire (30-day TTL) -- which the old fully-stateless design made structurally impossible. Every render path through buildCalculatorPanel() takes `basket` as an explicit possibly-null argument and has a real "this basket no longer exists" branch; there is no path that assumes it is there.
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { mentionCommand } = require('../utils/commandMentions');
@@ -108,7 +109,7 @@ function readBalanceFields({ amount = null, cards = null, coins = null }) {
     take(cards, 'Mythic Cards', parseCount, 'mythicCards', 'use 0 or a multiple of 5, like `300`.');
     take(coins, 'Mythic Coins', parseCount, 'mythicCoins', 'use 0 or a multiple of 5, like `300`.');
     const lead = saved.length ? `Saved ${saved.join(' and ')}.` : 'Nothing was saved.';
-    const warning = refused.length ? `⚠️ ${lead}\n${refused.map(r => `- ${r}`).join('\n')}\nPress **Set Region & Balance** to fix ${refused.length === 1 ? 'it' : 'them'}.` : null;
+    const warning = refused.length ? `${BOT_EMOJI.warn} ${lead}\n${refused.map(r => `- ${r}`).join('\n')}\nPress **Set Region & Balance** to fix ${refused.length === 1 ? 'it' : 'them'}.` : null;
     return { fields, warning };
 }
 function parseCount(raw) {
@@ -780,8 +781,8 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     // An armory not set up yet is left out with its own reason (2026-10-18 15:13 EDT), not "no pricing".
     const notSetUp = (basket.banners || []).map((b, i) => (isArmoryKey(b.drawKey) && armorySize(b) === null ? `#${i + 1}` : null)).filter(Boolean);
     const noPrice = unpriced.filter(b => !(isArmoryKey(b.drawKey) && armorySize(b) === null));
-    if (notSetUp.length) cost.push(`⚠️ **${notSetUp.join(', ')} left out** — set up ${notSetUp.length === 1 ? 'that armory' : 'those armories'} in Edit Selections first.`);
-    if (noPrice.length) cost.push(`⚠️ **${plural(noPrice.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${noPrice.map(b => shortName(b.drawKey)).join(', ')}.`);
+    if (notSetUp.length) cost.push(`${BOT_EMOJI.warn} **${notSetUp.join(', ')} left out** — set up ${notSetUp.length === 1 ? 'that armory' : 'those armories'} in Edit Selections first.`);
+    if (noPrice.length) cost.push(`${BOT_EMOJI.warn} **${plural(noPrice.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${noPrice.map(b => shortName(b.drawKey)).join(', ')}.`);
     // 🔴 A SILENT ZERO, FOUND 2026-10-13 12:40 EDT: an upgrade with no price at the region used to add nothing while claiming it was included. Say so instead.
     cost.push(...upgradeWarnings(basket, upgrades));
 
@@ -793,7 +794,7 @@ function buildCostBlock(state, basket, currency, client, { detail = false, level
     // The purchase search is the expensive part and does not change with the fitting level, so one render runs it once (`memo`), however many levels it tries.
     const result = memo && 'result' in memo ? memo.result : optimizePurchase(shortfall, { currency, doubleCpAvailable });
     if (memo) memo.result = result;
-    if (!result || !result.cheapest) return { cost, purchase: [`⚠️ **${fmt(shortfall)} CP** is more than a reasonable number of store purchases can cover at once.`], buying: false };
+    if (!result || !result.cheapest) return { cost, purchase: [`${BOT_EMOJI.warn} **${fmt(shortfall)} CP** is more than a reasonable number of store purchases can cover at once.`], buying: false };
     const settingsMention = client ? mentionCommand(client, '/settings') : '`/settings`';
     const money = cents => formatMoney(cents, currency);
     const stockUp = detail ? result.stockUp : null;
@@ -1346,7 +1347,7 @@ function buildMissingBasketPanel(state, accentColor, savedCount = 0) {
     return buildSetupPanel({ ...state, basketId: null }, null, accentColor, {
         savedCount,
         region: 'region_10',
-        notice: '⚠️ That saved calculation no longer exists — it may have expired, or been deleted.'
+        notice: BOT_EMOJI.warn + ' That saved calculation no longer exists — it may have expired, or been deleted.'
     });
 }
 
@@ -1355,8 +1356,8 @@ const BREAK = ' ⌇ ';
 // Warnings the two cost views share: an upgrade pool with no price at this region, and Final Form asked for below its minimum.
 function upgradeWarnings(basket, upgrades) {
     const out = [];
-    if (upgrades.missing.length) out.push(`⚠️ **Upgrade not included** for ${upgrades.missing.map(p => `Mythic ${p.currency}`).join(', ')} — no upgrade price at ${regionLabel(basket.region)} yet.`);
-    if (upgrades.lines.some(l => l.finalFormBlocked)) out.push(`⚠️ **${MYTHIC_UPGRADE.mythicCharacter.finalForm.name} left out** — it needs ${MYTHIC_UPGRADE.mythicCharacter.finalForm.minTiers} of 9 tiers.`);
+    if (upgrades.missing.length) out.push(`${BOT_EMOJI.warn} **Upgrade not included** for ${upgrades.missing.map(p => `Mythic ${p.currency}`).join(', ')} — no upgrade price at ${regionLabel(basket.region)} yet.`);
+    if (upgrades.lines.some(l => l.finalFormBlocked)) out.push(`${BOT_EMOJI.warn} **${MYTHIC_UPGRADE.mythicCharacter.finalForm.name} left out** — it needs ${MYTHIC_UPGRADE.mythicCharacter.finalForm.minTiers} of 9 tiers.`);
     return out;
 }
 function lineFigures(basket) {

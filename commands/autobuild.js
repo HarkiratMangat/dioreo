@@ -1,4 +1,5 @@
 // commands/autobuild.js Screenshot -> Gemini vision extraction -> review/edit -> Cloudinary upload -> Loadout doc, gated behind an explicit admin Confirm step. Full design: docs/superpowers/specs/2026-07-19-loadout- automation-poc-design.md. Admin-only (same ALLOWED_ADMIN_ID as /manage). MP-only until 2026-10-19 17:54 EDT; it now reads DMZ builds too, telling the two apart from the screenshot (utils/visionExtract.js's classifyMode) unless `mode:` says which. Extraction/state/write logic lives in utils/autobuildPipeline.js, shared with handlers/autobuild.js's button/ modal handlers for Confirm/Edit/Cancel/retry -- this file only does option parsing + admin gating.
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder } = require('discord.js');
 const { hasCommandAccess } = require('../utils/adminAccess'); // owner OR Mongo-allowlisted admin scoped to 'autobuild'
 const { runExtraction } = require('../utils/autobuildPipeline');
@@ -42,7 +43,7 @@ module.exports = {
         // retry_token path (Task 7 adds retryImageUpload) -- Discord modals can't accept file attachments, so "ask for the image again" after a Cloudinary failure has to be a fresh slash-command invocation, not a button/modal round-trip. See the design spec's "Image retry mechanism" decision.
         if (retryToken) {
             if (!imageUrl) {
-                return interaction.reply({ content: require('../utils/emojiMap').glyphs('❌ Provide `screenshot` or `url` with a retry_token.'), ephemeral: true });
+                return interaction.reply({ content: require('../utils/emojiMap').glyphs(BOT_EMOJI.cross + ' Provide `screenshot` or `url` with a retry_token.'), ephemeral: true });
             }
             await interaction.deferReply({ ephemeral: isEphemeral });
             const { retryImageUpload } = require('../utils/autobuildPipeline');
@@ -51,7 +52,7 @@ module.exports = {
 
         // Several screenshots: the bulk review. `url` stays a single-screenshot option, and `category`, `badges` and `mode` apply to every screenshot in the batch (Edit changes any one build).
         if (extra.length) {
-            if (url) return interaction.reply({ content: require('../utils/emojiMap').glyphs('❌ `url` reads one screenshot. Attach the screenshots instead when sending several.'), ephemeral: true });
+            if (url) return interaction.reply({ content: require('../utils/emojiMap').glyphs(BOT_EMOJI.cross + ' `url` reads one screenshot. Attach the screenshots instead when sending several.'), ephemeral: true });
             await interaction.deferReply({ ephemeral: isEphemeral });
             const { runBulk } = require('../utils/autobuildBulk');
             return runBulk(interaction, [attachment, ...extra].filter(Boolean).map(a => a.url), {
@@ -62,7 +63,7 @@ module.exports = {
         }
 
         if ((attachment && url) || (!attachment && !url)) {
-            return interaction.reply({ content: require('../utils/emojiMap').glyphs('❌ Provide exactly one of `screenshot` or `url`.'), ephemeral: true });
+            return interaction.reply({ content: require('../utils/emojiMap').glyphs(BOT_EMOJI.cross + ' Provide exactly one of `screenshot` or `url`.'), ephemeral: true });
         }
 
         await interaction.deferReply({ ephemeral: isEphemeral });
