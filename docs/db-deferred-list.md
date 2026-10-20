@@ -1172,6 +1172,10 @@ Filed 2026-09-25 10:49 EDT at Harkirat's direction: "we'll be creating a new set
 
 **Verify condition:** on Board 4, each new badge renders in the manifest row, the form's toggles, Bulk's parser and cards, Compare's heads in tables A, B and C, Export's tiles and hover card, and the selection bar, in every palette and under reduced motion; in the bot and portal, a build carrying each badge saves, reloads (schema), renders in Discord, and round-trips through the bulk format.
 
+### `/dmz` becomes the DMZ info command — secret rooms, maps and the rest `[P2 · M · Sonnet5-High]`
+
+*Filed 2026-10-19 20:03 EDT.* Harkirat, 2026-10-20 00:03 UTC (20:03 EDT), asked whether to drop `/dmz` now that `/gunsmiths dmz` finds DMZ builds: *"no, keep /dmz because i want to utilize it for other dmz info such as secret rooms, maps, etc."* So `/dmz` stays, and today it still does exactly what `/gunsmiths dmz` does (a DMZ weapon lookup, `commands/dmz.js` over `utils/loadoutLookup.js`). **Do:** design what `/dmz` shows (secret rooms, maps, and whatever else he lists) and decide whether its build lookup stays beside them or moves fully to `/gunsmiths dmz`; his content and layout first, as a design session. **Verify:** `/dmz` answers at least one non-build DMZ topic, and nothing about DMZ builds is reachable only through it.
+
 ### Integrate the CODM weapons and attachments catalogue into the prod and dev bot — BEFORE v3 LAUNCHES `[P1 · M]`
 
 > 🔧 **BUILT 2026-10-19 16:45 EDT on `feat/loadout-catalogue-batch`** (not merged). His calls: it WARNS, with Save anyway or Back to edit (16:13 EDT), and it lives in the DATABASE (`models/CatalogueItem.js`, edited through `core/ops/catalogue.js`), seeded from the JSON plus every stored name (`scripts/seedCatalogue.js`). ⚠️ **The verify condition below is wrong on the data**: the screenshot is the game's general table, missing 7 stored weapons (incl. "AK17" for AK117) and 311 of 684 stored attachments, so pickers listing exactly 122 weapons would refuse real builds. Dev seeded (541 names); prod seed waits for his word. Portal pickers: pins2.
