@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.100.0 — 2026-10-19 22:51 EDT (#209) — the `/commands` page's six open items are settled, and the landing header gets a Commands button
+## Pre-Release v3.102.0 — 2026-10-20 00:15 EDT (#209) — the `/commands` page's six open items are settled, and the landing header gets a Commands button
 **`scripts/lib/commandCatalog.js`, `scripts/lib/commandsPage.js`, `scripts/lib/commandProse.js`, `scripts/buildLegalPages.js`, `commands/gunsmith.js`, `commands/calendar.js`, `scripts/commandCatalog.test.js`, `public/`.** The six items were filed as one collective deferred item on 2026-09-09 17:04 EDT; Harkirat, 2026-10-19 22:22 EDT: "let's start a fresh thread to handle all 6."
 
 - **The landing header holds Install and Commands, and Source is a text link in the footer.** Harkirat's layout, after three mocked placements and one restyle (2026-10-19 23:11 EDT). `Commands` (`.cmdb`) wears the Source capsule's old look held open: a hairline pill, the label in mono small caps, the border warming and the cursor light following on hover, no mark inside, and Install's height (37px, 38px under 620px) and label (same size, weight and tracking, measured equal at six widths). Source is a plain text link (`.srcln`) under the "All rights reserved" line, styled like the legal pages' footer nav links and flush with the lines above it. The capsule stays on the document pages' bar. At 320px the mascot is about 64px wide.
@@ -42,6 +42,15 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 - **Two `/timestamp` bugs found and filed, not fixed:** it ignores the timezone saved in `/settings`, and its relative phrases depend on the host's timezone (measured: "in 2 hours" is +6 h on a UTC host; the prod VM's timezone is not recorded).
 - **No new dependency, no schema change, nothing deployed.** The page ships with the v3 deploy.
 
+## Pre-Release v3.101.0 — 2026-10-19 23:22 EDT (#210 · `8b16f533`) — the bulk cache spends no Cloudinary Admin calls on a fresh SKU
+**`scripts/bulkCacheCollectibles.js`.** Harkirat, 2026-10-19 23:18 EDT, choosing how to pace the prod run: "A."
+
+- **`--limit N`** stops a run after about N SKUs. It keeps whole design groups, because a group posts as one channel message, so a run can end a few SKUs under N.
+- **`--repair-context`** re-patches a cached SKU whose Cloudinary context has no Discord url, using the asset index. It does not re-render or re-post.
+- **Why:** Cloudinary's Admin API allows 500 calls an hour, shared with the live bot. A run spends about two per SKU, and a dry run spends one. The first prod dry run spent the hour on its own, and the 4-group sample after it lost its 7 context patches while the uploads and posts went through.
+- **Zero Admin calls for a fresh SKU** (his "restructure", 2026-10-19 23:31 EDT): the cached-or-not check reads the Mongo asset index first, and each variant is posted before it is uploaded, so the Discord url rides in the upload's own context. Tested on the dev bot while the hourly limit was spent: 4 cached, no errors.
+- **Prod, on his go (2026-10-19 23:12 EDT):** the catalogue sync inserted all **986** SKUs (prod held none). The bulk cache then cached the other **979** in one run, 23:36 to 00:00 EDT, 0 failed, and `--repair-context` fixed the sample's 7. That repair checked every cached SKU (714 read back with their Discord url) and spent the next hour's Admin budget, so it is now capped at 25 a run.
+- **The six unique slots:** the Cloudinary half is moot, so no metadata schema change. The portal half stays open with pins2.
 
 ## Pre-Release v3.99.0 — 2026-10-19 21:54 EDT (#208 · `af2a73c8`) — seven helpers nothing called are deleted
 **`utils/alertStore.js`, `utils/changeStore.js`, `utils/stillFrame.js`, `utils/calendarBannerCache.js`, `utils/manageActions.js`.** Harkirat, 2026-10-19 21:44 EDT: "delete the extra codes".
