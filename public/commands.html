@@ -2139,8 +2139,10 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   .rx-rail.rx-js .rx-pick{display:flex}/* 📌 THE PILL STAYS PINNED WHILE YOU SCROLL ITS LIST (Harkirat, 2026-10-20 18:38 EDT: "when you scroll down in the menu... the top part doesn't stick"). The box scrolls with the page, so the button inside it is sticky to where the rail sticks and the chips pass under it; its ::before paints the strip between it and the bar so nothing shows through that gap. It is sticky inside the BOX, so it lets go at the box's end and the page simply carries on. */
   
   .rx-rail.rx-js.open .rx-pick{position:sticky;z-index:3;top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px) + .55rem + 1px);
-    background:var(--paper);border-radius:23px;box-shadow:0 10px 18px -14px rgba(0,0,0,.7)}
-  .rx-rail.rx-js.open .rx-pick::before{content:"";position:absolute;left:-2px;right:-2px;bottom:100%;height:calc(.55rem + 2px);
+    transition:box-shadow .2s ease,background-color .2s ease}/* ⚠️ ONLY ONCE IT IS ACTUALLY PINNED (.pinned, set by the script when the list has scrolled under it). Wearing the paper and shadow from the moment it opened drew the header as a separate dark box inside the menu ("bugged when it opens", Harkirat, 2026-10-20 18:46 EDT). */
+  
+  .rx-rail.rx-js.open.pinned .rx-pick{background:var(--paper);box-shadow:0 10px 18px -14px rgba(0,0,0,.7)}
+  .rx-rail.rx-js.open.pinned .rx-pick::before{content:"";position:absolute;left:-2px;right:-2px;bottom:100%;height:calc(.55rem + 2px);
     background:var(--desk);pointer-events:none}
   .rx-rail.rx-js .rx-drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.4,0,.2,1)}
   .rx-rail.rx-js.open .rx-drop{grid-template-rows:1fr;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1)}
@@ -4954,7 +4956,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
       /* If the list was scrolled while the pill stayed pinned, the box top is above the pill: move the rail down by that much first, so the fold closes up INTO the pill instead of dragging it away. */
       var bx=rail.querySelector(".rx-box"), gap=pick.getBoundingClientRect().top-(bx?bx.getBoundingClientRect().top:0)-1;
       if(bx&&gap>1) rail.style.top=((parseFloat(rail.style.top)||0)+gap)+"px";
-      rail.classList.remove("open");
+      rail.classList.remove("open"); rail.classList.remove("pinned");
       rail._t=setTimeout(function(){ rail.classList.remove("held"); rail.style.top=""; if(after) after(); },still.matches?0:SHUT);
     }
     pick.setAttribute("aria-expanded",on?"true":"false");
@@ -4970,6 +4972,10 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     if(on) sk.style.setProperty("--ci","var(--ct)"); else sk.style.removeProperty("--ci");
     setPick(false);
   }
+  /* .pinned: the list has scrolled under the pill, so it needs its own paper; see the CSS. */
+  function pinned(){ if(!rail||!rail.classList.contains("open")){ if(rail) rail.classList.remove("pinned"); return; }
+    var bx=rail.querySelector(".rx-box"); rail.classList.toggle("pinned", pick.getBoundingClientRect().top-bx.getBoundingClientRect().top>2); }
+  addEventListener("scroll",pinned,{passive:true});
   if(rail&&pick){
     rail.classList.add("rx-js");
     pick.addEventListener("click",function(){ setPick(!rail.classList.contains("open")); });
