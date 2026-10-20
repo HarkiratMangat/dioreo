@@ -32,7 +32,7 @@ const { assertProseCoverage, assertAskCoverage, assertSearchCoverage, searchHays
 
 const CHROME_KEYS = [
     'esc', 'TOKENS', 'COMPONENT_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS', 'MORPH_JS', 'GOO_SVG',
-    'wordmark', 'navSwitcher', 'repoBtn', 'installBtn', 'themeBtn',
+    'wordmark', 'navSwitcher', 'commandsBtn', 'installBtn', 'themeBtn',
     'mobileNav', 'pageFoot', 'BAR_CSS', 'PAGE_CSS', 'SLOT_CSS', 'TOTOP_HTML', 'TOTOP_TRACK_JS', 'cmdRoleCss',
     'SWITCHER_CSS',
 ];
@@ -275,7 +275,7 @@ const RECEIVER_CSS = `
 .rx-sub em{font-style:italic;color:var(--ink)}
 
 /* ── THE RAIL ────────────────────────────────────────────────────────────────── */
-.rx-rail{position:sticky;top:54px;z-index:30;margin:1.25rem 0 0;padding:.7rem 0 .6rem;
+.rx-rail{position:sticky;top:var(--bar-h,58px);z-index:30;margin:1.25rem 0 0;padding:.7rem 0 .6rem;
   background:color-mix(in srgb,var(--desk) 92%,transparent);backdrop-filter:blur(10px)}
 .rx-scroll{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
 /* The group labels were pure --ink3 and read as abandoned beside the coloured chips. They
@@ -310,7 +310,7 @@ const RECEIVER_CSS = `
 .rx-p:target ~ .rx-home{display:none}
 .rx-p:focus{outline:none}
 /* 🔴 SCROLL-MARGIN, AND IT MUST NOT GO MISSING AGAIN. A fragment jump parks the target at
-   viewport top, which on this page is underneath a 54px fixed bar AND a sticky rail — so
+   viewport top, which on this page is underneath the fixed bar (--bar-h, 58px) AND a sticky rail — so
    nearly every command opened with its own heading cut off. The rewrite dropped this
    declaration entirely and the defect fired on all fourteen. */
 .rx-p,.rx-home{scroll-margin-top:9.5rem}
@@ -351,7 +351,7 @@ const RECEIVER_CSS = `
   background:color-mix(in srgb,var(--ink) 11%,transparent);color:var(--ink)}
 
 /* ── THE LINE ────────────────────────────────────────────────────────────────── */
-.rx-bar{position:sticky;top:calc(54px + 3.4rem);z-index:20;margin:1.3rem 0 0;
+.rx-bar{position:sticky;top:calc(var(--bar-h,58px) + 3.4rem);z-index:20;margin:1.3rem 0 0;
   display:flex;align-items:center;gap:.6rem;padding:.62rem .68rem;border-radius:12px;
   background:color-mix(in srgb,var(--desk) 62%,transparent);backdrop-filter:blur(12px) saturate(1.4);
   border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);
@@ -572,7 +572,7 @@ const RECEIVER_CSS = `
 @media (max-width:900px){
   .rx-top{padding-top:1rem}
   .rx-sub{font-size:.98rem}
-  .rx-rail{margin-top:1rem;padding:.55rem 0;top:calc(54px + env(safe-area-inset-top,0px))}
+  .rx-rail{margin-top:1rem;padding:.55rem 0;top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px))}
   .rx-scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
     scroll-snap-type:x proximity;padding-bottom:.15rem}
   .rx-scroll::-webkit-scrollbar{display:none}
@@ -1201,7 +1201,7 @@ ${C.GOO_SVG}
      footer is the LAST CHILD of .page. Do not flatten any of these back out. -->
 <div class="bar">
   ${C.wordmark('./', page)}
-  <nav>${C.navSwitcher(page)}${C.repoBtn}${C.installBtn()}${C.themeBtn()}</nav>
+  <nav>${C.navSwitcher(page)}${C.commandsBtn(page)}${C.installBtn()}${C.themeBtn()}</nav>
 </div>
 <!-- ⚠️ NO SECTION SLOTS ON PURPOSE: mobileNav() renders its "On this page" accordion only
      when given some, and this page's rail already IS that navigation. -->

@@ -190,42 +190,15 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    you, rounded = an invitation. An action is an invitation, so the earlier
    squared repo/install buttons contradicted the rule the rest of the site is
    built on. Every interactive control in the bar is now a pill; only document
-   chrome stays squared. *//* Every control in the bar is 32px tall so the icons, the switcher and the
-   switch sit on one optical line. The old 30px height with a 30px icon plate
-   inside a 1px border left the plate 2px wider than the content box, so the
-   GitHub mark was pushed off-centre and clipped by overflow:hidden — that is the
-   whole "logo is not properly aligned" bug, and it is why the plate is now sized
-   from the CONTENT box rather than matched to the outer height. */
+   chrome stays squared. *//* Every control in the bar is a 34px stadium (Install, Commands and the theme
+   switch), so the switcher and the controls sit on one optical line. They were
+   32px, with Install at 37px, until 2026-10-20 10:00 EDT (Harkirat: 34px for all three).
+   The GitHub capsule that used to share this rule is gone from the bar; the repo
+   link is a plain footer link now, on every page. */
 
 
 
-.ghb,.ins{border-radius:999px;height:32px;position:relative;isolation:isolate}/* repo — a capsule that opens. The mark holds still on its plate and the label
-   is uncovered as the capsule grows past it. */
-
-
-.ghb{display:inline-flex;align-items:center;justify-content:flex-start;
-  overflow:hidden;text-decoration:none;color:var(--ink2);
-  border:1px solid var(--rule2);background:transparent;
-  width:32px;padding:0;transition:width .42s cubic-bezier(.16,.84,.28,1),
-  color .22s,border-color .22s}
-.ghb-ic{position:relative;z-index:1;display:grid;place-items:center;
-  width:30px;height:30px;flex:0 0 30px}
-.ghb-ic svg{width:15px;height:15px;display:block}
-.ghb-t{position:relative;z-index:1;overflow:hidden;padding-right:.9rem}
-.ghb-t b{display:block;font-family:var(--mono);font-size:.65rem;font-weight:600;
-  letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;
-  transform:translateX(-8px);opacity:0;
-  transition:transform .42s cubic-bezier(.16,.84,.28,1),opacity .3s}.ghb:focus-visible{width:108px;color:var(--ink);
-  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}@media (hover:hover) and (pointer:fine){
-.ghb:hover{width:108px;color:var(--ink);
-  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}}.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}@media (hover:hover) and (pointer:fine){
-.ghb:hover .ghb-t b{transform:translateX(0);opacity:1}}/* the cursor-tracked light */
-
-.ghb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
-  opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
-    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
-    transparent 72%)}.ghb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
-.ghb:hover::after{opacity:1}}/* install — the one filled control on the site, and the only place a second
+.ins{border-radius:999px;height:34px;position:relative;isolation:isolate}/* install — the one filled control on the site, and the only place a second
    ambient effect is justified. Three things happen and each has a reason: the
    fill is lit from the cursor, a single edge-light passes once on hover (not a
    loop — an idle sheen competes with the theme switch), and the mark sits in a
@@ -247,19 +220,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      actually looks like. */
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.13),
     0 2px 10px -5px color-mix(in srgb,var(--accent) 80%,transparent);
-  transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}/* Taller, heavier and wider than the repo capsule beside it. These two were the
-   same 32px pill, which gave the primary action on the site exactly as much
-   presence as a link to the source. *//* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
-   same number as the right. The pill is 37px tall, so its cap radius is 18.5px;
+  transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}/* Heavier and wider-tracked than the plain controls around it: this is the
+   primary action on the site. 34px tall since 2026-10-20 10:00 EDT (Harkirat), the same
+   height as Commands and the theme switch; it was 37px. *//* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
+   same number as the right. The pill is 34px tall, so its cap radius is 17px;
    the Discord disc is 22px, radius 11px. A disc reads as sitting concentrically
-   inside a cap only when the gap equals the difference — 7.5px, which is .47rem.
-   At the old symmetric .95rem the disc was 15.2px from the left edge and 7.5px
-   from the top and bottom, so the crescent of space around it was twice as thick
-   on one axis as the other: the "different amounts of curve". The right side
-   keeps more room because it ends in a text run's terminal, not a circle. */
+   inside a cap only when the gap equals the difference — 6px, which is .375rem.
+   (It was .47rem at the old 37px.) The right side keeps more room because it
+   ends in a text run's terminal, not a circle. */
 
 
-.ins{height:37px;font-weight:700;letter-spacing:.14em;padding-inline:.47rem .85rem}
+.ins{height:34px;font-weight:700;letter-spacing:.14em;padding-inline:.375rem .85rem}
 .ins .ins-t{font-size:.7rem;font-weight:800}
 .ins-ic{position:relative;z-index:2;display:grid;place-items:center;
   width:22px;height:22px;flex:0 0 22px;border-radius:50%;
@@ -314,13 +285,13 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ins:hover{transform:none}}.ins:focus-visible .ins-ic{transform:none}@media (hover:hover) and (pointer:fine){
   .ins:hover .ins-ic{transform:none}}
 }/* ── the way into /commands: .cmdb ──────────────────────────────────────────
-   The Source capsule's look with its word held open: a hairline pill, the label in the capsule's mono small caps, the border warming and the cursor light following on hover. ⚠️ ITS HEIGHT IS INSTALL'S, declared twice on purpose (37px here, 38px in the 620px block with .ins) and not inherited from the shared 32px rule, because the whole point of the second pass was that the pair read as one height. Change .ins and change this with it.
+   The Source capsule's look with its word held open: a hairline pill, the label in the capsule's mono small caps, the border warming and the cursor light following on hover. ⚠️ ITS HEIGHT IS INSTALL'S, declared twice on purpose (34px here, 38px in the 620px block with .ins) and not inherited from the shared 32px rule, because the whole point of the second pass was that the pair read as one height. Change .ins and change this with it.
    The label is --ink2 at rest and --ink on hover, the pairing the capsule and the footer nav links already use on this ground. No mark inside, by instruction. Trailing letter-spacing is taken off the right padding so the word sits centred rather than a tracking-width left of centre.
    ⚠️ THE LABEL IS INSTALL'S LABEL, METRIC FOR METRIC, AND BUILT THE SAME WAY: the pill carries .66rem and the .14em tracking (which inherits as the absolute 1.48px, not as .14em of the label), the word inside is .7rem / 800. Setting .7rem on the pill instead gives 1.57px tracking and a 700 weight, a hair off Install on the desktop. The first build kept the capsule's .65rem/.13em, and the second guessed Install's phone size from a rule that never applies (see the phone block), so the pair read as two different type sizes (Harkirat, 2026-10-19 23:40 EDT: "their sizing and alignment is off"). */
 
 .cmdb{display:inline-flex;align-items:center;justify-content:center;
   position:relative;isolation:isolate;overflow:hidden;
-  height:37px;padding-inline:1.05rem calc(1.05rem - .14em);border-radius:999px;
+  height:34px;padding-inline:1.05rem calc(1.05rem - .14em);border-radius:999px;
   text-decoration:none;white-space:nowrap;color:var(--ink2);
   border:1px solid var(--rule2);background:transparent;
   font-family:var(--mono);font-size:.66rem;font-weight:700;letter-spacing:.14em;
@@ -333,13 +304,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}@media (hover:hover) and (pointer:fine){
 .cmdb:hover{color:var(--ink);
   border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}}.cmdb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
-.cmdb:hover::after{opacity:1}}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
+.cmdb:hover::after{opacity:1}}/* The page you are on: the warm border stays on, so the control reads as current without a fill. A fill would need its own ink for the cursor swarm (an accent-filled control makes a same-coloured blob vanish, which is why Install is dark inside), and an outline needs none. */
+
+.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
-   eaten. The install button collapses to its mark and the gap tightens, which
-   brings it to ~315px. The GitHub button deliberately survives instead: it is the
-   ONLY repo link on the entire site, so dropping it on mobile would remove that
-   route altogether, whereas the install label is recoverable from the icon plus
-   the accessible name. */
+   eaten. The gap tightens below. Since 2026-10-20 10:00 EDT the controls are Commands, Install
+   and the switch, and Commands leaves the BAR under 621px (it is the first tab of
+   the strip below; the landing header keeps it at every width). The repo link is a
+   footer link on every page, so no width loses the route to it. */
 
 @media (max-width:620px){/* ⚠️ .bar.bar, not .bar — and the doubled class is load-bearing.
      The base .bar rule lives in the SHELLS, which are concatenated after
@@ -368,36 +340,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      19px (itself plus its gap) on a surface where it can never be revealed.
      That 19px is exactly what "Dior's Buil..." was short of. */
   
-  .mark .go{display:none}/* ⚠️ ONE rule, BOTH axes, for the icon-only control. The desktop rule gives
-     .ins height:37px while this one set only width:32px, so on a phone the
-     Discord button rendered as a 32x37 egg — a specificity trap, not a drawing
-     mistake: the height came from a rule nobody was looking at.
-     .ins keeps its LABEL here. A bare circular Discord glyph reads as a sign-in
-     or an avatar, which is the opposite of what it does — it is an outbound
-     install link, and the word is what says so. The repo button stays a circle
-     because it is secondary and its mark is self-explanatory. */
+  .mark .go{display:none}/* .ins keeps its LABEL on a phone. A bare circular Discord glyph reads as a
+     sign-in or an avatar, which is the opposite of what it does: it is an outbound
+     install link, and the word is what says so. It is 38px tall here and 34px on
+     a desktop, because on a phone it is a thumb target. */
   
-  .ghb{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}/* ⚠️ THE MARK WAS SITTING 3.2px OUTSIDE ITS OWN BUTTON HERE, and the cause is
-     that opacity:0 hides INK and KEEPS THE BOX. Measured: the collapsed control
-     is 38px with a 36px content box, but its flex line still carries the 30px
-     icon plate PLUS the label's 14.4px of padding-right = 44.4px. With
-     justify-content:center the 8.4px of overflow splits evenly, so the GitHub
-     glyph is pushed 3.2px past the left edge with 11.2px of slack on the right,
-     and the button's own overflow:hidden clips it. The <b> being opacity:0 is
-     exactly what made this invisible to a style read — the label looked absent
-     and was still occupying the line.
-     Taking the label OUT of the line is the fix rather than trimming its
-     padding, because at this width it can never be revealed: .ghb only shows it
-     by growing to 108px on hover, and there is no hover here. It also costs no
-     accessibility — the label is not the accessible name. With .ghb-t removed
-     from the tree the name falls back to the link's own title ("View the source
-     on GitHub"), which is more informative than the word "Source" it replaces. */
-  
-  .ghb .ghb-t{display:none}/* And the capsule must not open to 108px around a label that is not there.
-     This matters on a narrow DESKTOP window, which is the one place a fine
-     pointer and this breakpoint coexist. */.ghb:focus-visible{width:38px}@media (hover:hover) and (pointer:fine){
-  
-  .ghb:hover{width:38px}}
+  .bar .cmdb{display:none}
   .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
@@ -416,18 +364,21 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    NOT the page accent — a violet moon read as an unidentifiable blob. Only the
    track border and focus ring follow the accent.
    Hovering PEEKS: the knob leans toward the far side and the destination's
-   furniture fades up, so the control shows you what pressing it will do. *//* Geometry, stated once because it was wrong before: the track is 60x32 with a
-   1px border, so the CONTENT box is 58x30. The knob is 26px inset 2px, which
-   leaves exactly 2px on every side and gives a travel of 58-2-26-2 = 28px. The
-   previous knob was inset 3px inside a 28px content box, so it had 3px above and
-   1px below — that is the "moon/sun aren't properly aligned" bug. Any change to
-   the track size has to re-derive the travel or the knob stops at the wrong end. */
+   furniture fades up, so the control shows you what pressing it will do. *//* Geometry, stated once because it was wrong before: the track is 62x34 with a
+   1px border, so the CONTENT box is 60x32. The knob is 28px inset 2px, which
+   leaves exactly 2px on every side and gives a travel of 60-2-28-2 = 28px. (It
+   was 60x32 with a 26px knob, which also travelled 28px; Harkirat asked for 34px
+   on 2026-10-20 10:00 EDT and the track gained 2px of width so the travel and the peek
+   offsets below stayed as they were.) The previous knob was inset 3px inside a
+   28px content box, so it had 3px above and 1px below — that is the "moon/sun
+   aren't properly aligned" bug. Any change to the track size has to re-derive
+   the travel or the knob stops at the wrong end. */
 
 
 
 .thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
   cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
-.thm-tr{display:block;position:relative;width:60px;height:32px;border-radius:999px;
+.thm-tr{display:block;position:relative;width:62px;height:34px;border-radius:999px;
   border:1px solid var(--rule2);overflow:hidden;
   background:linear-gradient(168deg,#171430,#2B2446 62%,#3A2F52);
   transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}.thm:focus-visible .thm-tr{border-color:var(--accent);
@@ -467,7 +418,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 
-.thm-kn{position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;
+.thm-kn{position:absolute;top:2px;left:2px;width:28px;height:28px;border-radius:50%;
   display:grid;place-items:center;
   background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.15),rgba(255,255,255,.04));
   border:1px solid rgba(255,255,255,.22);
@@ -475,7 +426,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   transform:translateX(0);
   transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32),
     background .5s,border-color .5s,box-shadow .5s}
-.thm-kn svg{width:17px;height:17px;overflow:visible}/* ⚠️ THE BODY IS LIT, NOT FLAT, and it is filled by a GRADIENT REFERENCE. An SVG
+.thm-kn svg{width:18px;height:18px;overflow:visible}/* ⚠️ THE BODY IS LIT, NOT FLAT, and it is filled by a GRADIENT REFERENCE. An SVG
    shape whose fill rule goes missing paints BLACK with no warning — that is
    worth knowing before anyone "tidies" this: losing this one line produces a
    black crescent and, in light mode, a black sun ringed by orange rays.
@@ -730,16 +681,22 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    the one you are pointing at. */
 
 .endnav{grid-column:2;grid-row:1/span 2;align-self:start;
-  display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
-  gap:.15rem .75rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
-  text-transform:uppercase}
-.endnav a,.srcln{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
+  display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase}/* Two rows (documents, then Commands · GitHub · Install), each wrapping on its own so a narrow footer folds the long row without dragging the short one with it. */
+
+.en-row{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
+  gap:.15rem .75rem}
+.endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;
   transition:color .22s,border-color .22s}@media (hover:hover) and (pointer:fine){
-.endnav a:hover,.srcln:hover{color:var(--ink);border-bottom-color:var(--accent)}}/* .srcln is the landing footer's Source link, a lone link outside any .endnav, so it carries the nav's type itself. */
+.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}}
+.endnav span{color:var(--ink3);opacity:.45}/* ⚠️ A DOT THAT ENDS A WRAPPED ROW IS A DEFECT, AND NO SELECTOR CAN TELL A ROW'S LAST ITEM FROM ITS LAST *ON THE LINE*. Seen on the phone and at 800px on 2026-10-20 10:20 EDT: "TERMS · PRIVACY · LICENSE ·" with the dot dangling at the end of the line it broke on. Below 1000px a row can fold (the Commands page's, whose footer sits beside a wide column, still folded at 960px), so the dots go and the gap widens to carry the separation alone; above it every row fits on one line (measured 1001 to 1440px, every page) and the dots stay. */
 
-.srcln{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase}
-.endnav span{color:var(--ink3);opacity:.45}/* ⚠️ The sign-off is FIRST in the footer's DOM and LAST on screen, and the split
+@media (max-width:1000px){
+  .endnav span{display:none}
+  .en-row{column-gap:1.15rem}
+}/* ⚠️ The sign-off is FIRST in the footer's DOM and LAST on screen, and the split
    is deliberate. On the warm pages this line is lifted straight out of the
    source, where it runs on from the last paragraph ("Thanks for being here —
    genuinely. / ♡ Made with love by dior"). If the five nav labels sit between
@@ -806,7 +763,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
     padding-bottom:.7rem}
   .disc{order:1;max-width:none}
-  .endnav{order:2;justify-content:flex-start}
+  .endnav{order:2;align-items:flex-start}
+  .en-row{justify-content:flex-start}
   .sig{order:3;margin:0}
 }
 .sig b{color:var(--ink2);font-weight:600}/* The name itself carries the page's own accent, not the neutral ink-family
@@ -1094,8 +1052,9 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
    phone height, so that's the term trimmed. */
 
 
-body{min-height:100vh;display:flex;align-items:center;padding:clamp(1.4rem,5.5vh,4rem) clamp(1.2rem,5vw,2rem)}
-.wrap{width:100%;max-width:780px;margin:0 auto}/* ⚠️ MASCOT +16px, MARGIN TIGHTENED then EASED BACK OUT TWICE — 2026-08-05
+body{min-height:100vh;display:flex;align-items:center;padding:clamp(1.4rem,5.5vh,4rem) clamp(1.2rem,5vw,2rem)}/* 900px, up from 780: Harkirat asked to cut the empty margin by about 60px on each side (2026-10-20 10:00 EDT), and on a wide screen the margin is what is left of the viewport once this is taken out. A narrower window is unaffected, since the body's own side padding is the limit there. */
+
+.wrap{width:100%;max-width:900px;margin:0 auto}/* ⚠️ MASCOT +16px, MARGIN TIGHTENED then EASED BACK OUT TWICE — 2026-08-05
    09:37 EDT tightened this to clamp(1.6rem,6vh,3.4rem) alongside the bigger
    mascot; 09:49 EDT eased it to clamp(2rem,7.5vh,4rem) as that read too
    close. 09:58 EDT nudges it again, on purpose this time to COMPENSATE for
@@ -1104,7 +1063,7 @@ body{min-height:100vh;display:flex;align-items:center;padding:clamp(1.4rem,5.5vh
    than leaving it all at the very top. */
 
 .top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.6rem,9.5vh,4.8rem)}
-.top .cmdb{margin-left:auto}/* The Commands button takes the push to the right edge that the Source capsule used to carry (Source now lives in the footer), so the two actions sit together at the end of the header. *//* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
+.top .cmdb{margin-left:auto}/* The Commands button takes the push to the right edge, so the two actions (Commands, Install) sit together at the end of the header. *//* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
    The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
    at -.05em on a ~66px display size the tracking pulled unrelated pairs into
    contact: the comma sat on the t of "print", and the n of "plain" touched the s of
@@ -1367,9 +1326,18 @@ h1 em{font-style:normal;color:var(--accent-t)}
    Reported same session, 08:56 EDT, with a phone screenshot showing exactly
    that. 760px matches this template's other mobile breakpoints. */
 
-.sig.lsig{margin:0;flex:0 0 auto;text-align:right}/* The Source link sits under the copyright line, on the sign-off's own alignment: right on a wide screen, left once .lsig turns left below. Harkirat's placement, 2026-10-19 22:45 EDT (he drew a circle there); at 23:11 EDT he turned it from a capsule into a text link in the footer nav's style. It left the header so the two actions up there are Install and Commands. It is an inline link, so it needs its own line: inline-block plus a top margin puts it under the block-level copyright span. ⚠️ NO SIDE PADDING AND A NEGATIVE END MARGIN, because the shared .srcln rule keeps the footer nav's .1rem of side padding and the word carries a trailing .14em of tracking: together they left it about 3px inside the lines above, indented on a phone and short of the right edge on a desktop (Harkirat, 2026-10-19 23:40 EDT). */
+.sig.lsig{margin:0;flex:0 0 auto;text-align:right}/* ⚠️ THE COPYRIGHT LINE ENDS ON A FULL STOP, THE SIGN-OFF ON AN r. The text boxes
+   of the two lines end at the same edge but the ink does not: a full stop in a
+   monospace face sits in the middle of its cell, so its dot stopped about 2px
+   short of the r above it. Measured on the rendered pixels at 1440px (sign-off
+   ink ends 1169.16, copyright 1167.16, box 1170) and reported by Harkirat
+   2026-10-20 10:00 EDT as the "all rights reserved" line not being perfectly
+   right-aligned with its neighbours. A negative end margin pushes only that
+   line's box out by the missing 2px, so its ink lands on the same edge. Right-aligned
+   layout only: the left-aligned one below already matches (both lines start at
+   the same ink edge). */
 
-.lsig .srcln{display:inline-block;margin-top:.55rem;padding-inline:0;margin-inline-end:-.14em}
+@media (min-width:761px){ .sig.lsig .sig-cr{margin-inline-end:-.18em} }
 @media (max-width:760px){ .sig.lsig{text-align:left} }
 .disc.fine{margin:0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
@@ -1632,12 +1600,23 @@ h1 em{font-style:normal;color:var(--accent-t)}
 
 .lede.sub{font-size:.97rem;max-width:54ch;margin-bottom:1.1rem}/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
    request: on a landing page the masthead should be the only thing competing for
-   the top of the screen. */
+   the top of the screen.
+   The label that used to sit far left of it ("Appearance") is gone (Harkirat,
+   2026-10-20 10:00 EDT: "kind of dumb"), and the footer's two-row link block takes
+   that place, so the switch is the only thing on the right. The block is the SAME
+   markup every other page's footer carries (footNav), left-aligned here because
+   nothing else in this row is. */
 
 
 .tray{margin-top:clamp(1.8rem,5vh,2.8rem);padding-top:1.4rem;border-top:1px solid var(--rule);
   display:flex;align-items:center;gap:.7rem}
-.tray .lab{margin-right:auto}
+.tray .endnav{align-self:center;align-items:flex-start;margin-right:auto}
+.tray .en-row{justify-content:flex-start}/* ⚠️ ON A PHONE THE LINK BLOCK LEADS AND THE SWITCH FOLLOWS, STACKED. The shared footer rule gives .endnav order:2 below 760px (it belongs after the disclaimer on a document page), which in this one-row tray put the switch first and squeezed the links into a 280px column to its right (seen on a phone screenshot, 2026-10-20 10:20 EDT). */
+
+@media (max-width:760px){
+  .tray{flex-direction:column;align-items:flex-start;gap:1rem}
+  .tray .endnav{order:0;margin-right:0;align-self:stretch}
+}
 </style></head><body>
 <!-- ⚠️ THE LANDING PAGE HAD NO FILTER DEFS AT ALL until the morph port — it is the
      one template that never carried GOO_SVG, because it is also the one without a
@@ -1800,7 +1779,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
         <span class="inv-b">
           <span class="inv-h">
             <span class="inv-m" aria-hidden="true"><svg viewBox="0 0 14 14" aria-hidden="true"><line class="ln" x1="2" y1="3.6" x2="12" y2="3.6"/><line class="ln" x1="2" y1="7" x2="8.4" y2="7"/><line class="ln" x1="2" y1="10.4" x2="5.6" y2="10.4"/></svg></span>
-            <span class="ik">Roll call</span>
+            <span class="ik">Thank you</span>
           </span>
           <h3>Contributors</h3>
           <p>Who helped build this, and how credit works. Bug reports count.</p>
@@ -1822,7 +1801,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
 </details>
   </div>
   <div class="tray">
-    <span class="lab">Appearance</span>
+    <nav class="endnav" aria-label="Footer"><div class="en-row"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></div><div class="en-row"><a href="./commands.html">Commands</a><span>&middot;</span><a href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer" data-tip="Source on GitHub">GitHub</a><span>&middot;</span><a href="https://discord.com/oauth2/authorize?client_id=1491474871778021550" target="_blank" rel="noopener noreferrer" data-tip="Add to Discord">Install</a></div></nav>
     <button id="th" class="thm " role="switch"
   aria-checked="false" aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
@@ -1885,7 +1864,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
     <!-- The sign-off closes the landing page as it closes every other one. It was
          the only page without it, which made the site look like it ended twice:
          every document signed off and the front door did not. -->
-    <p class="sig lsig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span><a class="srcln" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer" data-tip="Source on GitHub">Source</a></p>
+    <p class="sig lsig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
   </div>
 </main>
 <script>
@@ -2096,7 +2075,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
          Below roughly the v11 band they stop happening within a glance.
 
          ⚠️ AND THE REST STATE IS A PILL, NOT AN OVAL. Every other control on the
-         site is a stadium (border-radius:999px on .ghb and .ins), and a lone
+         site is a stadium (border-radius:999px on .ins and .cmdb), and a lone
          ellipse read as a different vocabulary. A stadium is not "50% everywhere":
          it is a corner radius of HALF THE HEIGHT in both axes, which as a
          percentage of a 14x6.5 box is 23.2% horizontally and 50% vertically — so
@@ -2384,7 +2363,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
         e.closest('a,button,summary,[role="button"],input,select,textarea,label')?'link'
         :(e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')
           &&onGlyphs(cx,cy))?'text':'idle');
-      /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .ghb transitions its own
+      /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .cmdb transitions its own
          color over 220ms on hover, so sampling every 90ms walked the swarm up that
          ramp (a white flash) and then dropped it. Latching on the surface reads the
          colour once on arrival and holds it. */
@@ -3090,12 +3069,33 @@ h1 em{font-style:normal;color:var(--accent-t)}
        label reset the wait twice and the hint could take three delays to arrive
        — or never, on a control with several children. Re-asking for the node
        that is already queued is a no-op now. */
-    function want(node,delay){
+    /* ⚠️ THE POINTER GEOMETRY IS READ FROM THE EVENT THAT SAYS WHERE IT IS.
+       lastX and lastY come from pointermove, and when a pointer leaves a control the
+       browser fires pointerout BEFORE the pointermove for that same movement. So at
+       pointerout time they still hold the position INSIDE the control, the old
+       guard below read them, concluded nothing had been left, and returned without
+       hiding. The 700ms timer was still queued, the pointer by then had stopped, the
+       settle check passed, and the hint opened over a control the pointer was no
+       longer on, and stayed there. Reported 2026-10-20 10:00 EDT (Harkirat: a
+       momentary movement over a button, then away, still raised the hint and left
+       it up, on every page). Two changes, and both are needed:
+       (1) pointerout asks the event's own clientX and clientY, which are where the
+       pointer IS now, not where the last move event left it;
+       (2) the timer re-asks, when it fires, whether the pointer is still on the
+       control (pointer-queued hints only: a keyboard hint has no pointer to ask).
+       pointerover onto something with no hint of its own used to leave a queued
+       hint alone as well, so it clears the queue now. */
+    function inside(node,x,y){
+      var r=node.getBoundingClientRect();
+      return x>=r.left-1&&x<=r.right+1&&y>=r.top-1&&y<=r.bottom+1;
+    }
+    function want(node,delay,byPointer){
       if(!node||node===cur||node===pending)return;
       pending=node;
       clearTimeout(showT);
       showT=setTimeout(function fire(){
         if(fine&&performance.now()-lastMove<130){ showT=setTimeout(fire,130); return; }
+        if(byPointer&&!inside(node,lastX,lastY)){ pending=null; return; }
         pending=null;
         place(node);
       },delay);
@@ -3108,7 +3108,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
       document.addEventListener('pointerover',function(e){
         if(e.pointerType==='touch')return;
         var n=tipOf(e);
-        if(!n){ if(cur)hide(); return; }
+        if(!n){ if(cur||pending)hide(); return; }
         /* 700ms, not the 190 this started at and not the 420 that followed.
            Reported as naggy at both: a hint that arrives while you are still
            deciding whether you wanted it reads as an interruption, and the
@@ -3116,29 +3116,26 @@ h1 em{font-style:normal;color:var(--accent-t)}
            check below, which is the half that stops sweep-through triggers —
            raising the delay alone would only have made the WANTED case feel
            broken too. */
-        want(n,700);
+        want(n,700,true);
       },true);
       /* ⚠️ pointerout FIRES ON EVERY INTERNAL BOUNDARY, and reading it as "the
          pointer left" is what made the hint strobe across a single button —
          reported 2026-08-03 16:40 EDT with a recording of it appearing and
-         vanishing three times inside the Source capsule. Moving from .ghb-ic to
-         .ghb-t is a pointerout on the icon whose target still resolves to the
-         same trigger, so the old check hid it and pointerover then queued it
-         again. relatedTarget is the element being entered: if it is still
-         inside the same trigger, nothing has been left. */
+         vanishing three times inside a capsule that had an icon and a label.
+         Moving from the icon to the label is a pointerout on the icon whose
+         target still resolves to the same trigger, so the old check hid it and
+         pointerover then queued it again. relatedTarget is the element being
+         entered: if it is still inside the same trigger, nothing has been left. */
       document.addEventListener('pointerout',function(e){
         var n=tipOf(e);
         if(!n)return;
         var to=e.relatedTarget;
         if(to&&n.contains(to))return;
-        /* ⚠️ relatedTarget IS NOT ENOUGH ON A CONTROL THAT RESIZES. .ghb grows
-           from 32px to its full width over 420ms on hover, so a pointer that
-           has not moved can fall outside the box for a frame and come back —
-           pointerout fires with relatedTarget outside, and the hint hid and
-           re-queued. Ask the geometry instead: if the pointer is still within
-           the trigger's current rect, nothing has been left. */
-        var r=n.getBoundingClientRect();
-        if(lastX>=r.left-1&&lastX<=r.right+1&&lastY>=r.top-1&&lastY<=r.bottom+1)return;
+        /* relatedTarget IS NOT ENOUGH ON A CONTROL THAT RESIZES (the old GitHub
+           capsule grew over 420ms and a pointer that had not moved could fall
+           outside the box for a frame), so the geometry is asked as well, with the
+           event's own coordinates; see the note above want(). */
+        if(inside(n,e.clientX,e.clientY))return;
         hide();
       },true);
     }
@@ -3156,7 +3153,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
        replaces a device guess with the platform's real answer. */
     document.addEventListener('focusin',function(e){
       var n=tipOf(e);
-      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0); else hide();
+      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0,false); else hide();
     },true);
     document.addEventListener('focusout',hide,true);
     /* ⚠️ .anchor's CLICK IS HANDLED HERE, NOT AS A SEPARATE LISTENER, because a
@@ -3281,10 +3278,20 @@ h1 em{font-style:normal;color:var(--accent-t)}
        source (6) + From Main Profile (17) is 23, while From Server Profile (19)
        is 25 and would be filtered out silently. It is left out on purpose. */
     {c:'/colors', pairs:[['page','Avatar'],['page','Banner'],['page','Name'],['page','Nameplate'],['page','Deco'],['source','From Main Profile']]},
-    {c:'/settings'},
+    /* open is a real choice on /settings (Visibility, Preferences, Colors), added
+       2026-10-19 20:10 EDT (#206); the three labels are the name half of its addChoices. */
+    {c:'/settings', pairs:[['open','Visibility'],['open','Preferences'],['open','Colors']]},
     /* The cmd option is a real autocomplete on /help and these are real command
-       names, so the line stays honest rather than decorative. */
-    {c:'/help', pairs:[['cmd','/gunsmith'],['cmd','/calendar'],['cmd','/dmz']]},
+       names, so the line stays honest rather than decorative. Every name below is
+       one the autocomplete actually offers a non-admin (commands/help.js, the
+       staticCommands of each category), so none of them is a line the bot cannot
+       answer. The admin commands are left out on purpose, as everywhere here.
+       Widened 2026-10-20 10:00 EDT from three names to eleven, after the landing
+       line was reported as repeating a lot: /help was one of the commands with
+       the fewest distinct options to show. */
+    {c:'/help', pairs:[['cmd','/gunsmith'],['cmd','/calendar'],['cmd','/dmz'],['cmd','/draws'],
+                        ['cmd','/draw prices'],['cmd','/patch notes'],['cmd','/colors'],
+                        ['cmd','/timestamp'],['cmd','/settings'],['cmd','/invite'],['cmd','/season end']]},
     /* Bare, like /colors and /settings: its only option is visibility, which no
        spec here decorates with -- it says nothing about what the command does. */
     {c:'/invite'}
@@ -3354,23 +3361,58 @@ h1 em{font-style:normal;color:var(--accent-t)}
      colour them. Anything that flattens this back to textContent loses the
      meaning while still looking fine, which is the dangerous kind of
      regression. Harkirat's ask, 2026-08-05 17:30 EDT.
-     Bare about two showings in five, decorated the rest: the aim is that one
-     command does not look the same twice, not that every line is busy — every
-     line busy would make the options read as part of the command's own name. */
+     Bare about three showings in ten, decorated the rest (it was a flat two in
+     five until 2026-10-20 10:00 EDT, see the bag below): the aim is that one command does
+     not look the same twice, not that every line is busy — every line busy would
+     make the options read as part of the command's own name. */
+  /* ⚠️ EACH COMMAND DEALS FROM ITS OWN BAG, NOT FROM A COIN FLIP (Harkirat,
+     2026-10-20 10:00 EDT: the line "is repeating a lot of commands"). The order of
+     the commands was already a shuffled full pass with three others between any
+     two showings, so what repeated was what each command SHOWED: render() used to
+     pick one of its pairs at random every time, with a flat two-in-five chance of
+     showing none, so a command with three options could put the same one up twice
+     running, and the bare form came round far more often than any single option.
+     A bag holds every option that fits plus a few BARE tokens (one per four options, at least one: measured over five cycles, 29% of the showings of commands that have options),
+     is shuffled, and is dealt from until empty; the next bag is reshuffled so its
+     first card is never the card just dealt. Every option is therefore seen once
+     before any is seen twice, and the bare form is a minority rather than the
+     most common face. The fit filter runs once per command, here, because the cap
+     does not change while the page is open. */
+  var BARE=0;
+  function refill(s){
+    var bag=s.ok.slice(), nb=Math.max(1,Math.round(s.ok.length/4)), i, t;
+    for(i=0;i<nb;i++) bag.push(BARE);
+    shuffle(bag);
+    if(bag.length>1 && bag[0]===s.last){
+      for(i=1;i<bag.length;i++){
+        if(bag[i]!==s.last){ t=bag[0]; bag[0]=bag[i]; bag[i]=t; break; }
+      }
+    }
+    s.bag=bag;
+  }
+  function deal(s){
+    var room=MAXLEN-s.c.length-1, i;
+    if(!s.ok){
+      s.ok=[];
+      for(i=0;i<s.pairs.length;i++){
+        if(s.pairs[i][0].length+s.pairs[i][1].length<=room) s.ok.push(s.pairs[i]);
+      }
+    }
+    if(!s.ok.length) return BARE;
+    if(!s.bag || !s.bag.length) refill(s);
+    s.last=s.bag.shift();
+    return s.last;
+  }
   function render(s){
     var parts=[{t:s.c,k:'c'}];
-    if(!s.pairs || Math.random()<0.4) return parts;
-    var room=MAXLEN-s.c.length-1, ok=[], i;
-    for(i=0;i<s.pairs.length;i++){
-      if(s.pairs[i][0].length+s.pairs[i][1].length<=room) ok.push(s.pairs[i]);
-    }
-    if(!ok.length) return parts;
-    var pr=pick(ok);
+    if(!s.pairs) return parts;
+    var pr=deal(s);
+    if(!pr) return parts;
     parts.push({t:' ',k:''},{t:pr[0],k:'o'},{t:pr[1],k:'v'});
     /* A second option, occasionally, and only where build: is real — the eight
        characters it costs are checked against the cap rather than assumed. */
     var used=s.c.length+1+pr[0].length+pr[1].length;
-    if(s.w && Math.random()<0.25 && used+7<=MAXLEN2){
+    if(s.w && Math.random()<0.3 && used+7<=MAXLEN2){
       parts.push({t:' ',k:''},{t:'build',k:'o'},{t:String(1+Math.floor(Math.random()*3)),k:'v'});
     }
     return parts;

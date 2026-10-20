@@ -168,7 +168,7 @@ const EXTRA_PAGES = [
     {
         file: 'CONTRIBUTORS.md', kind: 'md', root: true, out: 'contributors.html',
         title: 'Contributors', short: 'Contributors',
-        kicker: 'Roll call', accent: BRAND.citron, glow: '#FBFFB0',
+        kicker: 'Thank you', accent: BRAND.citron, glow: '#FBFFB0',
         lede: 'Everyone who has made this better, credited under the name they chose.',
         // "Your name goes here" read as a sales pitch on a page whose actual subject is that crediting is a binding obligation under LICENSE §5.6. This says the same thing the page does.
         badge: 'Credit, in writing',
@@ -264,6 +264,9 @@ const hrefTo = (target, from) => {
     // Only two directories exist (root and changelog/), so a !== b means exactly one of them is root: crossing FROM root goes down into b; crossing from changelog/ (the only other case) goes up, and b is root so leaf alone is the whole path — 'b + / + leaf' would double a slash here since b is ''.
     return a === '' ? b + '/' + leaf : '../' + leaf;
 };
+
+// Whether `p` is the page being rendered (`cur`; null on the landing page). Defined up here, beside the other page-addressing helpers, because commandsBtn reads it and a `const` used from a function that runs before its line is a temporal dead zone (the tdz ratchet found it when commandsBtn first used it from above its old home).
+const isHere = (p, cur) => cur && p.out === cur.out && dirOf(p) === dirOf(cur);
 
 /* ─────────────────────────── inline formatting ─────────────────────────── */
 
@@ -1135,11 +1138,17 @@ const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${
 </a>`;
 
 /**
- * The way into the /commands page, drawn the way the Source capsule was drawn, because that is the look Harkirat picked for it (2026-10-19 23:11 EDT, after the first build in Install's own anatomy read as "ugly"): a hairline pill on the page, the label in the capsule's mono small caps, and the accent held back for the hover, when the border warms and the cursor light follows. It is the capsule held OPEN. The capsule only showed its word on hover, and a way into a page has to say where it goes before anyone hovers.
+ * The way into the /commands page, drawn the way the old Source capsule was drawn, because that is the look Harkirat picked for it (2026-10-19 23:11 EDT, after the first build in Install's own anatomy read as "ugly"): a hairline pill on the page, the label in the capsule's mono small caps, and the accent held back for the hover, when the border warms and the cursor light follows. It is the capsule held OPEN: a way into a page has to say where it goes before anyone hovers.
  *
- * Its height is Install's (37px, 38px under 620px) so the two read as a pair; the capsule's 32px read as the smaller of them. There is no mark inside it, by his instruction: the word is the whole button. It stays a link on the site (no outbound arrow), and only the landing page carries it, since the document pages reach /commands through their nav. Its href is built with hrefTo from the landing page's own position.
+ * Its height is Install's (34px, 38px under 620px) so the two read as a pair. There is no mark inside it, by his instruction: the word is the whole button. It stays a link on the site (no outbound arrow).
+ *
+ * ⚠️ IT LIVES IN TWO PLACES. The landing page's header, and the bar of every other page, where it took the slot the GitHub capsule had and left the switcher (Harkirat, 2026-10-20 10:00 EDT: remove GitHub from the bar, "put the command button over there"). `cur` is the page being rendered, or null on the landing page. On the /commands page itself it is the current page, so it keeps its warm border and says aria-current. Under 621px the bar hides it (the mobile strip's first tab is the way in there); the landing header keeps it at every width.
  */
-const commandsBtn = `<a class="cmdb" href="${hrefTo(TOOL_PAGES[0], { out: 'index.html', dir: '' })}" data-spot data-tip="Every command, with examples"><span class="cmdb-t">Commands</span></a>`;
+const commandsBtn = cur => {
+    const here = !!cur && isHere(TOOL_PAGES[0], cur);
+    const from = cur || { out: 'index.html', dir: '' };
+    return `<a class="cmdb${here ? ' on' : ''}" href="${hrefTo(TOOL_PAGES[0], from)}"${here ? ' aria-current="page"' : ''} data-spot data-tip="Every command, with examples"><span class="cmdb-t">Commands</span></a>`;
+};
 
 /**
  * The wordmark. It was previously a static accent bar plus text, and the first thing Harkirat said about the live site was that he could not tell whether it was clickable. So it now carries a permanent, slow idle animation — a highlight that sweeps the three bars every few seconds — because a hover state cannot advertise interactivity to someone who has not hovered yet. The three bars are the same motif as the favicon and stand for attachment slots on a spec sheet.
@@ -1168,15 +1177,6 @@ const wordmark = (href, cur) => {
   </div>`;
 };
 
-// Collapsed to the mark alone, expanding to reveal the label on hover/focus. NOTE: this is the ONLY repo link on the site (in the bar on the document pages, and as a plain text link, `repoLink` below, in the landing page's footer under the copyright since 2026-10-19 23:11 EDT: Harkirat moved it out of the header on 22:45 EDT and then took it out of its button design altogether), and it is a navigation affordance, not a citation. That distinction is deliberate — a citation inside a legal document must resolve (the repo's visibility can change at any time, per TERMS §7.1), whereas a nav button that stops working is a dead button and not a defective legal instrument. TERMS §20 still deliberately withholds the repo as a *contact* route, which this does not change.
-const repoBtn = `<a class="ghb" href="${REPO_URL}" target="_blank" rel="noopener noreferrer"
-  data-spot data-tip="Source on GitHub">
-  <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
-  <span class="ghb-t"><b>Source</b></span>
-</a>`;
-
-// The landing footer's way to the repo: a text link in the footer nav's own style (.endnav a), under the copyright line. Harkirat, 2026-10-19 23:11 EDT: "remove it from its button design ... make it a text link under the all rights reserved line, styled like the footer nav links on the legal pages." It is the same destination as repoBtn and carries the same hover hint.
-const repoLink = `<a class="srcln" href="${REPO_URL}" target="_blank" rel="noopener noreferrer" data-tip="Source on GitHub">Source</a>`;
 
 /**
  * The light/dark switch. Replaces a ◐ glyph in a box.
@@ -1259,13 +1259,15 @@ const NAV_GROUPS = [TOOL_PAGES, PAGES, EXTRA_PAGES];
 const navSetFor = cur => (cur && dirOf(cur) === 'changelog')
     ? [...NAV_GROUPS, CHRONICLE_PAGES]
     : NAV_GROUPS;
+/* ⚠️ THE DESKTOP SWITCHER DOES NOT CARRY THE COMMANDS GROUP ANY MORE (Harkirat, 2026-10-20 10:00 EDT): /commands is a button in the bar (commandsBtn), in the slot the GitHub capsule had. The MOBILE strip below still lists it first, because that strip is the whole site in one row and Commands leaves the phone's bar. So the two controls read from two different sets, and the tab counts the desktop staging is measured for are six (nine inside /changelog/) rather than seven (ten). */
+const deskSetFor = cur => navSetFor(cur).filter(g => g !== TOOL_PAGES);
 const navLabelFor = gi => NAV_GROUP_LABELS[gi] || 'Releases';
 
-/* What each group is called once it is stacked in the mobile menu, where the
-   pills are no longer side by side to make the distinction for themselves. The
-   labels are also what the collapsed desktop chips show between 981 and 1100px —
-   see SWITCHER_CSS, where the staging is re-derived for three groups. */
-const NAV_GROUP_LABELS = ['Using it', 'Documents', 'Community'];
+/* What each DESKTOP group is called when its tabs give way to a chip (see
+   SWITCHER_CSS, where the staging is derived). Indexed by position in deskSetFor(),
+   which no longer starts with the Commands group; the third entry is the record
+   group inside /changelog/. */
+const NAV_GROUP_LABELS = ['Documents', 'Community'];
 
 /**
  * DESKTOP navigation — the segmented switcher in the bar.
@@ -1284,8 +1286,8 @@ const NAV_GROUP_LABELS = ['Using it', 'Documents', 'Community'];
    nav — the whole point is that these numbers are measured, so an unmeasured count
    must not quietly inherit someone else's. */
 const navSwitcher = cur => {
-    const n = navSetFor(cur).reduce((a, g) => a + g.length, 0);
-    if (n !== 7 && n !== 10) {
+    const n = deskSetFor(cur).reduce((a, g) => a + g.length, 0);
+    if (n !== 6 && n !== 9) {
         throw new Error(`navSwitcher: ${n} tabs has no measured breakpoint staging. ` +
             'Measure it (bar.scrollWidth > bar.clientWidth, both sides of every boundary), ' +
             'add a data-fit tier in SWITCHER_CSS, then allow the count here.');
@@ -1293,9 +1295,8 @@ const navSwitcher = cur => {
     return `<div class="navwrap" data-fit="${n}">${navGroups(cur)}</div>`;
 };
 
-const isHere = (p, cur) => cur && p.out === cur.out && dirOf(p) === dirOf(cur);
 
-const navGroups = (cur, i0 = 0) => navSetFor(cur).map((grp, gi) => {
+const navGroups = (cur, i0 = 0) => deskSetFor(cur).map((grp, gi) => {
     const at = grp.findIndex(p => isHere(p, cur));
     /* ⚠️ THE COLLAPSED CHIP IS REAL MARKUP, NOT A ::before.
        Between 981 and 1100px the groups you are not in give up their tabs (nine
@@ -1427,13 +1428,33 @@ const styleDisclaimer = html => html.replace(DISCLAIMER_RE,
    it again in the chrome a centimetre below said the same thing twice on one
    screen — which is what Harkirat was looking at. The warm and chronicle pages
    carry no such closing line, so they keep the footer's copy. */
+/**
+ * The footer's link block, shared by every page and by the landing page's tray (Harkirat, 2026-10-20 10:00 EDT). Two rows: the documents, then the three things that leave the page you are reading: Commands, GitHub and Install.
+ *
+ * ⚠️ THE REPO LINK IS HERE AND NOWHERE ELSE. The GitHub capsule left the bar and the landing page's Source link left its sign-off; this is the only repo link on the site, still a navigation affordance and not a citation (a citation inside a legal document must resolve, and the repo's visibility can change, per TERMS §7.1; a nav link that stops working is a dead link, not a defective instrument). TERMS §20 still withholds the repo as a *contact* route, which this does not change.
+ *
+ * `cur` is null on the landing page, which is why every href is built from a root-page fallback there. The page you are on is left out of its own row, as the old single row did. Install and GitHub are outbound, so they open in a new tab and carry the hint the bar's controls carry.
+ */
+const footNav = cur => {
+    const from = cur || { out: 'index.html', dir: '' };
+    const sep = '<span>&middot;</span>';
+    const pg = p => `<a href="${hrefTo(p, from)}">${esc(p.short)}</a>`;
+    const out = (href, label, tip) =>
+        `<a href="${href}" target="_blank" rel="noopener noreferrer" data-tip="${tip}">${label}</a>`;
+    const docs = deskSetFor(cur).flat().filter(p => !isHere(p, cur)).map(pg);
+    const tools = [
+        ...(isHere(TOOL_PAGES[0], cur) ? [] : [pg(TOOL_PAGES[0])]),
+        out(REPO_URL, 'GitHub', 'Source on GitHub'),
+        out(INSTALL_URL, 'Install', 'Add to Discord'),
+    ];
+    return `<nav class="endnav" aria-label="Footer"><div class="en-row">${docs.join(sep)}</div>`
+        + `<div class="en-row">${tools.join(sep)}</div></nav>`;
+};
+
 const pageFoot = (cur, sig, disc = true) => `<footer class="foot${disc ? '' : ' nodisc'}">
     <p class="sig">${sig || DIOR_SIG}${SIG_COPYRIGHT}</p>
     ${disc ? `<p class="disc">${TRADEMARK_NOTE}</p>` : ''}
-    <nav class="endnav">${navSetFor(cur).flat()
-        .filter(p => !isHere(p, cur))
-        .map(p => `<a href="${hrefTo(p, cur || p)}">${esc(p.short)}</a>`)
-        .join('<span>&middot;</span>')}</nav>
+    ${footNav(cur)}
   </footer>`;
 
 /**
@@ -1535,38 +1556,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    squared repo/install buttons contradicted the rule the rest of the site is
    built on. Every interactive control in the bar is now a pill; only document
    chrome stays squared. */
-/* Every control in the bar is 32px tall so the icons, the switcher and the
-   switch sit on one optical line. The old 30px height with a 30px icon plate
-   inside a 1px border left the plate 2px wider than the content box, so the
-   GitHub mark was pushed off-centre and clipped by overflow:hidden — that is the
-   whole "logo is not properly aligned" bug, and it is why the plate is now sized
-   from the CONTENT box rather than matched to the outer height. */
-.ghb,.ins{border-radius:999px;height:32px;position:relative;isolation:isolate}
-
-/* repo — a capsule that opens. The mark holds still on its plate and the label
-   is uncovered as the capsule grows past it. */
-.ghb{display:inline-flex;align-items:center;justify-content:flex-start;
-  overflow:hidden;text-decoration:none;color:var(--ink2);
-  border:1px solid var(--rule2);background:transparent;
-  width:32px;padding:0;transition:width .42s cubic-bezier(.16,.84,.28,1),
-  color .22s,border-color .22s}
-.ghb-ic{position:relative;z-index:1;display:grid;place-items:center;
-  width:30px;height:30px;flex:0 0 30px}
-.ghb-ic svg{width:15px;height:15px;display:block}
-.ghb-t{position:relative;z-index:1;overflow:hidden;padding-right:.9rem}
-.ghb-t b{display:block;font-family:var(--mono);font-size:.65rem;font-weight:600;
-  letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;
-  transform:translateX(-8px);opacity:0;
-  transition:transform .42s cubic-bezier(.16,.84,.28,1),opacity .3s}
-.ghb:hover,.ghb:focus-visible{width:108px;color:var(--ink);
-  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}
-.ghb:hover .ghb-t b,.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}
-/* the cursor-tracked light */
-.ghb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
-  opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
-    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
-    transparent 72%)}
-.ghb:hover::after,.ghb:focus-visible::after{opacity:1}
+/* Every control in the bar is a 34px stadium (Install, Commands and the theme
+   switch), so the switcher and the controls sit on one optical line. They were
+   32px, with Install at 37px, until 2026-10-20 10:00 EDT (Harkirat: 34px for all three).
+   The GitHub capsule that used to share this rule is gone from the bar; the repo
+   link is a plain footer link now, on every page. */
+.ins{border-radius:999px;height:34px;position:relative;isolation:isolate}
 
 /* install — the one filled control on the site, and the only place a second
    ambient effect is justified. Three things happen and each has a reason: the
@@ -1589,18 +1584,16 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.13),
     0 2px 10px -5px color-mix(in srgb,var(--accent) 80%,transparent);
   transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
-/* Taller, heavier and wider than the repo capsule beside it. These two were the
-   same 32px pill, which gave the primary action on the site exactly as much
-   presence as a link to the source. */
+/* Heavier and wider-tracked than the plain controls around it: this is the
+   primary action on the site. 34px tall since 2026-10-20 10:00 EDT (Harkirat), the same
+   height as Commands and the theme switch; it was 37px. */
 /* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
-   same number as the right. The pill is 37px tall, so its cap radius is 18.5px;
+   same number as the right. The pill is 34px tall, so its cap radius is 17px;
    the Discord disc is 22px, radius 11px. A disc reads as sitting concentrically
-   inside a cap only when the gap equals the difference — 7.5px, which is .47rem.
-   At the old symmetric .95rem the disc was 15.2px from the left edge and 7.5px
-   from the top and bottom, so the crescent of space around it was twice as thick
-   on one axis as the other: the "different amounts of curve". The right side
-   keeps more room because it ends in a text run's terminal, not a circle. */
-.ins{height:37px;font-weight:700;letter-spacing:.14em;padding-inline:.47rem .85rem}
+   inside a cap only when the gap equals the difference — 6px, which is .375rem.
+   (It was .47rem at the old 37px.) The right side keeps more room because it
+   ends in a text run's terminal, not a circle. */
+.ins{height:34px;font-weight:700;letter-spacing:.14em;padding-inline:.375rem .85rem}
 .ins .ins-t{font-size:.7rem;font-weight:800}
 .ins-ic{position:relative;z-index:2;display:grid;place-items:center;
   width:22px;height:22px;flex:0 0 22px;border-radius:50%;
@@ -1653,12 +1646,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ins:hover .ins-ic,.ins:focus-visible .ins-ic{transform:none}
 }
 /* ── the way into /commands: .cmdb ──────────────────────────────────────────
-   The Source capsule's look with its word held open: a hairline pill, the label in the capsule's mono small caps, the border warming and the cursor light following on hover. ⚠️ ITS HEIGHT IS INSTALL'S, declared twice on purpose (37px here, 38px in the 620px block with .ins) and not inherited from the shared 32px rule, because the whole point of the second pass was that the pair read as one height. Change .ins and change this with it.
+   The Source capsule's look with its word held open: a hairline pill, the label in the capsule's mono small caps, the border warming and the cursor light following on hover. ⚠️ ITS HEIGHT IS INSTALL'S, declared twice on purpose (34px here, 38px in the 620px block with .ins) and not inherited from the shared 32px rule, because the whole point of the second pass was that the pair read as one height. Change .ins and change this with it.
    The label is --ink2 at rest and --ink on hover, the pairing the capsule and the footer nav links already use on this ground. No mark inside, by instruction. Trailing letter-spacing is taken off the right padding so the word sits centred rather than a tracking-width left of centre.
    ⚠️ THE LABEL IS INSTALL'S LABEL, METRIC FOR METRIC, AND BUILT THE SAME WAY: the pill carries .66rem and the .14em tracking (which inherits as the absolute 1.48px, not as .14em of the label), the word inside is .7rem / 800. Setting .7rem on the pill instead gives 1.57px tracking and a 700 weight, a hair off Install on the desktop. The first build kept the capsule's .65rem/.13em, and the second guessed Install's phone size from a rule that never applies (see the phone block), so the pair read as two different type sizes (Harkirat, 2026-10-19 23:40 EDT: "their sizing and alignment is off"). */
 .cmdb{display:inline-flex;align-items:center;justify-content:center;
   position:relative;isolation:isolate;overflow:hidden;
-  height:37px;padding-inline:1.05rem calc(1.05rem - .14em);border-radius:999px;
+  height:34px;padding-inline:1.05rem calc(1.05rem - .14em);border-radius:999px;
   text-decoration:none;white-space:nowrap;color:var(--ink2);
   border:1px solid var(--rule2);background:transparent;
   font-family:var(--mono);font-size:.66rem;font-weight:700;letter-spacing:.14em;
@@ -1671,13 +1664,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .cmdb:hover,.cmdb:focus-visible{color:var(--ink);
   border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}
 .cmdb:hover::after,.cmdb:focus-visible::after{opacity:1}
+/* The page you are on: the warm border stays on, so the control reads as current without a fill. A fill would need its own ink for the cursor swarm (an accent-filled control makes a same-coloured blob vanish, which is why Install is dark inside), and an outline needs none. */
+.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}
 /* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
-   eaten. The install button collapses to its mark and the gap tightens, which
-   brings it to ~315px. The GitHub button deliberately survives instead: it is the
-   ONLY repo link on the entire site, so dropping it on mobile would remove that
-   route altogether, whereas the install label is recoverable from the icon plus
-   the accessible name. */
+   eaten. The gap tightens below. Since 2026-10-20 10:00 EDT the controls are Commands, Install
+   and the switch, and Commands leaves the BAR under 621px (it is the first tab of
+   the strip below; the landing header keeps it at every width). The repo link is a
+   footer link on every page, so no width loses the route to it. */
 @media (max-width:620px){
   /* ⚠️ .bar.bar, not .bar — and the doubled class is load-bearing.
      The base .bar rule lives in the SHELLS, which are concatenated after
@@ -1706,35 +1700,11 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      19px (itself plus its gap) on a surface where it can never be revealed.
      That 19px is exactly what "Dior's Buil..." was short of. */
   .mark .go{display:none}
-  /* ⚠️ ONE rule, BOTH axes, for the icon-only control. The desktop rule gives
-     .ins height:37px while this one set only width:32px, so on a phone the
-     Discord button rendered as a 32x37 egg — a specificity trap, not a drawing
-     mistake: the height came from a rule nobody was looking at.
-     .ins keeps its LABEL here. A bare circular Discord glyph reads as a sign-in
-     or an avatar, which is the opposite of what it does — it is an outbound
-     install link, and the word is what says so. The repo button stays a circle
-     because it is secondary and its mark is self-explanatory. */
-  .ghb{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}
-  /* ⚠️ THE MARK WAS SITTING 3.2px OUTSIDE ITS OWN BUTTON HERE, and the cause is
-     that opacity:0 hides INK and KEEPS THE BOX. Measured: the collapsed control
-     is 38px with a 36px content box, but its flex line still carries the 30px
-     icon plate PLUS the label's 14.4px of padding-right = 44.4px. With
-     justify-content:center the 8.4px of overflow splits evenly, so the GitHub
-     glyph is pushed 3.2px past the left edge with 11.2px of slack on the right,
-     and the button's own overflow:hidden clips it. The <b> being opacity:0 is
-     exactly what made this invisible to a style read — the label looked absent
-     and was still occupying the line.
-     Taking the label OUT of the line is the fix rather than trimming its
-     padding, because at this width it can never be revealed: .ghb only shows it
-     by growing to 108px on hover, and there is no hover here. It also costs no
-     accessibility — the label is not the accessible name. With .ghb-t removed
-     from the tree the name falls back to the link's own title ("View the source
-     on GitHub"), which is more informative than the word "Source" it replaces. */
-  .ghb .ghb-t{display:none}
-  /* And the capsule must not open to 108px around a label that is not there.
-     This matters on a narrow DESKTOP window, which is the one place a fine
-     pointer and this breakpoint coexist. */
-  .ghb:hover,.ghb:focus-visible{width:38px}
+  /* .ins keeps its LABEL on a phone. A bare circular Discord glyph reads as a
+     sign-in or an avatar, which is the opposite of what it does: it is an outbound
+     install link, and the word is what says so. It is 38px tall here and 34px on
+     a desktop, because on a phone it is a thumb target. */
+  .bar .cmdb{display:none}
   .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
@@ -1756,15 +1726,18 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    track border and focus ring follow the accent.
    Hovering PEEKS: the knob leans toward the far side and the destination's
    furniture fades up, so the control shows you what pressing it will do. */
-/* Geometry, stated once because it was wrong before: the track is 60x32 with a
-   1px border, so the CONTENT box is 58x30. The knob is 26px inset 2px, which
-   leaves exactly 2px on every side and gives a travel of 58-2-26-2 = 28px. The
-   previous knob was inset 3px inside a 28px content box, so it had 3px above and
-   1px below — that is the "moon/sun aren't properly aligned" bug. Any change to
-   the track size has to re-derive the travel or the knob stops at the wrong end. */
+/* Geometry, stated once because it was wrong before: the track is 62x34 with a
+   1px border, so the CONTENT box is 60x32. The knob is 28px inset 2px, which
+   leaves exactly 2px on every side and gives a travel of 60-2-28-2 = 28px. (It
+   was 60x32 with a 26px knob, which also travelled 28px; Harkirat asked for 34px
+   on 2026-10-20 10:00 EDT and the track gained 2px of width so the travel and the peek
+   offsets below stayed as they were.) The previous knob was inset 3px inside a
+   28px content box, so it had 3px above and 1px below — that is the "moon/sun
+   aren't properly aligned" bug. Any change to the track size has to re-derive
+   the travel or the knob stops at the wrong end. */
 .thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
   cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
-.thm-tr{display:block;position:relative;width:60px;height:32px;border-radius:999px;
+.thm-tr{display:block;position:relative;width:62px;height:34px;border-radius:999px;
   border:1px solid var(--rule2);overflow:hidden;
   background:linear-gradient(168deg,#171430,#2B2446 62%,#3A2F52);
   transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}
@@ -1803,7 +1776,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    circles with three different centres, which at any magnification reads as a
    misaligned disc sitting behind the moon rather than as one lit plate. The
    gradient is centred now and the only offset left is a soft drop shadow. */
-.thm-kn{position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;
+.thm-kn{position:absolute;top:2px;left:2px;width:28px;height:28px;border-radius:50%;
   display:grid;place-items:center;
   background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.15),rgba(255,255,255,.04));
   border:1px solid rgba(255,255,255,.22);
@@ -1811,7 +1784,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   transform:translateX(0);
   transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32),
     background .5s,border-color .5s,box-shadow .5s}
-.thm-kn svg{width:17px;height:17px;overflow:visible}
+.thm-kn svg{width:18px;height:18px;overflow:visible}
 /* ⚠️ THE BODY IS LIT, NOT FLAT, and it is filled by a GRADIENT REFERENCE. An SVG
    shape whose fill rule goes missing paints BLACK with no warning — that is
    worth knowing before anyone "tidies" this: losing this one line produces a
@@ -2065,16 +2038,22 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 /* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
    the one you are pointing at. */
 .endnav{grid-column:2;grid-row:1/span 2;align-self:start;
-  display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
-  gap:.15rem .75rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
+  display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
   text-transform:uppercase}
-.endnav a,.srcln{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
+/* Two rows (documents, then Commands · GitHub · Install), each wrapping on its own so a narrow footer folds the long row without dragging the short one with it. */
+.en-row{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
+  gap:.15rem .75rem}
+.endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;
   transition:color .22s,border-color .22s}
-.endnav a:hover,.srcln:hover{color:var(--ink);border-bottom-color:var(--accent)}
-/* .srcln is the landing footer's Source link, a lone link outside any .endnav, so it carries the nav's type itself. */
-.srcln{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase}
+.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}
 .endnav span{color:var(--ink3);opacity:.45}
+/* ⚠️ A DOT THAT ENDS A WRAPPED ROW IS A DEFECT, AND NO SELECTOR CAN TELL A ROW'S LAST ITEM FROM ITS LAST *ON THE LINE*. Seen on the phone and at 800px on 2026-10-20 10:20 EDT: "TERMS · PRIVACY · LICENSE ·" with the dot dangling at the end of the line it broke on. Below 1000px a row can fold (the Commands page's, whose footer sits beside a wide column, still folded at 960px), so the dots go and the gap widens to carry the separation alone; above it every row fits on one line (measured 1001 to 1440px, every page) and the dots stay. */
+@media (max-width:1000px){
+  .endnav span{display:none}
+  .en-row{column-gap:1.15rem}
+}
 /* ⚠️ The sign-off is FIRST in the footer's DOM and LAST on screen, and the split
    is deliberate. On the warm pages this line is lifted straight out of the
    source, where it runs on from the last paragraph ("Thanks for being here —
@@ -2141,7 +2120,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
     padding-bottom:.7rem}
   .disc{order:1;max-width:none}
-  .endnav{order:2;justify-content:flex-start}
+  .endnav{order:2;align-items:flex-start}
+  .en-row{justify-content:flex-start}
   .sig{order:3;margin:0}
 }
 .sig b{color:var(--ink2);font-weight:600}
@@ -2464,13 +2444,15 @@ html.liq,html.liq *{cursor:none !important}
    family (--accent on the documents, --sig on the chronicle) and warmShell has no
    progress bar at all. */
 const BAR_CSS = `
-.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
+/* ⚠️ THE BAR'S HEIGHT IS ONE NUMBER, --bar-h, AND EVERY OFFSET UNDER IT READS IT. It was a literal 54px written into the bar, the page padding, both mobile-nav sticky tops, the sticky section headings, the rail and the anchor margins, so a bar one nudge taller (Harkirat, 2026-10-20 10:00 EDT: 58px) would have left a page's first heading sitting 4px behind it in every place the number was forgotten. Pages that carry no bar (the landing) never use it. */
+:root{--bar-h:58px}
+.bar{position:fixed;inset:0 0 auto;height:var(--bar-h);z-index:60;display:flex;align-items:center;
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
 .bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
 `;
 
-/* .page centres and bounds the document column, and its 54px of top padding is the
+/* .page centres and bounds the document column, and its top padding (the bar's height) is the
    space the fixed bar occupies. Shared for the same reason as BAR_CSS: a template
    that centres its own content to a different max-width sits visibly narrower than
    the chrome above it, and one that forgets the top padding starts underneath it.
@@ -2482,7 +2464,7 @@ const BAR_CSS = `
    2.6rem (paired with .wrap's own trim) after the dead space below the sign-off was
    reported on every legal, Contributing and Contributors page. */
 const PAGE_CSS = `
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+.page{max-width:1220px;margin:0 auto;padding:var(--bar-h,58px) clamp(1rem,3vw,2rem) 0}
 @media (max-width:760px){ .page{padding-bottom:2.6rem} }
 `;
 
@@ -3641,11 +3623,15 @@ const NAV_JS = `
      No backticks in this comment on purpose: it lives inside a template literal,
      where one ends the string and fails the build with a SyntaxError pointing at
      prose. */
+  function barH(){
+    return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h'))||58;
+  }
   function anchorOffset(){
     var n=document.getElementById('mnav');
-    if(!n){ document.documentElement.style.setProperty('--anchor-off','76px'); return; }
+    var base=(barH()+22)+'px';
+    if(!n){ document.documentElement.style.setProperty('--anchor-off',base); return; }
     var h=n.getBoundingClientRect().height;
-    if(!h){ document.documentElement.style.setProperty('--anchor-off','76px'); return; }
+    if(!h){ document.documentElement.style.setProperty('--anchor-off',base); return; }
     var t=parseFloat(getComputedStyle(n).top)||0;
     document.documentElement.style.setProperty('--anchor-off',(t+h+22)+'px');
   }
@@ -3961,35 +3947,43 @@ const SWITCHER_CSS = `
 .seg[data-at="-1"].hot .seg-ink{opacity:1}
 .seg-gap{width:.45rem;flex:0 0 auto}
 
-/* THE BAR COMES IN TWO SIZES NOW, and each has its own MEASURED staging. Six tabs
-   on every page; nine on the three inside /changelog/, which keep their own group
-   so a reader already in that section is not stranded there. data-fit on .navwrap
-   selects the regime — see navSwitcher(), which refuses to build an unmeasured one.
+/* THE BAR COMES IN TWO SIZES, and each has its own MEASURED staging. Six tabs on
+   every page; nine on the three inside /changelog/, which keep their own group so a
+   reader already in that section is not stranded there. The Commands group is not in
+   the switcher (it is a button beside Install, see commandsBtn), so these counts are
+   one lower than the ones this replaced (seven and ten). data-fit on .navwrap selects
+   the regime — see navSwitcher(), which refuses to build an unmeasured one.
 
-   Measured 2026-08-01 21:40 EDT, in a browser, on the widest page of each set. The method is
-   the only one that works: neutralise the media queries, read the nav's real width
-   at each tab size, and add the bar's own chrome (32+32 padding + a 24 gap + the
-   108px wordmark). Reading the CSS cannot find these numbers and neither can
-   arithmetic on the old ones — the tabs went to 600 weight and 1.02rem of padding
-   in this same pass, which moved every one of them.
+   Measured 2026-10-20 10:14 EDT, in a browser, on the built pages. The method: load
+   the page at a 1700px viewport so the media queries sit on the FULL tier, constrain
+   the bar's own width and step it down one pixel at a time until bar.scrollWidth
+   exceeds bar.clientWidth; for the tightened and chips tiers the same rules are forced
+   as plain CSS first. Reading the CSS cannot find these numbers, and neither can
+   arithmetic on the old ones: the bar gained a Commands button (34px tall, wider than
+   the 32px GitHub capsule it replaced) and lost a tab, and the controls and the
+   padding moved too.
 
        tabs   full-size needs   tightened needs   chips-only needs
-        6          1049              936                 -
-        9          1452             1277                919
+        6           999               863                 -
+        9          1421              1212                842
 
-   ⚠️ A TIER BOUNDARY IS ONLY CORRECT IF BOTH SIDES OF IT FIT. That is what caught
-   the previous staging's first attempt (1240/1100), which was wrong at both ends
-   and shipped a nav running off the edge at two common laptop widths. Every
-   boundary below is checked one pixel above as well as one below:
-     · six tabs, 1060: full needs 1049 above it, tightened needs 936 below. Six
-       tightened tabs still fit at 981, so this set needs NO chip tier at all —
-       tightening carries it the whole way to the mobile handoff.
-     · nine tabs, 1465: full needs 1452 above, tightened 1277 below.
-     · nine tabs, 1300: tightened needs 1277 above, chips-only 919 below.
+   The nine-tab numbers are measured WITH the chronicle webfonts, which is the wider
+   case: with the webfonts blocked (the fallback metrics the page first lays out in,
+   because they load with font-display:swap) the same tiers need 1328 / 1124 / 784. The
+   six-tab numbers are identical either way, since the legal pages' tabs set in a
+   system stack. The boundaries below are set against the wider figures.
 
-   The margins are deliberate rather than tight: the chronicle pages' webfonts load
-   with font-display:swap, so the bar is first laid out with FALLBACK metrics, and a
-   boundary with no spare room overflows during the swap on every cold load.
+   ⚠️ A TIER BOUNDARY IS ONLY CORRECT IF BOTH SIDES OF IT FIT. That is what caught an
+   earlier staging (1240/1100), which was wrong at both ends and shipped a nav running
+   off the edge at two common laptop widths. Every boundary below is checked one pixel
+   above as well as one below, in the real viewport and not only in the constrained bar:
+     · six tabs, 1030: full needs 999 above it (31px spare), tightened needs 863 below
+       it. Six tightened tabs still fit at 981, so this set needs NO chip tier at all.
+     · nine tabs, 1520: full needs 1421 above it (99px spare), tightened needs 1212
+       below it.
+     · nine tabs, 1310: tightened needs 1212 above it (98px spare), chips-only needs
+       842 below it, well inside the 981 desktop floor.
+   The spare room is deliberate rather than tight, for the font-swap reason above.
 
    ⚠️ Why a chip rather than hiding the group. The two-group version hid the whole
    seg, which cost one group in a narrow band and was recoverable from the footer.
@@ -4009,39 +4003,33 @@ const SWITCHER_CSS = `
 .segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* ── seven tabs: tighten below 1140 ──
-   MEASURED 2026-08-17 20:38 EDT against the real built page, in an iframe stepped
-   across the desktop range so both sides of the boundary are read from the same
-   engine that ships it. Findings: the tab font steps 10.56px -> 9.92px exactly
-   between 1140 and 1139, so the boundary applies where it says it does; and
-   bar.scrollWidth - bar.clientWidth is 0 at every width from 1600 down to 981,
-   the desktop floor. ⚠️ THE MEASURE WAS PROVEN ABLE TO FIRE before being believed
-   -- forcing the switcher visible at 500px reports 108px of overflow. A gate that
-   never fails is not a gate, and "no overflow anywhere" is exactly the result a
-   broken probe also returns.
-   The six- and nine-tab tiers these replaced are GONE rather than kept: with the
-   Commands group in the bar, no page produces those counts any more, and a
-   staging nothing selects is a number that rots unread. */
-@media (max-width:1139px){
-  .navwrap[data-fit="7"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="7"] .seg{--gap:.6rem}
+/* ── six tabs: tighten below 1030 ──
+   MEASURED 2026-10-20 10:14 EDT, see the table above. Verified in the real viewport
+   afterwards, stepped across the desktop range on the built pages: the tab font
+   changes between 1030 and 1029 and nowhere else, and bar.scrollWidth minus
+   bar.clientWidth is 0 at every width from 1700 down to 981. ⚠️ THE MEASURE WAS
+   PROVEN ABLE TO FIRE before being believed — the same probe reports overflow the
+   moment the bar is narrower than a tier needs, and forcing the switcher visible at
+   500px reports a large one. "No overflow anywhere" is exactly the result a broken
+   probe also returns. */
+@media (max-width:1029px){
+  .navwrap[data-fit="6"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="6"] .seg{--gap:.6rem}
 }
 
-/* ── ten tabs (inside /changelog/, where the record group rejoins) ──
-   MEASURED the same way and at the same time. The font steps at 1545 -> 1544 and
-   the three group chips replace the tabs at 1380 -> 1379, both exactly where
-   declared; zero overflow from 1600 down to 981. */
-@media (max-width:1544px){
-  .navwrap[data-fit="10"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
-  .navwrap[data-fit="10"] .seg{--gap:.6rem}
+/* ── nine tabs (inside /changelog/, where the record group rejoins) ──
+   Tighten below 1520, and swap the groups you are not in for chips below 1310. */
+@media (max-width:1519px){
+  .navwrap[data-fit="9"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="9"] .seg{--gap:.6rem}
 }
-@media (min-width:981px) and (max-width:1379px){
+@media (min-width:981px) and (max-width:1309px){
   /* A group you are not in shows its chip instead of its tabs. The indicator goes
      with them — .seg-ink measures real tab boxes, and there are none to measure. */
-  .navwrap[data-fit="10"] .seg[data-at="-1"] .tab{display:none}
-  .navwrap[data-fit="10"] .seg[data-at="-1"] .seg-ink{display:none}
-  .navwrap[data-fit="10"] .seg[data-at="-1"] .segchip{display:inline-block}
-  .navwrap[data-fit="10"] .seg[data-at="-1"]{padding:0}
+  .navwrap[data-fit="9"] .seg[data-at="-1"] .tab{display:none}
+  .navwrap[data-fit="9"] .seg[data-at="-1"] .seg-ink{display:none}
+  .navwrap[data-fit="9"] .seg[data-at="-1"] .segchip{display:inline-block}
+  .navwrap[data-fit="9"] .seg[data-at="-1"]{padding:0}
 }
 
 /* Desktop shows no mobile menu. */
@@ -4065,7 +4053,7 @@ const SWITCHER_CSS = `
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .mk-ctx i{flex:0 0 auto;width:5px;height:5px;border-radius:50%;
     background:var(--accent)}
-  .mnav{display:block;position:sticky;top:54px;z-index:40}
+  .mnav{display:block;position:sticky;top:var(--bar-h,58px);z-index:40}
 
   /* ⚠️ THE BAR AND THE SCROLLER ARE TWO ELEMENTS, AND THEY HAVE TO STAY APART.
      The indicator below is a metaball layer: it paints an opaque black bed and
@@ -4515,7 +4503,7 @@ ${PAGE_CSS}
    top and bottom edges says "this list ends here"; a 2rem fade says it continues,
    which is true. mask-image, not a gradient overlay, because the rail sits on the
    page background and an overlay would need to know that colour. */
-.rail{position:sticky;top:76px;align-self:start;padding:2.6rem 0 3.4rem;
+.rail{position:sticky;top:calc(var(--bar-h,58px) + 22px);align-self:start;padding:2.6rem 0 3.4rem;
   max-height:calc(100vh - 96px);overflow-y:auto;scrollbar-width:none;
   -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 2rem,
     #000 calc(100% - 2rem),transparent 100%);
@@ -4604,7 +4592,7 @@ ${SLOT_CSS}
 /* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
 @media (max-width:980px){ .rail{display:none} }
-.mnav{position:sticky;top:54px;z-index:50;margin:0 0 1.6rem}
+.mnav{position:sticky;top:var(--bar-h,58px);z-index:50;margin:0 0 1.6rem}
 
 /* ── the document ────────────────────────────────────────────────── */
 /* ⚠️ --gut IS THE STICKY BAND'S REACH, AND IT IS DERIVED FROM THE PADDING ON PURPOSE.
@@ -4643,7 +4631,7 @@ ${SLOT_CSS}
 .mast .meta b{color:var(--ink2);font-weight:500}
 
 /* ── headings: number lives in the margin ────────────────────────── */
-.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:var(--anchor-off,76px)}
+.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:var(--anchor-off,calc(var(--bar-h,58px) + 22px))}
 .doc h2{font-size:1.42rem;font-weight:750;letter-spacing:-.022em;line-height:1.22;
   margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
 .doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
@@ -4680,7 +4668,7 @@ ${SLOT_CSS}
     height:15px;pointer-events:none;opacity:0;transition:opacity .18s ease;
     background:linear-gradient(var(--paper),transparent)}
   .doc .dsec>h2.stuck::after{opacity:1}
-  .doc .dsec>h2{position:sticky;top:54px;z-index:4;background:var(--paper);
+  .doc .dsec>h2{position:sticky;top:var(--bar-h,58px);z-index:4;background:var(--paper);
     padding-top:.9rem;padding-bottom:.78rem;
     transition:box-shadow .18s ease;
     /* The rule under the heading is its own border-bottom, so it travels with it
@@ -4969,7 +4957,7 @@ pre.aligned a{color:var(--ink)}
    longer exists. It spans the full .page width simply by being a block child of it. */
 
 @media print{
-  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.gotop,.ins{display:none!important}
+  .bar,#prog,.rail,.anchor,.thm,.mnav,.gotop,.ins{display:none!important}
   .authoritative{border:1px solid #999}
   p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
   body{background:#fff;color:#000}
@@ -4997,7 +4985,7 @@ html{scroll-behavior:smooth}
   ${wordmark('./', cur)}
   <nav>
     ${navSwitcher(cur)}
-    ${repoBtn}
+    ${commandsBtn(cur)}
     ${installBtn()}
     ${themeBtn()}
   </nav>
@@ -5145,8 +5133,9 @@ ${TOTOP_HTML}
        that makes a heading count once it is comfortably clear of the bar rather
        than at the instant its first pixel escapes.
        .mnav is display:none above 980, so height 0 keeps the desktop value, where
-       130 is correct against a 54px masthead and nothing else. */
-    var navEl=document.getElementById('mnav'), line=130;
+       130 was correct against the old 54px masthead and nothing else; it is now the bar's height (--bar-h) plus 76. */
+    var bh=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h'))||58;
+    var navEl=document.getElementById('mnav'), line=bh+76;
     if(navEl){
       var nr=navEl.getBoundingClientRect();
       if(nr.height>0) line=nr.bottom+72;
@@ -5155,7 +5144,7 @@ ${TOTOP_HTML}
       if(!heads[i]) continue;
       var ht=heads[i].getBoundingClientRect().top;
       if(ht<=line) cur=i;
-      heads[i].classList.toggle('stuck', wide && ht>52.5 && ht<55.5);
+      heads[i].classList.toggle('stuck', wide && ht>bh-1.5 && ht<bh+1.5);
     }
     /* At the bottom of the document the last headings can never cross the 130px
        line — the page simply runs out of scroll before they get there — so the
@@ -5833,7 +5822,7 @@ const MORPH_JS = `
          Below roughly the v11 band they stop happening within a glance.
 
          ⚠️ AND THE REST STATE IS A PILL, NOT AN OVAL. Every other control on the
-         site is a stadium (border-radius:999px on .ghb and .ins), and a lone
+         site is a stadium (border-radius:999px on .ins and .cmdb), and a lone
          ellipse read as a different vocabulary. A stadium is not "50% everywhere":
          it is a corner radius of HALF THE HEIGHT in both axes, which as a
          percentage of a 14x6.5 box is 23.2% horizontally and 50% vertically — so
@@ -6121,7 +6110,7 @@ const MORPH_JS = `
         e.closest('a,button,summary,[role="button"],input,select,textarea,label')?'link'
         :(e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')
           &&onGlyphs(cx,cy))?'text':'idle');
-      /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .ghb transitions its own
+      /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .cmdb transitions its own
          color over 220ms on hover, so sampling every 90ms walked the swarm up that
          ramp (a white flash) and then dropped it. Latching on the surface reads the
          colour once on arrival and holds it. */
@@ -6827,12 +6816,33 @@ const MORPH_JS = `
        label reset the wait twice and the hint could take three delays to arrive
        — or never, on a control with several children. Re-asking for the node
        that is already queued is a no-op now. */
-    function want(node,delay){
+    /* ⚠️ THE POINTER GEOMETRY IS READ FROM THE EVENT THAT SAYS WHERE IT IS.
+       lastX and lastY come from pointermove, and when a pointer leaves a control the
+       browser fires pointerout BEFORE the pointermove for that same movement. So at
+       pointerout time they still hold the position INSIDE the control, the old
+       guard below read them, concluded nothing had been left, and returned without
+       hiding. The 700ms timer was still queued, the pointer by then had stopped, the
+       settle check passed, and the hint opened over a control the pointer was no
+       longer on, and stayed there. Reported 2026-10-20 10:00 EDT (Harkirat: a
+       momentary movement over a button, then away, still raised the hint and left
+       it up, on every page). Two changes, and both are needed:
+       (1) pointerout asks the event's own clientX and clientY, which are where the
+       pointer IS now, not where the last move event left it;
+       (2) the timer re-asks, when it fires, whether the pointer is still on the
+       control (pointer-queued hints only: a keyboard hint has no pointer to ask).
+       pointerover onto something with no hint of its own used to leave a queued
+       hint alone as well, so it clears the queue now. */
+    function inside(node,x,y){
+      var r=node.getBoundingClientRect();
+      return x>=r.left-1&&x<=r.right+1&&y>=r.top-1&&y<=r.bottom+1;
+    }
+    function want(node,delay,byPointer){
       if(!node||node===cur||node===pending)return;
       pending=node;
       clearTimeout(showT);
       showT=setTimeout(function fire(){
         if(fine&&performance.now()-lastMove<130){ showT=setTimeout(fire,130); return; }
+        if(byPointer&&!inside(node,lastX,lastY)){ pending=null; return; }
         pending=null;
         place(node);
       },delay);
@@ -6845,7 +6855,7 @@ const MORPH_JS = `
       document.addEventListener('pointerover',function(e){
         if(e.pointerType==='touch')return;
         var n=tipOf(e);
-        if(!n){ if(cur)hide(); return; }
+        if(!n){ if(cur||pending)hide(); return; }
         /* 700ms, not the 190 this started at and not the 420 that followed.
            Reported as naggy at both: a hint that arrives while you are still
            deciding whether you wanted it reads as an interruption, and the
@@ -6853,29 +6863,26 @@ const MORPH_JS = `
            check below, which is the half that stops sweep-through triggers —
            raising the delay alone would only have made the WANTED case feel
            broken too. */
-        want(n,700);
+        want(n,700,true);
       },true);
       /* ⚠️ pointerout FIRES ON EVERY INTERNAL BOUNDARY, and reading it as "the
          pointer left" is what made the hint strobe across a single button —
          reported 2026-08-03 16:40 EDT with a recording of it appearing and
-         vanishing three times inside the Source capsule. Moving from .ghb-ic to
-         .ghb-t is a pointerout on the icon whose target still resolves to the
-         same trigger, so the old check hid it and pointerover then queued it
-         again. relatedTarget is the element being entered: if it is still
-         inside the same trigger, nothing has been left. */
+         vanishing three times inside a capsule that had an icon and a label.
+         Moving from the icon to the label is a pointerout on the icon whose
+         target still resolves to the same trigger, so the old check hid it and
+         pointerover then queued it again. relatedTarget is the element being
+         entered: if it is still inside the same trigger, nothing has been left. */
       document.addEventListener('pointerout',function(e){
         var n=tipOf(e);
         if(!n)return;
         var to=e.relatedTarget;
         if(to&&n.contains(to))return;
-        /* ⚠️ relatedTarget IS NOT ENOUGH ON A CONTROL THAT RESIZES. .ghb grows
-           from 32px to its full width over 420ms on hover, so a pointer that
-           has not moved can fall outside the box for a frame and come back —
-           pointerout fires with relatedTarget outside, and the hint hid and
-           re-queued. Ask the geometry instead: if the pointer is still within
-           the trigger's current rect, nothing has been left. */
-        var r=n.getBoundingClientRect();
-        if(lastX>=r.left-1&&lastX<=r.right+1&&lastY>=r.top-1&&lastY<=r.bottom+1)return;
+        /* relatedTarget IS NOT ENOUGH ON A CONTROL THAT RESIZES (the old GitHub
+           capsule grew over 420ms and a pointer that had not moved could fall
+           outside the box for a frame), so the geometry is asked as well, with the
+           event's own coordinates; see the note above want(). */
+        if(inside(n,e.clientX,e.clientY))return;
         hide();
       },true);
     }
@@ -6893,7 +6900,7 @@ const MORPH_JS = `
        replaces a device guess with the platform's real answer. */
     document.addEventListener('focusin',function(e){
       var n=tipOf(e);
-      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0); else hide();
+      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0,false); else hide();
     },true);
     document.addEventListener('focusout',hide,true);
     /* ⚠️ .anchor's CLICK IS HANDLED HERE, NOT AS A SEPARATE LISTENER, because a
@@ -7035,10 +7042,20 @@ const CMD_JS = `
        source (6) + From Main Profile (17) is 23, while From Server Profile (19)
        is 25 and would be filtered out silently. It is left out on purpose. */
     {c:'/colors', pairs:[['page','Avatar'],['page','Banner'],['page','Name'],['page','Nameplate'],['page','Deco'],['source','From Main Profile']]},
-    {c:'/settings'},
+    /* open is a real choice on /settings (Visibility, Preferences, Colors), added
+       2026-10-19 20:10 EDT (#206); the three labels are the name half of its addChoices. */
+    {c:'/settings', pairs:[['open','Visibility'],['open','Preferences'],['open','Colors']]},
     /* The cmd option is a real autocomplete on /help and these are real command
-       names, so the line stays honest rather than decorative. */
-    {c:'/help', pairs:[['cmd','/gunsmith'],['cmd','/calendar'],['cmd','/dmz']]},
+       names, so the line stays honest rather than decorative. Every name below is
+       one the autocomplete actually offers a non-admin (commands/help.js, the
+       staticCommands of each category), so none of them is a line the bot cannot
+       answer. The admin commands are left out on purpose, as everywhere here.
+       Widened 2026-10-20 10:00 EDT from three names to eleven, after the landing
+       line was reported as repeating a lot: /help was one of the commands with
+       the fewest distinct options to show. */
+    {c:'/help', pairs:[['cmd','/gunsmith'],['cmd','/calendar'],['cmd','/dmz'],['cmd','/draws'],
+                        ['cmd','/draw prices'],['cmd','/patch notes'],['cmd','/colors'],
+                        ['cmd','/timestamp'],['cmd','/settings'],['cmd','/invite'],['cmd','/season end']]},
     /* Bare, like /colors and /settings: its only option is visibility, which no
        spec here decorates with -- it says nothing about what the command does. */
     {c:'/invite'}
@@ -7108,23 +7125,58 @@ const CMD_JS = `
      colour them. Anything that flattens this back to textContent loses the
      meaning while still looking fine, which is the dangerous kind of
      regression. Harkirat's ask, 2026-08-05 17:30 EDT.
-     Bare about two showings in five, decorated the rest: the aim is that one
-     command does not look the same twice, not that every line is busy — every
-     line busy would make the options read as part of the command's own name. */
+     Bare about three showings in ten, decorated the rest (it was a flat two in
+     five until 2026-10-20 10:00 EDT, see the bag below): the aim is that one command does
+     not look the same twice, not that every line is busy — every line busy would
+     make the options read as part of the command's own name. */
+  /* ⚠️ EACH COMMAND DEALS FROM ITS OWN BAG, NOT FROM A COIN FLIP (Harkirat,
+     2026-10-20 10:00 EDT: the line "is repeating a lot of commands"). The order of
+     the commands was already a shuffled full pass with three others between any
+     two showings, so what repeated was what each command SHOWED: render() used to
+     pick one of its pairs at random every time, with a flat two-in-five chance of
+     showing none, so a command with three options could put the same one up twice
+     running, and the bare form came round far more often than any single option.
+     A bag holds every option that fits plus a few BARE tokens (one per four options, at least one: measured over five cycles, 29% of the showings of commands that have options),
+     is shuffled, and is dealt from until empty; the next bag is reshuffled so its
+     first card is never the card just dealt. Every option is therefore seen once
+     before any is seen twice, and the bare form is a minority rather than the
+     most common face. The fit filter runs once per command, here, because the cap
+     does not change while the page is open. */
+  var BARE=0;
+  function refill(s){
+    var bag=s.ok.slice(), nb=Math.max(1,Math.round(s.ok.length/4)), i, t;
+    for(i=0;i<nb;i++) bag.push(BARE);
+    shuffle(bag);
+    if(bag.length>1 && bag[0]===s.last){
+      for(i=1;i<bag.length;i++){
+        if(bag[i]!==s.last){ t=bag[0]; bag[0]=bag[i]; bag[i]=t; break; }
+      }
+    }
+    s.bag=bag;
+  }
+  function deal(s){
+    var room=MAXLEN-s.c.length-1, i;
+    if(!s.ok){
+      s.ok=[];
+      for(i=0;i<s.pairs.length;i++){
+        if(s.pairs[i][0].length+s.pairs[i][1].length<=room) s.ok.push(s.pairs[i]);
+      }
+    }
+    if(!s.ok.length) return BARE;
+    if(!s.bag || !s.bag.length) refill(s);
+    s.last=s.bag.shift();
+    return s.last;
+  }
   function render(s){
     var parts=[{t:s.c,k:'c'}];
-    if(!s.pairs || Math.random()<0.4) return parts;
-    var room=MAXLEN-s.c.length-1, ok=[], i;
-    for(i=0;i<s.pairs.length;i++){
-      if(s.pairs[i][0].length+s.pairs[i][1].length<=room) ok.push(s.pairs[i]);
-    }
-    if(!ok.length) return parts;
-    var pr=pick(ok);
+    if(!s.pairs) return parts;
+    var pr=deal(s);
+    if(!pr) return parts;
     parts.push({t:' ',k:''},{t:pr[0],k:'o'},{t:pr[1],k:'v'});
     /* A second option, occasionally, and only where build: is real — the eight
        characters it costs are checked against the cap rather than assumed. */
     var used=s.c.length+1+pr[0].length+pr[1].length;
-    if(s.w && Math.random()<0.25 && used+7<=MAXLEN2){
+    if(s.w && Math.random()<0.3 && used+7<=MAXLEN2){
       parts.push({t:' ',k:''},{t:'build',k:'o'},{t:String(1+Math.floor(Math.random()*3)),k:'v'});
     }
     return parts;
@@ -7384,7 +7436,7 @@ body{min-height:100vh;background:
    legal shell's own .page trim above it — too much dead space below the
    footer on Contributing/Contributors, reported against the same complaint
    on the four legal pages. */
-.wrap{max-width:950px;margin:0 auto;padding:calc(54px + clamp(2.6rem,9vh,5rem)) clamp(1.2rem,5vw,2rem) 2.6rem}
+.wrap{max-width:950px;margin:0 auto;padding:calc(var(--bar-h,58px) + clamp(2.6rem,9vh,5rem)) clamp(1.2rem,5vw,2rem) 2.6rem}
 
 .hero{text-align:center;margin-bottom:clamp(2.4rem,7vh,3.6rem)}
 .chip{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.63rem;
@@ -7406,7 +7458,7 @@ body{min-height:100vh;background:
   box-shadow:0 30px 70px -34px rgba(0,0,0,.7);backdrop-filter:blur(6px)}
 
 .card h2{font-family:var(--display);font-size:1.3rem;font-weight:750;letter-spacing:-.022em;
-  color:var(--ink);margin:2.6rem 0 .9rem;scroll-margin-top:var(--anchor-off,76px)}
+  color:var(--ink);margin:2.6rem 0 .9rem;scroll-margin-top:var(--anchor-off,calc(var(--bar-h,58px) + 22px))}
 .card h2:first-child{margin-top:0}
 .card h3{font-family:var(--display);font-size:1.02rem;font-weight:700;
   letter-spacing:-.01em;color:var(--ink);margin:1.9rem 0 .6rem}
@@ -7809,7 +7861,7 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    document and the nav's hairline sits below it, separating site chrome from the
    letter rather than cutting the letter off from its own last line. */
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
-@media print{.bar,.thm,.ghb,.ins,.cmdb,.cpy,.node,.mnav{display:none!important}
+@media print{.bar,.thm,.ins,.cmdb,.cpy,.node,.mnav{display:none!important}
   body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}
   .plate,.opt,.prom,.slip,.ldg{box-shadow:none;animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -7827,7 +7879,7 @@ html{scroll-behavior:smooth}
        back button, which could only ever go one place. -->
   <nav>
     ${navSwitcher(cur)}
-    ${repoBtn}
+    ${commandsBtn(cur)}
     ${installBtn()}
     ${themeBtn()}
   </nav>
@@ -7971,7 +8023,8 @@ ${COMPONENT_CSS}
    clamp(2rem,8vh,6rem); the 8vh term is what actually governs on a typical
    phone height, so that's the term trimmed. */
 body{min-height:100vh;display:flex;align-items:center;padding:clamp(1.4rem,5.5vh,4rem) clamp(1.2rem,5vw,2rem)}
-.wrap{width:100%;max-width:780px;margin:0 auto}
+/* 900px, up from 780: Harkirat asked to cut the empty margin by about 60px on each side (2026-10-20 10:00 EDT), and on a wide screen the margin is what is left of the viewport once this is taken out. A narrower window is unaffected, since the body's own side padding is the limit there. */
+.wrap{width:100%;max-width:900px;margin:0 auto}
 /* ⚠️ MASCOT +16px, MARGIN TIGHTENED then EASED BACK OUT TWICE — 2026-08-05
    09:37 EDT tightened this to clamp(1.6rem,6vh,3.4rem) alongside the bigger
    mascot; 09:49 EDT eased it to clamp(2rem,7.5vh,4rem) as that read too
@@ -7980,7 +8033,7 @@ body{min-height:100vh;display:flex;align-items:center;padding:clamp(1.4rem,5.5vh
    on the page now, some of that reclaimed space goes back in here rather
    than leaving it all at the very top. */
 .top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.6rem,9.5vh,4.8rem)}
-.top .cmdb{margin-left:auto}/* The Commands button takes the push to the right edge that the Source capsule used to carry (Source now lives in the footer), so the two actions sit together at the end of the header. */
+.top .cmdb{margin-left:auto}/* The Commands button takes the push to the right edge, so the two actions (Commands, Install) sit together at the end of the header. */
 /* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
    The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
    at -.05em on a ~66px display size the tracking pulled unrelated pairs into
@@ -8178,8 +8231,17 @@ ${cmdRoleCss('.cmd-line')}
    Reported same session, 08:56 EDT, with a phone screenshot showing exactly
    that. 760px matches this template's other mobile breakpoints. */
 .sig.lsig{margin:0;flex:0 0 auto;text-align:right}
-/* The Source link sits under the copyright line, on the sign-off's own alignment: right on a wide screen, left once .lsig turns left below. Harkirat's placement, 2026-10-19 22:45 EDT (he drew a circle there); at 23:11 EDT he turned it from a capsule into a text link in the footer nav's style. It left the header so the two actions up there are Install and Commands. It is an inline link, so it needs its own line: inline-block plus a top margin puts it under the block-level copyright span. ⚠️ NO SIDE PADDING AND A NEGATIVE END MARGIN, because the shared .srcln rule keeps the footer nav's .1rem of side padding and the word carries a trailing .14em of tracking: together they left it about 3px inside the lines above, indented on a phone and short of the right edge on a desktop (Harkirat, 2026-10-19 23:40 EDT). */
-.lsig .srcln{display:inline-block;margin-top:.55rem;padding-inline:0;margin-inline-end:-.14em}
+/* ⚠️ THE COPYRIGHT LINE ENDS ON A FULL STOP, THE SIGN-OFF ON AN r. The text boxes
+   of the two lines end at the same edge but the ink does not: a full stop in a
+   monospace face sits in the middle of its cell, so its dot stopped about 2px
+   short of the r above it. Measured on the rendered pixels at 1440px (sign-off
+   ink ends 1169.16, copyright 1167.16, box 1170) and reported by Harkirat
+   2026-10-20 10:00 EDT as the "all rights reserved" line not being perfectly
+   right-aligned with its neighbours. A negative end margin pushes only that
+   line's box out by the missing 2px, so its ink lands on the same edge. Right-aligned
+   layout only: the left-aligned one below already matches (both lines start at
+   the same ink edge). */
+@media (min-width:761px){ .sig.lsig .sig-cr{margin-inline-end:-.18em} }
 @media (max-width:760px){ .sig.lsig{text-align:left} }
 .disc.fine{margin:0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
@@ -8440,10 +8502,21 @@ ${cmdRoleCss('.cmd-line')}
 
 /* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
    request: on a landing page the masthead should be the only thing competing for
-   the top of the screen. */
+   the top of the screen.
+   The label that used to sit far left of it ("Appearance") is gone (Harkirat,
+   2026-10-20 10:00 EDT: "kind of dumb"), and the footer's two-row link block takes
+   that place, so the switch is the only thing on the right. The block is the SAME
+   markup every other page's footer carries (footNav), left-aligned here because
+   nothing else in this row is. */
 .tray{margin-top:clamp(1.8rem,5vh,2.8rem);padding-top:1.4rem;border-top:1px solid var(--rule);
   display:flex;align-items:center;gap:.7rem}
-.tray .lab{margin-right:auto}
+.tray .endnav{align-self:center;align-items:flex-start;margin-right:auto}
+.tray .en-row{justify-content:flex-start}
+/* ⚠️ ON A PHONE THE LINK BLOCK LEADS AND THE SWITCH FOLLOWS, STACKED. The shared footer rule gives .endnav order:2 below 760px (it belongs after the disclaimer on a document page), which in this one-row tray put the switch first and squeezed the links into a 280px column to its right (seen on a phone screenshot, 2026-10-20 10:20 EDT). */
+@media (max-width:760px){
+  .tray{flex-direction:column;align-items:flex-start;gap:1rem}
+  .tray .endnav{order:0;margin-right:0;align-self:stretch}
+}
 </style></head><body>
 <!-- ⚠️ THE LANDING PAGE HAD NO FILTER DEFS AT ALL until the morph port — it is the
      one template that never carried GOO_SVG, because it is also the one without a
@@ -8454,7 +8527,7 @@ ${cmdRoleCss('.cmd-line')}
 <main class="wrap" id="main" tabindex="-1">
   <div class="top">
     ${wordmark(null)}
-    ${commandsBtn}
+    ${commandsBtn(null)}
     ${installBtn()}
   </div>
   <!-- ⚠️ CHANGED TO "Discord bot", 2026-08-05 09:35 EDT — supersedes the note this
@@ -8498,7 +8571,7 @@ ${cmdRoleCss('.cmd-line')}
     ${emailReveal}
   </div>
   <div class="tray">
-    <span class="lab">Appearance</span>
+    ${footNav(null)}
     ${themeBtn()}
   </div>
   <!-- The trademark notice sits last and reads quietest. It is an obligation, not
@@ -8518,7 +8591,7 @@ ${cmdRoleCss('.cmd-line')}
     <!-- The sign-off closes the landing page as it closes every other one. It was
          the only page without it, which made the site look like it ended twice:
          every document signed off and the front door did not. -->
-    <p class="sig lsig">${DIOR_SIG}${SIG_COPYRIGHT}${repoLink}</p>
+    <p class="sig lsig">${DIOR_SIG}${SIG_COPYRIGHT}</p>
   </div>
 </main>
 <script>${THEME_JS}${MORPH_JS}${CMD_JS}</script>
@@ -8583,7 +8656,7 @@ const CHROME = {
     esc, parseBlocks, linkifyRefs, slug,
     TOKENS, COMPONENT_CSS, SWITCHER_CSS, THEME_BOOT, THEME_JS, NAV_JS, GOO_SVG,
     MORPH_JS,
-    wordmark, repoBtn, installBtn, themeBtn, navSwitcher, mobileNav, pageFoot,
+    wordmark, commandsBtn, installBtn, themeBtn, navSwitcher, mobileNav, pageFoot,
     BAR_CSS, PAGE_CSS, SLOT_CSS, TOTOP_HTML, TOTOP_TRACK_JS, cmdRoleCss,
 };
 

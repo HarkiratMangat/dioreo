@@ -53,7 +53,7 @@ const CHROME_KEYS = [
     'esc', 'parseBlocks', 'linkifyRefs', 'slug',
     'TOKENS', 'COMPONENT_CSS', 'SWITCHER_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS', 'GOO_SVG',
     'MORPH_JS',
-    'wordmark', 'repoBtn', 'installBtn', 'themeBtn', 'navSwitcher', 'mobileNav', 'pageFoot',
+    'wordmark', 'commandsBtn', 'installBtn', 'themeBtn', 'navSwitcher', 'mobileNav', 'pageFoot',
 ];
 
 function requireChrome(C) {
@@ -299,7 +299,7 @@ const VOICES = {
         },
 
         css: `
-.pn-wrap{max-width:1100px;margin:0 auto;padding:calc(54px + clamp(2rem,7vh,4rem)) clamp(1rem,4vw,2rem) 5rem}
+.pn-wrap{max-width:1100px;margin:0 auto;padding:calc(var(--bar-h,58px) + clamp(2rem,7vh,4rem)) clamp(1rem,4vw,2rem) 5rem}
 .pn-mast{margin:0 0 2.6rem}
 .pn-op{display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.58rem;
   letter-spacing:.22em;color:var(--sig);margin:0 0 .9rem}
@@ -411,7 +411,7 @@ const VOICES = {
 
         css: `
 .lg-wrap{max-width:1180px;margin:0 auto;
-  padding:calc(54px + clamp(2rem,6vh,3.4rem)) clamp(1rem,3vw,2rem) 5rem}
+  padding:calc(var(--bar-h,58px) + clamp(2rem,6vh,3.4rem)) clamp(1rem,3vw,2rem) 5rem}
 /* Scanlines. Very low contrast and fixed to the viewport, so they read as the
    surface of a screen rather than as texture printed onto the content. */
 .lg-scan{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.45;
@@ -440,7 +440,7 @@ const VOICES = {
    header strip above the prose rather than a cramped column. */
 .lg-row{display:grid;grid-template-columns:11.5rem minmax(0,1fr);gap:clamp(1rem,3vw,2.2rem);
   padding:1.5rem 0;border-bottom:1px solid var(--rule)}
-.lg-k{position:sticky;top:76px;align-self:start;display:flex;flex-direction:column;gap:.3rem}
+.lg-k{position:sticky;top:calc(var(--bar-h,58px) + 22px);align-self:start;display:flex;flex-direction:column;gap:.3rem}
 .lg-v{margin:0;font-family:var(--mono);font-size:1.05rem;font-weight:700;letter-spacing:-.02em;
   color:var(--sig);line-height:1.2}
 .lg-maj .lg-v{font-size:1.35rem}
@@ -519,7 +519,7 @@ const VOICES = {
 
         css: `
 .tl-wrap{max-width:1160px;margin:0 auto;
-  padding:calc(54px + clamp(2rem,7vh,3.6rem)) clamp(1rem,4vw,2rem) 5rem}
+  padding:calc(var(--bar-h,58px) + clamp(2rem,7vh,3.6rem)) clamp(1rem,4vw,2rem) 5rem}
 .tl-mast{margin:0 0 3rem;max-width:60ch}
 .tl-op{display:flex;font-family:var(--mono);font-size:.58rem;letter-spacing:.22em;
   color:var(--sig);margin:0 0 .9rem}
@@ -784,7 +784,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}
    round, a patch is a hollow tick, and the one you are inside lights up. It is
    the same .slot markup the legal rail uses so ONE scroll tracker drives both. */
 .rail{position:sticky;top:74px;max-height:calc(100vh - 96px);overflow:auto;
-  padding:calc(54px + clamp(2rem,6vh,3.4rem)) .4rem 2rem 0}
+  padding:calc(var(--bar-h,58px) + clamp(2rem,6vh,3.4rem)) .4rem 2rem 0}
 .rail .lab{display:block;font-family:var(--mono);font-size:.52rem;letter-spacing:.2em;
   text-transform:uppercase;color:var(--ink3);margin:0 0 .8rem}
 .slot{position:relative;display:flex;gap:.5rem;align-items:baseline;padding:.26rem 0 .26rem 1.1rem;
@@ -837,7 +837,7 @@ ${voice.name === 'record' ? '<div class="lg-scan" aria-hidden="true"></div>' : '
   ${C.wordmark('../', cur)}
   <nav>
     ${C.navSwitcher(cur)}
-    ${C.repoBtn}
+    ${C.commandsBtn(cur)}
     ${C.installBtn()}
     ${C.themeBtn()}
   </nav>
@@ -1010,7 +1010,8 @@ ${C.mobileNav(cur, railSlots)}
        bottom edge, so an entry only became current after it had scrolled up behind
        the bar and the bar named the previous one while you were reading this one.
        Height 0 means .mnav is display:none, which is the desktop case. */
-    var navEl=document.getElementById('mnav'), line=130;
+    var bh=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h'))||58;
+    var navEl=document.getElementById('mnav'), line=bh+76;
     if(navEl){
       var nr=navEl.getBoundingClientRect();
       if(nr.height>0) line=nr.bottom+72;
