@@ -114,6 +114,26 @@ check('models/DrawBasket.js declares no partial TTL index MongoDB would refuse',
     assert.deepStrictEqual(refused, []);
 });
 
+// ── #2 a failed boot backs off ─────────────────────────────────────────────
+const bootFailures = require('../utils/bootFailures');
+
+check('failed boots in a row are counted across processes, back off, and clear on ready', () => {
+    const file = require('path').join(require('os').tmpdir(), `sweep-boot-${process.pid}`);
+    bootFailures.clear(file);
+    assert.strictEqual(bootFailures.read(file), 0);
+    assert.strictEqual(bootFailures.record(file), 1);
+    assert.strictEqual(bootFailures.record(file), 2, 'the count must survive between records, as it does between processes');
+    assert.deepStrictEqual([1, 2, 3, 100].map(bootFailures.backoffMs), [30000, 60000, 90000, 600000]);
+    bootFailures.clear(file);
+    assert.strictEqual(bootFailures.read(file), 0);
+});
+
+check('index.js keeps the public bot up when only the admin login fails', () => {
+    const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'index.js'), 'utf8');
+    const boot = src.slice(src.indexOf('await client.login(process.env.BOT_TOKEN)'));
+    assert.ok(/try \{ await adminClient\.login\(ADMIN_TOKEN\); \}\s*catch/.test(boot), 'the admin login must have its own catch, outside the fatal one');
+});
+
 // ── #5 hotpatch sees core/ ────────────────────────────────────────────────
 const { planHotpatch } = require('../utils/hotpatch');
 

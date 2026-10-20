@@ -5,6 +5,9 @@ patchConsole();
 logBootBanner();
 
 const { sendAlert } = require('./utils/alertWebhook'); // Discord webhook alerting; reads LOG_WEBHOOK_URL lazily, no-op if unset
+const bootFailures = require('./utils/bootFailures');
+// Boots that have failed in a row before this one: a retry after the first still posts its alerts, but never pings (utils/bootFailures.js).
+const priorBootFailures = bootFailures.read();
 // (gatewayRecovery moved with the shard listeners it pairs alerts for -- see bot/lifecycle.js)
 
 // SAFETY NET: Node crashes the whole process on an unhandled promise rejection by default (since Node 15). The interactionCreate handler's own try/catch already covers most Discord API failures, but a rejection from a `return interaction.reply(...)`-style call inside a catch block can still slip past it -- the try/catch has already exited by the time that promise settles, so nothing downstream is listening. This is exactly what took the bot offline on Railway (10062 Unknown interaction -> fallback reply -> 40060 already acknowledged -> crash). Logging instead of crashing here is a last-resort net, not a substitute for fixing the actual unawaited call sites -- see handlers/router.js and the handlers it dispatches for the real fix.
@@ -43,7 +46,7 @@ mongoose.connect(process.env.MONGODB_URI)
         const dbName = mongoose.connection.name || "unknown db";
         console.log(`🍃 Successfully authenticated and established secure link to MongoDB (${host}/${dbName})!`);
     })
-    .catch(err => { console.error("❌ Database connection failure detailed error:", err); sendAlert("MongoDB connection failure", err, "error"); });
+    .catch(err => { console.error("❌ Database connection failure detailed error:", err); sendAlert("MongoDB connection failure", err, "error", priorBootFailures ? { ping: false } : {}); });
 
 // ==========================================
 // THE CLIENT
@@ -91,7 +94,8 @@ setClients({ public: client, admin: adminClient });
 // ==========================================
 // Gated on the single-instance lock so a stray leftover local `node index.js` can't silently race an already-running instance (VM or another local process) the way it did in the 2026-07-14 incident (see .claude/rules/accent-and-colors.md). The acquireInstanceLock() query is issued via Mongoose, which buffers commands until the mongoose.connect() call above actually finishes -- no extra wait-for-connection logic needed here.
 //
-// 🔴 A FAILED BOOT EXITS NON-ZERO (2026-10-20, v3 sweep). This block used to have no catch and left login() un-awaited, so a lock query that timed out (Atlas unreachable at a restart) or a rejected login (bad token, network) became an unhandled rejection -- which the net at the top of this file deliberately LOGS AND SURVIVES. The process then sat alive but never logged in, and systemd, seeing it running, never restarted it. Exiting lets systemd retry. The delay gives sendAlert()'s fire-and-forget webhook POST time to leave; the lock needs no release, because the next boot reads a dead pid on this host as an abandoned lock (utils/instanceLock.js isHolderAlive).
+// 🔴 A FAILED BOOT EXITS NON-ZERO (2026-10-20, v3 sweep). This block used to have no catch and left login() un-awaited, so a lock query that timed out (Atlas unreachable at a restart) or a rejected login (bad token, network) became an unhandled rejection -- which the net at the top of this file deliberately LOGS AND SURVIVES. The process then sat alive but never logged in, and systemd, seeing it running, never restarted it. Exiting lets systemd retry. The wait before exiting grows with each failure in a row and only the first one pings (utils/bootFailures.js), so an Atlas outage backs off instead of pinging every ~13s; it also gives sendAlert()'s fire-and-forget webhook POST time to leave; the lock needs no release, because the next boot reads a dead pid on this host as an abandoned lock (utils/instanceLock.js isHolderAlive). A ready bot ends the failure run. Registered before login, because ready can fire before login()'s promise settles.
+client.once('clientReady', () => bootFailures.clear());
 (async () => {
     try {
         const acquired = await acquireInstanceLock();
@@ -103,10 +107,17 @@ setClients({ public: client, admin: adminClient });
             process.exit(1);
         }
         await client.login(process.env.BOT_TOKEN);
-        if (adminClient) await adminClient.login(ADMIN_TOKEN);
     } catch (err) {
-        console.error('❌ Boot failed before the bot could log in; exiting so systemd restarts it:', err);
-        sendAlert('Boot failed', err, 'error');
-        setTimeout(() => process.exit(1), 3000);
+        const n = bootFailures.record();
+        const waitMs = bootFailures.backoffMs(n);
+        console.error(`❌ Boot failed before the bot could log in (${n} in a row); exiting in ${waitMs / 1000}s so systemd restarts it:`, err);
+        sendAlert('Boot failed', err, 'error', n > 1 ? { ping: false } : {});
+        setTimeout(() => process.exit(1), waitMs);
+        return;
+    }
+    // The admin app's login is NOT fatal: a wrong or revoked ADMIN_BOT_TOKEN must not take the public bot down with it. It alerts and the public bot keeps serving, which is how an un-awaited admin login behaved before the boot fix above.
+    if (adminClient) {
+        try { await adminClient.login(ADMIN_TOKEN); }
+        catch (err) { console.error('❌ Dioreo Admin failed to log in; the public bot keeps running:', err); sendAlert('Dioreo Admin login failed', err, 'error'); }
     }
 })();
