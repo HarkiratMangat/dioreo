@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.100.0 — 2026-10-19 23:22 EDT (#210) — the bulk cache spends no Cloudinary Admin calls on a fresh SKU
+## Pre-Release v3.101.0 — 2026-10-19 23:22 EDT (#210) — the bulk cache spends no Cloudinary Admin calls on a fresh SKU
 **`scripts/bulkCacheCollectibles.js`.** Harkirat, 2026-10-19 23:18 EDT, choosing how to pace the prod run: "A."
 
 - **`--limit N`** stops a run after about N SKUs. It keeps whole design groups, because a group posts as one channel message, so a run can end a few SKUs under N.
