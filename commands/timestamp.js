@@ -104,8 +104,8 @@ module.exports = {
                 .setRequired(true))
         .addStringOption(option =>
             option.setName('timezone')
-                // Trimmed 2026-07-18 (mobile-width audit) -- also fixed "leave blank to defaults to" grammar while touching this line.
-                .setDescription('Your timezone (leave blank for local default)')
+                // Trimmed 2026-07-18 (mobile-width audit) -- also fixed "leave blank to defaults to" grammar while touching this line. Blank now means the /settings timezone, as /help already promised (fixed 2026-10-20 16:50 EDT).
+                .setDescription('Your timezone (leave blank for your /settings one)')
                 .addChoices(
                     { name: getTimezoneLabel('America/Toronto', tzLabels['America/Toronto']), value: 'America/Toronto' },
                     { name: getTimezoneLabel('America/Winnipeg', tzLabels['America/Winnipeg']), value: 'America/Winnipeg' },
@@ -169,11 +169,12 @@ module.exports = {
             isTextMode = Boolean(overrideState.isTextMode);
         } else {
             queryInput = interaction.options.getString('datetime');
-            tz = interaction.options.getString('timezone') || 'America/Toronto';
             isTextMode = interaction.options.getString('view') === 'text';
+            const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+            // explicit option > saved /settings timezone > Toronto (UserPreference.timezone's own default). The saved zone was fetched a few lines below and never read for this until 2026-10-20 16:50 EDT, so a user who saved Tokyo got Toronto's 9am while /help said otherwise.
+            tz = interaction.options.getString('timezone') || prefs?.timezone || 'America/Toronto';
 
             // NOTE (fixed during review): this option was previously ALWAYS taken as-is, so leaving it blank meant "all formats" no matter what a user had saved as their default Timestamp Style in /settings — that saved preference was stored and shown in the dashboard but never actually consulted (flagged as a known gap in CLAUDE.md). Now falls back the same way `ephemeral` already does below: explicit option > saved preference > "all formats". `prefs.timestampStyle` defaults to the literal string 'all_formats' in the schema, which needs to be treated as "no specific style" (i.e. `style = null`) here, since that's how the rest of this function distinguishes the two view modes.
-            const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
             const argStyle = interaction.options.getString('style');
             const savedStyle = prefs?.timestampStyle;
             style = argStyle !== null ? argStyle : (savedStyle && savedStyle !== 'all_formats' ? savedStyle : null);
@@ -212,7 +213,8 @@ module.exports = {
             unix = timestampsBase.unix;
         }
 
-        const currentFullTzLabel = getTimezoneLabel(tz, tzLabels[tz]);
+        // A saved /settings zone can be any IANA zone, not only the 15 in tzLabels; fall back to its id so the label never reads "undefined".
+        const currentFullTzLabel = getTimezoneLabel(tz, tzLabels[tz] || tz);
 
         const styleCharMap = {
             fullDateTime: 'F', longDateTime: 'f', longDate: 'D', shortDate: 'd',
