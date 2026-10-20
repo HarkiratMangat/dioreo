@@ -381,6 +381,28 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ins:hover::after{animation:none}}.ins:focus-visible,.ins:active{transform:none}@media (hover:hover) and (pointer:fine){
   .ins:hover{transform:none}}.ins:focus-visible .ins-ic{transform:none}@media (hover:hover) and (pointer:fine){
   .ins:hover .ins-ic{transform:none}}
+}/* ── the quiet sibling of Install: .ins.sec ───────────────────────────────
+   Same anatomy, same size, same hover behaviour; only the MATERIAL differs. An ink tint over the page is the site's idiom for a recessed bed (the landing command line's option chip uses it) and inverts per theme with no second declaration. The disc keeps the accent so the pair stays one family.
+   A color-mix() surface is invisible to contrastAudit(), so the label pairing was worked out by hand: --ink on a 9% ink bed measures about 12:1 in both themes, the same pairing the command line's option chip records (12.04 dark, 11.88 light). The disc's slash is #141021 on the accent fill, which is Install's own label pairing. */
+
+.ins.sec{color:var(--ink);box-shadow:none;
+  background:color-mix(in srgb,var(--ink) 9%,transparent);
+  border-color:color-mix(in srgb,var(--ink) 18%,transparent)}
+.ins.sec .ins-ic{color:#141021;background:var(--accent);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.ins.sec .ins-gl{background:radial-gradient(58% 150% at var(--px,50%) var(--py,50%),
+  color-mix(in srgb,var(--ink) 16%,transparent),transparent 68%)}
+.ins.sec::after{background:linear-gradient(90deg,transparent,
+  color-mix(in srgb,var(--ink) 22%,transparent),transparent)}.ins.sec:focus-visible{
+  border-color:color-mix(in srgb,var(--accent) 60%,transparent);
+  box-shadow:0 8px 22px -9px color-mix(in srgb,var(--accent) 55%,transparent)}@media (hover:hover) and (pointer:fine){
+.ins.sec:hover{
+  border-color:color-mix(in srgb,var(--accent) 60%,transparent);
+  box-shadow:0 8px 22px -9px color-mix(in srgb,var(--accent) 55%,transparent)}}/* ⚠️ AT 320px THE HEADER HAS NO ROOM FOR TWO LABELLED KEYS AND THE MASCOT: with both discs the mascot measured about 30px wide, a blob. Commands drops its disc below 340px (the word and the arrow carry it), which hands back about 30px; Install keeps its mark because the Discord glyph is what says it is an outbound install link. */
+
+@media (max-width:340px){
+  .ins.sec .ins-ic{display:none}
+  .ins.sec{padding:0 .75rem}
 }/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
    eaten. The install button collapses to its mark and the gap tightens, which
