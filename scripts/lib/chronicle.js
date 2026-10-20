@@ -53,7 +53,7 @@ const CHROME_KEYS = [
     'esc', 'parseBlocks', 'linkifyRefs', 'slug',
     'TOKENS', 'COMPONENT_CSS', 'SWITCHER_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS', 'GOO_SVG',
     'MORPH_JS',
-    'wordmark', 'commandsBtn', 'installBtn', 'themeBtn', 'navSwitcher', 'mobileNav', 'pageFoot',
+    'wordmark', 'commandsBtn', 'installBtn', 'themeBtn', 'barMenu', 'navSwitcher', 'mobileNav', 'pageFoot',
 ];
 
 function requireChrome(C) {
@@ -839,7 +839,7 @@ ${voice.name === 'record' ? '<div class="lg-scan" aria-hidden="true"></div>' : '
     ${C.navSwitcher(cur)}
     ${C.commandsBtn(cur)}
     ${C.installBtn()}
-    ${C.themeBtn()}
+    ${C.barMenu(cur)}
   </nav>
 </div>
 <div id="prog"></div>

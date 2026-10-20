@@ -32,7 +32,7 @@ const { assertProseCoverage, assertAskCoverage, assertSearchCoverage, findTools,
 
 const CHROME_KEYS = [
     'esc', 'TOKENS', 'COMPONENT_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS', 'MORPH_JS', 'GOO_SVG',
-    'wordmark', 'navSwitcher', 'commandsBtn', 'installBtn', 'themeBtn',
+    'wordmark', 'navSwitcher', 'commandsBtn', 'installBtn', 'themeBtn', 'barMenu',
     'mobileNav', 'pageFoot', 'BAR_CSS', 'PAGE_CSS', 'SLOT_CSS', 'TOTOP_HTML', 'TOTOP_TRACK_JS', 'cmdRoleCss',
     'SWITCHER_CSS', 'TRAY_CSS', 'trayFoot',
 ];
@@ -278,6 +278,8 @@ const RECEIVER_CSS = `
 .rx-rail{position:sticky;top:var(--bar-h,58px);z-index:30;margin:1.25rem 0 0;padding:.7rem 0 .6rem;
   background:color-mix(in srgb,var(--desk) 92%,transparent);backdrop-filter:blur(10px)}
 .rx-scroll{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
+/* The phone's way into the list; see THE PICKER under NARROW. Never drawn on a desktop, where the wrapped rail already shows everything. */
+.rx-pick{display:none}
 /* The group labels were pure --ink3 and read as abandoned beside the coloured chips. They
    now carry a tint of the PAGE accent, which is what they belong to — they label the index,
    not any one command. */
@@ -289,7 +291,7 @@ const RECEIVER_CSS = `
 /* ⚠️ THE CHIPS ARE THE SITE'S HAIRLINE CAPSULE (Harkirat, 2026-10-20 10:45 EDT: "the same style that the landing Commands button uses"). The construction is .cmdb's in the shared CSS: no fill, a hairline border, the label --ink2 at rest and --ink on hover, the border warming and a cursor light following the pointer. What differs is on purpose: the chip's own colour (--cc, the command's) does the warming and the light instead of the page accent, so the colour coding survives; the label stays lowercase mono because it is a command name; and .on is NO LONGER a fill: it is the same outline with the border in the full colour and the light held on (changed 2026-10-20 11:57 EDT). The light is a ::before at z-index -1 inside an isolated stacking context, so it paints above the border-box background and below the label and dot, with no wrapper span needed; the pointer position is the --px/--py that THEME_JS writes on every [data-spot] element. */
 .rx-chip{position:relative;isolation:isolate;overflow:hidden;
   display:inline-flex;align-items:center;gap:.45rem;flex:none;
-  --hv:var(--cc);height:34px;padding:0 .72rem;border-radius:999px;border:1px solid var(--rule2);background:transparent;
+  --hv:var(--cc);height:34px;padding:0 .72rem 0 12px;border-radius:999px;border:1px solid var(--rule2);background:transparent;
   font-family:var(--mono);font-size:.8rem;color:var(--ink2);text-decoration:none;
   white-space:nowrap;
   transition:border-color .22s,color .22s,box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
@@ -649,11 +651,37 @@ const RECEIVER_CSS = `
   .rx-top{padding-top:1rem}
   .rx-sub{font-size:.98rem}
   .rx-rail{margin-top:1rem;padding:.55rem 0;top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px))}
-  .rx-scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
-    scroll-snap-type:x proximity;padding-bottom:.15rem}
-  .rx-scroll::-webkit-scrollbar{display:none}
-  .rx-chip{scroll-snap-align:start;min-height:44px}
-  .rx-gl{font-size:.58rem;padding:0 .4rem 0 .55rem}
+  /* ── THE PICKER ────────────────────────────────────────────────────────────
+     The chips used to be one sideways-scrolling row on a phone, and Harkirat found it
+     hard to use (2026-10-20 17:13 EDT: "that navigation needs a drastic improvement to
+     fit better on mobile... maybe a drop down"). So on a phone the rail is ONE button
+     naming the command you are on, in its colour, and it opens the whole list as a
+     dropdown, every group on its own line and every chip visible, nothing to scroll
+     sideways. ⚠️ It is a dropdown only once the script has run (.rx-js): with no script
+     the list stays out in the open, wrapped, so the page still works. */
+  .rx-scroll{gap:.4rem}
+  .rx-gl{flex:0 0 100%;border-left:0;margin:.35rem 0 0;padding:0 .1rem;font-size:.58rem}
+  .rx-scroll > .rx-gl:first-of-type{margin-top:.2rem}
+  .rx-chip{min-height:40px}
+  .rx-rail.rx-js .rx-pick{display:flex}
+  .rx-rail.rx-js .rx-scroll{display:none}
+  .rx-rail.rx-js.open .rx-scroll{display:flex;position:absolute;left:0;right:0;top:calc(100% - .2rem);
+    z-index:5;max-height:calc(100dvh - var(--bar-h,58px) - 6rem);overflow-y:auto;overscroll-behavior:contain;
+    padding:.6rem .8rem .9rem;border-radius:16px;border:1px solid var(--rule2);background:var(--paper);
+    box-shadow:0 22px 44px -20px rgba(0,0,0,.6)}
+  .rx-pick{--cc:var(--accent);--ci:var(--accent-t);align-items:center;gap:.6rem;width:100%;height:48px;
+    padding:0 1rem 0 19px;border-radius:999px;cursor:pointer;-webkit-appearance:none;appearance:none;
+    border:1px solid color-mix(in srgb,var(--cc) 70%,transparent);
+    background:color-mix(in srgb,var(--cc) 10%,var(--paper));color:var(--ink);text-align:left}
+  .rx-pick:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rx-pick:active{background:color-mix(in srgb,var(--cc) 18%,var(--paper))}
+  .rx-pick .rx-dot{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none}
+  .rx-pick-n{flex:1;min-width:0;font-family:var(--mono);font-size:.86rem;font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rx-pick-g{flex:none;font-family:var(--mono);font-size:.58rem;letter-spacing:.15em;
+    text-transform:uppercase;color:var(--ink3)}
+  .rx-pick svg{flex:none;width:12px;height:12px;color:var(--ink2);transition:transform .22s ease}
+  .rx-rail.open .rx-pick svg{transform:rotate(180deg)}
   .rx-card{padding:1.2rem 1.1rem 1.3rem 1.4rem;border-radius:14px}
   .rx-why{font-size:1rem}
   .rx-slots,.rx-inst{grid-template-columns:minmax(0,1fr)}
@@ -899,6 +927,26 @@ const RECEIVER_JS = [
     '    });',
     '    var home=document.getElementById("rx-homechip");',
     '    if(home) home.classList.toggle("on",!document.querySelector(".rx-p:target"));',
+    '    paintPick();',
+    '  }',
+    '  /* THE PICKER (phone). The button names the command you are on, in its colour, and',
+    '     the dropdown closes itself on every navigation and on any tap outside it. */',
+    '  var rail=document.getElementById("rx-rail"), pick=document.getElementById("rx-pick");',
+    '  function setPick(on){ if(!rail||!pick) return; rail.classList.toggle("open",on); pick.setAttribute("aria-expanded",on?"true":"false"); }',
+    '  function paintPick(){',
+    '    if(!pick) return;',
+    '    var on=document.querySelector(".rx-chip.on[data-for]");',
+    '    pick.querySelector(".rx-pick-n").textContent=on?on.textContent:"All commands";',
+    '    pick.querySelector(".rx-pick-g").textContent=on?(on.getAttribute("data-group")||""):(chips.length+" commands");',
+    '    ["--cc","--con","--ct","--ctl"].forEach(function(k){ var v=on&&on.style.getPropertyValue(k); if(v) pick.style.setProperty(k,v); else pick.style.removeProperty(k); });',
+    '    if(on) pick.style.setProperty("--ci","var(--ct)"); else pick.style.removeProperty("--ci");',
+    '    setPick(false);',
+    '  }',
+    '  if(rail&&pick){',
+    '    rail.classList.add("rx-js");',
+    '    pick.addEventListener("click",function(){ setPick(!rail.classList.contains("open")); });',
+    '    document.addEventListener("click",function(e){ if(rail.classList.contains("open")&&!rail.contains(e.target)) setPick(false); });',
+    '    rail.addEventListener("click",function(e){ if(e.target.closest(".rx-chip")) setPick(false); });',
     '  }',
     '  addEventListener("hashchange",mark); mark();',
     '',
@@ -908,6 +956,9 @@ const RECEIVER_JS = [
     '     hashchange, and does not reload, so anything typed into the panel survives. */',
     '  addEventListener("keydown",function(e){',
     '    if(e.key!=="Escape") return;',
+    '    /* An open phone menu or picker takes Escape first; this one waits for the next press. */',
+    '    if(rail&&rail.classList.contains("open")){ setPick(false); pick.focus(); return; }',
+    '    if(document.querySelector(".hmb-p.open")) return;',
     '    if(!document.querySelector(".rx-p:target")) return;',
     '    if(document.activeElement && document.activeElement.tagName==="INPUT") return;',
     '    location.hash="";',
@@ -1304,7 +1355,7 @@ function commandsShell({ page, catalog, C }) {
             const derived = DERIVED.has(command.path);
             const vars = colourVars(command.path, accents, derived ? DERIVED_NEUTRAL : null);
             rail.push('<a class="rx-chip" href="#' + esc(command.id) + '" data-for="' + esc(command.id) + '" ' +
-                'data-spot style="' + vars + '">' +
+                'data-group="' + esc(group.label) + '" data-spot style="' + vars + '">' +
                 '<i class="rx-dot" aria-hidden="true"></i>' + esc(command.path) + '</a>');
             panels.push(renderPanel(command, group, C, accents, cats, scopes));
             cards.push(homeCard(command, C, accents));
@@ -1359,7 +1410,7 @@ ${C.GOO_SVG}
      footer is the LAST CHILD of .page. Do not flatten any of these back out. -->
 <div class="bar">
   ${C.wordmark('./', page)}
-  <nav>${C.navSwitcher(page)}${C.commandsBtn(page)}${C.installBtn()}${C.themeBtn()}</nav>
+  <nav>${C.navSwitcher(page)}${C.commandsBtn(page)}${C.installBtn()}${C.barMenu(page)}</nav>
 </div>
 <!-- ⚠️ NO SECTION SLOTS ON PURPOSE: mobileNav() renders its "On this page" accordion only
      when given some, and this page's rail already IS that navigation. -->
@@ -1387,8 +1438,12 @@ ${C.mobileNav(page, '')}
     <div class="rx-tries"><span>Try</span>${tries}</div>
   </div>
 
-  <div class="rx-rail">
-    <nav class="rx-scroll" aria-label="Command list">
+  <div class="rx-rail" id="rx-rail">
+    <button type="button" class="rx-pick" id="rx-pick" aria-expanded="false" aria-controls="rx-scroll">
+      <i class="rx-dot" aria-hidden="true"></i><span class="rx-pick-n">All commands</span><span class="rx-pick-g">${catalog.groups.reduce((n, g) => n + g.commands.length, 0)} commands</span>
+      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <nav class="rx-scroll" id="rx-scroll" aria-label="Command list">
       <a class="rx-chip rx-home-chip" id="rx-homechip" href="#" data-spot><i class="rx-dot" aria-hidden="true"></i>All commands</a>
       ${rail.join('')}
     </nav>

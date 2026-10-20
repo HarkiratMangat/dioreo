@@ -293,12 +293,16 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    height as Commands and the theme switch; it was 37px. *//* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
    same number as the right. The pill is 34px tall, so its cap radius is 17px;
    the Discord disc is 22px, radius 11px. A disc reads as sitting concentrically
-   inside a cap only when the gap equals the difference — 6px, which is .375rem.
-   (It was .47rem at the old 37px.) The right side keeps more room because it
-   ends in a text run's terminal, not a circle. */
+   inside a cap only when the gap from the OUTER edge equals the difference — 6px.
+   ⚠️ That 6px includes the 1px border, so the padding is 5px. It was .375rem (6px)
+   and measured 7px from the edge, and on a phone, where the pill is 38px and the rule
+   below set .82rem, the disc sat 14px in against an ideal 8px: the lopsided gap
+   Harkirat saw (2026-10-20 17:13 EDT). Rule of thumb for any pill with a leading
+   circle: padding-left = (pill height − circle size) / 2 − border.
+   The right side keeps more room because it ends in a text run, not a circle. */
 
 
-.ins{height:34px;font-weight:700;letter-spacing:.14em;padding-inline:.375rem .85rem}
+.ins{height:34px;font-weight:700;letter-spacing:.14em;padding-inline:5px .85rem}
 .ins .ins-t{font-size:.7rem;font-weight:800}
 .ins-ic{position:relative;z-index:2;display:grid;place-items:center;
   width:22px;height:22px;flex:0 0 22px;border-radius:50%;
@@ -450,8 +454,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      install link, and the word is what says so. It is 38px tall here and 34px on
      a desktop, because on a phone it is a thumb target. */
   
-  .bar .cmdb,.bar .cmdr{display:none}
-  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
+  .bar .cmdb,.bar .cmdr{display:none}/* (38 − 22) / 2 − 1 = 7px on the left: see the concentric-gap note on .ins above. */
+  
+  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem 0 7px;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
   .ins-ar{display:none}/* Commands follows Install on a phone too: its height (38px), its horizontal padding and its label tracking (.11em on the label, as .ins-t above). ⚠️ IT COPIES WHAT INSTALL RENDERS, NOT WHAT THE RULE ABOVE SAYS: .ins-t's font-size:.6rem is beaten by the base rule for .ins .ins-t, which sets .7rem (higher specificity), so Install's label is still .7rem on a phone and only its .11em tracking lands. The first fix followed the rule and set Commands to .6rem, which left it visibly smaller than Install (measured 9.6px against 11.2px). Making Install .6rem would shrink a live button and is its own change. The right padding gives up .077rem, the .11em tracking on a .7rem label, so the word sits centred. */
@@ -1538,10 +1543,21 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 }/* Desktop shows no mobile menu. */
 
 
-.mnav{display:none}/* ── mobile navigation: a swipeable strip ─────────────────────────────
-   Every page in one scrollable row, nothing to open. The three previous
-   attempts (two-tab rail, bottom sheet, disclosure) all put the answer to
-   "where am I and what else is there" behind a tap; this states it.
+.mnav{display:none}/* ── the phone menu (barMenu) ─────────────────────────────────────────
+   On a desktop the panel and its theme row dissolve into the bar (display:contents)
+   so the theme switch sits where it always has; the button, the page list, the label
+   and the scrim are not drawn. */
+
+
+.hmb{display:none}
+.hmb-p,.hmb-th{display:contents}
+.hmb-list,.hmb-thl,.hmb-s{display:none}/* ── mobile navigation ─────────────────────────────────────────────────
+   ⚠️ THE SWIPEABLE PAGE STRIP THAT LIVED HERE IS RETIRED (2026-10-20 17:13 EDT).
+   Harkirat: sideways scrolling was "kind of very like odd to maneuver", and its band
+   chewed into the reading space. It stated "where am I" without a tap, which is why
+   it replaced a two-tab rail, a bottom sheet and a disclosure; the menu answers that
+   with the current page marked inside it, and the page title is the first thing on
+   the page anyway. Its metaball indicator went with it.
 
    No hover rules live in here AT ALL. On touch a :hover latches until you tap
    something else, which is what made every earlier version feel stuck. Touch
@@ -1558,205 +1574,63 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .mk-ctx i{flex:0 0 auto;width:5px;height:5px;border-radius:50%;
     background:var(--accent)}
-  .mnav{display:block;position:sticky;top:var(--bar-h,58px);z-index:40}/* ⚠️ THE BAR AND THE SCROLLER ARE TWO ELEMENTS, AND THEY HAVE TO STAY APART.
-     The indicator below is a metaball layer: it paints an opaque black bed and
-     erases the bed with mix-blend-mode. A blend needs two things a scroller
-     cannot give it — an OPAQUE backdrop to blend against, and no scroll
-     container between it and that backdrop. Put the layer inside the strip and
-     the blend is dropped and you get a black rectangle instead; that was
-     measured in the prototype before it was measured here.
-     The background is OPAQUE on purpose. It used to be color-mix(paper 96%)
-     with a backdrop-filter, and the blend formula weights the source by
-     (1 - backdrop alpha), so a 4%-transparent backdrop is a 4% black wash
-     across the whole bar. Deterministic beats pretty here.
-     overflow:hidden clips the swarm to the bar, which is also deliberate — see
-     the y-squash note on the particles. */
+  .mnav{display:block;position:sticky;top:var(--bar-h,58px);z-index:40}/* The menu button takes the theme switch's place and the theme switch's height
+     on a phone bar (38px, like Install there), as a hairline capsule. */
 
   
-  .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
-    background:var(--paper);
-    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
-     a no-op for momentum since iOS 13 made smooth scrolling the default; the only
-     effect it still has is forcing this scroller onto its own composited layer,
-     which is the other half of the blend failure described above. Removing an
-     obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
+  .hmb{display:inline-grid;place-items:center;flex:0 0 auto;width:48px;height:38px;padding:0;
+    -webkit-appearance:none;appearance:none;cursor:pointer;color:var(--ink);
+    border-radius:999px;border:1px solid var(--rule2);background:none;
+    transition:border-color .2s,background .2s}
+  .hmb:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+  .hmb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .hmb[aria-expanded=true]{border-color:var(--accent)}/* Between 621 and 980 the bar's controls are 34px (Install shrinks to 38px only below 621), so the button matches them. */
   
-  .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
-    flex:1 1 auto;min-width:0;
-    overflow-x:auto;overscroll-behavior-x:contain;
-    scroll-snap-type:x proximity;
-    padding:.5rem .75rem;
-    scrollbar-width:none}
-  .mstrip::-webkit-scrollbar{display:none}
-
-  .mtab{position:relative;z-index:1;flex:0 0 auto;scroll-snap-align:center;
-    display:flex;align-items:center;min-height:44px;padding:0 .8rem;
-    border-radius:999px;text-decoration:none;
-    font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--ink2);
-    transition:color .28s ease}/* Same inversion the desktop pill uses, and measured the same way: a solid
-     accent is far too light to carry accent-coloured text, and near-black on
-     the six accents bottoms out at 5.07 which clears AA. */
-  
-  .mtab.on{color:#120E1C;font-weight:700}/* The crisp resting pill. The goo layer draws a pill of its own — that is what
-     the particles fuse into — but thresholding a blurred stadium erodes its caps
-     a little, and this is the shape you are left looking at for the rest of the
-     page. Same box, same colour, painted unfiltered on top, so the fluid reads
-     as assembling into it rather than as a second object. *//* inset 4px, not 0: the tap target stays the full 44px the guideline asks
-     for, but the pill you actually see is 36px. Filling the target edge to edge
-     made the indicator read as a block rather than a marker. */
-  
-  
-  .mtab::after{content:"";position:absolute;inset:4px 0;z-index:-1;border-radius:999px;
-    background:var(--row);scale:0;opacity:0}
-  .mtab.on::after{animation:mgPill 2s var(--spring) .2s both}
-  .mtab:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
-  .ms-sep{flex:0 0 1px;align-self:center;height:20px;background:var(--rule2);
-    margin:0 .3rem}/* ── the indicator: a metaball layer ──────────────────────────────────
-     Two elements and two SHORT filter chains, and they cannot be merged. .mgo
-     blurs a field of white discs and crushes it to a hard two-tone image;
-     .mgw recolours the finished result. Written as one seven-function chain on
-     one element, iOS applied the blur and the contrast and silently DROPPED the
-     four colour functions after them — the fluid came out white while the tab's
-     own pill, which is never filtered, stayed accent-coloured. That is what the
-     split buys.
-     There is no SVG filter here, also deliberately. An SVG filter's region is a
-     percentage of the element's box; the swarm spawns at radius 90 around a box
-     about 90x44, and everything outside the region paints UNFILTERED — which is
-     exactly what made the particles read as hard circles instead of liquid.
-     Chrome expands the region to cover overflow, Safari honours what you wrote.
-     A CSS chain has no region at all. */
+  @media (min-width:621px){ .hmb{height:34px;width:44px} }
+  .hmb-i{position:relative;display:block;width:18px;height:12px}
+  .hmb-i i{position:absolute;left:0;right:0;height:2px;border-radius:2px;background:currentColor;
+    transition:transform .26s cubic-bezier(.2,.8,.2,1),opacity .18s}
+  .hmb-i i:nth-child(1){top:0}
+  .hmb-i i:nth-child(2){top:5px}
+  .hmb-i i:nth-child(3){top:10px}
+  .hmb[aria-expanded=true] .hmb-i i:nth-child(1){transform:translateY(5px) rotate(45deg)}
+  .hmb[aria-expanded=true] .hmb-i i:nth-child(2){opacity:0}
+  .hmb[aria-expanded=true] .hmb-i i:nth-child(3){transform:translateY(-5px) rotate(-45deg)}/* The panel drops from under the bar and scrolls on its own if a short phone
+     cannot hold it. It is a box only here; see the desktop rules above. */
 
   
-  .mgw{position:absolute;left:0;top:0;width:0;height:0;z-index:0;
-    pointer-events:none;mix-blend-mode:lighten}/* ⚠️ THE LIQUID LAYER IS RETIRED ONCE ITS BIRTH IS OVER, AND THAT IS THE FIX
-     FOR THE SCROLL ARTIFACT — not a compositing hint, which was tried first and
-     did nothing. This layer exists to play ONE animation on arrival: particles
-     converge and fuse into a pill. What you look at for the rest of the page is
-     .mtab.on::after, a crisp unfiltered pill painted by the tab itself, and the
-     alpha crush ERODES the goo pill's caps, so the filtered shape sits strictly
-     inside the crisp one and removing it changes nothing you can see.
-     Leaving it alive meant a filtered, blended, per-frame-transformed layer lived
-     inside a position:sticky header for the life of the page. A blend needs its
-     backdrop rasterised in the same layer, and iOS re-layers exactly this kind of
-     element during a scroll gesture — at which point the bed has nothing to be
-     erased against and paints raw: a black rectangle in dark mode, and in light
-     mode the inverted white bed plus the accent plate, which is why it came out
-     yellow behind Contributors. A layer that is not on screen cannot be
-     mis-composited, so the artifact has no surface to appear on.
-     ⚠️ display:none, NOT opacity:0 AND NOT visibility:hidden. Both of those leave
-     the element in the layer tree, and iOS keeps compositing a mix-blend-mode
-     element that is merely invisible. This is a hardening, NOT the fix for the
-     light-mode artefact — that one was the filter chain and is fixed at source by
-     the --goo-bed/--goo-ink swap below. Keeping the two straight matters: while
-     the light chain was still wrong, the visibility version read as clean in dark
-     and broken in light, which is easy to misread as "hiding it works in one theme
-     and not the other" when the layer being hidden was never the problem.
-     No transition either: fading a blended layer means 240ms of it compositing at
-     partial opacity, which is the state being eliminated. The snap is invisible
-     regardless — .mtab.on::after is the same pill in the same place, unfiltered,
-     and the alpha crush erodes the goo pill strictly inside it. */
+  .hmb-p{display:none;position:fixed;left:0;right:0;top:var(--bar-h,58px);z-index:70;
+    max-height:calc(100dvh - var(--bar-h,58px));overflow-y:auto;overscroll-behavior:contain;
+    padding:.35rem .9rem 1.05rem;background:var(--paper);
+    border-bottom:1px solid var(--rule);box-shadow:0 22px 40px -22px rgba(0,0,0,.55)}
+  .hmb-p.open{display:block}/* ⚠️ A HEIGHT, NOT bottom:0. The bar's backdrop-filter makes IT the containing block
+     for these fixed elements, so bottom:0 meant the bar's own bottom edge and the scrim
+     came out 0px tall: taps outside the menu went straight through it. */
   
-  .mgw.spent{display:none}
-  .mgo{position:absolute;inset:0;filter:blur(7px) contrast(20) blur(0)}/* The bed. contrast() thresholds colour, not alpha, so the discs need
-     something opaque behind them or there is nothing to threshold. Black,
-     and large: the plate below has to sit entirely within the bed's OPAQUE
-     core, and blur(7px) softens the bed's own edge over about 21px. */
+  .hmb-s{position:fixed;left:0;right:0;top:var(--bar-h,58px);height:100dvh;z-index:69;
+    background:rgba(8,6,14,.42)}
+  .hmb-s.open{display:block}
+  .hmb-list{display:block}
+  .hmb-h{margin:.8rem 0 .35rem .15rem;font-family:var(--mono);font-size:.58rem;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+  .hmb-g{display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
+  .hmb-g:has(> :only-child){grid-template-columns:1fr}/* Each page keeps its own colour as a dot, the way the strip's pills did, and the
+     page you are on is outlined and washed in it. No hover rules: on touch a hover
+     latches, which is what made earlier phone menus feel stuck. */
   
-  .mgo::before{content:"";position:absolute;inset:-110px;z-index:-2;background:var(--goo-bed)}
-  .mgo::after{content:"";position:absolute;inset:4px 0;z-index:-1;background:var(--goo-ink);
-    border-radius:100vw;scale:0;opacity:0}
-  .mgo.on::after{animation:mgPill 2s var(--spring) .2s both}
-  @keyframes mgPill{to{scale:1;opacity:1}}/* ⚠️ THE COLOUR IS A BLEND, NOT A FILTER — and that is the second attempt.
-     The first recoloured the crushed white image with a fitted
-     sepia/saturate/hue-rotate/brightness chain. Composed on paper it lands every
-     accent exactly; rendered, it does not, and the error is large enough to see
-     (a difference-blend test against the true accent glowed on four of the six).
-     Filter chains clamp somewhere the arithmetic does not model, so the whole
-     approach was fitting a curve to a function nobody has the real form of.
-     A blend needs no model. multiply(white, accent) IS accent and
-     multiply(black, accent) IS black, exactly, for every accent that will ever
-     exist — so a plain accent plate multiplied over the crushed image colours
-     the blobs and leaves the bed alone. .mgw carries mix-blend-mode, which makes
-     it a stacking context, which makes it an isolation group: the plate blends
-     with the goo INSIDE it and the finished group blends with the bar outside.
-     The one trap, and the reason an earlier attempt at this was abandoned: the
-     plate must stay inside the bed's opaque core. Blending against a
-     partly-transparent backdrop leaves the plate's own colour showing, which
-     reads as an accent-coloured square around the whole effect. -80 inside
-     -110 is well clear of the blurred edge. */
-
-  
-  .mtint{position:absolute;inset:-80px;z-index:1;background:var(--row);
-    mix-blend-mode:multiply;pointer-events:none}/* ⚠️ LIGHT MODE IS THE SAME TRICK READ UPSIDE DOWN, AND IT INVERTS THE SOURCE,
-     NEVER THE RESULT.
-     lighten erases the black bed only because the backdrop is darker than the
-     blobs. On near-white paper it would erase the BLOBS instead and the bar would
-     stay empty, so light needs the mirror image: a WHITE bed, which is the identity
-     for multiply, blobs in black, and the plate on screen — screen(white, accent)
-     is white and screen(black, accent) is accent, exactly as multiply's identities
-     run the other way.
-     ⛔ THE OBVIOUS WAY TO GET THERE IS invert(1) ON THE FILTER, AND IT MUST NOT
-     COME BACK. That is what shipped first, and on iOS it painted the ACCENT PLATE
-     inverted — a lime rectangle across the bar on the violet License page
-     (invert(#9B6BE3) is #64941C), yellow on citron Contributors. The plate is a
-     SIBLING of the filtered element, so a filter reaching it at all means the light
-     chain composites wrongly, not merely blends wrongly; the same file already
-     records iOS silently dropping colour functions after blur+contrast on this very
-     element. Three attempts to fix it downstream — removing the scroller's
-     compositing hint, promoting the bar, retiring the layer — each moved WHEN the
-     artefact appeared without removing it, and suppressing the effect outright
-     removed the animation Harkirat actually wanted.
-     Swapping the SOURCE colours needs no fourth filter function: the discs, the
-     bed and the pill plate come from --goo-ink and --goo-bed, which the theme
-     already flips. Both themes now run the identical three-function chain, so there
-     is no light-only filter left to render differently. */
-
-  
-  :root[data-theme=light] .mgw{mix-blend-mode:multiply}
-  :root[data-theme=light] .mtint{mix-blend-mode:screen}
-  @media (prefers-color-scheme:light){
-    :root:not([data-theme=dark]) .mgw{mix-blend-mode:multiply}
-    :root:not([data-theme=dark]) .mtint{mix-blend-mode:screen}
-  }/* Particle geometry is the reference implementation's, unchanged: fifteen
-     20px discs spawning on a radius of 90 and converging INWARD to 10, each
-     running 1200±300ms and started 350ms in so they are already mid-flight on
-     the first frame. Two nested elements because the travel and the swelling
-     need different timing functions and one element carries only one.
-     The single deviation is the y squash. .mbar has to clip (an unclipped bed
-     paints black wherever there is no opaque backdrop under it), and a circular
-     radius-90 swarm in a 60px bar would spend most of its flight outside the
-     clip. Squashing y keeps the whole swarm on screen; x is untouched, and x is
-     the axis the pill actually grows along. */
-
-  
-  .mpt{position:absolute;top:calc(50% - 8px);left:calc(50% - 8px);
-    display:block;width:20px;height:20px;border-radius:100%;opacity:0;
-    transform-origin:center;animation:mptFly var(--t) ease 1 -350ms}
-  .mpd{display:block;width:20px;height:20px;border-radius:100%;
-    background:var(--goo-ink);opacity:1;transform-origin:center;
-    animation:mptPop var(--t) ease 1 -350ms}
-  @keyframes mptFly{
-    0%{transform:rotate(0deg) translate(var(--sx),var(--sy));opacity:1;
-      animation-timing-function:cubic-bezier(.55,0,1,.45)}
-    70%{transform:rotate(calc(var(--rot) * .5)) translate(calc(var(--ex) * 1.2),calc(var(--ey) * 1.2));
-      opacity:1;animation-timing-function:ease}
-    85%{transform:rotate(calc(var(--rot) * .66)) translate(var(--ex),var(--ey));opacity:1}
-    100%{transform:rotate(calc(var(--rot) * 1.2)) translate(calc(var(--ex) * .5),calc(var(--ey) * .5));
-      opacity:1}
-  }
-  @keyframes mptPop{
-    0%{scale:0;opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}
-    25%{scale:calc(var(--sc) * .25)}
-    38%{opacity:1}
-    65%{scale:var(--sc);opacity:1;animation-timing-function:ease}
-    85%{scale:var(--sc);opacity:1}
-    100%{scale:0;opacity:0}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .mgo.on::after,.mtab.on::after{animation:none;scale:1;opacity:1}
-    .mpt{display:none}
-  }/* The section index is no longer in a menu with the pages — it is not the
+  .hmb-a{display:flex;align-items:center;gap:.6rem;min-height:46px;padding:0 .85rem;
+    border-radius:12px;border:1px solid var(--rule);text-decoration:none;
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink2)}
+  .hmb-a i{flex:0 0 auto;width:7px;height:7px;border-radius:50%;background:var(--row)}
+  .hmb-a[aria-current]{color:var(--ink);font-weight:700;border-color:var(--row);
+    background:color-mix(in srgb,var(--row) 13%,transparent)}
+  .hmb-a:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+  .hmb-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .hmb-th{display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    margin-top:1rem;padding:.85rem .15rem 0;border-top:1px solid var(--rule)}
+  .hmb-thl{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink2)}/* The section index is no longer in a menu with the pages — it is not the
      same question. It sits with the document it indexes, closed by default. */
 
   
@@ -2079,7 +1953,10 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   <span class="ins-t">Install</span>
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
-    <button id="th" class="thm " role="switch"
+    <button type="button" class="hmb" id="hmb" aria-expanded="false" aria-controls="hmb-p" aria-label="Menu"><span class="hmb-i" aria-hidden="true"><i></i><i></i><i></i></span></button>
+    <div class="hmb-p" id="hmb-p">
+      <div class="hmb-list" role="navigation" aria-label="Pages"><p class="hmb-h">Use</p><div class="hmb-g"><a class="hmb-a" href="../commands.html" style="--row:#58D05A"><i aria-hidden="true"></i>Commands</a></div><p class="hmb-h">Documents</p><div class="hmb-g"><a class="hmb-a" href="../terms.html" style="--row:#F2994A"><i aria-hidden="true"></i>Terms</a><a class="hmb-a" href="../privacy.html" style="--row:#17A2A2"><i aria-hidden="true"></i>Privacy</a><a class="hmb-a" href="../license.html" style="--row:#9B6BE3"><i aria-hidden="true"></i>License</a><a class="hmb-a" href="../notice.html" style="--row:#FF5264"><i aria-hidden="true"></i>Notice</a></div><p class="hmb-h">Community</p><div class="hmb-g"><a class="hmb-a" href="../contributing.html" style="--row:#8B9BFF"><i aria-hidden="true"></i>Contributing</a><a class="hmb-a" href="../contributors.html" style="--row:#F8FF4A"><i aria-hidden="true"></i>Contributors</a></div><p class="hmb-h">Releases</p><div class="hmb-g"><a class="hmb-a" href="./" style="--row:#FF9E3D"><i aria-hidden="true"></i>What&#39;s New</a><a class="hmb-a" href="./detailed.html" aria-current="page" style="--row:#7CE38B"><i aria-hidden="true"></i>Changelog</a><a class="hmb-a" href="./devlog.html" style="--row:#8FB8FF"><i aria-hidden="true"></i>Devlog</a></div></div>
+      <div class="hmb-th"><span class="hmb-thl">Light or dark</span><button id="th" class="thm " role="switch"
   aria-checked="false" aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
@@ -2122,17 +1999,13 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       </svg>
     </span>
   </span>
-</button>
+</button></div>
+    </div>
+    <div class="hmb-s" id="hmb-s" aria-hidden="true"></div>
   </nav>
 </div>
 <div id="prog"></div>
 <aside class="mnav" id="mnav">
-  <div class="mbar">
-    <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
-    <nav class="mstrip" id="mstrip" aria-label="Pages">
-      <a class="mtab" href="../commands.html" style="--row:#58D05A">Commands</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="../terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="../privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="../license.html" style="--row:#9B6BE3">License</a><a class="mtab" href="../notice.html" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="../contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="../contributors.html" style="--row:#F8FF4A">Contributors</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./" style="--row:#FF9E3D">What&#39;s New</a><a class="mtab on" href="./detailed.html" aria-current="page" style="--row:#7CE38B">Changelog</a><a class="mtab" href="./devlog.html" style="--row:#8FB8FF">Devlog</a>
-    </nav>
-  </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
     <div class="mp-list msec"><a href="#pre-release-v3-102-0" class="slot"><i>Pre-Release v3.102.0</i><span>2026-10-20 00:15 EDT — the /commands page&#39;s six open items are settled, and the landing header gets a Commands button</span></a><a href="#pre-release-v3-101-0" class="slot"><i>Pre-Release v3.101.0</i><span>2026-10-19 23:22 EDT — the bulk cache spends no Cloudinary Admin calls on a fresh SKU</span></a><a href="#pre-release-v3-99-0" class="slot"><i>Pre-Release v3.99.0</i><span>2026-10-19 21:54 EDT — seven helpers nothing called are deleted</span></a><a href="#pre-release-v3-98-0" class="slot"><i>Pre-Release v3.98.0</i><span>2026-10-19 21:36 EDT — /gunsmiths becomes /gunsmith, and the CODM catalogue, Rank Modes, per-build badges and attachment slots ship with it</span></a><a href="#pre-release-v3-97-0" class="slot"><i>Pre-Release v3.97.0</i><span>2026-10-19 19:43 EDT — admin permissions become two tiers, Create and Destructive, checked on every write</span></a><a href="#pre-release-v3-96-0" class="slot"><i>Pre-Release v3.96.0</i><span>2026-10-19 19:15 EDT — the Privacy Policy&#39;s two change-history tables now list the same versions</span></a><a href="#pre-release-v3-95-0" class="slot"><i>Pre-Release v3.95.0</i><span>2026-10-19 18:22 EDT — /autobuild moves to Gemini 3.8 Flash</span></a><a href="#pre-release-v3-94-0" class="slot"><i>Pre-Release v3.94.0</i><span>2026-10-19 18:10 EDT — the deferred list and roadmap swept for staleness, and Harkirat&#39;s 2026-10-19 decisions recorded</span></a><a href="#pre-release-v3-93-0" class="slot"><i>Pre-Release v3.93.0</i><span>2026-10-19 18:03 EDT — /settings opens on the page you ask for, and /autobuild reads DMZ builds</span></a><a href="#pre-release-v3-92-0" class="slot"><i>Pre-Release v3.92.0</i><span>2026-10-19 15:43 EDT — Dioreo Admin, a second app for the admin commands, and View Colors from a message</span></a><a href="#pre-release-v3-91-0" class="slot"><i>Pre-Release v3.91.0</i><span>2026-10-19 12:39 EDT — right-click a post to add it to patch notes, draws or the calendar, and right-click a person to see their colours</span></a><a href="#pre-release-v3-90-0" class="slot"><i>Pre-Release v3.90.0</i><span>2026-10-19 09:51 EDT — the calculator&#39;s buttons rearranged, season emojis on every season title, and a Credits row in /help</span></a><a href="#pre-release-v3-89-0" class="slot"><i>Pre-Release v3.89.0</i><span>2026-10-19 00:54 EDT — Series Armory and the Advanced draws join the calculator, and /patch notes keeps every season</span></a><a href="#pre-release-v3-88-0" class="slot"><i>Pre-Release v3.88.0</i><span>2026-10-18 00:11 EDT — the draw calculator rebuilt from his click-tests: saved calculations, Mythic upgrades by tier, and a smarter bundle pick</span></a><a href="#pre-release-v3-87-0" class="slot"><i>Pre-Release v3.87.0</i><span>2026-10-01 20:33 EDT — the first hook-free PR is watched for, and two CI decisions are recorded</span></a><a href="#pre-release-v3-86-0" class="slot"><i>Pre-Release v3.86.0</i><span>2026-10-01 18:32 EDT — CI and the test queue rebuilt: a parallel runner, deterministic browser walks, CI split into jobs</span></a><a href="#pre-release-v3-85-0" class="slot"><i>Pre-Release v3.85.0</i><span>2026-10-01 17:27 EDT — portal pins batch 2: Session 2&#39;s manifests and Session 3&#39;s boards, Board 4 signed off at Version 81</span></a><a href="#pre-release-v3-84-0" class="slot"><i>Pre-Release v3.84.0</i><span>2026-09-14 16:42 EDT — portal pins batch 2: design board 2 answers G1–G4, G6 and G11 for Session 2</span></a><a href="#pre-release-v3-83-0" class="slot"><i>Pre-Release v3.83.0</i><span>2026-09-14 02:45 EDT — portal pins batch 2: the design board answers G8–G10, and a second board session is planned</span></a><a href="#pre-release-v3-82-0" class="slot"><i>Pre-Release v3.82.0</i><span>2026-09-13 22:17 EDT — portal pins batch 2, the critique: §10 for the New Build drawer, Compare and the composer</span></a><a href="#pre-release-v3-81-0" class="slot"><i>Pre-Release v3.81.0</i><span>2026-09-13 18:59 EDT — portal pins batch 2, Session 1: the colours, History, the header, and two agents</span></a><a href="#pre-release-v3-80-0" class="slot"><i>Pre-Release v3.80.0</i><span>2026-09-13 14:33 EDT — the second pin batch, decided and planned</span></a><a href="#pre-release-v3-79-0" class="slot"><i>Pre-Release v3.79.0</i><span>2026-09-06 — the deferred list stops lying, and the portal&#39;s write path is proven for the first time</span></a><a href="#pre-release-v3-78-0" class="slot"><i>Pre-Release v3.78.0</i><span>2026-09-06 — The portal is built out: every pin, the design queue, fifteen lenses, and the drawer that kept one character</span></a><a href="#pre-release-v3-77-0" class="slot"><i>Pre-Release v3.77.0</i><span>2026-09-05 — The dev portal was fully configured and running nothing</span></a><a href="#pre-release-v3-76-0" class="slot"><i>Pre-Release v3.76.0</i><span>2026-09-03 → 2026-09-05 — Home rendered a clock that was deleted a week ago, and two instruments had been comparing different data</span></a><a href="#pre-release-v3-75-0" class="slot"><i>Pre-Release v3.75.0</i><span>2026-09-03 — Review&#39;s commit path had never been exercised, and the portal&#39;s most dangerous button had been dead since August</span></a><a href="#pre-release-v3-74-0" class="slot"><i>Pre-Release v3.74.0</i><span>2026-09-02 — Four context layers reported healthy while being partly unusable, and the workflow we mandate was bypassing the rules tier entirely</span></a><a href="#pre-release-v3-73-0" class="slot"><i>Pre-Release v3.73.0</i><span>2026-09-02 — Analytics could not draw a third of its own alerts, and the two controls the design makes buttons had been text all along</span></a><a href="#pre-release-v3-72-0" class="slot"><i>Pre-Release v3.72.0</i><span>2026-09-01 — Access drew a black bar through every granted cell, the owner row had never rendered once, and the reader test then broke four fixes that had already been committed as correct</span></a><a href="#pre-release-v3-71-0" class="slot"><i>Pre-Release v3.71.0</i><span>2026-09-01 — Broadcast&#39;s SAVED badge was pale grey on a bright green fill, four of the Manifest&#39;s six state shapes had never rendered, and the memory index had been losing its tail to a platform limit nobody had acted on</span></a><a href="#pre-release-v3-70-0" class="slot"><i>Pre-Release v3.70.0</i><span>2026-08-31 → 2026-09-01 — Armory&#39;s tier board had never rendered its ranking, one paragraph between two panels cost a 125-row table its ground, and the instrument that reported both had its ordering upside down</span></a><a href="#pre-release-v3-69-0" class="slot"><i>Pre-Release v3.69.0</i><span>2026-08-23 → 2026-08-31 — the portal migrates to Preact, builds its own instrument suite, collapses its two rendering modes and converges onto its design; two sibling branches fold in, bringing four PreToolUse guards, a bot-side batch, and eleven CI checks nothing was running</span></a><a href="#pre-release-v3-68-0" class="slot"><i>Pre-Release v3.68.0</i><span>2026-08-26 19:36 EDT — the draw calculator becomes one live panel</span></a><a href="#pre-release-v3-67-0" class="slot"><i>Pre-Release v3.67.0</i><span>2026-08-23 14:08 EDT — five tracker entries that described work already done</span></a><a href="#pre-release-v3-66-0" class="slot"><i>Pre-Release v3.66.0</i><span>2026-08-23 13:05 EDT — the change panel covers every entity, and a permission check that compared against nothing</span></a><a href="#pre-release-v3-65-0" class="slot"><i>Pre-Release v3.65.0</i><span>2026-08-23 11:34 EDT — /bot analytics becomes five glances, and the change log becomes readable</span></a><a href="#pre-release-v3-64-0" class="slot"><i>Pre-Release v3.64.0</i><span>2026-08-23 00:09 EDT — a copy-pasteable retry for every failed /manage submit, loadout images by URL, and a bulk format that finally has a principle</span></a><a href="#pre-release-v3-63-0" class="slot"><i>Pre-Release v3.63.0</i><span>2026-08-22 20:24 EDT — a batch of live /manage click-test fixes across draws, calendar, loadouts, and announcements</span></a><a href="#pre-release-v3-62-0" class="slot"><i>Pre-Release v3.62.0</i><span>2026-08-22 15:56 EDT — the design-alignment plan&#39;s Phase 1-2, and a live /manage crash found and fixed on the dev bot</span></a><a href="#pre-release-v3-61-0" class="slot"><i>Pre-Release v3.61.0</i><span>2026-08-22 10:45 EDT — the live portal doesn&#39;t resemble its own mockups, audited and planned</span></a><a href="#pre-release-v3-60-0" class="slot"><i>Pre-Release v3.60.0</i><span>2026-08-21 23:44 EDT — the portal&#39;s compose UI: Track drag, Armory&#39;s Add form + live preview, Broadcast&#39;s Post form</span></a><a href="#pre-release-v3-59-0" class="slot"><i>Pre-Release v3.59.0</i><span>2026-08-21 19:05 EDT — the remaining 5 entities wired onto the operation core, and a branch-wide review that found the core&#39;s own sharp edges</span></a><a href="#pre-release-v3-58-0" class="slot"><i>Pre-Release v3.58.0</i><span>2026-08-21 12:30 EDT — parallelized check/hooks/audit-self-test, with a session-scoped test cache</span></a><a href="#pre-release-v3-57-0" class="slot"><i>Pre-Release v3.57.0</i><span>2026-08-20 22:54 EDT — the portal&#39;s ship-after-v3.0.0 gate, reversed</span></a><a href="#pre-release-v3-56-0" class="slot"><i>Pre-Release v3.56.0</i><span>2026-08-20 22:10 EDT — the changelog&#39;s PR citation, gated</span></a><a href="#pre-release-v3-55-0" class="slot"><i>Pre-Release v3.55.0</i><span>2026-08-20 20:15 EDT — the web admin portal, designed: spec, three plans, and 28 defects a context-free reader found in them</span></a><a href="#pre-release-v3-54-0" class="slot"><i>Pre-Release v3.54.0</i><span>2026-08-20 15:24 EDT — the memory-index-visibility insight, and a sequential-thinking audit of the record-keeping timing rules</span></a><a href="#pre-release-v3-53-0" class="slot"><i>Pre-Release v3.53.0</i><span>2026-08-20 13:16 EDT — Hotpatch v1: reload a pulled file into the running bot without a restart</span></a><a href="#pre-release-v3-52-0" class="slot"><i>Pre-Release v3.52.0</i><span>2026-08-20 10:32 EDT — roadmap corrections, and the changelog&#39;s own stale Planned/Coming-soon sections removed</span></a><a href="#pre-release-v3-51-0" class="slot"><i>Pre-Release v3.51.0</i><span>2026-08-19 14:03 EDT — dioreo.app&#39;s /commands page becomes a command builder, and an accent stops being used as a text colour</span></a><a href="#pre-release-v3-50-0" class="slot"><i>Pre-Release v3.50.0</i><span>2026-08-18 20:43 EDT — the reflow-comments CI crash, and a /help wording pick that turned out to be a decision already made</span></a><a href="#pre-release-v3-49-0" class="slot"><i>Pre-Release v3.49.0</i><span>2026-08-18 15:34 EDT — the SearchTerm buffer, and a shutdown race that finding #12 never actually closed</span></a><a href="#pre-release-v3-48-0" class="slot"><i>Pre-Release v3.48.0</i><span>2026-08-18 13:38 EDT — two more review-remnants findings close, and the record turns out to want a fixture, not a code read</span></a><a href="#pre-release-v3-47-0" class="slot"><i>Pre-Release v3.47.0</i><span>2026-08-18 12:42 EDT — the installed-but-unused CLI shelf gets written down</span></a><a href="#pre-release-v3-46-0" class="slot"><i>Pre-Release v3.46.0</i><span>2026-08-18 12:04 EDT — settings pickers and /help collapse to shared, self-enforcing shapes</span></a><a href="#pre-release-v3-45-0" class="slot"><i>Pre-Release v3.45.0</i><span>2026-08-18 09:52 EDT — a full-branch code review, and 61 of its findings fixed same-session</span></a><a href="#pre-release-v3-44-0" class="slot"><i>Pre-Release v3.44.0</i><span>2026-08-17 19:35 EDT — recover storage-channel messages instead of orphaning them</span></a><a href="#pre-release-v3-43-0" class="slot"><i>Pre-Release v3.43.0</i><span>2026-08-17 18:23 EDT — code comments soft-wrap too now</span></a><a href="#pre-release-v3-42-0" class="slot"><i>Pre-Release v3.42.0</i><span>2026-08-17 13:36 EDT — a --watch restart race closes, and every Flaticon icon author gets credited</span></a><a href="#pre-release-v3-41-0" class="slot"><i>Pre-Release v3.41.0</i><span>2026-08-17 09:50 EDT — /invite design pass, and a 95% smaller mascot</span></a><a href="#pre-release-v3-40-0" class="slot"><i>Pre-Release v3.40.0</i><span>2026-08-16 21:00 EDT — /invite: one panel, both install paths</span></a><a href="#pre-release-v3-39-0" class="slot"><i>Pre-Release v3.39.0</i><span>2026-08-16 20:04 EDT — deferred-list upkeep: one reminder closed, one drift filed</span></a><a href="#pre-release-v3-38-0" class="slot"><i>Pre-Release v3.38.0</i><span>2026-08-16 18:29 EDT — draw thumbnails skip a repeat Cloudinary round trip</span></a><a href="#pre-release-v3-37-0" class="slot"><i>Pre-Release v3.37.0</i><span>2026-08-16 16:40 EDT — the observability layer closes: Health, roll-ups, and a reporting CLI</span></a><a href="#pre-release-v3-36-0" class="slot"><i>Pre-Release v3.36.0</i><span>2026-08-16 15:47 EDT — the /bot command tree ships, and manageadmins moves out of /manage</span></a><a href="#pre-release-v3-35-0" class="slot"><i>Pre-Release v3.35.0</i><span>2026-08-16 13:24 EDT — the bot starts recording what it actually does, and a raw user ID leaves the database</span></a><a href="#pre-release-v3-34-0" class="slot"><i>Pre-Release v3.34.0</i><span>2026-08-16 12:30 EDT — interaction-context attribution: one edit, not 146</span></a><a href="#pre-release-v3-33-0" class="slot"><i>Pre-Release v3.33.0</i><span>2026-08-16 11:52 EDT — the global instruction file contradicted itself, and nothing had ever checked it</span></a><a href="#pre-release-v3-32-0" class="slot"><i>Pre-Release v3.32.0</i><span>2026-08-16 11:28 EDT — the memory index gets 24% smaller without losing a single memory</span></a><a href="#pre-release-v3-31-0" class="slot"><i>Pre-Release v3.31.0</i><span>2026-08-16 11:02 EDT — the observability layer is designed, the database has a real name, and backups exist at all</span></a><a href="#pre-release-v3-30-0" class="slot"><i>Pre-Release v3.30.0</i><span>2026-08-15 23:06 EDT — collectible cache-channel embeds redesigned, and their Cloudinary ids renamed to Discord&#39;s own naming</span></a><a href="#pre-release-v3-29-0" class="slot"><i>Pre-Release v3.29.0</i><span>2026-08-15 21:56 EDT — /gunsmiths consolidates nine loadout commands into two</span></a><a href="#pre-release-v3-28-0" class="slot"><i>Pre-Release v3.28.0</i><span>2026-08-15 19:16 EDT — /draw calculator ships</span></a><a href="#pre-release-v3-27-0" class="slot"><i>Pre-Release v3.27.0</i><span>2026-08-15 17:22 EDT — two guards built from this session&#39;s own misses, and a worktree finding</span></a><a href="#pre-release-v3-26-0" class="slot"><i>Pre-Release v3.26.0</i><span>2026-08-15 16:43 EDT — /draw calculator designed, and CP prices captured for 41 currencies</span></a><a href="#pre-release-v3-25-0" class="slot"><i>Pre-Release v3.25.0</i><span>2026-08-15 13:37 EDT — a bugs-fix batch: /colors wording, /manage guides + rename, /help aliases, timezone search</span></a><a href="#pre-release-v3-24-0" class="slot"><i>Pre-Release v3.24.0</i><span>2026-08-15 12:38 EDT — DB change log and /audit</span></a><a href="#pre-release-v3-23-0" class="slot"><i>Pre-Release v3.23.0</i><span>2026-08-15 12:07 EDT — Bulk-cache pipeline for the nameplate/decoration catalog</span></a><a href="#pre-release-v3-22-0" class="slot"><i>Pre-Release v3.22.0</i><span>2026-08-15 01:50 EDT — The full nameplate/decoration catalog lands, with a script to keep it synced</span></a><a href="#pre-release-v3-21-0" class="slot"><i>Pre-Release v3.21.0</i><span>2026-08-14 18:09 EDT — /manage datafor:draws action:add-new opens the modal directly</span></a><a href="#pre-release-v3-20-0" class="slot"><i>Pre-Release v3.20.0</i><span>2026-08-14 17:24 EDT — /manage stops being one 2,416-line file</span></a><a href="#pre-release-v3-19-0" class="slot"><i>Pre-Release v3.19.0</i><span>2026-08-14 16:27 EDT — A presence check for the memory layer, and an expiring hook stopped asserting its own reversal</span></a><a href="#pre-release-v3-18-0" class="slot"><i>Pre-Release v3.18.0</i><span>2026-08-14 13:45 EDT — /manage&#39;s actions become one table instead of two copies of the same list</span></a><a href="#pre-release-v3-17-0" class="slot"><i>Pre-Release v3.17.0</i><span>2026-08-14 11:14 EDT — the idle-disable timer stops being a /settings exclusive, and /server becomes /admin</span></a><a href="#pre-release-v3-16-0" class="slot"><i>Pre-Release v3.16.0</i><span>2026-08-13 17:28 EDT — index.js stops being a code dump and becomes an entrypoint</span></a><a href="#pre-release-v3-15-0" class="slot"><i>Pre-Release v3.15.0</i><span>2026-08-13 15:41 EDT — admin access becomes per-page, announcements become a real queue</span></a><a href="#pre-release-v3-14-0" class="slot"><i>Pre-Release v3.14.0</i><span>2026-08-13 10:12 EDT — an invisible pixel stops passing for an opaque one</span></a><a href="#pre-release-v3-13-0" class="slot"><i>Pre-Release v3.13.0</i><span>2026-08-13 00:12 EDT — the palette stops discarding colours it found, and the refresh path reaches every one</span></a><a href="#pre-release-v3-11-0" class="slot"><i>Pre-Release v3.11.0</i><span>2026-08-12 14:09 EDT — the swatch captions stop asking &quot;than what?&quot;</span></a><a href="#pre-release-v3-10-0" class="slot"><i>Pre-Release v3.10.0</i><span>2026-08-11 23:23 EDT — the message and the side effect finally agree</span></a><a href="#pre-release-v3-9-0" class="slot"><i>Pre-Release v3.9.0</i><span>2026-08-11 21:10 EDT — the model-selection grid stops being a pointer</span></a><a href="#pre-release-v3-8-0" class="slot"><i>Pre-Release v3.8.0</i><span>2026-08-11 15:19 EDT — the palette stops paying for a picture nobody looks at</span></a><a href="#pre-release-v3-7-0" class="slot"><i>Pre-Release v3.7.0</i><span>2026-08-11 13:27 EDT — a design&#39;s colours computed once, and named like a person would</span></a><a href="#pre-release-v3-6-0" class="slot"><i>Pre-Release v3.6.0</i><span>2026-08-11 09:12 EDT — animations sampled whole, small colours surfaced, and names people actually use</span></a><a href="#pre-release-v3-5-0" class="slot"><i>Pre-Release v3.5.0</i><span>2026-08-10 23:31 EDT — /help gets real, clickable slash-command mentions</span></a><a href="#pre-release-v3-4-2" class="slot"><i>Pre-Release v3.4.2</i><span>2026-08-10 21:06 EDT — the legacy v2 queue gets read for the first time, and it was stale rather than dead</span></a><a href="#pre-release-v3-4-1" class="slot"><i>Pre-Release v3.4.1</i><span>2026-08-10 20:32 EDT — v2 ships and closes, the queue is re-planned, and the live bot finally catches up</span></a><a href="#pre-release-v3-4-0" class="slot"><i>Pre-Release v3.4.0</i><span>2026-08-10 19:57 EDT — /server: server admins can finally quiet the bot, and the one thing they asked for turns out to be impossible</span></a><a href="#pre-release-v3-3-0" class="slot"><i>Pre-Release v3.3.0</i><span>2026-08-10 14:17 EDT — Nameplate/Deco previews: GIF → lossless WebP, and Discord&#39;s own proxy turned out to be the real obstacle</span></a><a href="#pre-release-v3-2-0" class="slot"><i>Pre-Release v3.2.0</i><span>2026-08-09 17:15 EDT — Per-server profile colours, and a premise that was never tested</span></a><a href="#pre-release-v3-1-1" class="slot"><i>Pre-Release v3.1.1</i><span>2026-08-09 12:10 EDT — Guild install: the bot can live in servers, and its presence finally renders</span></a><a href="#pre-release-v3-1-0" class="slot"><i>Pre-Release v3.1.0</i><span>2026-08-08 22:43 EDT — The first v3 feature: /help, and a bot-wide option rename</span></a><a href="#v2-63-1" class="slot"><i>v2.63.1</i><span>A memory budget that was never measured, and two guards for the gaps prose kept missing</span></a><a href="#v2-63-0" class="slot"><i>v2.63.0</i><span>Soft-wrapped prose, front matter on every doc, and a verified reflow tool</span></a><a href="#v2-62-1" class="slot"><i>v2.62.1</i><span>Remediate 16 of 24 GitHub code-scanning alerts on the legal-site generator</span></a><a href="#v2-62-0" class="slot"><i>v2.62.0</i><span>Patch notes get a Fix icon, palette defaults back to preset, /calendar&#39;s title reads &quot;Season Calendar&quot;</span></a><a href="#v2-61-2" class="slot"><i>v2.61.2</i><span>Fixing the hook that made v2.61.1 necessary</span></a><a href="#v2-61-1" class="slot"><i>v2.61.1</i><span>Design-notes correction, no code change</span></a><a href="#v2-61-0" class="slot"><i>v2.61.0</i><span>Calendar banners stop silently expiring, and every Cloudinary URL gets adaptive quality</span></a><a href="#v2-60-0" class="slot"><i>v2.60.0</i><span>The bug that looked fixed, and the fix that traded speed for correctness</span></a><a href="#v2-59-0" class="slot"><i>v2.59.0</i><span>A purge that looked like data loss, and wasn&#39;t</span></a><a href="#v2-58-2" class="slot"><i>v2.58.2</i><span>A tolerance window, a round-trip cut, and a CI-only bug hiding in both</span></a><a href="#v2-58-1" class="slot"><i>v2.58.1</i><span>Filing what the last release only said in chat</span></a><a href="#v2-58-0" class="slot"><i>v2.58.0</i><span>A third region, sourced instead of guessed</span></a><a href="#v2-57-3" class="slot"><i>v2.57.3</i><span>The rule was everywhere, the method was nowhere</span></a><a href="#v2-57-2" class="slot"><i>v2.57.2</i><span>Choosing the model is a grid, not a ladder</span></a><a href="#v2-57-1" class="slot"><i>v2.57.1</i><span>Closing out the outage</span></a><a href="#v2-57-0" class="slot"><i>v2.57.0</i><span>Alerts a human can read, and a dev database that isn&#39;t anyone&#39;s</span></a><a href="#v2-56-2" class="slot"><i>v2.56.2</i><span>The DEVLOG entry v2.56.1 should have carried</span></a><a href="#v2-56-1" class="slot"><i>v2.56.1</i><span>A guard that judged the room instead of the request</span></a><a href="#v2-56-0" class="slot"><i>v2.56.0</i><span>Three filed reorgs, and the audit that came out of checking them</span></a><a href="#v2-55-5" class="slot"><i>v2.55.5</i><span>A tier for thinking, and a warning that had become noise</span></a><a href="#v2-55-4" class="slot"><i>v2.55.4</i><span>A pack triage, and a tool chosen for the wrong reason</span></a><a href="#v2-55-3" class="slot"><i>v2.55.3</i><span>The DEVLOG entry that should have blocked the previous release</span></a><a href="#v2-55-2" class="slot"><i>v2.55.2</i><span>A seam only one device could see, and the share card nobody had checked</span></a><a href="#v2-55-1" class="slot"><i>v2.55.1</i><span>A P1 that had been fixed for a day, and a guard that blocks the cleanup it asks for</span></a><a href="#v2-55-0" class="slot"><i>v2.55.0</i><span>A homepage that types, and a button an ad blocker had been hiding</span></a><a href="#v2-54-0" class="slot"><i>v2.54.0</i><span>dioreo.app, and a site that no longer lives one folder down from itself</span></a><a href="#v2-53-0" class="slot"><i>v2.53.0</i><span>Confirmations that only worked when nothing else was happening</span></a><a href="#v2-52-0" class="slot"><i>v2.52.0</i><span>The bot has a name, and the front door finally says what it is</span></a><a href="#v2-51-3" class="slot"><i>v2.51.3</i><span>Closing the loop on a CLI that shouldn&#39;t be the worse variant</span></a><a href="#v2-51-2" class="slot"><i>v2.51.2</i><span>One regex, two copies, one left unfixed</span></a><a href="#v2-51-1" class="slot"><i>v2.51.1</i><span>A placeholder time is not a bare date</span></a><a href="#v2-51-0" class="slot"><i>v2.51.0</i><span>Two colours meeting inside a pill, and a cursor you can aim</span></a><a href="#v2-50-4" class="slot"><i>v2.50.4</i><span>The spellchecker did not know the codebase&#39;s own vocabulary</span></a><a href="#v2-50-3" class="slot"><i>v2.50.3</i><span>A third home for an idea that was right but early</span></a><a href="#v2-50-2" class="slot"><i>v2.50.2</i><span>The bare-date check was wrong four times in five</span></a><a href="#v2-50-1" class="slot"><i>v2.50.1</i><span>A gate that refused a real deadline, and two items that were only ever said out loud</span></a><a href="#v2-50-0" class="slot"><i>v2.50.0</i><span>The tests were fine. Nothing was running them.</span></a><a href="#v2-49-2" class="slot"><i>v2.49.2</i><span>A gate that fired too late, and the release it forced</span></a><a href="#v2-49-1" class="slot"><i>v2.49.1</i><span>The gate fired on its own author, and the versioning rule was describing a dead era</span></a><a href="#v2-49-0" class="slot"><i>v2.49.0</i><span>Four guards that fire at the moment of the mistake, and thirty invented timestamps</span></a><a href="#v2-48-0" class="slot"><i>v2.48.0</i><span>The memory index gets a ceiling, and the MCP layer turns out to have been quietly broken</span></a><a href="#v2-47-1" class="slot"><i>v2.47.1</i><span>The site publishes itself, and main stops accepting direct pushes</span></a><a href="#v2-47-0" class="slot"><i>v2.47.0</i><span>The record pages, a rebuilt nav indicator, and eight new build gates</span></a><a href="#v2-46-0" class="slot"><i>v2.46.0</i><span>A 3-page calendar, real banners, and a bulk-format guide that finally explains itself</span></a><a href="#v2-45-0" class="slot"><i>v2.45.0</i><span>Six v2 launch bugs: a lowercased &quot;V&quot;, a comment line stored as a fake weapon, and a real staging area for next season</span></a><a href="#v2-44-0" class="slot"><i>v2.44.0</i><span>Two pages that stopped reading like a Markdown dump, and a sticky rail that was never actually fixed</span></a><a href="#v2-43-2" class="slot"><i>v2.43.2</i><span>The rule note the merge gate asked for, and the lessons behind it</span></a><a href="#v2-43-1" class="slot"><i>v2.43.1</i><span>Seven dead links inside the documents whose point is being checkable</span></a><a href="#v2-43-0" class="slot"><i>v2.43.0</i><span>A licence that said the opposite of what it meant</span></a><a href="#v2-42-2" class="slot"><i>v2.42.2</i><span>Nineteen entries the table of contents never lied about</span></a><a href="#v2-42-1" class="slot"><i>v2.42.1</i><span>A local ref is not a remote state</span></a><a href="#v2-42-0" class="slot"><i>v2.42.0</i><span>&quot;Not checkable&quot; was never true</span></a><a href="#v2-41-4" class="slot"><i>v2.41.4</i><span>A hard reset that ate another session&#39;s work</span></a><a href="#v2-41-3" class="slot"><i>v2.41.3</i><span>A number I invented, in three files, wrong by 4x</span></a><a href="#v2-41-2" class="slot"><i>v2.41.2</i><span>A table of contents you can&#39;t actually search</span></a><a href="#v2-41-1" class="slot"><i>v2.41.1</i><span>Verifying forward but never backward</span></a><a href="#v2-41-0" class="slot"><i>v2.41.0</i><span>The error counter was never capable of being right</span></a><a href="#v2-40-0" class="slot"><i>v2.40.0</i><span>The DEVLOG is now enforced like the changelog</span></a><a href="#v2-39-2" class="slot"><i>v2.39.2</i><span>The DEVLOG entry v2.39.1 should have shipped with</span></a><a href="#v2-39-1" class="slot"><i>v2.39.1</i><span>Two stale claims the v2.39.0 sweep walked past</span></a><a href="#v2-39-0" class="slot"><i>v2.39.0</i><span>The enforcement layer is finally in version control</span></a><a href="#v2-38-3" class="slot"><i>v2.38.3</i><span>The DEVLOG entries v2.38.1/.2 should have shipped with</span></a><a href="#v2-38-2" class="slot"><i>v2.38.2</i><span>Two dead host credentials revoked and removed</span></a><a href="#v2-38-1" class="slot"><i>v2.38.1</i><span>Remove a stray empty file that rode in with v2.38.0</span></a><a href="#v2-38-0" class="slot"><i>v2.38.0</i><span>Memory moves to the path the platform actually reads</span></a><a href="#v2-37-0" class="slot"><i>v2.37.0</i><span>The v3 sync gets a trigger, not just a mechanism</span></a><a href="#v2-36-3" class="slot"><i>v2.36.3</i><span>The tag invariant becomes a gate, after it caught nobody</span></a><a href="#v2-36-2" class="slot"><i>v2.36.2</i><span>Audit follow-ups: two checks that would have cried wolf</span></a><a href="#v2-36-1" class="slot"><i>v2.36.1</i><span>Merged branches stop rotting</span></a><a href="#v2-36-0" class="slot"><i>v2.36.0</i><span>One commit, one tag: the finalize commit is retired</span></a><a href="#v2-35-15" class="slot"><i>v2.35.15</i><span>A scripted records sweep, and the chore checklist that was wrong</span></a><a href="#v2-35-14" class="slot"><i>v2.35.14</i><span>Render deleted, VM divergence fixed: GCP is now the only host</span></a><a href="#v2-35-13" class="slot"><i>v2.35.13</i><span>Diagnosed the VM divergence and cleared Render&#39;s health gate</span></a><a href="#v2-35-12" class="slot"><i>v2.35.12</i><span>Reconciled the two tracking files; refreshed stale model tags</span></a><a href="#v2-35-11" class="slot"><i>v2.35.11</i><span>Corrected the CI deferred entry after its own precondition was met</span></a><a href="#v2-35-10" class="slot"><i>v2.35.10</i><span>Synced the standing records to the v3 structure</span></a><a href="#v2-35-9" class="slot"><i>v2.35.9</i><span>Stopped the dev bot from writing to the LIVE Cloudinary account</span></a><a href="#v2-35-8" class="slot"><i>v2.35.8</i><span>First CI: a syntax check on every push and PR</span></a><a href="#v2-35-7" class="slot"><i>v2.35.7</i><span>Filed the roadmap board&#39;s remaining manual view setup</span></a><a href="#v2-35-6" class="slot"><i>v2.35.6</i><span>Designed the v3 development structure</span></a><a href="#v2-35-5" class="slot"><i>v2.35.5</i><span>Corrected a stale memory-store count; filed commit attribution as deferred</span></a><a href="#v2-35-4" class="slot"><i>v2.35.4</i><span>Patch notes release date now supports a real local-clock time</span></a><a href="#v2-35-3" class="slot"><i>v2.35.3</i><span>scripts/devCommands.js: take the dev bot&#39;s commands out of the / picker</span></a><a href="#v2-35-2" class="slot"><i>v2.35.2</i><span>dotenv quieted, xlsx demoted, and a connect log that told the truth</span></a><a href="#v2-35-1" class="slot"><i>v2.35.1</i><span>Tool-discovery session filed in the deferred list</span></a><a href="#v2-35-0" class="slot"><i>v2.35.0</i><span>Single-instance startup guard</span></a><a href="#v2-34-1" class="slot"><i>v2.34.1</i><span>Rule files re-pointed at the symbols v2.34.0 renamed</span></a><a href="#v2-34-0" class="slot"><i>v2.34.0</i><span>The local dev bot: a way to test before prod</span></a><a href="#v2-33-6" class="slot"><i>v2.33.6</i><span>Commit &amp; branch naming, verified against the spec instead of assumed</span></a><a href="#v2-33-5" class="slot"><i>v2.33.5</i><span>/draw prices: the NOTE callout comes off the Advanced Double Legendary page</span></a><a href="#v2-33-4" class="slot"><i>v2.33.4</i><span>GitHub Projects roadmap board: build + re-sync after the deferred-list restructure</span></a><a href="#v2-33-3" class="slot"><i>v2.33.3</i><span>Deferred-list restructure: finish the split, rename the files, split the archives out</span></a><a href="#v2-33-2" class="slot"><i>v2.33.2</i><span>Split Diors Builds deferred items into docs/deferred-items.md</span></a><a href="#v2-33-1" class="slot"><i>v2.33.1</i><span>/autobuild private toggle</span></a><a href="#v2-33-0" class="slot"><i>v2.33.0</i><span>Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow</span></a><a href="#v2-32-0" class="slot"><i>v2.32.0</i><span>/manage patch notes: multi-season management + manual title override</span></a><a href="#v2-31-0" class="slot"><i>v2.31.0</i><span>CLAUDE.md modularized into path-scoped rules + vision cost logging</span></a><a href="#v2-30-2" class="slot"><i>v2.30.2</i><span>fix pagination duplicate-customid crash at exactly 2 pages</span></a><a href="#v2-30-1" class="slot"><i>v2.30.1</i><span>/draw prices Advanced Double Legendary page corrections</span></a><a href="#v2-30-0" class="slot"><i>v2.30.0</i><span>/draw prices Advanced Double Legendary page redesign + full-caps draw headings</span></a><a href="#v2-29-0" class="slot"><i>v2.29.0</i><span>/autobuild v2-test fixes · loadout data corrections</span></a><a href="#v2-28-0" class="slot"><i>v2.28.0</i><span>/autobuild live-test fixes · Cloudinary metadata · new Advanced Double Legendary draw · looping pagination</span></a><a href="#v2-27-0" class="slot"><i>v2.27.0</i><span>silence routine gateway-reconnect alerts (log, don&#39;t post)</span></a><a href="#v2-26-0" class="slot"><i>v2.26.0</i><span>2026-07-20 (477d37c)</span></a><a href="#v2-25-0" class="slot"><i>v2.25.0</i><span>2026-07-20</span></a><a href="#v2-24-0" class="slot"><i>v2.24.0</i><span>2026-07-20</span></a><a href="#v2-23-0" class="slot"><i>v2.23.0</i><span>2026-07-18</span></a><a href="#v2-22-1" class="slot"><i>v2.22.1</i><span>2026-07-18</span></a><a href="#v2-22-0" class="slot"><i>v2.22.0</i><span>2026-07-18</span></a><a href="#v2-21-1" class="slot"><i>v2.21.1</i><span>2026-07-18</span></a><a href="#v2-21-0" class="slot"><i>v2.21.0</i><span>2026-07-18</span></a><a href="#v2-20-0" class="slot"><i>v2.20.0</i><span>2026-07-17</span></a><a href="#v2-19-0" class="slot"><i>v2.19.0</i><span>2026-07-17</span></a><a href="#v2-18-3" class="slot"><i>v2.18.3</i><span>2026-07-16</span></a><a href="#v2-18-2" class="slot"><i>v2.18.2</i><span>2026-07-16</span></a><a href="#v2-18-1" class="slot"><i>v2.18.1</i><span>2026-07-15</span></a><a href="#v2-18-0" class="slot"><i>v2.18.0</i><span>2026-07-14</span></a><a href="#v2-17-3" class="slot"><i>v2.17.3</i><span>2026-07-13</span></a><a href="#v2-17-2" class="slot"><i>v2.17.2</i><span>2026-07-13</span></a><a href="#v2-17-1" class="slot"><i>v2.17.1</i><span>2026-07-13</span></a><a href="#v2-17-0" class="slot"><i>v2.17.0</i><span>2026-07-13</span></a><a href="#v2-16-0" class="slot"><i>v2.16.0</i><span>2026-07-13</span></a><a href="#v2-15-0" class="slot"><i>v2.15.0</i><span>2026-07-13</span></a><a href="#v2-14-0" class="slot"><i>v2.14.0</i><span>2026-07-13</span></a><a href="#v2-13-0" class="slot"><i>v2.13.0</i><span>2026-07-13</span></a><a href="#v2-12-1" class="slot"><i>v2.12.1</i><span>2026-07-12</span></a><a href="#v2-12-0" class="slot"><i>v2.12.0</i><span>2026-07-12</span></a><a href="#v2-11-1" class="slot"><i>v2.11.1</i><span>2026-07-12</span></a><a href="#v2-11-0" class="slot"><i>v2.11.0</i><span>2026-07-12</span></a><a href="#v2-10-0" class="slot"><i>v2.10.0</i><span>2026-07-12</span></a><a href="#v2-9-0" class="slot"><i>v2.9.0</i><span>2026-07-09</span></a><a href="#v2-8-1" class="slot"><i>v2.8.1</i><span>2026-07-09</span></a><a href="#v2-8-0" class="slot"><i>v2.8.0</i><span>2026-07-09</span></a><a href="#v2-7-1" class="slot"><i>v2.7.1</i><span>2026-07-09</span></a><a href="#v2-7-0" class="slot"><i>v2.7.0</i><span>2026-07-09</span></a><a href="#v2-6-0" class="slot"><i>v2.6.0</i><span>2026-07-08</span></a><a href="#v2-5-1" class="slot"><i>v2.5.1</i><span>2026-07-08</span></a><a href="#v2-5-0" class="slot"><i>v2.5.0</i><span>2026-07-08</span></a><a href="#v2-4-0" class="slot"><i>v2.4.0</i><span>2026-07-08</span></a><a href="#v2-3-1" class="slot"><i>v2.3.1</i><span>2026-07-07</span></a><a href="#v2-3-0" class="slot"><i>v2.3.0</i><span>2026-07-07</span></a><a href="#v2-2-1" class="slot"><i>v2.2.1</i><span>2026-07-07</span></a><a href="#v2-2-0" class="slot"><i>v2.2.0</i><span>2026-07-07</span></a><a href="#v2-1-0" class="slot"><i>v2.1.0</i><span>2026-07-07</span></a><a href="#v2-0-0" class="slot slot-m"><i>v2.0.0</i><span>2026-07-06</span></a><a href="#v1-7-0" class="slot"><i>v1.7.0</i><span>2026-07-04</span></a><a href="#v1-6-1" class="slot"><i>v1.6.1</i><span>2026-05-17</span></a><a href="#v1-6-0" class="slot"><i>v1.6.0</i><span>2026-05-17</span></a><a href="#v1-5-0" class="slot"><i>v1.5.0</i><span>2026-04-08</span></a><a href="#v1-4-0" class="slot"><i>v1.4.0</i><span>2026-04-08</span></a><a href="#v1-3-0" class="slot"><i>v1.3.0</i><span>2026-04-08</span></a><a href="#v1-2-1" class="slot"><i>v1.2.1</i><span>2026-04-08</span></a><a href="#v1-2-0" class="slot"><i>v1.2.0</i><span>2026-04-08</span></a><a href="#v1-1-0" class="slot"><i>v1.1.0</i><span>2026-04-08</span></a><a href="#v1-0-0" class="slot slot-m"><i>v1.0.0</i><span>2026-04-08</span></a></div>
@@ -2176,7 +2049,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         <div class="lg-b">
           
           <p><strong><code>scripts/lib/commandCatalog.js</code>, <code>scripts/lib/commandsPage.js</code>, <code>scripts/lib/commandProse.js</code>, <code>scripts/lib/chronicle.js</code>, <code>scripts/buildLegalPages.js</code>, <code>commands/gunsmith.js</code>, <code>commands/calendar.js</code>, <code>scripts/commandCatalog.test.js</code>, <code>public/</code>.</strong> The six items were filed as one collective deferred item on 2026-09-09 17:04 EDT; Harkirat, 2026-10-19 22:22 EDT: &quot;let&#39;s start a fresh thread to handle all 6.&quot;</p>
-<ul><li><strong>The landing header holds Install and Commands, and GitHub is a text link in the footer nav.</strong> Harkirat&#39;s layout, after three mocked placements, one restyle (2026-10-19 23:11 EDT) and a 13-point review (2026-10-20 10:00 EDT). <code>Commands</code> (<code>.cmdb</code>) wears the old GitHub capsule&#39;s look held open: a hairline pill, the label in mono small caps, the border warming and the cursor light following on hover, no mark inside, at Install&#39;s height (34px, 38px on a phone) and with Install&#39;s label. On the document pages it replaced the GitHub capsule in the bar and left the desktop switcher, so the switcher carries six tabs (nine inside <code>/changelog/</code>), its staging was re-measured, and the cursor light no longer stays green over a tab that is not there. GitHub is a footer link in a shared two-row footer nav (the documents, then Commands, GitHub, Install), on every page and in the landing&#39;s tray, where it replaces the &quot;Appearance&quot; label. At 320px the mascot is about 64px wide.</li><li><strong>The review&#39;s other tweaks.</strong> The nav bar is 58px (<code>--bar-h</code>, one source for every sticky offset), the Install button and the light/dark switch are 34px, the landing column is 900px wide, &quot;Roll call&quot; reads &quot;Thank you&quot;, the copyright line&#39;s ink lands on the same right edge as the line above it, the footer&#39;s dot separators drop below 1000px so a folded row never ends on one, and the landing&#39;s link block stacks above the switch on a phone.</li><li><strong>Commands is a filled rail in the bar, and the bar&#39;s spacing is exact.</strong> Harkirat, 2026-10-20 10:45 EDT: the Commands control in the bar takes the switcher&#39;s rail look (a dark groove, one tab, a solid accent pill on hover, focus and on /commands itself), while the landing keeps the hairline capsule. The gaps are 10px between the rails, rail to Commands and Commands to Install, and 14px from Install to the theme switch, measured on the built page. The bar&#39;s staging was re-measured (six tabs: 1007 full, 853 tightened; nine tabs: 1431, 1203, 833) with zero overflow from 1700 down to 981 and the tiers changing at exactly 1029, 1519 and 1309.</li><li><strong>The /commands page&#39;s command chips use the hairline capsule.</strong> No fill, a hairline border, the label brightening on hover, the border warming to the command&#39;s own colour and a cursor light following the pointer. The style is named in the site rule so it can be asked for by name. See the next bullet for the hover, the 34px height and the selected state.</li><li><strong>Commands keeps its own green, the cursor goes dark on its own colour, and the capsules hover like Install.</strong> Harkirat, 2026-10-20 11:53 EDT and 11:57 EDT. The Commands pill in the bar read the page accent (crimson on Notice, amber on Terms); it is now Commands&#39; own green on every page, and the landing capsule&#39;s hover warms to the same green. The liquid cursor over a surface painted in its own colour (the current page&#39;s tab, the Commands pill) now wears the dark ink, as it already did over Install; before, a crimson swarm over the crimson NOTICE tab could not be seen, and a link-default blue leaked in over the Commands pill. The hairline capsule&#39;s hover is Install&#39;s (a 1px lift, a coloured shadow, the edge-light sweep) in its own hue, written once for the landing button and the chips; the /commands chips are 34px tall instead of 31px, and the selected chip keeps the outline, with its border in the command&#39;s full colour and the light held on, instead of a fill.</li><li><strong>The landing Commands button lost its green glow, and a site sweep fixed the Notice page on phones.</strong> Harkirat, 2026-10-20 14:24 EDT: &quot;why does it look like this with the outside glow under it?&quot; Install&#39;s coloured hover shadow reads as the fill&#39;s own depth, but under a hairline pill it read as a green halo, so only the /commands chips keep it. The sweep (every page, both themes, 1440px and 320 to 430px) found the Notice page scrolling sideways on a phone: its Flaticon credits printed raw Markdown, <code>[Andy Horvath](https://…)</code>, run together in one paragraph, and the htm card&#39;s two-line licence spilled its second half, copyright and link into the notes. The credits are now one linked name per line and the licence pill wraps.</li><li><strong>Footers: every link on every page, links left, the sign-off right, and /commands gets the landing&#39;s footer.</strong> Harkirat, 2026-10-20 15:05 to 15:08 EDT. The page you are on used to drop out of its own footer row (/commands lost Commands); it now stays, in full ink. On the legal, warm and record pages the link block moved to the left and &quot;Made with love&quot; with the copyright to the right. /commands was the one page with no trademark notice, so it now closes with the landing&#39;s footer: the links in a ruled tray, then the notice and the sign-off side by side. Contributing and Contributors widen from 950px to 1070px, the same 120px the landing gained. At the foot of /commands the back-to-top button now parks beside the footer links, in the tray&#39;s empty right half, instead of on the corner of the card above (Harkirat, 2026-10-20 16:04 EDT).</li><li><strong>/commands: ask in your own words, and try the command.</strong> Harkirat, 2026-10-20 16:36 EDT. The &quot;Or start from what you want to do&quot; list at the foot of the All commands card is gone; a search field above the chips takes the reader&#39;s issue in plain words (&quot;how much CP am I short&quot;, &quot;best AK117 build&quot;) and answers with the commands that fit, best first. Enter opens the best fit, <code>/</code> jumps to the field from anywhere, and a Try row under it fills three example questions. The old asks are now the search&#39;s training phrases, and the build fails unless each one, and eight other plain-language questions, puts its own command first through the same ranker the page runs. The copy bar now reads as something to try: a Try it tag, a blinking caret at the end of the line, the line typing itself in when a panel opens, a pulse on any option Discord will demand, and a + on each optional one.</li><li><strong>The landing footer sits closer and the disclaimer fits three lines.</strong> The gap above the disclaimer and sign-off is about 13px smaller, and the disclaimer&#39;s measure went from 74ch to 84ch.</li><li><strong>The hover hint no longer sticks after a passing pointer.</strong> <code>pointerout</code> fires before the <code>pointermove</code> of the same movement, so a stale pointer position made the guard think the pointer was still inside and the 700ms timer survived. The timer now re-checks the live position when it fires. Proven with real mouse events against the old and the new build.</li><li><strong>The landing&#39;s command animation repeats less.</strong> Each command deals from its own shuffled bag of options plus a few bare forms, <code>/settings</code> and <code>/help</code> gained real options, and the bare form is a minority (29% of showings for commands that have options, measured over five full cycles with no identical line twice running). The command list itself cannot grow: all sixteen public commands were already in it.</li><li><strong>Whole-number options read &quot;whole number&quot;, not &quot;text&quot;.</strong> <code>normalizeOption</code> carries Discord&#39;s option type, <code>min</code> and <code>max</code>; every type in use is labelled, and a type with no label throws instead of falling back to text. The open <code>build</code> slot says &quot;A whole number, 1 or higher.&quot; rather than repeating its description under itself.</li><li><strong>The wording was re-checked against the command definitions, and the lines that disagreed with the code are fixed.</strong> <code>/help</code>, <code>/gunsmith</code>, <code>/dmz</code>, <code>/draw prices</code>, <code>/draw calculator</code>, <code>/calendar</code>, <code>/season end</code>, <code>/colors</code>, <code>/timestamp</code> and <code>/settings</code> each lost a claim the code did not back, and two ask lines were reworded. The <code>/timestamp</code> example &quot;in 2 hours&quot; is gone because it returns the wrong time on a UTC host. What still needs a person in Discord is listed in the deferred list&#39;s <code>/commands</code> item.</li><li><strong>The copy pass landed.</strong> The page&#39;s blurb and share description are scoped (&quot;Every slash command a player can use&quot;), the home panel has a heading and lead, and the rail and command-line aria-labels say what they do. The group labels and the lede were reviewed and kept.</li><li><strong>Print and the <code>/colors</code> swatch are decided.</strong> No print stylesheet (nobody prints a command list), and the swatch stays a cycling demo (his word: &quot;keep it&quot;). Both are in the deferred list&#39;s Decided-no.</li><li><strong>Two bot-side one-liners.</strong> <code>/gunsmith</code>&#39;s weapon option said &quot;A MP weapon&quot; and now says &quot;An MP weapon&quot; (the registered text changes on the next command registration). <code>/calendar</code>&#39;s empty state pointed at a <code>/settings</code> option removed on 2026-08-15 13:01 EDT and now says &quot;Set <code>view</code> to All Events to see them.&quot;</li><li><strong>The roadmap and the deferred list record Harkirat&#39;s v3 to-do sweep (2026-10-19 22:52 EDT).</strong> &quot;Actual local time&quot; moved to the post-v3.0.0 queue and off the launch checklist; the router-split click-test is ticked, and its deferred-list entry is archived on his &quot;yeah&quot; of 2026-10-20 09:16 EDT (the five <code>/manage</code> short-lived Maps were in what he ran); the <code>/bot analytics</code> phone check is deferred and no longer a launch blocker; the <code>/admin</code> click-test stays open for a later day; the prod catalogue seed and slot fill are marked done; and the &quot;not merged&quot; notes that #207 made stale are corrected.</li><li><strong>Two <code>/timestamp</code> bugs found and filed, not fixed:</strong> it ignores the timezone saved in <code>/settings</code>, and its relative phrases depend on the host&#39;s timezone (measured: &quot;in 2 hours&quot; is +6 h on a UTC host; the prod VM&#39;s timezone is not recorded).</li><li><strong>No new dependency, no schema change, nothing deployed.</strong> The page ships with the v3 deploy.</li></ul>
+<ul><li><strong>The landing header holds Install and Commands, and GitHub is a text link in the footer nav.</strong> Harkirat&#39;s layout, after three mocked placements, one restyle (2026-10-19 23:11 EDT) and a 13-point review (2026-10-20 10:00 EDT). <code>Commands</code> (<code>.cmdb</code>) wears the old GitHub capsule&#39;s look held open: a hairline pill, the label in mono small caps, the border warming and the cursor light following on hover, no mark inside, at Install&#39;s height (34px, 38px on a phone) and with Install&#39;s label. On the document pages it replaced the GitHub capsule in the bar and left the desktop switcher, so the switcher carries six tabs (nine inside <code>/changelog/</code>), its staging was re-measured, and the cursor light no longer stays green over a tab that is not there. GitHub is a footer link in a shared two-row footer nav (the documents, then Commands, GitHub, Install), on every page and in the landing&#39;s tray, where it replaces the &quot;Appearance&quot; label. At 320px the mascot is about 64px wide.</li><li><strong>The review&#39;s other tweaks.</strong> The nav bar is 58px (<code>--bar-h</code>, one source for every sticky offset), the Install button and the light/dark switch are 34px, the landing column is 900px wide, &quot;Roll call&quot; reads &quot;Thank you&quot;, the copyright line&#39;s ink lands on the same right edge as the line above it, the footer&#39;s dot separators drop below 1000px so a folded row never ends on one, and the landing&#39;s link block stacks above the switch on a phone.</li><li><strong>Commands is a filled rail in the bar, and the bar&#39;s spacing is exact.</strong> Harkirat, 2026-10-20 10:45 EDT: the Commands control in the bar takes the switcher&#39;s rail look (a dark groove, one tab, a solid accent pill on hover, focus and on /commands itself), while the landing keeps the hairline capsule. The gaps are 10px between the rails, rail to Commands and Commands to Install, and 14px from Install to the theme switch, measured on the built page. The bar&#39;s staging was re-measured (six tabs: 1007 full, 853 tightened; nine tabs: 1431, 1203, 833) with zero overflow from 1700 down to 981 and the tiers changing at exactly 1029, 1519 and 1309.</li><li><strong>The /commands page&#39;s command chips use the hairline capsule.</strong> No fill, a hairline border, the label brightening on hover, the border warming to the command&#39;s own colour and a cursor light following the pointer. The style is named in the site rule so it can be asked for by name. See the next bullet for the hover, the 34px height and the selected state.</li><li><strong>Commands keeps its own green, the cursor goes dark on its own colour, and the capsules hover like Install.</strong> Harkirat, 2026-10-20 11:53 EDT and 11:57 EDT. The Commands pill in the bar read the page accent (crimson on Notice, amber on Terms); it is now Commands&#39; own green on every page, and the landing capsule&#39;s hover warms to the same green. The liquid cursor over a surface painted in its own colour (the current page&#39;s tab, the Commands pill) now wears the dark ink, as it already did over Install; before, a crimson swarm over the crimson NOTICE tab could not be seen, and a link-default blue leaked in over the Commands pill. The hairline capsule&#39;s hover is Install&#39;s (a 1px lift, a coloured shadow, the edge-light sweep) in its own hue, written once for the landing button and the chips; the /commands chips are 34px tall instead of 31px, and the selected chip keeps the outline, with its border in the command&#39;s full colour and the light held on, instead of a fill.</li><li><strong>The landing Commands button lost its green glow, and a site sweep fixed the Notice page on phones.</strong> Harkirat, 2026-10-20 14:24 EDT: &quot;why does it look like this with the outside glow under it?&quot; Install&#39;s coloured hover shadow reads as the fill&#39;s own depth, but under a hairline pill it read as a green halo, so only the /commands chips keep it. The sweep (every page, both themes, 1440px and 320 to 430px) found the Notice page scrolling sideways on a phone: its Flaticon credits printed raw Markdown, <code>[Andy Horvath](https://…)</code>, run together in one paragraph, and the htm card&#39;s two-line licence spilled its second half, copyright and link into the notes. The credits are now one linked name per line and the licence pill wraps.</li><li><strong>Footers: every link on every page, links left, the sign-off right, and /commands gets the landing&#39;s footer.</strong> Harkirat, 2026-10-20 15:05 to 15:08 EDT. The page you are on used to drop out of its own footer row (/commands lost Commands); it now stays, in full ink. On the legal, warm and record pages the link block moved to the left and &quot;Made with love&quot; with the copyright to the right. /commands was the one page with no trademark notice, so it now closes with the landing&#39;s footer: the links in a ruled tray, then the notice and the sign-off side by side. Contributing and Contributors widen from 950px to 1070px, the same 120px the landing gained. At the foot of /commands the back-to-top button now parks beside the footer links, in the tray&#39;s empty right half, instead of on the corner of the card above (Harkirat, 2026-10-20 16:04 EDT).</li><li><strong>/commands: ask in your own words, and try the command.</strong> Harkirat, 2026-10-20 16:36 EDT. The &quot;Or start from what you want to do&quot; list at the foot of the All commands card is gone; a search field above the chips takes the reader&#39;s issue in plain words (&quot;how much CP am I short&quot;, &quot;best AK117 build&quot;) and answers with the commands that fit, best first. Enter opens the best fit, <code>/</code> jumps to the field from anywhere, and a Try row under it fills three example questions. The old asks are now the search&#39;s training phrases, and the build fails unless each one, and eight other plain-language questions, puts its own command first through the same ranker the page runs. The copy bar now reads as something to try: a Try it tag, a blinking caret at the end of the line, the line typing itself in when a panel opens, a pulse on any option Discord will demand, and a + on each optional one.</li><li><strong>Phones: a menu instead of the sideways page strip, a command picker, and evened-out pills.</strong> Harkirat, 2026-10-20 17:13 EDT. On a phone the pages are behind a menu button where the theme switch was, and the theme switch lives inside the menu; the scrolling strip under the header and its animation are gone, which gives the page about 52px back. On /commands the sideways row of command chips is now one button naming the command you are on, opening every group as a dropdown. Install&#39;s Discord disc, the command chips&#39; dots and the download button&#39;s icon now sit as far from the pill&#39;s end as from its top and bottom; on a phone Install&#39;s disc had been 14px in against 8px.</li><li><strong>The landing footer sits closer and the disclaimer fits three lines.</strong> The gap above the disclaimer and sign-off is about 13px smaller, and the disclaimer&#39;s measure went from 74ch to 84ch.</li><li><strong>The hover hint no longer sticks after a passing pointer.</strong> <code>pointerout</code> fires before the <code>pointermove</code> of the same movement, so a stale pointer position made the guard think the pointer was still inside and the 700ms timer survived. The timer now re-checks the live position when it fires. Proven with real mouse events against the old and the new build.</li><li><strong>The landing&#39;s command animation repeats less.</strong> Each command deals from its own shuffled bag of options plus a few bare forms, <code>/settings</code> and <code>/help</code> gained real options, and the bare form is a minority (29% of showings for commands that have options, measured over five full cycles with no identical line twice running). The command list itself cannot grow: all sixteen public commands were already in it.</li><li><strong>Whole-number options read &quot;whole number&quot;, not &quot;text&quot;.</strong> <code>normalizeOption</code> carries Discord&#39;s option type, <code>min</code> and <code>max</code>; every type in use is labelled, and a type with no label throws instead of falling back to text. The open <code>build</code> slot says &quot;A whole number, 1 or higher.&quot; rather than repeating its description under itself.</li><li><strong>The wording was re-checked against the command definitions, and the lines that disagreed with the code are fixed.</strong> <code>/help</code>, <code>/gunsmith</code>, <code>/dmz</code>, <code>/draw prices</code>, <code>/draw calculator</code>, <code>/calendar</code>, <code>/season end</code>, <code>/colors</code>, <code>/timestamp</code> and <code>/settings</code> each lost a claim the code did not back, and two ask lines were reworded. The <code>/timestamp</code> example &quot;in 2 hours&quot; is gone because it returns the wrong time on a UTC host. What still needs a person in Discord is listed in the deferred list&#39;s <code>/commands</code> item.</li><li><strong>The copy pass landed.</strong> The page&#39;s blurb and share description are scoped (&quot;Every slash command a player can use&quot;), the home panel has a heading and lead, and the rail and command-line aria-labels say what they do. The group labels and the lede were reviewed and kept.</li><li><strong>Print and the <code>/colors</code> swatch are decided.</strong> No print stylesheet (nobody prints a command list), and the swatch stays a cycling demo (his word: &quot;keep it&quot;). Both are in the deferred list&#39;s Decided-no.</li><li><strong>Two bot-side one-liners.</strong> <code>/gunsmith</code>&#39;s weapon option said &quot;A MP weapon&quot; and now says &quot;An MP weapon&quot; (the registered text changes on the next command registration). <code>/calendar</code>&#39;s empty state pointed at a <code>/settings</code> option removed on 2026-08-15 13:01 EDT and now says &quot;Set <code>view</code> to All Events to see them.&quot;</li><li><strong>The roadmap and the deferred list record Harkirat&#39;s v3 to-do sweep (2026-10-19 22:52 EDT).</strong> &quot;Actual local time&quot; moved to the post-v3.0.0 queue and off the launch checklist; the router-split click-test is ticked, and its deferred-list entry is archived on his &quot;yeah&quot; of 2026-10-20 09:16 EDT (the five <code>/manage</code> short-lived Maps were in what he ran); the <code>/bot analytics</code> phone check is deferred and no longer a launch blocker; the <code>/admin</code> click-test stays open for a later day; the prod catalogue seed and slot fill are marked done; and the &quot;not merged&quot; notes that #207 made stale are corrected.</li><li><strong>Two <code>/timestamp</code> bugs found and filed, not fixed:</strong> it ignores the timezone saved in <code>/settings</code>, and its relative phrases depend on the host&#39;s timezone (measured: &quot;in 2 hours&quot; is +6 h on a UTC host; the prod VM&#39;s timezone is not recorded).</li><li><strong>No new dependency, no schema change, nothing deployed.</strong> The page ships with the v3 deploy.</li></ul>
         </div>
       </article>
       <article class="lg-row" data-entry data-rv>
@@ -7901,160 +7774,27 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     addEventListener('resize',function(){ padMeasure(); aim(idx,true); });
   });
 
-  /* ── the mobile strip ─────────────────────────────────────────────────
-     The indicator here is deliberately NOT the desktop morph. There is no
-     hover on a phone, so there is no "moving between two known points" to
-     animate — a tap is a single discrete event. So this clones the reference
-     implementation's choreography instead: particles appear on a WIDE radius
-     and converge INWARD while the pill scales up from nothing, which reads as
-     the shape being assembled rather than moved.
-
-     It plays on PAGE LOAD, not only on tap. Each tab is a real link to a real
-     document, so a tap tears the page down mid-animation and you would never
-     see it; arriving is the moment that has time for it. */
-  var strip=document.getElementById('mstrip'), gw=document.getElementById('mgw');
-  if(strip&&gw){
-    var goo=gw.firstElementChild;
-    var mtabs=[].slice.call(strip.querySelectorAll('.mtab'));
-    var cur=mtabs.indexOf(strip.querySelector('.mtab.on'));
-    if(cur<0) cur=0;
-    var mstill=matchMedia('(prefers-reduced-motion:reduce)').matches;
-    var bar=gw.parentNode;
-
-    function noise(n){ return n/2 - Math.random()*n; }
-    /* One angle per particle, walked outward-to-inward along it — that is what
-       makes the swarm read as converging on a point rather than swirling around
-       one. y is squashed for the clipping reason given in the CSS. */
-    function xy(dist,i,total){
-      var a=((360+noise(8))/total*i)*Math.PI/180;
-      return [dist*Math.cos(a), dist*Math.sin(a)*0.34];
-    }
-
-    /* The indicator lives OUTSIDE the scroller (the blend needs it to), so its
-       x has to be tracked by hand. That is the whole price of keeping
-       mix-blend-mode working, and it is cheaper than the alternative, which is
-       no effect at all.
-       ⚠️ Measured from RECTS, not from offsetLeft minus scrollLeft. The
-       arithmetic version was correct at the instant it ran and wrong 17px later:
-       scroll-snap re-settles the strip after reveal() sets scrollLeft, so the
-       cached scrollLeft was stale before the first paint. A rect difference is
-       whatever is true right now and cannot go stale. */
-    /* ⚠️ ONCE SPENT, STOP TRACKING. The whole reason this element has to be
-       hand-positioned is that it lives outside the scroller so its blend keeps a
-       backdrop — but a retired layer is invisible, so writing a transform to it on
-       every frame of every scroll buys nothing and is precisely the per-frame work
-       that exposed it to iOS's compositor. See the .mgw.spent note in the CSS. */
-    var spentT=null;
-    function follow(){
-      if(gw.classList.contains('spent')) return;
-      var t=mtabs[cur]; if(!t) return;
-      gw.style.transform='translateX('
-        +(t.getBoundingClientRect().left-bar.getBoundingClientRect().left)+'px)';
-    }
-
-    /* Long enough to outlast the whole birth: the pill runs 2s on a .2s delay and
-       the particles 1200±300ms started 350ms in, so everything has landed well
-       before this. Retiring it early would cut the animation off mid-flight. */
-    function retire(){
-      if(spentT) clearTimeout(spentT);
-      spentT=setTimeout(function(){ gw.classList.add('spent'); },2600);
-    }
-
-    /* ⚠️ ONLY AN ANIMATED PLACEMENT MAY BRING THE LAYER BACK, AND THIS IS THE
-       WHOLE BUG. Retiring it after the birth was correct and did nothing, because
-       place() un-retired it on every call and the RESIZE handler calls place() —
-       and iOS fires resize every time the URL bar shows or hides, which is on
-       every scroll. So the layer was resurrected continuously while scrolling and
-       hid itself again about 2.6s after the last gesture: reported exactly as
-       "it disappears once I stop touching the screen, then reappears as I begin
-       scrolling again".
-       A resize only needs the geometry to follow the tab; it is not an arrival and
-       has nothing to animate, so it must not resurrect a layer whose animation is
-       long over. */
-    function place(i,animate){
-      var t=mtabs[i]; if(!t) return;
-      if(animate){
-        if(spentT) clearTimeout(spentT);
-        gw.classList.remove('spent');
-      }
-      cur=i; follow();
-      gw.style.width=t.offsetWidth+'px';
-      gw.style.top=t.offsetTop+'px';
-      gw.style.height=t.offsetHeight+'px';
-      gw.style.setProperty('--row',t.style.getPropertyValue('--row'));
-      if(!animate||mstill){ goo.classList.add('on'); retire(); return; }
-      /* Clear, reflow, spray, THEN arm the pill on the next frame. Painting the
-         pill first and re-animating it a moment later is what made the old
-         version look glitchy: you saw the pill, saw it vanish, saw it grow. */
-      goo.classList.remove('on');
-      [].slice.call(goo.querySelectorAll('.mpt')).forEach(function(n){ n.remove(); });
-      /* The forced reflow is what restarts the animation, and it is enough on
-         its own. Arming the pill inside requestAnimationFrame instead looked
-         equivalent and was not: rAF does not run in a backgrounded tab, so a
-         page loaded in one came forward with no indicator at all. Nothing here
-         needs to wait for a frame. */
-      void goo.offsetWidth;
-      spray();
-      goo.classList.add('on');
-      retire();
-    }
-
-    function spray(){
-      var N=15;
-      for(var i=0;i<N;i++){
-        (function(i){
-          var t=Math.round(1200+noise(600));
-          var a=xy(90,N-i,N), b=xy(10+noise(7),N-i,N);
-          var rot=noise(10); rot = rot>0 ? (rot+5)*10 : (rot-5)*10;
-          var el=document.createElement('i'); el.className='mpt';
-          var dot=document.createElement('b'); dot.className='mpd';
-          /* White, always. The wrapper's filter is what puts the accent back —
-             a coloured particle would be crushed to a primary by contrast(20)
-             long before anyone saw the colour. */
-          el.style.cssText='--sx:'+a[0].toFixed(1)+'px;--sy:'+a[1].toFixed(1)+'px;'
-            +'--ex:'+b[0].toFixed(1)+'px;--ey:'+b[1].toFixed(1)+'px;'
-            +'--rot:'+rot.toFixed(0)+'deg;--sc:'+(1+noise(0.2)).toFixed(2)+';'
-            +'--t:'+t+'ms';
-          el.appendChild(dot); goo.appendChild(el);
-          setTimeout(function(){ el.remove(); },t);
-        })(i);
-      }
-    }
-
-    /* Keep where you are on screen without yanking the page around it. */
-    function reveal(){
-      var t=mtabs[cur]; if(!t) return;
-      strip.scrollLeft = Math.max(0, t.offsetLeft + t.offsetWidth/2 - strip.clientWidth/2);
-    }
-    function live(){ return getComputedStyle(strip).display!=='none'; }
-
-    /* Listener FIRST: reveal() scrolls the strip, and a listener attached after
-       that has already missed the event it exists for. The two timers catch the
-       snap settling afterwards — deliberately timers and not rAF, because rAF
-       does not run in a backgrounded tab and this has to be right when the tab
-       is first looked at, not when it is first painted. */
-    strip.addEventListener('scroll',follow,{passive:true});
-    if(live()){
-      reveal(); place(cur,true);
-      setTimeout(follow,0); setTimeout(follow,160);
-    }
-    /* ⚠️ WIDTH, NOT "resize". On iOS the URL bar collapsing and expanding fires
-       resize on almost every scroll, with the width unchanged — nothing about this
-       strip's layout depends on viewport HEIGHT, so those events are pure noise
-       that was re-running reveal() and place() continuously mid-gesture. Comparing
-       the width ignores them and leaves a real orientation change or window resize
-       handled exactly as before. */
-    var lastW=innerWidth;
-    addEventListener('resize',function(){
-      if(innerWidth===lastW) return;
-      lastW=innerWidth;
-      if(live()){ reveal(); place(cur,false); }
+  /* ── the phone menu ───────────────────────────────────────────────────
+     See barMenu(). The panel is a plain list of links, so a tap on a page is an
+     ordinary navigation; this only opens and closes it. It closes on the button, on
+     the scrim, on Escape, and when the viewport grows past the phone layout, where
+     the panel stops being a box and an "open" state would be invisible. */
+  var hb=document.getElementById('hmb'), hp=document.getElementById('hmb-p'), hs=document.getElementById('hmb-s');
+  if(hb&&hp){
+    var setMenu=function(on){
+      hp.classList.toggle('open',on); if(hs) hs.classList.toggle('open',on);
+      hb.setAttribute('aria-expanded',on?'true':'false');
+      hb.setAttribute('aria-label',on?'Close menu':'Menu');
+    };
+    hb.addEventListener('click',function(){ setMenu(!hp.classList.contains('open')); });
+    if(hs) hs.addEventListener('click',function(){ setMenu(false); });
+    addEventListener('keydown',function(e){
+      if(e.key==='Escape'&&hp.classList.contains('open')){ setMenu(false); hb.focus(); }
     });
-    /* A tap moves the indicator immediately even though the page is about to be
-       replaced: on a slow connection that is the only feedback the tap landed. */
-    mtabs.forEach(function(a,i){
-      a.addEventListener('click',function(){ cur=i; place(i,true); });
-    });
+    var wideMq=matchMedia('(min-width:981px)');
+    var onWide=function(){ if(wideMq.matches) setMenu(false); };
+    if(wideMq.addEventListener) wideMq.addEventListener('change',onWide);
+    else if(wideMq.addListener) wideMq.addListener(onWide);
   }
 
   /* ── the section disclosure ───────────────────────────────────────────

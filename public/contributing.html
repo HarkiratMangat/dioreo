@@ -227,12 +227,16 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    height as Commands and the theme switch; it was 37px. *//* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
    same number as the right. The pill is 34px tall, so its cap radius is 17px;
    the Discord disc is 22px, radius 11px. A disc reads as sitting concentrically
-   inside a cap only when the gap equals the difference — 6px, which is .375rem.
-   (It was .47rem at the old 37px.) The right side keeps more room because it
-   ends in a text run's terminal, not a circle. */
+   inside a cap only when the gap from the OUTER edge equals the difference — 6px.
+   ⚠️ That 6px includes the 1px border, so the padding is 5px. It was .375rem (6px)
+   and measured 7px from the edge, and on a phone, where the pill is 38px and the rule
+   below set .82rem, the disc sat 14px in against an ideal 8px: the lopsided gap
+   Harkirat saw (2026-10-20 17:13 EDT). Rule of thumb for any pill with a leading
+   circle: padding-left = (pill height − circle size) / 2 − border.
+   The right side keeps more room because it ends in a text run, not a circle. */
 
 
-.ins{height:34px;font-weight:700;letter-spacing:.14em;padding-inline:.375rem .85rem}
+.ins{height:34px;font-weight:700;letter-spacing:.14em;padding-inline:5px .85rem}
 .ins .ins-t{font-size:.7rem;font-weight:800}
 .ins-ic{position:relative;z-index:2;display:grid;place-items:center;
   width:22px;height:22px;flex:0 0 22px;border-radius:50%;
@@ -384,8 +388,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      install link, and the word is what says so. It is 38px tall here and 34px on
      a desktop, because on a phone it is a thumb target. */
   
-  .bar .cmdb,.bar .cmdr{display:none}
-  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
+  .bar .cmdb,.bar .cmdr{display:none}/* (38 − 22) / 2 − 1 = 7px on the left: see the concentric-gap note on .ins above. */
+  
+  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem 0 7px;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
   .ins-ar{display:none}/* Commands follows Install on a phone too: its height (38px), its horizontal padding and its label tracking (.11em on the label, as .ins-t above). ⚠️ IT COPIES WHAT INSTALL RENDERS, NOT WHAT THE RULE ABOVE SAYS: .ins-t's font-size:.6rem is beaten by the base rule for .ins .ins-t, which sets .7rem (higher specificity), so Install's label is still .7rem on a phone and only its .11em tracking lands. The first fix followed the rule and set Commands to .6rem, which left it visibly smaller than Install (measured 9.6px against 11.2px). Making Install .6rem would shrink a live button and is its own change. The right padding gives up .077rem, the .11em tracking on a .7rem label, so the word sits centred. */
@@ -1471,10 +1476,21 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 }/* Desktop shows no mobile menu. */
 
 
-.mnav{display:none}/* ── mobile navigation: a swipeable strip ─────────────────────────────
-   Every page in one scrollable row, nothing to open. The three previous
-   attempts (two-tab rail, bottom sheet, disclosure) all put the answer to
-   "where am I and what else is there" behind a tap; this states it.
+.mnav{display:none}/* ── the phone menu (barMenu) ─────────────────────────────────────────
+   On a desktop the panel and its theme row dissolve into the bar (display:contents)
+   so the theme switch sits where it always has; the button, the page list, the label
+   and the scrim are not drawn. */
+
+
+.hmb{display:none}
+.hmb-p,.hmb-th{display:contents}
+.hmb-list,.hmb-thl,.hmb-s{display:none}/* ── mobile navigation ─────────────────────────────────────────────────
+   ⚠️ THE SWIPEABLE PAGE STRIP THAT LIVED HERE IS RETIRED (2026-10-20 17:13 EDT).
+   Harkirat: sideways scrolling was "kind of very like odd to maneuver", and its band
+   chewed into the reading space. It stated "where am I" without a tap, which is why
+   it replaced a two-tab rail, a bottom sheet and a disclosure; the menu answers that
+   with the current page marked inside it, and the page title is the first thing on
+   the page anyway. Its metaball indicator went with it.
 
    No hover rules live in here AT ALL. On touch a :hover latches until you tap
    something else, which is what made every earlier version feel stuck. Touch
@@ -1491,205 +1507,63 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .mk-ctx i{flex:0 0 auto;width:5px;height:5px;border-radius:50%;
     background:var(--accent)}
-  .mnav{display:block;position:sticky;top:var(--bar-h,58px);z-index:40}/* ⚠️ THE BAR AND THE SCROLLER ARE TWO ELEMENTS, AND THEY HAVE TO STAY APART.
-     The indicator below is a metaball layer: it paints an opaque black bed and
-     erases the bed with mix-blend-mode. A blend needs two things a scroller
-     cannot give it — an OPAQUE backdrop to blend against, and no scroll
-     container between it and that backdrop. Put the layer inside the strip and
-     the blend is dropped and you get a black rectangle instead; that was
-     measured in the prototype before it was measured here.
-     The background is OPAQUE on purpose. It used to be color-mix(paper 96%)
-     with a backdrop-filter, and the blend formula weights the source by
-     (1 - backdrop alpha), so a 4%-transparent backdrop is a 4% black wash
-     across the whole bar. Deterministic beats pretty here.
-     overflow:hidden clips the swarm to the bar, which is also deliberate — see
-     the y-squash note on the particles. */
+  .mnav{display:block;position:sticky;top:var(--bar-h,58px);z-index:40}/* The menu button takes the theme switch's place and the theme switch's height
+     on a phone bar (38px, like Install there), as a hairline capsule. */
 
   
-  .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
-    background:var(--paper);
-    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
-     a no-op for momentum since iOS 13 made smooth scrolling the default; the only
-     effect it still has is forcing this scroller onto its own composited layer,
-     which is the other half of the blend failure described above. Removing an
-     obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
+  .hmb{display:inline-grid;place-items:center;flex:0 0 auto;width:48px;height:38px;padding:0;
+    -webkit-appearance:none;appearance:none;cursor:pointer;color:var(--ink);
+    border-radius:999px;border:1px solid var(--rule2);background:none;
+    transition:border-color .2s,background .2s}
+  .hmb:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+  .hmb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .hmb[aria-expanded=true]{border-color:var(--accent)}/* Between 621 and 980 the bar's controls are 34px (Install shrinks to 38px only below 621), so the button matches them. */
   
-  .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
-    flex:1 1 auto;min-width:0;
-    overflow-x:auto;overscroll-behavior-x:contain;
-    scroll-snap-type:x proximity;
-    padding:.5rem .75rem;
-    scrollbar-width:none}
-  .mstrip::-webkit-scrollbar{display:none}
-
-  .mtab{position:relative;z-index:1;flex:0 0 auto;scroll-snap-align:center;
-    display:flex;align-items:center;min-height:44px;padding:0 .8rem;
-    border-radius:999px;text-decoration:none;
-    font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--ink2);
-    transition:color .28s ease}/* Same inversion the desktop pill uses, and measured the same way: a solid
-     accent is far too light to carry accent-coloured text, and near-black on
-     the six accents bottoms out at 5.07 which clears AA. */
-  
-  .mtab.on{color:#120E1C;font-weight:700}/* The crisp resting pill. The goo layer draws a pill of its own — that is what
-     the particles fuse into — but thresholding a blurred stadium erodes its caps
-     a little, and this is the shape you are left looking at for the rest of the
-     page. Same box, same colour, painted unfiltered on top, so the fluid reads
-     as assembling into it rather than as a second object. *//* inset 4px, not 0: the tap target stays the full 44px the guideline asks
-     for, but the pill you actually see is 36px. Filling the target edge to edge
-     made the indicator read as a block rather than a marker. */
-  
-  
-  .mtab::after{content:"";position:absolute;inset:4px 0;z-index:-1;border-radius:999px;
-    background:var(--row);scale:0;opacity:0}
-  .mtab.on::after{animation:mgPill 2s var(--spring) .2s both}
-  .mtab:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
-  .ms-sep{flex:0 0 1px;align-self:center;height:20px;background:var(--rule2);
-    margin:0 .3rem}/* ── the indicator: a metaball layer ──────────────────────────────────
-     Two elements and two SHORT filter chains, and they cannot be merged. .mgo
-     blurs a field of white discs and crushes it to a hard two-tone image;
-     .mgw recolours the finished result. Written as one seven-function chain on
-     one element, iOS applied the blur and the contrast and silently DROPPED the
-     four colour functions after them — the fluid came out white while the tab's
-     own pill, which is never filtered, stayed accent-coloured. That is what the
-     split buys.
-     There is no SVG filter here, also deliberately. An SVG filter's region is a
-     percentage of the element's box; the swarm spawns at radius 90 around a box
-     about 90x44, and everything outside the region paints UNFILTERED — which is
-     exactly what made the particles read as hard circles instead of liquid.
-     Chrome expands the region to cover overflow, Safari honours what you wrote.
-     A CSS chain has no region at all. */
+  @media (min-width:621px){ .hmb{height:34px;width:44px} }
+  .hmb-i{position:relative;display:block;width:18px;height:12px}
+  .hmb-i i{position:absolute;left:0;right:0;height:2px;border-radius:2px;background:currentColor;
+    transition:transform .26s cubic-bezier(.2,.8,.2,1),opacity .18s}
+  .hmb-i i:nth-child(1){top:0}
+  .hmb-i i:nth-child(2){top:5px}
+  .hmb-i i:nth-child(3){top:10px}
+  .hmb[aria-expanded=true] .hmb-i i:nth-child(1){transform:translateY(5px) rotate(45deg)}
+  .hmb[aria-expanded=true] .hmb-i i:nth-child(2){opacity:0}
+  .hmb[aria-expanded=true] .hmb-i i:nth-child(3){transform:translateY(-5px) rotate(-45deg)}/* The panel drops from under the bar and scrolls on its own if a short phone
+     cannot hold it. It is a box only here; see the desktop rules above. */
 
   
-  .mgw{position:absolute;left:0;top:0;width:0;height:0;z-index:0;
-    pointer-events:none;mix-blend-mode:lighten}/* ⚠️ THE LIQUID LAYER IS RETIRED ONCE ITS BIRTH IS OVER, AND THAT IS THE FIX
-     FOR THE SCROLL ARTIFACT — not a compositing hint, which was tried first and
-     did nothing. This layer exists to play ONE animation on arrival: particles
-     converge and fuse into a pill. What you look at for the rest of the page is
-     .mtab.on::after, a crisp unfiltered pill painted by the tab itself, and the
-     alpha crush ERODES the goo pill's caps, so the filtered shape sits strictly
-     inside the crisp one and removing it changes nothing you can see.
-     Leaving it alive meant a filtered, blended, per-frame-transformed layer lived
-     inside a position:sticky header for the life of the page. A blend needs its
-     backdrop rasterised in the same layer, and iOS re-layers exactly this kind of
-     element during a scroll gesture — at which point the bed has nothing to be
-     erased against and paints raw: a black rectangle in dark mode, and in light
-     mode the inverted white bed plus the accent plate, which is why it came out
-     yellow behind Contributors. A layer that is not on screen cannot be
-     mis-composited, so the artifact has no surface to appear on.
-     ⚠️ display:none, NOT opacity:0 AND NOT visibility:hidden. Both of those leave
-     the element in the layer tree, and iOS keeps compositing a mix-blend-mode
-     element that is merely invisible. This is a hardening, NOT the fix for the
-     light-mode artefact — that one was the filter chain and is fixed at source by
-     the --goo-bed/--goo-ink swap below. Keeping the two straight matters: while
-     the light chain was still wrong, the visibility version read as clean in dark
-     and broken in light, which is easy to misread as "hiding it works in one theme
-     and not the other" when the layer being hidden was never the problem.
-     No transition either: fading a blended layer means 240ms of it compositing at
-     partial opacity, which is the state being eliminated. The snap is invisible
-     regardless — .mtab.on::after is the same pill in the same place, unfiltered,
-     and the alpha crush erodes the goo pill strictly inside it. */
+  .hmb-p{display:none;position:fixed;left:0;right:0;top:var(--bar-h,58px);z-index:70;
+    max-height:calc(100dvh - var(--bar-h,58px));overflow-y:auto;overscroll-behavior:contain;
+    padding:.35rem .9rem 1.05rem;background:var(--paper);
+    border-bottom:1px solid var(--rule);box-shadow:0 22px 40px -22px rgba(0,0,0,.55)}
+  .hmb-p.open{display:block}/* ⚠️ A HEIGHT, NOT bottom:0. The bar's backdrop-filter makes IT the containing block
+     for these fixed elements, so bottom:0 meant the bar's own bottom edge and the scrim
+     came out 0px tall: taps outside the menu went straight through it. */
   
-  .mgw.spent{display:none}
-  .mgo{position:absolute;inset:0;filter:blur(7px) contrast(20) blur(0)}/* The bed. contrast() thresholds colour, not alpha, so the discs need
-     something opaque behind them or there is nothing to threshold. Black,
-     and large: the plate below has to sit entirely within the bed's OPAQUE
-     core, and blur(7px) softens the bed's own edge over about 21px. */
+  .hmb-s{position:fixed;left:0;right:0;top:var(--bar-h,58px);height:100dvh;z-index:69;
+    background:rgba(8,6,14,.42)}
+  .hmb-s.open{display:block}
+  .hmb-list{display:block}
+  .hmb-h{margin:.8rem 0 .35rem .15rem;font-family:var(--mono);font-size:.58rem;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+  .hmb-g{display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
+  .hmb-g:has(> :only-child){grid-template-columns:1fr}/* Each page keeps its own colour as a dot, the way the strip's pills did, and the
+     page you are on is outlined and washed in it. No hover rules: on touch a hover
+     latches, which is what made earlier phone menus feel stuck. */
   
-  .mgo::before{content:"";position:absolute;inset:-110px;z-index:-2;background:var(--goo-bed)}
-  .mgo::after{content:"";position:absolute;inset:4px 0;z-index:-1;background:var(--goo-ink);
-    border-radius:100vw;scale:0;opacity:0}
-  .mgo.on::after{animation:mgPill 2s var(--spring) .2s both}
-  @keyframes mgPill{to{scale:1;opacity:1}}/* ⚠️ THE COLOUR IS A BLEND, NOT A FILTER — and that is the second attempt.
-     The first recoloured the crushed white image with a fitted
-     sepia/saturate/hue-rotate/brightness chain. Composed on paper it lands every
-     accent exactly; rendered, it does not, and the error is large enough to see
-     (a difference-blend test against the true accent glowed on four of the six).
-     Filter chains clamp somewhere the arithmetic does not model, so the whole
-     approach was fitting a curve to a function nobody has the real form of.
-     A blend needs no model. multiply(white, accent) IS accent and
-     multiply(black, accent) IS black, exactly, for every accent that will ever
-     exist — so a plain accent plate multiplied over the crushed image colours
-     the blobs and leaves the bed alone. .mgw carries mix-blend-mode, which makes
-     it a stacking context, which makes it an isolation group: the plate blends
-     with the goo INSIDE it and the finished group blends with the bar outside.
-     The one trap, and the reason an earlier attempt at this was abandoned: the
-     plate must stay inside the bed's opaque core. Blending against a
-     partly-transparent backdrop leaves the plate's own colour showing, which
-     reads as an accent-coloured square around the whole effect. -80 inside
-     -110 is well clear of the blurred edge. */
-
-  
-  .mtint{position:absolute;inset:-80px;z-index:1;background:var(--row);
-    mix-blend-mode:multiply;pointer-events:none}/* ⚠️ LIGHT MODE IS THE SAME TRICK READ UPSIDE DOWN, AND IT INVERTS THE SOURCE,
-     NEVER THE RESULT.
-     lighten erases the black bed only because the backdrop is darker than the
-     blobs. On near-white paper it would erase the BLOBS instead and the bar would
-     stay empty, so light needs the mirror image: a WHITE bed, which is the identity
-     for multiply, blobs in black, and the plate on screen — screen(white, accent)
-     is white and screen(black, accent) is accent, exactly as multiply's identities
-     run the other way.
-     ⛔ THE OBVIOUS WAY TO GET THERE IS invert(1) ON THE FILTER, AND IT MUST NOT
-     COME BACK. That is what shipped first, and on iOS it painted the ACCENT PLATE
-     inverted — a lime rectangle across the bar on the violet License page
-     (invert(#9B6BE3) is #64941C), yellow on citron Contributors. The plate is a
-     SIBLING of the filtered element, so a filter reaching it at all means the light
-     chain composites wrongly, not merely blends wrongly; the same file already
-     records iOS silently dropping colour functions after blur+contrast on this very
-     element. Three attempts to fix it downstream — removing the scroller's
-     compositing hint, promoting the bar, retiring the layer — each moved WHEN the
-     artefact appeared without removing it, and suppressing the effect outright
-     removed the animation Harkirat actually wanted.
-     Swapping the SOURCE colours needs no fourth filter function: the discs, the
-     bed and the pill plate come from --goo-ink and --goo-bed, which the theme
-     already flips. Both themes now run the identical three-function chain, so there
-     is no light-only filter left to render differently. */
-
-  
-  :root[data-theme=light] .mgw{mix-blend-mode:multiply}
-  :root[data-theme=light] .mtint{mix-blend-mode:screen}
-  @media (prefers-color-scheme:light){
-    :root:not([data-theme=dark]) .mgw{mix-blend-mode:multiply}
-    :root:not([data-theme=dark]) .mtint{mix-blend-mode:screen}
-  }/* Particle geometry is the reference implementation's, unchanged: fifteen
-     20px discs spawning on a radius of 90 and converging INWARD to 10, each
-     running 1200±300ms and started 350ms in so they are already mid-flight on
-     the first frame. Two nested elements because the travel and the swelling
-     need different timing functions and one element carries only one.
-     The single deviation is the y squash. .mbar has to clip (an unclipped bed
-     paints black wherever there is no opaque backdrop under it), and a circular
-     radius-90 swarm in a 60px bar would spend most of its flight outside the
-     clip. Squashing y keeps the whole swarm on screen; x is untouched, and x is
-     the axis the pill actually grows along. */
-
-  
-  .mpt{position:absolute;top:calc(50% - 8px);left:calc(50% - 8px);
-    display:block;width:20px;height:20px;border-radius:100%;opacity:0;
-    transform-origin:center;animation:mptFly var(--t) ease 1 -350ms}
-  .mpd{display:block;width:20px;height:20px;border-radius:100%;
-    background:var(--goo-ink);opacity:1;transform-origin:center;
-    animation:mptPop var(--t) ease 1 -350ms}
-  @keyframes mptFly{
-    0%{transform:rotate(0deg) translate(var(--sx),var(--sy));opacity:1;
-      animation-timing-function:cubic-bezier(.55,0,1,.45)}
-    70%{transform:rotate(calc(var(--rot) * .5)) translate(calc(var(--ex) * 1.2),calc(var(--ey) * 1.2));
-      opacity:1;animation-timing-function:ease}
-    85%{transform:rotate(calc(var(--rot) * .66)) translate(var(--ex),var(--ey));opacity:1}
-    100%{transform:rotate(calc(var(--rot) * 1.2)) translate(calc(var(--ex) * .5),calc(var(--ey) * .5));
-      opacity:1}
-  }
-  @keyframes mptPop{
-    0%{scale:0;opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}
-    25%{scale:calc(var(--sc) * .25)}
-    38%{opacity:1}
-    65%{scale:var(--sc);opacity:1;animation-timing-function:ease}
-    85%{scale:var(--sc);opacity:1}
-    100%{scale:0;opacity:0}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .mgo.on::after,.mtab.on::after{animation:none;scale:1;opacity:1}
-    .mpt{display:none}
-  }/* The section index is no longer in a menu with the pages — it is not the
+  .hmb-a{display:flex;align-items:center;gap:.6rem;min-height:46px;padding:0 .85rem;
+    border-radius:12px;border:1px solid var(--rule);text-decoration:none;
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink2)}
+  .hmb-a i{flex:0 0 auto;width:7px;height:7px;border-radius:50%;background:var(--row)}
+  .hmb-a[aria-current]{color:var(--ink);font-weight:700;border-color:var(--row);
+    background:color-mix(in srgb,var(--row) 13%,transparent)}
+  .hmb-a:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+  .hmb-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .hmb-th{display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    margin-top:1rem;padding:.85rem .15rem 0;border-top:1px solid var(--rule)}
+  .hmb-thl{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink2)}/* The section index is no longer in a menu with the pages — it is not the
      same question. It sits with the document it indexes, closed by default. */
 
   
@@ -2224,7 +2098,7 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 
 
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
-@media print{.bar,.thm,.ins,.cmdb,.cmdr,.cpy,.node,.mnav{display:none!important}
+@media print{.bar,.thm,.ins,.cmdb,.cmdr,.cpy,.node,.mnav,.hmb,.hmb-p,.hmb-s{display:none!important}
   body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}
   .plate,.opt,.prom,.slip,.ldg{box-shadow:none;animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -2316,7 +2190,10 @@ html{scroll-behavior:smooth}
   <span class="ins-t">Install</span>
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
-    <button id="th" class="thm " role="switch"
+    <button type="button" class="hmb" id="hmb" aria-expanded="false" aria-controls="hmb-p" aria-label="Menu"><span class="hmb-i" aria-hidden="true"><i></i><i></i><i></i></span></button>
+    <div class="hmb-p" id="hmb-p">
+      <div class="hmb-list" role="navigation" aria-label="Pages"><p class="hmb-h">Use</p><div class="hmb-g"><a class="hmb-a" href="./commands.html" style="--row:#58D05A"><i aria-hidden="true"></i>Commands</a></div><p class="hmb-h">Documents</p><div class="hmb-g"><a class="hmb-a" href="./terms.html" style="--row:#F2994A"><i aria-hidden="true"></i>Terms</a><a class="hmb-a" href="./privacy.html" style="--row:#17A2A2"><i aria-hidden="true"></i>Privacy</a><a class="hmb-a" href="./license.html" style="--row:#9B6BE3"><i aria-hidden="true"></i>License</a><a class="hmb-a" href="./notice.html" style="--row:#FF5264"><i aria-hidden="true"></i>Notice</a></div><p class="hmb-h">Community</p><div class="hmb-g"><a class="hmb-a" href="./contributing.html" aria-current="page" style="--row:#8B9BFF"><i aria-hidden="true"></i>Contributing</a><a class="hmb-a" href="./contributors.html" style="--row:#F8FF4A"><i aria-hidden="true"></i>Contributors</a></div></div>
+      <div class="hmb-th"><span class="hmb-thl">Light or dark</span><button id="th" class="thm " role="switch"
   aria-checked="false" aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
@@ -2359,17 +2236,13 @@ html{scroll-behavior:smooth}
       </svg>
     </span>
   </span>
-</button>
+</button></div>
+    </div>
+    <div class="hmb-s" id="hmb-s" aria-hidden="true"></div>
   </nav>
 </div>
 
 <aside class="mnav" id="mnav">
-  <div class="mbar">
-    <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
-    <nav class="mstrip" id="mstrip" aria-label="Pages">
-      <a class="mtab" href="./commands.html" style="--row:#58D05A">Commands</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab" href="./notice.html" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab on" href="./contributing.html" aria-current="page" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#F8FF4A">Contributors</a>
-    </nav>
-  </div>
   
 </aside>
 <div class="wrap">
@@ -3190,160 +3063,27 @@ NODE_ENV=development</code></pre></div>
     addEventListener('resize',function(){ padMeasure(); aim(idx,true); });
   });
 
-  /* ── the mobile strip ─────────────────────────────────────────────────
-     The indicator here is deliberately NOT the desktop morph. There is no
-     hover on a phone, so there is no "moving between two known points" to
-     animate — a tap is a single discrete event. So this clones the reference
-     implementation's choreography instead: particles appear on a WIDE radius
-     and converge INWARD while the pill scales up from nothing, which reads as
-     the shape being assembled rather than moved.
-
-     It plays on PAGE LOAD, not only on tap. Each tab is a real link to a real
-     document, so a tap tears the page down mid-animation and you would never
-     see it; arriving is the moment that has time for it. */
-  var strip=document.getElementById('mstrip'), gw=document.getElementById('mgw');
-  if(strip&&gw){
-    var goo=gw.firstElementChild;
-    var mtabs=[].slice.call(strip.querySelectorAll('.mtab'));
-    var cur=mtabs.indexOf(strip.querySelector('.mtab.on'));
-    if(cur<0) cur=0;
-    var mstill=matchMedia('(prefers-reduced-motion:reduce)').matches;
-    var bar=gw.parentNode;
-
-    function noise(n){ return n/2 - Math.random()*n; }
-    /* One angle per particle, walked outward-to-inward along it — that is what
-       makes the swarm read as converging on a point rather than swirling around
-       one. y is squashed for the clipping reason given in the CSS. */
-    function xy(dist,i,total){
-      var a=((360+noise(8))/total*i)*Math.PI/180;
-      return [dist*Math.cos(a), dist*Math.sin(a)*0.34];
-    }
-
-    /* The indicator lives OUTSIDE the scroller (the blend needs it to), so its
-       x has to be tracked by hand. That is the whole price of keeping
-       mix-blend-mode working, and it is cheaper than the alternative, which is
-       no effect at all.
-       ⚠️ Measured from RECTS, not from offsetLeft minus scrollLeft. The
-       arithmetic version was correct at the instant it ran and wrong 17px later:
-       scroll-snap re-settles the strip after reveal() sets scrollLeft, so the
-       cached scrollLeft was stale before the first paint. A rect difference is
-       whatever is true right now and cannot go stale. */
-    /* ⚠️ ONCE SPENT, STOP TRACKING. The whole reason this element has to be
-       hand-positioned is that it lives outside the scroller so its blend keeps a
-       backdrop — but a retired layer is invisible, so writing a transform to it on
-       every frame of every scroll buys nothing and is precisely the per-frame work
-       that exposed it to iOS's compositor. See the .mgw.spent note in the CSS. */
-    var spentT=null;
-    function follow(){
-      if(gw.classList.contains('spent')) return;
-      var t=mtabs[cur]; if(!t) return;
-      gw.style.transform='translateX('
-        +(t.getBoundingClientRect().left-bar.getBoundingClientRect().left)+'px)';
-    }
-
-    /* Long enough to outlast the whole birth: the pill runs 2s on a .2s delay and
-       the particles 1200±300ms started 350ms in, so everything has landed well
-       before this. Retiring it early would cut the animation off mid-flight. */
-    function retire(){
-      if(spentT) clearTimeout(spentT);
-      spentT=setTimeout(function(){ gw.classList.add('spent'); },2600);
-    }
-
-    /* ⚠️ ONLY AN ANIMATED PLACEMENT MAY BRING THE LAYER BACK, AND THIS IS THE
-       WHOLE BUG. Retiring it after the birth was correct and did nothing, because
-       place() un-retired it on every call and the RESIZE handler calls place() —
-       and iOS fires resize every time the URL bar shows or hides, which is on
-       every scroll. So the layer was resurrected continuously while scrolling and
-       hid itself again about 2.6s after the last gesture: reported exactly as
-       "it disappears once I stop touching the screen, then reappears as I begin
-       scrolling again".
-       A resize only needs the geometry to follow the tab; it is not an arrival and
-       has nothing to animate, so it must not resurrect a layer whose animation is
-       long over. */
-    function place(i,animate){
-      var t=mtabs[i]; if(!t) return;
-      if(animate){
-        if(spentT) clearTimeout(spentT);
-        gw.classList.remove('spent');
-      }
-      cur=i; follow();
-      gw.style.width=t.offsetWidth+'px';
-      gw.style.top=t.offsetTop+'px';
-      gw.style.height=t.offsetHeight+'px';
-      gw.style.setProperty('--row',t.style.getPropertyValue('--row'));
-      if(!animate||mstill){ goo.classList.add('on'); retire(); return; }
-      /* Clear, reflow, spray, THEN arm the pill on the next frame. Painting the
-         pill first and re-animating it a moment later is what made the old
-         version look glitchy: you saw the pill, saw it vanish, saw it grow. */
-      goo.classList.remove('on');
-      [].slice.call(goo.querySelectorAll('.mpt')).forEach(function(n){ n.remove(); });
-      /* The forced reflow is what restarts the animation, and it is enough on
-         its own. Arming the pill inside requestAnimationFrame instead looked
-         equivalent and was not: rAF does not run in a backgrounded tab, so a
-         page loaded in one came forward with no indicator at all. Nothing here
-         needs to wait for a frame. */
-      void goo.offsetWidth;
-      spray();
-      goo.classList.add('on');
-      retire();
-    }
-
-    function spray(){
-      var N=15;
-      for(var i=0;i<N;i++){
-        (function(i){
-          var t=Math.round(1200+noise(600));
-          var a=xy(90,N-i,N), b=xy(10+noise(7),N-i,N);
-          var rot=noise(10); rot = rot>0 ? (rot+5)*10 : (rot-5)*10;
-          var el=document.createElement('i'); el.className='mpt';
-          var dot=document.createElement('b'); dot.className='mpd';
-          /* White, always. The wrapper's filter is what puts the accent back —
-             a coloured particle would be crushed to a primary by contrast(20)
-             long before anyone saw the colour. */
-          el.style.cssText='--sx:'+a[0].toFixed(1)+'px;--sy:'+a[1].toFixed(1)+'px;'
-            +'--ex:'+b[0].toFixed(1)+'px;--ey:'+b[1].toFixed(1)+'px;'
-            +'--rot:'+rot.toFixed(0)+'deg;--sc:'+(1+noise(0.2)).toFixed(2)+';'
-            +'--t:'+t+'ms';
-          el.appendChild(dot); goo.appendChild(el);
-          setTimeout(function(){ el.remove(); },t);
-        })(i);
-      }
-    }
-
-    /* Keep where you are on screen without yanking the page around it. */
-    function reveal(){
-      var t=mtabs[cur]; if(!t) return;
-      strip.scrollLeft = Math.max(0, t.offsetLeft + t.offsetWidth/2 - strip.clientWidth/2);
-    }
-    function live(){ return getComputedStyle(strip).display!=='none'; }
-
-    /* Listener FIRST: reveal() scrolls the strip, and a listener attached after
-       that has already missed the event it exists for. The two timers catch the
-       snap settling afterwards — deliberately timers and not rAF, because rAF
-       does not run in a backgrounded tab and this has to be right when the tab
-       is first looked at, not when it is first painted. */
-    strip.addEventListener('scroll',follow,{passive:true});
-    if(live()){
-      reveal(); place(cur,true);
-      setTimeout(follow,0); setTimeout(follow,160);
-    }
-    /* ⚠️ WIDTH, NOT "resize". On iOS the URL bar collapsing and expanding fires
-       resize on almost every scroll, with the width unchanged — nothing about this
-       strip's layout depends on viewport HEIGHT, so those events are pure noise
-       that was re-running reveal() and place() continuously mid-gesture. Comparing
-       the width ignores them and leaves a real orientation change or window resize
-       handled exactly as before. */
-    var lastW=innerWidth;
-    addEventListener('resize',function(){
-      if(innerWidth===lastW) return;
-      lastW=innerWidth;
-      if(live()){ reveal(); place(cur,false); }
+  /* ── the phone menu ───────────────────────────────────────────────────
+     See barMenu(). The panel is a plain list of links, so a tap on a page is an
+     ordinary navigation; this only opens and closes it. It closes on the button, on
+     the scrim, on Escape, and when the viewport grows past the phone layout, where
+     the panel stops being a box and an "open" state would be invisible. */
+  var hb=document.getElementById('hmb'), hp=document.getElementById('hmb-p'), hs=document.getElementById('hmb-s');
+  if(hb&&hp){
+    var setMenu=function(on){
+      hp.classList.toggle('open',on); if(hs) hs.classList.toggle('open',on);
+      hb.setAttribute('aria-expanded',on?'true':'false');
+      hb.setAttribute('aria-label',on?'Close menu':'Menu');
+    };
+    hb.addEventListener('click',function(){ setMenu(!hp.classList.contains('open')); });
+    if(hs) hs.addEventListener('click',function(){ setMenu(false); });
+    addEventListener('keydown',function(e){
+      if(e.key==='Escape'&&hp.classList.contains('open')){ setMenu(false); hb.focus(); }
     });
-    /* A tap moves the indicator immediately even though the page is about to be
-       replaced: on a slow connection that is the only feedback the tap landed. */
-    mtabs.forEach(function(a,i){
-      a.addEventListener('click',function(){ cur=i; place(i,true); });
-    });
+    var wideMq=matchMedia('(min-width:981px)');
+    var onWide=function(){ if(wideMq.matches) setMenu(false); };
+    if(wideMq.addEventListener) wideMq.addEventListener('change',onWide);
+    else if(wideMq.addListener) wideMq.addListener(onWide);
   }
 
   /* ── the section disclosure ───────────────────────────────────────────

@@ -225,12 +225,16 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    height as Commands and the theme switch; it was 37px. *//* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
    same number as the right. The pill is 34px tall, so its cap radius is 17px;
    the Discord disc is 22px, radius 11px. A disc reads as sitting concentrically
-   inside a cap only when the gap equals the difference — 6px, which is .375rem.
-   (It was .47rem at the old 37px.) The right side keeps more room because it
-   ends in a text run's terminal, not a circle. */
+   inside a cap only when the gap from the OUTER edge equals the difference — 6px.
+   ⚠️ That 6px includes the 1px border, so the padding is 5px. It was .375rem (6px)
+   and measured 7px from the edge, and on a phone, where the pill is 38px and the rule
+   below set .82rem, the disc sat 14px in against an ideal 8px: the lopsided gap
+   Harkirat saw (2026-10-20 17:13 EDT). Rule of thumb for any pill with a leading
+   circle: padding-left = (pill height − circle size) / 2 − border.
+   The right side keeps more room because it ends in a text run, not a circle. */
 
 
-.ins{height:34px;font-weight:700;letter-spacing:.14em;padding-inline:.375rem .85rem}
+.ins{height:34px;font-weight:700;letter-spacing:.14em;padding-inline:5px .85rem}
 .ins .ins-t{font-size:.7rem;font-weight:800}
 .ins-ic{position:relative;z-index:2;display:grid;place-items:center;
   width:22px;height:22px;flex:0 0 22px;border-radius:50%;
@@ -382,8 +386,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      install link, and the word is what says so. It is 38px tall here and 34px on
      a desktop, because on a phone it is a thumb target. */
   
-  .bar .cmdb,.bar .cmdr{display:none}
-  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
+  .bar .cmdb,.bar .cmdr{display:none}/* (38 − 22) / 2 − 1 = 7px on the left: see the concentric-gap note on .ins above. */
+  
+  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem 0 7px;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
   .ins-ar{display:none}/* Commands follows Install on a phone too: its height (38px), its horizontal padding and its label tracking (.11em on the label, as .ins-t above). ⚠️ IT COPIES WHAT INSTALL RENDERS, NOT WHAT THE RULE ABOVE SAYS: .ins-t's font-size:.6rem is beaten by the base rule for .ins .ins-t, which sets .7rem (higher specificity), so Install's label is still .7rem on a phone and only its .11em tracking lands. The first fix followed the rule and set Commands to .6rem, which left it visibly smaller than Install (measured 9.6px against 11.2px). Making Install .6rem would shrink a live button and is its own change. The right padding gives up .077rem, the .11em tracking on a .7rem label, so the word sits centred. */
