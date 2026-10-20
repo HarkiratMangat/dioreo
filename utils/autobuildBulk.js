@@ -148,6 +148,8 @@ function renderPage(batch, key, index, heldImages = null) {
     const item = batch.items[index];
     const header = overview(batch, index);
     const { inside, outside } = batchRows(batch, key, index, heldImages);
+    // A live countdown at the base of the panel (Harkirat, 2026-10-20 14:07 EDT); Discord renders <t:…:R> as "in 13 minutes" and counts it down by itself. Every click renews it, since show() calls touch() before rendering.
+    if (batch.expiresAt) inside.push({ type: 10, content: `-# Panel timeout: <t:${Math.floor(batch.expiresAt / 1000)}:R> · Press a button to renew!` });
     if (item.status === 'pending') {
         const n = index + 1;
         const card = buildReviewCard(item.token, item.data, {
@@ -206,6 +208,7 @@ async function show(interaction, batch, key) {
 
 function touch(key, batch) {
     if (batch.timer) clearTimeout(batch.timer);
+    batch.expiresAt = Date.now() + (batch.public ? PUBLIC_IDLE_MS : PRIVATE_IDLE_MS);
     batch.timer = setTimeout(() => {
         batches.delete(key);
         for (const it of batch.items) if (it.token) pendingAutobuilds.delete(it.token);

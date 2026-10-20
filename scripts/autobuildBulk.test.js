@@ -244,6 +244,15 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.strictEqual(bulk.PUBLIC_IDLE_MS, 30 * 60 * 1000);
     });
 
+    await check('the base of the panel shows a live timeout countdown, and only once a timer is set', () => {
+        const items = [item(mp('A', '', FIVE)), item(mp('B', '', ['X']))];
+        const at = 1_800_000_000_000;
+        const page = renderPage({ items, page: 0, skipped: 0, expiresAt: at }, 'kc', 0);
+        const inside = page[0].components;
+        assert.deepStrictEqual(inside[inside.length - 1], { type: 10, content: `-# Panel timeout: <t:${at / 1000}:R> · Press a button to renew!` });
+        assert.ok(!JSON.stringify(renderPage({ items, page: 0, skipped: 0 }, 'kc', 0)).includes('Panel timeout'));
+    });
+
     if (failed) { console.log(`\n${failed} bulk /autobuild check(s) failed.`); process.exit(1); }
     console.log('\nAll bulk /autobuild checks passed.');
     process.exit(0);
