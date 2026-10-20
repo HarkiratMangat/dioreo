@@ -29,7 +29,16 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.99.0 — 2026-10-19 21:54 EDT (#208) — seven helpers nothing called are deleted
+## Pre-Release v3.100.0 — 2026-10-19 23:22 EDT (#210) — the bulk cache paces itself under Cloudinary's hourly limit
+**`scripts/bulkCacheCollectibles.js`.** Harkirat, 2026-10-19 23:18 EDT, choosing how to pace the prod run: "A."
+
+- **`--limit N`** stops a run after about N SKUs. It keeps whole design groups, because a group posts as one channel message, so a run can end a few SKUs under N.
+- **`--repair-context`** re-patches a cached SKU whose Cloudinary context has no Discord url, using the asset index. It does not re-render or re-post.
+- **Why:** Cloudinary's Admin API allows 500 calls an hour, shared with the live bot. A run spends about two per SKU, and a dry run spends one. The first prod dry run spent the hour on its own, and the 4-group sample after it lost its 7 context patches while the uploads and posts went through.
+- **Prod, on his go (2026-10-19 23:12 EDT):** the catalogue sync inserted all **986** SKUs (prod held none). The bulk cache is under way at 200 SKUs an hour.
+- **The six unique slots:** the Cloudinary half is moot, so no metadata schema change. The portal half stays open with pins2.
+
+## Pre-Release v3.99.0 — 2026-10-19 21:54 EDT (#208 · `af2a73c8`) — seven helpers nothing called are deleted
 **`utils/alertStore.js`, `utils/changeStore.js`, `utils/stillFrame.js`, `utils/calendarBannerCache.js`, `utils/manageActions.js`.** Harkirat, 2026-10-19 21:44 EDT: "delete the extra codes".
 
 - **Gone:** `parseAlertId`, `buildAlertExport`, `buildChangeExport`, `extractStillFrame`, `capBannerPreviewWidth`, `pageForLoadoutMode` (the `manageActions` copy; `core/changeset.js` keeps its own) and `buttonsFor`, plus the two `fmtUtc` formatters only those exports used. Each was searched across the repo, `portal/` and hidden paths included, before it went.

@@ -10,6 +10,10 @@
 //   node scripts/bulkCacheCollectibles.js --retry-failed          # also reprocess cacheStatus:'failed'
 //   node scripts/bulkCacheCollectibles.js --dry-run
 //   node scripts/bulkCacheCollectibles.js --batch-size 5 --delay-ms 3000   (defaults shown)
+//   node scripts/bulkCacheCollectibles.js --limit 200             # stop after ~200 SKUs (whole design groups only)
+//   node scripts/bulkCacheCollectibles.js --repair-context        # re-patch cached SKUs whose Cloudinary context lost its Discord url
+//
+// 🔴 Cloudinary's Admin API allows 500 calls an HOUR on this account, shared with the live bot. A real run spends about TWO per SKU (the cache lookup and the context patch; uploads use the separate Upload API), and --dry-run spends ONE per SKU. A dry run over the whole 986-SKU catalogue on 2026-10-19 23:13 EDT spent the hour by itself, and the prod sample run straight after it lost all seven context patches to `Rate Limit Exceeded` while its uploads and channel posts succeeded. So a full run is paced with --limit (about 200 SKUs an hour leaves room for the bot), and --repair-context fixes any SKU whose patch failed anyway: attach*DiscordCdnUrl swallows the error, so this script cannot tell at the time.
 //
 // Rate-limiting: uploadToStorageChannel/uploadMultipleToStorageChannel already go through
 // @discordjs/rest's REST client, which implements exactly what Discord's own docs recommend -- per-bucket header parsing and automatic backoff on 429 ("rate limits should not be hard coded into your app" -- checked directly against Discord's rate-limits documentation, there is no published fixed number for the message-create route). Real protection against hitting the limit therefore already exists underneath this pipeline for free. --batch-size/--delay-ms below are a deliberate COURTESY pacing measure on top of that (predictable CPU load, readable progress, avoiding a burst that queues hundreds of requests into the REST bucket manager at once) -- not the primary defense.
@@ -27,7 +31,7 @@ const {
     publicIdFor: decorationPublicIdFor, FOLDER: DECORATION_FOLDER
 } = require('../utils/decorationWebpCache');
 const { uploadMultipleToStorageChannel } = require('../utils/discordCdnStorage');
-const { recordDiscordCdnAsset } = require('../utils/discordCdnAssetIndex');
+const { recordDiscordCdnAsset, getDiscordCdnAsset } = require('../utils/discordCdnAssetIndex');
 
 function parseArgs(argv) {
     const args = { batchSize: 5, delayMs: 3000, kind: 'all' };
@@ -41,6 +45,8 @@ function parseArgs(argv) {
         else if (a === '--delay-ms') args.delayMs = parseInt(argv[++i], 10);
         else if (a === '--retry-failed') args.retryFailed = true;
         else if (a === '--dry-run') args.dryRun = true;
+        else if (a === '--limit') args.limit = parseInt(argv[++i], 10);
+        else if (a === '--repair-context') args.repairContext = true;
     }
     return args;
 }
@@ -219,6 +225,34 @@ function pickDiverseSample(groups, n) {
     return picked.slice(0, n);
 }
 
+// --limit N: keeps whole design groups, in order, until the next one would take the run past N SKUs. A group is never split, because its variants post as ONE channel message; so a run can end a few SKUs under N, and a first group larger than N still runs alone so every run makes progress.
+function limitGroups(groups, n) {
+    if (!Number.isInteger(n) || n <= 0) return groups;
+    const picked = [];
+    let skus = 0;
+    for (const g of groups) {
+        if (picked.length && skus + g.variants.length > n) break;
+        picked.push(g);
+        skus += g.variants.length;
+    }
+    return picked;
+}
+
+// --repair-context: a SKU marked cached whose Cloudinary context has no discord_cdn_url, although its channel post exists, gets the url and its catalog metadata re-patched from the durable asset index (utils/discordCdnAssetIndex.js). No re-render and no new channel message, so the "never rewrite cache-channel history" rule holds. A normal run cannot do this: it only looks at pending SKUs, and re-rendering one would post it a second time.
+async function repairContext(docs, args, stats) {
+    for (const doc of docs) {
+        const cached = await getCachedFor(doc);
+        if (!cached || cached.error) { stats.failed++; console.log(`  lookup failed  ${doc.skuId}  ${doc.displayName}`); continue; }
+        if (cached.discordCdnUrl) { stats.skipped++; continue; }
+        const publicId = publicIdFor(doc);
+        const record = await getDiscordCdnAsset(publicId);
+        if (!record) { stats.failed++; console.log(`  no asset-index row  ${doc.skuId}  ${publicId}`); continue; }
+        if (args.dryRun) { console.log(`  [dry-run] would repair  ${doc.skuId}  ${doc.displayName}`); continue; }
+        await attachFor(doc, publicId, cached.palette, record.discordCdnUrl, { ...catalogExtra(doc), discord_message_id: record.discordMessageId });
+        stats.healed++;
+    }
+}
+
 async function markCached(doc) {
     await CollectibleCatalog.updateOne(
         { skuId: doc.skuId },
@@ -316,6 +350,8 @@ async function main() {
     if (args.collection) filter.parentCategory = args.collection;
     if (args.sku) {
         filter.skuId = args.sku;
+    } else if (args.repairContext) {
+        filter.cacheStatus = 'cached';
     } else {
         filter.cacheStatus = args.retryFailed ? { $in: ['pending', 'failed'] } : 'pending';
     }
@@ -324,10 +360,21 @@ async function main() {
     console.log(`${docs.length} SKU(s) match the filter.`);
     if (!docs.length) { await mongoose.disconnect(); return; }
 
+    if (args.repairContext) {
+        const targets = args.limit > 0 ? docs.slice(0, args.limit) : docs;
+        console.log(`Repairing Cloudinary context on ${targets.length} cached SKU(s)${args.dryRun ? ' (DRY RUN)' : ''}.`);
+        const stats = { cached: 0, healed: 0, skipped: 0, failed: 0 };
+        await repairContext(targets, args, stats);
+        console.log(`\nDone. repaired=${stats.healed} already-fine=${stats.skipped} failed=${stats.failed}.`);
+        await mongoose.disconnect();
+        return;
+    }
+
     let groups = groupCatalogDocs(docs);
     if (args.sample) groups = pickDiverseSample(groups, args.sample);
+    if (args.limit) groups = limitGroups(groups, args.limit);
 
-    console.log(`Processing ${groups.length} design group(s)${args.dryRun ? ' (DRY RUN)' : ''}, batches of ${args.batchSize}, ${args.delayMs}ms delay between batches.\n`);
+    console.log(`Processing ${groups.length} design group(s), ${groups.reduce((n, g) => n + g.variants.length, 0)} SKU(s)${args.dryRun ? ' (DRY RUN)' : ''}, batches of ${args.batchSize}, ${args.delayMs}ms delay between batches.\n`);
     const stats = { cached: 0, healed: 0, skipped: 0, failed: 0 };
     let done = 0;
     for (let i = 0; i < groups.length; i += args.batchSize) {
@@ -343,7 +390,7 @@ async function main() {
 }
 
 module.exports = {
-    parseArgs, catalogKeyFor, pickDiverseSample, assetFolderFor, catalogExtra,
+    parseArgs, catalogKeyFor, pickDiverseSample, limitGroups, assetFolderFor, catalogExtra,
     buildGroupComponents, variantMetadataLines, groupHeaderLines, variantHeadingLines
 };
 
