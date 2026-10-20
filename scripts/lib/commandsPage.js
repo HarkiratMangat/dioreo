@@ -721,8 +721,11 @@ ${toneCss()}
   .rx-rail.rx-js.open .rx-pick{position:sticky;z-index:3;top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px) + .55rem + 1px);
     transition:box-shadow .2s ease,background-color .2s ease}
   /* ⚠️ ONLY ONCE IT IS ACTUALLY PINNED (.pinned, set by the script when the list has scrolled under it). Wearing the paper and shadow from the moment it opened drew the header as a separate dark box inside the menu ("bugged when it opens", Harkirat, 2026-10-20 18:46 EDT). */
-  .rx-rail.rx-js.open.pinned .rx-pick{background:var(--paper);box-shadow:0 10px 18px -14px rgba(0,0,0,.7)}
-  .rx-rail.rx-js.open.pinned .rx-pick::before{content:"";position:absolute;left:-2px;right:-2px;bottom:100%;height:calc(.55rem + 2px);
+  /* Pinned, it becomes the PILL again: the closed state's own border and tint on an ::after one pixel wider than the button, so it also covers the box's side borders, with a shadow under it. A borderless dark strip with the list cut off at its sides read as broken (Harkirat, 2026-10-20 19:28 EDT: "I don't like how it looks as its sticky state"). The ::before still paints the gap up to the bar. */
+  .rx-rail.rx-js.open.pinned .rx-pick::after{content:"";position:absolute;inset:-1px;z-index:-1;border-radius:24px;pointer-events:none;
+    border:1px solid color-mix(in srgb,var(--cc) 70%,transparent);background:color-mix(in srgb,var(--cc) 10%,var(--paper));
+    box-shadow:0 12px 22px -14px rgba(0,0,0,.75)}
+  .rx-rail.rx-js.open.pinned .rx-pick::before{content:"";position:absolute;left:-3px;right:-3px;bottom:calc(100% + 1px);height:calc(.55rem + 2px);
     background:var(--desk);pointer-events:none}
   .rx-rail.rx-js .rx-drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.4,0,.2,1)}
   .rx-rail.rx-js.open .rx-drop{grid-template-rows:1fr;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1)}

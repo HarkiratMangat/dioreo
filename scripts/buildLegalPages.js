@@ -1333,8 +1333,12 @@ const MENU_GROUP_LABELS = ['Help', 'Legal', 'Community', 'Releases'];
 const barMenu = cur => {
     const row = p => `<a class="hmb-a" href="${hrefTo(p, cur || p)}"${isHere(p, cur) ? ' aria-current="page"' : ''}` +
         ` style="--row:${p.accent}">${esc(p.short)}</a>`;
-    const groups = navSetFor(cur).map((grp, gi) =>
-        `<p class="hmb-h">${esc(MENU_GROUP_LABELS[gi] || 'More')}</p><div class="hmb-g">${grp.map(row).join('')}</div>`).join('');
+    const labelled = navSetFor(cur).map((grp, gi) => ({ grp, label: MENU_GROUP_LABELS[gi] || 'More' }));
+    // Help (Commands) moves below Community (Harkirat, 2026-10-20 19:28 EDT: "move the commands tile down below contributing buttons"), so the page you reach for most sits lowest, nearest the thumb. The desktop nav order is unchanged.
+    const help = labelled.findIndex(g => g.label === 'Help'), comm = labelled.findIndex(g => g.label === 'Community');
+    if (help > -1 && comm > help) labelled.splice(comm, 0, labelled.splice(help, 1)[0]);
+    const groups = labelled.map(({ grp, label }) =>
+        `<p class="hmb-h">${esc(label)}</p><div class="hmb-g">${grp.map(row).join('')}</div>`).join('');
     // ⚠️ The list is a div with role=navigation, NOT a <nav>: it sits inside the bar's own <nav>, and every `.bar nav` rule (display:flex, margin-left:auto, the gaps) matched it too and outranked the classes that hide it on a desktop.
     return `<button type="button" class="hmb" id="hmb" aria-expanded="false" aria-controls="hmb-p" aria-label="Menu">` +
         `<span class="hmb-i" aria-hidden="true"><i></i><i></i><i></i></span></button>
@@ -4148,7 +4152,7 @@ const SWITCHER_CSS = `
   /* Each page's colour is its OUTLINE now, not a dot (Harkirat, 2026-10-20 17:40 EDT: "remove the dots... maybe like displaying just the outline color"): a muted ring in its own hue at rest, and the page you are on takes the full colour and a wash. No hover rules: on touch a hover latches, which is what made earlier phone menus feel stuck. */
   /* The label is set a clear step above the .58rem group label and heavier, so the two stop blending ("they kind of feel small and tiny... they blend in with their like eyebrow label"). */
   .hmb-a{display:flex;align-items:center;gap:.6rem;min-height:50px;padding:0 .95rem;
-    border-radius:13px;border:1px solid color-mix(in srgb,var(--row) 42%,var(--rule));text-decoration:none;
+    border-radius:13px;border:2px solid color-mix(in srgb,var(--row) 48%,var(--rule));text-decoration:none;
     font-family:var(--mono);font-size:.78rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;
     color:var(--ink)}
   .hmb-a[aria-current]{color:var(--ink);font-weight:800;border-color:var(--row);
