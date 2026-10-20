@@ -36,3 +36,9 @@ Harkirat (`ALLOWED_ADMIN_ID`) was getting the same "not your panel" denial as an
 - **It is read only on a real slash invocation** (`isChatInputCommand()`), so every button re-render (`toggle_`/`set_`/`set_page_`) still draws the page its handler asked for. A re-render reading the option would pin the panel to one page.
 - **`Colors` goes through `commands/colors.js`'s own `execute()`** with `{ prefsField: 'settingsVisibility' }`, not a third copy of the palette render. ⚠️ `settingsVisibility` is deliberate: this option is a shortcut to the dashboard's View Colors button, and that button reads `settingsVisibility` (see `handlers/colors.js`'s `colors_view` branch). An explicit `visibility:` on the same `/settings` call still wins, because /colors reads the option of that name.
 - Covered by `scripts/settingsJumpTo.test.js`, which runs the real `execute()` with the database and the send stubbed.
+
+## "Dioreo User Since" — `firstCommandAt` (2026-10-20 17:55 EDT)
+`/settings` shows when the user first ran a command of their own, under Member Since (Harkirat: "start tracking that"). `UserPreference.firstCommandAt` is written by `utils/firstCommand.js`, called from `handlers/router.js` AFTER a slash or right-click command runs; buttons, selects and modals never count, so using someone else's panel does not.
+- **After, not before:** a first-time user's command may create their record with find-then-save, and an upsert racing that save would fail it with a duplicate key.
+- **`$min`, never `$set`:** the date only moves earlier, so the backfill (`scripts/backfillFirstCommandAt.js`, from each record's ObjectId time, an approximation either way) and live writes can run in any order.
+- On someone's very first `/settings` the field is not written yet, so a slash invocation shows "now"; a button re-render with no date shows no line.

@@ -7,7 +7,7 @@ published: true
 # Privacy Policy — Dioreo
 
 **Effective date:** on the Dioreo v3 release — this version is not yet in effect
-**Version:** 1.16 (pending)
+**Version:** 1.17 (pending)
 **Applies to:** the Dioreo Discord application (the "Bot") and this documentation website (the "Site")
 
 
@@ -66,6 +66,7 @@ Everything below lives in a single `UserPreference` record keyed to your Discord
 | **Seen announcements** | The IDs of any bot-wide announcements you've already been shown | So an announcement is delivered to you once, not repeatedly |
 | **Announcement delivery counts** *(pending, v3)* | For a bot-wide announcement configured to repeat, how many times you've been shown it and when you were last shown it | So a repeating announcement stops once you've seen it enough times, with at least a day between showings |
 | **CP currency preference** | Which storefront `/draw calculator` quotes prices from | Shows the right purchase recommendation for your currency without re-selecting |
+| **First command date** *(pending, v3)* | When you first ran a command yourself (a slash command or a right-click). Clicking a button on someone else's message doesn't count | Shown in `/settings` as "Dioreo User Since" |
 
 **Is a Discord user ID personal data?** Yes — we treat it as such. It's a persistent unique identifier that can be linked back to you, which brings it within GDPR Art. 4(1) and PIPEDA's definition of personal information. We say so rather than arguing otherwise.
 
@@ -470,6 +471,7 @@ Kept here as well as in git, because the repository's visibility can change and 
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.17 *(pending)* | on the v3 release | **Not yet in effect.** Your `UserPreference` record gains `firstCommandAt`, the date you first ran a command yourself, shown in `/settings` as "Dioreo User Since" (§2.1, Appendix A). Records that already existed get the record's own creation date instead. Running a command now also creates your record if you didn't have one, which §2.1 already says happens once you use the Bot. **No new recipient, no longer retention.** |
 | 1.16 *(pending)* | on the v3 release | **Not yet in effect.** `/draw calculator` can now save a calculation so you can come back to it. New §2.1d describes the record (also in Appendix A, §5's MongoDB Atlas row and §7): your Discord user ID, an optional name, the calculator's setup (region, balances, upgrades and 2X entitlements), and the ordered list of draws you were pricing, plus when it last changed so running the command again reopens your latest one. An unnamed calculation is deleted 30 days after creation; a named one is kept until you delete it or ask us to. A list entry can also hold a Series Armory's item count and spins toward its next item, and the title of a draw you picked from this season's list, which is game data you chose, nothing about you. `/draw calculator` also gets **its own response-visibility preference** (`calculatorVisibility`, public by default) instead of sharing the Seasonal Content one. **View Colors** (right-click a user): for a person who doesn't use the Bot, the colours worked out from their image are cached for 30 days keyed only by a fingerprint of the image, with no user identifier (§2.2, §7, Appendix A). **No new recipient and no new category of data.** |
 | 1.15 *(pending)* | on the v3 release | **Not yet in effect.** This announcement can now also be configured to REPEAT, up to a whole number of times set by whoever posts it, at least 24 hours apart. To make that possible, your `UserPreference` record gains one new field, `announcementDeliveries` — for a repeating announcement only, how many times you've been shown it and when you were last shown it. A non-repeating announcement (the existing, unconfigured behaviour) is completely unaffected and writes nothing to this new field. The announcement record itself (§2.1b) can now also optionally carry a banner image URL and a repeat count, set by whoever posts it — neither is personal data about anyone reading the announcement. **No new recipient** — both live in the same MongoDB Atlas database §5 already names — **and no longer retention**: the new per-user field is deleted along with the rest of your `UserPreference` record under the same conditions as everything else in it, described in §7. |
 | 1.14 *(pending)* | on the v3 release | **Not yet in effect.** `/colors` gets its own response-visibility preference, separate from `/settings`, so your `UserPreference` record gains one more visibility field, `colorsVisibility` (Appendix A). It is one more value of a kind §2 already describes. **No new category of data, no new recipient, and no longer retention.** |
@@ -542,6 +544,9 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 - `seenAnnouncementIds` — which bot-wide announcements you've already been shown
 - `announcementDeliveries` *(pending, v3)* — for a REPEATING announcement only: how many times you've been shown it, and when you were last shown it
 
+**Account history**
+- `firstCommandAt` *(pending, v3)* — when you first ran a command of your own. For records that existed before this was tracked, it was filled in from the record's own creation date
+
 **That's the whole list.** It mirrors the schema in the source code rather than paraphrasing it, so it can be checked line-by-line against the software itself. If you have access to the repository you can verify it directly; if you don't, ask and we will show you the relevant file.
 
 **Stored on your device, not on ours:** the documentation website additionally keeps a `db-theme` entry in your own browser's local storage, holding `light` or `dark`, and a `db-booted` entry in session storage on the record pages. They are listed here for completeness only — neither reaches our database or any server, and both are described in full in §2.6.
@@ -564,6 +569,7 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 | Version | Date | Change |
 |---|---|---|
+| **1.17** *(pending)* | on the v3 release | **Not yet in effect.** Added `firstCommandAt` to §2.1 and Appendix A: the date you first ran a command yourself, shown in `/settings` as "Dioreo User Since"; existing records are filled from their own creation date. **No new recipient, no longer retention.** |
 | **1.16** *(pending)* | on the v3 release | **Not yet in effect.** `/draw calculator` gained saved, named baskets — new §2.1d describes the record, listed in Appendix A, named in §5's MongoDB Atlas row, and given retention in §7 (unnamed: 30-day TTL; named: kept until deleted). **No new recipient, no new category of data** — it's the same discordId/region/balance/entitlement shape §2.1 already describes, plus an ordered banner list, stored so a session can be resumed instead of starting over. A list entry can also hold a Series Armory's item count and spins toward its next item, and the title of a draw picked from this season's list — game data you chose, nothing about you. The record also keeps **when it last changed**, so running the command again reopens your most recent calculation; and `/draw calculator` has **its own response-visibility preference** (`calculatorVisibility`, public by default) instead of sharing the Seasonal Content one. **View Colors** (right-click a user): for a person who doesn't use the Bot, the colours worked out from their image are cached for 30 days keyed only by a fingerprint of the image, with no user identifier (§2.2, §7, Appendix A). |
 | **1.15** *(pending)* | on the v3 release | **Not yet in effect.** A bot-wide announcement can now optionally REPEAT (a whole number of times, at least 24h apart) and optionally carry a banner image. Your `UserPreference` record gains `announcementDeliveries` — for a repeating announcement only, how many times shown and when last shown; a non-repeating announcement writes nothing new. **No new recipient, no longer retention.** |
 | **1.14** *(pending)* | on the v3 release | **Not yet in effect.** Added `colorsVisibility` to Appendix A: `/colors` gets its own response-visibility preference, detached from `/settings`, so the record stores one more per-user visibility field. **No new category of data** — it is one more value of a kind already described in §2. Written 2026-08-31, when `docs-audit`'s `privacy-inventory` check found the field missing from Appendix A, which claims to be a complete transcription of the schema. |

@@ -154,10 +154,14 @@ module.exports = {
             type: 9,
             components: [{
                 type: 10,
-                content: `# ${emojis.settings} Settings Dashboard\n### <@${userId}> | \`${interaction.user.username}\`\n(\`${userId}\`)\n\n-# Member Since: \n-# <t:${userCreatedAt}:F> (<t:${userCreatedAt}:R>)`
+                content: `# ${emojis.settings} Settings Dashboard\n### <@${userId}> | \`${interaction.user.username}\`\n(\`${userId}\`)`
             }],
             accessory: { type: 11, media: { url: userAvatarUrl } }
         });
+        // Member Since sits OUTSIDE the avatar Section (Harkirat, 2026-10-20 17:29 EDT): a Section's text is squeezed into the column beside its thumbnail, so the long date wrapped onto three lines on a phone. Only the title, the mention and the id share the avatar's row now. Dioreo User Since (2026-10-20 17:53 EDT): the first command this user ran themselves (UserPreference.firstCommandAt). It is written after a command finishes, so on someone's very first /settings it is not there yet; a slash invocation is always the user's own, so "now" is right then. A button re-render with no date shows no line rather than a wrong one.
+        const firstCommandAt = prefs?.firstCommandAt || (interaction.isChatInputCommand?.() ? new Date() : null);
+        const dioreoSince = firstCommandAt ? Math.floor(new Date(firstCommandAt).getTime() / 1000) : null;
+        containerComponents.push({ type: 10, content: `-# Member Since: \n-# <t:${userCreatedAt}:F> (<t:${userCreatedAt}:R>)` + (dioreoSince ? `\n-# Dioreo User Since: \n-# <t:${dioreoSince}:F> (<t:${dioreoSince}:R>)` : '') });
 
         // AVATAR/BANNER DOWNLOAD LINKS: Link-style buttons (style 5) point straight at the full-quality (4096px) CDN asset, so a user can save their own avatar/banner without needing to open Discord's own profile settings. A Section's accessory slot (used above for the avatar thumbnail) only supports ONE thumbnail-or-button, not both, so these live in their own Action Row instead of being crammed into the header Section.
         const profileLinkButtons = [{ type: 2, style: 5, label: "Avatar", url: userAvatarFullUrl }];

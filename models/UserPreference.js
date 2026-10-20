@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const UserPreferenceSchema = new mongoose.Schema({
     discordId: { type: String, required: true, unique: true },
     timezone: { type: String, default: 'America/Toronto' },
+    // When this user first ran a command of their OWN (a slash command or a right-click), added 2026-10-20 17:53 EDT for /settings' "Dioreo User Since" (Harkirat). Written once by utils/firstCommand.js with $min, so it only ever moves earlier; clicking a button on someone else's panel never sets it. Users who existed before it were backfilled from this document's own creation time (scripts/backfillFirstCommandAt.js), an approximation. No default: unset means "not recorded yet", never "now".
+    firstCommandAt: { type: Date },
     timestampStyle: { type: String, default: 'all_formats' },
     // Shared by /dmz AND /gunsmith (mp + dmz) — one "Weapon Builds" toggle in /settings covers every loadout command, same Option A pattern as `seasonalVisibility` below. `dmzVisibility` used to exist as a separate field here, but it was never actually wired to anything in the /settings UI (the visible toggle always wrote to `loadoutVisibility`), so it silently did nothing forever — removed rather than left as dead, unreachable state.
     loadoutVisibility: { type: String, default: 'public' },
