@@ -1,0 +1,38 @@
+// scripts/weaponSearch.test.js
+//
+// /gunsmiths' weapon suggestions: a class typed in plain words finds that class, and a half-typed class word finds it too (Harkirat, 2026-10-19 20:09 EDT: "i typed assault, which should have showed all AR ... and i typed 'snipe' but that only showed 'all snipers' and didn't list the other sniper builds").
+const assert = require('assert');
+const { resolveCategorySynonym, findWeaponMatches } = require('../utils/search');
+
+let failures = 0;
+function check(name, fn) {
+    try { fn(); console.log(`  ✓ ${name}`); }
+    catch (e) { failures++; console.error(`  ✗ ${name}\n      ${e.message}`); }
+}
+
+check('a class word, whole or half typed, names its class', () => {
+    for (const [q, cat] of [['assault', 'AR'], ['assault rifle', 'AR'], ['snipe', 'SNIPER'], ['sniper', 'SNIPER'], ['sub', 'SMG'], ['light machine', 'LMG'], ['mark', 'MARKSMAN'], ['shot', 'SHOTGUN'], ['pist', 'SECONDARIES'], ['ar', 'AR'], ['dmr', 'MARKSMAN']]) {
+        assert.strictEqual(resolveCategorySynonym(q), cat, q);
+    }
+});
+
+check('a weapon name, two letters, or nothing never names a class', () => {
+    for (const q of ['hol', 'ak117', 'sn', '', 'locus']) assert.strictEqual(resolveCategorySynonym(q), null, q);
+});
+
+check('a half-typed class lists every weapon in it, plus names that match the letters', () => {
+    const pool = [
+        { weaponKey: 'locus', weaponName: 'LOCUS', category: 'SNIPER' },
+        { weaponKey: 'dlq33', weaponName: 'DL Q33', category: 'SNIPER' },
+        { weaponKey: 'ak117', weaponName: 'AK117', category: 'AR' },
+        { weaponKey: 'shorty', weaponName: 'SHORTY', category: 'SECONDARIES' },
+        { weaponKey: 'striker', weaponName: 'STRIKER', category: 'SHOTGUN' },
+    ];
+    assert.deepStrictEqual(findWeaponMatches('snipe', pool).map(w => w.weaponKey), ['locus', 'dlq33']);
+    assert.deepStrictEqual(findWeaponMatches('assault', pool).map(w => w.weaponKey), ['ak117']);
+    assert.deepStrictEqual(findWeaponMatches('shot', pool).map(w => w.weaponKey), ['striker'], 'the class, and SHORTY only if its own letters matched');
+});
+
+if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
+console.log('\nweaponSearch: all checks passed.');
+process.exit(0);

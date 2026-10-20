@@ -48,9 +48,15 @@ const CATEGORY_SEARCH_SYNONYMS = Object.fromEntries(
 );
 
 // Returns the `Loadout.category` a query resolves to via the synonym map above, or `null` if it isn't a recognized synonym. Deliberately an exact (normalized) match, not a substring/fuzzy one -- a synonym should only fire on a clear, whole-word query, not an accidental partial hit inside some unrelated longer string.
+//
+// 🔁 WIDENED 2026-10-19 20:09 EDT (Harkirat, on the dev bot: "i typed assault, which should have showed all AR and the 'all ar builds' option yet nothing. and i typed 'snipe' but that only showed 'all snipers'"). The exact match stays first; after it, a query of 3+ letters that BEGINS one of the synonyms counts too, when every synonym it begins names the same class ("assault" -> AR, "snipe" -> SNIPER, "sub" -> SMG, "light" -> LMG). Typing is incremental, so the class has to appear while the word is still being typed. A prefix shared by two classes resolves to nothing rather than to a guess.
 function resolveCategorySynonym(query) {
     if (!query) return null;
-    return CATEGORY_SEARCH_SYNONYMS[normalizeForSearch(query)] || null;
+    const q = normalizeForSearch(query);
+    if (CATEGORY_SEARCH_SYNONYMS[q]) return CATEGORY_SEARCH_SYNONYMS[q];
+    if (q.length < 3) return null;
+    const hits = new Set(Object.entries(CATEGORY_SEARCH_SYNONYMS).filter(([key]) => key.startsWith(q)).map(([, cat]) => cat));
+    return hits.size === 1 ? [...hits][0] : null;
 }
 
 // findWeaponMatches (2026-07-18, v2 quick-wins batch; extended same day with synonym support) -- backs the loadout-lookup fallback in /dmz and /gunsmiths mp for a short/partial weapon name (e.g. "loc") that doesn't exact-match any stored weaponKey. The slash command's `weapon` option is autocomplete-backed but NOT `.setRequired` to a strict choice list -- Discord still submits whatever raw text a user typed if they hit enter without picking a suggestion (confirmed a real live complaint on mobile, where the autocomplete dropdown is easy to dismiss by accident), and that raw text almost never equals a normalized weaponKey exactly for a partial query. Returns every candidate (from the caller's mode/category-scoped list, expected to carry `weaponKey`/ `weaponName`/`category`) whose weaponName fuzzy-matches the raw query OR whose category matches a resolved synonym (e.g. "pistol" -> every SECONDARIES weapon, not just the ones whose own name happens to contain the word "pistol"), deduped by weaponKey -- so a caller can auto-resolve an unambiguous single match or ask the user to pick from a short list of real candidates instead of just saying "not found" with no explanation.

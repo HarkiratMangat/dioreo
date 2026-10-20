@@ -350,8 +350,11 @@ async function handleInteractionInner(interaction) {
                 const { browseRows } = require('../utils/loadoutScopes');
                 const mode = queryFilter.mode;
                 const cats = mode === 'MP' ? [...new Set(distinctChoices.map(w => w.category))].sort() : [];
+                // A row shows when its own words match, or when the query names its class ("assault" shows All AR builds, as findWeaponMatches shows the AR weapons beside it).
+                const { resolveCategorySynonym } = require('../utils/search');
+                const synonym = resolveCategorySynonym(focusedValue);
                 const rows = browseRows(mode, cats)
-                    .filter(r => !focusedValue || fuzzyMatch(focusedValue, r.label))
+                    .filter(r => !focusedValue || fuzzyMatch(focusedValue, r.label) || (synonym && r.value === `MP.${synonym}.std`))
                     .map(r => ({ name: `▸ ${r.label}`, value: `~scope~${r.value}` }));
                 const weaponRows = findWeaponMatches(focusedValue, distinctChoices)
                     .slice(0, 25 - rows.length)
