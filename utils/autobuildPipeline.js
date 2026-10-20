@@ -153,7 +153,7 @@ function buildReviewCard(token, data, opts = {}) {
         return `${i + 1}. **\`${a || '(empty)'}\`**${slot ? ` · \`(${slot.toUpperCase()})\`` : ''}`;
     });
     const body = [
-        `## Weapon: \`${data.weaponName}\` — \`${data.category || 'unknown'}\``,
+        `### Weapon: \`${data.weaponName}\` — \`${data.category || 'unknown'}\``,
         `> **Label:** \`${label || '—'}\``,
         label ? null : '> -# *Set custom build label using **Adjust***',
         `**Build:** \`Build ${data.ordinal || 1}\``,
@@ -161,14 +161,13 @@ function buildReviewCard(token, data, opts = {}) {
         `-# *${modeHint}*`,
         `**Badges:** \`${badges || '—'}\``,
         badges ? null : '-# *Badges are per build; add using **Adjust***',
-        '',
         '### Attachments:',
         codeLine,
         ...attachmentLines,
     ].filter(l => l !== null).join('\n');
 
     const components = [
-        { type: 10, content: `# Review Extracted Loadout` },
+        { type: 10, content: opts.title || '## Review Extracted Gunsmith' },
         ...(opts.header ? [{ type: 10, content: opts.header }] : []),
         { type: 14, spacing: 1, divider: true },
     ];

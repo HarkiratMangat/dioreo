@@ -1,5 +1,5 @@
 // ==========================================
-// RIGHT-CLICK → APPS → "Autobuild Loadout" (message context menu)
+// RIGHT-CLICK → APPS → "Autobuild Gunsmith" (message context menu; "Autobuild Loadout" until 2026-10-20 13:49 EDT, renamed by Harkirat)
 // ==========================================
 // Right-click a Gunsmith screenshot (a post, or a forward of one) and it goes straight into /autobuild's reader and review card (Harkirat, 2026-10-19 11:11 EDT: "lets builds them all except the announcement one"). Built 2026-10-19 11:16 EDT.
 //
@@ -27,7 +27,7 @@ function heldFor(key) {
 function buildPicker(key, images) {
     const shown = images.slice(0, 10);
     return [{ type: 17, components: [
-        { type: 10, content: `## Autobuild Loadout\nThis message has **${images.length} images**. Pick the Gunsmith screenshots to read, or read them all.${images.length > 10 ? `\n-# Only the first 10 can be read at once.` : ''}` },
+        { type: 10, content: `## Autobuild Gunsmith\nThis message has **${images.length} images**. Pick the Gunsmith screenshots to read, or read them all.${images.length > 10 ? `\n-# Only the first 10 can be read at once.` : ''}` },
         { type: 12, items: shown.map((url, i) => ({ media: { url }, description: `Image ${i + 1}` })) },
         { type: 1, components: [{
             type: 3, custom_id: `autobuild_pick|${key}`, placeholder: 'Pick one or more screenshots to read',
@@ -40,7 +40,7 @@ function buildPicker(key, images) {
 
 module.exports = {
     data: new ContextMenuCommandBuilder()
-        .setName('Autobuild Loadout')
+        .setName('Autobuild Gunsmith')
         .setType(ApplicationCommandType.Message)
         .setDefaultMemberPermissions(0)
         // ADMIN-ONLY, like /autobuild: user-install only, and in bot/registry.js's ADMIN_COMMAND_NAMES.

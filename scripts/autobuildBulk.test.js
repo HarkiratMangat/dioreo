@@ -115,13 +115,16 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.ok(JSON.stringify(picker).includes('Only the first 10'));
     });
 
-    await check('the header is ONE subtext line naming each build\'s state (his 12:36 EDT: the list "looks so stupid")', () => {
+    await check('the header is his 13:49 EDT format: title with position, a Ready line, a Check line, and no empty line', () => {
+        const e = require('../utils/emojiMap');
         const a = mp('PKM', '1A4A', FIVE); a.duplicateWarning = 'dup';
         const b = mp('S36', '1A2A', FIVE);
         const c = mp('CRONEN SQUALL', '1C2B', FIVE); c.catalogueUnknown = { weapon: false, attachments: 2 };
-        const text = bulk.overview({ items: [item(a), item(b), item(c)], skipped: 0 }, 2);
-        assert.ok(!text.includes('\n'), 'one line');
-        assert.match(text, /^-# Build 3 of 3 · #1 .*possible duplicate · #2 .*ready to save · #3 .*2 unknown attachments$/);
+        const text = bulk.overview({ items: [item(a), item(b), item(c)], skipped: 0 }, 0);
+        assert.strictEqual(text, ['## Review Extracted Gunsmiths · `#1 of 3`', `-# ${e.checkmark} **Ready:** \`#2 S36\``, `-# ${e.warn} **Check:** \`#1 PKM\` possible duplicate · \`#3 CRONEN SQUALL\` 2 unknown attachments`].join('\n'));
+        const clean = bulk.overview({ items: [item(b)], skipped: 0 }, 0);
+        assert.ok(!clean.includes('**Check:**'), 'no Check line when nothing needs a look');
+        assert.ok(clean.startsWith('## Review Extracted Gunsmith\n'), 'a batch of one: singular, no position');
     });
 
     await check('the pager is the shared arrow row, and the buttons say Save / Adjust / Discard with the build number', () => {

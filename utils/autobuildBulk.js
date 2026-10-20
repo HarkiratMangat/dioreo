@@ -13,7 +13,8 @@ const { buildPaginationRow } = require('./paginationRow');
 const emojis = require('./emojiMap');
 
 const MAX_SCREENSHOTS = 10;
-const BATCH_MS = 30 * 60 * 1000; // a single review keeps 10 minutes; ten reviews need longer
+// A batch stays usable for 30 minutes after its LAST click, not 30 from when it was read. Found 2026-10-20 13:49 EDT: his panel went dead after 14 minutes because every page send went through sendV2Payload, which schedules the bot-wide 10-minute idle disable (utils/passiveExpiry.js). Batch pages now skip that, and `touch` slides one timer that drops the batch and its reviews together.
+const BATCH_MS = 30 * 60 * 1000;
 const READ_AT_ONCE = 3;
 
 // key -> { items: [{ url, token, data, status, error, doc, retryToken, sourceIndex }], page, skipped, adminId, source } status: pending (to review) · saved · cancelled (discarded) · failed (couldn't read) · retry (image upload failed on Save) source: { key, total } when the batch came from the right-click's picker, so Add more can offer that message's other screenshots.
@@ -61,22 +62,24 @@ function flagsOf(items, index) {
     return flags;
 }
 
-// The batch line at the top of every page: where you are, then each build's state in a few words (Harkirat, 2026-10-20 12:10 EDT: say "#1 might be a duplicate, #2's category is unknown"; 12:36 EDT: the list version "looks so stupid", so it is one subtext line now). Pure.
+// The header at the top of every page, in Harkirat's format (2026-10-20 13:49 EDT): the title with which build is showing, a Ready line naming the builds that can be saved as they are, and a Check line naming each one that needs a look and why. A line with nothing to list is left out. Saved and discarded builds are on neither line; their own pages say so. Pure.
 function overview(batch, index) {
-    const warn = emojis.warn;
-    const parts = batch.items.map((it, i) => {
-        const n = `#${i + 1}`;
+    const total = batch.items.length;
+    const name = (it, i) => `\`#${i + 1} ${it.data?.weaponName || `Image ${it.sourceIndex != null ? it.sourceIndex + 1 : i + 1}`}\``;
+    const ready = [];
+    const check = [];
+    batch.items.forEach((it, i) => {
         if (it.status === 'pending') {
             const flags = flagsOf(batch.items, i);
-            return flags.length ? `${n} ${warn} ${flags.join(', ')}` : `${n} ${emojis.checkmark} ready to save`;
-        }
-        if (it.status === 'saved') return `${n} saved as ${it.doc.buildName}`;
-        if (it.status === 'cancelled') return `${n} ${emojis.cross} discarded`;
-        if (it.status === 'failed') return `${n} ${warn} couldn't read`;
-        return `${n} ${warn} image upload failed`;
+            if (flags.length) check.push(`${name(it, i)} ${flags.join(', ')}`); else ready.push(name(it, i));
+        } else if (it.status === 'failed') check.push(`${name(it, i)} couldn't read`);
+        else if (it.status === 'retry') check.push(`${name(it, i)} image upload failed`);
     });
-    if (batch.skipped) parts.push(`${batch.skipped} not read (${MAX_SCREENSHOTS} at most)`);
-    return `-# Build ${index + 1} of ${batch.items.length} · ${parts.join(' · ')}`;
+    const lines = [`## Review Extracted ${total === 1 ? 'Gunsmith' : 'Gunsmiths'}${total > 1 ? ` · \`#${index + 1} of ${total}\`` : ''}`];
+    if (ready.length) lines.push(`-# ${emojis.checkmark} **Ready:** ${ready.join(' · ')}`);
+    if (check.length) lines.push(`-# ${emojis.warn} **Check:** ${check.join(' · ')}`);
+    if (batch.skipped) lines.push(`-# ${batch.skipped} not read (${MAX_SCREENSHOTS} at most)`);
+    return lines.join('\n');
 }
 
 // The next build still to review after `from`, wrapping round; -1 when none is left. Pure.
@@ -147,7 +150,7 @@ function renderPage(batch, key, index, heldImages = null) {
     if (item.status === 'pending') {
         const n = index + 1;
         const card = buildReviewCard(item.token, item.data, {
-            header,
+            title: header,
             notes: [batchDuplicateNote(batch.items, index)],
             rows: [
                 { type: 1, components: [
@@ -168,7 +171,6 @@ function renderPage(batch, key, index, heldImages = null) {
         retry: () => `${warn} **Image upload failed** (${item.error}). Nothing was saved yet. Try the image again with\n\`/autobuild retry_token:${item.retryToken} screenshot:<new attachment>\``,
     }[item.status]();
     return [{ type: 17, accent_color: 2829617, components: [
-        { type: 10, content: '# Review Extracted Loadout' },
         { type: 10, content: header },
         { type: 14, spacing: 1, divider: true },
         { type: 10, content: line },
@@ -179,7 +181,7 @@ function renderPage(batch, key, index, heldImages = null) {
 
 function heldImagesFor(interaction, batch) {
     if (!batch.source) return null;
-    return interaction.client.commands.get('Autobuild Loadout')?.heldFor(batch.source.key)?.images || null;
+    return interaction.client.commands.get('Autobuild Gunsmith')?.heldFor(batch.source.key)?.images || null;
 }
 
 // Always the page you are on, even when nothing is left to review: a save, a discard or a failure stays in front of you (Harkirat, 2026-10-20 12:36 EDT: "leave me on that build's page, let me see the confirmation or problem"). The saved builds open from the menu under it.
@@ -194,8 +196,19 @@ function withGlyphs(components) {
     return components;
 }
 
+// ⚠️ The buttons are NOT disabled when the 30 minutes run out: the panel is ephemeral, so only an interaction token can edit it, and a token lives 15 minutes. A click after that answers "This batch has expired" instead.
 async function show(interaction, batch, key) {
-    return sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))));
+    touch(key, batch);
+    return sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), { skipExpiry: true });
+}
+
+function touch(key, batch) {
+    if (batch.timer) clearTimeout(batch.timer);
+    batch.timer = setTimeout(() => {
+        batches.delete(key);
+        for (const it of batch.items) if (it.token) pendingAutobuilds.delete(it.token);
+    }, BATCH_MS);
+    batch.timer.unref?.();
 }
 
 // Saves every build still to review, in order (one at a time, so two builds of one weapon get different build names). Stops at the first build that is missing a category or a mode and returns its index; a failed image upload is recorded and the run carries on. `confirm` is confirmCore, passed in so the stop rule can be tested without a database.
@@ -236,8 +249,7 @@ async function readInto(interaction, newItems, { explicitCategory = null, badges
             try {
                 item.data = await extractToData(item.url, { explicitCategory, badgesOption, explicitMode, adminId: interaction.user.id, allBuilds });
                 item.token = crypto.randomBytes(8).toString('hex');
-                pendingAutobuilds.set(item.token, item.data);
-                setTimeout(() => pendingAutobuilds.delete(item.token), BATCH_MS).unref();
+                pendingAutobuilds.set(item.token, item.data); // dropped by the batch's own timer (touch), with the batch
             } catch (err) {
                 console.error('Bulk autobuild: extraction failed for one screenshot:', err.message);
                 item.status = 'failed';
@@ -262,7 +274,6 @@ async function runBulk(interaction, urls, { explicitCategory = null, badgesOptio
     const first = items.findIndex(it => it.status === 'pending');
     batch.page = first === -1 ? 0 : first;
     batches.set(key, batch);
-    setTimeout(() => batches.delete(key), BATCH_MS).unref();
     return show(interaction, batch, key);
 }
 
@@ -329,7 +340,6 @@ async function handleBatchComponent(interaction) {
         for (const i of restored) {
             const item = batch.items[i];
             pendingAutobuilds.set(item.token, item.data);
-            setTimeout(() => pendingAutobuilds.delete(item.token), BATCH_MS).unref();
             item.status = 'pending';
         }
         if (restored.length) batch.page = restored[0];
@@ -355,6 +365,7 @@ async function showBatchEditModal(interaction) {
     const item = batches.get(key)?.items[index];
     const data = item && pendingAutobuilds.get(item.token);
     if (!data || item.status !== 'pending') return expired(interaction);
+    touch(key, batches.get(key));
     return interaction.showModal(buildEditModal(item.token, data, id('editmodal', key, index)));
 }
 

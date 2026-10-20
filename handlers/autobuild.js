@@ -45,12 +45,12 @@ async function route(interaction) {
         if ((interaction.isStringSelectMenu() && interaction.customId.startsWith('autobuild_pick|'))
             || (interaction.isButton() && interaction.customId.startsWith('autobuild_pickall|'))) {
             const key = interaction.customId.split('|')[1];
-            const source = interaction.client.commands.get('Autobuild Loadout')?.heldFor(key);
+            const source = interaction.client.commands.get('Autobuild Gunsmith')?.heldFor(key);
             if (!source) {
                 try {
                     await interaction.reply({ content: "These images aren't held any more (the bot restarted, or 30 minutes passed). Right-click the message again.", ephemeral: true });
                 } catch (notifyError) {
-                    console.error('Autobuild Loadout: could not explain an expired picker (interaction likely expired):', notifyError);
+                    console.error('Autobuild Gunsmith: could not explain an expired picker (interaction likely expired):', notifyError);
                 }
                 return;
             }
