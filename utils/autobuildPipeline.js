@@ -1,7 +1,7 @@
 // utils/autobuildPipeline.js Shared state + logic for /autobuild, required from BOTH commands/autobuild.js's execute() (initial invocation) and handlers/autobuild.js's button/modal handlers (Confirm/Edit/Cancel/retry, added in Tasks 7/8). Kept out of commands/autobuild.js itself so handlers/autobuild.js can reach the same pendingAutobuilds Map without a circular require -- the router imports handlers, not the reverse; every command file already requires shared logic FROM utils/, never the reverse. Full design: docs/superpowers/specs/2026-07-19-loadout-automation-poc-design.md.
 const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const crypto = require('crypto');
-const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
 const Loadout = require('../models/Loadout');
 const { extractLoadoutFromImage } = require('./visionExtract');
 const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges, normalizeWeaponName, orderAttachmentsBySlot } = require('./adminParser');
@@ -479,18 +479,43 @@ async function cancelReview(interaction, token) {
     return interaction.followUp({ content: glyphs(BOT_EMOJI.cross + ' Discarded -- nothing was saved or uploaded.'), ephemeral: true });
 }
 
-// Edit modal -- ALL fields in one modal (per the design spec's decision), pre-filled from the pending token's current data. Discord caps a modal at 5 fields; attachments share ONE Paragraph field (one per line, matching every other loadout modal's convention in commands/manage.js) so weapon/code/attachments/category/badges all fit.
+// Edit modal -- ALL fields in one modal (per the design spec's decision), pre-filled from the pending token's current data. Discord caps a modal at 5 fields; attachments share ONE Paragraph field (one per line, matching every other loadout modal's convention in commands/manage.js) so weapon/code/attachments/category/badges all fit. The Badges dropdown's choices for a build's mode (Harkirat, 2026-10-20 14:08 EDT: "make badges in the modal a dropdown"). Values are the same tokens the old text box took, so parseLoadoutBadges reads a pick exactly as it read typing. DMZ adds the range-qualified tiers and has no rank modes (MP only). Pure.
+function badgeChoices(mode) {
+    const e = require('./emojiMap');
+    const icon = (mention) => (mention ? e.parseEmoji(mention) || { name: mention } : undefined);
+    const tiers = [['best', 'Best', e.best], ['top3', 'Top 3', e.top], ['top5', 'Top 5', e.top], ['capable', 'Capable', e.capable]];
+    const out = [
+        { label: 'Meta', value: 'meta', emoji: icon(e.meta) },
+        { label: 'Toxic', value: 'toxic', emoji: icon(e.toxic) },
+        { label: 'Ass', value: 'ass', description: 'Not with Meta or a tier', emoji: icon(e.ass) },
+        ...tiers.map(([v, l, m]) => ({ label: l, value: v, description: 'Pick one tier', emoji: icon(m) })),
+    ];
+    if (mode === 'DMZ') {
+        for (const [v, l, m] of tiers) for (const [rv, rl] of [['close', 'Close Range'], ['midlong', 'Mid-Long Range']]) out.push({ label: `${l} ${rl}`, value: `${v}${rv}`, description: 'Pick one tier', emoji: icon(m) });
+    } else {
+        const { RANK_MODES, RANK_MODE_EMOJI, rankModeToken } = require('./rankModes');
+        for (const m of RANK_MODES) out.push({ label: `Rank Mode: ${m}`, value: rankModeToken(m), emoji: icon(e.byName(RANK_MODE_EMOJI[m])) });
+    }
+    return out.map(o => (o.emoji ? o : (({ emoji, ...rest }) => rest)(o)));
+}
+
+// Edit modal -- ALL fields in one modal (per the design spec's decision), pre-filled from the pending token's current data. Discord caps a modal at 5 fields. Built from Labels since 2026-10-20 14:08 EDT so Badges can be a multi-pick dropdown, the shape /manage's Draw Type box uses (commands/manage.js's drawTypeLabel).
 function buildEditModal(token, data, customId = `autobuild_editmodal_${token}`) {
     const modal = new ModalBuilder().setCustomId(customId).setTitle('Adjust Extracted Loadout');
-    modal.addComponents(
-        // `|| ''` fallback on both -- TextInputBuilder.setValue(undefined) throws SYNCHRONOUSLY, which would throw inside showModal() before the interaction is ever acknowledged (the exact production incident documented in CLAUDE.md's `/manage` batch-refinement-pass section: buildEditDrawModal's .setValue(targetDraw.thumbnailUrl) on a legacy doc missing that field). Gemini extraction can genuinely leave weaponName/gunsmithCode undefined on a bad read, so this can't assume they're set the way category/badgesRaw two lines below already correctly don't assume.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setValue(data.weaponName || '').setRequired(true)),
+    const text = (id, label, input) => new LabelBuilder().setLabel(label).setTextInputComponent(input.setCustomId(id));
+    const picked = new Set(String(data.badgesRaw || '').toLowerCase().split(',').map(t => t.trim().replace(/-/g, '')).filter(Boolean));
+    const choices = badgeChoices(data.mode).map(o => ({ ...o, default: picked.has(o.value) }));
+    modal.addLabelComponents(
+        // `|| ''` fallback on every value -- TextInputBuilder.setValue(undefined) throws SYNCHRONOUSLY, which would throw inside showModal() before the interaction is ever acknowledged. Gemini extraction can genuinely leave weaponName/gunsmithCode undefined on a bad read.
+        text('weapon', 'Weapon Name', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(data.weaponName || '').setRequired(true)),
         // Not required since 2026-10-19 17:53 EDT: a DMZ build has no Gunsmith code at all, and a required box would force one to be invented.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('code').setLabel('Build Label | Gunsmith Code').setPlaceholder('Ranked | 1A2B3C4D5E   (both optional)').setStyle(TextInputStyle.Short).setValue(`${data.buildLabel || ''} | ${data.gunsmithCode || ''}`).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (one per line)').setStyle(TextInputStyle.Paragraph).setValue(data.attachments.join('\n')).setRequired(true)),
-        // The mode rides in the category box as "Category | Mode" because all five modal slots are taken -- the shape /manage's loadout box used for the same reason. See parseCategoryAndMode.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Category | Mode').setStyle(TextInputStyle.Short).setPlaceholder('AR | MP   or   SNIPER | DMZ').setValue(`${data.category || ''} | ${data.mode || ''}`).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('badges').setLabel('Badges (optional)').setStyle(TextInputStyle.Short).setPlaceholder('meta,best,top5,toxic').setValue(data.badgesRaw || '').setRequired(false))
+        text('code', 'Build Label | Gunsmith Code', new TextInputBuilder().setPlaceholder('Ranked | 1A2B3C4D5E   (both optional)').setStyle(TextInputStyle.Short).setValue(`${data.buildLabel || ''} | ${data.gunsmithCode || ''}`).setRequired(false)),
+        text('attachments', 'Attachments (one per line)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(data.attachments.join('\n')).setRequired(true)),
+        // The mode rides in the category box as "Category | Mode" -- see parseCategoryAndMode.
+        text('category', 'Category | Mode', new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder('AR | MP   or   SNIPER | DMZ').setValue(`${data.category || ''} | ${data.mode || ''}`).setRequired(true)),
+        new LabelBuilder().setLabel('Badges').setDescription('Optional. Pick any; one tier at most').setStringSelectMenuComponent(
+            new StringSelectMenuBuilder().setCustomId('badges').setPlaceholder('No badges').setRequired(false).setMinValues(0).setMaxValues(choices.length).addOptions(choices)
+        )
     );
     return modal;
 }
@@ -507,7 +532,9 @@ async function applyEditFields(interaction, data) {
     else { buildLabel = codeBox.trim(); rawCode = ''; }
     const rawAttachments = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(Boolean);
     const { category, mode } = parseCategoryAndMode(interaction.fields.getTextInputValue('category'), data.mode);
-    const badgesRaw = interaction.fields.getTextInputValue('badges').trim();
+    // The dropdown's picks are the same tokens the old text box took (badgeChoices), joined the way the box read them.
+    let badgesRaw = '';
+    try { badgesRaw = interaction.fields.getStringSelectValues('badges').join(','); } catch { badgesRaw = ''; }
 
     // Same richer select as runExtraction -- reused for the attachment corrector AND the recomputed duplicate/category-conflict warnings (an Edit is exactly what changes whether either applies).
     const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
@@ -559,5 +586,5 @@ module.exports = {
     // The shared halves bulk /autobuild (utils/autobuildBulk.js) drives.
     extractToData, confirmCore, confirmMessage, applyEditFields,
     // Exported for scripts/autobuildDmz.test.js; nothing else calls them.
-    resolveMode, parseCategoryAndMode, refreshReviewWarnings, nextBuildNumber, findDmzDuplicates, badgeTokensOf, badgeFieldsFor, writeLoadoutDoc, cleanAttachmentPairs
+    resolveMode, parseCategoryAndMode, refreshReviewWarnings, nextBuildNumber, badgeChoices, findDmzDuplicates, badgeTokensOf, badgeFieldsFor, writeLoadoutDoc, cleanAttachmentPairs
 };

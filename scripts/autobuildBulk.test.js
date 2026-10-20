@@ -253,6 +253,21 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         assert.ok(!JSON.stringify(renderPage({ items, page: 0, skipped: 0 }, 'kc', 0)).includes('Panel timeout'));
     });
 
+    await check('Adjust\'s Badges is a multi-pick dropdown, its values are the parser\'s own tokens, and the build\'s badges come pre-picked', () => {
+        const parser = require('../utils/adminParser');
+        for (const mode of ['MP', 'DMZ']) {
+            const choices = pipe.badgeChoices(mode);
+            assert.ok(choices.length <= 25, `${mode}: ${choices.length} options`);
+            for (const o of choices) assert.deepStrictEqual(parser.parseLoadoutBadges(o.value, mode).unrecognized, [], `${mode} ${o.value} is not a token the parser reads`);
+        }
+        assert.ok(pipe.badgeChoices('DMZ').some(o => o.value === 'bestclose') && !pipe.badgeChoices('DMZ').some(o => o.value === 'hp'));
+        const json = pipe.buildEditModal('t', { weaponName: 'PKM', gunsmithCode: '1A', attachments: ['A'], category: 'LMG', mode: 'MP', badgesRaw: 'meta,top5' }).toJSON();
+        const select = json.components.map(c => c.component).find(c => c && c.custom_id === 'badges');
+        assert.strictEqual(select.type, 3);
+        assert.strictEqual(select.min_values, 0);
+        assert.deepStrictEqual(select.options.filter(o => o.default).map(o => o.value), ['meta', 'top5']);
+    });
+
     if (failed) { console.log(`\n${failed} bulk /autobuild check(s) failed.`); process.exit(1); }
     console.log('\nAll bulk /autobuild checks passed.');
     process.exit(0);

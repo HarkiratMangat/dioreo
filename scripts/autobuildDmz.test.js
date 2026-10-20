@@ -210,7 +210,7 @@ const lastToken = () => [...pipeline.pendingAutobuilds.keys()].pop();
     });
     await check('the Edit box pre-fills "Category | Mode" and no longer demands a Gunsmith code', () => {
         const json = pipeline.buildEditModal('t', { weaponName: 'AK117', gunsmithCode: '', attachments: DMZ_AK117, category: 'AR', mode: 'DMZ', badgesRaw: '' }).toJSON();
-        const inputs = Object.fromEntries(json.components.map(r => { const c = r.components[0]; return [c.custom_id, c]; }));
+        const inputs = Object.fromEntries(json.components.map(r => { const c = r.component || r.components[0]; return [c.custom_id, c]; }));
         assert.strictEqual(inputs.category.value, 'AR | DMZ');
         assert.strictEqual(inputs.code.required, false);
     });
