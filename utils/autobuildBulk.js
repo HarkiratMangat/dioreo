@@ -13,9 +13,8 @@ const { buildPaginationRow } = require('./paginationRow');
 const emojis = require('./emojiMap');
 
 const MAX_SCREENSHOTS = 10;
-// How long a batch idles before it closes, counted from its LAST click (Harkirat, 2026-10-20 13:57 EDT, pick "B"): a private (ephemeral) panel closes after 14 idle minutes and greys its buttons out, which has to happen inside the 15-minute life of the last click's token, the only thing that can edit an ephemeral message; a PUBLIC panel ("visibility: public") stays open 30 idle minutes. Found 13:49 EDT: the panel had been dying at 10 minutes because every send went through sendV2Payload's bot-wide idle disable.
-const PRIVATE_IDLE_MS = 14 * 60 * 1000;
-const PUBLIC_IDLE_MS = 30 * 60 * 1000;
+// How long a batch idles before it closes, counted from its LAST click: 14 minutes for every batch, private or public, and its buttons grey out at the end (Harkirat, 2026-10-20 14:11 EDT: "i thought we kept it the 14 so we can have the grey buttons?"). Greying out has to happen inside the 15-minute life of the last click's token, the only thing that can edit the panel, so the idle length stays under 15. A 30-minute public window was tried at 13:57 EDT and dropped because it could not grey out. Found 13:49 EDT: the panel had been dying at 10 minutes because every send went through sendV2Payload's bot-wide idle disable at its default length.
+const IDLE_MS = 14 * 60 * 1000;
 const READ_AT_ONCE = 3;
 
 // key -> { items: [{ url, token, data, status, error, doc, retryToken, sourceIndex }], page, skipped, adminId, source } status: pending (to review) · saved · cancelled (discarded) · failed (couldn't read) · retry (image upload failed on Save) source: { key, total } when the batch came from the right-click's picker, so Add more can offer that message's other screenshots.
@@ -199,20 +198,19 @@ function withGlyphs(components) {
     return components;
 }
 
-// A private batch greys out at 14 idle minutes through the bot-wide expiry, given that idle length. A public one is not greyed out: 30 minutes is past the token's 15, so a click after it answers "This batch has expired" instead.
+// The bot-wide expiry greys the batch out after IDLE_MS without a click.
 async function show(interaction, batch, key) {
     touch(key, batch);
-    const idle = batch.public ? PUBLIC_IDLE_MS : PRIVATE_IDLE_MS;
-    return sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), batch.public ? { skipExpiry: true } : { expiryMs: idle });
+    return sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), { expiryMs: IDLE_MS });
 }
 
 function touch(key, batch) {
     if (batch.timer) clearTimeout(batch.timer);
-    batch.expiresAt = Date.now() + (batch.public ? PUBLIC_IDLE_MS : PRIVATE_IDLE_MS);
+    batch.expiresAt = Date.now() + IDLE_MS;
     batch.timer = setTimeout(() => {
         batches.delete(key);
         for (const it of batch.items) if (it.token) pendingAutobuilds.delete(it.token);
-    }, batch.public ? PUBLIC_IDLE_MS : PRIVATE_IDLE_MS);
+    }, IDLE_MS);
     batch.timer.unref?.();
 }
 
@@ -392,5 +390,5 @@ async function applyBatchEdit(interaction) {
 module.exports = {
     runBulk, handleBatchComponent, showBatchEditModal, applyBatchEdit, MAX_SCREENSHOTS,
     // Exported for scripts/autobuildBulk.test.js.
-    batches, withGlyphs, PRIVATE_IDLE_MS, PUBLIC_IDLE_MS, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, applyResult, unreadImages,
+    batches, withGlyphs, IDLE_MS, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, applyResult, unreadImages,
 };
