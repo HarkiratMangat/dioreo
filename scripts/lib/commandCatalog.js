@@ -82,6 +82,11 @@ function leavesOf(json) {
 const normalizeOption = o => ({
     name: o.name,
     description: o.description,
+    // Discord's ApplicationCommandOptionType. The page labels an option by what it TAKES, and a whole-number option (`build`) used to fall through to "text" because this was the one fact the reduction dropped.
+    type: o.type,
+    // Bounds exist only on number options; undefined everywhere else, and left undefined so a reader of the page is never told a limit the client does not enforce.
+    min: o.min_value,
+    max: o.max_value,
     required: Boolean(o.required),
     autocomplete: Boolean(o.autocomplete),
     // Discord renders the choice's NAME and never its value, so the name is the only half a reader ever sees — putting the value on the page would print a string that appears nowhere in the client.

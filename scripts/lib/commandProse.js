@@ -15,7 +15,7 @@
  */
 const COMMANDS = {
     '/help': {
-        purpose: 'Every command Dioreo has, listed inside Discord.',
+        purpose: 'Every command you can use, listed inside Discord.',
         facts: ['The `cmd` option jumps straight to one command instead of the whole list.',
                 'This is the only command that answers privately unless you say otherwise.'],
         keywords: 'commands directory list menu what can it do capabilities',
@@ -30,22 +30,23 @@ const COMMANDS = {
     '/gunsmith mp': {
         purpose: 'The attachment build for one MP weapon, or every build in a class, the meta, or all of MP.',
         facts: ['Discord searches as you type, and partial words match — "hol" finds Holger 26.',
-                'The top of the list opens a whole set: All META builds, All MP builds, then each class.',
+                'With nothing typed, the top of the list opens a whole set: All META builds, All MP builds, then each class.',
                 'The reply comes back in that weapon\'s category colour.'],
         sample: { weapon: 'AK117' },
         keywords: 'loadout loadouts build builds attachment attachments gunsmith class setup weapon gun mp meta category browse',
     },
     '/gunsmith dmz': {
         purpose: 'The attachment build for one DMZ weapon, or the DMZ meta, or all of DMZ.',
-        facts: ['The top of the list opens All META builds and All DMZ builds.',
+        facts: ['With nothing typed, the top of the list opens All META builds and All DMZ builds.',
                 'A meta browse has an MP Meta / DMZ Meta switch under it.'],
         sample: { weapon: 'Fennec' },
         keywords: 'loadout loadouts build builds attachment gunsmith dmz meta weapon gun browse',
     },
     '/dmz': {
         purpose: 'DMZ builds, which are a separate set from the MP ones.',
-        facts: ['DMZ weapons are ranked by combat range rather than by category.',
-                'Searching here never returns an MP build, and vice versa.'],
+        facts: ['DMZ builds are badged by combat range, Close or Mid-Long, rather than by weapon class.',
+                'Searching here never returns an MP build, and vice versa.',
+                'It suggests weapons only. To browse All META or All DMZ builds, use `/gunsmith dmz`.'],
         sample: { weapon: 'OUTLAW' },
         keywords: 'loadout loadouts build builds attachment gunsmith dmz weapon gun class setup',
     },
@@ -57,19 +58,21 @@ const COMMANDS = {
     },
     '/draw prices': {
         purpose: 'What a draw costs, spin by spin.',
-        facts: ['CP prices differ by region, so pick the one that matches your account.',
-                'Every spin in a draw costs more than the last — the table shows each step.'],
+        facts: ['Your region is the price of your first spin on a Mythic or Legendary Weapon draw: 10, 20 or 30 CP.',
+                'Every spin costs more than the last, and each draw lists every spin with the running total.'],
         keywords: 'lucky draw cost price cp spin cheapest money currency region',
     },
     '/draw calculator': {
         purpose: 'How much more CP you need, and the cheapest way to buy it.',
-        facts: ['Works out the top-up bundles that reach your target with the least waste.'],
+        facts: ['It starts from the spins you have already done and what you hold: CP, Mythic Cards and Mythic Coins.',
+                'Bundle prices use the currency you set in `/settings`, and you can save up to 25 calculations.'],
         keywords: 'cp credits cost short top up buy budget how much calculator maths lucky draw',
     },
 
     '/calendar': {
         purpose: "This season's events, draws and playlist rotation, with dates.",
-        facts: ['`view` hides anything that has already finished.'],
+        facts: ['It opens on Draws; `page` jumps to Events or Playlists & Modes instead.',
+                '`view` set to Active/Upcoming Only hides events that have already ended.'],
         keywords: 'events schedule playlist rotation dates season what is on when ranked',
     },
     '/patch notes': {
@@ -78,22 +81,23 @@ const COMMANDS = {
         keywords: 'balance buff nerf buffed nerfed update changes weapon meta patch season',
     },
     '/season end': {
-        purpose: 'A live countdown to the end of the season.',
-        facts: ['The countdown is live — it keeps counting down in the message after it is posted.'],
+        purpose: 'How long until the Battle Pass, Ranked Series and DMZ Season end.',
+        facts: ['Each one shows its exact date and a live countdown that keeps running after the message is posted.',
+                'A date that has not been announced shows as TBD.'],
         keywords: 'countdown ends ending finish reset time left when days',
     },
 
     '/colors': {
         purpose: 'The colours in your own Discord profile, as hex values.',
         facts: ['Reads your avatar, banner, display name, nameplate and decoration.',
-                'Animated avatars and nameplates are sampled from a still frame.',
-                '`source` switches between your main profile and your profile for this server.'],
+                'Animated avatars, banners, nameplates and decorations are sampled across the whole animation, not one frame.',
+                'In a server where you have a server profile it shows that one; `source` picks main or server.'],
         keywords: 'colour colours color hex profile avatar banner nameplate decoration palette pfp accent',
     },
     '/timestamp': {
         purpose: "A time that reads correctly for every person who sees it.",
-        facts: ['Plain English works — "tomorrow", "sun 4:30pm", "in 2 hours".',
-                'Leave `style` blank and you get all nine formats at once.',
+        facts: ['Plain English works — "tomorrow", "sun 4:30pm", "this saturday 7pm".',
+                'Leave `style` blank for all nine formats at once, or the style you saved in `/settings`.',
                 'Everyone who reads it sees it in their own timezone, not yours.'],
         examples: { datetime: ['tomorrow', 'sun 4:30pm', '19:30'] },
         sample: { datetime: 'sun 4:30pm' },
@@ -101,8 +105,8 @@ const COMMANDS = {
     },
 
     '/settings': {
-        purpose: 'Your saved timezone, region, and how Dioreo answers you.',
-        facts: ['What you set here becomes the default for every other command.'],
+        purpose: 'Your saved defaults: who sees your replies, plus your timezone, draw-price region, price currency and timestamp style.',
+        facts: ['A `visibility` you pick in a command beats the default you saved here.'],
         keywords: 'preferences prefs timezone region defaults change my profile options',
     },
 };
@@ -122,8 +126,8 @@ const ASKS = [
     { q: "What's in the draws this season", to: '/draws' },
     { q: 'The build for one weapon', to: '/gunsmith mp' },
     { q: 'Builds for a category, or the meta', to: '/gunsmith mp' },
-    { q: 'The same, but for DMZ', to: '/gunsmith dmz' },
-    { q: 'A DMZ build, the old way', to: '/dmz' },
+    { q: 'DMZ builds, or the DMZ meta', to: '/gunsmith dmz' },
+    { q: 'A DMZ build, straight to a weapon', to: '/dmz' },
     { q: 'When the season ends', to: '/season end' },
     { q: "What's on this season, and when", to: '/calendar' },
     { q: 'What got buffed or nerfed', to: '/patch notes' },

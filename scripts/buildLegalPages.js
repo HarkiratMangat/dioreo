@@ -238,8 +238,11 @@ const TOOL_PAGES = [
            cannot silently stop applying. */
         lede: 'Start from the command you know — or from what you are trying to do.',
         ledeEm: 'what you are trying to do',
-        blurb: 'Every Dioreo command, what it does, and every option it accepts.',
-        desc: 'Every Dioreo command, what each one does, and every option it accepts -- with a copyable example.'
+        /* ⚠️ "EVERY" IS SCOPED ON PURPOSE. The page lists what a player can run and leaves out the admin
+           commands and the right-click apps, so "every Dioreo command" was a claim the page itself
+           contradicted. "Option" is the word Discord's own command picker uses, so it stays. */
+        blurb: 'Every slash command a player can use, what it does, and every option it takes.',
+        desc: 'Every Dioreo slash command a player can use, what each one does, and every option it takes -- with an example you can copy.'
     },
 ];
 
@@ -7846,6 +7849,8 @@ function indexPage(built) {
     };
     // ⚠️ hrefTo, not a bare p.out. The chronicle pages live in a different directory AND one of them is called index.html — the same name as this page. A bare href would have pointed the site's biggest new section at the page the reader is already on, and linkAudit() could not have caught it: the target resolves perfectly, it is simply the wrong file.
     const here = { out: 'index.html', dir: '' };
+    // The way in to the /commands page: a pill in the header beside Source and Install, chosen from three mocked placements on 2026-10-19 22:39 EDT because it is the one spot visible on first load at both desktop and phone widths (the other two were a link under the typing line and a card above the fine print, both below the fold on a short window). Its label is its visible word, so there is no aria-label to drift from it, and it is not in the numbered legal series on purpose: the number series is what tells a reader a document binds them. hrefTo, not a bare name, for the same reason as the rows below.
+    const commandsLink = `<a class="cmdlink" href="${hrefTo(TOOL_PAGES[0], here)}">Commands</a>`;
     const invRow = list => list.map(p => `
       <a class="inv" href="${hrefTo(p, here)}" style="--ia:${p.accent}">
         <span class="inv-b">
@@ -7943,7 +7948,20 @@ body{min-height:100vh;display:flex;align-items:center;padding:clamp(1.4rem,5.5vh
    on the page now, some of that reclaimed space goes back in here rather
    than leaving it all at the very top. */
 .top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.6rem,9.5vh,4.8rem)}
-.top .ghb{margin-left:auto}
+.top .cmdlink{margin-left:auto}/* The pill takes the push to the right edge that .ghb used to carry, so Source and Install stay together after it. */
+.cmdlink{display:inline-flex;align-items:center;height:37px;padding:0 1rem;border-radius:999px;
+  font-family:var(--mono);font-size:.7rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  text-decoration:none;color:var(--ink);
+  /* An ink tint over the page, the site's own idiom for a recessed bed (the landing command line's option chip uses the same one), so it inverts per theme with no second declaration and sits quieter than Install, which is the one action. A color-mix surface is invisible to contrastAudit(), so the pairing was worked out by hand: --ink on that bed measures 12.04:1 dark and 11.88:1 light, the figures recorded beside the command line's option chip. */
+  background:color-mix(in srgb,var(--ink) 10%,transparent);transition:background-color .2s}
+.cmdlink:hover{background:color-mix(in srgb,var(--ink) 17%,transparent)}
+.cmdlink:active{background:color-mix(in srgb,var(--ink) 22%,transparent)}
+@media (max-width:620px){.cmdlink{height:38px;padding:0 .82rem}}
+/* ⚠️ BELOW ~400px THE HEADER RUNS OUT OF ROOM AND THE MASCOT IS WHAT GIVES: it is the only flexible item, and at 320px the first build of this pill left it about 10px wide, a blob where the mascot should be. Tighter tracking and padding on the pill, and a smaller gap, win back most of it; the rest is the mascot shrinking, which at 320px is the honest trade for a fourth control in a header that fits three. Measured at 320 / 360 / 390 with the mascot's width in each. */
+@media (max-width:400px){
+  .top{gap:.4rem}
+  .cmdlink{padding:0 .62rem;letter-spacing:.07em;font-size:.64rem}
+}
 /* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
    The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
    at -.05em on a ~66px display size the tracking pulled unrelated pairs into
@@ -8415,6 +8433,7 @@ ${cmdRoleCss('.cmd-line')}
 <main class="wrap" id="main" tabindex="-1">
   <div class="top">
     ${wordmark(null)}
+    ${commandsLink}
     ${repoBtn}
     ${installBtn()}
   </div>

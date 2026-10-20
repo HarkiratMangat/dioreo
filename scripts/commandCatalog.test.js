@@ -276,6 +276,50 @@ check('every live command is accounted for as fixed-colour or derive-per-render'
     assert.deepStrictEqual(missed, [], 'a command in neither set renders a grey dot with nothing saying why');
 });
 
+// ── option types: a whole-number option must not read as free text ────────────────────────────── `build` (an integer) used to carry a "text" badge because the catalog dropped Discord's option type and the page fell back to "text" for anything without choices. These cases pin the three halves: the type survives the catalog, every type in use has a label, and an unlisted one throws instead of defaulting.
+const { optionKind, badges, bareHint } = require('./lib/commandsPage');
+const allOptions = allCommands.flatMap(c => c.options.map(o => ({ command: c.path, option: o })));
+
+check('the catalog keeps Discord\'s option type, and min / max where one is set', () => {
+    const missing = allOptions.filter(({ option }) => typeof option.type !== 'number').map(({ command, option }) => command + ' ' + option.name);
+    assert.deepStrictEqual(missing, [], 'an option without a type cannot be labelled');
+    const build = byPath.get('/dmz').options.find(o => o.name === 'build');
+    assert.strictEqual(build.type, 4, '`build` is an integer option');
+    assert.strictEqual(build.min, 1, '`build` starts at 1, and the page says so');
+});
+
+check('every option type in use on the live bot has a label', () => {
+    for (const { option } of allOptions) assert.doesNotThrow(() => optionKind(option), 'option ' + option.name);
+});
+
+check('an integer option is badged "whole number", never "text"', () => {
+    const integers = allOptions.filter(({ option }) => option.type === 4 && !option.choices.length && !option.autocomplete);
+    assert.ok(integers.length >= 3, '`build` on /dmz and both /gunsmith leaves are integers; found ' + integers.length);
+    for (const { command, option } of integers) {
+        const html = badges(option, false);
+        assert.ok(html.includes('whole number'), command + ' ' + option.name + ' should read whole number');
+        assert.ok(!html.includes('>text<'), command + ' ' + option.name + ' must not read as text');
+    }
+});
+
+check('a free-text option still reads "text", and a choice list still wins over the type', () => {
+    assert.ok(badges({ name: 'q', type: 3, choices: [], autocomplete: false }, true).includes('>text<'));
+    assert.ok(badges({ name: 'v', type: 3, choices: [{ name: 'A', value: 'a' }, { name: 'B', value: 'b' }], autocomplete: false }, false).includes('2 choices'));
+});
+
+check('an option type with no label throws instead of falling back to text', () => {
+    // 7 is Discord's CHANNEL type: nothing here uses it, so it must fail loudly the day someone does.
+    assert.throws(() => optionKind({ name: 'where', type: 7 }), /no badge label/);
+});
+
+check('bareHint: a number says its bounds, a search says Discord suggests, anything else keeps its description', () => {
+    assert.strictEqual(bareHint({ type: 4, min: 1, autocomplete: false, description: 'x' }), 'A whole number, 1 or higher.');
+    assert.strictEqual(bareHint({ type: 4, min: 1, max: 25, autocomplete: false, description: 'x' }), 'A whole number from 1 to 25.');
+    assert.strictEqual(bareHint({ type: 10, max: 9, autocomplete: false, description: 'x' }), 'A number, 9 or lower.');
+    assert.strictEqual(bareHint({ type: 3, autocomplete: true, description: 'x' }), 'Discord suggests matches as you type.');
+    assert.strictEqual(bareHint({ type: 3, autocomplete: false, description: 'Your timezone' }), 'Your timezone');
+});
+
 const { assertSearchCoverage } = require('./lib/commandProse');
 
 check('the search answers the queries a reader actually types', () => {

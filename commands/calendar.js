@@ -150,8 +150,9 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     calendarComponents.push(withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji)));
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
+    // The pointer used to read "Change this under /settings's Preferences page" -- the saved Active/All default was silenced 2026-08-15 (see the NOTE at execute()), so the only control left is this command's own `view` option, and the old text sent people to a setting that no longer exists.
     const noneScheduledText = filterMode === 'active' && totalEntryCount > 0
-        ? `*No active or upcoming events right now — every event this season has already ended. Change this under \`/settings\`'s Preferences page.*`
+        ? `*No active or upcoming events right now — every event this season has already ended. Set \`view\` to All Events to see them.*`
         : `*There are currently no events scheduled for this season.*`;
 
     if (safePage === 0) {

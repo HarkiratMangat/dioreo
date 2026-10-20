@@ -646,7 +646,7 @@ const RECEIVER_JS = [
     '      tok.className="rx-tok"+(landed===name?" rx-land":"");',
     '      tok.setAttribute("data-state", val?"filled":(req?"need":"empty"));',
     '      tok.setAttribute("data-goto",name);',
-    '      tok.setAttribute("aria-label",(val?("Change "+name):("Set "+name)));',
+    '      tok.setAttribute("aria-label",(val?("Change "+name+" "+val):("Set "+name)));',
     '      tok.appendChild(el("span","rx-o",name));',
     '      if(val){ tok.appendChild(el("span","rx-v",val)); plain+=" "+name+":"+val; set++; }',
     '      line.appendChild(tok);',
@@ -878,14 +878,45 @@ const VISIBLE_CHOICES = 12;
 const ownOptions = command => command.options
     .slice().sort((a, b) => Number(b.required) - Number(a.required));
 
+/**
+ * What a free-entry option takes, by Discord's ApplicationCommandOptionType.
+ *
+ * ⚠️ AN UNLISTED TYPE THROWS RATHER THAN FALLING BACK TO "text". That fallback is the bug this table replaces: `build` is an integer option, and every one of them was badged "text" because anything that was neither a choice list nor an autocomplete took the last branch. A future user, channel or attachment option would have been mislabelled the same silent way, so the build stops and names it. The keys are Discord's own numbers: 3 string, 4 integer, 5 boolean, 10 number.
+ */
+const OPTION_KIND = { 3: 'text', 4: 'whole number', 5: 'yes / no', 10: 'number' };
+
+function optionKind(option) {
+    const kind = OPTION_KIND[option.type];
+    if (!kind) {
+        throw new Error('commandsPage.js: the option "' + option.name + '" has Discord type ' + option.type +
+            ', which has no badge label. Add it to OPTION_KIND rather than letting it read as text.');
+    }
+    return kind;
+}
+
 /** What an option IS, in three words or fewer: whether it must be filled, and what it takes. */
 function badges(option, required) {
     const out = ['<span class="rx-badge' + (required ? ' rx-b-req' : '') + '">' +
         (required ? 'required' : 'optional') + '</span>'];
     if (option.choices.length) out.push('<span class="rx-badge">' + option.choices.length + ' choices</span>');
     else if (option.autocomplete) out.push('<span class="rx-badge">search</span>');
-    else out.push('<span class="rx-badge">text</span>');
+    else out.push('<span class="rx-badge">' + optionKind(option) + '</span>');
     return '<span class="rx-meta">' + out.join('') + '</span>';
+}
+
+/**
+ * What an OPEN optional slot says when it has no choices to show. The summary above it already prints Discord's description, so repeating it here printed the same sentence twice, one under the other, on every `build`, `cmd` and `season` option; this says what the description does not.
+ */
+function bareHint(option) {
+    if (option.autocomplete) return 'Discord suggests matches as you type.';
+    if (option.type === 4 || option.type === 10) {
+        const noun = option.type === 4 ? 'A whole number' : 'A number';
+        if (option.min != null && option.max != null) return noun + ' from ' + option.min + ' to ' + option.max + '.';
+        if (option.min != null) return noun + ', ' + option.min + ' or higher.';
+        if (option.max != null) return noun + ', ' + option.max + ' or lower.';
+        return noun + '.';
+    }
+    return option.description || '';
 }
 
 /** Which weapon list an option searches, or '' when it is not a weapon option. */
@@ -951,7 +982,7 @@ function renderOptional(option, command, C, tints) {
     const { esc } = C;
     const body = option.choices.length
         ? choiceBlock(option, tints, null)
-        : '<p class="rx-bare">' + esc(option.description || '') + '</p>';
+        : '<p class="rx-bare">' + esc(bareHint(option)) + '</p>';
     return '<details class="rx-slot" data-opt="' + esc(option.name) + '" data-req="0">' +
         '<summary class="rx-sum">' +
         '<span class="rx-sumhead"><span class="rx-lab">' + esc(option.name) + '</span>' +
@@ -978,7 +1009,7 @@ function runLine(command, C) {
             : '';
         const state = value ? 'filled' : (option.required ? 'need' : 'empty');
         parts.push('<button type="button" class="rx-tok" data-state="' + state + '" ' +
-            'data-goto="' + esc(option.name) + '" aria-label="' + (value ? 'Change ' : 'Set ') + esc(option.name) + '">' +
+            'data-goto="' + esc(option.name) + '" aria-label="' + (value ? 'Change ' : 'Set ') + esc(option.name) + (value ? ' ' + esc(value) : '') + '">' +
             '<span class="rx-o">' + esc(option.name) + '</span>' +
             (value ? '<span class="rx-v">' + esc(value) + '</span>' : '') + '</button>');
         if (value) { plain += ' ' + option.name + ':' + value; set++; }
@@ -1183,7 +1214,7 @@ ${C.mobileNav(page, '')}
   </header>
 
   <div class="rx-rail">
-    <nav class="rx-scroll" aria-label="All commands">
+    <nav class="rx-scroll" aria-label="Command list">
       <a class="rx-chip rx-home-chip" id="rx-homechip" href="#"><i class="rx-dot" aria-hidden="true"></i>All commands</a>
       ${rail.join('')}
     </nav>
@@ -1200,11 +1231,11 @@ ${C.mobileNav(page, '')}
       ${panels.join('')}
       <section class="rx-home" tabindex="-1">
         <div class="rx-card" style="--cc:var(--accent);--con:var(--accent-on)">
-          <h2>Every command</h2>
-          <p class="rx-lead">Pick one to see what it takes, fill it in, and copy the line into Discord.</p>
+          <h2>All commands</h2>
+          <p class="rx-lead">Pick one, fill in what it takes, and copy the line into Discord.</p>
           <div class="rx-cards">${cards.join('')}</div>
-          <p class="rx-asks-h">Or start from what you want</p>
-          <p class="rx-asks-s">Each of these is one command.</p>
+          <p class="rx-asks-h">Or start from what you want to do</p>
+          <p class="rx-asks-s">Each one opens the command that does it.</p>
           <div class="rx-asks">${asks}</div>
         </div>
       </section>
@@ -1230,7 +1261,7 @@ ${C.TOTOP_HTML}
 
 module.exports = {
     commandsShell, CHROME_KEYS, SIGNAL, RECEIVER_CSS, RECEIVER_JS,
-    VISIBLE_CHOICES, ownOptions, solveText, solveOn, darken,
+    VISIBLE_CHOICES, ownOptions, solveText, solveOn, darken, optionKind, badges, bareHint,
     loadAccents, loadCategoryAccents, loadScopeAccents, loadWeaponIndex,
     DERIVED, DERIVED_NEUTRAL, GROUND_DARK, GROUND_LIGHT,
 };
