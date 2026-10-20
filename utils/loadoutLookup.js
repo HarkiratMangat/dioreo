@@ -1,4 +1,5 @@
 // Shared weapon-lookup + render path for /dmz and /gunsmith mp -- previously duplicated as commands/dmz.js's execute() and handlers/router.js's ~110-line MP fallback (the dynamically generated /all + /<category> commands had no 'data'+'execute' module in commands/, so interaction.client.commands.get() always missed and control fell through to that block). Both copies are gone; this is the one path both callers now share, differing only by `mode`.
+const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const Loadout = require('../models/Loadout');
 const UserPreference = require('../models/UserPreference');
 const { buildLoadoutCard, getMpCategoryAccent } = require('./loadoutRender');
@@ -33,7 +34,7 @@ async function lookupAndRenderWeapon(interaction, { mode, rawQuery, requestedBui
         } else if (fuzzyMatches.length > 1) {
             const names = fuzzyMatches.slice(0, 10).map(w => w.weaponName).join(', ');
             try {
-                await interaction.followUp({ content: `❌ That's not specific enough — did you mean one of these? **${names}**\nPick a suggestion from the dropdown as you type instead of typing the full name.` });
+                await interaction.followUp({ content: `${BOT_EMOJI.cross} That's not specific enough — did you mean one of these? **${names}**\nPick a suggestion from the dropdown as you type instead of typing the full name.` });
             } catch (notifyError) {
                 console.error(`Failed to notify user of ambiguous ${mode} weapon match (interaction likely expired):`, notifyError);
             }
@@ -48,7 +49,7 @@ async function lookupAndRenderWeapon(interaction, { mode, rawQuery, requestedBui
             : ' Double-check the spelling, or pick a suggestion from the dropdown as you type.';
         const noneLabel = mode === 'DMZ' ? 'specialized DMZ builds' : 'MP builds';
         try {
-            await interaction.followUp({ content: `❌ No ${noneLabel} were found for that weapon.${hint}` });
+            await interaction.followUp({ content: `${BOT_EMOJI.cross} No ${noneLabel} were found for that weapon.${hint}` });
         } catch (notifyError) {
             console.error(`Failed to notify user of missing ${mode} builds (interaction likely expired):`, notifyError);
         }

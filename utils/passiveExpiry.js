@@ -29,8 +29,8 @@ function disableAllComponents(components) {
     });
 }
 
-// Call once per render of a passively-expiring panel (initial command AND every button/select re-render), right after the message is sent/edited. `components` must be the EXACT array just sent -- it's what gets cloned-and-disabled if the timer ever actually fires.
-function schedulePanelExpiry(interaction, messageId, components) {
+// Call once per render of a passively-expiring panel (initial command AND every button/select re-render), right after the message is sent/edited. `components` must be the EXACT array just sent -- it's what gets cloned-and-disabled if the timer ever actually fires. `timeoutMs` (2026-10-20 13:57 EDT, bulk /autobuild): a panel may idle out sooner or later than the bot-wide 10 minutes, but never past the 15-minute life of the token that has to grey it out.
+function schedulePanelExpiry(interaction, messageId, components, timeoutMs = IDLE_TIMEOUT_MS) {
     const existing = pendingTimers.get(messageId);
     if (existing) clearTimeout(existing);
 
@@ -45,7 +45,7 @@ function schedulePanelExpiry(interaction, messageId, components) {
             // Best-effort UX nicety, not a critical path -- the token may already be dead (bot restarted since this render, or the message was deleted), and there's no user to notify either way. Log and move on rather than let this throw into an unhandled rejection from inside a bare setTimeout callback.
             console.error('Passive panel expiry: failed to disable components (token likely expired or message gone):', err?.message || err);
         }
-    }, IDLE_TIMEOUT_MS);
+    }, timeoutMs);
 
     pendingTimers.set(messageId, timeoutHandle);
 }

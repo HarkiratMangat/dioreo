@@ -5,6 +5,7 @@
 //
 // ⚠️ THE STORES BELOW ARE MODULE-LEVEL AND MANAGE-PRIVATE, same as before the split. They rely on Node caching this module so exactly one instance exists -- require it by exactly one path (`./shared` from inside handlers/manage/, never a relative path that resolves differently).
 
+const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { randomUUID } = require('crypto');
 
 // ==========================================
@@ -49,7 +50,7 @@ function registerBulkDelete(interaction, { description, summary, apply }) {
     pendingBulkDeletes.set(token, { description, summary, apply });
     setTimeout(() => pendingBulkDeletes.delete(token), 10 * 60 * 1000).unref();
     return interaction.reply({
-        content: `⚠️ **Confirm Bulk Delete?**\n${summary.join('\n')}`,
+        content: `${BOT_EMOJI.warn} **Confirm Bulk Delete?**\n${summary.join('\n')}`,
         components: [{
             type: 1, components: [
                 { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_bulkdelconfirm_${token}` },
@@ -65,7 +66,7 @@ function registerBulkDelete(interaction, { description, summary, apply }) {
 // ==========================================
 // Shared by every bulk draw-save route (single add/edit uses resolveThumbnail directly, since there's only ever one draw to resolve). Runs every parsed draw's thumbnailUrl through resolveThumbnail() concurrently -- a draw with no provided URL AND no existing cache hit has nothing to show and is dropped from the batch entirely (reported back as "skipped", not silently discarded) rather than saved with a broken/undefined image field.
 function thumbnailNote(thumbResult) {
-    if (thumbResult.error) return `⚠️ Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
+    if (thumbResult.error) return `${BOT_EMOJI.warn} Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
     if (thumbResult.reused && thumbResult.matchedTitle) return `ℹ️ Thumbnail reused from a similarly-named cached draw: "${thumbResult.matchedTitle}"`;
     return null;
 }
@@ -175,7 +176,7 @@ async function resolveManagePanelAction(interaction, group, action, match) {
 
         // The prompt used to promise "an Undo button right after" -- that inline button was retired when Undo moved to /bot's Changes page (plan 2 Task 7), and since the permission restructure (2026-10-19 19:38 EDT) a /manage-only admin cannot open that page at all, so the promise was false for exactly the person reading it.
         return interaction.reply({
-            content: `⚠️ **Are you sure you want to delete ${match.label}?** Every change is recorded, and it can be reverted from \`/bot\`'s Changes page.`,
+            content: `${BOT_EMOJI.warn} **Are you sure you want to delete ${match.label}?** Every change is recorded, and it can be reverted from \`/bot\`'s Changes page.`,
             components: [{
                 type: 1, components: [
                     { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_delconfirm_${token}` },
@@ -255,7 +256,7 @@ async function handlePick(interaction) {
 
     if (!match) {
         try {
-            await prompt(interaction, { text: '❌ That item no longer exists -- it may have been changed or removed since you searched.' });
+            await prompt(interaction, { text: BOT_EMOJI.cross + ' That item no longer exists -- it may have been changed or removed since you searched.' });
         } catch (notifyError) {
             console.error('Failed to notify user of stale manage-panel pick (interaction likely expired):', notifyError);
         }
@@ -277,7 +278,7 @@ async function handleSearchSubmit(interaction) {
     const searchAgainRow = { type: 1, components: [{ type: 2, style: 2, label: 'Search Again', custom_id: `mng_act_${group}_${action}` }] };
 
     if (matches.length === 0) {
-        return interaction.reply({ content: `❌ No matches found for "${query}".`, components: [searchAgainRow], ephemeral: true });
+        return interaction.reply({ content: `${BOT_EMOJI.cross} No matches found for "${query}".`, components: [searchAgainRow], ephemeral: true });
     }
 
     // Discord's API does not allow responding to a MODAL_SUBMIT interaction with another modal at all (`ModalSubmitInteraction.prototype.showModal` is `undefined` in discord.js v14.26.4, unlike Button/StringSelectMenu interactions). So a single match resolved straight from THIS search modal can never chain into resolveManagePanelAction's showModal() call for Edit -- it needs one extra click through a button first, stashed in pendingManageEdits. Delete is unaffected -- it replies with a plain Confirm/Cancel message, which modal-submit interactions CAN do.
@@ -325,7 +326,7 @@ async function handleEditButton(interaction) {
     const pending = pendingManageEdits.get(token);
     pendingManageEdits.delete(token);
     if (!pending) {
-        await interaction.reply({ content: '❌ This has expired -- please search again.', ephemeral: true });
+        await interaction.reply({ content: BOT_EMOJI.cross + ' This has expired -- please search again.', ephemeral: true });
         return;
     }
     return await resolveManagePanelAction(interaction, pending.group, 'edit', pending.match);

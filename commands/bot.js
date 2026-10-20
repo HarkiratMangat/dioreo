@@ -6,6 +6,7 @@
 // This file builds every panel; handlers/bot.js owns all `bot_`-prefixed button/select/modal routing, mirroring the commands/*.js-builds + handlers/*.js-routes split every other admin surface in this bot uses.
 //
 // 🔴 `/bot access` is NOT a grantable scope, on purpose — same invariant `manageadmins` always had: the allowlist page itself is owner-only visibility, checked directly via isOwner() in execute() below and re-checked at every mutation in handlers/bot.js. `/bot analytics` is grant-gated PER PAGE since the permission restructure (2026-10-19 19:27 EDT): each of Health · Alerts · Changes · Usage · Timing opens with any tier on that page (`bot.<page>`), and a grant on /bot itself carries to all five (core/permissions.js).
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
@@ -555,7 +556,7 @@ async function buildChangeDetailBody(changeId) {
     // 🔴 THE ONE GENUINELY DANGEROUS CASE. Reverting an edit writes old values back over whatever came AFTER it, so a later change to the same record is silently destroyed by a button that looks isolated.
     if (later.length && !row.undone) {
         body.push({ type: 14, spacing: 1 });
-        body.push({ type: 10, content: `⚠️ **${plural(later.length, 'later change')} touched this same ${noun} after this one.**\n`
+        body.push({ type: 10, content: `${BOT_EMOJI.warn} **${plural(later.length, 'later change')} touched this same ${noun} after this one.**\n`
             + later.slice(0, 3).map(c => `-# • ${truncate(c.summary || c.action, 60)} — <@${c.actorId}>, <t:${unix(c.createdAt)}:R>`).join('\n')
             + `\n-# Reverting this one puts the old values back over ${later.length === 1 ? 'that' : 'those'} too.` });
     }
@@ -568,7 +569,7 @@ async function buildChangeDetailBody(changeId) {
         return body;
     }
     if (verb === 'edit' && !record && view.fetch) {
-        body.push({ type: 10, content: `⚠️ **This ${noun} can't be found any more.** It was probably deleted after this change, in which case the revert will fail rather than resurrect it.` });
+        body.push({ type: 10, content: `${BOT_EMOJI.warn} **This ${noun} can't be found any more.** It was probably deleted after this change, in which case the revert will fail rather than resurrect it.` });
     }
     // 🔴 SUBTEXT, AND NO DIVIDER BEFORE THE BUTTONS (Harkirat, 2026-08-23 12:31 EDT). The hint explains the action; it is not the action, and at body weight above a divider it read as the panel's conclusion. As `-#` sitting directly on the button row it becomes a caption for those buttons, which is what it is -- and the buttons become the panel's visual anchor, which is what they are.
     body.push({ type: 10, content: `-# ${revertSentence(row, noun, changed.length)}` });
@@ -893,7 +894,7 @@ async function buildAdminListBlocks(adminDocs, client) {
         const grantedTs = unix(a.grantedAt);
         // grantsOf() reads a row's `grants`, or bridges its legacy token list (core/permissions.js) -- a legacy row is marked so the owner can see which admins the purge would remove.
         const legacy = !(a.grants && a.grants.length) && (a.permissions || []).length;
-        const content = `### <@${a.discordId}>\n-# ID: \`${a.discordId}\` — granted by <@${a.grantedBy}> <t:${grantedTs}:R>\n**Permissions:** ${formatGrants(grantsOf(a))}${legacy ? '\n-# ⚠️ Old-style grant. Edit Permissions to move it to the new tiers.' : ''}\n**Note:** ${a.note || '*(none)*'}`;
+        const content = `### <@${a.discordId}>\n-# ID: \`${a.discordId}\` — granted by <@${a.grantedBy}> <t:${grantedTs}:R>\n**Permissions:** ${formatGrants(grantsOf(a))}${legacy ? '\n-# ' + BOT_EMOJI.warn + ' Old-style grant. Edit Permissions to move it to the new tiers.' : ''}\n**Note:** ${a.note || '*(none)*'}`;
         blocks.push(avatarUrl
             ? { type: 9, components: [{ type: 10, content }], accessory: { type: 11, media: { url: avatarUrl } } }
             : { type: 10, content });
@@ -966,7 +967,7 @@ function buildHotpatchPanel(out) {
     head(`### 🩹 Hotpatch · \`${commit.slice(0, 7)}\`\n**${changed.length}** changed runtime file(s), **${plan.members.length}** module(s) in the reload closure.`);
 
     if (plan.verdict === 'ALLOW' && result?.ok) {
-        head(`✅ **Applied.** No restart, no gateway reconnect.\n${result.applied.map(f => `• \`${f}\``).join('\n')}`);
+        head(`${BOT_EMOJI.checkmark} **Applied.** No restart, no gateway reconnect.\n${result.applied.map(f => `• \`${f}\``).join('\n')}`);
         return [{ type: 17, accent_color: 0x57F287, components: body }];
     }
     if (plan.verdict === 'ALLOW' && !result) {
@@ -976,9 +977,9 @@ function buildHotpatchPanel(out) {
     if (plan.verdict === 'REFUSE_STRUCTURAL') {
         head(`⛔ **Can't hotpatch this — a full restart is required.**\n${plan.escaped.map(f => `• \`${f}\` — owns process lifecycle or is a Mongoose model`).join('\n')}${plan.unresolved?.length ? `\n\nNot a runtime module (deleted by the pull, or a typo): ${plan.unresolved.map(f => `\`${f}\``).join(', ')}` : ''}${plan.stray?.length ? `\n\nYou named ${plan.stray.map(f => `\`${f}\``).join(', ')}, which the pull did not change.` : ''}\n\nThis is permanent for these files, not a missing feature.`);
     } else if (plan.verdict === 'REFUSE_STATE') {
-        head(`⚠️ **Refused — live state in the reload closure.**\n${Object.entries(plan.blocked).map(([f, r]) => `• \`${f}\` — ${r.join(', ')}`).join('\n')}\n\nEach of these can opt in later with a \`__hotSwap\` contract. Until then a restart is the honest option.`);
+        head(`${BOT_EMOJI.warn} **Refused — live state in the reload closure.**\n${Object.entries(plan.blocked).map(([f, r]) => `• \`${f}\` — ${r.join(', ')}`).join('\n')}\n\nEach of these can opt in later with a \`__hotSwap\` contract. Until then a restart is the honest option.`);
     } else if (result && !result.ok) {
-        head(`❌ **Nothing was applied.**\n\`\`\`\n${String(result.error).slice(0, 800)}\n\`\`\`\nThe process is still running the code it had.`);
+        head(`${BOT_EMOJI.cross} **Nothing was applied.**\n\`\`\`\n${String(result.error).slice(0, 800)}\n\`\`\`\nThe process is still running the code it had.`);
     }
     body.push({ type: 1, components: [
         { type: 2, style: 4, custom_id: 'bot_hp_restart', label: 'Full restart', emoji: { name: '♻️' } },

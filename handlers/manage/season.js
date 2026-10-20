@@ -7,6 +7,7 @@
 //
 // ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 5 (2026-08-21 13:10 EDT) -- the highest blast-radius entity in the system. `season.promoteDraft`/`season.startNew` are tier 3 rotations whose inverse is a FULL pre-rotation snapshot (`season.restoreSnapshot`), never a diff. `utils/manageActions.js`'s `draftGuard('promote'/'discard')` still refuses BEFORE the confirm buttons even render when no draft is active -- the `reason: 'missing'` branches below are a defensive re-check for the (rare) case a draft got discarded in the few seconds between that prompt and the click, same as patchnotes.js's editSeason. Undo now lives on /bot analytics' Changes page (core/revert.js) -- the old in-memory Undo button is GONE from every mutation here (see handlers/manage/shared.js's own header for where it used to live).
 
+const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { commitSet } = require('../../core/changeset');
 const { prompt, pendingSeasonWipes, extractCommitError } = require('./shared');
 
@@ -19,7 +20,7 @@ async function promptWipeSeason(interaction) {
     setTimeout(() => pendingSeasonWipes.delete(token), 10 * 60 * 1000).unref();
 
     return interaction.reply({
-        content: `⚠️ **Are you sure?** This will rename the current season to **${newTitle}** and permanently wipe all Draws and Calendar data (Patch Notes history is kept). This cannot be undone.`,
+        content: `${BOT_EMOJI.warn} **Are you sure?** This will rename the current season to **${newTitle}** and permanently wipe all Draws and Calendar data (Patch Notes history is kept). This cannot be undone.`,
         components: [{
             type: 1, components: [
                 { type: 2, style: 4, label: 'Yes, Start New Season', custom_id: `mng_wipeconfirm_${token}` },
@@ -40,7 +41,7 @@ async function handleWipeButton(interaction) {
         pendingSeasonWipes.delete(token);
         if (!pending) {
             try {
-                await prompt(interaction, { text: '❌ This confirmation has expired -- please start over from the Season dropdown.' });
+                await prompt(interaction, { text: BOT_EMOJI.cross + ' This confirmation has expired -- please start over from the Season dropdown.' });
             } catch (notifyError) {
                 console.error('Failed to notify user of expired season-wipe confirmation:', notifyError);
             }
@@ -50,7 +51,7 @@ async function handleWipeButton(interaction) {
         const result = await commitSet([{ type: 'season.startNew', payload: { newTitle: pending.newTitle } }], { actorId: interaction.user.id });
         if (!result.ok) {
             const why = extractCommitError(result);
-            try { await prompt(interaction, { text: `❌ ${why}` }); }
+            try { await prompt(interaction, { text: `${BOT_EMOJI.cross} ${why}` }); }
             catch (notifyError) { console.error('Failed to notify user of season-wipe failure:', notifyError); }
             return;
         }
@@ -58,7 +59,7 @@ async function handleWipeButton(interaction) {
 
         try {
             await prompt(interaction, {
-                text: `✅ **Success:** Renamed the season to **${pending.newTitle}** and wiped Draws (${prior.newDraws.length + prior.returningDraws.length} entries) + Calendar (${prior.calendar.length} events). Patch Notes history was kept.`
+                text: `${BOT_EMOJI.checkmark} **Success:** Renamed the season to **${pending.newTitle}** and wiped Draws (${prior.newDraws.length + prior.returningDraws.length} entries) + Calendar (${prior.calendar.length} events). Patch Notes history was kept.`
             });
         } catch (notifyError) {
             console.error('Failed to confirm season wipe (interaction likely expired):', notifyError);
@@ -92,11 +93,11 @@ async function setTitlesDeadlines(interaction) {
     );
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
     }
     const { change } = result.results[0];
-    let confirmation = '✅ **Season Titles & Deadlines Updated!** The `/season end` module has been synced.';
-    if (change.detail) confirmation += `\n⚠️ ${change.detail}.`;
+    let confirmation = BOT_EMOJI.checkmark + ' **Season Titles & Deadlines Updated!** The `/season end` module has been synced.';
+    if (change.detail) confirmation += `\n${BOT_EMOJI.warn} ${change.detail}.`;
     return interaction.followUp({ content: confirmation });
 }
 
@@ -108,8 +109,8 @@ async function handleDraftButton(interaction) {
         const result = await commitSet([{ type: 'season.promoteDraft' }], { actorId: interaction.user.id });
         if (!result.ok) {
             const text = result.failedAt?.reason === 'missing'
-                ? '❌ No draft in progress -- nothing to promote.'
-                : `❌ ${extractCommitError(result)}`;
+                ? BOT_EMOJI.cross + ' No draft in progress -- nothing to promote.'
+                : `${BOT_EMOJI.cross} ${extractCommitError(result)}`;
             try { await prompt(interaction, { text }); }
             catch (notifyError) { console.error('Failed to notify empty-draft promote attempt:', notifyError); }
             return;
@@ -117,7 +118,7 @@ async function handleDraftButton(interaction) {
         const { change, applied } = result.results[0];
         try {
             await prompt(interaction, {
-                text: `✅ **Draft promoted to live!** "${change.target}" is now the live season (${applied.counts.newDraws} New, ${applied.counts.returningDraws} Returning, ${applied.counts.calendar} calendar event(s)). The draft has been cleared.`
+                text: `${BOT_EMOJI.checkmark} **Draft promoted to live!** "${change.target}" is now the live season (${applied.counts.newDraws} New, ${applied.counts.returningDraws} Returning, ${applied.counts.calendar} calendar event(s)). The draft has been cleared.`
             });
         } catch (notifyError) {
             console.error('Failed to confirm draft promote (interaction likely expired):', notifyError);
@@ -134,11 +135,11 @@ async function handleDraftButton(interaction) {
     if (customId === 'mng_draftdiscardconfirm') {
         const result = await commitSet([{ type: 'season.discardDraft' }], { actorId: interaction.user.id });
         if (!result.ok) {
-            try { await prompt(interaction, { text: `❌ ${extractCommitError(result)}` }); }
+            try { await prompt(interaction, { text: `${BOT_EMOJI.cross} ${extractCommitError(result)}` }); }
             catch (notifyError) { console.error('Failed to notify draft discard failure:', notifyError); }
             return;
         }
-        try { await prompt(interaction, { text: "✅ Draft discarded. What's live is untouched." }); }
+        try { await prompt(interaction, { text: BOT_EMOJI.checkmark + " Draft discarded. What's live is untouched." }); }
         catch (notifyError) { console.error('Failed to confirm draft discard (interaction likely expired):', notifyError); }
         return;
     }
@@ -164,11 +165,11 @@ async function setDraftTitlesDeadlines(interaction) {
     );
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
     }
     const { change } = result.results[0];
-    let draftConfirmation = '✅ **Draft Titles & Deadlines Staged!** Nothing is live yet — use Promote to Live when ready.';
-    if (change.detail) draftConfirmation += `\n⚠️ ${change.detail}.`;
+    let draftConfirmation = BOT_EMOJI.checkmark + ' **Draft Titles & Deadlines Staged!** Nothing is live yet — use Promote to Live when ready.';
+    if (change.detail) draftConfirmation += `\n${BOT_EMOJI.warn} ${change.detail}.`;
     return interaction.followUp({ content: draftConfirmation });
 }
 
@@ -184,10 +185,10 @@ async function bulkDraftDraws(interaction) {
     );
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
     }
     const { summary } = result.results[0].applied;
-    return interaction.followUp({ content: `✅ **Draft Draws Staged!**\n${summary.join('\n')}\nNothing is live yet — use Promote to Live when ready.` });
+    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Draft Draws Staged!**\n${summary.join('\n')}\nNothing is live yet — use Promote to Live when ready.` });
 }
 
 // custom_id: modal_draft_bulk_calendar
@@ -201,10 +202,10 @@ async function bulkDraftCalendar(interaction) {
     );
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
     }
     const { count } = result.results[0].applied;
-    return interaction.followUp({ content: `✅ **Draft Calendar Staged!** ${count} event(s). Nothing is live yet — use Promote to Live when ready.` });
+    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Draft Calendar Staged!** ${count} event(s). Nothing is live yet — use Promote to Live when ready.` });
 }
 
 module.exports = { promptWipeSeason, handleWipeButton, setTitlesDeadlines, handleDraftButton, setDraftTitlesDeadlines, bulkDraftDraws, bulkDraftCalendar };

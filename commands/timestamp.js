@@ -1,4 +1,5 @@
 // commands/timestamp.js
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder, Routes } = require('discord.js'); // Standard Packages — Added 'Routes' for native API endpoint mappings
 const { generateTimestamps } = require('../utils/timestampHelper');
 const UserPreference = require('../models/UserPreference');
@@ -204,7 +205,7 @@ module.exports = {
                 // LIBRARY SERIALIZATION BYPASS PROTOCOL (ON ERROR RENDER):
                 return interaction.client.rest.patch(
                     Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-                    { body: { content: `❌ Could not parse your time input from "${queryInput}".\n• Try formats like: \`tomorrow\`, \`sun at 4:30pm\`, \`july17 8pm\`, or \`19:30\`.` } }
+                    { body: { content: `${BOT_EMOJI.cross} Could not parse your time input from "${queryInput}".\n• Try formats like: \`tomorrow\`, \`sun at 4:30pm\`, \`july17 8pm\`, or \`19:30\`.` } }
                 );
             }
 

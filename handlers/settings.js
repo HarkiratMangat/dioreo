@@ -7,6 +7,7 @@
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleSettingsInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch. A bare `return interaction.reply(...)` can reject after the try has exited and escape the net. See .claude/rules/interaction-router.md.
 
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
 const { SETTINGS_PICKERS } = require('../utils/settingsPickers');
 const { buildPickerSearchModal } = require('../utils/pickerUI');
@@ -180,7 +181,7 @@ async function handlePickerSearchSubmit(interaction, picker) {
     const matches = picker.search(query);
 
     if (matches.length === 0) {
-        return await interaction.reply({ content: `❌ No ${picker.noun} matched **"${query}"** — try ${picker.hintText}.`, ephemeral: true });
+        return await interaction.reply({ content: `${BOT_EMOJI.cross} No ${picker.noun} matched **"${query}"** — try ${picker.hintText}.`, ephemeral: true });
     }
     if (matches.length > 1) {
         // Multiple hits -- rather than a second select+pick round-trip (which would need its own message identity to edit back into the real panel), just list the candidates and ask for a more specific search. Keeps this a single, coherent flow.

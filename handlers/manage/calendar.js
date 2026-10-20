@@ -7,6 +7,7 @@
 //
 // ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of plan 2 Task 2 (2026-08-21 12:56 EDT). Every mutation body below used to read the document, mutate it in memory, .save() it, then call utils/changeStore.js's recordChange() directly -- this page no longer does either. commitSet() applies the op transactionally, records the ChangeLog row itself with an `inverse`, and returns the changeId. Undo for calendar-page changes now lives on /bot analytics' Changes page (core/revert.js) instead of the inline Undo button that used to render here -- that mechanism is simply GONE from this file (see handlers/manage/shared.js's own header for where it used to live). Modal parsing and reply formatting are UNTOUCHED where the op's contract allows it to stay in the handler; single add/edit's date-parsing and category-normalization stay HERE (the op accepts either raw modal strings or an already-parsed Date, and passing a Date keeps this handler's user-facing wording byte-identical). See core/ops/calendar.js for the op contract and its own header for the real defects found and fixed during this integration pass.
 
+const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { commitSet } = require('../../core/changeset');
 const { loadOrCreateSeasonalDoc, registerBulkDelete, removeByTitle, extractCommitError } = require('./shared');
 const { failWithRetry } = require('./retry');
@@ -36,7 +37,7 @@ async function addCalendarEvent(interaction) {
     }
 
     // Real Discord timestamps instead of plain toDateString() text -- renders in the viewer's own local time/format instead of a fixed string.
-    return interaction.followUp({ content: `✅ **Event Added:** "${title}" (<t:${Math.floor(startDate.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(endDate.getTime() / 1000)}:D>`}).` });
+    return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Event Added:** "${title}" (<t:${Math.floor(startDate.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(endDate.getTime() / 1000)}:D>`}).` });
 }
 
 // --- SAVE EDITED CALENDAR EVENT --- custom_id: edit_calendar_{id}
@@ -71,7 +72,7 @@ async function editCalendarEvent(interaction) {
             return await failWithRetry(interaction, extractCommitError(result));
         }
 
-        return interaction.followUp({ content: `✅ **Event Updated:** "${title}" (<t:${Math.floor(parsedStart.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(parsedEnd.getTime() / 1000)}:D>`}).` });
+        return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Event Updated:** "${title}" (<t:${Math.floor(parsedStart.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(parsedEnd.getTime() / 1000)}:D>`}).` });
     }
 }
 
@@ -87,7 +88,7 @@ async function bulkAddOrReplaceCalendar(interaction) {
     const result = await commitSet([{ type: opType, payload: { text: bulkText } }], { actorId: interaction.user.id });
     if (!result.ok) {
         const why = extractCommitError(result);
-        return await interaction.editReply({ content: `❌ ${why}` });
+        return await interaction.editReply({ content: `${BOT_EMOJI.cross} ${why}` });
     }
 
     const { applied } = result.results[0];
@@ -124,12 +125,12 @@ async function bulkAddOrReplaceCalendar(interaction) {
             .map(({ e, prior }) => `${e.title} (${prior.isDoubleCP ? 'was ON' : 'was OFF'} → ${e.isDoubleCP ? 'ON' : 'OFF'})`);
         if (changes.length) {
             const joined = changes.join(', ');
-            const line = `⚠️ **Double CP flag CHANGED (${changes.length}):** ${joined} -- confirm this was intentional, not a side effect of an unrelated edit.`;
+            const line = `${BOT_EMOJI.warn} **Double CP flag CHANGED (${changes.length}):** ${joined} -- confirm this was intentional, not a side effect of an unrelated edit.`;
             flagChangeLine = `\n${line.length > 400 ? `${line.slice(0, 397)}...` : line}`;
         }
     }
     return interaction.editReply({
-        content: `✅ **Bulk Calendar ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${summary} Sorted chronologically.\n${breakdownLines.join('\n')}${doubleCpLine}${flagChangeLine}`
+        content: `${BOT_EMOJI.checkmark} **Bulk Calendar ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${summary} Sorted chronologically.\n${breakdownLines.join('\n')}${doubleCpLine}${flagChangeLine}`
     });
 }
 
@@ -140,11 +141,11 @@ async function bulkDeleteCalendar(interaction) {
     const { removed, ids, notFound } = removeByTitle(seasonalDoc.calendar, titlesRaw);
 
     if (removed.length === 0) {
-        return interaction.reply({ content: `❌ Nothing matched -- nothing to delete.${notFound.length ? `\n⚠️ Not found: ${notFound.join(', ')}` : ''}`, ephemeral: true });
+        return interaction.reply({ content: `${BOT_EMOJI.cross} Nothing matched -- nothing to delete.${notFound.length ? `\n${BOT_EMOJI.warn} Not found: ${notFound.join(', ')}` : ''}`, ephemeral: true });
     }
 
     const summary = [`Removed: ${removed.join(', ')}`];
-    if (notFound.length) summary.push(`⚠️ Not found: ${notFound.join(', ')}`);
+    if (notFound.length) summary.push(`${BOT_EMOJI.warn} Not found: ${notFound.join(', ')}`);
 
     return registerBulkDelete(interaction, {
         description: 'Bulk Delete Calendar Events',
@@ -181,7 +182,7 @@ async function setBanners(interaction) {
     );
     return interaction.followUp({
         content: changes.length
-            ? `✅ **Calendar Banners Updated!**\n${changes.map(c => `-# ${c}`).join('\n')}`
+            ? `${BOT_EMOJI.checkmark} **Calendar Banners Updated!**\n${changes.map(c => `-# ${c}`).join('\n')}`
             : 'ℹ️ No changes made.'
     });
 }
@@ -190,10 +191,10 @@ async function setBanners(interaction) {
 async function purge(actorId) {
     const result = await commitSet([{ type: 'calendar.purge' }], { actorId });
     if (!result.ok) {
-        return { confirmMsg: `❌ ${extractCommitError(result)}` };
+        return { confirmMsg: `${BOT_EMOJI.cross} ${extractCommitError(result)}` };
     }
     const { applied } = result.results[0];
-    return { confirmMsg: `✅ Purged the calendar (${applied.events.length} event(s) removed).` };
+    return { confirmMsg: `${BOT_EMOJI.checkmark} Purged the calendar (${applied.events.length} event(s) removed).` };
 }
 
 // --- DELETE (calendar) --- called from index.js's mng_delconfirm_ dispatch with the resolved match.

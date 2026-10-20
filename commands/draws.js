@@ -3,6 +3,7 @@
 // ==========================================
 // ARCHITECTURE: Multi-page array rendering. Uses an internal pagination block (New vs Returning) combined with Global Tab Navigation.
 
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder } = require('discord.js');
 const SeasonalData = require('../models/SeasonalData');
 const UserPreference = require('../models/UserPreference');
@@ -162,7 +163,7 @@ module.exports = {
 
         const seasonalDoc = await seasonalDocPromise;
         if (!seasonalDoc) {
-            return interaction.followUp({ content: '❌ The global seasonal database document has not been initialized yet.' });
+            return interaction.followUp({ content: BOT_EMOJI.cross + ' The global seasonal database document has not been initialized yet.' });
         }
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);

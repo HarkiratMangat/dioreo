@@ -90,9 +90,9 @@ check('Convert Times: nothing to convert gives nothing, and at most 10 are shown
     assert.strictEqual(convertText(many, 'America/Toronto', REF).lines.length, 10);
 });
 
-// ---- Autobuild Loadout ----
+// ---- Autobuild Gunsmith ----
 const autobuild = require('../commands/autobuildLoadout');
-check('Autobuild Loadout: several images ask which one, with a select the /autobuild lock covers', () => {
+check('Autobuild Gunsmith: several images ask which one, with a select the /autobuild lock covers', () => {
     const panel = autobuild.buildPicker('123', ['u1', 'u2', 'u3']);
     const rows = panel[0].components;
     assert.strictEqual(rows.find(c => c.type === 12).items.length, 3);
@@ -174,12 +174,12 @@ check('at most five message right-clicks per app, Discord\'s cap, with Dioreo Ad
     assert.ok(count(off.publicCommands) <= 5, `admin off: ${count(off.publicCommands)} message commands on one app; Discord allows 5`);
     for (const name of ['Convert Times', 'View Colors']) assert.ok(off.publicCommands.some(c => c.toJSON().name === name && c.toJSON().type === 3), `admin off keeps the public ${name}`);
     const byName = Object.fromEntries(messageCommands.map(c => [c.name, c]));
-    for (const name of ['Add to Patch Notes', 'Autobuild Loadout', 'Add to Draws', 'Add to Calendar']) {
+    for (const name of ['Add to Patch Notes', 'Autobuild Gunsmith', 'Add to Draws', 'Add to Calendar']) {
         assert.deepStrictEqual(byName[name].integration_types, [1], `${name} is admin-only`);
     }
     assert.deepStrictEqual(byName['Convert Times'].integration_types, [0, 1], 'Convert Times is public');
     const registry = fs.readFileSync(path.join(__dirname, '..', 'bot', 'registry.js'), 'utf8');
-    for (const name of ['Autobuild Loadout', 'Add to Draws', 'Add to Calendar']) assert.ok(registry.includes(`'${name}'`), `${name} is in ADMIN_COMMAND_NAMES`);
+    for (const name of ['Autobuild Gunsmith', 'Add to Draws', 'Add to Calendar']) assert.ok(registry.includes(`'${name}'`), `${name} is in ADMIN_COMMAND_NAMES`);
     assert.ok(!registry.includes("'Convert Times'"), 'Convert Times stays gateable by a server\'s /admin rules');
 });
 
