@@ -310,7 +310,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   border-color:color-mix(in srgb,var(--cmd-hue) 60%,var(--ink3))}}.cmdb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
 .cmdb:hover::after{opacity:1}}/* The page you are on: the warm border stays on, so the control reads as current without a fill. A fill would need its own ink for the cursor swarm (an accent-filled control makes a same-coloured blob vanish, which is why Install is dark inside), and an outline needs none. */
 
-.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--cmd-hue) 60%,var(--ink3))}/* ── THE HAIRLINE CAPSULE'S HOVER IS INSTALL'S (Harkirat, 2026-10-20 11:57 EDT: "it should be matching how the install button looks when hovered"). One rule for the whole look, so the landing's Commands button (.cmdb) and the /commands chips (.rx-chip) can not drift apart: the same 1px lift, the same soft coloured shadow underneath and the same edge-light that sweeps across once per hover. Only the hue differs, and each class names it in --hv: Commands green for .cmdb, the command's own colour for a chip. The sweep is drawn in that hue rather than Install's white because a hairline pill has no fill for white to read against, and it sits UNDER the label (z-index 0 here, negative on a chip) so a word is never crossed out. Install's disc tilt and arrow have no counterpart: there is no mark in a hairline capsule. */
+.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--cmd-hue) 60%,var(--ink3))}/* ── THE HAIRLINE CAPSULE'S HOVER IS INSTALL'S (Harkirat, 2026-10-20 11:57 EDT: "it should be matching how the install button looks when hovered"). One rule for the whole look, so the landing's Commands button (.cmdb) and the /commands chips (.rx-chip) can not drift apart: the same 1px lift and the same edge-light that sweeps across once per hover (the chip alone also takes Install's coloured shadow, see below). Only the hue differs, and each class names it in --hv: Commands green for .cmdb, the command's own colour for a chip. The sweep is drawn in that hue rather than Install's white because a hairline pill has no fill for white to read against, and it sits UNDER the label (z-index 0 here, negative on a chip) so a word is never crossed out. Install's disc tilt and arrow have no counterpart: there is no mark in a hairline capsule. */
 
 .cmdb::before,.rx-chip::after{content:"";position:absolute;top:-60%;bottom:-60%;width:36px;
   left:-60px;transform:skewX(-18deg);pointer-events:none;
@@ -319,10 +319,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .rx-chip::after{z-index:-1}.cmdb:focus-visible::before,.rx-chip:focus-visible::after{
   animation:swipe .62s cubic-bezier(.3,.7,.3,1)}@media (hover:hover) and (pointer:fine){
 .cmdb:hover::before,.rx-chip:hover::after{
-  animation:swipe .62s cubic-bezier(.3,.7,.3,1)}}.cmdb:focus-visible,.rx-chip:focus-visible{transform:translateY(-1px);
-  box-shadow:0 8px 22px -7px color-mix(in srgb,var(--hv) 82%,transparent)}@media (hover:hover) and (pointer:fine){
-.cmdb:hover,.rx-chip:hover{transform:translateY(-1px);
-  box-shadow:0 8px 22px -7px color-mix(in srgb,var(--hv) 82%,transparent)}}
+  animation:swipe .62s cubic-bezier(.3,.7,.3,1)}}.cmdb:focus-visible,.rx-chip:focus-visible{transform:translateY(-1px)}@media (hover:hover) and (pointer:fine){
+.cmdb:hover,.rx-chip:hover{transform:translateY(-1px)}}/* ⚠️ THE COLOURED SHADOW IS THE CHIP'S ONLY, NOT THE LANDING BUTTON'S (Harkirat, 2026-10-20 14:24 EDT, on the landing Commands button: "why does it look like this with the outside glow under it?"). Under Install the shadow reads as the fill's own depth; under a hairline pill there is no fill, so the same shadow reads as a green halo around a dark button. The chip keeps it because he asked for Install's hover on the chips by name. */.rx-chip:focus-visible{box-shadow:0 8px 22px -7px color-mix(in srgb,var(--hv) 82%,transparent)}@media (hover:hover) and (pointer:fine){
+
+.rx-chip:hover{box-shadow:0 8px 22px -7px color-mix(in srgb,var(--hv) 82%,transparent)}}
 .cmdb:active,.rx-chip:active{transform:translateY(0) scale(.98)}
 @media (prefers-reduced-motion:reduce){.cmdb:focus-visible::before,.rx-chip:focus-visible::after{animation:none}@media (hover:hover) and (pointer:fine){
   .cmdb:hover::before,.rx-chip:hover::after{animation:none}}.cmdb:focus-visible,.cmdb:active,.rx-chip:focus-visible,.rx-chip:active{transform:none}@media (hover:hover) and (pointer:fine){

@@ -549,12 +549,16 @@ function inlineText(s) {
     s = esc(s);
     // NOTICE's own emphasis marker for an inline aside ("*** See Section 2 — Apache-2.0 obligations ***", "*** No copyleft ... is present ... ***") — the plain-text source has no markdown bold to reach for, so it wraps in asterisks instead. Inside a raw <pre> that read fine as literal punctuation; once the same text landed inside a real card (depCard()) or a normal paragraph, the literal "***" on both sides looked like broken markdown rather than emphasis. Reported 2026-08-05 12:38 EDT against the discord.js dependency card specifically. Non-greedy and single-line by construction — every caller already joins its text to one line before this runs.
     s = s.replace(/\*\*\*([^*]+)\*\*\*/g, (_, t) => `<strong class="hi">${t}</strong>`);
+    // NOTICE §4A.2 copies Flaticon's attribution lines in Flaticon's own Markdown form, "[Andy Horvath](https://www.flaticon.com/authors/andy-horvath)". The plain-text parser never read that syntax, so the live page printed the brackets and the bare address, and the longest address pushed the Notice page sideways on a phone (found 2026-10-20 14:52 EDT in a site sweep). The link becomes an anchor on its label. It is parked behind a placeholder because the bare-URL pass below would otherwise match the address again inside the new href.
+    const mdLinks = [];
+    s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) =>
+        `\u0000${mdLinks.push(`<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`) - 1}\u0000`);
     // URLs first, so an address inside a URL isn't also matched as an email. Trailing sentence punctuation is excluded from the href.
     s = s.replace(/(https?:\/\/[^\s<)]+?)([.,;:)]*)(?=\s|$)/g,
         (_, url, tail) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>${tail}`);
     s = s.replace(/(^|[\s(])([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g,
         (_, pre, mail) => `${pre}<a href="mailto:${mail}">${mail}</a>`);
-    return s;
+    return s.replace(/\u0000(\d+)\u0000/g, (_, n) => mdLinks[+n]);
 }
 
 /**
@@ -585,6 +589,12 @@ function parsePlainLegal(txt) {
             letters.replace(/[^A-Z]/g, '').length / letters.length > 0.9;
     };
     const para = buf => {
+        // A run of attribution lines, each carrying its own Markdown link (NOTICE §4A.2's Flaticon credits), is a list of separate credits. Joined with spaces they read as one run-on sentence, so each keeps its own line.
+        if (buf.length > 1 && buf.every(l => /\]\(https?:\/\//.test(l))) {
+            out.push(`<p>${buf.map(inlineText).join('<br>')}</p>`);
+            buf.length = 0;
+            return;
+        }
         const t = buf.join(' ').trim();
         if (t) out.push(`<p${isShout(t) ? ' class="shout"' : ''}>${inlineText(t)}</p>`);
         buf.length = 0;
@@ -736,14 +746,18 @@ function renderIndented(head, region) {
     const depCard = grp => {
         const cut = Math.min(...grp.map(indentOf));
         const lines = grp.map(l => l.slice(cut).trimEnd());
-        const [, nameVer, license] = lines[0].match(/^(\S.*?)\s{2,}(\S.*)$/);
+        let [, nameVer, license] = lines[0].match(/^(\S.*?)\s{2,}(\S.*)$/);
         const vm = nameVer.match(/^(.*?)\s+(v?\d[\d.]*[A-Za-z]?)$/);
         const name = vm ? vm[1] : nameVer;
         const ver = vm ? vm[2] : '';
 
         const rest = lines.slice(1).map(l => l.trim()).filter(Boolean);
         let i = 0, copyright = '';
-        if (/^Copyright/i.test(rest[0] || '')) {
+        // A licence that wraps onto the next line (htm's "MIT (Apache-2.0 for a small number of contributed / files — see the package's own LICENSE)") belongs in the pill. Read only while a paren is still open, so an ordinary card's copyright line is never taken for licence text. Without this the second half, the copyright and the URL all fell into the card's notes (found 2026-10-20 14:52 EDT).
+        let lic = license;
+        while (rest[i] && (lic.match(/\(/g) || []).length > (lic.match(/\)/g) || []).length) lic += ' ' + rest[i++];
+        license = lic;
+        if (/^Copyright/i.test(rest[i] || '')) {
             copyright = rest[i++];
             // A wrapped continuation of the copyright line ("... Instrument Sans Project" / "Authors") — short, no terminal punctuation on the line before it, and not itself the URL. Same continuation heuristic the verbatim-block detector above uses.
             while (rest[i] && !/^https?:\/\//.test(rest[i]) && !/[.:]$/.test(rest[i - 1])) {
@@ -1674,7 +1688,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .cmdb:hover::after,.cmdb:focus-visible::after{opacity:1}
 /* The page you are on: the warm border stays on, so the control reads as current without a fill. A fill would need its own ink for the cursor swarm (an accent-filled control makes a same-coloured blob vanish, which is why Install is dark inside), and an outline needs none. */
 .cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--cmd-hue) 60%,var(--ink3))}
-/* ── THE HAIRLINE CAPSULE'S HOVER IS INSTALL'S (Harkirat, 2026-10-20 11:57 EDT: "it should be matching how the install button looks when hovered"). One rule for the whole look, so the landing's Commands button (.cmdb) and the /commands chips (.rx-chip) can not drift apart: the same 1px lift, the same soft coloured shadow underneath and the same edge-light that sweeps across once per hover. Only the hue differs, and each class names it in --hv: Commands green for .cmdb, the command's own colour for a chip. The sweep is drawn in that hue rather than Install's white because a hairline pill has no fill for white to read against, and it sits UNDER the label (z-index 0 here, negative on a chip) so a word is never crossed out. Install's disc tilt and arrow have no counterpart: there is no mark in a hairline capsule. */
+/* ── THE HAIRLINE CAPSULE'S HOVER IS INSTALL'S (Harkirat, 2026-10-20 11:57 EDT: "it should be matching how the install button looks when hovered"). One rule for the whole look, so the landing's Commands button (.cmdb) and the /commands chips (.rx-chip) can not drift apart: the same 1px lift and the same edge-light that sweeps across once per hover (the chip alone also takes Install's coloured shadow, see below). Only the hue differs, and each class names it in --hv: Commands green for .cmdb, the command's own colour for a chip. The sweep is drawn in that hue rather than Install's white because a hairline pill has no fill for white to read against, and it sits UNDER the label (z-index 0 here, negative on a chip) so a word is never crossed out. Install's disc tilt and arrow have no counterpart: there is no mark in a hairline capsule. */
 .cmdb::before,.rx-chip::after{content:"";position:absolute;top:-60%;bottom:-60%;width:36px;
   left:-60px;transform:skewX(-18deg);pointer-events:none;
   background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--hv) 55%,transparent),transparent)}
@@ -1682,8 +1696,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .rx-chip::after{z-index:-1}
 .cmdb:hover::before,.cmdb:focus-visible::before,.rx-chip:hover::after,.rx-chip:focus-visible::after{
   animation:swipe .62s cubic-bezier(.3,.7,.3,1)}
-.cmdb:hover,.cmdb:focus-visible,.rx-chip:hover,.rx-chip:focus-visible{transform:translateY(-1px);
-  box-shadow:0 8px 22px -7px color-mix(in srgb,var(--hv) 82%,transparent)}
+.cmdb:hover,.cmdb:focus-visible,.rx-chip:hover,.rx-chip:focus-visible{transform:translateY(-1px)}
+/* ⚠️ THE COLOURED SHADOW IS THE CHIP'S ONLY, NOT THE LANDING BUTTON'S (Harkirat, 2026-10-20 14:24 EDT, on the landing Commands button: "why does it look like this with the outside glow under it?"). Under Install the shadow reads as the fill's own depth; under a hairline pill there is no fill, so the same shadow reads as a green halo around a dark button. The chip keeps it because he asked for Install's hover on the chips by name. */
+.rx-chip:hover,.rx-chip:focus-visible{box-shadow:0 8px 22px -7px color-mix(in srgb,var(--hv) 82%,transparent)}
 .cmdb:active,.rx-chip:active{transform:translateY(0) scale(.98)}
 @media (prefers-reduced-motion:reduce){
   .cmdb:hover::before,.cmdb:focus-visible::before,.rx-chip:hover::after,.rx-chip:focus-visible::after{animation:none}
@@ -4910,9 +4925,14 @@ pre.aligned a{color:var(--ink)}
   letter-spacing:-.005em}
 .dep-v{font-family:var(--mono);font-size:.66rem;color:var(--ink3);
   font-variant-numeric:tabular-nums}
-.dep-lic{flex:0 0 auto;margin-left:auto;font-family:var(--mono);font-size:.58rem;
+/* The licence pill may shrink and wrap (flex-shrink 1, min-width 0). With
+   flex:0 0 auto a long licence line, such as discord.js's MIT-with-Apache
+   note, held its full width and pushed the Notice page sideways on a phone
+   (found 2026-10-20 14:50 EDT in a site sweep at 390px). Once it wraps, a 999px radius
+   would pinch its corners into the text, so it rounds to .7rem instead. */
+.dep-lic{flex:0 1 auto;min-width:0;max-width:100%;overflow-wrap:anywhere;margin-left:auto;font-family:var(--mono);font-size:.58rem;
   letter-spacing:.1em;text-transform:uppercase;color:var(--accent-t);
-  padding:.22rem .6rem;border-radius:999px;
+  padding:.22rem .6rem;border-radius:.7rem;
   border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);
   background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .dep-c{margin:0 0 .3rem;font-family:var(--mono);font-size:.7rem;line-height:1.55;
