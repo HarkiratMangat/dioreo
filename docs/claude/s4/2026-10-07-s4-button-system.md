@@ -835,3 +835,10 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 
 ## His 2026-10-20 13:31–13:32 EDT, verbatim, written 2026-10-20 13:34 EDT
 - (13:31, on the A and B sheet) "outlines seem a bit dark, don't you think?" · (13:32) "like the "today, on white" looks fine to me honestly" → yes: an outline made solid on the board's near-black takes its darker shade, and on white that shade reads heavy. The plain files already look right on white, so the 70 `-on-dark` files moved to `Dioreo-logo/Badges/WIP/on-dark-box-only/` (kept, not deleted), the README describes the plain set only, and Answer Shots v20 shows `ondark2` answered.
+
+## His 2026-10-20 14:12–14:16 EDT Answer Shots answers (Data display), verbatim, written 2026-10-20 14:27 EDT
+- (14:12, `ddhead`) choice 32, "44 only if theres a button there, such as armory's \"collapse all\"" → C31: a column head is 32, 44 only with a boxed button; Broadcast's (sort words, no box) goes 44 → 32.
+- (14:15, `ddgap`, no choice) "idek what im looking at there and comparing. all i know is that the \"sun, sep 6\" and the below times should be aligned on their left. the \"4 changes\" and the below tags should be aligned on their left ink. middle part seems fine. the owner/system should be aligned on the text's right ink. the undo/undone buttons right aligned ink. (make the undo button and undone button same size. `S`.)" → built in v126 and measured: the day's date and the times share a left edge (462.0), "4 changes" and the kind tags share a left edge (568.0), the names end on one right edge (1176.0), Undo and Undone are one 84 × 24 box ending on one right edge (1292.0). The gap he left to me: 26, the nearer step.
+- (14:15, `ddwell`) "11" → the well's corner 11.
+- (14:16, `ddav`) choice 16, "and add it as a flag --avatar, similar to how we have --dot/--icon, etc. with avatars being slightly larger than the typical size we use for dot,icon, etc." → C21's new flag `--avatar`, the row's icon + 2; the who filter is `toggle-M-pill.neutral--avatar--count`.
+- Data display **Decided** in v126; C31 Rows written; 12 ledger rows (`ddrow` … `ddwell`).
