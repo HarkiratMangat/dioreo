@@ -105,7 +105,9 @@ function loadoutsSections() {
             '`Weapon | Category`\n`Build: Build Name`\n`Image: Cloudinary Key`\n`Code: Gunsmith Code`\n`Badges: meta, best`\n`- Attachment 1`\n`- Attachment 2`\n' +
             '-# One build per BLOCK (blank line between blocks). **First line is the weapon\'s identity, every optional field is its own labelled line, everything else is an attachment.** The labelled lines can be in any order and any of them can be left out.'),
         section('🏷️ Badges (comma-separated, optional)',
-            '`meta` · `toxic` · `best` · `top5` (or any `topN`) · `bestclose` · `top3midlong` (rank + range combos for DMZ)'),
+            '`meta` · `toxic` · `ass` · `best` · `top3` · `top5` · `capable` · `bestclose` · `top3midlong` · `capableclose` (rank + range combos for DMZ)\n' +
+            '**Rank modes (MP only, any number):** `hp` · `s&d` · `dom` · `tdm` · `ftl` · `control`\n' +
+            '-# Badges belong to the one build they are typed on. `ass` can\'t sit with `meta` or a tier; `top4` is retired and reads as `top5`.'),
         section('✨ What Gets Auto-Formatted',
             '• **Mode** is not a field at all -- the page/button you clicked (MP or DMZ) decides it. It used to be a required 3rd pipe segment that the save then overwrote anyway, which meant a `DMZ` block pasted on the MP page saved as MP with no warning; removing it removed the lie, not the behaviour.\n' +
             '• **Build**, **Image**, **Code** and **Badges** are all optional -- omit the whole line if it doesn\'t apply. Build defaults to `Standard Build`.\n' +

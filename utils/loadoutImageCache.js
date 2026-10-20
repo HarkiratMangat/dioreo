@@ -143,7 +143,8 @@ function isHttpImageSource(value) {
 function deriveImageKey(weaponName, mode, takenKeys = []) {
     const base = String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-');
     const prefix = mode === 'DMZ' ? 'DMZ-' : '';
-    const taken = new Set(takenKeys.map(k => String(k || '').toUpperCase()));
+    // Stored keys carry the file extension (104 of 133 dev builds, counted 2026-10-19), so compare without it, or no candidate ever matches and every weapon is offered -1 even when Build 1 holds it (the bot half of the deferred-list entry "deriveNextImageKey offers a key that is already taken").
+    const taken = new Set(takenKeys.map(k => String(k || '').replace(/\.(png|jpe?g|webp|gif)$/i, '').toUpperCase()));
     let n = 1;
     while (taken.has(`${prefix}${base}-${n}`)) n++;
     return `${prefix}${base}-${n}`;

@@ -41,4 +41,20 @@ const FIXED_SCOPES = [
     { value: 'DMZ.*.std',  label: 'DMZ',           mode: 'DMZ', category: null, metaOnly: false },
 ];
 
-module.exports = { formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition, FIXED_SCOPES };
+// The browse rows at the top of /gunsmith mp and /gunsmith dmz's weapon suggestions (Harkirat, 2026-10-19 19:43 EDT: "lets just remove gunsmith list, instead put the 'all mp builds, all ar, all lmg, etc' at the top of the /gunsmiths mp command"). Their earlier order and the single META entry came from the same evening (19:38 EDT): META first, then everything in the mode, then each MP class. META opens that mode's meta, and the switch under the panel moves to the other mode's (utils/loadoutRender.js, `gsb~meta~`). A row's value is its scope token; commands/gunsmith.js reads it back as `~scope~<token>`.
+function browseRows(mode, categories = []) {
+    const { displayCategoryLabel } = require('./loadoutRender');
+    if (mode === 'DMZ') {
+        return [
+            { label: 'All META builds', value: 'DMZ.*.meta' },
+            { label: 'All DMZ builds', value: 'DMZ.*.std' },
+        ];
+    }
+    return [
+        { label: 'All META builds', value: 'MP.*.meta' },
+        { label: 'All MP builds', value: 'MP.*.std' },
+        ...categories.map(c => ({ label: `All ${displayCategoryLabel(c)} builds`, value: `MP.${c}.std` })),
+    ];
+}
+
+module.exports = { formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition, FIXED_SCOPES, browseRows };

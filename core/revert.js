@@ -22,7 +22,7 @@ async function revertChange(changeId, { actorId, source = 'discord' }) {
     const gate = canRevert(row);
     if (!gate.ok) return { ok: false, reason: gate.reason };
 
-    // revertOf: the Undo rule (destructive on the change's page, ⏳ provisional) gates this inside commitSet, not the inverse op's own tier.
+    // revertOf: the Undo rule (destructive on the change's page) gates this inside commitSet, not the inverse op's own tier.
     const result = await commitSet([row.inverse], { actorId, source, revertOf: row });
     if (!result.ok) return { ok: false, reason: result.error || 'The revert could not be applied.' };
 

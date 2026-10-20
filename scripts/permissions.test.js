@@ -115,7 +115,7 @@ async function run() {
             // Season's two entries are not registry buttons (they open from the dropdown) but they do map to ops, so tierForAction answers for them too. A renamed action fails here as null, never silently skipped.
             assert.strictEqual(P.tierForAction(page, id), tier, `${key} should be ${tier}`);
         }
-        assert.strictEqual(P.UNDO_TIER, 'destructive', 'Undo/Revert is destructive (provisional, his decision 2026-10-19 18:33 EDT)');
+        assert.strictEqual(P.UNDO_TIER, 'destructive', 'Undo/Revert is destructive (his decision, final 2026-10-19 20:17 EDT)');
         assert.strictEqual(P.CHANGE_EDIT_TIER, 'create');
         assert.strictEqual(P.OUTSIDE_ACTIONS['manage.announcementDelete'].tier, 'destructive');
         for (const k of ['rightclick.addToDraws', 'rightclick.addToCalendar', 'rightclick.addToPatchNotes', 'rightclick.autobuildLoadout', 'autobuild.confirm']) {

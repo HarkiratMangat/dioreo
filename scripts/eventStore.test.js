@@ -97,7 +97,7 @@ check('deriveInstallType reads discord.js 14.27 AuthorizingIntegrationOwners and
 check('isAdminSurface flags the admin commands so /bot usage never distorts product stats', () => {
     assert.strictEqual(S.isAdminSurface('manage', null), true);
     assert.strictEqual(S.isAdminSurface(null, 'mng'), true);
-    assert.strictEqual(S.isAdminSurface('gunsmiths', 'colors'), false);
+    assert.strictEqual(S.isAdminSurface('gunsmith', 'colors'), false);
 });
 
 // --- 🔴 THE HIGHEST-VALUE TEST ------------------------------------------------------------- The one property the entire privacy design rests on. A string search, not a field-by-field review: the realistic regression is not somebody adding a `discordId` field (a schema review catches that instantly) -- it is a detail value that happens to carry one, or a customIdPrefix capture that grabs a segment embedding a user snowflake. Neither survives this.
@@ -191,10 +191,10 @@ check('an error event FLUSHES IMMEDIATELY -- the moment an event is most worth h
 check('autocomplete records ONE event per search session, not one per keystroke', async () => {
     const before = inserted.length;
     const typed = ['k', 'ki', 'kil', 'kilo'];
-    runWithContext({ command: 'gunsmiths', userHash: hashUserId(RAW_ID), startedAt: Date.now() }, () => {
+    runWithContext({ command: 'gunsmith', userHash: hashUserId(RAW_ID), startedAt: Date.now() }, () => {
         for (const value of typed) {
             const ac = fakeInteraction({
-                isAutocomplete: () => true, commandName: 'gunsmiths',
+                isAutocomplete: () => true, commandName: 'gunsmith',
                 options: { getFocused: () => ({ name: 'weapon', value }) },
                 respond: async () => {},
             });
@@ -216,12 +216,12 @@ check('autocomplete records ONE event per search session, not one per keystroke'
 check('a closed search session upserts the user-linkage-free aggregate row', () => {
     assert.ok(upserts.length >= 1, 'expected a SearchTerm upsert');
     const filter = upserts[upserts.length - 1].updateOne.filter;
-    assert.deepStrictEqual(filter, { term: 'kilo', command: 'gunsmiths', field: 'weapon' });
+    assert.deepStrictEqual(filter, { term: 'kilo', command: 'gunsmith', field: 'weapon' });
     assert.ok(!JSON.stringify(filter).includes(RAW_ID), 'the aggregate must carry NO user linkage at all');
 });
 
 // --- SearchTerm buffer: bulkWrite, not a standalone round trip per closed session (finding #56) -- A closed search session now goes through the SAME buffer-then-flush discipline flushEvents() already used, and is flushed through the SAME shutdown call site (flushSearchSessions()) finding #12 already hooked into -- these two checks cover the shape of the buffered bulkWrite op and the FLUSH_AT auto-trigger, the two things a standalone-updateOne design could not offer at all.
-function openAndCloseSearchSession(term, { command = 'gunsmiths', field = 'weapon' } = {}) {
+function openAndCloseSearchSession(term, { command = 'gunsmith', field = 'weapon' } = {}) {
     const userHash = hashUserId(`${RAW_ID}-${term}`);   // distinct per session so notePicked() only closes THIS one
     runWithContext({ command, userHash, startedAt: Date.now() }, () => {
         const ac = fakeInteraction({
@@ -241,7 +241,7 @@ check('a closed search session buffers a bulkWrite op shaped for the unique inde
     S.flushSearchSessions();
     assert.ok(upserts.length > before, 'expected at least one new buffered op');
     const op = upserts[upserts.length - 1];
-    assert.deepStrictEqual(op.updateOne.filter, { term: 'shapecheck', command: 'gunsmiths', field: 'weapon' });
+    assert.deepStrictEqual(op.updateOne.filter, { term: 'shapecheck', command: 'gunsmith', field: 'weapon' });
     // picked: 1 because openAndCloseSearchSession() closes via notePicked(), the real "search then run the command" signal -- that's what marks a session picked, by design.
     assert.deepStrictEqual(op.updateOne.update.$inc, { searches: 1, zeroResults: 1, picked: 1 });
     assert.ok(op.updateOne.update.$min.firstSeen instanceof Date, 'firstSeen must be set via $min for the upsert path');

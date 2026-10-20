@@ -115,7 +115,7 @@ async function canDo(userId, actionKey) {
 const denialFor = (scope, tier) => `🔒 **You don't have ${P.TIER_LABELS[tier].toLowerCase()} permission on ${P.scopeLabel(scope)}.** Ask the bot owner to grant it if you need it.`;
 const denyDo = (actionKey) => denialFor(P.OUTSIDE_ACTIONS[actionKey].scope, P.OUTSIDE_ACTIONS[actionKey].tier);
 
-// Undo / Revert of one ChangeLog row: UNDO_TIER (destructive, ⏳ provisional) on the page the change belongs to, whatever the reverted op's own tier was.
+// Undo / Revert of one ChangeLog row: UNDO_TIER (destructive) on the page the change belongs to, whatever the reverted op's own tier was.
 async function checkRevert(userId, row) {
     if (!row) return { ok: false, reason: 'That change no longer exists.' };
     const scope = P.manageScope(row.page);

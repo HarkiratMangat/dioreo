@@ -1,4 +1,4 @@
-// Shared weapon-lookup + render path for /dmz and /gunsmiths search -- previously duplicated as commands/dmz.js's execute() and handlers/router.js's ~110-line MP fallback (the dynamically generated /all + /<category> commands had no 'data'+'execute' module in commands/, so interaction.client.commands.get() always missed and control fell through to that block). Both copies are gone; this is the one path both callers now share, differing only by `mode`.
+// Shared weapon-lookup + render path for /dmz and /gunsmith mp -- previously duplicated as commands/dmz.js's execute() and handlers/router.js's ~110-line MP fallback (the dynamically generated /all + /<category> commands had no 'data'+'execute' module in commands/, so interaction.client.commands.get() always missed and control fell through to that block). Both copies are gone; this is the one path both callers now share, differing only by `mode`.
 const Loadout = require('../models/Loadout');
 const UserPreference = require('../models/UserPreference');
 const { buildLoadoutCard, getMpCategoryAccent } = require('./loadoutRender');

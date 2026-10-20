@@ -3,7 +3,7 @@ const { withShareButton } = require('./shareButton');
 const { buildPaginationRow } = require('./paginationRow');
 const emojis = require('./emojiMap');
 
-// MP LOADOUT ACCENT COLORS — one per weapon category, from the "Custom Class" palette (a curated mix Harkirat picked across several palette proposals, see the palette spec sheet). Keyed by the exact uppercase string stored in `Loadout.category` (AR/LMG/MARKSMAN/SHOTGUN/SMG/SNIPER, plus SECONDARIES which has no loadouts yet — see bot/registry.js's applyGunsmithsScopeChoices() for why the SECONDARIES scope choice still exists ahead of any data). `/gunsmiths search` looks a weapon's OWN category up here at render time, so its accent color changes per weapon rather than using one fixed color. `/gunsmiths list scope:<category>` hits the exact same lookup via the same utils/loadoutScopes.js/renderScopeBrowse path (2026-08-15 consolidation).
+// MP LOADOUT ACCENT COLORS — one per weapon category, from the "Custom Class" palette (a curated mix Harkirat picked across several palette proposals, see the palette spec sheet). Keyed by the exact uppercase string stored in `Loadout.category` (AR/LMG/MARKSMAN/SHOTGUN/SMG/SNIPER, plus SECONDARIES which has no loadouts yet — see bot/registry.js's applyGunsmithsScopeChoices() for why the SECONDARIES scope choice still exists ahead of any data). `/gunsmith mp` and `/gunsmith dmz` look a weapon's OWN category up here at render time, so its accent color changes per weapon rather than using one fixed color. `/gunsmith list scope:<category>` hits the exact same lookup via the same utils/loadoutScopes.js/renderScopeBrowse path (2026-08-15 consolidation).
 const MP_CATEGORY_ACCENT = {
     AR: 16726876,          // FF3B5C — Crimson Pop
     SMG: 16765503,         // FFD23F — Electric Gold
@@ -107,7 +107,13 @@ async function checkImageExists(imageKey) {
     }
 }
 
-// "Badges" shown under the weapon name (Meta / Best-in-category / Top-N-in-category) -- only rendered when actually granted (see models/Loadout.js), joined by the `blank` spacer emoji rather than a visible separator character when both are present. `categoryRank` is free-form ('best' or 'top{N}', not a fixed "top3" enum) since not every category tops out at exactly 3 -- see adminParser.js's parseLoadoutBadges(). Returns null (render nothing) if the build has no badges at all.
+// An emoji that may not be on the app yet (Ass, Capable, the Rank Mode marks): the live one by name, else the placeholder given, else nothing, so the word still renders alone.
+function optionalEmoji(name, placeholder = null) {
+    const e = (emojis.byName ? emojis.byName(name) : null) || placeholder;
+    return e ? `${e} ` : '';
+}
+
+// "Badges" shown under the weapon name (Meta / Best-in-category / Top-N-in-category / Capable, Toxic, Ass) -- only rendered when actually granted (see models/Loadout.js), joined by the `blank` spacer emoji rather than a visible separator character when both are present. `categoryRank` is free-form ('best' or 'top{N}', not a fixed "top3" enum) since not every category tops out at exactly 3 -- see adminParser.js's parseLoadoutBadges(). Returns null (render nothing) if the build has no badges at all.
 function buildBadgesLine(build) {
     const badges = [];
     if (build.isMeta) badges.push(`${emojis.meta} Meta`);
@@ -119,6 +125,8 @@ function buildBadgesLine(build) {
                 : 'DMZ';
             if (build.dmzRangeRank.startsWith('best')) {
                 badges.push(`${emojis.best} Best ${rangeLabel}`);
+            } else if (build.dmzRangeRank.startsWith('capable')) {
+                badges.push(`${optionalEmoji('Capable', emojis.capable)}Capable ${rangeLabel}`);
             } else {
                 const topMatch = build.dmzRangeRank.match(/^top(\d+)/);
                 if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${rangeLabel}`);
@@ -126,14 +134,26 @@ function buildBadgesLine(build) {
         }
     } else if (build.categoryRank === 'best') {
         badges.push(`${emojis.best} Best ${displayCategoryLabel(build.category)}`);
+    } else if (build.categoryRank === 'capable') {
+        // The tier always names its category in the bot ("Capable AR"); the portal may leave the word off (his ruling, 2026-09-24).
+        badges.push(`${optionalEmoji('Capable', emojis.capable)}Capable ${displayCategoryLabel(build.category)}`);
     } else if (build.categoryRank) {
         const topMatch = build.categoryRank.match(/^top(\d+)$/);
         if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${displayCategoryLabel(build.category)}`);
     }
     // "Toxic" is independent of Meta/Best/TopN (a build can be unbalanced/cheese without being the objectively best in its category, or vice versa) -- see models/Loadout.js's isToxic field.
     if (build.isToxic) badges.push(`${emojis.toxic} Toxic`);
+    if (build.isAss) badges.push(`${optionalEmoji('Ass', emojis.ass)}Ass`);
     if (badges.length === 0) return null;
     return `**${badges.join(`${emojis.blank} `)}**`;
+}
+
+// "Recommended Rank Mode: HP | S&D" (Harkirat's wording, 2026-09-25 23:28 EDT), each name after its own mark, in utils/rankModes.js's order. MP only: a DMZ build never shows the line, even if old data carried a mode.
+function buildRankModeLine(build) {
+    if (build.mode === 'DMZ' || !build.rankModes?.length) return null;
+    const { RANK_MODES, RANK_MODE_EMOJI } = require('./rankModes');
+    const names = RANK_MODES.filter(m => build.rankModes.includes(m)).map(m => `${optionalEmoji(RANK_MODE_EMOJI[m])}${m}`);
+    return names.length ? `**Recommended Rank Mode:** ${names.join(' | ')}` : null;
 }
 
 // Capitalizes just the first letter (sentence case), leaving everything else untouched -- unlike toTitleCase (adminParser.js), which capitalizes every word. Descriptions come from freeform admin text (originally builds.xlsx's flavor-text column) that isn't always typed starting with a capital, so this is applied at render time rather than trusting the stored casing.
@@ -176,7 +196,7 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
         const start = Math.min(Math.max(0, active - 12), options.length - 25);
         truncated = options.slice(start, start + 25);
         // A select `placeholder` caps at 150 characters -- this phrasing is well under that even at 3-digit counts. NOTE (v3-pre-release review, finding #36): the windowing arithmetic below, this placeholder, and the default-marked option staying inside the slice are NOT exercised by any test today -- both cards in scripts/loadoutRenderSnapshot.test.js pass categoryBuilds: null, which returns before this branch runs. Treat as unverified (the old comment here claimed the opposite) until a real >25-weapon case is added.
-        placeholder = `Browse ${scopeLabel} — 25 of ${options.length}, use /gunsmiths search for the rest`;
+        placeholder = `Browse ${scopeLabel} — 25 of ${options.length}, type a weapon in /gunsmith for the rest`;
     }
 
     return {
@@ -190,11 +210,11 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
     };
 }
 
-// Shared Components V2 card builder for /dmz and /gunsmiths (search + list's scoped browse) -- same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs 'mp') so handlers/loadouts.js can tell a click apart and query the right mode.
+// Shared Components V2 card builder for /dmz and /gunsmith (mp + dmz, and their scoped browse) -- same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs 'mp') so handlers/loadouts.js can tell a click apart and query the right mode.
 //
-// NOTE (redesigned during review, per Harkirat's loadouts_ui.json reference): weapon name is now the top heading with optional Meta/Best/Top-3 badges directly below it (see buildBadgesLine above), rather than a small category overline -- the category moved down into the footer line instead ("{category} • Build N of M • Last updated..."). The divider between Gunsmith Code and the image was removed. "Attachments"/"Gunsmith Code" are now real H3 headings (### ) rather than bold text, and each attachment line is backtick-wrapped to match the Gunsmith Code code-block styling. V2 still has no equivalent to an embed's *inline fields*, so those two sections stack vertically rather than sitting side-by-side. THE CONTENT HALF, WITHOUT THE CHROME. Split out 2026-08-23 12:55 EDT so a build can be drawn somewhere that is not /gunsmiths -- /bot analytics' change-detail panel renders a loadout's before/after through this, per the record-view contract (docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md §2 rule D: never RE-DESCRIBE a record, draw it with its own renderer).
+// NOTE (redesigned during review, per Harkirat's loadouts_ui.json reference): weapon name is now the top heading with optional Meta/Best/Top-3 badges directly below it (see buildBadgesLine above), rather than a small category overline -- the category moved down into the footer line instead ("{category} • Build N of M • Last updated..."). The divider between Gunsmith Code and the image was removed. "Attachments"/"Gunsmith Code" are now real H3 headings (### ) rather than bold text, and each attachment line is backtick-wrapped to match the Gunsmith Code code-block styling. V2 still has no equivalent to an embed's *inline fields*, so those two sections stack vertically rather than sitting side-by-side. THE CONTENT HALF, WITHOUT THE CHROME. Split out 2026-08-23 12:55 EDT so a build can be drawn somewhere that is not /gunsmith -- /bot analytics' change-detail panel renders a loadout's before/after through this, per the record-view contract (docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md §2 rule D: never RE-DESCRIBE a record, draw it with its own renderer).
 //
-// ⚠️ WHAT IS DELIBERATELY NOT IN HERE: the Container (type 17) wrapper, the trailing divider, the pagination/Copy row, the browse dropdown and the Share button. Every one of those is a LIVE control whose custom_id routes to handlers/loadouts.js and resolves an index against a query only /gunsmiths has made -- embedded in a change panel they would either mislead or misfire, and the Container would nest inside another Container. buildLoadoutCard() below still owns all of it, so its output is byte-identical to before (scripts/loadoutRenderSnapshot.test.js is the proof and must not move).
+// ⚠️ WHAT IS DELIBERATELY NOT IN HERE: the Container (type 17) wrapper, the trailing divider, the pagination/Copy row, the browse dropdown and the Share button. Every one of those is a LIVE control whose custom_id routes to handlers/loadouts.js and resolves an index against a query only /gunsmith has made -- embedded in a change panel they would either mislead or misfire, and the Container would nest inside another Container. buildLoadoutCard() below still owns all of it, so its output is byte-identical to before (scripts/loadoutRenderSnapshot.test.js is the proof and must not move).
 function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = false } = {}) {
     const attachmentLines = (activeBuild.attachments || []).map(att => `• \`${att}\``).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
@@ -203,6 +223,8 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     // hideBadges is set for a meta scope browse -- "Meta" is implied by the view itself there, per Harkirat's call to hide the WHOLE badge line rather than just the redundant Meta badge. Category browses keep badges ("Best AR" is still informative in an AR list).
     const badgesLine = hideBadges ? null : buildBadgesLine(activeBuild);
     if (badgesLine) titleContent += `\n${badgesLine}`;
+    const rankModeLine = hideBadges ? null : buildRankModeLine(activeBuild);
+    if (rankModeLine) titleContent += `\n${rankModeLine}`;
 
     const containerComponents = [
         { type: 10, content: titleContent }
@@ -223,7 +245,7 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
         containerComponents.push({ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` });
     }
 
-    // NOTE (removed during review, per Harkirat's request): there used to be a divider here between Gunsmith Code and the image -- dropped so the image sits directly under the text above it. 🔴 GUARDED, and NOT defensively -- found live 2026-08-23 12:58 EDT while wiring the change-detail panel. buildImageUrl() calls imageKey.startsWith(), which THROWS on a build with no imageKey. Every stored Loadout has one, so /gunsmiths never hit it; a change panel does, because it reconstructs a BEFORE state as {...current, ...inversePayload} and renders delete payloads that may carry only the fields the op touched. renderRecord()'s try/catch would have swallowed the throw and quietly fallen back to a field list -- the budget fallback firing for the wrong reason, which is the "a guard that never fires is decoration" failure inverted. Omitting the gallery is the honest render of a build with no image.
+    // NOTE (removed during review, per Harkirat's request): there used to be a divider here between Gunsmith Code and the image -- dropped so the image sits directly under the text above it. 🔴 GUARDED, and NOT defensively -- found live 2026-08-23 12:58 EDT while wiring the change-detail panel. buildImageUrl() calls imageKey.startsWith(), which THROWS on a build with no imageKey. Every stored Loadout has one, so /gunsmith never hit it; a change panel does, because it reconstructs a BEFORE state as {...current, ...inversePayload} and renders delete payloads that may carry only the fields the op touched. renderRecord()'s try/catch would have swallowed the throw and quietly fallen back to a field list -- the budget fallback firing for the wrong reason, which is the "a guard that never fires is decoration" failure inverted. Omitting the gallery is the honest render of a build with no image.
     if (activeBuild.imageKey) {
         containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey) } }] });
     }
@@ -232,7 +254,7 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     return containerComponents;
 }
 
-// Shared Components V2 card builder for /dmz and /gunsmiths (search + list's scoped browse) -- same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs 'mp') so handlers/loadouts.js can tell a click apart and query the right mode. The card's CONTENT comes from buildLoadoutCardBody above; everything this function adds is chrome (container, controls, share).
+// Shared Components V2 card builder for /dmz and /gunsmith (mp + dmz, and their scoped browse) -- same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs 'mp') so handlers/loadouts.js can tell a click apart and query the right mode. The card's CONTENT comes from buildLoadoutCardBody above; everything this function adds is chrome (container, controls, share).
 function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null, hideBadges = false, browse = null }) {
     const activeBuild = builds[index];
     const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges });
@@ -275,6 +297,14 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
 
     const outerComponents = [containerPayload];
     if (browseRow) outerComponents.push(browseRow);
+    // A meta browse carries its own MP / DMZ switch, outside the panel at its foot (Harkirat, 2026-10-19 19:38 EDT: "Merge meta into a single list, with a button outside at the foot of the embed to toggle between MP/DMZ metas"). The side on screen is green and disabled, the other grey; a click re-opens the meta browse in that mode from its first build.
+    if (browse && browse.scopeToken.endsWith('.*.meta')) {
+        const onDmz = browse.scopeToken.startsWith('DMZ');
+        outerComponents.push({ type: 1, components: [
+            { type: 2, style: onDmz ? 2 : 3, label: 'MP Meta', custom_id: 'gsb~meta~MP.*.meta', disabled: !onDmz },
+            { type: 2, style: onDmz ? 3 : 2, label: 'DMZ Meta', custom_id: 'gsb~meta~DMZ.*.meta', disabled: onDmz }
+        ] });
+    }
 
     // "Share Publicly" stays its own row OUTSIDE the container too — same convention as every other command in the bot, see utils/shareButton.js.
     const components = withShareButton(outerComponents, isEphemeral);

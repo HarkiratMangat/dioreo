@@ -3,12 +3,12 @@
 // ==========================================
 // Everything that decides WHICH slash commands exist and pushes them to Discord. Split out of index.js on 2026-08-13 17:20 EDT; the logic is unchanged, only its address.
 //
-// Three stages, deliberately kept separate because they run at different TIMES and that timing is load-bearing:
-//   1. loadCommandModules(client)  -- at boot, synchronous. Reads commands/*.js off disk, including commands/gunsmiths.js.
-//   2. applyGunsmithsScopeChoices(commands) -- after ClientReady, async. Needs a live MongoDB query for the 7 category scope choices, so it CANNOT run at require time.
-//   3. registerApplicationCommands(client, commands) -- one REST PUT, after the two above.
+// Two stages, deliberately kept separate because they run at different TIMES and that timing is load-bearing:
+//   1. loadCommandModules(client)  -- at boot, synchronous. Reads commands/*.js off disk, including commands/gunsmith.js.
+//   2. registerApplicationCommands(client, commands) -- one REST PUT, after ClientReady.
+// (A middle stage, applyGunsmithsScopeChoices, filled /gunsmiths list's category choices from a live MongoDB query until that subcommand was removed on 2026-10-19 19:43 EDT; the list header above counted it as step 2 and went stale. Nothing in boot needs the database before the PUT now.)
 //
-// The /gunsmiths consolidation (2026-08-15) removed the nine commands (/all + 8 per-category) that used to be built here -- see docs/superpowers/specs/2026-08-15-gunsmiths-command- consolidation-design.md. This file's own ⚠️ used to warn that a commands/ readdir misses those nine; that trap is why the consolidation happened, and it no longer applies -- /gunsmiths is a normal commands/*.js module, found by the same readdir as everything else.
+// The /gunsmith consolidation (2026-08-15) removed the nine commands (/all + 8 per-category) that used to be built here -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-consolidation-design.md. This file's own ⚠️ used to warn that a commands/ readdir misses those nine; that trap is why the consolidation happened, and it no longer applies -- /gunsmith is a normal commands/*.js module, found by the same readdir as everything else.
 
 const fs = require('fs');
 const path = require('path');
@@ -58,7 +58,7 @@ function splitCommands(commands, modules, { adminApp }) {
 // STATIC + ON-DISK COMMAND MODULES
 // ==========================================
 
-// Initializes client.commands and returns the staging array that applyGunsmithsScopeChoices() and registerApplicationCommands() go on to fill and serialize. The array and the Collection are deliberately BOTH maintained: the Collection is what the router dispatches through (`interaction.client.commands.get(name)`), the array is what gets serialized to Discord and what /admin derives its gateable-command list from.
+// Initializes client.commands and returns the staging array that registerApplicationCommands() goes on to serialize. The array and the Collection are deliberately BOTH maintained: the Collection is what the router dispatches through (`interaction.client.commands.get(name)`), the array is what gets serialized to Discord and what /admin derives its gateable-command list from.
 function loadCommandModules(client) {
     client.commands = new Collection();
     const commands = [];
@@ -84,45 +84,6 @@ function loadCommandModules(client) {
         }
     }
 
-    return commands;
-}
-
-// ==========================================
-// PER-CATEGORY WEAPON COMMANDS (DB-DERIVED)
-// ==========================================
-
-/**
- * Was buildCategoryCommands(): it used to CREATE the eight per-category commands (/ar, /lmg, /sniper, etc.). It now fills in /gunsmiths list's `scope` choices from the same live query, so a new category appears on its own without a code change. Still runs after ClientReady and before the REST PUT -- it needs a DB round-trip, and `commands` holds the SAME SlashCommandBuilder object client.commands does (see loadCommandModules), so mutating its nested option here keeps both consistent.
- *
- * Mutates and returns the same `commands` array loadCommandModules built.
- */
-async function applyGunsmithsScopeChoices(commands) {
-    const Loadout = require('../models/Loadout');
-    const { FIXED_SCOPES } = require('../utils/loadoutScopes');
-    const dbCategories = await Loadout.distinct('category', { mode: 'MP' });
-    // SECONDARIES is merged in (not appended) so it is ready the moment Harkirat adds one, and so re-running this after real data exists cannot register it twice. Sorted for a stable, predictable choice order in the Discord picker.
-    const cats = Array.from(new Set([...dbCategories, 'SECONDARIES'])).sort();
-    const allChoices = [
-        ...cats.map(c => ({ name: c, value: `MP.${c}.std` })),
-        ...FIXED_SCOPES.map(s => ({ name: s.label, value: s.value })),
-    ];
-    // Capped + null-guarded (v3-pre-release review, finding #4) -- setChoices() throws past 25 entries, and this used to be awaited with no try/catch anywhere above it in the ClientReady handler, so a 22nd+ MP category (nothing stops one -- Loadout.category has no enum) skipped command registration ENTIRELY: no commands reached Discord at all, with only a generic client 'error' alert as the symptom.
-    const choices = allChoices.slice(0, 25);
-    if (allChoices.length > 25) {
-        console.warn(`⚠️ /gunsmiths list scope has ${allChoices.length} candidate choices, Discord's cap is 25 -- ${allChoices.length - 25} dropped. Consider consolidating MP categories.`);
-    }
-    const gunsmiths = commands.find(c => (c.toJSON ? c.toJSON().name : c.name) === 'gunsmiths');
-    if (!gunsmiths) {
-        console.error('⚠️ /gunsmiths not found in the command array — scope choices NOT applied');
-        return commands;
-    }
-    const listSub = gunsmiths.options.find(o => o.name === 'list');
-    const scopeOption = listSub?.options.find(o => o.name === 'scope');
-    if (!scopeOption) {
-        console.error('⚠️ /gunsmiths list scope option not found — scope choices NOT applied');
-        return commands;
-    }
-    scopeOption.setChoices(...choices);
     return commands;
 }
 
@@ -161,4 +122,4 @@ async function registerApplicationCommands(client, commands, { token = process.e
     }
 }
 
-module.exports = { loadCommandModules, applyGunsmithsScopeChoices, registerApplicationCommands, splitCommands, capMessageCommands, belongsOnAdminApp, ADMIN_COMMAND_NAMES, ADMIN_APP_COMMAND_NAMES, MESSAGE_COMMAND_CAP };
+module.exports = { loadCommandModules, registerApplicationCommands, splitCommands, capMessageCommands, belongsOnAdminApp, ADMIN_COMMAND_NAMES, ADMIN_APP_COMMAND_NAMES, MESSAGE_COMMAND_CAP };

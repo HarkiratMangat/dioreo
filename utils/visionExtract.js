@@ -53,7 +53,17 @@ const DEFAULT_LOCATION = 'us';
 // The old "exactly 5" wording is gone -- forcing a count is what made a restricted-slot weapon hallucinate a 5th attachment; the pipeline pads/filters for the review card instead. DMZ DETECTION (2026-10-19 17:53 EDT, docs/db-deferred-list.md's "/autobuild: recognise DMZ builds, not just MP"). The model is NOT asked which mode the screen is. It reports four pieces of UI chrome as plain yes/no facts, and classifyMode() below decides, so the rule lives in code that can be tested without a Vertex call and cannot drift between prompt wordings. The four are the text-bearing discriminators from .claude/rules/autobuild.md's "MP vs DMZ" table, strongest first. ⚠️ Deliberately NOT asked: slot COUNT (a DMZ SVD has five slots), slot POSITION (renames and moves), the `ATTACHMENTS ● ● ● ● ●` dot row (Harkirat: "i wouldnt fixate on those dot elements" -- a miscounted glyph would silently flip the mode), and the top-right MAX/GOLD badge (a weapon-levelling display, not rarity or mode).
 //
 // The slot label: MP prints one above each attachment, DMZ prints none at all (Harkirat, 2026-09-16 11:31 EDT), so the model is told to copy a printed label verbatim -- including weapon-specific renames like Bowstring or Limb -- and to leave it blank rather than guess one from a position or an icon. A guessed DMZ slot would land in Cloudinary's per-slot metadata as fact.
-function buildPrompt(maxAttachments) {
+function buildPrompt(maxAttachments, knownWeapons = []) {
+    return buildBasePrompt(maxAttachments) + weaponVocabulary(knownWeapons);
+}
+
+// The CODM catalogue's weapon names (utils/catalogue.js), so the model spells a known weapon the way the game does instead of guessing from a stylised skin title. Names only, never attachments: the attachment list runs to hundreds of names and is corrected after extraction instead (correctAttachmentName against the same catalogue).
+function weaponVocabulary(knownWeapons) {
+    if (!knownWeapons?.length) return '';
+    return `\n\nKnown CODM weapon names. When the screenshot's weapon is one of these, use this exact spelling for weaponName: ${knownWeapons.join(', ')}.`;
+}
+
+function buildBasePrompt(maxAttachments) {
     return `You are looking at a screenshot of a Call of Duty Mobile (CODM) "Gunsmith" weapon customization screen. Extract exactly this information and respond with ONLY a JSON object, no markdown code fences, no extra text:
 
 {
@@ -126,7 +136,7 @@ function classifyMode(screen) {
 }
 
 // `maxAttachments` (default MAX_ATTACHMENTS) -- how many attachment slots to extract. Kept as an option rather than a separate function so there's still ONE extraction path to maintain; scripts/backfillLoadoutSlots.js passes 9 explicitly.
-async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHMENTS, taskName } = {}) {
+async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHMENTS, taskName, knownWeapons = [] } = {}) {
     const accessToken = await getGcpAccessToken();
     const gcpProjectId = process.env.GCP_PROJECT_ID || DEFAULT_PROJECT_ID;
     const gcpLocation = process.env.GCP_LOCATION || DEFAULT_LOCATION;
@@ -161,7 +171,7 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHME
         contents: [{
             role: 'user',
             parts: [
-                { text: buildPrompt(maxAttachments) },
+                { text: buildPrompt(maxAttachments, knownWeapons) },
                 { inline_data: { mime_type: contentType, data: base64Image } }
             ]
         }],

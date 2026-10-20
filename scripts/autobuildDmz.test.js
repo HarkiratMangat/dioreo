@@ -120,9 +120,12 @@ const lastToken = () => [...pipeline.pendingAutobuilds.keys()].pop();
     await check('DMZ rank badges survive the round trip through the Badges box; a bare tier lands on dmzRangeRank', () => {
         const dmz = { mode: 'DMZ', isMeta: true, dmzRangeRank: 'best-close', isToxic: false };
         assert.strictEqual(pipeline.badgeTokensOf(dmz), 'meta,bestclose');
-        assert.deepStrictEqual(pipeline.badgeFieldsFor('DMZ', 'meta,bestclose'), { isMeta: true, isToxic: false, categoryRank: null, dmzRangeRank: 'best-close' });
-        assert.deepStrictEqual(pipeline.badgeFieldsFor('DMZ', 'top3'), { isMeta: false, isToxic: false, categoryRank: null, dmzRangeRank: 'top3' });
-        assert.deepStrictEqual(pipeline.badgeFieldsFor('MP', 'meta,top5,toxic'), { isMeta: true, isToxic: true, categoryRank: 'top5', dmzRangeRank: null });
+        assert.deepStrictEqual(pipeline.badgeFieldsFor('DMZ', 'meta,bestclose'), { isMeta: true, isToxic: false, isAss: false, rankModes: [], categoryRank: null, dmzRangeRank: 'best-close' });
+        assert.deepStrictEqual(pipeline.badgeFieldsFor('DMZ', 'top3'), { isMeta: false, isToxic: false, isAss: false, rankModes: [], categoryRank: null, dmzRangeRank: 'top3' });
+        assert.deepStrictEqual(pipeline.badgeFieldsFor('MP', 'meta,top5,toxic'), { isMeta: true, isToxic: true, isAss: false, rankModes: [], categoryRank: 'top5', dmzRangeRank: null });
+        // Rank modes are MP only: the parser drops them from a DMZ build (per-build badges, 2026-10-19 15:59 EDT).
+        assert.deepStrictEqual(pipeline.badgeFieldsFor('MP', 'hp,snd').rankModes, ['HP', 'S&D']);
+        assert.deepStrictEqual(pipeline.badgeFieldsFor('DMZ', 'hp').rankModes, []);
         assert.strictEqual(pipeline.badgeTokensOf({ mode: 'MP', categoryRank: 'top5', isToxic: true }), 'top5,toxic');
     });
     await check('a DMZ duplicate is the same weapon with the same attachment set in any order; MP builds never count', () => {
@@ -165,7 +168,7 @@ const lastToken = () => [...pipeline.pendingAutobuilds.keys()].pop();
         assert.ok(text.includes('DMZ builds have no code'));
         assert.ok(text.includes('9. `Granulated Grip Tape`'));
     });
-    await check('confirming it writes a DMZ Loadout under a free DMZ- key, and badges spread only to DMZ siblings', async () => {
+    await check('confirming it writes a DMZ Loadout under a free DMZ- key, and its badges stay on that build alone', async () => {
         builds.push({ weaponKey: 'ak117', weaponName: 'AK117', mode: 'DMZ', category: 'AR', buildName: 'Aggressive', imageKey: 'DMZ-AK117-1', attachments: DMZ_ASVAL });
         const token = lastToken();
         pipeline.pendingAutobuilds.get(token).badgesRaw = 'meta,bestmidlong';
@@ -179,9 +182,8 @@ const lastToken = () => [...pipeline.pendingAutobuilds.keys()].pop();
         assert.strictEqual(doc.shareCode, '');
         assert.deepStrictEqual(doc.attachments, DMZ_AK117);
         assert.deepStrictEqual([doc.dmzRangeRank, doc.categoryRank, doc.isMeta], ['best-midlong', null, true]);
-        assert.strictEqual(updates.length, 1);
-        assert.strictEqual(updates[0].filter.mode, 'DMZ', 'MP siblings untouched');
-        assert.deepStrictEqual(Object.keys(updates[0].set).sort(), ['dmzRangeRank', 'isMeta', 'isToxic']);
+        // Badges are per build since 2026-10-19 15:59 EDT (Harkirat): nothing is copied to the weapon's other builds, in either mode.
+        assert.strictEqual(updates.length, 0, 'no sibling build is written');
     });
     await check('an ambiguous screenshot asks, and Confirm refuses until the mode is set', async () => {
         sends.length = 0;

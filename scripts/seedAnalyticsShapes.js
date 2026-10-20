@@ -27,7 +27,7 @@ const ALERTS = [
 // One per felt-speed band, plus a genuine ACK breach and a deliberately long command name -- the two cases a 32-column bar chart is most likely to break on.
 const TIMINGS = [
     { command: 'draws', ackMs: 180, durations: [210, 240, 260, 300, 280] },
-    { command: 'gunsmiths', ackMs: 320, durations: [800, 950, 1100, 1250, 900] },
+    { command: 'gunsmith', ackMs: 320, durations: [800, 950, 1100, 1250, 900] },
     { command: 'colors', ackMs: 410, durations: [4200, 5100, 9100, 6300, 4800] },
     { command: 'timestamp', ackMs: 90, durations: [110, 120, 105, 130, 115] },
     // The ONLY thing Discord's 3,000ms limit actually governs is the ack. Post-defer the window is 15 minutes -- see the spec's finding #1.

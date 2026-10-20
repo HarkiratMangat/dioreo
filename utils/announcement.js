@@ -8,6 +8,21 @@ const UserPreference = require('../models/UserPreference');
 
 // Discord's hard cap on embeds in a single message. If a user somehow has more than this many unseen at once (hasn't run a command in a long time, or several were posted back-to-back), the OLDEST unseen ones are shown first and the rest wait for their next command rather than any of them being silently dropped -- `active`/`unseen` below are both sorted oldest-first.
 const MAX_EMBEDS_PER_MESSAGE = 10;
+// Discord refuses a message whose embeds hold more than 6,000 characters in total. Before this cap, one long announcement in a batch made Discord refuse the whole follow-up, nothing was marked seen, and the same oversized batch was retried and refused on every command, so no announcement reached anyone (deferred-list Active Bug, found 2026-09-13).
+const EMBED_CHAR_BUDGET = 6000;
+
+// The longest run of due announcements, in order, whose embeds fit the budget. The first one always goes (its own text is capped at 4,000 by core/ops/announcements.js); the rest wait for the user's next command, which is how a batch over ten already works.
+function fitEmbedBudget(docs) {
+    const out = [];
+    let used = 0;
+    for (const doc of docs) {
+        const size = (buildAnnouncementEmbed(doc).description || '').length;
+        if (out.length && used + size > EMBED_CHAR_BUDGET) break;
+        out.push(doc);
+        used += size;
+    }
+    return out;
+}
 
 // No expiry means indefinite. Explicit 60-day default is applied here (not as a schema default on Announcement itself) so there's exactly one place "what does blank mean" is decided.
 const DEFAULT_EXPIRY_DAYS = 60;
@@ -114,15 +129,15 @@ async function maybeSendAnnouncement(interaction) {
     const due = active.filter(a => isAnnouncementDue(a, seen, deliveryById, now));
     if (due.length === 0) return;
 
-    const toShow = due.slice(0, MAX_EMBEDS_PER_MESSAGE);
+    const toShow = fitEmbedBudget(due.slice(0, MAX_EMBEDS_PER_MESSAGE));
     const embeds = toShow.map(doc => buildAnnouncementEmbed(doc));
 
     // Plain discord.js followUp with normal embed objects -- NOT a Components V2 payload, so this doesn't need sendV2Payload's raw-REST bypass (a standard `embeds` array on followUp is fully supported). Only requires the interaction to already be acknowledged, which every caller of this function guarantees by calling it after the command's own reply completed.
     try {
         await interaction.followUp({ embeds, ephemeral: true });
     } catch (err) {
-        // Interaction likely expired -- don't mark as seen/delivered, so it's retried on their next command instead of silently lost.
-        console.error('Failed to deliver announcement follow-up (interaction likely expired):', err?.message || err);
+        // Interaction likely expired -- don't mark as seen/delivered, so it's retried on their next command instead of silently lost. The real Discord code, so a refusal (50035, invalid form body) reads differently from an expired interaction (10062).
+        console.error(`Failed to deliver announcement follow-up (Discord ${err?.code ?? 'no code'}):`, err?.message || err);
         return;
     }
 
@@ -151,4 +166,4 @@ async function maybeSendAnnouncement(interaction) {
 }
 
 // buildAnnouncementEmbed exported 2026-08-23 11:27 EDT so /bot analytics' change-detail panel renders an announcement with the SAME text shape a user is shown, instead of re-describing its fields.
-module.exports = { getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, MAX_EMBEDS_PER_MESSAGE, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };
+module.exports = { getActiveAnnouncements, maybeSendAnnouncement, computeExpiresAt, expiryToInputValue, generateAccentColor, buildAnnouncementEmbed, MAX_EMBEDS_PER_MESSAGE, EMBED_CHAR_BUDGET, fitEmbedBudget, isRepeatingAnnouncement, isAnnouncementDue, MIN_HOURS_BETWEEN_REPEATS };

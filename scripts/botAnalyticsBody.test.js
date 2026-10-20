@@ -190,7 +190,7 @@ check('every monospace block fits the MEASURED phone budget, not the estimated o
     const COLS = 32;
     const blocks = [
         buildVitalsBlock({ gatewayStatus: 0, uptimeSec: 3600, rssMb: 120, boots24h: 53, boots7d: 268 }),
-        buildUsageBars([{ _id: 'gunsmiths', c: 14 }, { _id: 'invite', c: 8 }]),
+        buildUsageBars([{ _id: 'gunsmith', c: 14 }, { _id: 'invite', c: 8 }]),
     ];
     for (const b of blocks) {
         for (const l of b.split('\n')) {
@@ -247,8 +247,8 @@ check('every canonical renderer REUSES its own command, and a pair fits the 40-c
     const build = { _id: 'b', weaponName: 'AK117', attachments: ['Muzzle: MIP', 'Barrel: OWC', 'Optic: Red Dot', 'Stock: No Stock', 'Laser: OWC'], lastUpdated: new Date(), category: 'AR', mode: 'MP', shareCode: 'ABC123', description: 'A test build', imageKey: 'x.png' };
     const mine = RECORD_VIEWS.loadouts_mp.render(build);
     const theirs = require('../utils/loadoutRender').buildLoadoutCardBody(build, { index: 0, total: 1, hideBadges: false });
-    assert.deepStrictEqual(mine, theirs, 'the panel must draw the build with /gunsmiths own renderer, not a copy');
-    assert.ok(!JSON.stringify(mine).includes('custom_id'), 'no live control may ride into the panel -- its ids resolve against a query only /gunsmiths made');
+    assert.deepStrictEqual(mine, theirs, 'the panel must draw the build with /gunsmith own renderer, not a copy');
+    assert.ok(!JSON.stringify(mine).includes('custom_id'), 'no live control may ride into the panel -- its ids resolve against a query only /gunsmith made');
     assert.ok(!mine.some(c => c.type === 17), 'a Container cannot nest inside the panel own Container');
     // MEASURED, not assumed -- this repo has already taken the 40-cap as a production crash.
     assert.ok(countPanelComponents(mine) * 2 <= 26, `a before/after pair of loadout cards is ${countPanelComponents(mine) * 2} components, which crowds out the panel own chrome`);

@@ -269,6 +269,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-19 00:54 EDT — Series Armory and the Advanced draws join the calculator, priced set by set (v3.89.0-pre)
 - 2026-10-19 12:39 EDT — Right-clicking a post or a person: six context-menu commands, and the colours of people who never used Dioreo kept anonymous (v3.91.0-pre)
 - 2026-10-19 15:43 EDT — Dioreo Admin: a second app for the admin commands (v3.92.0-pre)
+- 2026-10-19 21:36 EDT — Renaming a command is a grep with a history problem: /gunsmiths becomes /gunsmith (v3.98.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4599,6 +4600,16 @@ Harkirat's admin commands showed in every user's command list and refused on the
 The split itself was small. What a second login breaks was not: the emoji map was one shared object re-pointed to "the" app's ids at boot, and an application emoji only renders for the app that owns it. The router already ran each click inside an AsyncLocalStorage context for logging, so the app id rides there and the emoji export answers from that app's own ids, with every call site unchanged. The same pass found `/bot`'s health panel would have read the admin connection's zero servers, and the slim admin lifecycle keeps the heartbeat, cleanup and restart marker from running twice.
 
 The emoji copy taught the session's lesson. Copies made through the API came back blurred or refused, and the cause was Discord, not the script: any upload over 256 KB is re-compressed, dropping frames on heavy animated emojis. Asking the CDN for a bigger file made it worse, because it upscales. Harkirat's originals, under the limit, went up untouched, so 77 of 85 were matched to prod by image content and copied into a gitignored folder for the next app.
+
+## 2026-10-19 21:36 EDT — Renaming a command is a grep with a history problem: /gunsmiths becomes /gunsmith (v3.98.0-pre)
+
+Harkirat chose the singular, `/gunsmith`, after the command had been `/gunsmiths` since the consolidation. The rename is mechanical until it meets a repo that deliberately keeps its past. A bulk replace turned up four traps, all of them silent: it doubled an alias that already held both spellings (`'gunsmith','gunsmith'`), it rewrote his own quoted words, it renamed a function that is history (`applyGunsmithsScopeChoices`, which comments describe), and it broke every sentence that used "gunsmiths" as a noun ("Manage gunsmiths and seasonal data" became a sentence with no object). Each was fixed by hand and then searched for, because the replace had made every one of them look correct.
+
+The records stay as written, which is the repo's rule, and the cost of that rule showed up as stale comments rather than stale records. When `search` and `list` had already been removed that evening, the earlier comments still said `/gunsmith search` once the plural fell off, and now named a command that never existed. A grep for the old name finds none of those; a grep for the old subcommands did.
+
+One file could not be fixed from here. The portal's Armory share icon copies `/gunsmiths search weapon:… build:N`, and `scripts/armoryRealm.test.js` exists to prove that text resolves through the real weapon lookup. The portal belongs to another workstream, so the test keeps the portal's stale string on purpose, with a comment saying to change it in the same commit as the portal, and the change is a written hand-off instead of an edit.
+
+The landing page animation was a smaller version of the same lesson. Its option lists were measured against the command set once and then drifted, and `fit()` filters a value that is too long rather than trimming it, so a stale or oversized entry simply never appears.
 
 # Part B — Lessons Ledger (thematic)
 

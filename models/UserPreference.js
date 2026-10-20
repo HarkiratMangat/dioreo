@@ -4,7 +4,7 @@ const UserPreferenceSchema = new mongoose.Schema({
     discordId: { type: String, required: true, unique: true },
     timezone: { type: String, default: 'America/Toronto' },
     timestampStyle: { type: String, default: 'all_formats' },
-    // Shared by /dmz AND /gunsmiths search — one "Weapon Builds" toggle in /settings covers every loadout command, same Option A pattern as `seasonalVisibility` below. `dmzVisibility` used to exist as a separate field here, but it was never actually wired to anything in the /settings UI (the visible toggle always wrote to `loadoutVisibility`), so it silently did nothing forever — removed rather than left as dead, unreachable state.
+    // Shared by /dmz AND /gunsmith (mp + dmz) — one "Weapon Builds" toggle in /settings covers every loadout command, same Option A pattern as `seasonalVisibility` below. `dmzVisibility` used to exist as a separate field here, but it was never actually wired to anything in the /settings UI (the visible toggle always wrote to `loadoutVisibility`), so it silently did nothing forever — removed rather than left as dead, unreachable state.
     loadoutVisibility: { type: String, default: 'public' },
     // NOTE: seasonendVisibility / drawsVisibility / patchnotesVisibility / calendarVisibility / pricesVisibility were removed here — per the user's decision (Option A), /season, /draws, /patch, /calendar, and /draw prices all now check the single shared `seasonalVisibility` field below instead of five separate ones. Old documents that still have the retired fields aren't hurt by this — Mongoose just stops reading/writing them going forward.
     seasonalVisibility: { type: String, default: 'public' },

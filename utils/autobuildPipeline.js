@@ -4,6 +4,7 @@ const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = req
 const Loadout = require('../models/Loadout');
 const { extractLoadoutFromImage } = require('./visionExtract');
 const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges, normalizeWeaponName, orderAttachmentsBySlot } = require('./adminParser');
+const { getCatalogueIndex, findUnknownNames, learnItems, describeUnknown } = require('./catalogue');
 const { sendV2Payload } = require('./sendV2Payload');
 const { computeWeaponKeyAndBuild, buildLoadoutCard, getMpCategoryAccent, findDuplicateLoadouts } = require('./loadoutRender');
 const { uploadLoadoutImage, syncLoadoutMetadata, deriveImageKey } = require('./loadoutImageCache');
@@ -43,6 +44,18 @@ function refreshReviewWarnings(data, allBuilds) {
     } else {
         data.duplicateWarning = null;
     }
+}
+
+// The stored builds' attachment names plus the catalogue's, so a misread snaps onto a real name even when no build has used it yet.
+async function knownAttachmentNames(allMpBuilds) {
+    const catIndex = await getCatalogueIndex();
+    return [...new Set([...allMpBuilds.flatMap(l => l.attachments), ...(catIndex ? [...catIndex.attachments.values()].map(i => i.name) : [])])];
+}
+
+// The same warning /manage gives (Harkirat, 2026-10-19 16:13 EDT: warn, then confirm or go back to edit): the review card's Confirm is the "save anyway", and Edit is the way back.
+async function catalogueWarningFor(data) {
+    const unknown = await findUnknownNames({ weaponName: data.weaponName, attachments: data.attachments });
+    return unknown.count ? `⚠️ **Not in the catalogue yet:** ${describeUnknown(unknown)}\n-# A typo, or a new item? **Confirm** saves it and adds these names; **Edit** lets you fix them first.` : null;
 }
 
 // DMZ builds carry no Gunsmith code (the DMZ screen shows none), so findDuplicateLoadouts' code-based rules can never match one. A DMZ duplicate is the same weapon with the same attachment SET, order ignored, compared the way that function compares names (trimmed, case-folded). Kept here rather than in utils/loadoutRender.js so this change stays out of the loadout renderer.
@@ -118,6 +131,9 @@ function buildReviewCard(token, data) {
     if (data.duplicateWarning) {
         components.push({ type: 10, content: data.duplicateWarning });
     }
+    if (data.catalogueWarning) {
+        components.push({ type: 10, content: data.catalogueWarning });
+    }
     if (data.equipCapWarning) {
         components.push({ type: 10, content: data.equipCapWarning });
     }
@@ -146,18 +162,17 @@ function badgeTokensOf(build) {
     return [build.isMeta ? 'meta' : null, rank || null, build.isToxic ? 'toxic' : null].filter(Boolean).join(',');
 }
 
-// Category: explicit option > an existing sibling build's category > unresolved (null). Badges: explicit option > (if blank) an existing sibling's badges, reconstructed as a token string > empty (per the design spec's "blank inherits from an existing build if one exists" rule). Mode-aware since 2026-10-19 17:52 EDT. The category may come from a sibling in EITHER mode (it describes the weapon), preferring one in this build's own mode; badges only ever come from the same mode, because MP and DMZ rank on different scales (categoryRank vs dmzRangeRank) and a weapon's MP badges say nothing about its DMZ build. An unresolved mode inherits a category but no badges.
+// Category: explicit option > an existing sibling build's category > unresolved (null). Badges: the explicit option only. They used to inherit a sibling's badges when blank (the design spec's "blank inherits from an existing build" rule), which made sense while badges described the weapon; since 2026-10-19 15:59 EDT every badge is per build (Harkirat: "move all badge types to per build instead per weapon"), so a new build starts with none unless the admin gives some.
 async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOption, mode = 'MP') {
     const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
     let category = explicitCategory || null;
     let badgesRaw = badgesOption || '';
 
-    if (!category || !badgesRaw.trim()) {
+    if (!category) {
         const siblings = await Loadout.find({ weaponKey }).lean();
         const sameMode = mode ? siblings.find(b => (b.mode || 'MP') === mode) : null;
         const anyMode = sameMode || siblings[0];
-        if (!category && anyMode) category = anyMode.category;
-        if (!badgesRaw.trim() && sameMode) badgesRaw = badgeTokensOf(sameMode);
+        if (anyMode) category = anyMode.category;
     }
     return { category, badgesRaw };
 }
@@ -166,7 +181,9 @@ async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOpti
 async function runExtraction(interaction, sourceImageUrl, explicitCategory, badgesOption, explicitMode = null) {
     let extracted;
     try {
-        extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live' });
+        // The catalogue's weapon names ride in the prompt; its attachment names join the stored ones the corrector below snaps a misread onto.
+        const catIndex = await getCatalogueIndex();
+        extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live', knownWeapons: catIndex ? [...catIndex.weapons.values()].map(w => w.name) : [] });
     } catch (err) {
         console.error('Autobuild extraction failed:', err.message);
         return interaction.followUp({ content: `❌ Couldn't extract loadout data from that image: ${err.message}`, ephemeral: true });
@@ -174,7 +191,7 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
 
     // One fetch, reused for BOTH the attachment-name corrector's known-vocabulary set AND the duplicate/category-conflict warnings (refreshReviewWarnings) -- richer field select than the old attachments-only projection so those checks have shareCode/category/weaponName to work with. Both modes since 2026-10-19 17:52 EDT: DMZ uses the same attachment names (and adds some MP builds don't have), so the vocabulary is the union, and refreshReviewWarnings splits by mode where it matters.
     const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
-    const knownAttachments = [...new Set(allBuilds.flatMap(l => l.attachments))];
+    const knownAttachments = await knownAttachmentNames(allBuilds);
     const correctedAttachments = extracted.attachments.map(a => correctAttachmentName(a, knownAttachments));
     const correctedCode = correctGunsmithCode(extracted.gunsmithCode);
     // Strip skin suffix + normalize casing so the weaponKey/imageKey/display value all resolve to the real weapon (see normalizeWeaponName) -- this is the fix for the v2-test "new weapon created from the skin name" cascade. Everything below uses the normalized name, not the raw extraction.
@@ -204,6 +221,7 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
         adminId: interaction.user.id
     };
     refreshReviewWarnings(data, allBuilds);
+    data.catalogueWarning = await catalogueWarningFor(data);
     pendingAutobuilds.set(token, data);
     setTimeout(() => pendingAutobuilds.delete(token), 10 * 60 * 1000).unref();
 
@@ -229,9 +247,10 @@ async function replaceWithV2Card(interaction, card) {
 
 // The badge fields a build of this mode stores. DMZ never sets categoryRank and MP never sets dmzRangeRank (models/Loadout.js); a bare `best`/`topN` typed for a DMZ build parses as categoryRank because the parser does not know the mode, so it moves to dmzRangeRank here -- the same swap handlers/manage/loadouts.js makes on /manage's DMZ page.
 function badgeFieldsFor(mode, badgesRaw) {
-    const { isMeta, categoryRank, dmzRangeRank, isToxic } = parseLoadoutBadges(badgesRaw);
-    if (mode === 'DMZ') return { isMeta, isToxic, categoryRank: null, dmzRangeRank: dmzRangeRank || categoryRank || null };
-    return { isMeta, isToxic, categoryRank, dmzRangeRank: null };
+    // The parser is told the mode, so a rank mode on a DMZ build is dropped there (MP only), and Ass is already dropped beside Meta or a tier.
+    const { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes } = parseLoadoutBadges(badgesRaw, mode);
+    if (mode === 'DMZ') return { isMeta, isToxic, isAss, rankModes: [], categoryRank: null, dmzRangeRank: dmzRangeRank || categoryRank || null };
+    return { isMeta, isToxic, isAss, rankModes, categoryRank, dmzRangeRank: null };
 }
 
 async function writeLoadoutDoc(data, imageKeyOverride) {
@@ -254,22 +273,19 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
     });
     await doc.save();
 
-    // Badges describe the WEAPON, not one build variant -- sync them to every sibling build so a badge set here (e.g. Meta added during review) shows on the weapon's OTHER builds too (live-test 3: the badge only landed on the new build). Mirrors handlers/manage.js's edit_loadout_ propagation. Guarded on "at least one badge is actually set" so a blank never WIPES siblings -- and because /autobuild already RESOLVES blank badges by inheriting from an existing sibling (resolveCategoryAndBadges), a still-blank value here genuinely means no weapon-level badge exists, so skipping propagation in that case is correct, not a gap.
-    const rankField = mode === 'DMZ' ? 'dmzRangeRank' : 'categoryRank';
-    const badgesSet = badges.isMeta || badges[rankField] || badges.isToxic;
-    if (badgesSet) {
-        await Loadout.updateMany(
-            { weaponKey: data.weaponKey, mode, _id: { $ne: doc._id } },
-            { isMeta: badges.isMeta, isToxic: badges.isToxic, [rankField]: badges[rankField] }
-        );
+    // Confirm is the review card's "save anyway": names the catalogue did not know are added, through the op core so /bot analytics logs them. Best-effort -- the build is already saved, and a failure here only means the names warn again next time.
+    try {
+        const unknown = await findUnknownNames({ weaponName: data.weaponName, attachments });
+        if (unknown.count) {
+            const { commitSet } = require('../core/changeset');
+            await commitSet([{ type: 'catalogue.learn', payload: { items: learnItems(unknown, { category: data.category }), mode } }], { actorId: data.adminId });
+        }
+    } catch (err) {
+        console.error('Could not add /autobuild names to the catalogue:', err?.message || err);
     }
 
-    // Cloudinary structured metadata (best-effort, never throws). The new build gets its per-slot data too (only the /autobuild path has the slot->attachment mapping from the vision extraction). If badges just propagated, re-sync the affected siblings so their Cloudinary badge metadata matches.
+    // Badges are per build (2026-10-19 15:59 EDT), so nothing is copied to the weapon's other builds and only this build's metadata is synced. Best-effort, never throws; the new build gets its per-slot data too, since only /autobuild has the slot-to-attachment mapping from the vision extraction.
     await syncLoadoutMetadata(doc, attachmentSlots);
-    if (badgesSet) {
-        const siblings = await Loadout.find({ weaponKey: data.weaponKey, mode, _id: { $ne: doc._id } });
-        for (const sibling of siblings) await syncLoadoutMetadata(sibling);
-    }
     return doc;
 }
 
@@ -420,7 +436,7 @@ async function applyEditSubmission(interaction, token) {
 
     // Same richer select as runExtraction -- reused for the attachment corrector AND the recomputed duplicate/category-conflict warnings (an Edit is exactly what changes whether either applies).
     const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
-    const knownAttachments = [...new Set(allBuilds.flatMap(l => l.attachments))];
+    const knownAttachments = await knownAttachmentNames(allBuilds);
     // Variable length now (was force-padded to exactly 5) -- a restricted-slot weapon legitimately has fewer, and blank lines were already filtered out above.
     const correctedAttachments = rawAttachments.map(a => correctAttachmentName(a, knownAttachments));
     // correctGunsmithCode('') returns '' unchanged, so a blank DMZ code stays blank.
@@ -443,6 +459,7 @@ async function applyEditSubmission(interaction, token) {
         badgesRaw
     };
     refreshReviewWarnings(updated, allBuilds);
+    updated.catalogueWarning = await catalogueWarningFor(updated);
     pendingAutobuilds.set(token, updated);
 
     const card = buildReviewCard(token, updated);

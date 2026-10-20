@@ -87,6 +87,9 @@ const emojis = {
     best: '<a:Best:1524235235070312488>',
     top: '<a:Top:1524183479997169714>',
     toxic: '<a:Toxic:1524535298380402859>',
+    // PLACEHOLDERS for the Ass and Capable badges (Harkirat, 2026-10-19 16:13 EDT: "use placeholders for now. i'll give you emojis for them later on."). Plain unicode, so refreshEmojiIds() skips them and they render on every app. utils/loadoutRender.js prefers an app emoji named `Ass` / `Capable` the moment one is uploaded, so swapping in his emojis is an upload, or a mention here.
+    ass: '🫏',
+    capable: '✔️',
     blank: '<:blank:1524243739206352906>',
     // "View Colors" button in /settings (utils/colorPaletteView.js, handlers/colors.js's colors_view/ colors_page_ handlers) -- blurple-recolored, background-removed eyedropper icon, per Harkirat's own design pass (2026-07-13). Uploaded by Harkirat directly, not via this bot.
     eyedropper: '<a:Eyedropper:1526293991166054541>',
@@ -110,7 +113,7 @@ const emojis = {
     // The calculator's Add Draws and Remove buttons (2026-10-18 13:36 EDT, Harkirat supplied both).
     plus: '<a:Plus:1560408706233933845>',
     deleteBin: '<a:DeleteBin:1560788313508683807>',
-    // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmiths category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmiths now covers /all + every per-category command too, not just DMZ).
+    // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmith category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmith now covers /all + every per-category command too, not just DMZ).
     dioreoCombo: '<:DioreoCombo:1534640183230730470>',
     // /invite's Share Link line (2026-10-18 20:15 EDT, Harkirat supplied the prod id).
     dioreoKawaii: '<:DioreoKawaii3B:1534640190491070599>',
@@ -225,6 +228,14 @@ function repoint(mention) {
 emojis.parseEmoji = parseEmoji;
 emojis.refreshEmojiIds = refreshEmojiIds;
 emojis.repoint = repoint;
+
+// The booted app's emoji with this exact name, or null when the app has none. For an emoji that may not exist on an app yet (the Rank Mode marks, utils/rankModes.js): a missing one renders as plain text at its call site instead of a dead mention, and appears the moment it is uploaded, after the next boot's sync.
+function byName(name) {
+    const live = secondaryLiveByName.get(currentAppId()) || liveByName;
+    const match = live?.get(name);
+    return match ? `<${match.animated ? 'a' : ''}:${match.name}:${match.id}>` : null;
+}
+emojis.byName = byName;
 
 // Every consumer reads `emojis.foo` at render time, so answering from the current app's map here reaches all of them with no call-site change. Writes and key listings go to the default map, as before.
 module.exports = new Proxy(emojis, {

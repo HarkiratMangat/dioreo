@@ -287,36 +287,74 @@ function formatReleaseDateTime(date, userTimezone = 'America/Toronto') {
 }
 
 /**
- * Parses the loadout "badges" segment of /manage's "Category | Mode | Badges" modal field into `{ isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized }` (see models/Loadout.js). Comma- separated, case-insensitive, e.g. "meta, best" or "top3" or "top 5" or "" (no badges). Discord modals cap at 5 fields, and the loadout modal already uses all 5, so this rides along as a 3rd pipe-delimited segment on the existing "Category | Mode" field rather than getting its own input.
+ * Parses the loadout "badges" segment of /manage's "Category | Badges" modal field into `{ isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings }` (see models/Loadout.js). Comma- separated, case-insensitive, e.g. "meta, best" or "top3" or "top 5" or "" (no badges). Discord modals cap at 5 fields, and the loadout modal already uses all 5, so this rides along as a 3rd pipe-delimited segment on the existing "Category | Mode" field rather than getting its own input.
  *
  * NOTE (fixed during review): `categoryRank` used to only recognize the literal token "top3" -- typing "top 5" (a real ranking some weapons need, not every category caps out at exactly 3) silently matched nothing, with no feedback that it had been ignored. Now accepts any `topN` (with or without a space before the number), and anything that still doesn't match ends up in `unrecognized` so the caller (handlers/manage.js's add/edit-loadout handlers) can tell the admin exactly which token didn't take instead of the change just silently not applying.
  *
  * NOTE (added for DMZ range badges): `bestclose`/`bestmidlong`/`top{N}close`/`top{N}midlong` (no space before "close"/"midlong") map to `dmzRangeRank` instead of `categoryRank` -- /dmz has no per-category commands, so ranking by combat range role reads more meaningfully there than "Best in category". See buildBadgesLine() in utils/loadoutRender.js for how this renders.
  */
-function parseLoadoutBadges(badgesStr) {
+function parseLoadoutBadges(badgesStr, mode = null) {
+    const { RANK_MODES, RANK_MODE_TOKENS } = require('./rankModes');
     const tokens = (badgesStr || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
     let isMeta = false;
     let categoryRank = null;
     let dmzRangeRank = null;
     let isToxic = false;
+    let isAss = false;
+    const modes = new Set();
     const unrecognized = [];
+    // Tokens that were understood but changed or left off, each with the reason, so the confirmation says what happened instead of silently storing something other than what was typed.
+    const warnings = [];
+    // Top 4 is retired (Board 4 v19, 2026-09-24): a top-4 build is inside the top five, so an old token reads as top5, never as a demotion to Capable.
+    const tier = (raw) => {
+        const t = raw.replace(/\s+/g, '');
+        if (t === 'top4') { warnings.push('`top4` is retired and was read as `top5`.'); return 'top5'; }
+        return t;
+    };
 
     for (const token of tokens) {
         if (token === 'meta') { isMeta = true; continue; }
         if (token === 'best') { categoryRank = 'best'; continue; }
+        if (token === 'capable') { categoryRank = 'capable'; continue; }
         if (token === 'toxic') { isToxic = true; continue; }
-        const rangeMatch = token.match(/^(best|top\s*\d+)(close|midlong)$/);
-        if (rangeMatch) {
-            const tier = rangeMatch[1].replace(/\s+/g, '');
-            dmzRangeRank = `${tier}-${rangeMatch[2]}`;
+        if (token === 'ass') { isAss = true; continue; }
+        // The Rank Mode family is MP only. With the mode known (single add/edit), a DMZ build drops it here; the bulk paste does not know its page's mode yet, so core/ops/loadouts.js drops it there.
+        if (RANK_MODE_TOKENS[token]) {
+            if (mode === 'DMZ') warnings.push(`\`${token}\` is a rank mode, and DMZ builds carry none, so it was left off.`);
+            else modes.add(RANK_MODE_TOKENS[token]);
             continue;
         }
-        const topMatch = token.match(/^top\s*(\d+)$/);
-        if (topMatch) { categoryRank = `top${topMatch[1]}`; continue; }
+        // The hyphen is optional so a Board 4 export (`best-close`) reads the same as the bot's own `bestclose`.
+        const rangeMatch = token.match(/^(best|top\s*\d+|capable)-?(close|midlong)$/);
+        if (rangeMatch) {
+            dmzRangeRank = `${tier(rangeMatch[1])}-${rangeMatch[2]}`;
+            continue;
+        }
+        const topMatch = token.match(/^top\s*\d+$/);
+        if (topMatch) { categoryRank = tier(token); continue; }
         unrecognized.push(token);
     }
 
-    return { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized };
+    // Ass excludes Meta and every tier, both ways (his ruling, 2026-09-24); Toxic may sit with it. The positive claim stands and Ass is left off, the same rule the board's parser applies.
+    if (isAss && (isMeta || categoryRank || dmzRangeRank)) {
+        isAss = false;
+        warnings.push(`\`ass\` can't sit with ${isMeta ? '`meta`' : 'a tier'}, so it was left off.`);
+    }
+    const rankModes = RANK_MODES.filter(m => modes.has(m));
+    return { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings };
+}
+
+// The Badges line a stored build reads back as, in the parser's own tokens: what the bulk export writes and what the edit modal pre-fills, so re-opening either round-trips every badge. `dmzRangeRank` is stored hyphenated ("best-close"); the token drops the hyphen.
+function loadoutBadgeTokens(l) {
+    const { rankModeToken } = require('./rankModes');
+    return [
+        l.isMeta ? 'meta' : null,
+        l.isAss ? 'ass' : null,
+        l.categoryRank,
+        l.dmzRangeRank ? l.dmzRangeRank.replace('-', '') : null,
+        l.isToxic ? 'toxic' : null,
+        ...(l.mode === 'DMZ' ? [] : (l.rankModes || []).map(rankModeToken))
+    ].filter(Boolean);
 }
 
 // Gunsmith-code structural corrector (added for /autobuild's vision-extraction pipeline) -- CODM Gunsmith share codes alternate Number-Letter-Number-Letter... for their full length (confirmed against a real shareCode already referenced in this codebase, manage.js's placeholder example "1I2C6B8A9D"). A vision model reading a small, low-contrast in-game font is expected to occasionally misread a character as its visual look-alike from the WRONG character class for its position (digit-shaped glyphs in letter slots, letter-shaped glyphs in digit slots), or with incorrect case (lowercase 'l' instead of uppercase 'I'). Position parity (even index = digit, odd index = letter) decides what type a position requires. Three distinct corrections apply: (1) actual type mismatches get snapped via look-alike maps (DIGIT_TO_LETTER, LETTER_TO_DIGIT), (2) lowercase letters in letter positions get case-normalized (uppercase directly, or via LOWERCASE_LETTER_CORRECTION for digit-like lowercase like 'l'→'I'), and (3) characters already the right type for their position are left untouched even if they visually resemble something else (an '8' correctly in a digit slot is never touched, even though '8' resembles 'B') -- this prevents speculative corrections from corrupting already-correct input.
@@ -474,10 +512,11 @@ function parseBulkLoadoutList(bulkText) {
             continue;
         }
 
-        const { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(fields.badges);
+        const { isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings } = parseLoadoutBadges(fields.badges);
         if (unrecognized.length > 0) {
             errors.push(`"${snippet}" -- unrecognized badge token(s): ${unrecognized.join(', ')} (loadout still saved, just without these)`);
         }
+        for (const w of warnings) errors.push(`"${snippet}" -- ${w}`);
 
         // No `mode` here, deliberately -- see the Mode note in this function's docblock. core/ops/loadouts.js's upsertBulkBlocks supplies it from the page.
         parsed.push({
@@ -491,7 +530,9 @@ function parseBulkLoadoutList(bulkText) {
             isMeta,
             categoryRank,
             dmzRangeRank,
-            isToxic
+            isToxic,
+            isAss,
+            rankModes
         });
     }
 
@@ -547,12 +588,7 @@ function formatPatchNotesAsText(patchNotes) {
  */
 function formatLoadoutsAsBulkText(loadouts) {
     return loadouts.map(l => {
-        const badges = [
-            l.isMeta ? 'meta' : null,
-            l.categoryRank,
-            l.dmzRangeRank ? l.dmzRangeRank.replace('-', '') : null,
-            l.isToxic ? 'toxic' : null
-        ].filter(Boolean).join(', ');
+        const badges = loadoutBadgeTokens(l).join(', ');
         const lines = [`${l.weaponName} | ${l.category}`];
         if (l.buildName) lines.push(`Build: ${l.buildName}`);
         // A raw-URL imageKey is a legitimate stored state (see loadoutRender.js's buildImageUrl) but re-importing one would only re-save the same external URL, so only a real Cloudinary key round-trips.
@@ -564,4 +600,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };

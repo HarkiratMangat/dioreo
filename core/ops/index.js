@@ -40,7 +40,7 @@ function resolveOp(type) {
 const listOpTypes = () => [...REGISTRY.keys()];
 const opTypeForAction = (page, actionId) => ACTION_TO_OP.get(`${page}:${actionId}`) || null;
 const actionForOpType = (type) => OP_TO_ACTION.get(type) || null;   // an ARRAY of `page:id` keys, or null
-const pageForOpType = (type) => OP_TO_PAGE.get(type) || null;       // an explicit page key for an action-less op, or null
+const pageForOpType = (type) => OP_TO_PAGE.get(type) || null;       // an explicit page key for an action-less op (or an array of keys, one per mode -- core/ops/catalogue.js), or null
 
 // 🔴 ORDER IS LOAD-BEARING AND THIS IS NOT STYLE. `module.exports` is assigned FIRST, then the entities are required. Entities do `const { registerEntity } = require('./index')`, so if that require sits ABOVE this assignment, `module.exports` is still the default `{}` at that moment and `registerEntity` is `undefined` — a hard TypeError on load, before a single test runs. An earlier draft of this plan had exactly that shape and would have failed on the first `require`.
 module.exports = { registerEntity, resolveOp, listOpTypes, opTypeForAction, actionForOpType, pageForOpType };
@@ -52,3 +52,4 @@ require('./loadouts');
 require('./patchnotes');
 require('./season');
 require('./announcements');
+require('./catalogue');

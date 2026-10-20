@@ -38,14 +38,14 @@ const EXTRA_PLACEMENT = {
  */
 const GROUPS = [
     { key: 'start', label: 'Start here', fromHelp: null },
-    { key: 'gunsmiths', label: 'Gunsmiths', fromHelp: 'gunsmiths' },
+    { key: 'gunsmith', label: 'Gunsmith', fromHelp: 'gunsmith' },
     { key: 'draws', label: 'Draws', fromHelp: 'draws' },
     { key: 'seasonal', label: 'Seasonal', fromHelp: 'seasonal' },
     { key: 'utilities', label: 'Utilities', fromHelp: 'utilities' },
     { key: 'preferences', label: 'Preferences', fromHelp: 'preferences' },
 ];
 
-/** `/gunsmiths search` → `gunsmiths-search`, which is also its anchor. */
+/** `/gunsmith mp` → `gunsmith-mp`, which is also its anchor. */
 const idFor = commandPath => commandPath.replace(/^\//, '').replace(/\s+/g, '-');
 
 /**
@@ -113,7 +113,7 @@ function readBuilders(dir = COMMANDS_DIR) {
 function readHelpPlacement(categoryDefs) {
     const placement = new Map();
     for (const category of categoryDefs) {
-        // MIRRORS commands/help.js's own dispatch: `requested.detailCommands || visibleCommands(requested, perms)`. #154 gave CATEGORY_DEFS a second, finer list, and wherever it exists help.js treats it as authoritative -- gunsmiths' directory entry says `/gunsmiths` while its detail page documents `search` and `list` separately. Reading only the coarse list would still place both leaves (longest-prefix covers them), but it would compute `gated` from the PARENT: a future detail entry carrying its own `requires` would be hidden in /help and PUBLISHED on the website, silently. Preferring the finer list makes the failure loud instead -- a detail list that omits something the directory names leaves that leaf with no declared prefix, and buildCatalog throws naming it. Deliberately NOT a union of both lists: a union would paper over exactly that inconsistency.
+        // MIRRORS commands/help.js's own dispatch: `requested.detailCommands || visibleCommands(requested, perms)`. #154 gave CATEGORY_DEFS a second, finer list, and wherever it exists help.js treats it as authoritative -- gunsmith' directory entry says `/gunsmith` while its detail page documents `search` and `list` separately. Reading only the coarse list would still place both leaves (longest-prefix covers them), but it would compute `gated` from the PARENT: a future detail entry carrying its own `requires` would be hidden in /help and PUBLISHED on the website, silently. Preferring the finer list makes the failure loud instead -- a detail list that omits something the directory names leaves that leaf with no declared prefix, and buildCatalog throws naming it. Deliberately NOT a union of both lists: a union would paper over exactly that inconsistency.
         for (const command of category.detailCommands || category.staticCommands || []) {
             placement.set(command.name, {
                 helpKey: category.key,
@@ -127,7 +127,7 @@ function readHelpPlacement(categoryDefs) {
 }
 
 /**
- * The longest declared prefix that covers a leaf. `CATEGORY_DEFS` names `/gunsmiths`, while the builder registers `/gunsmiths search` and `/gunsmiths list`; both leaves belong to the category that claimed their parent. Longest-prefix rather than exact match is what lets one array entry cover a whole subcommand tree without listing each leaf.
+ * The longest declared prefix that covers a leaf. `CATEGORY_DEFS` names `/gunsmith`, while the builder registers `/gunsmith mp` and `/gunsmith dmz`; both leaves belong to the category that claimed their parent. Longest-prefix rather than exact match is what lets one array entry cover a whole subcommand tree without listing each leaf.
  */
 function placementFor(commandPath, placement) {
     let best = null;
@@ -186,7 +186,7 @@ function buildCatalog({ commandsDir = COMMANDS_DIR, categoryDefs = null } = {}) 
             id: idFor(leaf.path),
             description: leaf.description,
             options: leaf.options,
-            // Sort keys, dropped before the catalog is returned. `declared` is the command's position in CATEGORY_DEFS; `leaf` is its position within its own builder, which is what keeps `/gunsmiths search` ahead of `/gunsmiths list` -- one CATEGORY_DEFS entry covers both, so the array cannot order them and the builder is the only thing that can.
+            // Sort keys, dropped before the catalog is returned. `declared` is the command's position in CATEGORY_DEFS; `leaf` is its position within its own builder, which is what keeps `/gunsmith mp` ahead of `/gunsmith dmz` -- one CATEGORY_DEFS entry covers both, so the array cannot order them and the builder is the only thing that can.
             _declared: found ? found.info.order : extraOrder(leaf.path),
             _leaf: leafIndex,
         });

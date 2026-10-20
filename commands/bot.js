@@ -364,9 +364,9 @@ const RECORD_VIEWS = {
     loadouts_mp: {
         noun: 'build', dateOnly: [],
         fetch: async (t) => { const L = require('../models/Loadout'); const id = t.id || t.elementId; return id ? L.findById(id).lean() : null; },
-        // The content half of the real /gunsmiths card. NOT buildLoadoutCard -- that returns a whole Container ending in a live pagination/Copy row whose custom_ids resolve an index against a query only /gunsmiths has made, so those buttons would either mislead or misfire here, and a Container cannot nest inside the panel's own. See utils/loadoutRender.js's buildLoadoutCardBody header.
+        // The content half of the real /gunsmith card. NOT buildLoadoutCard -- that returns a whole Container ending in a live pagination/Copy row whose custom_ids resolve an index against a query only /gunsmith has made, so those buttons would either mislead or misfire here, and a Container cannot nest inside the panel's own. See utils/loadoutRender.js's buildLoadoutCardBody header.
         render: (b) => require('../utils/loadoutRender').buildLoadoutCardBody(b, { index: 0, total: 1, hideBadges: false }),
-        visibility: () => `🟢 **Players can see this now.** \`/gunsmiths\` serves whatever is stored — a build is live the moment it saves.`,
+        visibility: () => `🟢 **Players can see this now.** \`/gunsmith\` serves whatever is stored — a build is live the moment it saves.`,
     },
     announcement: {
         noun: 'announcement', dateOnly: [],

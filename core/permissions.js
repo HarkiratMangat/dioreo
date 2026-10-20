@@ -103,9 +103,12 @@ const OP_TIERS = {
     'announcement.post': 'create',
     'announcement.edit': 'create',
     'announcement.delete': 'destructive',
+    // CODM catalogue (core/ops/catalogue.js). A learn rides in the same commit as the loadout add or edit that named the new attachment, so it needs what that add needs; forgetting is its inverse-only undo.
+    'catalogue.learn': 'create',
+    'catalogue.forget': 'destructive',     // inverse-only
 };
 
-// ⏳ PROVISIONAL (his words 2026-10-19 18:33 EDT: "That one we'll get back to"). Undo and /bot Changes → Revert need this tier on the page the change belongs to, whatever the reverted op's own tier was. One constant, so revisiting it is a one-line change.
+// DECIDED 2026-10-19 20:17 EDT (Harkirat: "yeah leave it as destructive"; it had been provisional since 2026-10-19 18:33 EDT). Undo and /bot Changes → Revert need this tier on the page the change belongs to, whatever the reverted op's own tier was.
 const UNDO_TIER = 'destructive';
 
 // /bot Changes → Edit opens that page's own /manage edit, so it needs what that edit needs.

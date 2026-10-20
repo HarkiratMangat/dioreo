@@ -105,7 +105,7 @@ async function route(interaction) {
         const { checkRevert, can } = require('../utils/adminAccess');
         const row = await getChange(changeId);
         if (!row) return await interaction.reply({ content: '❌ That change no longer exists.', ephemeral: true });
-        // Revert needs the Undo tier (core/permissions.js's UNDO_TIER, Destructive and provisional) on the change's OWN page, plus the Changes page the button sits on. core/changeset.js's commitSet re-runs the same checkRevert, so this early check only exists to answer before deferring.
+        // Revert needs the Undo tier (core/permissions.js's UNDO_TIER, Destructive) on the change's OWN page, plus the Changes page the button sits on. core/changeset.js's commitSet re-runs the same checkRevert, so this early check only exists to answer before deferring.
         const gate = await checkRevert(interaction.user.id, row);
         if (!gate.ok || !(await can(interaction.user.id, 'bot.changes'))) {
             return await interaction.reply({ content: gate.ok ? "🔒 **You don't have permission for the Changes page.**" : gate.reason, ephemeral: true });

@@ -274,7 +274,7 @@ async function handleInteractionInner(interaction) {
                 return await interaction.respond(filtered.map(p => ({ name: displayTitle(p), value: p._id.toString() })));
             }
 
-            // === ROUTE B2: /help's cmd: option -- suggests every real command, including the live per-category Gunsmiths commands (/ar, /lmg, etc.), not just the static entries ===
+            // === ROUTE B2: /help's cmd: option -- suggests every real command, including the live per-category Gunsmith commands (/ar, /lmg, etc.), not just the static entries ===
             if (commandName === 'help') {
                 const { suggestHelpCommandNames } = require('../commands/help');
                 // Restricted entries (/admin for server admins, /manage//alerts//autobuild for the bot's own whitelist) are suggested only to someone who could use them -- see commands/help.js's note on filtering all surfaces, not just the visible menu.
@@ -316,16 +316,16 @@ async function handleInteractionInner(interaction) {
                 return interaction.respond(changed.filter(f => f.toLowerCase().includes(typed)).slice(0, 25).map(f => ({ name: f, value: f })));
             }
 
-            // Standard Loadout Dictionary Autocomplete Mapping (/dmz, /gunsmiths search)
+            // Standard Loadout Dictionary Autocomplete Mapping (/dmz, /gunsmith mp, /gunsmith dmz)
             const Loadout = require('../models/Loadout');
             let queryFilter = {};
 
             if (commandName === 'dmz') {
                 queryFilter.mode = 'DMZ';
-            } else if (commandName === 'gunsmiths') {
-                // `list` uses static choices (injected at registration by bot/registry.js's applyGunsmithsScopeChoices) and must never reach here -- only `search` autocompletes.
-                if (interaction.options.getSubcommand() !== 'search') return await interaction.respond([]);
-                queryFilter.mode = 'MP';
+            } else if (commandName === 'gunsmith') {
+                const sub = interaction.options.getSubcommand();
+                if (sub !== 'mp' && sub !== 'dmz') return await interaction.respond([]);
+                queryFilter.mode = sub === 'dmz' ? 'DMZ' : 'MP';
             } else {
                 return await interaction.respond([]);
             }
@@ -343,24 +343,25 @@ async function handleInteractionInner(interaction) {
 
             const { displayCategoryLabel } = require('../utils/loadoutRender');
 
-            // /gunsmiths search gets "sticky" category rows ahead of weapon matches -- WE author every slot on every keystroke (Discord has no real pinning). Filtered by the same fuzzyMatch as weapons, so a typed "ak" spends all 25 slots on weapons and an empty box shows all seven categories -- the discovery surface that replaces losing /smg. `~` can never appear in a weaponKey (checked against all 70), so the `~cat~` sentinel this produces cannot collide with a real weapon value.
-            if (commandName === 'gunsmiths') {
-                const categoryCounts = new Map();
-                for (const w of distinctChoices) categoryCounts.set(w.category, (categoryCounts.get(w.category) || 0) + 1);
-                // Fixed per-list budgets, not a cap on the concatenated union (v3-pre-release review, finding #26) -- catRows is unfiltered when focusedValue is falsy, so the old union-then-slice(0,25) let categories crowd out every weapon slot once enough categories exist (7 today -> 18 weapon slots left; each new DB category takes another), and a short query fuzzy-matching several category names could push the intended weapon off the list entirely.
-                const CATEGORY_BUDGET = 5;
-                const catRows = Array.from(categoryCounts.keys())
-                    .sort()
-                    .filter(c => !focusedValue || fuzzyMatch(focusedValue, c))
-                    .slice(0, CATEGORY_BUDGET)
-                    .map(c => ({ name: `▸ All ${displayCategoryLabel(c)} builds (${categoryCounts.get(c)} weapons)`, value: `~cat~${c}` }));
+            // /gunsmith mp and dmz open with their browse rows (All META, All MP / All DMZ, then each MP class), then the weapons (Harkirat, 2026-10-19 19:43 EDT). The rows filter with the same fuzzyMatch as the weapons, so typing "ak" leaves only weapons; their budget comes off the 25 first, so a row can never push every weapon out of view.
+            if (commandName === 'gunsmith') {
+                const { browseRows } = require('../utils/loadoutScopes');
+                const mode = queryFilter.mode;
+                const cats = mode === 'MP' ? [...new Set(distinctChoices.map(w => w.category))].sort() : [];
+                // A row shows when its own words match, or when the query names its class ("assault" shows All AR builds, as findWeaponMatches shows the AR weapons beside it).
+                const { resolveCategorySynonyms, isGenericWeaponQuery, typoDistance } = require('../utils/search');
+                const synonyms = resolveCategorySynonyms(focusedValue);
+                const generic = isGenericWeaponQuery(focusedValue);
+                const rows = browseRows(mode, cats)
+                    .filter(r => !focusedValue || generic || fuzzyMatch(focusedValue, r.label) || synonyms.some(c => r.value === `MP.${c}.std`) || (!synonyms.length && /^(META|MP|DMZ)$/.test(r.label.split(' ')[1]) && typoDistance(focusedValue, r.label.split(' ')[1]) !== Infinity))
+                    .map(r => ({ name: `▸ ${r.label}`, value: `~scope~${r.value}` }));
                 const weaponRows = findWeaponMatches(focusedValue, distinctChoices)
-                    .slice(0, 25 - catRows.length)
-                    .map(w => ({ name: `[${displayCategoryLabel(w.category)}] ${w.weaponName}`, value: w.weaponKey }));
-                return await interaction.respond([...catRows, ...weaponRows]);
+                    .slice(0, 25 - rows.length)
+                    .map(w => ({ name: mode === 'MP' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName, value: w.weaponKey }));
+                return await interaction.respond([...rows, ...weaponRows]);
             }
 
-            // /dmz: unchanged -- plain weapon names, no category prefix (that's gunsmiths-only, and /dmz has no per-category split -- see models/Loadout.js on categoryRank/DMZ). findWeaponMatches (2026-07-18) also expands recognized category synonyms (e.g. "pistol"/"smg"/"assault rifle") so typing a weapon-class term surfaces every weapon in that category, not just weapons whose own name happens to contain that word -- see utils/search.js's own comment for the full reasoning + the synonym list.
+            // /dmz: unchanged -- plain weapon names, no category prefix (that's gunsmith-only, and /dmz has no per-category split -- see models/Loadout.js on categoryRank/DMZ). findWeaponMatches (2026-07-18) also expands recognized category synonyms (e.g. "pistol"/"smg"/"assault rifle") so typing a weapon-class term surfaces every weapon in that category, not just weapons whose own name happens to contain that word -- see utils/search.js's own comment for the full reasoning + the synonym list.
             const filteredChoices = findWeaponMatches(focusedValue, distinctChoices)
                 .slice(0, 25); // Hard Discord API limit of 25 choices maximum
             return await interaction.respond(filteredChoices.map(w => ({ name: w.weaponName, value: w.weaponKey })));

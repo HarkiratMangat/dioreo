@@ -2,7 +2,7 @@
 /**
  * Dumps the weapon names the bot answers to into a committed JSON the website can read at build time.
  *
- * ⚠️ THIS EXISTS BECAUSE THE SITE BUILDS WITH NO DATABASE. `/gunsmiths search` and `/dmz` autocomplete against the live `loadouts` collection inside Discord; the website's build has no connection, so without an artifact the page can only offer a bare text box while the bot offers real search. Harkirat's call, 2026-08-19 17:03 EDT, after being shown the trade-off: commit a generated list rather than hand-write a partial one, because a hand-written list disagrees with the bot silently and that drift is the exact thing this page was built to prevent.
+ * ⚠️ THIS EXISTS BECAUSE THE SITE BUILDS WITH NO DATABASE. `/gunsmith mp`, `/gunsmith dmz` and `/dmz` autocomplete against the live `loadouts` collection inside Discord; the website's build has no connection, so without an artifact the page can only offer a bare text box while the bot offers real search. Harkirat's call, 2026-08-19 17:03 EDT, after being shown the trade-off: commit a generated list rather than hand-write a partial one, because a hand-written list disagrees with the bot silently and that drift is the exact thing this page was built to prevent.
  *
  * ⚠️ THE ARTIFACT CAN GO STALE, AND THAT IS THE COST OF THIS CHOICE. `scripts/weaponIndex.test.js` fails when the file is missing or malformed, and the file records the date and document count it was generated from so a reader can see how old it is. Re-run after any bulk loadout import.
  *
