@@ -135,8 +135,8 @@ const emojis = {
     saveStar: '<a:Save:1560682840692105346>',   // re-uploaded 2026-10-16 14:31 EDT   // Harkirat's new Save icon, 2026-10-16 09:59 EDT (was SaveStar 1560041207177023519); the key keeps its name so every Save button follows
     // The calculator's View Saved button (2026-10-16 09:59 EDT): prod id here; the dev bot re-points by name at boot.
     viewSaved: '<a:ViewSaved:1560682871151132793>',   // re-uploaded 2026-10-16 14:31 EDT
-    // The calculator's Edit Selection button (2026-10-14 19:28 EDT): prod id here; the dev bot re-points to its 1560068687942123642 by name at boot.
-    editCalc: '<a:EditCalc:1560408533160296519>',   // new EditCalc, 2026-10-15 18:02 EDT
+    // The calculator's Edit Selection button (2026-10-14 19:28 EDT): prod id here; the dev bot re-points to its 1560068687942123642 by name at boot. Renamed EditCalc -> Edit on every app by Harkirat (2026-10-20 13:19 EDT); the calculator's edit buttons and /autobuild's Adjust both use it.
+    edit: '<a:Edit:1560408533160296519>',
     // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.
     copyExport: '<a:CopyExport:1560682776305471600>',   // re-uploaded 2026-10-16 14:31 EDT
 };

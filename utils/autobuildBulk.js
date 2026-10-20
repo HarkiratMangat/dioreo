@@ -40,7 +40,7 @@ function batchDuplicateOf(items, index) {
 
 function batchDuplicateNote(items, index) {
     const n = batchDuplicateOf(items, index);
-    return n ? `${BOT_EMOJI.warn} **Same as Build ${n} in this batch:** two screenshots of one build. Discard one of them unless they really are different builds.` : null;
+    return n ? `${BOT_EMOJI.warn} **Same as Build ${n} in this batch**\n> Two screenshots of one build\n> **Fix:** discard one, unless they really are different builds` : null;
 }
 
 // What a build still to review needs looked at, in a few words each, for the overview. Pure.
@@ -54,6 +54,7 @@ function flagsOf(items, index) {
     else if (d.categoryConflict) flags.push(`saved elsewhere as ${d.categoryConflict}`);
     if (!d.mode) flags.push('MP or DMZ unknown');
     if (d.equipCapWarning) flags.push('too many attachments');
+    if (d.labelConflict) flags.push('label already used');
     const cu = d.catalogueUnknown;
     if (cu?.weapon) flags.push('weapon not in the catalogue');
     if (cu?.attachments) flags.push(`${cu.attachments} unknown attachment${cu.attachments === 1 ? '' : 's'}`);
@@ -91,21 +92,22 @@ const id = (action, key, index = '') => `autobuild_b|${action}|${key}|${index}`;
 // Button icons from the bot's own set, read at render time, as the draw calculator's buttons do.
 const icon = (key) => emojis.parseEmoji(emojis[key]);
 
-// The rows under every page: the bot's usual arrow pager, then the batch actions, then Add more when the right-click message has screenshots this batch has not read.
+// The controls under every page, spaced the way Harkirat set them (2026-10-20 13:19 EDT: "i dont like the way the buttons are all sandwiched together"): a small blank gap before the arrow pager, a small divider before Save All / Discard All, then the Open and Undo menus. Add more sits OUTSIDE the panel, as its own row under it. Returns { inside, outside }.
 function batchRows(batch, key, index, heldImages) {
-    const rows = [];
+    const inside = [];
+    const outside = [];
     const pager = buildPaginationRow({ totalChunks: batch.items.length, currentPage: index, makeCustomId: (p) => id('page', key, p), indicatorCustomId: id('ind', key) });
-    if (pager) rows.push(pager);
+    if (pager) inside.push({ type: 14, spacing: 1, divider: false }, pager);
     const pending = batch.items.filter(it => it.status === 'pending').length;
     if (pending > 1) {
-        rows.push({ type: 1, components: [
+        inside.push({ type: 14, spacing: 1, divider: true }, { type: 1, components: [
             { type: 2, style: 3, label: `Save All ${pending}`, custom_id: id('all', key), emoji: icon('saveStar') },
-            { type: 2, style: 4, label: `Discard All ${pending}`, custom_id: id('none', key), emoji: icon('deleteBin') },
+            { type: 2, style: 4, label: `Discard All ${pending}`, custom_id: id('none', key), emoji: icon('deleteAll') },
         ] });
     }
     const saved = batch.items.filter(it => it.status === 'saved');
     if (saved.length) {
-        rows.push({ type: 1, components: [{
+        inside.push({ type: 1, components: [{
             type: 3, custom_id: id('open', key), placeholder: 'Open a saved loadout',
             options: saved.map(it => ({ label: `${it.doc.weaponName} — ${it.doc.buildName}`.slice(0, 100), value: String(it.doc._id) })),
         }] });
@@ -113,7 +115,7 @@ function batchRows(batch, key, index, heldImages) {
     // Undo a discard (Harkirat, 2026-10-20 12:36 EDT): the build comes back exactly as it was read, with no second vision call.
     const discarded = batch.items.map((it, i) => ({ it, i })).filter(({ it }) => it.status === 'cancelled' && it.data);
     if (discarded.length) {
-        rows.push({ type: 1, components: [{
+        inside.push({ type: 1, components: [{
             type: 3, custom_id: id('undo', key), placeholder: 'Undo a discard',
             min_values: 1, max_values: discarded.length,
             options: discarded.map(({ it, i }) => ({ label: `#${i + 1} ${it.data.weaponName}`.slice(0, 100), value: String(i) })),
@@ -121,13 +123,13 @@ function batchRows(batch, key, index, heldImages) {
     }
     const more = unreadImages(batch, heldImages);
     if (more.length) {
-        rows.push({ type: 1, components: [{
+        outside.push({ type: 1, components: [{
             type: 3, custom_id: id('more', key), placeholder: `Add more screenshots from that message (${more.length} not read)`,
             min_values: 1, max_values: Math.min(more.length, MAX_SCREENSHOTS - batch.items.length),
             options: more.map(i => ({ label: `Image ${i + 1}`, value: String(i) })),
         }] });
     }
-    return rows;
+    return { inside, outside };
 }
 
 // The source message's screenshots this batch has not read, while there is room for them. Pure given the held images.
@@ -141,7 +143,7 @@ function unreadImages(batch, heldImages) {
 function renderPage(batch, key, index, heldImages = null) {
     const item = batch.items[index];
     const header = overview(batch, index);
-    const rows = batchRows(batch, key, index, heldImages);
+    const { inside, outside } = batchRows(batch, key, index, heldImages);
     if (item.status === 'pending') {
         const n = index + 1;
         const card = buildReviewCard(item.token, item.data, {
@@ -150,13 +152,13 @@ function renderPage(batch, key, index, heldImages = null) {
             rows: [
                 { type: 1, components: [
                     { type: 2, style: 3, label: `Save Build ${n}`, custom_id: id('confirm', key, index), emoji: icon('saveStar') },
-                    { type: 2, style: 1, label: 'Adjust', custom_id: id('edit', key, index), emoji: icon('mngEdit') },
+                    { type: 2, style: 1, label: 'Adjust', custom_id: id('edit', key, index), emoji: icon('edit') },
                     { type: 2, style: 4, label: `Discard Build ${n}`, custom_id: id('cancel', key, index), emoji: icon('deleteBin') },
                 ] },
-                ...rows,
+                ...inside,
             ],
         });
-        return card.components;
+        return [...card.components, ...outside];
     }
     const warn = emojis.warn;
     const line = {
@@ -171,8 +173,8 @@ function renderPage(batch, key, index, heldImages = null) {
         { type: 14, spacing: 1, divider: true },
         { type: 10, content: line },
         { type: 12, items: [{ media: { url: item.url } }] },
-        ...(rows.length ? [{ type: 14, spacing: 1, divider: true }, ...rows] : []),
-    ] }];
+        ...(inside.length ? [{ type: 14, spacing: 1, divider: true }, ...inside] : []),
+    ] }, ...outside];
 }
 
 function heldImagesFor(interaction, batch) {

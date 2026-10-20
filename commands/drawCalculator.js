@@ -932,7 +932,7 @@ function resumeSavedRow(state, savedBaskets) {
         options: list.map(b => ({ label: cutText(String(b.name), 100), value: String(b._id), description: cutText(savedDescription(b), 100) }))
     }] };
 }
-function progressButton(state) { return { type: 2, style: 2, label: 'Set Draw Progress', custom_id: encodeState('progress', { ...state, fromResult: false, dirty: false }), emoji: emojis.parseEmoji(emojis.editCalc) }; }
+function progressButton(state) { return { type: 2, style: 2, label: 'Set Draw Progress', custom_id: encodeState('progress', { ...state, fromResult: false, dirty: false }), emoji: emojis.parseEmoji(emojis.edit) }; }
 
 // THIS SEASON'S DRAWS (sidelined 2026-10-17 21:29 EDT, built 2026-10-18 12:15 EDT). First on the form (his "yes"). Each option is the draw's own title with its Draw Type under it (decided 2026-10-17 21:28 EDT). The list is listSeasonDraws's, read by the caller and passed in, because building a panel never touches the database.
 function seasonDrawsRow(state, seasonDraws, room) {
@@ -1405,7 +1405,7 @@ function textLength(node) {
 }
 
 // Edit Selection is the list Section's button (2026-10-17 17:26 EDT). The 2026-10-16 20:31 EDT rule that kept buttons off Section accessories for phones was reversed by his own testing.
-function editSelectionButton(state) { return { type: 2, style: 2, label: 'Edit Selections', custom_id: encodeState('edit', state), emoji: emojis.parseEmoji(emojis.editCalc) }; }
+function editSelectionButton(state) { return { type: 2, style: 2, label: 'Edit Selections', custom_id: encodeState('edit', state), emoji: emojis.parseEmoji(emojis.edit) }; }
 function buildCostPage(state, basket, accentColor, options = {}) {
     const { currency = 'USD', client = null, liveDoubleCPEntry = null } = options;
     const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];

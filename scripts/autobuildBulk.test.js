@@ -80,7 +80,7 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         const doc = { weaponName: 'AK117', buildName: 'Build 3', category: 'AR', mode: 'MP', _id: 'd1' };
         const items = [item(mp('AK117', '', FIVE), 'saved', { doc }), item(mp('M4', '', FIVE), 'cancelled'), item(null, 'failed', { error: 'blurry' })];
         const page = renderPage({ items, page: 1, skipped: 0 }, 'k3', 1);
-        const selects = page.flatMap(c => c.components).filter(c => c.type === 1).flatMap(r => r.components).filter(c => c.type === 3);
+        const selects = page.flatMap(function all(c) { return [c, ...(c.components || []).flatMap(all)]; }).filter(c => c.type === 3);
         const open = selects.find(c => c.custom_id === 'autobuild_b|open|k3|');
         const undo = selects.find(c => c.custom_id === 'autobuild_b|undo|k3|');
         assert.deepStrictEqual(open.options.map(o => o.value), ['d1']);
@@ -138,7 +138,7 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
         const items = [item(mp('A', '', FIVE), 'pending', { sourceIndex: 0 }), item(mp('B', '', ['X']), 'pending', { sourceIndex: 2 })];
         assert.deepStrictEqual(bulk.unreadImages({ items, source: { key: 'h' } }, held), [1, 3]);
         assert.deepStrictEqual(bulk.unreadImages({ items, source: null }, held), [], 'a /autobuild batch has no source message');
-        const select = renderPage({ items, page: 0, skipped: 0, source: { key: 'h' } }, 'k6', 0, held).flatMap(c => c.components).filter(c => c.type === 1).flatMap(r => r.components).find(c => c.type === 3);
+        const select = renderPage({ items, page: 0, skipped: 0, source: { key: 'h' } }, 'k6', 0, held).flatMap(function all(c) { return [c, ...(c.components || []).flatMap(all)]; }).find(c => c.type === 3);
         assert.deepStrictEqual(select.options.map(o => o.value), ['1', '3']);
         assert.strictEqual(select.custom_id, 'autobuild_b|more|k6|');
     });
@@ -176,8 +176,62 @@ const FIVE = ['A', 'B', 'C', 'D', 'E'];
 
     await check('every batch button that acts carries one of the bot\'s own icons', () => {
         const page = renderPage({ items: [item(mp('A', '', FIVE)), item(mp('B', '', ['X']))], page: 0, skipped: 0 }, 'ki', 0);
-        const buttons = page.flatMap(c => c.components).filter(c => c.type === 1).flatMap(r => r.components).filter(c => c.type === 2 && !/\|(page|ind)\|/.test(c.custom_id));
+        const buttons = page.flatMap(function all(c) { return [c, ...(c.components || []).flatMap(all)]; }).filter(c => c.type === 2 && !/\|(page|ind)\|/.test(c.custom_id));
         for (const b of buttons) assert.ok(b.emoji && b.emoji.id, `${b.label} has no icon`);
+    });
+
+    const pipe = require('../utils/autobuildPipeline');
+
+    await check('a possible duplicate names how it matched and the /gunsmith command that opens it, at its real position', () => {
+        const atts = ['A', 'B', 'C', 'D', 'E'];
+        const all = [
+            { _id: 'a1', weaponKey: 'pkm', weaponName: 'PKM', category: 'LMG', buildName: 'Build 1', shareCode: 'ZZZZ', attachments: ['X'], mode: 'MP' },
+            { _id: 'a2', weaponKey: 'pkm', weaponName: 'PKM', category: 'LMG', buildName: 'Build 2', shareCode: '1A4A5E7E9A', attachments: atts, mode: 'MP' },
+        ];
+        const d = { weaponName: 'PKM', gunsmithCode: '1A4A5E7E9A', attachments: atts, category: 'LMG', mode: 'MP' };
+        pipe.refreshReviewWarnings(d, all);
+        assert.ok(d.duplicateWarning.includes('> **Matching:** `Gunsmith code` + `5/5 attachments`'), d.duplicateWarning);
+        assert.ok(d.duplicateWarning.includes('> **Check:** `/gunsmith mp weapon:PKM build:2`'), d.duplicateWarning);
+        assert.strictEqual(d.ordinal, 3, 'the new build would be the third');
+    });
+
+    await check('a build label another build of the weapon already uses is flagged and blocks Save', () => {
+        const all = [{ _id: 'b1', weaponKey: 'pkm', weaponName: 'PKM', buildName: 'Ranked', attachments: ['X'], mode: 'MP', category: 'LMG' }];
+        const d = { weaponName: 'PKM', gunsmithCode: '', attachments: ['Y'], category: 'LMG', mode: 'MP', buildLabel: 'ranked' };
+        pipe.refreshReviewWarnings(d, all);
+        assert.strictEqual(d.labelConflict, true);
+        assert.ok(d.labelWarning.includes('Label already used'));
+        d.buildLabel = 'Pub';
+        pipe.refreshReviewWarnings(d, all);
+        assert.strictEqual(d.labelConflict, false);
+    });
+
+    await check('the next build number counts image keys too, so a labelled build\'s image is never reused', () => {
+        assert.strictEqual(pipe.nextBuildNumber('PKM', [{ buildName: 'Build 1', imageKey: 'PKM-1' }, { buildName: 'Ranked', imageKey: 'PKM-2' }]), 3);
+        assert.strictEqual(pipe.nextBuildNumber('L-CAR 9', [{ buildName: 'Build 4', imageKey: 'L-CAR-9-4' }]), 5);
+        assert.strictEqual(pipe.nextBuildNumber('PKM', []), 1);
+    });
+
+    await check('the card puts warnings above the build, in his 13:19 EDT layout, with the label and slots', () => {
+        const d = { weaponName: 'PKM', gunsmithCode: '1A4A5E7E9A', attachments: ['Tactical Suppressor'], slotLabels: ['Muzzle'], category: 'LMG', mode: 'MP', modeSource: 'detected', badgesRaw: '', ordinal: 3, duplicateWarning: '⚠️ **Possible duplicate:** x', sourceImageUrl: 'u' };
+        const flat = JSON.stringify(pipe.buildReviewCard('t', d).components);
+        const at = (s) => flat.indexOf(s);
+        assert.ok(at('Possible duplicate') !== -1 && at('Possible duplicate') < at('## Weapon: `PKM` — `LMG`'), 'warning first');
+        for (const s of ['> **Label:** `—`', '**Build:** `Build 3`', '**Mode:** `MP`', '### Attachments:', '> **Gunsmith Code:** `1A4A5E7E9A`', '1. **`Tactical Suppressor`** · `(MUZZLE)`']) assert.ok(at(s) !== -1, `missing ${s}`);
+    });
+
+    await check('Add more sits outside the panel; a small gap before the pager and a small divider before Save All', () => {
+        const items = [item(mp('A', '', FIVE), 'pending', { sourceIndex: 0 }), item(mp('B', '', ['X']), 'pending', { sourceIndex: 1 })];
+        const page = renderPage({ items, page: 0, skipped: 0, source: { key: 'h' } }, 'ks', 0, ['u0', 'u1', 'u2']);
+        assert.strictEqual(page.length, 2, 'the panel, then the Add more row');
+        assert.strictEqual(page[1].components[0].custom_id, 'autobuild_b|more|ks|');
+        const inside = page[0].components;
+        const pagerAt = inside.findIndex(c => c.type === 1 && c.components.some(b => /\|page\|/.test(b.custom_id || '')));
+        assert.deepStrictEqual(inside[pagerAt - 1], { type: 14, spacing: 1, divider: false });
+        const allAt = inside.findIndex(c => c.type === 1 && c.components.some(b => /\|all\|/.test(b.custom_id || '')));
+        assert.deepStrictEqual(inside[allAt - 1], { type: 14, spacing: 1, divider: true });
+        const flat = JSON.stringify(page);
+        assert.ok(flat.includes(`"name":"Edit"`) && flat.includes(`"name":"DeleteAll"`), 'Adjust uses Edit, Discard All uses DeleteAll');
     });
 
     if (failed) { console.log(`\n${failed} bulk /autobuild check(s) failed.`); process.exit(1); }

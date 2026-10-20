@@ -90,7 +90,8 @@ function findDuplicateLoadouts(candidate, existingBuilds) {
         const allAttachmentsMatch = candAtt.length > 0 && overlap === candAtt.length && overlap === buildSet.size;
 
         if ((codeExact && overlap >= 4) || (codeClose && allAttachmentsMatch)) {
-            matches.push({ weaponName: build.weaponName, buildName: build.buildName, overlap, total: candAtt.length });
+            // `id` and `code` (2026-10-20 13:22 EDT) let /autobuild's card name the build's /gunsmith position and say whether the code matched exactly or nearly.
+            matches.push({ weaponName: build.weaponName, buildName: build.buildName, overlap, total: candAtt.length, id: build._id, code: codeExact ? 'exact' : 'close' });
         }
     }
     return matches;
