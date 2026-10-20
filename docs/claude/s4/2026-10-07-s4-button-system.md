@@ -792,3 +792,6 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 ## Pickers proposed, written 2026-10-19 16:51 EDT
 - Built in spec v122, no new words of his: the pickers drawn live from Builder-2's own components (his 2026-09-27 date picker, his 2026-09-28 accent block) with only what a rule sets changed (C10, C13, C15, C16, C17, his 2026-10-19 15:43 EDT realm-coloured buttons). His 2026-10-11 "wait until later" on Q9 and Q10 is answered by C16 (2026-10-11 22:06 EDT, after it) for the day size; the swatch size is asked (Answer Shots `pkswatch`), with `pkdate`.
 
+## His 2026-10-19 20:22 and 20:37 EDT, verbatim, written 2026-10-19 20:38 EDT
+- (20:22) "also, do we have any flags or styles which would keep the dark button full but use the lighter outline/icon color?" → answered: none; tint rests dark with the colour's full ink and a 55% outline, and the lighter outline (75%) and ink (80% on white) are tint's and paint's hover only.
+- (20:37, which button) "yeah the color picks shuffle and copy button" · "but it's fine, keep it as tint current is" → the colour picker's copy stays `button-M-icon.tint-realm--quiet--borderless` and New colour `button-L-icon.tint-realm`, as drawn in spec v122; no new flag.
