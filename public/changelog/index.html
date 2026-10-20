@@ -355,26 +355,47 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 }/* ── the way into /commands: .cmdb ──────────────────────────────────────────
    The Source capsule's look with its word held open: a hairline pill, the label in the capsule's mono small caps, the border warming and the cursor light following on hover. ⚠️ ITS HEIGHT IS INSTALL'S, declared twice on purpose (34px here, 38px in the 620px block with .ins) and not inherited from the shared 32px rule, because the whole point of the second pass was that the pair read as one height. Change .ins and change this with it.
    The label is --ink2 at rest and --ink on hover, the pairing the capsule and the footer nav links already use on this ground. No mark inside, by instruction. Trailing letter-spacing is taken off the right padding so the word sits centred rather than a tracking-width left of centre.
-   ⚠️ THE LABEL IS INSTALL'S LABEL, METRIC FOR METRIC, AND BUILT THE SAME WAY: the pill carries .66rem and the .14em tracking (which inherits as the absolute 1.48px, not as .14em of the label), the word inside is .7rem / 800. Setting .7rem on the pill instead gives 1.57px tracking and a 700 weight, a hair off Install on the desktop. The first build kept the capsule's .65rem/.13em, and the second guessed Install's phone size from a rule that never applies (see the phone block), so the pair read as two different type sizes (Harkirat, 2026-10-19 23:40 EDT: "their sizing and alignment is off"). */
+   ⚠️ THE LABEL IS INSTALL'S LABEL, METRIC FOR METRIC, AND BUILT THE SAME WAY: the pill carries .66rem and the .14em tracking (which inherits as the absolute 1.48px, not as .14em of the label), the word inside is .7rem / 800. Setting .7rem on the pill instead gives 1.57px tracking and a 700 weight, a hair off Install on the desktop. The first build kept the capsule's .65rem/.13em, and the second guessed Install's phone size from a rule that never applies (see the phone block), so the pair read as two different type sizes (Harkirat, 2026-10-19 23:40 EDT: "their sizing and alignment is off"). *//* ⚠️ COMMANDS HAS ITS OWN HUE, AND IT IS THE SAME ON EVERY PAGE (Harkirat, 2026-10-20 11:53 EDT: "why is the commands pill accent matched to the current active page? it should be showing its own accent color, the green"). The rule is on the CLASS, so both looks (.cmdb here, .cmdr below) take it and no page can recolour it: --cmd-hue is BRAND.signal, the value the Commands page itself paints, and the mobile strip already gave this tab that colour through --row. The first build read --accent, so on Notice the pill was crimson and on Terms amber. */
 
+
+.cmdb,.cmdr{--cmd-hue:#58D05A}
+.cmdb{--hv:var(--cmd-hue)}
 .cmdb{display:inline-flex;align-items:center;justify-content:center;
   position:relative;isolation:isolate;overflow:hidden;
   height:34px;padding-inline:1.05rem calc(1.05rem - .14em);border-radius:999px;
   text-decoration:none;white-space:nowrap;color:var(--ink2);
   border:1px solid var(--rule2);background:transparent;
   font-family:var(--mono);font-size:.66rem;font-weight:700;letter-spacing:.14em;
-  text-transform:uppercase;transition:color .22s,border-color .22s}
+  text-transform:uppercase;
+  transition:color .22s,border-color .22s,box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
 .cmdb-t{position:relative;z-index:1;font-size:.7rem;font-weight:800}
 .cmdb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
   opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
-    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
+    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--cmd-hue) 30%,transparent),
     transparent 72%)}.cmdb:focus-visible{color:var(--ink);
-  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}@media (hover:hover) and (pointer:fine){
+  border-color:color-mix(in srgb,var(--cmd-hue) 60%,var(--ink3))}@media (hover:hover) and (pointer:fine){
 .cmdb:hover{color:var(--ink);
-  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}}.cmdb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
+  border-color:color-mix(in srgb,var(--cmd-hue) 60%,var(--ink3))}}.cmdb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
 .cmdb:hover::after{opacity:1}}/* The page you are on: the warm border stays on, so the control reads as current without a fill. A fill would need its own ink for the cursor swarm (an accent-filled control makes a same-coloured blob vanish, which is why Install is dark inside), and an outline needs none. */
 
-.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}/* ── Commands in the bar: .cmdr, a one-tab rail ─────────────────────────────
+.cmdb.on{color:var(--ink);border-color:color-mix(in srgb,var(--cmd-hue) 60%,var(--ink3))}/* ── THE HAIRLINE CAPSULE'S HOVER IS INSTALL'S (Harkirat, 2026-10-20 11:57 EDT: "it should be matching how the install button looks when hovered"). One rule for the whole look, so the landing's Commands button (.cmdb) and the /commands chips (.rx-chip) can not drift apart: the same 1px lift, the same soft coloured shadow underneath and the same edge-light that sweeps across once per hover. Only the hue differs, and each class names it in --hv: Commands green for .cmdb, the command's own colour for a chip. The sweep is drawn in that hue rather than Install's white because a hairline pill has no fill for white to read against, and it sits UNDER the label (z-index 0 here, negative on a chip) so a word is never crossed out. Install's disc tilt and arrow have no counterpart: there is no mark in a hairline capsule. */
+
+.cmdb::before,.rx-chip::after{content:"";position:absolute;top:-60%;bottom:-60%;width:36px;
+  left:-60px;transform:skewX(-18deg);pointer-events:none;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--hv) 55%,transparent),transparent)}
+.cmdb::before{z-index:0}
+.rx-chip::after{z-index:-1}.cmdb:focus-visible::before,.rx-chip:focus-visible::after{
+  animation:swipe .62s cubic-bezier(.3,.7,.3,1)}@media (hover:hover) and (pointer:fine){
+.cmdb:hover::before,.rx-chip:hover::after{
+  animation:swipe .62s cubic-bezier(.3,.7,.3,1)}}.cmdb:focus-visible,.rx-chip:focus-visible{transform:translateY(-1px);
+  box-shadow:0 8px 22px -7px color-mix(in srgb,var(--hv) 82%,transparent)}@media (hover:hover) and (pointer:fine){
+.cmdb:hover,.rx-chip:hover{transform:translateY(-1px);
+  box-shadow:0 8px 22px -7px color-mix(in srgb,var(--hv) 82%,transparent)}}
+.cmdb:active,.rx-chip:active{transform:translateY(0) scale(.98)}
+@media (prefers-reduced-motion:reduce){.cmdb:focus-visible::before,.rx-chip:focus-visible::after{animation:none}@media (hover:hover) and (pointer:fine){
+  .cmdb:hover::before,.rx-chip:hover::after{animation:none}}.cmdb:focus-visible,.cmdb:active,.rx-chip:focus-visible,.rx-chip:active{transform:none}@media (hover:hover) and (pointer:fine){
+  .cmdb:hover,.rx-chip:hover{transform:none}}
+}/* ── Commands in the bar: .cmdr, a one-tab rail ─────────────────────────────
    Harkirat, 2026-10-20 10:45 EDT: "keep 'commands' in the matching filled rail buttons style as the rest of the nav bar links". It is built the way the switcher's rails are, so it can not drift from them: the same hairline border, the same dark wash and inset shadow for the groove, 3px of padding, and inside it one tab with the SAME metrics as .tab (.66rem, 700, .1em, .42rem by 1.02rem). The switcher's indicator is script-driven and this control sits outside it, so its pill is plain CSS: with no pill the label is --ink2 (the state of a rail you are not in), the pill fades up on hover and focus, and it stays on when /commands is the page you are on, exactly as a rail's indicator does. The pill is the SOLID accent with the label inverted to #120E1C, the pair the .tab.lit rule measured for contrast. A solid accent fill also makes the liquid cursor read it as a chip and ink itself dark, which is the behaviour Harkirat asked for over Install. When the switcher tightens, the sibling selectors in SWITCHER_CSS tighten this tab with it. */
 
 .cmdr{position:relative;display:inline-flex;align-items:center;isolation:isolate;
@@ -385,9 +406,11 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   font-weight:700;letter-spacing:.1em;text-transform:uppercase;
   padding:.42rem 1.02rem;border-radius:999px;color:var(--ink2);
   transition:color .2s ease,background-color .22s ease}.cmdr:focus-visible .cmdr-t,.cmdr.on .cmdr-t{
-  background:var(--accent);color:#120E1C}@media (hover:hover) and (pointer:fine){
+  background:var(--cmd-hue);color:#120E1C}@media (hover:hover) and (pointer:fine){
 .cmdr:hover .cmdr-t{
-  background:var(--accent);color:#120E1C}}
+  background:var(--cmd-hue);color:#120E1C}}/* The ink the liquid cursor wears over this control. The pill is a SOLID fill in every state the pointer can be in (hover is the pointer), so the swarm goes dark like it does over Install. It is declared here, in CSS, because the cursor cannot read it from the pill: that fill is a transition and reads as half-painted for the first 220ms. */
+
+.cmdr{--cur-ink:#120E1C;color:var(--ink2)}
 .cmdr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
    eaten. The gap tightens below. Since 2026-10-20 10:00 EDT the controls are Commands, Install
@@ -4114,6 +4137,14 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     if(q.length>3&&q[3]===0)return false;
     return !!parseCol(c);
   }
+  /* two colours close enough to read as one surface — a few channel steps either
+     way, because a value written as hex and the same one read back as rgb() can
+     differ by rounding */
+  function sameCol(a,b){
+    var x=parseCol(a),y=parseCol(b);
+    if(!x||!y)return false;
+    return Math.abs(x[0]-y[0])<7&&Math.abs(x[1]-y[1])<7&&Math.abs(x[2]-y[2])<7;
+  }
   function mix(a,b,t){
     var x=parseCol(a),y=parseCol(b);
     if(!x||!y)return b;
@@ -4371,6 +4402,11 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     var baseCol=(getComputedStyle(document.body)
                   .getPropertyValue('--accent')||'').trim()||'#F2994A';
     var tgtCol=baseCol,curCol=baseCol,wroteCol='';
+    /* the colour the swarm WOULD wear if it were not standing on its own colour.
+       The nav pill's contained mesh blends against this one, never against the
+       dark ink: a dark blend inside the pill would put the label on a smudge. */
+    var tgtHue=baseCol,curHue=baseCol,wroteHue='';
+    var DARK_INK='#141021';
 
     /* ⚠️ NOT EVERY SURFACE ANNOUNCES ITSELF THE SAME WAY, and assuming --accent
        was the whole story left two surfaces flat. Measured on the live page: the
@@ -4381,7 +4417,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        So the chain runs most-local-first, and the --accent step compares against
        the PAGE value rather than merely reading it — equal means nothing in scope
        has overridden it, which is what separates a row from open prose. */
-    function accentOf(e){
+    function hueOf(e){
       var cs=getComputedStyle(e);
       var ia=cs.getPropertyValue('--ia').trim();
       if(ia)return ia;
@@ -4407,6 +4443,27 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         if(c&&chip&&legible(c,seat))return c;
       }
       return ac||baseCol;
+    }
+    /* ⚠️ A SWARM ON ITS OWN COLOUR VANISHES, SO IT WEARS THE DARK INK INSTEAD, AND
+       THIS IS A RULE ABOUT THE CLASS, NOT ABOUT ONE PAGE (Harkirat, 2026-10-20
+       11:53 EDT: on Notice the crimson swarm over the crimson NOTICE tab was
+       invisible; "it should be the dark/blackish color when hovering over its own
+       color"). hueOf() says what the swarm would be; this says whether that is the
+       colour of the surface it is about to sit on. Two routes, because two kinds
+       of surface exist:
+         · a control that declares --cur-ink in CSS (the Commands rail, whose pill
+           is a transitioning fill the cursor cannot read honestly on arrival);
+         · a nav tab, whose pill is painted by script into a layer the pointer
+           never hits, so the only honest statement of the colour under the
+           pointer is the tab's own data-accent. Equal to the swarm's hue means it
+           is the page you are on; a different tab keeps the page accent, which is
+           the mixture the contained mesh exists to show.
+       A fill the generator paints with a plain background (Install, an active
+       chip) already reaches the dark ink through hueOf's chip branch. */
+    function inkOver(e,hue){
+      var tab=e.closest('.tab[data-accent]');
+      if(tab&&sameCol(tab.getAttribute('data-accent'),hue))return DARK_INK;
+      return hue;
     }
     /* ⚠️ A CONTROL'S OWN color IS NOT ALWAYS WORTH WEARING. The back-to-top
        computes to black — its ring paints from --accent, but the element's color
@@ -4528,8 +4585,15 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       var h=e.closest('.inv,.entry,a,button,summary,[role="button"]')||document.body;
       if(h===lastHost)return;
       lastHost=h;
-      var v=accentOf(e);
-      if(v)tgtCol=v;
+      var v=hueOf(e);
+      if(v){
+        /* a control that declares its own ink also keeps the PAGE hue for the mesh,
+           so the colour it stirs into the pill never depends on that control's
+           inherited link colour */
+        var di=getComputedStyle(e).getPropertyValue('--cur-ink').trim();
+        tgtHue=di?baseCol:v;
+        tgtCol=di||inkOver(e,v);
+      }
     }
 
     function tick(now){
@@ -4554,6 +4618,8 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          the write stops by itself once it has arrived. */
       curCol=mix(curCol,tgtCol,0.09);
       if(curCol!==wroteCol){ink.style.color=curCol;wroteCol=curCol;}
+      curHue=mix(curHue,tgtHue,0.09);
+      if(curHue!==wroteHue){ink.style.setProperty('--hue',curHue);wroteHue=curHue;}
 
       var ox=cen.x-HALF,oy=cen.y-HALF;
       ink.style.transform='translate('+ox.toFixed(1)+'px,'+oy.toFixed(1)+'px)';
@@ -5016,6 +5082,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     var curInk=document.querySelector('.cur-ink');
     var page=parseCol(getComputedStyle(document.body).getPropertyValue('--accent'))
              ||[242,153,74];
+    var pageStr='rgb('+page[0]+','+page[1]+','+page[2]+')';
     segs.forEach(function(g){
       g.hot=parseCol(g.tabs[0].getAttribute('data-accent'))||page;
     });
@@ -5050,7 +5117,10 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       var r=piece.getBoundingClientRect();
       if(r.width<1.5)return '';
       var pill=parseCol(piece.style.backgroundColor)||g.hot;
-      var cur=(curInk&&parseCol(curInk.style.color))||page;
+      /* the swarm's HUE, not its ink: over its own colour the swarm goes dark,
+         and blending dark through the pill would put the label on a smudge */
+      var cur=(curInk&&(parseCol(curInk.style.getPropertyValue('--hue'))
+                        ||parseCol(curInk.style.color)))||page;
       var h=r.height||25, out='', i;
       for(i=0;i<BLOBS;i++){
         var rate=0.85+i*0.21, ph=i*2.1;
@@ -5109,7 +5179,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     },{passive:true,capture:true});
 
     function tick(now){
-      var t=now/1000*RATE, any=false, live=false, i, j;
+      var t=now/1000*RATE, any=false, own=false, live=false, i, j;
       for(i=0;i<segs.length;i++){
         var g=segs[i], ir=g.ink.getBoundingClientRect(), hot=null;
         for(j=0;j<g.tabs.length;j++){
@@ -5120,6 +5190,10 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
            tabs must not blink the field out and back */
         var over=!!hot||(px>=ir.left&&px<=ir.right&&py>=ir.top-8&&py<=ir.bottom+8);
         if(hot){var hc=parseCol(hot.getAttribute('data-accent'));if(hc)g.hot=hc;}
+        /* standing on the tab that already wears the page's own colour: there is
+           nothing to mix, and the swarm is the dark ink, which must stay opaque
+           to read at all */
+        if(hot&&sameCol(hot.getAttribute('data-accent'),pageStr))own=true;
         if(over){g.tx=px;any=true;}
         g.amt+=((over?1:0)-g.amt)*0.11;
         g.mx+=(g.tx-g.mx)*FOLLOW;
@@ -5128,7 +5202,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         else if(!g.clean){ clear(g); g.clean=true; }
       }
       if(curInk){
-        var wa=any?String(SWARM):'';
+        var wa=(any&&!own)?String(SWARM):'';
         if(curInk.style.opacity!==wa)curInk.style.opacity=wa;
       }
       /* stop the loop once the field has faded out, so a reader who never goes

@@ -286,12 +286,13 @@ const RECEIVER_CSS = `
   padding:0 .5rem 0 .7rem;white-space:nowrap;line-height:1.9;
   border-left:1px solid color-mix(in srgb,var(--accent) 22%,transparent);margin-left:.25rem}
 .rx-scroll > .rx-gl:first-of-type{border-left:0}
-/* ⚠️ THE CHIPS ARE THE SITE'S HAIRLINE CAPSULE (Harkirat, 2026-10-20 10:45 EDT: "the same style that the landing Commands button uses"). The construction is .cmdb's in the shared CSS: no fill, a hairline border, the label --ink2 at rest and --ink on hover, the border warming and a cursor light following the pointer. What differs is on purpose: the chip's own colour (--cc, the command's) does the warming and the light instead of the page accent, so the colour coding survives; the label stays lowercase mono because it is a command name; and .on is still a FILL, because a rail that filters has to say which filter is active from across the screen. The light is a ::before at z-index -1 inside an isolated stacking context, so it paints above the border-box background and below the label and dot, with no wrapper span needed; the pointer position is the --px/--py that THEME_JS writes on every [data-spot] element. */
+/* ⚠️ THE CHIPS ARE THE SITE'S HAIRLINE CAPSULE (Harkirat, 2026-10-20 10:45 EDT: "the same style that the landing Commands button uses"). The construction is .cmdb's in the shared CSS: no fill, a hairline border, the label --ink2 at rest and --ink on hover, the border warming and a cursor light following the pointer. What differs is on purpose: the chip's own colour (--cc, the command's) does the warming and the light instead of the page accent, so the colour coding survives; the label stays lowercase mono because it is a command name; and .on is NO LONGER a fill: it is the same outline with the border in the full colour and the light held on (changed 2026-10-20 11:57 EDT). The light is a ::before at z-index -1 inside an isolated stacking context, so it paints above the border-box background and below the label and dot, with no wrapper span needed; the pointer position is the --px/--py that THEME_JS writes on every [data-spot] element. */
 .rx-chip{position:relative;isolation:isolate;overflow:hidden;
   display:inline-flex;align-items:center;gap:.45rem;flex:none;
-  padding:.42rem .72rem;border-radius:999px;border:1px solid var(--rule2);background:transparent;
+  --hv:var(--cc);height:34px;padding:0 .72rem;border-radius:999px;border:1px solid var(--rule2);background:transparent;
   font-family:var(--mono);font-size:.8rem;color:var(--ink2);text-decoration:none;
-  white-space:nowrap;transition:border-color .22s,color .22s}
+  white-space:nowrap;
+  transition:border-color .22s,color .22s,box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
 .rx-chip::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;
   opacity:0;transition:opacity .3s;pointer-events:none;
   background:radial-gradient(64% 150% at var(--px,50%) var(--py,50%),
@@ -299,15 +300,15 @@ const RECEIVER_CSS = `
 .rx-chip:hover,.rx-chip:focus-visible{color:var(--ink);
   border-color:color-mix(in srgb,var(--cc) 60%,var(--ink3))}
 .rx-chip:hover::before,.rx-chip:focus-visible::before{opacity:1}
-.rx-chip.on{background:var(--cc);border-color:var(--cc);color:var(--con);font-weight:600}
-.rx-chip.on .rx-dot{display:none}
+/* The chip you are on keeps the outline and takes its colour: a solid border in the command's own hue, the label at full ink, and the cursor light held on so it still reads as lit from across the screen (Harkirat, 2026-10-20 11:57 EDT: "when selected, dont do the filled style. keep the outline style, just with the color activated on it"). Its dot stays, because with no fill there is nothing for the dot to vanish into. */
+.rx-chip.on{border-color:var(--cc);color:var(--ink);font-weight:600}
+.rx-chip.on::before{opacity:1}
 .rx-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rx-dot{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none}
 /* The home chip belongs to the PAGE, so it wears the page accent rather than white. */
-.rx-home-chip{font-weight:600;color:var(--accent-t);
+.rx-home-chip{--cc:var(--accent);font-weight:600;color:var(--accent-t);
   border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
 .rx-home-chip .rx-dot{background:var(--accent)}
-.rx-home-chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-on)}
 
 /* ── THE STAGE ─────────────────────────────────────────────────────────────── */
 .rx-stage{margin:1.1rem 0 0}
