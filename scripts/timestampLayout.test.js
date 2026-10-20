@@ -46,5 +46,14 @@ async function check(name, fn) { try { await fn(); console.log(`  ok   ${name}`)
         assert.strictEqual(codesIn(out.opts.content).length, 9);
         assert.strictEqual(out.components[0].type, 1);
     });
+    await check('a user who never chose a view gets Short List; an explicit choice wins', () => {
+        assert.strictEqual(timestamp.resolveStyle(null, undefined), 'short_list');
+        assert.strictEqual(timestamp.resolveStyle(null, 'all_formats'), null);
+        assert.strictEqual(timestamp.resolveStyle('all_formats', 'short_list'), null);
+        assert.strictEqual(timestamp.resolveStyle('longDate', 'short_list'), 'longDate');
+    });
+    await check('the hint line reads "Switch views or pick a format"', async () => {
+        assert.ok(textOf(await render(null)).includes('-# Switch views or pick a format'));
+    });
     process.exit(failures ? 1 : 0);
 })();

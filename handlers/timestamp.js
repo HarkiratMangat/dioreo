@@ -35,7 +35,7 @@ async function route(interaction) {
             const UserPreference = require('../models/UserPreference');
             const { getAccentColorForCommand } = require('../utils/accentColor');
             const tsPrefs = await UserPreference.findOne({ discordId: interaction.user.id });
-            const usesPersonalizedAccent = tsPrefs?.timestampStyle && tsPrefs.timestampStyle !== 'all_formats';
+            const usesPersonalizedAccent = Boolean(tsPrefs?.timestampStyle) && !timestampCommand.OVERVIEW_STYLES.includes(tsPrefs.timestampStyle);
             const accentColor = usesPersonalizedAccent
                 ? await getAccentColorForCommand(interaction, tsPrefs, timestampCommand.PRESET_ACCENT)
                 : timestampCommand.PRESET_ACCENT;

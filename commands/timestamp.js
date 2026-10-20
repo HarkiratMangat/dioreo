@@ -37,6 +37,14 @@ const FORMAT_LABELS = {
     T: 'MEDIUM TIME', t: 'SHORT TIME', s: 'SHORT DATE, SHORT TIME', S: 'SHORT DATE, MEDIUM TIME', R: 'RELATIVE TIME'
 };
 const ALL_CODES = ['F', 'f', 'D', 'd', 'T', 't', 's', 'S', 'R'];
+// The two overview views. Either one keeps the fixed teal accent; only a saved SINGLE format turns on personalised colour (Harkirat's 2026-07-12 rule, carried over when Short List arrived).
+const OVERVIEW_STYLES = ['all_formats', 'short_list'];
+
+// Which view to draw: an explicit `style:` wins, then the saved /settings style, then Short List, the default for anyone who never chose (2026-10-20 18:31 EDT, Harkirat: "let's make the default view ... be the shortlist view"). `null` means the All Formats overview, which is how the rest of this file reads it.
+function resolveStyle(argStyle, savedStyle) {
+    const chosen = argStyle ?? savedStyle ?? 'short_list';
+    return chosen === 'all_formats' ? null : chosen;
+}
 const SHORT_LIST_CODES = ['F', 'f', 'D', 'd', 't', 'R'];
 
 // Shorthand-day/relative-word expansions for the chrono parser, compiled once here at module load instead of being rebuilt (10 `new RegExp(...)` calls) on every single /timestamp invocation -- this data never depends on anything per-call, so there's no reason to recreate it each time.
@@ -105,6 +113,7 @@ function getTimezoneLabel(tz, baseName) {
 }
 
 module.exports = {
+    resolveStyle, OVERVIEW_STYLES,
     PRESET_ACCENT, // Exposed so handlers/timestamp.js's tsmenu re-render handler can resolve the same accent
                    // color the initial render would have used (see overrideState.accentColor above).
     data: new SlashCommandBuilder()
@@ -142,6 +151,7 @@ module.exports = {
                 .setDescription('Select a specific style, or leave blank for all formats')
                 .addChoices(
                     { name: 'Short List — the 6 most used formats', value: 'short_list' },
+                    { name: 'All Formats — every format', value: 'all_formats' },
                     { name: 'Full Date, Short Time (F) — e.g., Tuesday, April 20, 2021 at 16:20', value: 'fullDateTime' },
                     { name: 'Long Date, Short Time (f) — e.g., April 20, 2021 at 16:20', value: 'longDateTime' },
                     { name: 'Long Date (D) — e.g., April 20, 2021', value: 'longDate' },
@@ -192,7 +202,7 @@ module.exports = {
             // NOTE (fixed during review): this option was previously ALWAYS taken as-is, so leaving it blank meant "all formats" no matter what a user had saved as their default Timestamp Style in /settings — that saved preference was stored and shown in the dashboard but never actually consulted (flagged as a known gap in CLAUDE.md). Now falls back the same way `ephemeral` already does below: explicit option > saved preference > "all formats". `prefs.timestampStyle` defaults to the literal string 'all_formats' in the schema, which needs to be treated as "no specific style" (i.e. `style = null`) here, since that's how the rest of this function distinguishes the two view modes.
             const argStyle = interaction.options.getString('style');
             const savedStyle = prefs?.timestampStyle;
-            style = argStyle !== null ? argStyle : (savedStyle && savedStyle !== 'all_formats' ? savedStyle : null);
+            style = resolveStyle(argStyle, savedStyle);
 
             // NOTE (Option A wiring): /timestamp previously never checked any saved preference — the `private` option (renamed from `ephemeral` 2026-07-12) always defaulted to false if you didn't type it. Now it falls back to the "Timestamps" toggle from /settings (prefs.timestampVisibility) when the option is left blank, same priority pattern used by the other commands: explicit option > saved preference > public default.
             const visibilityChoice = interaction.options.getString('visibility');
@@ -200,7 +210,7 @@ module.exports = {
             ephemeral = argEphemeral !== null ? argEphemeral : (prefs ? prefs.timestampVisibility === 'ephemeral' : false);
 
             // Accent color: fixed teal UNLESS the user has saved a specific default style in /settings (i.e. `prefs.timestampStyle` isn't the schema default 'all_formats') -- checks the SAVED preference, not `style` above, so a one-off `style:` option on this particular call never triggers personalization by itself (Harkirat's explicit call).
-            const usesPersonalizedAccent = savedStyle && savedStyle !== 'all_formats';
+            const usesPersonalizedAccent = Boolean(savedStyle) && !OVERVIEW_STYLES.includes(savedStyle);
             accentColor = usesPersonalizedAccent ? await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT) : PRESET_ACCENT;
 
             // FIXED V14 EPHEMERAL DEFERRAL FORMAT: discord.js v14 strictly expects a boolean payload configuration object { ephemeral: true }
@@ -240,7 +250,7 @@ module.exports = {
         const dropdownComponent = {
             type: 3,
             custom_id: statelessCustomId,
-            placeholder: "Choose a view or one format…",
+            placeholder: "Switch to a singular layout style...",
             options: STYLE_SELECT_OPTIONS.map(opt => ({ ...opt, default: opt.value === (style || 'all_formats') }))
         };
 
@@ -248,7 +258,7 @@ module.exports = {
         const codes = style === 'short_list' ? SHORT_LIST_CODES : (style && STYLE_CHAR[style] ? [STYLE_CHAR[style]] : ALL_CODES);
         const headingLine = `## ${emojis.timestamp} Timestamp Codes\n-# Everyone sees these in their own time zone.\n-# **Tap a \`<code>\` to copy it.**`;
         const rowsBlock = codes.map(c => `-# **${FORMAT_LABELS[c]}**\n**<t:${unix}:${c}>**\n-# \`<t:${unix}:${c}>\``).join('\n\n');
-        const hintLine = `-# Switch views or pick one format below`;
+        const hintLine = `-# Switch views or pick a format`; // Harkirat's wording, 2026-10-20 18:30 EDT
 
         let componentPayload;
         // Plain message content for text mode (2026-07-14) -- undefined in embed mode, where the container's own Text Display components carry everything instead. See sendV2Payload's `content` param.

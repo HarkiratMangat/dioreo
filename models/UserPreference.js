@@ -5,7 +5,8 @@ const UserPreferenceSchema = new mongoose.Schema({
     timezone: { type: String, default: 'America/Toronto' },
     // When this user first ran a command of their OWN (a slash command or a right-click), added 2026-10-20 17:53 EDT for /settings' "Dioreo User Since" (Harkirat). Written once by utils/firstCommand.js with $min, so it only ever moves earlier; clicking a button on someone else's panel never sets it. Users who existed before it were backfilled from this document's own creation time (scripts/backfillFirstCommandAt.js), an approximation. No default: unset means "not recorded yet", never "now".
     firstCommandAt: { type: Date },
-    timestampStyle: { type: String, default: 'all_formats' },
+    // 'short_list' since 2026-10-20 18:31 EDT (Harkirat): someone who never picks a style gets the Short List view. Records saved before then keep the 'all_formats' they were given.
+    timestampStyle: { type: String, default: 'short_list' },
     // Shared by /dmz AND /gunsmith (mp + dmz) — one "Weapon Builds" toggle in /settings covers every loadout command, same Option A pattern as `seasonalVisibility` below. `dmzVisibility` used to exist as a separate field here, but it was never actually wired to anything in the /settings UI (the visible toggle always wrote to `loadoutVisibility`), so it silently did nothing forever — removed rather than left as dead, unreachable state.
     loadoutVisibility: { type: String, default: 'public' },
     // NOTE: seasonendVisibility / drawsVisibility / patchnotesVisibility / calendarVisibility / pricesVisibility were removed here — per the user's decision (Option A), /season, /draws, /patch, /calendar, and /draw prices all now check the single shared `seasonalVisibility` field below instead of five separate ones. Old documents that still have the retired fields aren't hurt by this — Mongoose just stops reading/writing them going forward.
