@@ -252,8 +252,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Special Events'), eventEntries, seasonalDoc);
         calendarComponents.push(eventSection || emptyPage(sectionHeading(emojis.events, 'Special Events')));
     } else {
-        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Game Modes'), playlistEntries, seasonalDoc);
-        calendarComponents.push(playlistSection || emptyPage(sectionHeading(emojis.modes, 'Game Modes')));
+        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists & Game Modes'), playlistEntries, seasonalDoc);
+        calendarComponents.push(playlistSection || emptyPage(sectionHeading(emojis.modes, 'Playlists & Game Modes')));
     }
 
     // PAGE NAV: divider -> hint -> pager -> filter (2026-10-21 15:32 EDT). One divider separates the content from the whole block, and the hint sits directly under the content (2026-07-31 16:55 EDT). The pager is left out when the filter keeps one page.
