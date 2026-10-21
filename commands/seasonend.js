@@ -80,9 +80,9 @@ module.exports = {
             if (isTBD) body = '*TBD — date not yet announced.*';
             else if (unix) body = `✦ **Ends...** <t:${unix}:F>\n✦ **That's...** <t:${unix}:R>`;
             else body = '*Date has not been set yet.*';
-            // The bar sits under the title and above the dates (Harkirat, 2026-10-21 10:14 EDT), only while the season is running.
+            // The bar sits under the dates, only while the season is running. It was above them for an hour; Harkirat moved it back on 2026-10-21 11:05 EDT: "put the progress bars below as they were before, up top doesnt look good".
             const bar = isTBD ? null : progressLine(start, unix ? unix * 1000 : null, Date.now());
-            return { type: 10, content: `## ${emoji} **${title}**\n${bar ? `${bar}\n` : ''}${body}` };
+            return { type: 10, content: `## ${emoji} **${title}**\n${body}${bar ? `\n${bar}` : ''}` };
         };
 
         const containerPayload = {
