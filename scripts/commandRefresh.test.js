@@ -140,16 +140,36 @@ t('/calendar: finished first by when they ended, then live by when they end, the
         { title: 'Live early', date: day(2026, 10, 1), endDate: day(2026, 10, 28) },
         { title: 'Back', date: day(2026, 10, 10), dateOnly: true, drawType: 'returning' },
         { title: 'Over early', date: day(2026, 9, 1), endDate: day(2026, 10, 2) },
-        { title: 'No date', date: null }
+        { title: 'Longquan Sword Draw', date: null }
     ];
     const order = [...entries].sort(cal.compareEntries(doc, now)).map(e => e.title);
-    assert.deepStrictEqual(order, ['Over early', 'Over late', 'Live early', 'Live late', 'Back', 'Soon A', 'Soon B', 'No date']);
+    assert.deepStrictEqual(order, ['Over early', 'Over late', 'Live early', 'Live late', 'Back', 'Soon A', 'Soon B', 'Longquan Sword Draw']);
     const line = title => cal.buildEntryLine(entries.find(e => e.title === title), doc, now);
     assert.ok(line('Over early').startsWith(`${emojis.redDotGlow} ~~**Over early**~~\n-# `) && line('Over early').includes('Ended <t:'), line('Over early'));
     assert.ok(line('Live early').startsWith(`${emojis.greenDotGlow} **Live early**`) && line('Live early').includes('**Live** · ends <t:'));
     assert.ok(line('Back').includes('**Back** · returned <t:'));
     assert.ok(line('Soon A').startsWith(`${emojis.whiteDotGlow} **Soon A**`) && line('Soon A').includes('Returns <t:'));
-    assert.ok(line('No date').endsWith('Releases TBA'));
+    assert.ok(line('Longquan Sword Draw').endsWith('Releases TBA'));
+});
+
+t('the owner is DM\'d once about a returning draw that went live in the last week with no end date (2026-10-21 14:39 EDT)', () => {
+    const { drawsNeedingEndDate, reminderText } = require('../utils/drawEndReminder');
+    const now = day(2026, 10, 21).getTime();
+    const doc = {
+        returningDraws: [
+            { title: 'Thermal Core Draw', date: day(2026, 10, 18) },
+            { title: 'Molten Fusion Draw', date: day(2026, 10, 17) },
+            { title: 'Double Tap Draw', date: day(2026, 10, 25) },
+            { title: 'Void Implosion Draw', date: day(2026, 9, 20) },
+            { title: 'Bloody Seas Draw', date: day(2026, 10, 19) },
+            { title: 'Longquan Sword Draw', date: null }
+        ],
+        calendar: [{ title: 'Molten Fusion Draw', category: 'draw', date: day(2026, 10, 17), endDate: day(2026, 10, 30) }],
+        drawEndReminders: ['bloody seas draw']
+    };
+    assert.deepStrictEqual(drawsNeedingEndDate(doc, now).map(d => d.title), ['Thermal Core Draw']);
+    const text = reminderText(drawsNeedingEndDate(doc, now));
+    assert.ok(text.includes('**Thermal Core Draw**') && text.includes('/manage'), text);
 });
 
 if (failed) { console.log(`\n${failed} failed`); process.exit(1); }

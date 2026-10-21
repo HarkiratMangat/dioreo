@@ -171,6 +171,10 @@ function registerLifecycle(client, commands) {
         // Unnamed draw calculations expire 30 days after creation (PRIVACY §2.1d) -- enforced HERE, daily, because the partial TTL index that was meant to do it can never be built (see models/DrawBasket.js). Never awaited and never throws, same as the cleanup above.
         runBasketExpiry();
         setInterval(runBasketExpiry, 24 * 60 * 60 * 1000).unref();
+        // A returning draw that goes live with no end date gets the owner a DM, checked hourly (utils/drawEndReminder.js, 2026-10-21 14:39 EDT). Never awaited, never throws.
+        const { runDrawEndReminders } = require('../utils/drawEndReminder');
+        runDrawEndReminders(client);
+        setInterval(() => runDrawEndReminders(client), 60 * 60 * 1000).unref();
 
         // One row per hotpatch since boot. In memory only, and deliberately: a restart clears it because a restart is exactly when it stops being true -- the process is back on its boot commit.
         client.hotpatches = [];
