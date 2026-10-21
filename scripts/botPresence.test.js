@@ -1,7 +1,7 @@
-// The bot's presence (2026-10-21 19:31 EDT): the top line swaps between the season countdown and /help, under one Watching card with "Website: dioreo.app" as its second line. See utils/botPresence.js.
+// The bot's presence (2026-10-21 19:31 EDT): the top line swaps between the season countdown and /help, under one Watching card with "Add Dioreo · dioreo.app/install" as its second line. See utils/botPresence.js.
 const assert = require('assert');
 const { ActivityType } = require('discord.js');
-const { seasonCountdownLine, buildPresence, startPresenceRotation, HELP_LINE, WEBSITE_LINE } = require('../utils/botPresence');
+const { seasonCountdownLine, buildPresence, startPresenceRotation, HELP_LINE, INSTALL_LINE } = require('../utils/botPresence');
 
 let passed = 0, failed = 0;
 const pending = [];
@@ -29,10 +29,10 @@ t('the Battle Pass title wins over a stale season title, which is the fallback, 
     assert.strictEqual(seasonCountdownLine(doc({ bpTitle: 'Battle Pass', currentSeasonTitle: 'season9 — Name' }), NOW), 'Season 9 · 21 days left');
     assert.strictEqual(seasonCountdownLine(doc({ currentSeasonTitle: '', bpTitle: '' }), NOW), 'Season · 21 days left');
 });
-t('the presence is ONE Watching card with the website as its second line', () => {
+t('the presence is ONE Watching card with the install line as its second line', () => {
     const p = buildPresence('Season 10 · 21 days left');
     assert.strictEqual(p.activities.length, 1, 'a second activity (a custom status) hides the card');
-    assert.deepStrictEqual(p.activities[0], { name: 'Season 10 · 21 days left', state: WEBSITE_LINE, type: ActivityType.Watching });
+    assert.deepStrictEqual(p.activities[0], { name: 'Season 10 · 21 days left', state: INSTALL_LINE, type: ActivityType.Watching });
     assert.strictEqual(buildPresence().activities[0].name, HELP_LINE);
 });
 t('the rotation starts on the countdown, then /help, then the countdown again', async () => {

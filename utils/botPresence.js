@@ -1,4 +1,4 @@
-// The bot's presence: one "Watching" card whose top line swaps between the season countdown and /help, with the website as its second line (2026-10-21 19:31 EDT, Harkirat: "lets do the season and countdown as the main line and Website: dioreo.app as the second line, make the first line swap between the season countdown and /help").
+// The bot's presence: one "Watching" card whose top line swaps between the season countdown and /help, with an install line as its second line (2026-10-21 19:31 EDT, Harkirat: "lets do the season and countdown as the main line and Website: dioreo.app as the second line, make the first line swap between the season countdown and /help").
 //
 // Why ONE card with a `state` line and not a custom status beside it: tried on the dev bot 2026-10-21 18:49-19:23 EDT. A custom status (type 4) hid the Watching card whichever order the two were listed in, and a bot cannot set `status_display_type` (Discord allows bots only name, state, type and url), so the member list always shows the top line (`name`) and only the profile card shows `state`.
 //
@@ -6,7 +6,8 @@
 const { ActivityType } = require('discord.js');
 
 const HELP_LINE = '/help';
-const WEBSITE_LINE = 'Website: dioreo.app';
+// The second line (2026-10-21 19:40 EDT, Harkirat: "instead of website, let's do Add Dioreo · dioreo.app/install"). Not clickable: a bot cannot set `state_url`.
+const INSTALL_LINE = 'Add Dioreo · dioreo.app/install';
 // How long each top line stays up. Discord caps presence updates per gateway session (op 3), so this stays at a minute or more.
 const ROTATE_MS = 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -27,7 +28,7 @@ function seasonCountdownLine(doc, now = Date.now()) {
 function buildPresence(topLine = HELP_LINE) {
     return {
         status: 'online',
-        activities: [{ name: topLine, state: WEBSITE_LINE, type: ActivityType.Watching }],
+        activities: [{ name: topLine, state: INSTALL_LINE, type: ActivityType.Watching }],
     };
 }
 
@@ -50,4 +51,4 @@ function startPresenceRotation(client, { loadSeason, intervalMs = ROTATE_MS } = 
     return { tick, stop: () => clearInterval(timer) };
 }
 
-module.exports = { seasonCountdownLine, buildPresence, startPresenceRotation, HELP_LINE, WEBSITE_LINE, ROTATE_MS };
+module.exports = { seasonCountdownLine, buildPresence, startPresenceRotation, HELP_LINE, INSTALL_LINE, ROTATE_MS };
