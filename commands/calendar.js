@@ -135,14 +135,14 @@ const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBa
 
 // THE FILTER (2026-10-21 15:32 EDT, Harkirat: "change the toggle buttons to a filter dropdown menu instead? with Live, Past/Ended, Upcoming, Lucky Draws, Special Events, Playlists & Modes as the filter options? lets still keep draws/events/modes seperated on 3 pages tho. and we can add a pagination row above the filter dropdown (loops pagination)"). One multi-select replaces the Draws / Events / Modes buttons. Its picks are a bit mask that rides in every custom_id, because nothing about the filter is saved:
 //   - the three STATUS picks keep only the entries in those states (none picked = every state; an undated entry counts as Upcoming);
-//   - the three PAGE picks decide which pages the pager walks (none picked = all three).
+//   - the three PAGE picks decide which pages the pager walks (none picked = all three). Their descriptions are his wording (2026-10-21 15:45 EDT).
 const FILTER_OPTIONS = [
     { value: 'live', bit: 1, label: 'Live', emojiKey: 'greenDotGlow', description: 'Running right now' },
     { value: 'over', bit: 2, label: 'Past/Ended', emojiKey: 'redDotGlow', description: 'Already finished this season' },
     { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'whiteDotGlow', description: "Hasn't started yet" },
-    { value: 'draws', bit: 8, label: 'Lucky Draws', emojiKey: 'newDraws', description: 'The Draws page' },
-    { value: 'events', bit: 16, label: 'Special Events', emojiKey: 'events', description: 'The Events page' },
-    { value: 'modes', bit: 32, label: 'Playlists & Modes', emojiKey: 'modes', description: 'The Game Modes page' }
+    { value: 'draws', bit: 8, label: 'Lucky Draws', emojiKey: 'newDraws', description: 'Draws releasing this season' },
+    { value: 'events', bit: 16, label: 'Special Events', emojiKey: 'events', description: 'Special Events this season' },
+    { value: 'modes', bit: 32, label: 'Playlists & Modes', emojiKey: 'modes', description: 'Playlists & game modes this season' }
 ];
 const STATE_BITS = 7;
 const PAGE_BIT = [8, 16, 32];
