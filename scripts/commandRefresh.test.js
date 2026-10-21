@@ -152,6 +152,32 @@ t('/calendar: finished first by when they ended, then live by when they end, the
     assert.ok(line('Longquan Sword Draw').endsWith('Releases TBA'));
 });
 
+t('/calendar: a looping pager over the pages the filter keeps, and a filter dropdown with his six options (2026-10-21 15:32 EDT)', () => {
+    const calendar = require('../commands/calendar');
+    const now = Date.now(), DAYMS = 864e5;
+    const doc = { currentSeasonTitle: 'Season 10: Test', newDraws: [], returningDraws: [], calendar: [
+        { title: 'Over Event', category: 'event', date: new Date(now - 9 * DAYMS), endDate: new Date(now - 2 * DAYMS) },
+        { title: 'Live Event', category: 'event', date: new Date(now - DAYMS), endDate: new Date(now + 3 * DAYMS) },
+        { title: 'Soon Event', category: 'event', date: new Date(now + 2 * DAYMS), endDate: new Date(now + 5 * DAYMS) },
+        { title: 'Live Mode', category: 'playlist', date: new Date(now - DAYMS), endDate: new Date(now + 3 * DAYMS) }
+    ] };
+    const json = (page, mode) => JSON.stringify(calendar.buildContainer(doc, page, undefined, false, mode));
+    const select = JSON.parse(json(1, 0)).flatMap(c => c.components || []).flatMap(c => c.components || []).find(c => c.type === 3);
+    assert.deepStrictEqual(select.options.map(o => o.label), ['Live', 'Past/Ended', 'Upcoming', 'Lucky Draws', 'Special Events', 'Playlists & Modes']);
+    assert.strictEqual(select.min_values, 0, 'clearing every pick is the full timeline');
+    assert.ok(!/Draws \| Events|"label":"Modes"/.test(json(1, 0)), 'the three page buttons are gone');
+    // Statuses filter the entries.
+    const liveOnly = json(1, calendar.filterMask('live'));
+    assert.ok(liveOnly.includes('Live Event') && !liveOnly.includes('Over Event') && !liveOnly.includes('Soon Event'));
+    assert.ok(json(1, 'active').includes('Soon Event') && !json(1, 'active').includes('Over Event'), "an old panel's Active view is Live + Upcoming");
+    // Pages: all three loop (Draws <- Events -> Modes); picking Events + Modes walks only those, and a left-out page falls back.
+    assert.deepStrictEqual(json(1, 0).match(/calpage_\d_m0_[pn]/g), ['calpage_0_m0_p', 'calpage_2_m0_n']);
+    const mask = calendar.filterMask('events') | calendar.filterMask('modes');
+    assert.deepStrictEqual(json(1, mask).match(/calpage_\d_m\d+_[pn]/g), [`calpage_2_m${mask}_p`, `calpage_2_m${mask}_n`]);
+    assert.ok(json(0, mask).includes('Live Event'), 'Draws is left out, so it opens on Events');
+    assert.ok(!/calpage_\d_m/.test(json(1, calendar.filterMask('events'))), 'one page kept: no pager');
+});
+
 t('the owner is DM\'d once about a returning draw that went live in the last week with no end date (2026-10-21 14:39 EDT)', () => {
     const { drawsNeedingEndDate, reminderComponents, drawForEndCustomId } = require('../utils/drawEndReminder');
     const now = day(2026, 10, 21).getTime();

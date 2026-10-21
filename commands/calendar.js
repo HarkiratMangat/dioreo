@@ -1,7 +1,7 @@
 // ==========================================
 // COMMAND: EVENT CALENDAR SCHEDULE
 // ==========================================
-// ARCHITECTURE: 3 separate pages (Draws / Events / Playlists-Modes), switched via named toggle buttons rather than Prev/Next -- see buildSectionToggleRow below. Includes a defensive char-budget safety net per section (SECTION_CHAR_BUDGET) since a bulk-imported list could otherwise overflow a single Text Display's 4000-char cap.
+// ARCHITECTURE: 3 separate pages (Draws / Events / Playlists-Modes), walked by a looping pager with a filter dropdown under it (2026-10-21; it replaced the Draws / Events / Modes buttons) -- see buildCalendarPager and buildFilterRow below. Includes a defensive char-budget safety net per section (SECTION_CHAR_BUDGET) since a bulk-imported list could otherwise overflow a single Text Display's 4000-char cap.
 
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder } = require('discord.js');
@@ -17,6 +17,7 @@ const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { isSameDrawTitle } = require('../utils/search');
 const { mentionCommand } = require('../utils/commandMentions');
+const { buildPaginationRow } = require('../utils/paginationRow');
 // ⚠️ REVERTED 2026-08-07 21:30 EDT -- the width-cap fix below (2026-07-31 17:20 EDT, "an uncapped banner was making the whole container render unnecessarily wide on desktop") was built on the assumption that a Discord CDN-hosted banner gets a genuine small-preview/full-resolution-on-click pairing via Discord's own resize proxy. Now that every banner is re-hosted to Cloudinary (see utils/calendarBannerCache.js's 2026-08-07 21:25 EDT fix for why -- Discord CDN links expire), that pairing no longer exists: a Cloudinary-transformed derivative is a genuinely separate, smaller file with no path back to the original, so the cap now also shrinks the ZOOMED view, not just the inline preview. Verified live on the dev bot -- confirmed by Harkirat: "it does work but it has that initial issue we discussed where it will remain in that small size even if someone taps on it. So I'd rather not do the resize." Full width now shows both inline and on zoom; the desktop- width nuisance this was fixing is the smaller cost of the two.
 
 // Repalette (2026-07-12, Section 5 of the batch) -- replaces the old flat 5-color nav-order gradient (Police Blue/Chinese Violet/China Rose/Light Coral/Tumbleweed) with a color chosen per command instead of just its position in a fade. Calendar gets a deep structural blue (schedule/ dependable) -- deliberately NOT a teal-leaning alternative Harkirat considered, so it doesn't sit hue-adjacent to Draw Prices' green two slots over in the nav row. See CLAUDE.md's design-decision- log entry for the full nav-row hue-spread reasoning (cool blue -> plum -> green -> gold -> warm amber, left to right).
@@ -122,7 +123,7 @@ function buildSectionComponent(headingLine, entries, seasonalDoc) {
     return { type: 10, content: `${headingLine}\n${body}` };
 }
 
-// PAGE TOGGLE ROW (replaces the old Prev/Next pagination, 2026-07-31 14:00 EDT, per Harkirat's explicit request) -- 3 named buttons instead of arrows, since there are exactly 3 fixed sections, not a variable chunk count. The current page's button is styled Success (green) + disabled since 2026-10-19 09:57 EDT (Harkirat, with the footer nav row moving to blurple in the same ask; it was Primary+disabled before); the other two are Secondary and clickable. Button label shortened "Gamemodes" -> "Modes" (2026-08-07 15:48 EDT, Harkirat's direct follow-up to the emoji addition below) -- the 3 buttons + their new emoji no longer fit on one row on mobile with "Gamemodes" spelled out (wrapped to its own 2nd row), and Harkirat wanted them to stay a single row. The footer hint line and the page-2 section heading both went "Playlists & Modes" -> "Gamemodes" -> "Game Modes" (2026-08-07 15:48-16:16 EDT, Harkirat's own correction -- "Gamemodes" isn't a real word; CODM's actual in-game terminology is the two-word "Game Modes"). The button label itself stays the shorter "Modes" (unaffected by this correction either way -- it's an abbreviation, not the fused misspelling). **The slash-command `data_for`-style choice list (`{ name: 'Playlists & Modes', value: 'playlists' }` below) is the ONE place still reading "Playlists & Modes" -- deliberately left alone, Harkirat's asks so far have named the button/hint/heading specifically, not that choice list.** Emoji added to each button 2026-08-07 13:10 EDT per Harkirat's request -- Draws reuses the SAME `newDraws` emoji /draws' own New Draws heading uses (his explicit call, rather than a separate generic "draw" icon), Events/Modes use emojiMap's own `events`/`modes` icons. `emojiKey` (a STRING NAME, not the emoji value itself) fixed 2026-08-07 13:59 EDT after CI's checkEmojiCaptures.js caught it: this table is module-level, so storing `emojis.newDraws` directly here would capture the PROD id at require() time, before `refreshEmojiIds()` ever runs on boot -- stale/broken on the dev bot exactly like the Guide emoji this same session already fixed elsewhere. `buildSectionToggleRow` looks the key up in `emojis` fresh on every render instead.
+// The three pages, in pager order. `emojiKey` is a NAME looked up in `emojis` at render time, never the emoji value: this table is module-level, and a value captured here would keep the PROD id the dev bot cannot show (scripts/checkEmojiCaptures.js, 2026-08-07). The heading for page 2 reads "Game Modes"; the filter calls it "Playlists & Modes", his wording.
 const PAGE_DEFS = [
     { page: 0, label: 'Draws', emojiKey: 'newDraws' },
     { page: 1, label: 'Events', emojiKey: 'events' },
@@ -131,18 +132,58 @@ const PAGE_DEFS = [
 
 // Per-page banner fields (added 2026-07-31 17:20 EDT, the notes file follow-up) -- indexed by the same numeric page used everywhere else in this file. Blank/'' = show nothing for that page, not a placeholder -- see utils/calendarBannerCache.js + /manage's "Banners" action.
 const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBannerUrl'];
-// `filterMode` rides in the id as a `_a` suffix (2026-10-20, v3 sweep). `view:Active/Upcoming` is a one-off slash option, saved nowhere, so a toggle id without it re-rendered with filterMode 'all' and the first click brought every ended event back.
-function buildSectionToggleRow(currentPage, filterMode = 'all') {
+
+// THE FILTER (2026-10-21 15:32 EDT, Harkirat: "change the toggle buttons to a filter dropdown menu instead? with Live, Past/Ended, Upcoming, Lucky Draws, Special Events, Playlists & Modes as the filter options? lets still keep draws/events/modes seperated on 3 pages tho. and we can add a pagination row above the filter dropdown (loops pagination)"). One multi-select replaces the Draws / Events / Modes buttons. Its picks are a bit mask that rides in every custom_id, because nothing about the filter is saved:
+//   - the three STATUS picks keep only the entries in those states (none picked = every state; an undated entry counts as Upcoming);
+//   - the three PAGE picks decide which pages the pager walks (none picked = all three).
+const FILTER_OPTIONS = [
+    { value: 'live', bit: 1, label: 'Live', emojiKey: 'greenDotGlow', description: 'Running right now' },
+    { value: 'over', bit: 2, label: 'Past/Ended', emojiKey: 'redDotGlow', description: 'Already finished this season' },
+    { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'whiteDotGlow', description: "Hasn't started yet" },
+    { value: 'draws', bit: 8, label: 'Lucky Draws', emojiKey: 'newDraws', description: 'The Draws page' },
+    { value: 'events', bit: 16, label: 'Special Events', emojiKey: 'events', description: 'The Events page' },
+    { value: 'modes', bit: 32, label: 'Playlists & Modes', emojiKey: 'modes', description: 'The Game Modes page' }
+];
+const STATE_BITS = 7;
+const PAGE_BIT = [8, 16, 32];
+const STATE_BIT = { live: 1, over: 2, soon: 4, tba: 4 };
+
+// Every way a filter arrives, as a mask: a number from a custom_id, the slash `filter` choice ('all'|'over'|'live'|'soon'), or 'active' from a panel posted before 2026-10-21 (the old `view:Active/Upcoming`, which is Live + Upcoming).
+function filterMask(filterMode) {
+    if (typeof filterMode === 'number' && Number.isFinite(filterMode)) return filterMode & 63;
+    if (filterMode === 'active') return 1 | 4;
+    const opt = FILTER_OPTIONS.find(o => o.value === filterMode);
+    return opt ? opt.bit : 0;
+}
+
+// The pages the pager walks under a mask, in order.
+const visiblePages = mask => [0, 1, 2].filter(p => !(mask & 56) || (mask & PAGE_BIT[p]));
+
+// The pager above the filter: it walks only the visible pages and loops. Direction rides in the id (`_p`/`_n`), so two pages still give two different ids (Discord rejects a message whose ids repeat).
+function buildCalendarPager(page, mask) {
+    const pages = visiblePages(mask);
+    const idx = Math.max(0, pages.indexOf(page));
+    return buildPaginationRow({
+        totalChunks: pages.length,
+        currentPage: idx,
+        prevCustomId: `calpage_${pages[(idx - 1 + pages.length) % pages.length]}_m${mask}_p`,
+        nextCustomId: `calpage_${pages[(idx + 1) % pages.length]}_m${mask}_n`,
+        indicatorCustomId: 'calpage_ind'
+    });
+}
+
+// The filter dropdown. Its picks are its defaults, so the closed menu shows what is applied.
+function buildFilterRow(page, mask) {
     return {
         type: 1,
-        components: PAGE_DEFS.map(d => ({
-            type: 2,
-            style: d.page === currentPage ? 3 : 2,
-            label: d.label,
-            emoji: emojis.parseEmoji(emojis[d.emojiKey]),
-            custom_id: `calpage_${d.page}${filterMode === 'active' ? '_a' : ''}`,
-            disabled: d.page === currentPage
-        }))
+        components: [{
+            type: 3,
+            custom_id: `calsel_${page}`,
+            placeholder: 'Filter: Full timeline',
+            min_values: 0,
+            max_values: FILTER_OPTIONS.length,
+            options: FILTER_OPTIONS.map(o => ({ label: o.label, value: o.value, description: o.description, emoji: emojis.parseEmoji(emojis[o.emojiKey]), default: Boolean(mask & o.bit) }))
+        }]
     };
 }
 
@@ -150,8 +191,10 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
     const nowMs = Date.now();
     const sortByDate = compareEntries(seasonalDoc, nowMs);
-    const applyFilter = (entries) => filterMode === 'active'
-        ? entries.filter(e => !isEventEnded(e, seasonalDoc, nowMs))
+    const mask = filterMask(filterMode);
+    const states = mask & STATE_BITS;
+    const applyFilter = (entries) => states
+        ? entries.filter(e => states & STATE_BIT[entryState(e, seasonalDoc, nowMs).state])
         : entries;
 
     const allDrawEntries = getDrawSectionEntries(seasonalDoc).sort(sortByDate);
@@ -163,7 +206,9 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     const eventEntries = applyFilter(allEventEntries);
     const playlistEntries = applyFilter(allPlaylistEntries);
 
-    const safePage = Math.min(Math.max(0, page), 2);
+    // A page the filter leaves out falls back to the first page it keeps.
+    const pages = visiblePages(mask);
+    const safePage = pages.includes(page) ? page : pages[0];
 
     const calendarComponents = [];
 
@@ -177,9 +222,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     calendarComponents.push(withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji)));
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
-    const noneScheduledText = filterMode === 'active' && totalEntryCount > 0
-        // The pointer used to send players to /settings' Preferences page, where the default this toggled was removed 2026-08-15 -- `view` is the only control left (2026-10-20, v3 sweep).
-        ? `*No active or upcoming events right now — every event this season has already ended. Run ${mentionCommand(client, '/calendar')} with **view: All Events** to see them.*`
+    const noneScheduledText = states && totalEntryCount > 0
+        ? `*Nothing on this page matches the filter. Clear it to see the full timeline.*`
         : `*There are currently no events scheduled for this season.*`;
 
     if (safePage === 0) {
@@ -203,10 +247,12 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         calendarComponents.push(playlistSection || { type: 10, content: noneScheduledText });
     }
 
-    // PAGE NAV: divider -> hint -> toggle row (reworked 2026-07-31 16:55 EDT, direct follow-up) -- was divider/row/divider/hint; Harkirat wanted the hint directly under the content with the toggle row below it, and only ONE divider total separating the section content above from this whole nav block.
+    // PAGE NAV: divider -> hint -> pager -> filter (2026-10-21 15:32 EDT). One divider separates the content from the whole block, and the hint sits directly under the content (2026-07-31 16:55 EDT). The pager is left out when the filter keeps one page.
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
-    calendarComponents.push({ type: 10, content: `-# Switch between this season's **Draws**, **Events**, and **Game Modes**. (Tip: check out ${mentionCommand(client, '/settings')})` });
-    calendarComponents.push(buildSectionToggleRow(safePage, filterMode));
+    calendarComponents.push({ type: 10, content: `-# Use the arrows to switch between this season's **Draws**, **Events**, and **Game Modes**, or narrow it down with the filter. (Tip: check out ${mentionCommand(client, '/settings')})` });
+    const pager = buildCalendarPager(safePage, mask);
+    if (pager) calendarComponents.push(pager);
+    calendarComponents.push(buildFilterRow(safePage, mask));
 
     const containerPayload = {
         type: 17,
@@ -224,24 +270,26 @@ module.exports = {
         .setName('calendar')
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
         .setDescription("View this season's in-game event timeline")
-        // `page`/`view` (added 2026-07-31 14:20 EDT) are one-off, per-invocation overrides only -- neither is saved anywhere. `view`'s old /settings-saved default (`calendarEventFilter`) was SILENCED 2026-08-15 13:01 EDT -- it now just defaults to 'all' when omitted, same as `page` opening on Draws (page 0) when omitted.
+        // `page`/`filter` are one-off, per-invocation overrides only -- neither is saved anywhere. `filter` was `view` (All Events / Active/Upcoming Only) until 2026-10-21 15:32 EDT (Harkirat: "view -> filter ... change the sub-options to \"Full timeline\", \"past/ended\", \"live right now\", \"upcoming\""). Its old /settings-saved default (`calendarEventFilter`) was SILENCED 2026-08-15 13:01 EDT.
         .addStringOption(option => option.setName('page').setDescription('Jump directly to a specific page').addChoices(
             { name: 'Draws', value: 'draws' }, { name: 'Events', value: 'events' }, { name: 'Playlists & Modes', value: 'playlists' }
         ))
-        .addStringOption(option => option.setName('view').setDescription('Show all events, or only active/upcoming ones').addChoices(
-            { name: 'All Events', value: 'all' }, { name: 'Active/Upcoming Only', value: 'active' }
+        .addStringOption(option => option.setName('filter').setDescription('Show the full timeline, or only past, live or upcoming entries').addChoices(
+            { name: 'Full Timeline', value: 'all' }, { name: 'Past/Ended', value: 'over' }, { name: 'Live Right Now', value: 'live' }, { name: 'Upcoming', value: 'soon' }
         ))
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     buildContainer,
+    filterMask,
+    FILTER_OPTIONS,
     entryState,
     compareEntries,
     // Exported for /bot analytics' change-detail panel: buildEntryLine is the CANONICAL renderer for one calendar row (rule D -- never re-describe a record), and isEventEnded is the ONLY thing that decides whether /calendar's Active/Upcoming view still shows it. A second, hand-rolled date comparison over there would drift from this one and then confidently state the opposite.
     buildEntryLine,
     isEventEnded,
 
-    // filterOverride: the `view` a page-toggle button carries (see buildSectionToggleRow); a slash `view` still wins.
+    // filterOverride: the filter mask a pager button or the filter dropdown carries (or 'active' from a panel posted before 2026-10-21); a slash `filter` still wins.
     async execute(interaction, pageOverride = null, filterOverride = null) {
         const userId = interaction.user.id;
 
@@ -263,9 +311,9 @@ module.exports = {
             return interaction.followUp({ content: BOT_EMOJI.cross + ' The global seasonal database document has not been initialized yet.' });
         }
 
-        // The Active/All Events filter's /settings default preference was SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request) -- `prefs.calendarEventFilter` is no longer read here (or written anywhere; see commands/settings.js). `view` is now the ONLY way to pick Active/Upcoming for a given invocation, a genuine one-off, defaulting to 'all' when omitted. Never saved, only ever read on a real slash-command launch (a button/select re-render always passes pageOverride explicitly and never carries a `view` option to read here anyway).
-        const viewChoice = interaction.isChatInputCommand() ? interaction.options.getString('view') : null;
-        const filterMode = viewChoice || filterOverride || 'all';
+        // The filter's /settings default preference was SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request) -- `prefs.calendarEventFilter` is no longer read here (or written anywhere; see commands/settings.js). The slash `filter` is a one-off, defaulting to the full timeline. Never saved, only read on a real slash-command launch.
+        const filterChoice = interaction.isChatInputCommand() ? interaction.options.getString('filter') : null;
+        const filterMode = filterChoice || filterOverride || 'all';
 
         // `page` (added 2026-07-31 14:20 EDT) is the same kind of one-off override -- only consulted when pageOverride wasn't already supplied by a button click (buildSyntheticInteraction callers always pass an explicit numeric page). Maps the option's word value to the numeric page index buildContainer expects.
         const PAGE_OPTION_TO_INDEX = { draws: 0, events: 1, playlists: 2 };
