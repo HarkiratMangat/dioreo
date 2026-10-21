@@ -26,9 +26,30 @@ function drawsNeedingEndDate(seasonalDoc, nowMs = Date.now()) {
     });
 }
 
-function reminderText(draws) {
-    const lines = draws.map(d => `- **${d.title}** · returned <t:${Math.floor(new Date(d.date).getTime() / 1000)}:R>`);
-    return `### 🔔 Returning ${draws.length === 1 ? 'draw is' : 'draws are'} live with no end date\n${lines.join('\n')}\n-# Check the game for when ${draws.length === 1 ? 'it ends' : 'they end'}, then add a Draws row with the end date in /manage → Calendar (or the portal). Until then /calendar can't show ${draws.length === 1 ? 'it' : 'them'} as finished.`;
+// The button on each draw (`mng_drawend_<title key>`) opens /manage's own Add Calendar Event box with the title and release date filled in, so the end date is the one thing left to type (2026-10-21 14:46 EDT, Harkirat: "No not as prose, as an actual embed where i can just interact with it directly, edit that particular draw and set the end date"). The `mng_` prefix puts it behind the router's /manage admin lock and handlers/manage/index.js answers it; the box's own submit is /manage's.
+const drawEndCustomId = title => `mng_drawend_${key(title)}`.slice(0, 100);
+
+// The DM: a Components V2 card, one Section per draw with its Set End Date button.
+function reminderComponents(draws) {
+    const emojis = require('./emojiMap');
+    return [{
+        type: 17,
+        components: [
+            { type: 10, content: `### 🔔 Returning ${draws.length === 1 ? 'draw is' : 'draws are'} live with no end date` },
+            ...draws.map(d => ({
+                type: 9,
+                components: [{ type: 10, content: `**${d.title}**\n-# Returned <t:${Math.floor(new Date(d.date).getTime() / 1000)}:R>` }],
+                accessory: { type: 2, style: 1, label: 'Set End Date', custom_id: drawEndCustomId(d.title), emoji: emojis.parseEmoji(emojis.edit) }
+            })),
+            { type: 10, content: `-# Check the game for when ${draws.length === 1 ? 'it ends' : 'they end'}, then set it here. Until then /calendar can't show ${draws.length === 1 ? 'it' : 'them'} as finished.` }
+        ]
+    }];
+}
+
+// The returning draw a Set End Date button points at, by its title key, or null if it has since been removed.
+function drawForEndCustomId(seasonalDoc, customId) {
+    const wanted = customId.slice('mng_drawend_'.length);
+    return (seasonalDoc.returningDraws || []).find(d => drawEndCustomId(d.title) === customId || key(d.title).startsWith(wanted)) || null;
 }
 
 // Never throws: a failed DM is logged and retried on the next run, since nothing is marked reminded until the DM has gone.
@@ -40,7 +61,10 @@ async function runDrawEndReminders(client) {
         const due = drawsNeedingEndDate(doc);
         if (!due.length) return;
         const owner = await client.users.fetch(ALLOWED_ADMIN_ID);
-        await owner.send({ content: reminderText(due), allowedMentions: { parse: [] } });
+        const dm = await owner.createDM();
+        // Raw REST, the same way sendV2Payload sends a Components V2 body: discord.js's own send() does not pass V2 JSON through.
+        const { Routes } = require('discord.js');
+        await client.rest.post(Routes.channelMessages(dm.id), { body: { flags: 32768, allowed_mentions: { parse: [] }, components: reminderComponents(due) } });
         const current = new Set((doc.returningDraws || []).map(d => key(d.title)));
         const kept = (doc.drawEndReminders || []).filter(k => current.has(k));
         await SeasonalData.updateOne({ docType: 'global' }, { $set: { drawEndReminders: [...new Set([...kept, ...due.map(d => key(d.title))])] } });
@@ -50,4 +74,4 @@ async function runDrawEndReminders(client) {
     }
 }
 
-module.exports = { drawsNeedingEndDate, reminderText, runDrawEndReminders, REMIND_WINDOW_DAYS };
+module.exports = { drawsNeedingEndDate, reminderComponents, drawForEndCustomId, drawEndCustomId, runDrawEndReminders, REMIND_WINDOW_DAYS };

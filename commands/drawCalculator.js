@@ -1110,7 +1110,7 @@ function buildPriceDrawsModal(seasonDraws, region = 'region_10') {
         return shown.length ? { type: 18, label, description: 'Select any draws you want to calculate', component: { type: 3, custom_id: id, required: false, min_values: 0, max_values: Math.min(shown.length, MAX_LINES), options: shown.map(option) } } : null;
     };
     const draws = seasonDraws || [];
-    return { custom_id: encodeState('drawspicksave', {}), title: 'Price These Draws', components: [
+    return { custom_id: encodeState('drawspicksave', {}), title: 'Calculate Draws', components: [
         pick('newd', 'New Draws', draws.filter(d => d.kind === 'new')),
         pick('retd', 'Returning Draws', draws.filter(d => d.kind === 'returning')),
         { type: 18, label: 'CP Balance', description: 'Set CP you already own or leave it blank', component: { type: 4, custom_id: 'amount', style: 1, required: false, placeholder: 'e.g. 3,000 or 3k' } },

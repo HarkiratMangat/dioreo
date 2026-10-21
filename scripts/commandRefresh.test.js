@@ -153,7 +153,7 @@ t('/calendar: finished first by when they ended, then live by when they end, the
 });
 
 t('the owner is DM\'d once about a returning draw that went live in the last week with no end date (2026-10-21 14:39 EDT)', () => {
-    const { drawsNeedingEndDate, reminderText } = require('../utils/drawEndReminder');
+    const { drawsNeedingEndDate, reminderComponents, drawForEndCustomId } = require('../utils/drawEndReminder');
     const now = day(2026, 10, 21).getTime();
     const doc = {
         returningDraws: [
@@ -168,8 +168,11 @@ t('the owner is DM\'d once about a returning draw that went live in the last wee
         drawEndReminders: ['bloody seas draw']
     };
     assert.deepStrictEqual(drawsNeedingEndDate(doc, now).map(d => d.title), ['Thermal Core Draw']);
-    const text = reminderText(drawsNeedingEndDate(doc, now));
-    assert.ok(text.includes('**Thermal Core Draw**') && text.includes('/manage'), text);
+    const card = reminderComponents(drawsNeedingEndDate(doc, now));
+    const button = card[0].components.find(c => c.type === 9).accessory;
+    assert.strictEqual(button.label, 'Set End Date');
+    assert.ok(button.custom_id.startsWith('mng_drawend_') && button.custom_id.length <= 100, button.custom_id);
+    assert.strictEqual(drawForEndCustomId(doc, button.custom_id).title, 'Thermal Core Draw', 'the button finds its draw again');
 });
 
 if (failed) { console.log(`\n${failed} failed`); process.exit(1); }

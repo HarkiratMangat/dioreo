@@ -149,7 +149,7 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
             isNewPage
                 ? { type: 2, style: 2, label: "View Returning Draws", emoji: emojis.parseEmoji(emojis.returningDraws), custom_id: "page_returning_draws" }
                 : { type: 2, style: 2, label: "View New Draws", emoji: emojis.parseEmoji(emojis.newDraws), custom_id: "page_new_draws" },
-            ...(priced ? [{ type: 2, style: 1, label: 'Price These Draws', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('drawspick', {}) }] : [])
+            ...(priced ? [{ type: 2, style: 1, label: 'Calculate Draws', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('drawspick', {}) }] : [])
         ]
     });
 
