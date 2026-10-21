@@ -6,7 +6,7 @@
 //
 // ⚠️ A rotation (promoteDraft/startNew) is inverted by a FULL PRE-ROTATION SNAPSHOT via the internal `season.restoreSnapshot` op, never a diff -- a diff of a multi-field, multi-array rotation is not a restore. restoreSnapshot is symmetric (its own apply() snapshots what it's about to overwrite and its invert() returns another restoreSnapshot carrying that snapshot), so it stays revertible indefinitely without needing a second op type for "undo of an undo".
 const { registerEntity } = require('./index');
-const { splitTitleDate, parseAdminDate, parseBulkDrawList, parseBulkEvents } = require('../../utils/adminParser');
+const { splitTitleDate, parseAdminDate, parseAdminDateRange, parseBulkDrawList, parseBulkEvents } = require('../../utils/adminParser');
 const { resolveThumbnailsForDraws } = require('../../utils/bulkMerge');
 const { syncPatchEntryMetadata } = require('../../utils/patchNotesCache');
 const { cleanPatchTitle } = require('../../commands/patchnotes');
@@ -16,16 +16,20 @@ const { splitSeasonEmoji } = require('../../utils/seasonEmoji');
 const DOC = { docType: 'global' };
 
 // Shared by setTitlesDeadlines (live) and setDraftTitlesDeadlines (staged) -- each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"). A blank line leaves that title+date pair untouched; typing the literal word "TBD" sets the TBD flag and nulls the date (the L194 bug this guards against: a TBD typo silently becoming a real date).
+// A RANGE sets the start too ("Battle Pass, Aug 6 - Nov 17", 2026-10-21 10:17 EDT, for /season end's progress bar). A single date clears the start: the box pre-fills the range whenever a start is stored, so a submitted single date means it was deleted.
 function applyLine(current, line, label, skipped) {
     const { title, dateStr } = splitTitleDate(line || '');
-    const result = { title: current.title, end: current.end, endTBD: current.endTBD };
+    const result = { title: current.title, start: current.start, end: current.end, endTBD: current.endTBD };
     if (title) result.title = title;
     if (dateStr) {
-        if (dateStr.trim().toLowerCase() === 'tbd') {
-            result.end = null; result.endTBD = true;
+        const range = parseAdminDateRange(dateStr);
+        if (range) {
+            Object.assign(result, range);
+        } else if (dateStr.trim().toLowerCase() === 'tbd') {
+            result.end = null; result.endTBD = true; result.start = null;
         } else {
             const parsed = parseAdminDate(dateStr);
-            if (parsed) { result.end = parsed; result.endTBD = false; }
+            if (parsed) { result.end = parsed; result.endTBD = false; result.start = null; }
             else skipped.push(label);
         }
     }
@@ -36,11 +40,18 @@ function applyLine(current, line, label, skipped) {
 //
 // ⚠️ ADDITIVE, AND THE LINE PATH IS UNTOUCHED. Discord still sends lines and still behaves identically; a field payload simply takes precedence when one is present. Making the portal build "title | date" strings instead would have put a parser between a form and a field that already has the value, and would break on any title containing the separator.
 function applyFields(current, payload, prefix, line, label, skipped) {
-    const tKey = `${prefix}Title`, eKey = `${prefix}End`, bKey = `${prefix}EndTBD`;
-    const hasFields = payload && (payload[tKey] !== undefined || payload[eKey] !== undefined || payload[bKey] !== undefined);
+    const tKey = `${prefix}Title`, eKey = `${prefix}End`, bKey = `${prefix}EndTBD`, sKey = `${prefix}Start`;
+    const hasFields = payload && (payload[tKey] !== undefined || payload[eKey] !== undefined || payload[bKey] !== undefined || payload[sKey] !== undefined);
     if (!hasFields) return applyLine(current, line, label, skipped);
 
-    const out = { title: current.title, end: current.end, endTBD: current.endTBD };
+    const out = { title: current.title, start: current.start, end: current.end, endTBD: current.endTBD };
+    // The start date (2026-10-21 10:17 EDT) as its own field, for a form like the portal's. Blank clears it; an unparseable one is reported, as the end is.
+    if (payload[sKey] !== undefined) {
+        const raw = payload[sKey];
+        if (!raw) out.start = null;
+        else if (raw instanceof Date) out.start = raw;
+        else { const parsed = parseAdminDate(String(raw)); if (parsed) out.start = parsed; else skipped.push(`${label} start`); }
+    }
     if (payload[tKey] !== undefined) out.title = String(payload[tKey]).trim() || current.title;
     // TBD is resolved BEFORE the date, because they contradict each other and the toggle is the more explicit statement: a form that submits both is saying "no date yet", not "this date, and also no date".
     if (payload[bKey] !== undefined) { out.endTBD = Boolean(payload[bKey]); if (out.endTBD) out.end = null; }
@@ -79,6 +90,7 @@ registerEntity('season', {
             const prior = {
                 currentSeasonTitle: before.currentSeasonTitle, currentSeasonEmoji: before.currentSeasonEmoji || '', bpTitle: before.bpTitle, rankTitle: before.rankTitle, dmzTitle: before.dmzTitle,
                 bpEnd: before.bpEnd, rankEnd: before.rankEnd, dmzEnd: before.dmzEnd,
+                bpStart: before.bpStart || null, rankStart: before.rankStart || null, dmzStart: before.dmzStart || null,
                 bpEndTBD: before.bpEndTBD, rankEndTBD: before.rankEndTBD, dmzEndTBD: before.dmzEndTBD
             };
             // `currentSeasonTitle` beside `mainTitle` for the same reason as the lines: the portal's field is named after the schema, Discord's modal field is named after the sentence it reads as.
@@ -86,12 +98,13 @@ registerEntity('season', {
             const currentSeasonTitle = typed.title || before.currentSeasonTitle;
             const currentSeasonEmoji = typed.emoji;
             const skipped = [];
-            const bp = applyFields({ title: before.bpTitle, end: before.bpEnd, endTBD: before.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
-            const rank = applyFields({ title: before.rankTitle, end: before.rankEnd, endTBD: before.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
-            const dmz = applyFields({ title: before.dmzTitle, end: before.dmzEnd, endTBD: before.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
+            const bp = applyFields({ title: before.bpTitle, start: before.bpStart || null, end: before.bpEnd, endTBD: before.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
+            const rank = applyFields({ title: before.rankTitle, start: before.rankStart || null, end: before.rankEnd, endTBD: before.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
+            const dmz = applyFields({ title: before.dmzTitle, start: before.dmzStart || null, end: before.dmzEnd, endTBD: before.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
             const $set = {
                 currentSeasonTitle, currentSeasonEmoji, bpTitle: bp.title, rankTitle: rank.title, dmzTitle: dmz.title,
-                bpEnd: bp.end, rankEnd: rank.end, dmzEnd: dmz.end, bpEndTBD: bp.endTBD, rankEndTBD: rank.endTBD, dmzEndTBD: dmz.endTBD
+                bpEnd: bp.end, rankEnd: rank.end, dmzEnd: dmz.end, bpEndTBD: bp.endTBD, rankEndTBD: rank.endTBD, dmzEndTBD: dmz.endTBD,
+                bpStart: bp.start, rankStart: rank.start, dmzStart: dmz.start
             };
             await SeasonalData.updateOne(DOC, { $set }, { session });
             let patchPrior = null;
@@ -154,6 +167,7 @@ registerEntity('season', {
             const prior = {
                 currentSeasonTitle: before.currentSeasonTitle, currentSeasonEmoji: before.currentSeasonEmoji || '', bpTitle: before.bpTitle, rankTitle: before.rankTitle, dmzTitle: before.dmzTitle,
                 bpEnd: before.bpEnd, rankEnd: before.rankEnd, dmzEnd: before.dmzEnd,
+                bpStart: before.bpStart || null, rankStart: before.rankStart || null, dmzStart: before.dmzStart || null,
                 bpEndTBD: before.bpEndTBD, rankEndTBD: before.rankEndTBD, dmzEndTBD: before.dmzEndTBD,
                 newDraws: before.newDraws, returningDraws: before.returningDraws, calendar: before.calendar,
                 drawsBannerUrl: before.drawsBannerUrl, eventsBannerUrl: before.eventsBannerUrl, playlistsBannerUrl: before.playlistsBannerUrl
@@ -168,6 +182,8 @@ registerEntity('season', {
             if (draft.bpEndTBD) { $set.bpEnd = null; $set.bpEndTBD = true; } else if (draft.bpEnd) { $set.bpEnd = draft.bpEnd; $set.bpEndTBD = false; }
             if (draft.rankEndTBD) { $set.rankEnd = null; $set.rankEndTBD = true; } else if (draft.rankEnd) { $set.rankEnd = draft.rankEnd; $set.rankEndTBD = false; }
             if (draft.dmzEndTBD) { $set.dmzEnd = null; $set.dmzEndTBD = true; } else if (draft.dmzEnd) { $set.dmzEnd = draft.dmzEnd; $set.dmzEndTBD = false; }
+            // The starts go live with the draft, blank included: a new season never keeps the old one's start, or its bar would count from the wrong day.
+            $set.bpStart = draft.bpStart || null; $set.rankStart = draft.rankStart || null; $set.dmzStart = draft.dmzStart || null;
             $set.newDraws = draft.newDraws || [];
             $set.returningDraws = draft.returningDraws || [];
             $set.calendar = draft.calendar || [];
@@ -271,15 +287,16 @@ registerEntity('season', {
             const typed = readSeasonTitle(op.payload, draft.currentSeasonEmoji);
             const mainTitle = typed.title;
             const skipped = [];
-            const bp = applyFields({ title: draft.bpTitle || 'Battle Pass', end: draft.bpEnd, endTBD: draft.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
-            const rank = applyFields({ title: draft.rankTitle || 'Ranked Series', end: draft.rankEnd, endTBD: draft.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
-            const dmz = applyFields({ title: draft.dmzTitle || 'DMZ Season', end: draft.dmzEnd, endTBD: draft.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
+            const bp = applyFields({ title: draft.bpTitle || 'Battle Pass', start: draft.bpStart || null, end: draft.bpEnd, endTBD: draft.bpEndTBD }, op.payload, 'bp', op.payload.bpLine, 'Battle Pass', skipped);
+            const rank = applyFields({ title: draft.rankTitle || 'Ranked Series', start: draft.rankStart || null, end: draft.rankEnd, endTBD: draft.rankEndTBD }, op.payload, 'rank', op.payload.rankLine, 'Ranked', skipped);
+            const dmz = applyFields({ title: draft.dmzTitle || 'DMZ Season', start: draft.dmzStart || null, end: draft.dmzEnd, endTBD: draft.dmzEndTBD }, op.payload, 'dmz', op.payload.dmzLine, 'DMZ', skipped);
             const $set = {
                 'draft.active': true,
                 ...(mainTitle ? { 'draft.currentSeasonTitle': mainTitle, 'draft.currentSeasonEmoji': typed.emoji } : {}),
                 'draft.bpTitle': bp.title, 'draft.rankTitle': rank.title, 'draft.dmzTitle': dmz.title,
                 'draft.bpEnd': bp.end, 'draft.rankEnd': rank.end, 'draft.dmzEnd': dmz.end,
-                'draft.bpEndTBD': bp.endTBD, 'draft.rankEndTBD': rank.endTBD, 'draft.dmzEndTBD': dmz.endTBD
+                'draft.bpEndTBD': bp.endTBD, 'draft.rankEndTBD': rank.endTBD, 'draft.dmzEndTBD': dmz.endTBD,
+                'draft.bpStart': bp.start, 'draft.rankStart': rank.start, 'draft.dmzStart': dmz.start
             };
             await SeasonalData.updateOne(DOC, { $set }, { session });
             return {

@@ -58,6 +58,30 @@ function parseAdminDate(dateStr) {
     return new Date(Date.UTC(parsedResult.getUTCFullYear(), parsedResult.getUTCMonth(), parsedResult.getUTCDate(), 0, 0, 0, 0));
 }
 
+// A season line's date part as a RANGE ("Aug 6 - Nov 17", "August 6, 2026 to November 17, 2026"), each end normalised like parseAdminDate. A start with "TBD" as its end ("Aug 6 - TBD") gives endTBD. Null when the text is not a range that covers the whole string (2026-10-21 10:17 EDT, the season progress bar's start dates).
+function parseAdminDateRange(dateStr) {
+    const cleanStr = String(dateStr || '').trim();
+    if (!cleanStr) return null;
+    const utcDay = d => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
+    const tbd = cleanStr.match(/^(.*?)\s*(?:-|–|—|to)\s*tbd$/i);
+    if (tbd) {
+        const start = parseAdminDate(tbd[1]);
+        return start ? { start, end: null, endTBD: true } : null;
+    }
+    const r = chrono.parse(cleanStr, new Date(), { timezone: 0 })[0];
+    if (!r || !r.end || r.index !== 0 || r.text.trim().length < cleanStr.length) return null;
+    return { start: utcDay(r.start.date()), end: utcDay(r.end.date()), endTBD: false };
+}
+
+// True when the WHOLE string reads as a date or a date range, not merely contains one: chrono finds "November 17" inside "Part 2, November 17", which is a title, not a date.
+function isWholeDate(str) {
+    const s = String(str || '').trim();
+    if (!s) return false;
+    if (/^tbd$/i.test(s) || parseAdminDateRange(s)) return true;
+    const r = chrono.parse(s, new Date(), { timezone: 0 })[0];
+    return Boolean(r && r.index === 0 && r.text.trim().length >= s.length);
+}
+
 /**
  * Patch notes' own release date/time parser -- unlike parseAdminDate above (draws/calendar/season end deadlines, always date-only, always UTC-0), Harkirat actually wants a real release TIME here, and per his own stated habit (2026-07-27 08:02 EDT) the two fields carry different implied timezones: a bare date ("July 22") is still typed in UTC-0 (same convention as everywhere else), but the MOMENT he also types a time ("2026-07-22, 7:20 AM") that time is his own local clock, not UTC -- he's never in the habit of hand-converting to UTC before typing a patch-notes time (per his own stated habit, confirmed directly with him during this fix). Detecting which case applies uses the same `isCertain('hour')` chrono-components check timestampHelper.js's generateTimestamps() already relies on for the same "was a time actually typed, or just inferred" distinction.
  *
@@ -549,6 +573,12 @@ function splitTitleDate(line) {
     const trimmed = (line || '').trim();
     if (!trimmed) return { title: '', dateStr: '' };
 
+    // The FIRST comma whose remainder is wholly a date (2026-10-21 10:17 EDT). It split on the LAST comma, so the modal's own pre-fill ("Battle Pass, November 17, 2026") came back as the title "Battle Pass, November 17" and the date "2026", which does not parse: resubmitting the box untouched renamed every season and reported its date as not understood.
+    for (let i = trimmed.indexOf(','); i !== -1; i = trimmed.indexOf(',', i + 1)) {
+        const rest = trimmed.slice(i + 1).trim();
+        if (isWholeDate(rest)) return { title: trimmed.slice(0, i).trim(), dateStr: rest };
+    }
+    // No comma leads to a date: the old last-comma split, so a mistyped date is still reported as not understood rather than folded into the title.
     const lastComma = trimmed.lastIndexOf(',');
     if (lastComma === -1) return { title: trimmed, dateStr: '' };
 
@@ -603,4 +633,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
