@@ -51,7 +51,7 @@ function reminderComponents(draws, seasonalDoc = {}) {
     const pending = rows.filter(r => !r.row?.endDate).length;
     const plural = draws.length !== 1;
     const heading = pending
-        ? `### 🔔 ${pending === 1 ? 'A returning draw needs' : `${pending} returning draws need`} an end date`
+        ? `### ${emojis.notification} ${pending === 1 ? 'A returning draw needs' : `${pending} returning draws need`} an end date`
         : `### ${emojis.checkmark} End ${plural ? 'dates' : 'date'} saved`;
     const hint = pending
         ? `-# /calendar can't mark ${pending === 1 ? 'it' : 'them'} finished until then. Check the draw in-game for when it ends.`
