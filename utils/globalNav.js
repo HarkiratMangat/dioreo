@@ -19,7 +19,8 @@ function buildGlobalNavRow(activeCustomId, overrides = {}) {
             const isActive = !override && item.custom_id === activeCustomId;
             return {
                 type: 2,
-                style: isActive ? 1 : 2,
+                // An override may set its own style: /calendar's filtered view turns its own slot into a live blurple "Full Calendar" (2026-10-21 16:02 EDT).
+                style: resolved.style ?? (isActive ? 1 : 2),
                 label: resolved.label,
                 custom_id: resolved.custom_id,
                 ...(resolved.emoji ? { emoji: resolved.emoji } : {}),

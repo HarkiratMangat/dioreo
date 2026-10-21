@@ -180,6 +180,9 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     const noMatch = { ...doc, calendar: doc.calendar.filter(e => e.title === 'Over Event') };
     const emptyJson = JSON.stringify(calendar.buildContainer(noMatch, 1, undefined, false, calendar.filterMask('live')));
     assert.ok(/## [^"]*Special Events.*:Warn:.*Nothing on this page matches the filter/.test(emptyJson), emptyJson.slice(0, 600));
+    const navCalendar = (mode) => JSON.parse(json(1, mode)).find(c => c.type === 1 && c.components.some(b => b.custom_id === 'nav_calendar')).components.find(b => b.custom_id === 'nav_calendar');
+    assert.deepStrictEqual([navCalendar(calendar.filterMask('live')).label, navCalendar(calendar.filterMask('live')).style, !!navCalendar(calendar.filterMask('live')).disabled], ['Full Calendar', 1, false], 'filtered: a live blurple Full Calendar');
+    assert.deepStrictEqual([navCalendar(0).label, !!navCalendar(0).disabled], ['Calendar', true], 'unfiltered: the usual disabled Calendar');
     assert.ok(emptyJson.includes('or filter your view further.') && !emptyJson.includes('Tip:'), 'his hint, without the /settings tip');
 });
 

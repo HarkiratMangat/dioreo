@@ -262,7 +262,10 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         components: calendarComponents
     };
 
-    const globalNavigationRow = buildGlobalNavRow('nav_calendar');
+    // In a filtered view the footer's own Calendar slot becomes a live blurple "Full Calendar" that clears the filter (2026-10-21 16:02 EDT, Harkirat: "when within a filtered view, can the outside nav have it's \"calendar\" button in an active blue state and rephrased as \"Full Calendar\""). nav_calendar opens /calendar with no filter.
+    const globalNavigationRow = mask
+        ? buildGlobalNavRow('nav_calendar', { nav_calendar: { label: 'Full Calendar', custom_id: 'nav_calendar', style: 1 } })
+        : buildGlobalNavRow('nav_calendar');
 
     return withShareButton([containerPayload, globalNavigationRow], isEphemeral);
 }
