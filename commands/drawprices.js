@@ -490,12 +490,12 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                     { type: 10, content: filterSummary(pickedKeys) },
                     { type: 1, components: [
                         { type: 2, style: 2, label: 'Show All Draws', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: `price_subpage_${regionKey}_${pageOfJump(pickedKeys[0])}` },
-                        { type: 2, style: 2, label: 'Filter Again', emoji: emojis.parseEmoji(emojis.edit), custom_id: `price_filteropen_${regionKey}_${token}` }
+                        { type: 2, style: 2, label: 'Filter Again', emoji: emojis.parseEmoji(emojis.filter), custom_id: `price_filteropen_${regionKey}_${token}` }
                     ] }
                 ] : [{
                     type: 9,
                     components: [{ type: 10, content: filterSummary(pickedKeys) }],
-                    accessory: { type: 2, style: 2, label: 'Filter', custom_id: `price_filteropen_${regionKey}_${token}`, emoji: emojis.parseEmoji(emojis.edit) }
+                    accessory: { type: 2, style: 2, label: 'Filter', custom_id: `price_filteropen_${regionKey}_${token}`, emoji: emojis.parseEmoji(emojis.filter) }
                 }]),
                 // One-line footer (was two `-#` lines) per example_reformat.json. Updated 2026-08-07 for the 3rd region.
                 { type: 10, content: `-# Switch between viewing 10 CP, 20 CP, or 30 CP region prices. (Tip: check out ${mentionCommand(client, '/settings')})` },
