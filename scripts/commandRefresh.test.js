@@ -183,10 +183,16 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     const navCalendar = (mode) => JSON.parse(json(1, mode)).find(c => c.type === 1 && c.components.some(b => b.custom_id === 'nav_calendar')).components.find(b => b.custom_id === 'nav_calendar');
     assert.deepStrictEqual([navCalendar(calendar.filterMask('live')).label, navCalendar(calendar.filterMask('live')).style, !!navCalendar(calendar.filterMask('live')).disabled], ['Full Calendar', 1, false], 'filtered: a live blurple Full Calendar');
     assert.deepStrictEqual([navCalendar(0).label, !!navCalendar(0).disabled], ['Calendar', true], 'unfiltered: the usual disabled Calendar');
-    const hint = (mode) => json(1, mode).match(/-# Viewing [^"]+/)[0];
-    assert.strictEqual(hint(0), '-# Viewing **Draws**, **Events**, and **Playlists & Modes**');
-    assert.strictEqual(hint(calendar.filterMask('draws') | calendar.filterMask('events')), '-# Viewing **Draws** and **Events**');
-    assert.strictEqual(hint(calendar.filterMask('modes')), '-# Viewing **Playlists & Modes**');
+    // The pager names the page, so the "Viewing ..." hint is gone (2026-10-21 16:21 EDT).
+    assert.ok(json(1, 0).includes('"label":"Events · 2/3"') && !json(1, 0).includes('Viewing'));
+    // Ended entries fold to the 3 most recent only in a section of 5 or more (2026-10-21 16:34 EDT), and never once Past/Ended is picked.
+    const D = 864e5, ev = (title, s, e) => ({ title, category: 'event', date: new Date(now + s * D), endDate: new Date(now + e * D) });
+    const ended4 = [ev('E1', -30, -20), ev('E2', -25, -15), ev('E3', -14, -8), ev('E4', -9, -3)];
+    const text = (cal, mode = 0) => JSON.stringify(calendar.buildContainer({ ...doc, calendar: cal }, 1, undefined, false, mode));
+    assert.ok(!text(ended4).includes('more ended') && text(ended4).includes('E1'), '4 in the section: all listed');
+    const five = [...ended4, ev('Live1', -1, 2)];
+    assert.ok(text(five).includes('+1`** **more ended') && !text(five).includes('E1') && text(five).includes('E2'), '5 in the section: the oldest ended folds');
+    assert.ok(!text(five, calendar.filterMask('over')).includes('more ended'), 'Past/Ended picked: all of them');
     assert.ok(json(1, 0).includes('Filter the timeline...'));
 });
 

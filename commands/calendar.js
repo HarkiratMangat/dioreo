@@ -112,10 +112,26 @@ function sectionHeading(emoji, text) {
     return `## ${emoji} ${text}`;
 }
 
+// In the full timeline a section shows only its ENDED_SHOWN most recent ended entries, under one line counting the rest (2026-10-21 16:21 EDT, Harkirat's pick after "on a phone the whole screen is crossed-out modes before anything live"). Picking Past/Ended in the filter shows them all.
+const ENDED_SHOWN = 3;
+// Only once a section holds this many entries, live and upcoming included (2026-10-21 16:34 EDT, Harkirat: "if the total number of events is 5 or more ... if the total is 4 or less, than just keep it listed as is").
+const FOLD_FROM = 5;
+
 // One Text Display per section (heading + entries together) -- Discord renders visible vertical margin BETWEEN components, not between lines inside one, so keeping heading+content in a single component is what keeps a section visually tight instead of looking like two floating pieces.
-function buildSectionComponent(headingLine, entries, seasonalDoc) {
+function buildSectionComponent(headingLine, entries, seasonalDoc, collapseEnded = false) {
     if (entries.length === 0) return null;
-    let body = entries.map(e => buildEntryLine(e, seasonalDoc, Date.now())).join('\n');
+    const nowMs = Date.now();
+    let shown = entries, hiddenCount = 0;
+    if (collapseEnded && entries.length >= FOLD_FROM) {
+        // Entries are sorted finished-first, oldest finished at the top, so the earliest ones are the ones folded away.
+        const ended = entries.filter(e => entryState(e, seasonalDoc, nowMs).state === 'over');
+        hiddenCount = Math.max(0, ended.length - ENDED_SHOWN);
+        const hidden = new Set(ended.slice(0, hiddenCount));
+        shown = entries.filter(e => !hidden.has(e));
+    }
+    // Shaped like an entry (dot, bold line, small indented line) so it reads as part of the list; as one small line it wrapped and floated above it on a phone (2026-10-21 16:28 EDT, Harkirat: "Text looks odd at the top?").
+    const moreLine = hiddenCount ? [`${emojis.redDotGlow} **\`+${hiddenCount}\`** **more ended**\n-# \u2800\u2800 Pick **Past/Ended** in the filter to see ${hiddenCount === 1 ? 'it' : 'them'}`] : [];
+    let body = [...moreLine, ...shown.map(e => buildEntryLine(e, seasonalDoc, nowMs))].join('\n');
     if (body.length > SECTION_CHAR_BUDGET) {
         body = body.slice(0, SECTION_CHAR_BUDGET) + `\n-# …and more (too many entries to show at once).`;
     }
@@ -158,14 +174,6 @@ function filterMask(filterMode) {
 // The pages the pager walks under a mask, in order.
 const visiblePages = mask => [0, 1, 2].filter(p => !(mask & 56) || (mask & PAGE_BIT[p]));
 
-// "**Draws**", "**Draws** and **Events**", or "**Draws**, **Events**, and **Playlists & Modes**" for the pages kept. The third name is his wording for the hint (2026-10-21 16:15 EDT), shorter than the page's own heading.
-const PAGE_NAMES = ['Draws', 'Events', 'Playlists & Modes'];
-function viewingList(pages) {
-    const names = pages.map(p => `**${PAGE_NAMES[p]}**`);
-    if (names.length <= 2) return names.join(' and ');
-    return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
-}
-
 // The pager above the filter: it walks only the visible pages and loops. Direction rides in the id (`_p`/`_n`), so two pages still give two different ids (Discord rejects a message whose ids repeat).
 function buildCalendarPager(page, mask) {
     const pages = visiblePages(mask);
@@ -175,7 +183,9 @@ function buildCalendarPager(page, mask) {
         currentPage: idx,
         prevCustomId: `calpage_${pages[(idx - 1 + pages.length) % pages.length]}_m${mask}_p`,
         nextCustomId: `calpage_${pages[(idx + 1) % pages.length]}_m${mask}_n`,
-        indicatorCustomId: 'calpage_ind'
+        indicatorCustomId: 'calpage_ind',
+        // The page name beside the arrows (2026-10-21 16:21 EDT), which is why the "Viewing ..." hint is gone.
+        indicatorLabel: `${PAGE_DEFS[page].label} · ${idx + 1}/${pages.length}`
     });
 }
 
@@ -239,8 +249,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         // NEW/RETURNING DRAWS soft-split (notes follow-up, 2026-07-31 14:00 EDT) -- replaces the old single "Draws" heading entirely; each sub-heading carries its own matching emoji (emojiMap.js's existing newDraws/returningDraws icons, already used elsewhere in the bot for this exact New/Returning distinction).
         const newDrawEntries = drawEntries.filter(e => e.drawType === 'new');
         const returningDrawEntries = drawEntries.filter(e => e.drawType === 'returning');
-        const newSection = buildSectionComponent(sectionHeading(emojis.newDraws, 'New Draws'), newDrawEntries, seasonalDoc);
-        const returningSection = buildSectionComponent(sectionHeading(emojis.returningDraws, 'Returning Draws'), returningDrawEntries, seasonalDoc);
+        const newSection = buildSectionComponent(sectionHeading(emojis.newDraws, 'New Draws'), newDrawEntries, seasonalDoc, !states);
+        const returningSection = buildSectionComponent(sectionHeading(emojis.returningDraws, 'Returning Draws'), returningDrawEntries, seasonalDoc, !states);
         if (!newSection && !returningSection) {
             calendarComponents.push(emptyPage(sectionHeading(emojis.newDraws, 'Lucky Draws')));
         } else {
@@ -250,17 +260,16 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
             if (returningSection) calendarComponents.push(returningSection);
         }
     } else if (safePage === 1) {
-        const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Special Events'), eventEntries, seasonalDoc);
+        const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Special Events'), eventEntries, seasonalDoc, !states);
         calendarComponents.push(eventSection || emptyPage(sectionHeading(emojis.events, 'Special Events')));
     } else {
-        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists & Game Modes'), playlistEntries, seasonalDoc);
+        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists & Game Modes'), playlistEntries, seasonalDoc, !states);
         calendarComponents.push(playlistSection || emptyPage(sectionHeading(emojis.modes, 'Playlists & Game Modes')));
     }
 
     // PAGE NAV: divider -> hint -> pager -> filter (2026-10-21 15:32 EDT). One divider separates the content from the whole block, and the hint sits directly under the content (2026-07-31 16:55 EDT). The pager is left out when the filter keeps one page.
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
-    // Names the pages the pager walks (2026-10-21 16:06 EDT, Harkirat: "change the hint line to \"Viewing **Draws**, **Events**, and **Game Modes**\". with the hint changing depending on the filter, such as \"Viewing **Draws** and **Events**\" or \"Viewing **Game Modes**\"").
-    calendarComponents.push({ type: 10, content: `-# Viewing ${viewingList(pages)}` });
+    // No hint line since 2026-10-21 16:21 EDT: the pager names the page (Harkirat: "this removes the need for the \"viewing draws, events...\" hint line").
     const pager = buildCalendarPager(safePage, mask);
     if (pager) calendarComponents.push(pager);
     calendarComponents.push(buildFilterRow(safePage, mask));
