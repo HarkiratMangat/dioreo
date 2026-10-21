@@ -7,6 +7,7 @@
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleNavigationInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch. A bare `return interaction.reply(...)` can reject after the try has exited and escape the net. See .claude/rules/interaction-router.md.
 
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
 
 const OWNED_PREFIXES = ["nav_"];
@@ -34,7 +35,7 @@ async function route(interaction) {
             if (!targetCommand) {
                 // Awaited + wrapped in its own try/catch -- see the matching note above.
                 try {
-                    await interaction.followUp({ content: '❌ Target interface module is currently offline.', ephemeral: true });
+                    await interaction.followUp({ content: BOT_EMOJI.cross + ' Target interface module is currently offline.', ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of offline nav target (interaction likely expired):', notifyError);
                 }
@@ -60,7 +61,7 @@ async function route(interaction) {
                 console.error(`UI Navigation Routing Error for ${interaction.customId}:`, error);
                 // See the matching comment in the slash-command error handler above -- an unawaited `return interaction.followUp(...)` here can reject after this try/catch has already exited, escaping as an unhandled rejection that crashes the whole process instead of just failing this one nav click.
                 try {
-                    await interaction.followUp({ content: '❌ An error occurred while swapping the interface view.', ephemeral: true });
+                    await interaction.followUp({ content: BOT_EMOJI.cross + ' An error occurred while swapping the interface view.', ephemeral: true });
                 } catch (notifyError) {
                     console.error(`Failed to notify user of nav routing error for ${interaction.customId} (interaction likely expired):`, notifyError);
                 }

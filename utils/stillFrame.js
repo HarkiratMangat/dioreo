@@ -27,7 +27,8 @@ function countFrames(inputPath, format) {
         if (format) args.push('-f', format);
         args.push('-v', 'error', '-count_frames', '-select_streams', 'v:0',
             '-show_entries', 'stream=nb_read_frames', '-of', 'default=nk=1:nw=1', inputPath);
-        const proc = spawn('ffprobe', args);
+        // Timeouts on both children and the download (2026-10-20, v3 sweep): a hung ffprobe/ffmpeg or a stalled fetch held its promise, temp files and memory forever on a 1GB VM. A killed child exits with a null code, so ffprobe resolves null and ffmpeg rejects, the same paths as any other failure.
+        const proc = spawn('ffprobe', args, { timeout: 15000 });
         let out = '';
         proc.stdout.on('data', d => { out += d; });
         proc.on('close', code => {
@@ -40,7 +41,7 @@ function countFrames(inputPath, format) {
 
 // ⚠️ SPAN BUG FIXED (2026-08-11 01:45 EDT). The stride here used to be the literal constant 3 with a 9-tile grid, so this only ever sampled frames 0,3,...,24 -- the first 25 frames, no matter how long the animation was. The comment claimed it "spans the whole cycle"; that was only true for animations of 27 frames or fewer, and it silently shortchanged everything longer INCLUDING the 60-frame decoration this function was written for. Measured on a real 85-frame banner whose pale sky blooms into crimson flowers only after frame ~34: a single frame lost 83% of the image's peak chroma and THIS FUNCTION lost 84% -- i.e. the montage was no better than the single frame it replaced. Deriving the stride from the real frame count recovers the crimson (#A90824). Harkirat predicted this failure from the source GIF before it was measured, exactly as he did for the decoration's gold sparkle. Still deterministic: the frame count, stride and grid are all fixed functions of the input, with no sampling or randomness anywhere -- which "Refresh Colors" change-detection depends on.
 async function extractFrameMontage(sourceUrl, frames = MONTAGE_FRAMES) {
-    const res = await fetch(sourceUrl);
+    const res = await fetch(sourceUrl, { signal: AbortSignal.timeout(20000) });
     if (!res.ok) throw new Error(`Failed to download ${sourceUrl}: HTTP ${res.status}`);
     const buffer = Buffer.from(await res.arrayBuffer());
 
@@ -65,7 +66,7 @@ async function extractFrameMontage(sourceUrl, frames = MONTAGE_FRAMES) {
                 // ⚠️ SCALE BEFORE TILING, always. A 3x3 grid multiplies the source's own resolution NINEFOLD: measured 2026-08-11 01:50 EDT, a 999x427 animated banner tiled out to 2997x1281 = 3.8M pixels for Jimp to decode SYNCHRONOUSLY -- precisely the event-loop stall that produced the bot-wide 10062 "Unknown interaction" wave (see .claude/rules/accent-and-colors.md). This never bit before because the only caller was decoration, whose assets are ~160px square; it becomes a real hazard the moment banners go through here. k-means samples ~2500 pixels regardless of resolution, so capping each tile at 160px wide costs nothing in quality. `min` is escaped because an unescaped comma would be read as a filter separator, silently breaking the chain.
                 '-vf', `select='not(mod(n\\,${stride}))',scale=w='min(160\\,iw)':h=-1,tile=${cols}x${rows}`,
                 '-frames:v', '1', '-update', '1', outputPath);
-            const proc = spawn('ffmpeg', args);
+            const proc = spawn('ffmpeg', args, { timeout: 30000 });
             let stderr = '';
             proc.stderr.on('data', d => { stderr += d; });
             proc.on('close', code => code === 0 ? resolve() : reject(new Error(`ffmpeg exited ${code}: ${stderr.slice(-300)}`)));

@@ -108,9 +108,11 @@ async function getGcpAccessToken() {
 
     // 2. Try Local Mac gcloud Application Default Credentials (ADC)
     try {
+        // timeout (2026-10-20, v3 sweep): execSync blocks the whole event loop, so a hung gcloud would freeze every interaction on the VM, not just this /autobuild.
         const token = execSync('gcloud auth application-default print-access-token', {
             encoding: 'utf8',
-            stdio: ['ignore', 'pipe', 'ignore']
+            stdio: ['ignore', 'pipe', 'ignore'],
+            timeout: 10000
         });
         if (token && token.trim()) {
             return token.trim();

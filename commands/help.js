@@ -167,9 +167,9 @@ const CATEGORY_DEFS = [
             cmd('/timestamp', {
                 description: 'Convert almost any date or time — including natural language — into a Discord timestamp that displays correctly in everyone\'s own timezone',
                 options: [
-                    { name: 'datetime', required: true, desc: 'e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "19:30", "next monday"' },
+                    { name: 'datetime', required: true, desc: 'e.g. "tomorrow", "in 2 hours", "dec 25 at 9am", "8pm to 10pm", "19:30"' },
                     { name: 'timezone', required: false, desc: (client) => `Defaults to your saved ${mentionCommand(client, '/settings')} timezone` },
-                    { name: 'style', required: false, desc: 'Pick one format, or leave blank for all formats' },
+                    { name: 'style', required: false, desc: 'Short List, All Formats, or one format; blank uses your saved view' },
                     { name: 'view', required: false, desc: 'Embed or plain Text, one-off only' }
                 ]
             }),
@@ -326,9 +326,10 @@ function buildBotAdminBody(commands, client) {
             + `-# 🔹 \`[file]\` Limit to one changed file (default: everything the pull brought in)`);
     }
     if (has('/autobuild')) {
-        sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until it is confirmed\n`
+        sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save\n`
             + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
             + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
+            + `-# 🔹 \`[screenshot2]\` to \`[screenshot10]\` More screenshots, read as one batch with a review page per build\n`
             + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`MARKSMAN\` · \`SNIPER\` · \`SHOTGUN\` · \`SECONDARIES\` — looked up from the weapon, or asked for, if left blank\n`
             + `-# 🔹 \`[mode]\` \`MP\` · \`DMZ\` — read from the screenshot if left blank, and asked for when the screenshot can't tell\n`
             + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon in the same mode\n`

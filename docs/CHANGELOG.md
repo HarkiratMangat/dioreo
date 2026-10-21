@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.102.0 — 2026-10-20 00:15 EDT (#209) — the `/commands` page's six open items are settled, and the landing header gets a Commands button
+## Pre-Release v3.105.0 — 2026-10-20 00:15 EDT (#209) — the `/commands` page's six open items are settled, and the landing header gets a Commands button
 **`scripts/lib/commandCatalog.js`, `scripts/lib/commandsPage.js`, `scripts/lib/commandProse.js`, `scripts/lib/chronicle.js`, `scripts/buildLegalPages.js`, `commands/gunsmith.js`, `commands/calendar.js`, `scripts/commandCatalog.test.js`, `public/`.** The six items were filed as one collective deferred item on 2026-09-09 17:04 EDT; Harkirat, 2026-10-19 22:22 EDT: "let's start a fresh thread to handle all 6."
 
 - **The landing header holds Install and Commands, and GitHub is a text link in the footer nav.** Harkirat's layout, after three mocked placements, one restyle (2026-10-19 23:11 EDT) and a 13-point review (2026-10-20 10:00 EDT). `Commands` (`.cmdb`) wears the old GitHub capsule's look held open: a hairline pill, the label in mono small caps, the border warming and the cursor light following on hover, no mark inside, at Install's height (34px, 38px on a phone) and with Install's label. On the document pages it replaced the GitHub capsule in the bar and left the desktop switcher, so the switcher carries six tabs (nine inside `/changelog/`), its staging was re-measured, and the cursor light no longer stays green over a tab that is not there. GitHub is a footer link in a shared two-row footer nav (the documents, then Commands, GitHub, Install), on every page and in the landing's tray, where it replaces the "Appearance" label. At 320px the mascot is about 64px wide.
@@ -54,6 +54,45 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 - **The roadmap and the deferred list record Harkirat's v3 to-do sweep (2026-10-19 22:52 EDT).** "Actual local time" moved to the post-v3.0.0 queue and off the launch checklist; the router-split click-test is ticked, and its deferred-list entry is archived on his "yeah" of 2026-10-20 09:16 EDT (the five `/manage` short-lived Maps were in what he ran); the `/bot analytics` phone check is deferred and no longer a launch blocker; the `/admin` click-test stays open for a later day; the prod catalogue seed and slot fill are marked done; and the "not merged" notes that #207 made stale are corrected.
 - **Two `/timestamp` bugs found and filed, not fixed:** it ignores the timezone saved in `/settings`, and its relative phrases depend on the host's timezone (measured: "in 2 hours" is +6 h on a UTC host; the prod VM's timezone is not recorded).
 - **No new dependency, no schema change, nothing deployed.** The page ships with the v3 deploy.
+## Pre-Release v3.104.0 — 2026-10-20 19:57 EDT (#213 · `f5e50763`) — `/timestamp` reads your time zone right, gains Short List and ranges, and `/settings` gets Your Stats
+**From the timestamp-fix thread** (Harkirat, 2026-10-20 16:45 EDT). Two filed `/timestamp` bugs, then the tweaks he asked for while waiting.
+
+- **`/timestamp` uses the time zone saved in `/settings`** when its `timezone` option is blank, as `/help` already said. It always used Toronto.
+- **Relative times are right on any server.** chrono read its "now" in the host's clock, and the prod VM runs UTC, so "in 2 hours" came out +6 h for a Toronto user and "tomorrow" was a day late after 8 PM. A "now" pinned to the user's zone fixes `/timestamp`, Convert Times and patch-note release times; a test runs under UTC, Tokyo and Toronto.
+- **A new panel:** "Timestamp Codes", one row per format with its name as a label, the time and its code, so nothing wraps on a phone. **Short List** (the six most used) is the default for anyone who never picked a view; All Formats stays in the dropdown and the `style:` option.
+- **Ranges:** "8pm to 10pm" or "oct 24 to oct 27" shows each format as start – end with one code that copies both. Convert Times rows match the new style.
+- **`/settings`:** Member Since moves out of the avatar row, **Dioreo User Since** shows when you first ran a command yourself (existing users filled from their record's creation date), and a **Your Stats** page (button and `open:Stats`) shows commands run, go-to build, CP priced, busiest hour and streaks, with Reset.
+- **Privacy Policy 1.17 (pending):** new §2.1e for Your Stats; §0, §2.4b and §3 reworded.
+
+## Pre-Release v3.103.0 — 2026-10-20 18:15 EDT (#212 · `f8373419`) — the v3 sweep's fixes: thumbnails kept, boot failures restart, long draws and notes page safely
+**From the 2026-10-20 bug and housekeeping sweep.** Harkirat asked for every fix on one branch and one PR (2026-10-20 17:47 EDT). The full ranked report sits in the project files under `v3-sweep/`.
+
+- **Draw thumbnails in use are no longer deleted.** The daily cleanup compared Cloudinary's raw `secure_url` against stored URLs that carry `f_auto,q_auto/`, so nothing matched and every thumbnail past 45 days counted as unused. Both sides now go through `withDeliveryDefaults` (`selectExpiredThumbnails`), and the cleanup skips its run when the season document is missing instead of treating everything as unused.
+- **A failed boot exits, so systemd restarts it.** The public login is now awaited and caught; the process alerts and exits 1. Failures in a row back off (30 s × n, capped at 10 minutes) and only the first one pings, so an Atlas outage can't ping every few seconds (`utils/bootFailures.js`, a count under the OS temp dir that ready clears). A failed **Dioreo Admin** login is not fatal: it alerts and the public bot keeps running.
+- **Unnamed draw calculations expire in code.** MongoDB refuses a partial TTL index on `$exists: false`, so the index never existed. A daily prune now deletes unnamed baskets 30 days after creation, which is what PRIVACY §2.1d already says.
+- **`/draws` and `/patch` stay under Discord's 4,000-character text cap.** `/draws` pages by text length as well as by component count, and trims one oversized draw with a "…and N more" line. A very long patch-note Additional Info is cut at a line break with a note.
+- **Hotpatch sees `core/`.** It was missing from the scan list and the runtime pattern, so a `core/`-only commit reported nothing to patch, and a patch to `utils/announcementBannerCache.js` or `utils/calendarBannerCache.js` was allowed while `core/ops/*` kept the old code. Both are now refused. `utils/drawBasketStore.js` now needs a restart rather than a hotpatch, because the daily basket prune makes `bot/lifecycle.js` import it.
+- **Edits and bulk updates set a loadout's `lastUpdated`.** It never changed after creation.
+- **`/calendar view:Active` survives a page click**, and the empty-view hint no longer points at the removed `/settings` control.
+- **Re-pasting an existing build keeps its image and share code** when the block leaves out `Image:` or `Code:`. Before, they reset to the placeholder and blank (Harkirat's call, 2026-10-20 18:46 EDT: keep the old values). A new build still gets the defaults.
+- **Undo claims the change before applying it**, so a double click applies the inverse once, and a failed revert hands the claim back. The trade: a crash between the claim and the commit leaves that change marked undone without being reverted.
+- **Smaller:** Copy Code on a stale card replies instead of throwing · the large-analytics alert uses the real `warn` level · alerts read `GCP VM` unless `NODE_ENV=development` · analytics events record the hotpatched commit · timeouts on the `gcloud`, `ffprobe`, `ffmpeg` and image-fetch calls · a new user's first two commands no longer race on `UserPreference` · the hotpatch autocomplete awaits its responds.
+- **Dead code removed:** `isArmory` (a duplicate of `isArmoryKey`), `ARMORY_DEFAULT_SIZE`, `isDiscordCdnUrl`, and the `calfilter_*` branches nothing sends.
+- **Records:** stale rows closed in `docs/ROADMAP.md`'s launch checklist; three finished deferred entries moved to `docs/archive/resolved-list.md`.
+- **Tests:** `scripts/sweepFixes.test.js`, 17 checks, each failing on the old code.
+
+## Pre-Release v3.102.0 — 2026-10-20 15:04 EDT (#211 · `0c7b979f`) — `/autobuild` reads up to ten screenshots into one batch panel, and the guild install asks for text-command permissions
+**Harkirat's three launch extras.** He click-tested the bulk panel on the dev bot over several rounds and approved it 2026-10-20 14:58 EDT: "alright autobuild bulk is fine and done".
+
+- **Bulk `/autobuild`:** `screenshot` plus `screenshot2`–`screenshot10`, and the right-click (renamed **Autobuild Gunsmith**) can pick several images. One batch panel, a page per build: Save, Adjust, Discard, Save All / Discard All, Undo a discard, Open a saved loadout, Add more. The single-image path runs through the same panel (`utils/autobuildBulk.js`).
+- **Review card:** warnings first (catalogue gaps, a duplicate with its `/gunsmith` check line, a taken build label), then weapon, label, build, mode, badges, attachments with their slots, and the Gunsmith Code.
+- **Build labels:** the label is the build's name, numbered per weapon by default; a taken one is warned about before saving.
+- **The panel's timeout:** every batch idles out after **14 minutes**, renewed by any press, with a live `<t:…:R>` countdown, and greys out before Discord's 15-minute interaction-token limit.
+- **Adjust's Badges** is a multi-pick dropdown, with the Rank Mode icons.
+- **The bot's own status emoji** replace Unicode ⚠️ ❌ ✅ bot-wide, applied at send time (`emojiMap.glyphs`) and pinned by `scripts/botGlyphs.test.js`.
+- **Guild install permissions:** View Channels, Send Messages, Send Messages in Threads, Embed Links, Attach Files, Read Message History, Use External Emojis, Add Reactions (`274878286912`) in `utils/inviteLinks.js`. No code uses them yet; they are for v4's text commands, since a permission added later reaches only servers that re-authorize. Intents stay `Guilds`. The dev apps were switched by Harkirat; prod's is a launch-day step.
+- **NOTICE** credits Flaticon UIcons.
+- **`scripts/syncMissingDevEmojis.js`** also copies the by-name rank mode emojis to Dioreo Admin, and uploads the original file before any CDN rendition (the CDN copies had lost about a sixth of their frames).
 
 ## Pre-Release v3.101.0 — 2026-10-19 23:22 EDT (#210 · `8b16f533`) — the bulk cache spends no Cloudinary Admin calls on a fresh SKU
 **`scripts/bulkCacheCollectibles.js`.** Harkirat, 2026-10-19 23:18 EDT, choosing how to pace the prod run: "A."

@@ -3,6 +3,7 @@
 // ==========================================
 // ARCHITECTURE: Multi-page array rendering. Uses an internal pagination block (New vs Returning) combined with Global Tab Navigation.
 
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder } = require('discord.js');
 const SeasonalData = require('../models/SeasonalData');
 const UserPreference = require('../models/UserPreference');
@@ -23,6 +24,8 @@ const PRESET_ACCENT = 7032445; // Plum Fortune (#6B4E7D) — 2nd nav button (Dra
 //   container(1) + header(1) + divider(1) + CHUNK_SIZE*3(draws) + spacer(1) + subPageRow(1+3)
 //   + divider(1) + categoryRow(1+2) = 30, + globalNavRow(1+5) = 36 total — still under 40.
 const CHUNK_SIZE = 6;
+// 🔴 AND A SECOND CAP THE COUNT ABOVE NEVER SAW (2026-10-20, v3 sweep): Discord holds a message's Text Displays to 4,000 characters IN TOTAL (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED, probed 2026-10-16 -- .claude/rules/draw-prices.md; the calculator already budgets for it). Six draws fit the component cap at any size, but every item line carries a ~35-character custom emoji, so six draws of about nine items each pass 4,000 and the whole page fails to send. Pages now close at CHUNK_SIZE draws OR at this many characters of draw text, whichever comes first; the rest of the 4,000 is headroom for the title block. One draw that alone runs past it is trimmed with a "…and N more" line (buildDrawSections).
+const DRAW_TEXT_BUDGET = 3400;
 
 /**
  * Array Mapper: Converts raw database JSON into Discord V2 UI "Section Item Rows" (Type 9)
@@ -31,19 +34,26 @@ function buildDrawSections(drawsArray) {
     const sections = [];
     drawsArray.forEach(draw => {
         // Resolve emoji tiers and title casing
-        const itemsString = draw.items.map(item => {
+        const itemLines = draw.items.map(item => {
             // "-# comment" items (2026-07-30 22:24 EDT, adminParser.js's parseItemLine) are a free- text note, not a real tiered item -- render as plain Discord subtext with no tier emoji/bold, matching how the admin typed it in.
             if (item.tier === 'comment') return `-# ${item.name}`;
             const emoji = emojis[item.tier.toLowerCase()] || '🔹';
             // Split once and reuse, instead of re-splitting the same string up to 3 times per item.
             const nameParts = item.name.split(' - ');
             return `${emoji} **${nameParts[0]}**${nameParts.length > 1 ? ` - ${nameParts[1]}` : ''}`;
-        }).join('\n');
+        });
 
         const unixTime = Math.floor(new Date(draw.date).getTime() / 1000);
 
         // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here.
-        const textContent = `**__${draw.title}__**\n${itemsString}\n<t:${unixTime}:f> (<t:${unixTime}:R>)`;
+        const compose = (lines, hidden) => `**__${draw.title}__**\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}\n<t:${unixTime}:f> (<t:${unixTime}:R>)`;
+        // A single draw too long for one page on its own drops item lines from the end until it fits (see DRAW_TEXT_BUDGET).
+        let shown = itemLines;
+        let textContent = compose(shown, 0);
+        while (textContent.length > DRAW_TEXT_BUDGET && shown.length > 1) {
+            shown = shown.slice(0, -1);
+            textContent = compose(shown, itemLines.length - shown.length);
+        }
         if (draw.thumbnailUrl) {
             sections.push({
                 type: 9,
@@ -61,16 +71,40 @@ function buildDrawSections(drawsArray) {
     return sections;
 }
 
+// The characters one draw adds to a page's Text Displays (its section's text, "(no image provided)" line included).
+function drawTextLength(draw) {
+    return buildDrawSections([draw]).reduce((n, s) => n + (s.type === 10 ? s.content : s.components[0].content).length, 0);
+}
+
+// Splits a category's draws into pages that respect BOTH caps -- CHUNK_SIZE draws (components) and DRAW_TEXT_BUDGET characters (text). Greedy and deterministic, so a `subpage_<category>_<n>` id names the same page on every render of the same data.
+function paginateDraws(list) {
+    const pages = [];
+    let page = [], used = 0;
+    for (const draw of list) {
+        const len = drawTextLength(draw);
+        if (page.length && (page.length >= CHUNK_SIZE || used + len > DRAW_TEXT_BUDGET)) {
+            pages.push(page);
+            page = [];
+            used = 0;
+        }
+        page.push(draw);
+        used += len;
+    }
+    if (page.length) pages.push(page);
+    return pages.length ? pages : [[]];
+}
+
 function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PRESET_ACCENT, isEphemeral = false) {
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
     const isNewPage = page !== 'returning';
 
     const activeList = isNewPage ? seasonalDoc.newDraws : seasonalDoc.returningDraws;
 
-    // CHUNKING: Split the full list into safe-sized pages so we never exceed Discord's 40-component cap
-    const totalChunks = Math.max(1, Math.ceil(activeList.length / CHUNK_SIZE));
+    // CHUNKING: Split the full list into safe-sized pages so we never exceed Discord's 40-component cap or its 4,000-character text cap (paginateDraws above)
+    const pages = paginateDraws(activeList);
+    const totalChunks = pages.length;
     const safeSubPage = Math.min(Math.max(0, subPage), totalChunks - 1);
-    const chunk = activeList.slice(safeSubPage * CHUNK_SIZE, (safeSubPage + 1) * CHUNK_SIZE);
+    const chunk = pages[safeSubPage];
 
     // Two-line title (season title on top, command header below) — shared pattern, matches the calendar_update_ui.json redesign. See utils/titleBlock.js.
     const titleEmoji = isNewPage ? emojis.newDraws : emojis.returningDraws;
@@ -135,6 +169,9 @@ module.exports = {
     buildContainer,
     // Exported 2026-08-23 10:56 EDT so /bot analytics' change-detail panel can render a draw with the SAME code players see, instead of hand-describing its fields. Copying the body instead would let the two drift, and a panel that quietly stops matching the real card is worse than one that never tried.
     buildDrawSections,
+    // Exported for scripts/drawsTextBudget.test.js.
+    paginateDraws,
+    DRAW_TEXT_BUDGET,
 
     async execute(interaction, pageOverride = null, subPageOverride = 0) {
         const userId = interaction.user.id;
@@ -162,7 +199,7 @@ module.exports = {
 
         const seasonalDoc = await seasonalDocPromise;
         if (!seasonalDoc) {
-            return interaction.followUp({ content: '❌ The global seasonal database document has not been initialized yet.' });
+            return interaction.followUp({ content: BOT_EMOJI.cross + ' The global seasonal database document has not been initialized yet.' });
         }
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);

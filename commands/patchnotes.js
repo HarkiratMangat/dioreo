@@ -3,6 +3,7 @@
 // ==========================================
 // ARCHITECTURE: Subcommands (/patch notes). Leverages Discord's native V2 Media Carousel Component (Type 12) to create swipable image galleries.
 
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder } = require('discord.js');
 const SeasonalData = require('../models/SeasonalData');
 const UserPreference = require('../models/UserPreference');
@@ -135,6 +136,16 @@ function buildSearchModal() {
     };
 }
 
+// Discord holds one message's Text Displays to 4,000 characters in total (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED -- .claude/rules/draw-prices.md). The Additional Info box has no length limit and its b:/n: shorthand expands into ~35-character emojis, so a long one could stop /patch rendering that season at all (2026-10-20, v3 sweep). It is cut at a line break inside this budget, which leaves the rest of the 4,000 for the title, disclaimer and source lines.
+const INFO_TEXT_BUDGET = 3400;
+function clampInfoText(text) {
+    if (text.length <= INFO_TEXT_BUDGET) return text;
+    const NOTE = '\n-# …the rest of these notes is too long to show here.';
+    const room = INFO_TEXT_BUDGET - NOTE.length;
+    const cut = text.lastIndexOf('\n', room);
+    return text.slice(0, cut > 0 ? cut : room) + NOTE;
+}
+
 function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT, isEphemeral = false) {
     const newestFirst = seasonalDoc.patchNotes.slice().reverse();
     const recentPatches = newestFirst.slice(0, HISTORY_SHOWN);
@@ -163,7 +174,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
     if (hasInfo) {
         components.push(
             { type: 14, spacing: 2, divider: true },
-            { type: 10, content: `${formatAdditionalInfo(activePatch.description)}\n${SUBJECT_TO_CHANGE_DISCLAIMER}` }
+            { type: 10, content: `${clampInfoText(formatAdditionalInfo(activePatch.description))}\n${SUBJECT_TO_CHANGE_DISCLAIMER}` }
         );
     } else {
         components.push({ type: 10, content: SUBJECT_TO_CHANGE_DISCLAIMER });
@@ -215,6 +226,8 @@ module.exports = {
     cleanPatchTitle,
     displayTitle,
     formatAdditionalInfo,
+    clampInfoText,
+    INFO_TEXT_BUDGET,
     seasonEmoji,
     findPatchByQuery,
     buildSearchModal,
@@ -258,7 +271,7 @@ module.exports = {
         const seasonalDoc = await seasonalDocPromise;
 
         if (!seasonalDoc || !seasonalDoc.patchNotes || seasonalDoc.patchNotes.length === 0) {
-            return interaction.followUp({ content: '❌ No patch notes have been logged in the database yet.' });
+            return interaction.followUp({ content: BOT_EMOJI.cross + ' No patch notes have been logged in the database yet.' });
         }
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);

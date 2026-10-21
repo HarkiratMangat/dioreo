@@ -30,14 +30,15 @@ module.exports = {
         .addStringOption(option => option.setName('open').setDescription('Open straight on one part of your settings.').addChoices(
             { name: 'Visibility', value: 'visibility' },
             { name: 'Preferences', value: 'preferences' },
-            { name: 'Colors', value: 'colors' }
+            { name: 'Colors', value: 'colors' },
+            { name: 'Your Stats', value: 'stats' }
         ))
         // Added 2026-07-18 (v2 quick-wins batch) -- every other command already has this option; /settings was simply missed. Same name/description/priority pattern as everywhere else (explicit option > saved settingsVisibility preference > public default, see resolveEphemeral below) -- the in-panel Show/Hide toggle button still works exactly as before for changing the SAVED preference; this just lets one specific invocation override it.
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region dropdown + hex-code lines + footer pushed the single-page layout close to Discord's 40-component cap -- see the `set_page_` button handler in handlers/settings.js for how page navigation re-invokes this with a target page.
-    async execute(interaction, pageOverride = 0) {
+    async execute(interaction, pageOverride = 0, { resetArmed = false } = {}) {
         const userId = interaction.user.id;
         // `open:` only exists on a real slash invocation. Every re-render (the toggle/set/set_page handlers in handlers/settings.js) calls this with a button or select interaction and its own pageOverride, so the guard keeps those exactly as they were.
         const open = interaction.isChatInputCommand() ? interaction.options.getString('open') : null;
@@ -45,9 +46,11 @@ module.exports = {
         if (open === 'colors') {
             return require('./colors').execute(interaction, { prefsField: 'settingsVisibility' });
         }
+        // Page 2 is Your Stats (2026-10-20 18:36 EDT): the header's Your Stats button and `open:Stats` land there.
         const page = open === 'preferences' ? 1
             : open === 'visibility' ? 0
-            : Math.min(Math.max(pageOverride, 0), 1);
+            : open === 'stats' ? 2
+            : Math.min(Math.max(pageOverride, 0), 2);
 
         // 1. DATA SYNCHRONIZATION
         let prefs = await UserPreference.findOne({ discordId: userId });
@@ -104,6 +107,16 @@ module.exports = {
 
         const userCreatedAt = Math.floor(interaction.user.createdAt.getTime() / 1000);
 
+        // YOUR STATS (page 2): its own panel, tinted like the dashboard, with Back to Settings and Reset My Stats. Drawn by utils/statsPanel.js from utils/userStats.js's summary.
+        if (page === 2) {
+            const { loadStatsView } = require('../utils/userStats');
+            const { buildStatsComponents } = require('../utils/statsPanel');
+            const summary = await loadStatsView(prefs);
+            const statsComponents = buildStatsComponents({ userId, avatarUrl: userAvatarUrl, summary, firstCommandAt: prefs.firstCommandAt, resetArmed, titleEmoji: emojis.settings });
+            const statsPayload = withShareButton([{ type: 17, accent_color: panelColorHex, components: statsComponents }], isEphemeral);
+            return sendV2Payload(interaction, statsPayload, { allowedMentions: { users: [] } });
+        }
+
         // 4. BULLETPROOF STATE SYNCING
         const loadoutVis = (prefs.loadoutVisibility || 'public').toUpperCase();
         const seasonVis = (prefs.seasonalVisibility || 'public').toUpperCase();
@@ -112,11 +125,12 @@ module.exports = {
         const colorsVis = (prefs.colorsVisibility || 'public').toUpperCase();
         const calcVis = (prefs.calculatorVisibility || 'public').toUpperCase();
         const tz = prefs.timezone || 'America/Toronto';
-        const style = prefs.timestampStyle || 'all_formats';
+        const style = prefs.timestampStyle || 'short_list';
 
         // NOTE (redesigned during review): aligned these value keys to match the exact style options /timestamp itself already offers (fullDateTime/longDateTime/longDate/shortDate/ mediumTime/shortTime/shortDateTimeShort/shortDateTimeMedium/relative). Discord's docs (docs.discord.com/developers/reference#message-formatting-timestamp-styles) confirm 's' and 'S' ARE real native styles ("Short Date, Short Time" / "Short Date, Medium Time") — the older CLAUDE.md note claiming they don't exist was wrong/stale; /timestamp.js already renders them correctly, so they belong here too.
         const styleDisplayMap = {
             all_formats: 'All Formats',
+            short_list: 'Short List',
             fullDateTime: 'Full Date, Short Time (F)',
             longDateTime: 'Long Date, Short Time (f)',
             longDate: 'Long Date (D)',
@@ -130,6 +144,7 @@ module.exports = {
         // Canonical example text per style — shown as the dropdown option's description line
         const styleExampleMap = {
             all_formats: 'Shows every format together as a summary',
+            short_list: 'The 6 most used formats',
             fullDateTime: 'e.g. Tuesday, April 20, 2021 at 16:20',
             longDateTime: 'e.g. April 20, 2021 at 16:20',
             longDate: 'e.g. April 20, 2021',
@@ -154,10 +169,14 @@ module.exports = {
             type: 9,
             components: [{
                 type: 10,
-                content: `# ${emojis.settings} Settings Dashboard\n### <@${userId}> | \`${interaction.user.username}\`\n(\`${userId}\`)\n\n-# Member Since: \n-# <t:${userCreatedAt}:F> (<t:${userCreatedAt}:R>)`
+                content: `# ${emojis.settings} Settings Dashboard\n### <@${userId}> | \`${interaction.user.username}\`\n(\`${userId}\`)`
             }],
             accessory: { type: 11, media: { url: userAvatarUrl } }
         });
+        // Member Since sits OUTSIDE the avatar Section (Harkirat, 2026-10-20 17:29 EDT): a Section's text is squeezed into the column beside its thumbnail, so the long date wrapped onto three lines on a phone. Only the title, the mention and the id share the avatar's row now. Dioreo User Since (2026-10-20 17:53 EDT): the first command this user ran themselves (UserPreference.firstCommandAt). It is written after a command finishes, so on someone's very first /settings it is not there yet; a slash invocation is always the user's own, so "now" is right then. A button re-render with no date shows no line rather than a wrong one.
+        const firstCommandAt = prefs?.firstCommandAt || (interaction.isChatInputCommand?.() ? new Date() : null);
+        const dioreoSince = firstCommandAt ? Math.floor(new Date(firstCommandAt).getTime() / 1000) : null;
+        containerComponents.push({ type: 10, content: `-# Member Since: \n-# <t:${userCreatedAt}:F> (<t:${userCreatedAt}:R>)` + (dioreoSince ? `\n-# Dioreo User Since: \n-# <t:${dioreoSince}:F> (<t:${dioreoSince}:R>)` : '') });
 
         // AVATAR/BANNER DOWNLOAD LINKS: Link-style buttons (style 5) point straight at the full-quality (4096px) CDN asset, so a user can save their own avatar/banner without needing to open Discord's own profile settings. A Section's accessory slot (used above for the avatar thumbnail) only supports ONE thumbnail-or-button, not both, so these live in their own Action Row instead of being crammed into the header Section.
         const profileLinkButtons = [{ type: 2, style: 5, label: "Avatar", url: userAvatarFullUrl }];
@@ -167,6 +186,8 @@ module.exports = {
             type: 2, style: 1, label: "View Colors", custom_id: `colors_view|${userId}`,
             emoji: emojis.parseEmoji(emojis.eyedropper)
         });
+        // Your Stats (2026-10-20 18:36 EDT, Harkirat: "a button up where the settings dashboard section is"): page 2 of this same panel, via the ordinary set_page_ handler.
+        profileLinkButtons.push({ type: 2, style: 1, label: "Your Stats", custom_id: `set_page_2|${userId}` });
         containerComponents.push({ type: 1, components: profileLinkButtons });
 
         containerComponents.push({ type: 14, spacing: 2, divider: true });

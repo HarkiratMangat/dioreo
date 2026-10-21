@@ -1,3 +1,4 @@
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 // ==========================================
 // LOADOUTS — INTERACTION HANDLER
 // ==========================================
@@ -35,7 +36,7 @@ async function route(interaction) {
             if (!matchingBuilds || matchingBuilds.length === 0) {
                 // Shouldn't happen (the option came from a live DB query moments ago), but guard against a build being deleted via /manage in the gap between render and click rather than throwing on `matchingBuilds[0].category` below.
                 try {
-                    await interaction.followUp({ content: '❌ That weapon no longer has any builds saved.', ephemeral: true });
+                    await interaction.followUp({ content: BOT_EMOJI.cross + ' That weapon no longer has any builds saved.', ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of missing browse-target builds (interaction likely expired):', notifyError);
                 }
@@ -47,6 +48,7 @@ async function route(interaction) {
                 : await Loadout.find({ category: matchingBuilds[0].category, mode: 'MP' }).lean();
             const cardPayload = buildLoadoutCard(matchingBuilds, 0,
                 { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds });
+            require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, matchingBuilds[0]?._id); // Your Stats: a build the clicker opened
 
             const { sendV2Payload } = require('../utils/sendV2Payload');
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
@@ -75,7 +77,7 @@ async function route(interaction) {
                 const builds = await resolveScopeBuilds(scope);
                 if (!builds.length) {
                     try {
-                        await interaction.reply({ content: '❌ That build no longer exists.', ephemeral: true });
+                        await interaction.reply({ content: BOT_EMOJI.cross + ' That build no longer exists.', ephemeral: true });
                     } catch (replyError) {
                         console.error(`Failed to reply to gunsmith ${action} action (interaction likely expired):`, replyError);
                     }
@@ -83,9 +85,10 @@ async function route(interaction) {
                 }
                 const { weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndexRaw);
                 const build = weaponBuilds[indexWithinWeapon];
-                const replyContent = action === 'copy' ? (build.shareCode || build.buildName) : build.attachments.join('\n');
+                const replyContent = action === 'copy' ? (build.shareCode || build.buildName) : (build.attachments || []).join('\n');
                 try {
-                    await interaction.reply({ content: replyContent, ephemeral: true });
+                    // A build saved with no attachments has nothing to copy, and Discord rejects an empty `content` (2026-10-20, v3 sweep) -- say so rather than fail as "likely expired".
+                    await interaction.reply({ content: replyContent || (BOT_EMOJI.cross + ' This build has nothing to copy yet.'), ephemeral: true });
                 } catch (replyError) {
                     console.error(`Failed to reply to gunsmith ${action} action (interaction likely expired):`, replyError);
                 }
@@ -124,7 +127,7 @@ async function route(interaction) {
             // Guard BEFORE the modulo/index -- mirrors the gsb~ browse branch's own guard below (v3-pre-release review, finding #6). /manage can purge a weapon's builds between render and click: `(cur ± 1) % matchingBuilds.length` is NaN on an empty array, and matchingBuilds[newIndex] is undefined for copy/copyatt too -- every branch past this point (category lookup, shareCode, attachments) would throw on an already-acked interaction.
             if (!matchingBuilds.length) {
                 try {
-                    await interaction.reply({ content: '❌ That build no longer exists.', ephemeral: true });
+                    await interaction.reply({ content: BOT_EMOJI.cross + ' That build no longer exists.', ephemeral: true });
                 } catch (replyError) {
                     console.error(`Failed to notify user of an empty ${mode} build list (interaction likely expired):`, replyError);
                 }
@@ -138,10 +141,19 @@ async function route(interaction) {
             if (action === 'copy' || action === 'copyatt') {
                 // Awaited + wrapped in its own try/catch -- see the matching note above. No further fallback reply attempt on failure here (unlike the error-fallback sites): this IS the terminal action, and if the interaction token already failed once, a second reply attempt on the same token would fail too.
                 const build = matchingBuilds[newIndex];
+                // A card older than the list it indexes (a build deleted after render) points past the end, and a build saved with no attachments has nothing to copy -- Discord rejects an empty `content`. Both used to throw or fail as "likely expired" with no word to the user (2026-10-20, v3 sweep).
+                const copyText = !build ? '' : action === 'copy' ? (build.shareCode || build.buildName) : (build.attachments || []).join('\n');
+                if (!copyText) {
+                    try {
+                        await interaction.reply({ content: BOT_EMOJI.cross + (build ? ' This build has nothing to copy yet.' : ' That build no longer exists.'), ephemeral: true });
+                    } catch (replyError) {
+                        console.error(`Failed to notify user of an empty ${action} (interaction likely expired):`, replyError);
+                    }
+                    return;
+                }
                 // Prefer the real in-game Gunsmith code (shareCode) if this loadout has one, falling back to buildName for loadouts added via /manage (which never collected a real code) — see models/Loadout.js for why these are two separate fields. "Copy Attachments" is the plain list instead, one per line, no bullets/backticks/ formatting -- unlike the card's own "### Attachments" display, this is meant to be pasted straight into Gunsmith.
-                const replyContent = action === 'copy' ? (build.shareCode || build.buildName) : build.attachments.join('\n');
                 try {
-                    await interaction.reply({ content: replyContent, ephemeral: true });
+                    await interaction.reply({ content: copyText, ephemeral: true });
                 } catch (replyError) {
                     console.error(`Failed to reply to loadout ${action} action (interaction likely expired):`, replyError);
                 }
@@ -160,6 +172,7 @@ async function route(interaction) {
                 : await Loadout.find({ category: matchingBuilds[0].category, mode: 'MP' }).lean();
             const cardPayload = buildLoadoutCard(matchingBuilds, newIndex,
                 { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds });
+            require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, matchingBuilds[newIndex]?._id); // Your Stats: a build the clicker opened
 
             const { sendV2Payload } = require('../utils/sendV2Payload');
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });

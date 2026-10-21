@@ -23,7 +23,8 @@ async function route(interaction) {
 
             // Split out parameters safely using the pipe (|) delimiter so timezones like Asia/Hong_Kong don't fracture
             const parts = interaction.customId.split('|');
-            const unix = parts[1];
+            // `unix~endUnix` for a range (2026-10-20 19:14 EDT), plain `unix` otherwise.
+            const [unix, endUnix] = parts[1].split('~');
             const tz = parts[2];
             const originalQueryText = parts.slice(3).join('|');
             const selectedStyle = interaction.values[0];
@@ -31,17 +32,17 @@ async function route(interaction) {
             const timestampCommand = interaction.client.commands.get('timestamp');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
 
-            // Resolve the same accent color the initial render would have used (2026-07-12) -- fixed teal unless the user's SAVED default style (prefs.timestampStyle) isn't 'all_formats', same rule timestamp.js's own execute() applies. Computed here since overrideState skips the normal option-resolution logic entirely.
+            // Resolve the same accent color the initial render would have used (2026-07-12) -- fixed teal unless the user's SAVED default style (prefs.timestampStyle) is a single format rather than one of the two overviews (OVERVIEW_STYLES), same rule timestamp.js's own execute() applies. Computed here since overrideState skips the normal option-resolution logic entirely.
             const UserPreference = require('../models/UserPreference');
             const { getAccentColorForCommand } = require('../utils/accentColor');
             const tsPrefs = await UserPreference.findOne({ discordId: interaction.user.id });
-            const usesPersonalizedAccent = tsPrefs?.timestampStyle && tsPrefs.timestampStyle !== 'all_formats';
+            const usesPersonalizedAccent = Boolean(tsPrefs?.timestampStyle) && !timestampCommand.OVERVIEW_STYLES.includes(tsPrefs.timestampStyle);
             const accentColor = usesPersonalizedAccent
                 ? await getAccentColorForCommand(interaction, tsPrefs, timestampCommand.PRESET_ACCENT)
                 : timestampCommand.PRESET_ACCENT;
 
             return await timestampCommand.execute(syntheticInteraction, {
-                unix, tz, queryInput: originalQueryText,
+                unix, endUnix: endUnix || null, tz, queryInput: originalQueryText,
                 style: selectedStyle === 'all_formats' ? null : selectedStyle,
                 // Preserve whether the message being edited was ephemeral — Discord doesn't let an edit change a message's ephemeral state either way, but timestamp.js still needs this to know whether to keep showing the "Share Publicly" button after a style switch (it otherwise has no other way to know, since overrideState skips the normal ephemeral-resolution logic entirely).
                 ephemeral: Boolean(interaction.message.flags?.bitfield & 64),

@@ -1,3 +1,4 @@
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 // ==========================================
 // BOT — INTERACTION HANDLER
 // ==========================================
@@ -104,7 +105,7 @@ async function route(interaction) {
         const { getChange } = require('../utils/changeStore');
         const { checkRevert, can } = require('../utils/adminAccess');
         const row = await getChange(changeId);
-        if (!row) return await interaction.reply({ content: '❌ That change no longer exists.', ephemeral: true });
+        if (!row) return await interaction.reply({ content: BOT_EMOJI.cross + ' That change no longer exists.', ephemeral: true });
         // Revert needs the Undo tier (core/permissions.js's UNDO_TIER, Destructive) on the change's OWN page, plus the Changes page the button sits on. core/changeset.js's commitSet re-runs the same checkRevert, so this early check only exists to answer before deferring.
         const gate = await checkRevert(interaction.user.id, row);
         if (!gate.ok || !(await can(interaction.user.id, 'bot.changes'))) {
@@ -114,7 +115,7 @@ async function route(interaction) {
         const { revertChange } = require('../core/revert');
         const result = await revertChange(changeId, { actorId: interaction.user.id });
         if (!result.ok) {
-            return await interaction.followUp({ content: `❌ ${result.reason}` });
+            return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${result.reason}` });
         }
         // Matches handleUndo's own pattern (handlers/manage/shared.js) -- a plain confirmation followUp, no re-render. The interaction is already acknowledged via deferReply/followUp above; deferUpdate() (what renderAnalyticsPage needs to refresh the panel in place) cannot be called on an interaction a second time. Re-opening the Changes page shows the update.
         return await interaction.followUp({ content: `↩️ **Reverted** \`${changeId}\`.` });
@@ -139,7 +140,7 @@ async function route(interaction) {
         const AdminUser = require('../models/AdminUser');
         const doc = await AdminUser.findOne({ discordId }).lean();
         if (!doc) {
-            return interaction.reply({ content: '❌ That admin no longer exists (they may have just been revoked).', ephemeral: true });
+            return interaction.reply({ content: BOT_EMOJI.cross + ' That admin no longer exists (they may have just been revoked).', ephemeral: true });
         }
         const { buildAdminEditPermissionsModal } = require('../commands/bot');
         return interaction.showModal(buildAdminEditPermissionsModal(doc));
@@ -153,7 +154,7 @@ async function route(interaction) {
         }
         const discordId = customId.replace('bot_admin_revoke_', '');
         return interaction.reply({
-            content: `⚠️ **Revoke admin access from <@${discordId}>?** This cannot be undone (they can always be re-granted).`,
+            content: `${BOT_EMOJI.warn} **Revoke admin access from <@${discordId}>?** This cannot be undone (they can always be re-granted).`,
             components: [{
                 type: 1, components: [
                     { type: 2, style: 4, label: 'Yes, Revoke', custom_id: `bot_admin_revokeconfirm_${discordId}` },
@@ -179,7 +180,7 @@ async function route(interaction) {
         invalidateAdminCache();
         recordChange({ actorId: interaction.user.id, page: 'access', action: 'revoke', model: 'AdminUser', target: discordId, summary: `Revoked admin access from <@${discordId}>` });
         try {
-            await respondText(interaction, `✅ Revoked admin access from <@${discordId}>.`);
+            await respondText(interaction, `${BOT_EMOJI.checkmark} Revoked admin access from <@${discordId}>.`);
         } catch (notifyError) {
             console.error('Failed to confirm bot-access revoke (interaction likely expired):', notifyError);
         }
@@ -213,11 +214,11 @@ async function route(interaction) {
         const note = interaction.fields.getTextInputValue('note')?.trim() || '';
         const discordId = rawId.replace(/[<@!>]/g, '');
         if (!/^\d{17,20}$/.test(discordId)) {
-            return interaction.reply({ content: `❌ "${rawId}" doesn't look like a valid Discord user ID or mention.`, ephemeral: true });
+            return interaction.reply({ content: `${BOT_EMOJI.cross} "${rawId}" doesn't look like a valid Discord user ID or mention.`, ephemeral: true });
         }
         const parsed = parseGrantsInput(interaction.fields.getTextInputValue('permissions'));
         if (!parsed.ok) {
-            return interaction.reply({ content: `❌ ${parsed.error}`, ephemeral: true });
+            return interaction.reply({ content: `${BOT_EMOJI.cross} ${parsed.error}`, ephemeral: true });
         }
         const { grants } = parsed;
         await interaction.deferReply({ ephemeral: true });
@@ -232,7 +233,7 @@ async function route(interaction) {
         invalidateAdminCache();
         recordChange({ actorId: interaction.user.id, page: 'access', action: 'grant', model: 'AdminUser', target: discordId, summary: `Granted admin access to <@${discordId}> — ${formatGrants(grants)}` });
         // editReply, not followUp (v3-pre-release review, finding #7) -- followUp posts a NEW message (leaving the deferReply({ephemeral:true}) placeholder hanging forever) and, with no ephemeral flag of its own, lands publicly -- disclosing who holds bot admin and at what scope to the whole channel.
-        return interaction.editReply({ content: `✅ Granted admin access to <@${discordId}> — ${formatGrants(grants)}.${note ? ` (${note})` : ''}` });
+        return interaction.editReply({ content: `${BOT_EMOJI.checkmark} Granted admin access to <@${discordId}> — ${formatGrants(grants)}.${note ? ` (${note})` : ''}` });
     }
 
     if (interaction.isModalSubmit() && customId.startsWith('bot_adminmodal_editperms_')) {
@@ -244,7 +245,7 @@ async function route(interaction) {
         const discordId = customId.replace('bot_adminmodal_editperms_', '');
         const parsed = parseGrantsInput(interaction.fields.getTextInputValue('permissions'));
         if (!parsed.ok) {
-            return interaction.reply({ content: `❌ ${parsed.error}`, ephemeral: true });
+            return interaction.reply({ content: `${BOT_EMOJI.cross} ${parsed.error}`, ephemeral: true });
         }
         const { grants } = parsed;
         await interaction.deferReply({ ephemeral: true });
@@ -252,11 +253,11 @@ async function route(interaction) {
         const { recordChange } = require('../utils/changeStore');
         const updated = await AdminUser.findOneAndUpdate({ discordId }, { $set: { grants, permissions: [] } }, { new: true });
         if (!updated) {
-            return interaction.editReply({ content: '❌ That admin no longer exists (they may have just been revoked).' });
+            return interaction.editReply({ content: BOT_EMOJI.cross + ' That admin no longer exists (they may have just been revoked).' });
         }
         invalidateAdminCache();
         recordChange({ actorId: interaction.user.id, page: 'access', action: 'edit', model: 'AdminUser', target: discordId, summary: `Updated <@${discordId}>'s permissions — ${formatGrants(grants)}` });
-        return interaction.editReply({ content: `✅ Updated <@${discordId}>'s permissions — ${formatGrants(grants)}.` });
+        return interaction.editReply({ content: `${BOT_EMOJI.checkmark} Updated <@${discordId}>'s permissions — ${formatGrants(grants)}.` });
     }
 }
 

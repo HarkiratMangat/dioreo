@@ -9,6 +9,7 @@
 //
 // ⚠️ GATED HERE, NOT IN THE ROUTER'S ADMIN LOCK: every click checks the Patch Notes page itself (per-click, like utils/manageActions.js's resolveAction), which is stricter than the lock's 'manage' token. The lock's prefix list must equal what handlers/manage/, /autobuild and /bot declare (scripts/handlerRouting.test.js check 10), so `ptn_` stays out of it.
 
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { canDo, denyDo } = require('../utils/adminAccess');
 const { mergeImages, mergeInfo } = require('../utils/patchNoteSource');
 const { formatReleaseDateTime } = require('../utils/adminParser');
@@ -63,7 +64,7 @@ async function route(interaction) {
     // ADD / REPLACE -- `ptn_add|{key}|{id}`, `ptn_replace|{key}|{id}`. The Edit Season box on that season, its own fields kept.
     if (interaction.isButton() && (interaction.customId.startsWith('ptn_add|') || interaction.customId.startsWith('ptn_replace|'))) {
         const entry = seasonalDoc?.patchNotes?.find(p => String(p._id) === seasonId);
-        if (!entry) return await notify(interaction, '❌ That season no longer exists. Right-click the message again to pick another.');
+        if (!entry) return await notify(interaction, BOT_EMOJI.cross + ' That season no longer exists. Right-click the message again to pick another.');
         const { images } = mergeImages(entry.images, source.images, interaction.customId.startsWith('ptn_add|') ? 'add' : 'replace');
         return await interaction.showModal(manageCommand.buildPatchEditSeasonModal(entry, prefs?.timezone, {
             images,

@@ -14,7 +14,8 @@
 // 🔴 NO RAW DISCORD USER ID EVER REACHES A DOCUMENT. hashUserId() from utils/requestContext.js is the only way a user identifier enters one, and buildEventDocument() additionally SCRUBS the finished document against the raw id before it is buffered -- see the comment on that function for why a schema review is not enough to catch the realistic regression.
 
 const { getContext } = require('./requestContext');
-const { VERSION, COMMIT } = require('./logger');
+// currentCommit(), never the COMMIT constant (2026-10-20, v3 sweep): COMMIT is the boot commit, copied at require time, so after a hotpatch every event kept reporting the pre-patch code. logger.noteHotpatch() keeps currentCommit() true. BootRecord keeps COMMIT on purpose: a boot row describes the boot.
+const { VERSION, COMMIT, currentCommit } = require('./logger');
 
 // --- Tunables. All of these are cheap to change and none is load-bearing on correctness. ---
 const FLUSH_INTERVAL_MS = 15000;   // idle flush; the buffer also flushes at FLUSH_AT and on error
@@ -152,7 +153,7 @@ function buildEventDocument(interaction, ctx, extra = {}, rawUserId = null) {
         detail: clampDetail(extra.detail),
         search: extra.search || undefined,
         version: VERSION,
-        commit: COMMIT,
+        commit: currentCommit(),
         host: HOST,
         createdAt: new Date(),
     };
@@ -195,7 +196,8 @@ async function checkSize(AnalyticsEvent) {
     sendAlert(
         'Analytics collection is large',
         `The event collection holds ~${n.toLocaleString()} documents. Atlas M0 caps at 512 MB total. Roll up and prune, or upgrade the tier — do not let writes start failing silently.`,
-        'warning',
+        // 'warn', not 'warning' (fixed 2026-10-20, v3 sweep): the levels are info · caution · warn · error, and an unknown one rendered red, never pinged, and was left out of the alert summary's counts.
+        'warn',
     );
 }
 
@@ -380,7 +382,7 @@ function closeSession(key) {
         detail: undefined,
         search: { term: s.term, field: s.field, keystrokes: s.keystrokes, results: s.results, picked: Boolean(s.picked) },
         version: VERSION,
-        commit: COMMIT,
+        commit: currentCommit(),
         host: HOST,
         createdAt: new Date(),
     });
@@ -477,7 +479,7 @@ function recordRenderTiming(name, durationMs, detail = null) {
             userHash: null, guildId: null, context: null, installType: null, isAdmin: false,
             command: name, subcommand: null, entry: 'background', customIdPrefix: null,
             outcome: 'ok', ackMs: null, durationMs: Math.round(durationMs) || 0,
-            detail: clampDetail(detail), version: VERSION, commit: COMMIT, host: HOST,
+            detail: clampDetail(detail), version: VERSION, commit: currentCommit(), host: HOST,
             createdAt: new Date(),
         });
     } catch { /* never */ }

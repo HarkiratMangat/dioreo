@@ -272,6 +272,8 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-19 21:36 EDT — Renaming a command is a grep with a history problem: /gunsmiths becomes /gunsmith (v3.98.0-pre)
 - 2026-10-19 22:12 EDT — seven dead helpers deleted, launch checks folded in (v3.99.0)
 - 2026-10-20 00:09 EDT — The bulk cache stops spending Cloudinary Admin calls (v3.101.0)
+- 2026-10-20 15:04 EDT — Bulk /autobuild: one batch panel for up to ten screenshots (v3.102.0-pre)
+- 2026-10-20 19:57 EDT — /timestamp reads your time zone right, and Your Stats arrives (v3.104.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4629,6 +4631,26 @@ The first prod run of the nameplate and decoration bulk cache, on Harkirat's go 
 The first fix was to pace the run: `--limit 200` an hour across five windows. Harkirat asked why it needed 2,000 calls at all, and that was the better question. Neither call was necessary. Every variant posted to a cache channel already gets a row in the Mongo asset index, so no row means never posted, and Cloudinary need not be asked. And if the variant is posted before it is uploaded, the Discord url can travel in the upload's own `context`, which goes through the Upload API that the Admin limit does not count. After the restructure a fresh SKU costs nothing. A dev run made while the hourly limit was still spent cached four SKUs with no errors, which proved the point better than any count. The 979 remaining prod SKUs then cached in one run, 23:36 to 00:00 EDT, with none failed.
 
 One more lesson came at the end. The `--repair-context` run that fixed the sample's seven checked every cached SKU to find them, 986 lookups again, and spent the next hour's budget. It is capped at 25 a run now. The general rule: before any prod run against Cloudinary, count the Admin calls it will make, because a cheap-looking dry run or repair is exactly what uses the budget up.
+
+## 2026-10-20 15:04 EDT — Bulk /autobuild: one batch panel for up to ten screenshots (v3.102.0-pre)
+
+Harkirat asked for three launch extras: credit the UIcons set in NOTICE, let `/autobuild` take several screenshots at once, and have the guild install ask for the permissions v4's text commands will need. The first and last were small. The second became one batch panel for up to ten builds, shaped by several rounds of his click-tests on the dev bot.
+
+Two lessons came out of those rounds. The first was his: "dont patch the instance. figure out the class!" The Unicode ⚠️ ❌ ✅ kept reappearing one string at a time, so the fix became a send-time helper and a bot-wide test, not another string edit. The same rule applied to the review card, which ended up as one surface shared by every path, and to the missing Rank Mode icons on the admin app, which turned out to be every by-name emoji the copy script had never known about.
+
+The second was a platform limit. The batch panel died at 14 minutes even after a 30-minute timer was set, because an interaction token lasts 15 minutes and an ephemeral message can only be edited through one. So every batch now idles out at 14 minutes, renewed by any press, with a live countdown, and greys out while the token still works.
+
+One last correction, also his: when the real emoji files are on disk, upload those. The script had copied the dev bot's CDN versions, which had lost about a sixth of their frames, while the originals went up untouched and matched prod.
+
+## 2026-10-20 19:57 EDT — /timestamp reads your time zone right, and Your Stats arrives (v3.104.0-pre)
+
+Harkirat asked for the two filed `/timestamp` bugs to be fixed in parallel with the website PR, and kept adding while it waited.
+
+**The bugs.** `/timestamp` fetched the saved preference a few lines after deciding the zone and never read it. The relative-phrase bug was subtler: chrono reads a plain `Date` reference in the host's local fields, so `dayjs().tz(zone).toDate()` (the real instant again) made every relative phrase depend on the server's clock. A read-only `timedatectl` showed the prod VM is `Etc/UTC`, so prod had it live. The fix gives chrono an `{instant, timezone}` reference and rebuilds each parsed point with `dayjs.tz`, which also fixed Convert Times and patch-note release times. The test runs under three host zones through `tzIndependence`, and the old logic fails it.
+
+**The tweaks.** He designed the new panel by editing a mock-up posted from the dev bot in #testing-spam, and it took three rounds to get his intent: labels per row, not per group. Short List became the default view. Ranges came out of asking what the date reader could already do. "Dioreo User Since" and Your Stats came from a side question about what we track; the cost was the Privacy Policy, whose "never applied back to an individual" promises had to be rewritten so they stay true about the hashed analytics while Your Stats is a separate record shown only to its owner.
+
+**Lesson:** a mock-up posted in the real client settled design questions in one round that prose had not.
 
 # Part B — Lessons Ledger (thematic)
 

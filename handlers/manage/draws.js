@@ -7,6 +7,7 @@
 //
 // ⚠️ MUTATIONS ROUTE THROUGH THE OPERATION CORE (core/changeset.js's commitSet), as of the portal operation core (plan 1 Task 6, 2026-08-20 23:51 EDT). Every mutation body below used to read the document, mutate it in memory, .save() it, then call utils/changeStore.js's recordChange() -- that write path still exists (utils/changeStore.js) but this page no longer calls it directly. commitSet() applies the op transactionally, records the ChangeLog row itself with an `inverse`, and returns the changeId. Undo for draws-page changes now lives on /bot analytics' Changes page (core/revert.js, Task 7) instead of the inline Undo button that used to render here -- that mechanism is simply GONE from this file, not replaced. Modal parsing and reply formatting are UNTOUCHED; only the mutate+audit section of each function changed. See core/ops/draws.js for the op contract, and its own header for two real defects (bulkReplace's merge semantics, and the bulk-parse payload shape) found and fixed during this exact integration pass.
 
+const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { resolveThumbnail } = require('../../utils/cloudinaryCache');
 const { commitSet } = require('../../core/changeset');
 const {
@@ -40,7 +41,7 @@ async function addDraw(interaction) {
 
     // URL is optional -- blank reuses a Cloudinary cache hit for this exact title if one exists. No URL AND no cache hit used to hard-reject the whole submission -- relaxed 2026-08-22 19:40 EDT (click-test fix): a draw's info is sometimes known before any image exists to link/cache. thumbnailUrl has no `required` on the schema (models/SeasonalData.js) -- this was purely an app-level choice. commands/draws.js's render renders a plain no-image row instead of a broken thumbnail when thumbnailUrl is null.
     const thumbResult = await resolveThumbnail(title, rawUrl);
-    const cloudinaryWarning = thumbResult.url ? thumbnailNote(thumbResult) : '⚠️ No image URL provided and none cached for this title -- draw saved without an image.';
+    const cloudinaryWarning = thumbResult.url ? thumbnailNote(thumbResult) : BOT_EMOJI.warn + ' No image URL provided and none cached for this title -- draw saved without an image.';
 
     const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
     const newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url, ...(priceType ? { priceType } : {}) };
@@ -54,7 +55,7 @@ async function addDraw(interaction) {
     }
 
     const addedType = drawTypeName(newDrawObj.priceType);
-    let confirmation = `✅ **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${addedType ? `${addedType}, ` : ''}${newDrawObj.items.length} item(s), releases <t:${Math.floor(new Date(newDrawObj.date).getTime() / 1000)}:D>).`;
+    let confirmation = `${BOT_EMOJI.checkmark} **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${addedType ? `${addedType}, ` : ''}${newDrawObj.items.length} item(s), releases <t:${Math.floor(new Date(newDrawObj.date).getTime() / 1000)}:D>).`;
     if (cloudinaryWarning) confirmation += `\n${cloudinaryWarning}`;
     return interaction.followUp({ content: confirmation });
 }
@@ -99,8 +100,8 @@ async function editDraw(interaction) {
         }
 
         const shownType = drawTypeName(typeChanged ? pickedType : storedType);
-        let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${shownType ? `${shownType}, ` : ''}${parsedItems.length} item(s), releases <t:${Math.floor(parsedDrawDate.getTime() / 1000)}:D>).`;
-        const editThumbNote = thumbResult.url ? thumbnailNote(thumbResult) : '⚠️ No image URL provided and none cached for this title -- draw saved without an image.';
+        let confirmation = `${BOT_EMOJI.checkmark} **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${shownType ? `${shownType}, ` : ''}${parsedItems.length} item(s), releases <t:${Math.floor(parsedDrawDate.getTime() / 1000)}:D>).`;
+        const editThumbNote = thumbResult.url ? thumbnailNote(thumbResult) : BOT_EMOJI.warn + ' No image URL provided and none cached for this title -- draw saved without an image.';
         if (editThumbNote) confirmation += `\n${editThumbNote}`;
         return interaction.followUp({ content: confirmation });
     }
@@ -116,7 +117,7 @@ async function bulkAddOrReplaceDraws(interaction) {
     const returningText = interaction.fields.getTextInputValue('returning_text')?.trim();
 
     if (!newText && !returningText) {
-        return interaction.followUp({ content: '❌ Both fields were left blank -- nothing was changed.' });
+        return interaction.followUp({ content: BOT_EMOJI.cross + ' Both fields were left blank -- nothing was changed.' });
     }
 
     const ops = [];
@@ -126,7 +127,7 @@ async function bulkAddOrReplaceDraws(interaction) {
     const result = await commitSet(ops, { actorId: interaction.user.id });
     if (!result.ok) {
         const why = result.failures?.map(f => f.errors.join(' ')).join(' ') || result.error;
-        return await interaction.followUp({ content: `❌ ${why}` });
+        return await interaction.followUp({ content: `${BOT_EMOJI.cross} ${why}` });
     }
 
     const updated = [];
@@ -145,9 +146,9 @@ async function bulkAddOrReplaceDraws(interaction) {
         }
     }
 
-    let confirmation = `✅ **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${updated.join('\n')}`;
-    if (allSkipped.length) confirmation += `\n⚠️ Skipped (no URL given and nothing cached yet): ${allSkipped.join(', ')}`;
-    if (allWarnings.length) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${allWarnings.join('; ')}`;
+    let confirmation = `${BOT_EMOJI.checkmark} **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${updated.join('\n')}`;
+    if (allSkipped.length) confirmation += `\n${BOT_EMOJI.warn} Skipped (no URL given and nothing cached yet): ${allSkipped.join(', ')}`;
+    if (allWarnings.length) confirmation += `\n${BOT_EMOJI.warn} Cloudinary caching failed, kept the original URL instead: ${allWarnings.join('; ')}`;
     return interaction.followUp({ content: confirmation });
 }
 
@@ -180,16 +181,16 @@ async function bulkDeleteDraws(interaction) {
     if (newTitlesRaw) {
         const { removedTitles, notFound, ids } = preview(seasonalDoc.newDraws, newTitlesRaw);
         if (removedTitles.length) { summary.push(`Removed from New: ${removedTitles.join(', ')}`); anyRemoved = true; idsByPath.newDraws = ids; }
-        if (notFound.length) summary.push(`⚠️ Not found in New: ${notFound.join(', ')}`);
+        if (notFound.length) summary.push(`${BOT_EMOJI.warn} Not found in New: ${notFound.join(', ')}`);
     }
     if (returningTitlesRaw) {
         const { removedTitles, notFound, ids } = preview(seasonalDoc.returningDraws, returningTitlesRaw);
         if (removedTitles.length) { summary.push(`Removed from Returning: ${removedTitles.join(', ')}`); anyRemoved = true; idsByPath.returningDraws = ids; }
-        if (notFound.length) summary.push(`⚠️ Not found in Returning: ${notFound.join(', ')}`);
+        if (notFound.length) summary.push(`${BOT_EMOJI.warn} Not found in Returning: ${notFound.join(', ')}`);
     }
 
     if (!anyRemoved) {
-        return interaction.reply({ content: `❌ Nothing matched -- nothing to delete.\n${summary.join('\n')}`, ephemeral: true });
+        return interaction.reply({ content: `${BOT_EMOJI.cross} Nothing matched -- nothing to delete.\n${summary.join('\n')}`, ephemeral: true });
     }
 
     return registerBulkDelete(interaction, {
@@ -210,13 +211,13 @@ async function bulkDeleteDraws(interaction) {
 async function purgeDraws(scope, actorId) {
     const result = await commitSet([{ type: 'draw.purge', target: { scope } }], { actorId });
     if (!result.ok) {
-        return { confirmMsg: `❌ ${extractCommitError(result)}` };
+        return { confirmMsg: `${BOT_EMOJI.cross} ${extractCommitError(result)}` };
     }
     const { applied } = result.results[0];
     const removedCounts = [];
     if (scope === 'new' || scope === 'all') removedCounts.push(`${applied.newDraws.length} New`);
     if (scope === 'returning' || scope === 'all') removedCounts.push(`${applied.returningDraws.length} Returning`);
-    const confirmMsg = `✅ Purged ${scope === 'all' ? 'all New and Returning draws' : `all ${scope} draws`} (${removedCounts.join(', ')} removed).`;
+    const confirmMsg = `${BOT_EMOJI.checkmark} Purged ${scope === 'all' ? 'all New and Returning draws' : `all ${scope} draws`} (${removedCounts.join(', ')} removed).`;
     return { confirmMsg };
 }
 

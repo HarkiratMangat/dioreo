@@ -50,8 +50,8 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
     if (now - (lastSent.get(key) || 0) < THROTTLE_MS) return; // throttled
     lastSent.set(key, now);
 
-    // Context needed whether or not we actually post to Discord (the store records it either way).
-    const host = process.env.NODE_ENV === 'production' ? 'GCP VM' : 'local';
+    // Context needed whether or not we actually post to Discord (the store records it either way). 'development' is the test, never 'production' (fixed 2026-10-20, v3 sweep): only .env.dev sets NODE_ENV and prod's .env never does (utils/cloudinaryDevGuard.js), so the old `=== 'production'` test labelled every prod alert footer and AlertLog row "local". Now the same derivation as utils/eventStore.js's HOST.
+    const host = process.env.NODE_ENV === 'development' ? 'local' : 'GCP VM';
     const rss = Math.round(process.memoryUsage().rss / 1024 / 1024); // MB — surfaces leaks/OOM trends
     const uptimeSec = Math.floor(process.uptime()); // raw seconds; formatUptime() for display, stored raw
     const rawDesc = describe(detail).slice(0, 1800);

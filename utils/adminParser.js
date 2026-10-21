@@ -7,6 +7,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const { fuzzyMatch, normalizeForSearch } = require('./search');
 const { resolveDrawType, drawTypeCode } = require('./drawTypes');
+const { zoneReference, componentInstant } = require('./timestampHelper');
 
 // NOTE (fixed during review): the old implementation did `str.toLowerCase()` on the WHOLE string first, then re-capitalized only the character immediately following whitespace. Real bugs fell out of that: (1) an already-uppercase acronym like "FSS Hurricane" got globally lowercased first and only its "F"/"H" recapitalized, producing "Fss Hurricane"; (2) a parenthesized word like "(Operator)" has "(" — not a letter — as the character right after the space, so nothing got recapitalized and "operator" stayed lowercase inside the parens; (3) a HYPHENATED word like "Blood-Red" was treated as ONE whitespace-delimited token, so only its very first letter ("B") got capitalized and everything else — including the "R" in "Red" — got lowercased into "Blood-red". Fixed by additionally splitting each whitespace-delimited word on its own hyphens and running the same acronym-preserve-or-capitalize logic on each hyphen segment independently, so "Blood-Red" capitalizes both "Blood" AND "Red" instead of just the first.
 function capitalizeSegment(segment) {
@@ -62,9 +63,10 @@ function parseAdminDate(dateStr) {
  *
  * `userTimezone` should be the admin's own UserPreference.timezone (see commands/settings.js) -- defaults to 'America/Toronto' to match every other timezone default in this codebase.
  */
-function parseReleaseDateTime(dateStr, userTimezone = 'America/Toronto') {
+function parseReleaseDateTime(dateStr, userTimezone = 'America/Toronto', now = new Date()) {
     const cleanStr = dateStr.trim();
-    const parseResults = chrono.parse(cleanStr, new Date());
+    // Reference pinned to the admin's zone (2026-10-20 16:50 EDT), so a relative "tomorrow 7pm" counts from their day, not the VM's UTC one. See utils/timestampHelper.js zoneReference().
+    const parseResults = chrono.parse(cleanStr, zoneReference(userTimezone, now));
     if (!parseResults || parseResults.length === 0) return new Date();
 
     const parsedComponents = parseResults[0].start;
@@ -76,9 +78,8 @@ function parseReleaseDateTime(dateStr, userTimezone = 'America/Toronto') {
     // An input that CARRIES ITS OWN OFFSET is already an absolute instant -- return it untouched. 🔴 CI-only failure, fixed 2026-08-31: the reinterpretation below is correct for a human typing "July 22, 2026 7:20 AM" and WRONG for a stored ISO string like "2026-07-06T16:27:56.919Z". `.tz(tz, true)` keeps the wall clock as rendered in the SYSTEM timezone, so on a machine already set to userTimezone the two readings cancel and an ISO round-trips by luck. On a UTC host they do not: 16:27Z reads as 16:27, gets re-anchored to Toronto, and comes back 20:27Z -- a real four-hour shift of a published release time, since the GCP VM runs UTC while every local test ran in EDT. `scripts/portalPatchNotes.test.js` asserts the round-trip and passed locally for exactly that reason; only CI could see it. ⚠️ The NAIVE path below is already timezone-independent and must stay as it is -- verified 2026-08-31 under UTC, America/Toronto and Asia/Tokyo, all three returning 11:20Z for "July 22, 2026 7:20 AM" -- because chrono builds the naive Date in the system zone and dayjs reads it back in the same zone, so the two cancel. Do not "fix" it to match the branch above.
     if (parsedComponents.isCertain('timezoneOffset')) return parsedComponents.date();
 
-    // A time was typed with no offset -- treat the literal date/time numbers as Harkirat's own local clock (userTimezone), then convert that wall-clock moment to its real UTC instant. `.tz(tz, true)` (keepLocalTime) re-anchors the exact Y/M/D H:M chrono extracted into userTimezone rather than reinterpreting whatever offset the initial naive parse assumed -- same pattern timestampHelper.js's generateTimestamps() already uses for user-facing /timestamp input.
-    const localTarget = dayjs(parsedComponents.date()).tz(userTimezone, true);
-    return localTarget.toDate();
+    // A time was typed with no offset -- treat the literal date/time numbers as Harkirat's own local clock (userTimezone) and convert that wall-clock moment to its real UTC instant. componentInstant() rebuilds the Y/M/D H:M chrono extracted in userTimezone with no reference to the host's zone (replaced `dayjs(date()).tz(tz, true)` 2026-10-20 16:50 EDT, which cancelled out for absolute dates but not relative ones).
+    return componentInstant(parsedComponents, userTimezone).toDate();
 }
 
 /**
@@ -527,6 +528,8 @@ function parseBulkLoadoutList(bulkText) {
             attachments: cleanAttachments,
             imageKey: fields.imageKey || PLACEHOLDER_IMAGE,
             shareCode: fields.shareCode || '',
+            // Which of those two the block left out, so a paste over an EXISTING build keeps its stored value instead of writing the default (2026-10-20, Harkirat's call in the v3 sweep). A new build still gets the default. core/ops/loadouts.js's bulkEntryWrite reads this and never stores it.
+            defaulted: [!fields.imageKey && 'imageKey', !fields.shareCode && 'shareCode'].filter(Boolean),
             isMeta,
             categoryRank,
             dmzRangeRank,

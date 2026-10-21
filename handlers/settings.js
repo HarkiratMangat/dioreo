@@ -7,6 +7,7 @@
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleSettingsInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch. A bare `return interaction.reply(...)` can reject after the try has exited and escape the net. See .claude/rules/interaction-router.md.
 
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
 const { SETTINGS_PICKERS } = require('../utils/settingsPickers');
 const { buildPickerSearchModal } = require('../utils/pickerUI');
@@ -110,10 +111,8 @@ async function route(interaction) {
             if (action === 'settings_ephemeral') prefs.settingsVisibility = 'ephemeral';
             if (action === 'colors_public') prefs.colorsVisibility = 'public';
             if (action === 'colors_ephemeral') prefs.colorsVisibility = 'ephemeral';
-            // Calendar's Active/All Events filter moved here from an in-page /calendar toggle (2026-07-31 14:00 EDT, per Harkirat's explicit request) -- lives on /settings' page 1 (Preferences), so the re-render below needs page 1, not the page-0 default every other toggle here uses.
-            if (action === 'calfilter_active') prefs.calendarEventFilter = 'active';
-            if (action === 'calfilter_all') prefs.calendarEventFilter = 'all';
-            const targetPage = (action === 'calfilter_active' || action === 'calfilter_all') ? 1 : 0;
+            // (The calfilter_active/calfilter_all branches that sat here were removed 2026-10-20, v3 sweep: nothing has rendered those buttons since the Active/All Events default was silenced 2026-08-15 -- see commands/settings.js. Every toggle left here lives on page 0.)
+            const targetPage = 0;
             // NOTE (removed 2026-07-12): region_10/region_30 toggle actions used to live here as a binary button. Replaced by a 3-option dropdown ("Show Last Viewed Region" / "10 CP" / "30 CP") writing to the new `defaultRegionMode` field instead -- see the `set_region_mode` branch in the generic `set_` dropdown handler above. All 4 of these visibility toggles stay on /settings' page 0 (Visibility), so no page param is needed here.
 
             await prefs.save(); // Write preferences live to the Atlas cluster
@@ -125,6 +124,25 @@ async function route(interaction) {
         }
 
         // (The old B.4 CALENDAR EVENT-FILTER TOGGLE handler was removed 2026-07-31 14:00 EDT -- the Active/All Events filter moved to /settings entirely, per Harkirat's explicit request. See the generic `toggle_` handler below for `calfilter_active`/`calfilter_all`.)
+
+        // YOUR STATS RESET (2026-10-20 18:36 EDT) -- `set_stats_reset|{userId}` redraws page 2 asking to confirm; `set_stats_resetok|{userId}` clears the stats and redraws it. Same author lock as every other settings button. Type-tested: the select branch above also matches `set_`.
+        if (interaction.isButton() && interaction.customId.startsWith('set_stats_')) {
+            await interaction.deferUpdate();
+            const [action, targetUserId] = interaction.customId.split('|');
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
+                try {
+                    await interaction.followUp({ content: "🔒 **Not your dashboard!** These stats belong to someone else.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked stats action (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+            if (action === 'set_stats_resetok') await require('../utils/userStats').resetStats(targetUserId);
+            const settingsCommand = interaction.client.commands.get('settings');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { }, user: actingUser });
+            return await settingsCommand.execute(syntheticInteraction, 2, { resetArmed: action === 'set_stats_reset' });
+        }
 
         // SETTINGS PAGE NAVIGATION -- /settings paginated into 2 pages (2026-07-12, once the new region dropdown + hex codes + footer line pushed it close to Discord's 40-component cap): page 0 = Visibility toggles, page 1 = Preferences. custom_id is `set_page_{targetPage}`, same Prev/Next pattern as calendar/draws sub-pages -- the banner/profile header section stays identical on both pages (re-rendered each time, not truly "shared" state).
         if (interaction.isButton() && interaction.customId.startsWith('set_page_') && interaction.customId !== 'set_page_indicator') {
@@ -180,7 +198,7 @@ async function handlePickerSearchSubmit(interaction, picker) {
     const matches = picker.search(query);
 
     if (matches.length === 0) {
-        return await interaction.reply({ content: `❌ No ${picker.noun} matched **"${query}"** — try ${picker.hintText}.`, ephemeral: true });
+        return await interaction.reply({ content: `${BOT_EMOJI.cross} No ${picker.noun} matched **"${query}"** — try ${picker.hintText}.`, ephemeral: true });
     }
     if (matches.length > 1) {
         // Multiple hits -- rather than a second select+pick round-trip (which would need its own message identity to edit back into the real panel), just list the candidates and ask for a more specific search. Keeps this a single, coherent flow.

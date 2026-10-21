@@ -2,6 +2,7 @@
 // COMMAND: /gunsmith — mp + dmz (renamed from /gunsmiths 2026-10-19 21:20 EDT; was search + list until 2026-10-19 19:43 EDT; consolidated /all + the 8 per-category MP commands before that)
 // ==========================================
 // Two subcommands, two doors onto one engine (see utils/loadoutScopes.js's scope descriptor): `mp` and `dmz` each take a weapon, or a browse row (All META builds, All MP / All DMZ builds, each MP class) that opens a whole set. Discord forbids a command from mixing top-level options with subcommands, which is why there is no shared `category:`/`mode:` option anywhere -- every browsable set is one whole named scope token (`gsb~` / `~scope~`) instead, so no invalid combination can ever be assembled. ⚠️ THE NAME IS SINGULAR ON PURPOSE (Harkirat, "let's use gunsmith singular"). It was /gunsmiths, a plural players never write; /loadouts and /builds were weighed against it in a naming pass and he chose /gunsmith. The description carries the word "loadout" so a player who types that into Discord's command picker still finds it. A command's registered name keys anything stored against it -- /admin visibility rules, analytics rows, the permission tables -- so the rename was done before v3 reached prod, while none of that exists yet under the old name.
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder } = require('discord.js');
 const { FIXED_SCOPES, formatScopeToken, parseScopeToken, resolveScopeBuilds, flatIndexToPosition } = require('../utils/loadoutScopes');
 const { buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel } = require('../utils/loadoutRender');
@@ -52,7 +53,7 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
     const builds = await resolveScopeBuilds(scope);
     if (!builds.length) {
         try {
-            await interaction.followUp({ content: '❌ That scope has no builds saved yet.' });
+            await interaction.followUp({ content: BOT_EMOJI.cross + ' That scope has no builds saved yet.' });
         } catch (notifyError) {
             console.error('Failed to notify user of an empty gunsmith scope (interaction likely expired):', notifyError);
         }
@@ -62,6 +63,7 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
     const { weaponKey, weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndex);
     const scopeToken = formatScopeToken(scope);
     const scopeLabel = labelForScope(scope);
+    require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, weaponBuilds[indexWithinWeapon]?._id); // Your Stats: a build this user opened
     const cardPayload = buildLoadoutCard(weaponBuilds, indexWithinWeapon, {
         color: getMpCategoryAccent(weaponBuilds[indexWithinWeapon].category),
         idPrefix: scope.mode === 'DMZ' ? 'dmz' : 'mp',

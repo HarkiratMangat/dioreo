@@ -8,6 +8,7 @@
 // ⚠️ THE SNIPPET AND THE BUTTON HAVE DIFFERENT LIFETIMES, ON PURPOSE. The token expires in 10 minutes (matching every other pending-token store in this panel); the snippet in the message body does not expire at all. That is the whole reason both were asked for rather than either alone -- the button is the fast path, the snippet is what survives a coffee break.
 //
 // ⚠️ THE SNIPPET IS IN THE ENTITY'S OWN BULK FORMAT, not a dump of the raw fields. Draws and calendar already have canonical one-line formats (utils/adminParser.js's parseBulkDrawList / parseBulkEvents) and loadouts has its labelled block, so a reconstruction in those formats pastes back into EITHER the field it came from or that entity's Bulk Add modal. A raw field dump would paste back into neither.
+const BOT_EMOJI = require('../../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { randomUUID } = require('crypto');
 
 // token -> { modalCustomId, values }
@@ -130,14 +131,14 @@ async function failWithRetry(interaction, message) {
         : interaction.reply({ ...payload, ephemeral: true });
 
     const spec = specFor(interaction.customId);
-    if (!spec) return await send({ content: `❌ ${message}` });
+    if (!spec) return await send({ content: `${BOT_EMOJI.cross} ${message}` });
 
     const values = captureModalValues(interaction);
     const token = randomUUID().slice(0, 8);
     pendingModalRetries.set(token, { modalCustomId: interaction.customId, values });
     setTimeout(() => pendingModalRetries.delete(token), RETRY_TTL_MS).unref();
 
-    let content = `❌ ${message}`;
+    let content = `${BOT_EMOJI.cross} ${message}`;
     let snippet = '';
     try { snippet = (spec.snippet(values) || '').trim(); } catch { snippet = ''; }
     if (snippet) content += `\n**What you entered** — copy this if you want to keep it:\n${codeBlock(snippet)}`;

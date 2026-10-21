@@ -57,7 +57,11 @@ async function run() {
             const page = texts(await helpCommand.buildContainer(cat.key, 16743772, perms, fakeClient));
             const commands = cat.detailCommands || cat.staticCommands;
             const expected = new Set(commands.flatMap(c => optionsOf(c.name)).filter(n => n !== 'visibility'));
-            const named = new Set([...page.matchAll(/🔹 `[<\[]([a-z_]+)[>\]]`/g)].map(m => m[1]).filter(n => n !== 'visibility'));
+            const named = new Set([...page.matchAll(/🔹 `[<\[]([a-z_]+\d*)[>\]]`/g)].map(m => m[1]).filter(n => n !== 'visibility'));
+            // A numbered run is named once as a range, `[screenshot2]` to `[screenshot10]` (bulk /autobuild, 2026-10-20 10:42 EDT), and stands for every name in it.
+            for (const m of page.matchAll(/🔹 `\[([a-z_]+)(\d+)\]` to `\[\1(\d+)\]`/g)) {
+                for (let n = Number(m[2]); n <= Number(m[3]); n++) named.add(`${m[1]}${n}`);
+            }
             for (const n of expected) assert.ok(named.has(n), `${cat.key}: registered option "${n}" is not on the /help page`);
             for (const n of named) assert.ok(expected.has(n), `${cat.key}: /help names "${n}", which no command on the page registers`);
         }

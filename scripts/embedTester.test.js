@@ -166,7 +166,7 @@ check('no note when every emoji was already right', () => {
 
 console.log('edit in place');
 check('the Edit JSON row is one real button, never a dummy id', () => {
-    const row = t.editRow({ name: 'EditCalc', id: '1' });
+    const row = t.editRow({ name: 'Edit', id: '1' });
     assert.deepStrictEqual([row.type, row.components[0].custom_id, row.components[0].label], [1, 'embedtest_edit', 'Edit JSON']);
     assert.ok(!row.components[0].custom_id.startsWith(t.DUMMY_PREFIX));
 });

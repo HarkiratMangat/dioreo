@@ -135,8 +135,8 @@ const emojis = {
     saveStar: '<a:Save:1560682840692105346>',   // re-uploaded 2026-10-16 14:31 EDT   // Harkirat's new Save icon, 2026-10-16 09:59 EDT (was SaveStar 1560041207177023519); the key keeps its name so every Save button follows
     // The calculator's View Saved button (2026-10-16 09:59 EDT): prod id here; the dev bot re-points by name at boot.
     viewSaved: '<a:ViewSaved:1560682871151132793>',   // re-uploaded 2026-10-16 14:31 EDT
-    // The calculator's Edit Selection button (2026-10-14 19:28 EDT): prod id here; the dev bot re-points to its 1560068687942123642 by name at boot.
-    editCalc: '<a:EditCalc:1560408533160296519>',   // new EditCalc, 2026-10-15 18:02 EDT
+    // The calculator's Edit Selection button (2026-10-14 19:28 EDT): prod id here; the dev bot re-points to its 1560068687942123642 by name at boot. Renamed EditCalc -> Edit on every app by Harkirat (2026-10-20 13:19 EDT); the calculator's edit buttons and /autobuild's Adjust both use it.
+    edit: '<a:Edit:1560408533160296519>',
     // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.
     copyExport: '<a:CopyExport:1560682776305471600>',   // re-uploaded 2026-10-16 14:31 EDT
 };
@@ -236,6 +236,14 @@ function byName(name) {
     return match ? `<${match.animated ? 'a' : ''}:${match.name}:${match.id}>` : null;
 }
 emojis.byName = byName;
+
+// The bot's own status glyphs in place of the Unicode ones (Harkirat, 2026-10-20 12:41 EDT, "dont patch the instance. figure out the class!": ⚠️ ❌ ✅ kept reappearing one string at a time). Call it on text at the moment it is SENT, never when it is composed, so the id is the running app's (memory project_emoji_require_time_capture). Only these three have a bot equivalent; anything else passes through.
+function glyphs(text) {
+    if (typeof text !== 'string') return text;
+    const m = module.exports;
+    return text.replace(/⚠️|⚠/g, m.warn).replace(/❌/g, m.cross).replace(/✅/g, m.checkmark);
+}
+emojis.glyphs = glyphs;
 
 // Every consumer reads `emojis.foo` at render time, so answering from the current app's map here reaches all of them with no call-site change. Writes and key listings go to the default map, as before.
 module.exports = new Proxy(emojis, {

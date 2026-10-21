@@ -1,4 +1,5 @@
 // commands/timestamp.js
+const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder, Routes } = require('discord.js'); // Standard Packages — Added 'Routes' for native API endpoint mappings
 const { generateTimestamps } = require('../utils/timestampHelper');
 const UserPreference = require('../models/UserPreference');
@@ -7,12 +8,13 @@ const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 
-// Repalette (2026-07-12, Section 5 of the batch) -- /timestamp was NOT part of the avatar/banner accent-color system at all before this (accent_color was hardcoded to Persimmon on every render, regardless of the user's /settings Accent Color Style preference). Harkirat's rule: the "All Formats" overview -- this command's own default, branded view -- keeps this fixed teal regardless of accent preference, same as Loadouts' fixed per-category colors are never personalized either. Only once a user has set a SPECIFIC default style in /settings (i.e. `prefs.timestampStyle` is anything other than the schema default 'all_formats') does this command start respecting avatar/banner personalization like Calendar/Draws/Draw Prices/Patch Notes/Season End already do. A one-off `/timestamp style:...` invocation does NOT trigger this -- only the user's SAVED default does (Harkirat's explicit confirmation) -- so this always checks `prefs.timestampStyle`, never the `style` actually being rendered on this particular call.
+// Repalette (2026-07-12, Section 5 of the batch) -- /timestamp was NOT part of the avatar/banner accent-color system at all before this (accent_color was hardcoded to Persimmon on every render, regardless of the user's /settings Accent Color Style preference). Harkirat's rule: the "All Formats" overview -- this command's own default, branded view -- keeps this fixed teal regardless of accent preference, same as Loadouts' fixed per-category colors are never personalized either. Only once a user has set a SPECIFIC default style in /settings (i.e. `prefs.timestampStyle` is a single format, not one of the two overviews in OVERVIEW_STYLES, All Formats and Short List; Short List became the default 2026-10-20 18:31 EDT) does this command start respecting avatar/banner personalization like Calendar/Draws/Draw Prices/Patch Notes/Season End already do. A one-off `/timestamp style:...` invocation does NOT trigger this -- only the user's SAVED default does (Harkirat's explicit confirmation) -- so this always checks `prefs.timestampStyle`, never the `style` actually being rendered on this particular call.
 const PRESET_ACCENT = 1548962; // Cyber Teal (#17A2A2)
 
 // Shared option list for the style-switch dropdown, used by both view modes below. handlers/timestamp.js's 'tsmenu|' select handler calls back into this file's execute() (see overrideState below) rather than duplicating this list, so there's only ever one copy to keep in sync.
 const STYLE_SELECT_OPTIONS = [
     { label: "All Formats Overview", value: "all_formats", description: "Shows every format together as a summary" },
+    { label: "Short List", value: "short_list", description: "The 6 most used formats" },
     { label: "Full Date, Short Time (F)", value: "fullDateTime", description: "e.g., Tuesday, April 20, 2021 at 16:20" },
     { label: "Long Date, Short Time (f)", value: "longDateTime", description: "e.g., April 20, 2021 at 16:20" },
     { label: "Long Date (D)", value: "longDate", description: "e.g., April 20, 2021" },
@@ -23,6 +25,27 @@ const STYLE_SELECT_OPTIONS = [
     { label: "Short Date, Medium Time (S)", value: "shortDateTimeMedium", description: "e.g., 20/04/2021, 16:20:30" },
     { label: "Relative Time (R)", value: "relative", description: "e.g., 4 years ago" }
 ];
+
+// The format each style value stands for, and the label shown above it: Discord's own names, the words the dropdown already uses. The overview shows ALL_CODES; Short List (added 2026-10-20 18:23 EDT, Harkirat) shows the six people paste most, longest first.
+const STYLE_CHAR = {
+    fullDateTime: 'F', longDateTime: 'f', longDate: 'D', shortDate: 'd',
+    mediumTime: 'T', shortTime: 't', shortDateTimeShort: 's',
+    shortDateTimeMedium: 'S', relative: 'R'
+};
+const FORMAT_LABELS = {
+    F: 'FULL DATE, SHORT TIME', f: 'LONG DATE, SHORT TIME', D: 'LONG DATE', d: 'SHORT DATE',
+    T: 'MEDIUM TIME', t: 'SHORT TIME', s: 'SHORT DATE, SHORT TIME', S: 'SHORT DATE, MEDIUM TIME', R: 'RELATIVE TIME'
+};
+const ALL_CODES = ['F', 'f', 'D', 'd', 'T', 't', 's', 'S', 'R'];
+// The two overview views. Either one keeps the fixed teal accent; only a saved SINGLE format turns on personalised colour (Harkirat's 2026-07-12 rule, carried over when Short List arrived).
+const OVERVIEW_STYLES = ['all_formats', 'short_list'];
+
+// Which view to draw: an explicit `style:` wins, then the saved /settings style, then Short List, the default for anyone who never chose (2026-10-20 18:31 EDT, Harkirat: "let's make the default view ... be the shortlist view"). `null` means the All Formats overview, which is how the rest of this file reads it.
+function resolveStyle(argStyle, savedStyle) {
+    const chosen = argStyle ?? savedStyle ?? 'short_list';
+    return chosen === 'all_formats' ? null : chosen;
+}
+const SHORT_LIST_CODES = ['F', 'f', 'D', 'd', 't', 'R'];
 
 // Shorthand-day/relative-word expansions for the chrono parser, compiled once here at module load instead of being rebuilt (10 `new RegExp(...)` calls) on every single /timestamp invocation -- this data never depends on anything per-call, so there's no reason to recreate it each time.
 const SHORTHAND_EXPANSIONS = Object.entries({
@@ -90,6 +113,7 @@ function getTimezoneLabel(tz, baseName) {
 }
 
 module.exports = {
+    resolveStyle, OVERVIEW_STYLES,
     PRESET_ACCENT, // Exposed so handlers/timestamp.js's tsmenu re-render handler can resolve the same accent
                    // color the initial render would have used (see overrideState.accentColor above).
     data: new SlashCommandBuilder()
@@ -103,8 +127,8 @@ module.exports = {
                 .setRequired(true))
         .addStringOption(option =>
             option.setName('timezone')
-                // Trimmed 2026-07-18 (mobile-width audit) -- also fixed "leave blank to defaults to" grammar while touching this line.
-                .setDescription('Your timezone (leave blank for local default)')
+                // Trimmed 2026-07-18 (mobile-width audit) -- also fixed "leave blank to defaults to" grammar while touching this line. Blank now means the /settings timezone, as /help already promised (fixed 2026-10-20 16:50 EDT).
+                .setDescription('Your timezone (leave blank for your /settings one)')
                 .addChoices(
                     { name: getTimezoneLabel('America/Toronto', tzLabels['America/Toronto']), value: 'America/Toronto' },
                     { name: getTimezoneLabel('America/Winnipeg', tzLabels['America/Winnipeg']), value: 'America/Winnipeg' },
@@ -124,8 +148,10 @@ module.exports = {
                 ))
         .addStringOption(option =>
             option.setName('style')
-                .setDescription('Select a specific style, or leave blank for all formats')
+                .setDescription('Pick a view or one format (blank = your saved view)')
                 .addChoices(
+                    { name: 'Short List — the 6 most used formats', value: 'short_list' },
+                    { name: 'All Formats — every format', value: 'all_formats' },
                     { name: 'Full Date, Short Time (F) — e.g., Tuesday, April 20, 2021 at 16:20', value: 'fullDateTime' },
                     { name: 'Long Date, Short Time (f) — e.g., April 20, 2021 at 16:20', value: 'longDateTime' },
                     { name: 'Long Date (D) — e.g., April 20, 2021', value: 'longDate' },
@@ -155,11 +181,12 @@ module.exports = {
 
     // NOTE (de-duplicated during review): this used to have a full second copy of both view layouts living in handlers/timestamp.js's 'tsmenu|' select handler, because that handler needed to re-render the SAME already-parsed timestamp under a different style without re-running chrono (a relative input like "tomorrow" would resolve to a different date if re-parsed later). The two copies had already drifted out of sync twice across earlier redesigns. Fixed properly now via the same synthetic-interaction pattern every other command uses: `overrideState` lets handlers/timestamp.js pass in the already-known { unix, tz, queryInput, style } instead of re-deriving them from slash command options, while both code paths still share this single render implementation below.
     async execute(interaction, overrideState = null) {
-        let queryInput, tz, style, unix, ephemeral, accentColor, isTextMode;
+        let queryInput, tz, style, unix, endUnix = null, ephemeral, accentColor, isTextMode;
 
         if (overrideState) {
             // Invoked from handlers/timestamp.js's tsmenu dropdown handler — reuse the exact original parse instead of re-parsing. Never ephemeral here since the dropdown-driven re-render path never applied the ephemeral flag (matches prior behavior).
             ({ unix, tz, queryInput, style } = overrideState);
+            endUnix = overrideState.endUnix || null;
             // Preserve whatever ephemeral state the message already had (Discord can't change it via edit anyway) — needed so the "Share Publicly" button doesn't disappear the moment someone switches timestamp styles. handlers/timestamp.js passes this in from the message being edited since overrideState skips the normal ephemeral-resolution logic entirely.
             ephemeral = Boolean(overrideState.ephemeral);
             // accentColor is precomputed by handlers/timestamp.js's tsmenu handler (it already needs to fetch prefs there to decide this) and passed through the same way ephemeral is — this render path skips the normal option-resolution logic entirely, so there's no `prefs` available here to resolve it from directly.
@@ -168,22 +195,23 @@ module.exports = {
             isTextMode = Boolean(overrideState.isTextMode);
         } else {
             queryInput = interaction.options.getString('datetime');
-            tz = interaction.options.getString('timezone') || 'America/Toronto';
             isTextMode = interaction.options.getString('view') === 'text';
+            const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+            // explicit option > saved /settings timezone > Toronto (UserPreference.timezone's own default). The saved zone was fetched a few lines below and never read for this until 2026-10-20 16:50 EDT, so a user who saved Tokyo got Toronto's 9am while /help said otherwise.
+            tz = interaction.options.getString('timezone') || prefs?.timezone || 'America/Toronto';
 
             // NOTE (fixed during review): this option was previously ALWAYS taken as-is, so leaving it blank meant "all formats" no matter what a user had saved as their default Timestamp Style in /settings — that saved preference was stored and shown in the dashboard but never actually consulted (flagged as a known gap in CLAUDE.md). Now falls back the same way `ephemeral` already does below: explicit option > saved preference > "all formats". `prefs.timestampStyle` defaults to the literal string 'all_formats' in the schema, which needs to be treated as "no specific style" (i.e. `style = null`) here, since that's how the rest of this function distinguishes the two view modes.
-            const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
             const argStyle = interaction.options.getString('style');
             const savedStyle = prefs?.timestampStyle;
-            style = argStyle !== null ? argStyle : (savedStyle && savedStyle !== 'all_formats' ? savedStyle : null);
+            style = resolveStyle(argStyle, savedStyle);
 
             // NOTE (Option A wiring): /timestamp previously never checked any saved preference — the `private` option (renamed from `ephemeral` 2026-07-12) always defaulted to false if you didn't type it. Now it falls back to the "Timestamps" toggle from /settings (prefs.timestampVisibility) when the option is left blank, same priority pattern used by the other commands: explicit option > saved preference > public default.
             const visibilityChoice = interaction.options.getString('visibility');
             const argEphemeral = visibilityChoice === null ? null : visibilityChoice === 'hidden';
             ephemeral = argEphemeral !== null ? argEphemeral : (prefs ? prefs.timestampVisibility === 'ephemeral' : false);
 
-            // Accent color: fixed teal UNLESS the user has saved a specific default style in /settings (i.e. `prefs.timestampStyle` isn't the schema default 'all_formats') -- checks the SAVED preference, not `style` above, so a one-off `style:` option on this particular call never triggers personalization by itself (Harkirat's explicit call).
-            const usesPersonalizedAccent = savedStyle && savedStyle !== 'all_formats';
+            // Accent color: fixed teal UNLESS the user has saved a specific default style in /settings (i.e. `prefs.timestampStyle` is a single format, not an overview in OVERVIEW_STYLES) -- checks the SAVED preference, not `style` above, so a one-off `style:` option on this particular call never triggers personalization by itself (Harkirat's explicit call).
+            const usesPersonalizedAccent = Boolean(savedStyle) && !OVERVIEW_STYLES.includes(savedStyle);
             accentColor = usesPersonalizedAccent ? await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT) : PRESET_ACCENT;
 
             // FIXED V14 EPHEMERAL DEFERRAL FORMAT: discord.js v14 strictly expects a boolean payload configuration object { ephemeral: true }
@@ -204,27 +232,25 @@ module.exports = {
                 // LIBRARY SERIALIZATION BYPASS PROTOCOL (ON ERROR RENDER):
                 return interaction.client.rest.patch(
                     Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-                    { body: { content: `❌ Could not parse your time input from "${queryInput}".\n• Try formats like: \`tomorrow\`, \`sun at 4:30pm\`, \`july17 8pm\`, or \`19:30\`.` } }
+                    { body: { content: `${BOT_EMOJI.cross} Could not parse your time input from "${queryInput}".\n• Try formats like: \`tomorrow\`, \`sun at 4:30pm\`, \`july17 8pm\`, or \`19:30\`.` } }
                 );
             }
 
             unix = timestampsBase.unix;
+            endUnix = timestampsBase.endUnix;
         }
 
-        const currentFullTzLabel = getTimezoneLabel(tz, tzLabels[tz]);
+        // A saved /settings zone can be any IANA zone, not only the 15 in tzLabels; fall back to its id so the label never reads "undefined".
+        const currentFullTzLabel = getTimezoneLabel(tz, tzLabels[tz] || tz);
 
-        const styleCharMap = {
-            fullDateTime: 'F', longDateTime: 'f', longDate: 'D', shortDate: 'd',
-            mediumTime: 'T', shortTime: 't', shortDateTimeShort: 's',
-            shortDateTimeMedium: 'S', relative: 'R'
-        };
-
-        // STATE STORAGE ID DESIGN: We encode critical query context properties inside the string key. Using a pipe (|) delimiter completely prevents crashes with timezone names containing underscores (e.g., Asia/Hong_Kong).
-        const cleanQueryText = queryInput.substring(0, 40).replace(/\|/g, ' ');
-        const statelessCustomId = `tsmenu|${unix}|${tz}|${cleanQueryText}`;
+        // STATE STORAGE ID DESIGN: We encode critical query context properties inside the string key. Using a pipe (|) delimiter completely prevents crashes with timezone names containing underscores (e.g., Asia/Hong_Kong). A range carries its end after a `~` in the time segment (2026-10-20 19:14 EDT); an old message without one still parses. The query is trimmed to whatever room is left under Discord's 100-character custom_id cap.
+        const timeSegment = endUnix ? `${unix}~${endUnix}` : `${unix}`;
+        const idHead = `tsmenu|${timeSegment}|${tz}|`;
+        const cleanQueryText = queryInput.substring(0, Math.min(40, 100 - idHead.length)).replace(/\|/g, ' ');
+        const statelessCustomId = `${idHead}${cleanQueryText}`;
         const parsedLine = `-# Parsed \`${queryInput}\` using timezone \`${currentFullTzLabel}\``;
 
-        // Shared dropdown component (2026-07-14) -- built once here instead of inline per-branch below, since text mode and embed mode both need the exact same select menu, just wrapped differently (nested inside the container vs. a top-level sibling row).
+        // One dropdown for every view (the overview, Short List and each single format), selected value pre-marked.
         const dropdownComponent = {
             type: 3,
             custom_id: statelessCustomId,
@@ -232,74 +258,38 @@ module.exports = {
             options: STYLE_SELECT_OPTIONS.map(opt => ({ ...opt, default: opt.value === (style || 'all_formats') }))
         };
 
-        let componentPayload = [];
+        // LAYOUT (Harkirat's, approved on the #testing-spam mock-ups 2026-10-20 18:23 EDT): a title that says what the panel is, then one row per format -- its name as an ALL-CAPS label, the time as each reader sees it, and the copyable code -- so neither the time nor the code wraps mid-line on a phone. The single-format view is this same panel with one row, so the two views cannot drift apart again (they did twice when each had its own layout). An unknown saved style falls back to the overview.
+        const codes = style === 'short_list' ? SHORT_LIST_CODES : (style && STYLE_CHAR[style] ? [STYLE_CHAR[style]] : ALL_CODES);
+        const headingLine = `## ${emojis.timestamp} Timestamp Codes\n-# Everyone sees these in their own time zone.\n-# **Tap a \`<code>\` to copy it.**`;
+        const { rangeText } = require('../utils/timestampHelper');
+        const rowsBlock = codes.map(c => {
+            const text = rangeText(Number(unix), endUnix ? Number(endUnix) : null, c, tz);
+            const label = endUnix && c === 'R' ? `${FORMAT_LABELS[c]} (STARTS)` : FORMAT_LABELS[c];
+            return `-# **${label}**\n**${text}**\n-# \`${text}\``;
+        }).join('\n\n');
+        const hintLine = `-# Switch views or pick a format`; // Harkirat's wording, 2026-10-20 18:30 EDT
+
+        let componentPayload;
         // Plain message content for text mode (2026-07-14) -- undefined in embed mode, where the container's own Text Display components carry everything instead. See sendV2Payload's `content` param.
         let textContent;
-
-        if (style) {
-            // VIEW MODE: SINGULAR TARGET LAYOUT NOTE (redesigned during review): this view previously told users to "use the dropdown below" without actually including one — the only place a dropdown ever appeared for this view was if you arrived here via the all-formats select menu (see handlers/timestamp.js's 'tsmenu|' handler, which reuses the incoming select component). Landing here directly via `/timestamp style:...` showed no dropdown at all. Now always included, nested at the bottom of the container per the redesign, with the selected style pre-marked.
-            const char = styleCharMap[style];
-            const headingLine = `### \`<t:${unix}:${char}>\` — <t:${unix}:${char}>`;
-            const hintLine = `-# Use the dropdown below to change timestamp style`;
-
-            if (isTextMode) {
-                // Text mode (2026-07-14): same content, no container/accent-color/divider chrome -- a blank line stands in for the divider since plain message content has no real divider component. Dropdown becomes a top-level sibling row instead of nested.
-                textContent = [headingLine, parsedLine, hintLine].join('\n\n');
-                componentPayload = [{ type: 1, components: [dropdownComponent] }];
-            } else {
-                // Layout per redesign: timestamp > divider > parsed line > "use dropdown" line > dropdown (parsed line moved back above the divider, under the timestamp itself).
-                componentPayload = [
-                    {
-                        type: 17, // Components v2: Section Container
-                        accent_color: accentColor,
-                        components: [
-                            { type: 10, content: headingLine }, // Type 10: Text Block
-                            { type: 14, spacing: 2, divider: true }, // Type 14: Interactive Separator/Divider
-                            { type: 10, content: parsedLine },
-                            { type: 10, content: hintLine },
-                            { type: 1, components: [dropdownComponent] }
-                        ]
-                    }
-                ];
-            }
+        if (isTextMode) {
+            // Text mode: the same strings with no container chrome; a blank line stands in for each divider, and the dropdown becomes a top-level row.
+            textContent = [headingLine, rowsBlock, parsedLine, hintLine].join('\n\n');
+            componentPayload = [{ type: 1, components: [dropdownComponent] }];
         } else {
-            // VIEW MODE: ALL FORMATS OVERVIEW (DEFAULT)
-            const lines = [
-                `\`<t:${unix}:F>\` — <t:${unix}:F>`,
-                `\`<t:${unix}:f>\` — <t:${unix}:f>`,
-                `\`<t:${unix}:D>\` — <t:${unix}:D>`,
-                `\`<t:${unix}:d>\` — <t:${unix}:d>`,
-                `\`<t:${unix}:T>\` — <t:${unix}:T>`,
-                `\`<t:${unix}:t>\` — <t:${unix}:t>`,
-                `\`<t:${unix}:s>\` — <t:${unix}:s>`,
-                `\`<t:${unix}:S>\` — <t:${unix}:S>`,
-                `\`<t:${unix}:R>\` — <t:${unix}:R>`
-            ].join('\n');
-            const headingLine = `## ${emojis.timestamp} Time Converted to Each User’s Local Timezone`;
-            const linesBlock = lines + `\n\n-# ✦ Tap on any \`<t:###:F>\` text above to instantly copy it`;
-            const hintLine = `-# Select a specific layout below to change views`;
-
-            if (isTextMode) {
-                textContent = [headingLine, linesBlock, parsedLine, hintLine].join('\n\n');
-                componentPayload = [{ type: 1, components: [dropdownComponent] }];
-            } else {
-                // Layout per redesign: title > divider > timestamps+tap-on-any > divider > parsed line > "select a specific layout" line > dropdown (parsed line moved back down below the timestamps list, not directly under the title).
-                componentPayload = [
-                    {
-                        type: 17, // Components v2: Section Container
-                        accent_color: accentColor,
-                        components: [
-                            { type: 10, content: headingLine },
-                            { type: 14, spacing: 2, divider: true },
-                            { type: 10, content: linesBlock },
-                            { type: 14, spacing: 2, divider: true },
-                            { type: 10, content: parsedLine },
-                            { type: 10, content: hintLine },
-                            { type: 1, components: [dropdownComponent] } // Action Row — nested inside the container, not a sibling
-                        ]
-                    }
-                ];
-            }
+            componentPayload = [{
+                type: 17, // Components v2: Container
+                accent_color: accentColor,
+                components: [
+                    { type: 10, content: headingLine },
+                    { type: 14, spacing: 2, divider: true },
+                    { type: 10, content: rowsBlock },
+                    { type: 14, spacing: 2, divider: true },
+                    { type: 10, content: parsedLine },
+                    { type: 10, content: hintLine },
+                    { type: 1, components: [dropdownComponent] } // Action Row nested inside the container, not a sibling
+                ]
+            }];
         }
 
         // --- LIBRARY SERIALIZATION BYPASS --- 32768 (1 << 15) forces Discord's gateway API to open the Components V2 engine route -- OMITTED entirely in text mode (2026-07-14) so the message renders as a classic plain-text response instead (content field + non-V2 action rows, which Discord supports identically in both systems). `flags` explicitly re-ORs in the ephemeral bit (64) rather than relying on sendV2Payload's plain 32768 default -- this render path (via overrideState, see the dropdown-driven re-render at the top of this function) doesn't go through a normal deferReply() that would set ephemeral state on its own, so it has to be preserved here. `flags: 0` (public + text mode) is intentional, not a bug -- sendV2Payload's default param only triggers on `undefined`, not on falsy values, so 0 is never silently overridden.

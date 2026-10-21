@@ -74,7 +74,7 @@ async function renderPayload(interaction, rawText, visibility = null, { edit = f
     const count = tester.countComponents(message.components);
     // The Edit JSON row goes under the design, after the dummies are made so it stays a real button. It costs 2 of the 40, so a design already at the cap renders without it.
     const editable = count + 2 <= tester.COMPONENT_CAP;
-    if (editable) message.components.push(tester.editRow(emojis.parseEmoji(emojis.editCalc)));
+    if (editable) message.components.push(tester.editRow(emojis.parseEmoji(emojis.edit)));
 
     let report = { named: [], remapped: [], fixed: [], unresolved: [] };
     try {
