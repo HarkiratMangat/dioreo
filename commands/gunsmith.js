@@ -19,7 +19,7 @@ const weaponSub = (name, mode, desc) => sub => sub.setName(name).setDescription(
 
 const data = new SlashCommandBuilder()
     .setName('gunsmith')
-    .setDescription('Best weapon loadouts and gunsmith builds for MP and DMZ')
+    .setDescription('Best MP and DMZ loadouts and gunsmith builds')
     .setIntegrationTypes([0, 1]).setContexts([0, 1, 2])
     .addSubcommand(weaponSub('mp', 'MP', 'Find an MP build or browse the META and more'))
     .addSubcommand(weaponSub('dmz', 'DMZ', 'Find a DMZ build or browse the META and more'));
