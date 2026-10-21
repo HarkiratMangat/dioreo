@@ -85,11 +85,12 @@ check('a very long Additional Info is cut at a line break and still renders unde
 // ── #8 /calendar's Active/Upcoming view survives a page click ──────────────
 const calendar = require('../commands/calendar');
 const calendarDoc = { currentSeasonTitle: 'Season 10: Test', calendar: [], newDraws: [], returningDraws: [] };
-const toggleIds = (filterMode) => JSON.stringify(calendar.buildContainer(calendarDoc, 0, undefined, false, filterMode)).match(/calpage_[0-9a-z_]+/g);
+const pagerIds = (filterMode) => JSON.stringify(calendar.buildContainer(calendarDoc, 0, undefined, false, filterMode)).match(/calpage_\d+_m\d+_[pn]/g);
 
-check('the page toggles carry the Active view, and only the Active view', () => {
-    assert.ok(toggleIds('active').every(id => id.endsWith('_a')), JSON.stringify(toggleIds('active')));
-    assert.ok(toggleIds('all').every(id => !id.endsWith('_a')), JSON.stringify(toggleIds('all')));
+// The Draws / Events / Modes buttons became a pager and a filter on 2026-10-21; the filter still has to survive a page click.
+check('the pager carries the filter, and an old Active view reads as Live + Upcoming', () => {
+    assert.ok(pagerIds('active').every(id => id.includes('_m5_')), JSON.stringify(pagerIds('active')));
+    assert.ok(pagerIds('all').every(id => id.includes('_m0_')), JSON.stringify(pagerIds('all')));
 });
 
 check('the empty Active view no longer points at the removed /settings control', () => {

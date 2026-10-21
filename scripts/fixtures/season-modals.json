@@ -40,7 +40,7 @@
           {
             "type": 4,
             "custom_id": "bp_line",
-            "label": "Battle Pass: Title, End Date",
+            "label": "Battle Pass: Title, Start - End",
             "style": 1,
             "value": "Battle Pass, September 4, 2026"
           }
@@ -52,7 +52,7 @@
           {
             "type": 4,
             "custom_id": "rank_line",
-            "label": "Ranked Series: Title, End Date",
+            "label": "Ranked Series: Title, Start - End",
             "style": 1,
             "value": "Ranked Series, September 4, 2026"
           }
@@ -64,9 +64,9 @@
           {
             "type": 4,
             "custom_id": "dmz_line",
-            "label": "DMZ Season: Title, End Date",
+            "label": "DMZ Season: Title, Start - End",
             "style": 1,
-            "value": "DMZ Season"
+            "value": "DMZ Season, TBD"
           }
         ]
       }
@@ -94,7 +94,7 @@
           {
             "type": 4,
             "custom_id": "bp_line",
-            "label": "Battle Pass: Title, End Date",
+            "label": "Battle Pass: Title, Start - End",
             "style": 1,
             "value": "Battle Pass"
           }
@@ -106,7 +106,7 @@
           {
             "type": 4,
             "custom_id": "rank_line",
-            "label": "Ranked Series: Title, End Date",
+            "label": "Ranked Series: Title, Start - End",
             "style": 1,
             "value": "Ranked Series"
           }
@@ -118,7 +118,7 @@
           {
             "type": 4,
             "custom_id": "dmz_line",
-            "label": "DMZ Season: Title, End Date",
+            "label": "DMZ Season: Title, Start - End",
             "style": 1,
             "value": "DMZ Season"
           }
@@ -149,7 +149,7 @@
           {
             "type": 4,
             "custom_id": "bp_line",
-            "label": "Battle Pass: Title, End Date",
+            "label": "Battle Pass: Title, Start - End",
             "style": 1,
             "value": "Battle Pass",
             "required": false
@@ -162,7 +162,7 @@
           {
             "type": 4,
             "custom_id": "rank_line",
-            "label": "Ranked Series: Title, End Date",
+            "label": "Ranked Series: Title, Start - End",
             "style": 1,
             "value": "Ranked Series",
             "required": false
@@ -175,7 +175,7 @@
           {
             "type": 4,
             "custom_id": "dmz_line",
-            "label": "DMZ Season: Title, End Date",
+            "label": "DMZ Season: Title, Start - End",
             "style": 1,
             "value": "DMZ Season",
             "required": false

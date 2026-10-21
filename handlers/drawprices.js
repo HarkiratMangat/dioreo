@@ -23,9 +23,9 @@ async function route(interaction) {
             // REVERTED to two-hop 2026-08-07 17:38 EDT (v2.60.0) -- the "pagination perf hybrid" single-hop UPDATE_MESSAGE (2026-08-06 22:17 EDT) causes a real, confirmed Discord client bug: a button's custom emoji (this row's region icons) can go blank after a re-render and sometimes never recover. Extensively investigated live (see docs/db-deferred-list.md's "button emoji goes blank" entry) -- ruled out our own payload (always correct), timing/lead-time (tested 200ms-2000ms delays on the single-hop path, all failed), animated-vs-static emoji, and button/emoji count. Only two-hop (deferUpdate() + PATCH @original) avoids it, on every command tested. Real measured cost: ~200-300ms extra per click -- accepted by Harkirat over losing the emoji or living with the bug.
             await interaction.deferUpdate();
             const selectedRegion = PRICE_REGION_PREFIXES[priceRegionPrefix];
-            // The last segment is the page number, or `f<key>` when a quick jump is open (commands/drawprices.js, focusOf), passed through as-is so the jump survives the switch.
+            // The last segment is the page number, or the filter (`f<key>` / `m<hex>[p<n>]`, commands/drawprices.js's filterOf), passed through as-is so the filter survives the switch.
             const lastSegment = interaction.customId.split('_').pop();
-            const currentSubpage = lastSegment.startsWith('f') ? lastSegment : (parseInt(lastSegment, 10) || 0);
+            const currentSubpage = /^[fm]/.test(lastSegment) ? lastSegment : (parseInt(lastSegment, 10) || 0);
 
             const UserPreference = require('../models/UserPreference');
             let prefs = await UserPreference.findOne({ discordId: interaction.user.id });
@@ -46,14 +46,48 @@ async function route(interaction) {
             const rest = interaction.customId.replace('price_subpage_', '');
             const lastUnderscore = rest.lastIndexOf('_');
             const region = rest.slice(0, lastUnderscore);
-            const targetPage = parseInt(rest.slice(lastUnderscore + 1), 10) || 0;
+            // A filtered view's pager carries the filter and its page (`m<hex>p<n>`) rather than a number.
+            const segment = rest.slice(lastUnderscore + 1);
+            const targetPage = segment.startsWith('m') ? segment : (parseInt(segment, 10) || 0);
 
             const pricesCommand = interaction.client.commands.get('draw');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
             return await pricesCommand.execute(syntheticInteraction, region, targetPage);
         }
 
-        // QUICK JUMP (2026-10-17 22:02 EDT) -- `price_jump_{region}`, a select: opens one draw type on its own, with Back in place of the pager. Two-hop like the branches above, for the same emoji-blank reason.
+        // FILTER (2026-10-21 13:02 EDT) -- `price_filteropen_{region}_{view}`, a button: opens the pop-up with the current picks ticked. Its submit, `price_filtersave_{region}`, shows only the picked draws; picking none returns to the all view. Two-hop, for the emoji-blank reason above.
+        if (interaction.isButton() && interaction.customId.startsWith('price_filteropen_')) {
+            const rest = interaction.customId.replace('price_filteropen_', '');
+            const lastUnderscore = rest.lastIndexOf('_');
+            const region = rest.slice(0, lastUnderscore);
+            const { buildFilterModal, filterOf } = require('../commands/drawprices');
+            const current = filterOf(rest.slice(lastUnderscore + 1));
+            return await interaction.showModal(buildFilterModal(region, current ? current.keys : []));
+        }
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('price_filtersave_')) {
+            await interaction.deferUpdate();
+            const region = interaction.customId.replace('price_filtersave_', '');
+            const { filterToken, JUMP_KEYS, FILTER_GROUPS } = require('../commands/drawprices');
+            // One dropdown per kind of draw (normal, armory, advanced); an unanswered one reads as none.
+            const values = FILTER_GROUPS.flatMap(group => { try { return interaction.fields.getStringSelectValues(group.id) || []; } catch { return []; } });
+            const picked = JUMP_KEYS.filter(key => values.includes(key));
+            const pricesCommand = interaction.client.commands.get('draw');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await pricesCommand.execute(syntheticInteraction, region, picked.length ? filterToken(picked) : 0);
+        }
+
+        // FILTER DROPDOWN (2026-10-21 11:50 EDT) -- `price_filter_{region}`, the multi-select the button above replaced within the hour; kept so panels posted before still answer.
+        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('price_filter_')) {
+            await interaction.deferUpdate();
+            const region = interaction.customId.replace('price_filter_', '');
+            const { filterToken, JUMP_KEYS } = require('../commands/drawprices');
+            const picked = JUMP_KEYS.filter(key => interaction.values.includes(key));
+            const pricesCommand = interaction.client.commands.get('draw');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await pricesCommand.execute(syntheticInteraction, region, picked.length ? filterToken(picked) : 0);
+        }
+
+        // QUICK JUMP (2026-10-17 22:02 EDT) -- `price_jump_{region}`, the single-pick select the filter above replaced; kept so panels posted before still answer. Opens one draw type on its own.
         if (interaction.isStringSelectMenu() && interaction.customId.startsWith('price_jump_')) {
             await interaction.deferUpdate();
             const region = interaction.customId.replace('price_jump_', '');

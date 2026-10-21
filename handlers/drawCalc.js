@@ -15,12 +15,13 @@ const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
     findLiveDoubleCPEntry, buildExportText, readBalanceFields, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
     buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName,
-    buildAddDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency, buildGoalModal, readGoal
+    buildAddDrawsModal, buildPriceDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency, buildGoalModal, readGoal
 } = require('../commands/drawCalculator');
 const { pullCount, upgradeKeyOf, isArmoryKey, armorySize, isAdvancedKey, advancedBoth, advancedLater } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES, CURRENCIES } = require('../utils/cpPackages');
 const basketStore = require('../utils/drawBasketStore');
+const { resolveEphemeral } = require('../utils/ephemeral');
 const { resolvePanelActor } = require('../utils/interactionContext');
 
 const OWNED_PREFIXES = ['calc~'];
@@ -138,6 +139,12 @@ async function loadOwned(interaction, state, actingUserId) {
         await renderPanel(interaction, { ...state, basketId: null, page: 0 }, null);
     }
     return basket;
+}
+
+// The region a new calculation starts in: the /settings default, else the last region viewed, else 10 CP. The same order the setup form's first pick uses.
+function defaultRegionFor(prefs) {
+    if (prefs?.defaultRegionMode && prefs.defaultRegionMode !== 'last_viewed') return prefs.defaultRegionMode;
+    return prefs?.defaultRegion || 'region_10';
 }
 
 async function route(interaction) {
@@ -363,6 +370,48 @@ async function route(interaction) {
         // "Save as New" from the Save step lands on the result it just saved (2026-10-14 17:28 EDT); a rename from the Saved view stays there. Saving an unsaved calculation lands on its result; renaming one that was already saved stays where it was (the Save step folded into the Saved view, 2026-10-16).
         if (!basket.name && updated?.name) { await renderPanel(interaction, { ...state, page: 0, verb: 'load' }, updated, `Saved as "${updated.name}".`); return true; }
         await renderPanel(interaction, state, updated);
+        return true;
+    }
+
+    // PRICE THESE DRAWS (2026-10-21 10:14 EDT): /draws' button opens the pop-up (buildPriceDrawsModal), a direct response like every showModal. The button carries no author, so whoever presses it prices for themselves.
+    if (interaction.isButton() && state.verb === 'drawspick') {
+        const list = await listSeasonDraws();
+        if (!list.length) {
+            try { await interaction.reply({ content: 'No draw this season has a price yet, so there is nothing to calculate.', flags: 64 }); }
+            catch (notifyError) { console.error('Failed to answer Price These Draws (interaction likely expired):', notifyError); }
+            return true;
+        }
+        const prefs = await UserPreference.findOne({ discordId: actingUserId });
+        return await interaction.showModal(buildPriceDrawsModal(list, defaultRegionFor(prefs)));
+    }
+    // Its submit starts a NEW calculation (his "yes, a new calc") as its own private message, the same way Help opens one: deferReply, never deferUpdate, because the pop-up was opened from /draws, which this must not overwrite.
+    if (interaction.isModalSubmit() && state.verb === 'drawspicksave') {
+        const picks = id => { try { return interaction.fields.getStringSelectValues(id) || []; } catch { return []; } };
+        // The pop-up's Calculation Visibility (2026-10-21 10:44 EDT); left blank, /settings' Draw Calculator visibility decides, as for /draw calculator.
+        const visPick = picks('visibility')[0];
+        const prefsForVis = await UserPreference.findOne({ discordId: actingUserId });
+        const isEphemeral = resolveEphemeral({ argPrivate: visPick ? visPick === 'ephemeral' : null, prefs: prefsForVis, prefsField: 'calculatorVisibility' });
+        await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
+        const text = id => { try { return interaction.fields.getTextInputValue(id); } catch { return null; } };
+        const list = await listSeasonDraws();
+        const ids = new Set([...picks('newd'), ...picks('retd')]);
+        // Read again rather than trusted from the pop-up, so a draw removed since it opened is left out and said so.
+        const picked = list.filter(d => ids.has(d.id));
+        const gone = ids.size - picked.length;
+        if (!picked.length) { await interaction.editReply({ content: gone ? 'The draws you picked are no longer listed, so no calculation was started.' : 'No draw was picked, so no calculation was started.' }); return true; }
+        const prefs = await UserPreference.findOne({ discordId: actingUserId });
+        let region = picks('region')[0];
+        if (!REGION_ORDER.includes(region)) region = defaultRegionFor(prefs);
+        const amount = text('amount');
+        const { fields, warning } = readBalanceFields({ amount: amount && amount.trim() ? amount : null });
+        const lines = picked.slice(0, MAX_LINES).map(d => ({ drawKey: d.drawKey, pullsDone: 0, title: d.title, ...(d.size ? { size: d.size } : {}) }));
+        const created = await basketStore.save(actingUserId, { banners: lines, region, ...(fields.balance !== undefined ? { balance: fields.balance } : {}) });
+        // Opens on Set Draw Progress (page 5) with the picks already in (his read, 2026-10-21 10:44 EDT), so the next step is entering the spins already done.
+        await renderPanel(interaction, { basketId: String(created._id), authorId: actingUserId, page: 5 }, created, gone ? 'A draw you picked is no longer listed, so it was left out.' : null);
+        if (warning) {
+            try { await interaction.followUp({ content: warning, flags: 64 }); }
+            catch (notifyError) { console.error('Failed to warn about a refused balance (interaction likely expired):', notifyError); }
+        }
         return true;
     }
 

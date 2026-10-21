@@ -415,7 +415,7 @@ t('Set Region & Balance sits at the bottom of the landing and the editor and und
         result: render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 6 }], ...basket }))
     };
     const e = require('../utils/emojiMap');
-    const his = `-# **${e.region20Cp} Region: \`20 CP\`${e.blank}${e.cp} Balance: \`3,000 CP\`**\n-# **${e.mythicCard} Mythic Cards: \`300\`${e.blank}${e.mythicCoin} Mythic Coins: \`0\`**`;
+    const his = `-# **${e.region20Cp} Region: \`20 CP\`${e.blank}${e.cp2} Balance: \`3,000 CP\`**\n-# **${e.mythicCard} Mythic Cards: \`300\`${e.blank}${e.mythicCoin} Mythic Coins: \`0\`**`;
     const at = {};
     for (const [name, panel] of Object.entries(screens)) {
         assert.strictEqual(buttons(panel).filter(b => verbOf(b) === 'region' || b.label === 'Set Balance').length, 0, `${name}: no region buttons, no Set Balance`);
@@ -1316,33 +1316,75 @@ t('/draw prices: the Series Armory page is page 3, priced per item and per full 
     assert.ok(!Object.keys(DRAW_META).some(k => k in dp.SERIES_ARMORY), 'armories stay out of DRAW_META, so the calculator never prices one as a ladder');
 });
 
-t('/draw prices: the quick jump opens one draw type, Back replaces the pager, and every view fits Discord (2026-10-17 22:01 EDT)', () => {
+t('/draw prices: the filter shows only the picked draws, pages them to fit, keeps them across a region switch, and every view fits Discord (2026-10-21 11:50 EDT)', () => {
     const dp = require('../commands/drawprices');
     const count = c => (c.components || []).reduce((n, x) => n + 1 + count(x), 0) + (c.accessory ? 1 : 0);
     const flat = c => [c, ...(c.components || []).flatMap(flat), ...(c.accessory ? [c.accessory] : [])];
     const keys = [...Object.keys(DRAW_META), ...Object.keys(dp.SERIES_ARMORY), 'advancedWeapon', 'advancedCharacter'];
+    assert.deepStrictEqual([...dp.JUMP_KEYS].sort(), [...keys].sort(), 'the filter lists every draw type');
+    const fits = (comps, label) => {
+        const total = comps.reduce((n, c) => n + 1 + count(c), 0);
+        const text = comps.flatMap(flat).filter(c => c.type === 10).reduce((n, c) => n + c.content.length, 0);
+        assert.ok(total <= 40, `${label}: ${total} components`);
+        assert.ok(text <= 4000, `${label}: ${text} characters of text`);
+    };
+    // A few picked sets: one draw, a mixed handful, every draw.
+    const sets = [...keys.map(k => [k]), ['mythicWeapon', 'armoryLegendaryWeapon', 'advancedWeapon'], ['legendaryGunReactive', 'doubleEpicCharacters'], keys];
     for (const region of REGION_ORDER) {
-        for (const view of [0, 1, 2, 3, 4, ...keys.map(k => `f${k}`)]) {
+        for (const view of [0, 1, 2, 3, 4]) {
             const comps = dp.buildContainer(region, 0, true, view, null);
-            const total = comps.reduce((n, c) => n + 1 + count(c), 0);
-            assert.ok(total <= 40, `${region} ${view}: ${total} components`);
+            fits(comps, `${region} page ${view}`);
             const all = comps.flatMap(flat);
-            const jump = all.find(c => c.type === 3 && c.custom_id === `price_jump_${region}`);
-            assert.ok(jump && jump.options.length === keys.length, `${region} ${view}: the jump select lists every draw type`);
-            const focused = typeof view === 'string' ? view.slice(1) : null;
-            assert.deepStrictEqual(jump.options.filter(o => o.default).map(o => o.value), focused ? [focused] : [], `${region} ${view}: the open draw is the select's default`);
-            const back = all.find(c => c.type === 2 && c.label === 'Show All Draws');
-            const pager = all.some(c => c.custom_id === 'price_subpage_indicator');
-            assert.strictEqual(Boolean(back), Boolean(focused), `${region} ${view}: Show All Draws only in a jump`);
-            assert.strictEqual(pager, !focused, `${region} ${view}: the pager only in the all view`);
-            const regionIds = all.filter(c => c.type === 2 && /^price_region_/.test(c.custom_id || '')).map(c => c.custom_id.split('_').pop());
-            assert.ok(regionIds.every(v => v === String(focused ? `f${focused}` : view)), `${region} ${view}: a region switch keeps the view`);
+            assert.ok(all.some(c => c.type === 10 && c.content === '-# **Draws:** `Showing all draws`'), `${region} ${view}: the filter line says all draws show`);
+            assert.ok(all.some(c => c.type === 2 && c.custom_id === `price_filteropen_${region}_${view}`), `${region} ${view}: Filter carries the view`);
+            assert.ok(!all.some(c => c.label === 'Show All Draws'), `${region} ${view}: no Show All Draws in the all view`);
+            assert.ok(all.some(c => c.custom_id === 'price_subpage_indicator'), `${region} ${view}: the pager in the all view`);
+        }
+        for (const picked of sets) {
+            // The filter keeps the dropdown's order (JUMP_KEYS), whatever order they were picked in.
+            const ordered = dp.JUMP_KEYS.filter(k => picked.includes(k));
+            const shown = [];
+            let pages = 1;
+            for (let page = 0; page < pages; page++) {
+                const token = dp.filterToken(ordered, page);
+                assert.deepStrictEqual(dp.filterOf(token), { keys: ordered, page }, `${token} reads back`);
+                const comps = dp.buildContainer(region, 0, true, token, null);
+                fits(comps, `${region} ${token}`);
+                const all = comps.flatMap(flat);
+                const { SHORT_NAME } = require('../commands/drawCalculator');
+                const line = all.find(c => c.type === 10 && /^-# \*\*(Regular|Armory|Advanced):\*\*/.test(c.content));
+                const expected = dp.FILTER_GROUPS.map(g => [g.line, g.keys.filter(k => ordered.includes(k))]).filter(([, ks]) => ks.length)
+                    .map(([label, ks]) => `-# **${label}:** ${ks.map(k => `\`${SHORT_NAME[k] || dp.jumpMeta(k).name}\``).join(', ')}`).join('\n');
+                assert.strictEqual(line.content, expected, `${region} ${token}: one small line per kind of draw picked, comma-separated`);
+                assert.ok(!all.some(c => c.type === 9 && c.components.some(x => x === line)), `${region} ${token}: once filtered the line is plain text, not a section`);
+                const filterRow = all.find(c => c.type === 1 && c.components.some(x => x.label === 'Filter Again'));
+                assert.deepStrictEqual(filterRow && filterRow.components.map(x => x.label), ['Show All Draws', 'Filter Again'], `${region} ${token}: Show All Draws and Filter Again share a row`);
+                assert.ok(filterRow.components[1].custom_id === `price_filteropen_${region}_${token}`, `${region} ${token}: Filter Again carries the filter`);
+                const modal = dp.buildFilterModal(region, ordered);
+                assert.deepStrictEqual(modal.components.map(c => c.label), ['Normal Draws', 'Series Armory', 'Advanced Draws'], 'the pop-up has his three groups');
+                assert.deepStrictEqual(modal.components.flatMap(c => c.component.options.map(o => o.value)).sort(), [...keys].sort(), 'the three groups hold every draw once');
+                assert.deepStrictEqual(modal.components.flatMap(c => c.component.options.filter(o => o.default).map(o => o.value)).sort(), [...ordered].sort(), `${region} ${token}: the pop-up ticks the picked draws`);
+                assert.doesNotThrow(() => new (require('discord.js').ModalBuilder)(modal).toJSON(), 'discord.js accepts the pop-up');
+                assert.ok(all.some(c => c.type === 2 && c.label === 'Show All Draws'), `${region} ${token}: Show All Draws in a filtered view`);
+                const indicator = all.find(c => c.custom_id === 'price_subpage_indicator');
+                pages = indicator ? Number(indicator.label.split('/')[1]) : 1;
+                const regionIds = all.filter(c => c.type === 2 && /^price_region_/.test(c.custom_id || '')).map(c => c.custom_id.split('_').pop());
+                assert.ok(regionIds.every(v => v === token), `${region} ${token}: a region switch keeps the filter`);
+                const ids = all.map(c => c.custom_id).filter(Boolean);
+                assert.strictEqual(new Set(ids).size, ids.length, `${region} ${token}: no two controls share an id`);
+                const text = all.filter(c => c.type === 10).map(c => c.content).join('\n');
+                for (const k of keys) if (new RegExp(dp.jumpMeta(k).name.replace(/[()+]/g, '.'), 'i').test(text)) shown.push(k);
+            }
+            assert.deepStrictEqual([...new Set(shown)].filter(k => ordered.includes(k)).sort(), [...ordered].sort(), `${region} ${ordered.length} picked: every picked draw shows across the pages`);
         }
     }
-    const jumpOpt = dp.data.toJSON().options.find(o => o.name === 'prices').options.find(o => o.name === 'type');
-    assert.deepStrictEqual(jumpOpt.choices.map(c => c.value).sort(), [...keys].sort(), '/draw prices type: lists the same draws as the dropdown');
+    const typeOpt = dp.data.toJSON().options.find(o => o.name === 'prices').options.find(o => o.name === 'type');
+    assert.deepStrictEqual(typeOpt.choices.map(c => c.value).sort(), [...keys].sort(), '/draw prices type: lists the same draws as the filter');
     const one = dp.buildContainer('region_10', 0, true, 'fmythicWeapon', null).flatMap(flat).filter(c => c.type === 10).map(c => c.content).join('\n');
-    assert.ok(/Mythic Weapon Draw/i.test(one) && !/Legendary Weapon Draw \(Reactive\)/i.test(one), 'a jump shows only the picked draw');
+    assert.ok(/Mythic Weapon Draw/i.test(one) && !/Legendary Weapon Draw \(Reactive\)/i.test(one), 'one picked draw shows only that draw');
+    assert.strictEqual(dp.filterOf('m0'), null, 'an empty filter is the all view');
+    const title = dp.buildContainer('region_20', 0, true, 0, null)[0].components[0].content.split('\n')[1];
+    assert.ok(title.startsWith(`${require('../utils/emojiMap').region20Cp} `), `the region's icon leads the subtitle: ${title}`);
 });
 
 // ==========================================

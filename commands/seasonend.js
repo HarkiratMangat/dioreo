@@ -16,7 +16,20 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 // Repalette (2026-07-12, Section 5 of the batch) -- see calendar.js's matching comment for the full nav-row hue-spread reasoning. A warm sunset amber -- fitting for "a season ending" -- that also pairs as an analogous warm neighbor to Patch Notes' gold one slot over, closing out the nav row's cool-to-warm progression.
 const PRESET_ACCENT = 15898954; // Neon Amber (#F2994A) — 5th nav button (Season End)
 
+// A season's progress as a subtext line, "▰▰▰▰▰▰▱▱▱▱ **62%** · Day 64 of 103" (2026-10-21 10:14 EDT). Null with no start or end, before the start, or once the season has ended, so the panel reads as it did without one.
+function progressLine(start, endMs, nowMs) {
+    const startMs = start ? new Date(start).getTime() : NaN;
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs || nowMs < startMs || nowMs >= endMs) return null;
+    const DAY = 86400000;
+    const share = (nowMs - startMs) / (endMs - startMs);
+    const filled = Math.min(10, Math.max(0, Math.round(share * 10)));
+    const day = Math.floor((nowMs - startMs) / DAY) + 1;
+    const total = Math.round((endMs - startMs) / DAY);
+    return `-# ${'▰'.repeat(filled)}${'▱'.repeat(10 - filled)} **${Math.round(share * 100)}%** · Day ${day} of ${total}`;
+}
+
 module.exports = {
+    progressLine,
     // COMMAND DEFINITION: Base command 'season' with subcommand 'end'
     data: new SlashCommandBuilder()
         .setName('season')
@@ -61,26 +74,28 @@ module.exports = {
         // Uses fallback strings ('Battle Pass', 'Ranked Series') if custom titles haven't been set yet. NOTE (redesigned during review): removed the "Exact Time... <t:X:T>" line and prefixed the remaining two timestamp lines with "✦ " per the new design. Also — the DMZ end time showing 1 hour off from the others was traced to adminParser.js's parseAdminDate relying on the host machine's local timezone during parsing; fixed there so all three deadlines are now parsed the same UTC-anchored way regardless of the bot's local system settings.
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
 
-        // NOTE (redesigned during review): headers used to be H2 (##) with emoji + season title + " ends..." all on one line — on narrow (mobile) widths that combined string routinely wrapped onto a second line, which looked broken given the whole point of a countdown header is to read at a glance. Previously fixed by dropping to H3 (###), but that made the titles feel smaller than the rest of the bot's uniform heading sizes. Real fix: move "ends..."/"that's..." OFF the heading line entirely and onto the timestamp lines below it ("✦ **Ends...** <timestamp>" / "✦ **That's...** <relative>") — the heading is now just "{emoji} **{title}**", short enough to stay on one line even on mobile, which means it's safe to go back to the bigger H2 (##) size. isTBD (added 2026-07-31 14:00 EDT) -- distinct from "not set yet": TBD means the admin explicitly typed "TBD" for this deadline (adminParser's applyLine, handlers/manage.js), so it gets its own honest message instead of reading as simply forgotten/unconfigured.
-        const buildEndBlock = (emoji, title, unix, isTBD) => {
+        // NOTE (redesigned during review): headers used to be H2 (##) with emoji + season title + " ends..." all on one line — on narrow (mobile) widths that combined string routinely wrapped onto a second line, which looked broken given the whole point of a countdown header is to read at a glance. Previously fixed by dropping to H3 (###), but that made the titles feel smaller than the rest of the bot's uniform heading sizes. Real fix: move "ends..."/"that's..." OFF the heading line entirely and onto the timestamp lines below it ("**Ends...** <timestamp>" / "**That's...** <relative>"; they carried a ✦ until 2026-10-21) — the heading is now just "{emoji} **{title}**", short enough to stay on one line even on mobile, which means it's safe to go back to the bigger H2 (##) size. isTBD (added 2026-07-31 14:00 EDT) -- distinct from "not set yet": TBD means the admin explicitly typed "TBD" for this deadline (adminParser's applyLine, handlers/manage.js), so it gets its own honest message instead of reading as simply forgotten/unconfigured.
+        const buildEndBlock = (emoji, title, unix, isTBD, start) => {
             let body;
             if (isTBD) body = '*TBD — date not yet announced.*';
-            else if (unix) body = `✦ **Ends...** <t:${unix}:F>\n✦ **That's...** <t:${unix}:R>`;
+            else if (unix) body = `**Ends...** <t:${unix}:F>\n**That's...** <t:${unix}:R>`;
             else body = '*Date has not been set yet.*';
-            return { type: 10, content: `## ${emoji} **${title}**\n${body}` };
+            // The bar sits under the dates, in a quote, only while the season is running. It was above them for an hour; Harkirat moved it back on 2026-10-21 11:05 EDT ("put the progress bars below as they were before, up top doesnt look good"). The date lines lost their ✦ and the bar went into `> -#` at 11:14 EDT, picked from mock-ups in #testing-spam: without bullets, the quote line is what sets the bar apart from the dates.
+            const bar = isTBD ? null : progressLine(start, unix ? unix * 1000 : null, Date.now());
+            return { type: 10, content: `## ${emoji} **${title}**\n${body}${bar ? `\n> ${bar}` : ''}` };
         };
 
         const containerPayload = {
             type: 17,
             accent_color: accentColor,
             components: [
-                buildEndBlock(emojis.bp1, seasonalDoc?.bpTitle || 'Battle Pass', bpUnix, seasonalDoc?.bpEndTBD),
+                buildEndBlock(emojis.bp1, seasonalDoc?.bpTitle || 'Battle Pass', bpUnix, seasonalDoc?.bpEndTBD, seasonalDoc?.bpStart),
                 { type: 14, spacing: 2, divider: true }, // Structural Separator
 
-                buildEndBlock(emojis.rank || '🏆', seasonalDoc?.rankTitle || 'Ranked Series', rankUnix, seasonalDoc?.rankEndTBD),
+                buildEndBlock(emojis.rank || '🏆', seasonalDoc?.rankTitle || 'Ranked Series', rankUnix, seasonalDoc?.rankEndTBD, seasonalDoc?.rankStart),
                 { type: 14, spacing: 2, divider: true },
 
-                buildEndBlock(emojis.dmz || '💀', seasonalDoc?.dmzTitle || 'DMZ Season', dmzUnix, seasonalDoc?.dmzEndTBD)
+                buildEndBlock(emojis.dmz || '💀', seasonalDoc?.dmzTitle || 'DMZ Season', dmzUnix, seasonalDoc?.dmzEndTBD, seasonalDoc?.dmzStart)
             ]
         };
 

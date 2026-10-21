@@ -137,6 +137,15 @@ const emojis = {
     viewSaved: '<a:ViewSaved:1560682871151132793>',   // re-uploaded 2026-10-16 14:31 EDT
     // The calculator's Edit Selection button (2026-10-14 19:28 EDT): prod id here; the dev bot re-points to its 1560068687942123642 by name at boot. Renamed EditCalc -> Edit on every app by Harkirat (2026-10-20 13:19 EDT); the calculator's edit buttons and /autobuild's Adjust both use it.
     edit: '<a:Edit:1560408533160296519>',
+    // /draw prices' Show All Draws once a filter is set (2026-10-21 13:14 EDT, Harkirat gave this prod id; swapped for his new Return 13:41 EDT). The dev app's emoji of the same name is matched at boot.
+    returnArrow: '<:Return:1562521110572961882>',
+    // The reminder bell (2026-10-21 15:41 EDT, Harkirat: "upload ... Notification.avif to all the bots first. and use it for the bell icon"). Uploaded to prod Dioreo at 15:49 EDT; the prod Dioreo Admin copy waits for deploy (its token is not on the Mac).
+    notification: '<a:Notification:1562553366461284444>',
+    // /calendar's status dots (2026-10-21 14:34 EDT, Harkirat: "Red with strike through for finished events, green for live, white for upcoming"); prod ids read from the prod app's emoji list, the dev app's are matched by name. whiteDotGlow (below) marks upcoming.
+    greenDotGlow: '<:GreenDotGlow_GDG:1542356494220140685>',
+    redDotGlow: '<:RedDotGlow_RDG:1542356487882416248>',
+    // /draw prices' Filter and Filter Again (2026-10-21 13:41 EDT, Harkirat's prod id; the dev app's Filter is matched by name).
+    filter: '<:Filter:1562521111579590736>',
     // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.
     copyExport: '<a:CopyExport:1560682776305471600>',   // re-uploaded 2026-10-16 14:31 EDT
 };

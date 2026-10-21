@@ -888,7 +888,7 @@ function regionBalanceSection(state, basket) {
     const region = basket?.region || 'region_10';
     const content = [
         // The word before its value, with a colon (2026-10-18 19:40 EDT, his ask: "like **Region: `20 CP`**"): a label joined to its value, the /draw prices grammar. The :blank: emoji between the pair, no spaces and no dot (2026-10-18 21:09 EDT, his ask).
-        `-# **${emojis[REGION_EMOJI_KEY[region]]} Region: \`${regionLabel(region)}\`${emojis.blank}${emojis.cp} Balance: \`${fmt(basket?.balance || 0)} CP\`**`,
+        `-# **${emojis[REGION_EMOJI_KEY[region]]} Region: \`${regionLabel(region)}\`${emojis.blank}${emojis.cp2} Balance: \`${fmt(basket?.balance || 0)} CP\`**`, // cp2, the same CP icon as the Set Region & Balance button beside it (Harkirat, 2026-10-20 22:26 EDT)
         `-# **${emojis.mythicCard} Mythic Cards: \`${fmt(basket?.mythicCards || 0)}\`${emojis.blank}${emojis.mythicCoin} Mythic Coins: \`${fmt(basket?.mythicCoins || 0)}\`**`
     ].join('\n');
     return { type: 9, components: [{ type: 10, content }],
@@ -1098,6 +1098,33 @@ function buildAddDrawsModal(state, basket, seasonDraws) {
     }));
     return { custom_id: encodeState('addsave', state), title: 'Add Draws', components };
 }
+// PRICE THESE DRAWS (2026-10-21 10:14 EDT, Harkirat: "have the price these draws button open a modal that allows you to select the specific draws ... 2 drops, pick from new draws, pick from returning draws. as well as an input for their CP balance and dropdown for region? and yes, a new calc."). Opened from /draws; handlers/drawCalc.js's `drawspicksave` starts a NEW calculation from it, privately. Only draws with a price type are listed (listSeasonDraws), so every pick can be priced.
+function buildPriceDrawsModal(seasonDraws, region = 'region_10') {
+    const option = d => ({
+        label: String(d.title).slice(0, 100), value: d.id,
+        description: `${shortName(d.drawKey)}${isArmoryKey(d.drawKey) ? ` · ${d.size} ${unitOf(d.drawKey)}` : ''}`.slice(0, 100),
+        emoji: emojis.parseEmoji(emojis[metaOf(d.drawKey).tier])
+    });
+    const pick = (id, label, list) => {
+        const shown = list.slice(0, 25);
+        return shown.length ? { type: 18, label, description: 'Select any draws you want to calculate', component: { type: 3, custom_id: id, required: false, min_values: 0, max_values: Math.min(shown.length, MAX_LINES), options: shown.map(option) } } : null;
+    };
+    const draws = seasonDraws || [];
+    return { custom_id: encodeState('drawspicksave', {}), title: 'Calculate Draws', components: [
+        pick('newd', 'New Draws', draws.filter(d => d.kind === 'new')),
+        pick('retd', 'Returning Draws', draws.filter(d => d.kind === 'returning')),
+        { type: 18, label: 'CP Balance', description: 'Set CP you already own or leave it blank', component: { type: 4, custom_id: 'amount', style: 1, required: false, placeholder: 'e.g. 3,000 or 3k' } },
+        { type: 18, label: 'CP Region', component: {
+            type: 3, custom_id: 'region', required: true, min_values: 1, max_values: 1,
+            options: REGION_ORDER.map(key => ({ label: regionLabel(key), value: key, emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]]), ...(key === region ? { default: true } : {}) }))
+        } },
+        // Who sees the new calculation (2026-10-21 10:44 EDT, his wording). Optional: left blank, it follows /settings' Draw Calculator visibility, as /draw calculator does.
+        { type: 18, label: 'Calculation Visibility', description: 'Open the calculation message publicly or ephemeral (only you can see)', component: {
+            type: 3, custom_id: 'visibility', required: false, min_values: 0, max_values: 1, placeholder: '(Optional) Choose message visibility...',
+            options: [{ label: 'Public', value: 'public', description: 'Everyone in the chat can see it' }, { label: 'Only You', value: 'ephemeral', description: 'Only you can see it' }]
+        } }
+    ].filter(Boolean) };
+}
 // THE REMOVE POP-UP (2026-10-18 13:37 EDT): every selection, pick one or more. Submitting is the confirmation (his "soft confirm"). Each value carries the line's draw too, so a pop-up opened before the list changed cannot remove the wrong line.
 function buildRemoveModal(state, basket) {
     const lines = (basket?.banners || []).slice(0, 25);
@@ -1207,14 +1234,15 @@ async function listSeasonDraws(nowMs = Date.now()) {
     const seasonOver = bpEndMs !== null && nowMs > bpEndMs;
     const calendarDraws = (doc.calendar || []).filter(e => e.category === 'draw');
     const out = [];
-    for (const d of [...(doc.newDraws || []), ...(doc.returningDraws || [])]) {
+    // Each draw keeps which list it came from (2026-10-21 10:21 EDT), so /draws' Price These Draws pop-up can offer New and Returning in their own dropdowns.
+    for (const d of [...(doc.newDraws || []).map(x => ({ ...x, __kind: 'new' })), ...(doc.returningDraws || []).map(x => ({ ...x, __kind: 'returning' }))]) {
         if (!d.priceType || !isPricedDrawType(d.priceType) || !CALC_KEYS.includes(d.priceType)) continue;
         if (seasonOver) {
             const cal = calendarDraws.find(e => isSameDrawTitle(e.title, d.title));
             const endMs = cal && cal.endDate ? new Date(cal.endDate).getTime() : bpEndMs;
             if (!(endMs > nowMs)) continue;
         }
-        out.push({ id: String(d._id), title: d.title, drawKey: d.priceType, date: d.date || null, size: d.priceType === 'armoryMythicWeapon' ? MYTHIC_ARMORY_SIZE : isArmoryKey(d.priceType) ? Math.max(1, armoryItemCount(d)) : null });
+        out.push({ id: String(d._id), kind: d.__kind, title: d.title, drawKey: d.priceType, date: d.date || null, size: d.priceType === 'armoryMythicWeapon' ? MYTHIC_ARMORY_SIZE : isArmoryKey(d.priceType) ? Math.max(1, armoryItemCount(d)) : null });
     }
     return out.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 }
@@ -1645,5 +1673,5 @@ module.exports = {
     buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,
     setTypeCount, SETUP_CONTAINER_BUDGET, SETUP_JSON_BUDGET, MAX_LINES, MAX_SAVED, linePages,
     CALC_KEYS, metaOf, unitOf, lineName, freshLine, buildProgressPanel, buildSpinsInModal, readSpinsIn, listSeasonDraws, selectionSummary,
-    buildAddDrawsModal, buildRemoveModal, readRemovePicks, progressTitle, buildRegionBalanceModal, regionBalanceSection, lineHint, calcCurrency, buildGoalModal, readGoal, ADVANCED_GOAL_TEXT
+    buildAddDrawsModal, buildPriceDrawsModal, buildRemoveModal, readRemovePicks, progressTitle, buildRegionBalanceModal, regionBalanceSection, lineHint, calcCurrency, buildGoalModal, readGoal, ADVANCED_GOAL_TEXT
 };

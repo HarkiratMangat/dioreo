@@ -67,10 +67,10 @@ function textOf(components) {
 }
 
 (async () => {
-    await check('the option is registered before `visibility`, with the three roadmap choices plus Your Stats', () => {
+    await check('the option is registered before `visibility`, with the three roadmap choices (Your Stats hidden until it launches post-v3, 2026-10-21 10:15 EDT)', () => {
         const opts = settings.data.toJSON().options;
         assert.deepStrictEqual(opts.map(o => o.name), ['open', 'visibility']);
-        assert.deepStrictEqual(opts[0].choices.map(c => c.value), ['visibility', 'preferences', 'colors', 'stats']);
+        assert.deepStrictEqual(opts[0].choices.map(c => c.value), ['visibility', 'preferences', 'colors']);
         assert.ok(!opts[0].required, 'open is optional');
     });
 

@@ -19,10 +19,10 @@ const weaponSub = (name, mode, desc) => sub => sub.setName(name).setDescription(
 
 const data = new SlashCommandBuilder()
     .setName('gunsmith')
-    .setDescription('Best weapon loadouts and gunsmith builds for MP and DMZ')
+    .setDescription('Best MP and DMZ loadouts and gunsmith builds')
     .setIntegrationTypes([0, 1]).setContexts([0, 1, 2])
-    .addSubcommand(weaponSub('mp', 'MP', 'Find an MP weapon\'s loadout, or browse a whole class, Meta or every MP build'))
-    .addSubcommand(weaponSub('dmz', 'DMZ', 'Find a DMZ weapon\'s loadout, or browse Meta or every DMZ build'));
+    .addSubcommand(weaponSub('mp', 'MP', 'Find an MP build or browse the META and more'))
+    .addSubcommand(weaponSub('dmz', 'DMZ', 'Find a DMZ build or browse the META and more'));
 
 // Matches a scope descriptor back to its human label -- a FIXED_SCOPES entry's own label for the 4 fixed scopes, or the display-cased category name for one of the 7 category scopes.
 function labelForScope(scope) {

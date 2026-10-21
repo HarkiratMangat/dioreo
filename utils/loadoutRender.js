@@ -220,7 +220,8 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     const attachmentLines = (activeBuild.attachments || []).map(att => `• \`${att}\``).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
 
-    let titleContent = `# ${activeBuild.weaponName}`;
+    // `##`, not `#` (Harkirat, 2026-10-20 22:23 EDT): every other panel's title is `##`, and on a phone `#` wraps the longer command titles onto two lines.
+    let titleContent = `## ${activeBuild.weaponName}`;
     // hideBadges is set for a meta scope browse -- "Meta" is implied by the view itself there, per Harkirat's call to hide the WHOLE badge line rather than just the redundant Meta badge. Category browses keep badges ("Best AR" is still informative in an AR list).
     const badgesLine = hideBadges ? null : buildBadgesLine(activeBuild);
     if (badgesLine) titleContent += `\n${badgesLine}`;
@@ -249,7 +250,8 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     const codeText = activeBuild.mode !== 'DMZ' && (activeBuild.shareCode || activeBuild.buildName);
     if (codeText) {
         if (copyIds) {
-            containerComponents.push({ type: 9, components: [{ type: 10, content: '### Gunsmith Code' }], accessory: { type: 2, style: 3, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.copyExport) } });
+            // Primary (blue), not Success (green), per Harkirat 2026-10-20 22:23 EDT: blue is the bot's call-to-action colour, green means "set / you are here". Copy Attachments stays grey as the secondary courtesy button.
+            containerComponents.push({ type: 9, components: [{ type: 10, content: '### Gunsmith Code' }], accessory: { type: 2, style: 1, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.copyExport) } });
             containerComponents.push({ type: 10, content: `\`${codeText}\`` });
         } else {
             containerComponents.push({ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` });

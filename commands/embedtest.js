@@ -165,7 +165,7 @@ module.exports = {
     buildEditModal,
     data: new SlashCommandBuilder()
         .setName('embedtest')
-        .setDescription('Dev bot: render pasted message JSON with the bot\'s own emojis')
+        .setDescription('Dev bot: render pasted message JSON')
         .addStringOption(o => o.setName('json').setDescription('The message JSON (leave empty to paste it in a box instead)').setMaxLength(6000))
         .addAttachmentOption(o => o.setName('file').setDescription('A .json or .txt file, for a payload too long to paste'))
         .addStringOption(o => o.setName('visibility').setDescription('Show the render only to you, or to everyone in the chat (default: what the JSON says)')

@@ -21,6 +21,9 @@ const DIOR_ID = '1139845545754632283';
 //
 // Idle-timeout expiry used to ALSO be encoded here (a `|{expiresAt}` 3rd segment, checked reactively on click) but that's gone (2026-07-18) -- replaced by `utils/passiveExpiry.js`'s PASSIVE setTimeout-based auto-disable, scheduled at the bottom of execute() after every send. See that module's own comment for the full mechanism and why it replaces rather than supplements the old design.
 
+// Your Stats is HIDDEN until it launches after v3 (Harkirat, 2026-10-21 10:15 EDT: "remove the 'stats' button from the settings command for now, just continue tracking in the background. we'll launch it post v3 officially."). Counting carries on (utils/userStats.js); only the header button and `open:Your Stats` go. Flip to true at launch; the page itself is unchanged and still answers a button on a panel posted before.
+const STATS_VISIBLE = false;
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('settings')
@@ -31,7 +34,7 @@ module.exports = {
             { name: 'Visibility', value: 'visibility' },
             { name: 'Preferences', value: 'preferences' },
             { name: 'Colors', value: 'colors' },
-            { name: 'Your Stats', value: 'stats' }
+            ...(STATS_VISIBLE ? [{ name: 'Your Stats', value: 'stats' }] : [])
         ))
         // Added 2026-07-18 (v2 quick-wins batch) -- every other command already has this option; /settings was simply missed. Same name/description/priority pattern as everywhere else (explicit option > saved settingsVisibility preference > public default, see resolveEphemeral below) -- the in-panel Show/Hide toggle button still works exactly as before for changing the SAVED preference; this just lets one specific invocation override it.
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
@@ -169,7 +172,7 @@ module.exports = {
             type: 9,
             components: [{
                 type: 10,
-                content: `# ${emojis.settings} Settings Dashboard\n### <@${userId}> | \`${interaction.user.username}\`\n(\`${userId}\`)`
+                content: `## ${emojis.settings} Settings Dashboard\n### <@${userId}> | \`${interaction.user.username}\`\n(\`${userId}\`)`
             }],
             accessory: { type: 11, media: { url: userAvatarUrl } }
         });
@@ -187,7 +190,7 @@ module.exports = {
             emoji: emojis.parseEmoji(emojis.eyedropper)
         });
         // Your Stats (2026-10-20 18:36 EDT, Harkirat: "a button up where the settings dashboard section is"): page 2 of this same panel, via the ordinary set_page_ handler.
-        profileLinkButtons.push({ type: 2, style: 1, label: "Your Stats", custom_id: `set_page_2|${userId}` });
+        if (STATS_VISIBLE) profileLinkButtons.push({ type: 2, style: 1, label: "Your Stats", custom_id: `set_page_2|${userId}` });
         containerComponents.push({ type: 1, components: profileLinkButtons });
 
         containerComponents.push({ type: 14, spacing: 2, divider: true });
@@ -310,16 +313,6 @@ module.exports = {
             });
 
             // NO "profile source" preference here, and that is a deliberate call (2026-08-09 17:12 EDT, Harkirat: "let's just leave it honestly"). Which profile the colours come from is purely CONTEXTUAL -- a DM has no server profile, and a server uses the user's server profile when they have one. A stored preference would only ever restate where the command was already run, so it was built and then removed rather than shipped as a setting that explains itself. The one real override lives on /colors (`from:`), and the in-panel toggle switches the view once server colours actually exist.
-
-            // Calendar's Active/All Events filter -- SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request): a saved default preference wasn't earning its keep as its own /settings row, so this toggle no longer renders and the preference is no longer written or read (see commands/calendar.js's `filterMode`, which now ignores `calendarEventFilter` entirely -- `/calendar`'s own `view` slash option is the one-off per-invocation replacement). Deliberately NOT deleted -- kept intact behind this comment in case the preference comes back. `handlers/settings.js`'s `toggle_calfilter_active`/`_all` branches are correspondingly unreachable now (nothing renders the button that would fire them) but are also left in place. const eventFilter = prefs.calendarEventFilter || 'all'; const isActiveOnly = eventFilter === 'active'; containerComponents.push({
-            //     type: 9,
-            //     components: [{ type: 10, content: `**Calendar Events** = \`${isActiveOnly ? 'Active/Upcoming Only' : 'All Events'}\`` }],
-            //     accessory: {
-            //         type: 2, style: 2,
-            //         label: isActiveOnly ? 'Show All' : 'Show Active Only',
-            //         custom_id: `${isActiveOnly ? 'toggle_calfilter_all' : 'toggle_calfilter_active'}|${userId}`
-            //     }
-            // });
 
             containerComponents.push({ type: 10, content: `-# ← Back to page 1 for Visibility settings` });
         }
