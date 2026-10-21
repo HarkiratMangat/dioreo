@@ -72,7 +72,7 @@ function buildContainer(accentColor, client) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('invite')
-        .setDescription('Add Dioreo to your server, or install it on your own account')
+        .setDescription('Add Dioreo to a server or your account')
         .addStringOption(option => option.setName('visibility').setDescription(VISIBILITY_DESCRIPTION)
             .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         // Guild + user install, all contexts -- a share command that cannot be run in the very servers you want to share it in would defeat itself.
