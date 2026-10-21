@@ -500,7 +500,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                     accessory: { type: 2, style: 2, label: 'Filter', custom_id: `price_filteropen_${regionKey}_${token}`, emoji: emojis.parseEmoji(emojis.filter) }
                 }]),
                 // One-line footer (was two `-#` lines) per example_reformat.json. Updated 2026-08-07 for the 3rd region.
-                { type: 10, content: `-# Switch CP regions. (Tip: check out ${mentionCommand(client, '/settings')})` }, // His wording, 2026-10-21 17:13 EDT
+                { type: 10, content: `-# Switch **CP regions**. (Tip: check out ${mentionCommand(client, '/settings')})` }, // His wording, 2026-10-21 17:13 EDT
                 {
                     type: 1,
                     // 3-way region switcher (replaced the old single "switch to the other region" toggle button 2026-08-07, now that a 3rd region exists). Always renders all 3 region buttons, in REGION_ORDER, each `custom_id` encoding the region it JUMPS TO plus the current view (a page number or the filter), so a switch keeps what is open. The CURRENT region is green and disabled (2026-10-14 13:13 EDT, Harkirat: "when the cp region button is selected, make it green-disabled"). Each button carries its own region icon (`REGION_EMOJI_KEY`, 2026-08-07 15:46 EDT).
