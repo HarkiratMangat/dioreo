@@ -158,8 +158,8 @@ function filterMask(filterMode) {
 // The pages the pager walks under a mask, in order.
 const visiblePages = mask => [0, 1, 2].filter(p => !(mask & 56) || (mask & PAGE_BIT[p]));
 
-// "**Draws**", "**Draws** and **Events**", or "**Draws**, **Events**, and **Game Modes**" for the pages kept.
-const PAGE_NAMES = ['Draws', 'Events', 'Game Modes'];
+// "**Draws**", "**Draws** and **Events**", or "**Draws**, **Events**, and **Playlists & Modes**" for the pages kept. The third name is his wording for the hint (2026-10-21 16:15 EDT), shorter than the page's own heading.
+const PAGE_NAMES = ['Draws', 'Events', 'Playlists & Modes'];
 function viewingList(pages) {
     const names = pages.map(p => `**${PAGE_NAMES[p]}**`);
     if (names.length <= 2) return names.join(' and ');
@@ -245,7 +245,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
             calendarComponents.push(emptyPage(sectionHeading(emojis.newDraws, 'Lucky Draws')));
         } else {
             if (newSection) calendarComponents.push(newSection);
-            if (newSection && returningSection) calendarComponents.push({ type: 14, spacing: 2, divider: true });
+            // Small spacing between sections; large is kept for the title and the footer (2026-10-21 16:15 EDT, Harkirat: "the middle ones can have small spacing").
+            if (newSection && returningSection) calendarComponents.push({ type: 14, spacing: 1, divider: true });
             if (returningSection) calendarComponents.push(returningSection);
         }
     } else if (safePage === 1) {

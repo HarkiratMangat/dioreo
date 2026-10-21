@@ -184,9 +184,9 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     assert.deepStrictEqual([navCalendar(calendar.filterMask('live')).label, navCalendar(calendar.filterMask('live')).style, !!navCalendar(calendar.filterMask('live')).disabled], ['Full Calendar', 1, false], 'filtered: a live blurple Full Calendar');
     assert.deepStrictEqual([navCalendar(0).label, !!navCalendar(0).disabled], ['Calendar', true], 'unfiltered: the usual disabled Calendar');
     const hint = (mode) => json(1, mode).match(/-# Viewing [^"]+/)[0];
-    assert.strictEqual(hint(0), '-# Viewing **Draws**, **Events**, and **Game Modes**');
+    assert.strictEqual(hint(0), '-# Viewing **Draws**, **Events**, and **Playlists & Modes**');
     assert.strictEqual(hint(calendar.filterMask('draws') | calendar.filterMask('events')), '-# Viewing **Draws** and **Events**');
-    assert.strictEqual(hint(calendar.filterMask('modes')), '-# Viewing **Game Modes**');
+    assert.strictEqual(hint(calendar.filterMask('modes')), '-# Viewing **Playlists & Modes**');
     assert.ok(json(1, 0).includes('Filter the timeline...'));
 });
 
