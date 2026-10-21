@@ -15,8 +15,7 @@ const { splitSeasonEmoji } = require('../../utils/seasonEmoji');
 
 const DOC = { docType: 'global' };
 
-// Shared by setTitlesDeadlines (live) and setDraftTitlesDeadlines (staged) -- each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"). A blank line leaves that title+date pair untouched; typing the literal word "TBD" sets the TBD flag and nulls the date (the L194 bug this guards against: a TBD typo silently becoming a real date).
-// A RANGE sets the start too ("Battle Pass, Aug 6 - Nov 17", 2026-10-21 10:17 EDT, for /season end's progress bar). A single date clears the start: the box pre-fills the range whenever a start is stored, so a submitted single date means it was deleted.
+// Shared by setTitlesDeadlines (live) and setDraftTitlesDeadlines (staged) -- each of the 3 deadline fields carries both a title and an end date on one line ("Battle Pass, August 28"). A blank line leaves that title+date pair untouched; typing the literal word "TBD" sets the TBD flag and nulls the date (the L194 bug this guards against: a TBD typo silently becoming a real date). A RANGE sets the start too ("Battle Pass, Aug 6 - Nov 17", 2026-10-21 10:17 EDT, for /season end's progress bar). A single date clears the start: the box pre-fills the range whenever a start is stored, so a submitted single date means it was deleted.
 function applyLine(current, line, label, skipped) {
     const { title, dateStr } = splitTitleDate(line || '');
     const result = { title: current.title, start: current.start, end: current.end, endTBD: current.endTBD };
