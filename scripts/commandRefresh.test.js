@@ -183,7 +183,11 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     const navCalendar = (mode) => JSON.parse(json(1, mode)).find(c => c.type === 1 && c.components.some(b => b.custom_id === 'nav_calendar')).components.find(b => b.custom_id === 'nav_calendar');
     assert.deepStrictEqual([navCalendar(calendar.filterMask('live')).label, navCalendar(calendar.filterMask('live')).style, !!navCalendar(calendar.filterMask('live')).disabled], ['Full Calendar', 1, false], 'filtered: a live blurple Full Calendar');
     assert.deepStrictEqual([navCalendar(0).label, !!navCalendar(0).disabled], ['Calendar', true], 'unfiltered: the usual disabled Calendar');
-    assert.ok(emptyJson.includes('or filter your view further.') && !emptyJson.includes('Tip:'), 'his hint, without the /settings tip');
+    const hint = (mode) => json(1, mode).match(/-# Viewing [^"]+/)[0];
+    assert.strictEqual(hint(0), '-# Viewing **Draws**, **Events**, and **Game Modes**');
+    assert.strictEqual(hint(calendar.filterMask('draws') | calendar.filterMask('events')), '-# Viewing **Draws** and **Events**');
+    assert.strictEqual(hint(calendar.filterMask('modes')), '-# Viewing **Game Modes**');
+    assert.ok(json(1, 0).includes('Filter the timeline...'));
 });
 
 t('the owner is DM\'d once about a returning draw that went live in the last week with no end date (2026-10-21 14:39 EDT)', () => {

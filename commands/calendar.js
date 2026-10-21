@@ -158,6 +158,14 @@ function filterMask(filterMode) {
 // The pages the pager walks under a mask, in order.
 const visiblePages = mask => [0, 1, 2].filter(p => !(mask & 56) || (mask & PAGE_BIT[p]));
 
+// "**Draws**", "**Draws** and **Events**", or "**Draws**, **Events**, and **Game Modes**" for the pages kept.
+const PAGE_NAMES = ['Draws', 'Events', 'Game Modes'];
+function viewingList(pages) {
+    const names = pages.map(p => `**${PAGE_NAMES[p]}**`);
+    if (names.length <= 2) return names.join(' and ');
+    return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+}
+
 // The pager above the filter: it walks only the visible pages and loops. Direction rides in the id (`_p`/`_n`), so two pages still give two different ids (Discord rejects a message whose ids repeat).
 function buildCalendarPager(page, mask) {
     const pages = visiblePages(mask);
@@ -178,7 +186,7 @@ function buildFilterRow(page, mask) {
         components: [{
             type: 3,
             custom_id: `calsel_${page}`,
-            placeholder: 'Filter: Full timeline',
+            placeholder: 'Filter the timeline...',
             min_values: 0,
             max_values: FILTER_OPTIONS.length,
             options: FILTER_OPTIONS.map(o => ({ label: o.label, value: o.value, description: o.description, emoji: emojis.parseEmoji(emojis[o.emojiKey]), default: Boolean(mask & o.bit) }))
@@ -250,8 +258,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
 
     // PAGE NAV: divider -> hint -> pager -> filter (2026-10-21 15:32 EDT). One divider separates the content from the whole block, and the hint sits directly under the content (2026-07-31 16:55 EDT). The pager is left out when the filter keeps one page.
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
-    // His wording, 2026-10-21 15:58 EDT, with the /settings tip removed ("let's remove the \"tip check out settings\" part").
-    calendarComponents.push({ type: 10, content: `-# Switch between **Draws**, **Events**, and **Game Modes**, or filter your view further.` });
+    // Names the pages the pager walks (2026-10-21 16:06 EDT, Harkirat: "change the hint line to \"Viewing **Draws**, **Events**, and **Game Modes**\". with the hint changing depending on the filter, such as \"Viewing **Draws** and **Events**\" or \"Viewing **Game Modes**\"").
+    calendarComponents.push({ type: 10, content: `-# Viewing ${viewingList(pages)}` });
     const pager = buildCalendarPager(safePage, mask);
     if (pager) calendarComponents.push(pager);
     calendarComponents.push(buildFilterRow(safePage, mask));
