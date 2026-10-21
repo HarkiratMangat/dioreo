@@ -484,7 +484,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('help')
-        .setDescription("See what Dioreo can do, and how to reach Dior with bugs or ideas")
+        .setDescription("See what Dioreo can do and how to report bugs")
         .addStringOption(option => option.setName('cmd').setDescription('Jump straight to a specific command').setAutocomplete(true))
         .addStringOption(option => option.setName('visibility').setDescription(`${VISIBILITY_DESCRIPTION} (Defaults to only you.)`).addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
