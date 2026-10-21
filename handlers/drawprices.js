@@ -55,7 +55,28 @@ async function route(interaction) {
             return await pricesCommand.execute(syntheticInteraction, region, targetPage);
         }
 
-        // FILTER DRAWS TO VIEW (2026-10-21 11:50 EDT) -- `price_filter_{region}`, a multi-select: shows only the picked draws; picking none returns to the all view. Two-hop like the branches above, for the same emoji-blank reason.
+        // FILTER (2026-10-21 13:02 EDT) -- `price_filteropen_{region}_{view}`, a button: opens the pop-up with the current picks ticked. Its submit, `price_filtersave_{region}`, shows only the picked draws; picking none returns to the all view. Two-hop, for the emoji-blank reason above.
+        if (interaction.isButton() && interaction.customId.startsWith('price_filteropen_')) {
+            const rest = interaction.customId.replace('price_filteropen_', '');
+            const lastUnderscore = rest.lastIndexOf('_');
+            const region = rest.slice(0, lastUnderscore);
+            const { buildFilterModal, filterOf } = require('../commands/drawprices');
+            const current = filterOf(rest.slice(lastUnderscore + 1));
+            return await interaction.showModal(buildFilterModal(region, current ? current.keys : []));
+        }
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('price_filtersave_')) {
+            await interaction.deferUpdate();
+            const region = interaction.customId.replace('price_filtersave_', '');
+            const { filterToken, JUMP_KEYS } = require('../commands/drawprices');
+            let values = [];
+            try { values = interaction.fields.getStringSelectValues('filter') || []; } catch { values = []; }
+            const picked = JUMP_KEYS.filter(key => values.includes(key));
+            const pricesCommand = interaction.client.commands.get('draw');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await pricesCommand.execute(syntheticInteraction, region, picked.length ? filterToken(picked) : 0);
+        }
+
+        // FILTER DROPDOWN (2026-10-21 11:50 EDT) -- `price_filter_{region}`, the multi-select the button above replaced within the hour; kept so panels posted before still answer.
         if (interaction.isStringSelectMenu() && interaction.customId.startsWith('price_filter_')) {
             await interaction.deferUpdate();
             const region = interaction.customId.replace('price_filter_', '');

@@ -1335,8 +1335,8 @@ t('/draw prices: the filter shows only the picked draws, pages them to fit, keep
             const comps = dp.buildContainer(region, 0, true, view, null);
             fits(comps, `${region} page ${view}`);
             const all = comps.flatMap(flat);
-            const select = all.find(c => c.type === 3 && c.custom_id === `price_filter_${region}`);
-            assert.ok(select && select.min_values === 0 && select.max_values === keys.length && select.options.every(o => !o.default), `${region} ${view}: an unfiltered select`);
+            assert.ok(all.some(c => c.type === 10 && c.content === '**Draw Filters:** `None`'), `${region} ${view}: the filter line says None`);
+            assert.ok(all.some(c => c.type === 2 && c.custom_id === `price_filteropen_${region}_${view}`), `${region} ${view}: Filter carries the view`);
             assert.ok(!all.some(c => c.label === 'Show All Draws'), `${region} ${view}: no Show All Draws in the all view`);
             assert.ok(all.some(c => c.custom_id === 'price_subpage_indicator'), `${region} ${view}: the pager in the all view`);
         }
@@ -1351,8 +1351,13 @@ t('/draw prices: the filter shows only the picked draws, pages them to fit, keep
                 const comps = dp.buildContainer(region, 0, true, token, null);
                 fits(comps, `${region} ${token}`);
                 const all = comps.flatMap(flat);
-                const select = all.find(c => c.type === 3 && c.custom_id === `price_filter_${region}`);
-                assert.deepStrictEqual(select.options.filter(o => o.default).map(o => o.value), ordered, `${region} ${token}: the picked draws are the select's defaults`);
+                const { SHORT_NAME } = require('../commands/drawCalculator');
+                const line = all.find(c => c.type === 10 && c.content.startsWith('**Draw Filters:**'));
+                assert.strictEqual(line.content, `**Draw Filters:** ${ordered.map(k => `\`${SHORT_NAME[k] || dp.jumpMeta(k).name}\``).join(' ')}`, `${region} ${token}: the line names every picked draw`);
+                assert.ok(all.some(c => c.type === 2 && c.custom_id === `price_filteropen_${region}_${token}`), `${region} ${token}: Filter carries the filter`);
+                const modal = dp.buildFilterModal(region, ordered);
+                assert.deepStrictEqual(modal.components[0].component.options.filter(o => o.default).map(o => o.value), ordered, `${region} ${token}: the pop-up ticks the picked draws`);
+                assert.doesNotThrow(() => new (require('discord.js').ModalBuilder)(modal).toJSON(), 'discord.js accepts the pop-up');
                 assert.ok(all.some(c => c.type === 2 && c.label === 'Show All Draws'), `${region} ${token}: Show All Draws in a filtered view`);
                 const indicator = all.find(c => c.custom_id === 'price_subpage_indicator');
                 pages = indicator ? Number(indicator.label.split('/')[1]) : 1;
