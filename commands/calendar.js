@@ -16,7 +16,6 @@ const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { isSameDrawTitle } = require('../utils/search');
-const { mentionCommand } = require('../utils/commandMentions');
 const { buildPaginationRow } = require('../utils/paginationRow');
 // ⚠️ REVERTED 2026-08-07 21:30 EDT -- the width-cap fix below (2026-07-31 17:20 EDT, "an uncapped banner was making the whole container render unnecessarily wide on desktop") was built on the assumption that a Discord CDN-hosted banner gets a genuine small-preview/full-resolution-on-click pairing via Discord's own resize proxy. Now that every banner is re-hosted to Cloudinary (see utils/calendarBannerCache.js's 2026-08-07 21:25 EDT fix for why -- Discord CDN links expire), that pairing no longer exists: a Cloudinary-transformed derivative is a genuinely separate, smaller file with no path back to the original, so the cap now also shrinks the ZOOMED view, not just the inline preview. Verified live on the dev bot -- confirmed by Harkirat: "it does work but it has that initial issue we discussed where it will remain in that small size even if someone taps on it. So I'd rather not do the resize." Full width now shows both inline and on zoom; the desktop- width nuisance this was fixing is the smaller cost of the two.
 
@@ -251,8 +250,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
 
     // PAGE NAV: divider -> hint -> pager -> filter (2026-10-21 15:32 EDT). One divider separates the content from the whole block, and the hint sits directly under the content (2026-07-31 16:55 EDT). The pager is left out when the filter keeps one page.
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
-    // Shortened 2026-10-21 15:53 EDT (his "rephase the bottom toggle/filter hint so it isnt so long").
-    calendarComponents.push({ type: 10, content: `-# Switch pages with the arrows, or narrow it down with the filter. (Tip: ${mentionCommand(client, '/settings')})` });
+    // His wording, 2026-10-21 15:58 EDT, with the /settings tip removed ("let's remove the \"tip check out settings\" part").
+    calendarComponents.push({ type: 10, content: `-# Switch between **Draws**, **Events**, and **Game Modes**, or filter your view further.` });
     const pager = buildCalendarPager(safePage, mask);
     if (pager) calendarComponents.push(pager);
     calendarComponents.push(buildFilterRow(safePage, mask));
@@ -314,7 +313,7 @@ module.exports = {
             return interaction.followUp({ content: BOT_EMOJI.cross + ' The global seasonal database document has not been initialized yet.' });
         }
 
-        // The filter's /settings default preference was SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request) -- `prefs.calendarEventFilter` is no longer read here (or written anywhere; see commands/settings.js). The slash `filter` is a one-off, defaulting to the full timeline. Never saved, only read on a real slash-command launch.
+        // The filter's /settings default preference was SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request) -- the field itself (`calendarEventFilter`) was removed from UserPreference 2026-10-21 15:58 EDT (Harkirat: "remove the setting's default calendar view option since it doesn't matter anymore"). The slash `filter` is a one-off, defaulting to the full timeline. Never saved, only read on a real slash-command launch.
         const filterChoice = interaction.isChatInputCommand() ? interaction.options.getString('filter') : null;
         const filterMode = filterChoice || filterOverride || 'all';
 

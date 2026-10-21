@@ -180,7 +180,7 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     const noMatch = { ...doc, calendar: doc.calendar.filter(e => e.title === 'Over Event') };
     const emptyJson = JSON.stringify(calendar.buildContainer(noMatch, 1, undefined, false, calendar.filterMask('live')));
     assert.ok(/EVENTS.*:Warn:.*Nothing on this page matches the filter/.test(emptyJson), emptyJson.slice(0, 600));
-    assert.ok(emptyJson.includes('Switch pages with the arrows'));
+    assert.ok(emptyJson.includes('or filter your view further.') && !emptyJson.includes('Tip:'), 'his hint, without the /settings tip');
 });
 
 t('the owner is DM\'d once about a returning draw that went live in the last week with no end date (2026-10-21 14:39 EDT)', () => {
