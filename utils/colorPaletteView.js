@@ -410,10 +410,19 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     } else {
         containerComponents.push({ type: 10, content: headingContent });
     }
-    // spacing: 2 (2026-07-14, Harkirat's request) -- "large" divider spacing, matching the convention every other command in this bot settled on (calendar/draws/drawprices/manage/etc all use 2).
-    containerComponents.push({ type: 14, spacing: 2, divider: true });
+    // The page's own image at full size, as a link button beside the copy hint (2026-10-21 17:23 EDT, Harkirat: "remove the avatar/color button from the outside footer. instead add a button in the top section saying \"avatar\" ... likewise for banner/nameplate/deco. no button for name color"; option A, 17:27 EDT). The avatar and deco headings hold their own thumbnail in their one accessory slot, so the button rides on the hint line. Nameplate and deco open the ORIGINAL animated asset: the nameplate's asset.webm beside the static.png we preview, the decoration with passthrough=true (the animated APNG at its own size).
+    const fullImageUrl = effectiveSource === 'avatar' ? data.avatarFullUrl
+        : effectiveSource === 'banner' ? data.bannerFullUrl
+        : effectiveSource === 'nameplate' && data.nameplateUrl ? data.nameplateUrl.replace(/static\.png$/, 'asset.webm')
+        : effectiveSource === 'decoration' && data.decorationUrl ? `${data.decorationUrl}${data.decorationUrl.includes('?') ? '&' : '?'}passthrough=true`
+        : null;
     // Copy hint (moved here 2026-08-09, top of the main palette section it actually describes -- used to be a second line folded into the heading above, cosmetic-only move). ⚠️ DOWNLOAD AVATAR/BANNER WAS BRIEFLY MOVED ONTO THIS LINE as a Section button accessory (2026-08-12 22:15 EDT) and REVERTED at 23:41 the same evening on Harkirat's call after seeing it rendered. Kept as a note rather than deleted because the constraint found on the way is real and someone will propose the move again: a Section carries exactly ONE accessory, a thumbnail OR a button, so the button can never join the avatar/decoration heading — that slot holds the source's own thumbnail. The buttons live in the bottom action row instead; see their block further down.
-    containerComponents.push({ type: 10, content: "-# Tap on the `#HEX` color code to copy it." });
+    const copyHint = { type: 10, content: "-# Tap on the `#HEX` color code to copy it." };
+    containerComponents.push(fullImageUrl
+        ? { type: 9, components: [copyHint], accessory: { type: 2, style: 5, label: SOURCE_META[effectiveSource].label, url: fullImageUrl } }
+        : copyHint);
+    // The divider sits BELOW the copy hint and its button since 2026-10-21 17:27 EDT (Harkirat: "what if we move the divider below the \"tap on the ...\" line + button?"), so the hint reads as part of the heading block. "Large" spacing, the convention every other command here uses.
+    containerComponents.push({ type: 14, spacing: 2, divider: true });
 
     // Labels are computed against the FULL entry set BEFORE paginating (buildSwatchEntries already does this) -- assigning "First Impression"/"Catches the Eye"/etc per-PAGE instead would produce inconsistent results depending on which page a given color happened to land on (e.g. the real eye-catching accent could end up on page 2, leaving page 1 with no "Catches the Eye" at all).
     const allEntries = effectiveSource === 'name'
@@ -444,7 +453,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
 
     containerComponents.push({ type: 14, spacing: 2, divider: true });
     // Hint line (2026-07-14, Harkirat's request) above the source-switch row -- short, tells a user who's never clicked the other page buttons that they exist, plus a nudge toward Refresh Colors for the (real, and otherwise easy to miss) case where they've since updated their avatar/ banner/etc and the panel is still showing the old cached extraction. One line since 2026-10-21 17:21 EDT (Harkirat: "remove the \"tap a button below...\" hint. just leave the \"Updated your profile?\" hint (but remove the Tip and brackets)").
-    if (!readOnly) containerComponents.push({ type: 10, content: "-# Updated your profile? `Refresh Colors`" });
+    if (!readOnly) containerComponents.push({ type: 10, content: "-# Updated your profile? **`Refresh Colors`**" });
     if (extraHint) containerComponents.push({ type: 10, content: extraHint });
     containerComponents.push({
         type: 1,
@@ -479,15 +488,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
             emoji: emojis.parseEmoji(emojis.showColors)
         });
     }
-    // Download Avatar/Banner (2026-07-18, v2 quick-wins batch) -- full-res, bottom, outside the container, beside Refresh, matching /settings' existing avatar/banner download buttons (same style-5 Link button pointed straight at the 4096px CDN url -- Discord renders a Link button in grey same as a plain Secondary button, it just needs `url` instead of `custom_id` since it's not an interaction at all, only a direct CDN link). Only shown on that source's OWN page (Harkirat's spec: "on their respective color-menu pages"), not on every page -- Name/Nameplate/Deco have no equivalent full-res original worth downloading here.
-    //
-    // ⚠️ THEY WERE MOVED INSIDE THE CONTAINER FOR ONE EVENING (2026-08-12 22:15 EDT) AND REVERTED HERE AT 23:41, on Harkirat's call after seeing it rendered. Kept as a note because the finding on the way is real and the move will be proposed again: a Section carries exactly ONE accessory, a thumbnail OR a button, so these can never sit in the avatar/decoration heading -- that slot holds the source's own thumbnail, which is the subject of the page.
-    //
-    // ⚠️ ON EVERY PAGE NOW, AND NAMED "Avatar" / "Banner" (2026-10-19 12:09 EDT, Harkirat: "the buttons show regardless of which sub-page you're viewing ... make that feature change in the main /color command as well", then "drop the "download" from the button's word"). This reverses the "only on its own page" rule above; a link button's ↗ already says it opens the image. Banner shows only when there is one. FIRST in the row, before Refresh (2026-10-19 12:11 EDT, Harkirat: "swap avatar/banner buttons before the "refresh" button").
-    const imageLinks = [];
-    if (data.avatarFullUrl) imageLinks.push({ type: 2, style: 5, label: 'Avatar', url: data.avatarFullUrl });
-    if (data.bannerFullUrl) imageLinks.push({ type: 2, style: 5, label: 'Banner', url: data.bannerFullUrl });
-    refreshRowComponents.unshift(...imageLinks);
+    // The Avatar / Banner link buttons lived first in this row from 2026-07-18 (on every page from 2026-10-19 12:09 EDT). Since 2026-10-21 17:23 EDT each page's image button sits beside its copy hint at the top instead (see fullImageUrl), so this row is Refresh Colors and the server switch only. A Section still carries ONE accessory, which is why the button rides on the hint line and never on the avatar/deco heading.
     const refreshRow = refreshRowComponents.length ? { type: 1, components: refreshRowComponents } : null;
 
     return { components: refreshRow ? [containerPayload, refreshRow] : [containerPayload], files };

@@ -65,14 +65,15 @@ t('there is real headroom left, not a page sitting on the line', async () => {
 });
 
 // --- The placements themselves. Each was a deliberate decision and each is invisible from the outside.
-t('the Avatar image link sits in the bottom action row, not inside the container', async () => {
-    // ⚠️ IT WAS MOVED INSIDE FOR ONE EVENING (2026-08-12 22:15 EDT) AND REVERTED AT 23:41 on Harkirat's call after seeing it rendered. Asserted in this direction so the move cannot creep back in unnoticed -- and the finding that came out of it still stands: a Section carries exactly ONE accessory, thumbnail OR button, so it could never have joined the avatar heading anyway. Labelled "Avatar" since 2026-10-19 12:11 EDT (Harkirat: "drop the "download" from the button's word").
+t('each page\'s image link sits beside the copy hint at the top, with the divider under it (2026-10-21 17:27 EDT)', async () => {
+    // Harkirat, 2026-10-21 17:23 EDT: "remove the avatar/color button from the outside footer. instead add a button in the top section saying \"avatar\""; option A and the divider move at 17:27. This reverses the 2026-08-12 revert that had kept the links in the bottom row. A Section carries ONE accessory, so the button rides on the copy-hint line, never on the avatar heading.
     const { components } = await render('avatar', { avatar: palette, avatarFullUrl: CDN });
     const [container, actionRow] = components;
-    assert.ok(actionRow.components.some(b => b.label === 'Avatar' && b.style === 5 && b.url === CDN), 'the Avatar link is missing from the bottom row');
-    assert.ok(!JSON.stringify(container).includes('"style":5'), 'an image link is back inside the container');
-    const hint = container.components.find(c => c.type === 10 && /HEX/.test(c.content || ''));
-    assert.ok(hint, 'the copy hint is no longer a plain text component');
+    const hintIdx = container.components.findIndex(c => c.type === 9 && /HEX/.test(JSON.stringify(c.components)));
+    assert.ok(hintIdx >= 0, 'the copy hint is not a Section');
+    assert.deepStrictEqual(container.components[hintIdx].accessory, { type: 2, style: 5, label: 'Avatar', url: CDN });
+    assert.ok(container.components[hintIdx + 1].type === 14 && container.components[hintIdx + 1].divider, 'the divider is not right under the hint');
+    assert.ok(!actionRow.components.some(b => b.style === 5), 'an image link is still in the bottom row');
 });
 
 t('the heading keeps its thumbnail — the download button never displaces it', async () => {
@@ -82,13 +83,14 @@ t('the heading keeps its thumbnail — the download button never displaces it', 
     assert.ok(heading, 'the avatar heading lost its thumbnail accessory');
 });
 
-t('the Avatar and Banner links show on EVERY page, and Banner only when there is one', async () => {
-    // Reversed 2026-10-19 12:11 EDT (Harkirat: "the buttons show regardless of which sub-page you're viewing ... make that feature change in the main /color command as well"); it used to be each source's own page only.
-    const both = await render('nameplate', { nameplate: palette.slice(0, 4), nameplateUrl: CDN, avatarFullUrl: CDN, bannerFullUrl: CDN });
-    assert.deepStrictEqual(both.components[1].components.filter(b => b.style === 5).map(b => b.label), ['Avatar', 'Banner']);
-    const noBanner = await render('nameplate', { nameplate: palette.slice(0, 4), nameplateUrl: CDN, avatarFullUrl: CDN });
-    assert.deepStrictEqual(noBanner.components[1].components.filter(b => b.style === 5).map(b => b.label), ['Avatar']);
-    assert.ok(JSON.stringify(both.components[0]).includes('HEX'), 'the copy hint vanished');
+t('each page links its own image, and the Name page none', async () => {
+    const link = async (source, extra) => (await render(source, extra)).components[0].components.find(c => c.type === 9 && c.accessory?.type === 2)?.accessory;
+    assert.strictEqual((await link('banner', { banner: palette, bannerUrl: CDN, bannerFullUrl: CDN + '?size=4096' })).url, CDN + '?size=4096');
+    const np = await link('nameplate', { nameplate: palette.slice(0, 4), nameplateUrl: 'https://cdn.discordapp.com/assets/collectibles/x/static.png' });
+    assert.deepStrictEqual([np.label, np.url], ['Nameplate', 'https://cdn.discordapp.com/assets/collectibles/x/asset.webm'], 'the nameplate links its original animated file');
+    const deco = await link('decoration', { decoration: palette.slice(0, 4), decorationUrl: 'https://cdn.discordapp.com/avatar-decoration-presets/a.png' });
+    assert.strictEqual(deco.url, 'https://cdn.discordapp.com/avatar-decoration-presets/a.png?passthrough=true');
+    assert.strictEqual(await link('name', { displayNameColors: ['112233', '445566'] }), undefined, 'the Name page has a link');
 });
 
 t('the open page is green and disabled', async () => {
@@ -114,7 +116,7 @@ t('read-only (the View Colors right-click): its own ids, no Refresh, switch or h
     assert.ok(/No custom banner detected/.test(flat));
     assert.ok(!/"label":"Banner"/.test(flat.replace(/"style":5[^}]*/g, '')), 'a page the person lacks has a button');
     assert.ok(/vc_page\|1\|avatar\|g\|0/.test(flat), 'the pager does not use the right-click ids');
-    assert.deepStrictEqual(components[1].components.map(b => b.label), ['Avatar'], 'only the image link under it');
+    assert.strictEqual(components[1], undefined, 'nothing under it: the image link moved into the panel');
     assert.ok(countComponents(components) <= LIMIT);
 });
 
@@ -139,8 +141,8 @@ t('Refresh is the row\'s only PRIMARY, and both interactive buttons carry icons'
     const { components } = await render('avatar', { avatar: palette, avatarFullUrl: CDN });
     const buttons = components[1].components;
     assert.strictEqual(buttons.filter(b => b.style === 1).length, 1, 'the row no longer has exactly one primary action');
-    // The Avatar / Banner links lead the row since 2026-10-19 12:11 EDT (Harkirat), then Refresh Colors.
-    assert.deepStrictEqual(buttons.slice(0, 2).map(b => b.label), ['Avatar', 'Refresh Colors'], 'the row is no longer Avatar, then Refresh Colors');
+    // Refresh Colors leads the row again since the image links moved into the panel (2026-10-21 17:23 EDT).
+    assert.strictEqual(buttons[0].label, 'Refresh Colors', 'the row no longer starts with Refresh Colors');
     const swtch = buttons.find(b => String(b.custom_id || '').startsWith('colors_variant_'));
     assert.strictEqual(swtch?.style, 2, 'the global/server switch is no longer secondary/grey');
     for (const b of buttons.filter(b => b.custom_id)) assert.ok(b.emoji?.id, `"${b.label}" lost its emoji`);
