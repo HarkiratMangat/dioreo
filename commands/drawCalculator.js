@@ -888,7 +888,7 @@ function regionBalanceSection(state, basket) {
     const region = basket?.region || 'region_10';
     const content = [
         // The word before its value, with a colon (2026-10-18 19:40 EDT, his ask: "like **Region: `20 CP`**"): a label joined to its value, the /draw prices grammar. The :blank: emoji between the pair, no spaces and no dot (2026-10-18 21:09 EDT, his ask).
-        `-# **${emojis[REGION_EMOJI_KEY[region]]} Region: \`${regionLabel(region)}\`${emojis.blank}${emojis.cp} Balance: \`${fmt(basket?.balance || 0)} CP\`**`,
+        `-# **${emojis[REGION_EMOJI_KEY[region]]} Region: \`${regionLabel(region)}\`${emojis.blank}${emojis.cp2} Balance: \`${fmt(basket?.balance || 0)} CP\`**`, // cp2, the same CP icon as the Set Region & Balance button beside it (Harkirat, 2026-10-20 22:26 EDT)
         `-# **${emojis.mythicCard} Mythic Cards: \`${fmt(basket?.mythicCards || 0)}\`${emojis.blank}${emojis.mythicCoin} Mythic Coins: \`${fmt(basket?.mythicCoins || 0)}\`**`
     ].join('\n');
     return { type: 9, components: [{ type: 10, content }],

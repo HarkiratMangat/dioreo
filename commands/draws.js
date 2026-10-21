@@ -44,9 +44,11 @@ function buildDrawSections(drawsArray) {
         });
 
         const unixTime = Math.floor(new Date(draw.date).getTime() / 1000);
+        // A draw saved with no date used to print a raw `<t:NaN:f>` (seen on a dev probe draw, 2026-10-20); it reads "Date TBA" instead.
+        const dateLine = Number.isFinite(unixTime) ? `<t:${unixTime}:f> (<t:${unixTime}:R>)` : '*Date TBA*';
 
         // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here.
-        const compose = (lines, hidden) => `**__${draw.title}__**\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}\n<t:${unixTime}:f> (<t:${unixTime}:R>)`;
+        const compose = (lines, hidden) => `**__${draw.title}__**\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}\n${dateLine}`;
         // A single draw too long for one page on its own drops item lines from the end until it fits (see DRAW_TEXT_BUDGET).
         let shown = itemLines;
         let textContent = compose(shown, 0);

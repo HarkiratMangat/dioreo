@@ -64,20 +64,22 @@ function getDrawSectionEntries(seasonalDoc) {
 
 function buildEntryLine(event, seasonalDoc) {
     const startUnix = Math.floor(new Date(event.date).getTime() / 1000);
+    // An entry with no usable date (a draw saved without one, merged in from newDraws/returningDraws) used to print a raw `<t:NaN:D>`; it reads "TBA" instead, the same as /draws' "Date TBA" (2026-10-20).
+    const stamp = unix => (Number.isFinite(unix) ? `<t:${unix}:D>` : 'TBA');
     // Redesigned per calendar_update_ui.json: bold title line + a subtext date-range line below it, using the static "b1" bullet emoji and `D` (Long Date) style with the em-dash directly joining the two timestamps, no surrounding spaces.
     let rangeText;
     if (event.dateOnly) {
-        rangeText = `Releases <t:${startUnix}:D>`;
+        rangeText = `Releases ${stamp(startUnix)}`;
     } else if (event.isOngoing) {
         if (seasonalDoc.bpEndTBD) {
-            rangeText = `<t:${startUnix}:D>—TBD`;
+            rangeText = `${stamp(startUnix)}—TBD`;
         } else {
             rangeText = seasonalDoc.bpEnd
-                ? `<t:${startUnix}:D>—<t:${Math.floor(new Date(seasonalDoc.bpEnd).getTime() / 1000)}:D>`
-                : `<t:${startUnix}:D>—Ongoing`;
+                ? `${stamp(startUnix)}—${stamp(Math.floor(new Date(seasonalDoc.bpEnd).getTime() / 1000))}`
+                : `${stamp(startUnix)}—Ongoing`;
         }
     } else {
-        rangeText = `<t:${startUnix}:D>—<t:${Math.floor(new Date(event.endDate).getTime() / 1000)}:D>`;
+        rangeText = `${stamp(startUnix)}—${stamp(Math.floor(new Date(event.endDate).getTime() / 1000))}`;
     }
     return `**✦ ${event.title}**\n-# ${emojis.b1} ${rangeText}`;
 }

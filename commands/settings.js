@@ -169,7 +169,7 @@ module.exports = {
             type: 9,
             components: [{
                 type: 10,
-                content: `# ${emojis.settings} Settings Dashboard\n### <@${userId}> | \`${interaction.user.username}\`\n(\`${userId}\`)`
+                content: `## ${emojis.settings} Settings Dashboard\n### <@${userId}> | \`${interaction.user.username}\`\n(\`${userId}\`)`
             }],
             accessory: { type: 11, media: { url: userAvatarUrl } }
         });
