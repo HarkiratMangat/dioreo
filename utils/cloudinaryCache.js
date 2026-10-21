@@ -16,6 +16,7 @@ if (!process.env.CLOUDINARY_URL) {
 
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
 const { withDeliveryDefaults } = require('./cloudinaryDeliveryUrl');
+const { archiveByMove, archiveBeforeReplace } = require('./cloudinaryArchive');
 
 const FOLDER = 'temp_draws';
 const EXPIRY_DAYS = 45;
@@ -57,6 +58,8 @@ async function cacheThumbnail(title, sourceUrl) {
     if (isCloudinaryWriteBlocked('upload', publicIdFor(title))) {
         return { url: null, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
+    // The image this upload overwrites is copied to archive/draws/ first (Harkirat, 2026-10-21 11:39 EDT); never throws, and a failed copy does not stop the replacement. utils/cloudinaryArchive.js.
+    await archiveBeforeReplace(publicIdFor(title), sourceUrl, 'draws');
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: publicIdFor(title), // folder is baked into this path (temp_draws/{slug})
@@ -198,7 +201,7 @@ function selectExpiredThumbnails(assets, currentUrls, now = Date.now()) {
 }
 
 /**
- * Deletes cached thumbnails that are BOTH 45+ days old AND no longer referenced by any current draw -- Harkirat's confirmed rule (not a strict age-only cutoff), so a long-lived draw's image never silently disappears from the command just because it's been up for a while. `currentUrls` is a Set of every thumbnailUrl actually in use right now (newDraws + returningDraws combined) -- callers build this from SeasonalData themselves, since this module stays model-agnostic (matches every other utils/ file's convention of not importing Mongoose models directly).
+ * Archives (moves to archive/draws/, never deletes -- Harkirat, 2026-10-21 11:25 EDT) cached thumbnails that are BOTH 45+ days old AND no longer referenced by any current draw -- Harkirat's confirmed rule (not a strict age-only cutoff), so a long-lived draw's image never silently disappears from the command just because it's been up for a while. `currentUrls` is a Set of every thumbnailUrl actually in use right now (newDraws + returningDraws combined) -- callers build this from SeasonalData themselves, since this module stays model-agnostic (matches every other utils/ file's convention of not importing Mongoose models directly).
  */
 async function pruneExpiredThumbnails(currentUrls) {
     // NOTE (fixed during review): the whole body is wrapped here now -- listCachedAssets() had no try/catch of its own, so a Cloudinary error from IT used to propagate all the way up to bot/lifecycle.js's runCloudinaryCleanup(), which logged it with the same `error.message || error` anti-pattern this file's other catch blocks were just fixed for -- printing the raw error object (API key + secret in `request_options.auth`) straight to the console/log aggregator. Every Cloudinary call this module makes must have its error caught and sanitized IN this file, never left to escape to a caller that doesn't know to sanitize it.
@@ -206,21 +209,22 @@ async function pruneExpiredThumbnails(currentUrls) {
         const assets = await listCachedAssets();
         const toDelete = selectExpiredThumbnails(assets, currentUrls);
 
-        if (toDelete.length === 0) return { deletedCount: 0, deleted: [] };
+        if (toDelete.length === 0) return { archivedCount: 0, archived: [] };
 
         const publicIds = toDelete.map(a => a.public_id);
-        // Irreversible against the live account -- and the dev bot's own boot/24h cleanup sweep would otherwise run this unprompted, deleting prod thumbnails with nobody having asked for anything.
-        if (isCloudinaryWriteBlocked('delete_resources', `${publicIds.length} asset(s) under ${FOLDER}/`)) {
-            return { deletedCount: 0, deleted: [] };
+        // Moved, not deleted, since 2026-10-21 (utils/cloudinaryArchive.js): an in-use thumbnail this sweep once wrongly judged unused (fixed in #212) would now sit in archive/draws/ instead of being lost. The dev bot still may not touch the live account, and the sweep runs unprompted on its boot.
+        if (isCloudinaryWriteBlocked('archive (move)', `${publicIds.length} asset(s) under ${FOLDER}/`)) {
+            return { archivedCount: 0, archived: [] };
         }
-        await cloudinary.api.delete_resources(publicIds, { invalidate: true });
-        // A deleted asset must not linger in the memo -- a since-restarted process is fine either way, but THIS process could otherwise keep serving a URL for an asset that no longer exists.
-        for (const id of publicIds) resolvedCache.delete(id);
-        return { deletedCount: publicIds.length, deleted: publicIds };
+        const moved = await archiveByMove(publicIds, 'draws');
+        // A moved asset must not linger in the memo -- a since-restarted process is fine either way, but THIS process could otherwise keep serving a URL for an id that no longer exists.
+        for (const { from } of moved.archived) resolvedCache.delete(from);
+        for (const id of moved.missing) resolvedCache.delete(id);
+        return { archivedCount: moved.archived.length, archived: moved.archived, failed: moved.failed };
     } catch (err) {
         const message = safeErrorMessage(err);
         console.error(`Cloudinary prune failed: ${message}`);
-        return { deletedCount: 0, deleted: [], error: message };
+        return { archivedCount: 0, archived: [], error: message };
     }
 }
 

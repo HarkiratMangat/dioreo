@@ -6,6 +6,7 @@
 const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+const { archiveBeforeReplace } = require('./cloudinaryArchive');
 
 const FOLDER = 'gun-builds'; // same flat folder every existing loadout image already lives in
 
@@ -156,6 +157,8 @@ async function uploadLoadoutImage(sourceUrl, imageKey) {
     if (isCloudinaryWriteBlocked('upload', `${FOLDER}/${imageKey}`)) {
         return { success: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
+    // The loadout image this overwrites is copied to archive/loadouts/ first (Harkirat, 2026-10-21 11:39 EDT); a first upload under a new key has nothing to archive. utils/cloudinaryArchive.js.
+    await archiveBeforeReplace(imageKey, sourceUrl, 'loadouts');
     try {
         await cloudinary.uploader.upload(sourceUrl, {
             public_id: imageKey, // bare key, NOT folder-prefixed -- gun-builds is dynamic-folder mode,

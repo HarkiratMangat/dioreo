@@ -15,6 +15,7 @@ if (!process.env.CLOUDINARY_URL) {
 }
 
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+const { archiveByMove, archiveBeforeReplace } = require('./cloudinaryArchive');
 const { withDeliveryDefaults } = require('./cloudinaryDeliveryUrl');
 
 const FOLDER = 'patch_notes';
@@ -83,6 +84,8 @@ async function cachePatchImage(patchId, imageIndex, sourceUrl, meta = {}) {
     if (isCloudinaryWriteBlocked('upload', publicIdFor(patchId, imageIndex))) {
         return { url: sourceUrl, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
+    // The image in this slot is copied to archive/patch_notes/ before it is overwritten (Harkirat, 2026-10-21 11:39 EDT); re-submitting the slot's own stored URL archives nothing. utils/cloudinaryArchive.js.
+    await archiveBeforeReplace(publicIdFor(patchId, imageIndex), sourceUrl, 'patch_notes');
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: publicIdFor(patchId, imageIndex),
@@ -119,7 +122,7 @@ async function listCachedPatchAssets() {
 }
 
 /**
- * Deletes every cached image belonging to a season whose patch note `_id` is NOT in `keepPatchIds` -- callers pass every patchNotes[] entry's `_id`, since every season stays reachable in Discord, so only a deleted entry's folder goes. Whole-folder deletion, not age-based.
+ * Archives (moves to archive/patch_notes/, never deletes -- Harkirat, 2026-10-21 11:25 EDT) every cached image belonging to a season whose patch note `_id` is NOT in `keepPatchIds` -- callers pass every patchNotes[] entry's `_id`, since every season stays reachable in Discord, so only a deleted entry's folder goes. Whole-folder deletion, not age-based.
  */
 async function pruneOrphanedPatchFolders(keepPatchIds) {
     try {
@@ -130,19 +133,19 @@ async function pruneOrphanedPatchFolders(keepPatchIds) {
             return patchId && !keepPatchIds.has(patchId);
         });
 
-        if (toDelete.length === 0) return { deletedCount: 0, deleted: [] };
+        if (toDelete.length === 0) return { archivedCount: 0, archived: [] };
 
         const publicIds = toDelete.map(a => a.public_id);
-        // Irreversible against the live account -- and the dev bot's own boot/24h cleanup sweep would otherwise run this unprompted, deleting prod patch images with nobody having asked for anything.
-        if (isCloudinaryWriteBlocked('delete_resources', `${publicIds.length} asset(s) under ${FOLDER}/`)) {
-            return { deletedCount: 0, deleted: [] };
+        // The dev bot's own boot/24h cleanup sweep would otherwise run this unprompted against the live account.
+        if (isCloudinaryWriteBlocked('archive (move)', `${publicIds.length} asset(s) under ${FOLDER}/`)) {
+            return { archivedCount: 0, archived: [] };
         }
-        await cloudinary.api.delete_resources(publicIds, { invalidate: true });
-        return { deletedCount: publicIds.length, deleted: publicIds };
+        const moved = await archiveByMove(publicIds, 'patch_notes');
+        return { archivedCount: moved.archived.length, archived: moved.archived, failed: moved.failed };
     } catch (err) {
         const message = safeErrorMessage(err);
         console.error(`Cloudinary patch-notes prune failed: ${message}`);
-        return { deletedCount: 0, deleted: [], error: message };
+        return { archivedCount: 0, archived: [], error: message };
     }
 }
 

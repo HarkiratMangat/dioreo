@@ -2,7 +2,7 @@
 // ==========================================
 // CALENDAR PAGE BANNER CLOUDINARY CACHE
 // ==========================================
-// One banner image per /calendar page (Draws/Events/Playlists), independently settable via /manage's Calendar "Banners" action (added 2026-07-31 17:20 EDT, the notes file follow-up). Same re-host-so-a-dead-external-link-can't-break-the-command philosophy as utils/cloudinaryCache.js (draw thumbnails) and utils/patchNotesCache.js (patch screenshots), but far simpler retention: exactly 3 possible public_ids ever exist (calendar_banners/draws|events|playlists), each just overwritten in place on every re-set -- no age/season-based pruning needed.
+// One banner image per /calendar page (Draws/Events/Playlists), independently settable via /manage's Calendar "Banners" action (added 2026-07-31 17:20 EDT, the notes file follow-up). Same re-host-so-a-dead-external-link-can't-break-the-command philosophy as utils/cloudinaryCache.js (draw thumbnails) and utils/patchNotesCache.js (patch screenshots), but far simpler retention: exactly 3 possible public_ids ever exist (calendar_banners/draws|events|playlists), each overwritten in place on every re-set -- no age/season-based pruning needed. Since 2026-10-21 the banner being replaced or cleared goes to archive/calendar_banners/ first, never deleted (utils/cloudinaryArchive.js).
 const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
 if (!process.env.CLOUDINARY_URL) {
@@ -11,6 +11,7 @@ if (!process.env.CLOUDINARY_URL) {
 
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
 const { withDeliveryDefaults } = require('./cloudinaryDeliveryUrl');
+const { archiveByMove, archiveBeforeReplace } = require('./cloudinaryArchive');
 
 const FOLDER = 'calendar_banners';
 const VALID_PAGES = ['draws', 'events', 'playlists'];
@@ -34,6 +35,7 @@ async function cacheBannerImage(page, sourceUrl) {
     if (isCloudinaryWriteBlocked('upload', publicIdFor(page))) {
         return { url: sourceUrl, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
+    await archiveBeforeReplace(publicIdFor(page), sourceUrl, 'calendar_banners');
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: publicIdFor(page),
@@ -51,15 +53,11 @@ async function cacheBannerImage(page, sourceUrl) {
     }
 }
 
-// Best-effort delete of a page's cached banner asset -- called when the admin clears a banner field back to blank. Never throws; a failed delete just leaves an orphaned (harmless) asset in Cloudinary, same non-blocking philosophy as every other write path in this file.
+// Best-effort archive of a page's cached banner asset -- called when the admin clears a banner field back to blank. Moved to archive/calendar_banners/, never deleted (Harkirat, 2026-10-21 11:25 EDT). Never throws; archiveByMove logs its own failures, and a failed move just leaves the old asset where it was, same non-blocking philosophy as every other write path in this file.
 async function clearBannerImage(page) {
     if (!VALID_PAGES.includes(page)) return;
-    if (isCloudinaryWriteBlocked('delete_resources', publicIdFor(page))) return;
-    try {
-        await cloudinary.uploader.destroy(publicIdFor(page), { invalidate: true });
-    } catch (err) {
-        console.error(`Cloudinary banner clear failed for "${page}" (best-effort, non-fatal): ${safeErrorMessage(err)}`);
-    }
+    if (isCloudinaryWriteBlocked('archive (move)', publicIdFor(page))) return;
+    await archiveByMove([publicIdFor(page)], 'calendar_banners');
 }
 
 module.exports = { cacheBannerImage, clearBannerImage, VALID_PAGES, FOLDER };
