@@ -137,6 +137,8 @@ const emojis = {
     viewSaved: '<a:ViewSaved:1560682871151132793>',   // re-uploaded 2026-10-16 14:31 EDT
     // The calculator's Edit Selection button (2026-10-14 19:28 EDT): prod id here; the dev bot re-points to its 1560068687942123642 by name at boot. Renamed EditCalc -> Edit on every app by Harkirat (2026-10-20 13:19 EDT); the calculator's edit buttons and /autobuild's Adjust both use it.
     edit: '<a:Edit:1560408533160296519>',
+    // /draw prices' Show All Draws once a filter is set (2026-10-21 13:14 EDT, Harkirat gave this prod id; the dev app's Return is matched by name at boot).
+    returnArrow: '<:Return:1562514351477231636>',
     // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.
     copyExport: '<a:CopyExport:1560682776305471600>',   // re-uploaded 2026-10-16 14:31 EDT
 };

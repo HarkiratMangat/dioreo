@@ -368,27 +368,32 @@ const MESSAGE_COMPONENT_CAP = 40;
 // THE FILTER IS A LINE AND A BUTTON, NOT A DROPDOWN (2026-10-21 13:02 EDT, Harkirat: "show me G properly then, as a section+accesory"). The multi-select drew every picked draw as a chip in its closed box, which stacked seven deep on desktop ("this kind of looks ridiculous when a lot of draws are selected"); a box with nothing marked showed no ticks ("the dropdown itself doesnt show what's picked"). Discord draws a ticked option only by listing it in the closed box too, so the ticks moved into a pop-up: the panel says what is filtered in one line, and Filter opens the full list already ticked. OwO's weapon panel does the same.
 function filterSummary(keys) {
     const { SHORT_NAME } = require('./drawCalculator');
-    return `**Draw Filters:** ${keys.length ? keys.map(k => `\`${SHORT_NAME[k] || jumpMeta(k).name}\``).join(' ') : '`None`'}`;
+    return `**Draw Filters:** ${keys.length ? keys.map(k => `\`${SHORT_NAME[k] || jumpMeta(k).name}\``).join(', ') : '`None`'}`;
 }
-// The pop-up Filter opens: every draw type, the picked ones ticked; picking none shows them all again.
+// The pop-up Filter opens: one dropdown per kind of draw (2026-10-21 13:14 EDT, Harkirat: "separate the filter modal to \"normal draws\", \"series armory\", and \"advanced draws\""), the picked ones ticked; leaving all three empty shows every draw again.
+const FILTER_GROUPS = [
+    { id: 'normal', label: 'Normal Draws', keys: SUBPAGES.flat() },
+    { id: 'armory', label: 'Series Armory', keys: Object.keys(SERIES_ARMORY) },
+    { id: 'advanced', label: 'Advanced Draws', keys: Object.keys(ADVANCED_JUMPS) }
+];
 function buildFilterModal(regionKey, keys) {
     return {
         title: 'Filter Draws to View',
         custom_id: `price_filtersave_${regionKey}`,
-        components: [{
+        components: FILTER_GROUPS.map((group, i) => ({
             type: 18,
-            label: 'Draws to Show',
-            description: 'Pick any draw types, or none to show them all',
+            label: group.label,
+            ...(i === 0 ? { description: 'Leave all three empty to show every draw' } : {}),
             component: {
                 type: 3,
-                custom_id: 'filter',
-                placeholder: 'Pick draw types...',
+                custom_id: group.id,
+                placeholder: `Pick ${group.label.toLowerCase()}...`,
                 min_values: 0,
-                max_values: JUMP_KEYS.length,
+                max_values: group.keys.length,
                 required: false,
-                options: JUMP_KEYS.map(key => ({ label: jumpMeta(key).name, value: key, emoji: emojis.parseEmoji(tierIcon(jumpMeta(key).tier)), default: keys.includes(key) }))
+                options: group.keys.map(key => ({ label: jumpMeta(key).name, value: key, emoji: emojis.parseEmoji(tierIcon(jumpMeta(key).tier)), default: keys.includes(key) }))
             }
-        }]
+        }))
     };
 }
 const MESSAGE_TEXT_BUDGET = 3800;
@@ -401,11 +406,9 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
     const filter = filterOf(subpage);
     const innerDividerSpacing = 2;
 
-    // Prev/Next between the entry pages, same region -- shared pagination row helper (see utils/paginationRow.js), same style as /calendar and /draws' sub-page navigation. Placed directly under the entries themselves (own divider on both sides) rather than next to the region-switch footer/button below -- sitting right next to that footer's "Switch between viewing 10 CP or 30 CP region prices" text read as if the page arrows were ALSO part of switching region, which they aren't (Harkirat's explicit fix, 2026-07-12). In a filtered view the pager pages the picked draws and Show All Draws sits at its end, to the all-view page the first picked draw sits on. Not "Back" (it read as a page back), but the arrow stays (Harkirat 2026-10-17 22:47 EDT: "nah keep the back arrow"; 2026-10-17 22:14 EDT, Harkirat: "It kind of feels like back as in a page").
+    // Prev/Next between the entry pages, same region -- shared pagination row helper (see utils/paginationRow.js), same style as /calendar and /draws' sub-page navigation. Placed directly under the entries themselves (own divider on both sides) rather than next to the region-switch footer/button below -- sitting right next to that footer's "Switch between viewing 10 CP or 30 CP region prices" text read as if the page arrows were ALSO part of switching region, which they aren't (Harkirat's explicit fix, 2026-07-12). In a filtered view the pager pages the picked draws, and only shows when they take more than one page; Show All Draws lives with the filter line (assemble, below).
     function filteredView(page, pageCount) {
-        const showAll = { type: 2, style: 2, label: 'Show All Draws', emoji: emojis.parseEmoji(emojis.left), custom_id: `price_subpage_${regionKey}_${pageOfJump(filter.keys[0])}` };
-        const pager = buildPaginationRow({ totalChunks: pageCount, currentPage: page, makeCustomId: (p) => `price_subpage_${regionKey}_${filterToken(filter.keys, p)}`, indicatorCustomId: 'price_subpage_indicator' });
-        return { type: 1, components: [...(pager ? pager.components : []), showAll] };
+        return buildPaginationRow({ totalChunks: pageCount, currentPage: page, makeCustomId: (p) => `price_subpage_${regionKey}_${filterToken(filter.keys, p)}`, indicatorCustomId: 'price_subpage_indicator' });
     }
 
     let currentPage, entrySections, controlRow, viewToken;
@@ -477,12 +480,18 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                 // NO divider between the last entry and the pagination row (Harkirat's explicit, repeated correction) -- pagination sits directly under the entries with no separator. A small space above the pager, no line (2026-10-18 15:12 EDT, Harkirat: "add a divider:false small spacing ... anywhere else that pagination buttons appear"). This replaces the old "nothing between the last entry and the pager" rule: a space, still no line.
                 ...(pagerRow ? [{ type: 14, spacing: 1, divider: false }, pagerRow] : []),
                 { type: 14, spacing: 2, divider: true },
-                // The filter sits above the region hint line, where the quick jump sat: one line naming what is filtered, and Filter, which opens the pop-up (filterSummary, buildFilterModal).
-                {
+                // The filter sits above the region hint line, where the quick jump sat: one line naming what is filtered, and Filter, which opens the pop-up (filterSummary, buildFilterModal). Once a filter is set the line stands alone and a row holds Show All Draws (his Return icon, to the all-view page the first picked draw sits on) and Filter Again (2026-10-21 13:14 EDT, Harkirat: "once a filter is set, let's swap that section to just text + an action row").
+                ...(pickedKeys.length ? [
+                    { type: 10, content: filterSummary(pickedKeys) },
+                    { type: 1, components: [
+                        { type: 2, style: 2, label: 'Show All Draws', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: `price_subpage_${regionKey}_${pageOfJump(pickedKeys[0])}` },
+                        { type: 2, style: 2, label: 'Filter Again', emoji: emojis.parseEmoji(emojis.edit), custom_id: `price_filteropen_${regionKey}_${token}` }
+                    ] }
+                ] : [{
                     type: 9,
                     components: [{ type: 10, content: filterSummary(pickedKeys) }],
                     accessory: { type: 2, style: 2, label: 'Filter', custom_id: `price_filteropen_${regionKey}_${token}`, emoji: emojis.parseEmoji(emojis.edit) }
-                },
+                }]),
                 // One-line footer (was two `-#` lines) per example_reformat.json. Updated 2026-08-07 for the 3rd region.
                 { type: 10, content: `-# Switch between viewing 10 CP, 20 CP, or 30 CP region prices. (Tip: check out ${mentionCommand(client, '/settings')})` },
                 {
@@ -517,7 +526,7 @@ function addCalculatorShortcutOptions(sub) {
 module.exports = {
     // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads"). buildDrawEntries/UPGRADE_LABEL/formatCP exported 2026-08-26 17:25 EDT so the calculator's own per-draw summary block can reuse THIS command's exact rendering -- Harkirat's own mockup for the redesign was built by pasting a real /draw prices entry in verbatim, so the two must never drift apart into two similar-looking but independently-maintained copies.
     DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
-    buildDrawEntries, SERIES_ARMORY, ARMORY_SPIN_CP, JUMP_KEYS, jumpMeta, filterToken, filterOf, buildFilterModal, UPGRADE_LABEL, upgradeEmoji, formatCP, MYTHIC_UPGRADE, upgradeFullAmount,
+    buildDrawEntries, SERIES_ARMORY, ARMORY_SPIN_CP, JUMP_KEYS, jumpMeta, filterToken, filterOf, buildFilterModal, FILTER_GROUPS, UPGRADE_LABEL, upgradeEmoji, formatCP, MYTHIC_UPGRADE, upgradeFullAmount,
     // The two Advanced pages' per-pull arrays, for /draw calculator (2026-10-18 21:51 EDT): priced from these same numbers, never a copy.
     ADVANCED_DOUBLE_LEGENDARY, ADVANCED_DOUBLE_LEGENDARY_CHARACTER,
 

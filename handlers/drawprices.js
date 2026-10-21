@@ -67,9 +67,9 @@ async function route(interaction) {
         if (interaction.isModalSubmit() && interaction.customId.startsWith('price_filtersave_')) {
             await interaction.deferUpdate();
             const region = interaction.customId.replace('price_filtersave_', '');
-            const { filterToken, JUMP_KEYS } = require('../commands/drawprices');
-            let values = [];
-            try { values = interaction.fields.getStringSelectValues('filter') || []; } catch { values = []; }
+            const { filterToken, JUMP_KEYS, FILTER_GROUPS } = require('../commands/drawprices');
+            // One dropdown per kind of draw (normal, armory, advanced); an unanswered one reads as none.
+            const values = FILTER_GROUPS.flatMap(group => { try { return interaction.fields.getStringSelectValues(group.id) || []; } catch { return []; } });
             const picked = JUMP_KEYS.filter(key => values.includes(key));
             const pricesCommand = interaction.client.commands.get('draw');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });

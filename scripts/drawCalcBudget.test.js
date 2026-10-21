@@ -1353,10 +1353,15 @@ t('/draw prices: the filter shows only the picked draws, pages them to fit, keep
                 const all = comps.flatMap(flat);
                 const { SHORT_NAME } = require('../commands/drawCalculator');
                 const line = all.find(c => c.type === 10 && c.content.startsWith('**Draw Filters:**'));
-                assert.strictEqual(line.content, `**Draw Filters:** ${ordered.map(k => `\`${SHORT_NAME[k] || dp.jumpMeta(k).name}\``).join(' ')}`, `${region} ${token}: the line names every picked draw`);
-                assert.ok(all.some(c => c.type === 2 && c.custom_id === `price_filteropen_${region}_${token}`), `${region} ${token}: Filter carries the filter`);
+                assert.strictEqual(line.content, `**Draw Filters:** ${ordered.map(k => `\`${SHORT_NAME[k] || dp.jumpMeta(k).name}\``).join(', ')}`, `${region} ${token}: the line names every picked draw, comma-separated`);
+                assert.ok(!all.some(c => c.type === 9 && c.components.some(x => x === line)), `${region} ${token}: once filtered the line is plain text, not a section`);
+                const filterRow = all.find(c => c.type === 1 && c.components.some(x => x.label === 'Filter Again'));
+                assert.deepStrictEqual(filterRow && filterRow.components.map(x => x.label), ['Show All Draws', 'Filter Again'], `${region} ${token}: Show All Draws and Filter Again share a row`);
+                assert.ok(filterRow.components[1].custom_id === `price_filteropen_${region}_${token}`, `${region} ${token}: Filter Again carries the filter`);
                 const modal = dp.buildFilterModal(region, ordered);
-                assert.deepStrictEqual(modal.components[0].component.options.filter(o => o.default).map(o => o.value), ordered, `${region} ${token}: the pop-up ticks the picked draws`);
+                assert.deepStrictEqual(modal.components.map(c => c.label), ['Normal Draws', 'Series Armory', 'Advanced Draws'], 'the pop-up has his three groups');
+                assert.deepStrictEqual(modal.components.flatMap(c => c.component.options.map(o => o.value)).sort(), [...keys].sort(), 'the three groups hold every draw once');
+                assert.deepStrictEqual(modal.components.flatMap(c => c.component.options.filter(o => o.default).map(o => o.value)).sort(), [...ordered].sort(), `${region} ${token}: the pop-up ticks the picked draws`);
                 assert.doesNotThrow(() => new (require('discord.js').ModalBuilder)(modal).toJSON(), 'discord.js accepts the pop-up');
                 assert.ok(all.some(c => c.type === 2 && c.label === 'Show All Draws'), `${region} ${token}: Show All Draws in a filtered view`);
                 const indicator = all.find(c => c.custom_id === 'price_subpage_indicator');
