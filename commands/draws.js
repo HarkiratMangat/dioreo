@@ -143,13 +143,14 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     // CATEGORY TOGGLE: showing both "NEW"/"RETURNING" buttons side by side (one disabled) still wrapped onto two lines on mobile even after shortening the labels, and a disabled button showing the page you're already on doesn't add anything — replaced with a single button that only offers the OTHER category, worded as a full call-to-action instead. Sentence case (was all-caps) -- 2026-07-12, matching the same gray/Secondary + sentence-case convention now used bot-wide for "switch view" buttons (see drawprices.js's region toggle). PRICE THESE DRAWS (2026-10-21 10:14 EDT, Harkirat): opens /draw calculator's pick-your-draws pop-up (handlers/drawCalc.js `drawspick`), shown only when a draw this season has a price type. A `calc~` id with no author, so whoever presses it gets their own calculation. +1 component.
     const priced = [...(seasonalDoc.newDraws || []), ...(seasonalDoc.returningDraws || [])].some(d => d.priceType);
     const { encodeState } = require('./drawCalculator');
+    // Short labels so both buttons stay on one row on a phone (2026-10-21 16:25 EDT, Harkirat's option D: "I just don't want them to wrap"). Measured on his iPhone: Returning Draws + Calculate leaves about 60px of the row free, Calculate Draws or Price Draws beside it wrapped or nearly did.
     drawComponents.push({
         type: 1,
         components: [
             isNewPage
-                ? { type: 2, style: 2, label: "View Returning Draws", emoji: emojis.parseEmoji(emojis.returningDraws), custom_id: "page_returning_draws" }
-                : { type: 2, style: 2, label: "View New Draws", emoji: emojis.parseEmoji(emojis.newDraws), custom_id: "page_new_draws" },
-            ...(priced ? [{ type: 2, style: 1, label: 'Calculate Draws', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('drawspick', {}) }] : [])
+                ? { type: 2, style: 2, label: "Returning Draws", emoji: emojis.parseEmoji(emojis.returningDraws), custom_id: "page_returning_draws" }
+                : { type: 2, style: 2, label: "New Draws", emoji: emojis.parseEmoji(emojis.newDraws), custom_id: "page_new_draws" },
+            ...(priced ? [{ type: 2, style: 1, label: 'Calculate', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('drawspick', {}) }] : [])
         ]
     });
 
