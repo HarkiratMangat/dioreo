@@ -1335,7 +1335,7 @@ t('/draw prices: the filter shows only the picked draws, pages them to fit, keep
             const comps = dp.buildContainer(region, 0, true, view, null);
             fits(comps, `${region} page ${view}`);
             const all = comps.flatMap(flat);
-            assert.ok(all.some(c => c.type === 10 && c.content === '**Draw Filters:** `None`'), `${region} ${view}: the filter line says None`);
+            assert.ok(all.some(c => c.type === 10 && c.content === '-# **Draws:** `Showing all draws`'), `${region} ${view}: the filter line says all draws show`);
             assert.ok(all.some(c => c.type === 2 && c.custom_id === `price_filteropen_${region}_${view}`), `${region} ${view}: Filter carries the view`);
             assert.ok(!all.some(c => c.label === 'Show All Draws'), `${region} ${view}: no Show All Draws in the all view`);
             assert.ok(all.some(c => c.custom_id === 'price_subpage_indicator'), `${region} ${view}: the pager in the all view`);
@@ -1352,8 +1352,10 @@ t('/draw prices: the filter shows only the picked draws, pages them to fit, keep
                 fits(comps, `${region} ${token}`);
                 const all = comps.flatMap(flat);
                 const { SHORT_NAME } = require('../commands/drawCalculator');
-                const line = all.find(c => c.type === 10 && c.content.startsWith('**Draw Filters:**'));
-                assert.strictEqual(line.content, `**Draw Filters:** ${ordered.map(k => `\`${SHORT_NAME[k] || dp.jumpMeta(k).name}\``).join(', ')}`, `${region} ${token}: the line names every picked draw, comma-separated`);
+                const line = all.find(c => c.type === 10 && /^-# \*\*(Regular|Armory|Advanced):\*\*/.test(c.content));
+                const expected = dp.FILTER_GROUPS.map(g => [g.line, g.keys.filter(k => ordered.includes(k))]).filter(([, ks]) => ks.length)
+                    .map(([label, ks]) => `-# **${label}:** ${ks.map(k => `\`${SHORT_NAME[k] || dp.jumpMeta(k).name}\``).join(', ')}`).join('\n');
+                assert.strictEqual(line.content, expected, `${region} ${token}: one small line per kind of draw picked, comma-separated`);
                 assert.ok(!all.some(c => c.type === 9 && c.components.some(x => x === line)), `${region} ${token}: once filtered the line is plain text, not a section`);
                 const filterRow = all.find(c => c.type === 1 && c.components.some(x => x.label === 'Filter Again'));
                 assert.deepStrictEqual(filterRow && filterRow.components.map(x => x.label), ['Show All Draws', 'Filter Again'], `${region} ${token}: Show All Draws and Filter Again share a row`);

@@ -365,16 +365,21 @@ const countComponents = list => list.reduce((n, c) => n + 1 + countComponents(c.
 const textLength = list => list.reduce((n, c) => n + (c.type === 10 ? c.content.length : 0) + textLength(c.components || []), 0);
 // Discord's caps on one message: 40 components, and about 4,000 characters of text across it (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED, probed 2026-10-16 01:17 EDT for the calculator). The text budget keeps some room under that.
 const MESSAGE_COMPONENT_CAP = 40;
-// THE FILTER IS A LINE AND A BUTTON, NOT A DROPDOWN (2026-10-21 13:02 EDT, Harkirat: "show me G properly then, as a section+accesory"). The multi-select drew every picked draw as a chip in its closed box, which stacked seven deep on desktop ("this kind of looks ridiculous when a lot of draws are selected"); a box with nothing marked showed no ticks ("the dropdown itself doesnt show what's picked"). Discord draws a ticked option only by listing it in the closed box too, so the ticks moved into a pop-up: the panel says what is filtered in one line, and Filter opens the full list already ticked. OwO's weapon panel does the same.
+// THE FILTER IS A LINE AND A BUTTON, NOT A DROPDOWN (2026-10-21 13:02 EDT, Harkirat: "show me G properly then, as a section+accesory"). The multi-select drew every picked draw as a chip in its closed box, which stacked seven deep on desktop ("this kind of looks ridiculous when a lot of draws are selected"); a box with nothing marked showed no ticks ("the dropdown itself doesnt show what's picked"). Discord draws a ticked option only by listing it in the closed box too, so the ticks moved into a pop-up: the panel says what is filtered in one line, and Filter opens the full list already ticked. OwO's weapon panel does the same. His format (2026-10-21 13:38 EDT): small text, one line per kind of draw that has picks, "-# **Regular:** `Draw name`, `Draw name`" then Armory and Advanced; with no filter, "-# **Draws:** `Showing all draws`".
 function filterSummary(keys) {
     const { SHORT_NAME } = require('./drawCalculator');
-    return `**Draw Filters:** ${keys.length ? keys.map(k => `\`${SHORT_NAME[k] || jumpMeta(k).name}\``).join(', ') : '`None`'}`;
+    if (!keys.length) return '-# **Draws:** `Showing all draws`';
+    return FILTER_GROUPS
+        .map(group => ({ label: group.line, picked: group.keys.filter(k => keys.includes(k)) }))
+        .filter(g => g.picked.length)
+        .map(g => `-# **${g.label}:** ${g.picked.map(k => `\`${SHORT_NAME[k] || jumpMeta(k).name}\``).join(', ')}`)
+        .join('\n');
 }
 // The pop-up Filter opens: one dropdown per kind of draw (2026-10-21 13:14 EDT, Harkirat: "separate the filter modal to \"normal draws\", \"series armory\", and \"advanced draws\""), the picked ones ticked; leaving all three empty shows every draw again.
 const FILTER_GROUPS = [
-    { id: 'normal', label: 'Normal Draws', keys: SUBPAGES.flat() },
-    { id: 'armory', label: 'Series Armory', keys: Object.keys(SERIES_ARMORY) },
-    { id: 'advanced', label: 'Advanced Draws', keys: Object.keys(ADVANCED_JUMPS) }
+    { id: 'normal', label: 'Normal Draws', line: 'Regular', keys: SUBPAGES.flat() },
+    { id: 'armory', label: 'Series Armory', line: 'Armory', keys: Object.keys(SERIES_ARMORY) },
+    { id: 'advanced', label: 'Advanced Draws', line: 'Advanced', keys: Object.keys(ADVANCED_JUMPS) }
 ];
 function buildFilterModal(regionKey, keys) {
     return {
