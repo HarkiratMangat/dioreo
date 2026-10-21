@@ -222,9 +222,11 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     calendarComponents.push(withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji)));
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
-    const noneScheduledText = states && totalEntryCount > 0
-        ? `*Nothing on this page matches the filter. Clear it to see the full timeline.*`
-        : `*There are currently no events scheduled for this season.*`;
+    // An empty page keeps its own heading, so it is clear which page is empty (2026-10-21 15:53 EDT, Harkirat: "can that include the \":Events: EVENTS\" heading? and add the warning icon infront of the hint"). The Draws page names itself Draws here, having no New/Returning split to show.
+    const filteredOut = states && totalEntryCount > 0;
+    const emptyPage = (headingLine) => ({ type: 10, content: `${headingLine}\n${filteredOut
+        ? `${emojis.warn} *Nothing on this page matches the filter. Clear it to see the full timeline.*`
+        : `*There are currently no events scheduled for this season.*`}` });
 
     if (safePage === 0) {
         // NEW/RETURNING DRAWS soft-split (notes follow-up, 2026-07-31 14:00 EDT) -- replaces the old single "Draws" heading entirely; each sub-heading carries its own matching emoji (emojiMap.js's existing newDraws/returningDraws icons, already used elsewhere in the bot for this exact New/Returning distinction).
@@ -233,7 +235,7 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         const newSection = buildSectionComponent(sectionHeading(emojis.newDraws, 'New Draws'), newDrawEntries, seasonalDoc);
         const returningSection = buildSectionComponent(sectionHeading(emojis.returningDraws, 'Returning Draws'), returningDrawEntries, seasonalDoc);
         if (!newSection && !returningSection) {
-            calendarComponents.push({ type: 10, content: noneScheduledText });
+            calendarComponents.push(emptyPage(sectionHeading(emojis.newDraws, 'Draws')));
         } else {
             if (newSection) calendarComponents.push(newSection);
             if (newSection && returningSection) calendarComponents.push({ type: 14, spacing: 2, divider: true });
@@ -241,15 +243,16 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         }
     } else if (safePage === 1) {
         const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Events'), eventEntries, seasonalDoc);
-        calendarComponents.push(eventSection || { type: 10, content: noneScheduledText });
+        calendarComponents.push(eventSection || emptyPage(sectionHeading(emojis.events, 'Events')));
     } else {
         const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Game Modes'), playlistEntries, seasonalDoc);
-        calendarComponents.push(playlistSection || { type: 10, content: noneScheduledText });
+        calendarComponents.push(playlistSection || emptyPage(sectionHeading(emojis.modes, 'Game Modes')));
     }
 
     // PAGE NAV: divider -> hint -> pager -> filter (2026-10-21 15:32 EDT). One divider separates the content from the whole block, and the hint sits directly under the content (2026-07-31 16:55 EDT). The pager is left out when the filter keeps one page.
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
-    calendarComponents.push({ type: 10, content: `-# Use the arrows to switch between this season's **Draws**, **Events**, and **Game Modes**, or narrow it down with the filter. (Tip: check out ${mentionCommand(client, '/settings')})` });
+    // Shortened 2026-10-21 15:53 EDT (his "rephase the bottom toggle/filter hint so it isnt so long").
+    calendarComponents.push({ type: 10, content: `-# Switch pages with the arrows, or narrow it down with the filter. (Tip: ${mentionCommand(client, '/settings')})` });
     const pager = buildCalendarPager(safePage, mask);
     if (pager) calendarComponents.push(pager);
     calendarComponents.push(buildFilterRow(safePage, mask));

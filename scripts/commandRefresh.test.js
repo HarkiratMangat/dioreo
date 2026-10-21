@@ -176,6 +176,11 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     assert.deepStrictEqual(json(1, mask).match(/calpage_\d_m\d+_[pn]/g), [`calpage_2_m${mask}_p`, `calpage_2_m${mask}_n`]);
     assert.ok(json(0, mask).includes('Live Event'), 'Draws is left out, so it opens on Events');
     assert.ok(!/calpage_\d_m/.test(json(1, calendar.filterMask('events'))), 'one page kept: no pager');
+    // An empty filtered page keeps its heading and leads with the warning icon (2026-10-21 15:53 EDT).
+    const noMatch = { ...doc, calendar: doc.calendar.filter(e => e.title === 'Over Event') };
+    const emptyJson = JSON.stringify(calendar.buildContainer(noMatch, 1, undefined, false, calendar.filterMask('live')));
+    assert.ok(/EVENTS.*:Warn:.*Nothing on this page matches the filter/.test(emptyJson), emptyJson.slice(0, 600));
+    assert.ok(emptyJson.includes('Switch pages with the arrows'));
 });
 
 t('the owner is DM\'d once about a returning draw that went live in the last week with no end date (2026-10-21 14:39 EDT)', () => {
