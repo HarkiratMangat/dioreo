@@ -40,15 +40,15 @@ function buildDrawSections(drawsArray) {
             const emoji = emojis[item.tier.toLowerCase()] || '🔹';
             // Split once and reuse, instead of re-splitting the same string up to 3 times per item.
             const nameParts = item.name.split(' - ');
-            return `${emoji} **${nameParts[0]}**${nameParts.length > 1 ? ` - ${nameParts[1]}` : ''}`;
+            return `${emoji} **${nameParts[0]}**${nameParts.length > 1 ? ` — ${nameParts[1]}` : ''}`;
         });
 
         const unixTime = Math.floor(new Date(draw.date).getTime() / 1000);
         // A draw saved with no date used to print a raw `<t:NaN:f>` (seen on a dev probe draw, 2026-10-20); it reads "Date TBA" instead.
         const dateLine = Number.isFinite(unixTime) ? `<t:${unixTime}:f> (<t:${unixTime}:R>)` : '*Date TBA*';
 
-        // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here.
-        const compose = (lines, hidden) => `**__${draw.title}__**\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}\n${dateLine}`;
+        // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here. Layout H (Harkirat, 2026-10-21 11:35 EDT, "yeah lets go H", picked from mock-ups A–H in #testing-spam): a `###` title, the date in a quote right under it, then the items with an em dash before the skin. The title used to be `**__bold underline__**` with the date last, and on a phone the draws ran together. The date keeps its time although it wraps on a phone: "I've actually seen people confused about the exact time something launches". `-#` on the date was tried and does nothing to a timestamp on mobile.
+        const compose = (lines, hidden) => `### ${draw.title}\n> ${dateLine}\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}`;
         // A single draw too long for one page on its own drops item lines from the end until it fits (see DRAW_TEXT_BUDGET).
         let shown = itemLines;
         let textContent = compose(shown, 0);
