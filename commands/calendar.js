@@ -62,26 +62,49 @@ function getDrawSectionEntries(seasonalDoc) {
     return [...taggedExplicit, ...syntheticNew, ...syntheticReturning];
 }
 
-function buildEntryLine(event, seasonalDoc) {
-    const startUnix = Math.floor(new Date(event.date).getTime() / 1000);
-    // An entry with no usable date (a draw saved without one, merged in from newDraws/returningDraws) used to print a raw `<t:NaN:D>`; it reads "TBA" instead, the same as /draws' "Date TBA" (2026-10-20).
-    const stamp = unix => (Number.isFinite(unix) ? `<t:${unix}:D>` : 'TBA');
-    // Redesigned per calendar_update_ui.json: bold title line + a subtext date-range line below it, using the static "b1" bullet emoji and `D` (Long Date) style with the em-dash directly joining the two timestamps, no surrounding spaces.
-    let rangeText;
-    if (event.dateOnly) {
-        rangeText = `Releases ${stamp(startUnix)}`;
-    } else if (event.isOngoing) {
-        if (seasonalDoc.bpEndTBD) {
-            rangeText = `${stamp(startUnix)}—TBD`;
-        } else {
-            rangeText = seasonalDoc.bpEnd
-                ? `${stamp(startUnix)}—${stamp(Math.floor(new Date(seasonalDoc.bpEnd).getTime() / 1000))}`
-                : `${stamp(startUnix)}—Ongoing`;
-        }
-    } else {
-        rangeText = `${stamp(startUnix)}—${stamp(Math.floor(new Date(event.endDate).getTime() / 1000))}`;
+// Where an entry stands right now: 'over', 'live', 'soon' or 'tba' (no usable date), with its start and end in ms (end null when it has none: a draw merged in from newDraws/returningDraws, or an All Season event with bpEnd unset or TBD).
+function entryState(event, seasonalDoc, nowMs) {
+    // A missing date is TBA, never the epoch: `new Date(null)` is 1970, which read as long since live.
+    const startMs = event.date ? new Date(event.date).getTime() : NaN;
+    let endMs = null;
+    if (!event.dateOnly) {
+        if (event.isOngoing) endMs = seasonalDoc.bpEndTBD || !seasonalDoc.bpEnd ? null : new Date(seasonalDoc.bpEnd).getTime();
+        else if (event.endDate) endMs = new Date(event.endDate).getTime();
     }
-    return `**✦ ${event.title}**\n-# ${emojis.b1} ${rangeText}`;
+    if (!Number.isFinite(startMs)) return { state: 'tba', startMs, endMs };
+    if (Number.isFinite(endMs) && endMs <= nowMs) return { state: 'over', startMs, endMs };
+    if (nowMs < startMs) return { state: 'soon', startMs, endMs };
+    return { state: 'live', startMs, endMs };
+}
+
+// The calendar's order (2026-10-21 14:39 EDT, Harkirat: "move finished events to the top of the list in oldest to newest finished order. Active and upcoming sorted similarly as well? Active being \"first to end to last to end order\". Upcoming being \"first to release to last to release\""): finished by when they ended, then live by when they end (one with no end after them, by start), then upcoming by when they start, then any with no date.
+const STATE_ORDER = { over: 0, live: 1, soon: 2, tba: 3 };
+function compareEntries(seasonalDoc, nowMs) {
+    return (a, b) => {
+        const x = entryState(a, seasonalDoc, nowMs), y = entryState(b, seasonalDoc, nowMs);
+        if (x.state !== y.state) return STATE_ORDER[x.state] - STATE_ORDER[y.state];
+        if (x.state === 'soon') return x.startMs - y.startMs;
+        if (x.state === 'tba') return 0;
+        const ex = Number.isFinite(x.endMs) ? x.endMs : Infinity, ey = Number.isFinite(y.endMs) ? y.endMs : Infinity;
+        return ex !== ey ? ex - ey : x.startMs - y.startMs;
+    };
+}
+
+// One entry: a status dot, the name, and a small line saying where it stands (2026-10-21 14:34 EDT, his mock G, after mocks A–F in #testing-spam): green live, white upcoming or undated, red with the name struck through once it is over. The small line is padded with two blank braille characters so it sits under the name: Discord indents nothing in small text, and its own list bullet swallowed the line (his "Indent didn't work"). An entry with no usable date reads "Releases TBA", never a raw `<t:NaN:D>` (2026-10-20). Replaces the 2026-07-31 calendar_update_ui.json shape (`**✦ title**` over a `b1` date range).
+function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
+    const { state, startMs, endMs } = entryState(event, seasonalDoc, nowMs);
+    const s = Math.floor(startMs / 1000), e = Number.isFinite(endMs) ? Math.floor(endMs / 1000) : null;
+    const returning = event.drawType === 'returning';
+    let text;
+    if (state === 'tba') text = 'Releases TBA';
+    else if (state === 'over') text = `Ended <t:${e}:R>`;
+    else if (state === 'soon') text = `${returning ? 'Returns' : event.dateOnly ? 'Releases' : 'Starts'} <t:${s}:R> · <t:${s}:D>`;
+    else if (e) text = `**Live** · ends <t:${e}:R>`;
+    else if (event.dateOnly) text = returning ? `**Back** · returned <t:${s}:R>` : `**Live** · released <t:${s}:R>`;
+    else text = `**Live** · ends ${seasonalDoc.bpEndTBD ? 'TBD' : 'with the season'}`;
+    const dot = state === 'live' ? emojis.greenDotGlow : state === 'over' ? emojis.redDotGlow : emojis.whiteDotGlow;
+    const title = state === 'over' ? `~~**${event.title}**~~` : `**${event.title}**`;
+    return `${dot} ${title}\n-# \u2800\u2800 ${text}`;
 }
 
 // Full-caps + underline heading, per Harkirat's explicit request (notes follow-up, 2026-07-31 14:00 EDT) -- `.toUpperCase()` guarantees the caps regardless of how the heading text is typed at the call site, `__**...**__` combines Discord's underline+bold markdown inside the `### ` heading line.
@@ -92,7 +115,7 @@ function sectionHeading(emoji, text) {
 // One Text Display per section (heading + entries together) -- Discord renders visible vertical margin BETWEEN components, not between lines inside one, so keeping heading+content in a single component is what keeps a section visually tight instead of looking like two floating pieces.
 function buildSectionComponent(headingLine, entries, seasonalDoc) {
     if (entries.length === 0) return null;
-    let body = entries.map(e => buildEntryLine(e, seasonalDoc)).join('\n');
+    let body = entries.map(e => buildEntryLine(e, seasonalDoc, Date.now())).join('\n');
     if (body.length > SECTION_CHAR_BUDGET) {
         body = body.slice(0, SECTION_CHAR_BUDGET) + `\n-# …and more (too many entries to show at once).`;
     }
@@ -126,7 +149,7 @@ function buildSectionToggleRow(currentPage, filterMode = 'all') {
 function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filterMode = 'all', client) {
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
     const nowMs = Date.now();
-    const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
+    const sortByDate = compareEntries(seasonalDoc, nowMs);
     const applyFilter = (entries) => filterMode === 'active'
         ? entries.filter(e => !isEventEnded(e, seasonalDoc, nowMs))
         : entries;
@@ -212,6 +235,8 @@ module.exports = {
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
     buildContainer,
+    entryState,
+    compareEntries,
     // Exported for /bot analytics' change-detail panel: buildEntryLine is the CANONICAL renderer for one calendar row (rule D -- never re-describe a record), and isEventEnded is the ONLY thing that decides whether /calendar's Active/Upcoming view still shows it. A second, hand-rolled date comparison over there would drift from this one and then confidently state the opposite.
     buildEntryLine,
     isEventEnded,

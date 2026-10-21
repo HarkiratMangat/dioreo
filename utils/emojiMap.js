@@ -139,6 +139,9 @@ const emojis = {
     edit: '<a:Edit:1560408533160296519>',
     // /draw prices' Show All Draws once a filter is set (2026-10-21 13:14 EDT, Harkirat gave this prod id; swapped for his new Return 13:41 EDT). The dev app's emoji of the same name is matched at boot.
     returnArrow: '<:Return:1562521110572961882>',
+    // /calendar's status dots (2026-10-21 14:34 EDT, Harkirat: "Red with strike through for finished events, green for live, white for upcoming"); prod ids read from the prod app's emoji list, the dev app's are matched by name. whiteDotGlow (below) marks upcoming.
+    greenDotGlow: '<:GreenDotGlow_GDG:1542356494220140685>',
+    redDotGlow: '<:RedDotGlow_RDG:1542356487882416248>',
     // /draw prices' Filter and Filter Again (2026-10-21 13:41 EDT, Harkirat's prod id; the dev app's Filter is matched by name).
     filter: '<:Filter:1562521111579590736>',
     // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.

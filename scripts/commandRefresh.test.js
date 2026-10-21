@@ -127,5 +127,30 @@ t('/draws shows Price These Draws only when a draw has a price type, and stays u
     assert.ok(!JSON.stringify(buildContainer(doc(false), 'new', 0)).includes('calc~drawspick~'), 'no priced draw, no button');
 });
 
+t('/calendar: finished first by when they ended, then live by when they end, then upcoming by when they start; each with its dot and status (2026-10-21 14:39 EDT)', () => {
+    const cal = require('../commands/calendar');
+    const emojis = require('../utils/emojiMap');
+    const now = day(2026, 10, 21).getTime();
+    const doc = { bpEnd: day(2026, 11, 12), bpEndTBD: false };
+    const entries = [
+        { title: 'Soon B', date: day(2026, 10, 30), endDate: day(2026, 11, 5) },
+        { title: 'Live late', date: day(2026, 10, 1), endDate: day(2026, 11, 20) },
+        { title: 'Over late', date: day(2026, 9, 1), endDate: day(2026, 10, 15) },
+        { title: 'Soon A', date: day(2026, 10, 25), dateOnly: true, drawType: 'returning' },
+        { title: 'Live early', date: day(2026, 10, 1), endDate: day(2026, 10, 28) },
+        { title: 'Back', date: day(2026, 10, 10), dateOnly: true, drawType: 'returning' },
+        { title: 'Over early', date: day(2026, 9, 1), endDate: day(2026, 10, 2) },
+        { title: 'No date', date: null }
+    ];
+    const order = [...entries].sort(cal.compareEntries(doc, now)).map(e => e.title);
+    assert.deepStrictEqual(order, ['Over early', 'Over late', 'Live early', 'Live late', 'Back', 'Soon A', 'Soon B', 'No date']);
+    const line = title => cal.buildEntryLine(entries.find(e => e.title === title), doc, now);
+    assert.ok(line('Over early').startsWith(`${emojis.redDotGlow} ~~**Over early**~~\n-# `) && line('Over early').includes('Ended <t:'), line('Over early'));
+    assert.ok(line('Live early').startsWith(`${emojis.greenDotGlow} **Live early**`) && line('Live early').includes('**Live** · ends <t:'));
+    assert.ok(line('Back').includes('**Back** · returned <t:'));
+    assert.ok(line('Soon A').startsWith(`${emojis.whiteDotGlow} **Soon A**`) && line('Soon A').includes('Returns <t:'));
+    assert.ok(line('No date').endsWith('Releases TBA'));
+});
+
 if (failed) { console.log(`\n${failed} failed`); process.exit(1); }
 console.log('\ncommandRefresh: all passed');
