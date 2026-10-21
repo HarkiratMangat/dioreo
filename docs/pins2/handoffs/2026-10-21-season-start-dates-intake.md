@@ -27,7 +27,7 @@ Not checked: the bot branch's tests, and whether Review's change text names the 
 >
 > Verify: a start set in the portal makes that season's bar appear in /season end, and Review shows the start in the change.
 
-## The write-up, verbatim (`Dioreo-Bot/local/project/proposals/2026-10-21-pins2-season-start-dates.md`)
+## The write-up, verbatim (from the Dioreo-Bot checkout's local proposals folder, the path in his message above)
 
 Written 2026-10-21 10:24 EDT by the command-refresh lead (Dioreo-Bot, branch `fix/command-refresh-polish`). The bot side is built; nothing in `portal/**` was touched.
 
