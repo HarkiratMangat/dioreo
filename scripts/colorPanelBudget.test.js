@@ -87,9 +87,14 @@ t('each page links its own image, and the Name page none', async () => {
     const link = async (source, extra) => (await render(source, extra)).components[0].components.find(c => c.type === 9 && c.accessory?.type === 2)?.accessory;
     assert.strictEqual((await link('banner', { banner: palette, bannerUrl: CDN, bannerFullUrl: CDN + '?size=4096' })).url, CDN + '?size=4096');
     const np = await link('nameplate', { nameplate: palette.slice(0, 4), nameplateUrl: 'https://cdn.discordapp.com/assets/collectibles/x/static.png' });
-    assert.deepStrictEqual([np.label, np.url], ['Nameplate', 'https://cdn.discordapp.com/assets/collectibles/x/asset.webm'], 'the nameplate links its original animated file');
+    assert.deepStrictEqual([np.label, np.url], ['Nameplate', 'https://cdn.discordapp.com/assets/collectibles/x/asset.webm'], 'with no render yet, the nameplate links its original animated file');
     const deco = await link('decoration', { decoration: palette.slice(0, 4), decorationUrl: 'https://cdn.discordapp.com/avatar-decoration-presets/a.png' });
     assert.strictEqual(deco.url, 'https://cdn.discordapp.com/avatar-decoration-presets/a.png?passthrough=true');
+    // With a render, both open our lossless WebP, Discord's own copy first (2026-10-21 17:40 EDT).
+    const npWebp = await link('nameplate', { nameplate: palette.slice(0, 4), nameplateUrl: 'https://cdn.discordapp.com/assets/collectibles/x/static.png', nameplateWebp: { discordCdnUrl: 'https://cdn.discordapp.com/attachments/1/2/x.webp', cloudinaryUrl: 'https://res.cloudinary.com/x.webp' } });
+    assert.strictEqual(npWebp.url, 'https://cdn.discordapp.com/attachments/1/2/x.webp');
+    const decoWebp = await link('decoration', { decoration: palette.slice(0, 4), decorationUrl: 'https://cdn.discordapp.com/avatar-decoration-presets/a.png', decorationWebp: { cloudinaryUrl: 'https://res.cloudinary.com/d.webp' } });
+    assert.strictEqual(decoWebp.url, 'https://res.cloudinary.com/d.webp');
     assert.strictEqual(await link('name', { displayNameColors: ['112233', '445566'] }), undefined, 'the Name page has a link');
 });
 
