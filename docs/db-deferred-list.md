@@ -1097,6 +1097,10 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 *🏷️ **`/gunsmiths` became `/gunsmith` on 2026-10-19 21:17 EDT** (Harkirat: "let's use gunsmith singular"). Entries anywhere in this file that were filed earlier keep the name they were written under, and so do the changelogs and the devlog: a record is never backdated. Read `/gunsmiths` in an older entry as `/gunsmith`, and remember `search` and `list` there are `mp` and `dmz` now.*
 
+### The portal's season editor needs Start dates — pins2's half of the season progress bar `[P2 · S]`
+
+*Filed 2026-10-21 10:27 EDT.* The bot side shipped on `fix/command-refresh-polish` (`b647551e`): `/season end` shows a progress bar per season (Harkirat, 2026-10-21 10:14 EDT) from new `bpStart` / `rankStart` / `dmzStart` fields, which `/manage` takes as a range on each season line. The portal's Season identity editor has no Start input, so a portal-only admin cannot set them. **Do:** pins2 adds a Start date input beside each End, sent as `bpStart` / `rankStart` / `dmzStart` in the existing `season.setTitlesDeadlines` payload (`applyFields` in `core/ops/season.js` already reads them). The full ask is the project proposal `local/project/proposals/2026-10-21-pins2-season-start-dates.md`; it goes to pins2 on Harkirat's word. **Verify:** a start set in the portal makes that season's bar appear in `/season end`.
+
 ### `/timestamp` ranges — "8pm to 10pm" gives a start and an end `[P2 · S]`
 
 > ✅ **BUILT 2026-10-20 19:15 EDT** on `fix/timestamp-timezone`, his pick A (2026-10-20 18:57 EDT); ships in Pre-Release v3.104.0 (#213).
