@@ -107,9 +107,9 @@ function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
     return `${dot} ${title}\n-# \u2800\u2800 ${text}`;
 }
 
-// Full-caps + underline heading, per Harkirat's explicit request (notes follow-up, 2026-07-31 14:00 EDT) -- `.toUpperCase()` guarantees the caps regardless of how the heading text is typed at the call site, `__**...**__` combines Discord's underline+bold markdown inside the `### ` heading line.
+// A `## ` heading in title case (2026-10-21 16:02 EDT, Harkirat: "change the draws/events, etc headings to \"## :emoji: Special Events\", etc."). It replaced the full-caps, underlined `### ` heading of 2026-07-31.
 function sectionHeading(emoji, text) {
-    return `### ${emoji} __**${text.toUpperCase()}**__`;
+    return `## ${emoji} ${text}`;
 }
 
 // One Text Display per section (heading + entries together) -- Discord renders visible vertical margin BETWEEN components, not between lines inside one, so keeping heading+content in a single component is what keeps a section visually tight instead of looking like two floating pieces.
@@ -141,7 +141,7 @@ const FILTER_OPTIONS = [
     { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'whiteDotGlow', description: "Hasn't started yet" },
     { value: 'draws', bit: 8, label: 'Lucky Draws', emojiKey: 'newDraws', description: 'Draws releasing this season' },
     { value: 'events', bit: 16, label: 'Special Events', emojiKey: 'events', description: 'Special Events this season' },
-    { value: 'modes', bit: 32, label: 'Playlists & Modes', emojiKey: 'modes', description: 'Playlists & game modes this season' }
+    { value: 'modes', bit: 32, label: 'Playlists & Modes', emojiKey: 'modes', description: 'Playlists & Game Modes this season' }
 ];
 const STATE_BITS = 7;
 const PAGE_BIT = [8, 16, 32];
@@ -221,7 +221,7 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     calendarComponents.push(withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji)));
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
-    // An empty page keeps its own heading, so it is clear which page is empty (2026-10-21 15:53 EDT, Harkirat: "can that include the \":Events: EVENTS\" heading? and add the warning icon infront of the hint"). The Draws page names itself Draws here, having no New/Returning split to show.
+    // An empty page keeps its own heading, so it is clear which page is empty (2026-10-21 15:53 EDT, Harkirat: "can that include the \":Events: EVENTS\" heading? and add the warning icon infront of the hint"). The Draws page names itself Lucky Draws here, having no New/Returning split to show.
     const filteredOut = states && totalEntryCount > 0;
     const emptyPage = (headingLine) => ({ type: 10, content: `${headingLine}\n${filteredOut
         ? `${emojis.warn} *Nothing on this page matches the filter. Clear it to see the full timeline.*`
@@ -234,15 +234,15 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         const newSection = buildSectionComponent(sectionHeading(emojis.newDraws, 'New Draws'), newDrawEntries, seasonalDoc);
         const returningSection = buildSectionComponent(sectionHeading(emojis.returningDraws, 'Returning Draws'), returningDrawEntries, seasonalDoc);
         if (!newSection && !returningSection) {
-            calendarComponents.push(emptyPage(sectionHeading(emojis.newDraws, 'Draws')));
+            calendarComponents.push(emptyPage(sectionHeading(emojis.newDraws, 'Lucky Draws')));
         } else {
             if (newSection) calendarComponents.push(newSection);
             if (newSection && returningSection) calendarComponents.push({ type: 14, spacing: 2, divider: true });
             if (returningSection) calendarComponents.push(returningSection);
         }
     } else if (safePage === 1) {
-        const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Events'), eventEntries, seasonalDoc);
-        calendarComponents.push(eventSection || emptyPage(sectionHeading(emojis.events, 'Events')));
+        const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Special Events'), eventEntries, seasonalDoc);
+        calendarComponents.push(eventSection || emptyPage(sectionHeading(emojis.events, 'Special Events')));
     } else {
         const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Game Modes'), playlistEntries, seasonalDoc);
         calendarComponents.push(playlistSection || emptyPage(sectionHeading(emojis.modes, 'Game Modes')));

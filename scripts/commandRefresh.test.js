@@ -179,7 +179,7 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     // An empty filtered page keeps its heading and leads with the warning icon (2026-10-21 15:53 EDT).
     const noMatch = { ...doc, calendar: doc.calendar.filter(e => e.title === 'Over Event') };
     const emptyJson = JSON.stringify(calendar.buildContainer(noMatch, 1, undefined, false, calendar.filterMask('live')));
-    assert.ok(/EVENTS.*:Warn:.*Nothing on this page matches the filter/.test(emptyJson), emptyJson.slice(0, 600));
+    assert.ok(/## [^"]*Special Events.*:Warn:.*Nothing on this page matches the filter/.test(emptyJson), emptyJson.slice(0, 600));
     assert.ok(emptyJson.includes('or filter your view further.') && !emptyJson.includes('Tip:'), 'his hint, without the /settings tip');
 });
 
