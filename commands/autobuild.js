@@ -11,7 +11,7 @@ const EXTRA_SCREENSHOTS = Array.from({ length: 9 }, (_, i) => `screenshot${i + 2
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('autobuild')
-        .setDescription('Extract and create a MP/DMZ gunsmith from an image')
+        .setDescription('Make an MP/DMZ gunsmith build from an image')
         .setDefaultMemberPermissions(0)
         .addAttachmentOption(option => option.setName('screenshot').setDescription('The Gunsmith screenshot (or use the url option instead)'))
         .addStringOption(option => option.setName('url').setDescription('A URL to the screenshot, instead of an attachment'))

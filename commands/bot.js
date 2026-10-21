@@ -1008,7 +1008,7 @@ module.exports = {
 
     data: new SlashCommandBuilder()
         .setName('bot')
-        .setDescription("Dioreo's own analytics and admin access management")
+        .setDescription('Dioreo analytics and admin access')
         .setDefaultMemberPermissions(0)
         // ADMIN-ONLY, same reasoning as /manage/autobuild: stays user-install [1] deliberately — an admin command advertised in every server's command list is noise plus needless surface.
         .setIntegrationTypes([1]).setContexts([0, 1, 2])
@@ -1018,9 +1018,9 @@ module.exports = {
                 { name: 'Usage', value: 'usage' }, { name: 'Timing', value: 'timing' },
             ))
             .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
-        .addSubcommand(sub => sub.setName('access').setDescription('View and manage the admin allowlist (owner-only)')
+        .addSubcommand(sub => sub.setName('access').setDescription('Manage the admin allowlist (owner-only)')
             .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
-        .addSubcommand(sub => sub.setName('hotpatch').setDescription('Reload changed files into the running bot without a restart (owner-only)')
+        .addSubcommand(sub => sub.setName('hotpatch').setDescription('Reload changed files without a restart')
             .addBooleanOption(o => o.setName('pull').setDescription('git pull first (default: yes)'))
             .addBooleanOption(o => o.setName('dry_run').setDescription('Show the plan and change nothing'))
             .addStringOption(o => o.setName('file').setDescription('Limit to one changed file (default: everything the pull brought in)').setAutocomplete(true))),

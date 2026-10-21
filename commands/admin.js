@@ -352,7 +352,7 @@ async function handleComponent(interaction) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('admin')
-        .setDescription('Server admins: control where Dioreo answers publicly and where it stays hidden')
+        .setDescription("SERVER ADMINS: control Dioreo's server settings")
         // Keeps the command out of ordinary members' pickers where the bot IS guild-installed. It is NOT the gate -- Discord ignores this field for a user-installed invocation, which is exactly the case this feature exists to cover, so execute() re-checks for real.
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         // [0, 1]: a server whose members only user-installed the bot still needs admin controls -- the visibility policy applies to a user-installed invocation too, so registering [0] alone would create servers where the policy is ACTIVE but nobody can ever configure it.
