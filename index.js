@@ -30,7 +30,7 @@ require("dotenv").config({ quiet: true }); // quiet: true suppresses dotenv's ru
 const mongoose = require("mongoose");
 // Atlas dependency timing (2026-08-16, observability stage 2). Installed HERE, before any model is required or any query runs, because it patches Query/Aggregate exec -- see utils/mongoTiming.js.
 require("./utils/mongoTiming").installMongoTiming();
-const { Client, GatewayIntentBits, ActivityType } = require("discord.js");
+const { Client, GatewayIntentBits } = require("discord.js");
 const { acquireInstanceLock } = require("./utils/instanceLock");
 
 // The three modules this file wires together. Everything that used to live inline here moved into them on 2026-08-13 17:20 EDT (docs/ROADMAP.md's index.js split) -- this file is the entrypoint again: connect, construct, wire, log in. Nothing else.
@@ -56,10 +56,8 @@ mongoose.connect(process.env.MONGODB_URI)
 // Passed in ClientOptions rather than via a post-ready client.user.setPresence(), because `presence` is a documented IDENTIFY field ("Presence structure for initial presence information") and discord.js otherwise identifies with its default empty `presence: {}` (Options.js), publishing no status at all. Path verified 2026-08-09 11:12 EDT: Client.js login() -> options.ws.presence -> WebSocketManager initialPresence -> @discordjs/ws sets d.presence on the IDENTIFY payload.
 //
 // ⚠️ PRESENCE IS DELIVERED ONLY TO USERS WHO SHARE A GUILD with the account, and prod sits at guild_count 0, so on prod this renders to an audience of nobody. That is a DISTRIBUTION fact, not a code bug -- do not "fix" it by adding fields, moving it, or setting it again post-ready. Confirmed on the dev bot 2026-08-09 11:27 EDT by a controlled add/kick/re-add cycle. It lights up by itself for any guild the app joins under the v3 guild-install work (docs/ROADMAP.md).
-const BOT_PRESENCE = {
-    status: "online",
-    activities: [{ name: "/help · dioreo.app", type: ActivityType.Watching }],
-};
+// The card itself (top line swapping between the season countdown and /help, "Website: dioreo.app" under it) is built by utils/botPresence.js; this is its /help turn, so the first IDENTIFY already carries a presence. bot/lifecycle.js starts the swap on ready (2026-10-21 19:31 EDT).
+const BOT_PRESENCE = require("./utils/botPresence").buildPresence();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds], presence: BOT_PRESENCE });
 
