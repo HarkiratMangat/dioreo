@@ -645,8 +645,9 @@ ${toneCss()}
 .rx-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ── MOTION ────────────────────────────────────────────────────────────────────
-   🔴 .rx-card ANIMATES OPACITY ONLY — NEVER A TRANSFORM. It contains .rx-bar, which is
-   position:fixed on a phone, and a transform of ANY value (including the identity matrix a
+   🔴 .rx-card ANIMATES OPACITY ONLY — NEVER A TRANSFORM. It contains .rx-bar, which was
+   position:fixed on a phone until 2026-10-21 (it is in the card's flow now; keep the rule
+   in case anything fixed moves back in), and a transform of ANY value (including the identity matrix a
    final "transform: none" keyframe computes to) makes its element a containing block for
    every fixed descendant. With translateY on the card the pinned line was measured at
    top:1268px in an 812px window. */
@@ -788,11 +789,25 @@ ${toneCss()}
   .rx-lead{margin-bottom:.8rem;font-size:.96rem}
   /* The bar, the closed picker rail (48px + its .55rem padding top and bottom) and a 16px gap. A flat 7.5rem was 4px SHORT of the rail's bottom, so every opened card had its top edge tucked under it (Harkirat, 2026-10-20 18:38 EDT). */
   .rx-p,.rx-home{scroll-margin-top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px) + 48px + 1.1rem + 16px)}
-  .rx-bar{position:fixed;left:.6rem;right:.6rem;bottom:calc(.6rem + env(safe-area-inset-bottom,0px));
-    top:auto;margin:0;border-radius:13px;
-    box-shadow:0 6px 26px color-mix(in srgb,#000 42%,transparent)}
-  .rx-p:not(:target) .rx-bar{display:none}
-  .rx-floor{padding-bottom:5.6rem}
+  /* 🧩 THE LINE LIVES IN THE CARD (Harkirat, 2026-10-21 18:39 EDT: "the command try bar doesn't look good formatted on phone... integrate it into the commands card itself"). It used to float position:fixed over the bottom of the screen, where one row had to hold the tag, the whole line and two buttons, so the line scrolled sideways and showed "weapon: Fe". Now it is a block in the card's own flow: a header row (Try it, then Clear and Copy on the right, the way a code block carries its copy button) over a field that WRAPS, so every option is visible at once and nothing scrolls sideways. */
+  .rx-bar{position:relative;top:auto;margin:1.05rem 0 0;display:grid;grid-template-columns:minmax(0,1fr) auto auto;
+    grid-template-areas:"tag clear copy" "line line line";align-items:center;gap:.55rem .4rem;padding:.55rem .55rem .6rem;
+    border-radius:14px;background:color-mix(in srgb,var(--cc) 6%,${BED});border:1px solid color-mix(in srgb,var(--cc) 34%,${LINE});
+    box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .rx-bar .rx-try{grid-area:tag;border-right:0;padding:0 0 0 .25rem}
+  .rx-bar .rx-try span{display:inline}
+  .rx-bar .rx-clear{grid-area:clear}
+  .rx-bar .rx-copy{grid-area:copy}
+  .rx-bar .rx-btn{min-height:38px;padding-top:.4rem;padding-bottom:.4rem}
+  .rx-line{grid-area:line;flex-wrap:wrap;overflow:visible;gap:.32rem;padding:.55rem .6rem;border-radius:10px;
+    background:var(--desk);border:1px solid ${LINE}}
+  /* The text sizes follow the screen's width, between a floor and the desktop size, instead of one fixed rem (Harkirat, 2026-10-21 18:39 EDT: "the text in the cards also doesn't scale relative to the screen, it looks so big"). 16px serif at 390px wide read as large print. */
+  .rx-eyebrow{font-size:clamp(.6rem,2.6vw,.7rem)}
+  .rx-name{font-size:clamp(.9rem,3.9vw,1.05rem)}
+  .rx-why{font-size:clamp(.84rem,3.6vw,1.1rem);line-height:1.42}
+  .rx-facts li{font-size:clamp(.78rem,3.3vw,.98rem);line-height:1.42}
+  .rx-desc,.rx-bare,.rx-inst p{font-size:clamp(.76rem,3.2vw,.94rem)}
+  .rx-lab{font-size:clamp(.74rem,3.1vw,.8rem)}
 }
 @media (pointer:coarse){
   .rx-chip,.rx-pill,.rx-btn,.rx-ac-hit{min-height:44px}
@@ -800,12 +815,8 @@ ${toneCss()}
   .rx-tq{min-height:40px}
 }
 @media (max-width:520px){
-  .rx-name{font-size:1.05rem}
   .rx-line{font-size:.8rem}
-  /* The tag keeps its icon and drops its words on a phone, where the line needs the room. */
-  .rx-try{padding-right:.55rem}
-  .rx-try span{display:none}
-  /* Clear shrinks to a cross for the same reason; its aria-label still says Clear. */
+  /* Clear shrinks to a cross, so the header row keeps Try it's words; its aria-label still says Clear. */
   .rx-clear{font-size:0;letter-spacing:0;padding-left:.8rem;padding-right:.8rem}
   .rx-clear::before{content:"\\2715";font-size:.8rem}
 }
