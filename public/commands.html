@@ -2138,17 +2138,19 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     box-shadow:0 24px 48px -22px rgba(0,0,0,.65)}
   .rx-rail.rx-js .rx-pick{display:flex}/* 📌 THE PILL STAYS PINNED WHILE YOU SCROLL ITS LIST (Harkirat, 2026-10-20 18:38 EDT: "when you scroll down in the menu... the top part doesn't stick"). The box scrolls with the page, so the button inside it is sticky to where the rail sticks and the chips pass under it; its ::before paints the strip between it and the bar so nothing shows through that gap. It is sticky inside the BOX, so it lets go at the box's end and the page simply carries on. */
   
-  .rx-rail.rx-js.open .rx-pick{position:sticky;z-index:3;top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px) + 1px);
-    transition:box-shadow .2s ease,background-color .2s ease}/* ⚠️ ONLY ONCE IT IS ACTUALLY PINNED (.pinned, set by the script when the list has scrolled under it). Wearing the paper and shadow from the moment it opened drew the header as a separate dark box inside the menu ("bugged when it opens", Harkirat, 2026-10-20 18:46 EDT). *//* Pinned, it becomes the PILL again: the closed state's own border and tint on an ::after one pixel wider than the button, so it also covers the box's side borders, with a shadow under it. A borderless dark strip with the list cut off at its sides read as broken (Harkirat, 2026-10-20 19:28 EDT: "I don't like how it looks as its sticky state"). The ::before still paints the gap up to the bar. */
+  .rx-rail.rx-js.open .rx-pick{position:sticky;z-index:3;top:calc(var(--bar-h,58px) + env(safe-area-inset-top,0px));
+    transition:box-shadow .2s ease,background-color .2s ease}/* ⚠️ ONLY ONCE IT IS ACTUALLY PINNED (.pinned, set by the script when the list has scrolled under it). Wearing the paper and shadow from the moment it opened drew the header as a separate dark box inside the menu ("bugged when it opens", Harkirat, 2026-10-20 18:46 EDT). *//* Pinned, it becomes the PILL again: the closed state's own border and tint on an ::after one pixel wider than the button, so it also covers the box's side borders, with a shadow under it. A borderless dark strip with the list cut off at its sides read as broken (Harkirat, 2026-10-20 19:28 EDT: "I don't like how it looks as its sticky state"). The ::before, below, cuts the menu off at the pill. */
   
   
   .rx-rail.rx-js.open.pinned .rx-pick::after{content:"";position:absolute;inset:-1px;z-index:-1;border-radius:24px;pointer-events:none;
     border:1px solid color-mix(in srgb,var(--cc) 70%,transparent);background:color-mix(in srgb,var(--cc) 10%,var(--paper));
-    box-shadow:0 12px 22px -14px rgba(0,0,0,.75)}/* ✂️ AND THE LIST IS CUT AT THE PILL (Harkirat, 2026-10-20 19:48 EDT: the box's side borders ran on above the pill up to the bar, and chips showed under it; "fade into the bar or get cut off"). So the pinned pill sits FLUSH under the bar, leaving no gap for the borders to show in, and the chips fade back in over 28px below it: a mask on the list alone, so the box keeps its paper and nothing behind the menu shows through. The script writes where the pill ends, in the list's own coordinates, as --s1. ⚠️ Two dead ends: a --desk strip painted above the pill did not cover the borders, and a mask on the whole box made its paper see-through below the pill. */
+    box-shadow:0 12px 22px -14px rgba(0,0,0,.75)}/* ✂️ AND THE MENU IS CUT AT THE PILL (Harkirat, 2026-10-20 19:48 EDT: the box's side borders ran on above the pill up to the bar, and chips showed under it; "fade into the bar or get cut off"). The ::before sits under the pill skin and does both, in CSS alone: above the pill's middle it paints the page's own --desk across the box AND its borders (2px wider than the button), up under the bar, so the box seems to start at the pill's sides; from the middle down it paints the box's paper inside the borders and fades it out over 26px, so the chips fade in below the pill. The borders run on beside it, which is the menu hanging from the pill.
+     ⚠️ Dead ends: a --desk strip that did not reach over the borders; a mask on the whole box, which made its paper see-through; and a mask on the list whose edge the script rewrote on every scroll event, which lagged behind iOS momentum scrolling and read as glitchy ("more buggy/glitchy now", 2026-10-20 20:00 EDT). Nothing here moves with scrolling except the one .pinned class. */
   
-  .rx-rail.rx-js.open.pinned .rx-scroll{
-    -webkit-mask-image:linear-gradient(to bottom,transparent var(--s1,0px),#000 calc(var(--s1,0px) + 28px));
-    mask-image:linear-gradient(to bottom,transparent var(--s1,0px),#000 calc(var(--s1,0px) + 28px))}
+  .rx-rail.rx-js.open.pinned .rx-pick::before{content:"";position:absolute;z-index:-1;pointer-events:none;
+    left:-2px;right:-2px;top:-64px;bottom:-26px;
+    background:linear-gradient(var(--paper) 23px,transparent) 2px 87px/calc(100% - 4px) 49px no-repeat,
+      linear-gradient(var(--desk),var(--desk)) 0 0/100% 87px no-repeat}
   .rx-rail.rx-js .rx-drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.4,0,.2,1)}
   .rx-rail.rx-js.open .rx-drop{grid-template-rows:1fr;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1)}
   .rx-rail.rx-js .rx-scroll{min-height:0;overflow:hidden;visibility:hidden;opacity:0;transform:translateY(-6px);
@@ -4979,9 +4981,8 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   }
   /* .pinned: the list has scrolled under the pill, so it needs its own paper; see the CSS. */
   function pinned(){ if(!rail||!rail.classList.contains("open")){ if(rail) rail.classList.remove("pinned"); return; }
-    var bx=rail.querySelector(".rx-box"), pr=pick.getBoundingClientRect(), off=pr.top-bx.getBoundingClientRect().top;
-    rail.classList.toggle("pinned", off>2);
-    var sc=document.getElementById("rx-scroll"); sc.style.setProperty("--s1",Math.max(0,pr.bottom-sc.getBoundingClientRect().top)+"px"); }
+    var bx=rail.querySelector(".rx-box"), off=pick.getBoundingClientRect().top-bx.getBoundingClientRect().top;
+    rail.classList.toggle("pinned", off>2); }
   addEventListener("scroll",pinned,{passive:true});
   if(rail&&pick){
     rail.classList.add("rx-js");
