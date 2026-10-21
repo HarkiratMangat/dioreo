@@ -443,8 +443,8 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     if (subpageRow) containerComponents.push({ type: 14, spacing: 1, divider: false }, subpageRow);
 
     containerComponents.push({ type: 14, spacing: 2, divider: true });
-    // Hint line (2026-07-14, Harkirat's request) above the source-switch row -- short, tells a user who's never clicked the other page buttons that they exist, plus a nudge toward Refresh Colors for the (real, and otherwise easy to miss) case where they've since updated their avatar/ banner/etc and the panel is still showing the old cached extraction.
-    if (!readOnly) containerComponents.push({ type: 10, content: "-# Tap a button below to view colors from a different part of your profile.\n-# (Tip: Updated your profile? `Refresh Colors`)" });
+    // Hint line (2026-07-14, Harkirat's request) above the source-switch row -- short, tells a user who's never clicked the other page buttons that they exist, plus a nudge toward Refresh Colors for the (real, and otherwise easy to miss) case where they've since updated their avatar/ banner/etc and the panel is still showing the old cached extraction. One line since 2026-10-21 17:21 EDT (Harkirat: "remove the \"tap a button below...\" hint. just leave the \"Updated your profile?\" hint (but remove the Tip and brackets)").
+    if (!readOnly) containerComponents.push({ type: 10, content: "-# Updated your profile? `Refresh Colors`" });
     if (extraHint) containerComponents.push({ type: 10, content: extraHint });
     containerComponents.push({
         type: 1,
