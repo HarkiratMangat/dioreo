@@ -21,6 +21,7 @@ const { pullCount, upgradeKeyOf, isArmoryKey, armorySize, isAdvancedKey, advance
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES, CURRENCIES } = require('../utils/cpPackages');
 const basketStore = require('../utils/drawBasketStore');
+const { resolveEphemeral } = require('../utils/ephemeral');
 const { resolvePanelActor } = require('../utils/interactionContext');
 
 const OWNED_PREFIXES = ['calc~'];
@@ -385,8 +386,12 @@ async function route(interaction) {
     }
     // Its submit starts a NEW calculation (his "yes, a new calc") as its own private message, the same way Help opens one: deferReply, never deferUpdate, because the pop-up was opened from /draws, which this must not overwrite.
     if (interaction.isModalSubmit() && state.verb === 'drawspicksave') {
-        await interaction.deferReply({ flags: 64 });
         const picks = id => { try { return interaction.fields.getStringSelectValues(id) || []; } catch { return []; } };
+        // The pop-up's Calculation Visibility (2026-10-21 10:44 EDT); left blank, /settings' Draw Calculator visibility decides, as for /draw calculator.
+        const visPick = picks('visibility')[0];
+        const prefsForVis = await UserPreference.findOne({ discordId: actingUserId });
+        const isEphemeral = resolveEphemeral({ argPrivate: visPick ? visPick === 'ephemeral' : null, prefs: prefsForVis, prefsField: 'calculatorVisibility' });
+        await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
         const text = id => { try { return interaction.fields.getTextInputValue(id); } catch { return null; } };
         const list = await listSeasonDraws();
         const ids = new Set([...picks('newd'), ...picks('retd')]);
@@ -401,7 +406,8 @@ async function route(interaction) {
         const { fields, warning } = readBalanceFields({ amount: amount && amount.trim() ? amount : null });
         const lines = picked.slice(0, MAX_LINES).map(d => ({ drawKey: d.drawKey, pullsDone: 0, title: d.title, ...(d.size ? { size: d.size } : {}) }));
         const created = await basketStore.save(actingUserId, { banners: lines, region, ...(fields.balance !== undefined ? { balance: fields.balance } : {}) });
-        await renderPanel(interaction, { basketId: String(created._id), authorId: actingUserId, page: 0 }, created, gone ? 'A draw you picked is no longer listed, so it was left out.' : null);
+        // Opens on Set Draw Progress (page 5) with the picks already in (his read, 2026-10-21 10:44 EDT), so the next step is entering the spins already done.
+        await renderPanel(interaction, { basketId: String(created._id), authorId: actingUserId, page: 5 }, created, gone ? 'A draw you picked is no longer listed, so it was left out.' : null);
         if (warning) {
             try { await interaction.followUp({ content: warning, flags: 64 }); }
             catch (notifyError) { console.error('Failed to warn about a refused balance (interaction likely expired):', notifyError); }

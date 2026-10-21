@@ -87,10 +87,14 @@ const draws = [
     { id: 'c', kind: 'returning', title: 'Molten Fusion Draw', drawKey: 'legendaryGunReactive' }
 ];
 
-t('the pop-up: New Draws, Returning Draws, CP Balance, CP Region, and discord.js accepts it', () => {
+t('the pop-up: New Draws, Returning Draws, CP Balance, CP Region, Calculation Visibility, in his words, and discord.js accepts it', () => {
     const { ModalBuilder } = require('discord.js');
     const m = buildPriceDrawsModal(draws, 'region_20');
-    assert.deepStrictEqual(m.components.map(c => c.label), ['New Draws', 'Returning Draws', 'CP Balance', 'CP Region']);
+    assert.deepStrictEqual(m.components.map(c => c.label), ['New Draws', 'Returning Draws', 'CP Balance', 'CP Region', 'Calculation Visibility']);
+    assert.strictEqual(m.components[0].description, 'Select any draws you want to calculate');
+    assert.strictEqual(m.components[2].description, 'Set CP you already own or leave it blank');
+    assert.strictEqual(m.components[4].component.placeholder, '(Optional) Choose message visibility...');
+    assert.strictEqual(m.components[4].component.required, false);
     assert.deepStrictEqual(m.components[0].component.options.map(o => o.value), ['a', 'b']);
     assert.deepStrictEqual(m.components[1].component.options.map(o => o.value), ['c']);
     assert.strictEqual(m.components[3].component.options.find(o => o.default).value, 'region_20');
@@ -100,7 +104,7 @@ t('the pop-up: New Draws, Returning Draws, CP Balance, CP Region, and discord.js
 
 t('a list with no returning draws leaves that dropdown out', () => {
     const m = buildPriceDrawsModal(draws.filter(d => d.kind === 'new'));
-    assert.deepStrictEqual(m.components.map(c => c.label), ['New Draws', 'CP Balance', 'CP Region']);
+    assert.deepStrictEqual(m.components.map(c => c.label), ['New Draws', 'CP Balance', 'CP Region', 'Calculation Visibility']);
 });
 
 function countComponents(list) {

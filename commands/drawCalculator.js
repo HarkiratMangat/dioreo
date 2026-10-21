@@ -1107,16 +1107,21 @@ function buildPriceDrawsModal(seasonDraws, region = 'region_10') {
     });
     const pick = (id, label, list) => {
         const shown = list.slice(0, 25);
-        return shown.length ? { type: 18, label, description: 'Pick any number, or none', component: { type: 3, custom_id: id, required: false, min_values: 0, max_values: Math.min(shown.length, MAX_LINES), options: shown.map(option) } } : null;
+        return shown.length ? { type: 18, label, description: 'Select any draws you want to calculate', component: { type: 3, custom_id: id, required: false, min_values: 0, max_values: Math.min(shown.length, MAX_LINES), options: shown.map(option) } } : null;
     };
     const draws = seasonDraws || [];
     return { custom_id: encodeState('drawspicksave', {}), title: 'Price These Draws', components: [
         pick('newd', 'New Draws', draws.filter(d => d.kind === 'new')),
         pick('retd', 'Returning Draws', draws.filter(d => d.kind === 'returning')),
-        { type: 18, label: 'CP Balance', description: 'The CP you already have (optional)', component: { type: 4, custom_id: 'amount', style: 1, required: false, placeholder: 'e.g. 3,000 or 3k' } },
+        { type: 18, label: 'CP Balance', description: 'Set CP you already own or leave it blank', component: { type: 4, custom_id: 'amount', style: 1, required: false, placeholder: 'e.g. 3,000 or 3k' } },
         { type: 18, label: 'CP Region', component: {
             type: 3, custom_id: 'region', required: true, min_values: 1, max_values: 1,
             options: REGION_ORDER.map(key => ({ label: regionLabel(key), value: key, emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]]), ...(key === region ? { default: true } : {}) }))
+        } },
+        // Who sees the new calculation (2026-10-21 10:44 EDT, his wording). Optional: left blank, it follows /settings' Draw Calculator visibility, as /draw calculator does.
+        { type: 18, label: 'Calculation Visibility', description: 'Open the calculation message publicly or ephemeral (only you can see)', component: {
+            type: 3, custom_id: 'visibility', required: false, min_values: 0, max_values: 1, placeholder: '(Optional) Choose message visibility...',
+            options: [{ label: 'Public', value: 'public', description: 'Everyone in the chat can see it' }, { label: 'Only You', value: 'ephemeral', description: 'Only you can see it' }]
         } }
     ].filter(Boolean) };
 }
