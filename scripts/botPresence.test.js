@@ -1,7 +1,7 @@
-// The bot's presence (2026-10-21 19:31 EDT): the top line swaps between the season countdown and /help, under one Watching card with "Add Dioreo · dioreo.app/install" as its second line. See utils/botPresence.js.
+// The bot's presence (the top line and its verb rotate: Watching the season, Competing in ranked, Watching /help; 2026-10-21 19:31 EDT): the top line swaps between the season countdown and /help, under one Watching card with "Add Dioreo · dioreo.app/install" as its second line. See utils/botPresence.js.
 const assert = require('assert');
 const { ActivityType } = require('discord.js');
-const { seasonCountdownLine, buildPresence, startPresenceRotation, HELP_LINE, INSTALL_LINE } = require('../utils/botPresence');
+const { seasonCountdownLine, rankedCountdownLine, buildPresence, startPresenceRotation, HELP_LINE, INSTALL_LINE } = require('../utils/botPresence');
 
 let passed = 0, failed = 0;
 const pending = [];
@@ -9,7 +9,7 @@ function t(name, fn) { pending.push((async () => { try { await fn(); passed++; c
 
 const NOW = Date.UTC(2026, 9, 21, 23, 30);
 const DAY = 24 * 60 * 60 * 1000;
-const doc = (over = {}) => ({ currentSeasonTitle: 'Season 7 — Terminated', bpTitle: 'Season 10 2026', bpEnd: new Date(NOW + 21 * DAY), bpEndTBD: false, ...over });
+const doc = (over = {}) => ({ currentSeasonTitle: 'Season 7 — Terminated', bpTitle: 'Season 10 2026', bpEnd: new Date(NOW + 21 * DAY), bpEndTBD: false, rankTitle: 'Ranked Series 3 2026', rankEnd: new Date(NOW + 21 * DAY), rankEndTBD: false, ...over });
 
 t('a season with an end date reads "Season N · D days left"', () => {
     assert.strictEqual(seasonCountdownLine(doc(), NOW), 'Season 10 · 21 days left');
@@ -35,14 +35,24 @@ t('the presence is ONE Watching card with the install line as its second line', 
     assert.deepStrictEqual(p.activities[0], { name: 'Season 10 · 21 days left', state: INSTALL_LINE, type: ActivityType.Watching });
     assert.strictEqual(buildPresence().activities[0].name, HELP_LINE);
 });
-t('the rotation starts on the countdown, then /help, then the countdown again', async () => {
+t('ranked reads "Ranked Series N · D days left", and skips like the season line', () => {
+    assert.strictEqual(rankedCountdownLine(doc(), NOW), 'Ranked Series 3 · 21 days left');
+    assert.strictEqual(rankedCountdownLine(doc({ rankEndTBD: true }), NOW), null);
+    assert.strictEqual(rankedCountdownLine(doc({ rankTitle: 'Ranked' }), NOW), 'Ranked · 21 days left');
+});
+t('the rotation: Watching the season, Competing in ranked, Watching /help, then the season again; a turn with no date is skipped', async () => {
     const sent = [];
-    const client = { user: { setPresence: p => sent.push(p.activities[0].name) } };
-    const r = startPresenceRotation(client, { loadSeason: async () => doc({ bpEnd: new Date(Date.now() + 6 * DAY + 60 * 1000) }), intervalMs: 60 * 60 * 1000 });
+    const client = { user: { setPresence: p => sent.push(`${p.activities[0].type}:${p.activities[0].name}`) } };
+    const later = new Date(Date.now() + 6 * DAY + 60 * 1000);
+    let d = doc({ bpEnd: later, rankEnd: later });
+    const r = startPresenceRotation(client, { loadSeason: async () => d, intervalMs: 60 * 60 * 1000 });
     await new Promise(res => setImmediate(res));
     await r.tick(); await r.tick();
+    d = doc({ bpEnd: later, rankEndTBD: true });
+    await r.tick(); await r.tick();
     r.stop();
-    assert.deepStrictEqual(sent, ['Season 10 · 6 days left', HELP_LINE, 'Season 10 · 6 days left']);
+    const W = ActivityType.Watching, C = ActivityType.Competing;
+    assert.deepStrictEqual(sent, [`${W}:Season 10 · 6 days left`, `${C}:Ranked Series 3 · 6 days left`, `${W}:${HELP_LINE}`, `${W}:Season 10 · 6 days left`, `${W}:${HELP_LINE}`]);
 });
 t('must NOT: a failed season read or no countdown leaves /help up, never throws', async () => {
     const sent = [];
@@ -52,7 +62,7 @@ t('must NOT: a failed season read or no countdown leaves /help up, never throws'
     await new Promise(res => setImmediate(res));
     console.error = origErr;
     r.stop();
-    const r2 = startPresenceRotation(client, { loadSeason: async () => doc({ bpEndTBD: true }), intervalMs: 60 * 60 * 1000 });
+    const r2 = startPresenceRotation(client, { loadSeason: async () => doc({ bpEndTBD: true, rankEndTBD: true }), intervalMs: 60 * 60 * 1000 });
     await new Promise(res => setImmediate(res));
     r2.stop();
     assert.deepStrictEqual(sent, [HELP_LINE, HELP_LINE]);
