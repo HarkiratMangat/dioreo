@@ -3,7 +3,26 @@ const mongoose = require('mongoose');
 const UserPreferenceSchema = new mongoose.Schema({
     discordId: { type: String, required: true, unique: true },
     timezone: { type: String, default: 'America/Toronto' },
-    timestampStyle: { type: String, default: 'all_formats' },
+    // When this user first ran a command of their OWN (a slash command or a right-click), added 2026-10-20 17:53 EDT for /settings' "Dioreo User Since" (Harkirat). Written once by utils/firstCommand.js with $min, so it only ever moves earlier; clicking a button on someone else's panel never sets it. Users who existed before it were backfilled from this document's own creation time (scripts/backfillFirstCommandAt.js), an approximation. No default: unset means "not recorded yet", never "now".
+    firstCommandAt: { type: Date },
+    // YOUR STATS (2026-10-20 18:35 EDT, Harkirat: "I like your ideas ... counting starts on V3"): what this user did with Dioreo, written by utils/userStats.js and shown on /settings' Your Stats page. Every field is optional with no default, so a record that never counted anything carries no `stats` at all; Reset my stats removes the whole object. Maps, not arrays: `$inc` on a missing array index makes an object, not an array. Map keys never contain a dot (command names and loadout ids don't).
+    stats: {
+        since: { type: Date },         // when counting started for this user
+        lastUsedAt: { type: Date },
+        total: { type: Number },       // own commands run (slash + right-click)
+        commands: { type: Map, of: Number }, // "gunsmith mp" -> count
+        builds: { type: Map, of: Number },   // Loadout _id -> times opened
+        hours: { type: Map, of: Number },    // "0".."23" in the user's /settings zone -> count
+        days: { type: Number },        // distinct days active
+        streak: { type: Number },
+        bestStreak: { type: Number },
+        lastDay: { type: String },     // YYYY-MM-DD in the user's zone, for the streak
+        cpPriced: { type: Number },    // CP of every calculation they calculated
+        biggestCp: { type: Number },
+        shares: { type: Number },      // panels made public with Show Everyone
+    },
+    // 'short_list' since 2026-10-20 18:31 EDT (Harkirat): someone who never picks a style gets the Short List view. Records saved before then keep the 'all_formats' they were given.
+    timestampStyle: { type: String, default: 'short_list' },
     // Shared by /dmz AND /gunsmith (mp + dmz) — one "Weapon Builds" toggle in /settings covers every loadout command, same Option A pattern as `seasonalVisibility` below. `dmzVisibility` used to exist as a separate field here, but it was never actually wired to anything in the /settings UI (the visible toggle always wrote to `loadoutVisibility`), so it silently did nothing forever — removed rather than left as dead, unreachable state.
     loadoutVisibility: { type: String, default: 'public' },
     // NOTE: seasonendVisibility / drawsVisibility / patchnotesVisibility / calendarVisibility / pricesVisibility were removed here — per the user's decision (Option A), /season, /draws, /patch, /calendar, and /draw prices all now check the single shared `seasonalVisibility` field below instead of five separate ones. Old documents that still have the retired fields aren't hurt by this — Mongoose just stops reading/writing them going forward.

@@ -67,6 +67,7 @@ async function route(interaction) {
             const flags = (msg.flags?.bitfield || 0) & ~64;
 
             await interaction.deferReply(); // public — no ephemeral flag
+            require('../utils/userStats').noteShareSafely(interaction.user?.id); // Your Stats: a panel made public
             const { sendV2Payload } = require('../utils/sendV2Payload');
             return sendV2Payload(interaction, components, { content: msg.content || '', embeds, flags });
         }

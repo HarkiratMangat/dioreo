@@ -1097,6 +1097,32 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 *🏷️ **`/gunsmiths` became `/gunsmith` on 2026-10-19 21:17 EDT** (Harkirat: "let's use gunsmith singular"). Entries anywhere in this file that were filed earlier keep the name they were written under, and so do the changelogs and the devlog: a record is never backdated. Read `/gunsmiths` in an older entry as `/gunsmith`, and remember `search` and `list` there are `mp` and `dmz` now.*
 
+### `/timestamp` ranges — "8pm to 10pm" gives a start and an end `[P2 · S]`
+
+> ✅ **BUILT 2026-10-20 19:15 EDT** on `fix/timestamp-timezone`, his pick A (2026-10-20 18:57 EDT); ships in Pre-Release v3.104.0 (#213).
+
+*Filed 2026-10-20 18:46 EDT. Harkirat, 2026-10-20 18:30 EDT: "ranges is actually a really good idea ... if it can, that would be a really good thing to implement."* Checked the same day: chrono returns a start and an end for "8pm to 10pm", "tomorrow 8-10pm", "oct 24 to oct 27", "fri 9am - sun 11pm" and "from 6pm until 9pm", read through `zoneReference`/`componentInstant`.
+
+- **Waiting on his layout pick** from the mock-ups in Dioreoland #testing-spam: **A** (one line per format, `<start> – <end>`, one code copying the whole range; a same-day range shows the end as a time only) or **B** (a START block and an END block).
+- **Do:** in `utils/timestampHelper.js` return the end too when chrono has one; in `commands/timestamp.js` draw the picked layout; carry the end in the `tsmenu|` custom_id (mind the 100-character cap). Add cases to `scripts/timestampLayout.test.js` and `scripts/timestampZone.test.js`.
+- **Verify:** `/timestamp datetime:tomorrow 8pm to 10pm` on the dev bot shows both times; a plain time still shows one.
+
+### `/commands` page: describe the saved timezone and relative times once both PRs land `[P3 · XS]`
+
+*Filed 2026-10-20 18:46 EDT.* PR #209's `/commands` page deliberately does not claim `/timestamp` uses the saved `/settings` timezone or that "in 2 hours" is right, because both were bugs. `fix/timestamp-timezone` fixes them. **Do:** once both are merged, word the page's `/timestamp` entry to say so and mention Short List, then rebuild `public/`. Also mark #209's two `/timestamp` bug rows ("ignores the timezone saved in `/settings`" and the relative-phrase one) fixed by this branch, since they only exist on #209's branch until it merges. **Verify:** the page's `/timestamp` text matches `/help`.
+
+### Your Stats — per-user usage stats on a /settings page `[P2 · M]`
+
+> ✅ **BUILT 2026-10-20 18:46 EDT** on `fix/timestamp-timezone` (`419c8fd6`): counting, the page, Your Stats button, `open:Stats`, Reset, PRIVACY §2.1e; ships in Pre-Release v3.104.0 (#213). Still open below: milestone messages and a season-end Dioreo Wrapped.
+
+*Filed 2026-10-20 18:25 EDT, approved by Harkirat 2026-10-20 18:16 EDT ("I like your ideas… let's make it a button… counting starts on V3"). Being built in the timestamp-fix thread on `fix/timestamp-timezone`; mock-ups (Stats button, Stats page) posted in Dioreoland #testing-spam, his OK on them pending.*
+
+- **What:** a separate per-user stats record, counted from v3 only (no backfill): commands and subcommands run, builds opened, CP priced and biggest draw priced, hour of day used, days active and streaks, panels shared, last used. Inferred at render: Dioreo user #N (from `firstCommandAt`), percentile, favourite command, go-to build and class. A **Your Stats** button in the /settings header row and `/settings open:Stats`; a **Reset my stats** button with a confirm.
+- ⚠️ **Never derive it from `AnalyticsEvent`**: those rows are keyed by an HMAC hash so they cannot be tied back to a person (PRIVACY §2.4b).
+- **Privacy:** §0, §2.4b and §3 promise usage records are "never applied back to an individual" and "no profiling"; rewrite all three, plus §2.1 and Appendix A rows.
+- **Later, same data:** milestone messages (100th command, one year) and a season-end Dioreo Wrapped.
+- **Verify:** run three commands on the dev bot, open Your Stats, see the counts; Reset clears them; a click on someone else's panel counts nothing.
+
 ### What the 2026-10-20 sweep left open — three items `[P2 · S]`
 
 Filed 2026-10-20 18:15 EDT from the v3 sweep (full report in the project files under `v3-sweep/`). Everything else it found is fixed in Pre-Release v3.103.0.

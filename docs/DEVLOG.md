@@ -273,6 +273,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-19 22:12 EDT — seven dead helpers deleted, launch checks folded in (v3.99.0)
 - 2026-10-20 00:09 EDT — The bulk cache stops spending Cloudinary Admin calls (v3.101.0)
 - 2026-10-20 15:04 EDT — Bulk /autobuild: one batch panel for up to ten screenshots (v3.102.0-pre)
+- 2026-10-20 19:57 EDT — /timestamp reads your time zone right, and Your Stats arrives (v3.104.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4640,6 +4641,16 @@ Two lessons came out of those rounds. The first was his: "dont patch the instanc
 The second was a platform limit. The batch panel died at 14 minutes even after a 30-minute timer was set, because an interaction token lasts 15 minutes and an ephemeral message can only be edited through one. So every batch now idles out at 14 minutes, renewed by any press, with a live countdown, and greys out while the token still works.
 
 One last correction, also his: when the real emoji files are on disk, upload those. The script had copied the dev bot's CDN versions, which had lost about a sixth of their frames, while the originals went up untouched and matched prod.
+
+## 2026-10-20 19:57 EDT — /timestamp reads your time zone right, and Your Stats arrives (v3.104.0-pre)
+
+Harkirat asked for the two filed `/timestamp` bugs to be fixed in parallel with the website PR, and kept adding while it waited.
+
+**The bugs.** `/timestamp` fetched the saved preference a few lines after deciding the zone and never read it. The relative-phrase bug was subtler: chrono reads a plain `Date` reference in the host's local fields, so `dayjs().tz(zone).toDate()` (the real instant again) made every relative phrase depend on the server's clock. A read-only `timedatectl` showed the prod VM is `Etc/UTC`, so prod had it live. The fix gives chrono an `{instant, timezone}` reference and rebuilds each parsed point with `dayjs.tz`, which also fixed Convert Times and patch-note release times. The test runs under three host zones through `tzIndependence`, and the old logic fails it.
+
+**The tweaks.** He designed the new panel by editing a mock-up posted from the dev bot in #testing-spam, and it took three rounds to get his intent: labels per row, not per group. Short List became the default view. Ranges came out of asking what the date reader could already do. "Dioreo User Since" and Your Stats came from a side question about what we track; the cost was the Privacy Policy, whose "never applied back to an individual" promises had to be rewritten so they stay true about the hashed analytics while Your Stats is a separate record shown only to its owner.
+
+**Lesson:** a mock-up posted in the real client settled design questions in one round that prose had not.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -48,6 +48,7 @@ async function route(interaction) {
                 : await Loadout.find({ category: matchingBuilds[0].category, mode: 'MP' }).lean();
             const cardPayload = buildLoadoutCard(matchingBuilds, 0,
                 { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds });
+            require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, matchingBuilds[0]?._id); // Your Stats: a build the clicker opened
 
             const { sendV2Payload } = require('../utils/sendV2Payload');
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
@@ -171,6 +172,7 @@ async function route(interaction) {
                 : await Loadout.find({ category: matchingBuilds[0].category, mode: 'MP' }).lean();
             const cardPayload = buildLoadoutCard(matchingBuilds, newIndex,
                 { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds });
+            require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, matchingBuilds[newIndex]?._id); // Your Stats: a build the clicker opened
 
             const { sendV2Payload } = require('../utils/sendV2Payload');
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });

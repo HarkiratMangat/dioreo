@@ -82,7 +82,8 @@ check('Convert Times: a bare date is that day at midnight, shown as a date; a ra
     assert.ok(/<t:\d+:D>/.test(date.lines[0]) && date.guessed === false, date.lines[0]);
     assert.strictEqual(unixOf(date.lines[0]), Date.parse('2026-10-22T04:00:00Z') / 1000, 'midnight in Toronto');
     const range = convertText('Double XP from Oct 24 to Oct 27', 'America/Toronto', REF);
-    assert.ok(/→/.test(range.lines[0]), range.lines[0]);
+    // Since the label style (2026-10-20 19:14 EDT) a range is `<start> – <end>` with ONE code copying both.
+    assert.ok(/<t:\d+:D> – <t:\d+:D>/.test(range.lines[0]) && range.lines[0].includes('`<t:'), range.lines[0]);
 });
 check('Convert Times: nothing to convert gives nothing, and at most 10 are shown', () => {
     assert.deepStrictEqual(convertText('no dates here at all', 'America/Toronto', REF).lines, []);

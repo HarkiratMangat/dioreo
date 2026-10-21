@@ -29,7 +29,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.103.0 — 2026-10-20 18:15 EDT (#212) — the v3 sweep's fixes: thumbnails kept, boot failures restart, long draws and notes page safely
+## Pre-Release v3.104.0 — 2026-10-20 19:57 EDT (#213) — `/timestamp` reads your time zone right, gains Short List and ranges, and `/settings` gets Your Stats
+**From the timestamp-fix thread** (Harkirat, 2026-10-20 16:45 EDT). Two filed `/timestamp` bugs, then the tweaks he asked for while waiting.
+
+- **`/timestamp` uses the time zone saved in `/settings`** when its `timezone` option is blank, as `/help` already said. It always used Toronto.
+- **Relative times are right on any server.** chrono read its "now" in the host's clock, and the prod VM runs UTC, so "in 2 hours" came out +6 h for a Toronto user and "tomorrow" was a day late after 8 PM. A "now" pinned to the user's zone fixes `/timestamp`, Convert Times and patch-note release times; a test runs under UTC, Tokyo and Toronto.
+- **A new panel:** "Timestamp Codes", one row per format with its name as a label, the time and its code, so nothing wraps on a phone. **Short List** (the six most used) is the default for anyone who never picked a view; All Formats stays in the dropdown and the `style:` option.
+- **Ranges:** "8pm to 10pm" or "oct 24 to oct 27" shows each format as start – end with one code that copies both. Convert Times rows match the new style.
+- **`/settings`:** Member Since moves out of the avatar row, **Dioreo User Since** shows when you first ran a command yourself (existing users filled from their record's creation date), and a **Your Stats** page (button and `open:Stats`) shows commands run, go-to build, CP priced, busiest hour and streaks, with Reset.
+- **Privacy Policy 1.17 (pending):** new §2.1e for Your Stats; §0, §2.4b and §3 reworded.
+
+## Pre-Release v3.103.0 — 2026-10-20 18:15 EDT (#212 · `f8373419`) — the v3 sweep's fixes: thumbnails kept, boot failures restart, long draws and notes page safely
 **From the 2026-10-20 bug and housekeeping sweep.** Harkirat asked for every fix on one branch and one PR (2026-10-20 17:47 EDT). The full ranked report sits in the project files under `v3-sweep/`.
 
 - **Draw thumbnails in use are no longer deleted.** The daily cleanup compared Cloudinary's raw `secure_url` against stored URLs that carry `f_auto,q_auto/`, so nothing matched and every thumbnail past 45 days counted as unused. Both sides now go through `withDeliveryDefaults` (`selectExpiredThumbnails`), and the cleanup skips its run when the season document is missing instead of treating everything as unused.

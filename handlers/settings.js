@@ -125,6 +125,25 @@ async function route(interaction) {
 
         // (The old B.4 CALENDAR EVENT-FILTER TOGGLE handler was removed 2026-07-31 14:00 EDT -- the Active/All Events filter moved to /settings entirely, per Harkirat's explicit request. See the generic `toggle_` handler below for `calfilter_active`/`calfilter_all`.)
 
+        // YOUR STATS RESET (2026-10-20 18:36 EDT) -- `set_stats_reset|{userId}` redraws page 2 asking to confirm; `set_stats_resetok|{userId}` clears the stats and redraws it. Same author lock as every other settings button. Type-tested: the select branch above also matches `set_`.
+        if (interaction.isButton() && interaction.customId.startsWith('set_stats_')) {
+            await interaction.deferUpdate();
+            const [action, targetUserId] = interaction.customId.split('|');
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
+                try {
+                    await interaction.followUp({ content: "🔒 **Not your dashboard!** These stats belong to someone else.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked stats action (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+            if (action === 'set_stats_resetok') await require('../utils/userStats').resetStats(targetUserId);
+            const settingsCommand = interaction.client.commands.get('settings');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { }, user: actingUser });
+            return await settingsCommand.execute(syntheticInteraction, 2, { resetArmed: action === 'set_stats_reset' });
+        }
+
         // SETTINGS PAGE NAVIGATION -- /settings paginated into 2 pages (2026-07-12, once the new region dropdown + hex codes + footer line pushed it close to Discord's 40-component cap): page 0 = Visibility toggles, page 1 = Preferences. custom_id is `set_page_{targetPage}`, same Prev/Next pattern as calendar/draws sub-pages -- the banner/profile header section stays identical on both pages (re-rendered each time, not truly "shared" state).
         if (interaction.isButton() && interaction.customId.startsWith('set_page_') && interaction.customId !== 'set_page_indicator') {
             // REVERTED to two-hop 2026-08-07 17:44 EDT (v2.60.0) -- same emoji-blank bug as `calpage_` (handlers/pagination.js) and `price_region_`/`price_subpage_` (handlers/drawprices.js), directly confirmed on THIS handler during that investigation (docs/db-deferred-list.md's "button emoji goes blank after a single-hop re-render" entry) even though it was found mid-investigation rather than part of the original report. Applying the same already-decided fix rather than leaving a confirmed-broken path in place.

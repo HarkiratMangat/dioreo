@@ -698,6 +698,11 @@ async function route(interaction) {
         if (!basket.banners.length) { await renderPanel(interaction, state, basket); return true; }
         // Calculate is where the Restore copy ends (his rule: kept "until the moment they click calculate again").
         const updated = await writeTo(actingUserId, state, basket, { submitted: true, ...(basket.previous ? { previous: null } : {}) });
+        // Your Stats: the CP this calculation prices, counted on Calculate only (re-renders and region switches don't count again).
+        try {
+            const { basketCost } = require('../utils/drawCost');
+            require('../utils/userStats').noteCpPricedSafely(actingUserId, basketCost(updated.region, updated.banners, updated.includeUpgrades, { mythicCards: updated.mythicCards || 0, mythicCoins: updated.mythicCoins || 0 }).total);
+        } catch (statsError) { console.error('Failed to price a calculation for Your Stats:', statsError); }
         await renderPanel(interaction, { ...state, page: 0, bpage: 0, focus: null, fromResult: false, dirty: false }, updated);
         return true;
     }

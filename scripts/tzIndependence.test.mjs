@@ -9,7 +9,7 @@
 // ⚠️ Asia/Tokyo is deliberate. UTC alone would not catch a bug that only appears at a POSITIVE offset, and America/Toronto is the developer's own zone, where cancelling errors hide. ⚠️ Add a file here when it starts touching parseAdminDate/parseReleaseDateTime/dayjs. The list is not derived, so it cannot notice a new one on its own -- that is a known limit, stated rather than hidden.
 import { execFileSync } from "node:child_process";
 
-const SUITES = ["scripts/portalPatchNotes.test.js", "scripts/patchnoteOps.test.js", "scripts/drawOps.test.js"];
+const SUITES = ["scripts/portalPatchNotes.test.js", "scripts/patchnoteOps.test.js", "scripts/drawOps.test.js", "scripts/timestampZone.test.js", "scripts/rightClickCommands.test.js"];
 const ZONES = ["UTC", "Asia/Tokyo", "America/Toronto"];
 
 let failed = 0;

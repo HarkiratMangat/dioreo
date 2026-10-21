@@ -384,6 +384,8 @@ async function handleInteractionInner(interaction) {
             markHandler(commandName);
             try {
                 await command.execute(interaction);
+                // "Dioreo User Since" and Your Stats: the user's own command, recorded after the command's own reply (see utils/firstCommand.js for why after).
+                require('../utils/userStats').noteOwnCommandSafely(interaction);
                 // Fires AFTER the command's own reply has already gone out, once per fresh top-level command invocation -- see utils/announcement.js's header for why this is the only choke point (never buttons/selects/modals) and why the dynamic MP loadout fallback below needs its own identical call. Wrapped in its OWN try/catch, separate from the command's own -- a DB hiccup in here must never fall into the outer catch below and overwrite the command's already-successful reply with "There was an error executing this command!".
                 try {
                     const { maybeSendAnnouncement } = require('../utils/announcement');
@@ -421,6 +423,8 @@ async function handleInteractionInner(interaction) {
             markHandler(interaction.commandName);
             try {
                 await command.execute(interaction);
+                // A right-click is the user's own command too (utils/firstCommand.js, utils/userStats.js).
+                require('../utils/userStats').noteOwnCommandSafely(interaction);
             } catch (error) {
                 console.error(`Error executing context menu command ${interaction.commandName}:`, error);
                 try {
