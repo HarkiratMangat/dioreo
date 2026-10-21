@@ -14,7 +14,10 @@ const { failWithRetry } = require('./retry');
 
 // --- ADD SINGLE CALENDAR EVENT --- custom_id: modal_calendar_add A blank End Date means the event runs until the Battle Pass ends (isOngoing), same semantics as the bulk parser's "All Season" handling.
 async function addCalendarEvent(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    // From the returning-draw reminder DM, the submit redraws that card instead of answering privately (2026-10-21 14:52 EDT, Harkirat); a failure still goes through failWithRetry, as a follow-up.
+    const reminder = require('../../utils/drawEndReminder');
+    const fromReminder = reminder.isReminderMessage(interaction.message);
+    if (fromReminder) await interaction.deferUpdate(); else await interaction.deferReply({ ephemeral: true });
     const { parseAdminDate, normalizeCalendarCategory } = require('../../utils/adminParser');
     const title = interaction.fields.getTextInputValue('title').trim();
     const startDateStr = interaction.fields.getTextInputValue('start_date');
@@ -36,13 +39,17 @@ async function addCalendarEvent(interaction) {
         return await failWithRetry(interaction, extractCommitError(result));
     }
 
+    if (fromReminder && await reminder.refreshReminderMessage(interaction)) return;
     // Real Discord timestamps instead of plain toDateString() text -- renders in the viewer's own local time/format instead of a fixed string.
     return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Event Added:** "${title}" (<t:${Math.floor(startDate.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(endDate.getTime() / 1000)}:D>`}).` });
 }
 
 // --- SAVE EDITED CALENDAR EVENT --- custom_id: edit_calendar_{id}
 async function editCalendarEvent(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    // Change End Date on the reminder DM opens this box; its submit redraws the card too (see addCalendarEvent).
+    const reminder = require('../../utils/drawEndReminder');
+    const fromReminder = reminder.isReminderMessage(interaction.message);
+    if (fromReminder) await interaction.deferUpdate(); else await interaction.deferReply({ ephemeral: true });
     const { parseAdminDate, normalizeCalendarCategory } = require('../../utils/adminParser');
     const targetId = interaction.customId.replace('edit_calendar_', '');
 
@@ -72,6 +79,7 @@ async function editCalendarEvent(interaction) {
             return await failWithRetry(interaction, extractCommitError(result));
         }
 
+        if (fromReminder && await reminder.refreshReminderMessage(interaction)) return;
         return interaction.followUp({ content: `${BOT_EMOJI.checkmark} **Event Updated:** "${title}" (<t:${Math.floor(parsedStart.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(parsedEnd.getTime() / 1000)}:D>`}).` });
     }
 }

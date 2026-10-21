@@ -171,6 +171,19 @@ t('the owner is DM\'d once about a returning draw that went live in the last wee
     const card = reminderComponents(drawsNeedingEndDate(doc, now));
     const button = card[0].components.find(c => c.type === 9).accessory;
     assert.strictEqual(button.label, 'Set End Date');
+    assert.strictEqual(card[0].accent_color, 7032445, "/draws' accent");
+    assert.strictEqual(button.emoji.name, 'DB_Edit', "/manage's database edit emoji");
+    // After he sets it: the same card shows the end date and keeps the button as Change End Date (2026-10-21 14:52 EDT).
+    const thermal = doc.returningDraws[0];
+    const saved = { ...doc, calendar: [...doc.calendar, { title: 'Thermal Core Draw', category: 'draw', date: day(2026, 10, 18), endDate: day(2026, 10, 27) }] };
+    const after = reminderComponents([thermal], saved);
+    const afterButton = after[0].components.find(c => c.type === 9).accessory;
+    assert.strictEqual(afterButton.label, 'Change End Date');
+    assert.strictEqual(afterButton.custom_id, button.custom_id, 'the button still opens the same draw');
+    assert.ok(JSON.stringify(after).includes('Ends <t:') && JSON.stringify(after).includes('saved'));
+    const { drawsOnMessage, isReminderMessage } = require('../utils/drawEndReminder');
+    assert.deepStrictEqual(drawsOnMessage(doc, { components: card }).map(d => d.title), ['Thermal Core Draw'], 'a submit finds the card\'s draws');
+    assert.ok(isReminderMessage({ components: card }) && !isReminderMessage({ components: [] }) && !isReminderMessage(undefined));
     assert.ok(button.custom_id.startsWith('mng_drawend_') && button.custom_id.length <= 100, button.custom_id);
     assert.strictEqual(drawForEndCustomId(doc, button.custom_id).title, 'Thermal Core Draw', 'the button finds its draw again');
     const { msUntilNextDailyRun } = require('../utils/drawEndReminder');

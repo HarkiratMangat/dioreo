@@ -226,10 +226,10 @@ async function routeManage(interaction) {
             return await interaction.showModal(modalJson);
         }
         if (customId.startsWith('mng_editbtn_')) return await handleEditButton(interaction);
-        // Set End Date on the returning-draw reminder DM (utils/drawEndReminder.js, 2026-10-21 14:46 EDT): /manage's Add Calendar Event box with the draw's title and release date filled in. The router's /manage lock already ran on the `mng_` prefix.
+        // Set End Date on the returning-draw reminder DM (utils/drawEndReminder.js, 2026-10-21 14:46 EDT): /manage's Add Calendar Event box with the draw's title and release date filled in, or its Edit box once the draw has a calendar row (Change End Date, 14:52 EDT), so a second press never adds a duplicate row. The router's /manage lock already ran on the `mng_` prefix.
         if (customId.startsWith('mng_drawend_')) {
             const SeasonalData = require('../../models/SeasonalData');
-            const { drawForEndCustomId } = require('../../utils/drawEndReminder');
+            const { drawForEndCustomId, calendarRowFor } = require('../../utils/drawEndReminder');
             const { formatAdminDate } = require('../../utils/adminParser');
             const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
             const draw = doc && drawForEndCustomId(doc, customId);
@@ -239,6 +239,8 @@ async function routeManage(interaction) {
                 return;
             }
             const manage = interaction.client.commands.get('manage');
+            const row = calendarRowFor(doc, draw.title);
+            if (row) return await interaction.showModal(manage.buildEditCalendarModal(row, row._id.toString()));
             return await interaction.showModal(manage.buildCalendarAddModal({ title: draw.title, startDate: draw.date ? formatAdminDate(new Date(draw.date)) : '', endDate: '' }));
         }
     }
