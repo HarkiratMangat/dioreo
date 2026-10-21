@@ -29,7 +29,19 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.104.0 — 2026-10-20 19:57 EDT (#213) — `/timestamp` reads your time zone right, gains Short List and ranges, and `/settings` gets Your Stats
+## Pre-Release v3.105.0 — 2026-10-21 17:49 EDT (#214) — `/calendar` gets a filter and status dots, the bot reminds the owner to set returning draws' end dates, and six commands get the layouts picked from mock-ups
+**From the command-refresh thread** (Harkirat, 2026-10-20 to 2026-10-21). Each layout was chosen from mock-ups the dev bot posted in #testing-spam.
+
+- **`/calendar`:** a green, white or red dot per entry, and a finished one is struck through. Finished entries come first, then live, then upcoming. A looping pager and a filter dropdown (Live, Past/Ended, Upcoming, Lucky Draws, Special Events, Playlists & Modes) replace the three page buttons. The `view` option is now `filter`. In a section of five or more, older finished entries fold into a "+N more ended" line. In a filtered view the footer's Calendar button becomes **Full Calendar**.
+- **Draw end-date reminder:** once a day, just after the game's daily update, the bot DMs the owner a card naming any returning draw that went live with no end date. **Set End Date** saves it, and the card updates in place.
+- **`/draws`:** each draw's title as a heading with its date quoted under it, and a **Calculate** button that opens `/draw calculator` with the season's draws filled in.
+- **`/draw prices`:** a filter pop-up with Regular, Armory and Advanced groups, the region's icon on the subtitle, a shorter hint and a blue Draw Calculator button.
+- **`/season end`** progress bars, the **`/patch notes`** release date on its source line, and **`/colors`** image buttons beside the copy hint. The nameplate and deco open our lossless WebP.
+- **Images are archived, not deleted:** a removed or replaced Cloudinary image moves to an `archive/` folder.
+- **Show Everyone is off** for now, everywhere.
+- **Privacy Policy 1.17 (pending):** `calendarEventFilter` is no longer stored.
+
+## Pre-Release v3.104.0 — 2026-10-20 19:57 EDT (#213 · `f5e50763`) — `/timestamp` reads your time zone right, gains Short List and ranges, and `/settings` gets Your Stats
 **From the timestamp-fix thread** (Harkirat, 2026-10-20 16:45 EDT). Two filed `/timestamp` bugs, then the tweaks he asked for while waiting.
 
 - **`/timestamp` uses the time zone saved in `/settings`** when its `timezone` option is blank, as `/help` already said. It always used Toronto.

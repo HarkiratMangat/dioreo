@@ -274,6 +274,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-20 00:09 EDT — The bulk cache stops spending Cloudinary Admin calls (v3.101.0)
 - 2026-10-20 15:04 EDT — Bulk /autobuild: one batch panel for up to ten screenshots (v3.102.0-pre)
 - 2026-10-20 19:57 EDT — /timestamp reads your time zone right, and Your Stats arrives (v3.104.0-pre)
+- 2026-10-21 17:49 EDT — The command refresh: a filtered calendar, a draw end-date reminder, and layouts picked from mock-ups (v3.105.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4651,6 +4652,16 @@ Harkirat asked for the two filed `/timestamp` bugs to be fixed in parallel with 
 **The tweaks.** He designed the new panel by editing a mock-up posted from the dev bot in #testing-spam, and it took three rounds to get his intent: labels per row, not per group. Short List became the default view. Ranges came out of asking what the date reader could already do. "Dioreo User Since" and Your Stats came from a side question about what we track; the cost was the Privacy Policy, whose "never applied back to an individual" promises had to be rewritten so they stay true about the hashed analytics while Your Stats is a separate record shown only to its owner.
 
 **Lesson:** a mock-up posted in the real client settled design questions in one round that prose had not.
+
+## 2026-10-21 17:49 EDT — The command refresh: a filtered calendar, a draw end-date reminder, and layouts picked from mock-ups (v3.105.0-pre)
+
+Harkirat spent two days refining command layouts on the dev bot, mostly from his phone, with every change shown as a mock-up in #testing-spam before it was built.
+
+**The calendar.** It started with how the entries looked and ended up changing how the page works. Status dots and finished-first ordering led to the question of what to do with a season's worth of crossed-out entries: they pushed live ones off a phone screen. A filter dropdown replaced the page buttons, then a fold that keeps only the three most recent finished entries in a busy section. He set the threshold himself, five entries.
+
+**The reminder.** Returning draws only have a release date, so the calendar could never mark them finished. The bot now DMs the owner once a day, just after the game's update, with a card whose button saves the end date and redraws the card.
+
+**Lesson:** a link stored for later can go stale even when the image it shows still works. A Discord attachment link carries a signature that expires, and the client only refreshes it inside a message, so a link button has to point at the permanent Cloudinary copy.
 
 # Part B — Lessons Ledger (thematic)
 
