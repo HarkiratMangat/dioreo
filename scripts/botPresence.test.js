@@ -44,7 +44,7 @@ t('DMZ reads "DMZ Season N · D days left", and skips like the others', () => {
     assert.strictEqual(dmzCountdownLine(doc(), NOW), 'DMZ Season 1 · 20 days left');
     assert.strictEqual(dmzCountdownLine(doc({ dmzEnd: new Date(NOW - 1) }), NOW), null);
 });
-t('the rotation: Watching the season, Competing in ranked, Playing DMZ, Watching /help, then the season again; a turn with no date is skipped', async () => {
+t('the rotation: Watching the season, Competing in ranked, Playing DMZ, Listening to /help, then the season again; a turn with no date is skipped', async () => {
     const sent = [];
     const client = { user: { setPresence: p => sent.push(`${p.activities[0].type}:${p.activities[0].name}`) } };
     const later = new Date(Date.now() + 6 * DAY + 60 * 1000);
@@ -55,8 +55,8 @@ t('the rotation: Watching the season, Competing in ranked, Playing DMZ, Watching
     d = doc({ bpEnd: later, rankEndTBD: true, dmzEnd: null });
     await r.tick(); await r.tick();
     r.stop();
-    const W = ActivityType.Watching, C = ActivityType.Competing, P = ActivityType.Playing;
-    assert.deepStrictEqual(sent, [`${W}:Season 10 · 6 days left`, `${C}:Ranked Series 3 · 6 days left`, `${P}:DMZ Season 1 · 6 days left`, `${W}:${HELP_LINE}`, `${W}:Season 10 · 6 days left`, `${W}:${HELP_LINE}`]);
+    const W = ActivityType.Watching, C = ActivityType.Competing, P = ActivityType.Playing, L = ActivityType.Listening;
+    assert.deepStrictEqual(sent, [`${W}:Season 10 · 6 days left`, `${C}:Ranked Series 3 · 6 days left`, `${P}:DMZ Season 1 · 6 days left`, `${L}:${HELP_LINE}`, `${W}:Season 10 · 6 days left`, `${L}:${HELP_LINE}`]);
 });
 t('must NOT: a failed season read or no countdown leaves /help up, never throws', async () => {
     const sent = [];

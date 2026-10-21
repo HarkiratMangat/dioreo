@@ -178,7 +178,7 @@ function registerLifecycle(client, commands) {
             setInterval(() => runDrawEndReminders(client), 24 * 60 * 60 * 1000).unref();
         }, msUntilNextDailyRun()).unref();
 
-        // The presence's top line and verb rotate every minute: Watching the season countdown, Competing in the ranked countdown, Playing the DMZ countdown, Watching /help (utils/botPresence.js, 2026-10-21 19:31 EDT). Never throws; a failed season read keeps /help up.
+        // The presence's top line and verb rotate every minute: Watching the season countdown, Competing in the ranked countdown, Playing the DMZ countdown, Listening to /help (utils/botPresence.js, 2026-10-21 19:31 EDT). Never throws; a failed season read keeps /help up.
         require('../utils/botPresence').startPresenceRotation(client);
 
         // One row per hotpatch since boot. In memory only, and deliberately: a restart clears it because a restart is exactly when it stops being true -- the process is back on its boot commit.
