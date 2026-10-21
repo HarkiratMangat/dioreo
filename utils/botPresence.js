@@ -11,13 +11,13 @@ const WEBSITE_LINE = 'Website: dioreo.app';
 const ROTATE_MS = 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// "Season 7 · 21 days left" (whole days left, rounded DOWN, so it never promises a day that is not there; under a day reads "last day"), or null when there is nothing to count down to: no end date, a TBD end, or a season already over. The season end is the Battle Pass end, the same date /season end counts down to. The label is the "Season N" part of the season title, so a long title never crowds the member list.
+// "Season 7 · 21 days left" (whole days left, rounded DOWN, so it never promises a day that is not there; under a day reads "last day"), or null when there is nothing to count down to: no end date, a TBD end, or a season already over. The season end is the Battle Pass end, the same date /season end counts down to. The label is the "Season N" part of the Battle Pass title, the field /manage keeps current with the season dates (currentSeasonTitle is the patch-notes title and can lag a season behind: on the dev data it still read "Season 7" while the Battle Pass read "Season 9 2026"); the season title is only the fallback. Just the "Season N" part, so a long title never crowds the member list.
 function seasonCountdownLine(doc, now = Date.now()) {
     if (!doc || doc.bpEndTBD || !doc.bpEnd) return null;
     const msLeft = new Date(doc.bpEnd).getTime() - now;
     if (!(msLeft > 0)) return null;
     const days = Math.floor(msLeft / DAY_MS);
-    const label = [doc.currentSeasonTitle, doc.bpTitle].map(t => (t || '').match(/season\s*\d+/i)?.[0]).find(Boolean);
+    const label = [doc.bpTitle, doc.currentSeasonTitle].map(t => (t || '').match(/season\s*\d+/i)?.[0]).find(Boolean);
     const season = label ? label.replace(/^season\s*/i, 'Season ') : 'Season';
     if (days === 0) return `${season} · last day`;
     return `${season} · ${days} ${days === 1 ? 'day' : 'days'} left`;
