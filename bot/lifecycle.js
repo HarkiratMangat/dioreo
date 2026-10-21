@@ -171,10 +171,12 @@ function registerLifecycle(client, commands) {
         // Unnamed draw calculations expire 30 days after creation (PRIVACY §2.1d) -- enforced HERE, daily, because the partial TTL index that was meant to do it can never be built (see models/DrawBasket.js). Never awaited and never throws, same as the cleanup above.
         runBasketExpiry();
         setInterval(runBasketExpiry, 24 * 60 * 60 * 1000).unref();
-        // A returning draw that goes live with no end date gets the owner a DM, checked hourly (utils/drawEndReminder.js, 2026-10-21 14:39 EDT). Never awaited, never throws.
-        const { runDrawEndReminders } = require('../utils/drawEndReminder');
-        runDrawEndReminders(client);
-        setInterval(() => runDrawEndReminders(client), 60 * 60 * 1000).unref();
+        // A returning draw that goes live with no end date gets the owner a DM (utils/drawEndReminder.js, 2026-10-21 14:39 EDT), once a day just after the game's daily update: 00:00 UTC, which is 8 PM in Toronto in summer and 7 PM in winter (2026-10-21 14:48 EDT, Harkirat: "No need to do per hour, just have it send based on the 7 or 8pm (based on daylight) Toronto time when the game updates its stuff"). Not on boot, so a restart never DMs at an odd hour; a day it misses is caught the next day, inside the reminder's 7-day window. Never awaited, never throws.
+        const { runDrawEndReminders, msUntilNextDailyRun } = require('../utils/drawEndReminder');
+        setTimeout(() => {
+            runDrawEndReminders(client);
+            setInterval(() => runDrawEndReminders(client), 24 * 60 * 60 * 1000).unref();
+        }, msUntilNextDailyRun()).unref();
 
         // One row per hotpatch since boot. In memory only, and deliberately: a restart clears it because a restart is exactly when it stops being true -- the process is back on its boot commit.
         client.hotpatches = [];

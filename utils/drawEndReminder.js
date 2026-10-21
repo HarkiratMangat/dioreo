@@ -6,11 +6,19 @@
 //
 // ⚠️ THE ONE PROACTIVE MESSAGE THE BOT SENDS, AND ONLY TO THE OWNER. CLAUDE.md's "answers ONLY through interactions" invariant names it as its second deliberate exception (after utils/discordCdnStorage.js): a DM to ALLOWED_ADMIN_ID, never a channel, never another user. The bot shares Harkirat's server, which is what lets it open the DM.
 //
-// Runs hourly from bot/lifecycle.js. Each draw is reminded about once: its title goes into SeasonalData.drawEndReminders, trimmed to the titles still in returningDraws so a new season starts clean. Only draws released in the last REMIND_WINDOW_DAYS count, so the first run after a deploy cannot send a backlog of last season's draws.
+// Runs once a day from bot/lifecycle.js, five minutes after the game's 00:00 UTC update. Each draw is reminded about once: its title goes into SeasonalData.drawEndReminders, trimmed to the titles still in returningDraws so a new season starts clean. Only draws released in the last REMIND_WINDOW_DAYS count, so the first run after a deploy cannot send a backlog of last season's draws.
 const { ALLOWED_ADMIN_ID } = require('./owner');
 const { isSameDrawTitle } = require('./search');
 
 const REMIND_WINDOW_DAYS = 7;
+// The game's daily update is 00:00 UTC (8 PM Toronto in summer, 7 PM in winter); a draw dated that day is stored at that instant, so five minutes after it is the first moment it reads as released.
+const DAILY_RUN_UTC_MINUTE = 5;
+function msUntilNextDailyRun(nowMs = Date.now()) {
+    const next = new Date(nowMs);
+    next.setUTCHours(0, DAILY_RUN_UTC_MINUTE, 0, 0);
+    if (next.getTime() <= nowMs) next.setUTCDate(next.getUTCDate() + 1);
+    return next.getTime() - nowMs;
+}
 const key = title => String(title || '').trim().toLowerCase();
 
 // The returning draws that are live, have no calendar row giving them an end date, were released within the window, and were never reminded about.
@@ -74,4 +82,4 @@ async function runDrawEndReminders(client) {
     }
 }
 
-module.exports = { drawsNeedingEndDate, reminderComponents, drawForEndCustomId, drawEndCustomId, runDrawEndReminders, REMIND_WINDOW_DAYS };
+module.exports = { drawsNeedingEndDate, reminderComponents, drawForEndCustomId, drawEndCustomId, runDrawEndReminders, msUntilNextDailyRun, REMIND_WINDOW_DAYS };

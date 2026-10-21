@@ -173,6 +173,9 @@ t('the owner is DM\'d once about a returning draw that went live in the last wee
     assert.strictEqual(button.label, 'Set End Date');
     assert.ok(button.custom_id.startsWith('mng_drawend_') && button.custom_id.length <= 100, button.custom_id);
     assert.strictEqual(drawForEndCustomId(doc, button.custom_id).title, 'Thermal Core Draw', 'the button finds its draw again');
+    const { msUntilNextDailyRun } = require('../utils/drawEndReminder');
+    assert.strictEqual(msUntilNextDailyRun(Date.UTC(2026, 9, 21, 18, 50)), (5 * 60 + 15) * 60 * 1000, 'from 14:50 EDT it waits until 00:05 UTC (20:05 EDT)');
+    assert.strictEqual(msUntilNextDailyRun(Date.UTC(2026, 9, 22, 0, 5)), 24 * 60 * 60 * 1000, 'right at 00:05 UTC it waits a full day');
 });
 
 if (failed) { console.log(`\n${failed} failed`); process.exit(1); }
