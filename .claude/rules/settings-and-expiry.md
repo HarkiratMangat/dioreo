@@ -44,6 +44,8 @@ Harkirat (`ALLOWED_ADMIN_ID`) was getting the same "not your panel" denial as an
 - On someone's very first `/settings` the field is not written yet, so a slash invocation shows "now"; a button re-render with no date shows no line.
 
 ## Your Stats — page 2 (2026-10-20 18:38 EDT)
+🔴 **HIDDEN UNTIL IT LAUNCHES POST-v3 (Harkirat, 2026-10-21 10:15 EDT: "remove the 'stats' button from the settings command for now, just continue tracking in the background").** `STATS_VISIBLE = false` in `commands/settings.js` drops the header button and the `open:` choice; counting is unchanged, and the page still answers a `set_page_2` button on a panel posted before. Flip it to `true` at launch, with `scripts/settingsJumpTo.test.js`'s choice list.
+
 Harkirat approved it 2026-10-20 18:16 EDT: a **Your Stats** button in the header row (`set_page_2|{userId}`) and `/settings open:Stats`, counting from v3. `utils/userStats.js` writes and summarises, `utils/statsPanel.js` draws, `UserPreference.stats` holds it (PRIVACY §2.1e).
 - 🔴 **Never built from `AnalyticsEvent`.** Those rows are HMAC-hashed so they can't be tied back to a person; this is a separate identified record.
 - **What counts:** an own slash or right-click command (after it runs, with Dioreo User Since, in `noteOwnCommand`), a build card drawn for the clicker, Calculate on `/draw calculator` (the calculation's CP), a Show Everyone share. Re-renders don't count again.

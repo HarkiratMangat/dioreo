@@ -1117,6 +1117,8 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ### Your Stats — per-user usage stats on a /settings page `[P2 · M]`
 
+> ⏸️ **Hidden until a post-v3 launch** (Harkirat, 2026-10-21 10:15 EDT): the button and `open:` choice are off behind `STATS_VISIBLE` in `commands/settings.js`; counting carries on. **Launch:** set it to `true`, put Your Stats back in `scripts/settingsJumpTo.test.js`'s choices, and check PRIVACY §2.1e still matches what players see.
+
 > ✅ **BUILT 2026-10-20 18:46 EDT** on `fix/timestamp-timezone` (`419c8fd6`): counting, the page, Your Stats button, `open:Stats`, Reset, PRIVACY §2.1e; ships in Pre-Release v3.104.0 (#213). Still open below: milestone messages and a season-end Dioreo Wrapped.
 
 *Filed 2026-10-20 18:25 EDT, approved by Harkirat 2026-10-20 18:16 EDT ("I like your ideas… let's make it a button… counting starts on V3"). Being built in the timestamp-fix thread on `fix/timestamp-timezone`; mock-ups (Stats button, Stats page) posted in Dioreoland #testing-spam, his OK on them pending.*
