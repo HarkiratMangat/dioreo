@@ -254,15 +254,6 @@ t('the command menu stays quiet when everything fits', () => {
 });
 
 // --- 5b. the Commands menu: labels, right-click lines, older rules, and the save ------------- From the 2026-10-21 22:26 EDT click test: right-click commands showed as "/Convert Times", and subcommands as a bare "/draw".
-t('Check a Member names the rule that decided', () => {
-    const { buildCheck } = require('../commands/admin').__testRenderers;
-    const settings = { defaultVisibility: 'public', ephemeralCommands: ['draw calculator'], roleRules: [{ roleId: 'R', visibility: 'ephemeral', channelIds: [] }], channelRules: [] };
-    const text = page => JSON.stringify(page);
-    assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { who: 'r:R', channelId: 'C' })).includes('is Hidden everywhere'));
-    assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { channelId: 'C', cmd: 'draw calculator' })).includes('has its own settings'));
-    assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { channelId: 'C' })).includes('server default decides'));
-});
-
 t('each page offers Clear only when it has rules, and the role screen keeps the four tabs', () => {
     const { buildChannels, buildRoles, buildRoleScope, buildCommands } = require('../commands/admin').__testRenderers;
     const ids = page => JSON.stringify(page);
@@ -453,8 +444,8 @@ t("the panel reads Discord's own block and puts it before any /admin rule", () =
     assert.strictEqual(discordGate(guild, 'NOAPPS'), 'private');
     assert.strictEqual(discordGate(guild, 'NOCMDS'), 'noCommands');
     const place = { discordGate: (c, r) => discordGate(guild, c, r) };
-    const check = JSON.stringify(buildCheck({ defaultVisibility: 'public', channelRules: [{ channelId: 'NOAPPS', visibility: 'public' }] }, [], { channelId: 'NOAPPS' }, place));
-    assert.ok(check.includes('Use External Apps') && check.includes('Hidden'), 'Discord blocking apps must win over a Public rule');
+    const check = JSON.stringify(buildCheck({ defaultVisibility: 'public', channelRules: [{ channelId: 'NOAPPS', visibility: 'public' }] }, [], { who: 'r:R', channelIds: ['NOAPPS', 'OPEN'] }, place));
+    assert.ok(check.includes('Discord keeps their answers private in') && check.includes('<#NOAPPS>'), 'Discord blocking apps must show before the rules');
     const page = JSON.stringify(buildChannels({ channelRules: [{ channelId: 'NOAPPS', visibility: 'public' }] }, place));
     assert.ok(page.includes("Discord's own permissions make these private"));
 });
@@ -528,15 +519,24 @@ t('every scoped page carries its command in each control, and the command Overvi
     assert.ok(fresh.includes('follows the server settings'));
 });
 
-t('Check a Member uses a real member: their roles, admin status and Discord permissions', () => {
+t("Check a Member shows a member's whole picture, no channel needed", () => {
     const { buildCheck } = require('../commands/admin').__testRenderers;
-    const settings = { defaultVisibility: 'public', roleRules: [{ roleId: 'MUTED', visibility: 'ephemeral', channelIds: [] }], commandSettings: [{ command: 'colors', defaultVisibility: 'ephemeral', channelRules: [], roleRules: [] }] };
+    const settings = {
+        defaultVisibility: 'public',
+        channelRules: [{ channelId: 'QUIET', visibility: 'ephemeral' }],
+        roleRules: [{ roleId: 'MUTED', visibility: 'ephemeral', channelIds: [] }],
+        commandSettings: [{ command: 'calendar', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'A', visibility: 'public' }], roleRules: [] }],
+    };
     const member = (roleIds, isAdmin = false, gate = () => null) => ({ id: 'U', roleIds, isAdmin, gate });
-    const text = state => JSON.stringify(buildCheck(settings, ['colors'], { channelId: 'C', ...state }));
-    assert.ok(text({ who: 'u:U', member: member(['MUTED']) }).includes('is Hidden everywhere'), "the member's own role decides");
-    assert.ok(text({ who: 'u:U', member: member([]) }).includes('Public'), 'no rule for them: the default');
-    assert.ok(text({ who: 'u:U', cmd: 'colors', member: member([], true) }).includes('server admin, so command settings skip them'), 'an admin skips command settings');
-    assert.ok(text({ who: 'u:U', member: member([], false, () => 'private') }).includes('Use External Apps'), "Discord's block for them comes first");
+    const text = state => JSON.stringify(buildCheck(settings, ['calendar', 'colors'], { channelIds: ['A', 'QUIET', 'BLOCKED'], ...state }));
+    const plain = text({ who: 'u:U', member: member([]) });
+    assert.ok(plain.includes('Public**') && plain.includes('<#QUIET>'), 'Public everywhere, except the Hidden channel');
+    assert.ok(plain.includes('`/calendar`') && plain.includes('<#A>'), "a command's own settings and its exception are listed");
+    assert.ok(text({ who: 'u:U', member: member(['MUTED']) }).includes('Hidden** everywhere'), "the member's own role decides");
+    const admin = text({ who: 'u:U', member: member([], true) });
+    assert.ok(admin.includes('Server admin') && !admin.includes('`/calendar`'), 'an admin skips command settings');
+    assert.ok(text({ who: 'u:U', member: member([], false, id => (id === 'BLOCKED' ? 'private' : null)) }).includes('Discord keeps their answers private in'));
+    assert.ok(text({ who: 'r:MUTED' }).includes('A member with'), 'a role works too');
     assert.ok(text({ error: "That member isn't in this server." }).includes("isn't in this server"));
 });
 
@@ -566,8 +566,8 @@ t('every /admin page stays under the 40-component ceiling', () => {
         commands: buildCommands(settings, ids(30)),
         help: buildHelp(),
         commandToggles: buildCommands(settings, ids(20)),
-        check: buildCheck(settings, ids(30), { who: 'r:ID_1', channelId: 'ID_2', cmd: 'ID_3' }),
-        checkMember: buildCheck(settings, ids(30), { who: 'u:ID_9', channelId: 'ID_2', cmd: 'ID_3', member: { id: 'ID_9', roleIds: ['ID_1'], isAdmin: false, gate: () => null } }),
+        check: buildCheck(settings, ids(30), { who: 'r:ID_1', channelIds: ids(25) }),
+        checkMember: buildCheck({ ...settings, commandSettings: ids(10).map(command => ({ command, defaultVisibility: 'ephemeral', channelRules: [], roleRules: [] })) }, ids(30), { who: 'u:ID_9', channelIds: ids(25), member: { id: 'ID_9', roleIds: ['ID_1'], isAdmin: false, gate: () => 'private' } }),
         commandHome: buildHome({ ...settings, commandSettings: [{ command: 'ID_1', defaultVisibility: 'ephemeral', channelRules: settings.channelRules, roleRules: settings.roleRules }] }, null, {}, { scope: 'ID_1' }),
         commandChannels: buildChannels({ commandSettings: [{ command: 'ID_1', defaultVisibility: 'ephemeral', channelRules: settings.channelRules, roleRules: [] }] }, {}, 'ID_1'),
         homeResetArmed: buildHome(settings, null, { guildName: 'A server', guildIcon: 'https://cdn.discordapp.com/icons/1/a.png', channelId: 'C_1' }, { resetArmed: true }),

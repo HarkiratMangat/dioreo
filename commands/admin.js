@@ -466,47 +466,71 @@ function checkReason(result, cmd) {
     }
 }
 
-// CHECK A MEMBER (Harkirat 2026-10-22 18:46 EDT: "i assumed it would actually check a specific member's perms. like either search from a dropdown or input their ID"). Pick a member (menu, or Enter ID) and their real roles, admin status and Discord permissions are used; or pick a role to see what any member with it gets. `who` is 'u:<id>' or 'r:<id>' and rides in each control's custom id with the channel and command, so the screen holds no state of its own. `member` is the fetched member ({ id, roleIds, isAdmin, gate(channelId) }) when `who` is a user.
-function buildCheck(settings, gateable, { who = null, channelId = null, cmd = null, member = null, error = null } = {}, place = {}) {
-    const shown = menuCommands(gateable).shown.slice(0, 24);
-    const command = cmd && shown.includes(cmd) ? cmd : null;
+// CHECK A MEMBER (Harkirat 2026-10-22 18:46 EDT: "check a specific member's perms ... search from a dropdown or input their ID"; 18:57 EDT: "why do i need to choose a channel? if i input the user, just display the perms on that member"). Pick a member (menu, or Enter ID) or a role, and the panel shows their whole picture at once: what every command does for them everywhere, the channels where that changes and why, each command with its own settings, and where Discord itself keeps their answers private. `who` is 'u:<id>' or 'r:<id>'; `member` is the fetched member ({ id, roleIds, isAdmin, gate(channelId) }); `channelIds` are the server's channels, for Discord's own blocks.
+const ELSEWHERE = '0';
+function memberPicture(settings, { roleIds, isAdmin, gate, channelIds = [] }) {
+    const referenced = new Set();
+    const addRules = set => {
+        for (const r of set?.channelRules || []) referenced.add(r.channelId);
+        for (const r of set?.roleRules || []) for (const id of r.channelIds || []) referenced.add(id);
+    };
+    addRules(settings);
+    const commands = isAdmin ? [] : commandEntries(settings);
+    for (const e of commands) addRules(e);
+    const describe = (path) => {
+        const at = channelId => explainVisibility(settings || {}, { channelId, roleIds, commandName: path ? path.split(' ')[0] : null, commandPath: path, isAdmin });
+        const base = at(ELSEWHERE);
+        const changes = [...referenced].map(id => ({ id, r: at(id) })).filter(x => x.r.visibility !== base.visibility);
+        return { base, changes };
+    };
+    const blocked = gate ? channelIds.map(id => ({ id, g: gate(id) })).filter(x => x.g) : [];
+    return { server: describe(null), commands: commands.map(e => ({ command: e.command, ...describe(e.command) })), blocked };
+}
+
+function pictureLines({ base, changes }) {
+    const lines = [`${visText(base.visibility)} everywhere${changes.length ? ', except:' : ''}`];
+    for (const c of changes.slice(0, 8)) lines.push(`${visText(c.r.visibility)} in <#${c.id}>`, `-# ${checkReason(c.r)}`);
+    if (changes.length > 8) lines.push(`-# +${changes.length - 8} more channels`);
+    return lines;
+}
+
+function buildCheck(settings, gateable, { who = null, member = null, error = null, channelIds = [] } = {}, place = {}) {
     const userId = who?.startsWith('u:') ? who.slice(2) : null;
     const roleId = who?.startsWith('r:') ? who.slice(2) : null;
-    const asMember = Boolean(userId && member);
-    // Discord's own permissions decide first: /admin can only make Dioreo quieter beneath them.
-    const gate = !channelId ? null : asMember ? member.gate?.(channelId) : (place.discordGate ? place.discordGate(channelId, roleId) : null);
-    const roleIds = asMember ? member.roleIds : (roleId ? [roleId] : []);
-    const result = !channelId || (userId && !member) ? null
-        : gate ? { visibility: 'ephemeral', tier: 'discord', rule: gate }
-            : explainVisibility(settings, { channelId, roleIds, commandName: command ? command.split(' ')[0] : null, commandPath: command, isAdmin: asMember && member.isAdmin });
-    const name = userId ? `<@${userId}>` : roleId ? `A member with <@&${roleId}>` : 'A member with no role rule';
-    const checking = userId ? `**Checking:** <@${userId}>${member?.isAdmin ? ' · server admin' : ''}\n` : '';
-    const verdict = error ? `-# ${BOT_EMOJI.cross} ${error}`
-        : !channelId ? '-# Pick a channel to see the answer.'
-            : userId && !member ? '-# Pick a member again.'
-                : `${name}${command ? `, using ${commandText(command)},` : ''} in <#${channelId}>:\n## ${result.tier === 'discord' && result.rule === 'noCommands' ? '⛔ **Commands not shown**' : visText(result.visibility)}\n-# Because ${checkReason(result)}.${asMember && member.isAdmin && result.tier !== 'discord' ? ' (They are a server admin, so command settings skip them.)' : ''}${result.visibility === 'public' ? ` Their own ${'`/settings`'} can still make it private.` : ''}`;
-    const w = who || '-';
-    const c = channelId || '-';
-    const k = command || '-';
+    const ready = Boolean((userId && member) || roleId);
+    const roleIds = member ? member.roleIds : (roleId ? [roleId] : []);
+    const isAdmin = Boolean(member?.isAdmin);
+    const gate = member ? member.gate : (roleId && place.discordGate ? id => place.discordGate(id, roleId) : null);
+    const pic = ready ? memberPicture(settings, { roleIds, isAdmin, gate, channelIds }) : null;
+    const blocks = [];
+    if (error) blocks.push({ type: 10, content: `-# ${BOT_EMOJI.cross} ${error}` });
+    else if (!ready) blocks.push({ type: 10, content: '-# Pick a member below, or enter their ID. A role works too: it shows what anyone with that role gets.' });
+    else {
+        const roles = member ? member.roleIds.filter(id => id !== place.guildId).map(id => `<@&${id}>`).join(' ') : '';
+        blocks.push({ type: 10, content: userId
+            ? `### <@${userId}>\n-# ${isAdmin ? '**Server admin**: commands\' own settings skip them · ' : ''}Roles: ${roles || 'none'}`
+            : `### A member with <@&${roleId}>` });
+        blocks.push({ type: 14, spacing: 2 });
+        blocks.push({ type: 10, content: `**${pic.commands.length ? 'Every other command' : 'Every command'}**\n${pictureLines(pic.server).join('\n')}` });
+        for (const c of pic.commands.slice(0, 6)) blocks.push({ type: 10, content: `**${commandText(c.command)}** · its own settings\n${pictureLines(c).join('\n')}` });
+        if (pic.commands.length > 6) blocks.push({ type: 10, content: `-# +${pic.commands.length - 6} more commands with their own settings` });
+        if (pic.blocked.length) blocks.push({ type: 10, content: `${BOT_EMOJI.warn} **Discord keeps their answers private in** ${channelList(pic.blocked.map(x => x.id))}\n-# Discord blocks Use External Apps (or commands) for them there, before any rule on this panel.` });
+        blocks.push({ type: 10, content: '-# Public only *allows* public: their own `/settings` can still make an answer private.' });
+    }
     return [
         {
             type: 17,
             accent_color: ACCENT,
             components: [
-                ...header('Check a Member', place, '-# Pick a member (or a role), a channel and a command: see what Dioreo does for them, and which rule decides it.'),
+                ...header('Check a Member', place, '-# Everything Dioreo does for one member, and why.'),
                 { type: 14, spacing: 2 },
-                { type: 10, content: checking + verdict },
-                { type: 1, components: [{ type: 2, style: 2, label: 'Enter a Member ID', custom_id: `admin_check_id|${c}|${k}` }] },
+                ...blocks,
+                { type: 1, components: [{ type: 2, style: 2, label: 'Enter a Member ID', custom_id: 'admin_check_id' }] },
             ],
         },
-        // No default_values here on purpose: Discord drew the picked member as "undefined" when its client had not loaded them (Harkirat's test, 2026-10-22 18:55 EDT). The member is named in the answer above instead.
-        { type: 1, components: [{ type: 5, custom_id: `admin_check_user|${c}|${k}`, placeholder: userId ? 'Change member…' : 'Member…', min_values: 0, max_values: 1 }] },
-        { type: 1, components: [{ type: 6, custom_id: `admin_check_role|${c}|${k}`, placeholder: '…or a role', min_values: 0, max_values: 1, default_values: roleId ? [{ id: roleId, type: 'role' }] : [] }] },
-        { type: 1, components: [{ type: 8, custom_id: `admin_check_ch|${w}|${k}`, placeholder: 'Channel…', min_values: 0, max_values: 1, default_values: channelId ? [{ id: channelId, type: 'channel' }] : [] }] },
-        { type: 1, components: [{ type: 3, custom_id: `admin_check_cmd|${w}|${c}`, placeholder: 'Command (optional)…', min_values: 0, max_values: 1, options: [
-            { label: 'Any command', value: '-', default: !command },
-            ...shown.map(v => ({ label: commandLabel(v), value: v, default: v === command })),
-        ] }] },
+        // No default_values on the member menu: Discord drew the picked member as "undefined" when its client had not loaded them (his test, 2026-10-22 18:55 EDT). The member is named above instead.
+        { type: 1, components: [{ type: 5, custom_id: 'admin_check_user', placeholder: userId ? 'Check another member…' : 'Member…', min_values: 0, max_values: 1 }] },
+        { type: 1, components: [{ type: 6, custom_id: 'admin_check_role', placeholder: '…or a role', min_values: 0, max_values: 1, default_values: roleId ? [{ id: roleId, type: 'role' }] : [] }] },
         navRow('admin_home', { subpage: true }),
     ];
 }
@@ -680,6 +704,7 @@ function placeOf(interaction) {
     return {
         guildName: interaction.guild?.name || null,
         guildIcon: interaction.guild?.iconURL?.({ size: 128 }) || null,
+        guildId: interaction.guildId || null,
         channelId: interaction.channelId || null,
         parentId: interaction.channel?.parentId || null,
         // Only where the guild is cached (the bot is in the server): roles and channels arrive with it, so a missing id is gone or out of sight. Threads are checked too, but an archived thread is not cached, which is why staleCount only counts and never removes.
@@ -794,27 +819,22 @@ async function handleComponent(interaction) {
         case 'admin_check_cmd':
         case 'admin_check_idm': {
             settings = await getGuildSettings(guildId);
-            const [p1, p2] = parts.slice(1).map(v => (v === '-' ? null : v));
             const picked = values[0] && values[0] !== '-' ? values[0] : null;
-            let state;
-            if (id === 'admin_check') state = { channelId: interaction.channelId };
-            else if (id === 'admin_check_user') state = { who: picked ? `u:${picked}` : null, channelId: p1, cmd: p2 };
-            else if (id === 'admin_check_role') state = { who: picked ? `r:${picked}` : null, channelId: p1, cmd: p2 };
-            else if (id === 'admin_check_ch') state = { who: p1, channelId: picked, cmd: p2 };
-            else if (id === 'admin_check_cmd') state = { who: p1, channelId: p2, cmd: picked };
-            else {
+            let state = {};
+            if (id === 'admin_check_user' && picked) state = { who: `u:${picked}` };
+            else if (id === 'admin_check_role' && picked) state = { who: `r:${picked}` };
+            else if (id === 'admin_check_idm') {
                 // The "Enter a Member ID" pop-up's submit.
                 const typed = (interaction.fields?.getTextInputValue('id') || '').replace(/[<@!>\s]/g, '');
-                if (!/^\d{15,22}$/.test(typed)) state = { channelId: p1, cmd: p2, error: 'That is not a member ID: 17–20 digits, from their profile with Developer Mode on.' };
-                else state = { who: `u:${typed}`, channelId: p1, cmd: p2 };
+                state = /^\d{15,22}$/.test(typed) ? { who: `u:${typed}` } : { error: 'That is not a member ID: 17–20 digits, from their profile with Developer Mode on.' };
             }
-            // The answer needs a channel; a cleared channel menu falls back to the one the panel is in, so the screen never sits on "pick a channel" (his test: clearing it left no answer).
-            if (!state.channelId) state.channelId = interaction.channelId;
             if (state.who?.startsWith('u:')) {
                 const read = await readMember(interaction, state.who.slice(2));
-                if (read.error) state = { ...state, who: null, error: read.error };
+                if (read.error) state = { error: read.error };
                 else state.member = read.member;
             }
+            // The server's text channels, for where Discord itself blocks them (from the cache: no REST call).
+            state.channelIds = [...(interaction.guild?.channels?.cache?.values?.() || [])].filter(ch => ch.isTextBased?.() && !ch.isThread?.()).map(ch => ch.id);
             return send(interaction, buildCheck(settings, gateable, state, place));
         }
 
@@ -822,7 +842,7 @@ async function handleComponent(interaction) {
         case 'admin_check_id':
             return interaction.showModal({
                 title: 'Check a Member',
-                custom_id: `admin_check_idm|${parts[1] || '-'}|${parts[2] || '-'}`,
+                custom_id: 'admin_check_idm',
                 components: [{ type: 1, components: [{ type: 4, custom_id: 'id', label: 'Member ID', style: 1, min_length: 15, max_length: 25, required: true, placeholder: '17–20 digits' }] }],
             });
 
