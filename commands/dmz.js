@@ -5,6 +5,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
+    // HIDDEN (2026-10-21 21:05 EDT, Harkirat: "lets also hide the /dmz slash command until we've updated it with the additional dmz info"). `devOnly` keeps it off prod's command list and the public /commands page (bot/registry.js, scripts/lib/commandCatalog.js); on the dev bot it still registers, on Dioreo Admin (Dev) while that app is on. Remove this flag, and restore its /help entries (commands/help.js, same date), to bring it back.
+    devOnly: true,
     data: new SlashCommandBuilder()
         .setName('dmz')
         .setDescription('Search through all DMZ specific gunsmith builds')

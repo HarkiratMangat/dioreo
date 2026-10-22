@@ -140,8 +140,9 @@ const ASKS = [
  * Each case is a query a real reader would type and the FULL set of commands that must come back — full, not "at least", because a search that returns everything is as useless as one that returns nothing and only an exact set catches both.
  */
 const SEARCH_CASES = [
-    { q: 'loadout', hit: ['/gunsmith mp', '/gunsmith dmz', '/dmz'] },
-    { q: 'attachment', hit: ['/gunsmith mp', '/gunsmith dmz', '/dmz'] },
+    // /dmz left out while it is hidden (2026-10-21 21:07 EDT); add it back to these two with it.
+    { q: 'loadout', hit: ['/gunsmith mp', '/gunsmith dmz'] },
+    { q: 'attachment', hit: ['/gunsmith mp', '/gunsmith dmz'] },
     { q: 'cp', hit: ['/draw prices', '/draw calculator'] },
     { q: 'timezone', hit: ['/timestamp', '/settings'] },
     { q: 'countdown', hit: ['/season end', '/timestamp'] },

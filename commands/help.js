@@ -32,7 +32,7 @@ const COMMAND_ALIASES = {
     '/colors': ['color', 'accent', 'palette', 'avatar'],
     '/timestamp': ['time', 'clock', 'date'],
     '/gunsmith': ['loadout', 'loadouts', 'gunsmith', 'gunsmiths', 'weapon', 'weapons', 'build', 'builds', 'meta', 'category', 'all', 'ar', 'smg', 'lmg', 'sniper', 'marksman', 'shotgun', 'secondaries'],
-    '/dmz': ['dmzloadout', 'dmzloadouts'],
+    // '/dmz' aliases removed while /dmz is hidden (2026-10-21 21:05 EDT); restore ['dmzloadout', 'dmzloadouts'] with it.
     '/draws': ['draw', 'luckydraw', 'luckydraws'],
     '/draw prices': ['prices', 'price', 'cp', 'cost', 'costs'],
     '/draw calculator': ['calculator', 'calc', 'shortfall', 'optimizer', 'howmuch'],
@@ -90,8 +90,8 @@ function renderCommandBlock(command, client) {
 const CATEGORY_DEFS = [
     {
         key: 'gunsmith', label: 'Gunsmith', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts',
-        // staticCommands stays [/gunsmith, /dmz] -- the directory/dropdown/autocomplete mention `/gunsmith` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way. ⚠️ CORRECTED 2026-10-17 23:51 EDT: the landing directory used to mention bare `/gunsmith`, and Discord renders a mention of a command that has subcommands as plain text, never a link (Harkirat: "the /gunsmith command link seems to be broken in the /help command landing"). The landing now lists detailCommands when a category has them, so it reads `/gunsmith mp` · `/gunsmith dmz` · `/dmz`, each a real link (it read `/gunsmith search` · `/gunsmith list` · `/dmz` until 2026-10-19 19:43 EDT). staticCommands keeps `/gunsmith` for `cmd:` lookup and its aliases.
-        staticCommands: [cmd('/gunsmith'), cmd('/dmz')],
+        // staticCommands stays [/gunsmith, /dmz] -- the directory/dropdown/autocomplete mention `/gunsmith` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way. ⚠️ CORRECTED 2026-10-17 23:51 EDT: the landing directory used to mention bare `/gunsmith`, and Discord renders a mention of a command that has subcommands as plain text, never a link (Harkirat: "the /gunsmith command link seems to be broken in the /help command landing"). The landing now lists detailCommands when a category has them, so it reads `/gunsmith mp` · `/gunsmith dmz` · `/dmz`, each a real link (it read `/gunsmith search` · `/gunsmith list` · `/dmz` until 2026-10-19 19:43 EDT). staticCommands keeps `/gunsmith` for `cmd:` lookup and its aliases. /dmz left out while it is hidden (2026-10-21 21:05 EDT, commands/dmz.js's devOnly note); add cmd('/dmz') back here and its detail entry below when it returns.
+        staticCommands: [cmd('/gunsmith')],
         detailCommands: [
             cmd('/gunsmith mp', {
                 description: "Find an MP weapon's loadout, or browse a whole class, Meta or every MP build",
@@ -104,13 +104,6 @@ const CATEGORY_DEFS = [
                 description: "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                 options: [
                     { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' },
-                    { name: 'build', required: false, desc: 'Specify build number' }
-                ]
-            }),
-            cmd('/dmz', {
-                description: 'Search for DMZ specific loadouts',
-                options: [
-                    { name: 'weapon', required: true, desc: 'Select weapon (supports autocomplete & partial word matching)' },
                     { name: 'build', required: false, desc: 'Specify build number' }
                 ]
             })
