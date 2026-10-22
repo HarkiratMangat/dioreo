@@ -21,7 +21,7 @@ async function route(interaction) {
         // PUBLIC, AS ONE HYPERLINKED LINE (2026-10-18 20:15 EDT, Harkirat: "can we change the 'share link''s output to be as a public message (unless public bot messages are restricted via admin commands or other ways)? and also hide the invite link as a hyperlink?"). This reverses two of his earlier calls (2026-08-17): the reply was ephemeral, so a mis-click on a public panel could not post to the channel, and it was the bare URL alone, so Discord unfurled it into its app card and copying gave exactly the link. Now it is public, and the link is masked behind "Add Dioreo". Where a server's /admin policy makes the bot private in this channel, attachGuildPolicy has already forced every reply ephemeral (utils/guildPolicy.js), so nothing here checks it; where Discord itself bars an app from posting publicly, Discord makes the reply ephemeral.
         const url = buildInviteUrls(interaction.client).chooser;
         // No emoji in front since 2026-10-21 20:10 EDT (Harkirat: "can we remove the dioreokawaii emoji from the share link's message?").
-        return await interaction.reply({ content: `### [Add Dioreo](${url}) — the COD:M companion bot!`, ephemeral: false });
+        return await interaction.reply({ content: `### [Add Dioreo](${url}) — COD:M companion bot!`, ephemeral: false });
     }
 }
 
