@@ -47,7 +47,7 @@ function buildContainer(accentColor, client) {
             type: 10,
             content: `## ${emojis.dioreoCombo} Invite Dioreo\n`
                 // Tagline and pitch in a quote bar, and the pitch reworded (2026-10-21 20:13 EDT, Harkirat: drop "builds", plural Gunsmiths, drop "lucky", singular calculator, "patch notes, season calendar, and more"), then cut to fit two lines beside the thumbnail on a phone (2026-10-21 20:27 EDT, his pick "H"; about 30 characters fit on line 2).
-                + `> -# The COD:M companion bot\n`
+                + `> -# **The COD:M companion bot**\n`
                 + `> Gunsmiths, draw prices/calculator, patch notes, calendar & more.`
         }],
         accessory: { type: 11, media: { url: MASCOT_URL } }
