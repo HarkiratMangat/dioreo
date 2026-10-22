@@ -29,7 +29,15 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.106.0 — 2026-10-21 22:36 EDT (#215) — the bot's presence rotates through the season, ranked and DMZ countdowns and /help, `/invite` gets a new layout, and `/dmz` is hidden until its DMZ update
+## Pre-Release v3.107.0 — 2026-10-22 01:06 EDT (#216) — the overnight housekeeping sweep: stale docs, rules, records and comments corrected, unused code removed
+**From the overnight housekeeping sweep** (Harkirat, 2026-10-22). Docs, comments and unused code only; the one player-visible change is three corrected strings.
+
+- **Dead code:** unused imports, helpers and one dead export removed across 23 files. Tests unchanged.
+- **Records:** ROADMAP citations and shipped markers re-checked against this changelog; 14 closed entries archived out of the deferred list; the rules, the `CLAUDE.md` navigation map, the hooks and scripts catalogues and the deployment docs brought in line with the tree (retired commands, the split-up `handlers/manage.js`, moved line numbers, wrong counts).
+- **Comments:** references to files and commands that no longer exist fixed across commands, handlers, utils, models and hook headers. Every JS change was AST-compared against the previous commit and differs only in comments.
+- **Strings:** the `/help` `/calendar` example and two `/bot` status lines named a view that became the `filter` option on 2026-10-21; they now name the real filters.
+
+## Pre-Release v3.106.0 — 2026-10-21 22:36 EDT (#215 · `ab402731`) — the bot's presence rotates through the season, ranked and DMZ countdowns and /help, `/invite` gets a new layout, and `/dmz` is hidden until its DMZ update
 **From the bot-presence thread** (Harkirat, 2026-10-21). Each choice was tried live on the dev bot.
 
 - **Presence:** one activity card whose top line and verb change every minute: Watching "Season 9 · 21 days left", Competing in "Ranked Series 3 · …", Playing "DMZ Season 1 · …", Listening to /help. The second line is "Add Dioreo · dioreo.app/install". A countdown with no date, a TBD date or a past date is skipped. A custom status beside the card was tried and dropped: Discord hides the card when a bot has one.
