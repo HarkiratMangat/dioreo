@@ -5,7 +5,6 @@
 //
 // NOTE on the deferred "search + multi-select" flow: the mockups describe "Delete Multiple" (all entities) and Loadouts' "Replace Multiple" as searching first, then picking which matches to act on from a list — a new interaction, different from today's paste-a-list-of-names bulk-remove. Per Harkirat's explicit direction, that real search+multi-select rebuild is intentionally NOT part of this pass — it's large enough on its own that bundling it here risked a usage-limit interruption mid-build. This pass keeps those specific actions on today's paste-based modals (renamed/re-styled to match the new buttons) as a deliberate placeholder, not an oversight.
 
-const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { formatAdminDate, formatReleaseDateTime } = require('../utils/adminParser');
 const { sendV2Payload } = require('../utils/sendV2Payload');

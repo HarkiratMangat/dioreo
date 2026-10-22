@@ -64,7 +64,7 @@ async function addDraw(interaction) {
 async function editDraw(interaction) {
     await interaction.deferReply({ ephemeral: true });
     const { toTitleCase, parseItemLine, parseAdminDate } = require('../../utils/adminParser');
-    const [_, __, targetId, drawType] = interaction.customId.split('_');
+    const [, , targetId, drawType] = interaction.customId.split('_');
 
     // Existence pre-check kept exactly as before the refactor -- draw.edit's op would also report this as `reason: 'missing'`, but the pre-core handler simply returned with no reply at all when the id wasn't found (a stale search result), and this preserves that exact silent behaviour rather than introducing a new error reply where none existed.
     const seasonalDoc = await loadOrCreateSeasonalDoc();

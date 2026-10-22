@@ -9,7 +9,6 @@
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
-const { buildPaginationRow } = require('../utils/paginationRow');
 const { getAlertSummary, getRecentAlerts, formatUptime } = require('../utils/alertStore');
 const { getChangeSummary, getRecentChanges } = require('../utils/changeStore');
 const { displayTitle } = require('../utils/alertExplain');
@@ -155,7 +154,6 @@ async function buildHealthBody(client) {
     const s = stats.summary;
     const line = (t) => `🟢 ${t.info} · 🟡 ${t.caution} · 🟠 ${t.warn} · 🔴 ${t.error}`;
     const lastErr = s.lastError ? `\`${s.lastError.alertId}\` · <t:${unix(s.lastError.createdAt)}:R>` : '_none recorded_ 🟢';
-    const lastBootTs = stats.lastBoot ? unix(stats.lastBoot.createdAt) : null;
     const tiers = errorTiers(s, stats.cloud);
     const tierLine = tiers.logged == null
         ? `**Errors, last 24h:** ${tiers.announced} announced to Discord`

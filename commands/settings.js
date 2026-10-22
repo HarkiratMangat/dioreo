@@ -12,7 +12,6 @@ const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
 const { resolveEphemeral } = require('../utils/ephemeral');
-const { schedulePanelExpiry } = require('../utils/passiveExpiry');
 
 // Harkirat's Discord ID, for the "Made with love by @dior" footer's silent mention -- see the bottom of buildContainer() below.
 const DIOR_ID = '1139845545754632283';

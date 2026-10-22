@@ -7,7 +7,7 @@
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleHelpInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch. A bare `return interaction.reply(...)` can reject after the try has exited and escape the net. See .claude/rules/interaction-router.md.
 
-const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
+const { buildSyntheticInteraction } = require('../utils/interactionContext');
 const { hasCommandAccess } = require('../utils/adminAccess');
 
 const OWNED_PREFIXES = ["help_category", "help_guide_pick"];

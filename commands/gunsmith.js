@@ -59,7 +59,7 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
         return;
     }
 
-    const { weaponKey, weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndex);
+    const { weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndex);
     const scopeToken = formatScopeToken(scope);
     const scopeLabel = labelForScope(scope);
     require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, weaponBuilds[indexWithinWeapon]?._id); // Your Stats: a build this user opened

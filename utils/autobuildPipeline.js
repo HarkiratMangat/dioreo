@@ -1,13 +1,13 @@
 // utils/autobuildPipeline.js Shared state + logic for /autobuild, required from BOTH commands/autobuild.js's execute() (initial invocation) and handlers/autobuild.js's button/modal handlers (Confirm/Edit/Cancel/retry, added in Tasks 7/8). Kept out of commands/autobuild.js itself so handlers/autobuild.js can reach the same pendingAutobuilds Map without a circular require -- the router imports handlers, not the reverse; every command file already requires shared logic FROM utils/, never the reverse. Full design: docs/superpowers/specs/2026-07-19-loadout-automation-poc-design.md.
 const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const crypto = require('crypto');
-const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
+const { ModalBuilder, TextInputBuilder, TextInputStyle, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
 const Loadout = require('../models/Loadout');
 const { extractLoadoutFromImage } = require('./visionExtract');
 const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges, normalizeWeaponName, orderAttachmentsBySlot } = require('./adminParser');
-const { getCatalogueIndex, findUnknownNames, learnItems, describeUnknown } = require('./catalogue');
+const { getCatalogueIndex, findUnknownNames, learnItems } = require('./catalogue');
 const { sendV2Payload } = require('./sendV2Payload');
-const { computeWeaponKeyAndBuild, buildLoadoutCard, getMpCategoryAccent, findDuplicateLoadouts } = require('./loadoutRender');
+const { computeWeaponKeyAndBuild, getMpCategoryAccent, findDuplicateLoadouts } = require('./loadoutRender');
 const { uploadLoadoutImage, syncLoadoutMetadata, deriveImageKey } = require('./loadoutImageCache');
 const { glyphs } = require('./emojiMap');
 const { mentionCommand } = require('./commandMentions');

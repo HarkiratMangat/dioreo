@@ -1,7 +1,6 @@
 // scripts/eventStore.test.js -- coverage for the event plane's writer (utils/eventStore.js), observability layer stage 2. Pure logic plus a stubbed Mongoose model: no Atlas, no Discord, no Cloudinary. What is deliberately NOT covered here: whether Mongo actually accepts the documents (that is the live dev-bot boot test) and the Cloudinary/Vertex/REST wrappers (they are transparent proxies with no logic of their own). Run: `node scripts/eventStore.test.js` (also via `npm test`).
 
 const assert = require('assert');
-const path = require('path');
 const Module = require('module');
 
 // --- Stub the model BEFORE eventStore lazily requires it, so a flush is observable without Mongo. ---

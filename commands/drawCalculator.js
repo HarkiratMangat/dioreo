@@ -13,12 +13,12 @@ const { mentionCommand } = require('../utils/commandMentions');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const emojis = require('../utils/emojiMap');
 const UserPreference = require('../models/UserPreference');
-const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP } = require('./drawprices');
+const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, MYTHIC_UPGRADE, upgradeFullAmount, SERIES_ARMORY, ARMORY_SPIN_CP } = require('./drawprices');
 const { pullCount, upgradeCost, remainingToFinish, spentSoFar, basketCost, upgradePlan, upgradeState, characterPreset, isArmoryKey, armorySize, upgradeKeyOf, ARMORY_SIZES, MYTHIC_ARMORY_SIZE, ADVANCED_KEYS, ADVANCED_GOALS, isAdvancedKey, advancedGoal, advancedGoalTotals, advancedBoth, advancedLater } = require('../utils/drawCost');
 const crypto = require('crypto');
 const { CP_PACKAGES, CURRENCIES, STOCK_UP_RULES, PURCHASE_RULES, normalCp, priceCents, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 const { QUICK_CURRENCIES, currencyLabel } = require('../utils/cpCurrencyData');
-const { buildTitleBlock, toBoldItalicUnicode } = require('../utils/titleBlock');
+const { toBoldItalicUnicode } = require('../utils/titleBlock');
 
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
 const DRAW_KEYS = Object.keys(DRAW_META);
@@ -79,7 +79,6 @@ function shortName(drawKey) { return SHORT_NAME[drawKey] || drawName(drawKey); }
 
 const DRAW_DATA = require('./drawprices').DRAW_DATA;
 function entryFor(region, drawKey) { return (DRAW_DATA[region] && DRAW_DATA[region][drawKey]) || null; }
-function regionsWithData(drawKey) { return REGION_ORDER.filter(r => entryFor(r, drawKey)); }
 
 // Pure input/selection helpers the handler uses. They live here, not in handlers/drawCalc.js, because a handler module exports exactly ONE function (scripts/handlerRouting.test.js) and both need direct tests (2026-10-13 12:42 EDT).
 function parseAmount(raw) {
@@ -166,9 +165,6 @@ function setTypeCount(banners, drawKey, count) {
     const drop = new Set(order.slice(0, idx.length - count));
     return { banners: list.filter((_, i) => !drop.has(i)), removed: list.filter((_, i) => drop.has(i)) };
 }
-function copies(n) { return n === 1 ? '1 copy' : `${n} copies`; }
-// Style A's one dropdown lists every picked draw × 1..max, kept within Discord's 25 options.
-function maxCountFor(typeCount) { return Math.max(1, Math.min(4, Math.floor(25 / Math.max(1, typeCount)))); }
 
 function upgradeCardEmoji(drawKey) {
     if (upgradeKeyOf(drawKey) === 'mythicWeapon') return emojis.mythicCard;
@@ -567,7 +563,6 @@ function freshDrawDescription(region, key) {
     // No "·" before the upgrade (2026-10-14 16:51 EDT, Harkirat): the "+" already joins it to the total. "Attempts" took the place of "Items" (2026-10-17 17:20 EDT, Harkirat: "'attempts' basically took the spot of 'items'. spins stays as-is.").
     return `${total} Attempts · ${fmt(remainingToFinish(region, key, 0))} CP Total${upgrade !== null ? ` + ${fmt(upgrade)} CP Upgrade` : ''}`.slice(0, 100);
 }
-function ordinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 
 // Pages hold whole draws: a draw's consecutive lines stay on one page (Harkirat, 2026-10-13 19:47 EDT: two of a draw split across two pages read as unrelated). A run longer than a page is the one case that still splits. Returns the line indices on each page.
 function linePages(banners, perPage) {
@@ -619,8 +614,6 @@ function entitlementSelectRow(state, basket) {
     };
 }
 
-// Room between blocks without a rule (his "more breathing room"): a separator with no divider.
-const SPACER = { type: 14, spacing: 2, divider: false };
 // "Your Selections" once there are two or more draws (2026-10-14 16:51 EDT, Harkirat).
 function selectionHeading(banners) { return (banners || []).length >= 2 ? 'Your Selections' : 'Your Selection'; }
 
@@ -1667,7 +1660,7 @@ async function execute(interaction) {
 module.exports = {
     encodeState, decodeState, defaultState, clampFocus,
     buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildExportText, buildDrawInfoPanel, buildHelpPanel, buildSavedPanel, savedChecksum, savedDescription,
-    buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
+    buildCostBlock, entryFor, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute,
     parseAmount, parseCount, readBalanceFields, applySelection, shortName, SHORT_NAME, slashShortcut,
     buildUpgradeModal, readUpgradeModal, upgradeControls, balanceLabel,

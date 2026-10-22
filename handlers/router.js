@@ -12,7 +12,6 @@
 // ⚠️ ORDER IS LOAD-BEARING ABOVE THE CHAIN, MEANINGLESS INSIDE IT. The guards run in a fixed order for real reasons (see each one's comment). The dispatch chain does not: the modules' prefixes are mutually exclusive, checked mechanically when they were extracted, so no two can claim the same id.
 
 // (resolveThumbnail moved to handlers/manage.js with the bulk draw-save helpers that used it)
-const { buildSyntheticInteraction, resolvePanelActor } = require("../utils/interactionContext");
 const { runWithContext, getContext, hashUserId } = require("../utils/requestContext");
 const { recordInteractionEvent, markOutcome, instrumentAck, instrumentAutocomplete } = require("../utils/eventStore");
 const { cancelPanelExpiry } = require("../utils/passiveExpiry");

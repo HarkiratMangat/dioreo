@@ -1,6 +1,5 @@
 // utils/discordCdnAssetIndex.test.js -- coverage for the DiscordCdnAsset durable secondary index and its recovery routine (see discordCdnAssetIndex.js's header for the full reasoning: recovering a Cloudinary resource's bytes from the Discord storage-channel message that still holds an untouched copy, when the Cloudinary resource was deleted out-of-band). Stubs the model, cloudinaryClient and global fetch -- no Mongo, no Cloudinary, no network. Run: `node utils/discordCdnAssetIndex.test.js` (also via `npm test`).
 const assert = require('assert');
-const path = require('path');
 const Module = require('module');
 
 // --- Stub models/DiscordCdnAsset BEFORE the module under test requires it. ---
