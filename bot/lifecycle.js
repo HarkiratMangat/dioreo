@@ -15,7 +15,7 @@ const { pruneExpiredThumbnails } = require('../utils/cloudinaryCache');
 const { pruneOrphanedPatchFolders } = require('../utils/patchNotesCache');
 const { registerApplicationCommands } = require('./registry');
 
-// --- DRAW THUMBNAIL CLOUDINARY CACHE: SCHEDULED CLEANUP (2026-07-12) --- Cloudinary has no native per-asset TTL (confirmed against the current cloudinary_npm docs before building this feature) -- so "auto-delete after 45 days" only happens because THIS runs on a schedule, not because Cloudinary does it on its own. Deletes only assets that are BOTH 45+ days old AND no longer referenced by any current draw (Harkirat's confirmed rule), so a long-lived draw's cached image is never at risk just because it's been up a while. Wrapped in its own try/catch since this runs unawaited from handleBotReady -- a failure here must never be able to crash the bot (matches the crash-resilience convention documented in CLAUDE.md).
+// --- DRAW THUMBNAIL CLOUDINARY CACHE: SCHEDULED CLEANUP (2026-07-12) --- Cloudinary has no native per-asset TTL (confirmed against the current cloudinary_npm docs before building this feature) -- so "auto-expire after 45 days" only happens because THIS runs on a schedule, not because Cloudinary does it on its own. Archives (moves to archive/draws/, never deletes -- 2026-10-21) only assets that are BOTH 45+ days old AND no longer referenced by any current draw (Harkirat's confirmed rule), so a long-lived draw's cached image is never at risk just because it's been up a while. Wrapped in its own try/catch since this runs unawaited from the ClientReady handler below and then every 24 h -- a failure here must never be able to crash the bot (matches the crash-resilience convention documented in CLAUDE.md).
 async function runCloudinaryCleanup() {
     try {
         const SeasonalData = require('../models/SeasonalData');
@@ -31,15 +31,15 @@ async function runCloudinaryCleanup() {
         ]);
 
         const result = await pruneExpiredThumbnails(currentUrls);
-        if (result.deletedCount > 0) {
-            console.log(`🧹 Cloudinary cleanup: pruned ${result.deletedCount} expired, unused draw thumbnail(s).`);
+        if (result.archivedCount > 0) {
+            console.log(`🧹 Cloudinary cleanup: archived ${result.archivedCount} expired, unused draw thumbnail(s) to archive/draws/.`);
         }
 
         // PATCH NOTES: every season stays reachable now (2026-10-19 00:30 EDT, Harkirat, superseding "only the previous 5": the dropdown lists 12 and search finds the rest), so every entry's images are kept. Only a folder whose patch note entry was deleted is pruned -- see utils/patchNotesCache.js.
         const keepPatchIds = new Set((seasonalDoc?.patchNotes || []).map(p => p._id.toString()));
         const patchResult = await pruneOrphanedPatchFolders(keepPatchIds);
-        if (patchResult.deletedCount > 0) {
-            console.log(`🧹 Cloudinary cleanup: pruned ${patchResult.deletedCount} patch-notes image(s) from deleted seasons.`);
+        if (patchResult.archivedCount > 0) {
+            console.log(`🧹 Cloudinary cleanup: archived ${patchResult.archivedCount} patch-notes image(s) from deleted seasons to archive/patch_notes/.`);
         }
     } catch (error) {
         // SECURITY: never fall back to logging the raw `error` object here -- a Cloudinary error's shape can carry the account's API key/secret in a nested `request_options.auth` field (see utils/cloudinaryCache.js's safeErrorMessage note). This should be unreachable in practice now (pruneExpiredThumbnails sanitizes everything it catches internally), but this is the last line of defense for a SeasonalData/Mongoose error from the same block, so it stays just as strict rather than assuming the callee always behaves.
@@ -121,7 +121,7 @@ function registerLifecycle(client, commands) {
         }
     });
 
-    // --- GATEWAY / SHARD DIAGNOSTICS --- DIAGNOSTIC LOGGING (added 2026-07-16): found live that the Gateway handshake can silently take 10+ minutes with ZERO error on either client.login()'s promise or the 'error' handler above -- MongoDB connects fine, but handleBotReady() (which logs "fully authenticated"/"routing links integrated") never fires until the WS layer's internal retry/backoff eventually succeeds. That internal retry activity was completely invisible, so a real multi-minute production gap looked identical to "nothing is happening" from the logs alone. These shard-lifecycle events are the actual diagnostic trail for next time -- deliberately NOT listening to the raw 'debug' event, which fires on nearly every heartbeat and would flood production logs; these five only fire on real state transitions. Each shard-lifecycle event also fires a Discord alert (utils/alertWebhook.js) so gateway trouble is visible in real time, not just in journald. shardReady stays console-only (the initial connect is announced by the "Bot online" alert below); the rest map to warn/error/info by severity. ⚠️ RECOVERY IS PAIRED TO THE ANNOUNCEMENT (2026-08-06 14:54 EDT). Harkirat: he learns the bot broke and never that it healed — "there is no signal at all when the bot recovers".
+    // --- GATEWAY / SHARD DIAGNOSTICS --- DIAGNOSTIC LOGGING (added 2026-07-16): found live that the Gateway handshake can silently take 10+ minutes with ZERO error on either client.login()'s promise or the 'error' handler above -- MongoDB connects fine, but the ClientReady handler below (which logs "fully authenticated") never fires until the WS layer's internal retry/backoff eventually succeeds. That internal retry activity was completely invisible, so a real multi-minute production gap looked identical to "nothing is happening" from the logs alone. These shard-lifecycle events are the actual diagnostic trail for next time -- deliberately NOT listening to the raw 'debug' event, which fires on nearly every heartbeat and would flood production logs; these five only fire on real state transitions. Each shard-lifecycle event also fires a Discord alert (utils/alertWebhook.js) so gateway trouble is visible in real time, not just in journald. shardReady stays console-only (the initial connect is announced by the "Bot online" alert below); the rest map to warn/error/info by severity. ⚠️ RECOVERY IS PAIRED TO THE ANNOUNCEMENT (2026-08-06 14:54 EDT). Harkirat: he learns the bot broke and never that it healed — "there is no signal at all when the bot recovers".
     //
     // The naive fix (make 'Gateway resumed' loud) is WRONG and would undo a correct decision: that pair fires every 1-3h as routine churn, and posting it would restore exactly the noise the 2026-07-20 `silent` call removed. Noise is not a lesser problem than silence — it is how someone learns to stop reading the channel, and then the loud alerts stop working too.
     //
@@ -132,7 +132,7 @@ function registerLifecycle(client, commands) {
 
     // shardReady is no longer console-only: it is the re-identify recovery path described above. On the FIRST connect gatewayTroubleAt is null, so noteGatewayRecovered() no-ops and the initial connect is still announced solely by "Bot online" below — no duplicate.
     client.on('shardReady', (id) => { console.log(`🔌 Shard ${id} ready`); noteGatewayRecovered(`shard ${id} reconnected with a fresh session`); });
-    // The reconnect→resume PAIR is `silent` (2026-07-20, Harkirat's call): still logged to the alert store (so /alerts + a future /status can print the reconnect history on demand), but NOT posted to the Discord channel. These fire every 1-3h as routine, self-recovering gateway churn (Discord cycling sessions / tiny network blips, sub-second, resumed with full event replay = zero data loss) — genuinely nothing to act on, so they're pure channel noise. The GENUINELY-bad case is still loud: a reconnect that FAILS to resume surfaces via 'Gateway disconnected' (shardDisconnect, orange, pings) below — a separate handler, so suppressing the routine pair from Discord doesn't hide a real outage. The silent 'Gateway resumed' is kept for the routine case (it is what /alerts reads back), and is SKIPPED when a loud "Back online" already covered the same recovery — two log rows for one event would make the reconnect history read as twice as much churn as actually happened.
+    // The reconnect→resume PAIR is `silent` (2026-07-20, Harkirat's call): still logged to the alert store (so the /bot analytics Alerts page can print the reconnect history on demand), but NOT posted to the Discord channel. These fire every 1-3h as routine, self-recovering gateway churn (Discord cycling sessions / tiny network blips, sub-second, resumed with full event replay = zero data loss) — genuinely nothing to act on, so they're pure channel noise. The GENUINELY-bad case is still loud: a reconnect that FAILS to resume surfaces via 'Gateway disconnected' (shardDisconnect, orange, pings) below — a separate handler, so suppressing the routine pair from Discord doesn't hide a real outage. The silent 'Gateway resumed' is kept for the routine case (it is what the /bot analytics Alerts page reads back), and is SKIPPED when a loud "Back online" already covered the same recovery — two log rows for one event would make the reconnect history read as twice as much churn as actually happened.
     client.on('shardResume', (id, replayed) => {
         console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`);
         if (noteGatewayRecovered(`shard ${id} resumed and replayed ${replayed} events`)) return;
@@ -171,6 +171,15 @@ function registerLifecycle(client, commands) {
         // Unnamed draw calculations expire 30 days after creation (PRIVACY §2.1d) -- enforced HERE, daily, because the partial TTL index that was meant to do it can never be built (see models/DrawBasket.js). Never awaited and never throws, same as the cleanup above.
         runBasketExpiry();
         setInterval(runBasketExpiry, 24 * 60 * 60 * 1000).unref();
+        // A returning draw that goes live with no end date gets the owner a DM (utils/drawEndReminder.js, 2026-10-21 14:39 EDT), once a day just after the game's daily update: 00:00 UTC, which is 8 PM in Toronto in summer and 7 PM in winter (2026-10-21 14:48 EDT, Harkirat: "No need to do per hour, just have it send based on the 7 or 8pm (based on daylight) Toronto time when the game updates its stuff"). Not on boot, so a restart never DMs at an odd hour; a day it misses is caught the next day, inside the reminder's 7-day window. Never awaited, never throws.
+        const { runDrawEndReminders, msUntilNextDailyRun } = require('../utils/drawEndReminder');
+        setTimeout(() => {
+            runDrawEndReminders(client);
+            setInterval(() => runDrawEndReminders(client), 24 * 60 * 60 * 1000).unref();
+        }, msUntilNextDailyRun()).unref();
+
+        // The presence's top line and verb rotate every minute: Watching the season countdown, Competing in the ranked countdown, Playing the DMZ countdown, Listening to /help (utils/botPresence.js, 2026-10-21 19:31 EDT). Never throws; a failed season read keeps /help up.
+        require('../utils/botPresence').startPresenceRotation(client);
 
         // One row per hotpatch since boot. In memory only, and deliberately: a restart clears it because a restart is exactly when it stops being true -- the process is back on its boot commit.
         client.hotpatches = [];

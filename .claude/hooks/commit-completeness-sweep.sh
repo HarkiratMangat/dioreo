@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# completeness-sweep.sh — passes 2 and 3 of the pre-PR audit.
+# commit-completeness-sweep.sh — passes 2 and 3 of the pre-PR audit.
 #
 # WHY THIS EXISTS (2026-08-06 09:19 EDT, Harkirat's ask, in his words):
 #   "I usually tell you to check, then after I'll usually tell you do another check with a different
@@ -35,7 +35,7 @@ HOOKDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 
-# ⚠️ TWO BASES EXIST IN THIS REPO and the `Stop` wiring cannot know which one applies — it fires on every message, long before any `--base` flag is typed, so it passes a literal `main`. A v3 branch is cut from `v3-pre-release`, and diffing it against `main` yields the whole v3 delta: every v3 file reads as "changed", conservation scans hundreds of irrelevant lines, and the report is noise on the branch type that most needs it. Detected 2026-08-06 09:32 EDT while adversarially testing this hook rather than by hitting it in production. Three cheap git calls: if the merge-base with v3-pre-release is a DESCENDANT of the merge-base with main, the branch was cut from v3 and v3 is the truer base.
+# ⚠️ TWO BASES EXIST IN THIS REPO and the `git commit`/`merge`/`tag` wiring cannot know which one applies — no `--base` flag has been typed yet, so it passes the default `main` (the `gh pr create` wiring passes `--base` when it is given). A v3 branch is cut from `v3-pre-release`, and diffing it against `main` yields the whole v3 delta: every v3 file reads as "changed", conservation scans hundreds of irrelevant lines, and the report is noise on the branch type that most needs it. Detected 2026-08-06 09:32 EDT while adversarially testing this hook rather than by hitting it in production. Three cheap git calls: if the merge-base with v3-pre-release is a DESCENDANT of the merge-base with main, the branch was cut from v3 and v3 is the truer base.
 if [ "$BASE" = main ] && git rev-parse --verify -q v3-pre-release >/dev/null 2>&1; then
   mb_main=$(git merge-base main HEAD 2>/dev/null)
   mb_v3=$(git merge-base v3-pre-release HEAD 2>/dev/null)

@@ -3,7 +3,7 @@ const { withShareButton } = require('./shareButton');
 const { buildPaginationRow } = require('./paginationRow');
 const emojis = require('./emojiMap');
 
-// MP LOADOUT ACCENT COLORS — one per weapon category, from the "Custom Class" palette (a curated mix Harkirat picked across several palette proposals, see the palette spec sheet). Keyed by the exact uppercase string stored in `Loadout.category` (AR/LMG/MARKSMAN/SHOTGUN/SMG/SNIPER, plus SECONDARIES which has no loadouts yet — see bot/registry.js's applyGunsmithsScopeChoices() for why the SECONDARIES scope choice still exists ahead of any data). `/gunsmith mp` and `/gunsmith dmz` look a weapon's OWN category up here at render time, so its accent color changes per weapon rather than using one fixed color. `/gunsmith list scope:<category>` hits the exact same lookup via the same utils/loadoutScopes.js/renderScopeBrowse path (2026-08-15 consolidation).
+// MP LOADOUT ACCENT COLORS — one per weapon category, from the "Custom Class" palette (a curated mix Harkirat picked across several palette proposals, see the palette spec sheet). Keyed by the exact uppercase string stored in `Loadout.category` (AR/LMG/MARKSMAN/SHOTGUN/SMG/SNIPER, plus SECONDARIES which has no loadouts yet). `/gunsmith mp` and `/gunsmith dmz` look a weapon's OWN category up here at render time, so its accent color changes per weapon rather than using one fixed color. The `/gunsmith mp` and `/gunsmith dmz` browse rows hit the exact same lookup via the same utils/loadoutScopes.js/renderScopeBrowse path (2026-08-15 consolidation).
 const MP_CATEGORY_ACCENT = {
     AR: 16726876,          // FF3B5C — Crimson Pop
     SMG: 16765503,         // FFD23F — Electric Gold
@@ -31,7 +31,7 @@ function buildImageUrl(imageKey) {
     return imageKey.startsWith('http') ? imageKey : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${imageKey}`;
 }
 
-// Deterministic weaponKey + next-build-number + Cloudinary-key computation for /autobuild -- no AI involved (per the design spec). weaponKey matches the exact convention every other write site in this codebase already uses (handlers/manage.js's add_loadout_/edit_loadout_ handlers: lowercase, spaces stripped). buildName follows a plain "Build N" convention specific to auto-created loadouts (there's no human-typed variant label like "Aggressive Flex" available from a screenshot) -- N is computed from the HIGHEST existing "Build N" number among this weapon's current builds, not a count, so a deleted build in the middle can't produce a colliding buildName. Non-"Build N"-shaped existing names are simply ignored for this max-finding purpose, not treated as errors. imageKey follows the documented convention (CLAUDE.md's "Recommended naming convention" note): WeaponKey-BuildNum, all-caps, hyphens preserved from the weapon name's own word breaks (a multi-word name like "Holger 26" becomes "HOLGER-26", a single-word name stays single-word with no hyphen invented that wasn't already implied by a space).
+// Deterministic weaponKey + next-build-number + Cloudinary-key computation for /autobuild -- no AI involved (per the design spec). weaponKey matches the exact convention every other write site in this codebase already uses (handlers/manage/loadouts.js's add_loadout_/edit_loadout_ handlers: lowercase, spaces stripped). buildName follows a plain "Build N" convention specific to auto-created loadouts (there's no human-typed variant label like "Aggressive Flex" available from a screenshot) -- N is computed from the HIGHEST existing "Build N" number among this weapon's current builds, not a count, so a deleted build in the middle can't produce a colliding buildName. Non-"Build N"-shaped existing names are simply ignored for this max-finding purpose, not treated as errors. imageKey follows the documented convention (.claude/rules/loadout-images-and-metadata.md, "Recommended naming convention"): WeaponKey-BuildNum, all-caps, hyphens preserved from the weapon name's own word breaks (a multi-word name like "Holger 26" becomes "HOLGER-26", a single-word name stays single-word with no hyphen invented that wasn't already implied by a space).
 function computeWeaponKeyAndBuild(weaponName, existingBuildNames) {
     const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
 
@@ -189,7 +189,7 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
             default: weaponKey === activeWeaponKey
         }));
 
-    // Never drop weapons silently -- commands/admin.js:219 sets the house rule for this exact situation. Window around the active weapon so paging forward reveals the rest, and say so in the placeholder (Discord select menus cap at 25 options; there is no scroll/search on a string select the way native role/channel selects have).
+    // Never drop weapons silently -- commands/admin.js (the SELECT_OPTION_CAP slice in buildCommands) sets the house rule for this exact situation. Window around the active weapon so paging forward reveals the rest, and say so in the placeholder (Discord select menus cap at 25 options; there is no scroll/search on a string select the way native role/channel selects have).
     let truncated = options;
     let placeholder = `Browse other ${scopeLabel} weapons`;
     if (options.length > 25) {
@@ -220,7 +220,8 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     const attachmentLines = (activeBuild.attachments || []).map(att => `• \`${att}\``).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
 
-    let titleContent = `# ${activeBuild.weaponName}`;
+    // `##`, not `#` (Harkirat, 2026-10-20 22:23 EDT): every other panel's title is `##`, and on a phone `#` wraps the longer command titles onto two lines.
+    let titleContent = `## ${activeBuild.weaponName}`;
     // hideBadges is set for a meta scope browse -- "Meta" is implied by the view itself there, per Harkirat's call to hide the WHOLE badge line rather than just the redundant Meta badge. Category browses keep badges ("Best AR" is still informative in an AR list).
     const badgesLine = hideBadges ? null : buildBadgesLine(activeBuild);
     if (badgesLine) titleContent += `\n${badgesLine}`;
@@ -249,7 +250,8 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     const codeText = activeBuild.mode !== 'DMZ' && (activeBuild.shareCode || activeBuild.buildName);
     if (codeText) {
         if (copyIds) {
-            containerComponents.push({ type: 9, components: [{ type: 10, content: '### Gunsmith Code' }], accessory: { type: 2, style: 3, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.copyExport) } });
+            // Primary (blue), not Success (green), per Harkirat 2026-10-20 22:23 EDT: blue is the bot's call-to-action colour, green means "set / you are here". Copy Attachments stays grey as the secondary courtesy button.
+            containerComponents.push({ type: 9, components: [{ type: 10, content: '### Gunsmith Code' }], accessory: { type: 2, style: 1, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.copyExport) } });
             containerComponents.push({ type: 10, content: `\`${codeText}\`` });
         } else {
             containerComponents.push({ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` });

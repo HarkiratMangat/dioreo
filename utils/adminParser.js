@@ -33,7 +33,7 @@ function resolveTier(shorthand) {
     return toTitleCase(shorthand);
 }
 
-// Shared by parseBulkDrawList below AND handlers/manage.js's single add-draw/edit-draw modal handlers -- used to be copy-pasted verbatim in all three places. Matches the first word as the tier shorthand, the rest as the item name; falls back to 'epic' if there's no tier prefix at all.
+// Shared by parseBulkDrawList below AND handlers/manage/draws.js's single add-draw/edit-draw modal handlers -- used to be copy-pasted verbatim in all three places. Matches the first word as the tier shorthand, the rest as the item name; falls back to 'epic' if there's no tier prefix at all.
 function parseItemLine(itemStr) {
     const trimmed = itemStr.trim();
     // "-# comment" lines (2026-07-30 22:24 EDT) -- a free-text note attached to a draw's item list (e.g. "-# Character bundle only, no weapon this time"), rendered later as Discord subtext instead of a tiered item (see draws.js's buildDrawSections). Must be checked BEFORE the generic tier-shorthand parse below: "-#" doesn't match any known tier shorthand, so it used to fall through to resolveTier's toTitleCase() fallback and get stored as a nonsense tier, AND the comment text itself got title-cased like a weapon/character name, mangling it.
@@ -56,6 +56,30 @@ function parseAdminDate(dateStr) {
 
     // Normalize to midnight UTC on the parsed calendar day — deadlines/events are date-only, no specific time-of-day is collected from the admin. Use the UTC getters here (not the local getters used previously) since parsedResult is already anchored in UTC.
     return new Date(Date.UTC(parsedResult.getUTCFullYear(), parsedResult.getUTCMonth(), parsedResult.getUTCDate(), 0, 0, 0, 0));
+}
+
+// A season line's date part as a RANGE ("Aug 6 - Nov 17", "August 6, 2026 to November 17, 2026"), each end normalised like parseAdminDate. A start with "TBD" as its end ("Aug 6 - TBD") gives endTBD. Null when the text is not a range that covers the whole string (2026-10-21 10:17 EDT, the season progress bar's start dates).
+function parseAdminDateRange(dateStr) {
+    const cleanStr = String(dateStr || '').trim();
+    if (!cleanStr) return null;
+    const utcDay = d => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
+    const tbd = cleanStr.match(/^(.*?)\s*(?:-|–|—|to)\s*tbd$/i);
+    if (tbd) {
+        const start = parseAdminDate(tbd[1]);
+        return start ? { start, end: null, endTBD: true } : null;
+    }
+    const r = chrono.parse(cleanStr, new Date(), { timezone: 0 })[0];
+    if (!r || !r.end || r.index !== 0 || r.text.trim().length < cleanStr.length) return null;
+    return { start: utcDay(r.start.date()), end: utcDay(r.end.date()), endTBD: false };
+}
+
+// True when the WHOLE string reads as a date or a date range, not merely contains one: chrono finds "November 17" inside "Part 2, November 17", which is a title, not a date.
+function isWholeDate(str) {
+    const s = String(str || '').trim();
+    if (!s) return false;
+    if (/^tbd$/i.test(s) || parseAdminDateRange(s)) return true;
+    const r = chrono.parse(s, new Date(), { timezone: 0 })[0];
+    return Boolean(r && r.index === 0 && r.text.trim().length >= s.length);
 }
 
 /**
@@ -102,7 +126,7 @@ function parseBulkDrawList(bulkText) {
 
         const title = toTitleCase(parts[0]);
 
-        // URL is now OPTIONAL (2026-07-12, Cloudinary-cache feature) -- a blank/omitted URL means "reuse whatever's already cached for this draw name" (see utils/cloudinaryCache.js's resolveThumbnail), resolved later at save time in handlers/manage.js, not here. Only pop a trailing URL field if the last field actually looks like one.
+        // URL is now OPTIONAL (2026-07-12, Cloudinary-cache feature) -- a blank/omitted URL means "reuse whatever's already cached for this draw name" (see utils/cloudinaryCache.js's resolveThumbnail), resolved later at save time in handlers/manage/draws.js, not here. Only pop a trailing URL field if the last field actually looks like one.
         let url = null;
         if (parts.length > 1 && looksLikeUrlOrKey(parts[parts.length - 1])) {
             url = parts.pop();
@@ -175,7 +199,7 @@ function guessCalendarCategory(title) {
     return 'event';
 }
 
-// Shared by the single add/edit calendar-event modals (handlers/manage.js) -- accepts a full word ("draw"/"playlist"/"event") or a single letter (d/p/e), case-insensitive. Blank/unrecognized falls through to the keyword guess above against `title` (2nd arg) instead of a flat 'event' default.
+// Shared by the single add/edit calendar-event modals (handlers/manage/calendar.js) -- accepts a full word ("draw"/"playlist"/"event") or a single letter (d/p/e), case-insensitive. Blank/unrecognized falls through to the keyword guess above against `title` (2nd arg) instead of a flat 'event' default.
 function normalizeCalendarCategory(raw, title) {
     const cleaned = (raw || '').trim().toLowerCase();
     if (!cleaned) return guessCalendarCategory(title);
@@ -290,7 +314,7 @@ function formatReleaseDateTime(date, userTimezone = 'America/Toronto') {
 /**
  * Parses the loadout "badges" segment of /manage's "Category | Badges" modal field into `{ isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings }` (see models/Loadout.js). Comma- separated, case-insensitive, e.g. "meta, best" or "top3" or "top 5" or "" (no badges). Discord modals cap at 5 fields, and the loadout modal already uses all 5, so this rides along as a 3rd pipe-delimited segment on the existing "Category | Mode" field rather than getting its own input.
  *
- * NOTE (fixed during review): `categoryRank` used to only recognize the literal token "top3" -- typing "top 5" (a real ranking some weapons need, not every category caps out at exactly 3) silently matched nothing, with no feedback that it had been ignored. Now accepts any `topN` (with or without a space before the number), and anything that still doesn't match ends up in `unrecognized` so the caller (handlers/manage.js's add/edit-loadout handlers) can tell the admin exactly which token didn't take instead of the change just silently not applying.
+ * NOTE (fixed during review): `categoryRank` used to only recognize the literal token "top3" -- typing "top 5" (a real ranking some weapons need, not every category caps out at exactly 3) silently matched nothing, with no feedback that it had been ignored. Now accepts any `topN` (with or without a space before the number), and anything that still doesn't match ends up in `unrecognized` so the caller (handlers/manage/loadouts.js's add/edit-loadout handlers) can tell the admin exactly which token didn't take instead of the change just silently not applying.
  *
  * NOTE (added for DMZ range badges): `bestclose`/`bestmidlong`/`top{N}close`/`top{N}midlong` (no space before "close"/"midlong") map to `dmzRangeRank` instead of `categoryRank` -- /dmz has no per-category commands, so ranking by combat range role reads more meaningfully there than "Best in category". See buildBadgesLine() in utils/loadoutRender.js for how this renders.
  */
@@ -549,6 +573,12 @@ function splitTitleDate(line) {
     const trimmed = (line || '').trim();
     if (!trimmed) return { title: '', dateStr: '' };
 
+    // The FIRST comma whose remainder is wholly a date (2026-10-21 10:17 EDT). It split on the LAST comma, so the modal's own pre-fill ("Battle Pass, November 17, 2026") came back as the title "Battle Pass, November 17" and the date "2026", which does not parse: resubmitting the box untouched renamed every season and reported its date as not understood.
+    for (let i = trimmed.indexOf(','); i !== -1; i = trimmed.indexOf(',', i + 1)) {
+        const rest = trimmed.slice(i + 1).trim();
+        if (isWholeDate(rest)) return { title: trimmed.slice(0, i).trim(), dateStr: rest };
+    }
+    // No comma leads to a date: the old last-comma split, so a mistyped date is still reported as not understood rather than folded into the title.
     const lastComma = trimmed.lastIndexOf(',');
     if (lastComma === -1) return { title: trimmed, dateStr: '' };
 
@@ -603,4 +633,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };

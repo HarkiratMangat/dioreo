@@ -42,15 +42,7 @@ const COMMANDS = {
         sample: { weapon: 'Fennec' },
         keywords: 'loadout loadouts build builds attachment gunsmith dmz meta weapon gun browse',
     },
-    // Kept while /dmz is hidden (DELIBERATELY_ABSENT in commandCatalog.js), so it returns with its words: nothing renders it until the command is listed again.
-    '/dmz': {
-        purpose: 'DMZ builds, which are a separate set from the MP ones.',
-        facts: ['DMZ builds are badged by combat range, Close or Mid-Long, rather than by weapon class.',
-                'Searching here never returns an MP build, and vice versa.',
-                'It suggests weapons only. To browse All META or All DMZ builds, use `/gunsmith dmz`.'],
-        sample: { weapon: 'OUTLAW' },
-        keywords: 'loadout loadouts build builds attachment gunsmith dmz weapon gun class setup',
-    },
+    // '/dmz' prose removed while /dmz is hidden (2026-10-21 22:42 EDT); restore it with the command (docs/db-deferred-list.md, Queued).
 
     '/draws': {
         purpose: "What is in this season's lucky draws.",

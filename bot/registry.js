@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { REST, Routes, SlashCommandBuilder, Collection } = require('discord.js');
+const { REST, Routes, Collection } = require('discord.js');
 
 // The names /admin's "always hidden commands" menu never offers (2026-08-10 15:48 EDT, v3 server-admin visibility policy): a server rule has no business quieting Harkirat's own owner-level commands, and /admin must never be able to hide its own answer from the admin trying to undo a rule. 'Add to Patch Notes' (the right-click command, 2026-10-19 10:22 EDT) is /manage's patch-notes editor by another door, so it is excluded with it.
 const ADMIN_COMMAND_NAMES = new Set(['admin', 'manage', 'autobuild', 'bot', 'Add to Patch Notes', 'Autobuild Gunsmith', 'Add to Draws', 'Add to Calendar']);
@@ -63,7 +63,7 @@ function loadCommandModules(client) {
     client.commands = new Collection();
     const commands = [];
 
-    // DYNAMIC COMMAND EXTENSION MODULE LOADER: Scans internal subdirectory directories to dynamically extract and merge independent slash files ⚠️ Resolved against this file's PARENT, not __dirname -- this module lives in bot/, the command modules live in commands/ at the repo root. A plain path.join(__dirname, 'commands') here would silently find nothing and register an empty command set, with no error anywhere.
+    // DYNAMIC COMMAND EXTENSION MODULE LOADER: Loads every top-level .js file in commands/ (no subdirectory scan) ⚠️ Resolved against this file's PARENT, not __dirname -- this module lives in bot/, the command modules live in commands/ at the repo root. A plain path.join(__dirname, 'commands') here would silently find nothing and register an empty command set, with no error anywhere.
     const commandsPath = path.join(__dirname, '..', 'commands');
     if (fs.existsSync(commandsPath)) {
         const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));

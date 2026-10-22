@@ -10,7 +10,8 @@ const emojis = require('./emojiMap');
 // Two ways to supply the button custom_ids:
 //  • makeCustomId(targetPage) — PREFERRED, for callers whose id bakes in a TARGET PAGE NUMBER (every caller except loadout cards). The helper computes the WRAPPED prev/next page itself and calls this to build each id, so the modulo math lives in exactly ONE place instead of being copied into (and drifting across) every caller.
 //  • prevCustomId / nextCustomId — legacy, for callers whose id encodes a DIRECTION + current index rather than a target page (loadout cards: `${prefix}prev_...` / `${prefix}next_...`, whose own handlers/loadouts.js already does the modulo wrap on click). These are passed through verbatim; the only thing looping needs for them is that the buttons are no longer disabled — which is now the default here. Don't mix the two: pass makeCustomId OR the prev/next pair, not both.
-function buildPaginationRow({ totalChunks, currentPage, makeCustomId, prevCustomId, nextCustomId, indicatorCustomId }) {
+// `indicatorLabel` (optional) replaces the bare "1 / 3", e.g. /calendar's "Modes · 3/3" (2026-10-21 16:21 EDT).
+function buildPaginationRow({ totalChunks, currentPage, makeCustomId, prevCustomId, nextCustomId, indicatorCustomId, indicatorLabel }) {
     if (totalChunks <= 1) return null;
 
     // At exactly 2 pages the page-based (makeCustomId) path must NOT wrap — see the block comment above for why (duplicate custom_id → the whole message is rejected). Clamp + disable the boundary arrow in that one case; wrap everywhere else. The legacy prev/next-string path (direction-encoded, inherently unique) always wraps, unaffected.
@@ -27,7 +28,7 @@ function buildPaginationRow({ totalChunks, currentPage, makeCustomId, prevCustom
         components: [
             { type: 2, style: 2, emoji: emojis.parseEmoji(emojis.left), custom_id: prevId, disabled: prevDisabled },
             // Numbers only (no "Page" label) per the mobile-friendly redesign — the arrows either side already make it obvious this is a pager. Stays disabled (it's just a label).
-            { type: 2, style: 2, label: `${currentPage + 1} / ${totalChunks}`, custom_id: indicatorCustomId, disabled: true },
+            { type: 2, style: 2, label: indicatorLabel || `${currentPage + 1} / ${totalChunks}`, custom_id: indicatorCustomId, disabled: true },
             { type: 2, style: 2, emoji: emojis.parseEmoji(emojis.right), custom_id: nextId, disabled: nextDisabled }
         ]
     };

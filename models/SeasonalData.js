@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const SeasonalDataSchema = new mongoose.Schema({
     docType: { type: String, default: 'global', unique: true },
 
-    // NOTE (added during review): these four titles are set by the "Initialize New Season" and "Edit Season Titles" admin modals (handlers/manage.js's modal_wipe_season and modal_season_titles_deadlines handlers), and read as fallback display text in seasonend.js and draws.js — but were missing from the schema, so .save() was silently discarding them every time (Mongoose only persists declared paths).
+    // NOTE (added during review): these four titles are set by the "Initialize New Season" and "Edit Season Titles" admin modals (handlers/manage/season.js's modal_wipe_season and modal_season_titles_deadlines handlers), and read as fallback display text in seasonend.js and draws.js — but were missing from the schema, so .save() was silently discarding them every time (Mongoose only persists declared paths).
     currentSeasonTitle: { type: String, default: '' },
     // The season's own emoji (2026-10-19 09:30 EDT), typed in front of the title in /manage and split off by core/ops/season.js so the title stays plain. Blank falls back to emojiMap's season{N} (utils/seasonEmoji.js).
     currentSeasonEmoji: { type: String, default: '' },
@@ -15,6 +15,12 @@ const SeasonalDataSchema = new mongoose.Schema({
     bpEnd: { type: Date },
     rankEnd: { type: Date },
     dmzEnd: { type: Date },
+    // Start dates (2026-10-21 10:17 EDT, Harkirat: a progress bar on all three seasons in /season end). Entered as a range on the same /manage line ("Battle Pass, Aug 6 - Nov 17"); no start, no bar.
+    bpStart: { type: Date },
+    rankStart: { type: Date },
+    dmzStart: { type: Date },
+    // Returning draws the owner was already DM'd about for a missing end date (utils/drawEndReminder.js, 2026-10-21 14:39 EDT), lowercased titles, trimmed to the current returningDraws on each write.
+    drawEndReminders: { type: [String], default: [] },
     // TBD state (added 2026-07-31 14:00 EDT) -- typing the literal word "TBD" into a deadline field now sets this flag + nulls the Date, instead of silently corrupting the date (the L194 bug -- see adminParser.js's parseAdminDate). Distinct from "not set yet" (both fields default false/undefined): TBD means "known to be undecided," so seasonend.js shows "TBD" rather than "Date has not been set yet," and anything checking whether the season/an "All Season" calendar event has ended (calendar.js's isEventEnded) treats a TBD end as indefinitely running rather than comparing against a null date.
     bpEndTBD: { type: Boolean, default: false },
     rankEndTBD: { type: Boolean, default: false },
@@ -23,7 +29,7 @@ const SeasonalDataSchema = new mongoose.Schema({
     // /patchnotes
     patchNotes: [{
         title: { type: String }, // Now holds just the season # & name (e.g. "Season 6: Take Your Heart"),
-        // not the full "Balance Changes for..." string — see patchnotes.js. Kept auto-synced to currentSeasonTitle for the current entry (see handlers/manage.js's modal_season_titles_deadlines) -- titleOverride below is what actually decides what's DISPLAYED. The season emoji carried onto the current entry beside its title, by the same sync that keeps `title` matching currentSeasonTitle (2026-10-19 09:30 EDT).
+        // not the full "Balance Changes for..." string — see patchnotes.js. Kept auto-synced to currentSeasonTitle for the current entry (see handlers/manage/season.js's modal_season_titles_deadlines) -- titleOverride below is what actually decides what's DISPLAYED. The season emoji carried onto the current entry beside its title, by the same sync that keeps `title` matching currentSeasonTitle (2026-10-19 09:30 EDT).
         emoji: { type: String, default: '' },
         titleOverride: { type: String, default: '' }, // Manual per-entry title override (2026-07-24,
         // /manage "Add New Season"/"Past Seasons" edit) -- lets Harkirat set a placeholder season title on a patch entry when the real season title isn't finalized yet (e.g. patch notes released before the new season's name is announced). Blank = no override, falls back to `title` above. Every display site must read `titleOverride || title`, never `title` alone -- see patchnotes.js's exported `displayTitle()`.
@@ -83,6 +89,9 @@ const SeasonalDataSchema = new mongoose.Schema({
         bpEnd: { type: Date },
         rankEnd: { type: Date },
         dmzEnd: { type: Date },
+        bpStart: { type: Date }, // promoted with the end dates (2026-10-21 10:17 EDT)
+        rankStart: { type: Date },
+        dmzStart: { type: Date },
         bpEndTBD: { type: Boolean, default: false },
         rankEndTBD: { type: Boolean, default: false },
         dmzEndTBD: { type: Boolean, default: false },

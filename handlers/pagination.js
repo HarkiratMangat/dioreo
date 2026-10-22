@@ -7,9 +7,9 @@
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handlePaginationInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch. A bare `return interaction.reply(...)` can reject after the try has exited and escape the net. See .claude/rules/interaction-router.md.
 
-const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
+const { buildSyntheticInteraction } = require('../utils/interactionContext');
 
-const OWNED_PREFIXES = ["page_", "subpage_", "calpage_"];
+const OWNED_PREFIXES = ["page_", "subpage_", "calpage_", "calsel_"];
 
 function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
@@ -39,16 +39,27 @@ async function route(interaction) {
             return await drawsCommand.execute(syntheticInteraction, targetPage, targetSubPage);
         }
 
-        // CALENDAR PAGE TOGGLE (Draws / Events / Playlists-Modes -- replaces the old Prev/Next sub-page pagination, 2026-07-31 14:00 EDT, per Harkirat's explicit request for named section-toggle buttons instead of arrows). custom_id format: calpage_<0|1|2>, plus `_a` when the panel is the Active/Upcoming view (2026-10-20, v3 sweep -- see commands/calendar.js buildSectionToggleRow).
+        // CALENDAR PAGER (2026-10-21 15:32 EDT; the Draws / Events / Modes buttons before it). custom_id: calpage_<page>_m<filter mask>_<p|n> (see commands/calendar.js buildCalendarPager). Still read: calpage_<page> and calpage_<page>_a from panels posted before, `_a` being the old Active/Upcoming view.
         if (interaction.customId.startsWith('calpage_')) {
             // REVERTED to two-hop 2026-08-07 17:38 EDT (v2.60.0) -- see the price_region_ branch's comment in handlers/drawprices.js for the full reasoning (the emoji-blank bug + investigation).
             await interaction.deferUpdate();
             const targetPage = parseInt(interaction.customId.replace('calpage_', ''), 10) || 0;
-            const filterOverride = interaction.customId.endsWith('_a') ? 'active' : null;
+            const maskMatch = interaction.customId.match(/_m(\d+)/);
+            const filterOverride = maskMatch ? Number(maskMatch[1]) : interaction.customId.endsWith('_a') ? 'active' : null;
             const calendarCommand = interaction.client.commands.get('calendar');
 
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
             return await calendarCommand.execute(syntheticInteraction, targetPage, filterOverride);
+        }
+
+        // CALENDAR FILTER (2026-10-21 15:32 EDT): the multi-select under the pager. custom_id calsel_<page>; its picks become the mask, and the calendar moves to the first page the filter keeps when this one is left out.
+        if (interaction.customId.startsWith('calsel_') && interaction.isStringSelectMenu()) {
+            await interaction.deferUpdate();
+            const calendarCommand = interaction.client.commands.get('calendar');
+            const mask = interaction.values.reduce((m, v) => m | calendarCommand.filterMask(v), 0);
+            const targetPage = parseInt(interaction.customId.replace('calsel_', ''), 10) || 0;
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await calendarCommand.execute(syntheticInteraction, targetPage, mask);
         }
 }
 

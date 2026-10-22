@@ -1,6 +1,6 @@
 // commands/admin.js
 //
-// /admin -- the SERVER-ADMIN control panel. Deliberately distinct from /manage, which is Harkirat's owner-level panel gated on ALLOWED_ADMIN_ID and stays user-install-only. This one belongs to whoever administers the server the command was run in.
+// /admin -- the SERVER-ADMIN control panel. Deliberately distinct from /manage, which is Harkirat's owner-level panel gated on hasCommandAccess(userId, 'manage') (utils/adminAccess.js) and stays user-install-only. This one belongs to whoever administers the server the command was run in.
 //
 // It configures exactly one thing: the RESPONSE-VISIBILITY POLICY (utils/guildPolicy.js). Nothing here refuses a command or touches a channel, because the bot holds no moderation permission and never acts on a channel outside an interaction (root CLAUDE.md), so it could not enforce either. Design + the rejected alternatives: docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
@@ -352,7 +352,7 @@ async function handleComponent(interaction) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('admin')
-        .setDescription('Server admins: control where Dioreo answers publicly and where it stays hidden')
+        .setDescription("SERVER ADMINS: control Dioreo's server settings")
         // Keeps the command out of ordinary members' pickers where the bot IS guild-installed. It is NOT the gate -- Discord ignores this field for a user-installed invocation, which is exactly the case this feature exists to cover, so execute() re-checks for real.
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         // [0, 1]: a server whose members only user-installed the bot still needs admin controls -- the visibility policy applies to a user-installed invocation too, so registering [0] alone would create servers where the policy is ACTIVE but nobody can ever configure it.

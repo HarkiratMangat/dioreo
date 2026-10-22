@@ -40,13 +40,15 @@ function buildDrawSections(drawsArray) {
             const emoji = emojis[item.tier.toLowerCase()] || '🔹';
             // Split once and reuse, instead of re-splitting the same string up to 3 times per item.
             const nameParts = item.name.split(' - ');
-            return `${emoji} **${nameParts[0]}**${nameParts.length > 1 ? ` - ${nameParts[1]}` : ''}`;
+            return `${emoji} **${nameParts[0]}**${nameParts.length > 1 ? ` — ${nameParts[1]}` : ''}`;
         });
 
         const unixTime = Math.floor(new Date(draw.date).getTime() / 1000);
+        // A draw saved with no date used to print a raw `<t:NaN:f>` (seen on a dev probe draw, 2026-10-20); it reads "Date TBA" instead.
+        const dateLine = Number.isFinite(unixTime) ? `<t:${unixTime}:f> (<t:${unixTime}:R>)` : '*Date TBA*';
 
-        // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here.
-        const compose = (lines, hidden) => `**__${draw.title}__**\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}\n<t:${unixTime}:f> (<t:${unixTime}:R>)`;
+        // Relative timestamp added in brackets alongside the date, per redesign request. `f` (Long Date, Short Time) instead of `F` (Full Date, Short Time) — drops the day-of-week text, which was mostly just extra width for no real benefit here. Layout H (Harkirat, 2026-10-21 11:35 EDT, "yeah lets go H", picked from mock-ups A–H in #testing-spam): a `###` title, the date in a quote right under it, then the items with an em dash before the skin. The title used to be `**__bold underline__**` with the date last, and on a phone the draws ran together. The date keeps its time although it wraps on a phone: "I've actually seen people confused about the exact time something launches". `-#` on the date was tried and does nothing to a timestamp on mobile.
+        const compose = (lines, hidden) => `### ${draw.title}\n> ${dateLine}\n${lines.join('\n')}${hidden ? `\n-# …and ${hidden} more` : ''}`;
         // A single draw too long for one page on its own drops item lines from the end until it fits (see DRAW_TEXT_BUDGET).
         let shown = itemLines;
         let textContent = compose(shown, 0);
@@ -138,12 +140,18 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
 
     drawComponents.push({ type: 14, spacing: 2, divider: true }); // Divider before the category toggle
 
-    // CATEGORY TOGGLE: showing both "NEW"/"RETURNING" buttons side by side (one disabled) still wrapped onto two lines on mobile even after shortening the labels, and a disabled button showing the page you're already on doesn't add anything — replaced with a single button that only offers the OTHER category, worded as a full call-to-action instead. Sentence case (was all-caps) -- 2026-07-12, matching the same gray/Secondary + sentence-case convention now used bot-wide for "switch view" buttons (see drawprices.js's region toggle).
+    // CATEGORY TOGGLE: showing both "NEW"/"RETURNING" buttons side by side (one disabled) still wrapped onto two lines on mobile even after shortening the labels, and a disabled button showing the page you're already on doesn't add anything — replaced with a single button that only offers the OTHER category, worded as a full call-to-action instead. Sentence case (was all-caps) -- 2026-07-12, matching the same gray/Secondary + sentence-case convention now used bot-wide for "switch view" buttons (see drawprices.js's region toggle). PRICE THESE DRAWS (2026-10-21 10:14 EDT, Harkirat): opens /draw calculator's pick-your-draws pop-up (handlers/drawCalc.js `drawspick`), shown only when a draw this season has a price type. A `calc~` id with no author, so whoever presses it gets their own calculation. +1 component.
+    const priced = [...(seasonalDoc.newDraws || []), ...(seasonalDoc.returningDraws || [])].some(d => d.priceType);
+    const { encodeState } = require('./drawCalculator');
+    // Short labels so both buttons stay on one row on a phone (2026-10-21 16:25 EDT, Harkirat's option D: "I just don't want them to wrap"). Measured on his iPhone: Returning Draws + Calculate leaves about 60px of the row free, Calculate Draws or Price Draws beside it wrapped or nearly did.
     drawComponents.push({
         type: 1,
-        components: isNewPage
-            ? [{ type: 2, style: 2, label: "View Returning Draws", emoji: emojis.parseEmoji(emojis.returningDraws), custom_id: "page_returning_draws" }]
-            : [{ type: 2, style: 2, label: "View New Draws", emoji: emojis.parseEmoji(emojis.newDraws), custom_id: "page_new_draws" }]
+        components: [
+            isNewPage
+                ? { type: 2, style: 2, label: "Returning Draws", emoji: emojis.parseEmoji(emojis.returningDraws), custom_id: "page_returning_draws" }
+                : { type: 2, style: 2, label: "New Draws", emoji: emojis.parseEmoji(emojis.newDraws), custom_id: "page_new_draws" },
+            ...(priced ? [{ type: 2, style: 1, label: 'Calculate', emoji: emojis.parseEmoji(emojis.calculator), custom_id: encodeState('drawspick', {}) }] : [])
+        ]
     });
 
     const containerPayload = {
@@ -169,7 +177,7 @@ module.exports = {
     buildContainer,
     // Exported 2026-08-23 10:56 EDT so /bot analytics' change-detail panel can render a draw with the SAME code players see, instead of hand-describing its fields. Copying the body instead would let the two drift, and a panel that quietly stops matching the real card is worse than one that never tried.
     buildDrawSections,
-    // Exported for scripts/drawsTextBudget.test.js.
+    // Exported for scripts/sweepFixes.test.js.
     paginateDraws,
     DRAW_TEXT_BUDGET,
 

@@ -2,7 +2,7 @@
 /**
  * Guards against the "emoji frozen at require() time" bug class.
  *
- * `utils/emojiMap.js`'s refreshEmojiIds() re-points every emoji mention at the BOOTING app's own ids, but it runs from handleBotReady -- long after every command module has been require()d. JS strings copy by value, so any module that READS an emoji value during its own require() (a module-level `const`, or an object literal built at load time) keeps the pre-sync PROD id forever. On prod that's invisible; on the dev bot -- a different Discord application -- those emojis render as broken text.
+ * `utils/emojiMap.js`'s refreshEmojiIds() re-points every emoji mention at the BOOTING app's own ids, but it runs from the ClientReady listeners in bot/lifecycle.js -- long after every command module has been require()d. JS strings copy by value, so any module that READS an emoji value during its own require() (a module-level `const`, or an object literal built at load time) keeps the pre-sync PROD id forever. On prod that's invisible; on the dev bot -- a different Discord application -- those emojis render as broken text.
  *
  * This proxies emojiMap and records every string-valued read that happens while each module loads. A clean run reads nothing. Found four real sites on 2026-07-26 16:04 EDT that manual review missed: manage.js's PAGES table (every /manage emoji), drawprices.js's TIER_ICON (pages 1-2), seasonend.js's hardcoded BP_CODM1 literal, and shareButton.js's SHARE_BUTTON_ROW.
  *

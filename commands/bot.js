@@ -9,7 +9,6 @@
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
-const { buildPaginationRow } = require('../utils/paginationRow');
 const { getAlertSummary, getRecentAlerts, formatUptime } = require('../utils/alertStore');
 const { getChangeSummary, getRecentChanges } = require('../utils/changeStore');
 const { displayTitle } = require('../utils/alertExplain');
@@ -155,7 +154,6 @@ async function buildHealthBody(client) {
     const s = stats.summary;
     const line = (t) => `🟢 ${t.info} · 🟡 ${t.caution} · 🟠 ${t.warn} · 🔴 ${t.error}`;
     const lastErr = s.lastError ? `\`${s.lastError.alertId}\` · <t:${unix(s.lastError.createdAt)}:R>` : '_none recorded_ 🟢';
-    const lastBootTs = stats.lastBoot ? unix(stats.lastBoot.createdAt) : null;
     const tiers = errorTiers(s, stats.cloud);
     const tierLine = tiers.logged == null
         ? `**Errors, last 24h:** ${tiers.announced} announced to Discord`
@@ -358,8 +356,8 @@ const RECORD_VIEWS = {
             // Two fields, lean, on an admin-only panel -- an `isOngoing` entry ends when the Battle Pass does, and that lives on the season doc rather than the entry.
             const doc = await SeasonalData.findOne({ docType: 'global' }).select('bpEnd bpEndTBD').lean();
             return isEventEnded(e, doc || {}, Date.now())
-                ? `⚫ **This one has already ended.** It is hidden from \`/calendar\`'s Active/Upcoming view, but still listed in the default All view.`
-                : `🟢 **Players can see this now.** It shows on \`/calendar\` in both the default view and Active/Upcoming.`;
+                ? `⚫ **This one has already ended.** It is hidden from \`/calendar\`'s Live Right Now and Upcoming filters, but still listed in the Full Timeline and Past/Ended.`
+                : `🟢 **Players can see this now.** It shows on \`/calendar\` in the Full Timeline and in the Live Right Now or Upcoming filter.`;
         },
     },
     loadouts_mp: {
@@ -1008,7 +1006,7 @@ module.exports = {
 
     data: new SlashCommandBuilder()
         .setName('bot')
-        .setDescription("Dioreo's own analytics and admin access management")
+        .setDescription('Dioreo analytics and admin access')
         .setDefaultMemberPermissions(0)
         // ADMIN-ONLY, same reasoning as /manage/autobuild: stays user-install [1] deliberately — an admin command advertised in every server's command list is noise plus needless surface.
         .setIntegrationTypes([1]).setContexts([0, 1, 2])
@@ -1018,9 +1016,9 @@ module.exports = {
                 { name: 'Usage', value: 'usage' }, { name: 'Timing', value: 'timing' },
             ))
             .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
-        .addSubcommand(sub => sub.setName('access').setDescription('View and manage the admin allowlist (owner-only)')
+        .addSubcommand(sub => sub.setName('access').setDescription('Manage the admin allowlist (owner-only)')
             .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
-        .addSubcommand(sub => sub.setName('hotpatch').setDescription('Reload changed files into the running bot without a restart (owner-only)')
+        .addSubcommand(sub => sub.setName('hotpatch').setDescription('Reload changed files without a restart')
             .addBooleanOption(o => o.setName('pull').setDescription('git pull first (default: yes)'))
             .addBooleanOption(o => o.setName('dry_run').setDescription('Show the plan and change nothing'))
             .addStringOption(o => o.setName('file').setDescription('Limit to one changed file (default: everything the pull brought in)').setAutocomplete(true))),

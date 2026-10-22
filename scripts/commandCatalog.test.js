@@ -150,7 +150,7 @@ check('/help and /invite are placed despite CATEGORY_DEFS not knowing them', () 
 // ── order, which carries decisions ─────────────────────────────────────────────────────────────
 check('within a group, order follows CATEGORY_DEFS then the builder', () => {
     const gunsmith = catalog.groups.find(g => g.key === 'gunsmith').commands.map(c => c.path);
-    // CATEGORY_DEFS declares `/gunsmith` before `/dmz`; the builder declares `mp` before `dmz`. One entry covers both subcommands, so only the builder can order those two.
+    // CATEGORY_DEFS declares `/gunsmith` before `/dmz`; the builder declares `mp` before `dmz`. One entry covers both subcommands, so only the builder can order those two. /dmz is devOnly while hidden (2026-10-21 21:07 EDT), so the page leaves it out.
     assert.deepStrictEqual(gunsmith, ['/gunsmith mp', '/gunsmith dmz']);
 
     const draws = catalog.groups.find(g => g.key === 'draws').commands.map(c => c.path);

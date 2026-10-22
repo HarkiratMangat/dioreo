@@ -51,7 +51,7 @@ const PEOPLE = [
     { discordId: 'dev-000003', timezone: 'Asia/Kolkata', timestampStyle: 'relative',
       defaultRegion: 'region_5', accentColorStyle: 'displayName', seasonalVisibility: 'private' },
     { discordId: 'dev-000004', timezone: 'Australia/Sydney', timestampStyle: 'long_date',
-      defaultRegion: 'region_3', defaultRegionMode: 'fixed', calendarEventFilter: 'draw' },
+      defaultRegion: 'region_3', defaultRegionMode: 'fixed' },
     { discordId: 'dev-000005', timezone: 'America/Los_Angeles', timestampStyle: 'all_formats',
       defaultRegion: 'region_10', accentColorStyle: 'dynamicProfile', settingsVisibility: 'private' },
     // One record left almost empty on purpose: most real rows are mostly schema defaults, and a dev database where every field is populated hides the bugs that only appear when a field is absent.

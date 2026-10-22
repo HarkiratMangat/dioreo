@@ -11,7 +11,7 @@
 #
 # The `-r` trap was ALREADY written up in the global CLAUDE.md and I still hit the other two the same day. That is the whole argument for a gate over prose: the documentation was correct, present, and recently read, and it did not stop the hand.
 #
-# WARNS rather than blocks: there are legitimate uses (`rg --help` spelled out), and a PreToolUse note lands BEFORE I read the output, which is the moment that matters — the danger is misreading help text as an empty result, not the command itself.
+# REWRITES a fixable multi-letter cluster (permissionDecision allow + updatedInput) and otherwise WARNS rather than blocks: there are legitimate uses (`rg --help` spelled out), and a PreToolUse note lands BEFORE I read the output, which is the moment that matters — the danger is misreading help text as an empty result, not the command itself.
 
 cmd=$(jq -r '.tool_input.command // empty')
 [ -z "$cmd" ] && exit 0

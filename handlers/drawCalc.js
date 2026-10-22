@@ -15,17 +15,17 @@ const {
     decodeState, encodeState, clampFocus, buildCalculatorPanel, buildDrawInfoPanel, buildHelpPanel,
     findLiveDoubleCPEntry, buildExportText, readBalanceFields, applySelection, setTypeCount, MAX_LINES, MAX_SAVED, shortName, savedChecksum,
     buildUpgradeModal, readUpgradeModal, buildSpinsInModal, readSpinsIn, CALC_KEYS, listSeasonDraws, freshLine, unitOf, lineName,
-    buildAddDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency, buildGoalModal, readGoal
+    buildAddDrawsModal, buildPriceDrawsModal, buildRemoveModal, readRemovePicks, buildRegionBalanceModal, calcCurrency, buildGoalModal, readGoal
 } = require('../commands/drawCalculator');
 const { pullCount, upgradeKeyOf, isArmoryKey, armorySize, isAdvancedKey, advancedBoth, advancedLater } = require('../utils/drawCost');
 const { PRESET_ACCENT, REGION_ORDER } = require('../commands/drawprices');
 const { CP_PACKAGES, CURRENCIES } = require('../utils/cpPackages');
 const basketStore = require('../utils/drawBasketStore');
+const { resolveEphemeral } = require('../utils/ephemeral');
 const { resolvePanelActor } = require('../utils/interactionContext');
 
 const OWNED_PREFIXES = ['calc~'];
 
-const { DRAW_META } = require('../commands/drawprices');
 // The draws a calculation can hold, in the untick confirm's mask bit order (the three Series Armories after the nine draws since 2026-10-18 12:16 EDT).
 const DRAW_KEY_ORDER = CALC_KEYS;
 // The calculator's one name per draw (commands/drawCalculator.js SHORT_NAME), never DRAW_META's full "... Draw" name.
@@ -65,7 +65,6 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
     const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
     const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
     const liveDoubleCPEntry = await findLiveDoubleCPEntry();
-    const isEphemeral = Boolean(interaction.message?.flags?.has?.(64));
     // Listed on every render: the Saved view needs the list and every other view shows its count on the nav's Saved button.
     const savedBaskets = await basketStore.listForUser(interaction.user.id);
     // A working copy shows which saved calculation it came from; read live, so a renamed or deleted source never shows a stale name.
@@ -138,6 +137,12 @@ async function loadOwned(interaction, state, actingUserId) {
         await renderPanel(interaction, { ...state, basketId: null, page: 0 }, null);
     }
     return basket;
+}
+
+// The region a new calculation starts in: the /settings default, else the last region viewed, else 10 CP. The same order the setup form's first pick uses.
+function defaultRegionFor(prefs) {
+    if (prefs?.defaultRegionMode && prefs.defaultRegionMode !== 'last_viewed') return prefs.defaultRegionMode;
+    return prefs?.defaultRegion || 'region_10';
 }
 
 async function route(interaction) {
@@ -366,6 +371,48 @@ async function route(interaction) {
         return true;
     }
 
+    // PRICE THESE DRAWS (2026-10-21 10:14 EDT): /draws' button opens the pop-up (buildPriceDrawsModal), a direct response like every showModal. The button carries no author, so whoever presses it prices for themselves.
+    if (interaction.isButton() && state.verb === 'drawspick') {
+        const list = await listSeasonDraws();
+        if (!list.length) {
+            try { await interaction.reply({ content: 'No draw this season has a price yet, so there is nothing to calculate.', flags: 64 }); }
+            catch (notifyError) { console.error('Failed to answer Price These Draws (interaction likely expired):', notifyError); }
+            return true;
+        }
+        const prefs = await UserPreference.findOne({ discordId: actingUserId });
+        return await interaction.showModal(buildPriceDrawsModal(list, defaultRegionFor(prefs)));
+    }
+    // Its submit starts a NEW calculation (his "yes, a new calc") as its own private message, the same way Help opens one: deferReply, never deferUpdate, because the pop-up was opened from /draws, which this must not overwrite.
+    if (interaction.isModalSubmit() && state.verb === 'drawspicksave') {
+        const picks = id => { try { return interaction.fields.getStringSelectValues(id) || []; } catch { return []; } };
+        // The pop-up's Calculation Visibility (2026-10-21 10:44 EDT); left blank, /settings' Draw Calculator visibility decides, as for /draw calculator.
+        const visPick = picks('visibility')[0];
+        const prefsForVis = await UserPreference.findOne({ discordId: actingUserId });
+        const isEphemeral = resolveEphemeral({ argPrivate: visPick ? visPick === 'ephemeral' : null, prefs: prefsForVis, prefsField: 'calculatorVisibility' });
+        await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
+        const text = id => { try { return interaction.fields.getTextInputValue(id); } catch { return null; } };
+        const list = await listSeasonDraws();
+        const ids = new Set([...picks('newd'), ...picks('retd')]);
+        // Read again rather than trusted from the pop-up, so a draw removed since it opened is left out and said so.
+        const picked = list.filter(d => ids.has(d.id));
+        const gone = ids.size - picked.length;
+        if (!picked.length) { await interaction.editReply({ content: gone ? 'The draws you picked are no longer listed, so no calculation was started.' : 'No draw was picked, so no calculation was started.' }); return true; }
+        const prefs = await UserPreference.findOne({ discordId: actingUserId });
+        let region = picks('region')[0];
+        if (!REGION_ORDER.includes(region)) region = defaultRegionFor(prefs);
+        const amount = text('amount');
+        const { fields, warning } = readBalanceFields({ amount: amount && amount.trim() ? amount : null });
+        const lines = picked.slice(0, MAX_LINES).map(d => ({ drawKey: d.drawKey, pullsDone: 0, title: d.title, ...(d.size ? { size: d.size } : {}) }));
+        const created = await basketStore.save(actingUserId, { banners: lines, region, ...(fields.balance !== undefined ? { balance: fields.balance } : {}) });
+        // Opens on Set Draw Progress (page 5) with the picks already in (his read, 2026-10-21 10:44 EDT), so the next step is entering the spins already done.
+        await renderPanel(interaction, { basketId: String(created._id), authorId: actingUserId, page: 5 }, created, gone ? 'A draw you picked is no longer listed, so it was left out.' : null);
+        if (warning) {
+            try { await interaction.followUp({ content: warning, flags: 64 }); }
+            catch (notifyError) { console.error('Failed to warn about a refused balance (interaction likely expired):', notifyError); }
+        }
+        return true;
+    }
+
     // Draw Info / Help open as their OWN ephemeral messages, own fresh 40-component budget each (spec §3) -- deferReply (never deferUpdate) starts a genuinely NEW response chain on this same interaction, so the sendV2Payload call below patches THAT message's @original, not the live panel's. Handled here, before the generic ack, because deferReply/deferUpdate are each only valid once per interaction -- this branch cannot fall through the generic defer below. Export answers privately with the result as copyable markdown (2026-10-14 18:23 EDT); a new reply, never an edit of the panel, so it is handled before the generic defer below.
     if (interaction.isButton() && state.verb === 'export') {
         try {
@@ -384,7 +431,7 @@ async function route(interaction) {
         let panel;
         if (state.verb === 'info') {
             const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
-            // Legacy: only panels posted before the Draw Info button left the nav row (15b49b09) can send `info`. Kept until the code-housekeeping session decides on deletion; see buildDrawInfoPanel's comment.
+            // Legacy: only panels posted before the Draw Info button left the nav row (15b49b09) can send `info`. Kept so those older panels' Draw Info button still answers; see buildDrawInfoPanel's comment.
             panel = buildDrawInfoPanel(basket || { banners: [], region: 'region_10' }, accentColor);
         } else {
             // Help draws its price ladder from the open calculation's region and first draw (2026-10-14 18:33 EDT), so it shows the player their own numbers.

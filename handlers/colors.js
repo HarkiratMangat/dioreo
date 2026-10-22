@@ -45,7 +45,6 @@ async function handleColorsButton(interaction) {
         const isEphemeral = (prefs.settingsVisibility || 'public').toUpperCase() !== 'PUBLIC';
 
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
-        const panelStartedAt = Date.now();
         const { getPalettePanelData } = require('../utils/colorPalette');
         const { buildColorPalettePanel } = require('../utils/colorPaletteView');
 
@@ -93,7 +92,6 @@ async function handleColorsButton(interaction) {
         const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
 
         await interaction.deferUpdate();
-        const panelStartedAt = Date.now();
         const UserPreference = require('../models/UserPreference');
         const { getPalettePanelData } = require('../utils/colorPalette');
         const { buildColorPalettePanel } = require('../utils/colorPaletteView');
@@ -136,7 +134,6 @@ async function handleColorsButton(interaction) {
         const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
 
         await interaction.deferUpdate();
-        const panelStartedAt = Date.now();
         const source = actionStr.replace('colors_page_', '');
         const UserPreference = require('../models/UserPreference');
         const { getPalettePanelData } = require('../utils/colorPalette');
@@ -182,7 +179,6 @@ async function handleColorsButton(interaction) {
         const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
 
         await interaction.deferUpdate();
-        const panelStartedAt = Date.now();
         const [source, subpageStr] = actionStr.replace('colors_subpage_', '').split('_');
         const subpage = parseInt(subpageStr, 10) || 0;
         const UserPreference = require('../models/UserPreference');
@@ -243,7 +239,6 @@ async function handleColorsButton(interaction) {
         colorsRefreshCooldowns.set(interaction.user.id, now);
 
         await interaction.deferUpdate();
-        const panelStartedAt = Date.now();
         const [source, subpageStr] = actionStr.replace('colors_refresh_', '').split('_');
         const subpage = parseInt(subpageStr, 10) || 0;
         const UserPreference = require('../models/UserPreference');

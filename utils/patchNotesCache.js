@@ -6,7 +6,7 @@
 //
 // Distinct retention model from utils/cloudinaryCache.js's draws cache (45-day age + orphan check): patch notes retention is SEASON-based, not time-based -- an image stays cached for as long as its season's patch note entry exists. Every season is reachable now (2026-10-19 00:30 EDT: the dropdown lists the 12 newest and Search Older Seasons finds the rest), so only a deleted entry's folder is pruned, regardless of how many days have passed.
 //
-// Keyed by the patch note SUBDOCUMENT'S OWN `_id`, not its title -- titles can be renamed later (see handlers/manage.js's `modal_season_titles_deadlines`, which keeps the most recent patchNotes[] entry's title synced to `currentSeasonTitle`), and keying by a mutable title would either orphan already-cached images on a rename or require a folder-rename step. `_id` never changes.
+// Keyed by the patch note SUBDOCUMENT'S OWN `_id`, not its title -- titles can be renamed later (see handlers/manage/season.js's `modal_season_titles_deadlines`, which keeps the most recent patchNotes[] entry's title synced to `currentSeasonTitle`), and keying by a mutable title would either orphan already-cached images on a rename or require a folder-rename step. `_id` never changes.
 const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
 // Same auto-config-from-env behavior as utils/cloudinaryCache.js -- the Cloudinary Node SDK reads CLOUDINARY_URL the moment it's required, no explicit cloudinary.config() call needed. This just fails loudly at boot if that var is missing instead of every upload silently erroring later.
@@ -15,6 +15,7 @@ if (!process.env.CLOUDINARY_URL) {
 }
 
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+const { archiveByMove, archiveBeforeReplace } = require('./cloudinaryArchive');
 const { withDeliveryDefaults } = require('./cloudinaryDeliveryUrl');
 
 const FOLDER = 'patch_notes';
@@ -24,7 +25,7 @@ function safeErrorMessage(err) {
     return err?.message || err?.error?.message || 'Unknown Cloudinary error';
 }
 
-// --- Patch-notes Structured Metadata (2026-07-21, Harkirat's request) ------------------------------- Structured metadata fields for patch-notes images so each cached screenshot carries which season it belongs to, its order in the carousel, and the season's release date. Created via scripts/createCloudinaryMetadataFields.js (idempotent), same as the loadout fields. Account-global fields -- a patch image just doesn't set the loadout fields and vice versa. Cloudinary-only, kept in sync from the SeasonalData patchNotes[] entry (on image (re)cache, on release-date edit, and on season rename -- see handlers/manage.js). `Patch_Id` is the patch subdoc's own immutable `_id` (stable across title renames, same reason the public_id is keyed by it); `Patch_Season` is the human-readable title.
+// --- Patch-notes Structured Metadata (2026-07-21, Harkirat's request) ------------------------------- Structured metadata fields for patch-notes images so each cached screenshot carries which season it belongs to, its order in the carousel, and the season's release date. Created via scripts/createCloudinaryMetadataFields.js (idempotent), same as the loadout fields. Account-global fields -- a patch image just doesn't set the loadout fields and vice versa. Cloudinary-only, kept in sync from the SeasonalData patchNotes[] entry (on image (re)cache, on release-date edit, and on season rename -- see handlers/manage/season.js and core/ops/season.js). `Patch_Id` is the patch subdoc's own immutable `_id` (stable across title renames, same reason the public_id is keyed by it); `Patch_Season` is the human-readable title.
 const PATCH_METADATA_FIELDS = [
     { external_id: 'Patch_Id', label: 'Patch Id', type: 'string' },
     { external_id: 'Patch_Season', label: 'Patch Season', type: 'string' },
@@ -61,7 +62,7 @@ async function setPatchImageMetadata(patchId, imageIndex, { season, releaseDate 
     }
 }
 
-// Re-syncs metadata across EVERY cached image of a patch entry -- used when the release date or the season title changes WITHOUT re-uploading the images (a /manage "date & info" edit, or a season rename). `seasonTitle` is passed already-cleaned by the caller (handlers/manage.js applies commands/patchnotes.js's cleanPatchTitle; this util deliberately stays decoupled from the command layer). Each image's own order is preserved.
+// Re-syncs metadata across EVERY cached image of a patch entry -- used when the release date or the season title changes WITHOUT re-uploading the images (a /manage "date & info" edit, or a season rename). `seasonTitle` is passed already-cleaned by the caller (core/ops/season.js applies commands/patchnotes.js's cleanPatchTitle, core/ops/patchnotes.js its displayTitle; this util deliberately stays decoupled from the command layer). Each image's own order is preserved.
 async function syncPatchEntryMetadata(patchEntry, seasonTitle) {
     if (!patchEntry?._id) return;
     const patchId = String(patchEntry._id);
@@ -72,7 +73,7 @@ async function syncPatchEntryMetadata(patchEntry, seasonTitle) {
     }
 }
 
-// public_id shape: patch_notes/{patchId}/{imageIndex} -- imageIndex is the ABSOLUTE position in the patch note's `images[]` array (0-9), not a per-modal-submission-local index, so re-submitting the same slot (URLs 1 owns 0-4, URLs 2 owns 5-9 -- see handlers/manage.js) always overwrites the same asset in place via `overwrite: true` rather than accumulating duplicates under different indices.
+// public_id shape: patch_notes/{patchId}/{imageIndex} -- imageIndex is the ABSOLUTE position in the patch note's `images[]` array (0-9), not a per-modal-submission-local index, so re-submitting the same slot (URLs 1 owns 0-4, URLs 2 owns 5-9 -- see core/ops/patchnotes.js) always overwrites the same asset in place via `overwrite: true` rather than accumulating duplicates under different indices.
 function publicIdFor(patchId, imageIndex) {
     return `${FOLDER}/${patchId}/${imageIndex}`;
 }
@@ -83,6 +84,8 @@ async function cachePatchImage(patchId, imageIndex, sourceUrl, meta = {}) {
     if (isCloudinaryWriteBlocked('upload', publicIdFor(patchId, imageIndex))) {
         return { url: sourceUrl, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
+    // The image in this slot is copied to archive/patch_notes/ before it is overwritten (Harkirat, 2026-10-21 11:39 EDT); re-submitting the slot's own stored URL archives nothing. utils/cloudinaryArchive.js.
+    await archiveBeforeReplace(publicIdFor(patchId, imageIndex), sourceUrl, 'patch_notes');
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: publicIdFor(patchId, imageIndex),
@@ -119,7 +122,7 @@ async function listCachedPatchAssets() {
 }
 
 /**
- * Deletes every cached image belonging to a season whose patch note `_id` is NOT in `keepPatchIds` -- callers pass every patchNotes[] entry's `_id`, since every season stays reachable in Discord, so only a deleted entry's folder goes. Whole-folder deletion, not age-based.
+ * Archives (moves to archive/patch_notes/, never deletes -- Harkirat, 2026-10-21 11:25 EDT) every cached image belonging to a season whose patch note `_id` is NOT in `keepPatchIds` -- callers pass every patchNotes[] entry's `_id`, since every season stays reachable in Discord, so only a deleted entry's folder goes. Whole-folder deletion, not age-based.
  */
 async function pruneOrphanedPatchFolders(keepPatchIds) {
     try {
@@ -130,19 +133,19 @@ async function pruneOrphanedPatchFolders(keepPatchIds) {
             return patchId && !keepPatchIds.has(patchId);
         });
 
-        if (toDelete.length === 0) return { deletedCount: 0, deleted: [] };
+        if (toDelete.length === 0) return { archivedCount: 0, archived: [] };
 
         const publicIds = toDelete.map(a => a.public_id);
-        // Irreversible against the live account -- and the dev bot's own boot/24h cleanup sweep would otherwise run this unprompted, deleting prod patch images with nobody having asked for anything.
-        if (isCloudinaryWriteBlocked('delete_resources', `${publicIds.length} asset(s) under ${FOLDER}/`)) {
-            return { deletedCount: 0, deleted: [] };
+        // The dev bot's own boot/24h cleanup sweep would otherwise run this unprompted against the live account.
+        if (isCloudinaryWriteBlocked('archive (move)', `${publicIds.length} asset(s) under ${FOLDER}/`)) {
+            return { archivedCount: 0, archived: [] };
         }
-        await cloudinary.api.delete_resources(publicIds, { invalidate: true });
-        return { deletedCount: publicIds.length, deleted: publicIds };
+        const moved = await archiveByMove(publicIds, 'patch_notes');
+        return { archivedCount: moved.archived.length, archived: moved.archived, failed: moved.failed };
     } catch (err) {
         const message = safeErrorMessage(err);
         console.error(`Cloudinary patch-notes prune failed: ${message}`);
-        return { deletedCount: 0, deleted: [], error: message };
+        return { archivedCount: 0, archived: [], error: message };
     }
 }
 

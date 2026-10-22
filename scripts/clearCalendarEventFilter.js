@@ -5,7 +5,8 @@ const UserPreference = require('../models/UserPreference');
 
 (async () => {
     await mongoose.connect(process.env.MONGODB_URI);
-    const res = await UserPreference.updateMany({ calendarEventFilter: { $exists: true } }, { $unset: { calendarEventFilter: 1 } });
+    // The raw collection, not the model: the field left UserPreference's schema 2026-10-21, and Mongoose drops a filter or $unset on a path its schema does not declare (the model call reported 'undefined of undefined' and changed nothing).
+    const res = await UserPreference.collection.updateMany({ calendarEventFilter: { $exists: true } }, { $unset: { calendarEventFilter: 1 } });
     console.log(`Cleared calendarEventFilter from ${res.modifiedCount} of ${res.matchedCount} matched preference doc(s).`);
     await mongoose.disconnect();
 })();

@@ -23,7 +23,7 @@
 #       and the cell becomes a lookup anyone -- Harkirat, or this hook -- can verify. You cannot
 #       write "Premise Low · Delib Med -> Opus5-XHigh" without it being visibly wrong.
 #
-# THREE MODES, chosen by reading the transcript, because a nudge that never stops is a nudge that gets tuned out -- and this one was re-injecting ~1.4KB of table on EVERY prompt for a decision made ONCE:
+# FIVE MODES, chosen by reading the transcript, because a nudge that never stops is a nudge that gets tuned out -- and this one was re-injecting ~1.4KB of table on EVERY prompt for a decision made ONCE:
 #   · no derivation yet        -> FULL grid + the required shape + the FIRST ACTION gate.
 #   · derivation valid         -> SHORT: escalation triggers + off-grid moves. The FIRST ACTION gate
 #                                 is replaced by "already given -- do NOT repeat it".

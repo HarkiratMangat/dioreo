@@ -1,5 +1,5 @@
 #!/bin/bash
-# notes-hardwrap-check.sh — PostToolUse (Edit|Write) gate.
+# notes-hardwrap-check.sh — PostToolUse (Edit|Write|Bash) gate.
 #
 # WHY THIS EXISTS. `docs/ideas/diors-notes.md` carries a rule in its own legend: do NOT hard-break prose inside an HTML comment, because MarkEdit soft-wraps and manual breaks make the rendered text jump mid-sentence. Harkirat has now corrected me on this THREE separate times (2026-07-18 when the rule was created, again in a later pass, and again 2026-07-29 18:24 EDT with specific line numbers). Prose rules that get violated three times are not rules, they are wishes — the standing strategy in memory `reference_enforcement_hooks` is that a checkable rule becomes a machine gate. This is that gate. It exists because I could not be trusted to remember.
 #

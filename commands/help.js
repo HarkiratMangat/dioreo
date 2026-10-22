@@ -1,7 +1,7 @@
 // ==========================================
 // COMMAND: PLAYER GUIDE / HELP
 // ==========================================
-// ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups (local/landingPageUI.json, local/gunsmithsUI.json), then revised again 21:31 EDT the same day from his direct review feedback. Landing page is a Section+thumbnail "hero" (mascot + tagline), two Link buttons (Website/Install), a flat command DIRECTORY grouped by category, then a category select menu. Picking a category (or using the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/ Examples breakdown per command, options split under whichever command actually has them (never merged across commands with different option sets -- `/gunsmith search` and `/dmz` share one options block since their shapes are identical (weapon/build/visibility); `/gunsmith list` gets its own, since a `scope` choice replaces weapon+build. Consolidated from `/all` + the eight per-category MP commands 2026-08-15 -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-consolidation-design.md.
+// ARCHITECTURE: Redesigned 2026-08-08 20:56 EDT from Harkirat's own JSON mockups (local/landingPageUI.json, local/gunsmithsUI.json), then revised again 21:31 EDT the same day from his direct review feedback. Landing page is a Section+thumbnail "hero" (mascot + tagline), two Link buttons (Website/Install), a flat command DIRECTORY grouped by category, then a category select menu. Picking a category (or using the `cmd:` autocomplete option) swaps to that category's own detail page: a real Usage/Options/ Examples breakdown per command, options split under whichever command actually has them (never merged across commands with different option sets -- `/gunsmith mp` and `/gunsmith dmz` have identical shapes (weapon/build/visibility) but each is its own detailCommands entry with its own options block; the `/gunsmith search` and `list` subcommands this used to document were removed 2026-10-19. Consolidated from `/all` + the eight per-category MP commands 2026-08-15 -- see docs/superpowers/specs/2026-08-15-gunsmiths-command-consolidation-design.md.
 //
 // Categories: Gunsmith (/gunsmith mp, /gunsmith dmz, /dmz) / Draws / Seasonal Info / Utilities / Preferences (which also carries `/admin` for server admins) / Bot Admin (whitelist-gated, hidden entirely from everyone else).
 //
@@ -13,7 +13,6 @@
 
 const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
-const Loadout = require('../models/Loadout');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { sendV2Payload } = require('../utils/sendV2Payload');
@@ -32,7 +31,7 @@ const COMMAND_ALIASES = {
     '/colors': ['color', 'accent', 'palette', 'avatar'],
     '/timestamp': ['time', 'clock', 'date'],
     '/gunsmith': ['loadout', 'loadouts', 'gunsmith', 'gunsmiths', 'weapon', 'weapons', 'build', 'builds', 'meta', 'category', 'all', 'ar', 'smg', 'lmg', 'sniper', 'marksman', 'shotgun', 'secondaries'],
-    '/dmz': ['dmzloadout', 'dmzloadouts'],
+    // '/dmz' aliases removed while /dmz is hidden (2026-10-21 21:05 EDT); restore ['dmzloadout', 'dmzloadouts'] with it.
     '/draws': ['draw', 'luckydraw', 'luckydraws'],
     '/draw prices': ['prices', 'price', 'cp', 'cost', 'costs'],
     '/draw calculator': ['calculator', 'calc', 'shortfall', 'optimizer', 'howmuch'],
@@ -90,8 +89,8 @@ function renderCommandBlock(command, client) {
 const CATEGORY_DEFS = [
     {
         key: 'gunsmith', label: 'Gunsmith', emojiKey: 'loadouts', dropdownDescription: 'Search MP and DMZ weapon loadouts',
-        // staticCommands stays [/gunsmith, /dmz] -- the directory/dropdown/autocomplete mention `/gunsmith` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way. ⚠️ CORRECTED 2026-10-17 23:51 EDT: the landing directory used to mention bare `/gunsmith`, and Discord renders a mention of a command that has subcommands as plain text, never a link (Harkirat: "the /gunsmith command link seems to be broken in the /help command landing"). The landing now lists detailCommands when a category has them, so it reads `/gunsmith mp` · `/gunsmith dmz` · `/dmz`, each a real link (it read `/gunsmith search` · `/gunsmith list` · `/dmz` until 2026-10-19 19:43 EDT). staticCommands keeps `/gunsmith` for `cmd:` lookup and its aliases.
-        staticCommands: [cmd('/gunsmith'), cmd('/dmz')],
+        // staticCommands is [/gunsmith] only (/dmz is hidden for now) -- the directory/dropdown/autocomplete mention `/gunsmith` as one entry (Discord resolves that base mention regardless of which subcommand someone picks), but the detail page below documents its two REAL subcommands separately. detailCommands is the finer-grained list that divergence needs -- unlike draws/seasonal/utilities, where staticCommands already matches 1:1 and no second list is needed. Neither list carries a `requires`, so there is no permission-filtering concern for this category either way. ⚠️ CORRECTED 2026-10-17 23:51 EDT: the landing directory used to mention bare `/gunsmith`, and Discord renders a mention of a command that has subcommands as plain text, never a link (Harkirat: "the /gunsmith command link seems to be broken in the /help command landing"). The landing now lists detailCommands when a category has them, so it reads `/gunsmith mp` · `/gunsmith dmz` · `/dmz`, each a real link (it read `/gunsmith search` · `/gunsmith list` · `/dmz` until 2026-10-19 19:43 EDT). staticCommands keeps `/gunsmith` for `cmd:` lookup and its aliases. /dmz left out while it is hidden (2026-10-21 21:05 EDT, commands/dmz.js's devOnly note); add cmd('/dmz') back here and its detail entry below when it returns.
+        staticCommands: [cmd('/gunsmith')],
         detailCommands: [
             cmd('/gunsmith mp', {
                 description: "Find an MP weapon's loadout, or browse a whole class, Meta or every MP build",
@@ -104,13 +103,6 @@ const CATEGORY_DEFS = [
                 description: "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                 options: [
                     { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' },
-                    { name: 'build', required: false, desc: 'Specify build number' }
-                ]
-            }),
-            cmd('/dmz', {
-                description: 'Search for DMZ specific loadouts',
-                options: [
-                    { name: 'weapon', required: true, desc: 'Select weapon (supports autocomplete & partial word matching)' },
                     { name: 'build', required: false, desc: 'Specify build number' }
                 ]
             })
@@ -141,10 +133,10 @@ const CATEGORY_DEFS = [
         staticCommands: [
             cmd('/calendar', {
                 description: "This season's event timeline — Draws, Events, and Game Modes",
-                // [view] description corrected (v3-pre-release review, finding #63) -- commands/calendar.js silenced the /settings-saved default 2026-08-15; [view] is now a one-off per-invocation choice only, never saved.
+                // [view] (renamed [filter] 2026-10-21) description corrected (v3-pre-release review, finding #63) -- commands/calendar.js silenced the /settings-saved default 2026-08-15; it is a one-off per-invocation choice only, never saved.
                 options: [
                     { name: 'page', required: false, desc: 'Jump directly to Draws/Events/Playlists & Modes' },
-                    { name: 'view', required: false, desc: 'Show all events, or only active/upcoming for this one view (not saved)' }
+                    { name: 'filter', required: false, desc: 'Full timeline, or only past, live or upcoming entries (not saved)' }
                 ]
             }),
             cmd('/patch notes', {
@@ -239,7 +231,7 @@ async function suggestHelpCommandNames(query, perms = {}) {
     return [...new Set([...direct, ...aliasMatched])].slice(0, 25);
 }
 
-// Every real command name this bot has, for /help's `cmd:` autocomplete -- static entries plus the live per-category Gunsmith commands. `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third of the three places the Server Admin category has to be filtered -- suggesting `/admin` to someone and then handing them the directory when they pick it is worse than never offering it.
+// Every real command name this bot has, for /help's `cmd:` autocomplete -- the static entries only (/gunsmith is one entry; the per-category Gunsmith commands it once added are gone). `isAdmin` keeps admin-only commands out of a non-admin's suggestions. Autocomplete is the third of the three places the Server Admin category has to be filtered -- suggesting `/admin` to someone and then handing them the directory when they pick it is worse than never offering it.
 async function getAllHelpCommandNames(perms = {}) {
     return visibleCategories(perms).flatMap(c => visibleCommands(c, perms)).map(c => c.name);
 }
@@ -265,7 +257,7 @@ function buildDrawsBody(commands, client) {
 
 function buildSeasonalBody(commands, client) {
     return commands.map(c => renderCommandBlock(c, client)).join('')
-        + `\n-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` view:\`Active/Upcoming Only\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;
+        + `\n-# **Examples**\n-# 🔸 **/calendar** page:\`Events\` filter:\`Upcoming\`\n-# 🔸 **/patch notes** season:\`Season 6 — Take Your Heart\``;
 }
 
 function buildUtilitiesBody(commands, client) {
@@ -484,7 +476,7 @@ async function buildContainer(selectedKey, accentColor, perms = {}, client) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('help')
-        .setDescription("See what Dioreo can do, and how to reach Dior with bugs or ideas")
+        .setDescription("See what Dioreo can do and how to report bugs")
         .addStringOption(option => option.setName('cmd').setDescription('Jump straight to a specific command').setAutocomplete(true))
         .addStringOption(option => option.setName('visibility').setDescription(`${VISIBILITY_DESCRIPTION} (Defaults to only you.)`).addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
@@ -518,7 +510,7 @@ module.exports = {
         }
         if (selectedKey === 'landing') selectedKey = null;
 
-        // Unlike every other command, /help has no saved preference to fall back to -- defaults to hidden (matches /manage's/`/alerts`' own-panel convention) unless explicitly made public.
+        // Unlike every other command, /help has no saved preference to fall back to -- defaults to hidden (matches /manage's own-panel convention) unless explicitly made public.
         const visibilityChoice = interaction.isChatInputCommand() ? interaction.options.getString('visibility') : null;
         const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
         if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });

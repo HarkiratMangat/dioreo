@@ -14,6 +14,7 @@ const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
 const { mentionCommand } = require('../utils/commandMentions');
+const { withCaptionEmoji } = require('../utils/seasonEmoji');
 
 // Repalette (2026-07-12, Section 5 of the batch) -- see calendar.js's matching comment for the full nav-row hue-spread reasoning. A deep forest emerald ("CP" = currency) -- chosen over a lighter jade alternative Harkirat considered so it reads as confidently "money green" at a glance rather than blending into Patch Notes' gold two slots over.
 const PRESET_ACCENT = 2067038; // CP Emerald (#1F8A5E) — 3rd nav button (Draw Prices)
@@ -333,98 +334,191 @@ const JUMP_KEYS = [...SUBPAGES.flat(), ...Object.keys(SERIES_ARMORY), ...Object.
 function jumpMeta(key) { return DRAW_META[key] || SERIES_ARMORY[key] || ADVANCED_JUMPS[key] || null; }
 // The page a draw sits on in the all view, so Back returns to where that draw lives.
 function pageOfJump(key) { if (SERIES_ARMORY[key]) return ARMORY_PAGE_INDEX; return ADVANCED_JUMPS[key] ? ADVANCED_JUMPS[key].page : Math.max(0, SUBPAGES.findIndex(keys => keys.includes(key))); }
-function focusOf(subpage) { const key = typeof subpage === 'string' && subpage.startsWith('f') ? subpage.slice(1) : null; return key && jumpMeta(key) ? key : null; }
+
+// FILTER DRAWS TO VIEW (2026-10-21 11:50 EDT, Harkirat: "instead of jump to a draw type, can we make it a \"filter draw to view\" or something? where it's a multi select dropdown, that allows you to pick the draw types you want to filter for and shows those?"). Replaces the single-pick quick jump above as the panel's dropdown; `price_jump_` still answers panels posted before. The picked set travels as `m<hex>`, a bitmask over JUMP_KEYS' order, so all 14 draw types fit in any custom_id; a set that does not fit one message pages on its own as `m<hex>p<n>`. One draw on its first page stays `f<key>`, which is what the slash command's `type:` sends.
+function filterToken(keys, page = 0) {
+    if (keys.length === 1 && !page) return `f${keys[0]}`;
+    const mask = keys.reduce((m, key) => m | (1 << JUMP_KEYS.indexOf(key)), 0);
+    return `m${mask.toString(16)}${page ? `p${page}` : ''}`;
+}
+// The picked draws (in JUMP_KEYS order) and the page, or null in the all view.
+function filterOf(subpage) {
+    if (typeof subpage !== 'string') return null;
+    if (subpage.startsWith('f')) { const key = subpage.slice(1); return jumpMeta(key) ? { keys: [key], page: 0 } : null; }
+    const m = /^m([0-9a-f]+)(?:p(\d+))?$/.exec(subpage);
+    if (!m) return null;
+    const mask = parseInt(m[1], 16);
+    const keys = JUMP_KEYS.filter((_, i) => mask & (1 << i));
+    return keys.length ? { keys, page: Number(m[2]) || 0 } : null;
+}
+// One draw's components, whatever builder it needs.
+function entryComponentsFor(regionKey, key) {
+    if (key === 'advancedWeapon') return buildAdvancedDoubleLegendaryEntry(regionKey);
+    if (key === 'advancedCharacter') return buildAdvancedDoubleLegendaryCharacterEntry(regionKey);
+    const blocks = SERIES_ARMORY[key] ? buildArmoryEntries(regionKey, [key])[0] : buildDrawEntries(regionKey, [key])[0];
+    return blocks.map(content => ({ type: 10, content }));
+}
+function joinEntries(groups, spacing) {
+    return groups.flatMap((group, i) => (i > 0 ? [{ type: 14, spacing, divider: true }, ...group] : group));
+}
+const countComponents = list => list.reduce((n, c) => n + 1 + countComponents(c.components || []) + (c.accessory ? 1 : 0), 0);
+const textLength = list => list.reduce((n, c) => n + (c.type === 10 ? c.content.length : 0) + textLength(c.components || []), 0);
+// Discord's caps on one message: 40 components, and about 4,000 characters of text across it (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED, probed 2026-10-16 01:17 EDT for the calculator). The text budget keeps some room under that.
+const MESSAGE_COMPONENT_CAP = 40;
+// THE FILTER IS A LINE AND A BUTTON, NOT A DROPDOWN (2026-10-21 13:02 EDT, Harkirat: "show me G properly then, as a section+accesory"). The multi-select drew every picked draw as a chip in its closed box, which stacked seven deep on desktop ("this kind of looks ridiculous when a lot of draws are selected"); a box with nothing marked showed no ticks ("the dropdown itself doesnt show what's picked"). Discord draws a ticked option only by listing it in the closed box too, so the ticks moved into a pop-up: the panel says what is filtered in one line, and Filter opens the full list already ticked. OwO's weapon panel does the same. His format (2026-10-21 13:38 EDT): small text, one line per kind of draw that has picks, "-# **Regular:** `Draw name`, `Draw name`" then Armory and Advanced; with no filter, "-# **Draws:** `Showing all draws`".
+function filterSummary(keys) {
+    const { SHORT_NAME } = require('./drawCalculator');
+    if (!keys.length) return '-# **Draws:** `Showing all draws`';
+    return FILTER_GROUPS
+        .map(group => ({ label: group.line, picked: group.keys.filter(k => keys.includes(k)) }))
+        .filter(g => g.picked.length)
+        .map(g => `-# **${g.label}:** ${g.picked.map(k => `\`${SHORT_NAME[k] || jumpMeta(k).name}\``).join(', ')}`)
+        .join('\n');
+}
+// The pop-up Filter opens: one dropdown per kind of draw (2026-10-21 13:14 EDT, Harkirat: "separate the filter modal to \"normal draws\", \"series armory\", and \"advanced draws\""), the picked ones ticked; leaving all three empty shows every draw again.
+const FILTER_GROUPS = [
+    { id: 'normal', label: 'Normal Draws', line: 'Regular', keys: SUBPAGES.flat() },
+    { id: 'armory', label: 'Series Armory', line: 'Armory', keys: Object.keys(SERIES_ARMORY) },
+    { id: 'advanced', label: 'Advanced Draws', line: 'Advanced', keys: Object.keys(ADVANCED_JUMPS) }
+];
+function buildFilterModal(regionKey, keys) {
+    return {
+        title: 'Filter Draws to View',
+        custom_id: `price_filtersave_${regionKey}`,
+        components: FILTER_GROUPS.map((group, i) => ({
+            type: 18,
+            label: group.label,
+            ...(i === 0 ? { description: 'Leave all three empty to show every draw' } : {}),
+            component: {
+                type: 3,
+                custom_id: group.id,
+                placeholder: `Pick ${group.label.toLowerCase()}...`,
+                min_values: 0,
+                max_values: group.keys.length,
+                required: false,
+                options: group.keys.map(key => ({ label: jumpMeta(key).name, value: key, emoji: emojis.parseEmoji(tierIcon(jumpMeta(key).tier)), default: keys.includes(key) }))
+            }
+        }))
+    };
+}
+const MESSAGE_TEXT_BUDGET = 3800;
 
 /**
  * UI BUILDER: Constructs the V2 JSON Payload Separated into its own function so handlers/drawprices.js can call it directly when users swap regions or pages without needing to re-run the entire slash command.
  */
 function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = false, subpage = 0, client) {
     const region = DRAW_DATA[regionKey] || DRAW_DATA.region_10;
-    // Clamp rather than reject an out-of-range page (matches the "build N of M" clamping convention used elsewhere, e.g. loadout pagination) -- defensive, not expected to trigger in practice since the pagination row's own disabled state already prevents going out of bounds.
-    const focus = focusOf(subpage);
-    const currentPage = focus ? pageOfJump(focus) : Math.min(Math.max(Number(subpage) || 0, 0), TOTAL_PAGES - 1);
-    // What the region buttons carry so a switch keeps the view: the page number, or `f<key>` in a jump.
-    const viewToken = focus ? `f${focus}` : String(currentPage);
-
-    // Flat, divider-separated sequence per drawPrices_ui.json — no group headers at all (the old Mythic/Legendary-Epic two-group split is gone). Split across 2 pages (see PAGE_1_KEYS/ PAGE_2_KEYS above) to stay under Discord's 40-component cap now that each entry can render as up to 3 separate Text Displays. Large divider spacing (2) between draw entries, applied to BOTH regions as of 2026-07-12 -- this used to be a region_10-only test to compare against region_30's spacing 1, but Harkirat confirmed he wants the larger spacing everywhere now that the comparison's done. Every OTHER divider in this container (title, pagination, nav row) also uses spacing 2 now -- the earlier "title divider stays spacing 1" exception was dropped the same day per Harkirat's "large spacing across the board" follow-up.
+    const filter = filterOf(subpage);
     const innerDividerSpacing = 2;
-    // The two Advanced pages (4th and 5th) and the Series Armory page (3rd) are each rendered by their own builder since neither fits the shared key/`draws: []` model; every other page goes through buildDrawEntries.
-    const entrySections = focus && SERIES_ARMORY[focus]
-        ? withInnerDividers(buildArmoryEntries(regionKey, [focus]), innerDividerSpacing)
-        : focus && !ADVANCED_JUMPS[focus]
-        ? withInnerDividers(buildDrawEntries(regionKey, [focus]), innerDividerSpacing)
-        : currentPage === ARMORY_PAGE_INDEX
-        ? withInnerDividers(buildArmoryEntries(regionKey, Object.keys(SERIES_ARMORY)), innerDividerSpacing)
-        : currentPage === ADVANCED_PAGE_INDEX
-        ? buildAdvancedDoubleLegendaryEntry(regionKey)
-        : currentPage === CHARACTER_ADVANCED_PAGE_INDEX
-        ? buildAdvancedDoubleLegendaryCharacterEntry(regionKey)
-        : withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
 
-    // Prev/Next between the 2 entry pages, same region -- shared pagination row helper (see utils/paginationRow.js), same style as /calendar and /draws' sub-page navigation. Placed directly under the entries themselves (own divider on both sides) rather than next to the region-switch footer/button below -- sitting right next to that footer's "Switch between viewing 10 CP or 30 CP region prices" text read as if the page arrows were ALSO part of switching region, which they aren't (Harkirat's explicit fix, 2026-07-12). In a jump the pager is replaced by Show All Draws, to the all-view page that draw sits on. Not "Back" (it read as a page back), but the arrow stays (Harkirat 2026-10-17 22:47 EDT: "nah keep the back arrow"; 2026-10-17 22:14 EDT, Harkirat: "It kind of feels like back as in a page").
-    const paginationRow = focus ? { type: 1, components: [{ type: 2, style: 2, label: 'Show All Draws', emoji: emojis.parseEmoji(emojis.left), custom_id: `price_subpage_${regionKey}_${currentPage}` }] } : buildPaginationRow({
-        totalChunks: TOTAL_PAGES,
-        currentPage,
-        // Looping pager: the helper wraps last↔first and builds the id from the wrapped page.
-        makeCustomId: (p) => `price_subpage_${regionKey}_${p}`,
-        indicatorCustomId: 'price_subpage_indicator'
-    });
+    // Prev/Next between the entry pages, same region -- shared pagination row helper (see utils/paginationRow.js), same style as /calendar and /draws' sub-page navigation. Placed directly under the entries themselves (own divider on both sides) rather than next to the region-switch footer/button below -- sitting right next to that footer's "Switch between viewing 10 CP or 30 CP region prices" text read as if the page arrows were ALSO part of switching region, which they aren't (Harkirat's explicit fix, 2026-07-12). In a filtered view the pager pages the picked draws, and only shows when they take more than one page; Show All Draws lives with the filter line (assemble, below).
+    function filteredView(page, pageCount) {
+        return buildPaginationRow({ totalChunks: pageCount, currentPage: page, makeCustomId: (p) => `price_subpage_${regionKey}_${filterToken(filter.keys, p)}`, indicatorCustomId: 'price_subpage_indicator' });
+    }
 
-    // BUG FIX (found live, 2026-07-13): the global nav row used to be nested INSIDE the container, sitting BEFORE the divider/hint line/region button rather than after them -- crammed directly under the pagination arrows with no separation, and structurally inconsistent with every other seasonal command (/calendar, /draws), which both pass their nav row as a separate top-level sibling into `withShareButton([containerPayload, globalNavigationRow], isEphemeral)` rather than nesting it. Fixed per Harkirat's exact spec: the divider/hint line/region button all STAY inside the container -- only the nav row itself moves OUTSIDE, as its own sibling below the container, matching calendar/draws. "region button is the container's LAST item" is true again as of 2026-08-26 23:05 EDT -- the in-container "Cost Calculator" row (which had briefly displaced it) is gone; the cross-link now lives entirely in the nav row below, via `overrides`. Lazy-required (function-scoped, not top-level) to avoid a circular require: drawCalculator.js already requires THIS file's exports at module load.
-    //
-    // Swaps the disabled-and-useless "Draw Prices" nav slot for an active "Draw Calculator" link (2026-08-26 23:05 EDT, Harkirat's explicit call: "instead of changing the 'draw prices' button to be in disabled state, instead change it to show 'Draw Calculator'"). Every other command's nav row still disables its own slot as usual -- this is the one place `overrides` is used, because /draw prices and /draw calculator are siblings under the same `draw` group and the disabled state was a dead end with no way back to the calculator.
-    //
-    // ⚠️ UPDATED for the 2026-08-27 saved-basket redesign -- there is no `region` field on the calculator's own state any more (it lives on the basket document, not the customId), so this can no longer carry a target region the way the single-draw panel's cross-link did. It lands on the calculator's plain LANDING state instead (verb 'page', no basketId, no author lock -- landing needs none) via encodeState/defaultState, which is still the exact shape drawCalculator.js's own handler already routes -- zero new handler code.
-    const globalNavigationRow = buildGlobalNavRow(null, {
-        nav_prices: {
-            // NO emoji (2026-08-27, Harkirat): utils/globalNav.js's NAV_ITEMS carries none on any slot, and one decorated button in an otherwise bare five-button row reads as a mistake rather than as emphasis.
-            label: 'Draw Calculator',
-            custom_id: require('./drawCalculator').encodeState('page', require('./drawCalculator').defaultState())
+    let currentPage, entrySections, controlRow, viewToken;
+    if (filter) {
+        // Pack the picked draws into pages that each fit one message, in the dropdown's order. A draw too big for a page with others still gets a page of its own.
+        const groups = filter.keys.map(key => ({ key, components: entryComponentsFor(regionKey, key) }));
+        const pages = [];
+        for (const group of groups) {
+            const last = pages[pages.length - 1];
+            const trial = last ? [...last, group] : null;
+            const fits = trial && (() => {
+                // Measured as the worst case: with the Show Everyone row an ephemeral copy carries, and a full pager.
+                const message = withShareButton(assemble(joinEntries(trial.map(g => g.components), innerDividerSpacing), filteredView(0, 3), filter.keys, 'm0p0'), true);
+                return countComponents(message) <= MESSAGE_COMPONENT_CAP && textLength(message) <= MESSAGE_TEXT_BUDGET;
+            })();
+            if (fits) pages[pages.length - 1] = trial; else pages.push([group]);
         }
-    });
+        currentPage = Math.min(filter.page, pages.length - 1);
+        entrySections = joinEntries(pages[currentPage].map(g => g.components), innerDividerSpacing);
+        controlRow = filteredView(currentPage, pages.length);
+        viewToken = filterToken(filter.keys, currentPage);
+    } else {
+        // Clamp rather than reject an out-of-range page (matches the "build N of M" clamping convention used elsewhere, e.g. loadout pagination) -- defensive, not expected to trigger in practice since the pagination row's own disabled state already prevents going out of bounds.
+        currentPage = Math.min(Math.max(Number(subpage) || 0, 0), TOTAL_PAGES - 1);
+        // Flat, divider-separated sequence per drawPrices_ui.json — no group headers at all. Split across pages to stay under Discord's 40-component cap now that each entry can render as up to 3 separate Text Displays. Large divider spacing (2) between draw entries everywhere (2026-07-12, Harkirat's "large spacing across the board"). The two Advanced pages (4th and 5th) and the Series Armory page (3rd) are each rendered by their own builder since neither fits the shared key/`draws: []` model; every other page goes through buildDrawEntries.
+        entrySections = currentPage === ARMORY_PAGE_INDEX
+            ? withInnerDividers(buildArmoryEntries(regionKey, Object.keys(SERIES_ARMORY)), innerDividerSpacing)
+            : currentPage === ADVANCED_PAGE_INDEX
+            ? buildAdvancedDoubleLegendaryEntry(regionKey)
+            : currentPage === CHARACTER_ADVANCED_PAGE_INDEX
+            ? buildAdvancedDoubleLegendaryCharacterEntry(regionKey)
+            : withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
+        controlRow = buildPaginationRow({
+            totalChunks: TOTAL_PAGES,
+            currentPage,
+            // Looping pager: the helper wraps last↔first and builds the id from the wrapped page.
+            makeCustomId: (p) => `price_subpage_${regionKey}_${p}`,
+            indicatorCustomId: 'price_subpage_indicator'
+        });
+        // What the region buttons carry so a switch keeps the view: the page number, or the filter.
+        viewToken = String(currentPage);
+    }
+    return withShareButton(assemble(entrySections, controlRow, filter ? filter.keys : [], viewToken), isEphemeral);
 
-    // All dividers now spacing 2 (2026-07-12, "large spacing across the board" -- overrides the earlier "title divider stays spacing 1" exception from the same day's prior pass).
-    const containerPayload = {
-        type: 17, // Section Container
-        accent_color: accentColor,
-        components: [
-            // Two-line title (region label on top, command header below) — shared pattern. See utils/titleBlock.js. headingLevel 2 (`## `) and boldCaption (extra **bold** wrap on the region caption) -- both scoped to this command only per Harkirat's request (2026-07-12); see utils/titleBlock.js's buildTitleBlock.
-            buildTitleBlock(region.label, emojis.drawPrices, 'Breakdown of Draw Prices', 2, true),
-            { type: 14, spacing: 2, divider: true },
-            ...entrySections,
-            // NO divider between the last entry and the pagination row (Harkirat's explicit, repeated correction) -- pagination sits directly under the entries with no separator. A small space above the pager, no line (2026-10-18 15:12 EDT, Harkirat: "add a divider:false small spacing ... anywhere else that pagination buttons appear"). This replaces the old "nothing between the last entry and the pager" rule: a space, still no line.
-            ...(paginationRow ? [{ type: 14, spacing: 1, divider: false }, paginationRow] : []),
-            { type: 14, spacing: 2, divider: true },
-            // The quick jump sits above the region hint line, as he asked; in a jump it shows which draw is open.
-            {
-                type: 1,
-                components: [{
-                    type: 3,
-                    custom_id: `price_jump_${regionKey}`,
-                    placeholder: 'Jump to a draw type',
-                    options: JUMP_KEYS.map(key => ({ label: jumpMeta(key).name, value: key, emoji: emojis.parseEmoji(tierIcon(jumpMeta(key).tier)), default: key === focus }))
-                }]
-            },
-            // One-line footer (was two `-#` lines) per example_reformat.json. Updated 2026-08-07 for the 3rd region.
-            { type: 10, content: `-# Switch between viewing 10 CP, 20 CP, or 30 CP region prices. (Tip: check out ${mentionCommand(client, '/settings')})` },
-            {
-                type: 1,
-                // 3-way region switcher (replaced the old single "switch to the other region" toggle button 2026-08-07, now that a 3rd region exists -- a binary toggle has no meaning once there are 3 options). Always renders all 3 region buttons, in REGION_ORDER, each `custom_id` encoding the region it JUMPS TO plus the current subpage (same encoding scheme the old toggle button used) so handlers/drawprices.js's handler needs no changes beyond recognizing a 3rd prefix. Follows the bot's own established multi-option button-row convention (see `.claude/rules/rendering-and-ui.md`'s Components V2 notes and buildGlobalNavRow): the CURRENT region's button is style 3 (Success/green) and disabled to show it as the active selection (green since 2026-10-14 00:16 EDT, disabled again since 2026-10-14 13:13 EDT; disabled blue before that, red before 2026-08-07 13:09 EDT), the other two are enabled + style 2 (Secondary/gray). Labels shortened to "N CP" (rather than "View N CP Region Prices" x3) since three full labels side by side in one row would be visually cramped. Each button carries its OWN region-specific icon (2026-08-07 15:45 EDT, `region10Cp`/`region20Cp`/`region30Cp` in emojiMap.js) instead of the one shared `regions` icon all three used to carry -- `REGION_EMOJI_KEY` below is the single place mapping a region key to its emojiMap.js key.
-                components: REGION_ORDER.map(key => ({
-                    type: 2,
-                    // The CURRENT region is green and disabled (2026-10-14 13:13 EDT, Harkirat: "when the cp region button is selected, make it green-disabled"). Green says which is active (2026-10-14 00:16 EDT, "so it implies active/selected"); disabled says there is nothing to press, since a click only re-rendered the same page. Same as the calculator's region row.
-                    style: key === regionKey ? 3 : 2,
-                    disabled: key === regionKey,
-                    custom_id: `price_region_${key.split('_')[1]}_${viewToken}`,
-                    label: `${key.split('_')[1]} CP`,
-                    emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
-                }))
+    // The whole message around a page's entries. Also used above to measure whether a filtered page fits.
+    function assemble(entries, pagerRow, pickedKeys, token) {
+        // BUG FIX (found live, 2026-07-13): the global nav row used to be nested INSIDE the container, sitting BEFORE the divider/hint line/region button rather than after them -- crammed directly under the pagination arrows with no separation, and structurally inconsistent with every other seasonal command (/calendar, /draws), which both pass their nav row as a separate top-level sibling into `withShareButton([containerPayload, globalNavigationRow], isEphemeral)` rather than nesting it. Fixed per Harkirat's exact spec: the divider/hint line/region button all STAY inside the container -- only the nav row itself moves OUTSIDE, as its own sibling below the container, matching calendar/draws. Lazy-required (function-scoped, not top-level) to avoid a circular require: drawCalculator.js already requires THIS file's exports at module load.
+        //
+        // Swaps the disabled-and-useless "Draw Prices" nav slot for an active "Draw Calculator" link (2026-08-26 23:05 EDT, Harkirat's explicit call: "instead of changing the 'draw prices' button to be in disabled state, instead change it to show 'Draw Calculator'"). Every other command's nav row still disables its own slot as usual -- this is the one place `overrides` is used, because /draw prices and /draw calculator are siblings under the same `draw` group and the disabled state was a dead end with no way back to the calculator.
+        //
+        // ⚠️ UPDATED for the 2026-08-27 saved-basket redesign -- there is no `region` field on the calculator's own state any more (it lives on the basket document, not the customId), so this can no longer carry a target region the way the single-draw panel's cross-link did. It lands on the calculator's plain LANDING state instead (verb 'page', no basketId, no author lock -- landing needs none) via encodeState/defaultState, which is still the exact shape drawCalculator.js's own handler already routes -- zero new handler code.
+        const globalNavigationRow = buildGlobalNavRow(null, {
+            nav_prices: {
+                // NO emoji (2026-08-27, Harkirat): utils/globalNav.js's NAV_ITEMS carries none on any slot, and one decorated button in an otherwise bare five-button row reads as a mistake rather than as emphasis.
+                label: 'Draw Calculator',
+                // Blue on this page (2026-10-21 17:13 EDT, Harkirat: "make the \"draw calculator\" button blue when on the draw prices page"), the way /calendar's Full Calendar is.
+                style: 1,
+                custom_id: require('./drawCalculator').encodeState('page', require('./drawCalculator').defaultState())
             }
-        ]
-    };
+        });
 
-    // Nav row lives OUTSIDE the container, as a separate top-level sibling -- matches /calendar and /draws' own convention (see calendar.js/draws.js), not nested inside like every other element in this command.
-    return withShareButton([containerPayload, globalNavigationRow], isEphemeral);
+        // All dividers now spacing 2 (2026-07-12, "large spacing across the board" -- overrides the earlier "title divider stays spacing 1" exception from the same day's prior pass).
+        const containerPayload = {
+            type: 17, // Section Container
+            accent_color: accentColor,
+            components: [
+                // Two-line title (region label on top, command header below) — shared pattern. See utils/titleBlock.js. headingLevel 2 (`## `) and boldCaption (extra **bold** wrap on the region caption) -- both scoped to this command only per Harkirat's request (2026-07-12); see utils/titleBlock.js's buildTitleBlock. The region's own emoji sits in front of the caption, outside the bold-italic lettering (2026-10-21 11:50 EDT, Harkirat: "put the respective region emoji infront of the subtitle"), the same icon its region button carries.
+                withCaptionEmoji(buildTitleBlock(region.label, emojis.drawPrices, 'Breakdown of Draw Prices', 2, true), emojis[REGION_EMOJI_KEY[regionKey] || REGION_EMOJI_KEY.region_10]),
+                { type: 14, spacing: 2, divider: true },
+                ...entries,
+                // NO divider between the last entry and the pagination row (Harkirat's explicit, repeated correction) -- pagination sits directly under the entries with no separator. A small space above the pager, no line (2026-10-18 15:12 EDT, Harkirat: "add a divider:false small spacing ... anywhere else that pagination buttons appear"). This replaces the old "nothing between the last entry and the pager" rule: a space, still no line.
+                ...(pagerRow ? [{ type: 14, spacing: 1, divider: false }, pagerRow] : []),
+                { type: 14, spacing: 2, divider: true },
+                // The filter sits above the region hint line, where the quick jump sat: one line naming what is filtered, and Filter, which opens the pop-up (filterSummary, buildFilterModal). Once a filter is set the line stands alone and a row holds Show All Draws (his Return icon, to the all-view page the first picked draw sits on) and Filter Again (2026-10-21 13:14 EDT, Harkirat: "once a filter is set, let's swap that section to just text + an action row").
+                ...(pickedKeys.length ? [
+                    { type: 10, content: filterSummary(pickedKeys) },
+                    { type: 1, components: [
+                        { type: 2, style: 2, label: 'Show All Draws', emoji: emojis.parseEmoji(emojis.returnArrow), custom_id: `price_subpage_${regionKey}_${pageOfJump(pickedKeys[0])}` },
+                        { type: 2, style: 2, label: 'Filter Again', emoji: emojis.parseEmoji(emojis.filter), custom_id: `price_filteropen_${regionKey}_${token}` }
+                    ] }
+                ] : [{
+                    type: 9,
+                    components: [{ type: 10, content: filterSummary(pickedKeys) }],
+                    accessory: { type: 2, style: 2, label: 'Filter', custom_id: `price_filteropen_${regionKey}_${token}`, emoji: emojis.parseEmoji(emojis.filter) }
+                }]),
+                // One-line footer (was two `-#` lines) per example_reformat.json. Updated 2026-08-07 for the 3rd region.
+                { type: 10, content: `-# Switch **CP regions**. (Tip: check out ${mentionCommand(client, '/settings')})` }, // His wording, 2026-10-21 17:13 EDT
+                {
+                    type: 1,
+                    // 3-way region switcher (replaced the old single "switch to the other region" toggle button 2026-08-07, now that a 3rd region exists). Always renders all 3 region buttons, in REGION_ORDER, each `custom_id` encoding the region it JUMPS TO plus the current view (a page number or the filter), so a switch keeps what is open. The CURRENT region is green and disabled (2026-10-14 13:13 EDT, Harkirat: "when the cp region button is selected, make it green-disabled"). Each button carries its own region icon (`REGION_EMOJI_KEY`, 2026-08-07 15:46 EDT).
+                    components: REGION_ORDER.map(key => ({
+                        type: 2,
+                        style: key === regionKey ? 3 : 2,
+                        disabled: key === regionKey,
+                        custom_id: `price_region_${key.split('_')[1]}_${token}`,
+                        label: `${key.split('_')[1]} CP`,
+                        emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
+                    }))
+                }
+            ]
+        };
+
+        // Nav row lives OUTSIDE the container, as a separate top-level sibling -- matches /calendar and /draws' own convention (see calendar.js/draws.js), not nested inside like every other element in this command.
+        return [containerPayload, globalNavigationRow];
+    }
 }
 
 // /draw calculator's shortcut options, UNWIRED 2026-10-17 23:38 EDT and kept so they can come back (see the calculator subcommand below). Every option is optional and every one maps onto a control the panel also carries, so the command line and the panel are two doors into the same state rather than two features. Choices are DERIVED from DRAW_META/REGION_ORDER rather than transcribed -- a tenth draw or a fourth region appears here on its own, which is the same rule DRAW_DATA's header sets for every other number in this file.
@@ -439,7 +533,7 @@ function addCalculatorShortcutOptions(sub) {
 module.exports = {
     // Exported so utils/drawCost.js can do remainder math over the same arrays rather than keeping a second copy -- a second copy is exactly the drift DRAW_DATA's own header comment exists to prevent. PRESET_ACCENT is exported so commands/drawCalculator.js inherits the same CP Emerald accent (design decision 1: the calculator "sits beside the pricing data it reads"). buildDrawEntries/UPGRADE_LABEL/formatCP exported 2026-08-26 17:25 EDT so the calculator's own per-draw summary block can reuse THIS command's exact rendering -- Harkirat's own mockup for the redesign was built by pasting a real /draw prices entry in verbatim, so the two must never drift apart into two similar-looking but independently-maintained copies.
     DRAW_DATA, DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT,
-    buildDrawEntries, SERIES_ARMORY, ARMORY_SPIN_CP, JUMP_KEYS, jumpMeta, UPGRADE_LABEL, upgradeEmoji, formatCP, MYTHIC_UPGRADE, upgradeFullAmount,
+    buildDrawEntries, SERIES_ARMORY, ARMORY_SPIN_CP, JUMP_KEYS, jumpMeta, filterToken, filterOf, buildFilterModal, FILTER_GROUPS, UPGRADE_LABEL, upgradeEmoji, formatCP, MYTHIC_UPGRADE, upgradeFullAmount,
     // The two Advanced pages' per-pull arrays, for /draw calculator (2026-10-18 21:51 EDT): priced from these same numbers, never a copy.
     ADVANCED_DOUBLE_LEGENDARY, ADVANCED_DOUBLE_LEGENDARY_CHARACTER,
 
@@ -456,7 +550,7 @@ module.exports = {
             .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .addSubcommand(sub => sub
             .setName('calculator')
-            .setDescription('Work out the CP for your draws and Mythic upgrades, and the bundles to buy')
+            .setDescription('Calculate costs & CP of draws and upgrades')
             // UNWIRED 2026-10-17 23:38 EDT (Harkirat: "can we also remove the options from the draw calc slash command, except for the visibility option? i honestly dont think they're that useful at the moment. dont delete the code, but unwire it and document it"). `draw`, `pulls`, `balance` and `region` live on in addCalculatorShortcutOptions below, applied nowhere; to wire them back, call it on this subcommand before `visibility`. drawCalculator.js still reads them and gets null, which slashShortcut treats as "no shortcut". Filed in docs/db-deferred-list.md (Someday). Which screen it opens on (2026-10-17 23:51 EDT, Harkirat: "do add view saved into the /draw calculator slash command. im thinking as an optional: page:{Start a Caclculation/View Saved/Help}"). Left blank, it reopens the last calculation as before.
             .addStringOption(option => option.setName('page').setDescription('Open on a specific screen').addChoices({ name: 'Start a Calculation', value: 'start' }, { name: 'View Saved', value: 'saved' }, { name: 'Help', value: 'help' }))
             .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))

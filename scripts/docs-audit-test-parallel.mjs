@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * docs-audit-test-parallel.mjs — run docs-audit.test.mjs's 71 checks across N shards, concurrently, and aggregate the result.
+ * docs-audit-test-parallel.mjs — run docs-audit.test.mjs's self-test cases across N shards, concurrently, and aggregate the result.
  *
  * WHY THIS EXISTS (2026-08-21 11:20 EDT, hardened 2026-08-21 11:55 EDT after code review)
  * ------------------------------------------------------------------------------------------
