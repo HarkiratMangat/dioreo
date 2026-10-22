@@ -1,7 +1,7 @@
 // ==========================================
 // /manage — SHARED HELPERS & CROSS-PAGE STORES
 // ==========================================
-// Everything the /manage panel's pages have in common: the undo store, the pending-confirmation token maps, the cross-group search/pick resolvers, and the `prompt()` render helper. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) — see handlers/manage/index.js for the thin dispatcher that reads from here, and the per-page modules for everything that ISN'T shared.
+// Everything the /manage panel's pages have in common: the undo store, the pending-confirmation token maps, the cross-group search/pick resolvers, and the `prompt()` render helper. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md) — see handlers/manage/index.js for the thin dispatcher that reads from here, and the per-page modules for everything that ISN'T shared.
 //
 // ⚠️ THE STORES BELOW ARE MODULE-LEVEL AND MANAGE-PRIVATE, same as before the split. They rely on Node caching this module so exactly one instance exists -- require it by exactly one path (`./shared` from inside handlers/manage/, never a relative path that resolves differently).
 
@@ -72,7 +72,7 @@ function thumbnailNote(thumbResult) {
 }
 
 // Moved to utils/bulkMerge.js (2026-08-20 23:42 EDT, portal core Task 6) so core/ops/draws.js can share the SAME real merge semantics instead of a divergent copy -- re-exported here so no existing call site in this directory needs to change. See that file's header for the story. (upsertDrawsByTitle/upsertEventsByTitle -- dead aliases nothing called by those names -- removed 2026-08-21.)
-const { resolveThumbnailsForDraws, upsertByTitle } = require('../../utils/bulkMerge');
+const { resolveThumbnailsForDraws } = require('../../utils/bulkMerge');
 
 // Subtractive counterpart to upsertByTitle -- fuzzy-matches each pasted title against `array`, removing the first match and reporting anything not found. (v3-pre-release review, finding #40 -- was copy-pasted twice, once as a local closure in draws.js and once inline in calendar.js.)
 function removeByTitle(array, titlesRaw) {

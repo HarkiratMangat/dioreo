@@ -6,7 +6,7 @@
 //
 // WRITES are the problem, and folder-scoping cannot fix the worst of them:
 //   - `gun-builds` loadout uploads use a BARE public_id (the imageKey), with the folder carried only in `asset_folder` -- a decoupled dashboard label, NOT part of the asset's identity. So a dev upload of an existing imageKey OVERWRITES the live image. A `-dev` folder cannot prevent that; only not-writing can.
-//   - `delete_resources` (both prune sweeps) and `update_metadata` against prod public_ids are likewise irreversible against live assets.
+//   - `uploader.rename` (the archive move both prune sweeps now use) and `update_metadata` against prod public_ids are likewise irreversible against live assets.
 //
 // Hence fail CLOSED: in development every Cloudinary write is refused and logged loudly, UNLESS the caller opts in via `devNamespaceSafe: true` -- meaning it has already prefixed its OWN public_id/ folder into an isolated dev-only namespace (verified case by case, not something this guard can infer from a string) so a dev write genuinely cannot collide with or overwrite a live prod asset. This is the "properly designed parallel namespace" the fix docs/db-deferred-list.md filed for this guard (2026-07-27 18:40 EDT) called for, added 2026-08-10 11:30 EDT for utils/nameplateWebpCache.js / utils/decorationWebpCache.js specifically -- NOT a blanket loosening. Every other existing caller (loadout images, patch notes, calendar banners) passes no third argument and stays unconditionally blocked in dev, unchanged. The deferred item's own caution about `gun-builds` (bare imageKey as public_id, no folder baked into asset identity, needs buildImageUrl() to agree too) is why this opt-in was NOT extended there -- do that separately, deliberately, when it's actually needed.
 //

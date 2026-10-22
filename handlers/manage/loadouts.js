@@ -1,7 +1,7 @@
 // ==========================================
 // /manage — LOADOUTS PAGES (MP + DMZ)
 // ==========================================
-// Every DB-mutating operation the Loadouts pages reach: single add/edit, bulk add/replace/delete, and the two export flows. MP and DMZ share this one file (same as manageActions.js's loadoutsActions() factory) since they're structurally identical pages differing only in `mode`, carried on the custom_id suffix (`add_loadout_MP`, `modal_loadouts_bulk_add_DMZ`, etc.). Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js.
+// Every DB-mutating operation the Loadouts pages reach: single add/edit, bulk add/replace/delete, and the two export flows. MP and DMZ share this one file (same as manageActions.js's loadoutsActions() factory) since they're structurally identical pages differing only in `mode`, carried on the custom_id suffix (`add_loadout_MP`, `modal_loadouts_bulk_add_DMZ`, etc.). Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js.
 //
 // ⚠️ NO PURGE HERE, DELIBERATELY -- Loadouts has no Purge button at all (see .claude/rules/manage-panel.md). Only draws.js/calendar.js/patchnotes.js export a purge().
 //

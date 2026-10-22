@@ -4,7 +4,7 @@ const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read wh
 // ==========================================
 // One table describing every action reachable from a /manage page button. Added 2026-08-14 as stage 1 of the decomposition designed in docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md.
 //
-// ⚠️ WHY THIS EXISTS — the action list used to be implied in TWO independent places that had to be kept in step by hand: the `buttons: [{ id, label, style }]` arrays inside commands/manage.js's buildPagesTable(), and a 220-line if/else sub-dispatcher inside handlers/manage.js's `mng_act_` branch. Nothing checked that they matched, so a button could render with no handler behind it (a dead button, indistinguishable from a bug in the handler) or a handler could outlive the button that reached it. Adding the upcoming `action:` slash option on top of that would have made a THIRD copy. Both of those call sites now read from here instead, and scripts/manageActions.test.js asserts conservation in both directions.
+// ⚠️ WHY THIS EXISTS — the action list used to be implied in TWO independent places that had to be kept in step by hand: the `buttons: [{ id, label, style }]` arrays inside commands/manage.js's buildPagesTable(), and a 220-line if/else sub-dispatcher inside handlers/manage/index.js's `mng_act_` branch. Nothing checked that they matched, so a button could render with no handler behind it (a dead button, indistinguishable from a bug in the handler) or a handler could outlive the button that reached it. Adding the upcoming `action:` slash option on top of that would have made a THIRD copy. Both of those call sites now read from here instead, and scripts/manageActions.test.js asserts conservation in both directions.
 //
 // ⚠️ `kind` IS LOAD-BEARING, NOT DECORATION. Discord requires showModal() to be an interaction's FIRST response — it cannot follow deferReply() (commands/manage.js's execute() already special-cases season_titlesdeadlines for exactly this). Declaring the response mode per action means a caller can decide whether it may defer BEFORE it does, instead of every new action rediscovering the rule the hard way:
 //     'modal'   -> run() calls showModal(). Caller must NOT have deferred or replied.
@@ -15,14 +15,14 @@ const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read wh
 //
 // ⚠️ `slash` IS WRITTEN OUT PER ENTRY ON PURPOSE, never derived from `kind`. It marks whether the action may be opened directly by the (stage 3) `action:` slash option, and the standing rule is that destructive actions stay panel-only so reaching one always costs a deliberate navigation. That rule happens to be "every kind:'confirm'" today — but deriving the flag from the kind would make the test that enforces it vacuously true, which is worse than no test at all. Two fields that must agree, with a check that they do, is the whole point.
 //
-// NOT IN THIS TABLE, deliberately: the two Season pseudo-pages ('season_titlesdeadlines', 'season_wipe'). They are flat entries on the page-nav dropdown, not page buttons — they never carry an `mng_act_` custom_id and never pass through this resolver. Same for the per-row buttons on Manage Admins and Announcement (`mng_admin_*`, `mng_announce_*`), whose ids embed a Mongo _id that parseMngId's group/action split cannot represent.
+// NOT IN THIS TABLE, deliberately: the two Season pseudo-pages ('season_titlesdeadlines', 'season_wipe'). They are flat entries on the page-nav dropdown, not page buttons — they never carry an `mng_act_` custom_id and never pass through this resolver. Same for the per-row buttons on Announcement (`mng_announce_*`) and on the admin list that moved to /bot access (`bot_admin_*`, formerly `mng_admin_*`), whose ids embed a Mongo _id that parseMngId's group/action split cannot represent.
 
 // Loadouts MP and DMZ are the same page with a different collection slice. Derived from the page key rather than stored per entry, so the two pages cannot drift apart.
 function loadoutModeFor(page) {
     return page === 'loadouts_mp' ? 'MP' : page === 'loadouts_dmz' ? 'DMZ' : null;
 }
 
-// ── Shared run() implementations ─────────────────────────────────────────── Edit/Delete can't autocomplete the way a slash option could, so they collect a search query through a one-field modal first; handlers/manage.js's `mng_search_` submit handler fuzzy-matches it. This is why 'delete' is safely slash-exposed: the button opens a SEARCH box, it deletes nothing on its own.
+// ── Shared run() implementations ─────────────────────────────────────────── Edit/Delete can't autocomplete the way a slash option could, so they collect a search query through a one-field modal first; handlers/manage/shared.js's `mng_search_` submit handler (handleSearchSubmit) fuzzy-matches it. This is why 'delete' is safely slash-exposed: the button opens a SEARCH box, it deletes nothing on its own.
 const openSearchModal = (searchAction) => async ({ interaction, page, manageCommand }) =>
     await interaction.showModal(manageCommand.buildSearchModal(page, searchAction));
 

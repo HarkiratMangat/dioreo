@@ -9,7 +9,6 @@
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
-const { buildPaginationRow } = require('../utils/paginationRow');
 const { getAlertSummary, getRecentAlerts, formatUptime } = require('../utils/alertStore');
 const { getChangeSummary, getRecentChanges } = require('../utils/changeStore');
 const { displayTitle } = require('../utils/alertExplain');
@@ -155,7 +154,6 @@ async function buildHealthBody(client) {
     const s = stats.summary;
     const line = (t) => `🟢 ${t.info} · 🟡 ${t.caution} · 🟠 ${t.warn} · 🔴 ${t.error}`;
     const lastErr = s.lastError ? `\`${s.lastError.alertId}\` · <t:${unix(s.lastError.createdAt)}:R>` : '_none recorded_ 🟢';
-    const lastBootTs = stats.lastBoot ? unix(stats.lastBoot.createdAt) : null;
     const tiers = errorTiers(s, stats.cloud);
     const tierLine = tiers.logged == null
         ? `**Errors, last 24h:** ${tiers.announced} announced to Discord`
@@ -358,8 +356,8 @@ const RECORD_VIEWS = {
             // Two fields, lean, on an admin-only panel -- an `isOngoing` entry ends when the Battle Pass does, and that lives on the season doc rather than the entry.
             const doc = await SeasonalData.findOne({ docType: 'global' }).select('bpEnd bpEndTBD').lean();
             return isEventEnded(e, doc || {}, Date.now())
-                ? `⚫ **This one has already ended.** It is hidden from \`/calendar\`'s Active/Upcoming view, but still listed in the default All view.`
-                : `🟢 **Players can see this now.** It shows on \`/calendar\` in both the default view and Active/Upcoming.`;
+                ? `⚫ **This one has already ended.** It is hidden from \`/calendar\`'s Live Right Now and Upcoming filters, but still listed in the Full Timeline and Past/Ended.`
+                : `🟢 **Players can see this now.** It shows on \`/calendar\` in the Full Timeline and in the Live Right Now or Upcoming filter.`;
         },
     },
     loadouts_mp: {

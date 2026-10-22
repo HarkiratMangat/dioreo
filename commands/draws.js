@@ -177,7 +177,7 @@ module.exports = {
     buildContainer,
     // Exported 2026-08-23 10:56 EDT so /bot analytics' change-detail panel can render a draw with the SAME code players see, instead of hand-describing its fields. Copying the body instead would let the two drift, and a panel that quietly stops matching the real card is worse than one that never tried.
     buildDrawSections,
-    // Exported for scripts/drawsTextBudget.test.js.
+    // Exported for scripts/sweepFixes.test.js.
     paginateDraws,
     DRAW_TEXT_BUDGET,
 

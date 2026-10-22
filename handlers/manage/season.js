@@ -1,7 +1,7 @@
 // ==========================================
 // /manage — SEASON (pseudo-page) + SEASON DRAFT PAGE
 // ==========================================
-// Covers both of the panel's season-transition surfaces: the Season dropdown's two flat entries (Titles & Deadlines, Start New Season / "Wipe Season") which open their modal directly with no page of their own, and the "Next Season Draft" staging page (seasondraft) -- Promote/Discard plus its three bulk-stage modals. Grouped into one file since both are season-lifecycle operations on the same SeasonalData document, thematically closer to each other than to any other page. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js.
+// Covers both of the panel's season-transition surfaces: the Season dropdown's two flat entries (Titles & Deadlines, Start New Season / "Wipe Season") which open their modal directly with no page of their own, and the "Next Season Draft" staging page (seasondraft) -- Promote/Discard plus its three bulk-stage modals. Grouped into one file since both are season-lifecycle operations on the same SeasonalData document, thematically closer to each other than to any other page. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and .claude/rules/interaction-router.md.
 //

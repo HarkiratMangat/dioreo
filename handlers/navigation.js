@@ -8,7 +8,7 @@
 // ⚠️ THE CRASH NET IS THE ROUTER'S, NOT THIS FILE'S. handleNavigationInteraction is awaited from inside handlers/router.js's single top-level try/catch -- do not add one here, do not register listeners, and keep every error-branch reply an AWAITED call in its own small try/catch. A bare `return interaction.reply(...)` can reject after the try has exited and escape the net. See .claude/rules/interaction-router.md.
 
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
-const { buildSyntheticInteraction, resolvePanelActor } = require('../utils/interactionContext');
+const { buildSyntheticInteraction } = require('../utils/interactionContext');
 
 const OWNED_PREFIXES = ["nav_"];
 

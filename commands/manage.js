@@ -1,11 +1,10 @@
 // ==========================================
 // COMMAND: ADVANCED DATABASE MANAGER
 // ==========================================
-// Single admin command covering everything the bot's data needs — individual add/edit/delete for draws, calendar events, patch notes, and MP/DMZ loadouts, additive/replace bulk import, bulk remove for the same, season title/deadline management, per-entity data Purge (except Loadouts — see PAGES.loadouts note below), and file-attachment export. Used to be split across this command and a separate /update dropdown-driven gateway; consolidated into one command (Harkirat's request — "don't want a long list of slash commands"), then redesigned three times more the same week: first collapsed from a subcommand-group tree into ONE flat command that opens a Components V2 panel, then added Purge/a page-select dropdown/folded a briefly-standalone /export command back in, then (2026-07-12) rebuilt again per 4 hand-drawn mockup JSONs Harkirat put together himself while working around a usage-limit outage — new title/section layout, a real Add-Multiple (additive) vs Replace-Multiple (destructive) distinction for draws/calendar, export folded INTO each entity's own page instead of a separate Export page, Loadouts losing its Export page in favor of a 3-way in-page export, and Patch Notes rebuilt around a single "current entry" model (Date/Info + URLs 1 + URLs 2) instead of add-a-new-entry-by-hand. `/manage` (optionally with a `section` option to jump straight to a section, and a `hidden` option to make the panel public) replies with a Container showing the current section's actions — clicking a button either opens its modal directly, replies with a file (Export actions), shows a Confirm/Cancel prompt (Purge), or, for Edit/Delete-by-search (which need a specific item picked first, and buttons can't autocomplete), opens a small "search by name" modal first — see handlers/manage.js's `mng_search_`/`mng_pick_` handlers for the resolve-then-chain-a-second-modal logic. This file only builds the modal SHAPES and the page/button layout; handlers/manage.js owns all the routing and DB-mutating submit logic.
+// Single admin command covering everything the bot's data needs — individual add/edit/delete for draws, calendar events, patch notes, and MP/DMZ loadouts, additive/replace bulk import, bulk remove for the same, season title/deadline management, per-entity data Purge (except Loadouts — see PAGES.loadouts note below), and file-attachment export. Used to be split across this command and a separate /update dropdown-driven gateway; consolidated into one command (Harkirat's request — "don't want a long list of slash commands"), then redesigned three times more the same week: first collapsed from a subcommand-group tree into ONE flat command that opens a Components V2 panel, then added Purge/a page-select dropdown/folded a briefly-standalone /export command back in, then (2026-07-12) rebuilt again per 4 hand-drawn mockup JSONs Harkirat put together himself while working around a usage-limit outage — new title/section layout, a real Add-Multiple (additive) vs Replace-Multiple (destructive) distinction for draws/calendar, export folded INTO each entity's own page instead of a separate Export page, Loadouts losing its Export page in favor of a 3-way in-page export, and Patch Notes rebuilt around a single "current entry" model (Date/Info + URLs 1 + URLs 2) instead of add-a-new-entry-by-hand. `/manage` (optionally with a `section` option to jump straight to a section, and a `hidden` option to make the panel public) replies with a Container showing the current section's actions — clicking a button either opens its modal directly, replies with a file (Export actions), shows a Confirm/Cancel prompt (Purge), or, for Edit/Delete-by-search (which need a specific item picked first, and buttons can't autocomplete), opens a small "search by name" modal first — see handlers/manage/shared.js's `mng_search_`/`mng_pick_` handlers for the resolve-then-chain-a-second-modal logic. This file only builds the modal SHAPES and the page/button layout; handlers/manage/ owns all the routing and DB-mutating submit logic.
 //
 // NOTE on the deferred "search + multi-select" flow: the mockups describe "Delete Multiple" (all entities) and Loadouts' "Replace Multiple" as searching first, then picking which matches to act on from a list — a new interaction, different from today's paste-a-list-of-names bulk-remove. Per Harkirat's explicit direction, that real search+multi-select rebuild is intentionally NOT part of this pass — it's large enough on its own that bundling it here risked a usage-limit interruption mid-build. This pass keeps those specific actions on today's paste-based modals (renamed/re-styled to match the new buttons) as a deliberate placeholder, not an oversight.
 
-const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, LabelBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { formatAdminDate, formatReleaseDateTime } = require('../utils/adminParser');
 const { sendV2Payload } = require('../utils/sendV2Payload');
@@ -18,7 +17,7 @@ const { ALLOWED_ADMIN_ID } = require('../utils/owner');
 
 // Per-page "Purge" wording — each page's Purge button nukes ONLY that page's own data (distinct from Season's existing "Start New Season" (formerly "Wipe Season"), which resets draws+calendar together as part of starting a new season but deliberately preserves patch notes history forever). Loadouts has NO Purge entry at all — deliberate, per Harkirat's explicit call (2026-07-12): loadout data is meant to persist long-term, unlike draws/calendar/patch-notes which are seasonal and benefit from a quick manual reset. Don't add one back in without him asking again.
 //
-// Draws gained 3 granular purge SCOPES (2026-07-12, was one "purge everything" button) — `all`, `new`, `returning` — since a Purge that only affects one of the two draw categories didn't exist before. Every other group only has one scope ('all'), but is still keyed the same way so handlers/manage.js's confirm/cancel handlers can treat every group identically (`PURGE_LABELS[group].all` vs `PURGE_LABELS[group][scope]`).
+// Draws gained 3 granular purge SCOPES (2026-07-12, was one "purge everything" button) — `all`, `new`, `returning` — since a Purge that only affects one of the two draw categories didn't exist before. Every other group only has one scope ('all'), but is still keyed the same way so handlers/manage/index.js's confirm/cancel handlers can treat every group identically (`PURGE_LABELS[group].all` vs `PURGE_LABELS[group][scope]`).
 const PURGE_LABELS = {
     draws: { all: 'ALL New and Returning draws', new: 'ALL New draws only', returning: 'ALL Returning draws only' },
     calendar: { all: 'ALL calendar events' },
@@ -114,7 +113,7 @@ function buildPagesTable(client) {
             }
         ]
     },
-    // Loadouts (MP + DMZ) — structurally identical pages, differing only in `mode`. DMZ literally reuses this same shape (Harkirat: "just copy that for DMZ loadouts since they're essentially the same thing") via `buildLoadoutsPage(mode)` below rather than a second hand-copied entry.
+    // Loadouts (MP + DMZ) — structurally identical pages, differing only in `mode`. DMZ literally reuses this same shape (Harkirat: "just copy that for DMZ loadouts since they're essentially the same thing") via `loadoutsPageDef(mode, ...)` below rather than a second hand-copied entry.
     loadouts_mp: loadoutsPageDef('MP', 'MP Loadouts', emojis.rank, client),
     loadouts_dmz: loadoutsPageDef('DMZ', 'DMZ Loadouts', emojis.dmz, client),
     patchnotes: {
@@ -131,7 +130,7 @@ function buildPagesTable(client) {
                 ],
                 buttons: ['dateinfo', 'urls1', 'urls2']
             },
-            // "Add New Season" (2026-07-24) -- previously the biggest gap in this page: there was no way to START a new season's patch notes at all, only edit whichever entry already happened to be "current." Pushes a new patchNotes[] entry, which becomes Current Season and demotes the old one to Past Seasons -- see handlers/manage.js's modal_patch_addseason handler.
+            // "Add New Season" (2026-07-24) -- previously the biggest gap in this page: there was no way to START a new season's patch notes at all, only edit whichever entry already happened to be "current." Pushes a new patchNotes[] entry, which becomes Current Season and demotes the old one to Past Seasons -- see handlers/manage/patchnotes.js's modal_patch_addseason handler.
             {
                 blocks: [`### ${emojis.mngAdd} Add New Season\n-# Add release notes for a new season. After saving, this data becomes the Current Season and the previous data moves to Past Seasons.`],
                 buttons: ['addseason']
@@ -253,7 +252,7 @@ function buildDraftStatusText(seasonalDoc) {
     ].join('\n');
 }
 
-// Loadouts page definition factory — MP and DMZ render from the exact same shape, just with a different `mode` baked into every action id (so the handlers in handlers/manage.js know which collection slice to touch) and a different header icon/label.
+// Loadouts page definition factory — MP and DMZ render from the exact same shape, just with a different `mode` baked into every action id (so the handlers in handlers/manage/loadouts.js know which collection slice to touch) and a different header icon/label.
 function loadoutsPageDef(mode, headerLabel, icon, client) {
     return {
         label: headerLabel,
@@ -321,7 +320,7 @@ const PAGE_ACCENT = {
                             // season-lifecycle theme; this page has no public-facing command of its own)
 };
 
-// Builds Patch Notes' "Past Seasons" select-menu options from a live seasonalDoc (2026-07-24) -- shared by both call sites that render the patchnotes page (manage.js's own execute() and handlers/manage.js's mng_pagesel handler) so there's exactly one definition of "which entries count as past, in what order." Excludes the current (last) entry -- only PAST seasons belong here -- most-recent-first, capped at Discord's 25-option select-menu limit.
+// Builds Patch Notes' "Past Seasons" select-menu options from a live seasonalDoc (2026-07-24) -- shared by both call sites that render the patchnotes page (manage.js's own execute() and handlers/manage/shared.js's mng_pagesel handler) so there's exactly one definition of "which entries count as past, in what order." Excludes the current (last) entry -- only PAST seasons belong here -- most-recent-first, capped at Discord's 25-option select-menu limit.
 function buildPastSeasonsOptions(seasonalDoc) {
     const { displayTitle } = require('./patchnotes');
     const entries = seasonalDoc?.patchNotes || [];
@@ -371,7 +370,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
                 });
             });
         } else if (group.style === 'select') {
-            // Section + select menu (2026-07-24, Patch Notes' "Past Seasons") -- options come from `dynamicData[group.optionsKey]` rather than this static PAGES table, since they're built fresh from the DB every render (see handlers/manage.js's mng_pagesel/manage.js's execute() call sites). Discord requires at least 1 option and rejects an empty array outright, so an empty result falls back to one disabled placeholder option instead of omitting the row -- same "always render the row, just inert" approach as Loadouts' empty-state info block above, rather than a conditional layout the rest of this file doesn't otherwise do.
+            // Section + select menu (2026-07-24, Patch Notes' "Past Seasons") -- options come from `dynamicData[group.optionsKey]` rather than this static PAGES table, since they're built fresh from the DB every render (see handlers/manage/shared.js's mng_pagesel/manage.js's execute() call sites). Discord requires at least 1 option and rejects an empty array outright, so an empty result falls back to one disabled placeholder option instead of omitting the row -- same "always render the row, just inert" approach as Loadouts' empty-state info block above, rather than a conditional layout the rest of this file doesn't otherwise do.
             group.blocks.forEach(content => components.push({ type: 10, content }));
             const dynamicOptions = dynamicData[group.optionsKey];
             const hasOptions = Array.isArray(dynamicOptions) && dynamicOptions.length > 0;
@@ -381,10 +380,10 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
                 components: [{ type: 3, custom_id: group.selectId, placeholder: group.placeholder || 'Select...', options, disabled: !hasOptions }]
             });
         } else if (group.style === 'status') {
-            // Live-computed text block (2026-07-24 pattern extended 2026-07-30 22:24 EDT) -- same dynamicData mechanism as the 'select' branch above, just rendered as a Text Display instead of a select menu. `dynamicData[group.dynamicKey]` is built fresh per render by whichever call site is rendering this page (see manage.js's execute()/handlers/manage.js's mng_pagesel), never baked into the static PAGES table.
+            // Live-computed text block (2026-07-24 pattern extended 2026-07-30 22:24 EDT) -- same dynamicData mechanism as the 'select' branch above, just rendered as a Text Display instead of a select menu. `dynamicData[group.dynamicKey]` is built fresh per render by whichever call site is rendering this page (see manage.js's execute()/handlers/manage/shared.js's mng_pagesel), never baked into the static PAGES table.
             components.push({ type: 10, content: dynamicData[group.dynamicKey] || 'Loading…' });
         } else if (group.style === 'raw') {
-            // Pre-built raw Discord components, spliced in verbatim (2026-08-13, Announcement's per-item Edit/Delete list) -- for a page whose group shape is genuinely dynamic (one Text Display + Action Row PER live DB row, not a fixed number of buttons), unlike 'status' above which is still exactly one static block. Built by whichever call site is rendering this page (manage.js's execute()/handlers/manage.js's mng_pagesel), same as every other dynamicData-fed style.
+            // Pre-built raw Discord components, spliced in verbatim (2026-08-13, Announcement's per-item Edit/Delete list) -- for a page whose group shape is genuinely dynamic (one Text Display + Action Row PER live DB row, not a fixed number of buttons), unlike 'status' above which is still exactly one static block. Built by whichever call site is rendering this page (manage.js's execute()/handlers/manage/shared.js's mng_pagesel), same as every other dynamicData-fed style.
             (dynamicData[group.dynamicKey] || []).forEach(component => components.push(component));
         } else {
             group.blocks.forEach(content => components.push({ type: 10, content }));
@@ -396,7 +395,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
 
     components.push({ type: 10, content: '-# Select from the list below to manage a different command\'s data.' });
 
-    // Page nav dropdown — Season has NO page of its own at all (per Harkirat's request: "let that selection open the editing modal right away instead of a dedicated management page"). Rather than one "Season" option leading to an intermediate page with 2 buttons (Titles & Deadlines / Wipe Season), both of Season's actions get their own flat dropdown entries — picking either opens its modal directly with nothing in between, see handlers/manage.js's `mng_pagesel` handler.
+    // Page nav dropdown — Season has NO page of its own at all (per Harkirat's request: "let that selection open the editing modal right away instead of a dedicated management page"). Rather than one "Season" option leading to an intermediate page with 2 buttons (Titles & Deadlines / Wipe Season), both of Season's actions get their own flat dropdown entries — picking either opens its modal directly with nothing in between, see handlers/manage/shared.js's `mng_pagesel` handler.
     const showSeasonFlat = !allowedPages || allowedPages.includes('season');
     const canReach = key => !allowedPages || allowedPages.includes(key);
     // ⚠️ ORDER (reworked 2026-08-15 13:27 EDT, Harkirat's direct request) is now explicit rather than "whatever order Object.entries(PAGES) happens to iterate, then both flat Season entries dumped at the end" -- that's what disagreed with the `content` slash option's own order above (which grouped the Season entries mid-list) and read as scattered. Same shared grouping here: everyday content pages, then season-lifecycle actions in the order you'd actually touch them, then the two admin-surface pages. `pushPage` is a real PAGES key; the two literal pushes below it are Season's flat (non-PAGES) entries.
@@ -410,7 +409,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
     if (showSeasonFlat) pageOptions.push({ label: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines', default: false });
     pushPage('seasondraft');
     if (showSeasonFlat) {
-        // Renamed from "Season: Wipe Season" (2026-07-12, Harkirat's request) — the OLD name read as a low-stakes settings toggle; the option's own `description` (rendered as a smaller gray line under the label in Discord's select menu) now spells out exactly what it does, specifically so it isn't mistakenly clicked. Also gained the same 2-step Confirm/Cancel flow as Purge (see handlers/manage.js's modal_wipe_season handler) — selecting this used to wipe draws/calendar the INSTANT the title modal was submitted, no confirmation at all.
+        // Renamed from "Season: Wipe Season" (2026-07-12, Harkirat's request) — the OLD name read as a low-stakes settings toggle; the option's own `description` (rendered as a smaller gray line under the label in Discord's select menu) now spells out exactly what it does, specifically so it isn't mistakenly clicked. Also gained the same 2-step Confirm/Cancel flow as Purge (see handlers/manage/season.js's modal_wipe_season handler) — selecting this used to wipe draws/calendar the INSTANT the title modal was submitted, no confirmation at all.
         pageOptions.push({ label: 'Start New Season', value: 'season_wipe', default: false, description: '⚠️ Wipes all draws & calendar data. Cannot be undone.' });
     }
     pushPage('announcement');
@@ -419,7 +418,7 @@ function buildManagePage(page, dynamicData = {}, client, allowedPages = null) {
     return [{ type: 17, accent_color: accentColor, components }];
 }
 
-// --- Generic one-field "search by name" modal, shown when Edit/Delete is clicked — buttons can't autocomplete like a slash command option could, so this collects a query text first. handlers/manage.js's `mng_search_` submit handler fuzzy-matches it against the target collection and either chains straight into the real edit modal (single match), shows a disambiguation dropdown (multiple matches), or reports no matches found.
+// --- Generic one-field "search by name" modal, shown when Edit/Delete is clicked — buttons can't autocomplete like a slash command option could, so this collects a query text first. handlers/manage/shared.js's `mng_search_` submit handler fuzzy-matches it against the target collection and either chains straight into the real edit modal (single match), shows a disambiguation dropdown (multiple matches), or reports no matches found.
 const ENTITY_LABELS = { draws: 'Draw', calendar: 'Calendar Event', loadouts_mp: 'MP Loadout', loadouts_dmz: 'DMZ Loadout', patchnotes: 'Patch Notes Entry' };
 function buildSearchModal(group, action) {
     const entityLabel = ENTITY_LABELS[group] || 'Item';
@@ -634,7 +633,7 @@ function buildPatchDateInfoModal(currentEntry, userTimezone) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setValue(currentEntry ? formatReleaseDateTime(currentEntry.releaseDate, userTimezone) : '').setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b:/n:/f: text...\nb/n/f: = buff/nerf/fix emojis (See Guide button)').setValue(currentEntry?.description || '').setRequired(false)),
-        // Manual title override (2026-07-24) -- for when patch notes release before the new season's real title is finalized/announced. Blank reverts to the auto-synced title (currentSeasonTitle, via the Season Titles/Dates modal) -- see handlers/manage.js's modal_patch_dateinfo submit handler.
+        // Manual title override (2026-07-24) -- for when patch notes release before the new season's real title is finalized/announced. Blank reverts to the auto-synced title (currentSeasonTitle, via the Season Titles/Dates modal) -- see handlers/manage/patchnotes.js's modal_patch_dateinfo submit handler.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title Override (blank = auto)').setStyle(TextInputStyle.Short).setValue(currentEntry?.titleOverride || '').setRequired(false))
     );
     return modal;
@@ -707,7 +706,7 @@ function seasonDates(start, end, endTBD) {
 }
 
 function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
-    // Each deadline field combines its title and end date on one line ("Battle Pass, August 28") — pre-filled so re-submitting without touching a field preserves it — see adminParser.js's splitTitleDate() for how handlers/manage.js parses these back apart.
+    // Each deadline field combines its title and end date on one line ("Battle Pass, August 28") — pre-filled so re-submitting without touching a field preserves it — see adminParser.js's splitTitleDate() for how handlers/manage/season.js (via core/ops/season.js) parses these back apart.
     const bpLine = [seasonalDoc?.bpTitle || 'Battle Pass', seasonDates(seasonalDoc?.bpStart, seasonalDoc?.bpEnd, seasonalDoc?.bpEndTBD)].filter(Boolean).join(', ');
     const rankLine = [seasonalDoc?.rankTitle || 'Ranked Series', seasonDates(seasonalDoc?.rankStart, seasonalDoc?.rankEnd, seasonalDoc?.rankEndTBD)].filter(Boolean).join(', ');
     const dmzLine = [seasonalDoc?.dmzTitle || 'DMZ Season', seasonDates(seasonalDoc?.dmzStart, seasonalDoc?.dmzEnd, seasonalDoc?.dmzEndTBD)].filter(Boolean).join(', ');
@@ -724,7 +723,7 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
 
 // buildAdminGrantModal()/buildAdminEditPermissionsModal() RETIRED from here 2026-08-16 (observability stage 3) -- moved to commands/bot.js, custom_ids renamed modal_admin_* -> bot_adminmodal_* to match /bot's single owned prefix.
 
-// --- ANNOUNCEMENT modal builder (2026-08-13, redesigned same day for multi-announcement + expiry) Shared by both Post New (announcementDoc = null) and Edit (prefilled from the existing doc) -- same field shape either way, just a different custom_id/title/prefill so handlers/manage.js's two separate submit handlers (create vs. update-in-place) can tell them apart.
+// --- ANNOUNCEMENT modal builder (2026-08-13, redesigned same day for multi-announcement + expiry) Shared by both Post New (announcementDoc = null) and Edit (prefilled from the existing doc) -- same field shape either way, just a different custom_id/title/prefill so handlers/manage/announcements.js's two separate submit handlers (create vs. update-in-place) can tell them apart.
 function buildAnnouncementModal(announcementDoc) {
     const { expiryToInputValue } = require('../utils/announcement');
     const isEdit = Boolean(announcementDoc);
@@ -741,7 +740,7 @@ function buildAnnouncementModal(announcementDoc) {
     return modal;
 }
 
-// --- NEXT SEASON DRAFT modal builders (2026-07-30 22:24 EDT) --- Same field shapes/parsers as their live equivalents above (splitTitleDate/parseAdminDate for titles+dates, parseBulkDrawList/parseBulkEvents for the bulk pastes) so handlers/manage.js's submit handlers can reuse the exact same parsing logic, just writing into `seasonalDoc.draft.*` instead of the top-level fields.
+// --- NEXT SEASON DRAFT modal builders (2026-07-30 22:24 EDT) --- Same field shapes/parsers as their live equivalents above (splitTitleDate/parseAdminDate for titles+dates, parseBulkDrawList/parseBulkEvents for the bulk pastes) so handlers/manage/season.js's submit handlers can reuse the exact same parsing logic, just writing into `seasonalDoc.draft.*` instead of the top-level fields.
 function buildDraftTitlesDatesModal(seasonalDoc) {
     const draft = seasonalDoc?.draft || {};
     const bpLine = [draft.bpTitle || 'Battle Pass', seasonDates(draft.bpStart, draft.bpEnd, draft.bpEndTBD)].filter(Boolean).join(', ');
@@ -812,8 +811,7 @@ function prefillModal(modal, values) {
 
 module.exports = {
     prefillModal,
-    ALLOWED_ADMIN_ID, // Exposed so handlers/router.js's centralized panel-interaction guard (button/select/
-                      // modal-submit) can check against the same single source of truth instead of a second hardcoded literal drifting out of sync — see the guard right after the anti-spam block in interactionCreate.
+    ALLOWED_ADMIN_ID, // Re-exported from utils/owner.js; nothing reads it off this module now (the panel-interaction guard in handlers/router.js gates through hasCommandAccess), so it is kept only as a harmless alias.
     data: new SlashCommandBuilder()
         .setName('manage')
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- the old 68-char version truncated on Discord mobile's command picker row.
@@ -856,7 +854,7 @@ module.exports = {
     async execute(interaction) {
         const { hasCommandAccess } = require('../utils/adminAccess');
         if (!(await hasCommandAccess(interaction.user.id, 'manage'))) {
-            // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of handlers/manage.js's centralized button/select/modal guard for this same panel (see interactionCreate).
+            // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of handlers/router.js's centralized button/select/modal guard for this same panel (see interactionCreate).
             return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
         }
         // Every admin may open every section (the permission restructure, 2026-10-19 19:25 EDT); what they may DO there is checked per button by resolveAction's tier check, and again by core/changeset.js's commitSet on the write.
@@ -893,7 +891,7 @@ module.exports = {
             actionFallbackNote = `${resolved.message || DENIAL_MESSAGE[resolved.reason]}\n\n`;
         }
 
-        // Default ephemeral (true) unless explicitly set to public — matches the "default private" convention Harkirat asked for on this specific command (every OTHER command defaults public; this one is the admin panel, so it flips the default).
+        // Default ephemeral (true) unless explicitly set to public — matches the "default private" convention Harkirat asked for on this specific command (most commands default public; this one is the admin panel, so it flips the default, as /help, /bot and /autobuild also do).
         const visibilityChoice = interaction.options.getString('visibility');
         const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });

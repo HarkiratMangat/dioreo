@@ -27,7 +27,7 @@ const BannerSchema = new mongoose.Schema({
 
 const DrawBasketSchema = new mongoose.Schema({
     discordId: { type: String, required: true, index: true },
-    // Absent (not null) on an unnamed basket -- the TTL index below keys on that absence via partialFilterExpression, and `undefined` fields are simply never written by Mongoose, so "never named" and "not yet named" are the same on-disk shape until a rename sets this.
+    // Absent (not null) on an unnamed basket -- the 30-day prune (utils/drawBasketStore.js's pruneExpiredBaskets) keys on that absence, and `undefined` fields are simply never written by Mongoose, so "never named" and "not yet named" are the same on-disk shape until a rename sets this.
     name: { type: String },
     banners: { type: [BannerSchema], default: [] },
     region: { type: String, default: 'region_10' },
@@ -36,7 +36,7 @@ const DrawBasketSchema = new mongoose.Schema({
     // Mythic Cards and Mythic Coins the player already holds (2026-10-17 13:17 EDT): one shared pool each, in steps of 5, taken off the pooled upgrade need.
     mythicCards: { type: Number, default: 0 },
     mythicCoins: { type: Number, default: 0 },
-    // RESTORE CALCULATION (2026-10-19 00:13 EDT, his idea): what New Calculation cleared, kept so the empty form can bring it back, through relaunches, until the next Calculate. Either the cleared contents (banners, region, balance, cards, coins, currency, upgrade toggle, 2X selections, submitted, sourceId) or { savedId } when the one left was a saved calculation. It lives on an unnamed calculation, so the 30-day TTL removes it with that calculation.
+    // RESTORE CALCULATION (2026-10-19 00:13 EDT, his idea): what New Calculation cleared, kept so the empty form can bring it back, through relaunches, until the next Calculate. Either the cleared contents (banners, region, balance, cards, coins, currency, upgrade toggle, 2X selections, submitted, sourceId) or { savedId } when the one left was a saved calculation. It lives on an unnamed calculation, so the 30-day prune removes it with that calculation.
     previous: { type: mongoose.Schema.Types.Mixed, default: undefined },
     // The existing 6-bit mask over CP_PACKAGES (cp80...cp8000), snapshotted onto the basket -- there is no live entitlement source to read, only what the player told us they still hold.
     entitlementMask: { type: Number, default: 0 },

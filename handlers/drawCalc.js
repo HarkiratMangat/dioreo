@@ -26,7 +26,6 @@ const { resolvePanelActor } = require('../utils/interactionContext');
 
 const OWNED_PREFIXES = ['calc~'];
 
-const { DRAW_META } = require('../commands/drawprices');
 // The draws a calculation can hold, in the untick confirm's mask bit order (the three Series Armories after the nine draws since 2026-10-18 12:16 EDT).
 const DRAW_KEY_ORDER = CALC_KEYS;
 // The calculator's one name per draw (commands/drawCalculator.js SHORT_NAME), never DRAW_META's full "... Draw" name.
@@ -66,7 +65,6 @@ async function renderPanel(interaction, state, basket, notice = null, dropConfir
     const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
     const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
     const liveDoubleCPEntry = await findLiveDoubleCPEntry();
-    const isEphemeral = Boolean(interaction.message?.flags?.has?.(64));
     // Listed on every render: the Saved view needs the list and every other view shows its count on the nav's Saved button.
     const savedBaskets = await basketStore.listForUser(interaction.user.id);
     // A working copy shows which saved calculation it came from; read live, so a renamed or deleted source never shows a stale name.
@@ -433,7 +431,7 @@ async function route(interaction) {
         let panel;
         if (state.verb === 'info') {
             const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
-            // Legacy: only panels posted before the Draw Info button left the nav row (15b49b09) can send `info`. Kept until the code-housekeeping session decides on deletion; see buildDrawInfoPanel's comment.
+            // Legacy: only panels posted before the Draw Info button left the nav row (15b49b09) can send `info`. Kept so those older panels' Draw Info button still answers; see buildDrawInfoPanel's comment.
             panel = buildDrawInfoPanel(basket || { banners: [], region: 'region_10' }, accentColor);
         } else {
             // Help draws its price ladder from the open calculation's region and first draw (2026-10-14 18:33 EDT), so it shows the player their own numbers.
