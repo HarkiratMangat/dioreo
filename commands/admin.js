@@ -189,6 +189,7 @@ function toolsRow(settings, resetArmed) {
     }
     return { type: 1, components: [
         { type: 2, style: 2, label: 'Check a Member', custom_id: 'admin_check' },
+        { type: 2, style: 2, label: 'Export Log', custom_id: 'admin_log' },
         ...(changed ? [{ type: 2, style: 4, label: 'Reset Everything', custom_id: 'admin_reset_arm' }] : []),
     ] };
 }
@@ -462,9 +463,9 @@ function buildHelp(client, place = {}) {
                     row('Threads', 'follow their channel, unless the thread has its own rule'),
                     row('Menus', 'save when you click outside them; Esc cancels'),
                     row('Clear', 'each page has one once it has rules'),
+                    row('Export Log', 'on Overview: every change in the last 60 days, who made it and when. It cannot be cleared, not even by Reset Everything'),
                     row('Check a Member', 'on Overview: pick a role, channel and command to see the answer and the rule behind it'),
                     row('Reset Everything', 'on Overview, two presses: clears every rule and sets the default back to Public'),
-                    row('Lost access?', 'admin power comes from Discord (owner, Administrator or Manage Server); once Discord restores it, so does this panel. Dioreo\'s owner can reset a server\'s rules on request'),
                 ].join('\n') },
             ],
         },
@@ -499,6 +500,33 @@ function setScopedRoleRule(doc, roleId, visibility, channelIds) {
     doc.roleRules = channelIds.length ? [...kept, { roleId, visibility, channelIds }] : kept;
 }
 
+// The export's text: newest first, one block per change, in UTC so it reads the same for everyone. Ids become names where the guild is cached; an actor's name comes from Discord, with the id kept beside it as the record.
+async function buildLogFile(interaction, rows) {
+    const guild = interaction.guild;
+    const name = (kind, id) => {
+        if (kind === '#') return guild?.channels?.cache?.get(id)?.name ? `#${guild.channels.cache.get(id).name} (${id})` : `#${id}`;
+        return guild?.roles?.cache?.get(id)?.name ? `@${guild.roles.cache.get(id).name} (${id})` : `@role ${id}`;
+    };
+    const plain = line => line.replace(/<#(\d+)>/g, (_, id) => name('#', id)).replace(/<@&(\d+)>/g, (_, id) => name('@', id));
+    const actors = new Map();
+    for (const id of new Set(rows.map(r => r.actorId))) {
+        try { actors.set(id, (await interaction.client.users.fetch(id)).username); } catch { actors.set(id, null); }
+    }
+    const stamp = d => new Date(d).toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+    const head = [
+        "Dioreo · Server Settings change log",
+        `Server: ${guild?.name || 'unknown'} (${interaction.guildId})`,
+        `Exported: ${stamp(Date.now())} · last 60 days · ${rows.length} change${rows.length === 1 ? '' : 's'}`,
+        'Kept 60 days. It cannot be cleared, so it shows every change in that window.',
+        '',
+    ];
+    const body = rows.map(r => [
+        `${stamp(r.createdAt)} · ${r.source === 'owner' ? "Dioreo's owner" : 'admin'} ${actors.get(r.actorId) || 'unknown user'} (${r.actorId})`,
+        ...r.changes.map(c => `  - ${plain(c)}`),
+    ].join('\n'));
+    return [...head, ...(body.length ? body : ['No changes in the last 60 days.'])].join('\n') + '\n';
+}
+
 // Where the panel was opened: the server's name and icon for the header, and the channel for Overview's "Here in" line. From the cached guild only, so it costs no REST call; a server the bot has not joined gives neither name nor icon.
 function placeOf(interaction) {
     return {
@@ -521,7 +549,7 @@ async function handleComponent(interaction) {
     if (!isServerAdmin(interaction)) {
         require('../utils/eventStore').markOutcome('rejected_admin');
         return interaction.reply({
-            content: '🔒 **Server admins only.** These controls change how Dioreo behaves for everyone here, so they need **Manage Server**.',
+            content: `🔒 **Server admins only.** These controls change how Dioreo behaves for everyone here, so they need **Manage Server**.\n-# If your server's admins lost access, Discord Support can restore ownership; once Discord says you're an admin again, this panel opens. Dioreo's owner can also reset this server's rules on request.`,
             ephemeral: true,
         });
     }
@@ -541,6 +569,19 @@ async function handleComponent(interaction) {
         case 'admin_help':
             settings = await getGuildSettings(guildId);
             break;
+
+        // EXPORT LOG: the server's change log as a private text file (Harkirat 2026-10-22 15:51 EDT). Channels and roles are named where Dioreo can see them, with the id beside.
+        case 'admin_log': {
+            const GuildSettingsLog = require('../models/GuildSettingsLog');
+            const rows = await GuildSettingsLog.find({ guildId }).sort({ createdAt: -1 }).limit(2000).lean();
+            const file = await buildLogFile(interaction, rows);
+            return interaction.reply({
+                content: rows.length ? `${emojis.serverSettings} **Change log** · ${rows.length} change${rows.length === 1 ? '' : 's'} in the last 60 days` : `${emojis.serverSettings} **Change log** · no changes in the last 60 days`,
+                files: [{ attachment: Buffer.from(file, 'utf8'), name: `dioreo-server-settings-log-${guildId}.txt` }],
+                ephemeral: true,
+                allowedMentions: NO_PINGS,
+            });
+        }
 
         case 'admin_reset_arm':
             settings = await getGuildSettings(guildId);
@@ -715,7 +756,7 @@ module.exports = {
     rulesText,
     lastChangedLine,
     // Exported for scripts/guildPolicyEnforcement.test.js only -- nothing in the bot calls these from outside this file. They are here because both limits these tests pin (25 options on a select, 40 components per message) are invisible right up until a panel refuses to open, and a test is the only thing that will notice before an admin does.
-    __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck },
+    __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck, buildLogFile },
 
     async execute(interaction) {
         // Private unless the admin picks Public. The refusals below stay private whatever was picked: a non-admin's "Public" must not post a refusal into the channel.
@@ -739,7 +780,7 @@ module.exports = {
                 accent_color: ACCENT,
                 components: [
                     { type: 10, content: '## 🔒 Server admins only' },
-                    { type: 10, content: `These controls change how Dioreo behaves for everyone in this server, so they need the **Manage Server** permission.\n\n-# Looking for your own settings? ${mentionCommand(interaction.client, '/settings')} is yours and works anywhere.` },
+                    { type: 10, content: `These controls change how Dioreo behaves for everyone in this server, so they need the **Manage Server** permission.\n\n-# Looking for your own settings? ${mentionCommand(interaction.client, '/settings')} is yours and works anywhere.\n-# Lost access? Discord Support can restore ownership; once Discord says you're an admin again, this panel opens. Dioreo's owner can also reset this server's rules on request.` },
                 ],
             }]);
         }

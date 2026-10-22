@@ -130,6 +130,9 @@ function forceEphemeralResponses(interaction) {
     const clamp = options => {
         // A bare string is a legal shorthand for reply()/followUp(); normalise before adding flags.
         const next = typeof options === 'string' ? { content: options } : { ...(options || {}) };
+        // The command was about to answer publicly, so the member's own choice (their visibility option or saved /settings) said Public and the server's rule overrode it. sendPolicyNotice reads this to tell them why (2026-10-22 15:51 EDT).
+        const wasPrivate = next.ephemeral === true || (typeof next.flags === 'number' && (next.flags & EPHEMERAL_FLAG) !== 0);
+        if (!wasPrivate && interaction.dioreoPolicy) interaction.dioreoPolicy.overrodeUser = true;
         next.ephemeral = true;
         // Preserve an explicit flags number (Components V2 sends pass 32768) rather than replacing it -- dropping that flag would render a V2 payload as a blank message.
         if (typeof next.flags === 'number') next.flags |= EPHEMERAL_FLAG;
@@ -164,6 +167,8 @@ async function attachGuildPolicy(interaction) {
         visibility,
         // Under an ephemeral policy the "Show Everyone" button must not render OR fire -- it posts a genuinely new public message, which would be a complete bypass of the rule. handlers/share.js's share_public handler re-checks this rather than trusting the button's absence, because a panel opened before the rule was set still has the button on it.
         allowShare: visibility === 'public',
+        // The settings version, so a member's "why is this private" notice can start over when the rules change.
+        rulesAt: settings?.updatedAt || null,
     };
 
     interaction.dioreoPolicy = policy;
@@ -172,17 +177,91 @@ async function attachGuildPolicy(interaction) {
 }
 
 // Read-modify-write helper for /admin, so every write invalidates the cache in the same place it mutates. `mutate` receives the document and may change it freely.
-async function updateGuildSettings(guildId, actorId, mutate) {
+async function updateGuildSettings(guildId, actorId, mutate, { source = 'admin' } = {}) {
     const doc = await GuildSettings.findOne({ guildId }) || new GuildSettings({ guildId });
+    const before = snapshot(doc);
     mutate(doc);
     doc.updatedBy = actorId;
     await doc.save();
     invalidateGuildPolicy(guildId);
+    logGuildChange(guildId, actorId, describeChanges(before, snapshot(doc)), source);
     return doc;
+}
+
+// The fields a change is described from, as plain data.
+function snapshot(doc) {
+    return {
+        defaultVisibility: doc?.defaultVisibility || 'public',
+        channelRules: (doc?.channelRules || []).map(r => ({ channelId: r.channelId, visibility: r.visibility })),
+        roleRules: (doc?.roleRules || []).map(r => ({ roleId: r.roleId, visibility: r.visibility, channelIds: [...(r.channelIds || [])] })),
+        ephemeralCommands: [...(doc?.ephemeralCommands || [])],
+    };
+}
+
+const LABEL = { public: 'Public', ephemeral: 'Hidden' };
+
+// One plain line per thing that changed, with channels and roles as <#id> / <@&id> tokens the log export turns into names. Empty when nothing changed, and then nothing is logged.
+function describeChanges(before, after) {
+    const lines = [];
+    if (before.defaultVisibility !== after.defaultVisibility) lines.push(`Default: ${LABEL[before.defaultVisibility]} → ${LABEL[after.defaultVisibility]}`);
+    const chKey = r => `${r.channelId}:${r.visibility}`;
+    const bCh = new Set(before.channelRules.map(chKey));
+    const aCh = new Set(after.channelRules.map(chKey));
+    for (const r of after.channelRules) if (!bCh.has(chKey(r))) lines.push(`Channel <#${r.channelId}> set to ${LABEL[r.visibility]}`);
+    for (const r of before.channelRules) if (!aCh.has(chKey(r)) && !after.channelRules.some(x => x.channelId === r.channelId)) lines.push(`Channel <#${r.channelId}> rule removed (was ${LABEL[r.visibility]})`);
+    const roleKey = r => `${r.roleId}:${r.visibility}:${[...r.channelIds].sort().join(',')}`;
+    const roleText = r => `<@&${r.roleId}> ${LABEL[r.visibility]} ${r.channelIds.length ? `in ${r.channelIds.map(id => `<#${id}>`).join(' ')}` : 'everywhere'}`;
+    const bRole = new Set(before.roleRules.map(roleKey));
+    const aRole = new Set(after.roleRules.map(roleKey));
+    for (const r of after.roleRules) if (!bRole.has(roleKey(r))) lines.push(`Role rule added: ${roleText(r)}`);
+    for (const r of before.roleRules) if (!aRole.has(roleKey(r))) lines.push(`Role rule removed: ${roleText(r)}`);
+    const cmd = c => (/[A-Z]/.test(c) ? c : `/${c}`);
+    for (const c of after.ephemeralCommands) if (!before.ephemeralCommands.includes(c)) lines.push(`Hidden command added: ${cmd(c)}`);
+    for (const c of before.ephemeralCommands) if (!after.ephemeralCommands.includes(c)) lines.push(`Hidden command removed: ${cmd(c)}`);
+    return lines;
+}
+
+// Writes one GuildSettingsLog row. Fire-and-forget and never throws: a log failure must not undo or block the admin's change, the same contract as utils/changeStore.js's recordChange().
+function logGuildChange(guildId, actorId, changes, source = 'admin') {
+    if (!changes?.length) return Promise.resolve();
+    const GuildSettingsLog = require('../models/GuildSettingsLog');
+    return GuildSettingsLog.create({ guildId, actorId, source, changes }).catch(error => {
+        console.error(`GuildSettingsLog write failed for ${guildId}: ${error.message}`);
+    });
+}
+
+// THE "WHY IS THIS PRIVATE?" NOTICE (Harkirat 2026-10-22 15:51 EDT: "make it like a 2x repeat ... private notification, if the settings change ... and they don't match the user's own settings"). Sent as a private follow-up after a slash command whose public answer a server rule made private, at most twice per member per change to that server's rules. Called by handlers/router.js after the command has answered; it never throws.
+const NOTICE_LIMIT = 2;
+async function sendPolicyNotice(interaction) {
+    try {
+        const policy = interaction.dioreoPolicy;
+        if (!policy?.overrodeUser || !interaction.guildId || !interaction.isChatInputCommand?.()) return false;
+        if (!interaction.replied && !interaction.deferred) return false;
+        const PolicyNotice = require('../models/PolicyNotice');
+        const { hashUserId } = require('./requestContext');
+        const userHash = hashUserId(interaction.user.id);
+        const rulesAt = policy.rulesAt ? new Date(policy.rulesAt) : new Date(0);
+        const seen = await PolicyNotice.findOne({ userHash, guildId: interaction.guildId }).lean();
+        const shown = seen && new Date(seen.rulesAt) >= rulesAt ? seen.shown : 0;
+        if (shown >= NOTICE_LIMIT) return false;
+        await PolicyNotice.updateOne({ userHash, guildId: interaction.guildId }, { $set: { rulesAt, shown: shown + 1, lastShownAt: new Date() } }, { upsert: true });
+        await interaction.followUp({
+            content: `🔒 **Why is this private?** This server's admins set Dioreo to answer privately here, so your own Public choice doesn't apply in this server.\n-# Shown ${NOTICE_LIMIT === shown + 1 ? 'one last time' : 'twice'} after the server's settings change.`,
+            ephemeral: true,
+            allowedMentions: { parse: [] },
+        });
+        return true;
+    } catch (error) {
+        console.error(`policy notice failed: ${error.message}`);
+        return false;
+    }
 }
 
 module.exports = {
     attachGuildPolicy,
+    describeChanges,
+    logGuildChange,
+    sendPolicyNotice,
     commandPaths,
     commandPathOf,
     explainVisibility,

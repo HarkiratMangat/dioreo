@@ -988,6 +988,21 @@ function buildHotpatchPanel(out) {
     return [{ type: 17, accent_color: 0xFEE75C, components: body }];
 }
 
+// /bot servers with no ID: "this server" where it was run in one, and a box for any other ID.
+function buildServersPicker(currentGuildId, currentName) {
+    return [{
+        type: 17,
+        accent_color: 0x5865F2,
+        components: [
+            { type: 10, content: `## ${emojis.serverSettings} Server Settings · Owner Tools\n-# Which server's /admin rules?` },
+            { type: 1, components: [
+                ...(currentGuildId ? [{ type: 2, style: 1, label: `This Server${currentName ? `: ${currentName}`.slice(0, 60) : ''}`, custom_id: `bot_srv_view|${currentGuildId}` }] : []),
+                { type: 2, style: 2, label: currentGuildId ? 'Enter Another ID' : 'Enter a Server ID', custom_id: 'bot_srv_ask' },
+            ] },
+        ],
+    }];
+}
+
 // /bot servers -- THE OWNER'S OVERRIDE FOR ONE SERVER'S /admin RULES (Harkirat 2026-10-22 15:35 EDT, "yeah build it"). For the case where a server's admins lost access (a hacked owner, say) and ask Dioreo's owner for help: view the rules, reset them, or delete the record (also the route for a server's data-deletion request). Admin power itself comes from Discord, so this never grants anyone /admin; it only changes the stored rules. Both changes are two presses and land on /bot analytics' Changes page with the rules as they were, so a server's setup can be rebuilt by hand -- neither has an Undo.
 async function buildServersPanel(client, guildId, { armed = null, note = null } = {}) {
     const { getGuildSettings } = require('../utils/guildPolicy');
@@ -1004,7 +1019,7 @@ async function buildServersPanel(client, guildId, { armed = null, note = null } 
         type: 17,
         accent_color: 0x5865F2,
         components: [
-            { type: 10, content: `## ${emojis.serverSettings} Server Settings · Owner Tools\n${where}\n-# Only on a server admin's request. Every change is logged on the Changes page of /bot analytics.` },
+            { type: 10, content: `## ${emojis.serverSettings} Server Settings · Owner Tools\n${where}\n-# Only on a server admin's request. Every change is logged on the Changes page of /bot analytics and in the server's own change log.` },
             { type: 14, spacing: 2 },
             { type: 10, content: rulesText(settings) },
             ...(lastChangedLine(settings) ? [{ type: 10, content: lastChangedLine(settings) }] : []),
@@ -1029,6 +1044,7 @@ module.exports = {
     computeTimingStats,
     buildAdminListBlocks,
     buildServersPanel,
+    buildServersPicker,
     buildAdminGrantModal,
     buildAdminEditPermissionsModal,
     // PAGE_LABEL stays OUT of exports (v3-pre-release review, finding #47) -- confirmed dead as a CROSS-MODULE export, this file uses it itself. PAGE_META/pageSelectRow were re-added 2026-08-23 00:22 EDT (bot analytics redesign) so scripts/botAnalyticsBody.test.js can assert on the page-switcher descriptions without duplicating them. decodeState (and FILTERABLE_PAGES/encodeState alongside it) was removed entirely in the same change -- the page/actor filter branches that were its only callers, in this file and handlers/bot.js, moved to the portal.
@@ -1048,7 +1064,7 @@ module.exports = {
         .addSubcommand(sub => sub.setName('access').setDescription('Manage the admin allowlist (owner-only)')
             .addStringOption(o => o.setName('visibility').setDescription('Show this panel only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' })))
         .addSubcommand(sub => sub.setName('servers').setDescription("View or reset a server's /admin rules (owner-only)")
-            .addStringOption(o => o.setName('server').setDescription('Server ID, or pick one that has saved settings').setRequired(true).setAutocomplete(true)))
+            .addStringOption(o => o.setName('server').setDescription('Server ID (blank: pick this server or type an ID)')))
         .addSubcommand(sub => sub.setName('hotpatch').setDescription('Reload changed files without a restart')
             .addBooleanOption(o => o.setName('pull').setDescription('git pull first (default: yes)'))
             .addBooleanOption(o => o.setName('dry_run').setDescription('Show the plan and change nothing'))
@@ -1074,6 +1090,8 @@ module.exports = {
             }
             await interaction.deferReply({ flags: 64 });
             const guildId = (interaction.options.getString('server') || '').trim();
+            // No ID: offer the server it was run in, or a box to type one (Harkirat 2026-10-22 15:51 EDT: a name picker would not work; default to the ID).
+            if (!guildId) return sendV2Payload(interaction, buildServersPicker(interaction.guildId, interaction.guild?.name));
             if (!/^\d{15,22}$/.test(guildId)) {
                 return sendV2Payload(interaction, [{ type: 17, accent_color: 0x5865F2, components: [{ type: 10, content: '## Server Settings · Owner Tools\nThat is not a server ID. Pick one from the list, or paste the 17–20 digit ID.' }] }]);
             }

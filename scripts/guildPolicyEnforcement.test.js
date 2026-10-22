@@ -361,14 +361,14 @@ t('/bot servers is owner-only on every click, and a reset clears the rules and i
         // A non-owner is refused before anything is read or written.
         adminAccess.isOwner = () => false;
         const denied = makeInteraction();
-        Object.assign(denied.interaction, { customId: 'bot_srv_reset|123456789012345678', isButton: () => true, deferUpdate: async () => {}, client: { ...denied.interaction.client, guilds: { cache: new Map() } } });
+        Object.assign(denied.interaction, { customId: 'bot_srv_reset|123456789012345678', isButton: () => true, isModalSubmit: () => false, deferUpdate: async () => {}, client: { ...denied.interaction.client, guilds: { cache: new Map() } } });
         await handleBotInteraction(denied.interaction);
         assert.ok(denied.calls.some(c => c.method === 'reply' && /Only the bot owner/.test(c.options.content)));
         assert.strictEqual(saved.channelRules.length, 1, 'a refused click must not change anything');
         // The owner resets.
         adminAccess.isOwner = () => true;
         const owner = makeInteraction();
-        Object.assign(owner.interaction, { customId: 'bot_srv_reset|123456789012345678', isButton: () => true, deferUpdate: async () => {}, deferred: true, client: { ...owner.interaction.client, guilds: { cache: new Map() } } });
+        Object.assign(owner.interaction, { customId: 'bot_srv_reset|123456789012345678', isButton: () => true, isModalSubmit: () => false, deferUpdate: async () => {}, deferred: true, client: { ...owner.interaction.client, guilds: { cache: new Map() } } });
         await handleBotInteraction(owner.interaction);
         assert.deepStrictEqual([saved.channelRules.length, saved.ephemeralCommands.length, saved.defaultVisibility], [0, 0, 'public']);
         assert.strictEqual(logged.length, 1);
@@ -397,6 +397,90 @@ t('the /admin panel never pings: every send turns mentions off', async () => {
         GuildSettings.findOne = original;
         guildPolicy.invalidateGuildPolicy('G_1');
     }
+});
+
+// --- 5d. the change log and the private-answer notice (2026-10-22 15:51 EDT) -----------------
+t('describeChanges names each change, and an unchanged save logs nothing', () => {
+    const { describeChanges } = guildPolicy;
+    const before = { defaultVisibility: 'public', channelRules: [{ channelId: 'C1', visibility: 'ephemeral' }], roleRules: [], ephemeralCommands: ['colors'] };
+    const after = { defaultVisibility: 'ephemeral', channelRules: [], roleRules: [{ roleId: 'R', visibility: 'public', channelIds: ['C2'] }], ephemeralCommands: ['colors', 'Convert Times'] };
+    assert.deepStrictEqual(describeChanges(before, after), [
+        'Default: Public → Hidden',
+        'Channel <#C1> rule removed (was Hidden)',
+        'Role rule added: <@&R> Public in <#C2>',
+        'Hidden command added: Convert Times',
+    ]);
+    assert.deepStrictEqual(describeChanges(before, before), []);
+});
+
+t('every save writes a log row, and Reset Everything adds one rather than clearing the log', async () => {
+    const GuildSettingsLog = require('../models/GuildSettingsLog');
+    const realCreate = GuildSettingsLog.create;
+    const rows = [];
+    GuildSettingsLog.create = async row => { rows.push(row); return row; };
+    const saved = { guildId: 'G_1', defaultVisibility: 'public', channelRules: [], roleRules: [], ephemeralCommands: ['colors'], save: async () => {} };
+    const original = GuildSettings.findOne;
+    GuildSettings.findOne = () => saved;
+    try {
+        await guildPolicy.updateGuildSettings('G_1', 'U_1', doc => { doc.defaultVisibility = 'ephemeral'; });
+        await guildPolicy.updateGuildSettings('G_1', 'U_1', doc => { doc.defaultVisibility = 'public'; doc.ephemeralCommands = []; });
+        await new Promise(r => setImmediate(r));
+    } finally {
+        GuildSettingsLog.create = realCreate;
+        GuildSettings.findOne = original;
+        guildPolicy.invalidateGuildPolicy('G_1');
+    }
+    assert.strictEqual(rows.length, 2);
+    assert.deepStrictEqual(rows[1].changes, ['Default: Hidden → Public', 'Hidden command removed: /colors']);
+    // Nothing in the admin or owner paths deletes log rows: the only deleteMany/deleteOne on the model would be here.
+    const fs = require('fs');
+    for (const f of ['commands/admin.js', 'commands/bot.js', 'handlers/bot.js', 'utils/guildPolicy.js']) {
+        assert.ok(!/GuildSettingsLog\.(deleteMany|deleteOne|findOneAndDelete|remove)/.test(fs.readFileSync(require('path').join(__dirname, '..', f), 'utf8')), `${f} must never delete change-log rows`);
+    }
+});
+
+t('the private-answer notice shows twice per rule change, only when a public answer was made private', async () => {
+    const PolicyNotice = require('../models/PolicyNotice');
+    const store = new Map();
+    const realFind = PolicyNotice.findOne;
+    const realUpdate = PolicyNotice.updateOne;
+    PolicyNotice.findOne = q => ({ lean: async () => store.get(`${q.userHash}|${q.guildId}`) || null });
+    PolicyNotice.updateOne = async (q, u) => { store.set(`${q.userHash}|${q.guildId}`, { ...u.$set }); };
+    const run = async (rulesAt, wasPublic = true) => {
+        const { interaction, calls } = makeInteraction({ commandName: 'colors' });
+        interaction.isChatInputCommand = () => true;
+        interaction.replied = true;
+        interaction.dioreoPolicy = { visibility: 'ephemeral', overrodeUser: wasPublic, rulesAt };
+        await guildPolicy.sendPolicyNotice(interaction);
+        return calls.some(c => c.method === 'followUp');
+    };
+    try {
+        const v1 = new Date('2026-10-22T19:00:00Z');
+        assert.deepStrictEqual([await run(v1), await run(v1), await run(v1)], [true, true, false], 'twice, then quiet');
+        assert.strictEqual(await run(new Date('2026-10-22T20:00:00Z')), true, 'a newer rule change starts the count again');
+        assert.strictEqual(await run(new Date('2026-10-22T21:00:00Z'), false), false, 'an answer the member already wanted private gets no notice');
+    } finally {
+        PolicyNotice.findOne = realFind;
+        PolicyNotice.updateOne = realUpdate;
+    }
+});
+
+t('the clamp marks an answer that was going to be public', async () => {
+    const { interaction } = makeInteraction();
+    await withSettings({ defaultVisibility: 'ephemeral' }, async () => { await guildPolicy.attachGuildPolicy(interaction); });
+    await interaction.deferReply({ ephemeral: true });
+    assert.ok(!interaction.dioreoPolicy.overrodeUser, 'an already-private answer is not an override');
+    await interaction.deferReply({ flags: 32768 });
+    assert.ok(interaction.dioreoPolicy.overrodeUser, 'a public answer made private is');
+});
+
+t('the exported log names channels and roles and keeps the ids', async () => {
+    const { buildLogFile } = require('../commands/admin').__testRenderers;
+    const guild = { name: 'Test Server', channels: { cache: new Map([['111', { name: 'general' }]]) }, roles: { cache: new Map([['222', { name: 'Mods' }]]) } };
+    const interaction = { guild, guildId: 'G_1', client: { users: { fetch: async () => ({ username: 'harkirat' }) } } };
+    const text = await buildLogFile(interaction, [{ createdAt: new Date('2026-10-22T19:30:00Z'), actorId: '999', source: 'admin', changes: ['Channel <#111> set to Hidden', 'Role rule added: <@&222> Public everywhere'] }]);
+    assert.ok(text.includes('2026-10-22 19:30 UTC · admin harkirat (999)'));
+    assert.ok(text.includes('#general (111)') && text.includes('@Mods (222)'));
 });
 
 // --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.

@@ -315,7 +315,7 @@ function buildBotAdminBody(commands, client) {
     }
     if (has('/bot servers')) {
         sections.push(`### ${mentionCommand(client, '/bot servers')}\nView, reset or delete one server's /admin rules, for an admin who lost access -- owner-only\n`
-            + `-# 🔹 \`[server]\` The server's ID, or pick one that has saved settings`);
+            + `-# 🔹 \`[server]\` A server ID; leave it blank to pick the server you're in or type one`);
     }
     if (has('/bot hotpatch')) {
         sections.push(`### ${mentionCommand(client, '/bot hotpatch')}\nReload changed files into the running bot without a restart -- owner-only\n`
