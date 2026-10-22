@@ -56,17 +56,12 @@ function buildContainer(accentColor, client) {
     components.push({ type: 14, spacing: 1, divider: true });
     components.push({ type: 10, content: '-# **Add to Server**, or **Add to My Apps** to use it anywhere, even in DMs!' });
 
-    // The two install buttons are LINK buttons (style 5): no custom_id, no interaction. "Share Link" is a real Primary button, which is why this panel passes `skipExpiry` at its send site -- one custom_id component would otherwise re-arm the 10-minute idle-disable for the WHOLE panel, greying out Share Link beside still-live install links on exactly the public post that exists to be found days later. Harkirat's call, 2026-08-17 09:18 EDT. Two rows (2026-10-21 20:17 EDT, Harkirat: "add buttons without emoji so they stay in 1 line" and a Website button before Share). Four buttons wrap unpredictably on a phone, so the install pair gets its own row and Website + Share the next.
+    // The two install buttons are LINK buttons (style 5): no custom_id, no interaction. "Share Link" is a real Primary button, which is why this panel passes `skipExpiry` at its send site -- one custom_id component would otherwise re-arm the 10-minute idle-disable for the WHOLE panel, greying out Share Link beside still-live install links on exactly the public post that exists to be found days later. Harkirat's call, 2026-08-17 09:18 EDT. One row of four (2026-10-21 21:00 EDT, Harkirat: "Leave 1 row, it's the same on mobile either way"; his phone wrapped the one-row and two-row versions alike). A two-row split, tried at 20:17 EDT the same day, only added a gap on desktop. The install buttons carry no emoji (20:17 EDT, his call), and Website sits before Share.
     components.push({
         type: 1,
         components: [
             { type: 2, style: 5, label: 'Add to Server', url: urls.guild },
             { type: 2, style: 5, label: 'Add to My Apps', url: urls.user },
-        ]
-    });
-    components.push({
-        type: 1,
-        components: [
             { type: 2, style: 5, label: 'Website', url: 'https://dioreo.app' },
             // STYLE 1 (blurple) with the heart icon, kept since 2026-08-22 and named again in the 2026-10-21 layout ("share button in blue with the shareheart emoji"). The other buttons are LINK buttons, which Discord renders grey, so the heart carries the colour and this button carries the emphasis.
             { type: 2, style: 1, label: 'Share Link', custom_id: 'invite_share', emoji: emojis.parseEmoji(emojis.shareHeart) }
