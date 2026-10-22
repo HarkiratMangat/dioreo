@@ -115,7 +115,7 @@ const emojis = {
     deleteBin: '<a:DeleteBin:1560788313508683807>',
     // /help's redesign (2026-08-08 20:52 EDT) -- dioreoCombo is the landing page's own logo/wordmark icon; loadouts is the Gunsmith category header icon (distinct from the DMZ-specific `dmz` icon above, since Gunsmith now covers /all + every per-category command too, not just DMZ).
     dioreoCombo: '<:DioreoCombo:1534640183230730470>',
-    // /invite's Share Link line (2026-10-18 20:15 EDT, Harkirat supplied the prod id).
+    // /invite's Share Link line (2026-10-18 20:15 EDT, Harkirat supplied the prod id). Unused since 2026-10-21 20:10 EDT, when he took it off that line; kept so it can come back without a new id.
     dioreoKawaii: '<:DioreoKawaii3B:1534640190491070599>',
     // /invite's Add to My Apps button (2026-10-21 20:05 EDT, Harkirat supplied the prod id). The dev app's own Sparkles is re-pointed by name at boot. Add to Server reuses `plus`.
     sparkles: '<a:Sparkles:1560410369447563274>',

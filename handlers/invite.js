@@ -8,7 +8,6 @@
 // WHY THE discord.com/oauth2 URL AND NOT `dioreo.app/install` (it is masked behind "Add Dioreo" since 2026-10-18; the reasoning below is from when it was sent bare) (Harkirat, 2026-08-17 09:18 EDT: "use the raw discord invite link instead of /install, since discord will render its raw link uniquely on the platform"): Discord unfurls its OWN authorization links into a rich application card wherever they are pasted. The short site route would paste as an ordinary dead-looking URL, which is worse precisely in the case this button exists for -- sharing inside Discord. The site route is still the right thing for sharing OUTSIDE Discord and is not being retired. ⚠️ It is sent as a BARE link on its own line, deliberately NOT inside a code fence: a fenced block suppresses the unfurl, which would throw away the entire reason the raw URL was chosen. The trade-off is that copying is a long-press/selection rather than a one-tap copy button.
 
 const { buildInviteUrls } = require('../utils/inviteLinks');
-const emojis = require('../utils/emojiMap');
 
 const OWNED_PREFIXES = ['invite_share'];
 
@@ -21,7 +20,8 @@ async function route(interaction) {
     if (interaction.customId === 'invite_share') {
         // PUBLIC, AS ONE HYPERLINKED LINE (2026-10-18 20:15 EDT, Harkirat: "can we change the 'share link''s output to be as a public message (unless public bot messages are restricted via admin commands or other ways)? and also hide the invite link as a hyperlink?"). This reverses two of his earlier calls (2026-08-17): the reply was ephemeral, so a mis-click on a public panel could not post to the channel, and it was the bare URL alone, so Discord unfurled it into its app card and copying gave exactly the link. Now it is public, and the link is masked behind "Add Dioreo". Where a server's /admin policy makes the bot private in this channel, attachGuildPolicy has already forced every reply ephemeral (utils/guildPolicy.js), so nothing here checks it; where Discord itself bars an app from posting publicly, Discord makes the reply ephemeral.
         const url = buildInviteUrls(interaction.client).chooser;
-        return await interaction.reply({ content: `### ${emojis.dioreoKawaii}  [Add Dioreo](${url}) — the COD:M companion bot!`, ephemeral: false });
+        // No emoji in front since 2026-10-21 20:10 EDT (Harkirat: "can we remove the dioreokawaii emoji from the share link's message?").
+        return await interaction.reply({ content: `### [Add Dioreo](${url}) — the COD:M companion bot!`, ephemeral: false });
     }
 }
 
