@@ -46,8 +46,9 @@ function buildContainer(accentColor, client) {
         components: [{
             type: 10,
             content: `## ${emojis.dioreoCombo} Invite Dioreo\n`
-                + `-# The COD:M companion bot\n`
-                + `Gunsmith builds, lucky draw prices and calculators, patch notes and the season calendar, anywhere on Discord!`
+                // Tagline and pitch in a quote bar, and the pitch reworded (2026-10-21 20:13 EDT, Harkirat: drop "builds", plural Gunsmiths, drop "lucky", singular calculator, "patch notes, season calendar, and more").
+                + `> -# The COD:M companion bot\n`
+                + `> Gunsmiths, draw prices and calculator, patch notes, season calendar, and more, anywhere on Discord!`
         }],
         accessory: { type: 11, media: { url: MASCOT_URL } }
     });
