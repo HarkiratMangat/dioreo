@@ -431,7 +431,7 @@ async function route(interaction) {
         let panel;
         if (state.verb === 'info') {
             const basket = state.basketId ? await basketStore.load(actingUserId, state.basketId) : null;
-            // Legacy: only panels posted before the Draw Info button left the nav row (15b49b09) can send `info`. Kept until the code-housekeeping session decides on deletion; see buildDrawInfoPanel's comment.
+            // Legacy: only panels posted before the Draw Info button left the nav row (15b49b09) can send `info`. Kept so those older panels' Draw Info button still answers; see buildDrawInfoPanel's comment.
             panel = buildDrawInfoPanel(basket || { banners: [], region: 'region_10' }, accentColor);
         } else {
             // Help draws its price ladder from the open calculation's region and first draw (2026-10-14 18:33 EDT), so it shows the player their own numbers.

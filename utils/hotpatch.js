@@ -183,7 +183,7 @@ async function applyHotpatchInner(plan, { client }) {
         for (const [rel, mod] of fresh) {
             if (!rel.startsWith('commands/')) continue;
             if (!isCommandShape(mod)) throw new Error(`${rel} no longer exports data + execute`);
-            // 🔴 DISCORD-FACING SHAPE. The command list Discord shows comes from ONE REST PUT at boot. Swapping the module changes what execute() DOES, never what Discord SHOWS -- so a new command would land in client.commands with no way to invoke it, and a changed option or description would leave every user on the old shape, both under a ✅ Applied message. Refuse instead. Re-PUTting from here drags in rate limits, applyGunsmithsScopeChoices's builder mutation and gateableCommandNames -- far more than "minor hot fix" warrants.
+            // 🔴 DISCORD-FACING SHAPE. The command list Discord shows comes from ONE REST PUT at boot. Swapping the module changes what execute() DOES, never what Discord SHOWS -- so a new command would land in client.commands with no way to invoke it, and a changed option or description would leave every user on the old shape, both under a ✅ Applied message. Refuse instead. Re-PUTting from here drags in rate limits and gateableCommandNames -- far more than "minor hot fix" warrants.
             const before = shapeSnapshot.get(rel);
             const now = JSON.stringify(mod.data.toJSON ? mod.data.toJSON() : mod.data);
             if (before !== now) throw new Error(`${rel}: the Discord-facing command shape changed (new command, or an option/description edit). That needs a re-register — use Full restart.`);
@@ -222,7 +222,7 @@ function git(args) {
 // The commit whose code this PROCESS is running -- from utils/logger.js, which resolved it at require time and which noteHotpatch() keeps current across successive patches. 🔴 NOT `git rev-parse HEAD`. Harkirat pulls separately and then hotpatches, so HEAD is ALREADY the new commit by the time this runs: diffing against it yields an empty changed set and a cheerful "nothing to patch" over a process still running old code. Verified 2026-08-20 11:47 EDT that DIORS_COMMIT is never set by anything, so there is no env-var shortcut either.
 function runningCommit() { return require('./logger').currentCommit(); }
 
-// Cheap: one `git diff`, no graph, no file scanning. Autocomplete calls THIS, never runHotpatch -- building the graph reads 128 files, and autocomplete fires per keystroke inside Discord's 3s budget on a shared-core e2-micro. commands/settings.js:54 records what happened the last time something heavy sat on that path: unrelated interactions missed the ACK window and died with 10062.
+// Cheap: one `git diff`, no graph, no file scanning. Autocomplete calls THIS, never runHotpatch -- building the graph reads 128 files, and autocomplete fires per keystroke inside Discord's 3s budget on a shared-core e2-micro. commands/settings.js's "REMOVED (2026-07-14, CPU pass)" comment records what happened the last time something heavy sat on that path: unrelated interactions missed the ACK window and died with 10062.
 function changedRuntimeFiles() {
     const head = git(['rev-parse', 'HEAD']);
     const base = runningCommit();

@@ -63,7 +63,7 @@ function loadCommandModules(client) {
     client.commands = new Collection();
     const commands = [];
 
-    // DYNAMIC COMMAND EXTENSION MODULE LOADER: Scans internal subdirectory directories to dynamically extract and merge independent slash files ⚠️ Resolved against this file's PARENT, not __dirname -- this module lives in bot/, the command modules live in commands/ at the repo root. A plain path.join(__dirname, 'commands') here would silently find nothing and register an empty command set, with no error anywhere.
+    // DYNAMIC COMMAND EXTENSION MODULE LOADER: Loads every top-level .js file in commands/ (no subdirectory scan) ⚠️ Resolved against this file's PARENT, not __dirname -- this module lives in bot/, the command modules live in commands/ at the repo root. A plain path.join(__dirname, 'commands') here would silently find nothing and register an empty command set, with no error anywhere.
     const commandsPath = path.join(__dirname, '..', 'commands');
     if (fs.existsSync(commandsPath)) {
         const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));

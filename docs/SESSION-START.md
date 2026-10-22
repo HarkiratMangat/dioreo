@@ -24,7 +24,7 @@ Never delete or act on a `.claude/worktrees/*` without checking first: run `git 
 
 ## Non-negotiables — one line each; the linked memory/rule is canonical, not this list
 - Never push, merge, or deploy without asking first, every time — `project_git_workflow` memory. Branch commits + running the local dev bot are free.
-- Git workflow (Branch→Commit→Test→Push→PR→Merge→Deploy, version minted at merge) — full glossary in `docs/reference/deployment-and-ops.md` § The Branch→Deploy workflow, canonical memory `project_git_workflow`.
+- Git workflow (Branch→Commit→Test→Push→PR→Merge→Deploy, version minted at merge) — full glossary in `docs/reference/deployment-and-ops.md` § Version tagging → **The lifecycle**, canonical memory `project_git_workflow`.
 - Central scratchpad `docs/ideas/diors-notes.md` — read it, mark items in-file the same session — `project_central_notes_file` memory.
 - Canonical Diors memory path is THIS repo's slug — never the old `-Applications-Diors-Builds` backup — `project_memory_slug_migration` memory.
 - Before filing a new doc, read the folder taxonomy in CLAUDE.md's 🗺️ nav map or `docs/README.md`.

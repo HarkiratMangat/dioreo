@@ -12,7 +12,7 @@ const { uploadLoadoutImage, syncLoadoutMetadata, deriveImageKey } = require('./l
 const { glyphs } = require('./emojiMap');
 const { mentionCommand } = require('./commandMentions');
 
-// token -> { weaponName, gunsmithCode, attachments[], attachmentSlots[], category, badgesRaw, mode: 'MP'|'DMZ'|null, modeSignals, sourceImageUrl, adminId } Same short-lived-token pattern as handlers/manage.js's pendingManageEdits (10 min TTL, set at insertion time by whichever function stashes a new entry).
+// token -> { weaponName, gunsmithCode, attachments[], attachmentSlots[], category, badgesRaw, mode: 'MP'|'DMZ'|null, modeSignals, sourceImageUrl, adminId } Same short-lived-token pattern as handlers/manage/shared.js's pendingManageEdits (10 min TTL, set at insertion time by whichever function stashes a new entry).
 const pendingAutobuilds = new Map();
 
 // Tracks tokens currently mid-upload/write inside confirmAndWrite -- closes a real duplicate-write race: `confirmAndWrite` only deletes a token from `pendingAutobuilds` AFTER its write durably succeeds (a deliberate fix for an earlier data-loss bug, see git history around this file), which means the token stays visible in the Map for the full duration of the Cloudinary upload + Mongo write. Without this marker, two overlapping Confirm clicks on the same token (an admin double-click, or a race with something else reading the same token) would both pass the "does this token still exist" guard and both independently upload+write, producing two duplicate builds for one weapon. Always released in a `finally` so an unexpected throw (e.g. doc.save() failing) doesn't permanently strand the token as "in progress" for the rest of its 10-minute TTL.

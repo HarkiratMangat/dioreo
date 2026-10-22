@@ -1,7 +1,7 @@
 // ==========================================
 // /manage — DRAWS PAGE
 // ==========================================
-// Every DB-mutating operation the Draws page reaches: single add/edit, bulk add/replace/delete, and purge. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js, which owns the customId parsing and the generic confirm/cancel glue. See handlers/manage/shared.js for thumbnailNote/resolveThumbnailsForDraws/extractCommitError/loadOrCreateSeasonalDoc, all shared with calendar.js/season.js -- the old in-memory Undo mechanism that also used to live there was retired in plan 2 Task 7.
+// Every DB-mutating operation the Draws page reaches: single add/edit, bulk add/replace/delete, and purge. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js, which owns the customId parsing and the generic confirm/cancel glue. See handlers/manage/shared.js for thumbnailNote/resolveThumbnailsForDraws/extractCommitError/loadOrCreateSeasonalDoc, all shared with calendar.js/season.js -- the old in-memory Undo mechanism that also used to live there was retired in plan 2 Task 7.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S. Every function here is awaited from inside handlers/router.js's single top-level try/catch (via handlers/manage/index.js) -- do NOT add a try/catch here that swallows, and keep every error-branch reply an AWAITED call. See .claude/rules/interaction-router.md.
 //

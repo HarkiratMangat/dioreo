@@ -1,7 +1,7 @@
 // ==========================================
 // /manage — SHARED HELPERS & CROSS-PAGE STORES
 // ==========================================
-// Everything the /manage panel's pages have in common: the undo store, the pending-confirmation token maps, the cross-group search/pick resolvers, and the `prompt()` render helper. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) — see handlers/manage/index.js for the thin dispatcher that reads from here, and the per-page modules for everything that ISN'T shared.
+// Everything the /manage panel's pages have in common: the undo store, the pending-confirmation token maps, the cross-group search/pick resolvers, and the `prompt()` render helper. Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md) — see handlers/manage/index.js for the thin dispatcher that reads from here, and the per-page modules for everything that ISN'T shared.
 //
 // ⚠️ THE STORES BELOW ARE MODULE-LEVEL AND MANAGE-PRIVATE, same as before the split. They rely on Node caching this module so exactly one instance exists -- require it by exactly one path (`./shared` from inside handlers/manage/, never a relative path that resolves differently).
 

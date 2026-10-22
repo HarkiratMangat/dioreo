@@ -134,7 +134,7 @@ function applySelection(banners, selected) {
     return kept;
 }
 
-// The slash-command shortcut (2026-10-13 12:47 EDT, Harkirat: "yeah wire them"). `draw`, `pulls` and `balance` sat on /draw calculator doing nothing once the setup form arrived. Now `draw` opens a NEW calculation straight on its result -- one line at `pulls`, the player's `balance` -- skipping the form and Calculate. `balance` alone lands on whichever calculation opens. `pulls` is clamped to the draw's real pull count, since two draws have 7 pulls and the option allows 10 (Discord's min/max is one range for every draw). Pure, so it is tested without Discord or Mongo.
+// The slash-command shortcut (2026-10-13 12:47 EDT, Harkirat: "yeah wire them"). `draw`, `pulls` and `balance` sat on /draw calculator doing nothing once the setup form arrived. `draw` opens a NEW calculation straight on its result -- one line at `pulls`, the player's `balance` -- skipping the form and Calculate. `balance` alone lands on whichever calculation opens. `pulls` is clamped to the draw's real pull count, since two draws have 7 pulls and the option allows 10 (Discord's min/max is one range for every draw). Pure, so it is tested without Discord or Mongo. [Now: the draw/pulls/balance options were unwired from the slash command on 2026-10-17 (commands/drawprices.js), so no live command reaches this; it is kept, and still tested in scripts/drawCalcBudget.test.js.]
 function slashShortcut({ draw = null, pulls = null, balance = null, region = 'region_10' }) {
     const notes = [];
     if (pulls !== null && !draw) notes.push('`pulls` needs a `draw` to count against, so it was left out.');

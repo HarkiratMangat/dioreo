@@ -17,15 +17,15 @@ It was renamed from its original filename `all-nameplates-decorations.json` to `
 
 ## Verified structure
 
-Checked by parsing the file programmatically on 2026-08-15 01:00 EDT, not sampled by eye:
+Re-checked by parsing the file programmatically on 2026-10-22 (first checked 2026-08-15 01:00 EDT, when it held 88 collections and 925 SKUs), not sampled by eye:
 
-- **88 top-level collections** (e.g. `"Underworld"`, `"Solar Eclipse"`, `"Sunkissed"`, `"Palworld"`, `"Toy Story"`), each holding a `nameplates` array and a `decorations` array of design groups.
-- **235 nameplate design groups → 262 total SKUs (variants).**
-- **490 decoration design groups → 663 total SKUs (variants).**
-- **925 SKUs total, 0 duplicate `sku_id` values anywhere in the file.**
-- Every nameplate variant carries `palette` + `palette_hex` — 0 of 262 missing either field.
+- **95 top-level collections** (e.g. `"Underworld"`, `"Solar Eclipse"`, `"Sunkissed"`, `"Palworld"`, `"Toy Story"`), each holding a `nameplates` array and a `decorations` array of design groups.
+- **260 nameplate design groups → 289 total SKUs (variants).**
+- **521 decoration design groups → 697 total SKUs (variants).**
+- **986 SKUs total, 0 duplicate `sku_id` values anywhere in the file.**
+- Every nameplate variant carries `palette` + `palette_hex` — 0 of 289 missing either field.
 - No decoration variant carries `palette`/`palette_hex` — decorations have no bed/palette concept, confirmed 0 exceptions.
-- The `name` vs. `variant_label`/`variant_value` split is 100% consistent across all 925 entries: a single-variant group's one variant carries `name` (the plain design name); a multi-variant group's variants each carry `variant_label` + `variant_value` instead, never both — 0 exceptions found.
+- The `name` vs. `variant_label`/`variant_value` split is 100% consistent across all 986 entries: a single-variant group's one variant carries `name` (the plain design name); a multi-variant group's variants each carry `variant_label` + `variant_value` instead, never both — 0 exceptions found.
 
 ### Shape
 
@@ -104,4 +104,4 @@ This file is the bootstrap data for the bulk-cache pipeline: `scripts/syncCatalo
 
 ⚠️ **Both nameplates and decorations now render from the SKU-addressed `/animated` endpoint above**, not `/video` — pivoted 2026-08-15 10:31 EDT once the endpoint was confirmed to return a genuine multi-frame APNG for nameplates too (previously nameplates sourced from the slug-based `asset.webm` route, needing ffmpeg's `-c:v libvpx-vp9` flag to force real alpha decoding; that workaround is gone now that both kinds share the same simpler `-f apng` extraction). See `utils/nameplateWebpCache.js`'s header for the full pipeline history.
 
-🚧 **The full 925-SKU run against the PROD bot is a v3 pre-launch blocker, not scheduled to this pipeline's build session** — the prod bot currently has no access to the "dioreoland" storage server, and fixing that means enabling guild-install on the prod app, which would also let real users guild-install the live bot early (undesired before v3 launches). See `docs/db-deferred-list.md`. The pipeline itself is fully built and verified against the dev bot; pointing it at prod is a config change (the two `*_CACHE_CHANNEL_ID` env vars + the invite), not a code change.
+🚧 **The full 986-SKU run against the PROD bot is a v3 pre-launch blocker, not scheduled to this pipeline's build session** — the prod bot currently has no access to the "dioreoland" storage server, and fixing that means enabling guild-install on the prod app, which would also let real users guild-install the live bot early (undesired before v3 launches). See `docs/db-deferred-list.md`. The pipeline itself is fully built and verified against the dev bot; pointing it at prod is a config change (the two `*_CACHE_CHANNEL_ID` env vars + the invite), not a code change.

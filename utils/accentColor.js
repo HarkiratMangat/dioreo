@@ -76,9 +76,9 @@ function blendGradientColors([first, second]) {
     return (Math.round((r1 + r2) / 2) << 16) | (Math.round((g1 + g2) / 2) << 8) | Math.round((b1 + b2) / 2);
 }
 
-// Per-command containers ship their own fixed brand color (Police Blue, Chinese Violet, etc. — see the palette in CLAUDE.md). This resolver lets a user override that on a per-preference basis via /settings' "Accent Color Style" option:
+// Per-command containers ship their own fixed brand color (Police Blue, Chinese Violet, etc. — see each command's own preset colour constant, e.g. commands/calendar.js). This resolver lets a user override that on a per-preference basis via /settings' "Accent Color Style" option:
 //   - 'preset'         : each command keeps its own preset color, EXCEPT /settings itself (which has no fixed brand color of its own) falls back to the user's avatar color instead. Callers signal this via `defaultBehavior: 'avatar'`. ("Pre- Designed Palette" in the /settings UI.) 'default' is the old value name for this same option — treated identically for pre-existing saved docs.
-//   - 'avatar'         : every container uses a color extracted from the user's avatar. The real default (UserPreference.js's schema default), not 'preset'.
+//   - 'avatar'         : every container uses a color extracted from the user's avatar.
 //   - 'banner'         : every container uses a color extracted from the user's banner. Falls back to avatar if the user has no banner set at all.
 //   - 'displayName'    : every container uses a color blended from the user's Nitro Display Name Styles gradient. Falls back to avatar if not set up.
 //   - 'dynamicProfile' : NOT a single deterministic style like the others — see resolveDynamicProfileColor below, which randomly picks between every source the user has available on each new slash-command launch and holds that pick steady across re-renders of that message. Routed around this resolver entirely by getAccentColorForCommand/settings.js, since it needs `interaction` (for message-based pick caching) rather than just a pre-resolved `userFetch`.

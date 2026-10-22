@@ -11,7 +11,7 @@
 //
 // ⚠️ ORDER IS LOAD-BEARING ABOVE THE CHAIN, MEANINGLESS INSIDE IT. The guards run in a fixed order for real reasons (see each one's comment). The dispatch chain does not: the modules' prefixes are mutually exclusive, checked mechanically when they were extracted, so no two can claim the same id.
 
-// (resolveThumbnail moved to handlers/manage.js with the bulk draw-save helpers that used it)
+// (resolveThumbnail moved out of this file with the bulk draw-save helpers that used it; handlers/manage/draws.js now imports it from utils/cloudinaryCache)
 const { runWithContext, getContext, hashUserId } = require("../utils/requestContext");
 const { recordInteractionEvent, markOutcome, instrumentAck, instrumentAutocomplete } = require("../utils/eventStore");
 const { cancelPanelExpiry } = require("../utils/passiveExpiry");
@@ -68,7 +68,7 @@ const handleNavigationInteraction = late('navigation', 'handleNavigationInteract
 // ==========================================
 // ROUTER-PRIVATE STATE
 // ==========================================
-// One Map, and it stays here on purpose: the anti-spam guard covers EVERY button and select in the bot, so it belongs to the dispatcher rather than to any one subsystem. The /manage stores that used to sit beside it moved into handlers/manage.js, which is their only reader.
+// One Map, and it stays here on purpose: the anti-spam guard covers EVERY button and select in the bot, so it belongs to the dispatcher rather than to any one subsystem. The /manage stores that used to sit beside it moved into handlers/manage/shared.js, which is their only reader.
 
 
 // Light anti-spam guard (2026-07-13) -- buttons/selects go through a deferUpdate()+edit cycle that can take a moment (DB round-trips, Cloudinary lookups, etc.), so rapid double/triple-clicking one while the previous click is still processing can stack up racing edits. One entry per distinct user (last-accepted timestamp, not per-click), so this never meaningfully grows -- no TTL needed.
@@ -170,7 +170,7 @@ async function handleInteractionInner(interaction) {
 
     // --- MANAGE PANEL ADMIN-ONLY LOCK (2026-07-14) --- /manage's own slash-command execute() only ever checked ALLOWED_ADMIN_ID once, at the initial invocation (commands/manage.js) — none of the ~25 button/select/modal-submit handlers this panel spawns re-checked who was clicking, so anyone who could see the panel message (e.g. run non-ephemeral via the `hidden:false` option, or just present in the same channel) could press its buttons and mutate bot data. Rather than patch every individual handler, this is ONE centralized choke point covering every custom_id prefix /manage ever generates — self-maintaining as long as new manage actions keep using these same prefixes, which they always have. Deliberately scoped to ONLY these prefixes (not every button/select/modal bot-wide) so /settings, /colors, draws/calendar pagination, etc. stay completely unaffected. ⚠️ NO TYPE TEST HERE, DELIBERATELY (2026-08-14 09:59 EDT). This used to read `isButton() || isStringSelectMenu() || isModalSubmit()`, which is NARROWER than the `admin_` dispatcher fifteen lines above — that one also covers channel- and role-selects, and commands/admin.js mints both. Nothing was ungated, because /manage happens to use only those three types today; the day it grows a channel-select (picking an announcement channel, say) that component would have routed straight past this gate, silently. The prefix match below is what selects the guarded set, so the type list added no protection and only supplied a way to fall out of scope. `customId` is present on every component and modal interaction and absent on slash commands and autocomplete, which is exactly the boundary wanted.
     if (interaction.customId) {
-        // ⚠️ EXPANDED 2026-08-13 from one blanket isAdmin() check to a PER-COMMAND gate -- this used to be a flat prefix LIST checked against isAdmin() alone, which meant someone granted access to only ONE admin command (say, /alerts) could still click every button on /manage's own panel, since every prefix shared the exact same check. Per-command permissions (utils/adminAccess.js's hasCommandAccess) are cosmetic on the slash command alone unless this shared choke point also enforces them per-prefix.
+        // ⚠️ EXPANDED 2026-08-13 from one blanket isAdmin() check to a PER-COMMAND gate -- this used to be a flat prefix LIST checked against isAdmin() alone, which meant someone granted access to only ONE admin command (say, /autobuild) could still click every button on /manage's own panel, since every prefix shared the exact same check. Per-command permissions (utils/adminAccess.js's hasCommandAccess) are cosmetic on the slash command alone unless this shared choke point also enforces them per-prefix.
         const MANAGE_PREFIX_COMMAND = {
             'mng_': 'manage', 'modal_': 'manage', 'add_loadout_': 'manage', 'edit_loadout_': 'manage',
             'edit_calendar_': 'manage', 'edit_draw_': 'manage', 'add_draw_': 'manage',
@@ -199,7 +199,7 @@ async function handleInteractionInner(interaction) {
             cancelPanelExpiry(interaction.message.id);
         }
 
-        // --- /manage PANEL (2026-08-13 17:40 EDT) --- every branch this panel mints lives in handlers/manage.js. Dispatched HERE, immediately after the permission guard above and before any other routing, because every /manage custom_id is uniquely prefixed: no branch below could ever match one, so consulting the panel first changes nothing about which handler wins. It must stay BELOW the guard -- that check is what decides who may click.
+        // --- /manage PANEL (2026-08-13 17:40 EDT) --- every branch this panel mints lives in handlers/manage/index.js. Dispatched HERE, immediately after the permission guard above and before any other routing, because every /manage custom_id is uniquely prefixed: no branch below could ever match one, so consulting the panel first changes nothing about which handler wins. It must stay BELOW the guard -- that check is what decides who may click.
         markHandler('manage');
         if (await handleManageInteraction(interaction)) return;
 
@@ -256,9 +256,9 @@ async function handleInteractionInner(interaction) {
         const { fuzzyMatch, findWeaponMatches } = require('../utils/search');
 
         try {
-            // NOTE (removed 2026-07-09): /manage used to have its own autocomplete route here, for its search options (draws/loadouts/calendar/patchnotes edit/delete autocomplete). That entire subcommand-group/option structure was replaced by the button+modal panel (see manage.js) -- Edit/Delete now collect their search query through a one-field modal instead of a slash-command autocomplete option, resolved in handlers/manage.js's `mng_search_` modal-submit handler. Nothing on /manage triggers autocomplete anymore.
+            // NOTE (removed 2026-07-09): /manage used to have its own autocomplete route here, for its search options (draws/loadouts/calendar/patchnotes edit/delete autocomplete). That entire subcommand-group/option structure was replaced by the button+modal panel (see manage.js) -- Edit/Delete now collect their search query through a one-field modal instead of a slash-command autocomplete option, resolved in handlers/manage/shared.js's `mng_search_` modal-submit handler. Nothing on /manage triggers autocomplete anymore.
 
-            // === USER FRONT-END AUTOCOMPLETE (/all, /dmz, /patch) === Required because we changed the base command name to 'patch' for subcommands
+            // === USER FRONT-END AUTOCOMPLETE (/patch) === Required because we changed the base command name to 'patch' for subcommands
             if (commandName === 'patch') {
                 const SeasonalData = require('../models/SeasonalData');
                 const { displayTitle } = require('../commands/patchnotes');
@@ -273,10 +273,10 @@ async function handleInteractionInner(interaction) {
                 return await interaction.respond(filtered.map(p => ({ name: displayTitle(p), value: p._id.toString() })));
             }
 
-            // === ROUTE B2: /help's cmd: option -- suggests every real command, including the live per-category Gunsmith commands (/ar, /lmg, etc.), not just the static entries ===
+            // === ROUTE B2: /help's cmd: option -- suggests every real command from commands/help.js's staticCommands (/gunsmith is one entry, not one per subcommand) ===
             if (commandName === 'help') {
                 const { suggestHelpCommandNames } = require('../commands/help');
-                // Restricted entries (/admin for server admins, /manage//alerts//autobuild for the bot's own whitelist) are suggested only to someone who could use them -- see commands/help.js's note on filtering all surfaces, not just the visible menu.
+                // Restricted entries (/admin for server admins, /manage//bot//autobuild for the bot's own whitelist) are suggested only to someone who could use them -- see commands/help.js's note on filtering all surfaces, not just the visible menu.
                 const { isServerAdmin } = require('../utils/guildPolicy');
                 const { isAdmin, hasCommandAccess } = require('../utils/adminAccess');
                 // suggestHelpCommandNames also matches on alias keywords (e.g. "server" -> /admin, "database" -> /manage) -- see commands/help.js's COMMAND_ALIASES.

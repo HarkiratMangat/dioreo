@@ -5,7 +5,7 @@
 //  - NEVER throws — every failure path is swallowed.
 //  - NEVER blocks — fire-and-forget with an 8s abort timeout.
 //  - Throttled per (level+title) to 1/min, so an error loop can't spam the channel or self-DoS.
-//  - Persists each SENT alert to Mongo (utils/alertStore, added 2026-07-20) as an INDEPENDENT fire-and-forget — the store write and the webhook POST never await each other, so a DB outage can't block a Discord alert (a DB failure is itself an alert), and a Discord outage can't block the log. Because of that decoupling the store-assigned id is NOT shown on the embed; it lives in /alerts.
+//  - Persists each SENT alert to Mongo (utils/alertStore, added 2026-07-20) as an INDEPENDENT fire-and-forget — the store write and the webhook POST never await each other, so a DB outage can't block a Discord alert (a DB failure is itself an alert), and a Discord outage can't block the log. Because of that decoupling the store-assigned id is NOT shown on the embed; it lives on the `/bot analytics` Alerts page.
 // LOG_WEBHOOK_URL is a SECRET (posts to Harkirat's channel) — .env only, never the repo.
 
 const { formatUptime, recordAlert } = require('./alertStore');
@@ -40,7 +40,7 @@ function describe(v) {
 //   opts.ping: force-override whether to actively @mention (rarely needed now that warn pings by default)
 //   opts.silent: LOG to the store but do NOT post to the Discord channel — for routine, self-recovering
 //     gateway churn (reconnect/resume, every 1-3h) that's noise in the channel but worth keeping in the
-//     persisted log for /alerts + a future /status. A silent alert can never ping (no message to attach to).
+//     persisted log for the `/bot analytics` Alerts page + a future /status. A silent alert can never ping (no message to attach to).
 function sendAlert(title, detail = '', level = 'error', opts = {}) {
     const url = process.env.LOG_WEBHOOK_URL;
     if (!url) return; // alerting disabled (store + webhook are both off when unconfigured)

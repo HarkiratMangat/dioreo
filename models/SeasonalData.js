@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const SeasonalDataSchema = new mongoose.Schema({
     docType: { type: String, default: 'global', unique: true },
 
-    // NOTE (added during review): these four titles are set by the "Initialize New Season" and "Edit Season Titles" admin modals (handlers/manage.js's modal_wipe_season and modal_season_titles_deadlines handlers), and read as fallback display text in seasonend.js and draws.js — but were missing from the schema, so .save() was silently discarding them every time (Mongoose only persists declared paths).
+    // NOTE (added during review): these four titles are set by the "Initialize New Season" and "Edit Season Titles" admin modals (handlers/manage/season.js's modal_wipe_season and modal_season_titles_deadlines handlers), and read as fallback display text in seasonend.js and draws.js — but were missing from the schema, so .save() was silently discarding them every time (Mongoose only persists declared paths).
     currentSeasonTitle: { type: String, default: '' },
     // The season's own emoji (2026-10-19 09:30 EDT), typed in front of the title in /manage and split off by core/ops/season.js so the title stays plain. Blank falls back to emojiMap's season{N} (utils/seasonEmoji.js).
     currentSeasonEmoji: { type: String, default: '' },
@@ -29,7 +29,7 @@ const SeasonalDataSchema = new mongoose.Schema({
     // /patchnotes
     patchNotes: [{
         title: { type: String }, // Now holds just the season # & name (e.g. "Season 6: Take Your Heart"),
-        // not the full "Balance Changes for..." string — see patchnotes.js. Kept auto-synced to currentSeasonTitle for the current entry (see handlers/manage.js's modal_season_titles_deadlines) -- titleOverride below is what actually decides what's DISPLAYED. The season emoji carried onto the current entry beside its title, by the same sync that keeps `title` matching currentSeasonTitle (2026-10-19 09:30 EDT).
+        // not the full "Balance Changes for..." string — see patchnotes.js. Kept auto-synced to currentSeasonTitle for the current entry (see handlers/manage/season.js's modal_season_titles_deadlines) -- titleOverride below is what actually decides what's DISPLAYED. The season emoji carried onto the current entry beside its title, by the same sync that keeps `title` matching currentSeasonTitle (2026-10-19 09:30 EDT).
         emoji: { type: String, default: '' },
         titleOverride: { type: String, default: '' }, // Manual per-entry title override (2026-07-24,
         // /manage "Add New Season"/"Past Seasons" edit) -- lets Harkirat set a placeholder season title on a patch entry when the real season title isn't finalized yet (e.g. patch notes released before the new season's name is announced). Blank = no override, falls back to `title` above. Every display site must read `titleOverride || title`, never `title` alone -- see patchnotes.js's exported `displayTitle()`.

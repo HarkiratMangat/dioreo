@@ -63,14 +63,14 @@ async function save(discordId, basket) {
     return doc;
 }
 
-// The saved-basket list on the calculator's landing page (decision 8) -- NAMED baskets only. Naming is the signal a player intends to keep coming back to a basket (it is also what exempts it from the 30-day TTL, see models/DrawBasket.js); an unnamed in-progress basket is session state for whichever live panel already has it open, not something to surface in a picker list.
+// The saved-basket list on the calculator's landing page (decision 8) -- NAMED baskets only. Naming is the signal a player intends to keep coming back to a basket (it is also what exempts it from the 30-day expiry, see pruneExpiredBaskets below and models/DrawBasket.js); an unnamed in-progress basket is session state for whichever live panel already has it open, not something to surface in a picker list.
 async function listForUser(discordId) {
     return DrawBasket.find({ discordId, name: { $exists: true, $ne: '' } })
         .sort({ name: 1 })
         .lean();
 }
 
-// Renaming to a blank string deliberately returns a basket to "unnamed" ($unset, not $set to '') -- and therefore back under the TTL -- rather than storing an empty-string name that would silently defeat models/DrawBasket.js's partialFilterExpression (`{ name: { $exists: false } }`, which does not match a doc holding `name: ''`).
+// Renaming to a blank string deliberately returns a basket to "unnamed" ($unset, not $set to '') -- and therefore back under the 30-day expiry -- rather than storing an empty-string name (expiredBasketFilter also catches `name: ''`, but a true field absence is the canonical "unnamed" shape, see models/DrawBasket.js).
 async function rename(discordId, basketId, name) {
     const existing = await load(discordId, basketId);
     if (!existing) return null;

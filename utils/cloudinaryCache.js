@@ -6,7 +6,7 @@
 //
 // Distinct from utils/loadoutRender.js's Cloudinary usage -- that file only ever builds URL strings for images an admin already uploaded to Cloudinary by hand (bare key or full URL). This module is the first place in the bot that actually calls Cloudinary's upload/delete API itself.
 //
-// Cloudinary has NO native per-asset TTL/auto-expiry (confirmed against the current cloudinary_npm docs before building this -- don't assume otherwise if you revisit this). Time-based cleanup is therefore done by us: pruneExpiredThumbnails() below, run on a schedule (see bot/lifecycle.js's handleBotReady), not something Cloudinary does on its own.
+// Cloudinary has NO native per-asset TTL/auto-expiry (confirmed against the current cloudinary_npm docs before building this -- don't assume otherwise if you revisit this). Time-based cleanup is therefore done by us: pruneExpiredThumbnails() below, run on a schedule (see bot/lifecycle.js's runCloudinaryCleanup(), scheduled from the ClientReady handler in registerLifecycle()), not something Cloudinary does on its own.
 const cloudinary = require('./cloudinaryClient'); // timed proxy over the SDK -- see utils/cloudinaryClient.js
 
 // The Cloudinary Node SDK auto-configures itself from process.env.CLOUDINARY_URL the moment it's required -- no explicit cloudinary.config() call needed. This just fails loudly at boot if that env var is missing, instead of every upload silently failing later with an opaque auth error.

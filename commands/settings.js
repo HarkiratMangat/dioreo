@@ -28,7 +28,7 @@ module.exports = {
         .setName('settings')
         // Trimmed 2026-07-18 (v2 quick-wins batch, mobile-width audit) -- the old 83-char version truncated to "..." on Discord mobile's command picker row; every top-level/subcommand description in this pass was checked against that same narrow row, not desktop.
         .setDescription('Customize your bot settings and preferences')
-        // Jump-to (2026-10-19 17:48 EDT, docs/ROADMAP.md's "/settings jump-to options"): land on page 1 (Visibility) or page 2 (Preferences) directly, or open the View Colors panel without going through the dashboard's button. Registered BEFORE `visibility` because Discord's option picker follows registration order, and the roadmap's own shape reads `/settings open:… visibility:…`. Named `customize:` when it shipped (v3.93.0) and renamed `open:` 2026-10-19 19:33 EDT at Harkirat's request: the choice says which page OPENS, it does not customize anything itself. Per-invocation only, never saved -- same shape as /timestamp's `view`.
+        // Jump-to (2026-10-19 17:48 EDT, docs/ROADMAP.md's "/settings jump-to options"): land on the Visibility or Preferences page directly, or open the View Colors panel without going through the dashboard's button. Registered BEFORE `visibility` because Discord's option picker follows registration order, and the roadmap's own shape reads `/settings open:… visibility:…`. Named `customize:` when it shipped (v3.93.0) and renamed `open:` 2026-10-19 19:33 EDT at Harkirat's request: the choice says which page OPENS, it does not customize anything itself. Per-invocation only, never saved -- same shape as /timestamp's `view`.
         .addStringOption(option => option.setName('open').setDescription('Open straight on one part of your settings.').addChoices(
             { name: 'Visibility', value: 'visibility' },
             { name: 'Preferences', value: 'preferences' },
@@ -39,7 +39,7 @@ module.exports = {
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
-    // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region dropdown + hex-code lines + footer pushed the single-page layout close to Discord's 40-component cap -- see the `set_page_` button handler in handlers/settings.js for how page navigation re-invokes this with a target page.
+    // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences (2 = Your Stats, added 2026-10-20 and hidden while STATS_VISIBLE is false). Added once the new region dropdown + hex-code lines + footer pushed the single-page layout close to Discord's 40-component cap -- see the `set_page_` button handler in handlers/settings.js for how page navigation re-invokes this with a target page.
     async execute(interaction, pageOverride = 0, { resetArmed = false } = {}) {
         const userId = interaction.user.id;
         // `open:` only exists on a real slash invocation. Every re-render (the toggle/set/set_page handlers in handlers/settings.js) calls this with a button or select interaction and its own pageOverride, so the guard keeps those exactly as they were.
