@@ -290,6 +290,25 @@ t('saving the menu replaces an older bare-name rule, so unticking a subcommand u
     assert.deepStrictEqual([...saved.ephemeralCommands].sort(), ['Old Gone Command', 'draw calculator'], 'the bare "draw" must go; a rule the menu could not show must stay');
 });
 
+t('a bare-name rule whose subcommands fall past the 25-option cut stays hidden for those subcommands', async () => {
+    const admin = require('../commands/admin');
+    // 25 commands sort ahead of 'zz', so both of its subcommands are cut from the menu.
+    const fill = Array.from({ length: 25 }, (_, i) => `a${String(i).padStart(2, '0')}`);
+    const saved = { guildId: 'G_1', ephemeralCommands: ['zz'], save: async () => {} };
+    const original = GuildSettings.findOne;
+    GuildSettings.findOne = () => saved;
+    try {
+        const { interaction } = makeInteraction({ isAdmin: true });
+        Object.assign(interaction, { customId: 'admin_cmd_select', values: [] });
+        interaction.client.gateableCommandNames = [...fill, 'zz one', 'zz two'];
+        await admin.handleComponent(interaction);
+    } finally {
+        GuildSettings.findOne = original;
+        guildPolicy.invalidateGuildPolicy('G_1');
+    }
+    assert.deepStrictEqual([...saved.ephemeralCommands].sort(), ['zz one', 'zz two'], 'subcommands the menu could not show must keep the bare rule, as full paths');
+});
+
 t('each page offers Clear only when it has rules, and the role screen keeps the four tabs', () => {
     const { buildChannels, buildRoles, buildRoleScope, buildCommands } = require('../commands/admin').__testRenderers;
     const ids = page => JSON.stringify(page);

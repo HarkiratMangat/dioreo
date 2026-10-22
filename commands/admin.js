@@ -378,10 +378,17 @@ async function handleComponent(interaction) {
 
         case 'admin_cmd_select':
             settings = await updateGuildSettings(guildId, actorId, doc => {
-                // Merge, not replace (v3-pre-release review, finding #28) -- the menu can only ever show/return the first SELECT_OPTION_CAP (25) of the sorted gateable list (see buildCommands' own comment), so a straight replace silently deleted every existing rule on a command past that cutoff the moment an admin touched this menu for an unrelated reason. Preserve whatever was already set for a command this render of the menu couldn't even show. A bare command name stored before per-subcommand rules ('draw') is dropped once its subcommands are in the menu: the menu showed them ticked, so what comes back is the admin's real choice. Keeping it would hide /draw prices forever after the admin unticked it.
-                const { shown } = menuCommands(interaction.client.gateableCommandNames || []);
-                const outsideMenu = (doc.ephemeralCommands || []).filter(c => !shown.includes(c) && !shown.some(v => v.startsWith(`${c} `)));
-                doc.ephemeralCommands = [...outsideMenu, ...values];
+                // Merge, not replace (v3-pre-release review, finding #28) -- the menu can only ever show/return the first SELECT_OPTION_CAP (25) of the sorted gateable list (see buildCommands' own comment), so a straight replace silently deleted every existing rule on a command past that cutoff the moment an admin touched this menu for an unrelated reason. Preserve whatever was already set for a command this render of the menu couldn't even show. A bare command name stored before per-subcommand rules ('draw') is replaced by full paths: the menu showed its subcommands ticked, so the values that come back are the admin's real choice for those, and keeping the bare name would hide /draw prices forever after the admin unticked it. Any of its subcommands the menu could NOT show inherit the bare rule as a full path, so the rewrite never un-hides an answer the admin had no chance to see (commit security review 2026-10-22 14:12 EDT: dropping the bare name outright would fail open past the 25-option cut).
+                const gateable = interaction.client.gateableCommandNames || [];
+                const { shown } = menuCommands(gateable);
+                const outsideMenu = [];
+                for (const c of doc.ephemeralCommands || []) {
+                    if (shown.includes(c)) continue;
+                    const subcommands = gateable.filter(v => v.startsWith(`${c} `));
+                    if (!subcommands.length) outsideMenu.push(c);
+                    else outsideMenu.push(...subcommands.filter(v => !shown.includes(v)));
+                }
+                doc.ephemeralCommands = [...new Set([...outsideMenu, ...values])];
             });
             break;
 
