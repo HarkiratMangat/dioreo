@@ -2,7 +2,7 @@
 /**
  * buildLegalPages.js — renders docs/legal/*.md into styled, self-contained HTML at the site root (public/, flat — see the note on OUT), for hosting on Cloudflare Pages.
  *
- * WHY A BUILD SCRIPT AND NOT HAND-WRITTEN HTML: The Markdown files are the legally operative source of truth (PRIVACY.md's own Appendix C points readers at them, and the ToS cites section numbers). Keeping a hand-maintained HTML copy guarantees the two drift apart, and a privacy policy that contradicts itself across two published URLs is worse than having none. So the .md stays canonical and the HTML is generated. Re-run after ANY edit:
+ * WHY A BUILD SCRIPT AND NOT HAND-WRITTEN HTML: The Markdown files are the legally operative source of truth (PRIVACY.md's own Appendix B points readers at them, and the ToS cites section numbers). Keeping a hand-maintained HTML copy guarantees the two drift apart, and a privacy policy that contradicts itself across two published URLs is worse than having none. So the .md stays canonical and the HTML is generated. Re-run after ANY edit:
  *
  *     node scripts/buildLegalPages.js
  *

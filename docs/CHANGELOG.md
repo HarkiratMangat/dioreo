@@ -29,7 +29,14 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.107.0 — 2026-10-22 01:06 EDT (#216) — the overnight housekeeping sweep: stale docs, rules, records and comments corrected, unused code removed
+## Pre-Release v3.108.0 — 2026-10-22 11:15 EDT (#PR) — the Privacy Policy keeps one change-history list
+**From Harkirat, 2026-10-22 10:58 EDT:** "why does the privacy list the changes twice? That's kind of redundant and useless. Let's just do one collective like list for it."
+
+- **One list.** §12.1 *Revision history* is the only change list now. Its old twin, *Appendix B — Change history*, told the same 18 versions in shorter words and had begun to disagree with it (1.11 said "ten" cached colour fields there and "eighteen" in §12.1). Each pair was compared row by row first, and the details only Appendix B had (1.17's `stats` entry and Reset button, when and why the 1.14 row was written, 1.6's `scripts/lib/chronicle.js`, 1.5's `*PaletteSource`, 1.2's `db-theme`) went into §12.1.
+- **Appendix C is now Appendix B.** The two rows that named it (1.12 and 1.2) and the build script's header comment follow, and a pending 1.18 row records the change, so the policy reads 1.18 *(pending)*. Nothing it collects, shares or keeps changed.
+- **The Terms have the same pair** (§19.1 and *Appendix — Change history*). They are untouched until Harkirat says.
+
+## Pre-Release v3.107.0 — 2026-10-22 01:06 EDT (#216 · `175fb674`) — the overnight housekeeping sweep: stale docs, rules, records and comments corrected, unused code removed
 **From the overnight housekeeping sweep** (Harkirat, 2026-10-22). Docs, comments and unused code only; the one player-visible change is three corrected strings.
 
 - **Dead code:** unused imports and helpers removed across 23 files, plus two exports nothing used (`noteCommandSafely` in `utils/userStats.js`, `regionsWithData` in `commands/drawCalculator.js`). The module graph and every module's export list were compared against the previous commit; only those two exports differ. Two test files lost an unused import and nothing else. A scan for exports that nothing else references found 89 more; they are kept as a list in `docs/claude/2026-10-22-unused-exports-scan.md` and filed, not removed.
