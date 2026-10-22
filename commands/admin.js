@@ -489,7 +489,8 @@ function memberPicture(settings, { roleIds, isAdmin, gate, channelIds = [] }) {
 
 function pictureLines({ base, changes }) {
     const lines = [`${visText(base.visibility)} everywhere${changes.length ? ', except:' : ''}`];
-    for (const c of changes.slice(0, 8)) lines.push(`${visText(c.r.visibility)} in <#${c.id}>`, `-# ${checkReason(c.r)}`);
+    // Inside a command's own block the reason is the rule within it; "has its own settings" would repeat the block's heading.
+    for (const c of changes.slice(0, 8)) lines.push(`${visText(c.r.visibility)} in <#${c.id}>`, `-# ${checkReason(c.r.tier === 'command' ? c.r.inner : c.r)}`);
     if (changes.length > 8) lines.push(`-# +${changes.length - 8} more channels`);
     return lines;
 }
