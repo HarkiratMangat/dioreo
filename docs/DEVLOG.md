@@ -275,6 +275,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-20 15:04 EDT — Bulk /autobuild: one batch panel for up to ten screenshots (v3.102.0-pre)
 - 2026-10-20 19:57 EDT — /timestamp reads your time zone right, and Your Stats arrives (v3.104.0-pre)
 - 2026-10-21 17:49 EDT — The command refresh: a filtered calendar, a draw end-date reminder, and layouts picked from mock-ups (v3.105.0-pre)
+- 2026-10-21 22:38 EDT — The bot's presence becomes a rotating card, and /invite gets his layout (v3.106.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4662,6 +4663,14 @@ Harkirat spent two days refining command layouts on the dev bot, mostly from his
 **The reminder.** Returning draws only have a release date, so the calendar could never mark them finished. The bot now DMs the owner once a day, just after the game's update, with a card whose button saves the end date and redraws the card.
 
 **Lesson:** a link stored for later can go stale even when the image it shows still works. A Discord attachment link carries a signature that expires, and the client only refreshes it inside a message, so a link button has to point at the permanent Cloudinary copy.
+
+## 2026-10-21 22:38 EDT — The bot's presence becomes a rotating card, and /invite gets his layout (v3.106.0-pre)
+
+**What happened.** Harkirat asked for the prod bot's "Watching /help · dioreo.app" card. It was already on v3-pre-release, so the work became improving it. A custom status beside the card was the first idea; on the dev bot a bot's custom status hid the activity card whichever order the two were sent in, and a bot cannot pick which line the member list shows. So both texts went onto one card instead: a top line that rotates every minute through the season, ranked and DMZ countdowns and /help, each with its own verb, over a fixed install line.
+
+**What was learned.** Discord kept a restarted bot's old presence for a few minutes, which looked like a broken change twice. The season label first came from the patch-notes season title, which still read Season 7 on the dev data; the Battle Pass title is the one kept current with the dates. The /invite share card went through four versions on #testing-spam mock-ups before he settled it as a redesign of /invite itself, worded to fit two lines beside the thumbnail on a phone.
+
+**Also.** /dmz is hidden until its DMZ update, and the /admin click test ran end to end on the dev bot with his alt; every rule and panel control works, and nine design issues in the panel are filed.
 
 # Part B — Lessons Ledger (thematic)
 
