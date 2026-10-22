@@ -1535,7 +1535,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Options** · `[open]` is /settings only; both take `[visibility]`\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings** visibility:`Public`\n-# 🔸 **/settings** open:`Colors`\n-# 🔸 **/admin** → **Overview** → Default *Hidden*, then **Channels** → allow `#bot-spam`\n-# 🔸 **/admin** → **Roles** → *Always public for these roles* → `@Moderator`\n-# 🔸 **/admin** → **Commands** → `/colors` → *Hidden*: only `/colors` answers privately"
+          "content": "-# **Options** · `[open]` is /settings only; both take `[visibility]`\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings** visibility:`Public`\n-# 🔸 **/settings** open:`Colors`\n-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow `#bot-spam`\n-# 🔸 **/admin** → **Roles** → *Always public for these roles* → `@Moderator`\n-# 🔸 **/admin** → **Commands** → `/colors` → *Private*: only `/colors` answers privately"
         },
         {
           "type": 14,
@@ -2496,7 +2496,7 @@
         },
         {
           "type": 10,
-          "content": "-# **Options** · `[open]` is /settings only; both take `[visibility]`\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings** visibility:`Public`\n-# 🔸 **/settings** open:`Colors`\n-# 🔸 **/admin** → **Overview** → Default *Hidden*, then **Channels** → allow `#bot-spam`\n-# 🔸 **/admin** → **Roles** → *Always public for these roles* → `@Moderator`\n-# 🔸 **/admin** → **Commands** → `/colors` → *Hidden*: only `/colors` answers privately"
+          "content": "-# **Options** · `[open]` is /settings only; both take `[visibility]`\n-# 🔹 `[open]` Open straight on Visibility, Preferences, or your Colors\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/settings** visibility:`Public`\n-# 🔸 **/settings** open:`Colors`\n-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow `#bot-spam`\n-# 🔸 **/admin** → **Roles** → *Always public for these roles* → `@Moderator`\n-# 🔸 **/admin** → **Commands** → `/colors` → *Private*: only `/colors` answers privately"
         },
         {
           "type": 14,

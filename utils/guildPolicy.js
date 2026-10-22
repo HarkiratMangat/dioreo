@@ -230,7 +230,7 @@ function snapshot(doc) {
     };
 }
 
-const LABEL = { public: 'Public', ephemeral: 'Hidden' };
+const LABEL = { public: 'Public', ephemeral: 'Private' };
 
 // One plain line per thing that changed, with channels and roles as <#id> / <@&id> tokens the log export turns into names. Empty when nothing changed, and then nothing is logged.
 function describeChanges(before, after) {

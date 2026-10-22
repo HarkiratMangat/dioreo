@@ -22,7 +22,7 @@ const ACCENT = 0x5865F2;
 // A select menu accepts at most 25 options. The bot registers 12 gate-able commands today (measured 2026-08-18, v3-pre-release review finding #64 -- was stale at 19), so this is headroom rather than a live truncation -- but it is a real cliff, and a silent one: Discord rejects the whole payload rather than trimming, which renders as a dead button.
 const SELECT_OPTION_CAP = 25;
 
-const VISIBILITY_LABEL = { public: 'Public', ephemeral: 'Hidden' };
+const VISIBILITY_LABEL = { public: 'Public', ephemeral: 'Private' };
 
 // ---------------------------------------------------------------------------------------------
 // Rendering
@@ -219,14 +219,14 @@ function buildCommandHome(settings, client, place, scope) {
     const body = entry
         ? [
             { type: 10, content: `### Default for ${commandLabel(scope)}\n-# ${visText(rules.defaultVisibility)} everywhere, except the rules below.` },
-            { type: 1, components: [btn('follow', 'Follow Server'), btn('public', 'Public'), btn('ephemeral', 'Hidden')] },
+            { type: 1, components: [btn('follow', 'Follow Server'), btn('public', 'Public'), btn('ephemeral', 'Private')] },
             { type: 14, spacing: 2 },
             areaSection(`Channels${rules.channelRules.length ? ` (${rules.channelRules.length})` : ''}`, rules.channelRules.length ? ['ephemeral', 'public'].filter(v => byVis(v).length).map(v => `${visText(v)} in ${channelList(byVis(v))}`) : ['-# No channel exceptions'], 'admin_channels', scope),
             areaSection(`Roles${rules.roleRules.length ? ` (${rules.roleRules.length})` : ''}`, rules.roleRules.length ? rules.roleRules.map(roleRuleText) : ['-# No role exceptions'], 'admin_roles', scope),
         ]
         : [
-            { type: 10, content: `### ${commandLabel(scope)} follows the server settings\n-# Pick Public or Hidden to give it its own. Then add channel or role exceptions for it alone.` },
-            { type: 1, components: [btn('follow', 'Follow Server'), btn('public', 'Public'), btn('ephemeral', 'Hidden')] },
+            { type: 10, content: `### ${commandLabel(scope)} follows the server settings\n-# Pick Public or Private to give it its own. Then add channel or role exceptions for it alone.` },
+            { type: 1, components: [btn('follow', 'Follow Server'), btn('public', 'Public'), btn('ephemeral', 'Private')] },
         ];
     return [
         {
@@ -321,7 +321,7 @@ function buildChannels(settings, place = {}, scope = null) {
                 { type: 10, content: '-# 🔎 Type to search · threads follow their channel' },
             ],
         },
-        channelSelect(sid('admin_ch_ephemeral', '', scope), 'Always hidden in these channels…', ephemeral),
+        channelSelect(sid('admin_ch_ephemeral', '', scope), 'Always private in these channels…', ephemeral),
         channelSelect(sid('admin_ch_public', '', scope), 'Always public in these channels…', publicIds),
         ...(rules.length ? [clearRow(sid('admin_ch_clear', '', scope), `Clear channel rules (${rules.length})`)] : []),
         navRow('admin_channels', { scope }),
@@ -364,7 +364,7 @@ function buildRoles(settings, place = {}, scope = null) {
             ],
         },
         roleSelect(sid('admin_role_public', '', scope), 'Always public for these roles…', rules.filter(r => r.visibility === 'public').map(r => r.roleId)),
-        roleSelect(sid('admin_role_ephemeral', '', scope), 'Always hidden for these roles…', rules.filter(r => r.visibility === 'ephemeral').map(r => r.roleId)),
+        roleSelect(sid('admin_role_ephemeral', '', scope), 'Always private for these roles…', rules.filter(r => r.visibility === 'ephemeral').map(r => r.roleId)),
         roleSelect(sid('admin_role_pick', '', scope), 'Set a role for specific channels…', [], 1),
         // Clears the everywhere rules only; a role's channel rules clear on that role's own screen, where the admin can see which they are.
         ...(rules.length ? [clearRow(sid('admin_role_clear', '', scope), `Clear everywhere rules (${rules.length})`)] : []),
@@ -388,7 +388,7 @@ function buildRoleScope(settings, roleId, place = {}, scope = null) {
             ],
         },
         channelSelect(sid('admin_role_scope_public', roleId, scope), 'Public for this role, only in…', pub?.channelIds || []),
-        channelSelect(sid('admin_role_scope_ephemeral', roleId, scope), 'Hidden for this role, only in…', eph?.channelIds || []),
+        channelSelect(sid('admin_role_scope_ephemeral', roleId, scope), 'Private for this role, only in…', eph?.channelIds || []),
         ...(existing.length ? [clearRow(sid('admin_role_scope_clear', roleId, scope), "Clear this role's channels")] : []),
         // The tabs, with Roles blurple but live: this screen sits under Roles, and dropping the tabs stranded the admin (click test 2026-10-21 22:26 EDT).
         navRow('admin_roles', { subpage: true, scope }),
@@ -439,7 +439,7 @@ function buildCommands(settings, gateable, targets = new Map(), place = {}) {
                 ...header('Commands', place, '-# Every command follows the server settings, until you give it its own. Then it uses only those.'),
                 { type: 14, spacing: 2 },
                 { type: 10, content: entries.length ? entries.map(commandSummary).join('\n') : '-# No command has its own settings yet.' },
-                ...(grid ? [{ type: 10, content: '-# Tap a command to open it. **Grey** follows the server · **Red** Hidden · **Green** Public · **Blurple** has exceptions. Capitalised ones are right-click commands.' }] : []),
+                ...(grid ? [{ type: 10, content: '-# Tap a command to open it. **Grey** follows the server · **Red** Private · **Green** Public · **Blurple** has exceptions. Capitalised ones are right-click commands.' }] : []),
                 // Said plainly because an admin will otherwise expect the command to disappear, and then read its continued presence as a bug rather than a platform limit.
                 { type: 10, content: '-# Hides the **answer**, not the command. To remove a command entirely: **Server Settings → Integrations**.' },
                 ...(omitted.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord allows 25 options per menu, so ${omitted.length} command(s) are missing from the list below: ${omitted.map(commandLabel).join(', ')}. Please report this.` }] : []),
@@ -584,11 +584,11 @@ function buildHelp(client, place = {}) {
                 ].join('\n') },
                 divider,
                 { type: 10, content: [
-                    '### 🔒 What Hidden Means',
-                    row('Hidden', 'only the person who ran the command sees the answer'),
+                    '### 🔒 What Private Means',
+                    row('Private', 'only the person who ran the command sees the answer'),
                     row('Public', `allows a public answer; anyone who chose private in ${mentionCommand(client, '/settings')} still gets private`),
                     row('Not the command', 'it still shows in the list; remove it in **Server Settings → Integrations**'),
-                    row('Show Everyone', 'cannot make a hidden answer public'),
+                    row('Show Everyone', 'cannot make a private answer public'),
                 ].join('\n') },
                 divider,
                 { type: 10, content: [

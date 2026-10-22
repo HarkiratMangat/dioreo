@@ -297,7 +297,7 @@ t('/bot servers is owner-only on every click, and a reset clears the rules and i
         await handleBotInteraction(owner.interaction);
         assert.deepStrictEqual([saved.channelRules.length, saved.ephemeralCommands.length, saved.defaultVisibility], [0, 0, 'public']);
         assert.strictEqual(logged.length, 1);
-        assert.ok(/Before: .*Hidden/.test(logged[0].summary), 'the log must carry the rules as they were');
+        assert.ok(/Before: .*Private/.test(logged[0].summary), 'the log must carry the rules as they were');
         await new Promise(r => setImmediate(r));
         assert.strictEqual(serverLog.length, 1, "the owner's reset must appear in the server's own change log");
         assert.strictEqual(serverLog[0].source, 'owner');
@@ -334,10 +334,10 @@ t('describeChanges names each change, and an unchanged save logs nothing', () =>
     const before = { defaultVisibility: 'public', channelRules: [{ channelId: 'C1', visibility: 'ephemeral' }], roleRules: [], ephemeralCommands: ['colors'] };
     const after = { defaultVisibility: 'ephemeral', channelRules: [], roleRules: [{ roleId: 'R', visibility: 'public', channelIds: ['C2'] }], ephemeralCommands: ['colors', 'Convert Times'] };
     assert.deepStrictEqual(describeChanges(before, after), [
-        'Default: Public → Hidden',
-        'Channel <#C1> rule removed (was Hidden)',
+        'Default: Public → Private',
+        'Channel <#C1> rule removed (was Private)',
         'Role rule added: <@&R> Public in <#C2>',
-        'Convert Times: own settings added (Hidden)',
+        'Convert Times: own settings added (Private)',
     ]);
     assert.deepStrictEqual(describeChanges(before, before), []);
 });
@@ -360,7 +360,7 @@ t('every save writes a log row, and Reset Everything adds one rather than cleari
         guildPolicy.invalidateGuildPolicy('G_1');
     }
     assert.strictEqual(rows.length, 2);
-    assert.deepStrictEqual(rows[1].changes, ['Default: Hidden → Public', '/colors: own settings removed, follows the server again']);
+    assert.deepStrictEqual(rows[1].changes, ['Default: Private → Public', '/colors: own settings removed, follows the server again']);
     // Nothing in the admin or owner paths deletes log rows: the only deleteMany/deleteOne on the model would be here.
     const fs = require('fs');
     for (const f of ['commands/admin.js', 'commands/bot.js', 'handlers/bot.js', 'utils/guildPolicy.js']) {
@@ -407,7 +407,7 @@ t('the exported log names channels and roles and keeps the ids', async () => {
     const { buildLogFile } = require('../commands/admin').__testRenderers;
     const guild = { name: 'Test Server', channels: { cache: new Map([['111', { name: 'general' }]]) }, roles: { cache: new Map([['222', { name: 'Mods' }]]) } };
     const interaction = { guild, guildId: 'G_1', client: { users: { fetch: async () => ({ username: 'harkirat' }) } } };
-    const text = await buildLogFile(interaction, [{ createdAt: new Date('2026-10-22T19:30:00Z'), actorId: '999', source: 'admin', changes: ['Channel <#111> set to Hidden', 'Role rule added: <@&222> Public everywhere'] }]);
+    const text = await buildLogFile(interaction, [{ createdAt: new Date('2026-10-22T19:30:00Z'), actorId: '999', source: 'admin', changes: ['Channel <#111> set to Private', 'Role rule added: <@&222> Public everywhere'] }]);
     assert.ok(text.includes('2026-10-22 19:30 UTC · admin harkirat (999)'));
     assert.ok(text.includes('#general (111)') && text.includes('@Mods (222)'));
 });
@@ -482,7 +482,7 @@ t('the Commands tab colours each command by state and opens it on tap', () => {
     const settings = { ephemeralCommands: ['colors'], commandSettings: [{ command: 'calendar', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'A', visibility: 'public' }], roleRules: [] }, { command: 'help', defaultVisibility: 'public', channelRules: [], roleRules: [] }] };
     const page = buildCommands(settings, ['calendar', 'colors', 'help', 'draws', 'Convert Times'], new Map([['Convert Times', 'message']]));
     const buttons = Object.fromEntries(page.filter(c => c.type === 1).flatMap(r => r.components).filter(b => b.custom_id?.startsWith('admin_home||')).map(b => [b.custom_id.split('|')[2], b]));
-    assert.deepStrictEqual([buttons.calendar.style, buttons.colors.style, buttons.help.style, buttons.draws.style], [1, 4, 3, 2], 'blurple custom · red Hidden · green Public · grey follows');
+    assert.deepStrictEqual([buttons.calendar.style, buttons.colors.style, buttons.help.style, buttons.draws.style], [1, 4, 3, 2], 'blurple custom · red Private · green Public · grey follows');
     assert.strictEqual(buttons['Convert Times'].label, 'Convert Times');
     // Past 20 commands a menu opens them, naming any past Discord's 25.
     const many = Array.from({ length: 30 }, (_, i) => `cmd${String(i).padStart(2, '0')}`);
@@ -530,9 +530,9 @@ t("Check a Member shows a member's whole picture, no channel needed", () => {
     const member = (roleIds, isAdmin = false, gate = () => null) => ({ id: 'U', roleIds, isAdmin, gate });
     const text = state => JSON.stringify(buildCheck(settings, ['calendar', 'colors'], { channelIds: ['A', 'QUIET', 'BLOCKED'], ...state }));
     const plain = text({ who: 'u:U', member: member([]) });
-    assert.ok(plain.includes('Public**') && plain.includes('<#QUIET>'), 'Public everywhere, except the Hidden channel');
+    assert.ok(plain.includes('Public**') && plain.includes('<#QUIET>'), 'Public everywhere, except the Private channel');
     assert.ok(plain.includes('`/calendar`') && plain.includes('<#A>'), "a command's own settings and its exception are listed");
-    assert.ok(text({ who: 'u:U', member: member(['MUTED']) }).includes('Hidden** everywhere'), "the member's own role decides");
+    assert.ok(text({ who: 'u:U', member: member(['MUTED']) }).includes('Private** everywhere'), "the member's own role decides");
     const admin = text({ who: 'u:U', member: member([], true) });
     assert.ok(admin.includes('Server admin') && !admin.includes('`/calendar`'), 'an admin skips command settings');
     assert.ok(text({ who: 'u:U', member: member([], false, id => (id === 'BLOCKED' ? 'private' : null)) }).includes('Discord keeps their answers private in'));

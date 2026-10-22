@@ -296,9 +296,9 @@ function buildPreferencesBody(commands, client) {
         + `-# **Examples**\n`
         + `-# 🔸 **/settings** visibility:\`Public\`\n`
         + `-# 🔸 **/settings** open:\`Colors\`\n`
-        + `-# 🔸 **/admin** → **Overview** → Default *Hidden*, then **Channels** → allow \`#bot-spam\`\n`
+        + `-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow \`#bot-spam\`\n`
         + `-# 🔸 **/admin** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
-        + `-# 🔸 **/admin** → **Commands** → \`/colors\` → *Hidden*: only \`/colors\` answers privately`;
+        + `-# 🔸 **/admin** → **Commands** → \`/colors\` → *Private*: only \`/colors\` answers privately`;
 }
 
 // Gated on the bot's own admin whitelist, not on any guild permission -- these write to shared global data (one SeasonalData document, the Loadout collection) rather than to anything scoped to the server they are run in, which is exactly why no per-guild permission could ever grant them. That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the section, it is not something you do. ⚠️ Filtered per-command, not just per-category (fixed 2026-08-15 13:10 EDT) -- this used to render all three commands' full detail unconditionally, so an admin granted only /bot analytics still read the complete /manage and /autobuild writeups even though the directory/dropdown correctly hid those commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether this page exists at all; each command's own perms key (perms.bot/perms.botAccess/perms.autobuild/ perms.manage) has to be checked again HERE, same as visibleCommands() already does for the directory and dropdown. `commands` is visibleCommands(category, perms) -- same reasoning as buildPreferencesBody above. Membership (`has(name)`) replaces the old direct `perms.X` checks, so a command's visibility here can never drift from the directory/dropdown/autocomplete again (the exact class of bug that let the per-command filter go missing from this function until 2026-08-15).
