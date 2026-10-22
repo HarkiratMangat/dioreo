@@ -134,6 +134,7 @@ function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
     const commandLines = commandRules.length ? [`${visText('ephemeral')} ${commandRules.map(commandText).join(' · ')}`] : ['-# No hidden commands'];
 
     // What this very channel does right now, for a member with no role rule: the one fact an admin otherwise has to work out from the rules above.
+    const hereGate = place.channelId && place.discordGate ? place.discordGate(place.channelId) : null;
     const here = place.channelId
         ? resolveVisibility(settings || { defaultVisibility: 'public' }, { channelId: place.channelId, parentChannelId: place.parentId || null, roleIds: [] })
         : null;
@@ -167,7 +168,9 @@ function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
                 areaSection(`Roles${roleRules.length ? ` (${roleRules.length})` : ''}`, roleLines, 'admin_roles'),
                 areaSection(`Hidden Commands${commandRules.length ? ` (${commandRules.length})` : ''}`, commandLines, 'admin_commands'),
                 { type: 14, spacing: 2 },
-                ...(here ? [{ type: 10, content: `📍 **Here in <#${place.channelId}>** · ${visText(here)} for members without a role rule` }] : []),
+                ...(here ? [{ type: 10, content: hereGate
+                    ? `📍 **Here in <#${place.channelId}>** · ${visText('ephemeral')} for @everyone\n-# ${GATE_TEXT[hereGate]}. To change that, allow it for @everyone in this channel's permissions.`
+                    : `📍 **Here in <#${place.channelId}>** · ${visText(here)} for members without a role rule` }] : []),
                 ...(staleCount(settings, place) ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} ${staleCount(settings, place)} rule(s) name a deleted role, a channel Dioreo can't see, or a retired command. They do nothing; **Clear** on that tab removes them.` }] : []),
                 ...(lastChangedLine(settings) ? [{ type: 10, content: lastChangedLine(settings) }] : []),
                 { type: 10, content: explainer },
@@ -232,6 +235,8 @@ function buildChannels(settings, place = {}) {
     const def = settings?.defaultVisibility || 'public';
     const ephemeral = rules.filter(r => r.visibility === 'ephemeral').map(r => r.channelId);
     const publicIds = rules.filter(r => r.visibility === 'public').map(r => r.channelId);
+    // Channels this page sets to Public that Discord itself keeps private: the confusion the Discord line exists for.
+    const gated = place.discordGate ? publicIds.filter(id => place.discordGate(id)) : [];
     return [
         {
             type: 17,
@@ -241,6 +246,7 @@ function buildChannels(settings, place = {}) {
                 ...header('Channels', place, `-# Your default is ${visText(def)}. Pick channels that answer differently.`),
                 { type: 14, spacing: 2 },
                 { type: 10, content: `${visText('ephemeral')} in${ephemeral.length ? ` (${ephemeral.length})` : ''} · ${channelList(ephemeral)}\n${visText('public')} in${publicIds.length ? ` (${publicIds.length})` : ''} · ${channelList(publicIds)}` },
+                ...(gated.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord's own permissions make these private for @everyone, whatever this page says: ${channelList(gated)}. Allow **Use External Apps** in those channels to change it.` }] : []),
                 { type: 10, content: '-# 🔎 Type to search · threads follow their channel' },
             ],
         },
@@ -394,6 +400,7 @@ function checkReason(result, cmd) {
         case 'channel': return `${where(result.rule.channelId)} is set to ${VISIBILITY_LABEL[result.rule.visibility]}`;
         case 'parent': return `this thread follows ${where(result.rule.channelId)}`;
         case 'default': return 'no rule applies, so the server default decides';
+        case 'discord': return `${GATE_TEXT[result.rule].replace(' here', ' in this channel for this role')}, before any rule on this panel`;
         default: return 'this server has no rules yet';
     }
 }
@@ -401,12 +408,14 @@ function checkReason(result, cmd) {
 function buildCheck(settings, gateable, { roleId = null, channelId = null, cmd = null } = {}, place = {}) {
     const shown = menuCommands(gateable).shown.slice(0, 24);
     const command = cmd && shown.includes(cmd) ? cmd : null;
-    const result = channelId
-        ? explainVisibility(settings, { channelId, roleIds: roleId ? [roleId] : [], commandName: command ? command.split(' ')[0] : null, commandPath: command })
-        : null;
+    const gate = channelId && place.discordGate ? place.discordGate(channelId, roleId) : null;
+    // Discord's own permissions decide first: /admin can only make Dioreo quieter beneath them.
+    const result = !channelId ? null
+        : gate ? { visibility: 'ephemeral', tier: 'discord', rule: gate }
+            : explainVisibility(settings, { channelId, roleIds: roleId ? [roleId] : [], commandName: command ? command.split(' ')[0] : null, commandPath: command });
     const who = roleId ? `A member with <@&${roleId}>` : 'A member with no role rule';
     const verdict = result
-        ? `${who}${command ? `, using ${commandText(command)},` : ''} in <#${channelId}>:\n## ${visText(result.visibility)}\n-# Because ${checkReason(result)}.${result.visibility === 'public' ? ` Their own ${'`/settings`'} can still make it private.` : ''}`
+        ? `${who}${command ? `, using ${commandText(command)},` : ''} in <#${channelId}>:\n## ${result.tier === 'discord' && result.rule === 'noCommands' ? '⛔ **Commands not shown**' : visText(result.visibility)}\n-# Because ${checkReason(result)}.${result.visibility === 'public' ? ` Their own ${'`/settings`'} can still make it private.` : ''}`
         : '-# Pick a channel to see the answer.';
     const [r, c, k] = checkState(roleId, channelId, command);
     return [
@@ -544,8 +553,29 @@ function placeOf(interaction) {
         hasChannel: interaction.guild?.channels?.cache ? id => interaction.guild.channels.cache.has(id) || Boolean(interaction.guild.channels.cache.find?.(c => c.threads?.cache?.has?.(id))) : null,
         gateable: interaction.client?.gateableCommandNames || [],
         botInGuild: require('../utils/guildPolicy').botInGuild(interaction),
+        discordGate: interaction.guild?.roles?.everyone ? (channelId, roleId) => discordGate(interaction.guild, channelId, roleId) : null,
     };
 }
+
+// WHAT DISCORD ITSELF ALLOWS (Harkirat 2026-10-22 18:21 EDT, "yeah" to showing it). Discord's own permissions are the ceiling under every /admin rule: with Use Application Commands off, Dioreo's commands don't show; with Use External Apps off, Discord forces every app's answer private (his 2026-08-10 test, admin-controls rule). Read from the cached guild, for @everyone or one role in one channel (a thread reads its parent). Returns 'noCommands', 'private' or null when Discord allows public answers.
+function discordGate(guild, channelId, roleId = null) {
+    try {
+        let channel = guild.channels.cache.get(channelId);
+        if (channel?.isThread?.() && channel.parent) channel = channel.parent;
+        if (!channel?.permissionsFor) return null;
+        const role = roleId ? guild.roles.cache.get(roleId) : guild.roles.everyone;
+        const perms = role && channel.permissionsFor(role);
+        if (!perms) return null;
+        if (perms.has(PermissionFlagsBits.Administrator)) return null;
+        if (!perms.has(PermissionFlagsBits.UseApplicationCommands)) return 'noCommands';
+        if (!perms.has(PermissionFlagsBits.UseExternalApps)) return 'private';
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+const GATE_TEXT = { noCommands: "Discord blocks **Use Application Commands** here, so Dioreo's commands don't show", private: 'Discord blocks **Use External Apps** here, so every app answers privately' };
 
 // Single entry point for every `admin_*` component. handlers/router.js routes here rather than growing another dozen branches in its own handler, and the admin gate lives here so there is exactly one place that decides who may change a server's rules.
 async function handleComponent(interaction) {
@@ -762,7 +792,7 @@ module.exports = {
     rulesText,
     lastChangedLine,
     // Exported for scripts/guildPolicyEnforcement.test.js only -- nothing in the bot calls these from outside this file. They are here because both limits these tests pin (25 options on a select, 40 components per message) are invisible right up until a panel refuses to open, and a test is the only thing that will notice before an admin does.
-    __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck, buildLogFile },
+    __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck, buildLogFile, discordGate },
 
     async execute(interaction) {
         // Private unless the admin picks Public. The refusals below stay private whatever was picked: a non-admin's "Public" must not post a refusal into the channel.

@@ -507,6 +507,29 @@ t('a server rule does nothing while Dioreo is not in that server', async () => {
     assert.ok(JSON.stringify(buildHome({ defaultVisibility: 'ephemeral' }, null, { botInGuild: false })).includes("isn't added to this server"));
 });
 
+t("the panel reads Discord's own block and puts it before any /admin rule", () => {
+    const { discordGate, buildCheck, buildChannels } = require('../commands/admin').__testRenderers;
+    const { PermissionsBitField: P } = require('discord.js');
+    const perms = bits => new P(bits);
+    const all = P.Flags.UseApplicationCommands | P.Flags.UseExternalApps;
+    const guild = {
+        roles: { everyone: { id: 'G' }, cache: new Map([['R', { id: 'R' }]]) },
+        channels: { cache: new Map([
+            ['OPEN', { permissionsFor: () => perms(all) }],
+            ['NOAPPS', { permissionsFor: () => perms(P.Flags.UseApplicationCommands) }],
+            ['NOCMDS', { permissionsFor: () => perms(0n) }],
+        ]) },
+    };
+    assert.strictEqual(discordGate(guild, 'OPEN'), null);
+    assert.strictEqual(discordGate(guild, 'NOAPPS'), 'private');
+    assert.strictEqual(discordGate(guild, 'NOCMDS'), 'noCommands');
+    const place = { discordGate: (c, r) => discordGate(guild, c, r) };
+    const check = JSON.stringify(buildCheck({ defaultVisibility: 'public', channelRules: [{ channelId: 'NOAPPS', visibility: 'public' }] }, [], { channelId: 'NOAPPS' }, place));
+    assert.ok(check.includes('Use External Apps') && check.includes('Hidden'), 'Discord blocking apps must win over a Public rule');
+    const page = JSON.stringify(buildChannels({ channelRules: [{ channelId: 'NOAPPS', visibility: 'public' }] }, place));
+    assert.ok(page.includes("Discord's own permissions make these private"));
+});
+
 // --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.
 function countComponents(nodes) {
     return (nodes || []).reduce((total, node) => total + 1 + countComponents(node.components), 0);
