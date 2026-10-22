@@ -95,10 +95,22 @@ function loadCommandModules(client) {
 async function registerApplicationCommands(client, commands, { token = process.env.BOT_TOKEN, gateable = true } = {}) {
     // The names /admin's "always hidden commands" menu offers. Derived from `commands` -- the SAME array that is about to be registered -- rather than a hand-maintained list, which would silently go stale the first time a command is added or removed. Only the public app's list feeds it: /admin is a public command, and an admin-app command is never gateable.
     if (gateable) {
-        // A Set: "View Colors" is two commands (user and message right-click) with one name, and /admin's menu lists it once.
-        client.gateableCommandNames = [...new Set(commands
-            .map(commandName)
-            .filter(name => name && !ADMIN_COMMAND_NAMES.has(name)))];
+        // One entry per subcommand ('draw prices'), since /admin's rules are per subcommand (2026-10-22 14:01 EDT). A Set: "View Colors" is two commands (user and message right-click) with one name, and /admin's menu lists it once. contextMenuTargets says what each right-click command is used on, for the menu's "Right-click a message" line.
+        const { commandPaths } = require('../utils/guildPolicy');
+        const paths = new Set();
+        const targets = new Map();
+        for (const c of commands) {
+            const json = typeof c.toJSON === 'function' ? c.toJSON() : c;
+            if (!json?.name || ADMIN_COMMAND_NAMES.has(json.name)) continue;
+            for (const path of commandPaths(json)) paths.add(path);
+            if (json.type === 2 || json.type === 3) {
+                const target = json.type === 2 ? 'user' : 'message';
+                const prev = targets.get(json.name);
+                targets.set(json.name, prev && prev !== target ? 'user or message' : target);
+            }
+        }
+        client.gateableCommandNames = [...paths];
+        client.contextMenuTargets = targets;
     }
 
     const rest = new REST({ version: '10' }).setToken(token);

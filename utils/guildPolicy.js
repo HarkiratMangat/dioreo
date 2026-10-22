@@ -65,10 +65,36 @@ function channelMatcher(channelId, parentChannelId) {
     return id => id === channelId || (parentChannelId != null && id === parentChannelId);
 }
 
-function resolveVisibility(settings, { channelId, parentChannelId = null, roleIds, commandName = null, isAdmin = false }) {
+// The rule keys /admin's Commands menu offers for one registered command: one per subcommand ('draw prices', 'draw calculator'), one per grouped subcommand ('name group sub'), or the bare name for a command with neither, a right-click command included. Per subcommand since 2026-10-22 14:01 EDT (Harkirat: "per subcommand"), so a server can hide /draw calculator and keep /draw prices public. Pure, so bot/registry.js can derive the menu from the exact JSON it registers.
+function commandPaths(json) {
+    if (!json?.name) return [];
+    if (json.type && json.type !== 1) return [json.name];
+    const paths = [];
+    for (const o of json.options || []) {
+        if (o.type === 1) paths.push(`${json.name} ${o.name}`);
+        if (o.type === 2) for (const sub of o.options || []) paths.push(`${json.name} ${o.name} ${sub.name}`);
+    }
+    return paths.length ? paths : [json.name];
+}
+
+// The full path of the command an interaction ran ('draw prices'), or its bare name. Context-menu and component interactions have no subcommand, and a context menu's options resolver may not offer the getters at all, hence the optional calls.
+function commandPathOf(interaction) {
+    if (!interaction.commandName) return null;
+    let group = null;
+    let sub = null;
+    try {
+        group = interaction.options?.getSubcommandGroup?.(false) ?? null;
+        sub = interaction.options?.getSubcommand?.(false) ?? null;
+    } catch { /* no subcommand on this interaction */ }
+    return [interaction.commandName, group, sub].filter(Boolean).join(' ');
+}
+
+function resolveVisibility(settings, { channelId, parentChannelId = null, roleIds, commandName = null, commandPath = null, isAdmin = false }) {
     if (!settings) return 'public';
 
-    if (!isAdmin && commandName && (settings.ephemeralCommands || []).includes(commandName)) {
+    // A rule on the full path ('draw prices') or on the bare command name. The bare name is how rules were stored before 2026-10-22 14:01 EDT, and it still means "every subcommand of this command" until /admin's Commands menu is next saved, which rewrites it as full paths.
+    const commandRules = settings.ephemeralCommands || [];
+    if (!isAdmin && commandName && (commandRules.includes(commandPath || commandName) || commandRules.includes(commandName))) {
         return 'ephemeral';
     }
 
@@ -122,6 +148,7 @@ async function attachGuildPolicy(interaction) {
         roleIds: memberRoleIds(interaction),
         // Present on chat-input and autocomplete interactions, absent on button/select clicks. That asymmetry is correct rather than a gap: a component interaction edits a message whose ephemerality Discord fixed when it was first sent, so a command rule has nothing left to decide there -- the tier is simply skipped and resolution falls through to role/channel.
         commandName: interaction.commandName || null,
+        commandPath: commandPathOf(interaction),
         isAdmin: isServerAdmin(interaction),
     });
 
@@ -148,6 +175,8 @@ async function updateGuildSettings(guildId, actorId, mutate) {
 
 module.exports = {
     attachGuildPolicy,
+    commandPaths,
+    commandPathOf,
     getGuildSettings,
     invalidateGuildPolicy,
     isServerAdmin,

@@ -39,7 +39,7 @@ function t(name, fn) {
 }
 
 // A minimal interaction carrying the shapes guildPolicy actually reads. `member.roles` is a plain ARRAY on purpose: that is the raw APIInteractionGuildMember shape Discord sends for a user-installed invocation in a server the bot has not joined, which is precisely the case this feature exists to cover, and the shape a discord.js-flavoured mock would quietly not test.
-function makeInteraction({ roleIds = [], commandName = null, parentId = null, isAdmin = false } = {}) {
+function makeInteraction({ roleIds = [], commandName = null, subcommand = null, parentId = null, isAdmin = false } = {}) {
     const calls = [];
     const interaction = {
         guildId: 'G_1',
@@ -48,6 +48,7 @@ function makeInteraction({ roleIds = [], commandName = null, parentId = null, is
         member: { roles: roleIds },
         user: { id: 'U_1' },
         commandName,
+        options: { getSubcommandGroup: () => null, getSubcommand: () => subcommand },
         memberPermissions: { has: () => isAdmin },
         deferred: true,
         replied: false,
@@ -162,6 +163,17 @@ t('a command rule clamps an ordinary member and exempts an admin', async () => {
     assert.strictEqual(admin.interaction.dioreoPolicy.visibility, 'public');
 });
 
+// Per subcommand (2026-10-22 14:01 EDT): the policy reads the subcommand off the real interaction shape, so /draw calculator can be hidden while /draw prices stays public.
+t('a subcommand rule clamps that subcommand only, through the real wrap', async () => {
+    const settings = { defaultVisibility: 'public', ephemeralCommands: ['draw calculator'] };
+    const calc = makeInteraction({ commandName: 'draw', subcommand: 'calculator' });
+    const prices = makeInteraction({ commandName: 'draw', subcommand: 'prices' });
+    await withSettings(settings, async () => { await guildPolicy.attachGuildPolicy(calc.interaction); });
+    await withSettings(settings, async () => { await guildPolicy.attachGuildPolicy(prices.interaction); });
+    assert.strictEqual(calc.interaction.dioreoPolicy.visibility, 'ephemeral');
+    assert.strictEqual(prices.interaction.dioreoPolicy.visibility, 'public');
+});
+
 // A component click carries no commandName. The tier is skipped rather than misapplied, which is correct -- Discord fixed that message's ephemerality when it was first sent -- but it is exactly the kind of asymmetry a later refactor "tidies up" into a bug.
 t('a component click (no commandName) skips the command tier', async () => {
     const { interaction } = makeInteraction({ commandName: null });
@@ -246,6 +258,47 @@ t('the command menu stays quiet when everything fits', () => {
     const few = ['colors', 'help', 'timestamp'];
     const rendered = JSON.stringify(buildCommands(null, few));
     assert.ok(!rendered.includes('not listed') && !rendered.includes('missing from the list'), 'no truncation warning should appear when nothing was truncated');
+});
+
+// --- 5b. the Commands menu: labels, right-click lines, older rules, and the save ------------- From the 2026-10-21 22:26 EDT click test: right-click commands showed as "/Convert Times", and subcommands as a bare "/draw".
+t('the menu labels subcommands in full and right-click commands without a slash', () => {
+    const { buildCommands } = require('../commands/admin').__testRenderers;
+    const page = buildCommands({ ephemeralCommands: ['draw'] }, ['draw prices', 'draw calculator', 'Convert Times', 'colors'], new Map([['Convert Times', 'message']]));
+    const options = page.find(c => c.type === 1 && c.components?.[0]?.type === 3).components[0].options;
+    const byValue = Object.fromEntries(options.map(o => [o.value, o]));
+    assert.strictEqual(byValue['draw prices'].label, '/draw prices');
+    assert.strictEqual(byValue['Convert Times'].label, 'Convert Times');
+    assert.strictEqual(byValue['Convert Times'].description, 'Right-click a message');
+    assert.ok(byValue['draw prices'].default && byValue['draw calculator'].default, 'an older bare "draw" rule must show every /draw subcommand ticked');
+    assert.ok(!byValue.colors.default);
+});
+
+t('saving the menu replaces an older bare-name rule, so unticking a subcommand un-hides it', async () => {
+    const admin = require('../commands/admin');
+    const saved = { guildId: 'G_1', ephemeralCommands: ['draw', 'Old Gone Command'], save: async () => {} };
+    const original = GuildSettings.findOne;
+    GuildSettings.findOne = () => saved;
+    try {
+        const { interaction } = makeInteraction({ isAdmin: true });
+        Object.assign(interaction, { customId: 'admin_cmd_select', values: ['draw calculator'] });
+        interaction.client.gateableCommandNames = ['draw prices', 'draw calculator', 'colors'];
+        await admin.handleComponent(interaction);
+    } finally {
+        GuildSettings.findOne = original;
+        guildPolicy.invalidateGuildPolicy('G_1');
+    }
+    assert.deepStrictEqual([...saved.ephemeralCommands].sort(), ['Old Gone Command', 'draw calculator'], 'the bare "draw" must go; a rule the menu could not show must stay');
+});
+
+t('each page offers Clear only when it has rules, and the role screen keeps the four tabs', () => {
+    const { buildChannels, buildRoles, buildRoleScope, buildCommands } = require('../commands/admin').__testRenderers;
+    const ids = page => JSON.stringify(page);
+    assert.ok(!ids(buildChannels({})).includes('admin_ch_clear'));
+    assert.ok(ids(buildChannels({ channelRules: [{ channelId: 'C', visibility: 'ephemeral' }] })).includes('admin_ch_clear'));
+    assert.ok(ids(buildRoles({ roleRules: [{ roleId: 'R', visibility: 'public', channelIds: [] }] })).includes('admin_role_clear'));
+    assert.ok(ids(buildCommands({ ephemeralCommands: ['colors'] }, ['colors'])).includes('admin_cmd_clear'));
+    const scope = ids(buildRoleScope({ roleRules: [{ roleId: 'R', visibility: 'public', channelIds: ['C'] }] }, 'R'));
+    assert.ok(scope.includes('admin_role_scope_clear|R') && scope.includes('admin_home') && scope.includes('admin_commands'), 'the role screen must carry Clear and all four tabs');
 });
 
 // --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.
