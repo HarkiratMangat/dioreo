@@ -261,16 +261,48 @@ t('the command menu stays quiet when everything fits', () => {
 });
 
 // --- 5b. the Commands menu: labels, right-click lines, older rules, and the save ------------- From the 2026-10-21 22:26 EDT click test: right-click commands showed as "/Convert Times", and subcommands as a bare "/draw".
-t('the menu labels subcommands in full and right-click commands without a slash', () => {
+t('the Commands page labels subcommands in full and right-click commands without a slash, as toggles and as a menu', () => {
     const { buildCommands } = require('../commands/admin').__testRenderers;
+    // Up to 20 commands: one toggle button each, red when hidden. An older bare "draw" rule shows both /draw subcommands red.
     const page = buildCommands({ ephemeralCommands: ['draw'] }, ['draw prices', 'draw calculator', 'Convert Times', 'colors'], new Map([['Convert Times', 'message']]));
-    const options = page.find(c => c.type === 1 && c.components?.[0]?.type === 3).components[0].options;
-    const byValue = Object.fromEntries(options.map(o => [o.value, o]));
-    assert.strictEqual(byValue['draw prices'].label, '/draw prices');
-    assert.strictEqual(byValue['Convert Times'].label, 'Convert Times');
-    assert.strictEqual(byValue['Convert Times'].description, 'Right-click a message');
-    assert.ok(byValue['draw prices'].default && byValue['draw calculator'].default, 'an older bare "draw" rule must show every /draw subcommand ticked');
-    assert.ok(!byValue.colors.default);
+    const buttons = page.filter(c => c.type === 1).flatMap(r => r.components).filter(b => b.custom_id?.startsWith('admin_cmd_toggle|'));
+    const byId = Object.fromEntries(buttons.map(b => [b.custom_id.split('|')[1], b]));
+    assert.strictEqual(buttons.length, 4);
+    assert.strictEqual(byId['draw prices'].label, '/draw prices');
+    assert.strictEqual(byId['Convert Times'].label, 'Convert Times');
+    assert.ok(byId['draw prices'].style === 4 && byId['draw calculator'].style === 4, 'an older bare "draw" rule must show every /draw subcommand as hidden');
+    assert.strictEqual(byId.colors.style, 2);
+    // Past 20 the dropdown returns, with the right-click line in the option's description.
+    const many = [...Array.from({ length: 21 }, (_, i) => `c${String(i).padStart(2, '0')}`), 'Convert Times'];
+    const menu = buildCommands({}, many, new Map([['Convert Times', 'message']])).find(c => c.type === 1 && c.components?.[0]?.type === 3);
+    assert.ok(menu, 'over 20 commands must fall back to the dropdown');
+    assert.strictEqual(menu.components[0].options.find(o => o.value === 'Convert Times').description, 'Right-click a message');
+});
+
+t('a toggle splits an older bare-name rule, so flipping one subcommand leaves the other hidden', async () => {
+    const admin = require('../commands/admin');
+    const saved = { guildId: 'G_1', ephemeralCommands: ['draw'], save: async () => {} };
+    const original = GuildSettings.findOne;
+    GuildSettings.findOne = () => saved;
+    try {
+        const { interaction } = makeInteraction({ isAdmin: true });
+        Object.assign(interaction, { customId: 'admin_cmd_toggle|draw prices', values: [] });
+        interaction.client.gateableCommandNames = ['draw prices', 'draw calculator', 'colors'];
+        await admin.handleComponent(interaction);
+    } finally {
+        GuildSettings.findOne = original;
+        guildPolicy.invalidateGuildPolicy('G_1');
+    }
+    assert.deepStrictEqual([...saved.ephemeralCommands], ['draw calculator']);
+});
+
+t('Check a Member names the rule that decided', () => {
+    const { buildCheck } = require('../commands/admin').__testRenderers;
+    const settings = { defaultVisibility: 'public', ephemeralCommands: ['draw calculator'], roleRules: [{ roleId: 'R', visibility: 'ephemeral', channelIds: [] }], channelRules: [] };
+    const text = page => JSON.stringify(page);
+    assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { roleId: 'R', channelId: 'C' })).includes('is Hidden everywhere'));
+    assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { channelId: 'C', cmd: 'draw calculator' })).includes('is a hidden command'));
+    assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { channelId: 'C' })).includes('server default decides'));
 });
 
 t('saving the menu replaces an older bare-name rule, so unticking a subcommand un-hides it', async () => {
@@ -326,7 +358,7 @@ function countComponents(nodes) {
 }
 
 t('every /admin page stays under the 40-component ceiling', () => {
-    const { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp } = require('../commands/admin').__testRenderers;
+    const { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck } = require('../commands/admin').__testRenderers;
     // A deliberately maximal configuration: the most components each page can possibly render.
     const ids = n => Array.from({ length: n }, (_, i) => `ID_${i}`);
     const settings = {
@@ -345,6 +377,9 @@ t('every /admin page stays under the 40-component ceiling', () => {
         roleScope: buildRoleScope(settings, 'R_S'),
         commands: buildCommands(settings, ids(30)),
         help: buildHelp(),
+        commandToggles: buildCommands(settings, ids(20)),
+        check: buildCheck(settings, ids(30), { roleId: 'ID_1', channelId: 'ID_2', cmd: 'ID_3' }),
+        homeResetArmed: buildHome(settings, null, { guildName: 'A server', guildIcon: 'https://cdn.discordapp.com/icons/1/a.png', channelId: 'C_1' }, { resetArmed: true }),
         homeWithServer: buildHome(settings, null, { guildName: 'A server', guildIcon: 'https://cdn.discordapp.com/icons/1/a.png', channelId: 'C_1' }),
     };
     for (const [name, page] of Object.entries(pages)) {

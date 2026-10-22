@@ -8,7 +8,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 // ⚠️ Required as the whole module and read INSIDE the render functions below, never destructured or captured at module level. refreshEmojiIds() rewrites this object in place at boot, long after this file is require()d, so a module-level capture freezes the pre-sync id and renders broken on the dev bot -- four sites shipped exactly that bug on 2026-07-26. See .claude/rules/rendering-and-ui.md.
 const emojis = require('../utils/emojiMap');
-const { getGuildSettings, isServerAdmin, resolveVisibility, updateGuildSettings } = require('../utils/guildPolicy');
+const { explainVisibility, getGuildSettings, isServerAdmin, resolveVisibility, updateGuildSettings } = require('../utils/guildPolicy');
 const { toBoldItalicUnicode } = require('../utils/titleBlock');
 const { mentionCommand } = require('../utils/commandMentions');
 
@@ -93,7 +93,7 @@ function header(page, place = {}, subtitle = null) {
         : [text];
 }
 
-function buildHome(settings, client, place = {}) {
+function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
     const def = settings?.defaultVisibility || 'public';
     const channelRules = settings?.channelRules || [];
     const roleRules = settings?.roleRules || [];
@@ -141,10 +141,31 @@ function buildHome(settings, client, place = {}) {
                 { type: 14, spacing: 2 },
                 ...(here ? [{ type: 10, content: `📍 **Here in <#${place.channelId}>** · ${visText(here)} for members without a role rule` }] : []),
                 { type: 10, content: explainer },
+                toolsRow(settings, resetArmed),
             ],
         },
         navRow('admin_home'),
     ];
+}
+
+function ruleCount(settings) {
+    return (settings?.ephemeralCommands?.length || 0) + (settings?.roleRules?.length || 0) + (settings?.channelRules?.length || 0);
+}
+
+// Overview's last row: Check a Member, and Reset Everything once there is something to reset. Reset is two presses: the first turns the row into Cancel · Confirm, so one stray click cannot wipe a server's setup (picked 2026-10-22 15:23 EDT).
+function toolsRow(settings, resetArmed) {
+    const count = ruleCount(settings);
+    const changed = count || (settings?.defaultVisibility || 'public') !== 'public';
+    if (resetArmed && changed) {
+        return { type: 1, components: [
+            { type: 2, style: 2, label: 'Cancel', custom_id: 'admin_home|cancel' },
+            { type: 2, style: 4, label: `Confirm: clear ${count} rule${count === 1 ? '' : 's'} and set Public`, custom_id: 'admin_reset' },
+        ] };
+    }
+    return { type: 1, components: [
+        { type: 2, style: 2, label: 'Check a Member', custom_id: 'admin_check' },
+        ...(changed ? [{ type: 2, style: 4, label: 'Reset Everything', custom_id: 'admin_reset_arm' }] : []),
+    ] };
 }
 
 // `type: 8` is a channel select. Omitting `channel_types` on purpose: slash commands work in text channels, threads, forum posts and voice text chat alike, and an allow-list of types here would silently make some of them unconfigurable.
@@ -259,24 +280,27 @@ function coveredByLegacyRule(value, selected) {
     return !isMenuCommand(value) && value.includes(' ') && selected.includes(value.split(' ')[0]);
 }
 
+// Up to 20 commands show as toggle buttons, four rows of five (picked 2026-10-22 15:23 EDT: the dropdown was the least visual control on the panel). Past 20 the dropdown returns, because 5 rows of buttons would leave no room for the rest of the page under Discord's 40-component cap.
+const TOGGLE_LIMIT = 20;
+
 function buildCommands(settings, gateable, targets = new Map(), place = {}) {
     const selected = settings?.ephemeralCommands || [];
     // ⚠️ A string select takes at most 25 OPTIONS, and unlike the channel/role menus it has no search -- it is a literal list, so everything must fit. One entry per subcommand since 2026-10-22 14:01 EDT, so the list is longer than the command count: 15 today. A BARE slice would make commands past the 25th unconfigurable with no signal at all, so the omitted ones are named. scripts/guildPolicyEnforcement.test.js pins this. If it ever fires for real, paginate the menu (utils/paginationRow.js) -- the cap is Discord's and cannot be raised.
     const { shown, omitted } = menuCommands(gateable);
-    return [
-        {
-            type: 17,
-            accent_color: ACCENT,
-            components: [
-                ...header('Commands', place, '-# These always answer privately, even in public channels. Server admins are exempt.'),
-                { type: 14, spacing: 2 },
-                { type: 10, content: selected.length ? `${visText('ephemeral')} **(${selected.length})** · ${selected.map(commandText).join(' · ')}` : `-# No hidden commands: every command follows your channel and role rules.` },
-                // Said plainly because an admin will otherwise expect the command to disappear, and then read its continued presence as a bug rather than a platform limit.
-                { type: 10, content: '-# Hides the **answer**, not the command. To remove a command entirely: **Server Settings → Integrations**.' },
-                ...(omitted.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord allows 25 options per menu, so ${omitted.length} command(s) are missing from the list below: ${omitted.map(commandLabel).join(', ')}. Please report this.` }] : []),
-            ],
-        },
-        {
+    const hiddenNow = v => selected.includes(v) || coveredByLegacyRule(v, selected);
+    const toggles = shown.length > 0 && shown.length <= TOGGLE_LIMIT;
+    const controls = toggles
+        ? Array.from({ length: Math.ceil(shown.length / 5) }, (_, i) => ({
+            type: 1,
+            components: shown.slice(i * 5, i * 5 + 5).map(v => ({
+                type: 2,
+                // Red is hidden, grey follows the channel and role rules.
+                style: hiddenNow(v) ? 4 : 2,
+                label: commandLabel(v),
+                custom_id: `admin_cmd_toggle|${v}`,
+            })),
+        }))
+        : [{
             type: 1,
             components: [{
                 type: 3,
@@ -288,12 +312,76 @@ function buildCommands(settings, gateable, targets = new Map(), place = {}) {
                     label: commandLabel(v),
                     value: v,
                     ...(targets.get(v) ? { description: `Right-click a ${targets.get(v)}` } : {}),
-                    default: selected.includes(v) || coveredByLegacyRule(v, selected),
+                    default: hiddenNow(v),
                 })),
             }],
+        }];
+    return [
+        {
+            type: 17,
+            accent_color: ACCENT,
+            components: [
+                ...header('Commands', place, '-# These always answer privately, even in public channels. Server admins are exempt.'),
+                { type: 14, spacing: 2 },
+                { type: 10, content: selected.length ? `${visText('ephemeral')} **(${selected.length})** · ${selected.map(commandText).join(' · ')}` : `-# No hidden commands: every command follows your channel and role rules.` },
+                ...(toggles ? [{ type: 10, content: `-# Tap a command to hide or show its answer. ${dot('ephemeral')} red = hidden. Capitalised ones are right-click commands.` }] : []),
+                // Said plainly because an admin will otherwise expect the command to disappear, and then read its continued presence as a bug rather than a platform limit.
+                { type: 10, content: '-# Hides the **answer**, not the command. To remove a command entirely: **Server Settings → Integrations**.' },
+                ...(omitted.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord allows 25 options per menu, so ${omitted.length} command(s) are missing from the list below: ${omitted.map(commandLabel).join(', ')}. Please report this.` }] : []),
+            ],
         },
+        ...controls,
         ...(selected.length ? [clearRow('admin_cmd_clear', `Clear hidden commands (${selected.length})`)] : []),
         navRow('admin_commands'),
+    ];
+}
+
+// CHECK A MEMBER (picked 2026-10-22 15:23 EDT): pick a role, a channel and a command, and see what Dioreo does for a member with that role there, and which rule decided. The three picks ride in each control's custom_id ('-' for none), so the screen holds no state of its own. The command menu holds 24 so "Any command" fits beside it.
+function checkState(roleId, channelId, cmd) {
+    return [roleId || '-', channelId || '-', cmd || '-'];
+}
+
+function checkReason(result, cmd) {
+    const where = id => `<#${id}>`;
+    switch (result.tier) {
+        case 'command': return `${commandText(result.rule)} is a hidden command`;
+        case 'roleChannel': return `<@&${result.rule.roleId}> has its own setting in ${channelList(result.rule.channelIds)}`;
+        case 'role': return `<@&${result.rule.roleId}> is ${VISIBILITY_LABEL[result.rule.visibility]} everywhere`;
+        case 'channel': return `${where(result.rule.channelId)} is set to ${VISIBILITY_LABEL[result.rule.visibility]}`;
+        case 'parent': return `this thread follows ${where(result.rule.channelId)}`;
+        case 'default': return 'no rule applies, so the server default decides';
+        default: return 'this server has no rules yet';
+    }
+}
+
+function buildCheck(settings, gateable, { roleId = null, channelId = null, cmd = null } = {}, place = {}) {
+    const shown = menuCommands(gateable).shown.slice(0, 24);
+    const command = cmd && shown.includes(cmd) ? cmd : null;
+    const result = channelId
+        ? explainVisibility(settings, { channelId, roleIds: roleId ? [roleId] : [], commandName: command ? command.split(' ')[0] : null, commandPath: command })
+        : null;
+    const who = roleId ? `A member with <@&${roleId}>` : 'A member with no role rule';
+    const verdict = result
+        ? `${who}${command ? `, using ${commandText(command)},` : ''} in <#${channelId}>:\n## ${visText(result.visibility)}\n-# Because ${checkReason(result)}.${result.visibility === 'public' ? ` Their own ${'`/settings`'} can still make it private.` : ''}`
+        : '-# Pick a channel to see the answer.';
+    const [r, c, k] = checkState(roleId, channelId, command);
+    return [
+        {
+            type: 17,
+            accent_color: ACCENT,
+            components: [
+                ...header('Check a Member', place, '-# What Dioreo does for one member, and which rule decides it.'),
+                { type: 14, spacing: 2 },
+                { type: 10, content: verdict },
+            ],
+        },
+        { type: 1, components: [{ type: 6, custom_id: `admin_check_role|${c}|${k}`, placeholder: 'Role (optional)…', min_values: 0, max_values: 1, default_values: roleId ? [{ id: roleId, type: 'role' }] : [] }] },
+        { type: 1, components: [{ type: 8, custom_id: `admin_check_ch|${r}|${k}`, placeholder: 'Channel…', min_values: 0, max_values: 1, default_values: channelId ? [{ id: channelId, type: 'channel' }] : [] }] },
+        { type: 1, components: [{ type: 3, custom_id: `admin_check_cmd|${r}|${c}`, placeholder: 'Command (optional)…', min_values: 0, max_values: 1, options: [
+            { label: 'Any command', value: '-', default: !command },
+            ...shown.map(v => ({ label: commandLabel(v), value: v, default: v === command })),
+        ] }] },
+        navRow('admin_home', { subpage: true }),
     ];
 }
 
@@ -336,6 +424,8 @@ function buildHelp(client, place = {}) {
                     row('Threads', 'follow their channel, unless the thread has its own rule'),
                     row('Menus', 'save when you click outside them; Esc cancels'),
                     row('Clear', 'each page has one once it has rules'),
+                    row('Check a Member', 'on Overview: pick a role, channel and command to see the answer and the rule behind it'),
+                    row('Reset Everything', 'on Overview, two presses: clears every rule and sets the default back to Public'),
                 ].join('\n') },
             ],
         },
@@ -408,6 +498,49 @@ async function handleComponent(interaction) {
         case 'admin_help':
             settings = await getGuildSettings(guildId);
             break;
+
+        case 'admin_reset_arm':
+            settings = await getGuildSettings(guildId);
+            return sendV2Payload(interaction, buildHome(settings, interaction.client, place, { resetArmed: true }));
+
+        case 'admin_reset':
+            settings = await updateGuildSettings(guildId, actorId, doc => {
+                doc.channelRules = [];
+                doc.roleRules = [];
+                doc.ephemeralCommands = [];
+                doc.defaultVisibility = 'public';
+            });
+            break;
+
+        case 'admin_check':
+        case 'admin_check_role':
+        case 'admin_check_ch':
+        case 'admin_check_cmd': {
+            settings = await getGuildSettings(guildId);
+            const parts = interaction.customId.split('|').slice(1).map(v => (v === '-' ? null : v));
+            const picked = values[0] && values[0] !== '-' ? values[0] : null;
+            const state = id === 'admin_check' ? { channelId: interaction.channelId }
+                : id === 'admin_check_role' ? { roleId: picked, channelId: parts[0], cmd: parts[1] }
+                    : id === 'admin_check_ch' ? { roleId: parts[0], channelId: picked, cmd: parts[1] }
+                        : { roleId: parts[0], channelId: parts[1], cmd: picked };
+            return sendV2Payload(interaction, buildCheck(settings, interaction.client.gateableCommandNames || [], state, place));
+        }
+
+        // One command's toggle. An older bare-name rule ('draw') covering it is first split into its subcommands, so flipping /draw prices leaves /draw calculator as it was.
+        case 'admin_cmd_toggle': {
+            const gateable = interaction.client.gateableCommandNames || [];
+            if (!gateable.includes(arg)) return;
+            settings = await updateGuildSettings(guildId, actorId, doc => {
+                let list = [...(doc.ephemeralCommands || [])];
+                const parent = arg.split(' ')[0];
+                if (!isMenuCommand(arg) && arg.includes(' ') && list.includes(parent)) {
+                    list = list.filter(c => c !== parent).concat(gateable.filter(v => v.startsWith(`${parent} `)));
+                }
+                list = list.includes(arg) ? list.filter(c => c !== arg) : [...list, arg];
+                doc.ephemeralCommands = [...new Set(list)];
+            });
+            break;
+        }
 
         // Overview's two default buttons; the button for the current default is disabled, so a click always means a change.
         case 'admin_default':
@@ -494,6 +627,8 @@ async function handleComponent(interaction) {
         admin_commands: 'admin_commands',
         admin_default_toggle: 'admin_home',
         admin_default: 'admin_home',
+        admin_reset: 'admin_home',
+        admin_cmd_toggle: 'admin_commands',
         admin_help: 'admin_help',
         admin_ch_public: 'admin_channels',
         admin_ch_ephemeral: 'admin_channels',
@@ -534,7 +669,7 @@ module.exports = {
 
     handleComponent,
     // Exported for scripts/guildPolicyEnforcement.test.js only -- nothing in the bot calls these from outside this file. They are here because both limits these tests pin (25 options on a select, 40 components per message) are invisible right up until a panel refuses to open, and a test is the only thing that will notice before an admin does.
-    __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp },
+    __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck },
 
     async execute(interaction) {
         // Private unless the admin picks Public. The refusals below stay private whatever was picked: a non-admin's "Public" must not post a refusal into the channel.

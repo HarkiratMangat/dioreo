@@ -71,6 +71,16 @@ same('a command with subcommands gets one key each', commandPaths({ name: 'draw'
 same('a subcommand group gets name group sub', commandPaths({ name: 'x', options: [{ type: 2, name: 'g', options: [{ type: 1, name: 's' }] }] }), ['x g s']);
 same('a right-click command is its bare name', commandPaths({ name: 'View Colors', type: 2 }), ['View Colors']);
 
+// explainVisibility names the tier that decided; resolveVisibility is its answer, so these also pin the two together.
+const { explainVisibility } = require('../utils/guildPolicy');
+t('explain: the command tier', explainVisibility(PER_SUB, { channelId: 'X', roleIds: [], commandName: 'draw', commandPath: 'draw calculator' }).tier, 'command');
+t('explain: a scoped role rule', explainVisibility(SETTINGS, { channelId: 'C_A', roleIds: ['R_SOME'] }).tier, 'roleChannel');
+t('explain: a server-wide role rule', explainVisibility(SETTINGS, { channelId: 'X', roleIds: ['R_MUTE'] }).tier, 'role');
+t('explain: a channel rule', explainVisibility(SETTINGS, { channelId: 'C_PUB', roleIds: [] }).tier, 'channel');
+t('explain: a thread following its parent', explainVisibility(SETTINGS, { channelId: 'T_1', parentChannelId: 'C_PUB', roleIds: [] }).tier, 'parent');
+t('explain: the default', explainVisibility(SETTINGS, { channelId: 'X', roleIds: [] }).tier, 'default');
+t('explain: a same-tier conflict names the public rule', explainVisibility(SETTINGS, { channelId: 'X', roleIds: ['R_MUTE', 'R_ALL'] }).rule.roleId, 'R_ALL');
+
 // --- threads inherit their parent channel's rule --------------------------------------------- Found by deriving angles before shipping, not by a failing check -- nothing in this repo could have caught it, because every case above passes channelId as an opaque string and so cannot tell a thread id from a channel id. In a real thread, interaction.channelId is the THREAD's id, so without inheritance an admin's rule on #general silently stops applying the moment conversation moves into a thread of #general -- failing OPEN, in a feature whose whole job is to restrict.
 t('a thread inherits its parent channel rule', resolveVisibility(SETTINGS, { channelId: 'T_1', parentChannelId: 'C_PUB', roleIds: [] }), 'public');
 t('a thread with no parent rule falls through to default', resolveVisibility(SETTINGS, { channelId: 'T_1', parentChannelId: 'C_OTHER', roleIds: [] }), 'ephemeral');

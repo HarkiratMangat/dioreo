@@ -89,32 +89,40 @@ function commandPathOf(interaction) {
     return [interaction.commandName, group, sub].filter(Boolean).join(' ');
 }
 
-function resolveVisibility(settings, { channelId, parentChannelId = null, roleIds, commandName = null, commandPath = null, isAdmin = false }) {
-    if (!settings) return 'public';
+// Which rule decided, as well as the answer: /admin's "Check a member" names it (Harkirat 2026-10-22 15:23 EDT asked me to pick the new settings; this is one). resolveVisibility below is this function's `visibility`, so the two can never disagree. `tier` is one of none · command · roleChannel · role · channel · parent · default, and `rule` is the matching rule (or its id) where there is one.
+function explainVisibility(settings, { channelId, parentChannelId = null, roleIds, commandName = null, commandPath = null, isAdmin = false }) {
+    if (!settings) return { visibility: 'public', tier: 'none', rule: null };
 
     // A rule on the full path ('draw prices') or on the bare command name. The bare name is how rules were stored before 2026-10-22 14:01 EDT, and it still means "every subcommand of this command" until /admin's Commands menu is next saved, which rewrites it as full paths.
     const commandRules = settings.ephemeralCommands || [];
-    if (!isAdmin && commandName && (commandRules.includes(commandPath || commandName) || commandRules.includes(commandName))) {
-        return 'ephemeral';
+    if (!isAdmin && commandName) {
+        const hit = commandRules.includes(commandPath || commandName) ? (commandPath || commandName) : (commandRules.includes(commandName) ? commandName : null);
+        if (hit) return { visibility: 'ephemeral', tier: 'command', rule: hit };
     }
 
     const held = new Set(roleIds);
     const matches = channelMatcher(channelId, parentChannelId);
+    // Same-tier conflict resolves to public, so the rule named is a public one when any is.
+    const pick = rules => rules.find(r => r.visibility === 'public') || rules[0];
 
     const roleRules = (settings.roleRules || []).filter(r => held.has(r.roleId));
     const scoped = roleRules.filter(r => (r.channelIds || []).some(matches));
-    if (scoped.length) return scoped.some(r => r.visibility === 'public') ? 'public' : 'ephemeral';
+    if (scoped.length) return { visibility: pick(scoped).visibility, tier: 'roleChannel', rule: pick(scoped) };
 
     const global = roleRules.filter(r => !(r.channelIds || []).length);
-    if (global.length) return global.some(r => r.visibility === 'public') ? 'public' : 'ephemeral';
+    if (global.length) return { visibility: pick(global).visibility, tier: 'role', rule: pick(global) };
 
     const channelRules = settings.channelRules || [];
     const own = channelRules.find(r => r.channelId === channelId);
-    if (own) return own.visibility;
+    if (own) return { visibility: own.visibility, tier: 'channel', rule: own };
     const inherited = parentChannelId && channelRules.find(r => r.channelId === parentChannelId);
-    if (inherited) return inherited.visibility;
+    if (inherited) return { visibility: inherited.visibility, tier: 'parent', rule: inherited };
 
-    return settings.defaultVisibility || 'public';
+    return { visibility: settings.defaultVisibility || 'public', tier: 'default', rule: null };
+}
+
+function resolveVisibility(settings, context) {
+    return explainVisibility(settings, context).visibility;
 }
 
 // Forces every response path on this interaction to ephemeral. Assigned as OWN properties so that utils/interactionContext.js's buildSyntheticInteraction() -- which copies own enumerable properties onto a fresh object -- carries the clamp through to a button re-invoking a command's execute(). Without that, a panel would render clamped on first invocation and unclamped on every navigation click.
@@ -177,6 +185,7 @@ module.exports = {
     attachGuildPolicy,
     commandPaths,
     commandPathOf,
+    explainVisibility,
     getGuildSettings,
     invalidateGuildPolicy,
     isServerAdmin,
