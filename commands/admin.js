@@ -524,6 +524,9 @@ module.exports = {
         .setDescription("SERVER ADMINS: control Dioreo's server settings")
         // Keeps the command out of ordinary members' pickers where the bot IS guild-installed. It is NOT the gate -- Discord ignores this field for a user-installed invocation, which is exactly the case this feature exists to cover, so execute() re-checks for real.
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+        // Hidden by default; Public posts the panel in the channel (Harkirat 2026-10-22 14:59 EDT: "theres also no visibility option for it"). The cost, accepted: a public panel shows the server's rules to everyone there. Its buttons still refuse anyone without Manage Server (handleComponent), and a channel rule set to Hidden still makes it private (attachGuildPolicy).
+        .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.')
+            .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         // [0, 1]: a server whose members only user-installed the bot still needs admin controls -- the visibility policy applies to a user-installed invocation too, so registering [0] alone would create servers where the policy is ACTIVE but nobody can ever configure it.
         //
         // ⚠️ The cost of keeping [1], found by Harkirat live 2026-08-10 16:06 EDT: a user-installed command travels with the USER into every server they are in, so /admin appears for anyone who has installed the bot even where it is not guild-installed, and setDefaultMemberPermissions cannot hide it (Discord ignores that field for user-installed invocations -- which is why the runtime admin check above is the real gate). setContexts([0]) is the part that CAN be fixed: guild channels only, so it no longer appears in DMs or group DMs where it could never do anything but refuse.
@@ -534,8 +537,9 @@ module.exports = {
     __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp },
 
     async execute(interaction) {
-        // Always ephemeral, and never offered as a `visibility` option: this is a configuration surface, not content. A public copy would leak the server's rules into the channel and hand every member buttons they are not allowed to press.
-        await interaction.deferReply({ ephemeral: true });
+        // Private unless the admin picks Public. The refusals below stay private whatever was picked: a non-admin's "Public" must not post a refusal into the channel.
+        const isPublic = interaction.options?.getString?.('visibility') === 'public' && Boolean(interaction.guildId) && isServerAdmin(interaction);
+        await interaction.deferReply({ ephemeral: !isPublic });
 
         if (!interaction.guildId) {
             return sendV2Payload(interaction, [{

@@ -291,7 +291,7 @@ function buildPreferencesBody(commands, client) {
         + `-# 🔸 Each menu takes **25 picks** — Discord's cap, and a sign you want a different default instead\n`
         + `-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**`
         + SECTION_BREAK
-        + `-# **Options** · /settings only, /admin has none\n${openBullet}\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Options** · \`[open]\` is /settings only; both take \`[visibility]\`\n${openBullet}\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n`
         + `-# 🔸 **/settings** visibility:\`Public\`\n`
         + `-# 🔸 **/settings** open:\`Colors\`\n`
