@@ -326,7 +326,7 @@ function countComponents(nodes) {
 }
 
 t('every /admin page stays under the 40-component ceiling', () => {
-    const { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands } = require('../commands/admin').__testRenderers;
+    const { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp } = require('../commands/admin').__testRenderers;
     // A deliberately maximal configuration: the most components each page can possibly render.
     const ids = n => Array.from({ length: n }, (_, i) => `ID_${i}`);
     const settings = {
@@ -344,6 +344,8 @@ t('every /admin page stays under the 40-component ceiling', () => {
         roles: buildRoles(settings),
         roleScope: buildRoleScope(settings, 'R_S'),
         commands: buildCommands(settings, ids(30)),
+        help: buildHelp(),
+        homeWithServer: buildHome(settings, null, { guildName: 'A server', guildIcon: 'https://cdn.discordapp.com/icons/1/a.png', channelId: 'C_1' }),
     };
     for (const [name, page] of Object.entries(pages)) {
         const used = countComponents(page);

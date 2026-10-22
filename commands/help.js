@@ -295,7 +295,7 @@ function buildPreferencesBody(commands, client) {
         + `-# **Examples**\n`
         + `-# 🔸 **/settings** visibility:\`Public\`\n`
         + `-# 🔸 **/settings** open:\`Colors\`\n`
-        + `-# 🔸 **/admin** → **Overview** → *Switch default to Hidden*, then **Channels** → allow \`#bot-spam\`\n`
+        + `-# 🔸 **/admin** → **Overview** → Default *Hidden*, then **Channels** → allow \`#bot-spam\`\n`
         + `-# 🔸 **/admin** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
         + `-# 🔸 **/admin** → **Commands** → mark \`/colors\` always-hidden, everything else stays public`;
 }
