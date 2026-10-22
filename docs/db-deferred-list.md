@@ -2481,6 +2481,14 @@ The "Can be undone" filter and the row's Undo control are both computed as `kind
 - **To fix:** widen the `hash-chain` regex with `(?:Pre-Release )?` after backfilling any v3 entry it then flags (additive, never `--amend`); add a file-level pass to `readme-map` for `reference/` and `ideas/`; make `nav-map-sync` compare each rule's `paths:` with its table cell; add an identifier-existence pass to `xref` for backticked names in the live rules (skipping lines that say retired, renamed or formerly).
 - **Verify when done:** `npm run docs:audit:test` shows each new check failing on a fixture (a v3 entry with no hash, an unnamed reference file, a row missing a declared path) and passing on the valid one.
 
+### `[P3 · S · Sonnet5-Medium]` 89 exports that no other file references — decide which are dead
+
+*Filed 2026-10-22 from the housekeeping sweep's think-pass (#216). The full list, grouped by file, is `docs/claude/2026-10-22-unused-exports-scan.md`.*
+
+- **What it is:** a scan of every module's `module.exports` against every tracked code file, tests and scripts included. 89 keys in 45 files are named nowhere else. The sweep removed the two it could prove dead (`noteCommandSafely`, `regionsWithData`) and left the rest, because an export can be public API on purpose, kept for a test, or reached by a computed name such as an `emojiMap.js` key.
+- **To do:** go through the list in one code-housekeeping session, delete what is truly dead from the file and from `module.exports` together, and run the full suite.
+- **Verify when done:** the scan, re-run, returns only the exports you decided to keep.
+
 ### `[P3 · XS]` Wire `/draw calculator`'s shortcut options back in, if Harkirat wants them
 
 *Filed 2026-10-17 23:38 EDT. Harkirat, 2026-10-17 23:37 EDT: "can we also remove the options from the draw calc slash command, except for the visibility option? i honestly dont think they're that useful at the moment. dont delete the code, but unwire it and document it. it might be wired back into the bot at some future stage if i feel like it".*
