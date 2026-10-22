@@ -354,6 +354,11 @@ t('/bot servers is owner-only on every click, and a reset clears the rules and i
     const realRecord = changeStore.recordChange;
     const logged = [];
     changeStore.recordChange = fields => { logged.push(fields); return Promise.resolve(); };
+    // The server's own change log must show the owner's reset too (Harkirat 2026-10-22 17:05 EDT: "it should log that just for transparency").
+    const GuildSettingsLog = require('../models/GuildSettingsLog');
+    const realLogCreate = GuildSettingsLog.create;
+    const serverLog = [];
+    GuildSettingsLog.create = async row => { serverLog.push(row); return row; };
     const saved = { guildId: '123456789012345678', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'C', visibility: 'ephemeral' }], roleRules: [], ephemeralCommands: ['colors'], save: async () => {} };
     const original = GuildSettings.findOne;
     GuildSettings.findOne = () => ({ lean: async () => saved, then: (ok) => ok(saved) });
@@ -373,7 +378,11 @@ t('/bot servers is owner-only on every click, and a reset clears the rules and i
         assert.deepStrictEqual([saved.channelRules.length, saved.ephemeralCommands.length, saved.defaultVisibility], [0, 0, 'public']);
         assert.strictEqual(logged.length, 1);
         assert.ok(/Before: .*Hidden/.test(logged[0].summary), 'the log must carry the rules as they were');
+        await new Promise(r => setImmediate(r));
+        assert.strictEqual(serverLog.length, 1, "the owner's reset must appear in the server's own change log");
+        assert.strictEqual(serverLog[0].source, 'owner');
     } finally {
+        GuildSettingsLog.create = realLogCreate;
         adminAccess.isOwner = realOwner;
         changeStore.recordChange = realRecord;
         GuildSettings.findOne = original;
@@ -481,6 +490,21 @@ t('the exported log names channels and roles and keeps the ids', async () => {
     const text = await buildLogFile(interaction, [{ createdAt: new Date('2026-10-22T19:30:00Z'), actorId: '999', source: 'admin', changes: ['Channel <#111> set to Hidden', 'Role rule added: <@&222> Public everywhere'] }]);
     assert.ok(text.includes('2026-10-22 19:30 UTC · admin harkirat (999)'));
     assert.ok(text.includes('#general (111)') && text.includes('@Mods (222)'));
+});
+
+t('a server rule does nothing while Dioreo is not in that server', async () => {
+    const outside = makeInteraction();
+    outside.interaction.client.guilds = { cache: new Map() };
+    const inside = makeInteraction();
+    inside.interaction.client.guilds = { cache: new Map([['G_1', {}]]) };
+    await withSettings({ defaultVisibility: 'ephemeral' }, async () => {
+        await guildPolicy.attachGuildPolicy(outside.interaction);
+        await guildPolicy.attachGuildPolicy(inside.interaction);
+    });
+    assert.strictEqual(outside.interaction.dioreoPolicy, undefined, 'no policy, no clamp: Discord permissions decide');
+    assert.strictEqual(inside.interaction.dioreoPolicy.visibility, 'ephemeral');
+    const { buildHome } = require('../commands/admin').__testRenderers;
+    assert.ok(JSON.stringify(buildHome({ defaultVisibility: 'ephemeral' }, null, { botInGuild: false })).includes("isn't added to this server"));
 });
 
 // --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.

@@ -35,7 +35,7 @@ async function getGuildSettings(guildId) {
     return cachePut(guildId, settings || null);
 }
 
-// The member's role ids, from whichever shape the interaction carries. discord.js gives a real GuildMember (roles.cache) when the guild is cached, and a raw APIInteractionGuildMember (roles as a plain id array) otherwise -- the raw shape is the norm for a user-installed invocation in a server the bot is not a member of, which is precisely a case this feature has to cover.
+// The member's role ids, from whichever shape the interaction carries. discord.js gives a real GuildMember (roles.cache) when the guild is cached, and a raw APIInteractionGuildMember (roles as a plain id array) otherwise -- the raw shape is the norm for a user-installed invocation, which arrives without the guild's member cache.
 function memberRoleIds(interaction) {
     const member = interaction.member;
     if (!member) return [];
@@ -147,9 +147,16 @@ function forceEphemeralResponses(interaction) {
     }
 }
 
-// Called ONCE per interaction from handlers/router.js's interactionCreate choke point, before any routing. Attaches `interaction.dioreoPolicy` and applies the clamp. Returns the policy, or null outside a guild (a DM or a user-install context has no server to have an opinion).
+// Called ONCE per interaction from handlers/router.js's interactionCreate choke point, before any routing. Attaches `interaction.dioreoPolicy` and applies the clamp. Returns the policy, or null outside a guild (a DM or a user-install context has no server to have an opinion). Whether Dioreo itself is in this server. The Guilds intent puts every server the bot belongs to in the client's cache, so this costs no REST call. Undefined when the interaction carries no client cache (a test double), which counts as "in".
+function botInGuild(interaction) {
+    const cache = interaction.client?.guilds?.cache;
+    return cache ? cache.has(interaction.guildId) : true;
+}
+
 async function attachGuildPolicy(interaction) {
     if (!interaction.guildId) return null;
+    // A server's /admin rules apply only while Dioreo is in that server (Harkirat 2026-10-22 17:05 EDT: "the whole point of like the server admin stuff is if the bot's actually in there. Otherwise, it just becomes too restricted"). Where only members' own installs reach it, Discord's own channel permissions (Use External Apps) decide, and the stored rules wait unused until the bot is added back.
+    if (!botInGuild(interaction)) return null;
 
     const settings = await getGuildSettings(interaction.guildId);
     const visibility = resolveVisibility(settings, {
@@ -259,6 +266,7 @@ async function sendPolicyNotice(interaction) {
 
 module.exports = {
     attachGuildPolicy,
+    botInGuild,
     describeChanges,
     logGuildChange,
     sendPolicyNotice,

@@ -117,6 +117,10 @@ function header(page, place = {}, subtitle = null) {
 }
 
 function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
+    // Dioreo not in this server: the rules are kept but do nothing, and Discord's own permissions decide.
+    const notIn = place.botInGuild === false
+        ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} **Dioreo isn't added to this server**, so these rules don't apply right now. Members' own installs follow Discord's channel permissions (Use External Apps). Add Dioreo to the server and the rules work again.` }]
+        : [];
     const def = settings?.defaultVisibility || 'public';
     const channelRules = settings?.channelRules || [];
     const roleRules = settings?.roleRules || [];
@@ -154,6 +158,7 @@ function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
             accent_color: ACCENT,
             components: [
                 ...header(null, place, '-# Where Dioreo answers **publicly**, and where only the person who asked sees it.'),
+                ...notIn,
                 { type: 14, spacing: 2 },
                 { type: 10, content: `### Default\n-# Every answer is ${visText(def)} unless a rule below says otherwise.` },
                 { type: 1, components: [defaultButton('public'), defaultButton('ephemeral')] },
@@ -538,6 +543,7 @@ function placeOf(interaction) {
         hasRole: interaction.guild?.roles?.cache ? id => interaction.guild.roles.cache.has(id) : null,
         hasChannel: interaction.guild?.channels?.cache ? id => interaction.guild.channels.cache.has(id) || Boolean(interaction.guild.channels.cache.find?.(c => c.threads?.cache?.has?.(id))) : null,
         gateable: interaction.client?.gateableCommandNames || [],
+        botInGuild: require('../utils/guildPolicy').botInGuild(interaction),
     };
 }
 
@@ -746,7 +752,7 @@ module.exports = {
         // Hidden by default; Public posts the panel in the channel (Harkirat 2026-10-22 14:59 EDT: "theres also no visibility option for it"). The cost, accepted: a public panel shows the server's rules to everyone there. Its buttons still refuse anyone without Manage Server (handleComponent), and a channel rule set to Hidden still makes it private (attachGuildPolicy).
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.')
             .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
-        // [0, 1]: a server whose members only user-installed the bot still needs admin controls -- the visibility policy applies to a user-installed invocation too, so registering [0] alone would create servers where the policy is ACTIVE but nobody can ever configure it.
+        // [0, 1]: kept so an admin can still open the panel through their own install, to read or tidy the rules, while Dioreo is not in the server. Since 2026-10-22 17:05 EDT the rules apply only while the bot IS in the server (utils/guildPolicy.js's botInGuild), and the panel says so when it is not.
         //
         // ⚠️ The cost of keeping [1], found by Harkirat live 2026-08-10 16:06 EDT: a user-installed command travels with the USER into every server they are in, so /admin appears for anyone who has installed the bot even where it is not guild-installed, and setDefaultMemberPermissions cannot hide it (Discord ignores that field for user-installed invocations -- which is why the runtime admin check above is the real gate). setContexts([0]) is the part that CAN be fixed: guild channels only, so it no longer appears in DMs or group DMs where it could never do anything but refuse.
         .setIntegrationTypes([0, 1]).setContexts([0]),
