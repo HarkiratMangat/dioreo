@@ -164,8 +164,8 @@ async function handleInteractionInner(interaction) {
         interactionCooldowns.set(interaction.user.id, now);
     }
 
-    // --- /admin PANEL (2026-08-10 15:49 EDT, v3) --- every `admin_*` component routes to the one dispatcher in commands/admin.js, which owns its own server-admin gate. Deliberately NOT spread across this handler the way older panels are: the whole point of this feature is that exactly one place decides who may change a server's rules, and a second copy of that check living here is how the /manage panel ended up with ~25 handlers that each forgot it.
-    if ((interaction.isButton() || interaction.isStringSelectMenu() || interaction.isChannelSelectMenu?.() || interaction.isRoleSelectMenu?.())
+    // --- /admin PANEL (2026-08-10 15:49 EDT, v3) --- every `admin_*` component routes to the one dispatcher in commands/admin.js, which owns its own server-admin gate. Deliberately NOT spread across this handler the way older panels are: the whole point of this feature is that exactly one place decides who may change a server's rules, and a second copy of that check living here is how the /manage panel ended up with ~25 handlers that each forgot it. A user select and a pop-up submit too, for Check a Member's member picker and its Enter ID box (2026-10-22 18:46 EDT).
+    if ((interaction.isButton() || interaction.isStringSelectMenu() || interaction.isChannelSelectMenu?.() || interaction.isRoleSelectMenu?.() || interaction.isUserSelectMenu?.() || interaction.isModalSubmit?.())
         && interaction.customId.startsWith('admin_')) {
         markHandler('admin');
         const adminCommand = interaction.client.commands.get('admin');

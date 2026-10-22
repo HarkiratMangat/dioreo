@@ -258,7 +258,7 @@ t('Check a Member names the rule that decided', () => {
     const { buildCheck } = require('../commands/admin').__testRenderers;
     const settings = { defaultVisibility: 'public', ephemeralCommands: ['draw calculator'], roleRules: [{ roleId: 'R', visibility: 'ephemeral', channelIds: [] }], channelRules: [] };
     const text = page => JSON.stringify(page);
-    assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { roleId: 'R', channelId: 'C' })).includes('is Hidden everywhere'));
+    assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { who: 'r:R', channelId: 'C' })).includes('is Hidden everywhere'));
     assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { channelId: 'C', cmd: 'draw calculator' })).includes('has its own settings'));
     assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { channelId: 'C' })).includes('server default decides'));
 });
@@ -528,6 +528,18 @@ t('every scoped page carries its command in each control, and the command Overvi
     assert.ok(fresh.includes('follows the server settings'));
 });
 
+t('Check a Member uses a real member: their roles, admin status and Discord permissions', () => {
+    const { buildCheck } = require('../commands/admin').__testRenderers;
+    const settings = { defaultVisibility: 'public', roleRules: [{ roleId: 'MUTED', visibility: 'ephemeral', channelIds: [] }], commandSettings: [{ command: 'colors', defaultVisibility: 'ephemeral', channelRules: [], roleRules: [] }] };
+    const member = (roleIds, isAdmin = false, gate = () => null) => ({ id: 'U', roleIds, isAdmin, gate });
+    const text = state => JSON.stringify(buildCheck(settings, ['colors'], { channelId: 'C', ...state }));
+    assert.ok(text({ who: 'u:U', member: member(['MUTED']) }).includes('is Hidden everywhere'), "the member's own role decides");
+    assert.ok(text({ who: 'u:U', member: member([]) }).includes('Public'), 'no rule for them: the default');
+    assert.ok(text({ who: 'u:U', cmd: 'colors', member: member([], true) }).includes('server admin, so command settings skip them'), 'an admin skips command settings');
+    assert.ok(text({ who: 'u:U', member: member([], false, () => 'private') }).includes('Use External Apps'), "Discord's block for them comes first");
+    assert.ok(text({ error: "That member isn't in this server." }).includes("isn't in this server"));
+});
+
 // --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.
 function countComponents(nodes) {
     return (nodes || []).reduce((total, node) => total + 1 + countComponents(node.components), 0);
@@ -554,7 +566,8 @@ t('every /admin page stays under the 40-component ceiling', () => {
         commands: buildCommands(settings, ids(30)),
         help: buildHelp(),
         commandToggles: buildCommands(settings, ids(20)),
-        check: buildCheck(settings, ids(30), { roleId: 'ID_1', channelId: 'ID_2', cmd: 'ID_3' }),
+        check: buildCheck(settings, ids(30), { who: 'r:ID_1', channelId: 'ID_2', cmd: 'ID_3' }),
+        checkMember: buildCheck(settings, ids(30), { who: 'u:ID_9', channelId: 'ID_2', cmd: 'ID_3', member: { id: 'ID_9', roleIds: ['ID_1'], isAdmin: false, gate: () => null } }),
         commandHome: buildHome({ ...settings, commandSettings: [{ command: 'ID_1', defaultVisibility: 'ephemeral', channelRules: settings.channelRules, roleRules: settings.roleRules }] }, null, {}, { scope: 'ID_1' }),
         commandChannels: buildChannels({ commandSettings: [{ command: 'ID_1', defaultVisibility: 'ephemeral', channelRules: settings.channelRules, roleRules: [] }] }, {}, 'ID_1'),
         homeResetArmed: buildHome(settings, null, { guildName: 'A server', guildIcon: 'https://cdn.discordapp.com/icons/1/a.png', channelId: 'C_1' }, { resetArmed: true }),
