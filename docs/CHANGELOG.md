@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.108.0 — 2026-10-22 14:20 EDT (#PR) — the Privacy Policy and the Terms each keep one change-history list
+## Pre-Release v3.108.0 — 2026-10-22 14:20 EDT (#217) — the Privacy Policy and the Terms each keep one change-history list
 **From Harkirat, 2026-10-22 10:58 EDT:** "why does the privacy list the changes twice? That's kind of redundant and useless. Let's just do one collective like list for it."
 
 - **One list.** §12.1 *Revision history* is the only change list now. Its old twin, *Appendix B — Change history*, told the same 18 versions in shorter words and had begun to disagree with it (1.11 said "ten" cached colour fields there and "eighteen" in §12.1). Each pair was compared row by row first, and the details only Appendix B had (1.17's `stats` entry and Reset button, when and why the 1.14 row was written, 1.6's `scripts/lib/chronicle.js`, 1.5's `*PaletteSource`, 1.2's `db-theme`) went into §12.1.
