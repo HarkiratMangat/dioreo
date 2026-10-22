@@ -46,7 +46,8 @@ const nameOf = c => (typeof c.toJSON === 'function' ? c.toJSON().name : c.name);
         const adm = adminCommands.map(nameOf).sort();
         for (const name of ADMIN_APP_COMMAND_NAMES) assert.ok(!pub.includes(name), `${name} is still on the public app`);
         assert.ok(pub.includes('admin'), '/admin left the public app');
-        assert.deepStrictEqual(adm, [...ADMIN_APP_COMMAND_NAMES, 'embedtest'].sort());
+        // Every devOnly module joins the admin app: /embedtest, and /dmz while it is hidden (2026-10-21 21:07 EDT).
+        assert.deepStrictEqual(adm, [...ADMIN_APP_COMMAND_NAMES, 'embedtest', 'dmz'].sort());
         assert.strictEqual(pub.length + adm.length, commands.length);
     });
 

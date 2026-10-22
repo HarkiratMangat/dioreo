@@ -29,7 +29,16 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.105.0 — 2026-10-21 17:49 EDT (#214) — `/calendar` gets a filter and status dots, the bot reminds the owner to set returning draws' end dates, and six commands get the layouts picked from mock-ups
+## Pre-Release v3.106.0 — 2026-10-21 22:36 EDT (#215) — the bot's presence rotates through the season, ranked and DMZ countdowns and /help, `/invite` gets a new layout, and `/dmz` is hidden until its DMZ update
+**From the bot-presence thread** (Harkirat, 2026-10-21). Each choice was tried live on the dev bot.
+
+- **Presence:** one activity card whose top line and verb change every minute: Watching "Season 9 · 21 days left", Competing in "Ranked Series 3 · …", Playing "DMZ Season 1 · …", Listening to /help. The second line is "Add Dioreo · dioreo.app/install". A countdown with no date, a TBD date or a past date is skipped. A custom status beside the card was tried and dropped: Discord hides the card when a bot has one.
+- **`/invite`:** Invite Dioreo with a bold "COD:M companion bot" tagline and the pitch "Gunsmiths, draw prices/calculator, patch notes, calendar & more." beside the mascot, then Add to Server · Add to My Apps · Website · Share Link on one row. The single Invite button and the `/help` footer are gone.
+- **Share Link** posts "Add Dioreo — COD:M companion bot!" with no emoji.
+- **`/dmz` is hidden** (dev bot only) until it carries the new DMZ info, the first feature after the v3 launch; `/help` drops it until then.
+- **`/admin` click-tested** on the dev bot with a member account: every rule and every panel control works. Its design pass is filed.
+
+## Pre-Release v3.105.0 — 2026-10-21 17:49 EDT (#214 · `6a58f0ac`) — `/calendar` gets a filter and status dots, the bot reminds the owner to set returning draws' end dates, and six commands get the layouts picked from mock-ups
 **From the command-refresh thread** (Harkirat, 2026-10-20 to 2026-10-21). Each layout was chosen from mock-ups the dev bot posted in #testing-spam.
 
 - **`/calendar`:** a green, white or red dot per entry, and a finished one is struck through. Finished entries come first, then live, then upcoming. A looping pager and a filter dropdown (Live, Past/Ended, Upcoming, Lucky Draws, Special Events, Playlists & Modes) replace the three page buttons. The `view` option is now `filter`. In a section of five or more, older finished entries fold into a "+N more ended" line. In a filtered view the footer's Calendar button becomes **Full Calendar**.

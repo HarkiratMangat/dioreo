@@ -42,13 +42,7 @@ const COMMANDS = {
         sample: { weapon: 'Fennec' },
         keywords: 'loadout loadouts build builds attachment gunsmith dmz meta weapon gun browse',
     },
-    '/dmz': {
-        purpose: 'DMZ builds, which are a separate set from the MP ones.',
-        facts: ['DMZ weapons are ranked by combat range rather than by category.',
-                'Searching here never returns an MP build, and vice versa.'],
-        sample: { weapon: 'OUTLAW' },
-        keywords: 'loadout loadouts build builds attachment gunsmith dmz weapon gun class setup',
-    },
+    // '/dmz' prose removed while /dmz is hidden (2026-10-21 22:42 EDT); restore it with the command (docs/db-deferred-list.md, Queued).
 
     '/draws': {
         purpose: "What is in this season's lucky draws.",
@@ -123,7 +117,6 @@ const ASKS = [
     { q: 'The build for one weapon', to: '/gunsmith mp' },
     { q: 'Builds for a category, or the meta', to: '/gunsmith mp' },
     { q: 'The same, but for DMZ', to: '/gunsmith dmz' },
-    { q: 'A DMZ build, the old way', to: '/dmz' },
     { q: 'When the season ends', to: '/season end' },
     { q: "What's on this season, and when", to: '/calendar' },
     { q: 'What got buffed or nerfed', to: '/patch notes' },
@@ -140,8 +133,9 @@ const ASKS = [
  * Each case is a query a real reader would type and the FULL set of commands that must come back — full, not "at least", because a search that returns everything is as useless as one that returns nothing and only an exact set catches both.
  */
 const SEARCH_CASES = [
-    { q: 'loadout', hit: ['/gunsmith mp', '/gunsmith dmz', '/dmz'] },
-    { q: 'attachment', hit: ['/gunsmith mp', '/gunsmith dmz', '/dmz'] },
+    // /dmz left out while it is hidden (2026-10-21 21:07 EDT); add it back to these two with it.
+    { q: 'loadout', hit: ['/gunsmith mp', '/gunsmith dmz'] },
+    { q: 'attachment', hit: ['/gunsmith mp', '/gunsmith dmz'] },
     { q: 'cp', hit: ['/draw prices', '/draw calculator'] },
     { q: 'timezone', hit: ['/timestamp', '/settings'] },
     { q: 'countdown', hit: ['/season end', '/timestamp'] },
