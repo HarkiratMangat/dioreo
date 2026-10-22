@@ -1,7 +1,7 @@
 // scripts/commandCatalog.test.js -- coverage for scripts/lib/commandCatalog.js, the module that tells the website's /commands page what the bot can do. It reads the REAL command builders, so most of what matters here is not "does it transform correctly" but "can it fail" -- a catalog that silently drops a command produces a page that lies about the bot while every other gate stays green. Run: `node scripts/commandCatalog.test.js` (also via `npm test`).
 const assert = require('assert');
 const {
-    buildCatalog, GROUPS, idFor, leavesOf, readHelpPlacement, placementFor, EXTRA_PLACEMENT,
+    buildCatalog, GROUPS, idFor, leavesOf, readHelpPlacement, placementFor, EXTRA_PLACEMENT, DELIBERATELY_ABSENT,
 } = require('./lib/commandCatalog');
 
 let failures = 0;
@@ -134,6 +134,7 @@ check('admin commands are excluded, and by GATING rather than by a hardcoded lis
     }
     // If this ever stops being true, an admin command is being excluded by NAME somewhere, and the next admin command added will quietly ship to the public site.
     for (const e of catalog.excluded) {
+        if (e.path in DELIBERATELY_ABSENT) continue; // a decision on the record, with its own reason
         assert.strictEqual(e.reason, 'admin-gated in CATEGORY_DEFS', `${e.path} excluded for the wrong reason`);
     }
 });
@@ -264,6 +265,19 @@ check('the derived six get a real colour, never an ink token', () => {
     assert.ok(contrast(solveOn(DERIVED_NEUTRAL), DERIVED_NEUTRAL) >= 4.5);
 });
 
+check('the /settings steel and every /colors stop read as text on both grounds', () => {
+    // The tones are not run through colourVars' hex path, so nothing else would notice a stop that fails. The dark ground takes the stop itself; the light ground takes solveText's twin, which is what the stylesheet emits.
+    const { STEEL, RAINBOW, TONED } = require('./lib/commandsPage');
+    const bad = [];
+    for (const hex of [STEEL, ...RAINBOW]) {
+        if (contrast(hex, GROUND_DARK) < 4.5) bad.push(hex + ' on dark');
+        const lt = solveText(hex, GROUND_LIGHT);
+        if (contrast(lt, GROUND_LIGHT) < 4.5) bad.push(lt + ' on light');
+    }
+    assert.deepStrictEqual(bad, [], 'a tone is unreadable');
+    assert.deepStrictEqual(Object.keys(TONED).sort(), ['/colors', '/settings'], 'only the two profile-coloured commands take a tone');
+});
+
 check('no command is both fixed-colour and derive-per-render', () => {
     const fixed = new Set(Object.keys(loadAccents()));
     const both = [...DERIVED].filter(p => fixed.has(p));
@@ -276,11 +290,64 @@ check('every live command is accounted for as fixed-colour or derive-per-render'
     assert.deepStrictEqual(missed, [], 'a command in neither set renders a grey dot with nothing saying why');
 });
 
+// ── option types: a whole-number option must not read as free text ────────────────────────────── `build` (an integer) used to carry a "text" badge because the catalog dropped Discord's option type and the page fell back to "text" for anything without choices. These cases pin the three halves: the type survives the catalog, every type in use has a label, and an unlisted one throws instead of defaulting.
+const { optionKind, badges, bareHint } = require('./lib/commandsPage');
+const allOptions = allCommands.flatMap(c => c.options.map(o => ({ command: c.path, option: o })));
+
+check('the catalog keeps Discord\'s option type, and min / max where one is set', () => {
+    const missing = allOptions.filter(({ option }) => typeof option.type !== 'number').map(({ command, option }) => command + ' ' + option.name);
+    assert.deepStrictEqual(missing, [], 'an option without a type cannot be labelled');
+    const build = byPath.get('/gunsmith dmz').options.find(o => o.name === 'build');
+    assert.strictEqual(build.type, 4, '`build` is an integer option');
+    assert.strictEqual(build.min, 1, '`build` starts at 1, and the page says so');
+});
+
+check('every option type in use on the live bot has a label', () => {
+    for (const { option } of allOptions) assert.doesNotThrow(() => optionKind(option), 'option ' + option.name);
+});
+
+check('an integer option is badged "whole number", never "text"', () => {
+    const integers = allOptions.filter(({ option }) => option.type === 4 && !option.choices.length && !option.autocomplete);
+    // /dmz carried the third while it was listed; it is hidden until the DMZ info update (2026-10-21).
+    assert.ok(integers.length >= 2, '`build` on both /gunsmith leaves is an integer; found ' + integers.length);
+    for (const { command, option } of integers) {
+        const html = badges(option, false);
+        assert.ok(html.includes('whole number'), command + ' ' + option.name + ' should read whole number');
+        assert.ok(!html.includes('>text<'), command + ' ' + option.name + ' must not read as text');
+    }
+});
+
+check('a free-text option still reads "text", and a choice list still wins over the type', () => {
+    assert.ok(badges({ name: 'q', type: 3, choices: [], autocomplete: false }, true).includes('>text<'));
+    assert.ok(badges({ name: 'v', type: 3, choices: [{ name: 'A', value: 'a' }, { name: 'B', value: 'b' }], autocomplete: false }, false).includes('2 choices'));
+});
+
+check('an option type with no label throws instead of falling back to text', () => {
+    // 7 is Discord's CHANNEL type: nothing here uses it, so it must fail loudly the day someone does.
+    assert.throws(() => optionKind({ name: 'where', type: 7 }), /no badge label/);
+});
+
+check('bareHint: a number says its bounds, a search says Discord suggests, anything else keeps its description', () => {
+    assert.strictEqual(bareHint({ type: 4, min: 1, autocomplete: false, description: 'x' }), 'A whole number, 1 or higher.');
+    assert.strictEqual(bareHint({ type: 4, min: 1, max: 25, autocomplete: false, description: 'x' }), 'A whole number from 1 to 25.');
+    assert.strictEqual(bareHint({ type: 10, max: 9, autocomplete: false, description: 'x' }), 'A number, 9 or lower.');
+    assert.strictEqual(bareHint({ type: 3, autocomplete: true, description: 'x' }), 'Discord suggests matches as you type.');
+    assert.strictEqual(bareHint({ type: 3, autocomplete: false, description: 'Your timezone' }), 'Your timezone');
+});
+
 const { assertSearchCoverage } = require('./lib/commandProse');
+const { findIndexFor } = require('./lib/commandsPage');
 
 check('the search answers the queries a reader actually types', () => {
     // The oracle lives in commandProse.js beside the keywords it tests, and it fails on an exact set rather than a superset — "loadout" must return the three loadout commands and nothing else. The previous page returned exactly one of them and nothing reported it.
-    assert.doesNotThrow(() => assertSearchCoverage({ groups: catalog.groups }));
+    assert.doesNotThrow(() => assertSearchCoverage({ groups: catalog.groups }, findIndexFor({ groups: catalog.groups })));
+});
+
+check('the search gate can fail: an index that has lost /calendar\'s words is caught', () => {
+    // Without this the case above could pass because the gate checks nothing. Blanking one command's fields must break the ask that points at it.
+    const index = findIndexFor({ groups: catalog.groups });
+    const blind = { ...index, cmds: index.cmds.map(c => (c.path === '/calendar' ? { ...c, f: [] } : c)) };
+    assert.throws(() => assertSearchCoverage({ groups: catalog.groups }, blind), /\/calendar/);
 });
 
 run();

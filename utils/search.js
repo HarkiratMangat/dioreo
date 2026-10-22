@@ -124,4 +124,5 @@ function findWeaponMatches(query, candidates) {
     return results;
 }
 
-module.exports = { fuzzyMatch, normalizeForSearch, findWeaponMatches, resolveCategorySynonyms, isGenericWeaponQuery, typoDistance, isSameDrawTitle };
+// CATEGORY_SEARCH_SYNONYMS and GENERIC_WEAPON_WORDS are exported for the site's /commands page (scripts/lib/commandsPage.js), whose weapon search ships this same table so it answers a class word the way the bot does.
+module.exports = { fuzzyMatch, normalizeForSearch, findWeaponMatches, resolveCategorySynonyms, isGenericWeaponQuery, typoDistance, isSameDrawTitle, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };
