@@ -480,6 +480,7 @@ function buildCheck(settings, gateable, { who = null, channelId = null, cmd = nu
         : gate ? { visibility: 'ephemeral', tier: 'discord', rule: gate }
             : explainVisibility(settings, { channelId, roleIds, commandName: command ? command.split(' ')[0] : null, commandPath: command, isAdmin: asMember && member.isAdmin });
     const name = userId ? `<@${userId}>` : roleId ? `A member with <@&${roleId}>` : 'A member with no role rule';
+    const checking = userId ? `**Checking:** <@${userId}>${member?.isAdmin ? ' · server admin' : ''}\n` : '';
     const verdict = error ? `-# ${BOT_EMOJI.cross} ${error}`
         : !channelId ? '-# Pick a channel to see the answer.'
             : userId && !member ? '-# Pick a member again.'
@@ -494,11 +495,12 @@ function buildCheck(settings, gateable, { who = null, channelId = null, cmd = nu
             components: [
                 ...header('Check a Member', place, '-# Pick a member (or a role), a channel and a command: see what Dioreo does for them, and which rule decides it.'),
                 { type: 14, spacing: 2 },
-                { type: 10, content: verdict },
+                { type: 10, content: checking + verdict },
                 { type: 1, components: [{ type: 2, style: 2, label: 'Enter a Member ID', custom_id: `admin_check_id|${c}|${k}` }] },
             ],
         },
-        { type: 1, components: [{ type: 5, custom_id: `admin_check_user|${c}|${k}`, placeholder: 'Member…', min_values: 0, max_values: 1, default_values: userId ? [{ id: userId, type: 'user' }] : [] }] },
+        // No default_values here on purpose: Discord drew the picked member as "undefined" when its client had not loaded them (Harkirat's test, 2026-10-22 18:55 EDT). The member is named in the answer above instead.
+        { type: 1, components: [{ type: 5, custom_id: `admin_check_user|${c}|${k}`, placeholder: userId ? 'Change member…' : 'Member…', min_values: 0, max_values: 1 }] },
         { type: 1, components: [{ type: 6, custom_id: `admin_check_role|${c}|${k}`, placeholder: '…or a role', min_values: 0, max_values: 1, default_values: roleId ? [{ id: roleId, type: 'role' }] : [] }] },
         { type: 1, components: [{ type: 8, custom_id: `admin_check_ch|${w}|${k}`, placeholder: 'Channel…', min_values: 0, max_values: 1, default_values: channelId ? [{ id: channelId, type: 'channel' }] : [] }] },
         { type: 1, components: [{ type: 3, custom_id: `admin_check_cmd|${w}|${c}`, placeholder: 'Command (optional)…', min_values: 0, max_values: 1, options: [
@@ -806,6 +808,8 @@ async function handleComponent(interaction) {
                 if (!/^\d{15,22}$/.test(typed)) state = { channelId: p1, cmd: p2, error: 'That is not a member ID: 17–20 digits, from their profile with Developer Mode on.' };
                 else state = { who: `u:${typed}`, channelId: p1, cmd: p2 };
             }
+            // The answer needs a channel; a cleared channel menu falls back to the one the panel is in, so the screen never sits on "pick a channel" (his test: clearing it left no answer).
+            if (!state.channelId) state.channelId = interaction.channelId;
             if (state.who?.startsWith('u:')) {
                 const read = await readMember(interaction, state.who.slice(2));
                 if (read.error) state = { ...state, who: null, error: read.error };
