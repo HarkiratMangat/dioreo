@@ -306,6 +306,20 @@ async function handleInteractionInner(interaction) {
                 return await interaction.respond(filtered.map(a => ({ name: a.label, value: a.id })));
             }
 
+            // /bot servers: servers that have saved /admin settings, named where Dioreo is in them. Owner-only, like the command.
+            if (interaction.commandName === 'bot' && interaction.options.getSubcommand() === 'servers') {
+                const { isOwner } = require('../utils/adminAccess');
+                if (!isOwner(interaction.user.id)) return await interaction.respond([]);
+                const GuildSettings = require('../models/GuildSettings');
+                const typed = (interaction.options.getFocused() || '').toLowerCase();
+                const docs = await GuildSettings.find({}, { guildId: 1 }).sort({ updatedAt: -1 }).limit(200).lean();
+                const choices = docs.map(d => {
+                    const name = interaction.client.guilds?.cache?.get(d.guildId)?.name;
+                    return { name: (name ? `${name} · ${d.guildId}` : d.guildId).slice(0, 100), value: d.guildId };
+                }).filter(c => c.name.toLowerCase().includes(typed)).slice(0, 25);
+                return await interaction.respond(choices);
+            }
+
             if (interaction.commandName === 'bot' && interaction.options.getSubcommand() === 'hotpatch') {
                 const { isOwner } = require('../utils/adminAccess');
                 if (!isOwner(interaction.user.id)) return await interaction.respond([]);

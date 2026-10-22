@@ -21,21 +21,14 @@ let pass = 0;
 const failures = [];
 const pending = [];
 
-// ⚠️ t() MUST track the promise an async case returns. The first version of this harness called fn() and moved on, which meant an async case's assertions ran AFTER its own try/finally had already restored the stubs it depended on -- and after the reporter had counted it as passed. It surfaced as a case "passing" and then the process dying on a 10s Mongo timeout, because the real model method was back in place by the time the code under test reached it. A test harness that reports before its tests finish is worse than no harness: it produces green with no run.
+// ⚠️ t() MUST track the promise an async case returns. The first version of this harness called fn() and moved on, which meant an async case's assertions ran AFTER its own try/finally had already restored the stubs it depended on -- and after the reporter had counted it as passed. It surfaced as a case "passing" and then the process dying on a 10s Mongo timeout, because the real model method was back in place by the time the code under test reached it. A test harness that reports before its tests finish is worse than no harness: it produces green with no run. Cases run ONE AFTER ANOTHER since 2026-10-22 15:41 EDT. Several async cases stub GuildSettings.findOne, and while they ran at once, a case could read another's stub: a /bot servers case got the no-ping case's lean-only stub and failed with "doc.save is not a function". The earlier cases had passed only because their timing never overlapped.
+let chain = Promise.resolve();
 function t(name, fn) {
-    try {
-        const result = fn();
-        if (result && typeof result.then === 'function') {
-            pending.push(result.then(
-                () => { pass++; },
-                error => { failures.push(`${name} -- ${error.message}`); },
-            ));
-            return;
-        }
-        pass++;
-    } catch (error) {
-        failures.push(`${name} -- ${error.message}`);
-    }
+    chain = chain.then(() => fn()).then(
+        () => { pass++; },
+        error => { failures.push(`${name} -- ${error.message}`); },
+    );
+    pending.push(chain);
 }
 
 // A minimal interaction carrying the shapes guildPolicy actually reads. `member.roles` is a plain ARRAY on purpose: that is the raw APIInteractionGuildMember shape Discord sends for a user-installed invocation in a server the bot has not joined, which is precisely the case this feature exists to cover, and the shape a discord.js-flavoured mock would quietly not test.
@@ -350,6 +343,60 @@ t('each page offers Clear only when it has rules, and the role screen keeps the 
     assert.ok(ids(buildCommands({ ephemeralCommands: ['colors'] }, ['colors'])).includes('admin_cmd_clear'));
     const scope = ids(buildRoleScope({ roleRules: [{ roleId: 'R', visibility: 'public', channelIds: ['C'] }] }, 'R'));
     assert.ok(scope.includes('admin_role_scope_clear|R') && scope.includes('admin_home') && scope.includes('admin_commands'), 'the role screen must carry Clear and all four tabs');
+});
+
+// --- 5c. /bot servers, the owner's override, and the no-ping rule ------------------------------ (edge-case pass, 2026-10-22 15:38 EDT)
+t('/bot servers is owner-only on every click, and a reset clears the rules and is logged', async () => {
+    const adminAccess = require('../utils/adminAccess');
+    const changeStore = require('../utils/changeStore');
+    const { handleBotInteraction } = require('../handlers/bot');
+    const realOwner = adminAccess.isOwner;
+    const realRecord = changeStore.recordChange;
+    const logged = [];
+    changeStore.recordChange = fields => { logged.push(fields); return Promise.resolve(); };
+    const saved = { guildId: '123456789012345678', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'C', visibility: 'ephemeral' }], roleRules: [], ephemeralCommands: ['colors'], save: async () => {} };
+    const original = GuildSettings.findOne;
+    GuildSettings.findOne = () => ({ lean: async () => saved, then: (ok) => ok(saved) });
+    try {
+        // A non-owner is refused before anything is read or written.
+        adminAccess.isOwner = () => false;
+        const denied = makeInteraction();
+        Object.assign(denied.interaction, { customId: 'bot_srv_reset|123456789012345678', isButton: () => true, deferUpdate: async () => {}, client: { ...denied.interaction.client, guilds: { cache: new Map() } } });
+        await handleBotInteraction(denied.interaction);
+        assert.ok(denied.calls.some(c => c.method === 'reply' && /Only the bot owner/.test(c.options.content)));
+        assert.strictEqual(saved.channelRules.length, 1, 'a refused click must not change anything');
+        // The owner resets.
+        adminAccess.isOwner = () => true;
+        const owner = makeInteraction();
+        Object.assign(owner.interaction, { customId: 'bot_srv_reset|123456789012345678', isButton: () => true, deferUpdate: async () => {}, deferred: true, client: { ...owner.interaction.client, guilds: { cache: new Map() } } });
+        await handleBotInteraction(owner.interaction);
+        assert.deepStrictEqual([saved.channelRules.length, saved.ephemeralCommands.length, saved.defaultVisibility], [0, 0, 'public']);
+        assert.strictEqual(logged.length, 1);
+        assert.ok(/Before: .*Hidden/.test(logged[0].summary), 'the log must carry the rules as they were');
+    } finally {
+        adminAccess.isOwner = realOwner;
+        changeStore.recordChange = realRecord;
+        GuildSettings.findOne = original;
+        guildPolicy.invalidateGuildPolicy('123456789012345678');
+    }
+});
+
+t('the /admin panel never pings: every send turns mentions off', async () => {
+    const admin = require('../commands/admin');
+    const original = GuildSettings.findOne;
+    GuildSettings.findOne = () => ({ lean: async () => ({ guildId: 'G_1', roleRules: [{ roleId: 'R', visibility: 'ephemeral', channelIds: [] }] }) });
+    guildPolicy.invalidateGuildPolicy('G_1');
+    try {
+        const { interaction, calls } = makeInteraction({ isAdmin: true });
+        Object.assign(interaction, { customId: 'admin_home', values: [] });
+        await admin.handleComponent(interaction);
+        const sent = calls.find(c => c.options?.body);
+        assert.ok(sent, 'the panel was not sent');
+        assert.deepStrictEqual(sent.options.body.allowed_mentions, { parse: [] });
+    } finally {
+        GuildSettings.findOne = original;
+        guildPolicy.invalidateGuildPolicy('G_1');
+    }
 });
 
 // --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.

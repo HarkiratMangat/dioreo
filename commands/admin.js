@@ -12,6 +12,10 @@ const { explainVisibility, getGuildSettings, isServerAdmin, resolveVisibility, u
 const { toBoldItalicUnicode } = require('../utils/titleBlock');
 const { mentionCommand } = require('../utils/commandMentions');
 
+// Every /admin render goes out with mentions OFF. Since the panel can be posted publicly (2026-10-22 14:59 EDT), its role and user mentions would otherwise ping those roles and people in the channel (found by the edge-case pass, 2026-10-22 15:38 EDT).
+const NO_PINGS = { parse: [] };
+const send = (interaction, components) => sendV2Payload(interaction, components, { allowedMentions: NO_PINGS });
+
 // Discord blurple -- this panel configures a SERVER's own behaviour, so it deliberately does not borrow any of the content commands' accents (see .claude/rules/rendering-and-ui.md's colour map).
 const ACCENT = 0x5865F2;
 
@@ -37,6 +41,25 @@ const visText = visibility => `${dot(visibility)} **${VISIBILITY_LABEL[visibilit
 function channelList(ids) {
     if (!ids?.length) return 'none';
     return ids.slice(0, 3).map(id => `<#${id}>`).join(' ') + (ids.length > 3 ? ` +${ids.length - 3} more` : '');
+}
+
+// Who saved last, and when: updatedBy and updatedAt are already stored (PRIVACY.md §2.1a), so this shows them rather than keeping anything new. It answers the first question after a takeover or a surprise change, "who did this?" (edge-case pass, 2026-10-22 15:38 EDT).
+function lastChangedLine(settings) {
+    if (!settings?.updatedBy) return null;
+    const when = settings.updatedAt ? ` <t:${Math.floor(new Date(settings.updatedAt).getTime() / 1000)}:R>` : '';
+    return `-# Last changed by <@${settings.updatedBy}>${when}`;
+}
+
+// Rules that point at a role that no longer exists, a channel Dioreo cannot see, or a command that is no longer registered. They change nothing, but they count and they read as live, so Overview says how many there are. Nothing is hidden or deleted on view: a channel missing from the cache may be an archived thread whose rule still applies, and a write on view would stamp updatedBy without the admin doing anything.
+function staleCount(settings, place = {}) {
+    let n = 0;
+    if (place.hasRole) n += (settings?.roleRules || []).filter(r => !place.hasRole(r.roleId)).length;
+    if (place.hasChannel) {
+        n += (settings?.channelRules || []).filter(r => !place.hasChannel(r.channelId)).length;
+        n += (settings?.roleRules || []).filter(r => (r.channelIds || []).some(id => !place.hasChannel(id))).length;
+    }
+    if (place.gateable?.length) n += (settings?.ephemeralCommands || []).filter(c => !place.gateable.includes(c) && !place.gateable.some(v => v.startsWith(`${c} `))).length;
+    return n;
 }
 
 function hasRules(settings) {
@@ -140,6 +163,8 @@ function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
                 areaSection(`Hidden Commands${commandRules.length ? ` (${commandRules.length})` : ''}`, commandLines, 'admin_commands'),
                 { type: 14, spacing: 2 },
                 ...(here ? [{ type: 10, content: `📍 **Here in <#${place.channelId}>** · ${visText(here)} for members without a role rule` }] : []),
+                ...(staleCount(settings, place) ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} ${staleCount(settings, place)} rule(s) name a deleted role, a channel Dioreo can't see, or a retired command. They do nothing; **Clear** on that tab removes them.` }] : []),
+                ...(lastChangedLine(settings) ? [{ type: 10, content: lastChangedLine(settings) }] : []),
                 { type: 10, content: explainer },
                 toolsRow(settings, resetArmed),
             ],
@@ -166,6 +191,19 @@ function toolsRow(settings, resetArmed) {
         { type: 2, style: 2, label: 'Check a Member', custom_id: 'admin_check' },
         ...(changed ? [{ type: 2, style: 4, label: 'Reset Everything', custom_id: 'admin_reset_arm' }] : []),
     ] };
+}
+
+// The whole rule set as text, for /bot servers (the owner's override tool) and its Changes-page record. Same pieces as Overview, so the two read alike.
+function rulesText(settings) {
+    if (!settings) return '-# No settings saved for this server.';
+    const def = settings.defaultVisibility || 'public';
+    const byVis = v => (settings.channelRules || []).filter(r => r.visibility === v).map(r => r.channelId);
+    const lines = [`**Default** · ${visText(def)}`];
+    const ch = ['ephemeral', 'public'].filter(v => byVis(v).length).map(v => `${visText(v)} in ${channelList(byVis(v))}`);
+    lines.push(`**Channels** · ${ch.length ? ch.join(' · ') : 'none'}`);
+    lines.push(`**Roles** · ${(settings.roleRules || []).length ? settings.roleRules.map(roleRuleText).join(' · ') : 'none'}`);
+    lines.push(`**Hidden commands** · ${(settings.ephemeralCommands || []).length ? settings.ephemeralCommands.map(commandText).join(' · ') : 'none'}`);
+    return lines.join('\n');
 }
 
 // `type: 8` is a channel select. Omitting `channel_types` on purpose: slash commands work in text channels, threads, forum posts and voice text chat alike, and an allow-list of types here would silently make some of them unconfigurable.
@@ -426,6 +464,7 @@ function buildHelp(client, place = {}) {
                     row('Clear', 'each page has one once it has rules'),
                     row('Check a Member', 'on Overview: pick a role, channel and command to see the answer and the rule behind it'),
                     row('Reset Everything', 'on Overview, two presses: clears every rule and sets the default back to Public'),
+                    row('Lost access?', 'admin power comes from Discord (owner, Administrator or Manage Server); once Discord restores it, so does this panel. Dioreo\'s owner can reset a server\'s rules on request'),
                 ].join('\n') },
             ],
         },
@@ -467,6 +506,10 @@ function placeOf(interaction) {
         guildIcon: interaction.guild?.iconURL?.({ size: 128 }) || null,
         channelId: interaction.channelId || null,
         parentId: interaction.channel?.parentId || null,
+        // Only where the guild is cached (the bot is in the server): roles and channels arrive with it, so a missing id is gone or out of sight. Threads are checked too, but an archived thread is not cached, which is why staleCount only counts and never removes.
+        hasRole: interaction.guild?.roles?.cache ? id => interaction.guild.roles.cache.has(id) : null,
+        hasChannel: interaction.guild?.channels?.cache ? id => interaction.guild.channels.cache.has(id) || Boolean(interaction.guild.channels.cache.find?.(c => c.threads?.cache?.has?.(id))) : null,
+        gateable: interaction.client?.gateableCommandNames || [],
     };
 }
 
@@ -501,7 +544,7 @@ async function handleComponent(interaction) {
 
         case 'admin_reset_arm':
             settings = await getGuildSettings(guildId);
-            return sendV2Payload(interaction, buildHome(settings, interaction.client, place, { resetArmed: true }));
+            return send(interaction, buildHome(settings, interaction.client, place, { resetArmed: true }));
 
         case 'admin_reset':
             settings = await updateGuildSettings(guildId, actorId, doc => {
@@ -523,7 +566,7 @@ async function handleComponent(interaction) {
                 : id === 'admin_check_role' ? { roleId: picked, channelId: parts[0], cmd: parts[1] }
                     : id === 'admin_check_ch' ? { roleId: parts[0], channelId: picked, cmd: parts[1] }
                         : { roleId: parts[0], channelId: parts[1], cmd: picked };
-            return sendV2Payload(interaction, buildCheck(settings, interaction.client.gateableCommandNames || [], state, place));
+            return send(interaction, buildCheck(settings, interaction.client.gateableCommandNames || [], state, place));
         }
 
         // One command's toggle. An older bare-name rule ('draw') covering it is first split into its subcommands, so flipping /draw prices leaves /draw calculator as it was.
@@ -586,18 +629,18 @@ async function handleComponent(interaction) {
             settings = await updateGuildSettings(guildId, actorId, doc => {
                 doc.roleRules = (doc.roleRules || []).filter(r => !(r.roleId === arg && r.channelIds?.length));
             });
-            return sendV2Payload(interaction, buildRoleScope(settings, arg, place));
+            return send(interaction, buildRoleScope(settings, arg, place));
 
         case 'admin_role_pick':
             settings = await getGuildSettings(guildId);
-            return sendV2Payload(interaction, buildRoleScope(settings, values[0], place));
+            return send(interaction, buildRoleScope(settings, values[0], place));
 
         case 'admin_role_scope_public':
         case 'admin_role_scope_ephemeral':
             settings = await updateGuildSettings(guildId, actorId, doc => {
                 setScopedRoleRule(doc, arg, id === 'admin_role_scope_public' ? 'public' : 'ephemeral', values);
             });
-            return sendV2Payload(interaction, buildRoleScope(settings, arg, place));
+            return send(interaction, buildRoleScope(settings, arg, place));
 
         case 'admin_cmd_select':
             settings = await updateGuildSettings(guildId, actorId, doc => {
@@ -650,7 +693,7 @@ async function handleComponent(interaction) {
     const components = (PAGE_BUILDERS[page] || (() => buildHome(settings, interaction.client, place)))();
 
     // ⚠️ Was a raw `interaction.update({ components, flags: 32768 })` until 2026-08-14 10:59 EDT -- switched to sendV2Payload for two reasons at once: (1) it's the established pattern every other handler in the bot uses for a V2 render (CLAUDE.md's "V2 sends" cheat-sheet: discord.js's own high-level reply/followUp/update don't RELIABLY serialize raw V2 JSON), and this command had never been real-world click-tested live (docs/ROADMAP.md's click-test checklist names it the one deliberate holdout) -- so matching the battle-tested path is strictly safer regardless of whether the raw call actually worked; (2) it's what makes this panel pick up the passive 10-minute idle-disable for free (utils/sendV2Payload.js's own header comment). The three `interaction.update()` calls above got the same swap for the same reasons.
-    return sendV2Payload(interaction, components);
+    return send(interaction, components);
 }
 
 module.exports = {
@@ -668,6 +711,9 @@ module.exports = {
         .setIntegrationTypes([0, 1]).setContexts([0]),
 
     handleComponent,
+    // For /bot servers, the owner's override tool (commands/bot.js).
+    rulesText,
+    lastChangedLine,
     // Exported for scripts/guildPolicyEnforcement.test.js only -- nothing in the bot calls these from outside this file. They are here because both limits these tests pin (25 options on a select, 40 components per message) are invisible right up until a panel refuses to open, and a test is the only thing that will notice before an admin does.
     __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck },
 
@@ -677,7 +723,7 @@ module.exports = {
         await interaction.deferReply({ ephemeral: !isPublic });
 
         if (!interaction.guildId) {
-            return sendV2Payload(interaction, [{
+            return send(interaction, [{
                 type: 17,
                 accent_color: ACCENT,
                 components: [
@@ -688,7 +734,7 @@ module.exports = {
         }
 
         if (!isServerAdmin(interaction)) {
-            return sendV2Payload(interaction, [{
+            return send(interaction, [{
                 type: 17,
                 accent_color: ACCENT,
                 components: [
@@ -699,6 +745,6 @@ module.exports = {
         }
 
         const settings = await getGuildSettings(interaction.guildId);
-        return sendV2Payload(interaction, buildHome(settings, interaction.client, placeOf(interaction)));
+        return send(interaction, buildHome(settings, interaction.client, placeOf(interaction)));
     },
 };

@@ -26,6 +26,7 @@ const COMMAND_ALIASES = {
     '/manage': ['database', 'data', 'db', 'admins', 'announcement', 'announcements'],
     '/bot analytics': ['alert', 'alerts', 'health', 'log', 'logs', 'uptime', 'usage', 'timing', 'audit', 'changes'],
     '/bot access': ['access', 'admins', 'permissions'],
+    '/bot servers': ['servers', 'server settings', 'override', 'reset'],
     '/autobuild': ['screenshot', 'scan', 'ocr', 'import'],
     '/settings': ['preferences', 'prefs', 'config', 'timezone'],
     '/invite': ['add', 'install', 'addbot', 'share', 'link'],
@@ -184,7 +185,7 @@ const CATEGORY_DEFS = [
         key: 'botadmin', label: 'Bot Admin', emojiKey: 'botAccess',
         dropdownDescription: "Dioreo's data management & ops commands",
         // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed these one way in the directory and another in the body, which reads as the page having lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT. ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin granted only /bot analytics must not see /manage or /autobuild listed here even though the whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a permission token -- see utils/adminAccess.js's header on why it can never have one).
-        staticCommands: [cmd('/bot analytics', { requires: 'bot' }), cmd('/bot access', { requires: 'botAccess' }), cmd('/bot hotpatch', { requires: 'botAccess' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
+        staticCommands: [cmd('/bot analytics', { requires: 'bot' }), cmd('/bot access', { requires: 'botAccess' }), cmd('/bot hotpatch', { requires: 'botAccess' }), cmd('/bot servers', { requires: 'botAccess' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
         requires: 'botAdmin',
     },
 ];
@@ -312,6 +313,10 @@ function buildBotAdminBody(commands, client) {
         sections.push(`### ${mentionCommand(client, '/bot access')}\nThe admin allowlist -- owner-only\n`
             + `-# 🔹 No options of its own`);
     }
+    if (has('/bot servers')) {
+        sections.push(`### ${mentionCommand(client, '/bot servers')}\nView, reset or delete one server's /admin rules, for an admin who lost access -- owner-only\n`
+            + `-# 🔹 \`[server]\` The server's ID, or pick one that has saved settings`);
+    }
     if (has('/bot hotpatch')) {
         sections.push(`### ${mentionCommand(client, '/bot hotpatch')}\nReload changed files into the running bot without a restart -- owner-only\n`
             + `-# 🔹 \`[pull]\` git pull first (default: yes)\n`
@@ -347,7 +352,7 @@ function buildBotAdminBody(commands, client) {
 
     return sections.join('\n')
         + SECTION_BREAK
-        + `-# **Options** · every command above except /bot hotpatch\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Options** · every command above except /bot hotpatch and /bot servers\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n${examples.join('\n')}\n\n`
         + `-# 💠 These are gated on **Dioreo's own admin whitelist**, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all.`;
 }
