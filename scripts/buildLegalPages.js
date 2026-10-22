@@ -6982,7 +6982,6 @@ const CMD_JS = `
   var SPECS=[
     {c:'/gunsmith mp',  o:'weapon', p:MP_ALL,      w:1},
     {c:'/gunsmith dmz', o:'weapon', p:WEAPONS.dmz, w:1},
-    {c:'/dmz',         o:'weapon',   p:WEAPONS.dmz,         w:1},
     {c:'/timestamp',   o:'datetime', p:WHEN},
     {c:'/draws',       pairs:[['page','New Draws'],['page','Returning Draws']]},
     {c:'/draw prices', pairs:[['region','10 CP Region'],['region','20 CP Region'],['region','30 CP Region']]},
@@ -7020,10 +7019,10 @@ const CMD_JS = `
        one the autocomplete actually offers a non-admin (commands/help.js, the
        staticCommands of each category), so none of them is a line the bot cannot
        answer. The admin commands are left out on purpose, as everywhere here.
-       Widened 2026-10-20 10:00 EDT from three names to eleven, after the landing
+       Widened 2026-10-20 10:00 EDT from three names to eleven (ten since 2026-10-21, while one command is hidden until it launches), after the landing
        line was reported as repeating a lot: /help was one of the commands with
        the fewest distinct options to show. */
-    {c:'/help', pairs:[['cmd','/gunsmith'],['cmd','/calendar'],['cmd','/dmz'],['cmd','/draws'],
+    {c:'/help', pairs:[['cmd','/gunsmith'],['cmd','/calendar'],['cmd','/draws'],
                         ['cmd','/draw prices'],['cmd','/patch notes'],['cmd','/colors'],
                         ['cmd','/timestamp'],['cmd','/settings'],['cmd','/invite'],['cmd','/season end']]},
     /* Bare, like /colors and /settings: its only option is visibility, which no

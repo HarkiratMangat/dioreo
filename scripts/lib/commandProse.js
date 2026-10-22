@@ -42,6 +42,7 @@ const COMMANDS = {
         sample: { weapon: 'Fennec' },
         keywords: 'loadout loadouts build builds attachment gunsmith dmz meta weapon gun browse',
     },
+    // Kept while /dmz is hidden (DELIBERATELY_ABSENT in commandCatalog.js), so it returns with its words: nothing renders it until the command is listed again.
     '/dmz': {
         purpose: 'DMZ builds, which are a separate set from the MP ones.',
         facts: ['DMZ builds are badged by combat range, Close or Mid-Long, rather than by weapon class.',
@@ -127,7 +128,7 @@ const ASKS = [
     { q: 'The build for one weapon', to: '/gunsmith mp' },
     { q: 'Builds for a category, or the meta', to: '/gunsmith mp' },
     { q: 'DMZ builds, or the DMZ meta', to: '/gunsmith dmz' },
-    { q: 'A DMZ build, straight to a weapon', to: '/dmz' },
+    // /dmz is hidden until the DMZ info update (Harkirat, 2026-10-21); its ask was { q: 'A DMZ build, straight to a weapon', to: '/dmz' }.
     { q: 'When the season ends', to: '/season end' },
     // ⚠️ Was "What's on this season, and when": every word but "season" is filler, and "season" is /season end's own name, so the ranker sent it there. The gate caught it the day the asks became search phrases.
     { q: "This season's events and dates", to: '/calendar' },
@@ -146,8 +147,8 @@ const ASKS = [
  */
 /* ⚠️ EXACT means the list the page SHOWS, after the ranker's weak-tail cut — the same rank() call the browser makes, so the gate and the page cannot disagree. */
 const SEARCH_CASES = [
-    { q: 'loadout', hit: ['/gunsmith mp', '/gunsmith dmz', '/dmz'] },
-    { q: 'attachment', hit: ['/gunsmith mp', '/gunsmith dmz', '/dmz'] },
+    { q: 'loadout', hit: ['/gunsmith mp', '/gunsmith dmz'] },
+    { q: 'attachment', hit: ['/gunsmith mp', '/gunsmith dmz'] },
     { q: 'cp', hit: ['/draw prices', '/draw calculator'] },
     { q: 'timezone', hit: ['/timestamp', '/settings'] },
     { q: 'countdown', hit: ['/season end', '/timestamp'] },
@@ -286,7 +287,9 @@ function assertProseCoverage(catalog) {
     const livePaths = new Set(live.map(c => c.path));
     const missing = live.filter(c => !(COMMANDS[c.path] || {}).purpose).map(c => c.path);
     if (missing.length) throw new Error('commandProse.js: no purpose written for ' + missing.join(', ') + '.');
-    const orphan = Object.keys(COMMANDS).filter(p => !livePaths.has(p));
+    // A command in DELIBERATELY_ABSENT is hidden on the record (/dmz, 2026-10-21), not gone, so its prose is parked rather than orphaned and comes back with it.
+    const { DELIBERATELY_ABSENT } = require('./commandCatalog');
+    const orphan = Object.keys(COMMANDS).filter(p => !livePaths.has(p) && !(p in DELIBERATELY_ABSENT));
     if (orphan.length) {
         throw new Error('commandProse.js: prose exists for ' + orphan.join(', ') +
             ', which the bot no longer registers. A description of something gone reads as current.');

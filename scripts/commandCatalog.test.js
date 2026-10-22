@@ -1,7 +1,7 @@
 // scripts/commandCatalog.test.js -- coverage for scripts/lib/commandCatalog.js, the module that tells the website's /commands page what the bot can do. It reads the REAL command builders, so most of what matters here is not "does it transform correctly" but "can it fail" -- a catalog that silently drops a command produces a page that lies about the bot while every other gate stays green. Run: `node scripts/commandCatalog.test.js` (also via `npm test`).
 const assert = require('assert');
 const {
-    buildCatalog, GROUPS, idFor, leavesOf, readHelpPlacement, placementFor, EXTRA_PLACEMENT,
+    buildCatalog, GROUPS, idFor, leavesOf, readHelpPlacement, placementFor, EXTRA_PLACEMENT, DELIBERATELY_ABSENT,
 } = require('./lib/commandCatalog');
 
 let failures = 0;
@@ -134,6 +134,7 @@ check('admin commands are excluded, and by GATING rather than by a hardcoded lis
     }
     // If this ever stops being true, an admin command is being excluded by NAME somewhere, and the next admin command added will quietly ship to the public site.
     for (const e of catalog.excluded) {
+        if (e.path in DELIBERATELY_ABSENT) continue; // a decision on the record, with its own reason
         assert.strictEqual(e.reason, 'admin-gated in CATEGORY_DEFS', `${e.path} excluded for the wrong reason`);
     }
 });
@@ -150,7 +151,7 @@ check('/help and /invite are placed despite CATEGORY_DEFS not knowing them', () 
 check('within a group, order follows CATEGORY_DEFS then the builder', () => {
     const gunsmith = catalog.groups.find(g => g.key === 'gunsmith').commands.map(c => c.path);
     // CATEGORY_DEFS declares `/gunsmith` before `/dmz`; the builder declares `mp` before `dmz`. One entry covers both subcommands, so only the builder can order those two.
-    assert.deepStrictEqual(gunsmith, ['/gunsmith mp', '/gunsmith dmz', '/dmz']);
+    assert.deepStrictEqual(gunsmith, ['/gunsmith mp', '/gunsmith dmz']);
 
     const draws = catalog.groups.find(g => g.key === 'draws').commands.map(c => c.path);
     assert.deepStrictEqual(draws, ['/draws', '/draw prices', '/draw calculator']);
@@ -296,7 +297,7 @@ const allOptions = allCommands.flatMap(c => c.options.map(o => ({ command: c.pat
 check('the catalog keeps Discord\'s option type, and min / max where one is set', () => {
     const missing = allOptions.filter(({ option }) => typeof option.type !== 'number').map(({ command, option }) => command + ' ' + option.name);
     assert.deepStrictEqual(missing, [], 'an option without a type cannot be labelled');
-    const build = byPath.get('/dmz').options.find(o => o.name === 'build');
+    const build = byPath.get('/gunsmith dmz').options.find(o => o.name === 'build');
     assert.strictEqual(build.type, 4, '`build` is an integer option');
     assert.strictEqual(build.min, 1, '`build` starts at 1, and the page says so');
 });
@@ -307,7 +308,8 @@ check('every option type in use on the live bot has a label', () => {
 
 check('an integer option is badged "whole number", never "text"', () => {
     const integers = allOptions.filter(({ option }) => option.type === 4 && !option.choices.length && !option.autocomplete);
-    assert.ok(integers.length >= 3, '`build` on /dmz and both /gunsmith leaves are integers; found ' + integers.length);
+    // /dmz carried the third while it was listed; it is hidden until the DMZ info update (2026-10-21).
+    assert.ok(integers.length >= 2, '`build` on both /gunsmith leaves is an integer; found ' + integers.length);
     for (const { command, option } of integers) {
         const html = badges(option, false);
         assert.ok(html.includes('whole number'), command + ' ' + option.name + ' should read whole number');

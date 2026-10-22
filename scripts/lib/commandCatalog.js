@@ -21,7 +21,10 @@ const TYPE_SUBCOMMAND_GROUP = 2;
 /**
  * Commands deliberately kept off the public page, each with the reason it is absent. ⚠️ A NAME HERE IS A DECISION ON THE RECORD, not a way to silence the completeness gate below — the gate exists precisely so that "this command is missing" can never be the *default* outcome of forgetting about it. Admin commands do NOT belong here: they are excluded structurally, by `requires`.
  */
-const DELIBERATELY_ABSENT = Object.create(null);
+const DELIBERATELY_ABSENT = Object.assign(Object.create(null), {
+    // Harkirat, 2026-10-21 21:10 EDT: "hide that command until its launched". /dmz waits for the DMZ info update, and the bot-presence branch makes `commands/dmz.js` devOnly, which `readBuilders` already skips. Once that lands this entry is redundant; delete it when /dmz returns.
+    '/dmz': 'hidden until the DMZ info update',
+});
 
 /**
  * Where a command goes when `CATEGORY_DEFS` has no opinion.
