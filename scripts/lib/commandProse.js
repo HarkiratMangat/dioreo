@@ -42,13 +42,7 @@ const COMMANDS = {
         sample: { weapon: 'Fennec' },
         keywords: 'loadout loadouts build builds attachment gunsmith dmz meta weapon gun browse',
     },
-    '/dmz': {
-        purpose: 'DMZ builds, which are a separate set from the MP ones.',
-        facts: ['DMZ weapons are ranked by combat range rather than by category.',
-                'Searching here never returns an MP build, and vice versa.'],
-        sample: { weapon: 'OUTLAW' },
-        keywords: 'loadout loadouts build builds attachment gunsmith dmz weapon gun class setup',
-    },
+    // '/dmz' prose removed while /dmz is hidden (2026-10-21 22:42 EDT); restore it with the command (docs/db-deferred-list.md, Queued).
 
     '/draws': {
         purpose: "What is in this season's lucky draws.",
@@ -123,7 +117,6 @@ const ASKS = [
     { q: 'The build for one weapon', to: '/gunsmith mp' },
     { q: 'Builds for a category, or the meta', to: '/gunsmith mp' },
     { q: 'The same, but for DMZ', to: '/gunsmith dmz' },
-    { q: 'A DMZ build, the old way', to: '/dmz' },
     { q: 'When the season ends', to: '/season end' },
     { q: "What's on this season, and when", to: '/calendar' },
     { q: 'What got buffed or nerfed', to: '/patch notes' },
