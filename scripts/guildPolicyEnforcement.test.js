@@ -254,84 +254,13 @@ t('the command menu stays quiet when everything fits', () => {
 });
 
 // --- 5b. the Commands menu: labels, right-click lines, older rules, and the save ------------- From the 2026-10-21 22:26 EDT click test: right-click commands showed as "/Convert Times", and subcommands as a bare "/draw".
-t('the Commands page labels subcommands in full and right-click commands without a slash, as toggles and as a menu', () => {
-    const { buildCommands } = require('../commands/admin').__testRenderers;
-    // Up to 20 commands: one toggle button each, red when hidden. An older bare "draw" rule shows both /draw subcommands red.
-    const page = buildCommands({ ephemeralCommands: ['draw'] }, ['draw prices', 'draw calculator', 'Convert Times', 'colors'], new Map([['Convert Times', 'message']]));
-    const buttons = page.filter(c => c.type === 1).flatMap(r => r.components).filter(b => b.custom_id?.startsWith('admin_cmd_toggle|'));
-    const byId = Object.fromEntries(buttons.map(b => [b.custom_id.split('|')[1], b]));
-    assert.strictEqual(buttons.length, 4);
-    assert.strictEqual(byId['draw prices'].label, '/draw prices');
-    assert.strictEqual(byId['Convert Times'].label, 'Convert Times');
-    assert.ok(byId['draw prices'].style === 4 && byId['draw calculator'].style === 4, 'an older bare "draw" rule must show every /draw subcommand as hidden');
-    assert.strictEqual(byId.colors.style, 2);
-    // Past 20 the dropdown returns, with the right-click line in the option's description.
-    const many = [...Array.from({ length: 21 }, (_, i) => `c${String(i).padStart(2, '0')}`), 'Convert Times'];
-    const menu = buildCommands({}, many, new Map([['Convert Times', 'message']])).find(c => c.type === 1 && c.components?.[0]?.type === 3);
-    assert.ok(menu, 'over 20 commands must fall back to the dropdown');
-    assert.strictEqual(menu.components[0].options.find(o => o.value === 'Convert Times').description, 'Right-click a message');
-});
-
-t('a toggle splits an older bare-name rule, so flipping one subcommand leaves the other hidden', async () => {
-    const admin = require('../commands/admin');
-    const saved = { guildId: 'G_1', ephemeralCommands: ['draw'], save: async () => {} };
-    const original = GuildSettings.findOne;
-    GuildSettings.findOne = () => saved;
-    try {
-        const { interaction } = makeInteraction({ isAdmin: true });
-        Object.assign(interaction, { customId: 'admin_cmd_toggle|draw prices', values: [] });
-        interaction.client.gateableCommandNames = ['draw prices', 'draw calculator', 'colors'];
-        await admin.handleComponent(interaction);
-    } finally {
-        GuildSettings.findOne = original;
-        guildPolicy.invalidateGuildPolicy('G_1');
-    }
-    assert.deepStrictEqual([...saved.ephemeralCommands], ['draw calculator']);
-});
-
 t('Check a Member names the rule that decided', () => {
     const { buildCheck } = require('../commands/admin').__testRenderers;
     const settings = { defaultVisibility: 'public', ephemeralCommands: ['draw calculator'], roleRules: [{ roleId: 'R', visibility: 'ephemeral', channelIds: [] }], channelRules: [] };
     const text = page => JSON.stringify(page);
     assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { roleId: 'R', channelId: 'C' })).includes('is Hidden everywhere'));
-    assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { channelId: 'C', cmd: 'draw calculator' })).includes('is a hidden command'));
+    assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { channelId: 'C', cmd: 'draw calculator' })).includes('has its own settings'));
     assert.ok(text(buildCheck(settings, ['draw calculator', 'colors'], { channelId: 'C' })).includes('server default decides'));
-});
-
-t('saving the menu replaces an older bare-name rule, so unticking a subcommand un-hides it', async () => {
-    const admin = require('../commands/admin');
-    const saved = { guildId: 'G_1', ephemeralCommands: ['draw', 'Old Gone Command'], save: async () => {} };
-    const original = GuildSettings.findOne;
-    GuildSettings.findOne = () => saved;
-    try {
-        const { interaction } = makeInteraction({ isAdmin: true });
-        Object.assign(interaction, { customId: 'admin_cmd_select', values: ['draw calculator'] });
-        interaction.client.gateableCommandNames = ['draw prices', 'draw calculator', 'colors'];
-        await admin.handleComponent(interaction);
-    } finally {
-        GuildSettings.findOne = original;
-        guildPolicy.invalidateGuildPolicy('G_1');
-    }
-    assert.deepStrictEqual([...saved.ephemeralCommands].sort(), ['Old Gone Command', 'draw calculator'], 'the bare "draw" must go; a rule the menu could not show must stay');
-});
-
-t('a bare-name rule whose subcommands fall past the 25-option cut stays hidden for those subcommands', async () => {
-    const admin = require('../commands/admin');
-    // 25 commands sort ahead of 'zz', so both of its subcommands are cut from the menu.
-    const fill = Array.from({ length: 25 }, (_, i) => `a${String(i).padStart(2, '0')}`);
-    const saved = { guildId: 'G_1', ephemeralCommands: ['zz'], save: async () => {} };
-    const original = GuildSettings.findOne;
-    GuildSettings.findOne = () => saved;
-    try {
-        const { interaction } = makeInteraction({ isAdmin: true });
-        Object.assign(interaction, { customId: 'admin_cmd_select', values: [] });
-        interaction.client.gateableCommandNames = [...fill, 'zz one', 'zz two'];
-        await admin.handleComponent(interaction);
-    } finally {
-        GuildSettings.findOne = original;
-        guildPolicy.invalidateGuildPolicy('G_1');
-    }
-    assert.deepStrictEqual([...saved.ephemeralCommands].sort(), ['zz one', 'zz two'], 'subcommands the menu could not show must keep the bare rule, as full paths');
 });
 
 t('each page offers Clear only when it has rules, and the role screen keeps the four tabs', () => {
@@ -417,7 +346,7 @@ t('describeChanges names each change, and an unchanged save logs nothing', () =>
         'Default: Public → Hidden',
         'Channel <#C1> rule removed (was Hidden)',
         'Role rule added: <@&R> Public in <#C2>',
-        'Hidden command added: Convert Times',
+        'Convert Times: own settings added (Hidden)',
     ]);
     assert.deepStrictEqual(describeChanges(before, before), []);
 });
@@ -440,7 +369,7 @@ t('every save writes a log row, and Reset Everything adds one rather than cleari
         guildPolicy.invalidateGuildPolicy('G_1');
     }
     assert.strictEqual(rows.length, 2);
-    assert.deepStrictEqual(rows[1].changes, ['Default: Hidden → Public', 'Hidden command removed: /colors']);
+    assert.deepStrictEqual(rows[1].changes, ['Default: Hidden → Public', '/colors: own settings removed, follows the server again']);
     // Nothing in the admin or owner paths deletes log rows: the only deleteMany/deleteOne on the model would be here.
     const fs = require('fs');
     for (const f of ['commands/admin.js', 'commands/bot.js', 'handlers/bot.js', 'utils/guildPolicy.js']) {
@@ -530,6 +459,75 @@ t("the panel reads Discord's own block and puts it before any /admin rule", () =
     assert.ok(page.includes("Discord's own permissions make these private"));
 });
 
+// --- 5e. the per-command model (Harkirat 2026-10-22 18:31 EDT) --------------------------------- His own example, 2026-10-22 18:26 EDT, set on /calendar: "hidden everywhere except in channel #a and #b. @roleA is still hidden in channel #a. @roleB is allowed public everywhere. @roleC is public in channel #c but hidden in channel #a." Every cell of the table sent back to him.
+t('his /calendar example resolves to the table he was shown', () => {
+    const settings = {
+        defaultVisibility: 'public',
+        commandSettings: [{
+            command: 'calendar', defaultVisibility: 'ephemeral',
+            channelRules: [{ channelId: 'A', visibility: 'public' }, { channelId: 'B', visibility: 'public' }],
+            roleRules: [
+                { roleId: 'RA', visibility: 'ephemeral', channelIds: ['A'] },
+                { roleId: 'RB', visibility: 'public', channelIds: [] },
+                { roleId: 'RC', visibility: 'public', channelIds: ['C'] },
+                { roleId: 'RC', visibility: 'ephemeral', channelIds: ['A'] },
+            ],
+        }],
+    };
+    const v = (roles, channelId) => guildPolicy.resolveVisibility(settings, { channelId, roleIds: roles, commandName: 'calendar', commandPath: 'calendar' }) === 'public' ? 'P' : 'H';
+    const row = roles => ['A', 'B', 'C', 'X'].map(c => v(roles, c)).join('');
+    assert.strictEqual(row([]), 'PPHH', 'no role rule');
+    assert.strictEqual(row(['RA']), 'HPHH', '@roleA');
+    assert.strictEqual(row(['RB']), 'PPPP', '@roleB');
+    assert.strictEqual(row(['RC']), 'HPPH', '@roleC');
+    // A command without its own settings follows the server.
+    assert.strictEqual(guildPolicy.resolveVisibility(settings, { channelId: 'X', roleIds: [], commandName: 'draws', commandPath: 'draws' }), 'public');
+    // Admins skip the command's own settings.
+    assert.strictEqual(guildPolicy.resolveVisibility(settings, { channelId: 'X', roleIds: [], commandName: 'calendar', commandPath: 'calendar', isAdmin: true }), 'public');
+});
+
+t('the Commands tab colours each command by state and opens it on tap', () => {
+    const { buildCommands } = require('../commands/admin').__testRenderers;
+    const settings = { ephemeralCommands: ['colors'], commandSettings: [{ command: 'calendar', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'A', visibility: 'public' }], roleRules: [] }, { command: 'help', defaultVisibility: 'public', channelRules: [], roleRules: [] }] };
+    const page = buildCommands(settings, ['calendar', 'colors', 'help', 'draws', 'Convert Times'], new Map([['Convert Times', 'message']]));
+    const buttons = Object.fromEntries(page.filter(c => c.type === 1).flatMap(r => r.components).filter(b => b.custom_id?.startsWith('admin_home||')).map(b => [b.custom_id.split('|')[2], b]));
+    assert.deepStrictEqual([buttons.calendar.style, buttons.colors.style, buttons.help.style, buttons.draws.style], [1, 4, 3, 2], 'blurple custom · red Hidden · green Public · grey follows');
+    assert.strictEqual(buttons['Convert Times'].label, 'Convert Times');
+    // Past 20 commands a menu opens them, naming any past Discord's 25.
+    const many = Array.from({ length: 30 }, (_, i) => `cmd${String(i).padStart(2, '0')}`);
+    const menu = buildCommands({}, many).find(c => c.type === 1 && c.components?.[0]?.type === 3);
+    assert.strictEqual(menu.components[0].custom_id, 'admin_cmd_open');
+    assert.strictEqual(menu.components[0].options.length, 25);
+});
+
+t('a scoped edit changes only that command, starting from the server default', () => {
+    const { editTarget, dropCommand } = require('../commands/admin').__testRenderers;
+    const doc = { defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'S', visibility: 'public' }], roleRules: [], ephemeralCommands: ['draw'], commandSettings: [] };
+    const gateable = ['draw prices', 'draw calculator', 'calendar'];
+    // A new command entry starts from the server default and has no exceptions; the server's own rules are untouched.
+    const cal = editTarget(doc, 'calendar', gateable);
+    assert.deepStrictEqual([cal.defaultVisibility, cal.channelRules.length], ['ephemeral', 0]);
+    cal.channelRules = [{ channelId: 'A', visibility: 'public' }];
+    assert.strictEqual(doc.channelRules.length, 1, 'the server rules must not change');
+    // The older bare 'draw' is split, so Follow Server on /draw prices leaves /draw calculator Hidden.
+    dropCommand(doc, 'draw prices', gateable);
+    assert.deepStrictEqual(doc.ephemeralCommands, []);
+    assert.deepStrictEqual(doc.commandSettings.map(e => `${e.command}:${e.defaultVisibility}`).sort(), ['calendar:ephemeral', 'draw calculator:ephemeral']);
+});
+
+t('every scoped page carries its command in each control, and the command Overview offers Follow Server', () => {
+    const { buildHome, buildChannels, buildRoles, buildRoleScope } = require('../commands/admin').__testRenderers;
+    const settings = { commandSettings: [{ command: 'draw prices', defaultVisibility: 'ephemeral', channelRules: [], roleRules: [{ roleId: 'R', visibility: 'public', channelIds: ['A'] }] }] };
+    for (const page of [buildChannels(settings, {}, 'draw prices'), buildRoles(settings, {}, 'draw prices'), buildRoleScope(settings, 'R', {}, 'draw prices')]) {
+        const ids = page.filter(c => c.type === 1).flatMap(r => r.components).map(c => c.custom_id).filter(id => /^admin_(ch|role)_/.test(id));
+        assert.ok(ids.length && ids.every(id => id.endsWith('|draw prices')), `every edit control must carry the scope: ${ids.join(', ')}`);
+    }
+    const home = JSON.stringify(buildHome(settings, null, {}, { scope: 'draw prices' }));
+    assert.ok(home.includes('admin_cmd_default|follow|draw prices') && home.includes('has its own settings'));
+    const fresh = JSON.stringify(buildHome({}, null, {}, { scope: 'colors' }));
+    assert.ok(fresh.includes('follows the server settings'));
+});
+
 // --- 6. no panel page can exceed the Components V2 ceiling ----------------------------------- 40 components per message, counted RECURSIVELY through containers, sections and rows. Exceeding it is not a soft failure: Discord rejects the whole message (COMPONENT_MAX_TOTAL_COMPONENTS_ EXCEEDED) and the panel simply refuses to open. This repo has already shipped that as a real production crash once (see .claude/rules/rendering-and-ui.md), and every explanatory line added to a panel costs one -- which is exactly the kind of harmless-looking edit that trips it.
 function countComponents(nodes) {
     return (nodes || []).reduce((total, node) => total + 1 + countComponents(node.components), 0);
@@ -557,6 +555,8 @@ t('every /admin page stays under the 40-component ceiling', () => {
         help: buildHelp(),
         commandToggles: buildCommands(settings, ids(20)),
         check: buildCheck(settings, ids(30), { roleId: 'ID_1', channelId: 'ID_2', cmd: 'ID_3' }),
+        commandHome: buildHome({ ...settings, commandSettings: [{ command: 'ID_1', defaultVisibility: 'ephemeral', channelRules: settings.channelRules, roleRules: settings.roleRules }] }, null, {}, { scope: 'ID_1' }),
+        commandChannels: buildChannels({ commandSettings: [{ command: 'ID_1', defaultVisibility: 'ephemeral', channelRules: settings.channelRules, roleRules: [] }] }, {}, 'ID_1'),
         homeResetArmed: buildHome(settings, null, { guildName: 'A server', guildIcon: 'https://cdn.discordapp.com/icons/1/a.png', channelId: 'C_1' }, { resetArmed: true }),
         homeWithServer: buildHome(settings, null, { guildName: 'A server', guildIcon: 'https://cdn.discordapp.com/icons/1/a.png', channelId: 'C_1' }),
     };

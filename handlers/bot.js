@@ -86,6 +86,8 @@ async function route(interaction) {
             const { rulesText } = require('../commands/admin');
             const GuildSettings = require('../models/GuildSettings');
             const before = await getGuildSettings(guildId);
+            // Written down before the change: the summary must show the rules as they were.
+            const beforeText = before ? rulesText(before).replace(/\n/g, ' · ') : '';
             if (before) {
                 if (verb === 'reset') {
                     // source 'owner' marks the server's own change log row as Dioreo's owner, not one of its admins.
@@ -93,6 +95,7 @@ async function route(interaction) {
                         doc.channelRules = [];
                         doc.roleRules = [];
                         doc.ephemeralCommands = [];
+                        doc.commandSettings = [];
                         doc.defaultVisibility = 'public';
                     }, { source: 'owner' });
                 } else {
@@ -104,7 +107,7 @@ async function route(interaction) {
                 const name = interaction.client.guilds?.cache?.get(guildId)?.name;
                 const { recordChange } = require('../utils/changeStore');
                 // The rules as they were go in the summary: neither action has an Undo, so this is what lets a server's setup be rebuilt by hand.
-                recordChange({ actorId: interaction.user.id, page: 'access', action: verb === 'reset' ? 'serverReset' : 'serverDelete', model: 'GuildSettings', target: guildId, summary: `${verb === 'reset' ? 'Reset' : 'Deleted'} /admin settings for ${name || guildId}. Before: ${rulesText(before).replace(/\n/g, ' · ')}` });
+                recordChange({ actorId: interaction.user.id, page: 'access', action: verb === 'reset' ? 'serverReset' : 'serverDelete', model: 'GuildSettings', target: guildId, summary: `${verb === 'reset' ? 'Reset' : 'Deleted'} /admin settings for ${name || guildId}. Before: ${beforeText}` });
             }
             const note = verb === 'reset' ? `-# ${BOT_EMOJI.checkmark} Every rule cleared and the default set to Public.` : `-# ${BOT_EMOJI.checkmark} Record deleted. The server behaves as if /admin was never used.`;
             return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId, { note }), NO_PINGS);

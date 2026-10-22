@@ -89,36 +89,60 @@ function commandPathOf(interaction) {
     return [interaction.commandName, group, sub].filter(Boolean).join(' ');
 }
 
-// Which rule decided, as well as the answer: /admin's "Check a member" names it (Harkirat 2026-10-22 15:23 EDT asked me to pick the new settings; this is one). resolveVisibility below is this function's `visibility`, so the two can never disagree. `tier` is one of none · command · roleChannel · role · channel · parent · default, and `rule` is the matching rule (or its id) where there is one.
-function explainVisibility(settings, { channelId, parentChannelId = null, roleIds, commandName = null, commandPath = null, isAdmin = false }) {
-    if (!settings) return { visibility: 'public', tier: 'none', rule: null };
+// A command's own settings, if it has any: a commandSettings entry for the full path, then for the bare name ('draw' still covering 'draw prices'), then the older ephemeralCommands form (Hidden everywhere, no exceptions). Null when the command follows the server-wide settings.
+function commandEntry(settings, path) {
+    if (!settings || !path) return null;
+    const bare = path.split(' ')[0];
+    const own = settings.commandSettings || [];
+    const hit = own.find(e => e.command === path) || own.find(e => e.command === bare);
+    if (hit) return { command: hit.command, defaultVisibility: hit.defaultVisibility || 'ephemeral', channelRules: hit.channelRules || [], roleRules: hit.roleRules || [] };
+    const legacy = settings.ephemeralCommands || [];
+    const old = legacy.includes(path) ? path : (legacy.includes(bare) ? bare : null);
+    return old ? { command: old, defaultVisibility: 'ephemeral', channelRules: [], roleRules: [], legacy: true } : null;
+}
 
-    // A rule on the full path ('draw prices') or on the bare command name. The bare name is how rules were stored before 2026-10-22 14:01 EDT, and it still means "every subcommand of this command" until /admin's Commands menu is next saved, which rewrites it as full paths.
-    const commandRules = settings.ephemeralCommands || [];
-    if (!isAdmin && commandName) {
-        const hit = commandRules.includes(commandPath || commandName) ? (commandPath || commandName) : (commandRules.includes(commandName) ? commandName : null);
-        if (hit) return { visibility: 'ephemeral', tier: 'command', rule: hit };
-    }
+// Every command with its own settings, the older form included, one entry each.
+function commandEntries(settings) {
+    const seen = new Set();
+    const out = [];
+    for (const e of settings?.commandSettings || []) { seen.add(e.command); out.push(commandEntry({ commandSettings: [e] }, e.command)); }
+    for (const c of settings?.ephemeralCommands || []) if (!seen.has(c)) { seen.add(c); out.push(commandEntry({ ephemeralCommands: [c] }, c)); }
+    return out;
+}
 
+// The layered rules of ONE rule set (the server's, or a command's own): a role in this channel › a role everywhere › this channel (or a thread's parent) › the set's default.
+function explainLayers(rules, { channelId, parentChannelId = null, roleIds }) {
     const held = new Set(roleIds);
     const matches = channelMatcher(channelId, parentChannelId);
     // Same-tier conflict resolves to public, so the rule named is a public one when any is.
-    const pick = rules => rules.find(r => r.visibility === 'public') || rules[0];
+    const pick = list => list.find(r => r.visibility === 'public') || list[0];
 
-    const roleRules = (settings.roleRules || []).filter(r => held.has(r.roleId));
+    const roleRules = (rules.roleRules || []).filter(r => held.has(r.roleId));
     const scoped = roleRules.filter(r => (r.channelIds || []).some(matches));
     if (scoped.length) return { visibility: pick(scoped).visibility, tier: 'roleChannel', rule: pick(scoped) };
 
     const global = roleRules.filter(r => !(r.channelIds || []).length);
     if (global.length) return { visibility: pick(global).visibility, tier: 'role', rule: pick(global) };
 
-    const channelRules = settings.channelRules || [];
+    const channelRules = rules.channelRules || [];
     const own = channelRules.find(r => r.channelId === channelId);
     if (own) return { visibility: own.visibility, tier: 'channel', rule: own };
     const inherited = parentChannelId && channelRules.find(r => r.channelId === parentChannelId);
     if (inherited) return { visibility: inherited.visibility, tier: 'parent', rule: inherited };
 
-    return { visibility: settings.defaultVisibility || 'public', tier: 'default', rule: null };
+    return { visibility: rules.defaultVisibility || 'public', tier: 'default', rule: null };
+}
+
+// Which rule decided, as well as the answer: /admin's "Check a member" names it. resolveVisibility below is this function's `visibility`, so the two can never disagree. THE MODEL SINCE 2026-10-22 18:31 EDT (Harkirat: "man idk, this is confusing ... build it out autonomously"): "Server settings cover every command. Give a command its own settings and it uses only those." A command with its own settings resolves inside them (tier 'command', with `inner` naming the rule there); every other command resolves in the server-wide rules. Server admins skip a command's own settings, as they always skipped hidden commands.
+function explainVisibility(settings, { channelId, parentChannelId = null, roleIds, commandName = null, commandPath = null, isAdmin = false }) {
+    if (!settings) return { visibility: 'public', tier: 'none', rule: null };
+    const context = { channelId, parentChannelId, roleIds };
+    const entry = !isAdmin && commandName ? commandEntry(settings, commandPath || commandName) : null;
+    if (entry) {
+        const inner = explainLayers(entry, context);
+        return { visibility: inner.visibility, tier: 'command', rule: entry.command, inner, entry };
+    }
+    return explainLayers(settings, context);
 }
 
 function resolveVisibility(settings, context) {
@@ -202,6 +226,7 @@ function snapshot(doc) {
         channelRules: (doc?.channelRules || []).map(r => ({ channelId: r.channelId, visibility: r.visibility })),
         roleRules: (doc?.roleRules || []).map(r => ({ roleId: r.roleId, visibility: r.visibility, channelIds: [...(r.channelIds || [])] })),
         ephemeralCommands: [...(doc?.ephemeralCommands || [])],
+        commands: commandEntries(doc).map(e => ({ command: e.command, defaultVisibility: e.defaultVisibility, channelRules: e.channelRules.map(r => ({ channelId: r.channelId, visibility: r.visibility })), roleRules: e.roleRules.map(r => ({ roleId: r.roleId, visibility: r.visibility, channelIds: [...(r.channelIds || [])] })) })),
     };
 }
 
@@ -209,6 +234,22 @@ const LABEL = { public: 'Public', ephemeral: 'Hidden' };
 
 // One plain line per thing that changed, with channels and roles as <#id> / <@&id> tokens the log export turns into names. Empty when nothing changed, and then nothing is logged.
 function describeChanges(before, after) {
+    const lines = describeRuleSet(before, after, '');
+    // A command's own settings: added, removed, or changed inside, each line prefixed with the command.
+    const cmd = c => (/[A-Z]/.test(c) ? c : `/${c}`);
+    // A snapshot carries `commands`; a raw settings object is read through commandEntries, the older ephemeralCommands included.
+    const bCmd = new Map((before.commands || commandEntries(before)).map(e => [e.command, e]));
+    const aCmd = new Map((after.commands || commandEntries(after)).map(e => [e.command, e]));
+    for (const [c, e] of aCmd) {
+        if (!bCmd.has(c)) lines.push(`${cmd(c)}: own settings added (${LABEL[e.defaultVisibility]})`);
+        lines.push(...describeRuleSet(bCmd.get(c) || { defaultVisibility: e.defaultVisibility, channelRules: [], roleRules: [] }, e, `${cmd(c)}: `));
+    }
+    for (const c of bCmd.keys()) if (!aCmd.has(c)) lines.push(`${cmd(c)}: own settings removed, follows the server again`);
+    return lines;
+}
+
+// One rule set's changes (the server's, or one command's), each line given `prefix`.
+function describeRuleSet(before, after, prefix) {
     const lines = [];
     if (before.defaultVisibility !== after.defaultVisibility) lines.push(`Default: ${LABEL[before.defaultVisibility]} → ${LABEL[after.defaultVisibility]}`);
     const chKey = r => `${r.channelId}:${r.visibility}`;
@@ -222,10 +263,7 @@ function describeChanges(before, after) {
     const aRole = new Set(after.roleRules.map(roleKey));
     for (const r of after.roleRules) if (!bRole.has(roleKey(r))) lines.push(`Role rule added: ${roleText(r)}`);
     for (const r of before.roleRules) if (!aRole.has(roleKey(r))) lines.push(`Role rule removed: ${roleText(r)}`);
-    const cmd = c => (/[A-Z]/.test(c) ? c : `/${c}`);
-    for (const c of after.ephemeralCommands) if (!before.ephemeralCommands.includes(c)) lines.push(`Hidden command added: ${cmd(c)}`);
-    for (const c of before.ephemeralCommands) if (!after.ephemeralCommands.includes(c)) lines.push(`Hidden command removed: ${cmd(c)}`);
-    return lines;
+    return lines.map(l => prefix + l);
 }
 
 // Writes one GuildSettingsLog row. Fire-and-forget and never throws: a log failure must not undo or block the admin's change, the same contract as utils/changeStore.js's recordChange().
@@ -266,6 +304,9 @@ async function sendPolicyNotice(interaction) {
 
 module.exports = {
     attachGuildPolicy,
+    commandEntries,
+    commandEntry,
+    explainLayers,
     botInGuild,
     describeChanges,
     logGuildChange,

@@ -8,7 +8,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 // ⚠️ Required as the whole module and read INSIDE the render functions below, never destructured or captured at module level. refreshEmojiIds() rewrites this object in place at boot, long after this file is require()d, so a module-level capture freezes the pre-sync id and renders broken on the dev bot -- four sites shipped exactly that bug on 2026-07-26. See .claude/rules/rendering-and-ui.md.
 const emojis = require('../utils/emojiMap');
-const { explainVisibility, getGuildSettings, isServerAdmin, resolveVisibility, updateGuildSettings } = require('../utils/guildPolicy');
+const { commandEntries, commandEntry, explainVisibility, getGuildSettings, isServerAdmin, resolveVisibility, updateGuildSettings } = require('../utils/guildPolicy');
 const { toBoldItalicUnicode } = require('../utils/titleBlock');
 const { mentionCommand } = require('../utils/commandMentions');
 
@@ -37,6 +37,27 @@ const commandText = value => (isMenuCommand(value) ? `${value} *(right-click)*` 
 const dot = visibility => (visibility === 'public' ? emojis.greenDotGlow : emojis.redDotGlow);
 const visText = visibility => `${dot(visibility)} **${VISIBILITY_LABEL[visibility]}**`;
 
+// THE PER-COMMAND MODEL (Harkirat 2026-10-22 18:31 EDT: "man idk, this is confusing ... build it out autonomously and then show me"). One sentence: server settings cover every command; give a command its own settings and it uses only those. The panel has ONE set of pages (Overview, Channels, Roles) and a SCOPE: blank for the server, or one command path. Every control in a scoped page carries the scope as the last `|` field of its custom_id, so a click edits that command's own rules and never the server's.
+const sid = (id, arg, scope) => (scope ? `${id}|${arg ?? ''}|${scope}` : (arg !== undefined && arg !== null && arg !== '' ? `${id}|${arg}` : id));
+
+// The rule set a page shows and edits: the server's, or a command's own. A command without its own settings shows a fresh set that starts from the server default, so adding one exception never flips the rest.
+function ruleSet(settings, scope) {
+    if (!scope) return settings || { defaultVisibility: 'public', channelRules: [], roleRules: [] };
+    return commandEntry(settings, scope) || { command: scope, defaultVisibility: settings?.defaultVisibility || 'public', channelRules: [], roleRules: [], fresh: true };
+}
+
+// A command's state as one word and a button style, for the Commands grid and summaries: follows the server (grey), Hidden or Public with no exceptions (red, green), or custom with channel or role rules (blurple).
+function commandState(entry) {
+    if (!entry) return { word: 'Follows server', style: 2 };
+    const custom = entry.channelRules.length || entry.roleRules.length;
+    if (custom) return { word: `${VISIBILITY_LABEL[entry.defaultVisibility]}, ${entry.channelRules.length + entry.roleRules.length} exception${entry.channelRules.length + entry.roleRules.length === 1 ? '' : 's'}`, style: 1 };
+    return { word: VISIBILITY_LABEL[entry.defaultVisibility], style: entry.defaultVisibility === 'public' ? 3 : 4 };
+}
+
+function commandSummary(entry) {
+    return `${dot(entry.defaultVisibility)} ${commandText(entry.command)} · ${commandState(entry).word}`;
+}
+
 // Names the channels instead of counting them ("Public in 1 channel" named nothing, click test 2026-10-21 22:26 EDT). Three, then a count, so a long list cannot push the page past Discord's text limits.
 function channelList(ids) {
     if (!ids?.length) return 'none';
@@ -58,17 +79,18 @@ function staleCount(settings, place = {}) {
         n += (settings?.channelRules || []).filter(r => !place.hasChannel(r.channelId)).length;
         n += (settings?.roleRules || []).filter(r => (r.channelIds || []).some(id => !place.hasChannel(id))).length;
     }
-    if (place.gateable?.length) n += (settings?.ephemeralCommands || []).filter(c => !place.gateable.includes(c) && !place.gateable.some(v => v.startsWith(`${c} `))).length;
+    if (place.gateable?.length) n += commandEntries(settings).filter(e => !place.gateable.includes(e.command) && !place.gateable.some(v => v.startsWith(`${e.command} `))).length;
     return n;
 }
 
 function hasRules(settings) {
-    return Boolean(settings?.ephemeralCommands?.length || settings?.roleRules?.length || settings?.channelRules?.length);
+    return Boolean(settings?.ephemeralCommands?.length || settings?.commandSettings?.length || settings?.roleRules?.length || settings?.channelRules?.length);
 }
 
 // "Server Settings" with the server-settings emoji on every page (Harkirat 2026-10-22 14:57 EDT, "title to Server Settings"; the one emoji is his 13:40 EDT option A). Custom emoji per sub-page are filed for after v3 in docs/db-deferred-list.md. The tabs say which page is open.
-function pageTitle(page) {
-    return `## ${emojis.serverSettings} Server Settings${page ? ` · ${page}` : ''}`;
+function pageTitle(page, scope) {
+    const where = scope ? ` · ${commandLabel(scope)}` : '';
+    return `## ${emojis.serverSettings} Server Settings${page ? ` · ${page}` : ''}${where}`;
 }
 
 function roleRuleText(rule) {
@@ -77,8 +99,10 @@ function roleRuleText(rule) {
 }
 
 // The five tabs. The open page is blurple and disabled (Harkirat 2026-10-22 14:57 EDT: "active page should = blurple-disabled", the footer convention of utils/globalNav.js). `subpage` keeps the parent tab blurple but clickable, so the role-in-channels screen can still go back to Roles.
-function navRow(active, { subpage = false } = {}) {
-    const btn = (id, label) => ({ type: 2, style: id === active ? 1 : 2, label, custom_id: id, ...(id === active && !subpage ? { disabled: true } : {}) });
+function navRow(active, { subpage = false, scope = null } = {}) {
+    // In a command's scope, Overview, Channels and Roles stay on that command; Commands and Help leave it.
+    const scoped = new Set(['admin_home', 'admin_channels', 'admin_roles']);
+    const btn = (id, label) => ({ type: 2, style: id === active ? 1 : 2, label, custom_id: scoped.has(id) ? sid(id, '', scope) : id, ...(id === active && !subpage ? { disabled: true } : {}) });
     return {
         type: 1,
         components: [
@@ -97,26 +121,27 @@ function clearRow(customId, label) {
 }
 
 // One Overview block per rule area, its Edit button as the Section's accessory, so every setting is one press from the summary. The `|go` suffix keeps its custom_id distinct from the nav row's identical target (Discord refuses a message with a duplicated id).
-function areaSection(title, lines, target) {
+function areaSection(title, lines, target, scope = null) {
     return {
         type: 9,
         components: [{ type: 10, content: `### ${title}\n${lines.join('\n')}` }],
-        accessory: { type: 2, style: 2, label: 'Edit', custom_id: `${target}|go` },
+        accessory: { type: 2, style: 2, label: 'Edit', custom_id: scope ? `${target}|go|${scope}` : `${target}|go` },
     };
 }
 
 // The page header: title, the server it is for (his ask, 2026-10-22 14:57 EDT: "mention the server the settings are for"), and on Overview the server's icon beside them. The name and icon come from the cached guild, so a user-installed /admin in a server the bot is not in shows neither; that is the only case without them.
-function header(page, place = {}, subtitle = null) {
-    const lines = [pageTitle(page)];
+function header(page, place = {}, subtitle = null, scope = null) {
+    const lines = [pageTitle(page, scope)];
     if (place.guildName) lines.push(`-# ${toBoldItalicUnicode(place.guildName)}`);
     if (subtitle) lines.push(subtitle);
     const text = { type: 10, content: lines.join('\n') };
-    return place.guildIcon && !page
+    return place.guildIcon && !page && !scope
         ? [{ type: 9, components: [text], accessory: { type: 11, media: { url: place.guildIcon } } }]
         : [text];
 }
 
-function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
+function buildHome(settings, client, place = {}, { resetArmed = false, scope = null } = {}) {
+    if (scope) return buildCommandHome(settings, client, place, scope);
     // Dioreo not in this server: the rules are kept but do nothing, and Discord's own permissions decide.
     const notIn = place.botInGuild === false
         ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} **Dioreo isn't added to this server**, so these rules don't apply right now. Members' own installs follow Discord's channel permissions (Use External Apps). Add Dioreo to the server and the rules work again.` }]
@@ -124,14 +149,14 @@ function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
     const def = settings?.defaultVisibility || 'public';
     const channelRules = settings?.channelRules || [];
     const roleRules = settings?.roleRules || [];
-    const commandRules = settings?.ephemeralCommands || [];
+    const commands = commandEntries(settings);
     const byVis = v => channelRules.filter(r => r.visibility === v).map(r => r.channelId);
 
     const channelLines = channelRules.length
         ? ['ephemeral', 'public'].filter(v => byVis(v).length).map(v => `${visText(v)} in ${channelList(byVis(v))}`)
         : ['-# No channel rules'];
     const roleLines = roleRules.length ? roleRules.map(roleRuleText) : ['-# No role rules'];
-    const commandLines = commandRules.length ? [`${visText('ephemeral')} ${commandRules.map(commandText).join(' · ')}`] : ['-# No hidden commands'];
+    const commandLines = commands.length ? commands.slice(0, 6).map(commandSummary).concat(commands.length > 6 ? [`-# +${commands.length - 6} more`] : []) : ['-# Every command follows the settings above'];
 
     // What this very channel does right now, for a member with no role rule: the one fact an admin otherwise has to work out from the rules above.
     const hereGate = place.channelId && place.discordGate ? place.discordGate(place.channelId) : null;
@@ -139,10 +164,10 @@ function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
         ? resolveVisibility(settings || { defaultVisibility: 'public' }, { channelId: place.channelId, parentChannelId: place.parentId || null, roleIds: [] })
         : null;
 
-    // The two explainer lines show in full only while the server has no rules (Harkirat 2026-10-22 13:47 EDT, "Text 1"); the rest of the detail lives on the Help tab.
+    // The explainer shows in full only while the server has no rules (Harkirat 2026-10-22 13:47 EDT, "Text 1"); the rest lives on Help.
     const explainer = hasRules(settings)
-        ? '-# Most specific rule wins: command → role → channel → default. More on **Help**.'
-        : `-# **Most specific rule wins:** command → role → channel → default.\n-# A rule can only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own ${mentionCommand(client, '/settings')}.`;
+        ? '-# A command with its own settings uses only those. Otherwise: role › channel › default. More on **Help**.'
+        : `-# **These settings cover every command.** Give one command its own on **Commands**.\n-# A rule can only make Dioreo **quieter** — Public *permits* a public answer, it never overrides someone's own ${mentionCommand(client, '/settings')}.`;
 
     const defaultButton = v => ({
         type: 2,
@@ -166,7 +191,7 @@ function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
                 { type: 14, spacing: 2 },
                 areaSection(`Channels${channelRules.length ? ` (${channelRules.length})` : ''}`, channelLines, 'admin_channels'),
                 areaSection(`Roles${roleRules.length ? ` (${roleRules.length})` : ''}`, roleLines, 'admin_roles'),
-                areaSection(`Hidden Commands${commandRules.length ? ` (${commandRules.length})` : ''}`, commandLines, 'admin_commands'),
+                areaSection(`Commands with their own settings${commands.length ? ` (${commands.length})` : ''}`, commandLines, 'admin_commands'),
                 { type: 14, spacing: 2 },
                 ...(here ? [{ type: 10, content: hereGate
                     ? `📍 **Here in <#${place.channelId}>** · ${visText('ephemeral')} for @everyone\n-# ${GATE_TEXT[hereGate]}. To change that, allow it for @everyone in this channel's permissions.`
@@ -181,8 +206,49 @@ function buildHome(settings, client, place = {}, { resetArmed = false } = {}) {
     ];
 }
 
+// ONE COMMAND'S OVERVIEW: the same page as the server's, scoped. Follow Server removes the command's own settings; Public or Hidden gives it its own, starting with no exceptions.
+function buildCommandHome(settings, client, place, scope) {
+    const entry = commandEntry(settings, scope);
+    const rules = ruleSet(settings, scope);
+    const byVis = v => rules.channelRules.filter(r => r.visibility === v).map(r => r.channelId);
+    const pick = entry ? rules.defaultVisibility : 'follow';
+    const btn = (value, label) => ({ type: 2, style: pick === value ? 3 : 2, label, custom_id: sid('admin_cmd_default', value, scope), ...(pick === value ? { disabled: true } : {}) });
+    const here = place.channelId
+        ? explainVisibility(settings || {}, { channelId: place.channelId, parentChannelId: place.parentId || null, roleIds: [], commandName: scope.split(' ')[0], commandPath: scope })
+        : null;
+    const body = entry
+        ? [
+            { type: 10, content: `### Default for ${commandLabel(scope)}\n-# ${visText(rules.defaultVisibility)} everywhere, except the rules below.` },
+            { type: 1, components: [btn('follow', 'Follow Server'), btn('public', 'Public'), btn('ephemeral', 'Hidden')] },
+            { type: 14, spacing: 2 },
+            areaSection(`Channels${rules.channelRules.length ? ` (${rules.channelRules.length})` : ''}`, rules.channelRules.length ? ['ephemeral', 'public'].filter(v => byVis(v).length).map(v => `${visText(v)} in ${channelList(byVis(v))}`) : ['-# No channel exceptions'], 'admin_channels', scope),
+            areaSection(`Roles${rules.roleRules.length ? ` (${rules.roleRules.length})` : ''}`, rules.roleRules.length ? rules.roleRules.map(roleRuleText) : ['-# No role exceptions'], 'admin_roles', scope),
+        ]
+        : [
+            { type: 10, content: `### ${commandLabel(scope)} follows the server settings\n-# Pick Public or Hidden to give it its own. Then add channel or role exceptions for it alone.` },
+            { type: 1, components: [btn('follow', 'Follow Server'), btn('public', 'Public'), btn('ephemeral', 'Hidden')] },
+        ];
+    return [
+        {
+            type: 17,
+            accent_color: ACCENT,
+            components: [
+                ...header(null, place, `-# ${entry ? `**${commandLabel(scope)} has its own settings.** It ignores the server-wide ones; every other command still uses them.` : 'Settings for this one command.'}`, scope),
+                { type: 14, spacing: 2 },
+                ...body,
+                ...(here ? [{ type: 14, spacing: 2 }, { type: 10, content: `📍 **Here in <#${place.channelId}>** · ${visText(here.visibility)} for ${commandLabel(scope)}, for members without a role rule` }] : []),
+                { type: 1, components: [
+                    { type: 2, style: 2, label: 'All Commands', custom_id: 'admin_commands|back' },
+                    { type: 2, style: 2, label: 'Server-wide Settings', custom_id: 'admin_home|back' },
+                ] },
+            ],
+        },
+        navRow('admin_home', { scope }),
+    ];
+}
+
 function ruleCount(settings) {
-    return (settings?.ephemeralCommands?.length || 0) + (settings?.roleRules?.length || 0) + (settings?.channelRules?.length || 0);
+    return commandEntries(settings).length + (settings?.roleRules?.length || 0) + (settings?.channelRules?.length || 0);
 }
 
 // Overview's last row: Check a Member, and Reset Everything once there is something to reset. Reset is two presses: the first turns the row into Cancel · Confirm, so one stray click cannot wipe a server's setup (picked 2026-10-22 15:23 EDT).
@@ -211,7 +277,8 @@ function rulesText(settings) {
     const ch = ['ephemeral', 'public'].filter(v => byVis(v).length).map(v => `${visText(v)} in ${channelList(byVis(v))}`);
     lines.push(`**Channels** · ${ch.length ? ch.join(' · ') : 'none'}`);
     lines.push(`**Roles** · ${(settings.roleRules || []).length ? settings.roleRules.map(roleRuleText).join(' · ') : 'none'}`);
-    lines.push(`**Hidden commands** · ${(settings.ephemeralCommands || []).length ? settings.ephemeralCommands.map(commandText).join(' · ') : 'none'}`);
+    const commands = commandEntries(settings);
+    lines.push(`**Commands with own settings** · ${commands.length ? commands.map(commandSummary).join(' · ') : 'none'}`);
     return lines.join('\n');
 }
 
@@ -230,30 +297,34 @@ function channelSelect(customId, placeholder, defaultIds) {
     };
 }
 
-function buildChannels(settings, place = {}) {
-    const rules = settings?.channelRules || [];
-    const def = settings?.defaultVisibility || 'public';
+function buildChannels(settings, place = {}, scope = null) {
+    const set = ruleSet(settings, scope);
+    const rules = set.channelRules || [];
+    const def = set.defaultVisibility || 'public';
     const ephemeral = rules.filter(r => r.visibility === 'ephemeral').map(r => r.channelId);
     const publicIds = rules.filter(r => r.visibility === 'public').map(r => r.channelId);
     // Channels this page sets to Public that Discord itself keeps private: the confusion the Discord line exists for.
     const gated = place.discordGate ? publicIds.filter(id => place.discordGate(id)) : [];
+    const lead = scope
+        ? `-# Only for ${commandLabel(scope)}. Its default is ${visText(def)}. Pick channels where it answers differently.`
+        : `-# Your default is ${visText(def)}. Pick channels that answer differently.`;
     return [
         {
             type: 17,
             accent_color: ACCENT,
             components: [
                 // ⚠️ KEEP THIS PAGE SHORT (Harkirat 2026-08-10 18:23 EDT: lead with the workflow, let help carry the detail). The default is stated here rather than "set that on Overview first", which read as an instruction to go somewhere else (click test 2026-10-21 22:26 EDT).
-                ...header('Channels', place, `-# Your default is ${visText(def)}. Pick channels that answer differently.`),
+                ...header('Channels', place, lead, scope),
                 { type: 14, spacing: 2 },
                 { type: 10, content: `${visText('ephemeral')} in${ephemeral.length ? ` (${ephemeral.length})` : ''} · ${channelList(ephemeral)}\n${visText('public')} in${publicIds.length ? ` (${publicIds.length})` : ''} · ${channelList(publicIds)}` },
                 ...(gated.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord's own permissions make these private for @everyone, whatever this page says: ${channelList(gated)}. Allow **Use External Apps** in those channels to change it.` }] : []),
                 { type: 10, content: '-# 🔎 Type to search · threads follow their channel' },
             ],
         },
-        channelSelect('admin_ch_ephemeral', 'Always hidden in these channels…', ephemeral),
-        channelSelect('admin_ch_public', 'Always public in these channels…', publicIds),
-        ...(rules.length ? [clearRow('admin_ch_clear', `Clear channel rules (${rules.length})`)] : []),
-        navRow('admin_channels'),
+        channelSelect(sid('admin_ch_ephemeral', '', scope), 'Always hidden in these channels…', ephemeral),
+        channelSelect(sid('admin_ch_public', '', scope), 'Always public in these channels…', publicIds),
+        ...(rules.length ? [clearRow(sid('admin_ch_clear', '', scope), `Clear channel rules (${rules.length})`)] : []),
+        navRow('admin_channels', { scope }),
     ];
 }
 
@@ -271,15 +342,19 @@ function roleSelect(customId, placeholder, defaultIds, maxValues = 25) {
     };
 }
 
-function buildRoles(settings, place = {}) {
-    const rules = (settings?.roleRules || []).filter(r => !r.channelIds?.length);
-    const scoped = (settings?.roleRules || []).filter(r => r.channelIds?.length);
+function buildRoles(settings, place = {}, scope = null) {
+    const set = ruleSet(settings, scope);
+    const rules = (set.roleRules || []).filter(r => !r.channelIds?.length);
+    const scoped = (set.roleRules || []).filter(r => r.channelIds?.length);
+    const lead = scope
+        ? `-# Only for ${commandLabel(scope)}. Give a role its own setting, everywhere or in chosen channels. **Roles beat channel rules.**`
+        : '-# Give a role its own setting, everywhere or in chosen channels. **Roles beat channel rules.**';
     return [
         {
             type: 17,
             accent_color: ACCENT,
             components: [
-                ...header('Roles', place, '-# Give a role its own setting, everywhere or in chosen channels. **Roles beat channel rules.**'),
+                ...header('Roles', place, lead, scope),
                 { type: 14, spacing: 2 },
                 {
                     type: 10, content: `**Everywhere** · ${rules.length ? rules.map(r => `<@&${r.roleId}> → ${visText(r.visibility)}`).join(' · ') : 'none'}\n`
@@ -288,17 +363,18 @@ function buildRoles(settings, place = {}) {
                 { type: 10, content: '-# 🔎 Type to search your roles' },
             ],
         },
-        roleSelect('admin_role_public', 'Always public for these roles…', rules.filter(r => r.visibility === 'public').map(r => r.roleId)),
-        roleSelect('admin_role_ephemeral', 'Always hidden for these roles…', rules.filter(r => r.visibility === 'ephemeral').map(r => r.roleId)),
-        roleSelect('admin_role_pick', 'Set a role for specific channels…', [], 1),
+        roleSelect(sid('admin_role_public', '', scope), 'Always public for these roles…', rules.filter(r => r.visibility === 'public').map(r => r.roleId)),
+        roleSelect(sid('admin_role_ephemeral', '', scope), 'Always hidden for these roles…', rules.filter(r => r.visibility === 'ephemeral').map(r => r.roleId)),
+        roleSelect(sid('admin_role_pick', '', scope), 'Set a role for specific channels…', [], 1),
         // Clears the everywhere rules only; a role's channel rules clear on that role's own screen, where the admin can see which they are.
-        ...(rules.length ? [clearRow('admin_role_clear', `Clear everywhere rules (${rules.length})`)] : []),
-        navRow('admin_roles'),
+        ...(rules.length ? [clearRow(sid('admin_role_clear', '', scope), `Clear everywhere rules (${rules.length})`)] : []),
+        navRow('admin_roles', { scope }),
     ];
 }
 
-function buildRoleScope(settings, roleId, place = {}) {
-    const existing = (settings?.roleRules || []).filter(r => r.roleId === roleId && r.channelIds?.length);
+function buildRoleScope(settings, roleId, place = {}, scope = null) {
+    const set = ruleSet(settings, scope);
+    const existing = (set.roleRules || []).filter(r => r.roleId === roleId && r.channelIds?.length);
     const pub = existing.find(r => r.visibility === 'public');
     const eph = existing.find(r => r.visibility === 'ephemeral');
     return [
@@ -306,16 +382,16 @@ function buildRoleScope(settings, roleId, place = {}) {
             type: 17,
             accent_color: ACCENT,
             components: [
-                ...header('Roles', place),
-                { type: 10, content: `### <@&${roleId}> in chosen channels` },
+                ...header('Roles', place, null, scope),
+                { type: 10, content: `### <@&${roleId}> in chosen channels${scope ? `, for ${commandLabel(scope)}` : ''}` },
                 { type: 10, content: `${visText('public')} in · ${channelList(pub?.channelIds)}\n${visText('ephemeral')} in · ${channelList(eph?.channelIds)}` },
             ],
         },
-        channelSelect(`admin_role_scope_public|${roleId}`, 'Public for this role, only in…', pub?.channelIds || []),
-        channelSelect(`admin_role_scope_ephemeral|${roleId}`, 'Hidden for this role, only in…', eph?.channelIds || []),
-        ...(existing.length ? [clearRow(`admin_role_scope_clear|${roleId}`, "Clear this role's channels")] : []),
+        channelSelect(sid('admin_role_scope_public', roleId, scope), 'Public for this role, only in…', pub?.channelIds || []),
+        channelSelect(sid('admin_role_scope_ephemeral', roleId, scope), 'Hidden for this role, only in…', eph?.channelIds || []),
+        ...(existing.length ? [clearRow(sid('admin_role_scope_clear', roleId, scope), "Clear this role's channels")] : []),
         // The tabs, with Roles blurple but live: this screen sits under Roles, and dropping the tabs stranded the admin (click test 2026-10-21 22:26 EDT).
-        navRow('admin_roles', { subpage: true }),
+        navRow('admin_roles', { subpage: true, scope }),
     ];
 }
 
@@ -325,44 +401,33 @@ function menuCommands(gateable) {
     return { shown: sorted.slice(0, SELECT_OPTION_CAP), omitted: sorted.slice(SELECT_OPTION_CAP) };
 }
 
-// A rule stored before 2026-10-22 14:01 EDT on a bare command name ('draw') still covers every subcommand, so the menu ticks them all; the next save rewrites it as full paths (see handleComponent).
-function coveredByLegacyRule(value, selected) {
-    return !isMenuCommand(value) && value.includes(' ') && selected.includes(value.split(' ')[0]);
-}
-
-// Up to 20 commands show as toggle buttons, four rows of five (picked 2026-10-22 15:23 EDT: the dropdown was the least visual control on the panel). Past 20 the dropdown returns, because 5 rows of buttons would leave no room for the rest of the page under Discord's 40-component cap.
+// Up to 20 commands show as buttons, four rows of five, coloured by state; past 20 a menu opens them instead, because 5 rows of buttons would leave no room for the rest of the page under Discord's 40-component cap.
 const TOGGLE_LIMIT = 20;
 
+// THE COMMANDS TAB: every command, coloured by whether it has its own settings. Tapping one opens its own Overview (the server's pages, scoped to it).
 function buildCommands(settings, gateable, targets = new Map(), place = {}) {
-    const selected = settings?.ephemeralCommands || [];
-    // ⚠️ A string select takes at most 25 OPTIONS, and unlike the channel/role menus it has no search -- it is a literal list, so everything must fit. One entry per subcommand since 2026-10-22 14:01 EDT, so the list is longer than the command count: 15 today. A BARE slice would make commands past the 25th unconfigurable with no signal at all, so the omitted ones are named. scripts/guildPolicyEnforcement.test.js pins this. If it ever fires for real, paginate the menu (utils/paginationRow.js) -- the cap is Discord's and cannot be raised.
+    const entries = commandEntries(settings);
+    // ⚠️ A string select takes at most 25 OPTIONS and has no search, so past 25 commands the omitted ones are named rather than silently missing. scripts/guildPolicyEnforcement.test.js pins this. If it ever fires for real, paginate the menu (utils/paginationRow.js) -- the cap is Discord's.
     const { shown, omitted } = menuCommands(gateable);
-    const hiddenNow = v => selected.includes(v) || coveredByLegacyRule(v, selected);
-    const toggles = shown.length > 0 && shown.length <= TOGGLE_LIMIT;
-    const controls = toggles
+    const grid = shown.length > 0 && shown.length <= TOGGLE_LIMIT;
+    const stateOf = v => commandState(commandEntry(settings, v));
+    const controls = grid
         ? Array.from({ length: Math.ceil(shown.length / 5) }, (_, i) => ({
             type: 1,
-            components: shown.slice(i * 5, i * 5 + 5).map(v => ({
-                type: 2,
-                // Red is hidden, grey follows the channel and role rules.
-                style: hiddenNow(v) ? 4 : 2,
-                label: commandLabel(v),
-                custom_id: `admin_cmd_toggle|${v}`,
-            })),
+            components: shown.slice(i * 5, i * 5 + 5).map(v => ({ type: 2, style: stateOf(v).style, label: commandLabel(v), custom_id: sid('admin_home', '', v) })),
         }))
         : [{
             type: 1,
             components: [{
                 type: 3,
-                custom_id: 'admin_cmd_select',
-                placeholder: 'Commands that always answer privately…',
-                min_values: 0,
-                max_values: shown.length,
+                custom_id: 'admin_cmd_open',
+                placeholder: 'Pick a command to open…',
+                min_values: 1,
+                max_values: 1,
                 options: shown.map(v => ({
                     label: commandLabel(v),
                     value: v,
-                    ...(targets.get(v) ? { description: `Right-click a ${targets.get(v)}` } : {}),
-                    default: hiddenNow(v),
+                    description: (targets.get(v) ? `Right-click a ${targets.get(v)} · ` : '') + stateOf(v).word,
                 })),
             }],
         }];
@@ -371,17 +436,17 @@ function buildCommands(settings, gateable, targets = new Map(), place = {}) {
             type: 17,
             accent_color: ACCENT,
             components: [
-                ...header('Commands', place, '-# These always answer privately, even in public channels. Server admins are exempt.'),
+                ...header('Commands', place, '-# Every command follows the server settings, until you give it its own. Then it uses only those.'),
                 { type: 14, spacing: 2 },
-                { type: 10, content: selected.length ? `${visText('ephemeral')} **(${selected.length})** · ${selected.map(commandText).join(' · ')}` : `-# No hidden commands: every command follows your channel and role rules.` },
-                ...(toggles ? [{ type: 10, content: `-# Tap a command to hide or show its answer. ${dot('ephemeral')} red = hidden. Capitalised ones are right-click commands.` }] : []),
+                { type: 10, content: entries.length ? entries.map(commandSummary).join('\n') : '-# No command has its own settings yet.' },
+                ...(grid ? [{ type: 10, content: '-# Tap a command to open it. **Grey** follows the server · **Red** Hidden · **Green** Public · **Blurple** has exceptions. Capitalised ones are right-click commands.' }] : []),
                 // Said plainly because an admin will otherwise expect the command to disappear, and then read its continued presence as a bug rather than a platform limit.
                 { type: 10, content: '-# Hides the **answer**, not the command. To remove a command entirely: **Server Settings → Integrations**.' },
                 ...(omitted.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord allows 25 options per menu, so ${omitted.length} command(s) are missing from the list below: ${omitted.map(commandLabel).join(', ')}. Please report this.` }] : []),
             ],
         },
         ...controls,
-        ...(selected.length ? [clearRow('admin_cmd_clear', `Clear hidden commands (${selected.length})`)] : []),
+        ...(entries.length ? [clearRow('admin_cmd_clear', `Make every command follow the server (${entries.length})`)] : []),
         navRow('admin_commands'),
     ];
 }
@@ -394,7 +459,7 @@ function checkState(roleId, channelId, cmd) {
 function checkReason(result, cmd) {
     const where = id => `<#${id}>`;
     switch (result.tier) {
-        case 'command': return `${commandText(result.rule)} is a hidden command`;
+        case 'command': return `${commandText(result.rule)} has its own settings: ${checkReason(result.inner).replace('the server default decides', 'its own default decides')}`;
         case 'roleChannel': return `<@&${result.rule.roleId}> has its own setting in ${channelList(result.rule.channelIds)}`;
         case 'role': return `<@&${result.rule.roleId}> is ${VISIBILITY_LABEL[result.rule.visibility]} everywhere`;
         case 'channel': return `${where(result.rule.channelId)} is set to ${VISIBILITY_LABEL[result.rule.visibility]}`;
@@ -454,12 +519,13 @@ function buildHelp(client, place = {}) {
                     `1. **Pick a default** on Overview: ${visText('public')} or ${visText('ephemeral')}`,
                     '2. **Add channel exceptions** on Channels',
                     '3. **Give roles their own setting** on Roles, everywhere or in chosen channels',
-                    '4. **Hide single commands** on Commands, down to one subcommand',
+                    '4. **Give one command its own settings** on Commands: it then uses only those',
                 ].join('\n') },
                 divider,
                 { type: 10, content: [
                     '### 🏆 Which Rule Wins',
-                    '`1` Hidden command › `2` role in this channel › `3` role everywhere › `4` channel › `5` default',
+                    'A command with **its own settings** uses only those. Every other command uses the server\'s.',
+                    'Inside either: `1` role in this channel › `2` role everywhere › `3` channel › `4` default',
                     '-# The first that applies decides. Two roles that disagree at the same level give Public, as Discord\'s own role permissions do.',
                 ].join('\n') },
                 divider,
@@ -473,7 +539,7 @@ function buildHelp(client, place = {}) {
                 divider,
                 { type: 10, content: [
                     '### 🛡️ Good to Know',
-                    row('Admins', 'skip hidden commands, but follow channel and role rules like everyone'),
+                    row('Admins', 'skip a command\'s own settings, but follow the server\'s channel and role rules like everyone'),
                     row('Threads', 'follow their channel, unless the thread has its own rule'),
                     row('Menus', 'save when you click outside them; Esc cancels'),
                     row('Clear', 'each page has one once it has rules'),
@@ -512,6 +578,45 @@ function setUnscopedRoleRules(doc, visibility, ids) {
 function setScopedRoleRule(doc, roleId, visibility, channelIds) {
     const kept = (doc.roleRules || []).filter(r => !(r.roleId === roleId && r.visibility === visibility && r.channelIds?.length));
     doc.roleRules = channelIds.length ? [...kept, { roleId, visibility, channelIds }] : kept;
+}
+
+// A bare command name ('draw') covering several subcommands is split into one entry per subcommand before any of them is edited, so changing /draw prices never changes /draw calculator. The older ephemeralCommands form is split the same way.
+function splitBare(doc, scope, gateable) {
+    if (!scope.includes(' ') || /[A-Z]/.test(scope)) return;
+    const bare = scope.split(' ')[0];
+    const siblings = gateable.filter(v => v.startsWith(`${bare} `));
+    const own = (doc.commandSettings || []).find(e => e.command === bare);
+    const legacy = (doc.ephemeralCommands || []).includes(bare);
+    if (!own && !legacy) return;
+    const template = own ? { defaultVisibility: own.defaultVisibility, channelRules: own.channelRules.map(r => ({ channelId: r.channelId, visibility: r.visibility })), roleRules: own.roleRules.map(r => ({ roleId: r.roleId, visibility: r.visibility, channelIds: [...(r.channelIds || [])] })) } : { defaultVisibility: 'ephemeral', channelRules: [], roleRules: [] };
+    doc.commandSettings = (doc.commandSettings || []).filter(e => e.command !== bare);
+    doc.ephemeralCommands = (doc.ephemeralCommands || []).filter(c => c !== bare);
+    for (const v of siblings) {
+        if (doc.commandSettings.some(e => e.command === v)) continue;
+        doc.commandSettings.push({ command: v, ...JSON.parse(JSON.stringify(template)) });
+    }
+}
+
+// The rule set a write changes: the server document, or the command's own entry, created on first edit from the server default (or from the older Hidden-everywhere form, which then moves in).
+function editTarget(doc, scope, gateable) {
+    if (!scope) return doc;
+    splitBare(doc, scope, gateable);
+    doc.commandSettings = doc.commandSettings || [];
+    let entry = doc.commandSettings.find(e => e.command === scope);
+    if (!entry) {
+        const wasHidden = (doc.ephemeralCommands || []).includes(scope);
+        doc.commandSettings.push({ command: scope, defaultVisibility: wasHidden ? 'ephemeral' : (doc.defaultVisibility || 'public'), channelRules: [], roleRules: [] });
+        doc.ephemeralCommands = (doc.ephemeralCommands || []).filter(c => c !== scope);
+        entry = doc.commandSettings[doc.commandSettings.length - 1];
+    }
+    return entry;
+}
+
+// Follow Server: the command loses its own settings, whatever form they were in.
+function dropCommand(doc, scope, gateable) {
+    splitBare(doc, scope, gateable);
+    doc.commandSettings = (doc.commandSettings || []).filter(e => e.command !== scope);
+    doc.ephemeralCommands = (doc.ephemeralCommands || []).filter(c => c !== scope);
 }
 
 // The export's text: newest first, one block per change, in UTC so it reads the same for everyone. Ids become names where the guild is cached; an actor's name comes from Discord, with the id kept beside it as the record.
@@ -590,13 +695,25 @@ async function handleComponent(interaction) {
         });
     }
 
-    const [id, arg] = interaction.customId.split('|');
+    const parts = interaction.customId.split('|');
+    const [id, arg] = parts;
     const guildId = interaction.guildId;
     const actorId = interaction.user.id;
     const values = interaction.values || [];
     const place = placeOf(interaction);
+    const gateable = interaction.client.gateableCommandNames || [];
+    // The command a scoped page is about (the last `|` field). Only a registered command, or one that already has settings here, is accepted, so a forged id cannot create settings for a name that does not exist.
+    let scope = parts[2] || null;
+    if (id === 'admin_cmd_open') scope = values[0] || null;
+    if (scope && !gateable.includes(scope)) {
+        const known = commandEntries(await getGuildSettings(guildId)).some(e => e.command === scope);
+        if (!known) scope = null;
+    }
+    // An edit inside a scope: change the command's own rule set, or the server's when there is no scope.
+    const edit = fn => updateGuildSettings(guildId, actorId, doc => fn(editTarget(doc, scope, gateable)));
 
     let settings;
+    let page = null;
     switch (id) {
         case 'admin_home':
         case 'admin_channels':
@@ -604,6 +721,12 @@ async function handleComponent(interaction) {
         case 'admin_commands':
         case 'admin_help':
             settings = await getGuildSettings(guildId);
+            page = id;
+            break;
+
+        case 'admin_cmd_open':
+            settings = await getGuildSettings(guildId);
+            page = 'admin_home';
             break;
 
         // EXPORT LOG: the server's change log as a private text file (Harkirat 2026-10-22 15:51 EDT). Channels and roles are named where Dioreo can see them, with the id beside.
@@ -624,12 +747,15 @@ async function handleComponent(interaction) {
             return send(interaction, buildHome(settings, interaction.client, place, { resetArmed: true }));
 
         case 'admin_reset':
+            scope = null;
             settings = await updateGuildSettings(guildId, actorId, doc => {
                 doc.channelRules = [];
                 doc.roleRules = [];
                 doc.ephemeralCommands = [];
+                doc.commandSettings = [];
                 doc.defaultVisibility = 'public';
             });
+            page = 'admin_home';
             break;
 
         case 'admin_check':
@@ -637,139 +763,88 @@ async function handleComponent(interaction) {
         case 'admin_check_ch':
         case 'admin_check_cmd': {
             settings = await getGuildSettings(guildId);
-            const parts = interaction.customId.split('|').slice(1).map(v => (v === '-' ? null : v));
+            const checkParts = parts.slice(1).map(v => (v === '-' ? null : v));
             const picked = values[0] && values[0] !== '-' ? values[0] : null;
             const state = id === 'admin_check' ? { channelId: interaction.channelId }
-                : id === 'admin_check_role' ? { roleId: picked, channelId: parts[0], cmd: parts[1] }
-                    : id === 'admin_check_ch' ? { roleId: parts[0], channelId: picked, cmd: parts[1] }
-                        : { roleId: parts[0], channelId: parts[1], cmd: picked };
-            return send(interaction, buildCheck(settings, interaction.client.gateableCommandNames || [], state, place));
+                : id === 'admin_check_role' ? { roleId: picked, channelId: checkParts[0], cmd: checkParts[1] }
+                    : id === 'admin_check_ch' ? { roleId: checkParts[0], channelId: picked, cmd: checkParts[1] }
+                        : { roleId: checkParts[0], channelId: checkParts[1], cmd: picked };
+            return send(interaction, buildCheck(settings, gateable, state, place));
         }
 
-        // One command's toggle. An older bare-name rule ('draw') covering it is first split into its subcommands, so flipping /draw prices leaves /draw calculator as it was.
-        case 'admin_cmd_toggle': {
-            const gateable = interaction.client.gateableCommandNames || [];
-            if (!gateable.includes(arg)) return;
-            settings = await updateGuildSettings(guildId, actorId, doc => {
-                let list = [...(doc.ephemeralCommands || [])];
-                const parent = arg.split(' ')[0];
-                if (!isMenuCommand(arg) && arg.includes(' ') && list.includes(parent)) {
-                    list = list.filter(c => c !== parent).concat(gateable.filter(v => v.startsWith(`${parent} `)));
-                }
-                list = list.includes(arg) ? list.filter(c => c !== arg) : [...list, arg];
-                doc.ephemeralCommands = [...new Set(list)];
-            });
-            break;
-        }
-
-        // Overview's two default buttons; the button for the current default is disabled, so a click always means a change.
+        // The server default (no scope).
         case 'admin_default':
             if (arg !== 'public' && arg !== 'ephemeral') return;
+            scope = null;
             settings = await updateGuildSettings(guildId, actorId, doc => { doc.defaultVisibility = arg; });
+            page = 'admin_home';
             break;
 
-        case 'admin_default_toggle':
+        // A command's own default: Follow Server removes its settings, Public or Hidden gives it its own.
+        case 'admin_cmd_default':
+            if (!scope || !['follow', 'public', 'ephemeral'].includes(arg)) return;
             settings = await updateGuildSettings(guildId, actorId, doc => {
-                doc.defaultVisibility = (doc.defaultVisibility || 'public') === 'public' ? 'ephemeral' : 'public';
+                if (arg === 'follow') return dropCommand(doc, scope, gateable);
+                editTarget(doc, scope, gateable).defaultVisibility = arg;
             });
+            page = 'admin_home';
             break;
 
         case 'admin_ch_public':
         case 'admin_ch_ephemeral':
-            settings = await updateGuildSettings(guildId, actorId, doc => {
-                setChannelRules(doc, id === 'admin_ch_public' ? 'public' : 'ephemeral', values);
-            });
+            settings = await edit(set => setChannelRules(set, id === 'admin_ch_public' ? 'public' : 'ephemeral', values));
+            page = 'admin_channels';
             break;
 
         case 'admin_role_public':
         case 'admin_role_ephemeral':
-            settings = await updateGuildSettings(guildId, actorId, doc => {
-                setUnscopedRoleRules(doc, id === 'admin_role_public' ? 'public' : 'ephemeral', values);
-            });
+            settings = await edit(set => setUnscopedRoleRules(set, id === 'admin_role_public' ? 'public' : 'ephemeral', values));
+            page = 'admin_roles';
             break;
 
         case 'admin_ch_clear':
-            settings = await updateGuildSettings(guildId, actorId, doc => { doc.channelRules = []; });
+            settings = await edit(set => { set.channelRules = []; });
+            page = 'admin_channels';
             break;
 
         case 'admin_role_clear':
-            settings = await updateGuildSettings(guildId, actorId, doc => {
-                doc.roleRules = (doc.roleRules || []).filter(r => r.channelIds?.length);
-            });
+            settings = await edit(set => { set.roleRules = (set.roleRules || []).filter(r => r.channelIds?.length); });
+            page = 'admin_roles';
             break;
 
         case 'admin_cmd_clear':
-            settings = await updateGuildSettings(guildId, actorId, doc => { doc.ephemeralCommands = []; });
+            scope = null;
+            settings = await updateGuildSettings(guildId, actorId, doc => { doc.ephemeralCommands = []; doc.commandSettings = []; });
+            page = 'admin_commands';
             break;
 
         case 'admin_role_scope_clear':
-            settings = await updateGuildSettings(guildId, actorId, doc => {
-                doc.roleRules = (doc.roleRules || []).filter(r => !(r.roleId === arg && r.channelIds?.length));
-            });
-            return send(interaction, buildRoleScope(settings, arg, place));
+            settings = await edit(set => { set.roleRules = (set.roleRules || []).filter(r => !(r.roleId === arg && r.channelIds?.length)); });
+            return send(interaction, buildRoleScope(settings, arg, place, scope));
 
         case 'admin_role_pick':
             settings = await getGuildSettings(guildId);
-            return send(interaction, buildRoleScope(settings, values[0], place));
+            return send(interaction, buildRoleScope(settings, values[0], place, scope));
 
         case 'admin_role_scope_public':
         case 'admin_role_scope_ephemeral':
-            settings = await updateGuildSettings(guildId, actorId, doc => {
-                setScopedRoleRule(doc, arg, id === 'admin_role_scope_public' ? 'public' : 'ephemeral', values);
-            });
-            return send(interaction, buildRoleScope(settings, arg, place));
-
-        case 'admin_cmd_select':
-            settings = await updateGuildSettings(guildId, actorId, doc => {
-                // Merge, not replace (v3-pre-release review, finding #28) -- the menu can only ever show/return the first SELECT_OPTION_CAP (25) of the sorted gateable list (see buildCommands' own comment), so a straight replace silently deleted every existing rule on a command past that cutoff the moment an admin touched this menu for an unrelated reason. Preserve whatever was already set for a command this render of the menu couldn't even show. A bare command name stored before per-subcommand rules ('draw') is replaced by full paths: the menu showed its subcommands ticked, so the values that come back are the admin's real choice for those, and keeping the bare name would hide /draw prices forever after the admin unticked it. Any of its subcommands the menu could NOT show inherit the bare rule as a full path, so the rewrite never un-hides an answer the admin had no chance to see (commit security review 2026-10-22 14:12 EDT: dropping the bare name outright would fail open past the 25-option cut).
-                const gateable = interaction.client.gateableCommandNames || [];
-                const { shown } = menuCommands(gateable);
-                const outsideMenu = [];
-                for (const c of doc.ephemeralCommands || []) {
-                    if (shown.includes(c)) continue;
-                    const subcommands = gateable.filter(v => v.startsWith(`${c} `));
-                    if (!subcommands.length) outsideMenu.push(c);
-                    else outsideMenu.push(...subcommands.filter(v => !shown.includes(v)));
-                }
-                doc.ephemeralCommands = [...new Set([...outsideMenu, ...values])];
-            });
-            break;
+            settings = await edit(set => setScopedRoleRule(set, arg, id === 'admin_role_scope_public' ? 'public' : 'ephemeral', values));
+            return send(interaction, buildRoleScope(settings, arg, place, scope));
 
         default:
             return;
     }
 
-    // Which page to re-render after a write: the one the control lives on. A per-id table, not two chained ternaries re-deriving the page and then the builder (v3-pre-release review, finding #46) -- the page step matched by PREFIX, and admin_role_pick/admin_role_scope_public/admin_role_scope_ephemeral all shared the admin_role_ prefix too, safe only because each of those three `return`s earlier in the switch above and never reaches this code. The switch above is the actual source of truth for which id maps to which page; this table just names it directly instead of re-deriving it by string-matching the id a second time.
-    const PAGE_FOR_ID = {
-        admin_home: 'admin_home',
-        admin_channels: 'admin_channels',
-        admin_roles: 'admin_roles',
-        admin_commands: 'admin_commands',
-        admin_default_toggle: 'admin_home',
-        admin_default: 'admin_home',
-        admin_reset: 'admin_home',
-        admin_cmd_toggle: 'admin_commands',
-        admin_help: 'admin_help',
-        admin_ch_public: 'admin_channels',
-        admin_ch_ephemeral: 'admin_channels',
-        admin_role_public: 'admin_roles',
-        admin_role_ephemeral: 'admin_roles',
-        admin_cmd_select: 'admin_commands',
-        admin_ch_clear: 'admin_channels',
-        admin_role_clear: 'admin_roles',
-        admin_cmd_clear: 'admin_commands',
-    };
-    const page = PAGE_FOR_ID[id] || id;
-
+    // A scoped page whose command no longer has settings (Follow Server, Reset) still opens: it shows the command following the server.
     const PAGE_BUILDERS = {
-        admin_channels: () => buildChannels(settings, place),
-        admin_roles: () => buildRoles(settings, place),
-        admin_commands: () => buildCommands(settings, interaction.client.gateableCommandNames || [], interaction.client.contextMenuTargets, place),
+        admin_channels: () => buildChannels(settings, place, scope),
+        admin_roles: () => buildRoles(settings, place, scope),
+        admin_commands: () => buildCommands(settings, gateable, interaction.client.contextMenuTargets, place),
         admin_help: () => buildHelp(interaction.client, place),
     };
-    const components = (PAGE_BUILDERS[page] || (() => buildHome(settings, interaction.client, place)))();
+    const components = (PAGE_BUILDERS[page] || (() => buildHome(settings, interaction.client, place, { scope })))();
 
-    // ⚠️ Was a raw `interaction.update({ components, flags: 32768 })` until 2026-08-14 10:59 EDT -- switched to sendV2Payload for two reasons at once: (1) it's the established pattern every other handler in the bot uses for a V2 render (CLAUDE.md's "V2 sends" cheat-sheet: discord.js's own high-level reply/followUp/update don't RELIABLY serialize raw V2 JSON), and this command had never been real-world click-tested live (docs/ROADMAP.md's click-test checklist names it the one deliberate holdout) -- so matching the battle-tested path is strictly safer regardless of whether the raw call actually worked; (2) it's what makes this panel pick up the passive 10-minute idle-disable for free (utils/sendV2Payload.js's own header comment). The three `interaction.update()` calls above got the same swap for the same reasons.
+    // ⚠️ Was a raw `interaction.update({ components, flags: 32768 })` until 2026-08-14 10:59 EDT -- sendV2Payload is the established pattern for a V2 render (CLAUDE.md's "V2 sends" cheat-sheet), and it is what makes this panel pick up the passive 10-minute idle-disable for free (utils/sendV2Payload.js's own header comment).
     return send(interaction, components);
 }
 
@@ -792,7 +867,7 @@ module.exports = {
     rulesText,
     lastChangedLine,
     // Exported for scripts/guildPolicyEnforcement.test.js only -- nothing in the bot calls these from outside this file. They are here because both limits these tests pin (25 options on a select, 40 components per message) are invisible right up until a panel refuses to open, and a test is the only thing that will notice before an admin does.
-    __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck, buildLogFile, discordGate },
+    __testRenderers: { buildHome, buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp, buildCheck, buildLogFile, discordGate, editTarget, dropCommand },
 
     async execute(interaction) {
         // Private unless the admin picks Public. The refusals below stay private whatever was picked: a non-admin's "Public" must not post a refusal into the channel.
