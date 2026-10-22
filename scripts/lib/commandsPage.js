@@ -28,6 +28,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const { browseRows } = require('../../utils/loadoutScopes');
+const { CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS } = require('../../utils/search');
 const { assertProseCoverage, assertAskCoverage, assertSearchCoverage, findTools, buildFindIndex, ASKS, COMMANDS } = require('./commandProse');
 
 const CHROME_KEYS = [
@@ -445,6 +447,9 @@ ${toneCss()}
   border:1px dashed color-mix(in srgb,var(--cc) 75%,transparent)}
 .rx-tok[data-state=need] .rx-o{color:var(--ink2)}
 .rx-tok[data-state=need] .rx-o::after{content:""}
+/* A value the bot would not accept (no weapon matches, a number out of range) is still shown, so the reader sees what they typed, but it is marked, because Copy hands out exactly this line. */
+.rx-tok[data-state=bad]{background:none;border:1px dashed #E5484D}
+.rx-tok[data-state=bad] .rx-v{color:#E5484D;text-decoration:underline wavy #E5484D 1px;text-underline-offset:3px}
 
 /* Every button on this page is one object: a pill with a coloured outline, the idiom the
    shared GitHub button already uses in the bar. ⚠️ It carries the command's HUE — an
@@ -521,6 +526,11 @@ ${toneCss()}
 .rx-ac-hit b{font-weight:400;color:var(--ink3);font-size:.68rem}
 .rx-ac-none{font-family:var(--mono);font-size:.74rem;color:var(--ink3)}
 .rx-ac-hit:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* The exact match reads as CHOSEN. It used to be the same grey button as any other hit, so the field and a chip below it both said JAK-12 and nothing said which was the answer. */
+.rx-ac-hit[aria-pressed=true]{color:var(--con);background:var(--cc);border-color:var(--cc)}
+.rx-ac-hit[aria-pressed=true] b{color:inherit;opacity:.75}
+.rx-ac-hit[aria-pressed=true]::before{content:"\\2713";font-weight:700}
+.rx-ac-row{font-weight:600}
 
 .rx-vals{display:flex;flex-wrap:wrap;gap:.34rem}
 .rx-pill{font-family:var(--mono);font-size:.78rem;text-align:left;padding:.42rem .62rem;
@@ -808,6 +818,8 @@ ${toneCss()}
   .rx-facts li{font-size:clamp(.78rem,3.3vw,.98rem);line-height:1.42}
   .rx-desc,.rx-bare,.rx-inst p{font-size:clamp(.76rem,3.2vw,.94rem)}
   .rx-lab{font-size:clamp(.74rem,3.1vw,.8rem)}
+  /* 16px exactly: iOS zooms the whole page in when a field under 16px takes focus, and does not zoom back out. */
+  .rx-in{font-size:16px}
 }
 @media (pointer:coarse){
   .rx-chip,.rx-pill,.rx-btn,.rx-ac-hit{min-height:44px}
@@ -827,7 +839,7 @@ const RECEIVER_JS = [
     '  var bench=document.getElementById("rx-bench"); if(!bench) return;',
     '  var panels=[].slice.call(document.querySelectorAll(".rx-p"));',
     '  var chips=[].slice.call(document.querySelectorAll(".rx-chip[data-for]"));',
-    '  var WEAPONS=window.__RX_WEAPONS||{};',
+    '  var WEAPONS=window.__RX_WEAPONS||{}, hover=matchMedia("(hover:hover)");',
     '',
     '  function el(tag,cls,txt){ var n=document.createElement(tag); if(cls) n.className=cls;',
     '    if(txt!=null) n.textContent=txt; return n; }',
@@ -855,7 +867,7 @@ const RECEIVER_JS = [
     '      var tok=document.createElement("button");',
     '      tok.type="button";',
     '      tok.className="rx-tok"+(landed===name?" rx-land":"");',
-    '      tok.setAttribute("data-state", val?"filled":(req?"need":"empty"));',
+    '      tok.setAttribute("data-state", val?(o.hasAttribute("data-bad")?"bad":"filled"):(req?"need":"empty"));',
     '      tok.setAttribute("data-goto",name); tok.style.setProperty("--i",idx++);',
     '      tok.setAttribute("aria-label",(val?("Change "+name+" "+val):("Set "+name)));',
     '      tok.appendChild(el("span","rx-o",name));',
@@ -905,27 +917,49 @@ const RECEIVER_JS = [
     '    var box=slot.querySelector(".rx-ac"); if(!box) return;',
     '    var q=input.value.trim().toLowerCase();',
     '    box.textContent="";',
-    '    var hits=list.filter(function(w){',
-    '      return !q || w.name.toLowerCase().indexOf(q)>-1 || (w.key||"").indexOf(q.replace(/\\s+/g,""))>-1;',
+    '    /* Class words, read the way the bot reads them (utils/search.js): "gun" or "all" means every class, an alias matches whole, and 3+ letters count when every alias they begin names the same classes ("assault" is AR). The bot also forgives a typo; the page does not. */',
+    '    var nq=q.replace(/[\\s\\-_.]/g,""), syn=WEAPONS.SYN||{}, cats=[];',
+    '    if((WEAPONS.ANY||[]).indexOf(nq)>-1) cats=["*"];',
+    '    else if(syn[nq]) cats=syn[nq];',
+    '    else if(nq.length>2){ var sets={}; Object.keys(syn).forEach(function(k){ if(k.indexOf(nq)===0) sets[syn[k].join("|")]=1; });',
+    '      var ks=Object.keys(sets); if(ks.length===1) cats=ks[0].split("|"); }',
+    '    function inCats(c){ return cats[0]==="*" || (!!c && cats.indexOf(c)>-1); }',
+    '    /* The browse rows come first, as in the bot. With nothing typed only META and the whole mode show: all nine stacked a phone screen high (critique 2026-10-21). */',
+    '    var rows=((WEAPONS.ROWS||{})[mode]||[]).filter(function(r){ return q ? (r.label.toLowerCase().indexOf(q)>-1 || inCats(r.cat)) : !r.cat; });',
+    '    var hits=q?list.filter(function(w){',
+    '      return w.name.toLowerCase().indexOf(q)>-1 || (w.key||"").indexOf(nq)>-1 || inCats(w.category);',
+    '    }):[];',
+    '    var exact=hits.some(function(w){ return w.name.toLowerCase()===q; });',
+    '    function pickHit(name){',
+    '      input.value=name;',
+    '      /* On a touch screen the pick closes the keyboard; refocusing brought it straight back over the card. */',
+    '      if(hover.matches) input.focus(); else input.blur();',
+    '      autocomplete(p,slot); summarise(slot); paint(p,slot.getAttribute("data-opt"));',
+    '    }',
+    '    slot.toggleAttribute("data-bad", !!q && !rows.length && !hits.length);',
+    '    rows.forEach(function(r){',
+    '      var b=document.createElement("button"); b.type="button"; b.className="rx-ac-hit rx-ac-row";',
+    '      b.setAttribute("data-val",r.label); b.setAttribute("aria-pressed",r.label.toLowerCase()===q?"true":"false");',
+    '      b.appendChild(document.createTextNode((r.label.toLowerCase()===q?"":"\\u25B8 ")+r.label)); /* pressed, the tick replaces the arrow */',
+    '      b.addEventListener("click",function(){ pickHit(r.label); });',
+    '      box.appendChild(b);',
     '    });',
-    '    var exact=hits.length===1&&hits[0].name.toLowerCase()===q;',
-    '    if(!q){ box.appendChild(el("span","rx-ac-none",list.length+" weapons — start typing")); return; }',
-    '    if(!hits.length){ box.appendChild(el("span","rx-ac-none","No weapon matches \\u201C"+input.value.trim()+"\\u201D"));',
+    '    if(!q){ box.appendChild(el("span","rx-ac-none",(mode==="MP"?"or a class (AR, SMG\\u2026), or ":"or ")+list.length+" weapons, start typing")); tintFrom(p,null); return; }',
+    '    if(!rows.length&&!hits.length){ box.appendChild(el("span","rx-ac-none","No weapon matches \\u201C"+input.value.trim()+"\\u201D"));',
     '      tintFrom(p,null); return; }',
     '    if(exact){',
+    '      var hit=hits.filter(function(w){ return w.name.toLowerCase()===q; })[0];',
     '      var tints=JSON.parse(p.getAttribute("data-cats")||"{}");',
-    '      tintFrom(p,tints[(hits[0].category||"").toUpperCase()]||null);',
-    '    }',
+    '      tintFrom(p,tints[(hit.category||"").toUpperCase()]||null);',
+    '      hits=[hit]; /* chosen: the one chip, pressed, instead of a list that repeats the field */',
+    '    } else tintFrom(p,null);',
     '    hits.slice(0,10).forEach(function(w){',
     '      var b=document.createElement("button"); b.type="button"; b.className="rx-ac-hit";',
-    '      b.setAttribute("data-val",w.name);',
+    '      b.setAttribute("data-val",w.name); b.setAttribute("aria-pressed",exact?"true":"false");',
     '      var dot=el("i"); if(w.tint) dot.style.background=w.tint; b.appendChild(dot);',
     '      b.appendChild(document.createTextNode(w.name));',
     '      if(w.builds>1) b.appendChild(el("b",null,w.builds+" builds"));',
-    '      b.addEventListener("click",function(){',
-    '        input.value=w.name; input.focus();',
-    '        autocomplete(p,slot); summarise(slot); paint(p,slot.getAttribute("data-opt"));',
-    '      });',
+    '      b.addEventListener("click",function(){ pickHit(w.name); });',
     '      box.appendChild(b);',
     '    });',
     '    if(hits.length>10) box.appendChild(el("span","rx-ac-none","+"+(hits.length-10)+" more"));',
@@ -946,13 +980,22 @@ const RECEIVER_JS = [
     '    });',
     '    [].slice.call(p.querySelectorAll(".rx-in")).forEach(function(i){',
     '      var slot=i.closest("[data-opt]");',
-    '      i.addEventListener("input",function(){ autocomplete(p,slot); summarise(slot); paint(p,null); });',
+    '      i.addEventListener("input",function(){',
+    '        var num=i.getAttribute("data-num");',
+    '        if(num){',
+    '          /* Digits only, as Discord own number field takes; then the range, so 0 for build reads as wrong rather than copying a line the bot rejects. */',
+    '          var clean=i.value.replace(num==="int"?/[^0-9]/g:/[^0-9.]/g,""); if(clean!==i.value) i.value=clean;',
+    '          var n=Number(clean), lo=i.getAttribute("data-min"), hi=i.getAttribute("data-max");',
+    '          slot.toggleAttribute("data-bad", clean!=="" && ((lo!=null&&n<Number(lo))||(hi!=null&&n>Number(hi))));',
+    '        }',
+    '        autocomplete(p,slot); summarise(slot); paint(p,null);',
+    '      });',
     '      autocomplete(p,slot);',
     '    });',
     '    [].slice.call(p.querySelectorAll(".rx-eg")).forEach(function(e){',
     '      e.addEventListener("click",function(){',
     '        var slot=e.closest("[data-opt]"), input=slot.querySelector(".rx-in"); if(!input) return;',
-    '        input.value=e.getAttribute("data-val"); input.focus();',
+    '        input.value=e.getAttribute("data-val"); if(hover.matches) input.focus(); else input.blur();',
     '        autocomplete(p,slot); summarise(slot); paint(p,slot.getAttribute("data-opt"));',
     '      });',
     '    });',
@@ -1305,9 +1348,18 @@ function renderRequired(option, command, C, tints, weapons) {
 /** An optional slot: a native <details>, so a long list costs one row until it is wanted. */
 function renderOptional(option, command, C, tints) {
     const { esc } = C;
+    // 🔴 A slot with no choices gets a FIELD. It used to print only a hint ("A whole number, 1 or higher."), so tapping "+ build" in the line opened a slot with nothing to do: build on both /gunsmith leaves, /help cmd and /patch notes season were dead ends (critique 2026-10-21). The hint is now the placeholder.
+    const numeric = option.type === 4 || option.type === 10;
+    const id = 'rx-' + esc(command.id) + '-' + esc(option.name);
     const body = option.choices.length
         ? choiceBlock(option, tints, null)
-        : '<p class="rx-bare">' + esc(bareHint(option)) + '</p>';
+        : '<label class="rx-sr" for="' + id + '">' + esc(option.name) + '</label>' +
+          '<input class="rx-in" id="' + id + '" type="text" placeholder="' +
+          esc(option.autocomplete ? 'Type it; Discord suggests matches' : bareHint(option)) + '"' +
+          (numeric ? ' inputmode="numeric" data-num="' + (option.type === 4 ? 'int' : 'dec') + '"' +
+            (option.min != null ? ' data-min="' + option.min + '"' : '') +
+            (option.max != null ? ' data-max="' + option.max + '"' : '') : '') +
+          ' autocomplete="off" spellcheck="false">';
     return '<details class="rx-slot" data-opt="' + esc(option.name) + '" data-req="0">' +
         '<summary class="rx-sum">' +
         '<span class="rx-sumhead"><span class="rx-lab">' + esc(option.name) + '</span>' +
@@ -1520,6 +1572,12 @@ function commandsShell({ page, catalog, C }) {
         MP: weapons.MP.map(w => ({ name: w.name, key: w.key, builds: w.builds, category: w.category,
             tint: cats[(w.category || '').toUpperCase()] || DERIVED_NEUTRAL })),
         DMZ: weapons.DMZ.map(w => ({ name: w.name, key: w.key, builds: w.builds })),
+        // The browse rows the bot's own suggestions open with (handlers/router.js). The weapon slot's description promises "All META / All MP builds", and before these were here the page answered that with "No weapon matches" (critique 2026-10-21). Each row carries its class (the middle of its scope value, `MP.AR.std`), so a class word like "assault" can surface "All AR builds".
+        ROWS: Object.fromEntries(['MP', 'DMZ'].map(mode => [mode, browseRows(mode, [...new Set(weapons[mode].map(w => w.category).filter(Boolean))].sort())
+            .map(r => { const cat = r.value.split('.')[1]; return { label: r.label, cat: cat === '*' ? null : cat }; })])),
+        // The bot's own class-word table, shipped rather than copied, so the page cannot drift from what the bot answers.
+        SYN: Object.fromEntries(Object.entries(CATEGORY_SEARCH_SYNONYMS).map(([k, v]) => [k, [].concat(v)])),
+        ANY: [...GENERIC_WEAPON_WORDS],
     }).replace(/</g, '\\u003C');
 
     return `<!doctype html><html lang="en"><head><meta charset="utf-8">
