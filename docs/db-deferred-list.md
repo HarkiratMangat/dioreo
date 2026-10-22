@@ -2470,14 +2470,15 @@ The "Can be undone" filter and the row's Undo control are both computed as `kind
 
 ## 🧹 Someday / tech-debt
 
-### `[P2 · S · Sonnet5-High]` docs-audit has three blind spots the housekeeping sweep walked through
+### `[P2 · S · Sonnet5-High]` docs-audit has four blind spots the housekeeping sweep walked through
 
 *Filed 2026-10-22 01:07 EDT from the overnight housekeeping sweep (#216). Each gap was confirmed in `scripts/docs-audit.mjs`, not inferred.*
 
-- **`hash-chain` never looks at a v3 entry.** Its heading regex is `^## (v\d+\.\d+\.\d+)` (`scripts/docs-audit.mjs`, the `hash-chain` check), which does not match `## Pre-Release v3.…`, so a v3 entry citing `(#PR)` with no hash is never flagged. The version-coverage check and the package-vs-changelog check already accept the `Pre-Release` prefix.
+- **`hash-chain` never looks at a v3 entry.** Its heading regex is `^## (v\d+\.\d+\.\d+)` (`scripts/docs-audit.mjs`, the `hash-chain` check), which does not match `## Pre-Release v3.…`, so a v3 entry citing `(#PR)` with no hash is never flagged. The version-coverage check and the package-vs-changelog check already accept the `Pre-Release` prefix. *[2026-10-22 think-pass: it had been hiding 13 such headings. #216 backfilled 11, each checked against the squash commit's own `package.json` version. `v3.65.0` and `v3.59.0` stay without one because their PRs minted the next version. `v3.24.0` (#132) and `v3.21.0` (#129) carry a hash that is a branch commit, not the squash: find the squash and correct them when the regex is widened.]*
 - **`readme-map` stops at the folder.** Its coverage unit is the top-level entry under `docs/`, so a whole folder counts as mapped once its name appears: the sweep found three `reference/` files and one `ideas/` file the README never named.
 - **`nav-map-sync` checks the rule's filename, not its row.** It never compares a rule's `paths:` front matter with the "Loads when you touch…" cell, so about a dozen rows in `CLAUDE.md` had drifted from the globs the rules actually declare.
-- **To fix:** widen the `hash-chain` regex with `(?:Pre-Release )?` after backfilling any v3 entry it then flags (additive, never `--amend`); add a file-level pass to `readme-map` for `reference/` and `ideas/`; make `nav-map-sync` compare each rule's `paths:` with its table cell.
+- **`xref` checks paths, never identifiers.** A backticked function, emoji key or constant can be renamed or deleted and every gate stays green. A 40-line scan of the live rules found two such stale claims the sweep's prose readers missed: `stripControls` (gone; `/colors` now uses `buildColorPalettePanel`'s `readOnly` mode) and the `editCalc` emoji (renamed `edit` on 2026-10-20). Both were fixed in #216; the scan itself is not kept.
+- **To fix:** widen the `hash-chain` regex with `(?:Pre-Release )?` after backfilling any v3 entry it then flags (additive, never `--amend`); add a file-level pass to `readme-map` for `reference/` and `ideas/`; make `nav-map-sync` compare each rule's `paths:` with its table cell; add an identifier-existence pass to `xref` for backticked names in the live rules (skipping lines that say retired, renamed or formerly).
 - **Verify when done:** `npm run docs:audit:test` shows each new check failing on a fixture (a v3 entry with no hash, an unnamed reference file, a row missing a declared path) and passing on the valid one.
 
 ### `[P3 · XS]` Wire `/draw calculator`'s shortcut options back in, if Harkirat wants them
