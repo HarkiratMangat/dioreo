@@ -56,8 +56,7 @@ function buildContainer(accentColor, client) {
     components.push({ type: 14, spacing: 1, divider: true });
     components.push({ type: 10, content: '-# **Add to Server**, or **Add to My Apps** to use it anywhere, even in DMs!' });
 
-    // The two install buttons are LINK buttons (style 5): no custom_id, no interaction. "Share Link" is a real Primary button, which is why this panel passes `skipExpiry` at its send site -- one custom_id component would otherwise re-arm the 10-minute idle-disable for the WHOLE panel, greying out Share Link beside still-live install links on exactly the public post that exists to be found days later. Harkirat's call, 2026-08-17 09:18 EDT.
-    // Two rows (2026-10-21 20:17 EDT, Harkirat: "add buttons without emoji so they stay in 1 line" and a Website button before Share). Four buttons wrap unpredictably on a phone, so the install pair gets its own row and Website + Share the next.
+    // The two install buttons are LINK buttons (style 5): no custom_id, no interaction. "Share Link" is a real Primary button, which is why this panel passes `skipExpiry` at its send site -- one custom_id component would otherwise re-arm the 10-minute idle-disable for the WHOLE panel, greying out Share Link beside still-live install links on exactly the public post that exists to be found days later. Harkirat's call, 2026-08-17 09:18 EDT. Two rows (2026-10-21 20:17 EDT, Harkirat: "add buttons without emoji so they stay in 1 line" and a Website button before Share). Four buttons wrap unpredictably on a phone, so the install pair gets its own row and Website + Share the next.
     components.push({
         type: 1,
         components: [
