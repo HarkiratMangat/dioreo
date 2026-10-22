@@ -117,8 +117,6 @@ const emojis = {
     dioreoCombo: '<:DioreoCombo:1534640183230730470>',
     // /invite's Share Link line (2026-10-18 20:15 EDT, Harkirat supplied the prod id). Unused since 2026-10-21 20:10 EDT, when he took it off that line; kept so it can come back without a new id.
     dioreoKawaii: '<:DioreoKawaii3B:1534640190491070599>',
-    // /invite's Add to My Apps button (2026-10-21 20:05 EDT, Harkirat supplied the prod id). The dev app's own Sparkles is re-pointed by name at boot. Add to Server reuses `plus`.
-    sparkles: '<a:Sparkles:1560410369447563274>',
     loadouts: '<a:Loadouts:1535779248982335618>',
     // /bot analytics' change-detail diff (added 2026-08-23 12:31 EDT, Harkirat supplied both). A git-style minus/add pair, one per value line, so a before/after reads as a diff rather than as two values with an arrow between them. 🔴 They are GLYPHS carrying meaning, which is deliberate: iOS strips ANSI colour from a code fence silently (see the successor spec's rule A), so colour can never be the thing that tells "before" from "after" -- a glyph survives. ✅ VERIFIED PROD IDS, not dev's -- the exact trap the View Colors note below records, checked rather than assumed. Method: added them, let the watching dev bot re-boot, and read refreshEmojiIds()' own counters. They went 57 -> 59 re-pointed with 0 unmatched, so both emoji exist in the dev app AND their dev ids DIFFER from the ones written here (a matching id would not have counted as a re-point). Since these came from a dev-bot session that was the live risk, and it is now ruled out by the sync's own arithmetic rather than by trust.
     diffMinus: '<:DiffMinus:1541120801892208741>',
