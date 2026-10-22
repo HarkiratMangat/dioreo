@@ -6,8 +6,8 @@ published: true
 
 # Terms of Service — Dioreo
 
-**Effective date:** 4 August 2026
-**Version:** 1.5
+**Effective date:** on the Dioreo v3 release — this version is not yet in effect
+**Version:** 1.6 (pending)
 **Applies to:** the Dioreo Discord application (the "Bot") and the website these documents are published on (the "Site")
 
 
@@ -437,8 +437,9 @@ Kept here as well as in git, because the repository's visibility can change (§7
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.6 *(pending)* | on the v3 release | **Not yet in effect.** Editorial only. These Terms kept two change lists, this table and a shorter appendix, which told the same history twice and disagreed: the appendix numbered the changes of 1 August as three versions (1.2, 1.3, 1.4), which were never published separately, and it stopped before 1.5. This table is now the only one; the two changes only the appendix recorded are added to the 1.4 row, and the appendix is removed. **Nothing you agreed to has changed.** |
 | 1.5 | 4 August 2026 | **The Bot was renamed from Dior's Builds to Dioreo.** A change of name only: same operator, same Bot, same data, same terms — see §1 and §19.2. §7.1 keeps the former name protected alongside the new one. **Nothing you agreed to has changed**, no new data is collected, and no right of yours is reduced. |
-| 1.4 | 1 August 2026 | Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (§14) and the limitation of liability (§15) did not reach the pages these documents are published on. Adds §1.1 defining the Site and saying exactly which Terms cover it and which do not. **No new obligation on you and no reduction of your rights** — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone. |
+| 1.4 | 1 August 2026 | Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (§14) and the limitation of liability (§15) did not reach the pages these documents are published on. Adds §1.1 defining the Site and saying exactly which Terms cover it and which do not. **No new obligation on you and no reduction of your rights** — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone. The same version added Discord (`diorswrld`) as a second contact route in §1 and §20, alongside the canonical email (anything that has to be on the record still goes by email), and broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. |
 | 1.3 | — | Never published. The header moved from 1.1 straight to 1.4 on 1 August 2026 while the row describing that change was written as "1.2", so 1.2 and 1.3 were skipped. Recorded rather than quietly renumbered: the document you were shown on 1 August said **1.4**, and a revision history that renumbers a published version to tidy itself up is worth less than one with a gap in it. |
 | 1.2 | — | Never published. See the note on 1.3. |
 | 1.1 | 29 July 2026 | Added §7.3 (crossover and collaboration content — third-party IP featured in the game); noted the operator's `diorswrld` alias in §1 and §20; renumbered the former §7.3–§7.6 to §7.4–§7.7 to make room. **Clarifying additions only** — no reduction of your rights, no new data collected, no new obligation on you. |
@@ -466,20 +467,6 @@ Ontario, Canada\
 Email is the canonical contact and always reaches us; Discord is usually faster for a question. Anything that has to be on the record — a notice, a rights request, a takedown, or anything under §17 — goes to the email address. We deliberately don't list a repository link here, because the repository's visibility can change (§7.1) and a contact point in binding terms must not be able to go dead.
 
 For security reports, email — don't open a public issue. See §4.11 of the [LICENSE](../../LICENSE).
-
-
-
-## Appendix — Change history
-
-| Version | Date | Change |
-|---|---|---|
-| **1.4** | 1 August 2026 | Added Discord (diorswrld) as a second contact route in §1 and §20, alongside the canonical email. Anything that has to be on the record still goes by email. |
-| **1.3** | 1 August 2026 | Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation. |
-| **1.2** | 31 July 2026 | Brought the Site — the website these documents are published on — into scope alongside the Bot. |
-| **1.1** | 29 July 2026 | Added the controller's "diorswrld" alias; added §7.3 covering third-party crossover and collaboration content, renumbering the takedown process to §7.5. |
-| **1.0** | 28 July 2026 | Initial terms. |
-
-Future revisions will be listed here. The complete drafting history is public in the repository's git log.
 
 
 
