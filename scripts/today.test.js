@@ -156,15 +156,37 @@ t('a busy season (40 live entries) still fits: under 40 components and 3,800 cha
     const { fitMessage, countComponents } = require('../commands/today');
     const busy = doc({ calendar: Array.from({ length: 40 }, (_, i) => ({ title: `Long Running Playlist Number ${i}`, category: i % 2 ? 'event' : 'playlist', date: d(20), endDate: d(31 + 5 + (i % 9)) })) });
     const textLen = m => (JSON.stringify(m).match(/"content":"(?:[^"\\]|\\.)*"/g) || []).reduce((n, c) => n + c.length - 12, 0);
-    for (const msg of [buildTodayContainer(busy, { nowMs: NOW, accentColor: 1, isEphemeral: true }), calendar.buildContainer(busy, calendar.TODAY_PAGE, 1, true, 0)]) {
-        assert.ok(countComponents(msg) <= 40, `components: ${countComponents(msg)}`);
-        assert.ok(textLen(msg) <= 3800, `text: ${textLen(msg)}`);
-        assert.ok(JSON.stringify(msg).includes('more'), 'the trimmed list says how many more');
+    const today = buildTodayContainer(busy, { nowMs: NOW, accentColor: 1, isEphemeral: true });
+    assert.ok(countComponents(today) <= 40, `components: ${countComponents(today)}`);
+    assert.ok(textLen(today) <= 3800, `text: ${textLen(today)}`);
+    assert.ok(JSON.stringify(today).includes('more'), 'the trimmed list says how many more');
+    // The Today page lists a line per entry, so 40 fit untrimmed; 120 must trim, and say so.
+    const busier = doc({ calendar: Array.from({ length: 120 }, (_, i) => ({ title: `Long Running Playlist Number ${i}`, category: i % 2 ? 'event' : 'playlist', date: d(20), endDate: d(31 + 5 + (i % 9)) })) });
+    for (const [season, trimmed] of [[busy, false], [busier, true]]) {
+        const page = calendar.buildContainer(season, calendar.TODAY_PAGE, 1, true, 0);
+        assert.ok(countComponents(page) <= 40, `components: ${countComponents(page)}`);
+        assert.ok(textLen(page) <= 3800, `text: ${textLen(page)}`);
+        assert.strictEqual(/\+\d+ more/.test(JSON.stringify(page)), trimmed, trimmed ? 'the trimmed list says how many more' : 'nothing trimmed');
     }
     // A quiet season keeps his spacing: one block per entry.
     const spaced = buildTodayBody(doc(), { nowMs: NOW });
     assert.ok(spaced.filter(c => c.type === 10 && /^<a?:\w+:\d+> \*\*/.test(c.content)).length >= 4);
     assert.ok(typeof fitMessage === 'function');
+});
+
+t("/calendar's Today page is his template (2026-10-23 15:49 EDT): ## headings, Live now by type, Ending soon under its end day, Upcoming with Going live and each day in its own block", () => {
+    const emojis = require('../utils/emojiMap');
+    const body = buildTodayBody(doc(), { nowMs: NOW, withDays: true }); // the page's own body, at the fixed clock
+    const texts = JSON.stringify(body);
+    const blocks = body.filter(c => c.type === 10).map(c => c.content);
+    assert.ok(blocks.some(b => b.startsWith(`## ${emojis.greenDotGlow} Live now\n-# ${emojis.newDraws} **Draws**\n${emojis.mythic} Deepstar Wraith Mythic Drop`)), 'Live now opens with the draws, tier icon first');
+    assert.ok(blocks.some(b => b.startsWith(`-# ${emojis.events} **Events**\n- `)), 'events are bullets under their own label');
+    assert.ok(blocks.some(b => b.startsWith(`## ${emojis.yellowDotGlow} Ending soon\n-# **Ends <t:`)), 'Ending soon groups under an Ends label');
+    assert.ok(blocks.some(b => b.startsWith(`## ${emojis.lightBlueDotGlow} Upcoming\n-# **Going live** <t:`)), 'Upcoming opens with Going live');
+    assert.ok(blocks.some(b => b.startsWith(`-# **Tue, Oct 27**\n${emojis.returningDraws} Double Tap Draw`)) && blocks.some(b => b.startsWith('-# **Wed, Oct 28**')), 'each day is its own block');
+    assert.ok(!texts.includes('Returning draw ·') && !texts.includes(' · ends '), 'no status lines or trailing times');
+    // /today keeps its own layout while he reviews it.
+    assert.ok(JSON.stringify(buildTodayBody(doc(), { nowMs: NOW })).includes('Returning draw'));
 });
 
 if (failed) { console.log(`\n${failed} failed`); process.exit(1); }

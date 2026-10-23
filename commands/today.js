@@ -148,6 +148,7 @@ function fitMessage(seasonalDoc, opts, wrap) {
 
 // The sections under a title, shared by /today (withDays false) and /calendar's Today page (withDays true), ending with the footer.
 function buildTodayBody(seasonalDoc, { nowMs = Date.now(), withDays = false, types = null, mode = 'spaced' } = {}) {
+    if (withDays) return buildCalendarTodayBody(seasonalDoc, { nowMs, types, mode });
     const { anyLive, liveNow: allLive, endingSoon: allEnding, goingLive, days, next } = todaySections(seasonalDoc, nowMs, { types });
     const capped = mode === 'capped';
     const liveNow = capped ? allLive.slice(0, LIVE_CAP) : allLive;
@@ -178,6 +179,58 @@ function buildTodayBody(seasonalDoc, { nowMs = Date.now(), withDays = false, typ
     sections.forEach((s, i) => components.push(...(i && !(i === 1 && !anyLive) ? [divider] : []), ...s));
     // The footer sits after an empty space, not a line (13:02 EDT: "change this to divider:false small spacing").
     components.push({ type: 14, spacing: 1, divider: false }, block(footerLine(seasonalDoc, next, nowMs)));
+    return components;
+}
+
+// /calendar's Today page, his own template (2026-10-23 15:50 EDT, built after mock-ups in #testing-spam; /today keeps the layout above while he reviews it). Every heading is `##`, and no entry carries a status line, which wrapped on his phone:
+//   Live now: one block per type, each under a small "<type emoji> **Draws**" label with a small no-line gap between types; draws keep their tier icon, events and playlists are `- ` bullets.
+//   Ending soon: names under one small bold "Ends <relative>" label per end day.
+//   Upcoming: a small bold "Going live <relative>" label over what starts by the next reset, then each of the next days with something in its own block under a small bold date.
+// A busy season trims Live now to its first LIVE_CAP entries and Ending soon to its ENDING_CAP soonest, each with a "+N more" line, until the message fits.
+const LIVE_KINDS = [['draw', 'Draws', 'newDraws'], ['event', 'Events', 'events'], ['playlist', 'Playlists & Modes', 'modes']];
+function buildCalendarTodayBody(seasonalDoc, { nowMs = Date.now(), types = null, mode = 'spaced' } = {}) {
+    const { anyLive, liveNow: allLive, endingSoon: allEnding, goingLive, days, next } = todaySections(seasonalDoc, nowMs, { types });
+    const capped = mode === 'capped';
+    const liveNow = capped ? allLive.slice(0, LIVE_CAP) : allLive;
+    const endingSoon = capped ? allEnding.slice(-ENDING_CAP) : allEnding;
+    const more = n => (n > 0 ? [`-# +${n} more`] : []);
+    const gap = { type: 14, spacing: 1, divider: false };
+    const divider = { type: 14, spacing: 2, divider: true };
+    const sections = [];
+
+    if (liveNow.length) {
+        const live = [];
+        for (const [type, label, emojiKey] of LIVE_KINDS) {
+            const items = liveNow.filter(e => e.type === type);
+            if (!items.length) continue;
+            const lines = items.map(e => (type === 'draw' ? `${e.icon} ${e.title}` : `- ${e.title}`));
+            if (live.length) live.push(gap);
+            live.push(block([...(live.length ? [] : [`## ${emojis.greenDotGlow} Live now`]), `-# ${emojis[emojiKey]} **${label}**`, ...lines].join('\n')));
+        }
+        const extra = more(allLive.length - liveNow.length);
+        if (extra.length) live.push(block(extra.join('\n')));
+        sections.push(live);
+    }
+    if (!anyLive) sections.push([block(`## ${emojis.redDotGlow} Nothing is currently live`)]);
+    if (endingSoon.length) {
+        const lines = [];
+        let lastDay = null;
+        for (const e of endingSoon) {
+            const day = Math.floor(e.endMs / DAY_MS);
+            if (day !== lastDay) { lines.push(`-# **Ends ${rel(e.endMs)}**`); lastDay = day; }
+            lines.push(`${e.icon} ${e.title}`);
+        }
+        sections.push([block([`## ${emojis.yellowDotGlow} Ending soon`, ...more(allEnding.length - endingSoon.length), ...lines].join('\n'))]);
+    }
+    const dated = [];
+    if (goingLive.length) dated.push([`-# **Going live** ${rel(next)}`, ...goingLive.map(e => `${e.icon} ${e.title}`)]);
+    for (const d of days) dated.push([`-# **${d.label}**`, ...d.entries.map(e => `${e.icon} ${e.title}`)]);
+    // Each dated group is its own block, for the spacing (his ask, 15:45 EDT); the Upcoming heading rides in the first.
+    if (dated.length) sections.push(dated.map((lines, i) => block([...(i ? [] : [`## ${emojis.lightBlueDotGlow} Upcoming`]), ...lines].join('\n'))));
+
+    const components = [];
+    sections.forEach((sec, i) => components.push(...(i && !(i === 1 && !anyLive) ? [divider] : []), ...sec));
+    components.push(gap, block(footerLine(seasonalDoc, next, nowMs)));
     return components;
 }
 
