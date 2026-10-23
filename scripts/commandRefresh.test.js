@@ -150,6 +150,9 @@ t('/calendar: finished first by when they ended, then live by when they end, the
     assert.ok(line('Back').includes('**Back** · returned <t:'));
     assert.ok(line('Soon A').startsWith(`${emojis.whiteDotGlow} **Soon A**`) && line('Soon A').includes('Returns <t:'));
     assert.ok(line('Longquan Sword Draw').endsWith('Releases TBA'));
+    // Upcoming with an end: "Until" and the END date; with none, the start date (2026-10-23 14:33 EDT).
+    assert.ok(line('Soon B').endsWith(`Starts <t:${day(2026, 10, 30).getTime() / 1000}:R> · Until <t:${day(2026, 11, 5).getTime() / 1000}:D>`), line('Soon B'));
+    assert.ok(line('Soon A').endsWith(`<t:${day(2026, 10, 25).getTime() / 1000}:D>`) && !line('Soon A').includes('Until'), line('Soon A'));
 });
 
 t('/calendar: a looping pager over the pages the filter keeps, and a filter dropdown with his six options (2026-10-21 15:32 EDT)', () => {
