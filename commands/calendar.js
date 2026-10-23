@@ -90,7 +90,7 @@ function compareEntries(seasonalDoc, nowMs) {
     };
 }
 
-// One entry: a status dot, the name, and a small line saying where it stands (2026-10-21 14:34 EDT, his mock G, after mocks A–F in #testing-spam): green live, white upcoming or undated, red with the name struck through once it is over. The small line is padded with the `blank` emoji so it sits under the name (2026-10-23 14:35 EDT, Harkirat: "instead of the invisible character, just use :blank: emoji"; two blank braille characters before that): Discord indents nothing in small text, and its own list bullet swallowed the line (his "Indent didn't work"). An entry with no usable date reads "Releases TBA", never a raw `<t:NaN:D>` (2026-10-20). Replaces the 2026-07-31 calendar_update_ui.json shape (`**✦ title**` over a `b1` date range).
+// One entry: a status dot, the name, and a small line saying where it stands (2026-10-21 14:34 EDT, his mock G, after mocks A–F in #testing-spam): green live, white upcoming or undated, red with the name struck through once it is over. The small line is padded with the `blank` emoji so it sits under the name (2026-10-23 14:35 EDT, Harkirat: "instead of the invisible character, just use :blank: emoji"; two blank braille characters before that), then an en space (U+2002), which lines it up under the name (2026-10-23 14:43 EDT, his pick of four paddings in #testing-spam): Discord indents nothing in small text, and its own list bullet swallowed the line (his "Indent didn't work"). An entry with no usable date reads "Releases TBA", never a raw `<t:NaN:D>` (2026-10-20). Replaces the 2026-07-31 calendar_update_ui.json shape (`**✦ title**` over a `b1` date range).
 function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
     const { state, startMs, endMs } = entryState(event, seasonalDoc, nowMs);
     const s = Math.floor(startMs / 1000), e = Number.isFinite(endMs) ? Math.floor(endMs / 1000) : null;
@@ -105,7 +105,7 @@ function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
     else text = `**Live** · ends ${seasonalDoc.bpEndTBD ? 'TBD' : 'with the season'}`;
     const dot = state === 'live' ? emojis.greenDotGlow : state === 'over' ? emojis.redDotGlow : emojis.lightBlueDotGlow;
     const title = state === 'over' ? `~~**${event.title}**~~` : `**${event.title}**`;
-    return `${dot} ${title}\n-# ${emojis.blank} ${text}`;
+    return `${dot} ${title}\n-# ${emojis.blank}\u2002${text}`;
 }
 
 // A `## ` heading in title case (2026-10-21 16:02 EDT, Harkirat: "change the draws/events, etc headings to \"## :emoji: Special Events\", etc."). It replaced the full-caps, underlined `### ` heading of 2026-07-31.
@@ -131,7 +131,7 @@ function buildSectionComponent(headingLine, entries, seasonalDoc, collapseEnded 
         shown = entries.filter(e => !hidden.has(e));
     }
     // Shaped like an entry (dot, bold line, small indented line) so it reads as part of the list; as one small line it wrapped and floated above it on a phone (2026-10-21 16:28 EDT, Harkirat: "Text looks odd at the top?").
-    const moreLine = hiddenCount ? [`${emojis.redDotGlow} **\`+${hiddenCount}\`** **more ended**\n-# ${emojis.blank} Pick **Past/Ended** in the filter to see ${hiddenCount === 1 ? 'it' : 'them'}`] : [];
+    const moreLine = hiddenCount ? [`${emojis.redDotGlow} **\`+${hiddenCount}\`** **more ended**\n-# ${emojis.blank}\u2002Pick **Past/Ended** in the filter to see ${hiddenCount === 1 ? 'it' : 'them'}`] : [];
     let body = [...moreLine, ...shown.map(e => buildEntryLine(e, seasonalDoc, nowMs))].join('\n');
     if (body.length > SECTION_CHAR_BUDGET) {
         body = body.slice(0, SECTION_CHAR_BUDGET) + `\n-# …and more (too many entries to show at once).`;
