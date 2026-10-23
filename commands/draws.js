@@ -67,13 +67,13 @@ function buildDrawSections(drawsArray) {
             });
         } else {
             // No image was provided/cached for this draw (relaxed 2026-08-22 19:40 EDT, click-test fix -- handlers/manage/draws.js no longer hard-rejects a no-image submission). A Components V2 Section (type 9) requires an accessory, so a bare Text Display is used instead of pointing a Thumbnail at a null/broken URL.
-            sections.push({ type: 10, content: `${textContent}\n-# *(no image provided)*` });
+            sections.push({ type: 10, content: `${textContent}\n-# *(no image)*` });
         }
     });
     return sections;
 }
 
-// The characters one draw adds to a page's Text Displays (its section's text, "(no image provided)" line included).
+// The characters one draw adds to a page's Text Displays (its section's text, "(no image)" line included).
 function drawTextLength(draw) {
     return buildDrawSections([draw]).reduce((n, s) => n + (s.type === 10 ? s.content : s.components[0].content).length, 0);
 }
