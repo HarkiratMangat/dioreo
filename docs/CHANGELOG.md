@@ -29,7 +29,16 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.108.0 — 2026-10-23 00:07 EDT (#218) — `/admin` becomes Server Settings: per-command settings, Check a Member, a 60-day change log, and Discord's own permissions on the panel
+## Pre-Release v3.109.0 — 2026-10-23 10:05 EDT (#219) — `/settings` drops Member Since, and the launch announcement and a per-command review sheet are drafted
+**From the overnight roadmap items** (Harkirat, 2026-10-22 note ideas #1, #5 and #8, picked up in the cloud on 2026-10-23). One code change and two drafts; nothing is posted, deployed or sent.
+
+- **`/settings`:** the dashboard shows only **Dioreo User Since**. **Member Since**, the Discord account's creation date, is gone (Harkirat: leave the bot-user line, "how long you've been using the bot"). `scripts/settingsJumpTo.test.js` has a new check that a slash run shows Dioreo User Since and no Member Since, and that a button re-render with no recorded date shows neither.
+- **Launch announcement drafted** (`docs/claude/2026-10-23-v3-launch-announcement-draft.md`): an in-bot version for the `/manage` Announcement box (1,077 characters of the 4,000 allowed), a Discord-post version (1,515 of 2,000) and a one-line listing blurb. Every claim is traced to a shipped release, with what was left out on purpose (`/dmz`, Your Stats, Show Everyone) and his open calls in a table. It stays a draft until he approves it, and sending is his call on the day.
+- **Per-command review sheet written** (`docs/claude/2026-10-23-command-review-checklist.md`): for every command, each slash option and description as registered (generated from the real command builders), the controls to click and a verdict line, starting with `/gunsmith mp` and `dmz`. It records wording findings for him to rule on, among them `/gunsmith mp`'s "A MP weapon", `/autobuild`'s internal `retry_token` in the picker, and `/bot servers` not saying it can delete.
+- **Found while writing the sheet, not fixed:** `/timestamp`'s time-zone picker labels (for example "(UTC-04:00) Eastern … (EDT)") are computed when the bot starts and registered once. Europe's clocks change on 2026-10-25 and Canada's and the US's on 2026-11-01, so those labels read an hour wrong until the next restart. The stored values are zone names and stay correct.
+- **Records:** `docs/ROADMAP.md` marks the Member Since item shipped and points the announcement and review items at their drafts; `docs/claude/README.md` indexes both; `.claude/rules/settings-and-expiry.md` no longer says the date sits under Member Since. No data changes, so PRIVACY is unchanged.
+
+## Pre-Release v3.108.0 — 2026-10-23 00:07 EDT (#218 · `940afe38`) — `/admin` becomes Server Settings: per-command settings, Check a Member, a 60-day change log, and Discord's own permissions on the panel
 **From the admin-panel design pass** (Harkirat, 2026-10-21 to 2026-10-22). Every round was click-tested by him on the dev bot; approved 2026-10-22 23:55 EDT.
 
 - **The panel:** titled Server Settings and naming its server, with Overview, Channels, Roles and Commands tabs (the open one blurple and disabled) and Help as its own private message. Rules read as coloured dots and the word **Private** or **Public** rather than paragraphs; every Clear button sits inside the panel beside what it clears; the Commands tab is one dropdown marked by state, not a button per command. Right-click commands show without a slash, and subcommands by their full name. `/admin` has a `visibility` option, and its renders never ping.
