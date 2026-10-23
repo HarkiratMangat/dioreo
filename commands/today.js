@@ -167,7 +167,7 @@ function buildTodayBody(seasonalDoc, { nowMs = Date.now(), withDays = false, typ
     if (endingSoon.length) sections.push([block([`### ${emojis.yellowDotGlow} Ending soon`, ...more(allEnding.length - endingSoon.length), ...endingSoon.map(e => `${e.icon} **${e.title}** · ends ${rel(e.endMs)}`)].join('\n'))]);
     const upcoming = [];
     if (goingLive.length) {
-        upcoming.push(...entryBlocks(`### ${emojis.blueDotGlow} Going live ${rel(next)}`, goingLive.map(e => `${e.icon} **${e.title}**\n-# ${e.kind}${ends(e)}`)));
+        upcoming.push(...entryBlocks(`### ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive.map(e => `${e.icon} **${e.title}**\n-# ${e.kind}${ends(e)}`)));
         if (withDays && days.length) upcoming.push({ type: 14, spacing: 1, divider: false });
     }
     const dayText = days.map(d => `**${d.label}**\n${d.entries.map(e => `${e.icon} ${e.title}`).join('\n')}`);

@@ -148,7 +148,7 @@ t('/calendar: finished first by when they ended, then live by when they end, the
     assert.ok(line('Over early').startsWith(`${emojis.redDotGlow} ~~**Over early**~~\n-# `) && line('Over early').includes('Ended <t:'), line('Over early'));
     assert.ok(line('Live early').startsWith(`${emojis.greenDotGlow} **Live early**`) && line('Live early').includes('**Live** · ends <t:'));
     assert.ok(line('Back').includes('**Back** · returned <t:'));
-    assert.ok(line('Soon A').startsWith(`${emojis.whiteDotGlow} **Soon A**`) && line('Soon A').includes('Returns <t:'));
+    assert.ok(line('Soon A').startsWith(`${emojis.lightBlueDotGlow} **Soon A**`) && line('Soon A').includes('Returns <t:'));
     assert.ok(line('Longquan Sword Draw').endsWith('Releases TBA'));
     // Upcoming with an end: "Until" and the END date; with none, the start date (2026-10-23 14:33 EDT).
     assert.ok(line('Soon B').endsWith(`Starts <t:${day(2026, 10, 30).getTime() / 1000}:R> · Until <t:${day(2026, 11, 5).getTime() / 1000}:D>`), line('Soon B'));

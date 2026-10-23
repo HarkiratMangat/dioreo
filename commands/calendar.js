@@ -103,7 +103,7 @@ function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
     else if (e) text = `**Live** · ends <t:${e}:R>`;
     else if (event.dateOnly) text = returning ? `**Back** · returned <t:${s}:R>` : `**Live** · released <t:${s}:R>`;
     else text = `**Live** · ends ${seasonalDoc.bpEndTBD ? 'TBD' : 'with the season'}`;
-    const dot = state === 'live' ? emojis.greenDotGlow : state === 'over' ? emojis.redDotGlow : emojis.whiteDotGlow;
+    const dot = state === 'live' ? emojis.greenDotGlow : state === 'over' ? emojis.redDotGlow : emojis.lightBlueDotGlow;
     const title = state === 'over' ? `~~**${event.title}**~~` : `**${event.title}**`;
     return `${dot} ${title}\n-# ${emojis.blank} ${text}`;
 }
@@ -159,7 +159,7 @@ const FILTER_OPTIONS = [
     { value: 'today', bit: 64, label: 'Today', emojiKey: 'calendar', description: 'Live now, ending soon and going live' },
     { value: 'live', bit: 1, label: 'Live', emojiKey: 'greenDotGlow', description: 'Running right now' },
     { value: 'over', bit: 2, label: 'Past/Ended', emojiKey: 'redDotGlow', description: 'Already finished this season' },
-    { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'whiteDotGlow', description: "Hasn't started yet" },
+    { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },
     { value: 'draws', bit: 8, label: 'Lucky Draws', emojiKey: 'newDraws', description: 'Draws releasing this season' },
     { value: 'events', bit: 16, label: 'Special Events', emojiKey: 'events', description: 'Special Events this season' },
     { value: 'modes', bit: 32, label: 'Playlists & Modes', emojiKey: 'modes', description: 'Playlists & Game Modes this season' }

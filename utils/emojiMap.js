@@ -147,6 +147,9 @@ const emojis = {
     // /today's Ending soon and Going live headings (2026-10-23 11:51 EDT). Prod ids read from the prod app's emoji list at his word (2026-10-23 12:04 EDT); the dev app's are matched by name. Images saved in the main checkout's Logos-&-Emojis/emoji-originals/.
     yellowDotGlow: '<:YellowDotGlow_YDG:1542356489761464421>',
     blueDotGlow: '<:BlueDotGlow_BDG:1542356493347586159>',
+    // Upcoming, on /calendar and /today alike (2026-10-23 14:42 EDT, Harkirat picked shade B, #7CC4FF, between the white and blue dots: "i want a sort of middle ground"). The original is Logos-&-Emojis/emoji-originals/LightBlueDotGlow_LBDG.png.
+    // ⚠️ THIS ID IS THE DEV APP'S, not prod's: the emoji is not on the prod app yet (a prod write, waiting for his word). The dev bot re-points by name either way; swap in the prod id before this branch ships.
+    lightBlueDotGlow: '<:LightBlueDotGlow_LBDG:1563261203231539331>',
     // /draw prices' Filter and Filter Again (2026-10-21 13:41 EDT, Harkirat's prod id; the dev app's Filter is matched by name).
     filter: '<:Filter:1562521111579590736>',
     // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.
