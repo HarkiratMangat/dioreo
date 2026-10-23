@@ -260,10 +260,11 @@ function buildAdvancedDoubleLegendaryEntry(regionKey) {
         `**'Regular Purchase' + Remaining Item Separately**\n${seqTotal(trap, trapTotal)}`,
         // 4: THE TRAP callout (the NOTE callout was removed entirely per Harkirat's request 2026-07-25)
         `> **THE TRAP:** Buying 'Regular Purchase', then paying for the 2nd remaining item afterwards costs **25% MORE** than just buying 'Advanced Purchase' upfront. **Commit before spinning!** Otherwise you essentially just did 2 'Regular Purchases' and wasted money.`,
-        // 5-7: the Strategy, as three separate Text Displays (heading rides on the first block). Heading is a REAL `### ` heading, "### The Strategy" -- reverses the 2026-07-21 "plain bold line" call per Harkirat's 2026-08-07 12:21 EDT request; "If You Want..." dropped since each strategy line's own bold label ("Both Weapons & Characters" etc.) already states the condition.
-        `### The Strategy\n**Both Weapons & Characters**\nReg 1-8 → Adv 9-10 ⌇ ${emojis.cp2} **\`${formatCP(costAll4)} CP\`**`,
-        `**Both Weapons + 1 Random Character**\nReg 1-9 → Adv 10 ⌇ ${emojis.cp2} **\`${formatCP(cost2Leg)} CP\`**`,
-        `**1 Random Weapon + 1 Random Character**\nReg only 1-10 ⌇ ${emojis.cp2} **\`${formatCP(cost1Leg)} CP\`**\n-# Note: These strategies assume that you didn't get lucky.`
+        // The second pair is "Epics", not "Characters" (2026-10-23 18:38 EDT, Harkirat: Alchemy Stars' second pair is epic WEAPONS, so the label must not name a kind).
+    // 5-7: the Strategy, as three separate Text Displays (heading rides on the first block). Heading is a REAL `### ` heading, "### The Strategy" -- reverses the 2026-07-21 "plain bold line" call per Harkirat's 2026-08-07 12:21 EDT request; "If You Want..." dropped since each strategy line's own bold label ("Both Weapons & Characters" etc.) already states the condition.
+        `### The Strategy\n**Both Weapons & Epics**\nReg 1-8 → Adv 9-10 ⌇ ${emojis.cp2} **\`${formatCP(costAll4)} CP\`**`,
+        `**Both Weapons + 1 Random Epic**\nReg 1-9 → Adv 10 ⌇ ${emojis.cp2} **\`${formatCP(cost2Leg)} CP\`**`,
+        `**1 Random Weapon + 1 Random Epic**\nReg only 1-10 ⌇ ${emojis.cp2} **\`${formatCP(cost1Leg)} CP\`**\n-# Note: These strategies assume that you didn't get lucky.`
     ];
 
     // NO internal dividers between the sections. The mockup (local/advanced leggy_format.json) has none, and Harkirat confirmed 2026-07-21 (marked-up screenshot: local/Screenshots/CleanShot 2026-07-21 at 20.16.48@2x.png) that the three dividers an earlier version of this builder added -- after the headline, after the purchase modes, after the callouts -- "shouldn't be here at all." The blocks flow as separate Text Displays relying on Discord's own natural inter-component spacing. The only dividers on this page are the title divider above the headline and the footer divider below, both added by buildContainer, NOT here.
