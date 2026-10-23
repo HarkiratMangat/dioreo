@@ -144,7 +144,7 @@ const emojis = {
     // /calendar's status dots (2026-10-21 14:34 EDT, Harkirat: "Red with strike through for finished events, green for live, white for upcoming"); prod ids read from the prod app's emoji list, the dev app's are matched by name. whiteDotGlow (below) marks upcoming.
     greenDotGlow: '<:GreenDotGlow_GDG:1542356494220140685>',
     redDotGlow: '<:RedDotGlow_RDG:1542356487882416248>',
-    // /today's Ending soon and Going live headings (2026-10-23 11:51 EDT). Prod ids read from the prod app's emoji list at his word (2026-10-23 12:04 EDT); the dev app's are matched by name. Images saved in local/emoji-originals/.
+    // /today's Ending soon and Going live headings (2026-10-23 11:51 EDT). Prod ids read from the prod app's emoji list at his word (2026-10-23 12:04 EDT); the dev app's are matched by name. Images saved in the main checkout's Logos-&-Emojis/emoji-originals/.
     yellowDotGlow: '<:YellowDotGlow_YDG:1542356489761464421>',
     blueDotGlow: '<:BlueDotGlow_BDG:1542356493347586159>',
     // /draw prices' Filter and Filter Again (2026-10-21 13:41 EDT, Harkirat's prod id; the dev app's Filter is matched by name).
