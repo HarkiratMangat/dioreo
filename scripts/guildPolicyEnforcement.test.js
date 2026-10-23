@@ -477,18 +477,33 @@ t('his /calendar example resolves to the table he was shown', () => {
     assert.strictEqual(guildPolicy.resolveVisibility(settings, { channelId: 'X', roleIds: [], commandName: 'calendar', commandPath: 'calendar', isAdmin: true }), 'public');
 });
 
-t('the Commands tab colours each command by state and opens it on tap', () => {
+t('the Commands tab lists every command in one menu, marked by state, with no button per command', () => {
     const { buildCommands } = require('../commands/admin').__testRenderers;
     const settings = { ephemeralCommands: ['colors'], commandSettings: [{ command: 'calendar', defaultVisibility: 'ephemeral', channelRules: [{ channelId: 'A', visibility: 'public' }], roleRules: [] }, { command: 'help', defaultVisibility: 'public', channelRules: [], roleRules: [] }] };
     const page = buildCommands(settings, ['calendar', 'colors', 'help', 'draws', 'Convert Times'], new Map([['Convert Times', 'message']]));
-    const buttons = Object.fromEntries(page.filter(c => c.type === 1).flatMap(r => r.components).filter(b => b.custom_id?.startsWith('admin_home||')).map(b => [b.custom_id.split('|')[2], b]));
-    assert.deepStrictEqual([buttons.calendar.style, buttons.colors.style, buttons.help.style, buttons.draws.style], [1, 4, 3, 2], 'blurple custom · red Private · green Public · grey follows');
-    assert.strictEqual(buttons['Convert Times'].label, 'Convert Times');
-    // Past 20 commands a menu opens them, naming any past Discord's 25.
+    assert.ok(!JSON.stringify(page).includes('admin_home||'), 'a button per command looked bad on mobile; the menu replaces it');
+    const menu = page.find(c => c.type === 1 && c.components?.[0]?.type === 3).components[0];
+    assert.strictEqual(menu.custom_id, 'admin_cmd_open');
+    const opt = Object.fromEntries(menu.options.map(o => [o.value, o]));
+    assert.deepStrictEqual(['calendar', 'colors', 'help', 'draws'].map(v => opt[v].description), ['Private, 1 exception', 'Private', 'Public', 'Follows server']);
+    assert.deepStrictEqual(['calendar', 'colors', 'help', 'draws'].map(v => opt[v].emoji?.name?.slice(0, 3)), ['Red', 'Red', 'Gre', 'Whi'], 'red Private · green Public · white follows');
+    assert.strictEqual(opt['Convert Times'].label, 'Convert Times');
+    // Past Discord's 25, the missing ones are named (case 5).
     const many = Array.from({ length: 30 }, (_, i) => `cmd${String(i).padStart(2, '0')}`);
-    const menu = buildCommands({}, many).find(c => c.type === 1 && c.components?.[0]?.type === 3);
-    assert.strictEqual(menu.components[0].custom_id, 'admin_cmd_open');
-    assert.strictEqual(menu.components[0].options.length, 25);
+    const big = buildCommands({}, many).find(c => c.type === 1 && c.components?.[0]?.type === 3);
+    assert.strictEqual(big.components[0].options.length, 25);
+});
+
+t('every Clear button sits inside the panel, and Help carries no tabs', () => {
+    const { buildChannels, buildRoles, buildRoleScope, buildCommands, buildHelp } = require('../commands/admin').__testRenderers;
+    const inPanel = (page, id) => page[0].type === 17 && JSON.stringify(page[0]).includes(id) && !JSON.stringify(page.slice(1)).includes(id);
+    assert.ok(inPanel(buildChannels({ channelRules: [{ channelId: 'C', visibility: 'ephemeral' }] }), 'admin_ch_clear'));
+    assert.ok(inPanel(buildRoles({ roleRules: [{ roleId: 'R', visibility: 'public', channelIds: [] }] }), 'admin_role_clear'));
+    assert.ok(inPanel(buildRoleScope({ roleRules: [{ roleId: 'R', visibility: 'public', channelIds: ['C'] }] }, 'R'), 'admin_role_scope_clear|R'));
+    assert.ok(inPanel(buildCommands({ ephemeralCommands: ['colors'] }, ['colors']), 'admin_cmd_clear'));
+    const help = buildHelp();
+    assert.strictEqual(help.length, 1, 'Help is its own message: the panel only');
+    assert.ok(!JSON.stringify(help).includes('admin_'), 'no tabs or buttons on Help');
 });
 
 t('a scoped edit changes only that command, starting from the server default', () => {

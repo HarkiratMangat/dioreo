@@ -46,7 +46,7 @@ function ruleSet(settings, scope) {
     return commandEntry(settings, scope) || { command: scope, defaultVisibility: settings?.defaultVisibility || 'public', channelRules: [], roleRules: [], fresh: true };
 }
 
-// A command's state as one word and a button style, for the Commands grid and summaries: follows the server (grey), Hidden or Public with no exceptions (red, green), or custom with channel or role rules (blurple).
+// A command's state as one word and a button style, for the Commands menu and summaries: follows the server (grey), Hidden or Public with no exceptions (red, green), or custom with channel or role rules (blurple).
 function commandState(entry) {
     if (!entry) return { word: 'Follows server', style: 2 };
     const custom = entry.channelRules.length || entry.roleRules.length;
@@ -115,9 +115,10 @@ function navRow(active, { subpage = false, scope = null } = {}) {
     };
 }
 
-// The answer to "how do I clear a rule?". A select only saves when it is closed by clicking outside it, and Escape silently cancels, so emptying a menu read as cleared when it was not (click test 2026-10-21 22:26 EDT). Shown only when there is something to clear; the label says what goes.
-function clearRow(customId, label) {
-    return { type: 1, components: [{ type: 2, style: 4, label, custom_id: customId }] };
+// The answer to "how do I clear a rule?". A select only saves when it is closed by clicking outside it, and Escape silently cancels, so emptying a menu read as cleared when it was not (click test 2026-10-21 22:26 EDT). Shown only when there is something to clear. It sits INSIDE the panel, as the accessory of the very text it clears (Harkirat 2026-10-22 23:39 EDT: "those buttons, can you put them actually in the embed?"), so the text says what goes and the label stays short enough to sit beside it on a phone. With nothing to clear the text stands alone, since a Section must have an accessory.
+function withClear(content, customId, count, label = `Clear (${count})`) {
+    const text = { type: 10, content };
+    return count ? { type: 9, components: [text], accessory: { type: 2, style: 4, label, custom_id: customId } } : text;
 }
 
 // One Overview block per rule area, its Edit button as the Section's accessory, so every setting is one press from the summary. The `|go` suffix keeps its custom_id distinct from the nav row's identical target (Discord refuses a message with a duplicated id).
@@ -316,14 +317,13 @@ function buildChannels(settings, place = {}, scope = null) {
                 // ⚠️ KEEP THIS PAGE SHORT (Harkirat 2026-08-10 18:23 EDT: lead with the workflow, let help carry the detail). The default is stated here rather than "set that on Overview first", which read as an instruction to go somewhere else (click test 2026-10-21 22:26 EDT).
                 ...header('Channels', place, lead, scope),
                 { type: 14, spacing: 2 },
-                { type: 10, content: `${visText('ephemeral')} in${ephemeral.length ? ` (${ephemeral.length})` : ''} · ${channelList(ephemeral)}\n${visText('public')} in${publicIds.length ? ` (${publicIds.length})` : ''} · ${channelList(publicIds)}` },
+                withClear(`${visText('ephemeral')} in${ephemeral.length ? ` (${ephemeral.length})` : ''} · ${channelList(ephemeral)}\n${visText('public')} in${publicIds.length ? ` (${publicIds.length})` : ''} · ${channelList(publicIds)}`, sid('admin_ch_clear', '', scope), rules.length),
                 ...(gated.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord's own permissions make these private for @everyone, whatever this page says: ${channelList(gated)}. Allow **Use External Apps** in those channels to change it.` }] : []),
                 { type: 10, content: '-# 🔎 Type to search · threads follow their channel' },
             ],
         },
         channelSelect(sid('admin_ch_ephemeral', '', scope), 'Always private in these channels…', ephemeral),
         channelSelect(sid('admin_ch_public', '', scope), 'Always public in these channels…', publicIds),
-        ...(rules.length ? [clearRow(sid('admin_ch_clear', '', scope), `Clear channel rules (${rules.length})`)] : []),
         navRow('admin_channels', { scope }),
     ];
 }
@@ -356,18 +356,15 @@ function buildRoles(settings, place = {}, scope = null) {
             components: [
                 ...header('Roles', place, lead, scope),
                 { type: 14, spacing: 2 },
-                {
-                    type: 10, content: `**Everywhere** · ${rules.length ? rules.map(r => `<@&${r.roleId}> → ${visText(r.visibility)}`).join(' · ') : 'none'}\n`
-                        + `**In chosen channels** · ${scoped.length ? scoped.map(roleRuleText).join(' · ') : 'none'}`,
-                },
+                // Clear removes the everywhere rules only, so it sits beside them; a role's channel rules clear on that role's own screen, where the admin can see which they are.
+                withClear(`**Everywhere** · ${rules.length ? rules.map(r => `<@&${r.roleId}> → ${visText(r.visibility)}`).join(' · ') : 'none'}`, sid('admin_role_clear', '', scope), rules.length),
+                { type: 10, content: `**In chosen channels** · ${scoped.length ? scoped.map(roleRuleText).join(' · ') : 'none'}` },
                 { type: 10, content: '-# 🔎 Type to search your roles' },
             ],
         },
         roleSelect(sid('admin_role_public', '', scope), 'Always public for these roles…', rules.filter(r => r.visibility === 'public').map(r => r.roleId)),
         roleSelect(sid('admin_role_ephemeral', '', scope), 'Always private for these roles…', rules.filter(r => r.visibility === 'ephemeral').map(r => r.roleId)),
         roleSelect(sid('admin_role_pick', '', scope), 'Set a role for specific channels…', [], 1),
-        // Clears the everywhere rules only; a role's channel rules clear on that role's own screen, where the admin can see which they are.
-        ...(rules.length ? [clearRow(sid('admin_role_clear', '', scope), `Clear everywhere rules (${rules.length})`)] : []),
         navRow('admin_roles', { scope }),
     ];
 }
@@ -384,12 +381,11 @@ function buildRoleScope(settings, roleId, place = {}, scope = null) {
             components: [
                 ...header('Roles', place, null, scope),
                 { type: 10, content: `### <@&${roleId}> in chosen channels${scope ? `, for ${commandLabel(scope)}` : ''}` },
-                { type: 10, content: `${visText('public')} in · ${channelList(pub?.channelIds)}\n${visText('ephemeral')} in · ${channelList(eph?.channelIds)}` },
+                withClear(`${visText('public')} in · ${channelList(pub?.channelIds)}\n${visText('ephemeral')} in · ${channelList(eph?.channelIds)}`, sid('admin_role_scope_clear', roleId, scope), existing.length, 'Clear'),
             ],
         },
         channelSelect(sid('admin_role_scope_public', roleId, scope), 'Public for this role, only in…', pub?.channelIds || []),
         channelSelect(sid('admin_role_scope_ephemeral', roleId, scope), 'Private for this role, only in…', eph?.channelIds || []),
-        ...(existing.length ? [clearRow(sid('admin_role_scope_clear', roleId, scope), "Clear this role's channels")] : []),
         // The tabs, with Roles blurple but live: this screen sits under Roles, and dropping the tabs stranded the admin (click test 2026-10-21 22:26 EDT).
         navRow('admin_roles', { subpage: true, scope }),
     ];
@@ -401,36 +397,30 @@ function menuCommands(gateable) {
     return { shown: sorted.slice(0, SELECT_OPTION_CAP), omitted: sorted.slice(SELECT_OPTION_CAP) };
 }
 
-// Up to 20 commands show as buttons, four rows of five, coloured by state; past 20 a menu opens them instead, because 5 rows of buttons would leave no room for the rest of the page under Discord's 40-component cap.
-const TOGGLE_LIMIT = 20;
-
-// THE COMMANDS TAB: every command, coloured by whether it has its own settings. Tapping one opens its own Overview (the server's pages, scoped to it).
+// THE COMMANDS TAB: every command in ONE menu, each marked by its state, opening its own Overview (the server's pages, scoped to it). It was a grid of a button per command until 2026-10-22 23:39 EDT (Harkirat: "I don't like the individual buttons for each of the commands because that looks really bad on mobile"): a phone wraps five buttons a row into a ragged stack, and a menu is one line however many commands there are.
 function buildCommands(settings, gateable, targets = new Map(), place = {}) {
     const entries = commandEntries(settings);
     // ⚠️ A string select takes at most 25 OPTIONS and has no search, so past 25 commands the omitted ones are named rather than silently missing. scripts/guildPolicyEnforcement.test.js pins this. If it ever fires for real, paginate the menu (utils/paginationRow.js) -- the cap is Discord's.
     const { shown, omitted } = menuCommands(gateable);
-    const grid = shown.length > 0 && shown.length <= TOGGLE_LIMIT;
     const stateOf = v => commandState(commandEntry(settings, v));
-    const controls = grid
-        ? Array.from({ length: Math.ceil(shown.length / 5) }, (_, i) => ({
-            type: 1,
-            components: shown.slice(i * 5, i * 5 + 5).map(v => ({ type: 2, style: stateOf(v).style, label: commandLabel(v), custom_id: sid('admin_home', '', v) })),
-        }))
-        : [{
-            type: 1,
-            components: [{
-                type: 3,
-                custom_id: 'admin_cmd_open',
-                placeholder: 'Pick a command to open…',
-                min_values: 1,
-                max_values: 1,
-                options: shown.map(v => ({
-                    label: commandLabel(v),
-                    value: v,
-                    description: (targets.get(v) ? `Right-click a ${targets.get(v)} · ` : '') + stateOf(v).word,
-                })),
-            }],
-        }];
+    // The option's dot is the state at a glance: white follows the server, red Private, green Public. Read at render time, like every emoji here.
+    const stateDot = v => (commandEntry(settings, v) ? dot(commandEntry(settings, v).defaultVisibility) : emojis.whiteDotGlow);
+    const controls = shown.length ? [{
+        type: 1,
+        components: [{
+            type: 3,
+            custom_id: 'admin_cmd_open',
+            placeholder: 'Open a command\'s settings…',
+            min_values: 1,
+            max_values: 1,
+            options: shown.map(v => ({
+                label: commandLabel(v),
+                value: v,
+                description: (targets.get(v) ? `Right-click a ${targets.get(v)} · ` : '') + stateOf(v).word,
+                ...(emojis.parseEmoji(stateDot(v)) ? { emoji: emojis.parseEmoji(stateDot(v)) } : {}),
+            })),
+        }],
+    }] : [];
     return [
         {
             type: 17,
@@ -438,15 +428,14 @@ function buildCommands(settings, gateable, targets = new Map(), place = {}) {
             components: [
                 ...header('Commands', place, '-# Every command follows the server settings, until you give it its own. Then it uses only those.'),
                 { type: 14, spacing: 2 },
-                { type: 10, content: entries.length ? entries.map(commandSummary).join('\n') : '-# No command has its own settings yet.' },
-                ...(grid ? [{ type: 10, content: '-# Tap a command to open it. **Grey** follows the server · **Red** Private · **Green** Public · **Blurple** has exceptions. Capitalised ones are right-click commands.' }] : []),
+                withClear(entries.length ? `**With their own settings**\n${entries.map(commandSummary).join('\n')}` : '-# No command has its own settings yet.', 'admin_cmd_clear', entries.length),
+                { type: 10, content: `-# Pick a command below to open its settings. ${emojis.whiteDotGlow} follows the server · ${dot('ephemeral')} Private · ${dot('public')} Public. Capitalised ones are right-click commands.` },
                 // Said plainly because an admin will otherwise expect the command to disappear, and then read its continued presence as a bug rather than a platform limit.
                 { type: 10, content: '-# Hides the **answer**, not the command. To remove a command entirely: **Server Settings → Integrations**.' },
                 ...(omitted.length ? [{ type: 10, content: `-# ${BOT_EMOJI.warn} Discord allows 25 options per menu, so ${omitted.length} command(s) are missing from the list below: ${omitted.map(commandLabel).join(', ')}. Please report this.` }] : []),
             ],
         },
         ...controls,
-        ...(entries.length ? [clearRow('admin_cmd_clear', `Make every command follow the server (${entries.length})`)] : []),
         navRow('admin_commands'),
     ];
 }
@@ -557,7 +546,7 @@ async function readMember(interaction, userId) {
     return { member: { id: userId, roleIds: [...m.roles.cache.keys()], isAdmin, gate } };
 }
 
-// THE HELP TAB (Harkirat 2026-10-22 14:57 EDT: "create a help panel for this command, similar to draw calc's help panel"). Same shape as commands/drawCalculator.js's buildHelpPanel: emoji headings, short "**term** · meaning" rows under dividers, no paragraphs. It carries the explanations that used to sit on the pages, so the pages can stay visual.
+// THE HELP PANEL (Harkirat 2026-10-22 14:57 EDT: "create a help panel for this command, similar to draw calc's help panel"). Sent as its own private message rather than replacing the panel (Harkirat 2026-10-22 23:39 EDT: "When you press help, can you make it send another private message instead of changing the panel?"), so it carries no tabs: the settings stay open above it. Same shape as commands/drawCalculator.js's buildHelpPanel: emoji headings, short "**term** · meaning" rows under dividers, no paragraphs. It carries the explanations that used to sit on the pages, so the pages can stay visual.
 function buildHelp(client, place = {}) {
     const row = (term, meaning) => `${emojis.smallDot} **${term}** · ${meaning}`;
     const divider = { type: 14, spacing: 2, divider: true };
@@ -603,7 +592,6 @@ function buildHelp(client, place = {}) {
                 ].join('\n') },
             ],
         },
-        navRow('admin_help'),
     ];
 }
 
@@ -774,10 +762,14 @@ async function handleComponent(interaction) {
         case 'admin_channels':
         case 'admin_roles':
         case 'admin_commands':
-        case 'admin_help':
             settings = await getGuildSettings(guildId);
             page = id;
             break;
+
+        // Help opens as its own private message, the way the draw calculator's does (handlers/drawCalc.js), and leaves the panel as it was. Nothing on it can go stale, so it skips the idle timeout.
+        case 'admin_help':
+            await interaction.deferReply({ flags: 64 });
+            return sendV2Payload(interaction, buildHelp(interaction.client, place), { allowedMentions: NO_PINGS, skipExpiry: true });
 
         case 'admin_cmd_open':
             settings = await getGuildSettings(guildId);
@@ -915,7 +907,6 @@ async function handleComponent(interaction) {
         admin_channels: () => buildChannels(settings, place, scope),
         admin_roles: () => buildRoles(settings, place, scope),
         admin_commands: () => buildCommands(settings, gateable, interaction.client.contextMenuTargets, place),
-        admin_help: () => buildHelp(interaction.client, place),
     };
     const components = (PAGE_BUILDERS[page] || (() => buildHome(settings, interaction.client, place, { scope })))();
 
