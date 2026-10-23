@@ -156,7 +156,7 @@ const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBa
 //   - the three PAGE picks decide which pages the pager walks (none picked = all three). Their descriptions are his wording (2026-10-21 15:45 EDT).
 const FILTER_OPTIONS = [
     // Today is a PAGE pick like the three below it (2026-10-23 13:05 EDT, his option C): picked with a type (Lucky Draws, Special Events, Playlists & Modes), the Today page shows only that type; the status picks narrow the three timeline pages only.
-    { value: 'today', bit: 64, label: 'Today', emojiKey: 'calendar', description: 'Live now, ending soon and going live' },
+    { value: 'today', bit: 64, label: 'Today', emojiKey: 'calendar', description: 'Active now, leaving soon and going live' },
     { value: 'live', bit: 1, label: 'Live', emojiKey: 'greenDotGlow', description: 'Running right now' },
     { value: 'over', bit: 2, label: 'Past/Ended', emojiKey: 'redDotGlow', description: 'Already finished this season' },
     { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },

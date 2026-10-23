@@ -165,7 +165,7 @@ function buildTodayBody(seasonalDoc, { nowMs = Date.now(), withDays = false, typ
     if (liveNow.length) sections.push(entryBlocks(`### ${emojis.greenDotGlow} Live now`, liveNow.map(e => `${e.icon} **${e.title}**\n-# ${emojis.blank}\u2002${e.kind}${ends(e)}`), more(allLive.length - liveNow.length)));
     // Nothing at all live: his line, true by construction since Live now lists everything live; it leads straight into what follows, no divider (his draft, 12:32 EDT).
     if (!anyLive) sections.push([block(`### ${emojis.redDotGlow} Nothing is currently live`)]);
-    if (endingSoon.length) sections.push([block([`### ${emojis.yellowDotGlow} Ending soon`, ...more(allEnding.length - endingSoon.length), ...endingSoon.map(e => `${e.icon} **${e.title}** · ends ${rel(e.endMs)}`)].join('\n'))]);
+    if (endingSoon.length) sections.push([block([`### ${emojis.yellowDotGlow} Leaving soon`, ...more(allEnding.length - endingSoon.length), ...endingSoon.map(e => `${e.icon} **${e.title}** · ends ${rel(e.endMs)}`)].join('\n'))]);
     const upcoming = [];
     if (goingLive.length) {
         upcoming.push(...entryBlocks(`### ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive.map(e => `${e.icon} **${e.title}**\n-# ${emojis.blank}\u2002${e.kind}${ends(e)}`)));
@@ -182,6 +182,7 @@ function buildTodayBody(seasonalDoc, { nowMs = Date.now(), withDays = false, typ
     return components;
 }
 
+// Headings renamed 2026-10-23 16:30 EDT (his asks): Ending soon -> Leaving soon on both screens, and the Today page's Live now -> Active now.
 // /calendar's Today page, his own template (2026-10-23 15:50 EDT, built after mock-ups in #testing-spam; /today keeps the layout above while he reviews it). Every heading is `##`, and no entry carries a status line, which wrapped on his phone:
 //   Live now: one block per type, each under a small "<type emoji> **Draws**" label with a small no-line gap between types; draws keep their tier icon, events and playlists are `- ` bullets.
 //   Ending soon: names under one small bold "Ends <relative>" label per end day.
@@ -205,7 +206,7 @@ function buildCalendarTodayBody(seasonalDoc, { nowMs = Date.now(), types = null,
             if (!items.length) continue;
             const lines = items.map(e => (type === 'draw' ? `${e.icon} ${e.title}` : `- ${e.title}`));
             if (live.length) live.push(gap);
-            live.push(block([...(live.length ? [] : [`## ${emojis.greenDotGlow} Live now`]), `-# ${emojis[emojiKey]} **${label}**`, ...lines].join('\n')));
+            live.push(block([...(live.length ? [] : [`## ${emojis.greenDotGlow} Active now`]), `-# ${emojis[emojiKey]} **${label}**`, ...lines].join('\n')));
         }
         const extra = more(allLive.length - liveNow.length);
         if (extra.length) live.push(block(extra.join('\n')));
@@ -220,7 +221,7 @@ function buildCalendarTodayBody(seasonalDoc, { nowMs = Date.now(), types = null,
             if (day !== lastDay) { lines.push(`-# **Ends ${rel(e.endMs)}**`); lastDay = day; }
             lines.push(`${e.icon} ${e.title}`);
         }
-        sections.push([block([`## ${emojis.yellowDotGlow} Ending soon`, ...more(allEnding.length - endingSoon.length), ...lines].join('\n'))]);
+        sections.push([block([`## ${emojis.yellowDotGlow} Leaving soon`, ...more(allEnding.length - endingSoon.length), ...lines].join('\n'))]);
     }
     const dated = [];
     if (goingLive.length) dated.push([`-# **Going live** ${rel(next)}`, ...goingLive.map(e => `${e.icon} ${e.title}`)]);
@@ -247,7 +248,7 @@ function buildTodayContainer(seasonalDoc, { nowMs = Date.now(), accentColor, isE
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('today')
-        .setDescription("What's live, ending soon and going live today, with the daily reset")
+        .setDescription("What's live, leaving soon and going live today, with the daily reset")
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts, like every public command
 

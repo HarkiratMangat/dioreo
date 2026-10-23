@@ -179,9 +179,9 @@ t("/calendar's Today page is his template (2026-10-23 15:49 EDT): ## headings, L
     const body = buildTodayBody(doc(), { nowMs: NOW, withDays: true }); // the page's own body, at the fixed clock
     const texts = JSON.stringify(body);
     const blocks = body.filter(c => c.type === 10).map(c => c.content);
-    assert.ok(blocks.some(b => b.startsWith(`## ${emojis.greenDotGlow} Live now\n-# ${emojis.newDraws} **Draws**\n${emojis.mythic} Deepstar Wraith Mythic Drop`)), 'Live now opens with the draws, tier icon first');
+    assert.ok(blocks.some(b => b.startsWith(`## ${emojis.greenDotGlow} Active now\n-# ${emojis.newDraws} **Draws**\n${emojis.mythic} Deepstar Wraith Mythic Drop`)), 'Live now opens with the draws, tier icon first');
     assert.ok(blocks.some(b => b.startsWith(`-# ${emojis.events} **Events**\n- `)), 'events are bullets under their own label');
-    assert.ok(blocks.some(b => b.startsWith(`## ${emojis.yellowDotGlow} Ending soon\n-# **Ends <t:`)), 'Ending soon groups under an Ends label');
+    assert.ok(blocks.some(b => b.startsWith(`## ${emojis.yellowDotGlow} Leaving soon\n-# **Ends <t:`)), 'Leaving soon groups under an Ends label');
     assert.ok(blocks.some(b => b.startsWith(`## ${emojis.lightBlueDotGlow} Upcoming\n-# **Going live** <t:`)), 'Upcoming opens with Going live');
     assert.ok(blocks.some(b => b.startsWith(`-# **Tue, Oct 27**\n${emojis.returningDraws} Double Tap Draw`)) && blocks.some(b => b.startsWith('-# **Wed, Oct 28**')), 'each day is its own block');
     assert.ok(!texts.includes('Returning draw ·') && !texts.includes(' · ends '), 'no status lines or trailing times');
