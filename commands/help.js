@@ -25,6 +25,7 @@ const COMMAND_ALIASES = {
     '/manage': ['database', 'data', 'db', 'admins', 'announcement', 'announcements'],
     '/bot analytics': ['alert', 'alerts', 'health', 'log', 'logs', 'uptime', 'usage', 'timing', 'audit', 'changes'],
     '/bot access': ['access', 'admins', 'permissions'],
+    '/bot servers': ['servers', 'server settings', 'override', 'reset'],
     '/autobuild': ['screenshot', 'scan', 'ocr', 'import'],
     '/settings': ['preferences', 'prefs', 'config', 'timezone'],
     '/invite': ['add', 'install', 'addbot', 'share', 'link'],
@@ -183,7 +184,7 @@ const CATEGORY_DEFS = [
         key: 'botadmin', label: 'Bot Admin', emojiKey: 'botAccess',
         dropdownDescription: "Dioreo's data management & ops commands",
         // Alphabetical, and it must MATCH buildBotAdminBody's order below -- the first draft listed these one way in the directory and another in the body, which reads as the page having lost track of itself. Harkirat asked for alphabetical here on 2026-08-10 19:34 EDT. ⚠️ Per-command `requires` (added 2026-08-13, per-command admin permissions) -- an admin granted only /bot analytics must not see /manage or /autobuild listed here even though the whole category is visible to them. Category-level `requires: 'botAdmin'` still gates the SECTION (shows if the user has ANY admin access at all, per utils/adminAccess.js's isAdmin()); each command's own key gates that ONE line, same pattern `/admin` already uses inside Preferences. `/bot access` is gated on `botAccess` (isOwner(), not a permission token -- see utils/adminAccess.js's header on why it can never have one).
-        staticCommands: [cmd('/bot analytics', { requires: 'bot' }), cmd('/bot access', { requires: 'botAccess' }), cmd('/bot hotpatch', { requires: 'botAccess' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
+        staticCommands: [cmd('/bot analytics', { requires: 'bot' }), cmd('/bot access', { requires: 'botAccess' }), cmd('/bot hotpatch', { requires: 'botAccess' }), cmd('/bot servers', { requires: 'botAccess' }), cmd('/autobuild', { requires: 'autobuild' }), cmd('/manage', { requires: 'manage' })],
         requires: 'botAdmin',
     },
 ];
@@ -290,13 +291,13 @@ function buildPreferencesBody(commands, client) {
         + `-# 🔸 Each menu takes **25 picks** — Discord's cap, and a sign you want a different default instead\n`
         + `-# 🔸 It hides the **answer**, not the command — to remove a command entirely, use **Server Settings → Integrations**`
         + SECTION_BREAK
-        + `-# **Options** · /settings only, /admin has none\n${openBullet}\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Options** · \`[open]\` is /settings only; both take \`[visibility]\`\n${openBullet}\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n`
         + `-# 🔸 **/settings** visibility:\`Public\`\n`
         + `-# 🔸 **/settings** open:\`Colors\`\n`
-        + `-# 🔸 **/admin** → **Overview** → *Switch default to Hidden*, then **Channels** → allow \`#bot-spam\`\n`
+        + `-# 🔸 **/admin** → **Overview** → Default *Private*, then **Channels** → allow \`#bot-spam\`\n`
         + `-# 🔸 **/admin** → **Roles** → *Always public for these roles* → \`@Moderator\`\n`
-        + `-# 🔸 **/admin** → **Commands** → mark \`/colors\` always-hidden, everything else stays public`;
+        + `-# 🔸 **/admin** → **Commands** → \`/colors\` → *Private*: only \`/colors\` answers privately`;
 }
 
 // Gated on the bot's own admin whitelist, not on any guild permission -- these write to shared global data (one SeasonalData document, the Loadout collection) rather than to anything scoped to the server they are run in, which is exactly why no per-guild permission could ever grant them. That fact is a HINT at the foot of the page rather than a bullet in the middle: it explains the section, it is not something you do. ⚠️ Filtered per-command, not just per-category (fixed 2026-08-15 13:10 EDT) -- this used to render all three commands' full detail unconditionally, so an admin granted only /bot analytics still read the complete /manage and /autobuild writeups even though the directory/dropdown correctly hid those commands from them elsewhere. Category-level `requires: 'botAdmin'` only gates whether this page exists at all; each command's own perms key (perms.bot/perms.botAccess/perms.autobuild/ perms.manage) has to be checked again HERE, same as visibleCommands() already does for the directory and dropdown. `commands` is visibleCommands(category, perms) -- same reasoning as buildPreferencesBody above. Membership (`has(name)`) replaces the old direct `perms.X` checks, so a command's visibility here can never drift from the directory/dropdown/autocomplete again (the exact class of bug that let the per-command filter go missing from this function until 2026-08-15).
@@ -310,6 +311,10 @@ function buildBotAdminBody(commands, client) {
     if (has('/bot access')) {
         sections.push(`### ${mentionCommand(client, '/bot access')}\nThe admin allowlist -- owner-only\n`
             + `-# 🔹 No options of its own`);
+    }
+    if (has('/bot servers')) {
+        sections.push(`### ${mentionCommand(client, '/bot servers')}\nView, reset or delete one server's /admin rules, for an admin who lost access -- owner-only\n`
+            + `-# 🔹 \`[server]\` A server ID; leave it blank to pick the server you're in or type one`);
     }
     if (has('/bot hotpatch')) {
         sections.push(`### ${mentionCommand(client, '/bot hotpatch')}\nReload changed files into the running bot without a restart -- owner-only\n`
@@ -346,7 +351,7 @@ function buildBotAdminBody(commands, client) {
 
     return sections.join('\n')
         + SECTION_BREAK
-        + `-# **Options** · every command above except /bot hotpatch\n${VISIBILITY_BULLET}\n\n`
+        + `-# **Options** · every command above except /bot hotpatch and /bot servers\n${VISIBILITY_BULLET}\n\n`
         + `-# **Examples**\n${examples.join('\n')}\n\n`
         + `-# 💠 These are gated on **Dioreo's own admin whitelist**, not on a server permission — Manage Server does not grant them, and they are not registered for guild install at all.`;
 }

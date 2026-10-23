@@ -55,6 +55,32 @@ t('a command not named is unaffected', resolveVisibility(SETTINGS, { channelId: 
 // Component interactions carry no command name, so the tier is skipped rather than misapplied.
 t('no command name skips the command tier', resolveVisibility(SETTINGS, { channelId: 'C_PUB', roleIds: ['R_ALL'] }), 'public');
 
+// --- per-subcommand rules (2026-10-22 14:01 EDT, Harkirat: "per subcommand") --------------- A rule names one subcommand ('draw calculator'), so its sibling stays public. A bare name stored before then ('draw') still covers every subcommand, or upgrading would silently un-hide answers a server had hidden.
+const PER_SUB = { defaultVisibility: 'public', ephemeralCommands: ['draw calculator', 'season'] };
+t('a subcommand rule hides that subcommand', resolveVisibility(PER_SUB, { channelId: 'X', roleIds: [], commandName: 'draw', commandPath: 'draw calculator' }), 'ephemeral');
+t('a subcommand rule leaves its sibling public', resolveVisibility(PER_SUB, { channelId: 'X', roleIds: [], commandName: 'draw', commandPath: 'draw prices' }), 'public');
+t('an older bare-name rule still covers every subcommand', resolveVisibility(PER_SUB, { channelId: 'X', roleIds: [], commandName: 'season', commandPath: 'season end' }), 'ephemeral');
+t('a right-click command (no subcommand) matches its own name', resolveVisibility({ ...PER_SUB, ephemeralCommands: ['Convert Times'] }, { channelId: 'X', roleIds: [], commandName: 'Convert Times', commandPath: 'Convert Times' }), 'ephemeral');
+t('the admin bypass still covers a subcommand rule', resolveVisibility(PER_SUB, { channelId: 'X', roleIds: [], commandName: 'draw', commandPath: 'draw calculator', isAdmin: true }), 'public');
+
+// commandPaths: the menu's keys, from the JSON that is registered.
+const { commandPaths } = require('../utils/guildPolicy');
+const same = (name, got, want) => t(name, JSON.stringify(got), JSON.stringify(want));
+same('a plain command is its own key', commandPaths({ name: 'colors', options: [{ type: 3, name: 'visibility' }] }), ['colors']);
+same('a command with subcommands gets one key each', commandPaths({ name: 'draw', options: [{ type: 1, name: 'prices' }, { type: 1, name: 'calculator' }] }), ['draw prices', 'draw calculator']);
+same('a subcommand group gets name group sub', commandPaths({ name: 'x', options: [{ type: 2, name: 'g', options: [{ type: 1, name: 's' }] }] }), ['x g s']);
+same('a right-click command is its bare name', commandPaths({ name: 'View Colors', type: 2 }), ['View Colors']);
+
+// explainVisibility names the tier that decided; resolveVisibility is its answer, so these also pin the two together.
+const { explainVisibility } = require('../utils/guildPolicy');
+t('explain: the command tier', explainVisibility(PER_SUB, { channelId: 'X', roleIds: [], commandName: 'draw', commandPath: 'draw calculator' }).tier, 'command');
+t('explain: a scoped role rule', explainVisibility(SETTINGS, { channelId: 'C_A', roleIds: ['R_SOME'] }).tier, 'roleChannel');
+t('explain: a server-wide role rule', explainVisibility(SETTINGS, { channelId: 'X', roleIds: ['R_MUTE'] }).tier, 'role');
+t('explain: a channel rule', explainVisibility(SETTINGS, { channelId: 'C_PUB', roleIds: [] }).tier, 'channel');
+t('explain: a thread following its parent', explainVisibility(SETTINGS, { channelId: 'T_1', parentChannelId: 'C_PUB', roleIds: [] }).tier, 'parent');
+t('explain: the default', explainVisibility(SETTINGS, { channelId: 'X', roleIds: [] }).tier, 'default');
+t('explain: a same-tier conflict names the public rule', explainVisibility(SETTINGS, { channelId: 'X', roleIds: ['R_MUTE', 'R_ALL'] }).rule.roleId, 'R_ALL');
+
 // --- threads inherit their parent channel's rule --------------------------------------------- Found by deriving angles before shipping, not by a failing check -- nothing in this repo could have caught it, because every case above passes channelId as an opaque string and so cannot tell a thread id from a channel id. In a real thread, interaction.channelId is the THREAD's id, so without inheritance an admin's rule on #general silently stops applying the moment conversation moves into a thread of #general -- failing OPEN, in a feature whose whole job is to restrict.
 t('a thread inherits its parent channel rule', resolveVisibility(SETTINGS, { channelId: 'T_1', parentChannelId: 'C_PUB', roleIds: [] }), 'public');
 t('a thread with no parent rule falls through to default', resolveVisibility(SETTINGS, { channelId: 'T_1', parentChannelId: 'C_OTHER', roleIds: [] }), 'ephemeral');

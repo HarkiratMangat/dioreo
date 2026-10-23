@@ -42,6 +42,79 @@ async function renderAnalyticsPage(interaction, page, subState = {}) {
 async function route(interaction) {
     const customId = interaction.customId;
 
+    // /bot servers' "Enter an ID" pop-up.
+    if (interaction.isModalSubmit() && customId === 'bot_srvmodal') {
+        const { isOwner } = require('../utils/adminAccess');
+        if (!isOwner(interaction.user.id)) {
+            return await interaction.reply({ content: "🔒 **Only the bot owner can change another server's settings.**", ephemeral: true });
+        }
+        const guildId = (interaction.fields.getTextInputValue('id') || '').trim();
+        if (!/^\d{15,22}$/.test(guildId)) {
+            return await interaction.reply({ content: `${BOT_EMOJI.cross} That is not a server ID: 17–20 digits, from the server's right-click menu with Developer Mode on.`, ephemeral: true });
+        }
+        await interaction.deferUpdate();
+        const { buildServersPanel } = require('../commands/bot');
+        const { sendV2Payload } = require('../utils/sendV2Payload');
+        return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId), { allowedMentions: { parse: [] } });
+    }
+
+    // --- /bot servers (the owner's override for one server's /admin rules) --- 🔴 Owner re-check here too: the router's `bot_` guard only proves SOME /bot access, and the 'bot' token is grantable to any admin.
+    if (interaction.isButton() && customId.startsWith('bot_srv_')) {
+        const { isOwner } = require('../utils/adminAccess');
+        if (!isOwner(interaction.user.id)) {
+            return await interaction.reply({ content: "🔒 **Only the bot owner can change another server's settings.**", ephemeral: true });
+        }
+        const [verb, guildId] = customId.slice('bot_srv_'.length).split('|');
+        // "Enter an ID": a one-box pop-up; its submit is bot_srvmodal below.
+        if (verb === 'ask') {
+            return await interaction.showModal({
+                title: "A server's /admin rules",
+                custom_id: 'bot_srvmodal',
+                components: [{ type: 1, components: [{ type: 4, custom_id: 'id', label: 'Server ID', style: 1, min_length: 15, max_length: 22, required: true, placeholder: '17–20 digits' }] }],
+            });
+        }
+        if (!/^\d{15,22}$/.test(guildId || '')) return;
+        await interaction.deferUpdate();
+        const { buildServersPanel } = require('../commands/bot');
+        const { sendV2Payload } = require('../utils/sendV2Payload');
+        const NO_PINGS = { allowedMentions: { parse: [] } };
+        if (verb === 'resetarm' || verb === 'delarm') {
+            return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId, { armed: verb === 'resetarm' ? 'reset' : 'delete' }), NO_PINGS);
+        }
+        if (verb === 'reset' || verb === 'del') {
+            const { getGuildSettings, updateGuildSettings, invalidateGuildPolicy } = require('../utils/guildPolicy');
+            const { rulesText } = require('../commands/admin');
+            const GuildSettings = require('../models/GuildSettings');
+            const before = await getGuildSettings(guildId);
+            // Written down before the change: the summary must show the rules as they were.
+            const beforeText = before ? rulesText(before).replace(/\n/g, ' · ') : '';
+            if (before) {
+                if (verb === 'reset') {
+                    // source 'owner' marks the server's own change log row as Dioreo's owner, not one of its admins.
+                    await updateGuildSettings(guildId, interaction.user.id, doc => {
+                        doc.channelRules = [];
+                        doc.roleRules = [];
+                        doc.ephemeralCommands = [];
+                        doc.commandSettings = [];
+                        doc.defaultVisibility = 'public';
+                    }, { source: 'owner' });
+                } else {
+                    await GuildSettings.deleteOne({ guildId });
+                    invalidateGuildPolicy(guildId);
+                    // The settings go; the change log stays, so the server's admins can still see what was there and who removed it.
+                    require('../utils/guildPolicy').logGuildChange(guildId, interaction.user.id, ['Settings record deleted by Dioreo\'s owner on request; every rule removed, default Public'], 'owner');
+                }
+                const name = interaction.client.guilds?.cache?.get(guildId)?.name;
+                const { recordChange } = require('../utils/changeStore');
+                // The rules as they were go in the summary: neither action has an Undo, so this is what lets a server's setup be rebuilt by hand.
+                recordChange({ actorId: interaction.user.id, page: 'access', action: verb === 'reset' ? 'serverReset' : 'serverDelete', model: 'GuildSettings', target: guildId, summary: `${verb === 'reset' ? 'Reset' : 'Deleted'} /admin settings for ${name || guildId}. Before: ${beforeText}` });
+            }
+            const note = verb === 'reset' ? `-# ${BOT_EMOJI.checkmark} Every rule cleared and the default set to Public.` : `-# ${BOT_EMOJI.checkmark} Record deleted. The server behaves as if /admin was never used.`;
+            return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId, { note }), NO_PINGS);
+        }
+        return sendV2Payload(interaction, await buildServersPanel(interaction.client, guildId), NO_PINGS);
+    }
+
     // --- HOTPATCH PANEL BUTTONS --- 🔴 Owner re-check, independent of the router's coarse `bot_` -> hasCommandAccess(userId,'bot') guard, exactly as every /bot access mutation does. That guard proves "has SOME /bot access", not ownership -- and this button restarts production.
     if (interaction.isButton() && customId === 'bot_hp_restart') {
         const { isOwner } = require('../utils/adminAccess');
