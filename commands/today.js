@@ -161,13 +161,13 @@ function buildTodayBody(seasonalDoc, { nowMs = Date.now(), withDays = false, typ
     const sections = [];
 
     // Each live entry is its own block, so Discord's gap between blocks separates them (his "nicer spacing", 10:49 EDT).
-    if (liveNow.length) sections.push(entryBlocks(`### ${emojis.greenDotGlow} Live now`, liveNow.map(e => `${e.icon} **${e.title}**\n-# ${e.kind}${ends(e)}`), more(allLive.length - liveNow.length)));
+    if (liveNow.length) sections.push(entryBlocks(`### ${emojis.greenDotGlow} Live now`, liveNow.map(e => `${e.icon} **${e.title}**\n-# ${emojis.blank}\u2002${e.kind}${ends(e)}`), more(allLive.length - liveNow.length)));
     // Nothing at all live: his line, true by construction since Live now lists everything live; it leads straight into what follows, no divider (his draft, 12:32 EDT).
     if (!anyLive) sections.push([block(`### ${emojis.redDotGlow} Nothing is currently live`)]);
     if (endingSoon.length) sections.push([block([`### ${emojis.yellowDotGlow} Ending soon`, ...more(allEnding.length - endingSoon.length), ...endingSoon.map(e => `${e.icon} **${e.title}** · ends ${rel(e.endMs)}`)].join('\n'))]);
     const upcoming = [];
     if (goingLive.length) {
-        upcoming.push(...entryBlocks(`### ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive.map(e => `${e.icon} **${e.title}**\n-# ${e.kind}${ends(e)}`)));
+        upcoming.push(...entryBlocks(`### ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive.map(e => `${e.icon} **${e.title}**\n-# ${emojis.blank}\u2002${e.kind}${ends(e)}`)));
         if (withDays && days.length) upcoming.push({ type: 14, spacing: 1, divider: false });
     }
     const dayText = days.map(d => `**${d.label}**\n${d.entries.map(e => `${e.icon} ${e.title}`).join('\n')}`);
