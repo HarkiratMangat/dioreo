@@ -141,7 +141,7 @@ const emojis = {
     returnArrow: '<:Return:1562521110572961882>',
     // The reminder bell (2026-10-21 15:41 EDT, Harkirat: "upload ... Notification.avif to all the bots first. and use it for the bell icon"). Uploaded to prod Dioreo at 15:49 EDT; the prod Dioreo Admin copy waits for deploy (its token is not on the Mac).
     notification: '<a:Notification:1562553366461284444>',
-    // /calendar's status dots (2026-10-21 14:34 EDT, Harkirat: "Red with strike through for finished events, green for live, white for upcoming"); prod ids read from the prod app's emoji list, the dev app's are matched by name. whiteDotGlow (below) marks upcoming.
+    // /calendar's status dots (2026-10-21 14:34 EDT, Harkirat: "Red with strike through for finished events, green for live, white for upcoming"); prod ids read from the prod app's emoji list, the dev app's are matched by name. lightBlueDotGlow (below) marks upcoming since 2026-10-23 14:42 EDT; whiteDotGlow stays for /admin's "follows the server".
     greenDotGlow: '<:GreenDotGlow_GDG:1542356494220140685>',
     redDotGlow: '<:RedDotGlow_RDG:1542356487882416248>',
     // /today's Ending soon and Going live headings (2026-10-23 11:51 EDT). Prod ids read from the prod app's emoji list at his word (2026-10-23 12:04 EDT); the dev app's are matched by name. Images saved in the main checkout's Logos-&-Emojis/emoji-originals/.
