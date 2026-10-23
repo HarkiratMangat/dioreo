@@ -29,7 +29,15 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.106.0 — 2026-10-21 22:36 EDT (#215) — the bot's presence rotates through the season, ranked and DMZ countdowns and /help, `/invite` gets a new layout, and `/dmz` is hidden until its DMZ update
+## Pre-Release v3.107.0 — 2026-10-22 01:06 EDT (#216) — the overnight housekeeping sweep: stale docs, rules, records and comments corrected, unused code removed
+**From the overnight housekeeping sweep** (Harkirat, 2026-10-22). Docs, comments and unused code only; the one player-visible change is three corrected strings.
+
+- **Dead code:** unused imports and helpers removed across 23 files, plus two exports nothing used (`noteCommandSafely` in `utils/userStats.js`, `regionsWithData` in `commands/drawCalculator.js`). The module graph and every module's export list were compared against the previous commit; only those two exports differ. Two test files lost an unused import and nothing else. A scan for exports that nothing else references found 89 more; they are kept as a list in `docs/claude/2026-10-22-unused-exports-scan.md` and filed, not removed.
+- **Records:** ROADMAP citations and shipped markers re-checked against this changelog; 14 closed entries archived out of the deferred list; 11 changelog headings that had no commit hash got one, each checked against the commit's own `package.json` version; Harkirat's 2026-10-22 note ideas filed as tracked v3 items in the ROADMAP; merging PRIVACY's two change-history lists into one filed in the deferred list; the rules, the `CLAUDE.md` navigation map, the hooks and scripts catalogues and the deployment docs brought in line with the tree (retired commands, the split-up `handlers/manage.js`, moved line numbers, wrong counts).
+- **Comments:** references to files and commands that no longer exist fixed across commands, handlers, utils, models and hook headers. Every JS change in that pass was AST-compared against the previous commit and differs only in comments, apart from the three strings below.
+- **Strings:** the `/help` `/calendar` example and two `/bot` status lines named a view that became the `filter` option on 2026-10-21; they now name the real filters.
+
+## Pre-Release v3.106.0 — 2026-10-21 22:36 EDT (#215 · `ab402731`) — the bot's presence rotates through the season, ranked and DMZ countdowns and /help, `/invite` gets a new layout, and `/dmz` is hidden until its DMZ update
 **From the bot-presence thread** (Harkirat, 2026-10-21). Each choice was tried live on the dev bot.
 
 - **Presence:** one activity card whose top line and verb change every minute: Watching "Season 9 · 21 days left", Competing in "Ranked Series 3 · …", Playing "DMZ Season 1 · …", Listening to /help. The second line is "Add Dioreo · dioreo.app/install". A countdown with no date, a TBD date or a past date is skipped. A custom status beside the card was tried and dropped: Discord hides the card when a bot has one.
@@ -682,7 +690,7 @@ Full plan: `~/.claude/plans/okay-so-i-want-majestic-yao.md`. Route/handoff: `loc
 - ⚠️ **Three of the ten fixes were the MEASUREMENT rather than the portal**: every resting number had compared an EMPTY mockup against a POPULATED one; the harness fabricated a tier-3 op that `core/ops`' registry contradicts; and the design rendered `[object Object]` in five places because `shell.js` stores a staged op's realm as an object and `review.html` never read `.label`. The instruments now REFUSE to measure Review unseeded.
 - 🧠 **Context layer (a second thread on the same branch):** the `MEMORY.md` `@`-import had never worked, and the reason was an ungranted permission — `hasClaudeMdExternalIncludesApproved` was `false`, with the warning flag also `false`, so it failed in silence. Approved for this repo and its worktrees; the import lives in the project `CLAUDE.md`, never the global one. Two earlier explanations were wrong and are recorded as such.
 
-## Pre-Release v3.74.0 — 2026-09-02 (#181) — Four context layers reported healthy while being partly unusable, and the workflow we mandate was bypassing the rules tier entirely
+## Pre-Release v3.74.0 — 2026-09-02 (#181 · `cfcd1d3a`) — Four context layers reported healthy while being partly unusable, and the workflow we mandate was bypassing the rules tier entirely
 
 - **The timestamp gate's idea of "today" depended on the machine's clock.** `date` was read unpinned, so on a UTC runner between 20:00 and midnight Eastern the hook looked for tomorrow's date, matched none of the placeholders its own safety suite writes, and corrected nothing — the exact silent no-op that suite exists to catch, manufactured by the environment rather than by a defect. `localtz` was wrong the same way, so every `EDT` stamp in the repo read as a foreign zone and the impossible-future branch went quiet where it matters most. **Both the hook and its suite now resolve the clock in `America/New_York`, overridable together via `TS_TZ`** — and the falsifier holds: unpinning the hook alone fails under UTC. This is the same shape as the BSD-vs-GNU `date` failure this file already records, one layer up — there the date *binary* differed, here the date *zone* did.
 
@@ -1882,7 +1890,7 @@ Recorded here because it cost real debugging time and the archive entry is easy 
 
 ---
 
-## Pre-Release v3.68.0 — 2026-08-26 19:36 EDT (#175) — the draw calculator becomes one live panel
+## Pre-Release v3.68.0 — 2026-08-26 19:36 EDT (#175 · `333f3ed1`) — the draw calculator becomes one live panel
 
 The old `/draw calculator` was a setup form: pick a draw, pick a goal, open a modal, type two numbers, submit, press Calculate — five interactions before a single figure appeared, and Harkirat called it "terrible, lacks intuitive, lacks design/style, and is not user friendly." It is rebuilt from the ground up.
 
@@ -1908,7 +1916,7 @@ Harkirat read the open-items summary and said *"thought they were implemented."*
 
 **The shared shape is worth naming.** Every stale entry asserted an *absence* — "no way to", "never lets you", "has no". That is the one kind of item the code can silently invalidate, because filling the gap leaves the list untouched. Nothing checks for it, so re-read an absence claim against the code before working it.
 
-## Pre-Release v3.66.0 — 2026-08-23 13:05 EDT (#173) — the change panel covers every entity, and a permission check that compared against nothing
+## Pre-Release v3.66.0 — 2026-08-23 13:05 EDT (#173 · `26957a29`) — the change panel covers every entity, and a permission check that compared against nothing
 
 Phase 2 of the analytics work, and three of its own premises turned out to be false — which is most of what this release is. ⚠️ **This and v3.65.0-pre below ship in the SAME pull request** — phase 1 was never separately merged, so both entries cite `#173`. They stay two entries because they are two versions of the code and two distinct bodies of work, not because they were two merges.
 
@@ -1942,7 +1950,7 @@ The plan and spec filed in v3.64.0, built — and then substantially rebuilt, fi
 
 Change ids are `#284` now rather than `Aug22-28`, which read as a second, contradicting date beside the real timestamp. Old ids still resolve.
 
-## Pre-Release v3.64.0 — 2026-08-23 00:09 EDT (#172) — a copy-pasteable retry for every failed `/manage` submit, loadout images by URL, and a bulk format that finally has a principle
+## Pre-Release v3.64.0 — 2026-08-23 00:09 EDT (#172 · `fe592460`) — a copy-pasteable retry for every failed `/manage` submit, loadout images by URL, and a bulk format that finally has a principle
 
 Four items off the deferred list, one deferred by name, and one turned into a spec instead of code.
 
@@ -1978,7 +1986,7 @@ A requested falsification pass on this session's own "done" work found and fixed
 
 Separately, launching the local dev bot for live click-testing (Harkirat's request, unrelated to the portal plan) found a real, 100%-reproducible crash: every `/manage` draw add/edit was throwing uncaught, because `core/ops/draws.js`'s `validateOne()` re-ran an already-parsed `Date` through `parseAdminDate()`, which calls `.trim()` on it. The interaction just hung on "thinking..." forever with nothing written to the database. `core/ops/calendar.js` already had the right guard for this exact hazard; `draws.js` never got it — likely the first entity migrated to the shared operation core, before that pattern was established. Reproduced in a failing test first, fixed, and swept every other `core/ops/*.js` entity for the same bug class — draws.js was the only gap.
 
-## Pre-Release v3.61.0 — 2026-08-22 10:45 EDT (#169) — the live portal doesn't resemble its own mockups, audited and planned
+## Pre-Release v3.61.0 — 2026-08-22 10:45 EDT (#169 · `5ca7e430`) — the live portal doesn't resemble its own mockups, audited and planned
 
 Harkirat viewed the live portal on a real phone and asked whether it resembles its six approved mockups. It doesn't. Whole designed surfaces were simplified away during implementation, not just left unstyled: Access shipped as three plain text inputs where the mockup specs a full admin×permission grid; the login page shipped with no Discord branding at all; every realm's explanatory masthead copy is absent from the build. Alongside that, `portal/ui/*.css` carries zero `@media` queries anywhere (the six mockups carry 8 between them), and four of Season's five category-accent tokens were never added to `tokens.css` — the fourth, undefined-`--topic-accent` fallback chain also silently breaks the login button's contrast to roughly 1.3:1, reproduced live in this investigation's own artifact.
 
@@ -1986,7 +1994,7 @@ Two new tracked docs carry the full investigation so a future session doesn't re
 
 Also fixed along the way: `scripts/cloudflared-config.yml`'s ingress target was the literal unexpanded string `${PORTAL_PORT}` — cloudflared does no env-var expansion and nothing in this repo ran `envsubst` on install, so the tunnel would have dialed a host named `${PORTAL_PORT}` and 502'd every request; hardcoded to 8787. `docs/reference/portal-launch-checklist.md` is marked superseded in priority — deploying today's portal to prod would ship the skeleton this audit found, not the intended product.
 
-## Pre-Release v3.60.0 — 2026-08-21 23:44 EDT (#168) — the portal's compose UI: Track drag, Armory's Add form + live preview, Broadcast's Post form
+## Pre-Release v3.60.0 — 2026-08-21 23:44 EDT (#168 · `009931ae`) — the portal's compose UI: Track drag, Armory's Add form + live preview, Broadcast's Post form
 
 Closes the web admin portal's last real gap: every realm could be browsed, but none of them could actually stage a new draw, edit a build, or post an announcement from the browser. Season's Track now has a right-edge drag handle for reassigning an item's end date; Armory gained an Add-build form, click-to-edit, bulk badges/export/delete, and a LIVE PREVIEW panel that renders the real `buildLoadoutCard()` output; Broadcast gained a Post form, inline edit, and bulk export/delete. All three verified live against real local dev Mongo — staged and committed a real `draw.edit`, `calendar.edit`, `loadout.add`/`edit`, and `announcement.post`/`edit`, confirmed each landed correctly, then cleaned up.
 
@@ -2024,13 +2032,13 @@ Nothing changed in the bot. Harkirat reversed decision 4 of the web-admin-portal
 
 **Two of the three "costs" of moving the date were not costs, and Harkirat corrected both.** The systemd unit was never deferrable — it is part of building the portal at all, so it happens now or later regardless, and calling it a cost of the timing change was simply wrong. The `PRIVACY.md` revision is accepted work, not a blocker. **And the OAuth credential came off the critical path entirely**: development runs against the existing `Dioreo (Dev)` application, whose secret Harkirat can create without touching prod, with an `http://localhost` redirect URI that needs no tunnel and no TLS. Prod's secret becomes a launch-time step, which it always would have been. §10 now carries the two-application table, requires both the client id and the secret to come from the environment — the applications have different ids, and a hardcoded one authenticates against the wrong app silently — and flags that the `.env.dev` dotenv-backfill trap applies, since omitting a key there does not unset it but inherits prod's value.
 
-## Pre-Release v3.56.0 — 2026-08-20 22:10 EDT (#165) — the changelog's PR citation, gated
+## Pre-Release v3.56.0 — 2026-08-20 22:10 EDT (#165 · `df4c4c6f`) — the changelog's PR citation, gated
 
 Nothing changed in the bot. v3.55.0 shipped citing a literal `(#PR)`; this fills it to `(#164)`, backfills v3.54.0's squash hash `9cb560a`, and adds a **`changelog-pr-cite`** ERROR check to `scripts/docs-audit.mjs` so the class cannot recur. **The placeholder is structural rather than careless**, which is why a check rather than more care: the pre-merge changelog entry is composed *on the branch*, where the PR number does not yet exist. Every audit check passed on it — version coverage, hash chain, record structure — because none of them read whether a citation is a *number*. The check is deliberately narrow, flagging placeholder shapes only (`(#PR)`, `(#XXX)`, `(#TBD)`) and never a missing citation, which has legitimate historical instances in that file. It scans headings only, so a body paragraph discussing the placeholder does not trip it — verified by appending one and confirming the audit stayed green.
 
 **The check failed twice before it worked, and both failures were silent.** It first returned a `problems` key: every other check in that file returns **`findings`**, the runner reads only that, so it **passed green while doing nothing** — vacuous in exactly the case it existed for. It then returned bare strings, which the renderer prints as `undefined` while still failing the run. Neither was visible from reading it; both were caught by injecting `(#PR)` and watching the exit code. Both causes are now comments at the return site, and a `proves()` case pins the behaviour. **The structural remedy is ordering, not diligence** — open the PR first, then write the entry with the real number — and that is what this release did.
 
-## Pre-Release v3.55.0 — 2026-08-20 20:15 EDT (#164) — the web admin portal, designed: spec, three plans, and 28 defects a context-free reader found in them
+## Pre-Release v3.55.0 — 2026-08-20 20:15 EDT (#164 · `a8ee8330`) — the web admin portal, designed: spec, three plans, and 28 defects a context-free reader found in them
 
 Nothing changed in the bot. A design-only pass producing `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` and three dependency-ordered plans for **`portal.dioreo.app`** — a browser admin console, Discord-OAuth-gated, that does everything `/manage` does plus scheduling, previewing, diffing and search-then-tick bulk editing that a Discord modal physically cannot host. `/manage` stays live and its behaviour unchanged. Ships after v3.0.0. **This supersedes the `[P2 · L]` "real search + multi-select flow" roadmap item** — Harkirat changed his mind on the implementation, not the goal, so that item is struck in place in both trackers rather than deleted, and `.claude/rules/manage-panel.md`'s own "Build the real version next, not a silent gap" instruction was struck too: that file auto-loads on any `commands/manage.js` edit and would otherwise have read as a live to-do.
 
@@ -2541,7 +2549,7 @@ All five local servers (`linksee`, `perseus-vault`, `sequential-thinking`, `code
 
 **Verification.** `npm run test:hooks` green (26 hooks, 10 new mutation-validated cases for this fix), `docs:audit` at 0 errors.
 
-## Pre-Release v3.18.0 — 2026-08-14 13:45 EDT (#126) — `/manage`'s actions become one table instead of two copies of the same list
+## Pre-Release v3.18.0 — 2026-08-14 13:45 EDT (#126 · `b86a3f98`) — `/manage`'s actions become one table instead of two copies of the same list
 
 Stage 1 of four in the `/manage` decomposition designed this session (`docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md`): a single action registry, then a per-page handler split, then the scoped `action:` slash option, then a DB-change audit log behind a new `/audit` command. This release is the first of those and changes nothing a user can see — every button renders with the same label, opens the same modal, and writes the same data as before.
 
@@ -2981,7 +2989,7 @@ Landed in `/help`'s landing directory and every detail page's command heading, p
 
 **Verified:** `docs-audit` 41/41 with `--diff HEAD`, `archive-conservation` included and clean, zero errors; 68/68 audit checks proven capable of failing. ⚠️ **Four self-inflicted errors were caught by the checks rather than shipped, and they are the honest part of this entry:** the first `/status` verdict **failed `xref`** by writing the deliberately-absent path as a path (the check cannot tell "this does not exist, that's my point" from a stale pointer); a bulk-delete pattern removed a **newly-written bullet** alongside the original it replaced; a missing bare `>` merged two quoted paragraphs; and — caught only by the completeness sweep's scope-conservation pass — removing a `/manage` roadmap line as "a duplicate" **silently dropped seven enumerated test targets**, since the wording that would expose such a gap is deleted by the same diff that causes it. All four fixed, the last by restoring the list verbatim.
 
-## Pre-Release v3.4.1 — 2026-08-10 20:32 EDT (#110) — v2 ships and closes, the queue is re-planned, and the live bot finally catches up
+## Pre-Release v3.4.1 — 2026-08-10 20:32 EDT (#110 · `e0c05d7b`) — v2 ships and closes, the queue is re-planned, and the live bot finally catches up
 
 **v2 is officially shipped and closed.** Harkirat's call: every remaining feature moves into the v3 release, including the passive button-disable work he had committed to v2 barely two hours earlier the same evening. The reversal was about the *release*, not the feature — its `P1` and its commitment both stand. The three v2 batches in `docs/ROADMAP.md` are now a **legacy queue**, and the "ship to `main`/live normally" parallel-track rule they carry is history rather than instruction.
 
@@ -3126,7 +3134,7 @@ The first real feature to ship on `v3-pre-release`. `/help` (ROADMAP.md's v3 lis
 
 **Verified:** `node --check` across every touched file · `scripts/checkEmojiCaptures.js` clean (0 module-level emoji reads) · local dev bot boot-tested repeatedly through every pass, 0 unmatched emoji on the final boot · `buildContainer()` output hand-verified for every category state, all well under the 40-component cap · `docs-audit` 39/41 (2 pre-existing, unrelated warnings) · `npm test` 22/22 hook self-tests, 29/29 reflow checks, 0 hard-wrapped paragraphs.
 
-## v2.63.1 — 2026-08-09 23:55 EDT (#107) — A memory budget that was never measured, and two guards for the gaps prose kept missing
+## v2.63.1 — 2026-08-09 23:55 EDT (#107 · `89f17662`) — A memory budget that was never measured, and two guards for the gaps prose kept missing
 
 **Internal workflow and enforcement only — no bot code is touched.** All of it is fallout from an investigation into why `perseus-vault`, `linksee` and `codebase-memory-mcp` went unused despite standing "always use me" directives.
 

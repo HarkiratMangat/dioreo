@@ -12,7 +12,7 @@
 #   (6) this branch changed a rule/enforcement file, and no memory file was written since the branch
 #       point -- so a rule was changed with nothing recorded about why
 #
-# Neither can prove a JUDGMENT was made correctly. They prove an artifact was never opened, which is the failure that actually kept happening. `permissionDecision: "ask"` on purpose: skipping is often right, but it should be a decision, not an omission.
+# Neither can prove a JUDGMENT was made correctly. They prove an artifact was never opened, which is the failure that actually kept happening. It nudges with `additionalContext` rather than blocking, on purpose: skipping is often right, but it should be a decision, not an omission.
 
 set -uo pipefail
 # ⚠️ CLAUDE_PROJECT_DIR, not a hardcoded path. Fixed 2026-07-29 00:45 EDT after discovering it while using a worktree to avoid disturbing a parallel session: superpowers' using-git-worktrees skill actively encourages worktrees, and with the path pinned to the main tree this gate silently inspected the WRONG branch -- reporting clean about work that isn't there, or dirty about work you can't see. A gate that answers confidently about the wrong tree is worse than no gate.

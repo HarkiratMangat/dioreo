@@ -27,3 +27,4 @@ The one-off write-ups a session produces and a later session would want to find:
 | File | What it holds |
 |---|---|
 | [`2026-09-15-spec-vs-structure-drift.md`](2026-09-15-spec-vs-structure-drift.md) | Why board 2's manifest ported at ~95% and board 1's drawers did not, and the three failures behind a session that produced specs instead of the board it was asked for. **A value spec is enough only when the two implementations already agree structurally.** |
+| [`2026-10-22-unused-exports-scan.md`](2026-10-22-unused-exports-scan.md) | The 89 exports in 45 files that no other tracked code file names, from the housekeeping sweep's think-pass. **A candidate list, never a delete list** — an export can be API on purpose or reached by a computed name. |

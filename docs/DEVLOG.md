@@ -276,6 +276,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-20 19:57 EDT — /timestamp reads your time zone right, and Your Stats arrives (v3.104.0-pre)
 - 2026-10-21 17:49 EDT — The command refresh: a filtered calendar, a draw end-date reminder, and layouts picked from mock-ups (v3.105.0-pre)
 - 2026-10-21 22:38 EDT — The bot's presence becomes a rotating card, and /invite gets his layout (v3.106.0-pre)
+- 2026-10-22 01:07 EDT — The overnight housekeeping sweep: stale docs, rules and comments corrected (v3.107.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4671,6 +4672,14 @@ Harkirat spent two days refining command layouts on the dev bot, mostly from his
 **What was learned.** Discord kept a restarted bot's old presence for a few minutes, which looked like a broken change twice. The season label first came from the patch-notes season title, which still read Season 7 on the dev data; the Battle Pass title is the one kept current with the dates. The /invite share card went through four versions on #testing-spam mock-ups before he settled it as a redesign of /invite itself, worded to fit two lines beside the thumbnail on a phone.
 
 **Also.** /dmz is hidden until its DMZ update, and the /admin click test ran end to end on the dev bot with his alt; every rule and panel control works, and nine design issues in the panel are filed.
+
+## 2026-10-22 01:07 EDT — The overnight housekeeping sweep: stale docs, rules and comments corrected (v3.107.0-pre)
+
+**What happened.** Harkirat went to sleep and asked for a mechanical cleanup of v3-pre-release. Twelve read-only scanners checked the docs, rules, records and code comments against the tree, then writers with disjoint file lists applied the fixes. Unused code was found separately with ESLint. Nothing a player would notice changed except three strings that still named the `/calendar` "Active/Upcoming" view.
+
+**What was learned.** The drift was the same few shapes everywhere. A file split into a folder (`handlers/manage.js` became `handlers/manage/`) was still cited by sixteen comments. Commands retired weeks ago (`/alerts`, `/all`, `/ar`, `/lmg`) were still named in router and help comments. Line numbers and counts had rotted, so the corrected text now names a function or file instead. Scanner reports were wrong several times, and the writers caught it by re-checking the tree: one claimed a hook denies when it only advises, one said a script never syncs metadata when it does, and two suggested comment text that was itself false. My own dead-code script nearly broke six handlers by deleting a shared import line when ESLint had flagged only one of its two names; a grep before the commit caught it.
+
+**The gates were blind to most of it.** `hash-chain` never examines a v3 entry because its heading pattern lacks `Pre-Release`, `readme-map` counts a whole folder as mapped once its name appears, and `nav-map-sync` checks a rule's filename but not the row that says when it loads. All three are filed in the deferred list.
 
 # Part B — Lessons Ledger (thematic)
 

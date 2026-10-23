@@ -52,7 +52,7 @@ function closeCode(detail) {
     return m ? Number(m[1]) : null;
 }
 
-// DISPLAY NAMES — presentation only. The canonical `title` stays exactly as the call sites pass it, because it is a KEY: sendAlert throttles on `${level}:${title}`, AlertLog stores it, and `/alerts` reads it back. Renaming the key would fragment the stored history and silently reset every throttle. So the human label is applied to the embed title and the notification line ONLY.
+// DISPLAY NAMES — presentation only. The canonical `title` stays exactly as the call sites pass it, because it is a KEY: sendAlert throttles on `${level}:${title}`, AlertLog stores it, and the `/bot analytics` Alerts page reads it back. Renaming the key would fragment the stored history and silently reset every throttle. So the human label is applied to the embed title and the notification line ONLY.
 //
 // This matters more than it looks: the notification content line is `<@user> 🔴 **<title>**`, which on a phone at 03:00 is the ENTIRE message — the embed is not shown in a push notification. "Gateway shard error" is the jargon that started this; "Discord connection error" is the same fact in words.
 const DISPLAY_TITLE = {

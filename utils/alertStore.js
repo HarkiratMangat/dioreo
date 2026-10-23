@@ -1,6 +1,6 @@
 // utils/alertStore.js The persistence + query layer behind the Discord alert system (see utils/alertWebhook.js). Kept in its own module so alertWebhook.js stays lean and the "monitors the bot, must never hurt it" contract is obvious in one place: recordAlert()/pruneAlerts() are fully swallowed and are called fire-and-forget (never awaited) from sendAlert(), completely INDEPENDENT of the webhook POST. Added 2026-07-20.
 //
-// Read helpers (getRecentAlerts/getAlertSummary) back the admin-only /alerts command.
+// Read helpers (getRecentAlerts/getAlertSummary) back the admin-only `/bot analytics` Alerts page (commands/bot.js).
 const AlertLog = require('../models/AlertLog');
 const AlertCounter = require('../models/AlertCounter');
 
@@ -82,7 +82,7 @@ async function pruneAlerts() {
     } catch { /* swallow — pruning is best-effort housekeeping */ }
 }
 
-// ── Read helpers (back the /alerts command) ─────────────────────────────────
+// ── Read helpers (back the `/bot analytics` Alerts page) ─────────────────────────────────
 
 // Newest-first page of alerts. perPage default 8 (fits the panel + component budget).
 async function getRecentAlerts({ page = 0, perPage = 8 } = {}) {
@@ -93,7 +93,7 @@ async function getRecentAlerts({ page = 0, perPage = 8 } = {}) {
     return { items, total, totalPages, page: p };
 }
 
-// Severity tallies for the last 24h and 7d, plus the most recent error's id/time — the /alerts summary.
+// Severity tallies for the last 24h and 7d, plus the most recent error's id/time — the Alerts page summary.
 async function getAlertSummary() {
     const now = Date.now();
     const since24h = new Date(now - 24 * 3600 * 1000);

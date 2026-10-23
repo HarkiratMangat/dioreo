@@ -1,6 +1,6 @@
 // commands/admin.js
 //
-// /admin -- the SERVER-ADMIN control panel. Deliberately distinct from /manage, which is Harkirat's owner-level panel gated on ALLOWED_ADMIN_ID and stays user-install-only. This one belongs to whoever administers the server the command was run in.
+// /admin -- the SERVER-ADMIN control panel. Deliberately distinct from /manage, which is Harkirat's owner-level panel gated on hasCommandAccess(userId, 'manage') (utils/adminAccess.js) and stays user-install-only. This one belongs to whoever administers the server the command was run in.
 //
 // It configures exactly one thing: the RESPONSE-VISIBILITY POLICY (utils/guildPolicy.js). Nothing here refuses a command or touches a channel, because the bot holds no moderation permission and never acts on a channel outside an interaction (root CLAUDE.md), so it could not enforce either. Design + the rejected alternatives: docs/superpowers/specs/2026-08-10-server-admin-visibility-policy-design.md
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)

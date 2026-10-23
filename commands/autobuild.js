@@ -1,8 +1,7 @@
-// commands/autobuild.js Screenshot -> Gemini vision extraction -> review/edit -> Cloudinary upload -> Loadout doc, gated behind an explicit admin Confirm step. Full design: docs/superpowers/specs/2026-07-19-loadout- automation-poc-design.md. Admin-only (same ALLOWED_ADMIN_ID as /manage). MP-only until 2026-10-19 17:54 EDT; it now reads DMZ builds too, telling the two apart from the screenshot (utils/visionExtract.js's classifyMode) unless `mode:` says which. Extraction/state/write logic lives in utils/autobuildPipeline.js, shared with handlers/autobuild.js's button/ modal handlers for Confirm/Edit/Cancel/retry -- this file only does option parsing + admin gating.
+// commands/autobuild.js Screenshot -> Gemini vision extraction -> review/edit -> Cloudinary upload -> Loadout doc, gated behind an explicit admin Confirm step. Full design: docs/superpowers/specs/2026-07-19-loadout-automation-poc-design.md. Admin-only (gated by hasCommandAccess(..., 'autobuild'), the same allowlist model as /manage). MP-only until 2026-10-19 17:54 EDT; it now reads DMZ builds too, telling the two apart from the screenshot (utils/visionExtract.js's classifyMode) unless `mode:` says which. Extraction/state/write logic lives in utils/autobuildPipeline.js, shared with handlers/autobuild.js's button/ modal handlers for Confirm/Edit/Cancel/retry -- this file only does option parsing + admin gating.
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder } = require('discord.js');
 const { hasCommandAccess } = require('../utils/adminAccess'); // owner OR Mongo-allowlisted admin scoped to 'autobuild'
-const { runExtraction } = require('../utils/autobuildPipeline');
 
 const CATEGORY_CHOICES = ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN', 'SECONDARIES'];
 

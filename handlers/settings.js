@@ -123,7 +123,7 @@ async function route(interaction) {
             return await settingsCommand.execute(renderInteraction, targetPage);
         }
 
-        // (The old B.4 CALENDAR EVENT-FILTER TOGGLE handler was removed 2026-07-31 14:00 EDT -- the Active/All Events filter moved to /settings entirely, per Harkirat's explicit request. See the generic `toggle_` handler below for `calfilter_active`/`calfilter_all`.)
+        // (The old B.4 CALENDAR EVENT-FILTER TOGGLE handler was removed 2026-07-31 14:00 EDT -- the Active/All Events filter moved to /settings entirely, per Harkirat's explicit request.)
 
         // YOUR STATS RESET (2026-10-20 18:36 EDT) -- `set_stats_reset|{userId}` redraws page 2 asking to confirm; `set_stats_resetok|{userId}` clears the stats and redraws it. Same author lock as every other settings button. Type-tested: the select branch above also matches `set_`.
         if (interaction.isButton() && interaction.customId.startsWith('set_stats_')) {

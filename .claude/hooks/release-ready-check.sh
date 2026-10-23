@@ -7,7 +7,7 @@
 #
 # It inspects `origin/main...HEAD` — the branch's own diff — NOT origin/main after the fact. That is the whole difference, and it is why this could not be a simple event-name swap.
 #
-# ASKS rather than blocks: a docs-only or hotfix merge can legitimately skip a DEVLOG entry, and the judgement is the human's. But it must be a decision, not an omission.
+# DENIES unless RELEASE_SKIP="reason" is set (see the DENY note further down): a docs-only or hotfix merge can legitimately skip a DEVLOG entry, and the judgement is the human's. But it must be a decision, not an omission.
 
 cmd=$(jq -r '.tool_input.command // empty')
 printf '%s' "$cmd" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time) +)*gh pr merge' || exit 0

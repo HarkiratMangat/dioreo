@@ -1,7 +1,7 @@
 // ==========================================
 // /manage — ANNOUNCEMENT PAGE
 // ==========================================
-// Post/edit/delete for the multi-announcement system (models/Announcement.js). Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/ 2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js.
+// Post/edit/delete for the multi-announcement system (models/Announcement.js). Split out of the former handlers/manage.js on 2026-08-14 (stage 2 of docs/superpowers/specs/2026-08-14-manage-slash-decomposition-design.md) -- dispatched from handlers/manage/index.js.
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S -- see draws.js's matching header note and .claude/rules/interaction-router.md.
 //

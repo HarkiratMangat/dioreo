@@ -162,7 +162,7 @@ async function uploadLoadoutImage(sourceUrl, imageKey) {
     try {
         await cloudinary.uploader.upload(sourceUrl, {
             public_id: imageKey, // bare key, NOT folder-prefixed -- gun-builds is dynamic-folder mode,
-                                  // decoupled from public_id (see CLAUDE.md's Cloudinary workflow docs)
+                                  // decoupled from public_id (see .claude/rules/loadout-images-and-metadata.md)
             asset_folder: FOLDER,
             overwrite: true,
             invalidate: true,

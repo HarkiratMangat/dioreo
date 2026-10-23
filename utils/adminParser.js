@@ -33,7 +33,7 @@ function resolveTier(shorthand) {
     return toTitleCase(shorthand);
 }
 
-// Shared by parseBulkDrawList below AND handlers/manage.js's single add-draw/edit-draw modal handlers -- used to be copy-pasted verbatim in all three places. Matches the first word as the tier shorthand, the rest as the item name; falls back to 'epic' if there's no tier prefix at all.
+// Shared by parseBulkDrawList below AND handlers/manage/draws.js's single add-draw/edit-draw modal handlers -- used to be copy-pasted verbatim in all three places. Matches the first word as the tier shorthand, the rest as the item name; falls back to 'epic' if there's no tier prefix at all.
 function parseItemLine(itemStr) {
     const trimmed = itemStr.trim();
     // "-# comment" lines (2026-07-30 22:24 EDT) -- a free-text note attached to a draw's item list (e.g. "-# Character bundle only, no weapon this time"), rendered later as Discord subtext instead of a tiered item (see draws.js's buildDrawSections). Must be checked BEFORE the generic tier-shorthand parse below: "-#" doesn't match any known tier shorthand, so it used to fall through to resolveTier's toTitleCase() fallback and get stored as a nonsense tier, AND the comment text itself got title-cased like a weapon/character name, mangling it.
@@ -126,7 +126,7 @@ function parseBulkDrawList(bulkText) {
 
         const title = toTitleCase(parts[0]);
 
-        // URL is now OPTIONAL (2026-07-12, Cloudinary-cache feature) -- a blank/omitted URL means "reuse whatever's already cached for this draw name" (see utils/cloudinaryCache.js's resolveThumbnail), resolved later at save time in handlers/manage.js, not here. Only pop a trailing URL field if the last field actually looks like one.
+        // URL is now OPTIONAL (2026-07-12, Cloudinary-cache feature) -- a blank/omitted URL means "reuse whatever's already cached for this draw name" (see utils/cloudinaryCache.js's resolveThumbnail), resolved later at save time in handlers/manage/draws.js, not here. Only pop a trailing URL field if the last field actually looks like one.
         let url = null;
         if (parts.length > 1 && looksLikeUrlOrKey(parts[parts.length - 1])) {
             url = parts.pop();
@@ -199,7 +199,7 @@ function guessCalendarCategory(title) {
     return 'event';
 }
 
-// Shared by the single add/edit calendar-event modals (handlers/manage.js) -- accepts a full word ("draw"/"playlist"/"event") or a single letter (d/p/e), case-insensitive. Blank/unrecognized falls through to the keyword guess above against `title` (2nd arg) instead of a flat 'event' default.
+// Shared by the single add/edit calendar-event modals (handlers/manage/calendar.js) -- accepts a full word ("draw"/"playlist"/"event") or a single letter (d/p/e), case-insensitive. Blank/unrecognized falls through to the keyword guess above against `title` (2nd arg) instead of a flat 'event' default.
 function normalizeCalendarCategory(raw, title) {
     const cleaned = (raw || '').trim().toLowerCase();
     if (!cleaned) return guessCalendarCategory(title);
@@ -314,7 +314,7 @@ function formatReleaseDateTime(date, userTimezone = 'America/Toronto') {
 /**
  * Parses the loadout "badges" segment of /manage's "Category | Badges" modal field into `{ isMeta, categoryRank, dmzRangeRank, isToxic, isAss, rankModes, unrecognized, warnings }` (see models/Loadout.js). Comma- separated, case-insensitive, e.g. "meta, best" or "top3" or "top 5" or "" (no badges). Discord modals cap at 5 fields, and the loadout modal already uses all 5, so this rides along as a 3rd pipe-delimited segment on the existing "Category | Mode" field rather than getting its own input.
  *
- * NOTE (fixed during review): `categoryRank` used to only recognize the literal token "top3" -- typing "top 5" (a real ranking some weapons need, not every category caps out at exactly 3) silently matched nothing, with no feedback that it had been ignored. Now accepts any `topN` (with or without a space before the number), and anything that still doesn't match ends up in `unrecognized` so the caller (handlers/manage.js's add/edit-loadout handlers) can tell the admin exactly which token didn't take instead of the change just silently not applying.
+ * NOTE (fixed during review): `categoryRank` used to only recognize the literal token "top3" -- typing "top 5" (a real ranking some weapons need, not every category caps out at exactly 3) silently matched nothing, with no feedback that it had been ignored. Now accepts any `topN` (with or without a space before the number), and anything that still doesn't match ends up in `unrecognized` so the caller (handlers/manage/loadouts.js's add/edit-loadout handlers) can tell the admin exactly which token didn't take instead of the change just silently not applying.
  *
  * NOTE (added for DMZ range badges): `bestclose`/`bestmidlong`/`top{N}close`/`top{N}midlong` (no space before "close"/"midlong") map to `dmzRangeRank` instead of `categoryRank` -- /dmz has no per-category commands, so ranking by combat range role reads more meaningfully there than "Best in category". See buildBadgesLine() in utils/loadoutRender.js for how this renders.
  */
