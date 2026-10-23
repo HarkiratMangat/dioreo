@@ -152,6 +152,8 @@ const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBa
 //   - the three STATUS picks keep only the entries in those states (none picked = every state; an undated entry counts as Upcoming);
 //   - the three PAGE picks decide which pages the pager walks (none picked = all three). Their descriptions are his wording (2026-10-21 15:45 EDT).
 const FILTER_OPTIONS = [
+    // Today (2026-10-23 11:51 EDT, Harkirat: "link it in the /calendar slash command as /calendar filter:today and implement it into it's dropdown filter") is a VIEW, not a filter: picked, the panel becomes /today's screen (commands/today.js), with this dropdown under it so unticking Today returns to the timeline.
+    { value: 'today', bit: 64, label: 'Today', emojiKey: 'calendar', description: "What's live, ending and coming up today" },
     { value: 'live', bit: 1, label: 'Live', emojiKey: 'greenDotGlow', description: 'Running right now' },
     { value: 'over', bit: 2, label: 'Past/Ended', emojiKey: 'redDotGlow', description: 'Already finished this season' },
     { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'whiteDotGlow', description: "Hasn't started yet" },
@@ -165,11 +167,15 @@ const STATE_BIT = { live: 1, over: 2, soon: 4, tba: 4 };
 
 // Every way a filter arrives, as a mask: a number from a custom_id, the slash `filter` choice ('all'|'over'|'live'|'soon'), or 'active' from a panel posted before 2026-10-21 (the old `view:Active/Upcoming`, which is Live + Upcoming).
 function filterMask(filterMode) {
-    if (typeof filterMode === 'number' && Number.isFinite(filterMode)) return filterMode & 63;
+    if (typeof filterMode === 'number' && Number.isFinite(filterMode)) return filterMode & 127;
     if (filterMode === 'active') return 1 | 4;
     const opt = FILTER_OPTIONS.find(o => o.value === filterMode);
     return opt ? opt.bit : 0;
 }
+
+// The Today view's bit (FILTER_OPTIONS' first entry); a mask carrying it renders /today instead of a page.
+const TODAY_BIT = 64;
+const todayMask = () => TODAY_BIT;
 
 // The pages the pager walks under a mask, in order.
 const visiblePages = mask => [0, 1, 2].filter(p => !(mask & 56) || (mask & PAGE_BIT[p]));
@@ -297,8 +303,8 @@ module.exports = {
         .addStringOption(option => option.setName('page').setDescription('Jump directly to a specific page').addChoices(
             { name: 'Draws', value: 'draws' }, { name: 'Events', value: 'events' }, { name: 'Playlists & Modes', value: 'playlists' }
         ))
-        .addStringOption(option => option.setName('filter').setDescription('Show the full timeline, or only past, live or upcoming entries').addChoices(
-            { name: 'Full Timeline', value: 'all' }, { name: 'Past/Ended', value: 'over' }, { name: 'Live Right Now', value: 'live' }, { name: 'Upcoming', value: 'soon' }
+        .addStringOption(option => option.setName('filter').setDescription("Show the full timeline, today's screen, or only past, live or upcoming entries").addChoices(
+            { name: 'Full Timeline', value: 'all' }, { name: 'Today', value: 'today' }, { name: 'Past/Ended', value: 'over' }, { name: 'Live Right Now', value: 'live' }, { name: 'Upcoming', value: 'soon' }
         ))
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
@@ -308,6 +314,12 @@ module.exports = {
     FILTER_OPTIONS,
     entryState,
     compareEntries,
+    // For commands/today.js, which reads the same entries and shows this filter under its own screen when opened from here.
+    getDrawSectionEntries,
+    buildFilterRow,
+    todayMask,
+    TODAY_BIT,
+    PRESET_ACCENT,
     // Exported for /bot analytics' change-detail panel: buildEntryLine is the CANONICAL renderer for one calendar row (rule D -- never re-describe a record), and isEventEnded is the ONLY thing that decides whether /calendar's Active/Upcoming view still shows it. A second, hand-rolled date comparison over there would drift from this one and then confidently state the opposite.
     buildEntryLine,
     isEventEnded,
@@ -337,6 +349,8 @@ module.exports = {
         // The filter's /settings default preference was SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request) -- the field itself (`calendarEventFilter`) was removed from UserPreference 2026-10-21 15:58 EDT (Harkirat: "remove the setting's default calendar view option since it doesn't matter anymore"). The slash `filter` is a one-off, defaulting to the full timeline. Never saved, only read on a real slash-command launch.
         const filterChoice = interaction.isChatInputCommand() ? interaction.options.getString('filter') : null;
         const filterMode = filterChoice || filterOverride || 'all';
+        // Today is /today's own screen (commands/today.js), with this dropdown under it.
+        if (filterMask(filterMode) & TODAY_BIT) return await require('./today').execute(interaction, { fromCalendar: true });
 
         // `page` (added 2026-07-31 14:20 EDT) is the same kind of one-off override -- only consulted when pageOverride wasn't already supplied by a button click (buildSyntheticInteraction callers always pass an explicit numeric page). Maps the option's word value to the numeric page index buildContainer expects.
         const PAGE_OPTION_TO_INDEX = { draws: 0, events: 1, playlists: 2 };

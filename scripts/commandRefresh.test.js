@@ -163,7 +163,8 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     ] };
     const json = (page, mode) => JSON.stringify(calendar.buildContainer(doc, page, undefined, false, mode));
     const select = JSON.parse(json(1, 0)).flatMap(c => c.components || []).flatMap(c => c.components || []).find(c => c.type === 3);
-    assert.deepStrictEqual(select.options.map(o => o.label), ['Live', 'Past/Ended', 'Upcoming', 'Lucky Draws', 'Special Events', 'Playlists & Modes']);
+    // Today joined first on 2026-10-23 11:48 EDT (his ask): a view, not a filter (scripts/today.test.js).
+    assert.deepStrictEqual(select.options.map(o => o.label), ['Today', 'Live', 'Past/Ended', 'Upcoming', 'Lucky Draws', 'Special Events', 'Playlists & Modes']);
     assert.strictEqual(select.min_values, 0, 'clearing every pick is the full timeline');
     assert.ok(!/Draws \| Events|"label":"Modes"/.test(json(1, 0)), 'the three page buttons are gone');
     // Statuses filter the entries.
