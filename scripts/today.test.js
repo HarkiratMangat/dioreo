@@ -121,7 +121,7 @@ t('/today: an empty Released or Going live is one bold red line with its time un
     const quiet = doc({ newDraws: [], returningDraws: [{ title: 'Old Draw', date: d(10), items: [] }], calendar: [] });
     const blocks = contents(buildTodayBody(quiet, { nowMs: NOW }));
     assert.ok(blocks.includes(`**${emojis.redDotGlow} Nothing new released**\n-# ${emojis.blank}\u2002Since the reset <t:${Date.UTC(2026, 9, 23) / 1000}:R>`));
-    assert.ok(blocks.includes(`**${emojis.redDotGlow} Nothing new on the calendar going live**\n-# ${emojis.blank}\u2002At the reset <t:${Date.UTC(2026, 9, 24) / 1000}:R>`));
+    assert.ok(blocks.includes(`**${emojis.redDotGlow} Nothing on the calendar going live**\n-# ${emojis.blank}\u2002For the next reset · <t:${Date.UTC(2026, 9, 24) / 1000}:R>`));
     assert.ok(blocks.some(b => b.includes('**Active now:** 1 Draw')), 'the Active now line still shows');
 });
 

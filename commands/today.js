@@ -205,7 +205,7 @@ function buildBriefBody(seasonalDoc, { nowMs = Date.now(), mode = 'spaced' } = {
         if (goingLive.length) sections.push(section(`## ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive));
     } else {
         sections.push([...(released.length ? section(`## ${emojis.greenDotGlow} Released ${rel(start)}`, released) : [block(`**${emojis.redDotGlow} Nothing new released**\n${pad}Since the reset ${rel(start)}`)]), ...active]);
-        sections.push(goingLive.length ? section(`## ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive) : [block(`**${emojis.redDotGlow} Nothing new on the calendar going live**\n${pad}At the reset ${rel(next)}`)]);
+        sections.push(goingLive.length ? section(`## ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive) : [block(`**${emojis.redDotGlow} Nothing on the calendar going live**\n${pad}For the next reset · ${rel(next)}`)]);
         const leaving = trim(allLeaving);
         if (leaving.length) {
             const groups = [];
