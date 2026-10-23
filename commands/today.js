@@ -130,9 +130,10 @@ function buildTodayContainer(seasonalDoc, { nowMs = Date.now(), accentColor, isE
     else components.push(block('-# Nothing on the calendar for the next 7 days.'));
     components.push({ type: 14, spacing: 1, divider: true }, block(footerLine(seasonalDoc, next, nowMs)));
 
-    if (!fromCalendar) return withShareButton([{ type: 17, accent_color: accentColor, components }], isEphemeral);
-    const { buildFilterRow, todayMask } = require('./calendar');
     const { buildGlobalNavRow } = require('../utils/globalNav');
+    // The seasonal nav under the panel (his ask, 2026-10-23 12:05 EDT). /today is not one of its five slots, so none is current and every one opens its command.
+    if (!fromCalendar) return withShareButton([{ type: 17, accent_color: accentColor, components }, buildGlobalNavRow(null)], isEphemeral);
+    const { buildFilterRow, todayMask } = require('./calendar');
     components.push({ type: 14, spacing: 2, divider: true }, buildFilterRow(0, todayMask()));
     const nav = buildGlobalNavRow('nav_calendar', { nav_calendar: { label: 'Full Calendar', custom_id: 'nav_calendar', style: 1 } });
     return withShareButton([{ type: 17, accent_color: accentColor, components }, nav], isEphemeral);

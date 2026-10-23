@@ -126,5 +126,14 @@ t("/calendar's filter option and dropdown both offer Today, and its mask routes 
     assert.strictEqual(calendar.filterMask(calendar.TODAY_BIT | 1) & calendar.TODAY_BIT, calendar.TODAY_BIT, 'a mask from a custom_id keeps the Today bit');
 });
 
+t('/today carries the seasonal nav under the panel, with every slot live', () => {
+    const msg = buildTodayContainer(doc(), { nowMs: NOW, accentColor: 1 });
+    const nav = msg[1];
+    assert.ok(nav && nav.type === 1, 'a nav row follows the container');
+    assert.deepStrictEqual(nav.components.map(b => b.custom_id), ['nav_calendar', 'nav_draws', 'nav_prices', 'nav_patchnotes', 'nav_seasonend']);
+    assert.ok(nav.components.every(b => !b.disabled));
+    assert.ok(count(msg) <= 40);
+});
+
 if (failed) { console.log(`\n${failed} failed`); process.exit(1); }
 console.log('\nall passed');
