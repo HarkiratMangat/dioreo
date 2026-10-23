@@ -243,19 +243,17 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
 
     // The Today page: /today's sections plus the next 2 days, under this command's title, pager and filter (commands/today.js). A type pick narrows it (option C); the status picks do not.
     if (safePage === TODAY_PAGE) {
-        const { buildTodayBody, seasonTeaser } = require('./today');
+        const { fitMessage, seasonTeaser } = require('./today');
         const types = new Set([[8, 'draw'], [16, 'event'], [32, 'playlist']].filter(([bit]) => mask & bit).map(([, t]) => t));
         const title = withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji));
         const teaser = seasonTeaser(seasonalDoc, nowMs);
         if (teaser) title.content += `\n${teaser}`;
-        const todayComponents = [title, { type: 14, spacing: 2, divider: true }, ...buildTodayBody(seasonalDoc, { nowMs, withDays: true, types: types.size ? types : null }), { type: 14, spacing: 2, divider: true }];
         const todayPager = buildCalendarPager(safePage, mask);
-        if (todayPager) todayComponents.push(todayPager);
-        todayComponents.push(buildFilterRow(safePage, mask));
         const todayNav = mask
             ? buildGlobalNavRow('nav_calendar', { nav_calendar: { label: 'Full Calendar', custom_id: 'nav_calendar', style: 1 } })
             : buildGlobalNavRow('nav_calendar');
-        return withShareButton([{ type: 17, accent_color: accentColor, components: todayComponents }, todayNav], isEphemeral);
+        // fitMessage steps the body down (one block per entry, then per section, then trimmed) until the whole message fits Discord's caps.
+        return fitMessage(seasonalDoc, { nowMs, withDays: true, types: types.size ? types : null }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [title, { type: 14, spacing: 2, divider: true }, ...body, { type: 14, spacing: 2, divider: true }, ...(todayPager ? [todayPager] : []), buildFilterRow(safePage, mask)] }, todayNav], isEphemeral));
     }
 
     // Per-page banner -- rendered as a true cover image at the VERY TOP of the container, above even the title (Harkirat's explicit call, 2026-07-31 17:20 EDT -- reads like a real banner/ splash image rather than a mid-card illustration this way). Independently settable per page; omitted entirely (no placeholder) when unset.

@@ -152,5 +152,20 @@ t("/calendar's slash options: Today under page, not under filter", () => {
     assert.ok(calendar.FILTER_OPTIONS.some(o => o.value === 'today'));
 });
 
+t('a busy season (40 live entries) still fits: under 40 components and 3,800 characters on both screens, with a "+N more" line', () => {
+    const { fitMessage, countComponents } = require('../commands/today');
+    const busy = doc({ calendar: Array.from({ length: 40 }, (_, i) => ({ title: `Long Running Playlist Number ${i}`, category: i % 2 ? 'event' : 'playlist', date: d(20), endDate: d(31 + 5 + (i % 9)) })) });
+    const textLen = m => (JSON.stringify(m).match(/"content":"(?:[^"\\]|\\.)*"/g) || []).reduce((n, c) => n + c.length - 12, 0);
+    for (const msg of [buildTodayContainer(busy, { nowMs: NOW, accentColor: 1, isEphemeral: true }), calendar.buildContainer(busy, calendar.TODAY_PAGE, 1, true, 0)]) {
+        assert.ok(countComponents(msg) <= 40, `components: ${countComponents(msg)}`);
+        assert.ok(textLen(msg) <= 3800, `text: ${textLen(msg)}`);
+        assert.ok(JSON.stringify(msg).includes('more'), 'the trimmed list says how many more');
+    }
+    // A quiet season keeps his spacing: one block per entry.
+    const spaced = buildTodayBody(doc(), { nowMs: NOW });
+    assert.ok(spaced.filter(c => c.type === 10 && /^<a?:\w+:\d+> \*\*/.test(c.content)).length >= 4);
+    assert.ok(typeof fitMessage === 'function');
+});
+
 if (failed) { console.log(`\n${failed} failed`); process.exit(1); }
 console.log('\nall passed');

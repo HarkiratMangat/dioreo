@@ -127,23 +127,51 @@ function footerLine(seasonalDoc, next, nowMs) {
     return `-# ${parts.join(emojis.blank)}`;
 }
 
+// Discord refuses a message over 40 components or over 4,000 characters of text in all (.claude/rules/draw-prices.md). A busy season can hold 30 live entries, which measured 57 components on /calendar's Today page (2026-10-23 13:11 EDT), so the body steps down until the message fits: 'spaced' (one block per entry, his spacing), then 'compact' (one block per section), then 'capped' (Live now and Ending soon trimmed, with a "+N more" line).
+const MODES = ['spaced', 'compact', 'capped'];
+const LIVE_CAP = 12, ENDING_CAP = 8;
+function countComponents(list) {
+    let n = 0;
+    const walk = c => { n++; (c.components || []).forEach(walk); if (c.accessory) walk(c.accessory); };
+    list.forEach(walk);
+    return n;
+}
+const textLength = list => JSON.stringify(list).match(/"content":"(?:[^"\\]|\\.)*"/g)?.reduce((n, c) => n + c.length - 12, 0) || 0;
+// The first mode whose whole message fits. `wrap(body)` builds the full message around a body.
+function fitMessage(seasonalDoc, opts, wrap) {
+    for (const mode of MODES) {
+        const message = wrap(buildTodayBody(seasonalDoc, { ...opts, mode }));
+        if (countComponents(message) <= 40 && textLength(message) <= 3800) return message;
+    }
+    return wrap(buildTodayBody(seasonalDoc, { ...opts, mode: 'capped' }));
+}
+
 // The sections under a title, shared by /today (withDays false) and /calendar's Today page (withDays true), ending with the footer.
-function buildTodayBody(seasonalDoc, { nowMs = Date.now(), withDays = false, types = null } = {}) {
-    const { anyLive, liveNow, endingSoon, goingLive, days, next } = todaySections(seasonalDoc, nowMs, { types });
+function buildTodayBody(seasonalDoc, { nowMs = Date.now(), withDays = false, types = null, mode = 'spaced' } = {}) {
+    const { anyLive, liveNow: allLive, endingSoon: allEnding, goingLive, days, next } = todaySections(seasonalDoc, nowMs, { types });
+    const capped = mode === 'capped';
+    const liveNow = capped ? allLive.slice(0, LIVE_CAP) : allLive;
+    const endingSoon = capped ? allEnding.slice(-ENDING_CAP) : allEnding; // the quickest to leave sit at the bottom, so keep those
+    const more = n => (n > 0 ? [`-# +${n} more`] : []);
+    // In 'spaced' each entry is its own block; otherwise a section is one block, its entries a line apart.
+    const entryBlocks = (heading, lines, extra = []) => (mode === 'spaced' && !extra.length
+        ? [block(heading), ...lines.map(block)]
+        : [block([heading, ...lines, ...extra].join('\n'))]);
     const divider = { type: 14, spacing: 2, divider: true };
     const sections = [];
 
     // Each live entry is its own block, so Discord's gap between blocks separates them (his "nicer spacing", 10:49 EDT).
-    if (liveNow.length) sections.push([block(`### ${emojis.greenDotGlow} Live now`), ...liveNow.map(e => block(`${e.icon} **${e.title}**\n-# ${e.kind}${ends(e)}`))]);
+    if (liveNow.length) sections.push(entryBlocks(`### ${emojis.greenDotGlow} Live now`, liveNow.map(e => `${e.icon} **${e.title}**\n-# ${e.kind}${ends(e)}`), more(allLive.length - liveNow.length)));
     // Nothing at all live: his line, true by construction since Live now lists everything live; it leads straight into what follows, no divider (his draft, 12:32 EDT).
     if (!anyLive) sections.push([block(`### ${emojis.redDotGlow} Nothing is currently live`)]);
-    if (endingSoon.length) sections.push([block(`### ${emojis.yellowDotGlow} Ending soon\n${endingSoon.map(e => `${e.icon} **${e.title}** · ends ${rel(e.endMs)}`).join('\n')}`)]);
+    if (endingSoon.length) sections.push([block([`### ${emojis.yellowDotGlow} Ending soon`, ...more(allEnding.length - endingSoon.length), ...endingSoon.map(e => `${e.icon} **${e.title}** · ends ${rel(e.endMs)}`)].join('\n'))]);
     const upcoming = [];
     if (goingLive.length) {
-        upcoming.push(block(`### ${emojis.blueDotGlow} Going live ${rel(next)}`), ...goingLive.map(e => block(`${e.icon} **${e.title}**\n-# ${e.kind}${ends(e)}`)));
+        upcoming.push(...entryBlocks(`### ${emojis.blueDotGlow} Going live ${rel(next)}`, goingLive.map(e => `${e.icon} **${e.title}**\n-# ${e.kind}${ends(e)}`)));
         if (withDays && days.length) upcoming.push({ type: 14, spacing: 1, divider: false });
     }
-    if (withDays) upcoming.push(...days.map(d => block(`**${d.label}**\n${d.entries.map(e => `${e.icon} ${e.title}`).join('\n')}`)));
+    const dayText = days.map(d => `**${d.label}**\n${d.entries.map(e => `${e.icon} ${e.title}`).join('\n')}`);
+    if (withDays && dayText.length) upcoming.push(...(mode === 'spaced' ? dayText.map(block) : [block(dayText.join('\n'))]));
     if (upcoming.length) sections.push(upcoming);
 
     const components = [];
@@ -159,12 +187,8 @@ function buildTodayContainer(seasonalDoc, { nowMs = Date.now(), accentColor, isE
     const seasonTitle = seasonalDoc.currentSeasonTitle || 'Current Season';
     const seasonEmoji = seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji);
     const teaser = seasonTeaser(seasonalDoc, nowMs);
-    const components = [
-        block(`## ${emojis.calendar} Today in CODM\n${seasonEmoji ? `${seasonEmoji} ` : ''}${toBoldItalicUnicode(seasonTitle)}${teaser ? `\n${teaser}` : ''}`),
-        { type: 14, spacing: 2, divider: true },
-        ...buildTodayBody(seasonalDoc, { nowMs }),
-    ];
-    return withShareButton([{ type: 17, accent_color: accentColor, components }, buildGlobalNavRow(null)], isEphemeral);
+    const title = block(`## ${emojis.calendar} Today in CODM\n${seasonEmoji ? `${seasonEmoji} ` : ''}${toBoldItalicUnicode(seasonTitle)}${teaser ? `\n${teaser}` : ''}`);
+    return fitMessage(seasonalDoc, { nowMs }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [title, { type: 14, spacing: 2, divider: true }, ...body] }, buildGlobalNavRow(null)], isEphemeral));
 }
 
 module.exports = {
@@ -176,6 +200,8 @@ module.exports = {
 
     buildTodayContainer,
     buildTodayBody,
+    fitMessage,
+    countComponents,
     todaySections,
     seasonTeaser,
     gameDay,
