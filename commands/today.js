@@ -103,7 +103,6 @@ function todaySections(seasonalDoc, nowMs = Date.now(), { types = null } = {}) {
 
 const rel = ms => `<t:${Math.floor(ms / 1000)}:R>`;
 const block = content => ({ type: 10, content });
-const ends = e => (Number.isFinite(e.endMs) ? ` · ends ${rel(e.endMs)}` : '');
 
 // The next season, from /manage's Next Season draft, when it starts within 96 hours, as the line under the season subtitle (13:02 EDT). Its start is the draft's Battle Pass start, else the live Battle Pass end (the new season begins when this one's pass ends).
 function seasonTeaser(seasonalDoc, nowMs = Date.now()) {
@@ -146,44 +145,87 @@ function fitMessage(seasonalDoc, opts, wrap) {
     return wrap(buildTodayBody(seasonalDoc, { ...opts, mode: 'capped' }));
 }
 
-// The sections under a title, shared by /today (withDays false) and /calendar's Today page (withDays true), ending with the footer.
+// The body under a title: /today's daily brief, or /calendar's Today page when `withDays` (its own layout, below).
 function buildTodayBody(seasonalDoc, { nowMs = Date.now(), withDays = false, types = null, mode = 'spaced' } = {}) {
     if (withDays) return buildCalendarTodayBody(seasonalDoc, { nowMs, types, mode });
-    const { anyLive, liveNow: allLive, endingSoon: allEnding, goingLive, days, next } = todaySections(seasonalDoc, nowMs, { types });
-    const capped = mode === 'capped';
-    const liveNow = capped ? allLive.slice(0, LIVE_CAP) : allLive;
-    const endingSoon = capped ? allEnding.slice(-ENDING_CAP) : allEnding; // the quickest to leave sit at the bottom, so keep those
-    const more = n => (n > 0 ? [`-# +${n} more`] : []);
-    // In 'spaced' each entry is its own block; otherwise a section is one block, its entries a line apart.
-    const entryBlocks = (heading, lines, extra = []) => (mode === 'spaced' && !extra.length
-        ? [block(heading), ...lines.map(block)]
-        : [block([heading, ...lines, ...extra].join('\n'))]);
-    const divider = { type: 14, spacing: 2, divider: true };
-    const sections = [];
+    return buildBriefBody(seasonalDoc, { nowMs, mode });
+}
 
-    // Each live entry is its own block, so Discord's gap between blocks separates them (his "nicer spacing", 10:49 EDT).
-    if (liveNow.length) sections.push(entryBlocks(`### ${emojis.greenDotGlow} Live now`, liveNow.map(e => `${e.icon} **${e.title}**\n-# ${emojis.blank}\u2002${e.kind}${ends(e)}`), more(allLive.length - liveNow.length)));
-    // Nothing at all live: his line, true by construction since Live now lists everything live; it leads straight into what follows, no divider (his draft, 12:32 EDT).
-    if (!anyLive) sections.push([block(`### ${emojis.redDotGlow} Nothing is currently live`)]);
-    if (endingSoon.length) sections.push([block([`### ${emojis.yellowDotGlow} Leaving soon`, ...more(allEnding.length - endingSoon.length), ...endingSoon.map(e => `${e.icon} **${e.title}** · ends ${rel(e.endMs)}`)].join('\n'))]);
-    const upcoming = [];
-    if (goingLive.length) {
-        upcoming.push(...entryBlocks(`### ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive.map(e => `${e.icon} **${e.title}**\n-# ${emojis.blank}\u2002${e.kind}${ends(e)}`)));
-        if (withDays && days.length) upcoming.push({ type: 14, spacing: 1, divider: false });
+// /today as a daily brief: what changed since the last reset, not the whole season (that is /calendar's job). His layout, settled over mock-ups in #testing-spam (2026-10-23 17:55 EDT):
+//   ## Released <since the reset>   each new draw as its own block (### title, its items, the draw's image as the thumbnail when it has one), then small Events / Playlists & Modes groups as bullets; a small no-line gap; then "Active now: N Draws · N Events · N Modes".
+//   ## Going live <next reset>      the same shape for what starts at the next reset.
+//   ## Leaving soon                 bullets under one "Ends <relative>" label per end day, each label its own block.
+// An empty Released or Going live is ONE bold red line with its time on a small line under it ("Nothing new released" / "Nothing new on the calendar going live"): a bracketed time wrapped on his phone. With nothing live at all, only "Nothing is currently live" shows, plus Going live if the season is about to start. 'compact' drops the draw blocks to plain lines and 'capped' trims each list with a "+N more" line, the safety net for an unusual day (Season 9's busiest day measured about 27 components).
+const BRIEF_KINDS = [['event', 'Events', 'events'], ['playlist', 'Playlists & Modes', 'modes']];
+const BRIEF_CAP = 8;
+function buildBriefBody(seasonalDoc, { nowMs = Date.now(), mode = 'spaced' } = {}) {
+    const { start } = gameDay(nowMs);
+    const { anyLive, liveNow, endingSoon: allLeaving, goingLive, next } = todaySections(seasonalDoc, nowMs);
+    const capped = mode === 'capped';
+    const trim = list => (capped ? list.slice(0, BRIEF_CAP) : list);
+    const more = (all, shown) => (all.length > shown.length ? [`-# +${all.length - shown.length} more`] : []);
+    const released = [...liveNow, ...allLeaving].filter(e => e.startMs >= start);
+    const allDraws = [...(seasonalDoc.newDraws || []), ...(seasonalDoc.returningDraws || [])];
+    const pad = `-# ${emojis.blank}\u2002`;
+    const gap = { type: 14, spacing: 1, divider: false };
+    const divider = { type: 14, spacing: 2, divider: true };
+
+    // One draw: its title and items, beside its image when it has one. "Weapon - Skin" reads as **Weapon** — Skin, as /draws writes it.
+    const itemLine = i => { const [w, ...skin] = i.name.split(' - '); return `${emojis[i.tier] || ''} **${w}**${skin.length ? ` — ${skin.join(' - ')}` : ''}`.trim(); };
+    const drawBlock = e => {
+        const d = allDraws.find(x => isSameDrawTitle(e.title, x.title));
+        const text = [`### ${e.title}`, ...(d?.items || []).filter(i => i.tier !== 'comment').map(itemLine)].join('\n');
+        return d?.thumbnailUrl ? { type: 9, components: [block(text)], accessory: { type: 11, media: { url: d.thumbnailUrl } } } : block(text);
+    };
+    // A section: its heading on its own, each draw, then one block per small group.
+    const section = (heading, all) => {
+        const list = trim(all);
+        const draws = list.filter(e => e.type === 'draw');
+        const out = [block(heading)];
+        if (mode === 'spaced') draws.forEach(e => out.push(drawBlock(e)));
+        else if (draws.length) out.push(block(draws.map(e => `${e.icon} ${e.title}`).join('\n')));
+        for (const [type, label, key] of BRIEF_KINDS) {
+            const items = list.filter(e => e.type === type);
+            if (items.length) out.push(block([`-# ${emojis[key]} **${label}**`, ...items.map(e => `- ${e.title}`)].join('\n')));
+        }
+        const extra = more(all, list);
+        if (extra.length) out.push(block(extra.join('\n')));
+        return out;
+    };
+
+    const live = [...liveNow, ...allLeaving];
+    const counts = [['draw', 'Draw'], ['event', 'Event'], ['playlist', 'Mode']]
+        .map(([type, word]) => [live.filter(e => e.type === type).length, word]).filter(([n]) => n)
+        .map(([n, word]) => `${n} ${word}${n === 1 ? '' : 's'}`);
+    const active = counts.length ? [gap, block(`-# ${emojis.greenDotGlow} **Active now:** ${counts.join(' · ')}`)] : [];
+
+    const sections = [];
+    if (!anyLive) {
+        sections.push([block(`## ${emojis.redDotGlow} Nothing is currently live`)]);
+        if (goingLive.length) sections.push(section(`## ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive));
+    } else {
+        sections.push([...(released.length ? section(`## ${emojis.greenDotGlow} Released ${rel(start)}`, released) : [block(`**${emojis.redDotGlow} Nothing new released**\n${pad}Since the reset ${rel(start)}`)]), ...active]);
+        sections.push(goingLive.length ? section(`## ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive) : [block(`**${emojis.redDotGlow} Nothing new on the calendar going live**\n${pad}At the reset ${rel(next)}`)]);
+        const leaving = trim(allLeaving);
+        if (leaving.length) {
+            const groups = [];
+            let lastDay = null;
+            for (const e of leaving) {
+                const day = Math.floor(e.endMs / DAY_MS);
+                if (day !== lastDay) { groups.push([`-# **Ends ${rel(e.endMs)}**`]); lastDay = day; }
+                groups.at(-1).push(`- ${e.title}`);
+            }
+            sections.push([block(`## ${emojis.yellowDotGlow} Leaving soon`), ...groups.map(g => block(g.join('\n'))), ...(more(allLeaving, leaving).length ? [block(more(allLeaving, leaving)[0])] : [])]);
+        }
     }
-    const dayText = days.map(d => `**${d.label}**\n${d.entries.map(e => `${e.icon} ${e.title}`).join('\n')}`);
-    if (withDays && dayText.length) upcoming.push(...(mode === 'spaced' ? dayText.map(block) : [block(dayText.join('\n'))]));
-    if (upcoming.length) sections.push(upcoming);
 
     const components = [];
-    sections.forEach((s, i) => components.push(...(i && !(i === 1 && !anyLive) ? [divider] : []), ...s));
-    // The footer sits after an empty space, not a line (13:02 EDT: "change this to divider:false small spacing").
-    components.push({ type: 14, spacing: 1, divider: false }, block(footerLine(seasonalDoc, next, nowMs)));
+    sections.forEach((sec, i) => components.push(...(i ? [divider] : []), ...sec));
+    components.push(gap, block(footerLine(seasonalDoc, next, nowMs)));
     return components;
 }
 
-// Headings renamed 2026-10-23 16:30 EDT (his asks): Ending soon -> Leaving soon on both screens, and the Today page's Live now -> Active now.
-// /calendar's Today page, his own template (2026-10-23 15:50 EDT, built after mock-ups in #testing-spam; /today keeps the layout above while he reviews it). Every heading is `##`, and no entry carries a status line, which wrapped on his phone:
+// Headings renamed 2026-10-23 16:30 EDT (his asks): Ending soon -> Leaving soon on both screens, and the Today page's Live now -> Active now. /calendar's Today page, his own template (2026-10-23 15:50 EDT, built after mock-ups in #testing-spam; /today keeps the layout above while he reviews it). Every heading is `##`, and no entry carries a status line, which wrapped on his phone:
 //   Live now: one block per type, each under a small "<type emoji> **Draws**" label with a small no-line gap between types; draws keep their tier icon, events and playlists are `- ` bullets.
 //   Ending soon: names under one small bold "Ends <relative>" label per end day.
 //   Upcoming: a small bold "Going live <relative>" label over what starts by the next reset, then each of the next days with something in its own block under a small bold date.
@@ -248,7 +290,7 @@ function buildTodayContainer(seasonalDoc, { nowMs = Date.now(), accentColor, isE
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('today')
-        .setDescription("What's live, leaving soon and going live today, with the daily reset")
+        .setDescription("What was released today, what goes live at the next reset, and what's leaving soon")
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts, like every public command
 

@@ -82,19 +82,56 @@ t('/today has no day list; the Today page shows the next 2 days with something',
     assert.ok(!page.includes('Longquan Sword Draw'), 'a 3rd day is cut');
 });
 
-t('with nothing going live, the Going live heading is left out entirely', () => {
-    const out = text(buildTodayBody(doc({ newDraws: [] }), { nowMs: NOW }));
-    assert.ok(!out.includes('Going live'));
-    assert.ok(!/nothing goes live/i.test(out));
+// /today is a daily brief (his layout, 2026-10-23 17:54 EDT): Released since the reset, Going live at the next reset, Leaving soon, each draw as its own block.
+const contents = list => list.flatMap(c => (c.type === 10 ? [c.content] : c.type === 9 ? c.components.map(x => x.content) : []));
+
+t('/today: Released since the reset, each draw its own block with its items, the small groups as bullets, then the Active now line', () => {
+    const emojis = require('../utils/emojiMap');
+    const body = buildTodayBody(doc(), { nowMs: NOW });
+    const blocks = contents(body);
+    const at = blocks.findIndex(b => b === `## ${emojis.greenDotGlow} Released <t:${Date.UTC(2026, 9, 23) / 1000}:R>`);
+    assert.ok(at >= 0, 'Released heading with the time since the reset, no "today"');
+    assert.strictEqual(blocks[at + 1], `### Deepstar Wraith Mythic Drop\n${emojis.mythic} **Z**`);
+    assert.strictEqual(blocks[at + 2], `-# ${emojis.events} **Events**\n- COD Point Rush Week 8`);
+    assert.ok(blocks[at + 3].startsWith(`-# ${emojis.greenDotGlow} **Active now:** `) && /\*\*Active now:\*\* \d+ Draws?( · \d+ (Events?|Modes?))*$/.test(blocks[at + 3]), blocks[at + 3]);
+    assert.ok(!JSON.stringify(body).includes('see </calendar'), 'no "see /calendar": it wrapped on his phone');
 });
 
-t('"Nothing is currently live" shows only when nothing at all is live, with no divider before what follows', () => {
-    assert.ok(!text(buildTodayBody(doc(), { nowMs: NOW })).includes('Nothing is currently live'));
-    const quiet = doc({ newDraws: [{ title: 'Widow Bite Draw', date: d(24), items: [] }], returningDraws: [], calendar: [] });
-    const body = buildTodayBody(quiet, { nowMs: NOW });
-    const at = body.findIndex(c => c.type === 10 && c.content.includes('Nothing is currently live'));
-    assert.ok(at >= 0);
-    assert.strictEqual(body[at + 1].type, 10, 'the next block follows straight on');
+t('/today: Going live with its draws, and Leaving soon grouped under one "Ends" label per end day', () => {
+    const emojis = require('../utils/emojiMap');
+    const blocks = contents(buildTodayBody(doc(), { nowMs: NOW }));
+    const go = blocks.indexOf(`## ${emojis.lightBlueDotGlow} Going live <t:${Date.UTC(2026, 9, 24) / 1000}:R>`);
+    assert.ok(go >= 0 && blocks[go + 1] === `### Widow Bite Draw\n${emojis.legendary} **X**`, blocks.slice(go, go + 2).join(' | '));
+    const leave = blocks.indexOf(`## ${emojis.yellowDotGlow} Leaving soon`);
+    assert.ok(leave > go, 'Leaving soon comes last');
+    assert.deepStrictEqual(blocks.slice(leave + 1, leave + 3).map(b => b.split('\n')[1]), ['- Halloween Haunt Event', '- Thermal Core Draw']);
+    assert.ok(blocks.slice(leave + 1, leave + 3).every(b => /^-# \*\*Ends <t:\d+:R>\*\*/.test(b)));
+});
+
+t("/today: a draw with an image shows it as the thumbnail; one without is a plain block", () => {
+    const withImage = doc();
+    withImage.returningDraws[0] = { ...withImage.returningDraws[0], thumbnailUrl: 'https://example.com/deepstar.png' };
+    const sec = buildTodayBody(withImage, { nowMs: NOW }).find(c => c.type === 9);
+    assert.ok(sec && sec.accessory.media.url === 'https://example.com/deepstar.png' && sec.components[0].content.startsWith('### Deepstar Wraith'));
+    assert.ok(!buildTodayBody(doc(), { nowMs: NOW }).some(c => c.type === 9), 'no image, no Section');
+});
+
+t('/today: an empty Released or Going live is one bold red line with its time underneath, never a "nothing goes live" claim without "on the calendar"', () => {
+    const emojis = require('../utils/emojiMap');
+    const quiet = doc({ newDraws: [], returningDraws: [{ title: 'Old Draw', date: d(10), items: [] }], calendar: [] });
+    const blocks = contents(buildTodayBody(quiet, { nowMs: NOW }));
+    assert.ok(blocks.includes(`**${emojis.redDotGlow} Nothing new released**\n-# ${emojis.blank}\u2002Since the reset <t:${Date.UTC(2026, 9, 23) / 1000}:R>`));
+    assert.ok(blocks.includes(`**${emojis.redDotGlow} Nothing new on the calendar going live**\n-# ${emojis.blank}\u2002At the reset <t:${Date.UTC(2026, 9, 24) / 1000}:R>`));
+    assert.ok(blocks.some(b => b.includes('**Active now:** 1 Draw')), 'the Active now line still shows');
+});
+
+t('/today: with nothing live at all, only "Nothing is currently live" (plus Going live when a season is about to start)', () => {
+    const emojis = require('../utils/emojiMap');
+    const over = contents(buildTodayBody(doc({ newDraws: [], returningDraws: [], calendar: [] }), { nowMs: NOW }));
+    assert.deepStrictEqual(over.slice(0, -1), [`## ${emojis.redDotGlow} Nothing is currently live`]);
+    const eve = contents(buildTodayBody(doc({ newDraws: [{ title: 'Widow Bite Draw', date: d(24), items: [] }], returningDraws: [], calendar: [] }), { nowMs: NOW }));
+    assert.ok(eve[0].includes('Nothing is currently live') && eve[1].startsWith(`## ${emojis.lightBlueDotGlow} Going live`));
+    assert.ok(!eve.some(b => b.includes('Active now')));
 });
 
 t('the footer sits after an empty space, with the daily reset first, a TBD end as TBD, and a past end left out', () => {
@@ -152,14 +189,17 @@ t("/calendar's slash options: Today under page, not under filter", () => {
     assert.ok(calendar.FILTER_OPTIONS.some(o => o.value === 'today'));
 });
 
-t('a busy season (40 live entries) still fits: under 40 components and 3,800 characters on both screens, with a "+N more" line', () => {
+t('a busy season still fits on both screens: under 40 components and 3,800 characters, trimming with a "+N more" line where it must', () => {
     const { fitMessage, countComponents } = require('../commands/today');
     const busy = doc({ calendar: Array.from({ length: 40 }, (_, i) => ({ title: `Long Running Playlist Number ${i}`, category: i % 2 ? 'event' : 'playlist', date: d(20), endDate: d(31 + 5 + (i % 9)) })) });
     const textLen = m => (JSON.stringify(m).match(/"content":"(?:[^"\\]|\\.)*"/g) || []).reduce((n, c) => n + c.length - 12, 0);
+    // /today shows only what changed, so a busy season's long-running entries cost one Active now line; 40 DRAWS released at once is what pushes it to plain lines.
     const today = buildTodayContainer(busy, { nowMs: NOW, accentColor: 1, isEphemeral: true });
-    assert.ok(countComponents(today) <= 40, `components: ${countComponents(today)}`);
-    assert.ok(textLen(today) <= 3800, `text: ${textLen(today)}`);
-    assert.ok(JSON.stringify(today).includes('more'), 'the trimmed list says how many more');
+    assert.ok(countComponents(today) <= 40 && textLen(today) <= 3800, `components: ${countComponents(today)}, text: ${textLen(today)}`);
+    const draws40 = doc({ newDraws: Array.from({ length: 40 }, (_, i) => ({ title: `Example Draw Number ${i}`, date: d(23), items: [{ tier: 'legendary', name: 'Gun - Skin' }] })) });
+    const many = buildTodayContainer(draws40, { nowMs: NOW, accentColor: 1, isEphemeral: true });
+    assert.ok(countComponents(many) <= 40 && textLen(many) <= 3800, `components: ${countComponents(many)}, text: ${textLen(many)}`);
+    assert.ok(!JSON.stringify(many).includes('### Example Draw Number'), 'too many draws drop to plain lines');
     // The Today page lists a line per entry, so 40 fit untrimmed; 120 must trim, and say so.
     const busier = doc({ calendar: Array.from({ length: 120 }, (_, i) => ({ title: `Long Running Playlist Number ${i}`, category: i % 2 ? 'event' : 'playlist', date: d(20), endDate: d(31 + 5 + (i % 9)) })) });
     for (const [season, trimmed] of [[busy, false], [busier, true]]) {
@@ -168,9 +208,8 @@ t('a busy season (40 live entries) still fits: under 40 components and 3,800 cha
         assert.ok(textLen(page) <= 3800, `text: ${textLen(page)}`);
         assert.strictEqual(/\+\d+ more/.test(JSON.stringify(page)), trimmed, trimmed ? 'the trimmed list says how many more' : 'nothing trimmed');
     }
-    // A quiet season keeps his spacing: one block per entry.
-    const spaced = buildTodayBody(doc(), { nowMs: NOW });
-    assert.ok(spaced.filter(c => c.type === 10 && /^<a?:\w+:\d+> \*\*/.test(c.content)).length >= 4);
+    // A normal day keeps his layout: each released draw is its own block.
+    assert.ok(buildTodayBody(doc(), { nowMs: NOW }).some(c => c.type === 10 && c.content.startsWith('### Deepstar Wraith')));
     assert.ok(typeof fitMessage === 'function');
 });
 
@@ -185,8 +224,8 @@ t("/calendar's Today page is his template (2026-10-23 15:49 EDT): ## headings, L
     assert.ok(blocks.some(b => b.startsWith(`## ${emojis.lightBlueDotGlow} Upcoming\n-# **Going live** <t:`)), 'Upcoming opens with Going live');
     assert.ok(blocks.some(b => b.startsWith(`-# **Tue, Oct 27**\n${emojis.returningDraws} Double Tap Draw`)) && blocks.some(b => b.startsWith('-# **Wed, Oct 28**')), 'each day is its own block');
     assert.ok(!texts.includes('Returning draw ·') && !texts.includes(' · ends '), 'no status lines or trailing times');
-    // /today keeps its own layout while he reviews it.
-    assert.ok(JSON.stringify(buildTodayBody(doc(), { nowMs: NOW })).includes('Returning draw'));
+    // /today has its own layout, the daily brief.
+    assert.ok(!JSON.stringify(buildTodayBody(doc(), { nowMs: NOW })).includes('Active now\\n-#'), "the brief's Released section is not the Today page's Active now section");
 });
 
 if (failed) { console.log(`\n${failed} failed`); process.exit(1); }

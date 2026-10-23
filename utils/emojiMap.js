@@ -147,8 +147,7 @@ const emojis = {
     // /today's Ending soon and Going live headings (2026-10-23 11:51 EDT). Prod ids read from the prod app's emoji list at his word (2026-10-23 12:04 EDT); the dev app's are matched by name. Images saved in the main checkout's Logos-&-Emojis/emoji-originals/.
     yellowDotGlow: '<:YellowDotGlow_YDG:1542356489761464421>',
     blueDotGlow: '<:BlueDotGlow_BDG:1542356493347586159>',
-    // Upcoming, on /calendar and /today alike (2026-10-23 14:42 EDT, Harkirat picked shade B, #7CC4FF, between the white and blue dots: "i want a sort of middle ground"). The original is Logos-&-Emojis/emoji-originals/LightBlueDotGlow_LBDG.png.
-    // Uploaded to the prod app 2026-10-23 14:43 EDT (his word, 14:42 EDT: "upload the dot to prod and dev apps"); the dev app has its own copy, re-pointed by name.
+    // Upcoming, on /calendar and /today alike (2026-10-23 14:42 EDT, Harkirat picked shade B, #7CC4FF, between the white and blue dots: "i want a sort of middle ground"). The original is Logos-&-Emojis/emoji-originals/LightBlueDotGlow_LBDG.png. Uploaded to the prod app 2026-10-23 14:43 EDT (his word, 14:42 EDT: "upload the dot to prod and dev apps"); the dev app has its own copy, re-pointed by name.
     lightBlueDotGlow: '<:LightBlueDotGlow_LBDG:1563261559776739452>',
     // /draw prices' Filter and Filter Again (2026-10-21 13:41 EDT, Harkirat's prod id; the dev app's Filter is matched by name).
     filter: '<:Filter:1562521111579590736>',

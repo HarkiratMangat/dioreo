@@ -67,9 +67,9 @@ const COMMANDS = {
         keywords: 'events schedule playlist rotation dates season what is on when ranked',
     },
     '/today': {
-        purpose: "Today in CODM: what's live, what's ending, and what goes live at the reset.",
-        facts: ['Counts down to the daily reset and to each season end.', '/calendar opens on the same screen, with the next few days added.'],
-        keywords: 'today daily reset live now active leaving soon ending soon going live tomorrow this week new draw event',
+        purpose: "Today in CODM: what was released at the last reset, what goes live at the next, and what's leaving soon.",
+        facts: ['Counts what is active now, and counts down to the daily reset and each season end.', '/calendar opens on its own Today page, with everything active and the next few days.'],
+        keywords: 'today daily reset released new live now active leaving soon ending soon going live tomorrow this week new draw event',
     },
     '/patch notes': {
         purpose: 'What got buffed and what got nerfed.',
