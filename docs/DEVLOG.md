@@ -277,6 +277,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-21 17:49 EDT — The command refresh: a filtered calendar, a draw end-date reminder, and layouts picked from mock-ups (v3.105.0-pre)
 - 2026-10-21 22:38 EDT — The bot's presence becomes a rotating card, and /invite gets his layout (v3.106.0-pre)
 - 2026-10-22 01:07 EDT — The overnight housekeeping sweep: stale docs, rules and comments corrected (v3.107.0-pre)
+- 2026-10-23 00:07 EDT — The /admin panel becomes Server Settings, with per-command settings, a change log and Check a Member (v3.108.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4680,6 +4681,14 @@ Harkirat spent two days refining command layouts on the dev bot, mostly from his
 **What was learned.** The drift was the same few shapes everywhere. A file split into a folder (`handlers/manage.js` became `handlers/manage/`) was still cited by sixteen comments. Commands retired weeks ago (`/alerts`, `/all`, `/ar`, `/lmg`) were still named in router and help comments. Line numbers and counts had rotted, so the corrected text now names a function or file instead. Scanner reports were wrong several times, and the writers caught it by re-checking the tree: one claimed a hook denies when it only advises, one said a script never syncs metadata when it does, and two suggested comment text that was itself false. My own dead-code script nearly broke six handlers by deleting a shared import line when ESLint had flagged only one of its two names; a grep before the commit caught it.
 
 **The gates were blind to most of it.** `hash-chain` never examines a v3 entry because its heading pattern lacks `Pre-Release`, `readme-map` counts a whole folder as mapped once its name appears, and `nav-map-sync` checks a rule's filename but not the row that says when it loads. All three are filed in the deferred list.
+
+## 2026-10-23 00:07 EDT — The /admin panel becomes Server Settings, with per-command settings, a change log and Check a Member (v3.108.0-pre)
+
+**What happened.** A click test of `/admin` on 2026-10-21 found nine issues, and the design pass turned into a rebuild over eight rounds of his reviews on the dev bot. Mock-ups went to #testing-spam through the dev bot's REST API, so every fork was shown before it was asked. The biggest change came from his own example: /calendar private everywhere except two channels, with roles that differ per channel. A flat list of tiers could not express it, so each command can now carry a whole rule set of its own, and the one sentence that explains it is "a command with its own settings uses only those".
+
+**What was learned.** I first recommended reordering the tiers, before checking Discord's own model; Discord's permission overwrites already answer most of the hierarchy questions, so that pick was withdrawn. The member picker drew a chosen member as "undefined" when the client had not loaded them, so the member is named in text instead. A grid of a button per command looked fine on desktop and wrapped badly on his phone, and was replaced by one dropdown.
+
+**Also.** Every change is logged 60 days for transparency, owner actions included, and the rules apply only while the bot is in the server.
 
 # Part B — Lessons Ledger (thematic)
 

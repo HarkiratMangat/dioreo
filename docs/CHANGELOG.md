@@ -29,7 +29,19 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.107.0 — 2026-10-22 01:06 EDT (#216) — the overnight housekeeping sweep: stale docs, rules, records and comments corrected, unused code removed
+## Pre-Release v3.108.0 — 2026-10-23 00:07 EDT (#218) — `/admin` becomes Server Settings: per-command settings, Check a Member, a 60-day change log, and Discord's own permissions on the panel
+**From the admin-panel design pass** (Harkirat, 2026-10-21 to 2026-10-22). Every round was click-tested by him on the dev bot; approved 2026-10-22 23:55 EDT.
+
+- **The panel:** titled Server Settings and naming its server, with Overview, Channels, Roles and Commands tabs (the open one blurple and disabled) and Help as its own private message. Rules read as coloured dots and the word **Private** or **Public** rather than paragraphs; every Clear button sits inside the panel beside what it clears; the Commands tab is one dropdown marked by state, not a button per command. Right-click commands show without a slash, and subcommands by their full name. `/admin` has a `visibility` option, and its renders never ping.
+- **Per-command settings:** server settings cover every command; give a command its own and it uses only those, with its own default and channel and role exceptions. Inside either: role in this channel › role everywhere › channel › default. Admins skip a command's own settings. Older rules keep working.
+- **Check a Member:** pick a member (or enter an ID, or a role) to see everything Dioreo does for them, and the rule behind each answer.
+- **Change log:** every change is kept 60 days with who made it, cannot be cleared from Discord, and exports as a text file. **Reset Everything** clears every rule in two presses.
+- **Limits stated on the panel:** the rules apply only while Dioreo is in the server, and Discord's own Use External Apps and Use Application Commands permissions are shown where they make an answer private.
+- **A notice when a rule makes an answer private:** the member is told why, at most twice per change to the server's rules.
+- **Owner tool:** `/bot servers` views, resets or deletes one server's settings by ID, logged in that server's log as an owner action.
+- **Privacy:** 1.18 (pending) covers the change log, the notice count and command settings.
+
+## Pre-Release v3.107.0 — 2026-10-22 01:06 EDT (#216 · `175fb674`) — the overnight housekeeping sweep: stale docs, rules, records and comments corrected, unused code removed
 **From the overnight housekeeping sweep** (Harkirat, 2026-10-22). Docs, comments and unused code only; the one player-visible change is three corrected strings.
 
 - **Dead code:** unused imports and helpers removed across 23 files, plus two exports nothing used (`noteCommandSafely` in `utils/userStats.js`, `regionsWithData` in `commands/drawCalculator.js`). The module graph and every module's export list were compared against the previous commit; only those two exports differ. Two test files lost an unused import and nothing else. A scan for exports that nothing else references found 89 more; they are kept as a list in `docs/claude/2026-10-22-unused-exports-scan.md` and filed, not removed.
