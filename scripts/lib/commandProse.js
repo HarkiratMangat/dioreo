@@ -68,8 +68,8 @@ const COMMANDS = {
     },
     '/today': {
         purpose: "Today in CODM: what was released at the last reset, what goes live at the next, and what's leaving soon.",
-        facts: ['Counts what is active now, and counts down to the daily reset and each season end.', '/calendar opens on its own Today page, with everything active and the next few days.'],
-        keywords: 'today daily reset released new live now active leaving soon ending soon going live tomorrow this week new draw event',
+        facts: ['Counts what is active now, and counts down to the daily update and each season end.', '/calendar opens on its own Today page, with everything active and the next few days.'],
+        keywords: 'today daily update reset released new live now active leaving soon ending soon going live tomorrow this week new draw event',
     },
     '/patch notes': {
         purpose: 'What got buffed and what got nerfed.',
