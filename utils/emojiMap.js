@@ -144,9 +144,9 @@ const emojis = {
     // /calendar's status dots (2026-10-21 14:34 EDT, Harkirat: "Red with strike through for finished events, green for live, white for upcoming"); prod ids read from the prod app's emoji list, the dev app's are matched by name. whiteDotGlow (below) marks upcoming.
     greenDotGlow: '<:GreenDotGlow_GDG:1542356494220140685>',
     redDotGlow: '<:RedDotGlow_RDG:1542356487882416248>',
-    // /today's Ending soon and Going live headings (2026-10-23 11:52 EDT). ⚠️ These two ids are the DEV app's: the prod ids have not been read yet. refreshEmojiIds() re-points both by name at boot on whichever app is running, so prod shows them only if its app has emoji with these names; swap in the prod ids once read.
-    yellowDotGlow: '<:YellowDotGlow_YDG:1542357393810264155>',
-    blueDotGlow: '<:BlueDotGlow_BDG:1542357397534674985>',
+    // /today's Ending soon and Going live headings (2026-10-23 11:51 EDT). Prod ids read from the prod app's emoji list at his word (2026-10-23 12:04 EDT); the dev app's are matched by name. Images saved in local/emoji-originals/.
+    yellowDotGlow: '<:YellowDotGlow_YDG:1542356489761464421>',
+    blueDotGlow: '<:BlueDotGlow_BDG:1542356493347586159>',
     // /draw prices' Filter and Filter Again (2026-10-21 13:41 EDT, Harkirat's prod id; the dev app's Filter is matched by name).
     filter: '<:Filter:1562521111579590736>',
     // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.
