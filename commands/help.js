@@ -134,14 +134,14 @@ const CATEGORY_DEFS = [
         key: 'seasonal', label: 'Seasonal Info', emojiKey: 'calendar', dropdownDescription: "This season's calendar, patch notes & end dates",
         staticCommands: [
             cmd('/calendar', {
-                description: "This season's event timeline — Draws, Events, and Game Modes",
+                description: "Today's screen, then this season's event timeline — Draws, Events, and Game Modes",
                 // [view] (renamed [filter] 2026-10-21) description corrected (v3-pre-release review, finding #63) -- commands/calendar.js silenced the /settings-saved default 2026-08-15; it is a one-off per-invocation choice only, never saved.
                 options: [
-                    { name: 'page', required: false, desc: 'Jump directly to Draws/Events/Playlists & Modes' },
-                    { name: 'filter', required: false, desc: "Full timeline, today's screen, or only past, live or upcoming entries (not saved)" }
+                    { name: 'page', required: false, desc: 'Jump directly to Today/Draws/Events/Playlists & Modes' },
+                    { name: 'filter', required: false, desc: 'Full timeline, or only past, live or upcoming entries (not saved)' }
                 ]
             }),
-            cmd('/today', { description: "What went live today, what's ending soon, what goes live at the next reset, and the next few days" }),
+            cmd('/today', { description: "Everything live now, what's ending soon, and what goes live at the next reset" }),
             cmd('/patch notes', {
                 description: 'Latest weapon balance changes, plus the full patch-note history',
                 options: [{ name: 'season', required: false, desc: 'Search for a specific previous season (start typing to see suggestions)' }]

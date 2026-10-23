@@ -142,7 +142,9 @@ function buildSectionComponent(headingLine, entries, seasonalDoc, collapseEnded 
 const PAGE_DEFS = [
     { page: 0, label: 'Draws', emojiKey: 'newDraws' },
     { page: 1, label: 'Events', emojiKey: 'events' },
-    { page: 2, label: 'Modes', emojiKey: 'modes' }
+    { page: 2, label: 'Modes', emojiKey: 'modes' },
+    // The Today page (2026-10-23 13:05 EDT, Harkirat: /calendar opens on it). Numbered 3 so the three timeline pages keep the numbers every posted custom_id already carries; PAGE_ORDER puts it first.
+    { page: 3, label: 'Today', emojiKey: 'calendar' }
 ];
 
 // Per-page banner fields (added 2026-07-31 17:20 EDT, the notes file follow-up) -- indexed by the same numeric page used everywhere else in this file. Blank/'' = show nothing for that page, not a placeholder -- see utils/calendarBannerCache.js + /manage's "Banners" action.
@@ -152,8 +154,8 @@ const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBa
 //   - the three STATUS picks keep only the entries in those states (none picked = every state; an undated entry counts as Upcoming);
 //   - the three PAGE picks decide which pages the pager walks (none picked = all three). Their descriptions are his wording (2026-10-21 15:45 EDT).
 const FILTER_OPTIONS = [
-    // Today (2026-10-23 11:51 EDT, Harkirat: "link it in the /calendar slash command as /calendar filter:today and implement it into it's dropdown filter") is a VIEW, not a filter: picked, the panel becomes /today's screen (commands/today.js), with this dropdown under it so unticking Today returns to the timeline.
-    { value: 'today', bit: 64, label: 'Today', emojiKey: 'calendar', description: "What's live, ending and coming up today" },
+    // Today is a PAGE pick like the three below it (2026-10-23 13:05 EDT, his option C): picked with a type (Lucky Draws, Special Events, Playlists & Modes), the Today page shows only that type; the status picks narrow the three timeline pages only.
+    { value: 'today', bit: 64, label: 'Today', emojiKey: 'calendar', description: 'Live now, ending soon and going live' },
     { value: 'live', bit: 1, label: 'Live', emojiKey: 'greenDotGlow', description: 'Running right now' },
     { value: 'over', bit: 2, label: 'Past/Ended', emojiKey: 'redDotGlow', description: 'Already finished this season' },
     { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'whiteDotGlow', description: "Hasn't started yet" },
@@ -175,10 +177,14 @@ function filterMask(filterMode) {
 
 // The Today view's bit (FILTER_OPTIONS' first entry); a mask carrying it renders /today instead of a page.
 const TODAY_BIT = 64;
-const todayMask = () => TODAY_BIT;
+const TODAY_PAGE = 3;
+// Today first, then the timeline pages (12:25 EDT: "should we make today calendar's landing").
+const PAGE_ORDER = [TODAY_PAGE, 0, 1, 2];
+const pageBit = p => (p === TODAY_PAGE ? TODAY_BIT : PAGE_BIT[p]);
+const ANY_PAGE_BITS = 8 | 16 | 32 | TODAY_BIT;
 
-// The pages the pager walks under a mask, in order.
-const visiblePages = mask => [0, 1, 2].filter(p => !(mask & 56) || (mask & PAGE_BIT[p]));
+// The pages the pager walks under a mask, in order: every page when no page is picked.
+const visiblePages = mask => PAGE_ORDER.filter(p => !(mask & ANY_PAGE_BITS) || (mask & pageBit(p)));
 
 // The pager above the filter: it walks only the visible pages and loops. Direction rides in the id (`_p`/`_n`), so two pages still give two different ids (Discord rejects a message whose ids repeat).
 function buildCalendarPager(page, mask) {
@@ -234,6 +240,23 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     const safePage = pages.includes(page) ? page : pages[0];
 
     const calendarComponents = [];
+
+    // The Today page: /today's sections plus the next 2 days, under this command's title, pager and filter (commands/today.js). A type pick narrows it (option C); the status picks do not.
+    if (safePage === TODAY_PAGE) {
+        const { buildTodayBody, seasonTeaser } = require('./today');
+        const types = new Set([[8, 'draw'], [16, 'event'], [32, 'playlist']].filter(([bit]) => mask & bit).map(([, t]) => t));
+        const title = withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji));
+        const teaser = seasonTeaser(seasonalDoc, nowMs);
+        if (teaser) title.content += `\n${teaser}`;
+        const todayComponents = [title, { type: 14, spacing: 2, divider: true }, ...buildTodayBody(seasonalDoc, { nowMs, withDays: true, types: types.size ? types : null }), { type: 14, spacing: 2, divider: true }];
+        const todayPager = buildCalendarPager(safePage, mask);
+        if (todayPager) todayComponents.push(todayPager);
+        todayComponents.push(buildFilterRow(safePage, mask));
+        const todayNav = mask
+            ? buildGlobalNavRow('nav_calendar', { nav_calendar: { label: 'Full Calendar', custom_id: 'nav_calendar', style: 1 } })
+            : buildGlobalNavRow('nav_calendar');
+        return withShareButton([{ type: 17, accent_color: accentColor, components: todayComponents }, todayNav], isEphemeral);
+    }
 
     // Per-page banner -- rendered as a true cover image at the VERY TOP of the container, above even the title (Harkirat's explicit call, 2026-07-31 17:20 EDT -- reads like a real banner/ splash image rather than a mid-card illustration this way). Independently settable per page; omitted entirely (no placeholder) when unset.
     const bannerUrl = seasonalDoc[BANNER_FIELDS_BY_PAGE[safePage]];
@@ -301,10 +324,10 @@ module.exports = {
         .setDescription("View this season's in-game event timeline")
         // `page`/`filter` are one-off, per-invocation overrides only -- neither is saved anywhere. `filter` was `view` (All Events / Active/Upcoming Only) until 2026-10-21 15:32 EDT (Harkirat: "view -> filter ... change the sub-options to \"Full timeline\", \"past/ended\", \"live right now\", \"upcoming\""). Its old /settings-saved default (`calendarEventFilter`) was SILENCED 2026-08-15 13:01 EDT.
         .addStringOption(option => option.setName('page').setDescription('Jump directly to a specific page').addChoices(
-            { name: 'Draws', value: 'draws' }, { name: 'Events', value: 'events' }, { name: 'Playlists & Modes', value: 'playlists' }
+            { name: 'Today', value: 'today' }, { name: 'Draws', value: 'draws' }, { name: 'Events', value: 'events' }, { name: 'Playlists & Modes', value: 'playlists' }
         ))
-        .addStringOption(option => option.setName('filter').setDescription("Show the full timeline, today's screen, or only past, live or upcoming entries").addChoices(
-            { name: 'Full Timeline', value: 'all' }, { name: 'Today', value: 'today' }, { name: 'Past/Ended', value: 'over' }, { name: 'Live Right Now', value: 'live' }, { name: 'Upcoming', value: 'soon' }
+        .addStringOption(option => option.setName('filter').setDescription('Show the full timeline, or only past, live or upcoming entries').addChoices(
+            { name: 'Full Timeline', value: 'all' }, { name: 'Past/Ended', value: 'over' }, { name: 'Live Right Now', value: 'live' }, { name: 'Upcoming', value: 'soon' }
         ))
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
@@ -317,8 +340,8 @@ module.exports = {
     // For commands/today.js, which reads the same entries and shows this filter under its own screen when opened from here.
     getDrawSectionEntries,
     buildFilterRow,
-    todayMask,
     TODAY_BIT,
+    TODAY_PAGE,
     PRESET_ACCENT,
     // Exported for /bot analytics' change-detail panel: buildEntryLine is the CANONICAL renderer for one calendar row (rule D -- never re-describe a record), and isEventEnded is the ONLY thing that decides whether /calendar's Active/Upcoming view still shows it. A second, hand-rolled date comparison over there would drift from this one and then confidently state the opposite.
     buildEntryLine,
@@ -349,15 +372,14 @@ module.exports = {
         // The filter's /settings default preference was SILENCED 2026-08-15 13:01 EDT (Harkirat's direct request) -- the field itself (`calendarEventFilter`) was removed from UserPreference 2026-10-21 15:58 EDT (Harkirat: "remove the setting's default calendar view option since it doesn't matter anymore"). The slash `filter` is a one-off, defaulting to the full timeline. Never saved, only read on a real slash-command launch.
         const filterChoice = interaction.isChatInputCommand() ? interaction.options.getString('filter') : null;
         const filterMode = filterChoice || filterOverride || 'all';
-        // Today is /today's own screen (commands/today.js), with this dropdown under it.
-        if (filterMask(filterMode) & TODAY_BIT) return await require('./today').execute(interaction, { fromCalendar: true });
 
         // `page` (added 2026-07-31 14:20 EDT) is the same kind of one-off override -- only consulted when pageOverride wasn't already supplied by a button click (buildSyntheticInteraction callers always pass an explicit numeric page). Maps the option's word value to the numeric page index buildContainer expects.
-        const PAGE_OPTION_TO_INDEX = { draws: 0, events: 1, playlists: 2 };
+        const PAGE_OPTION_TO_INDEX = { today: TODAY_PAGE, draws: 0, events: 1, playlists: 2 };
         let targetPage = pageOverride;
         if (targetPage === null) {
             const pageChoice = interaction.isChatInputCommand() ? interaction.options.getString('page') : null;
-            targetPage = pageChoice ? PAGE_OPTION_TO_INDEX[pageChoice] : 0;
+            // No page picked opens the Today page (2026-10-23 13:05 EDT, his call), which is why a bare /calendar and the nav's Calendar button land there.
+            targetPage = pageChoice ? PAGE_OPTION_TO_INDEX[pageChoice] : TODAY_PAGE;
         }
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);

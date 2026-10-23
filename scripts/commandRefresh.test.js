@@ -163,7 +163,7 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     ] };
     const json = (page, mode) => JSON.stringify(calendar.buildContainer(doc, page, undefined, false, mode));
     const select = JSON.parse(json(1, 0)).flatMap(c => c.components || []).flatMap(c => c.components || []).find(c => c.type === 3);
-    // Today joined first on 2026-10-23 11:48 EDT (his ask): a view, not a filter (scripts/today.test.js).
+    // Today joined first on 2026-10-23 11:48 EDT (his ask), and is a page pick since 13:05 EDT (scripts/today.test.js).
     assert.deepStrictEqual(select.options.map(o => o.label), ['Today', 'Live', 'Past/Ended', 'Upcoming', 'Lucky Draws', 'Special Events', 'Playlists & Modes']);
     assert.strictEqual(select.min_values, 0, 'clearing every pick is the full timeline');
     assert.ok(!/Draws \| Events|"label":"Modes"/.test(json(1, 0)), 'the three page buttons are gone');
@@ -185,7 +185,7 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     assert.deepStrictEqual([navCalendar(calendar.filterMask('live')).label, navCalendar(calendar.filterMask('live')).style, !!navCalendar(calendar.filterMask('live')).disabled], ['Full Calendar', 1, false], 'filtered: a live blurple Full Calendar');
     assert.deepStrictEqual([navCalendar(0).label, !!navCalendar(0).disabled], ['Calendar', true], 'unfiltered: the usual disabled Calendar');
     // The pager names the page, so the "Viewing ..." hint is gone (2026-10-21 16:21 EDT).
-    assert.ok(json(1, 0).includes('"label":"Events · 2/3"') && !json(1, 0).includes('Viewing'));
+    assert.ok(json(1, 0).includes('"label":"Events · 3/4"') && !json(1, 0).includes('Viewing'), 'Today is page 1 of 4 since 2026-10-23 13:05 EDT');
     // Ended entries fold to the 3 most recent only in a section of 5 or more (2026-10-21 16:34 EDT), and never once Past/Ended is picked.
     const D = 864e5, ev = (title, s, e) => ({ title, category: 'event', date: new Date(now + s * D), endDate: new Date(now + e * D) });
     const ended4 = [ev('E1', -30, -20), ev('E2', -25, -15), ev('E3', -14, -8), ev('E4', -9, -3)];
