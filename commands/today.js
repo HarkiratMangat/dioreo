@@ -117,7 +117,7 @@ function seasonTeaser(seasonalDoc, nowMs = Date.now()) {
 
 // One footer line, his pick E (2026-10-23 10:58–11:02 EDT): the daily reset, then each season end, the app's blank emoji between them, all relative. A TBD end reads TBD; an unset or past one is left out.
 function footerLine(seasonalDoc, next, nowMs) {
-    const parts = [`🔄 Daily reset ${rel(next)}`]; // 🔄 until the emoji project's reset emoji exists (docs/ROADMAP.md, "Emoji to request")
+    const parts = [`🔄 Daily update ${rel(next)}`]; // 🔄 until the emoji project's reset emoji exists (docs/ROADMAP.md, "Emoji to request")
     for (const [icon, label, field] of [[emojis.bp, 'BP', 'bpEnd'], [emojis.rank, 'Rank', 'rankEnd'], [emojis.dmz, 'DMZ', 'dmzEnd']]) {
         if (seasonalDoc[`${field}TBD`]) { parts.push(`${icon} ${label} TBD`); continue; }
         const ms = seasonalDoc[field] ? new Date(seasonalDoc[field]).getTime() : NaN;
@@ -205,7 +205,7 @@ function buildBriefBody(seasonalDoc, { nowMs = Date.now(), mode = 'spaced' } = {
         if (goingLive.length) sections.push(section(`## ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive));
     } else {
         sections.push([...(released.length ? section(`## ${emojis.greenDotGlow} Released ${rel(start)}`, released) : [block(`**${emojis.redDotGlow} Nothing new released**\n${pad}Since the reset ${rel(start)}`)]), ...active]);
-        sections.push(goingLive.length ? section(`## ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive) : [block(`**${emojis.redDotGlow} Nothing on the calendar going live**\n${pad}For the next reset · ${rel(next)}`)]);
+        sections.push(goingLive.length ? section(`## ${emojis.lightBlueDotGlow} Going live ${rel(next)}`, goingLive) : [block(`**${emojis.redDotGlow} Nothing on the calendar going live**\n${pad}For the next daily update · ${rel(next)}`)]);
         const leaving = trim(allLeaving);
         if (leaving.length) {
             const groups = [];

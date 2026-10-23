@@ -121,7 +121,7 @@ t('/today: an empty Released or Going live is one bold red line with its time un
     const quiet = doc({ newDraws: [], returningDraws: [{ title: 'Old Draw', date: d(10), items: [] }], calendar: [] });
     const blocks = contents(buildTodayBody(quiet, { nowMs: NOW }));
     assert.ok(blocks.includes(`**${emojis.redDotGlow} Nothing new released**\n-# ${emojis.blank}\u2002Since the reset <t:${Date.UTC(2026, 9, 23) / 1000}:R>`));
-    assert.ok(blocks.includes(`**${emojis.redDotGlow} Nothing on the calendar going live**\n-# ${emojis.blank}\u2002For the next reset · <t:${Date.UTC(2026, 9, 24) / 1000}:R>`));
+    assert.ok(blocks.includes(`**${emojis.redDotGlow} Nothing on the calendar going live**\n-# ${emojis.blank}\u2002For the next daily update · <t:${Date.UTC(2026, 9, 24) / 1000}:R>`));
     assert.ok(blocks.some(b => b.includes('**Active now:** 1 Draw')), 'the Active now line still shows');
 });
 
@@ -138,7 +138,7 @@ t('the footer sits after an empty space, with the daily reset first, a TBD end a
     const body = buildTodayBody(doc({ rankEndTBD: true, rankEnd: null, dmzEnd: d(1) }), { nowMs: NOW });
     const footer = body.at(-1).content;
     assert.deepStrictEqual(body.at(-2), { type: 14, spacing: 1, divider: false });
-    assert.ok(footer.startsWith(`-# 🔄 Daily reset <t:${Date.UTC(2026, 9, 24) / 1000}:R>`), footer);
+    assert.ok(footer.startsWith(`-# 🔄 Daily update <t:${Date.UTC(2026, 9, 24) / 1000}:R>`), footer);
     assert.ok(footer.includes('Rank TBD'));
     assert.ok(!footer.includes('DMZ'));
 });
