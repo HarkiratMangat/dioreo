@@ -34,8 +34,8 @@ const two = [slotted, { ...slotted, buildName: 'Second' }];
 const ar = [...two, { ...fixture[0], weaponKey: 'bp50', weaponName: 'BP50', isMeta: true, categoryRank: 'best' },
     { ...fixture[0], weaponKey: 'pharo', weaponName: 'PHARO', attachments: ['Coming soon — check back later!'] }];
 const card = JSON.stringify(R.buildLoadoutCard(two, 1, { color: 1, idPrefix: 'mp', categoryBuilds: ar }));
-assert.ok(card.includes('"Build 2/2"'), 'one weapon: the pager says Build 2/2');
-assert.ok(!card.includes('Build 2 of 2'), 'one weapon: the footer drops the build the pager already shows');
+assert.ok(card.includes('"Build 2 of 2"'), 'one weapon: the pager says Build 2 of 2');
+assert.ok(!card.includes('• Build 2 of 2'), 'one weapon: the footer drops the build the pager already shows');
 const single = JSON.stringify(R.buildLoadoutCard([slotted], 0, { color: 1, idPrefix: 'mp' }));
 assert.ok(single.includes('Build 1 of 1'), 'a one-build card has no pager, so its footer keeps Build 1 of 1');
 const metaCard = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix: 'mp', categoryBuilds: [{ ...ar[2], categoryRank: 'top3', isToxic: true }],
