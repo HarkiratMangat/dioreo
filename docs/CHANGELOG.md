@@ -39,6 +39,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 - **Notifications and reminders:** the design is agreed and recorded (`docs/superpowers/specs/2026-10-23-notifications-design.md`): opt-in DMs at 00:01 UTC, one bundled DM a day, a bell on each command and a `/remind` panel. Test DMs proved the bot can reach someone who only added the app. Nothing is built yet.
 - **Filed:** automated draw-image search, and a reminder when a weapon's META build changes (`docs/db-deferred-list.md`).
 - **Tests:** `scripts/today.test.js` covers both layouts, the empty states, the thumbnail section and the 40-component cap; `scripts/commandRefresh.test.js` covers the Until line and the dot.
+- **Security advisories (CI's `npm audit` gate, published 2026-10-23):** `undici` moves to the patched 6.29.1 (two denial-of-service advisories, GHSA-xjj6-f33q-929c and GHSA-4qv8-2p9j-2685). `zod`, which `jimp` pulls in, has no patched 3.x release for GHSA-mrhx-c7xc-m3w5, so `package.json` overrides it to `^4.6.6`. `jimp` was checked with it (read, resize, crop, blur and a pixel read on a real image) and the full suite passes. Both are MIT; no package was added.
 
 **From #219** (Harkirat, 2026-10-22 note ideas #1, #5 and #8, picked up in the cloud on 2026-10-23). One code change and two drafts; nothing is posted, deployed or sent.
 
