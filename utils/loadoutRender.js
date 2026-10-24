@@ -393,8 +393,9 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
     const containerComponents = [
         { type: 10, content: `## ${weaponName}` },
         { type: 14, spacing: 1, divider: true },
-        // The missing line in italics and the count on its own line (Harkirat, 2026-10-24 18:25 EDT).
-        { type: 10, content: `### No build yet\n*Dioreo doesn't have a ${weaponName} build yet.*${weaponCount ? `\n${weaponCount} other ${label} weapon${weaponCount === 1 ? ' has' : 's have'} one.` : ''}` },
+        // The missing line in italics and the count on its own line (Harkirat, 2026-10-24 18:25 EDT), with a small gap between them (18:35 EDT: "Add a divider:false small after the doesn't have a build line").
+        { type: 10, content: `### No build yet\n*Dioreo doesn't have a ${weaponName} build yet.*` },
+        ...(weaponCount ? [{ type: 14, divider: false, spacing: 1 }, { type: 10, content: `${weaponCount} other ${label} weapon${weaponCount === 1 ? ' has' : 's have'} one.` }] : []),
     ];
     if (real.length) {
         const token = mode === 'DMZ' ? 'DMZ.*.std' : `MP.${category}.std`;
