@@ -152,14 +152,14 @@ t('the bell: a grey emoji-only button on a title, and on /today', () => {
     assert.strictEqual(today[0].components[0].accessory?.custom_id, 'remind_open');
 });
 
-t('Send a test: the real next reminder when reminders are on, a "nothing at the next update" card when nothing fires, the plain card when nothing is on', () => {
-    const before = RUN - 60 * 1000; // a minute before the run, so the next daily update is RUN
+t('Send a test: today\'s real reminder when reminders are on, a "nothing at today\'s update" card when nothing fired, the plain card when nothing is on', () => {
+    const before = RUN + 60 * 1000; // a minute after the run, so today's daily update is RUN
     const real = JSON.stringify(R.buildTestDM({ categories: [...R.CATEGORY_KEYS].filter(k => k !== 'digest'), follows: [] }, doc(), { nowMs: before }));
-    assert.ok(real.includes('A test: this is your next reminder') && real.includes('Your reminders'), 'the real DM under a test note');
+    assert.ok(real.includes("A test: this is your reminder from today's daily update") && real.includes('Your reminders'), 'the real DM under a test note');
     const brief = JSON.stringify(R.buildTestDM({ categories: ['digest'], follows: [] }, doc(), { nowMs: before }));
     assert.ok(brief.includes('Your daily brief'), 'with the digest on, the test is the daily brief');
     const quiet = JSON.stringify(R.buildTestDM({ categories: [], follows: [{ kind: 'release', title: 'No Such Draw' }] }, doc(), { nowMs: before }));
-    assert.ok(quiet.includes('Nothing for the next daily update') && quiet.includes('No Such Draw (when it releases)'), 'nothing fires: says so and lists what they follow');
+    assert.ok(quiet.includes("Nothing at today's daily update") && quiet.includes('No Such Draw (when it releases)'), 'nothing fires: says so and lists what they follow');
     assert.ok(JSON.stringify(R.buildTestDM(null, doc(), { nowMs: before })).includes('Test reminder'), 'nothing on: the plain test card');
 });
 

@@ -134,18 +134,18 @@ function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 409
     return [{ type: 17, accent_color: accentColor, components: [...body, { type: 14, divider: false, spacing: 1 }, manageRow()] }];
 }
 
-// What Send a test DMs (Harkirat, 2026-10-24 19:39 EDT: "When someone has reminders enabled and they tap send a test, can you make it actually their reminders?"). With reminders on, it is the real DM the next daily update would send them, built exactly as the run builds it, under a one-line note that it is a test; when nothing they follow happens at that update, it says so and lists what they follow. With nothing on, the plain test card.
+// What Send a test DMs (Harkirat, 2026-10-24 19:39 EDT: "When someone has reminders enabled and they tap send a test, can you make it actually their reminders?"). With reminders on, it is the real DM from TODAY's daily update (the last run), built exactly as the run builds it, under a one-line note that it is a test; when nothing they follow happened then, it says so and lists what they follow. With nothing on, the plain test card. ⚠️ It shows the LAST run, not the next one: Discord draws every <t:…:R> against the reader's clock, so a DM built for a run still to come read "Released in 14 minutes" and gave the next daily update a day too late (his screenshot, 19:47 EDT: "Timings for the daily update doesn't make sense?").
 function buildTestDM(sub, seasonalDoc, { nowMs = Date.now(), accentColor = 4093660 } = {}) {
-    const runMs = nowMs + msUntilNextRun(nowMs);
+    const runMs = nowMs + msUntilNextRun(nowMs) - DAY_MS; // today's daily update, already past
     const note = text => ({ type: 10, content: `-# ${emojis.remind} ${text}` });
     const on = sub && (sub.categories?.length || sub.follows?.length);
     if (!on) return [{ type: 17, accent_color: accentColor, components: [block(`### ${emojis.remind} Test reminder\n-# Your reminders will arrive here, one DM a day at the daily update.`)] }];
     const p = personalise(sub, computeDue(seasonalDoc, runMs));
     const dm = p ? buildReminderDM(p, seasonalDoc, { nowMs: runMs, accentColor }) : null;
-    if (dm) return [note(`A test: this is your next reminder, due ${rel(runMs)}.`), ...dm];
+    if (dm) return [note(`A test: this is your reminder from today's daily update, ${rel(runMs)}.`), ...dm];
     const following = [...CATEGORIES.filter(c => sub.categories?.includes(c.key)).map(c => c.label), ...(sub.follows || []).map(f => `${f.title} (${f.kind === 'release' ? 'when it releases' : 'before it leaves'})`)];
     return [note('A test.'), { type: 17, accent_color: accentColor, components: [
-        block(`### ${emojis.remind} Nothing for the next daily update\n-# Nothing you follow happens at the daily update ${rel(runMs)}, so no reminder comes then. Your reminders still arrive here when something does.`),
+        block(`### ${emojis.remind} Nothing at today's daily update\n-# Nothing you follow happened at the daily update ${rel(runMs)}, so no reminder came. Your reminders arrive here when something does.`),
         block(['-# **You follow**', ...following.slice(0, 15).map(f => `- ${f}`), ...(following.length > 15 ? [`-# +${following.length - 15} more`] : [])].join('\n')),
         { type: 14, divider: false, spacing: 1 }, manageRow(),
     ] }];
