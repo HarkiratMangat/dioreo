@@ -29,8 +29,18 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.109.0 — 2026-10-23 10:05 EDT (#219) — `/settings` drops Member Since, and the launch announcement and a per-command review sheet are drafted
-**From the overnight roadmap items** (Harkirat, 2026-10-22 note ideas #1, #5 and #8, picked up in the cloud on 2026-10-23). One code change and two drafts; nothing is posted, deployed or sent.
+## Pre-Release v3.109.0 — 2026-10-23 21:17 EDT (#220) — `/today` is a daily brief, `/calendar` opens on a Today page, `/settings` drops Member Since, and the notifications design is agreed
+**From the badge, /today and notifications lead** (Harkirat, 2026-10-23 10:00–21:11 EDT, every layout settled on mock-ups in #testing-spam and read on his phone), with PR #219's work folded in at his word and that PR closed unmerged.
+
+- **`/today`, a daily brief:** `## Released <since the update>` (each new draw its own block with its items and image, then Events and Playlists & Modes as bullets, then an **Active now** count), `## Going live <next update>` in the same shape, and `## Leaving soon` grouped by end day. An empty section is one bold red line with its time under it: **Nothing new released** · Since the daily update, and **Nothing on the calendar going live** · For the next daily update. A footer counts down to the daily update, BP, Rank and DMZ. The command reads "New releases, going live, and leaving soon", short enough not to be cut off in Discord's command list.
+- **`/calendar` opens on Today:** Active now, Leaving soon and Upcoming (Going live, then each day with something in its own block), grouped by type, with no trailing times. Today is a page pick; a type pick narrows it.
+- **Calendar wording:** an upcoming entry reads "Starts in 4 days · Until Oct 27", status lines are indented with the `blank` emoji and an en space, and a new light-blue dot (`LightBlueDotGlow_LBDG`, uploaded to both apps on his word) marks upcoming entries.
+- **Smaller:** `/draws` says *(no image)*; the Advanced Weapon draw's second pair is called **Epics** in `/draw prices` and `/draw calculator`; short words stay lower-case in title case.
+- **Notifications and reminders:** the design is agreed and recorded (`docs/superpowers/specs/2026-10-23-notifications-design.md`): opt-in DMs at 00:01 UTC, one bundled DM a day, a bell on each command and a `/remind` panel. Test DMs proved the bot can reach someone who only added the app. Nothing is built yet.
+- **Filed:** automated draw-image search, and a reminder when a weapon's META build changes (`docs/db-deferred-list.md`).
+- **Tests:** `scripts/today.test.js` covers both layouts, the empty states, the thumbnail section and the 40-component cap; `scripts/commandRefresh.test.js` covers the Until line and the dot.
+
+**From #219** (Harkirat, 2026-10-22 note ideas #1, #5 and #8, picked up in the cloud on 2026-10-23). One code change and two drafts; nothing is posted, deployed or sent.
 
 - **`/settings`:** the dashboard shows only **Dioreo User Since**. **Member Since**, the Discord account's creation date, is gone (Harkirat: leave the bot-user line, "how long you've been using the bot"). `scripts/settingsJumpTo.test.js` has a new check that a slash run shows Dioreo User Since and no Member Since, and that a button re-render with no recorded date shows neither.
 - **Launch announcement drafted** (`docs/claude/2026-10-23-v3-launch-announcement-draft.md`): an in-bot version for the `/manage` Announcement box (1,077 characters of the 4,000 allowed), a Discord-post version (1,515 of 2,000) and a one-line listing blurb. Every claim is traced to a shipped release, with what was left out on purpose (`/dmz`, Your Stats, Show Everyone) and his open calls in a table. It stays a draft until he approves it, and sending is his call on the day.

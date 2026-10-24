@@ -278,6 +278,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-21 22:38 EDT — The bot's presence becomes a rotating card, and /invite gets his layout (v3.106.0-pre)
 - 2026-10-22 01:07 EDT — The overnight housekeeping sweep: stale docs, rules and comments corrected (v3.107.0-pre)
 - 2026-10-23 00:07 EDT — The /admin panel becomes Server Settings, with per-command settings, a change log and Check a Member (v3.108.0-pre)
+- 2026-10-23 21:17 EDT — /today becomes a daily brief, /calendar opens on Today, and reminders get a design (v3.109.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4689,6 +4690,16 @@ Harkirat spent two days refining command layouts on the dev bot, mostly from his
 **What was learned.** I first recommended reordering the tiers, before checking Discord's own model; Discord's permission overwrites already answer most of the hierarchy questions, so that pick was withdrawn. The member picker drew a chosen member as "undefined" when the client had not loaded them, so the member is named in text instead. A grid of a button per command looked fine on desktop and wrapped badly on his phone, and was replaced by one dropdown.
 
 **Also.** Every change is logged 60 days for transparency, owner actions included, and the rules apply only while the bot is in the server.
+
+## 2026-10-23 21:17 EDT — /today becomes a daily brief, /calendar opens on Today, and reminders get a design (v3.109.0)
+
+**What happened.** One long day with Harkirat, mostly in #testing-spam on the dev bot. `/today` started as a copy of the calendar and ended as a daily brief: what was released at the daily update, what goes live at the next one, what's leaving soon. Every heading, gap and empty-state line was settled on mock-ups he read on his phone, and the rule that kept recurring was "it wraps on mobile", which removed trailing dates, "see /calendar" and parenthesised times one by one. `/calendar` opens on its own Today page, built from his template.
+
+**Season 9 on the dev bot.** His screenshots were loaded through the same operations /manage uses, price types were added so `/draws` shows its Calculate button, and his 12 draw images went to the dev store and then, on his word, to prod Cloudinary's `temp_draws/` (all 12 new, nothing replaced). Automated image search was tried first and failed: Facebook and Instagram serve a login page to scripts, and Google's Custom Search API is closed to new customers. It is filed as a design item.
+
+**Lesson.** A `draw.edit` sent with only a title empties the draw's items, because the op replaces the whole draw. Every later edit sent the whole draw.
+
+**Reminders.** Four rounds of questions settled notifications for v3 (`docs/superpowers/specs/2026-10-23-notifications-design.md`). Five test DMs to his alt answered the open question: a bot can DM someone who only added the app, with no shared server. A refused DM returns the same code whether DMs are off or the app was removed, so the failure note has to name both fixes; my first reading of that error was wrong and was corrected in the thread.
 
 # Part B — Lessons Ledger (thematic)
 
