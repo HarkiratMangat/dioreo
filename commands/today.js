@@ -117,7 +117,7 @@ function seasonTeaser(seasonalDoc, nowMs = Date.now()) {
 
 // One footer line, his pick E (2026-10-23 10:58–11:02 EDT): the daily reset, then each season end, the app's blank emoji between them, all relative. A TBD end reads TBD; an unset or past one is left out.
 function footerLine(seasonalDoc, next, nowMs) {
-    const parts = [`🔄 Daily update ${rel(next)}`]; // 🔄 until the emoji project's reset emoji exists (docs/ROADMAP.md, "Emoji to request")
+    const parts = [`${emojis.dailyUpdate} Daily update ${rel(next)}`]; // his DailyUpdate icon (2026-10-24 00:57 EDT), in place of the 🔄 that stood in
     for (const [icon, label, field] of [[emojis.bp, 'BP', 'bpEnd'], [emojis.rank, 'Rank', 'rankEnd'], [emojis.dmz, 'DMZ', 'dmzEnd']]) {
         if (seasonalDoc[`${field}TBD`]) { parts.push(`${icon} ${label} TBD`); continue; }
         const ms = seasonalDoc[field] ? new Date(seasonalDoc[field]).getTime() : NaN;

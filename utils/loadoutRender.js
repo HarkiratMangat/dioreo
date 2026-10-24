@@ -251,7 +251,7 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     if (codeText) {
         if (copyIds) {
             // Primary (blue), not Success (green), per Harkirat 2026-10-20 22:23 EDT: blue is the bot's call-to-action colour, green means "set / you are here". Copy Attachments stays grey as the secondary courtesy button.
-            containerComponents.push({ type: 9, components: [{ type: 10, content: '### Gunsmith Code' }], accessory: { type: 2, style: 1, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.copyExport) } });
+            containerComponents.push({ type: 9, components: [{ type: 10, content: '### Gunsmith Code' }], accessory: { type: 2, style: 1, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.gunsmithCode) } });
             containerComponents.push({ type: 10, content: `\`${codeText}\`` });
         } else {
             containerComponents.push({ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` });

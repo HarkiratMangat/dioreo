@@ -138,7 +138,7 @@ t('the footer sits after an empty space, with the daily reset first, a TBD end a
     const body = buildTodayBody(doc({ rankEndTBD: true, rankEnd: null, dmzEnd: d(1) }), { nowMs: NOW });
     const footer = body.at(-1).content;
     assert.deepStrictEqual(body.at(-2), { type: 14, spacing: 1, divider: false });
-    assert.ok(footer.startsWith(`-# 🔄 Daily update <t:${Date.UTC(2026, 9, 24) / 1000}:R>`), footer);
+    assert.ok(footer.startsWith(`-# ${require('../utils/emojiMap').dailyUpdate} Daily update <t:${Date.UTC(2026, 9, 24) / 1000}:R>`), footer);
     assert.ok(footer.includes('Rank TBD'));
     assert.ok(!footer.includes('DMZ'));
 });
