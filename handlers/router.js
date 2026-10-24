@@ -364,9 +364,14 @@ async function handleInteractionInner(interaction) {
                 const rows = browseRows(mode, cats)
                     .filter(r => !focusedValue || generic || fuzzyMatch(focusedValue, r.label) || synonyms.some(c => r.value === `MP.${c}.std`) || (!synonyms.length && /^(META|MP|DMZ)$/.test(r.label.split(' ')[1]) && typoDistance(focusedValue, r.label.split(' ')[1]) !== Infinity))
                     .map(r => ({ name: `▸ ${r.label}`, value: `~scope~${r.value}` }));
-                const weaponRows = findWeaponMatches(focusedValue, distinctChoices)
-                    .slice(0, 25 - rows.length)
+                // When the matches outnumber the 25 Discord shows, the last row says so (Harkirat, 2026-10-24 09:45 EDT: "since only 25 items appear, can we better state to a user that can they search the weapon name?"). Picking that row opens the mode's whole browse, so it is never a dead end.
+                const matched = findWeaponMatches(focusedValue, distinctChoices);
+                const room = 25 - rows.length;
+                const more = matched.length > room;
+                const weaponRows = matched
+                    .slice(0, more ? room - 1 : room)
                     .map(w => ({ name: mode === 'MP' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName, value: w.weaponKey }));
+                if (more) weaponRows.push({ name: `▸ Type a name to search all ${matched.length} ${focusedValue ? 'matches' : 'weapons'}`, value: `~scope~${mode}.*.std` });
                 return await interaction.respond([...rows, ...weaponRows]);
             }
 

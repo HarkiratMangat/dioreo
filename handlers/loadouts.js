@@ -16,6 +16,14 @@ function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
 }
 
+// The one-box search behind the dropdown's "Search all weapons…" option (Harkirat, 2026-10-24 09:45 EDT: "can we make the flow of searching for another weapon or build much more fluid?"). A select menu cannot autocomplete, so the box takes a typed name and resolves it the way /gunsmith does (utils/loadoutLookup.js resolveWeapon).
+function searchModal(mode) {
+    return {
+        title: `Search ${mode} weapons`, custom_id: `gsb~find~${mode}`,
+        components: [{ type: 1, components: [{ type: 4, custom_id: 'q', label: 'Weapon name', style: 1, required: true, max_length: 60, placeholder: mode === 'DMZ' ? 'Fennec, AS VAL…' : 'AK117, Locus, BP50…' }] }],
+    };
+}
+
 async function route(interaction) {
         // LOADOUT "BROWSE OTHER BUILDS" DROPDOWN (added 2026-07-12) -- lets a user jump straight to a different weapon's card without re-running the slash command. Selected value is just a bare `weaponKey` (see utils/loadoutRender.js's buildCategoryBrowseRow -- this used to also encode a build index for a specific build variant, simplified to weapon-only per Harkirat's follow-up request; always opens at build index 0). Mode is inferred from which dropdown fired ('mpbrowse' vs 'dmzbrowse'), matching the dmz/mp-prefixed pagination convention used everywhere else for these two card types.
         //
@@ -26,13 +34,16 @@ async function route(interaction) {
             const isDmz = interaction.customId === 'dmzbrowse';
             const mode = isDmz ? 'DMZ' : 'MP';
             const gunKey = interaction.values[0];
+            // Search opens its box, which must be the FIRST response, so it comes before the defer below.
+            if (gunKey === '~search~') return await interaction.showModal(searchModal(mode));
 
             // Defer FIRST, before any DB round-trip -- matches the dmz/mp pagination handler further down ("PRO FIX: defer first"), for the same reason: an awaited query ahead of the ack risks missing Discord's ~3s interaction window, which surfaces to the user as a bare "This interaction failed" with no detail.
             await interaction.deferUpdate();
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
 
             // .lean() -- read-only, same as the pagination handler below.
-            const matchingBuilds = await Loadout.find({ weaponKey: gunKey, mode }).lean();
+            const { isPlaceholderBuild } = require('../utils/loadoutRender');
+            const matchingBuilds = (await Loadout.find({ weaponKey: gunKey, mode }).lean()).filter(b => !isPlaceholderBuild(b));
             if (!matchingBuilds || matchingBuilds.length === 0) {
                 // Shouldn't happen (the option came from a live DB query moments ago), but guard against a build being deleted via /manage in the gap between render and click rather than throwing on `matchingBuilds[0].category` below.
                 try {
@@ -60,13 +71,37 @@ async function route(interaction) {
             const { parseScopeToken, resolveScopeBuilds } = require('../utils/loadoutScopes');
             const { renderScopeBrowse } = require('../commands/gunsmith');
             const scope = parseScopeToken(scopeToken);
+            const picked = interaction.values[0];
+            if (picked === '~search~') return await interaction.showModal(searchModal(scope.mode === 'DMZ' ? 'DMZ' : 'MP'));
             const builds = await resolveScopeBuilds(scope);
             if (!builds.length) return await renderScopeBrowse(interaction, scope, 0, { isUpdate: true });
-            const target = Math.max(0, builds.findIndex(b => b.weaponKey === interaction.values[0]));
+            // `~class~<CATEGORY>` is the whole-mode browse's jump to another class: its first build, staying in the same browse so the arrows carry on across classes.
+            const target = picked.startsWith('~class~')
+                ? Math.max(0, builds.findIndex(b => b.category === picked.slice(7)))
+                : Math.max(0, builds.findIndex(b => b.weaponKey === picked));
             return await renderScopeBrowse(interaction, scope, target, { isUpdate: true });
         }
 
-        // /gunsmith browse-row SCOPE PAGING + COPY + META SWITCH -- a BUTTON. `action` outside {next,prev,copy,copyatt,meta} guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
+        // The dropdown's search box, submitted. Deferred first (the lookup can run three queries), then the message the dropdown sat under becomes the found weapon's card, or the missing-weapon card; a name that finds no single weapon is answered privately and the card stays as it was.
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('gsb~find~')) {
+            const mode = interaction.customId.endsWith('DMZ') ? 'DMZ' : 'MP';
+            const query = (interaction.fields.getTextInputValue('q') || '').trim();
+            await interaction.deferUpdate();
+            const { resolveWeapon, renderResolved, notFoundText } = require('../utils/loadoutLookup');
+            const found = await resolveWeapon(mode, query);
+            if (found.builds || found.missing) {
+                const isEphemeral = Boolean(interaction.message?.flags?.bitfield & 64);
+                return await renderResolved(interaction, mode, found, { isEphemeral });
+            }
+            try {
+                await interaction.followUp({ content: notFoundText(mode, query, found), ephemeral: true });
+            } catch (replyError) {
+                console.error('Failed to answer a gunsmith search (interaction likely expired):', replyError);
+            }
+            return;
+        }
+
+        // /gunsmith browse-row SCOPE PAGING + COPY + META SWITCH + OPEN -- a BUTTON. `open` is the missing-weapon card's "Browse all <class> builds". `action` outside {next,prev,copy,copyatt,meta,open} guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
         if (interaction.isButton() && interaction.customId.startsWith('gsb~')) {
             const [, action, scopeToken, flatIndexRaw] = interaction.customId.split('~');
             const { parseScopeToken, resolveScopeBuilds, flatIndexToPosition } = require('../utils/loadoutScopes');
@@ -85,7 +120,8 @@ async function route(interaction) {
                 }
                 const { weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndexRaw);
                 const build = weaponBuilds[indexWithinWeapon];
-                const replyContent = action === 'copy' ? (build.shareCode || build.buildName) : (build.attachments || []).join('\n');
+                const { orderedAttachments } = require('../utils/loadoutRender');
+                const replyContent = action === 'copy' ? (build.shareCode || build.buildName) : orderedAttachments(build).join('\n');
                 try {
                     // A build saved with no attachments has nothing to copy, and Discord rejects an empty `content` (2026-10-20, v3 sweep) -- say so rather than fail as "likely expired".
                     await interaction.reply({ content: replyContent || (BOT_EMOJI.cross + ' This build has nothing to copy yet.'), ephemeral: true });
@@ -96,7 +132,7 @@ async function route(interaction) {
             }
 
             // META MP / DMZ SWITCH (2026-10-19 19:38 EDT): one meta choice, two modes; opens the other mode's meta browse in place, from its first build.
-            if (action === 'meta') {
+            if (action === 'meta' || action === 'open') {
                 const { renderScopeBrowse } = require('../commands/gunsmith');
                 return await renderScopeBrowse(interaction, scope, 0, { isUpdate: true });
             }
@@ -122,8 +158,9 @@ async function route(interaction) {
             // Strip the prefix so we can parse the standard action format
             const [action, gunKey, currentIndex] = interaction.customId.replace(isDmz ? 'dmz' : 'mp', '').split('_');
 
-            // .lean() -- these builds are only ever read (rendered into the card or replied with directly), never mutated/saved on this path.
-            const matchingBuilds = await Loadout.find({ weaponKey: gunKey, mode }).lean();
+            // .lean() -- these builds are only ever read (rendered into the card or replied with directly), never mutated/saved on this path. Placeholders are dropped here exactly as the card that minted this index dropped them (utils/loadoutLookup.js), or the index would point at a different build.
+            const { isPlaceholderBuild, orderedAttachments } = require('../utils/loadoutRender');
+            const matchingBuilds = (await Loadout.find({ weaponKey: gunKey, mode }).lean()).filter(b => !isPlaceholderBuild(b));
             // Guard BEFORE the modulo/index -- mirrors the gsb~ browse branch's own guard below (v3-pre-release review, finding #6). /manage can purge a weapon's builds between render and click: `(cur ± 1) % matchingBuilds.length` is NaN on an empty array, and matchingBuilds[newIndex] is undefined for copy/copyatt too -- every branch past this point (category lookup, shareCode, attachments) would throw on an already-acked interaction.
             if (!matchingBuilds.length) {
                 try {
@@ -142,7 +179,7 @@ async function route(interaction) {
                 // Awaited + wrapped in its own try/catch -- see the matching note above. No further fallback reply attempt on failure here (unlike the error-fallback sites): this IS the terminal action, and if the interaction token already failed once, a second reply attempt on the same token would fail too.
                 const build = matchingBuilds[newIndex];
                 // A card older than the list it indexes (a build deleted after render) points past the end, and a build saved with no attachments has nothing to copy -- Discord rejects an empty `content`. Both used to throw or fail as "likely expired" with no word to the user (2026-10-20, v3 sweep).
-                const copyText = !build ? '' : action === 'copy' ? (build.shareCode || build.buildName) : (build.attachments || []).join('\n');
+                const copyText = !build ? '' : action === 'copy' ? (build.shareCode || build.buildName) : orderedAttachments(build).join('\n');
                 if (!copyText) {
                     try {
                         await interaction.reply({ content: BOT_EMOJI.cross + (build ? ' This build has nothing to copy yet.' : ' That build no longer exists.'), ephemeral: true });

@@ -13,7 +13,7 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 const visibilityOption = o => o.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.')
     .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' });
 const weaponSub = (name, mode, desc) => sub => sub.setName(name).setDescription(desc)
-    .addStringOption(o => o.setName('weapon').setDescription(`A ${mode} weapon, or All META / All ${mode} builds to browse them`).setRequired(true).setAutocomplete(true))
+    .addStringOption(o => o.setName('weapon').setDescription(`Type any ${mode} weapon's name to search, or pick All META / All ${mode} builds`).setRequired(true).setAutocomplete(true))
     .addIntegerOption(o => o.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
     .addStringOption(visibilityOption);
 
