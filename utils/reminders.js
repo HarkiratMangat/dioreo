@@ -226,9 +226,11 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         ...(warning ? [block(warning)] : []),
         { type: 14, divider: true, spacing: 2 },
         ...groups,
-        { type: 14, divider: true, spacing: 2 },
-        // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09 EDT: "it feels like it needs to be chosen in addition to the above toggle... better phrase it so it's clear that these are an 'or' option"), and never "one" (19:31 EDT: "they can pick a few options... 'or pick only what you want'").
-        block(['-# **Or pick only what you want** · specific draws, events or playlists, no whole group', ...followLines].join('\n')),
+        // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09 EDT: "it feels like it needs to be chosen in addition to the above toggle... better phrase it so it's clear that these are an 'or' option"), and never "one" (19:31 EDT: "they can pick a few options... 'or pick only what you want'"). His pick at 19:35 EDT was option B, an "— or —" line between the halves, with no drawn divider above it.
+        { type: 14, divider: false, spacing: 2 },
+        block('-# **— or —**'),
+        { type: 14, divider: false, spacing: 1 },
+        block(['-# **Pick only what you want** · specific draws, events or playlists, instead of a whole group', ...followLines].join('\n')),
         ...(relRow ? [relRow] : []),
         ...(lvRow ? [lvRow] : []),
         ...(foot.length ? [{ type: 14, divider: false, spacing: 1 }, { type: 1, components: foot }] : []),
