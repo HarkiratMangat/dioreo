@@ -71,6 +71,11 @@ const COMMANDS = {
         facts: ['Counts what is active now, and counts down to the daily update and each season end.', '/calendar opens on its own Today page, with everything active and the next few days.'],
         keywords: 'today daily update reset released new live now active leaving soon ending soon going live tomorrow this week new draw event',
     },
+    '/remind': {
+        purpose: 'A DM when something you follow releases, is about to leave, or the season is ending.',
+        facts: ['One DM a day, a minute after the daily update, with only what you picked.', 'Follow a whole category, one draw or event, or the daily /today brief.', 'The bell on /today, /calendar, /draws, /season end and /patch notes opens the same panel.'],
+        keywords: 'remind reminder reminders notify notification notifications dm alert follow subscribe release leaving last chance season end battle pass ranked dmz patch notes digest',
+    },
     '/patch notes': {
         purpose: 'What got buffed and what got nerfed.',
         facts: ['`season` searches earlier seasons, not just the current one.'],
@@ -124,6 +129,7 @@ const ASKS = [
     { q: 'The same, but for DMZ', to: '/gunsmith dmz' },
     { q: 'When the season ends', to: '/season end' },
     { q: "What's live today, and what's next", to: '/today' },
+    { q: 'Tell me when a draw releases or is leaving', to: '/remind' },
     { q: "What's on this season, and when", to: '/calendar' },
     { q: 'What got buffed or nerfed', to: '/patch notes' },
     { q: 'Post a time that reads right everywhere', to: '/timestamp' },

@@ -89,7 +89,8 @@ module.exports = {
             type: 17,
             accent_color: accentColor,
             components: [
-                buildEndBlock(emojis.bp1, seasonalDoc?.bpTitle || 'Battle Pass', bpUnix, seasonalDoc?.bpEndTBD, seasonalDoc?.bpStart),
+                // The reminders bell on the first block, which stands in for a title here (utils/reminders.js withBell).
+                require('../utils/reminders').withBell(buildEndBlock(emojis.bp1, seasonalDoc?.bpTitle || 'Battle Pass', bpUnix, seasonalDoc?.bpEndTBD, seasonalDoc?.bpStart)),
                 { type: 14, spacing: 2, divider: true }, // Structural Separator
 
                 buildEndBlock(emojis.rank || '🏆', seasonalDoc?.rankTitle || 'Ranked Series', rankUnix, seasonalDoc?.rankEndTBD, seasonalDoc?.rankStart),

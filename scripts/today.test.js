@@ -162,7 +162,8 @@ t('/today carries the seasonal nav under the panel, with every slot live', () =>
 t("/calendar's Today page: its own title, the pager starting at Today, the filter, under 40 components with unique ids", () => {
     const msg = calendar.buildContainer(doc(), calendar.TODAY_PAGE, 1, true, 0);
     const out = text(msg);
-    assert.ok(msg[0].components[0].content.includes('Season Calendar'));
+    assert.ok(msg[0].components[0].components[0].content.includes('Season Calendar'), 'the title, inside the Section that carries the reminders bell');
+    assert.strictEqual(msg[0].components[0].accessory?.custom_id, 'remind_open', 'the reminders bell on the title');
     assert.ok(out.includes('Today · 1/4'));
     assert.ok(out.includes('"custom_id":"calsel_3"'));
     assert.ok(count(msg) <= 40, `components: ${count(msg)}`);

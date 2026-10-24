@@ -38,6 +38,7 @@ const COMMAND_ALIASES = {
     '/draw calculator': ['calculator', 'calc', 'shortfall', 'optimizer', 'howmuch'],
     '/calendar': ['events', 'schedule', 'timeline'],
     '/today': ['today', 'reset', 'daily', 'live', 'now'],
+    '/remind': ['remind', 'reminder', 'reminders', 'notify', 'notification', 'notifications', 'dm', 'alert'],
     '/patch notes': ['patch', 'patchnotes', 'balance', 'changes', 'notes'],
     '/season end': ['seasonend', 'battlepass', 'bp', 'deadlines']
 };
@@ -142,6 +143,13 @@ const CATEGORY_DEFS = [
                 ]
             }),
             cmd('/today', { description: "New releases, going live, and leaving soon" }),
+            cmd('/remind', {
+                description: 'DM reminders for draws, events and seasons',
+                options: [
+                    { name: 'set', required: false, desc: 'What to be reminded about (start typing to search)' },
+                    { name: 'toggle', required: false, desc: 'Turn this reminder on or off' }
+                ]
+            }),
             cmd('/patch notes', {
                 description: 'Latest weapon balance changes, plus the full patch-note history',
                 options: [{ name: 'season', required: false, desc: 'Search for a specific previous season (start typing to see suggestions)' }]

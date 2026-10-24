@@ -39,6 +39,7 @@ const HANDLER_BINDINGS = [
     ['share', 'handleShareInteraction'],
     ['pagination', 'handlePaginationInteraction'],
     ['navigation', 'handleNavigationInteraction'],
+    ['remind', 'handleRemindInteraction'],
 ];
 const late = (mod, fn) => (...args) => {
     const impl = require(`./${mod}`)[fn];
@@ -64,6 +65,7 @@ const handleDrawCalcInteraction = late('drawCalc', 'handleDrawCalcInteraction');
 const handleShareInteraction = late('share', 'handleShareInteraction');
 const handlePaginationInteraction = late('pagination', 'handlePaginationInteraction');
 const handleNavigationInteraction = late('navigation', 'handleNavigationInteraction');
+const handleRemindInteraction = late('remind', 'handleRemindInteraction');
 
 // ==========================================
 // ROUTER-PRIVATE STATE
@@ -213,6 +215,8 @@ async function handleInteractionInner(interaction) {
         if (await handleHelpInteraction(interaction)) return;
         markHandler('invite');
         if (await handleInviteInteraction(interaction)) return;
+        markHandler('remind');
+        if (await handleRemindInteraction(interaction)) return;
         markHandler('embedTest');
         if (await handleEmbedTestInteraction(interaction)) return;
         markHandler('addToPatchNotes');
@@ -275,6 +279,9 @@ async function handleInteractionInner(interaction) {
 
                 return await interaction.respond(filtered.map(p => ({ name: displayTitle(p), value: p._id.toString() })));
             }
+
+            // /remind's set: option -- the categories pinned first, then this season's entries (utils/reminders.js autocompleteChoices).
+            if (commandName === 'remind') return await interaction.client.commands.get('remind').autocomplete(interaction);
 
             // === ROUTE B2: /help's cmd: option -- suggests every real command from commands/help.js's staticCommands (/gunsmith is one entry, not one per subcommand) ===
             if (commandName === 'help') {
@@ -388,6 +395,8 @@ async function handleInteractionInner(interaction) {
                 await command.execute(interaction);
                 // "Dioreo User Since" and Your Stats: the user's own command, recorded after the command's own reply (see utils/firstCommand.js for why after).
                 require('../utils/userStats').noteOwnCommandSafely(interaction);
+                // A failed or paused reminder gets one private line on the person's next command (utils/reminders.js, his rule 2026-10-23 20:21 EDT). Never throws.
+                await require('../utils/reminders').maybeShowReminderNote(interaction);
                 // Fires AFTER the command's own reply has already gone out, once per fresh top-level command invocation -- see utils/announcement.js's header for why this is the only choke point (never buttons/selects/modals) and why the dynamic MP loadout fallback below needs its own identical call. Wrapped in its OWN try/catch, separate from the command's own -- a DB hiccup in here must never fall into the outer catch below and overwrite the command's already-successful reply with "There was an error executing this command!".
                 try {
                     const { maybeSendAnnouncement } = require('../utils/announcement');
@@ -427,6 +436,7 @@ async function handleInteractionInner(interaction) {
                 await command.execute(interaction);
                 // A right-click is the user's own command too (utils/firstCommand.js, utils/userStats.js).
                 require('../utils/userStats').noteOwnCommandSafely(interaction);
+                await require('../utils/reminders').maybeShowReminderNote(interaction);
             } catch (error) {
                 console.error(`Error executing context menu command ${interaction.commandName}:`, error);
                 try {

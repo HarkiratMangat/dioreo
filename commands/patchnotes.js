@@ -170,6 +170,8 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
     ];
     // The season's emoji sits in front of its name, outside the bold-italic lettering (which would mangle an emoji).
     withCaptionEmoji(components[0], seasonEmoji(activePatch));
+    // The reminders bell on the title (utils/reminders.js withBell), added after the caption emoji, which edits the text in place.
+    components[0] = require('../utils/reminders').withBell(components[0]);
 
     if (hasInfo) {
         components.push(
