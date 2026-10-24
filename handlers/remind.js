@@ -117,13 +117,15 @@ async function route(interaction) {
         return await rerender(interaction, sub);
     }
 
-    // Send a test: one DM now, so a person can check their reminders will reach them; a refusal names both fixes (DMs off, or the app removed, give the same error).
+    // Send a test: one DM now, so a person can check their reminders will reach them, and with reminders on it is their real next reminder (utils/reminders.js buildTestDM, his ask of 2026-10-24 19:39 EDT); a refusal names both fixes (DMs off, or the app removed, give the same error).
     if (interaction.isButton() && interaction.customId.startsWith('remind_test:')) {
         await interaction.deferReply({ flags: 64 });
         const { Routes } = require('discord.js');
         try {
+            const { sub, doc } = await loadState(owner);
+            const components = R.buildTestDM(sub, doc || {}, { accentColor: accent() });
             const dm = await interaction.client.users.createDM(owner);
-            await interaction.client.rest.post(Routes.channelMessages(dm.id), { body: { flags: 32768, allowed_mentions: { parse: [] }, components: [{ type: 17, accent_color: accent(), components: [{ type: 10, content: `### ${emojis.remind} Test reminder\n-# Your reminders will arrive here, one DM a day at the daily update.` }] }] } });
+            await interaction.client.rest.post(Routes.channelMessages(dm.id), { body: { flags: 32768, allowed_mentions: { parse: [] }, components } });
             return await interaction.editReply({ content: `${emojis.checkmark} Sent. Check your DMs from Dioreo.` });
         } catch (err) {
             if (!R.isRefusal(err)) throw err;
