@@ -172,7 +172,7 @@ function toBlockquote(str) {
 // NOTE (simplified during review, per Harkirat's follow-up request): originally listed every INDIVIDUAL build with a "[Build N of M]" suffix on multi-build weapons -- dropped in favor of one entry per WEAPON, since browsing to a specific build variant is already what Prev/Next is for. Selecting a weapon here always opens it at build index 0. `weaponKey` is deduped via a Map (first doc encountered per key wins, which is fine -- every doc for a given weaponKey shares the same weaponName/category), then sorted alphabetically by weapon name.
 //
 // RESTRUCTURED 2026-10-24 09:45 EDT (Harkirat: "the dropdown menu can be better, and organize/restructure it as well"; "can we make the flow of searching for another weapon or build much more fluid?"). A string select cannot autocomplete, so the first option is **Search all weapons…**, which opens a one-box search (handlers/loadouts.js, `gsb~find~`) that resolves exactly like the slash command. Then one option per weapon with its badges and build count as the second line, and, in the whole-mode browse (`classJumps`), only the current class's weapons followed by a jump to each other class -- 68 MP weapons never fit in 25, and the old "25 of 68" window hid most of them. No option is pre-selected, so the placeholder says what the menu does. Placeholder weapons are never listed.
-function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scopeLabel, customIdOverride = null, { mode = 'MP', classJumps = false } = {}) {
+function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scopeLabel, customIdOverride = null, { mode = 'MP', classJumps = false, metaList = false } = {}) {
     if (!categoryBuilds || categoryBuilds.length === 0) return null;
     const real = categoryBuilds.filter(b => !isPlaceholderBuild(b));
     const activeCategory = (real.find(b => b.weaponKey === activeWeaponKey) || real[0] || {}).category;
@@ -185,7 +185,7 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
     }
     let weaponOptions = Array.from(weapons.entries())
         .sort((a, b) => a[1][0].weaponName.localeCompare(b[1][0].weaponName))
-        .map(([weaponKey, builds]) => ({ label: builds[0].weaponName, value: weaponKey, description: weaponSummary(builds) }));
+        .map(([weaponKey, builds]) => ({ label: builds[0].weaponName, value: weaponKey, description: weaponSummary(builds, { metaList }) }));
     const jumpOptions = classJumps
         ? [...new Set(real.map(b => b.category))].filter(c => c !== activeCategory).sort()
             .map(c => ({ label: `All ${displayCategoryLabel(c)} builds`, value: `~class~${c}`, description: countLabel(real.filter(b => b.category === c).length) }))
@@ -235,29 +235,29 @@ function countLabel(n) {
     return `${n} build${n === 1 ? '' : 's'}`;
 }
 
-// A weapon's strongest rank across its builds, as plain words for a dropdown option (no emoji: an option description is plain text). Best, then the lowest Top N, then Capable.
-function bestRankLabel(builds) {
+// A weapon's strongest rank across its builds, as plain words for a dropdown option (no emoji: an option description is plain text): Best, then the lowest Top N. Capable is not shown (Harkirat, 2026-10-24 18:25 EDT: "only mention if a weapon is meta or top three or top five or best"). `short` drops the MP class ("Top 3") where the line already names it.
+function bestRankLabel(builds, { short = false } = {}) {
     let best = null, score = Infinity;
     for (const b of builds) {
         const raw = b.mode === 'DMZ' ? b.dmzRangeRank : b.categoryRank;
-        const m = raw ? /^(best|top(\d+)|capable)/.exec(raw) : null;
+        const m = raw ? /^(best|top(\d+))/.exec(raw) : null;
         if (!m) continue;
-        const s = m[1] === 'best' ? 0 : m[2] ? Number(m[2]) : 99;
+        const s = m[1] === 'best' ? 0 : Number(m[2]);
         if (s < score) { score = s; best = b; }
     }
     if (!best) return null;
     const raw = best.mode === 'DMZ' ? best.dmzRangeRank : '';
-    const label = best.mode === 'DMZ' ? (raw.includes('-close') ? 'Close Range' : raw.includes('-midlong') ? 'Mid-Long Range' : 'DMZ') : displayCategoryLabel(best.category);
-    return score === 0 ? `Best ${label}` : score === 99 ? `Capable ${label}` : `Top ${score} ${label}`;
+    const label = best.mode === 'DMZ' ? (raw.includes('-close') ? 'Close Range' : raw.includes('-midlong') ? 'Mid-Long Range' : 'DMZ') : (short ? '' : displayCategoryLabel(best.category));
+    return (score === 0 ? `Best ${label}` : `Top ${score} ${label}`).trim();
 }
 
-// One dropdown option's second line: "Meta · Best AR · 3 builds".
-function weaponSummary(builds) {
+// One dropdown option's second line: "Meta · Best AR · 3 builds". Only Meta and the Best / Top N rank, never Toxic, Ass or Capable (Harkirat, 2026-10-24 18:25 EDT). In the META list every weapon is Meta, so the line names the class instead (same message: "in the dropdown for the meta list, can you also mention the category of that weapon?"): "AR · Top 3 · 2 builds".
+function weaponSummary(builds, { metaList = false } = {}) {
     const parts = [];
-    if (builds.some(b => b.isMeta)) parts.push('Meta');
-    const rank = bestRankLabel(builds);
+    if (metaList) parts.push(displayCategoryLabel(builds[0].category));
+    else if (builds.some(b => b.isMeta)) parts.push('Meta');
+    const rank = bestRankLabel(builds, { short: metaList });
     if (rank) parts.push(rank);
-    if (builds.some(b => b.isToxic)) parts.push('Toxic');
     parts.push(countLabel(builds.length));
     return parts.join(' · ').slice(0, 100);
 }
@@ -309,9 +309,9 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
         containerComponents.push({ type: 14, spacing: 1, divider: true });
         // A build with only the placeholder image says so in one quiet line instead of showing a grey "Coming Soon" rectangle; it stays in every list (his call, same message).
         if (hasRealImage(activeBuild)) containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey) } }] });
-        else containerComponents.push({ type: 10, content: '-# No screenshot of this build yet.' });
+        else containerComponents.push({ type: 10, content: '-# *No screenshot of this build yet.*' });
     }
-    // `footerBuild` is false on a single weapon's card, whose pager already reads "Build 2/5"; a browse card's pager counts the class instead, so its footer keeps the build.
+    // `footerBuild` is false on a single weapon's card with a pager, which already reads "Build 2/5"; a browse card's pager counts the class instead, and a one-build card has no pager, so both keep the build in the footer (Harkirat, 2026-10-24 18:25 EDT: with one build "it doesn't mention build one of one for this anymore").
     containerComponents.push({ type: 10, content: `-# ${[activeBuild.category, footerBuild ? `Build ${index + 1} of ${total}` : null, `Updated <t:${lastUpdatedUnix}:D>`].filter(Boolean).join(' • ')}` });
 
     return containerComponents;
@@ -322,7 +322,7 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     const activeBuild = builds[index];
     const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
     const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
-    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, copyIds: { attachments: copyAttCustomId, code: copyCustomId }, footerBuild: Boolean(browse) });
+    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, copyIds: { attachments: copyAttCustomId, code: copyCustomId }, footerBuild: Boolean(browse) || builds.length === 1 });
 
     // NOTE (moved during review): buttons live INSIDE the container now (were a separate row outside it), with a divider between them and the image/caption above — per Harkirat's request. Prev/Next also switched from plain "Back"/"Next" text buttons to the same Left/Right-emoji + numbers-only pagination style used everywhere else in the bot (utils/paginationRow.js), for consistency.
     containerComponents.push({ type: 14, spacing: 1, divider: true });
@@ -365,7 +365,7 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     const scopeLabel = browse ? browse.scopeLabel : (activeBuild.mode === 'DMZ' ? 'DMZ' : activeBuild.category);
     const browseRow = buildCategoryBrowseRow(categoryBuilds, activeBuild.weaponKey, idPrefix, scopeLabel,
         browse ? `gsb~jump~${browse.scopeToken}` : null,
-        { mode: activeBuild.mode === 'DMZ' ? 'DMZ' : 'MP', classJumps: Boolean(browse) && browse.scopeToken === 'MP.*.std' });
+        { mode: activeBuild.mode === 'DMZ' ? 'DMZ' : 'MP', classJumps: Boolean(browse) && browse.scopeToken === 'MP.*.std', metaList: Boolean(browse) && browse.scopeToken.endsWith('.meta') });
 
     const outerComponents = [containerPayload];
     if (browseRow) outerComponents.push(browseRow);
@@ -393,7 +393,8 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
     const containerComponents = [
         { type: 10, content: `## ${weaponName}` },
         { type: 14, spacing: 1, divider: true },
-        { type: 10, content: `### No build yet\nDioreo doesn't have a ${weaponName} build yet.${weaponCount ? ` ${weaponCount} other ${label} weapon${weaponCount === 1 ? ' has' : 's have'} one.` : ''}` },
+        // The missing line in italics and the count on its own line (Harkirat, 2026-10-24 18:25 EDT).
+        { type: 10, content: `### No build yet\n*Dioreo doesn't have a ${weaponName} build yet.*${weaponCount ? `\n${weaponCount} other ${label} weapon${weaponCount === 1 ? ' has' : 's have'} one.` : ''}` },
     ];
     if (real.length) {
         const token = mode === 'DMZ' ? 'DMZ.*.std' : `MP.${category}.std`;

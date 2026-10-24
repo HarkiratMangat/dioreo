@@ -36,6 +36,11 @@ const ar = [...two, { ...fixture[0], weaponKey: 'bp50', weaponName: 'BP50', isMe
 const card = JSON.stringify(R.buildLoadoutCard(two, 1, { color: 1, idPrefix: 'mp', categoryBuilds: ar }));
 assert.ok(card.includes('"Build 2/2"'), 'one weapon: the pager says Build 2/2');
 assert.ok(!card.includes('Build 2 of 2'), 'one weapon: the footer drops the build the pager already shows');
+const single = JSON.stringify(R.buildLoadoutCard([slotted], 0, { color: 1, idPrefix: 'mp' }));
+assert.ok(single.includes('Build 1 of 1'), 'a one-build card has no pager, so its footer keeps Build 1 of 1');
+const metaCard = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix: 'mp', categoryBuilds: [{ ...ar[2], categoryRank: 'top3', isToxic: true }],
+    browse: { scopeToken: 'MP.*.meta', flatIndex: 0, flatTotal: 1, scopeLabel: 'Meta — MP' } }));
+assert.ok(metaCard.includes('"AR · Top 3 · 1 build"'), 'the META list names the class, drops Meta and never says Toxic');
 assert.ok(card.indexOf('Muzzle') < card.indexOf('Grip') && card.indexOf('Grip') < card.indexOf('Ammo'), 'the card lists attachments in slot order');
 const opts = JSON.parse(card).components.find(c => c.type === 1 && c.components[0].type === 3).components[0].options;
 assert.strictEqual(opts[0].value, '~search~', 'Search is the first option');
@@ -47,7 +52,7 @@ const browseAll = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix
 assert.ok(browseAll.includes('"AR · 3/3"'), 'a browse pager names the class and the place in it');
 assert.ok(R.isPlaceholderBuild(ar[3]) && !R.isPlaceholderBuild(ar[0]), 'placeholder detection');
 const noImg = JSON.stringify(R.buildLoadoutCard([{ ...fixture[0], imageKey: 'https://placehold.co/1x1?text=Coming+Soon' }], 0, { color: 1, idPrefix: 'mp' }));
-assert.ok(noImg.includes('No screenshot of this build yet.') && !noImg.includes('"type":12'), 'a placeholder image is replaced by one line');
+assert.ok(noImg.includes('*No screenshot of this build yet.*') && !noImg.includes('"type":12'), 'a placeholder image is replaced by one line');
 const missing = JSON.stringify(R.buildMissingWeaponCard({ weaponName: 'PHARO', category: 'AR', categoryBuilds: ar }));
 assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.std'), 'the missing-weapon card says so and opens the class');
 console.log('✓ loadoutRender snapshot');
