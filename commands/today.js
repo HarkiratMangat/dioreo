@@ -290,7 +290,7 @@ function buildTodayContainer(seasonalDoc, { nowMs = Date.now(), accentColor, isE
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('today')
-        .setDescription("What was released today, what goes live at the next reset, and what's leaving soon")
+        .setDescription("New releases, going live, and leaving soon")
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts, like every public command
 

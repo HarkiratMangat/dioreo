@@ -141,7 +141,7 @@ const CATEGORY_DEFS = [
                     { name: 'filter', required: false, desc: 'Full timeline, or only past, live or upcoming entries (not saved)' }
                 ]
             }),
-            cmd('/today', { description: "What was released today, what goes live at the next reset, and what's leaving soon" }),
+            cmd('/today', { description: "New releases, going live, and leaving soon" }),
             cmd('/patch notes', {
                 description: 'Latest weapon balance changes, plus the full patch-note history',
                 options: [{ name: 'season', required: false, desc: 'Search for a specific previous season (start typing to see suggestions)' }]
