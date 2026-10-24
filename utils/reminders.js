@@ -15,18 +15,20 @@ const { isSameDrawTitle } = require('./search');
 const DAY_MS = 86400000;
 // The categories, in the panel's order. `emoji` is an emojiMap key, read at render time (scripts/checkEmojiCaptures.js).
 const CATEGORIES = [
-    { key: 'digest', label: 'Daily digest', emoji: 'calendar', hint: 'the whole /today brief' },
-    { key: 'newDraws', label: 'New draws', emoji: 'newDraws', hint: 'every new draw, when it releases' },
-    { key: 'returningDraws', label: 'Returning draws', emoji: 'returningDraws', hint: 'every returning draw, when it releases' },
-    { key: 'events', label: 'Events', emoji: 'events', hint: 'every event, when it starts' },
-    { key: 'playlists', label: 'Playlists & modes', emoji: 'modes', hint: 'every playlist and mode, when it starts' },
-    { key: 'leaving', label: 'Leaving soon', emoji: 'yellowDotGlow', hint: 'everything, 2 days and 1 day before it leaves' },
-    { key: 'newSeason', label: 'New season', emoji: 'greenDotGlow', hint: 'the day a new season starts' },
-    { key: 'patchNotes', label: 'Patch notes', emoji: 'patchNotes', hint: 'when new patch notes are posted' },
-    { key: 'bpEnding', label: 'BP ending', emoji: 'bp', hint: '3 days before the Battle Pass ends, and its last day' },
-    { key: 'rankEnding', label: 'Ranked ending', emoji: 'rank', hint: '3 days before Ranked ends, and its last day' },
-    { key: 'dmzEnding', label: 'DMZ ending', emoji: 'dmz', hint: '3 days before the DMZ season ends, and its last day' },
+    { key: 'newDraws', label: 'New draws', short: 'New draws', group: 'releases', emoji: 'newDraws', hint: 'every new draw, when it releases' },
+    { key: 'returningDraws', label: 'Returning draws', short: 'Returning draws', group: 'releases', emoji: 'returningDraws', hint: 'every returning draw, when it releases' },
+    { key: 'events', label: 'Events', short: 'Events', group: 'releases', emoji: 'events', hint: 'every event, when it starts' },
+    { key: 'playlists', label: 'Playlists & modes', short: 'Playlists & modes', group: 'releases', emoji: 'modes', hint: 'every playlist and mode, when it starts' },
+    { key: 'leaving', label: 'Leaving soon', short: 'Leaving soon', group: 'headsup', emoji: 'yellowDotGlow', hint: 'everything, 2 days and 1 day before it leaves' },
+    { key: 'newSeason', label: 'New season', short: 'New season', group: 'headsup', emoji: 'greenDotGlow', hint: 'the day a new season starts' },
+    { key: 'patchNotes', label: 'Patch notes', short: 'Patch notes', group: 'headsup', emoji: 'patchNotes', hint: 'when new patch notes are posted' },
+    { key: 'digest', label: 'Daily digest', short: 'Daily /today', group: 'headsup', emoji: 'calendar', hint: 'the whole /today brief' },
+    { key: 'bpEnding', label: 'BP ending', short: 'Battle Pass', group: 'season', emoji: 'bp', hint: '3 days before the Battle Pass ends, and its last day' },
+    { key: 'rankEnding', label: 'Ranked ending', short: 'Ranked', group: 'season', emoji: 'rank', hint: '3 days before Ranked ends, and its last day' },
+    { key: 'dmzEnding', label: 'DMZ ending', short: 'DMZ', group: 'season', emoji: 'dmz', hint: '3 days before the DMZ season ends, and its last day' },
 ];
+// The panel's three groups (his ask 2026-10-23 21:58 EDT, "improve the design and layout/structure"), each a small label over one row of toggles.
+const PANEL_GROUPS = [['releases', 'Releases', 'a DM the day it goes live'], ['headsup', 'Heads up', 'leaving soon, a new season, patch notes, or the whole /today brief'], ['season', 'Season ending', '3 days before, and on the last day']];
 const CATEGORY_KEYS = new Set(CATEGORIES.map(c => c.key));
 // Which category covers an entry's release, by /today's own entry kinds (commands/today.js collectEntries).
 const releaseCategory = e => (e.type === 'event' ? 'events' : e.type === 'playlist' ? 'playlists' : e.kind === 'Returning draw' ? 'returningDraws' : 'newDraws');
@@ -161,22 +163,45 @@ const shortDate = ms => new Date(ms).toLocaleDateString('en-US', { month: 'short
 const optionValue = title => title.slice(0, 100);
 const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return undefined; } };
 
-// The /remind panel, as one Components V2 container. Laid out like /settings, his round-3 Q3: a toggle per category (buttons in rows, green when on), then two dropdowns for one-thing follows; the panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1).
+// The /remind panel, as one Components V2 container, laid out like /settings (his round-3 Q3), then redesigned on his ask of 2026-10-23 21:58 EDT ("improve the design and layout/structure"):
+//   a header Section saying what is on and when the next DM comes, with a Send a test button beside it (so a person can check their DMs reach them before relying on it);
+//   three labelled groups of toggles, Releases · Heads up · Season ending, green when on;
+//   "Just one thing": what is followed, each with its date, then the two dropdowns;
+//   Search (past 25) and Stop all at the foot.
+// The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40.
 function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false } = {}) {
     const cats = new Set(sub?.categories || []);
     const follows = sub?.follows || [];
     const { releases, leaving } = followable(seasonalDoc, nowMs);
-    const header = [`## ${bell()} Reminders`, '-# One DM a day at the daily update (00:01 UTC), with only what you pick.'];
-    if (sub?.pausedAt) header.push(`${emojis.warn} **Paused:** your reminders couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account, then press **Turn back on**.`);
-    else if (sub?.failingSince) header.push(`${emojis.warn} Your last reminder couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.`);
+    const nextRun = nowMs + msUntilNextRun(nowMs);
 
-    const buttons = CATEGORIES.map(c => ({ type: 2, style: cats.has(c.key) ? 3 : 2, label: c.label, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emojis[c.emoji]) }));
-    const rows = [];
-    for (let i = 0; i < buttons.length; i += 4) rows.push({ type: 1, components: buttons.slice(i, i + 4) });
+    const summary = [];
+    if (cats.size) summary.push(`${cats.size} ${cats.size === 1 ? 'group' : 'groups'}`);
+    if (follows.length) summary.push(`${follows.length} single ${follows.length === 1 ? 'reminder' : 'reminders'}`);
+    const status = summary.length
+        ? `**On:** ${summary.join(' · ')}\n-# Your next DM comes ${rel(nextRun)}, if anything you follow happens that day.`
+        : '-# Nothing on yet. Turn on a group below, or pick one draw, event or playlist.';
+    const header = { type: 9, components: [block(`## ${bell()} Reminders\n-# One DM a day, a minute after the daily update, with only what you pick.\n${status}`)],
+        accessory: { type: 2, style: 2, label: 'Send a test', custom_id: `remind_test:${ownerId}` } };
+    const warning = sub?.pausedAt
+        ? `${emojis.warn} **Paused:** your reminders couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account, then press **Turn back on**.`
+        : sub?.failingSince ? `${emojis.warn} Your last reminder couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.` : null;
 
+    const groups = [];
+    for (const [key, title, hint] of PANEL_GROUPS) {
+        groups.push(block(`-# **${title}** · ${hint}`));
+        groups.push({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => ({ type: 2, style: cats.has(c.key) ? 3 : 2, label: c.short, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emojis[c.emoji]) })) });
+    }
+
+    const when = f => {
+        const list = f.kind === 'release' ? releases : leaving;
+        const e = list.find(x => sameTitle(x.title, f.title));
+        if (!e) return f.kind === 'release' ? 'when it releases' : 'when it is leaving';
+        return f.kind === 'release' ? `releases <t:${Math.floor(e.startMs / 1000)}:D>` : `leaving <t:${Math.floor(e.endMs / 1000)}:D>`;
+    };
     const followLines = follows.length
-        ? follows.map(f => `- ${bell()} **${f.title}** · when it ${f.kind === 'release' ? 'releases' : 'is leaving'}`)
-        : ['-# Nothing yet: pick a draw, event or playlist below.'];
+        ? follows.map(f => `- ${bell()} **${f.title}** · ${when(f)}`)
+        : ['-# Pick a draw, event or playlist below to hear about just that one.'];
 
     const select = (kind, list, placeholder, describe) => {
         const shown = list.slice(0, MAX_OPTIONS);
@@ -186,25 +211,25 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
             options: shown.map(e => ({ label: e.title.slice(0, 100), value: optionValue(e.title), description: describe(e), emoji: parseEmoji(e.icon), default: follows.some(f => f.kind === kind && sameTitle(f.title, e.title)) })),
         }] };
     };
-    const relRow = select('release', releases, 'Remind me when this releases…', e => `${e.kind} · releases ${shortDate(e.startMs)}`);
-    const lvRow = select('leaving', leaving, 'Remind me when this is leaving…', e => `${e.kind} · ends ${shortDate(e.endMs)}`);
+    const relRow = select('release', releases, `Remind me when this releases… (${Math.min(releases.length, MAX_OPTIONS)} upcoming)`, e => `${e.kind} · releases ${shortDate(e.startMs)}`);
+    const lvRow = select('leaving', leaving, `Remind me before this leaves… (${Math.min(leaving.length, MAX_OPTIONS)} live)`, e => `${e.kind} · ends ${shortDate(e.endMs)}`);
 
-    const bottom = [];
-    if (sub?.pausedAt) bottom.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}` });
-    if (releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS) bottom.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
-    if (confirmStop) bottom.push({ type: 2, style: 4, label: 'Yes, stop all and delete', custom_id: `remind_stopyes:${ownerId}` }, { type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}` });
-    else if (sub && (cats.size || follows.length)) bottom.push({ type: 2, style: 4, label: 'Stop all', custom_id: `remind_stop:${ownerId}` });
+    const foot = [];
+    if (sub?.pausedAt) foot.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}` });
+    if (releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
+    if (confirmStop) foot.push({ type: 2, style: 4, label: 'Yes, stop all and delete', custom_id: `remind_stopyes:${ownerId}` }, { type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}` });
+    else if (sub && (cats.size || follows.length)) foot.push({ type: 2, style: 4, label: 'Stop all', custom_id: `remind_stop:${ownerId}` });
 
     return [{ type: 17, accent_color: accentColor, components: [
-        block(header.join('\n')),
+        header,
+        ...(warning ? [block(warning)] : []),
         { type: 14, divider: true, spacing: 2 },
-        block('-# **Follow everything new**'),
-        ...rows,
+        ...groups,
         { type: 14, divider: true, spacing: 2 },
-        block(['-# **Just one thing**', ...followLines].join('\n')),
+        block(['-# **Just one thing** · a single draw, event or playlist', ...followLines].join('\n')),
         ...(relRow ? [relRow] : []),
         ...(lvRow ? [lvRow] : []),
-        ...(bottom.length ? [{ type: 14, divider: false, spacing: 1 }, { type: 1, components: bottom }] : []),
+        ...(foot.length ? [{ type: 14, divider: false, spacing: 1 }, { type: 1, components: foot }] : []),
     ] }];
 }
 
@@ -352,7 +377,7 @@ function withBell(textComponent) {
 }
 
 module.exports = {
-    CATEGORIES, CATEGORY_KEYS, MAX_OPTIONS,
+    CATEGORIES, CATEGORY_KEYS, PANEL_GROUPS, MAX_OPTIONS,
     computeDue, personalise, buildReminderDM, markFollowed,
     followable, buildPanel, mergeFollows, resolveSetValue, autocompleteChoices,
     failureUpdate, isRefusal, msUntilNextRun, runDailyReminders,

@@ -117,6 +117,20 @@ async function route(interaction) {
         return await rerender(interaction, sub);
     }
 
+    // Send a test: one DM now, so a person can check their reminders will reach them; a refusal names both fixes (DMs off, or the app removed, give the same error).
+    if (interaction.isButton() && interaction.customId.startsWith('remind_test:')) {
+        await interaction.deferReply({ flags: 64 });
+        const { Routes } = require('discord.js');
+        try {
+            const dm = await interaction.client.users.createDM(owner);
+            await interaction.client.rest.post(Routes.channelMessages(dm.id), { body: { flags: 32768, allowed_mentions: { parse: [] }, components: [{ type: 17, accent_color: accent(), components: [{ type: 10, content: `### ${emojis.notification} Test reminder\n-# Your reminders will arrive here, one DM a day at the daily update.` }] }] } });
+            return await interaction.editReply({ content: `${emojis.checkmark} Sent. Check your DMs from Dioreo.` });
+        } catch (err) {
+            if (!R.isRefusal(err)) throw err;
+            return await interaction.editReply({ content: `${emojis.cross} Discord wouldn't let Dioreo DM you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account, then try again.` });
+        }
+    }
+
     if (interaction.isButton() && (interaction.customId.startsWith('remind_stop:') || interaction.customId.startsWith('remind_stopno:'))) {
         await interaction.deferUpdate();
         const { sub } = await loadState(owner);
