@@ -141,7 +141,7 @@ const emojis = {
     returnArrow: '<:Return:1562521110572961882>',
     // The reminder bell (2026-10-21 15:41 EDT, Harkirat: "upload ... Notification.avif to all the bots first. and use it for the bell icon"). Uploaded to prod Dioreo at 15:49 EDT; the prod Dioreo Admin copy waits for deploy (its token is not on the Mac).
     notification: '<a:Notification:1562553366461284444>',
-    // His icon set, uploaded to the prod and dev apps on his word (2026-10-24 00:57 EDT); prod ids here, the dev bot re-points them by name at boot. Originals in the main checkout's Logos-&-Emojis/emoji-originals/ under these names. The Gunsmith Code button and /today's footer use theirs; the attachment and weapon-class icons wait until he picks how to use them (his word: attachments "uploaded and unused for now").
+    // His icon set, uploaded to the prod and dev apps on his word (2026-10-24 00:57 EDT); prod ids here, the dev bot re-points them by name at boot. Originals in the main checkout's Logos-&-Emojis/emoji-originals/ under these names. The Gunsmith Code button and /today's footer use theirs, and the single weapon-class icons sit on Copy Attachments by the build's class (2026-10-24 01:06 EDT, utils/loadoutRender.js). The split halves and the attachment icons are unused (his word: attachments "uploaded and unused for now").
     gunsmithCode: '<a:GunsmithCode:1563415632442163210>',
     dailyUpdate: '<a:DailyUpdate:1563415690738802690>',
     attAmmunition: '<a:Att_Ammunition:1563415633805189180>',

@@ -215,7 +215,13 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
 //
 // NOTE (redesigned during review, per Harkirat's loadouts_ui.json reference): weapon name is now the top heading with optional Meta/Best/Top-3 badges directly below it (see buildBadgesLine above), rather than a small category overline -- the category moved down into the footer line instead ("{category} • Build N of M • Last updated..."). The divider between Gunsmith Code and the image was removed. "Attachments"/"Gunsmith Code" are now real H3 headings (### ) rather than bold text, and each attachment line is backtick-wrapped to match the Gunsmith Code code-block styling. V2 still has no equivalent to an embed's *inline fields*, so those two sections stack vertically rather than sitting side-by-side. THE CONTENT HALF, WITHOUT THE CHROME. Split out 2026-08-23 12:55 EDT so a build can be drawn somewhere that is not /gunsmith -- /bot analytics' change-detail panel renders a loadout's before/after through this, per the record-view contract (docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md §2 rule D: never RE-DESCRIBE a record, draw it with its own renderer).
 //
-// ⚠️ WHAT IS DELIBERATELY NOT IN HERE: the Container (type 17) wrapper, the trailing divider, the pagination/Copy row, the browse dropdown and the Share button. Every one of those is a LIVE control whose custom_id routes to handlers/loadouts.js and resolves an index against a query only /gunsmith has made -- embedded in a change panel they would either mislead or misfire, and the Container would nest inside another Container. buildLoadoutCard() below still owns all of it, so its output is byte-identical to before (scripts/loadoutRenderSnapshot.test.js is the proof and must not move). `copyIds` (2026-10-20 12:12 EDT, Harkirat: "move the copy attachment and copy code buttons so they're inline with their respective sections as accessory buttons"): when given, the Attachments and Gunsmith Code headings become Sections with their Copy button as the accessory. Only buildLoadoutCard passes it; a change panel draws the body with no live controls, exactly as before.
+// ⚠️ WHAT IS DELIBERATELY NOT IN HERE: the Container (type 17) wrapper, the trailing divider, the pagination/Copy row, the browse dropdown and the Share button. Every one of those is a LIVE control whose custom_id routes to handlers/loadouts.js and resolves an index against a query only /gunsmith has made -- embedded in a change panel they would either mislead or misfire, and the Container would nest inside another Container. buildLoadoutCard() below still owns all of it, so its output is byte-identical to before (scripts/loadoutRenderSnapshot.test.js is the proof and must not move). `copyIds` (2026-10-20 12:12 EDT, Harkirat: "move the copy attachment and copy code buttons so they're inline with their respective sections as accessory buttons"): when given, the Attachments and Gunsmith Code headings become Sections with their Copy button as the accessory. Only buildLoadoutCard passes it; a change panel draws the body with no live controls, exactly as before. A build's weapon-class icon (his WC_ set, uploaded 2026-10-24 00:55 EDT), by its stored category; SECONDARIES is the pistol. Read at render time, so the dev bot's re-pointed ids are used (scripts/checkEmojiCaptures.js).
+const WEAPON_CLASS_EMOJI_KEY = { AR: 'wcAR', SMG: 'wcSMG', LMG: 'wcLMG', MARKSMAN: 'wcMarksman', SNIPER: 'wcSniper', SHOTGUN: 'wcShotgun', SECONDARIES: 'wcPistol' };
+function weaponClassEmoji(category) {
+    const key = WEAPON_CLASS_EMOJI_KEY[String(category || '').toUpperCase()];
+    return key ? emojis[key] : null;
+}
+
 function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = false, copyIds = null } = {}) {
     const attachmentLines = (activeBuild.attachments || []).map(att => `• \`${att}\``).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
@@ -240,7 +246,9 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     }
 
     if (copyIds) {
-        containerComponents.push({ type: 9, components: [{ type: 10, content: '### Attachments' }], accessory: { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyIds.attachments } });
+        // The build's weapon-class icon on Copy Attachments (Harkirat, 2026-10-24 01:05 EDT: "use it for the copy attachments button... depending on the weapon class that the loadout was for"); a category with no icon keeps the plain button.
+        const classIcon = weaponClassEmoji(activeBuild.category);
+        containerComponents.push({ type: 9, components: [{ type: 10, content: '### Attachments' }], accessory: { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyIds.attachments, ...(classIcon ? { emoji: emojis.parseEmoji(classIcon) } : {}) } });
         containerComponents.push({ type: 10, content: attachmentLines });
     } else {
         containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
