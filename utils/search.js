@@ -23,7 +23,11 @@ function distinctiveDrawTokens(title) {
     );
 }
 
+// The same words in any order and case are the same draw, before the distinctive-word count below (2026-10-23 13:31 EDT): Season 9's "Halloween Series Armory" has only one distinctive word, so the two-word rule never matched it even against itself, and /calendar listed it twice (its calendar row and its /draws entry). Word order is ignored so "Halloween Armory Series" matches too.
+const allDrawWords = title => (title || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean).sort().join(' ');
+
 function isSameDrawTitle(a, b) {
+    if (allDrawWords(a) && allDrawWords(a) === allDrawWords(b)) return true;
     const tokensA = distinctiveDrawTokens(a);
     const tokensB = distinctiveDrawTokens(b);
     let shared = 0;

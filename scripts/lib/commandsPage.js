@@ -58,6 +58,7 @@ const LINE = 'color-mix(in srgb,var(--ink) 12%,transparent)';
  */
 const ACCENT_SOURCE = {
     '/help': 'help', '/invite': 'invite', '/calendar': 'calendar',
+    '/today': 'calendar', // /today wears Calendar's accent (his call, 2026-10-23 10:00 EDT) and reads the same constant
     '/draw prices': 'drawprices', '/season end': 'seasonend',
     '/patch notes': 'patchnotes', '/draws': 'draws', '/timestamp': 'timestamp',
 };

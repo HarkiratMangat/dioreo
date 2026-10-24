@@ -98,6 +98,17 @@ function textOf(components) {
         assert.ok(textOf(sent[1].components).includes('Default Preferences'), 'a re-render is not hijacked by the option');
     });
 
+    await check('the dashboard shows "Dioreo User Since" and no "Member Since"; a button re-render with no recorded date shows neither (2026-10-23)', async () => {
+        sent.length = 0;
+        await settings.execute(fakeInteraction(), 1);
+        const slash = textOf(sent[0].components);
+        assert.ok(slash.includes('Dioreo User Since'), 'a slash run shows the Dioreo line (now, on a first /settings)');
+        assert.ok(!slash.includes('Member Since'), 'the Discord account date is gone');
+        await settings.execute(fakeInteraction({ slash: false }), 1);
+        const button = textOf(sent[1].components);
+        assert.ok(!button.includes('Dioreo User Since') && !button.includes('Member Since'), 'no date on a re-render means no line, not a wrong one');
+    });
+
     await check('open:colors opens /colors under settingsVisibility, the same field the dashboard button reads, and draws no dashboard', async () => {
         sent.length = 0; colorsCalls.length = 0;
         await settings.execute(fakeInteraction({ open: 'colors' }), 0);

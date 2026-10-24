@@ -66,6 +66,11 @@ const COMMANDS = {
         facts: ['`view` hides anything that has already finished.'],
         keywords: 'events schedule playlist rotation dates season what is on when ranked',
     },
+    '/today': {
+        purpose: "Today in CODM: what was released at the last reset, what goes live at the next, and what's leaving soon.",
+        facts: ['Counts what is active now, and counts down to the daily update and each season end.', '/calendar opens on its own Today page, with everything active and the next few days.'],
+        keywords: 'today daily update reset released new live now active leaving soon ending soon going live tomorrow this week new draw event',
+    },
     '/patch notes': {
         purpose: 'What got buffed and what got nerfed.',
         facts: ['`season` searches earlier seasons, not just the current one.'],
@@ -118,6 +123,7 @@ const ASKS = [
     { q: 'Builds for a category, or the meta', to: '/gunsmith mp' },
     { q: 'The same, but for DMZ', to: '/gunsmith dmz' },
     { q: 'When the season ends', to: '/season end' },
+    { q: "What's live today, and what's next", to: '/today' },
     { q: "What's on this season, and when", to: '/calendar' },
     { q: 'What got buffed or nerfed', to: '/patch notes' },
     { q: 'Post a time that reads right everywhere', to: '/timestamp' },

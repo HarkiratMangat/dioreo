@@ -148,8 +148,11 @@ t('/calendar: finished first by when they ended, then live by when they end, the
     assert.ok(line('Over early').startsWith(`${emojis.redDotGlow} ~~**Over early**~~\n-# `) && line('Over early').includes('Ended <t:'), line('Over early'));
     assert.ok(line('Live early').startsWith(`${emojis.greenDotGlow} **Live early**`) && line('Live early').includes('**Live** · ends <t:'));
     assert.ok(line('Back').includes('**Back** · returned <t:'));
-    assert.ok(line('Soon A').startsWith(`${emojis.whiteDotGlow} **Soon A**`) && line('Soon A').includes('Returns <t:'));
+    assert.ok(line('Soon A').startsWith(`${emojis.lightBlueDotGlow} **Soon A**`) && line('Soon A').includes('Returns <t:'));
     assert.ok(line('Longquan Sword Draw').endsWith('Releases TBA'));
+    // Upcoming with an end: "Until" and the END date; with none, the start date (2026-10-23 14:33 EDT).
+    assert.ok(line('Soon B').endsWith(`Starts <t:${day(2026, 10, 30).getTime() / 1000}:R> · Until <t:${day(2026, 11, 5).getTime() / 1000}:D>`), line('Soon B'));
+    assert.ok(line('Soon A').endsWith(`<t:${day(2026, 10, 25).getTime() / 1000}:D>`) && !line('Soon A').includes('Until'), line('Soon A'));
 });
 
 t('/calendar: a looping pager over the pages the filter keeps, and a filter dropdown with his six options (2026-10-21 15:32 EDT)', () => {
@@ -163,7 +166,8 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     ] };
     const json = (page, mode) => JSON.stringify(calendar.buildContainer(doc, page, undefined, false, mode));
     const select = JSON.parse(json(1, 0)).flatMap(c => c.components || []).flatMap(c => c.components || []).find(c => c.type === 3);
-    assert.deepStrictEqual(select.options.map(o => o.label), ['Live', 'Past/Ended', 'Upcoming', 'Lucky Draws', 'Special Events', 'Playlists & Modes']);
+    // Today joined first on 2026-10-23 11:48 EDT (his ask), and is a page pick since 13:05 EDT (scripts/today.test.js).
+    assert.deepStrictEqual(select.options.map(o => o.label), ['Today', 'Live', 'Past/Ended', 'Upcoming', 'Lucky Draws', 'Special Events', 'Playlists & Modes']);
     assert.strictEqual(select.min_values, 0, 'clearing every pick is the full timeline');
     assert.ok(!/Draws \| Events|"label":"Modes"/.test(json(1, 0)), 'the three page buttons are gone');
     // Statuses filter the entries.
@@ -184,7 +188,7 @@ t('/calendar: a looping pager over the pages the filter keeps, and a filter drop
     assert.deepStrictEqual([navCalendar(calendar.filterMask('live')).label, navCalendar(calendar.filterMask('live')).style, !!navCalendar(calendar.filterMask('live')).disabled], ['Full Calendar', 1, false], 'filtered: a live blurple Full Calendar');
     assert.deepStrictEqual([navCalendar(0).label, !!navCalendar(0).disabled], ['Calendar', true], 'unfiltered: the usual disabled Calendar');
     // The pager names the page, so the "Viewing ..." hint is gone (2026-10-21 16:21 EDT).
-    assert.ok(json(1, 0).includes('"label":"Events · 2/3"') && !json(1, 0).includes('Viewing'));
+    assert.ok(json(1, 0).includes('"label":"Events · 3/4"') && !json(1, 0).includes('Viewing'), 'Today is page 1 of 4 since 2026-10-23 13:05 EDT');
     // Ended entries fold to the 3 most recent only in a section of 5 or more (2026-10-21 16:34 EDT), and never once Past/Ended is picked.
     const D = 864e5, ev = (title, s, e) => ({ title, category: 'event', date: new Date(now + s * D), endDate: new Date(now + e * D) });
     const ended4 = [ev('E1', -30, -20), ev('E2', -25, -15), ev('E3', -14, -8), ev('E4', -9, -3)];

@@ -375,7 +375,7 @@ t('Advanced draws are priced per set, and from a fresh line each strategy goal m
     // Runs of three or more read as a range; the button says Char and Wep.
     const regOnly = allText(render(makeBasket({ banners: [{ drawKey: 'advancedWeapon', pullsDone: 10, goal: 'one_each', bothSets: [5] }] }), { detail: true }));
     assert.ok(regOnly.includes('Advanced: Set 5 · 1 of 2 Items: Sets 1–4, 6–10'), regOnly.slice(0, 600));
-    assert.strictEqual(buttons(progress([{ drawKey: 'advancedWeapon', pullsDone: 0, goal: 'mid2' }])).find(b => verbOf(b) === 'goalset').label, 'Goal: Both Epic Chars');
+    assert.strictEqual(buttons(progress([{ drawKey: 'advancedWeapon', pullsDone: 0, goal: 'mid2' }])).find(b => verbOf(b) === 'goalset').label, 'Goal: Both Epics');
     assert.strictEqual(dc.buildGoalModal(state(), makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] }), 0), null, 'only an Advanced line has a goal');
     assert.deepStrictEqual([dc.readGoal('top2'), dc.readGoal('nope')], ['top2', null]);
     // Lines with different goals or full sets never merge into one row on the result.

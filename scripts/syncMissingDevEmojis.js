@@ -126,13 +126,14 @@ async function compare(source, copy) {
     return problems;
 }
 
-// The real files, when they exist, beat any CDN rendition (Harkirat, 2026-10-20 14:48 EDT: "Why use the script when you have the real renders and can just upload via the api"). The first by-name copy took the dev app's CDN copies and lost about a sixth of each rank mode emoji's frames, while the originals sitting in local/ went up untouched and matched prod. So an upload looks for `<name>.<ext>` in this checkout's local/emoji-originals, then the main checkout's (a worktree shares its git dir, so `--git-common-dir` finds it), and only falls back to the CDN when no original is on disk.
+// The real files, when they exist, beat any CDN rendition (Harkirat, 2026-10-20 14:48 EDT: "Why use the script when you have the real renders and can just upload via the api"). The first by-name copy took the dev app's CDN copies and lost about a sixth of each rank mode emoji's frames, while the originals sitting in local/ went up untouched and matched prod. So an upload looks for `<name>.<ext>` in the main checkout's Logos-&-Emojis/emoji-originals (the canonical home, Harkirat 2026-10-23 12:08 EDT: "they should be in '/Applications/Claude Code/Diors-Builds/Logos-&-Emojis/emoji-originals'"), then the older local/emoji-originals folders in this checkout and the main one (a worktree shares its git dir, so `--git-common-dir` finds the main checkout), and only falls back to the CDN when no original is on disk.
 const ORIGINAL_DIRS = (() => {
-    const dirs = [path.join(REPO_ROOT, 'local', 'emoji-originals')];
+    const dirs = [path.join(REPO_ROOT, 'Logos-&-Emojis', 'emoji-originals'), path.join(REPO_ROOT, 'local', 'emoji-originals')];
     try {
-        const common = require('child_process').execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: REPO_ROOT, encoding: 'utf8' }).trim();
-        dirs.push(path.join(path.dirname(common), 'local', 'emoji-originals'));
-    } catch { /* not a git checkout: this checkout's folder only */ }
+        const main = path.dirname(require('child_process').execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: REPO_ROOT, encoding: 'utf8' }).trim());
+        dirs.unshift(path.join(main, 'Logos-&-Emojis', 'emoji-originals'));
+        dirs.push(path.join(main, 'local', 'emoji-originals'));
+    } catch { /* not a git checkout: this checkout's folders only */ }
     return [...new Set(dirs)];
 })();
 const ORIGINAL_MIME = { '.avif': 'image/avif', '.webp': 'image/webp', '.gif': 'image/gif', '.png': 'image/png' };
