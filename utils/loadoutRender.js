@@ -401,7 +401,8 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
         const token = mode === 'DMZ' ? 'DMZ.*.std' : `MP.${category}.std`;
         containerComponents.push({ type: 1, components: [{ type: 2, style: 1, label: `Browse ${mode === 'DMZ' ? 'all DMZ' : `all ${label}`} builds`, custom_id: `gsb~open~${token}` }] });
     }
-    containerComponents.push({ type: 10, content: `-# ${mode === 'DMZ' ? 'DMZ' : category}` });
+    // "SMG • Build pending" (Harkirat, 2026-10-24 18:36 EDT), the same dot the build cards' footers use.
+    containerComponents.push({ type: 10, content: `-# ${mode === 'DMZ' ? 'DMZ' : category} • Build pending` });
     const components = [{ type: 17, accent_color: getMpCategoryAccent(category), components: containerComponents }];
     const browseRow = buildCategoryBrowseRow(real, null, idPrefix, label, null, { mode });
     if (browseRow) components.push(browseRow);
