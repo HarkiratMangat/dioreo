@@ -184,7 +184,8 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
         weapons.get(doc.weaponKey).push(doc);
     }
     let weaponOptions = Array.from(weapons.entries())
-        .sort((a, b) => a[1][0].weaponName.localeCompare(b[1][0].weaponName))
+        // By class, then name (Harkirat, 2026-10-24 18:41 EDT: "Correctly organize the dropdown menus as well via category alphabetical"), the same order the browse pager steps through (utils/loadoutScopes.js resolveScopeBuilds).
+        .sort((a, b) => a[1][0].category.localeCompare(b[1][0].category) || a[1][0].weaponName.localeCompare(b[1][0].weaponName))
         .map(([weaponKey, builds]) => ({ label: builds[0].weaponName, value: weaponKey, description: weaponSummary(builds, { metaList }) }));
     const jumpOptions = classJumps
         ? [...new Set(real.map(b => b.category))].filter(c => c !== activeCategory).sort()
