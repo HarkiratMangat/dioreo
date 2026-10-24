@@ -116,12 +116,15 @@ function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 409
     const sep = { type: 14, divider: true, spacing: 2 };
     let body;
     if (p.digest) {
-        const { buildTodayBody } = require('../commands/today');
+        // The brief exactly as /today draws it, each new draw as its own block with its items and thumbnail (Harkirat, 2026-10-24 19:48 EDT: "shouldn't the black hole draw item be fully detailed including the thumbnail?"). It used to be the 'compact' plain lines; now /today's own fitMessage steps down to compact, then capped, only when the whole DM would pass Discord's 40 components or 4,000 characters.
+        const { fitMessage } = require('../commands/today');
         const marked = [...p.released, ...p.lastChance, ...p.leavingSoon].filter(e => e.followed).map(e => e.title);
-        const brief = buildTodayBody(seasonalDoc, { nowMs, mode: 'compact' }).map(c => markFollowed(c, marked));
-        body = [block(`## ${emojis.remind} Your daily brief\n${dateLine}`), sep, ...brief];
         const extra = extraBlocks(p);
-        if (extra.length) body.push(sep, ...extra);
+        const wrap = brief => [{ type: 17, accent_color: accentColor, components: [
+            block(`## ${emojis.remind} Your daily brief\n${dateLine}`), sep, ...brief.map(c => markFollowed(c, marked)),
+            ...(extra.length ? [sep, ...extra] : []), { type: 14, divider: false, spacing: 1 }, manageRow(),
+        ] }];
+        return fitMessage(seasonalDoc, { nowMs }, wrap);
     } else {
         const parts = [];
         const line = e => `- ${e.icon} **${e.title}**${mark(e)}`;
