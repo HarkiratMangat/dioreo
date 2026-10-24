@@ -31,7 +31,7 @@ function accent() {
 // Writes the record, creating it on first use; a record left with nothing followed is deleted, so Stop all and turning the last thing off leave no data behind (PRIVACY.md).
 async function saveSub(userId, update) {
     const ReminderSubscription = require('../models/ReminderSubscription');
-    const sub = await ReminderSubscription.findOneAndUpdate({ discordId: userId }, update, { upsert: true, new: true, setDefaultsOnInsert: true }).lean();
+    const sub = await ReminderSubscription.findOneAndUpdate({ discordId: userId }, update, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }).lean();
     if (!sub.categories?.length && !sub.follows?.length && !sub.pausedAt) {
         await ReminderSubscription.deleteOne({ _id: sub._id });
         return null;
@@ -81,7 +81,7 @@ async function route(interaction) {
 
     if (interaction.isStringSelectMenu() && (interaction.customId.startsWith('remind_rel:') || interaction.customId.startsWith('remind_lv:'))) {
         await interaction.deferUpdate();
-        const kind = action === 'remind_rel' ? 'release' : 'leaving';
+        const kind = interaction.customId.startsWith('remind_rel:') ? 'release' : 'leaving';
         const { sub: current, doc } = await loadState(owner);
         const { releases, leaving } = R.followable(doc || {});
         const listed = (kind === 'release' ? releases : leaving).slice(0, R.MAX_OPTIONS).map(e => e.title);
@@ -120,7 +120,7 @@ async function route(interaction) {
     if (interaction.isButton() && (interaction.customId.startsWith('remind_stop:') || interaction.customId.startsWith('remind_stopno:'))) {
         await interaction.deferUpdate();
         const { sub } = await loadState(owner);
-        return await rerender(interaction, sub, { confirmStop: action === 'remind_stop' });
+        return await rerender(interaction, sub, { confirmStop: interaction.customId.startsWith('remind_stop:') });
     }
 
     if (interaction.isButton() && interaction.customId.startsWith('remind_stopyes:')) {
@@ -133,7 +133,7 @@ async function route(interaction) {
 
     if (interaction.isButton() && interaction.customId.startsWith('remind_resume:')) {
         const ReminderSubscription = require('../models/ReminderSubscription');
-        const sub = await ReminderSubscription.findOneAndUpdate({ discordId: owner }, { $set: { pausedAt: null, pauseNoteShown: false, failingSince: null, noteDue: false, noteShownAt: null } }, { new: true }).lean();
+        const sub = await ReminderSubscription.findOneAndUpdate({ discordId: owner }, { $set: { pausedAt: null, pauseNoteShown: false, failingSince: null, noteDue: false, noteShownAt: null } }, { returnDocument: 'after' }).lean();
         R.pendingNotice.delete(owner);
         // From the panel it redraws the panel; from the note on a command it answers privately.
         if (interaction.message?.flags?.has?.(32768)) {

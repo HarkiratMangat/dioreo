@@ -48,7 +48,7 @@ module.exports = {
                 const follows = (current?.follows || []).filter(f => !(f.kind === target.kind && f.title === target.title));
                 update = { $set: { follows: on ? [...follows, { kind: target.kind, title: target.title }] : follows } };
             }
-            const sub = await ReminderSubscription.findOneAndUpdate({ discordId: userId }, update, { upsert: true, new: true, setDefaultsOnInsert: true }).lean();
+            const sub = await ReminderSubscription.findOneAndUpdate({ discordId: userId }, update, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }).lean();
             if (!sub.categories?.length && !sub.follows?.length && !sub.pausedAt) await ReminderSubscription.deleteOne({ _id: sub._id });
             const what = target.type === 'category' ? `**${target.label}**` : `**${target.title}** ${target.kind === 'release' ? 'releases' : 'is leaving'}`;
             const content = on
