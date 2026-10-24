@@ -112,7 +112,8 @@ const manageRow = () => ({ type: 1, components: [{ type: 2, style: 2, label: 'Ma
 // The DM, as Components V2 JSON, or null. His order (round 3): Last chance · Leaving soon · Released · Season · Patch notes. With the digest on, the /today brief takes the place of Released and the leaving lists, with followed items marked by the bell (his round-2 Q4: the digest absorbs the rest), and the season and patch-note parts follow it.
 function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 4093660 } = {}) {
     if (!p) return null;
-    const dateLine = `-# ${new Date(nowMs).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' })} · the daily update`;
+    // The run's own time, as a Discord timestamp, so each reader sees it in their zone (Harkirat, 2026-10-24 19:56 EDT: "improve the way the date is displayed on the brief"). It was a UTC date string, which read "Saturday, October 24" in Toronto for an update that landed Friday at 8:01 PM there.
+    const dateLine = `-# ${emojis.dailyUpdate} Daily update · <t:${Math.floor(nowMs / 1000)}:f>`;
     const sep = { type: 14, divider: true, spacing: 2 };
     let body;
     if (p.digest) {
