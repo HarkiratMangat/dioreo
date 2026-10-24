@@ -19,20 +19,20 @@ const CATEGORIES = [
     { key: 'returningDraws', label: 'Returning draws', short: 'Returning draws', group: 'releases', emoji: 'returningDraws', hint: 'every returning draw, when it releases' },
     { key: 'events', label: 'Events', short: 'Events', group: 'releases', emoji: 'events', hint: 'every event, when it starts' },
     { key: 'playlists', label: 'Playlists & modes', short: 'Playlists & modes', group: 'releases', emoji: 'modes', hint: 'every playlist and mode, when it starts' },
-    { key: 'leaving', label: 'Leaving soon', short: 'Leaving soon', group: 'headsup', emoji: 'yellowDotGlow', hint: 'everything, 2 days and 1 day before it leaves' },
-    { key: 'newSeason', label: 'New season', short: 'New season', group: 'headsup', emoji: 'greenDotGlow', hint: 'the day a new season starts' },
-    { key: 'patchNotes', label: 'Patch notes', short: 'Patch notes', group: 'headsup', emoji: 'patchNotes', hint: 'when new patch notes are posted' },
-    { key: 'digest', label: 'Daily digest', short: 'Daily /today', group: 'headsup', emoji: 'calendar', hint: 'the whole /today brief' },
-    { key: 'bpEnding', label: 'BP ending', short: 'Battle Pass', group: 'season', emoji: 'bp', hint: '3 days before the Battle Pass ends, and its last day' },
-    { key: 'rankEnding', label: 'Ranked ending', short: 'Ranked', group: 'season', emoji: 'rank', hint: '3 days before Ranked ends, and its last day' },
-    { key: 'dmzEnding', label: 'DMZ ending', short: 'DMZ', group: 'season', emoji: 'dmz', hint: '3 days before the DMZ season ends, and its last day' },
+    { key: 'leaving', label: 'Leaving soon', short: 'Leaving soon', group: 'releases', emoji: 'yellowDotGlow', hint: 'everything, 2 days and 1 day before it leaves' },
+    { key: 'newSeason', label: 'New season', short: 'New season', group: 'season', emoji: 'greenDotGlow', hint: 'the day a new season starts' },
+    { key: 'patchNotes', label: 'Patch notes', short: 'Patch notes', group: 'updates', emoji: 'patchNotes', hint: 'when new patch notes are posted' },
+    { key: 'digest', label: 'Daily digest', short: 'Daily /today', group: 'updates', emoji: 'calendar', hint: 'the whole /today brief' },
+    { key: 'bpEnding', label: 'BP ending', short: 'Battle Pass ends', group: 'season', emoji: 'bp1', hint: '3 days before the Battle Pass ends, and its last day' },
+    { key: 'rankEnding', label: 'Ranked ending', short: 'Ranked ends', group: 'season', emoji: 'rank', hint: '3 days before Ranked ends, and its last day' },
+    { key: 'dmzEnding', label: 'DMZ ending', short: 'DMZ ends', group: 'season', emoji: 'dmz', hint: '3 days before the DMZ season ends, and its last day' },
 ];
-// The panel's three groups (his ask 2026-10-23 21:58 EDT, "improve the design and layout/structure"), each a small label over one row of toggles.
-const PANEL_GROUPS = [['releases', 'Releases', 'a DM the day it goes live'], ['headsup', 'Heads up', 'leaving soon, a new season, patch notes, or the whole /today brief'], ['season', 'Season ending', '3 days before, and on the last day']];
+// The panel's three groups (his ask 2026-10-23 21:58 EDT, "improve the design and layout/structure"), each a small label over one row of toggles. Regrouped 2026-10-24 18:58 EDT (Harkirat: "Better organize this section? The heads up section kind of feels mixed together"): what goes live or leaves sits together, everything about the season sits together, and the two news DMs close the list.
+const PANEL_GROUPS = [['releases', 'Draws, events & modes', 'when one goes live, or before it leaves'], ['season', 'Season', 'when one starts, and 3 days before each part ends'], ['updates', 'Updates', 'new patch notes, or the whole /today brief each day']];
 const CATEGORY_KEYS = new Set(CATEGORIES.map(c => c.key));
 // Which category covers an entry's release, by /today's own entry kinds (commands/today.js collectEntries).
 const releaseCategory = e => (e.type === 'event' ? 'events' : e.type === 'playlist' ? 'playlists' : e.kind === 'Returning draw' ? 'returningDraws' : 'newDraws');
-const SEASON_ENDS = [['bpEnding', 'bpEnd', 'bpTitle', 'Battle Pass', 'bp'], ['rankEnding', 'rankEnd', 'rankTitle', 'Ranked Series', 'rank'], ['dmzEnding', 'dmzEnd', 'dmzTitle', 'DMZ Season', 'dmz']];
+const SEASON_ENDS = [['bpEnding', 'bpEnd', 'bpTitle', 'Battle Pass', 'bp1'], ['rankEnding', 'rankEnd', 'rankTitle', 'Ranked Series', 'rank'], ['dmzEnding', 'dmzEnd', 'dmzTitle', 'DMZ Season', 'dmz']];
 
 const dayKey = ms => new Date(ms).toISOString().slice(0, 10);
 const rel = ms => `<t:${Math.floor(ms / 1000)}:R>`;

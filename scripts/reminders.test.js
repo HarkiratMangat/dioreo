@@ -102,7 +102,7 @@ t('the panel: a toggle per category, green when on, two dropdowns with follows p
     assert.ok(s.includes('remind_stop:u1'));
     assert.ok(s.includes('remind_test:u1'), 'Send a test beside the header');
     for (const [, title] of R.PANEL_GROUPS) assert.ok(s.includes(`**${title}**`), `the ${title} group label`);
-    assert.deepStrictEqual(R.PANEL_GROUPS.map(([key]) => R.CATEGORIES.filter(c => c.group === key).length), [4, 4, 3], 'every category in a group, at most 5 to a row');
+    assert.deepStrictEqual(R.PANEL_GROUPS.map(([key]) => R.CATEGORIES.filter(c => c.group === key).length), [5, 4, 2], 'every category in a group, at most 5 to a row');
     assert.ok(!R.buildPanel(null, doc(), { ownerId: 'u1', nowMs: RUN }).some(c => text(c).includes('remind_stop:')), 'nothing to stop with no record');
 });
 
