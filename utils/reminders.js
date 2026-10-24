@@ -167,7 +167,7 @@ const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return un
 // The /remind panel, as one Components V2 container, laid out like /settings (his round-3 Q3), then redesigned on his ask of 2026-10-23 21:58 EDT ("improve the design and layout/structure"):
 //   a header Section saying what is on and when the next DM comes, with a Send a test button beside it (so a person can check their DMs reach them before relying on it);
 //   three labelled groups of toggles, Releases · Heads up · Season ending, green when on;
-//   "Just one thing": what is followed, each with its date, then the two dropdowns;
+//   "Or pick only what you want": what is followed, each with its date, then the two dropdowns;
 //   Search (past 25) and Stop all at the foot.
 // The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40.
 function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false } = {}) {
@@ -178,10 +178,10 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 
     const summary = [];
     if (cats.size) summary.push(`${cats.size} ${cats.size === 1 ? 'group' : 'groups'}`);
-    if (follows.length) summary.push(`${follows.length} single ${follows.length === 1 ? 'reminder' : 'reminders'}`);
+    if (follows.length) summary.push(`${follows.length} picked`);
     const status = summary.length
         ? `**On:** ${summary.join(' · ')}\n-# Your next DM comes ${rel(nextRun)}, if anything you follow happens that day.`
-        : '-# Nothing on yet. Turn on a group below, or pick one draw, event or playlist.';
+        : '-# Nothing on yet. Turn on a group below, or pick only the draws, events or playlists you want.';
     const header = { type: 9, components: [block(`## ${emojis.remind} Reminders\n-# One DM a day, a minute after the daily update, with only what you pick.\n${status}`)],
         accessory: { type: 2, style: 2, label: 'Send a test', custom_id: `remind_test:${ownerId}` } };
     const warning = sub?.pausedAt
@@ -202,7 +202,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     };
     const followLines = follows.length
         ? follows.map(f => `- ${bell()} **${f.title}** · ${when(f)}`)
-        : ['-# Pick a draw, event or playlist below to hear about only that one.'];
+        : ['-# Pick any draws, events or playlists below to hear about just those.'];
 
     const select = (kind, list, placeholder, describe) => {
         const shown = list.slice(0, MAX_OPTIONS);
@@ -227,8 +227,8 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         { type: 14, divider: true, spacing: 2 },
         ...groups,
         { type: 14, divider: true, spacing: 2 },
-        // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09 EDT: "it feels like it needs to be chosen in addition to the above toggle... better phrase it so it's clear that these are an 'or' option").
-        block(['-# **Or just one thing** · without turning on a whole group', ...followLines].join('\n')),
+        // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09 EDT: "it feels like it needs to be chosen in addition to the above toggle... better phrase it so it's clear that these are an 'or' option"), and never "one" (19:31 EDT: "they can pick a few options... 'or pick only what you want'").
+        block(['-# **Or pick only what you want** · specific draws, events or playlists, no whole group', ...followLines].join('\n')),
         ...(relRow ? [relRow] : []),
         ...(lvRow ? [lvRow] : []),
         ...(foot.length ? [{ type: 14, divider: false, spacing: 1 }, { type: 1, components: foot }] : []),
