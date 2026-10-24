@@ -248,8 +248,8 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     if (copyIds) {
         // The build's weapon-class icon on Copy Attachments (Harkirat, 2026-10-24 01:05 EDT: "use it for the copy attachments button... depending on the weapon class that the loadout was for"); a category with no icon keeps the plain button.
         const classIcon = weaponClassEmoji(activeBuild.category);
-        containerComponents.push({ type: 9, components: [{ type: 10, content: '### Attachments' }], accessory: { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyIds.attachments, ...(classIcon ? { emoji: emojis.parseEmoji(classIcon) } : {}) } });
-        containerComponents.push({ type: 10, content: attachmentLines });
+        // The list rides INSIDE the Section with its title (Harkirat, 2026-10-24 01:10 EDT): on a phone the accessory button drops below the whole Section, so it now lands under the attachments instead of between the title and the list.
+        containerComponents.push({ type: 9, components: [{ type: 10, content: `### Attachments\n${attachmentLines}` }], accessory: { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyIds.attachments, ...(classIcon ? { emoji: emojis.parseEmoji(classIcon) } : {}) } });
     } else {
         containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
     }
@@ -258,9 +258,8 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     const codeText = activeBuild.mode !== 'DMZ' && (activeBuild.shareCode || activeBuild.buildName);
     if (codeText) {
         if (copyIds) {
-            // Primary (blue), not Success (green), per Harkirat 2026-10-20 22:23 EDT: blue is the bot's call-to-action colour, green means "set / you are here". Copy Attachments stays grey as the secondary courtesy button.
-            containerComponents.push({ type: 9, components: [{ type: 10, content: '### Gunsmith Code' }], accessory: { type: 2, style: 1, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.gunsmithCode) } });
-            containerComponents.push({ type: 10, content: `\`${codeText}\`` });
+            // Primary (blue), not Success (green), per Harkirat 2026-10-20 22:23 EDT: blue is the bot's call-to-action colour, green means "set / you are here". Copy Attachments stays grey as the secondary courtesy button. The code rides inside its Section too, for the same phone layout (2026-10-24 01:10 EDT).
+            containerComponents.push({ type: 9, components: [{ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` }], accessory: { type: 2, style: 1, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.gunsmithCode) } });
         } else {
             containerComponents.push({ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` });
         }
