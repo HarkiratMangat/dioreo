@@ -202,7 +202,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     };
     const followLines = follows.length
         ? follows.map(f => `- ${bell()} **${f.title}** · ${when(f)}`)
-        : ['-# Pick a draw, event or playlist below to hear about just that one.'];
+        : ['-# Pick a draw, event or playlist below to hear about only that one.'];
 
     const select = (kind, list, placeholder, describe) => {
         const shown = list.slice(0, MAX_OPTIONS);
@@ -227,7 +227,8 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         { type: 14, divider: true, spacing: 2 },
         ...groups,
         { type: 14, divider: true, spacing: 2 },
-        block(['-# **Just one thing** · a single draw, event or playlist', ...followLines].join('\n')),
+        // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09 EDT: "it feels like it needs to be chosen in addition to the above toggle... better phrase it so it's clear that these are an 'or' option").
+        block(['-# **Or just one thing** · without turning on a whole group', ...followLines].join('\n')),
         ...(relRow ? [relRow] : []),
         ...(lvRow ? [lvRow] : []),
         ...(foot.length ? [{ type: 14, divider: false, spacing: 1 }, { type: 1, components: foot }] : []),
