@@ -93,7 +93,8 @@ function personalise(sub, due) {
 const block = content => ({ type: 10, content });
 const CAP = 15;
 const listLines = (items, line) => [...items.slice(0, CAP).map(line), ...(items.length > CAP ? [`-# +${items.length - CAP} more`] : [])];
-const bell = () => emojis.notification;
+// The mark after a title you follow (his ReminderEnabled icon, 2026-10-24 18:15 EDT); titles carry Remind, and a heads-up or a warning carries RemindAlert.
+const bell = () => emojis.reminderEnabled;
 const mark = e => (e.followed ? ` ${bell()}` : '');
 
 // The parts of a reminder the /today brief does not carry: season starts and ends, and patch notes. Used under the digest and in the plain reminder alike.
@@ -106,7 +107,7 @@ function extraBlocks(p) {
 }
 
 // The "Manage reminders" row every reminder DM ends with; the button opens the panel privately.
-const manageRow = () => ({ type: 1, components: [{ type: 2, style: 2, label: 'Manage reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.notification) }] });
+const manageRow = () => ({ type: 1, components: [{ type: 2, style: 2, label: 'Manage reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] });
 
 // The DM, as Components V2 JSON, or null. His order (round 3): Last chance · Leaving soon · Released · Season · Patch notes. With the digest on, the /today brief takes the place of Released and the leaving lists, with followed items marked by the bell (his round-2 Q4: the digest absorbs the rest), and the season and patch-note parts follow it.
 function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 4093660 } = {}) {
@@ -118,17 +119,17 @@ function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 409
         const { buildTodayBody } = require('../commands/today');
         const marked = [...p.released, ...p.lastChance, ...p.leavingSoon].filter(e => e.followed).map(e => e.title);
         const brief = buildTodayBody(seasonalDoc, { nowMs, mode: 'compact' }).map(c => markFollowed(c, marked));
-        body = [block(`## ${bell()} Your daily brief\n${dateLine}`), sep, ...brief];
+        body = [block(`## ${emojis.remind} Your daily brief\n${dateLine}`), sep, ...brief];
         const extra = extraBlocks(p);
         if (extra.length) body.push(sep, ...extra);
     } else {
         const parts = [];
         const line = e => `- ${e.icon} **${e.title}**${mark(e)}`;
-        if (p.lastChance.length) parts.push(block([`### ${emojis.redDotGlow} Heads up, last chance`, ...listLines(p.lastChance, e => `${line(e)} · ends ${rel(e.endMs)}`)].join('\n')));
-        if (p.leavingSoon.length) parts.push(block([`### ${emojis.yellowDotGlow} Heads up, leaving soon`, ...listLines(p.leavingSoon, e => `${line(e)} · ends ${rel(e.endMs)}`)].join('\n')));
+        if (p.lastChance.length) parts.push(block([`### ${emojis.remindAlert} Heads up, last chance`, ...listLines(p.lastChance, e => `${line(e)} · ends ${rel(e.endMs)}`)].join('\n')));
+        if (p.leavingSoon.length) parts.push(block([`### ${emojis.remindAlert} Heads up, leaving soon`, ...listLines(p.leavingSoon, e => `${line(e)} · ends ${rel(e.endMs)}`)].join('\n')));
         if (p.released.length) parts.push(block([`### ${emojis.greenDotGlow} Released`, ...listLines(p.released, line)].join('\n')));
         parts.push(...extraBlocks(p));
-        body = [block(`## ${bell()} Your reminders\n${dateLine}`), sep, ...parts];
+        body = [block(`## ${emojis.remind} Your reminders\n${dateLine}`), sep, ...parts];
     }
     return [{ type: 17, accent_color: accentColor, components: [...body, { type: 14, divider: false, spacing: 1 }, manageRow()] }];
 }
@@ -181,11 +182,11 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     const status = summary.length
         ? `**On:** ${summary.join(' · ')}\n-# Your next DM comes ${rel(nextRun)}, if anything you follow happens that day.`
         : '-# Nothing on yet. Turn on a group below, or pick one draw, event or playlist.';
-    const header = { type: 9, components: [block(`## ${bell()} Reminders\n-# One DM a day, a minute after the daily update, with only what you pick.\n${status}`)],
+    const header = { type: 9, components: [block(`## ${emojis.remind} Reminders\n-# One DM a day, a minute after the daily update, with only what you pick.\n${status}`)],
         accessory: { type: 2, style: 2, label: 'Send a test', custom_id: `remind_test:${ownerId}` } };
     const warning = sub?.pausedAt
-        ? `${emojis.warn} **Paused:** your reminders couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account, then press **Turn back on**.`
-        : sub?.failingSince ? `${emojis.warn} Your last reminder couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.` : null;
+        ? `${emojis.remindAlert} **Paused:** your reminders couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account, then press **Turn back on**.`
+        : sub?.failingSince ? `${emojis.remindAlert} Your last reminder couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.` : null;
 
     const groups = [];
     for (const [key, title, hint] of PANEL_GROUPS) {
@@ -215,10 +216,10 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     const lvRow = select('leaving', leaving, `Remind me before this leaves… (${Math.min(leaving.length, MAX_OPTIONS)} live)`, e => `${e.kind} · ends ${shortDate(e.endMs)}`);
 
     const foot = [];
-    if (sub?.pausedAt) foot.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}` });
+    if (sub?.pausedAt) foot.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}`, emoji: parseEmoji(emojis.reminderEnabled) });
     if (releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
-    if (confirmStop) foot.push({ type: 2, style: 4, label: 'Yes, stop all and delete', custom_id: `remind_stopyes:${ownerId}` }, { type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}` });
-    else if (sub && (cats.size || follows.length)) foot.push({ type: 2, style: 4, label: 'Stop all', custom_id: `remind_stop:${ownerId}` });
+    if (confirmStop) foot.push({ type: 2, style: 4, label: 'Yes, stop all and delete', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) }, { type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}` });
+    else if (sub && (cats.size || follows.length)) foot.push({ type: 2, style: 4, label: 'Stop all', custom_id: `remind_stop:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
 
     return [{ type: 17, accent_color: accentColor, components: [
         header,
@@ -357,10 +358,10 @@ async function maybeShowReminderNote(interaction) {
         if (!sub) return;
         const fix = 'Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.';
         if (sub.pausedAt && !sub.pauseNoteShown) {
-            await interaction.followUp({ content: `${emojis.warn} **Your reminders are paused:** they couldn't reach you for a few days. ${fix}`, components: [{ type: 1, components: [{ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${userId}` }] }], flags: 64 });
+            await interaction.followUp({ content: `${emojis.remindAlert} **Your reminders are paused:** they couldn't reach you for a few days. ${fix}`, components: [{ type: 1, components: [{ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${userId}`, emoji: parseEmoji(emojis.reminderEnabled) }] }], flags: 64 });
             await ReminderSubscription.updateOne({ _id: sub._id }, { $set: { pauseNoteShown: true } });
         } else if (sub.noteDue) {
-            await interaction.followUp({ content: `-# ${emojis.warn} Your reminder DM couldn't reach you. ${fix}`, flags: 64 });
+            await interaction.followUp({ content: `-# ${emojis.remindAlert} Your reminder DM couldn't reach you. ${fix}`, flags: 64 });
             await ReminderSubscription.updateOne({ _id: sub._id }, { $set: { noteDue: false, noteShownAt: new Date() } });
         }
     } catch (error) {
@@ -370,10 +371,10 @@ async function maybeShowReminderNote(interaction) {
 
 // ---------- The bell ----------
 
-// The bell: a grey, emoji-only button as the accessory of a command's header (his round-3 Q2), opening the panel privately. Wraps a Text Display in a Section; anything else passes through unchanged.
+// The bell: a grey, emoji-only button as the accessory of a command's header (his round-3 Q2), opening the panel privately. Its icon is his AddReminder (2026-10-24 18:15 EDT: "use this for the icon only buttons"). Wraps a Text Display in a Section; anything else passes through unchanged.
 function withBell(textComponent) {
     if (!textComponent || textComponent.type !== 10) return textComponent;
-    return { type: 9, components: [textComponent], accessory: { type: 2, style: 2, custom_id: 'remind_open', emoji: parseEmoji(emojis.notification) } };
+    return { type: 9, components: [textComponent], accessory: { type: 2, style: 2, custom_id: 'remind_open', emoji: parseEmoji(emojis.addReminder) } };
 }
 
 module.exports = {

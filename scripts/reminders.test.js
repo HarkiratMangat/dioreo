@@ -79,7 +79,7 @@ t('with the digest on, the DM is the /today brief with followed items marked by 
     const p = R.personalise(sub({ categories: ['digest', 'bpEnding'], follows: [{ kind: 'release', title: 'Black Hole Draw' }] }), due);
     const s = text(R.buildReminderDM(p, doc(), { nowMs: RUN }));
     assert.ok(s.includes('Your daily brief'));
-    assert.ok(s.includes(`Black Hole Draw ${emojis.notification}`), 'the followed draw is marked');
+    assert.ok(s.includes(`Black Hole Draw ${emojis.reminderEnabled}`), 'the followed draw is marked');
     assert.ok(s.includes('ends in 3 days'), 'season ends ride under the brief');
     assert.ok(!s.includes('Heads up, last chance'), 'the brief replaces the plain lists');
 });

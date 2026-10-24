@@ -143,6 +143,13 @@ const emojis = {
     notification: '<a:Notification:1562553366461284444>',
     // His icon set, uploaded to the prod and dev apps on his word (2026-10-24 00:57 EDT); prod ids here, the dev bot re-points them by name at boot. Originals in the main checkout's Logos-&-Emojis/emoji-originals/ under these names. The Gunsmith Code button and /today's footer use theirs, and the single weapon-class icons sit on Copy Attachments by the build's class (2026-10-24 01:06 EDT, utils/loadoutRender.js). The split halves and the attachment icons are unused (his word: attachments "uploaded and unused for now").
     gunsmithCode: '<a:GunsmithCode:1563415632442163210>',
+    // His reminder set and the mascot's tada (uploaded 2026-10-24 18:16 EDT to Dioreo, Dioreo (Dev) and Dioreo Admin (Dev)): Remind titles the /remind panel and the reminder DMs, RemindAlert marks a heads-up or a warning, AddReminder is the icon-only bell button, ReminderEnabled marks what you follow and turning reminders on, DisableReminder marks turning them off. DioreoTada is uploaded and not used yet.
+    dioreoTada: '<a:DioreoTada:1563677558589882510>',
+    remind: '<a:Remind:1563677560431452180>',
+    remindAlert: '<a:RemindAlert:1563677561697992724>',
+    addReminder: '<a:AddReminder:1563677562683654214>',
+    disableReminder: '<a:DisableReminder:1563677563988213831>',
+    reminderEnabled: '<a:ReminderEnabled:1563677565070217247>',
     dailyUpdate: '<a:DailyUpdate:1563415690738802690>',
     attAmmunition: '<a:Att_Ammunition:1563415633805189180>',
     attBarrel: '<a:Att_Barrel:1563415634904350761>',

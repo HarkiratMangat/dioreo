@@ -52,9 +52,9 @@ module.exports = {
             if (!sub.categories?.length && !sub.follows?.length && !sub.pausedAt) await ReminderSubscription.deleteOne({ _id: sub._id });
             const what = target.type === 'category' ? `**${target.label}**` : `**${target.title}** ${target.kind === 'release' ? 'releases' : 'is leaving'}`;
             const content = on
-                ? `${emojis.checkmark} ${target.type === 'category' ? `You'll get a DM for ${what}` : `You'll get a DM when ${what}`}, at the daily update (00:01 UTC).`
-                : `${emojis.checkmark} Reminder off: ${what}.`;
-            return await interaction.editReply({ content, components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.notification) }] }] });
+                ? `${emojis.reminderEnabled} ${target.type === 'category' ? `You'll get a DM for ${what}` : `You'll get a DM when ${what}`}, at the daily update (00:01 UTC).`
+                : `${emojis.disableReminder} Reminder off: ${what}.`;
+            return await interaction.editReply({ content, components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] }] });
         }
 
         // The panel: public unless hidden here or forced private by the server's rules (attachGuildPolicy clamps the defer).

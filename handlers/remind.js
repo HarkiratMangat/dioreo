@@ -55,7 +55,7 @@ async function rerender(interaction, sub, { confirmStop = false } = {}) {
 
 async function notYours(interaction) {
     try {
-        await interaction.reply({ content: `${emojis.notification} This is someone else's reminders panel.`, components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open your own reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.notification) }] }], flags: 64 });
+        await interaction.reply({ content: `${emojis.remind} This is someone else's reminders panel.`, components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open your own reminders', custom_id: 'remind_open', emoji: emojis.parseEmoji(emojis.remind) }] }], flags: 64 });
     } catch (error) {
         console.error('Failed to answer a click on someone else\'s reminders panel:', error?.message);
     }
@@ -123,7 +123,7 @@ async function route(interaction) {
         const { Routes } = require('discord.js');
         try {
             const dm = await interaction.client.users.createDM(owner);
-            await interaction.client.rest.post(Routes.channelMessages(dm.id), { body: { flags: 32768, allowed_mentions: { parse: [] }, components: [{ type: 17, accent_color: accent(), components: [{ type: 10, content: `### ${emojis.notification} Test reminder\n-# Your reminders will arrive here, one DM a day at the daily update.` }] }] } });
+            await interaction.client.rest.post(Routes.channelMessages(dm.id), { body: { flags: 32768, allowed_mentions: { parse: [] }, components: [{ type: 17, accent_color: accent(), components: [{ type: 10, content: `### ${emojis.remind} Test reminder\n-# Your reminders will arrive here, one DM a day at the daily update.` }] }] } });
             return await interaction.editReply({ content: `${emojis.checkmark} Sent. Check your DMs from Dioreo.` });
         } catch (err) {
             if (!R.isRefusal(err)) throw err;
@@ -155,7 +155,7 @@ async function route(interaction) {
             return await rerender(interaction, sub);
         }
         try {
-            await interaction.reply({ content: `${emojis.checkmark} Reminders are back on. The next one comes at the daily update.`, flags: 64 });
+            await interaction.reply({ content: `${emojis.reminderEnabled} Reminders are back on. The next one comes at the daily update.`, flags: 64 });
         } catch (error) {
             console.error('Failed to confirm reminders resumed:', error?.message);
         }
