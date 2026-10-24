@@ -389,17 +389,15 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
     const idPrefix = mode === 'DMZ' ? 'dmz' : 'mp';
     const label = mode === 'DMZ' ? 'DMZ' : displayCategoryLabel(category);
     const real = (categoryBuilds || []).filter(b => !isPlaceholderBuild(b));
-    const weaponCount = new Set(real.map(b => b.weaponKey)).size;
     const containerComponents = [
         { type: 10, content: `## ${weaponName}` },
         { type: 14, spacing: 1, divider: true },
-        // The missing line in italics and the count on its own line (Harkirat, 2026-10-24 18:25 EDT), with a small gap between them (18:35 EDT: "Add a divider:false small after the doesn't have a build line").
+        // The missing line in italics (Harkirat, 2026-10-24 18:25 EDT) and a small gap after it (18:35 EDT). The "14 other SMG weapons have one" line was dropped at 18:39 EDT: the button says it.
         { type: 10, content: `### No build yet\n*Dioreo doesn't have a ${weaponName} build yet.*` },
-        ...(weaponCount ? [{ type: 14, divider: false, spacing: 1 }, { type: 10, content: `${weaponCount} other ${label} weapon${weaponCount === 1 ? ' has' : 's have'} one.` }] : []),
     ];
     if (real.length) {
         const token = mode === 'DMZ' ? 'DMZ.*.std' : `MP.${category}.std`;
-        containerComponents.push({ type: 1, components: [{ type: 2, style: 1, label: `Browse ${mode === 'DMZ' ? 'all DMZ' : `all ${label}`} builds`, custom_id: `gsb~open~${token}` }] });
+        containerComponents.push({ type: 14, divider: false, spacing: 1 }, { type: 1, components: [{ type: 2, style: 1, label: `Browse other ${label} builds`, custom_id: `gsb~open~${token}` }] });
     }
     // "SMG • Build pending" (Harkirat, 2026-10-24 18:36 EDT), the same dot the build cards' footers use.
     containerComponents.push({ type: 10, content: `-# ${mode === 'DMZ' ? 'DMZ' : category} • Build pending` });
