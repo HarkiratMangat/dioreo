@@ -19,12 +19,12 @@ const CATEGORIES = [
     { key: 'returningDraws', label: 'Returning draws', short: 'Returning draws', group: 'releases', emoji: 'returningDraws', hint: 'every returning draw, when it releases' },
     { key: 'events', label: 'Events', short: 'Events', group: 'releases', emoji: 'events', hint: 'every event, when it starts' },
     { key: 'playlists', label: 'Playlists & modes', short: 'Playlists & modes', group: 'releases', emoji: 'modes', hint: 'every playlist and mode, when it starts' },
-    // Leaving soon by kind, picked in its own dropdown under the Draws, events & modes row (Harkirat, 2026-10-25 00:23 EDT: "let's go option C", after asking how someone would hear only when new draws, or all draws, are leaving). `leaving` is the older all-kinds key: records that hold it read as every kind, and the dropdown rewrites it as the four on the first change.
+    // Leaving soon by kind, a second row of toggles under the going-live row (Harkirat, 2026-10-25 00:32 EDT: "let's actually go option A from earlier but maybe better organize/structure so things are more intuitive", after the option C dropdown read as confusing); first built as option C's dropdown under the Draws, events & modes row (Harkirat, 2026-10-25 00:23 EDT: "let's go option C", after asking how someone would hear only when new draws, or all draws, are leaving). `leaving` is the older all-kinds key: records that hold it read as every kind, and the dropdown rewrites it as the four on the first change.
     { key: 'leaving', label: 'Leaving soon (everything)', short: 'Leaving soon', group: 'leavingAll', emoji: 'yellowDotGlow', hint: 'everything, 2 days and 1 day before it leaves' },
-    { key: 'leavingNewDraws', label: 'New draws leaving', short: 'All new draws', group: 'leaving', kind: 'newDraws', emoji: 'newDraws', hint: 'every new draw, 2 days and 1 day before it leaves' },
-    { key: 'leavingReturningDraws', label: 'Returning draws leaving', short: 'All returning draws', group: 'leaving', kind: 'returningDraws', emoji: 'returningDraws', hint: 'every returning draw, 2 days and 1 day before it leaves' },
-    { key: 'leavingEvents', label: 'Events leaving', short: 'All events', group: 'leaving', kind: 'events', emoji: 'events', hint: 'every event, 2 days and 1 day before it ends' },
-    { key: 'leavingPlaylists', label: 'Playlists & modes leaving', short: 'All playlists & modes', group: 'leaving', kind: 'playlists', emoji: 'modes', hint: 'every playlist and mode, 2 days and 1 day before it ends' },
+    { key: 'leavingNewDraws', label: 'New draws leaving', short: 'New draws leaving', btn: 'New draws', group: 'leaving', kind: 'newDraws', emoji: 'newDraws', hint: 'every new draw, 2 days and 1 day before it leaves' },
+    { key: 'leavingReturningDraws', label: 'Returning draws leaving', short: 'Returning draws leaving', btn: 'Returning draws', group: 'leaving', kind: 'returningDraws', emoji: 'returningDraws', hint: 'every returning draw, 2 days and 1 day before it leaves' },
+    { key: 'leavingEvents', label: 'Events leaving', short: 'Events leaving', btn: 'Events', group: 'leaving', kind: 'events', emoji: 'events', hint: 'every event, 2 days and 1 day before it ends' },
+    { key: 'leavingPlaylists', label: 'Playlists & modes leaving', short: 'Playlists & modes leaving', btn: 'Playlists & modes', group: 'leaving', kind: 'playlists', emoji: 'modes', hint: 'every playlist and mode, 2 days and 1 day before it ends' },
     { key: 'newSeason', label: 'New season', short: 'New season', group: 'season', emoji: 'greenDotGlow', hint: 'the day a new season starts' },
     { key: 'patchNotes', label: 'Patch notes', short: 'Patch notes', group: 'updates', emoji: 'patchNotes', hint: 'when new patch notes are posted' },
     { key: 'digest', label: 'Daily digest', short: 'Daily /today', group: 'updates', emoji: 'calendar', hint: 'the whole /today brief' },
@@ -244,18 +244,19 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         : sub?.failingSince ? `${emojis.remindAlert} Your last reminder couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.` : null;
 
     const groups = [];
+    const toggle = (c, label, emoji, on) => ({ type: 2, style: on ? 3 : 2, label, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emoji) });
     for (const [key, title, hint] of PANEL_GROUPS) {
-        groups.push(block(`-# **${title}** · ${hint}`));
-        groups.push({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => ({ type: 2, style: cats.has(c.key) ? 3 : 2, label: c.short, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emojis[c.emoji]) })) });
         if (key === 'releases') {
-            // Option C (Harkirat, 2026-10-25 00:23 EDT: "let's go option C", after asking how someone would hear only when new draws, or all draws, are leaving): a line saying which kinds remind before they leave, and a dropdown that toggles them like the follow dropdowns (nothing pre-picked, a picked kind marked in its row).
+            // Option A, organised (Harkirat, 2026-10-25 00:32 EDT: "let's actually go option A from earlier but maybe better organize/structure so things are more intuitive", after the option C dropdown read as confusing): one heading, then two labelled rows of the same four kinds, told apart at a glance by a green "going live" dot and a yellow "leaving soon" dot (the yellow dot also on every leaving button, where the kind icons would make the two rows look identical).
             const on = leavingKeys(cats);
-            const onNames = LEAVING_KINDS().filter(c => on.has(c.key)).map(c => c.short.replace(/^All /, ''));
-            const names = onNames.length === LEAVING_KINDS().length ? 'everything' : onNames.length ? onNames.map(n => n[0].toUpperCase() + n.slice(1)).join(', ') : 'off';
-            groups.push(block(`-# ${emojis.yellowDotGlow} **Leaving soon:** ${names} · 2 days and 1 day before ${onNames.length === 1 ? 'it ends' : 'they end'}`));
-            groups.push({ type: 1, components: [{ type: 3, custom_id: `remind_lvkinds:${ownerId}`, placeholder: 'Remind me before these leave…', min_values: 0, max_values: LEAVING_KINDS().length,
-                options: [...LEAVING_KINDS()].sort((x, y) => on.has(x.key) - on.has(y.key)).map(c => ({ label: c.short, value: c.key, description: on.has(c.key) ? 'On your list · select again to remove' : c.hint.replace(/^every/, 'Every'), emoji: parseEmoji(on.has(c.key) ? bell() : emojis[c.emoji]) })) }] });
+            groups.push(block(`-# **${title}**\n-# ${emojis.greenDotGlow} **Going live** · the day it starts`));
+            groups.push({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => toggle(c, c.short, emojis[c.emoji], cats.has(c.key))) });
+            groups.push(block(`-# ${emojis.yellowDotGlow} **Leaving soon** · 2 days and 1 day before it ends`));
+            groups.push({ type: 1, components: LEAVING_KINDS().map(c => toggle(c, c.btn, emojis.yellowDotGlow, on.has(c.key))) });
+            continue;
         }
+        groups.push(block(`-# **${title}** · ${hint}`));
+        groups.push({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => toggle(c, c.short, emojis[c.emoji], cats.has(c.key))) });
     }
 
     const when = f => {
@@ -319,11 +320,10 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         ...groups,
         // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09 EDT: "it feels like it needs to be chosen in addition to the above toggle... better phrase it so it's clear that these are an 'or' option"), and never "one" (19:31 EDT: "they can pick a few options... 'or pick only what you want'"). His pick at 19:35 EDT was option B, an "— or —" line between the halves, with no drawn divider above it. A small gap each side and a capital OR (19:36 EDT: "Too much gap above the —or— ... Or make the or capital?").
         { type: 14, divider: false, spacing: 1 },
-        block('-# **— OR —**'),
-        { type: 14, divider: false, spacing: 1 },
-        block(['-# **Pick only what you want** · specific draws, events or playlists, instead of a whole group', ...followLines].join('\n')),
-        ...(relRow ? [relRow] : []),
-        ...(lvRow ? [lvRow] : []),
+        // The OR line and Pick only share one text, and the follow dropdowns step aside while Stop all asks or the timezone picker is open: the second Leaving soon row took the panel to 39 of Discord's 40, and 42 with the picker (2026-10-25 00:34 EDT).
+        block(['-# **— OR —**', '-# **Pick only what you want** · specific draws, events or playlists, instead of a whole group', ...followLines].join('\n')),
+        ...(relRow && !confirmStop && !zoneOptions ? [relRow] : []),
+        ...(lvRow && !confirmStop && !zoneOptions ? [lvRow] : []),
         ...(zonePicker.length ? [{ type: 14, divider: true, spacing: 1 }, ...zonePicker] : []),
         ...(confirmStop ? [{ type: 14, divider: true, spacing: 1 }, block(`-# ${emojis.warn} **Stop All clears every reminder you've set!** You'll have to set them up again.`)] : []),
         ...(foot.length ? [{ type: 14, divider: false, spacing: 1 }, { type: 1, components: foot }] : []),

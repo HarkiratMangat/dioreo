@@ -89,7 +89,7 @@ t('the panel: a toggle per category, green when on, two dropdowns with follows p
     const ids = [...text(panel).matchAll(/"custom_id":"([^"]+)"/g)].map(m => m[1]);
     assert.strictEqual(new Set(ids).size, ids.length, 'unique ids');
     assert.ok(ids.every(id => id.endsWith(':u1')), 'every control carries its owner');
-    assert.strictEqual(ids.filter(id => id.startsWith('remind_cat:')).length, R.CATEGORIES.filter(c => R.PANEL_GROUPS.some(([g]) => g === c.group)).length, 'a button per category in a group row; the leaving kinds are a dropdown');
+    assert.strictEqual(ids.filter(id => id.startsWith('remind_cat:')).length, R.CATEGORIES.filter(c => c.key !== 'leaving').length, 'a button per category, the four leaving kinds included; the older all-kinds key has none');
     const buttons = []; const walk = c => { if (c.type === 2) buttons.push(c); (c.components || []).forEach(walk); }; panel.forEach(walk);
     assert.strictEqual(buttons.find(b => b.custom_id === 'remind_cat:newDraws:u1').style, 3);
     assert.strictEqual(buttons.find(b => b.custom_id === 'remind_cat:events:u1').style, 2);
@@ -119,15 +119,26 @@ t('Leaving soon by kind: the old all-kinds key reads as all four, and one kind c
     assert.strictEqual(R.leavingKeys(new Set(['leaving'])).size, 4);
     const panel = R.buildPanel(sub({ categories: ['leavingNewDraws'] }), doc(), { ownerId: 'u1', nowMs: RUN });
     const s = text(panel);
-    assert.ok(s.includes('"custom_id":"remind_lvkinds:u1"') && s.includes('**Leaving soon:** New draws'));
-    assert.ok(!s.includes('remind_cat:leaving'), 'no Leaving soon button');
+    const btns = []; const wb = c => { if (c.type === 2) btns.push(c); (c.components || []).forEach(wb); }; panel.forEach(wb);
+    assert.strictEqual(btns.find(b => b.custom_id === 'remind_cat:leavingNewDraws:u1')?.style, 3, 'New draws leaving is green');
+    assert.strictEqual(btns.find(b => b.custom_id === 'remind_cat:leavingEvents:u1')?.style, 2);
+    assert.ok(!s.includes('remind_cat:leaving:'), 'no all-kinds button');
     const lv = []; const f = c => { if (c.custom_id === 'remind_lv:u1') lv.push(...c.options); (c.components || []).forEach(f); }; panel.forEach(f);
     const { leaving } = R.followable(doc(), RUN);
     const newDraws = leaving.slice(0, R.MAX_OPTIONS).filter(e => e.kind === 'New draw').length;
-    assert.strictEqual(lv.filter(o => o.description === 'Already on through All new draws').length, newDraws, 'only new draws are covered');
+    assert.strictEqual(lv.filter(o => o.description === 'Already on through New draws leaving').length, newDraws, 'only new draws are covered');
     const due = R.computeDue(doc(), RUN);
     const p = R.personalise(sub({ categories: ['leavingEvents'] }), due);
     assert.ok([...p.lastChance, ...p.leavingSoon].every(e => e.type === 'event'), 'only events remind before leaving');
+});
+
+t('the busiest panel stays within 40: every toggle on, follows, paused, and each of its states', () => {
+    const busy = sub({ categories: R.CATEGORIES.map(c => c.key).filter(k => k !== 'leaving'), follows: [{ kind: 'release', title: 'Grim Duo Draw' }], pausedAt: new Date(RUN), failingSince: new Date(RUN) });
+    const zones = [{ label: 'Toronto (EDT)', value: 'America/Toronto' }];
+    for (const opts of [{}, { confirmStop: true }, { zoneOptions: zones }]) {
+        const n = require('../commands/today').countComponents(R.buildPanel(busy, doc(), { ownerId: 'u1', nowMs: RUN, ...opts }));
+        assert.ok(n <= 40, `${JSON.stringify(Object.keys(opts))}: ${n} components`);
+    }
 });
 
 t('a group toggle that is on marks what it covers in the dropdowns', () => {

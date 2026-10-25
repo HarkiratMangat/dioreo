@@ -104,6 +104,15 @@ async function route(interaction) {
         await interaction.deferUpdate();
         const ReminderSubscription = require('../models/ReminderSubscription');
         const current = await ReminderSubscription.findOne({ discordId: owner }).lean();
+        // A leaving kind is toggled against the four explicit keys, so the older all-kinds `leaving` key (or an old panel's Leaving soon button, which turns all four on or off) never hides a change (Harkirat, 2026-10-25 00:32 EDT: "let's actually go option A from earlier but maybe better organize/structure so things are more intuitive", after the option C dropdown read as confusing).
+        const kindKeys = R.CATEGORIES.filter(c => c.group === 'leaving').map(c => c.key);
+        if (a === 'leaving' || kindKeys.includes(a)) {
+            const cats = new Set(current?.categories || []);
+            const on = R.leavingKeys(cats);
+            if (a === 'leaving') { if (on.size) on.clear(); else kindKeys.forEach(k => on.add(k)); } else if (on.has(a)) on.delete(a); else on.add(a);
+            const categories = [...[...cats].filter(k => k !== 'leaving' && !kindKeys.includes(k)), ...on];
+            return await rerender(interaction, await saveSub(owner, { $set: { categories } }));
+        }
         const on = (current?.categories || []).includes(a);
         const sub = await saveSub(owner, on ? { $pull: { categories: a } } : { $addToSet: { categories: a } });
         return await rerender(interaction, sub);
