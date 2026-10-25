@@ -43,9 +43,10 @@ function quickZones() {
 }
 
 // Set timezone opens one box with both ways in (Harkirat, 2026-10-24 21:12 EDT: "Just do a modal when the button is pressed? That holds 2 fields: a search and a quick pick dropdown menu"): /settings' shortlist as a dropdown, the chosen zone pre-selected, and a search field for anything else. Typed text wins over the dropdown, since the dropdown arrives with the current zone already picked.
-function zoneModal(owner, current) {
+// `idPrefix` is remind_tzsearchdm when the box was opened from the timezone tip DM, whose submit confirms in place instead of drawing the panel.
+function zoneModal(owner, current, idPrefix = 'remind_tzsearch') {
     return {
-        title: 'Set your timezone', custom_id: `remind_tzsearch:${owner}`,
+        title: 'Set your timezone', custom_id: `${idPrefix}:${owner}`,
         components: [
             { type: 18, label: 'Quick pick', description: 'Common timezones', component: { type: 3, custom_id: 'zone', required: false, placeholder: 'Pick your timezone…', options: quickZones().slice(0, 25).map(o => ({ ...o, default: o.value === current })) } },
             { type: 18, label: 'Or search', description: 'A city, country or abbreviation', component: { type: 4, custom_id: 'query', style: 1, required: false, max_length: 60, placeholder: 'Toronto, London, Tokyo, PST…' } },
@@ -169,6 +170,38 @@ async function route(interaction) {
     // Set timezone: the box with the shortlist and a search field (zoneModal). It must be the first response, so no defer.
     if (interaction.isButton() && interaction.customId.startsWith('remind_tz:')) {
         return await interaction.showModal(zoneModal(owner, await userZone(owner)));
+    }
+
+    // The timezone tip DM: the same box, its submit (remind_tzsearchdm) confirming in place (Harkirat, 2026-10-24 23:44 EDT ask: "for the first time… when a real reminder sends… send another follow-up DM… heads up… your time zone… with the set button in it").
+    if (interaction.isButton() && interaction.customId.startsWith('remind_tzdm:')) {
+        return await interaction.showModal(zoneModal(owner, await userZone(owner), 'remind_tzsearchdm'));
+    }
+    if (interaction.isModalSubmit() && interaction.customId.startsWith('remind_tzsearchdm:')) {
+        const { searchTimezones, timezoneBaseLabel } = require('../utils/timezoneData');
+        let query = '';
+        try { query = (interaction.fields.getTextInputValue('query') || '').trim(); } catch { query = ''; }
+        let pick = null;
+        try { pick = interaction.fields.getStringSelectValues('zone')[0] || null; } catch { pick = null; }
+        const found = query ? searchTimezones(query, 24) : [];
+        const tz = query ? (found.length === 1 ? found[0].value : null) : pick;
+        if (tz) {
+            await interaction.deferUpdate();
+            await saveZone(owner, tz);
+            return await sendV2Payload(interaction, R.buildTimezoneNote(owner, { accentColor: accent(), setTo: timezoneBaseLabel(tz) }));
+        }
+        try {
+            if (!found.length) await interaction.reply({ content: `${emojis.cross} ${query ? 'No timezone matches that. Try a city, a country or an abbreviation like PST.' : 'Pick a timezone from the list, or type one to search.'}`, flags: 64 });
+            else await interaction.reply({ content: 'Which one do you mean?', components: [{ type: 1, components: [{ type: 3, custom_id: `remind_tzsetdm:${owner}`, placeholder: 'Pick your timezone…', options: found.slice(0, 25).map(o => ({ label: String(o.label).slice(0, 100), value: o.value, ...(o.description ? { description: String(o.description).slice(0, 100) } : {}) })) }] }], flags: 64 });
+        } catch (error) {
+            console.error('Failed to answer a timezone tip search:', error?.message);
+        }
+        return;
+    }
+    if (interaction.isStringSelectMenu() && interaction.customId.startsWith('remind_tzsetdm:')) {
+        const { timezoneBaseLabel } = require('../utils/timezoneData');
+        await interaction.deferUpdate();
+        await saveZone(owner, interaction.values[0]);
+        return await interaction.editReply({ content: `${emojis.checkmark} Timezone set to **${timezoneBaseLabel(interaction.values[0])}**. /remind's lists now show your time.`, components: [] });
     }
 
     // Cancel on the panel's picker, which now appears only when a search finds several zones.

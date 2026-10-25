@@ -15,6 +15,8 @@ const ReminderSubscriptionSchema = new mongoose.Schema({
     noteShownAt: { type: Date },
     pausedAt: { type: Date },
     pauseNoteShown: { type: Boolean, default: false },
+    // When the one-time "set your timezone" tip went out beside the first real reminder, so it is never sent twice (Harkirat, 2026-10-24 23:44 EDT ask: "for the first time… when a real reminder sends… send another follow-up DM… heads up… your time zone… with the set button in it").
+    tzNudgedAt: { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('ReminderSubscription', ReminderSubscriptionSchema);

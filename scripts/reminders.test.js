@@ -108,6 +108,13 @@ t('the panel: a toggle per category, green when on, two dropdowns with follows p
     assert.ok(!R.buildPanel(null, doc(), { ownerId: 'u1', nowMs: RUN }).some(c => text(c).includes('remind_stop:')), 'nothing to stop with no record');
 });
 
+t('the one-time timezone tip: a Set timezone button, then a confirmation with none', () => {
+    const tip = text(R.buildTimezoneNote('u1'));
+    assert.ok(tip.includes('"custom_id":"remind_tzdm:u1"') && tip.includes('UTC'));
+    const done = text(R.buildTimezoneNote('u1', { setTo: 'Toronto (America)' }));
+    assert.ok(done.includes('Toronto (America)') && !done.includes('remind_tzdm'));
+});
+
 t('a group toggle that is on marks what it covers in the dropdowns', () => {
     const { releases } = R.followable(doc(), RUN);
     const events = releases.slice(0, R.MAX_OPTIONS).filter(e => e.type === 'event');
