@@ -229,15 +229,9 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     const cats = new Set(sub?.categories || []);
     const follows = sub?.follows || [];
     const { releases, leaving } = followable(seasonalDoc, nowMs);
-    const nextRun = nowMs + msUntilNextRun(nowMs);
-
-    const summary = [];
-    if (cats.size) summary.push(`${cats.size} ${cats.size === 1 ? 'group' : 'groups'}`);
-    if (follows.length) summary.push(`${follows.length} picked`);
-    const status = summary.length
-        ? `**On:** ${summary.join(' · ')}\n-# Your next DM comes ${rel(nextRun)}, if anything you follow happens that day.`
-        : '-# Nothing on yet. Turn on a group below, or pick only the draws, events or playlists you want.';
-    const header = { type: 9, components: [block(`## ${emojis.remind} Reminders\n-# One DM a day, a minute after the daily update, with only what you pick.\n${status}`)],
+    // His layout (Harkirat's layout, 2026-10-25 00:55 EDT: "let's try this?", with "the dropdowns using discord's own multi-select system rather than our workaround trick"): a short header, three labelled groups, then Pick only with each dropdown under its own label. The "On: … · next DM" status and the list of picks are gone: Discord's own multi-select shows what is picked in each closed dropdown.
+    const { mentionCommand } = require('./commandMentions');
+    const header = { type: 9, components: [block(`## ${emojis.remind} Reminders\n-# Dioreo only sends one DM a day, a minute after the daily update, with only what you pick.`)],
         accessory: { type: 2, style: 2, label: 'Send a test', custom_id: `remind_test:${ownerId}` } };
     const warning = sub?.pausedAt
         ? `${emojis.remindAlert} **Paused:** your reminders couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account, then press **Turn back on**.`
@@ -245,54 +239,32 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 
     const groups = [];
     const toggle = (c, label, emoji, on) => ({ type: 2, style: on ? 3 : 2, label, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emoji) });
-    for (const [key, title, hint] of PANEL_GROUPS) {
-        if (key === 'releases') {
-            // Option A, organised (Harkirat, 2026-10-25 00:32 EDT: "let's actually go option A from earlier but maybe better organize/structure so things are more intuitive", after the option C dropdown read as confusing): one heading, then two labelled rows of the same four kinds, told apart at a glance by a green "going live" dot and a yellow "leaving soon" dot (the yellow dot also on every leaving button, where the kind icons would make the two rows look identical).
-            const on = leavingKeys(cats);
-            groups.push(block(`-# **${title}**\n-# ${emojis.greenDotGlow} **Going live** · the day it starts`));
-            groups.push({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => toggle(c, c.short, emojis[c.emoji], cats.has(c.key))) });
-            groups.push(block(`-# ${emojis.yellowDotGlow} **Leaving soon** · 2 days and 1 day before it ends`));
-            groups.push({ type: 1, components: LEAVING_KINDS().map(c => toggle(c, c.btn, emojis.yellowDotGlow, on.has(c.key))) });
-            continue;
-        }
-        groups.push(block(`-# **${title}** · ${hint}`));
-        groups.push({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => toggle(c, c.short, emojis[c.emoji], cats.has(c.key))) });
-    }
+    const row = key => ({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => toggle(c, c.short, emojis[c.emoji], cats.has(c.key))) });
+    const on = leavingKeys(cats);
+    // Draws, events & modes: a green-dot Going live row and a yellow-dot Leaving soon row of the same four kinds (option A, 2026-10-25 00:32 EDT), the yellow dot on every leaving button so the two rows differ at a glance.
+    groups.push(block(`**Draws, events & modes**\n-# ${emojis.greenDotGlow} **Going live** · reminds the day it starts`), row('releases'));
+    groups.push(block(`-# ${emojis.yellowDotGlow} **Leaving soon** · reminds 2 days and 1 day before it ends`), { type: 1, components: LEAVING_KINDS().map(c => toggle(c, c.btn, emojis.yellowDotGlow, on.has(c.key))) });
+    groups.push(block('**Season**\n-# Reminds when one starts, and 3 days before each part ends'), row('season'));
+    groups.push(block(`**Updates**\n-# Reminds for new patch notes, or get a ${mentionCommand(null, 'today')} brief each day`), row('updates'));
 
-    const when = f => {
-        const list = f.kind === 'release' ? releases : leaving;
-        const e = list.find(x => sameTitle(x.title, f.title));
-        if (!e) return f.kind === 'release' ? 'when it releases' : 'when it is leaving';
-        // Date AND time (:f): with the date alone, a release at 00:00 UTC showed as the day before in Toronto and read as a mismatch with the dropdown (2026-10-24 23:26 EDT, Harkirat). Discord draws it in the reader's own device zone.
-        return f.kind === 'release' ? `releases <t:${Math.floor(e.startMs / 1000)}:f>` : `leaving <t:${Math.floor(e.endMs / 1000)}:f>`;
-    };
-    // One header per kind instead of a check on every line (Harkirat, 2026-10-24 23:05 EDT: "you don't need to do the checkmark emoji like for each one. Do like a collective header").
-    // Each title on its own line with its date small under it, since the one-line form wrapped anyway (2026-10-24 23:05 EDT, Harkirat: "put the releases line like as a line break in smaller size").
-    const dateLine = f => { const t = when(f); return `-# ${t[0].toUpperCase()}${t.slice(1)}`; };
-    const group = (kind, label) => { const fs = follows.filter(f => f.kind === kind); return fs.length ? [`-# ${bell()} **${label}**`, ...fs.flatMap(f => [`**${f.title}**`, dateLine(f)])] : []; };
-    const followLines = follows.length
-        ? [...group('release', 'Reminding you when these release'), ...group('leaving', 'Reminding you before these leave')]
-        : ['-# Pick any draws, events or playlists below to hear about just those.'];
-
+    // Discord's own multi-select: what you follow is pre-picked, and a submit is the new set (mergeFollows). A row a group toggle already covers is marked, sits at the bottom, and is ignored on submit (the handler skips it).
     const select = (kind, list, placeholder, describe) => {
         const shown = list.slice(0, MAX_OPTIONS);
+        if (!shown.length) return null;
         const isOn = e => follows.some(f => f.kind === kind && sameTitle(f.title, e.title));
         const coveredBy = e => coveringCategory(cats, kind, e);
-        if (!shown.length) return null;
         return { type: 1, components: [{
             type: 3, custom_id: `remind_${kind === 'release' ? 'rel' : 'lv'}:${ownerId}`, placeholder, min_values: 0, max_values: shown.length,
-            // Nothing is pre-picked, the calculator's Add more draws way (2026-10-24 23:05 EDT, Harkirat: the list above already shows what is set, so the same list again in the closed dropdown was confusing). A picked option is marked in its row instead, and picking it again removes it (toggleFollows). Its row says only that, no kind or date (2026-10-24 23:10 EDT, Harkirat: "just leave out the playlist… leave out the releases").
-            // What you already follow goes to the bottom, so the top shows what you can still add (2026-10-24 23:10 EDT, Harkirat). The same 25 are listed either way.
-            options: [...shown].sort((x, y) => (isOn(x) || !!coveredBy(x)) - (isOn(y) || !!coveredBy(y))).map(e => {
-                const on = isOn(e), cover = coveredBy(e);
-                // A group toggle that is on already covers it: marked like a pick, and picking it changes nothing (toggleFollows skips it in the handler).
+            options: [...shown].sort((x, y) => !!coveredBy(x) - !!coveredBy(y)).map(e => {
+                const cover = coveredBy(e);
                 if (cover) return { label: e.title.slice(0, 100), value: optionValue(e.title), description: `Already on through ${cover.short}`, emoji: parseEmoji(bell()) };
-                return { label: e.title.slice(0, 100), value: optionValue(e.title), description: on ? 'On your list · select again to remove' : describe(e).slice(0, 100), emoji: parseEmoji(on ? bell() : e.icon) };
+                return { label: e.title.slice(0, 100), value: optionValue(e.title), description: describe(e).slice(0, 100), emoji: parseEmoji(e.icon), default: isOn(e) };
             }),
         }] };
     };
-    const relRow = select('release', releases, `Remind me when this releases… (${Math.min(releases.length, MAX_OPTIONS)} upcoming)`, e => `${e.kind} · releases ${optionTime(e.startMs, timeZone)}`);
-    const lvRow = select('leaving', leaving, `Remind me before this leaves… (${Math.min(leaving.length, MAX_OPTIONS)} live)`, e => `${e.kind} · ends ${optionTime(e.endMs, timeZone)}`);
+    const relRow = select('release', releases, `Pick from ${Math.min(releases.length, MAX_OPTIONS)} upcoming…`, e => `${e.kind} · releases ${optionTime(e.startMs, timeZone)}`);
+    const lvRow = select('leaving', leaving, `Pick from ${Math.min(leaving.length, MAX_OPTIONS)} live…`, e => `${e.kind} · ends ${optionTime(e.endMs, timeZone)}`);
+    const showPicks = !confirmStop && !zoneOptions; // the dropdowns step aside while Stop all asks or the timezone picker is open, keeping every state within 40 components
 
     const foot = [];
     let zonePicker = [];
@@ -318,32 +290,19 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         ...(warning ? [block(warning)] : []),
         { type: 14, divider: true, spacing: 2 },
         ...groups,
-        // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09 EDT: "it feels like it needs to be chosen in addition to the above toggle... better phrase it so it's clear that these are an 'or' option"), and never "one" (19:31 EDT: "they can pick a few options... 'or pick only what you want'"). His pick at 19:35 EDT was option B, an "— or —" line between the halves, with no drawn divider above it. A small gap each side and a capital OR (19:36 EDT: "Too much gap above the —or— ... Or make the or capital?").
-        { type: 14, divider: false, spacing: 1 },
-        // The OR line and Pick only share one text, and the follow dropdowns step aside while Stop all asks or the timezone picker is open: the second Leaving soon row took the panel to 39 of Discord's 40, and 42 with the picker (2026-10-25 00:34 EDT).
-        block(['-# **— OR —**', '-# **Pick only what you want** · specific draws, events or playlists, instead of a whole group', ...followLines].join('\n')),
-        ...(relRow && !confirmStop && !zoneOptions ? [relRow] : []),
-        ...(lvRow && !confirmStop && !zoneOptions ? [lvRow] : []),
+        // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09–19:36 EDT: an "— OR —" line, capital OR).
+        block('-# **— OR —**\n\n**Pick only what you want**\n-# Select specific draws, events or playlists, instead of a whole group'),
+        ...(relRow && showPicks ? [block('-# **When something releases...**'), relRow] : []),
+        ...(lvRow && showPicks ? [block('-# **When something leaves soon...**'), lvRow] : []),
         ...(zonePicker.length ? [{ type: 14, divider: true, spacing: 1 }, ...zonePicker] : []),
         ...(confirmStop ? [{ type: 14, divider: true, spacing: 1 }, block(`-# ${emojis.warn} **Stop All clears every reminder you've set!** You'll have to set them up again.`)] : []),
-        ...(foot.length ? [{ type: 14, divider: false, spacing: 1 }, { type: 1, components: foot }] : []),
+        ...(foot.length ? [{ type: 1, components: foot }] : []),
     ] }];
 }
 
 // ---------- Changing a record ----------
 
-// A dropdown submit toggles (2026-10-24 23:05 EDT): nothing is pre-picked, so each picked value is added, or removed when it was already followed. Follows the dropdown did not list are untouched.
-function toggleFollows(follows, kind, listedTitles, picked) {
-    const titleFor = v => listedTitles.find(t => optionValue(t) === v) || v;
-    let next = [...(follows || [])];
-    for (const v of picked) {
-        const has = next.some(f => f.kind === kind && optionValue(f.title) === v);
-        next = has ? next.filter(f => !(f.kind === kind && optionValue(f.title) === v)) : [...next, { kind, title: titleFor(v) }];
-    }
-    return next;
-}
-
-// (Before the toggle) A one-thing follow's set for one kind after a dropdown submit: what was picked, plus any follow of that kind the dropdown did not list (past its 25, or no longer followable), so a submit never drops what it could not show.
+// A one-thing follow's set for one kind after a dropdown submit: what was picked, plus any follow of that kind the dropdown did not list (past its 25, or no longer followable), so a submit never drops what it could not show.
 function mergeFollows(follows, kind, listedTitles, picked) {
     const listed = new Set(listedTitles.map(optionValue));
     const kept = (follows || []).filter(f => f.kind !== kind || !listed.has(optionValue(f.title)));
@@ -501,7 +460,7 @@ function withBell(textComponent) {
 module.exports = {
     CATEGORIES, CATEGORY_KEYS, PANEL_GROUPS, MAX_OPTIONS,
     computeDue, personalise, buildReminderDM, buildTestDM, markFollowed,
-    buildTimezoneNote, leavingKeys, followable, buildPanel, mergeFollows, toggleFollows, coveringCategory, resolveSetValue, autocompleteChoices,
+    buildTimezoneNote, leavingKeys, followable, buildPanel, mergeFollows, coveringCategory, resolveSetValue, autocompleteChoices,
     failureUpdate, isRefusal, msUntilNextRun, runDailyReminders,
     pendingNotice, loadPendingNotices, maybeShowReminderNote, withBell,
 };

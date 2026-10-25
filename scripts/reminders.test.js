@@ -96,10 +96,9 @@ t('the panel: a toggle per category, green when on, two dropdowns with follows p
     const s = text(panel);
     assert.ok(s.includes('"custom_id":"remind_rel:u1"') && s.includes('"custom_id":"remind_lv:u1"'));
     const rel = []; const find = c => { if (c.custom_id === 'remind_rel:u1') rel.push(...c.options); (c.components || []).forEach(find); }; panel.forEach(find);
-    assert.ok(rel.every(o => !o.default), 'nothing is pre-picked: the list above shows what is set');
-    assert.strictEqual(rel[rel.length - 1].value, 'Grim Duo Draw', 'a followed option sits at the bottom');
-    assert.ok(rel.find(o => o.value === 'Grim Duo Draw')?.description === 'On your list · select again to remove', 'a followed release is marked in its row');
-    assert.ok(!rel.find(o => o.value === 'Call of the Dead')?.description.startsWith('On your list'));
+    assert.strictEqual(rel.find(o => o.value === 'Grim Duo Draw')?.default, true, 'a followed release is pre-picked (Discord\'s own multi-select)');
+    assert.ok(!rel.find(o => o.value === 'Call of the Dead')?.default);
+    assert.ok(s.includes('When something releases...') && s.includes('When something leaves soon...'), 'each dropdown under its label');
     assert.ok(countComponents(panel) <= 40, `components: ${countComponents(panel)}`);
     assert.ok(s.includes('remind_stop:u1'));
     assert.ok(s.includes('remind_test:u1'), 'Send a test beside the header');
@@ -154,7 +153,6 @@ t('a group toggle that is on marks what it covers in the dropdowns', () => {
 });
 
 t('a dropdown submit keeps the follows it could not list, and Stop all asks first', () => {
-    assert.deepStrictEqual(R.toggleFollows([{ kind: 'release', title: 'A' }, { kind: 'leaving', title: 'B' }], 'release', ['A', 'B'], ['A', 'B']), [{ kind: 'leaving', title: 'B' }, { kind: 'release', title: 'B' }], 'a picked follow is removed, a new one added, the other kind untouched');
     const merged = R.mergeFollows([{ kind: 'release', title: 'A' }, { kind: 'release', title: 'Z (not listed)' }, { kind: 'leaving', title: 'A' }], 'release', ['A', 'B'], ['B']);
     assert.deepStrictEqual(merged, [{ kind: 'release', title: 'Z (not listed)' }, { kind: 'leaving', title: 'A' }, { kind: 'release', title: 'B' }]);
     const confirm = text(R.buildPanel(sub({ categories: ['events'] }), doc(), { ownerId: 'u1', nowMs: RUN, confirmStop: true }));

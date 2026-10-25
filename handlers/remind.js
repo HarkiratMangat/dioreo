@@ -142,7 +142,7 @@ async function route(interaction) {
         // A pick a group toggle already covers changes nothing (its row says "Already on through …").
         const cats = new Set(current?.categories || []);
         const picked = interaction.values.filter(v => { const e = shown.find(x => x.title.slice(0, 100) === v); return !(e && R.coveringCategory(cats, kind, e)); });
-        const follows = R.toggleFollows(current?.follows || [], kind, listed, picked);
+        const follows = R.mergeFollows(current?.follows || [], kind, listed, picked);
         const sub = await saveSub(owner, { $set: { follows } });
         return await rerender(interaction, sub);
     }
