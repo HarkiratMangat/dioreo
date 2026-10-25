@@ -60,6 +60,17 @@ async function recentFrom(userId) {
     const last = [s, d].filter(Boolean).sort((a, b) => b.createdAt - a.createdAt)[0];
     return last ? Math.floor((new Date(last.createdAt).getTime() + RATE_MS) / 1000) : null;
 }
+// The 10-minute check above and the create that follows are separate database calls, with a file fetch between them, so two pop-ups sent at once could both pass the check (security review, 2026-10-25 17:37 EDT). The bot is one process, so a per-user claim taken before the first await makes the check and the create one step; the second pop-up is turned away while the first is still sending.
+const inFlight = new Set();
+async function oneAtATime(interaction, run) {
+    const id = interaction.user.id;
+    if (inFlight.has(id)) {
+        try { await interaction.reply({ content: `${emojis.cross} Your last one is still sending. Try again in a moment.`, ephemeral: true }); } catch (e) { console.error('Failed to answer a second submission sent at once:', e); }
+        return;
+    }
+    inFlight.add(id);
+    try { return await run(interaction); } finally { inFlight.delete(id); }
+}
 // The uploaded file as something to re-send: its bytes and a name. Null when none, or when it cannot be fetched.
 async function fileFrom(interaction, id) {
     let file = null;
@@ -123,7 +134,8 @@ function submissionCard(sub, { imageUrl = null, state = sub.status, note = null 
     return [{ type: 17, accent_color: getMpCategoryAccent(sub.category), components: parts }];
 }
 
-async function handleSubmitSave(interaction) {
+async function handleSubmitSave(interaction) { return oneAtATime(interaction, sendSubmission); }
+async function sendSubmission(interaction) {
     const [, , mode = 'MP', category = ''] = interaction.customId.split('~');
     const wait = await recentFrom(interaction.user.id);
     if (wait) {
@@ -334,7 +346,8 @@ function disputeCard(dis, build, { imageUrl = null, state = dis.status, note = n
     return [{ type: 17, accent_color: getMpCategoryAccent(build ? build.category : null), components: parts }];
 }
 
-async function handleDisputeSave(interaction) {
+async function handleDisputeSave(interaction) { return oneAtATime(interaction, sendDispute); }
+async function sendDispute(interaction) {
     const wait = await recentFrom(interaction.user.id);
     if (wait) {
         try { await interaction.reply({ content: `${emojis.cross} You can send one build or dispute every 10 minutes. Try again <t:${wait}:R>.`, ephemeral: true }); } catch (e) { console.error('Failed to answer a rate-limited dispute:', e); }
@@ -412,5 +425,5 @@ async function handleDisputeInfo(interaction) {
 
 module.exports = {
     submitModal, parseDetails, submissionCard, handleSubmitSave, handleSubmissionButton, approveModal, handleApproveSave, onSaved,
-    disputeModal, parseBuildText, disputeCard, handleDisputeSave, handleDisputeButton, handleDisputeInfo, RATE_MS,
+    disputeModal, parseBuildText, disputeCard, handleDisputeSave, handleDisputeButton, handleDisputeInfo, RATE_MS, oneAtATime,
 };

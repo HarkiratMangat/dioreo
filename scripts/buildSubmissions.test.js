@@ -69,5 +69,17 @@ t('one submission or dispute per person every 10 minutes', () => {
     assert.strictEqual(S.RATE_MS, 10 * 60 * 1000);
 });
 
-console.log(`\n${passed} passed, ${failed} failed`);
-process.exit(failed ? 1 : 0);
+(async () => {
+    // Two pop-ups sent at once by the same person: the second is turned away while the first is still sending, and the claim is released afterwards.
+    const replies = []; let release; const ran = [];
+    const fake = { user: { id: '9' }, reply: async (r) => replies.push(r.content) };
+    const first = S.oneAtATime(fake, () => new Promise(r => { ran.push(1); release = r; }));
+    await S.oneAtATime(fake, async () => ran.push(2));
+    t('a second submission sent at once waits for the first', () => { assert.deepStrictEqual(ran, [1]); assert.ok(/still sending/.test(replies[0])); });
+    release(); await first;
+    await S.oneAtATime(fake, async () => ran.push(3));
+    t('the claim is released once the first has sent', () => assert.deepStrictEqual(ran, [1, 3]));
+    console.log(`\n${passed} passed, ${failed} failed`);
+    process.exit(failed ? 1 : 0);
+})();
+
