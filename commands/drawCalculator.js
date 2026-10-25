@@ -624,9 +624,9 @@ function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
     return {
         type: 1,
         components: [
-            { type: 2, style: 4, label: label || `Remove ${plural(count, 'line')}`, custom_id: encodeState(verb, { ...state, mask }) },
-            // Title Case like every other button (click-test 2026-10-14 18:58 EDT).
-            { type: 2, style: 2, label: count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('page', { ...state, mask: 0 }), emoji: emojis.parseEmoji(emojis.keep) }
+            // Keep first, on the left (2026-10-24 22:58 EDT, Harkirat). Title Case like every other button (click-test 2026-10-14 18:58 EDT).
+            { type: 2, style: 2, label: count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('page', { ...state, mask: 0 }), emoji: emojis.parseEmoji(emojis.keep) },
+            { type: 2, style: 4, label: label || `Remove ${plural(count, 'line')}`, custom_id: encodeState(verb, { ...state, mask }) }
         ]
     };
 }
@@ -1306,8 +1306,8 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         components.push({ type: 10, content: lines.join('\n') });
         if (overwriteConfirm) {
             components.push({ type: 1, components: [
-                { type: 2, style: 4, label: `Replace "${String(overwriteConfirm.name).slice(0, 60)}"`, custom_id: encodeState('owok', { ...view, target: overwriteConfirm.target }) },
-                { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }
+                { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) },
+                { type: 2, style: 4, label: `Replace "${String(overwriteConfirm.name).slice(0, 60)}"`, custom_id: encodeState('owok', { ...view, target: overwriteConfirm.target }) }
             ] });
         } else {
             components.push({ type: 1, components: [{ type: 2, style: 1, label: 'Save as New', custom_id: encodeState('modal_name', view), emoji: emojis.parseEmoji(emojis.saveStar) }] });
@@ -1338,8 +1338,8 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
             // A heading, not small print (2026-10-19 11:00 EDT, Harkirat: "### :emoji: Delete this calculation? This cannot be undone."); the emoji is his Warn, sent 2026-10-19 12:53 EDT.
             components.push({ type: 10, content: `### ${emojis.warn} Delete ${savedConfirm.count === 1 ? 'this calculation' : `these ${savedConfirm.count} calculations`}? This cannot be undone.` });
             components.push({ type: 1, components: [
-                { type: 2, style: 4, label: `Delete ${plural(savedConfirm.count, 'Calculation')}`, custom_id: encodeState('savedelok', { ...view, mask: savedConfirm.mask, check: savedConfirm.check }), emoji: emojis.parseEmoji(emojis.deleteBin) }, // Remove Draws' bin (2026-10-19 10:46 EDT, his ask)
-                { type: 2, style: 2, label: savedConfirm.count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }
+                { type: 2, style: 2, label: savedConfirm.count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) },
+                { type: 2, style: 4, label: `Delete ${plural(savedConfirm.count, 'Calculation')}`, custom_id: encodeState('savedelok', { ...view, mask: savedConfirm.mask, check: savedConfirm.check }), emoji: emojis.parseEmoji(emojis.deleteBin) } // Remove Draws' bin (2026-10-19 10:46 EDT, his ask)
             ] });
         } else {
             components.push({ type: 1, components: [{
@@ -1354,8 +1354,8 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         // Armed Delete All carries the same warning and the same way out as a single delete (2026-10-19 10:45 EDT, Harkirat: "can that warning also appear after clicking "delete all" ... As well as a "keep them" button appearing beside it").
         if (armed) components.push({ type: 10, content: `### ${emojis.warn} Delete ${list.length === 1 ? 'this calculation' : `all ${list.length} calculations`}? This cannot be undone.` });
         components.push({ type: 1, components: [
-            { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
             ...(armed ? [{ type: 2, style: 2, label: list.length === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }] : []),
+            { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
         ] });
         }
     }

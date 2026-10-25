@@ -48,7 +48,7 @@ function zoneModal(owner, current) {
         title: 'Set your timezone', custom_id: `remind_tzsearch:${owner}`,
         components: [
             { type: 18, label: 'Quick pick', description: 'Common timezones', component: { type: 3, custom_id: 'zone', required: false, placeholder: 'Pick your timezone…', options: quickZones().slice(0, 25).map(o => ({ ...o, default: o.value === current })) } },
-            { type: 18, label: 'Or search', description: 'A city, country or abbreviation, if yours is not listed', component: { type: 4, custom_id: 'query', style: 1, required: false, max_length: 60, placeholder: 'Toronto, London, Tokyo, PST…' } },
+            { type: 18, label: 'Or search', description: 'A city, country or abbreviation', component: { type: 4, custom_id: 'query', style: 1, required: false, max_length: 60, placeholder: 'Toronto, London, Tokyo, PST…' } },
         ],
     };
 }
