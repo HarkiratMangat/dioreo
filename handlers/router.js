@@ -282,6 +282,8 @@ async function handleInteractionInner(interaction) {
 
             // /remind's set: option -- the categories pinned first, then this season's entries (utils/reminders.js autocompleteChoices).
             if (commandName === 'remind') return await interaction.client.commands.get('remind').autocomplete(interaction);
+            // /timestamp's timezone: option -- every zone the runtime knows (utils/timezoneData.js), 2026-10-24 21:16 EDT.
+            if (commandName === 'timestamp') return await interaction.client.commands.get('timestamp').autocomplete(interaction);
 
             // === ROUTE B2: /help's cmd: option -- suggests every real command from commands/help.js's staticCommands (/gunsmith is one entry, not one per subcommand) ===
             if (commandName === 'help') {

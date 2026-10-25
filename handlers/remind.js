@@ -39,8 +39,7 @@ async function saveZone(userId, tz) {
 
 // The Set timezone picker's one-click zones: /settings' own shortlist (utils/timezoneData.js).
 function quickZones() {
-    const { QUICK_TIMEZONES, displayLabel } = require('../utils/timezoneData');
-    return QUICK_TIMEZONES.map(z => ({ label: displayLabel(z.tz, z.label), value: z.tz }));
+    return require('../utils/timezoneData').quickZoneOptions(); // west to east by offset
 }
 
 // Set timezone opens one box with both ways in (Harkirat, 2026-10-24 21:12 EDT: "Just do a modal when the button is pressed? That holds 2 fields: a search and a quick pick dropdown menu"): /settings' shortlist as a dropdown, the chosen zone pre-selected, and a search field for anything else. Typed text wins over the dropdown, since the dropdown arrives with the current zone already picked.
