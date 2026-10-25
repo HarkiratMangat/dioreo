@@ -279,6 +279,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-22 01:07 EDT — The overnight housekeeping sweep: stale docs, rules and comments corrected (v3.107.0-pre)
 - 2026-10-23 00:07 EDT — The /admin panel becomes Server Settings, with per-command settings, a change log and Check a Member (v3.108.0-pre)
 - 2026-10-23 21:17 EDT — /today becomes a daily brief, /calendar opens on Today, and reminders get a design (v3.109.0)
+- 2026-10-25 01:48 EDT — /remind: reminders by DM, built on his phone one mock-up at a time (v3.110.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4700,6 +4701,16 @@ Harkirat spent two days refining command layouts on the dev bot, mostly from his
 **Lesson.** A `draw.edit` sent with only a title empties the draw's items, because the op replaces the whole draw. Every later edit sent the whole draw.
 
 **Reminders.** Four rounds of questions settled notifications for v3 (`docs/superpowers/specs/2026-10-23-notifications-design.md`). Five test DMs to his alt answered the open question: a bot can DM someone who only added the app, with no shared server. A refused DM returns the same code whether DMs are off or the app was removed, so the failure note has to name both fixes; my first reading of that error was wrong and was corrected in the thread.
+
+## 2026-10-25 01:48 EDT — /remind: reminders by DM, built on his phone one mock-up at a time (v3.110.0)
+
+**What shipped:** `/remind` and a bell on every seasonal command, one DM a day at 00:01 UTC with only what a person picked, a timezone flow, and a `/gunsmith` card refresh (#221).
+
+**What the session taught:**
+- **Discord's own control beat the workaround.** The follow dropdowns spent an evening as a toggle trick (nothing pre-picked, a picked row marked, picking again removes it, a list above showing the picks). Each refinement exposed another seam: the list and the dropdown said the same thing twice, covered items needed their own marking, an old panel's button silently turned on every kind. His final layout went back to Discord's multi-select, where the closed box itself shows what is picked.
+- **The 40-component budget shaped the layout.** A second Leaving soon row took the panel to 39, then 42 with the old in-panel timezone picker. Moving the warnings into the header text, answering several timezone matches in a private message, and hiding Send a test while Stop all asks each freed room; a test now checks the busiest panel in every state.
+- **Work the class, not the instance.** One divider went large while the other three stayed small, and he caught it on the next click. They now share one shape, and a test checks every state.
+- **A default is not a choice.** `UserPreference.timezone` stores Toronto on every new record, so the zone a user actually picked needed its own marker (`timezoneSetAt`) before the dropdowns could show UTC honestly.
 
 # Part B — Lessons Ledger (thematic)
 
