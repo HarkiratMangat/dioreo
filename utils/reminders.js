@@ -249,7 +249,8 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
             buildPickerSelectRow({ customId: `remind_tzset:${ownerId}`, placeholder: 'Pick your timezone…', options: zoneOptions.slice(0, 24), currentValue: timeZone, searchLabel: 'Search for your city or zone…', searchDescription: 'Type a city, country or abbreviation' })];
         foot.push({ type: 2, style: 2, label: 'Cancel', custom_id: `remind_tzcancel:${ownerId}` });
     } else {
-        foot.push({ type: 2, style: 2, label: 'Set timezone', custom_id: `remind_tz:${ownerId}` });
+        // Blue "Set timezone" until a zone is chosen, then grey "Adjust timezone" (Harkirat, 2026-10-24 21:29 EDT).
+        foot.push(timeZone ? { type: 2, style: 2, label: 'Adjust timezone', custom_id: `remind_tz:${ownerId}` } : { type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tz:${ownerId}` });
     }
     if (zoneOptions) { /* the picker replaces the rest of the foot until it is closed */ } else if (sub?.pausedAt) foot.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}`, emoji: parseEmoji(emojis.reminderEnabled) });
     if (!zoneOptions && (releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });

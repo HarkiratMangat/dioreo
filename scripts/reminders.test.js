@@ -175,6 +175,9 @@ t('Set timezone: a button on the panel; the picker swaps the foot for the zones,
     const sub = { categories: ['newDraws'], follows: [] };
     const normal = JSON.stringify(R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN }));
     assert.ok(normal.includes('remind_tz:1') && normal.includes('Set timezone') && normal.includes('remind_stop:1'), 'Set timezone sits in the foot beside Stop all');
+    const btn = (opts) => R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN, ...opts })[0].components.flatMap(c => c.components || []).find(c => c.custom_id === 'remind_tz:1');
+    assert.deepStrictEqual([btn({}).style, btn({}).label], [1, 'Set timezone'], 'no zone chosen: blue Set timezone');
+    assert.deepStrictEqual([btn({ timeZone: 'Asia/Tokyo' }).style, btn({ timeZone: 'Asia/Tokyo' }).label], [2, 'Adjust timezone'], 'a zone chosen: grey Adjust timezone');
     const zones = [{ label: 'Toronto (EDT)', value: 'America/Toronto' }, { label: 'London (GMT)', value: 'Europe/London' }];
     const picking = R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN, zoneOptions: zones });
     const ps = JSON.stringify(picking);
