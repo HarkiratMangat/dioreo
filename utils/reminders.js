@@ -291,6 +291,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         { type: 14, divider: true, spacing: 2 },
         ...groups,
         // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09–19:36 EDT: an "— OR —" line, capital OR).
+        { type: 14, divider: false, spacing: 1 }, // a small gap above the OR line, which sat tight under the Updates buttons (Harkirat, 2026-10-25 01:08 EDT); one component, within budget
         block('-# **— OR —**\n\n**Pick only what you want**\n-# Select specific draws, events or playlists, instead of a whole group'),
         // The green and yellow dots of the Going live and Leaving soon rows (Harkirat, 2026-10-25 01:07 EDT).
         ...(relRow && showPicks ? [block(`-# ${emojis.greenDotGlow} **When something releases...**`), relRow] : []),
