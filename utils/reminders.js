@@ -226,7 +226,8 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         const list = f.kind === 'release' ? releases : leaving;
         const e = list.find(x => sameTitle(x.title, f.title));
         if (!e) return f.kind === 'release' ? 'when it releases' : 'when it is leaving';
-        return f.kind === 'release' ? `releases <t:${Math.floor(e.startMs / 1000)}:D>` : `leaving <t:${Math.floor(e.endMs / 1000)}:D>`;
+        // Date AND time (:f): with the date alone, a release at 00:00 UTC showed as the day before in Toronto and read as a mismatch with the dropdown (2026-10-24 23:26 EDT, Harkirat). Discord draws it in the reader's own device zone.
+        return f.kind === 'release' ? `releases <t:${Math.floor(e.startMs / 1000)}:f>` : `leaving <t:${Math.floor(e.endMs / 1000)}:f>`;
     };
     // One header per kind instead of a check on every line (Harkirat, 2026-10-24 23:05 EDT: "you don't need to do the checkmark emoji like for each one. Do like a collective header").
     // Each title on its own line with its date small under it, since the one-line form wrapped anyway (2026-10-24 23:05 EDT, Harkirat: "put the releases line like as a line break in smaller size").
