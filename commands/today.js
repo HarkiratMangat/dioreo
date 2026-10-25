@@ -285,7 +285,7 @@ function buildTodayContainer(seasonalDoc, { nowMs = Date.now(), accentColor, isE
     const teaser = seasonTeaser(seasonalDoc, nowMs);
     // The reminders bell rides on the title (utils/reminders.js withBell, his round-3 answer 2026-10-23 20:45 EDT).
     const title = require('../utils/reminders').withBell(block(`## ${emojis.calendar} Today in CODM\n${seasonEmoji ? `${seasonEmoji} ` : ''}${toBoldItalicUnicode(seasonTitle)}${teaser ? `\n${teaser}` : ''}`));
-    return fitMessage(seasonalDoc, { nowMs }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [title, { type: 14, spacing: 2, divider: true }, ...body] }, buildGlobalNavRow(null)], isEphemeral));
+    return fitMessage(seasonalDoc, { nowMs }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [...title, { type: 14, spacing: 2, divider: true }, ...body] }, buildGlobalNavRow(null)], isEphemeral));
 }
 
 module.exports = {

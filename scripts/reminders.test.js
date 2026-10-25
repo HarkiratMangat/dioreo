@@ -144,10 +144,12 @@ t('the run is at 00:01 UTC', () => {
 });
 
 t('the bell: a grey emoji-only button on a title, and on /today', () => {
-    const wrapped = R.withBell({ type: 10, content: '## Title' });
+    const [wrapped] = R.withBell({ type: 10, content: '## Title' });
     assert.deepStrictEqual([wrapped.type, wrapped.components[0].content, wrapped.accessory.custom_id, wrapped.accessory.style, wrapped.accessory.label], [9, '## Title', 'remind_open', 2, undefined]);
     const media = { type: 12, items: [] };
-    assert.strictEqual(R.withBell(media), media, 'anything but a text display passes through');
+    assert.deepStrictEqual(R.withBell(media), [media], 'anything but a text display passes through');
+    const split = R.withBell({ type: 10, content: '## Title\n***Season 9***\n-# teaser' });
+    assert.deepStrictEqual([split.length, split[0].components[0].content, split[1].content], [2, '## Title', '***Season 9***\n-# teaser'], 'only the title sits beside the bell; the subtitle gets its own full-width line');
     const today = require('../commands/today').buildTodayContainer(doc(), { nowMs: RUN });
     assert.strictEqual(today[0].components[0].accessory?.custom_id, 'remind_open');
 });
@@ -184,6 +186,12 @@ t('Set timezone: a button on the panel; the picker swaps the foot for the zones,
     assert.ok(ps.includes('remind_tzset:1') && ps.includes('__search__') && ps.includes('remind_tzcancel:1'), 'the picker, its search option and Cancel');
     assert.ok(!ps.includes('remind_stop:1') && !ps.includes('remind_tz:1'), 'no Stop all or second Set timezone while picking');
     assert.ok(require('../commands/today').countComponents(picking) <= 40, 'under 40 components');
+});
+
+t('Stop all asks on its own: a warning heading, "Yes, stop all!" and Keep them with its icon, and no timezone button', () => {
+    const ps = JSON.stringify(R.buildPanel({ categories: ['newDraws'], follows: [] }, doc(), { ownerId: '1', nowMs: RUN, confirmStop: true }));
+    assert.ok(ps.includes('Stop all your reminders?') && ps.includes('"Yes, stop all!"') && ps.includes('"Keep them"'), 'the warning and the two choices');
+    assert.ok(!ps.includes('remind_tz:1') && !ps.includes('and delete'), 'no Set timezone, no "and delete"');
 });
 
 console.log(`\n${failed ? 'FAILED' : 'all passed'}: ${passed} passed, ${failed} failed`);

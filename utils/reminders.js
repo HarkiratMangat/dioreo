@@ -243,7 +243,9 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 
     const foot = [];
     let zonePicker = [];
-    if (zoneOptions) {
+    if (confirmStop) {
+        // The Stop all confirmation stands alone: no timezone button, a warning heading above the two choices, as the calculator's Delete All does (Harkirat, 2026-10-24 21:38 EDT).
+    } else if (zoneOptions) {
         const { buildPickerSelectRow } = require('./pickerUI');
         zonePicker = [block(`-# **Your timezone** · the dropdowns above show times in it${timeZone ? '' : '; until you pick one they show UTC'}`),
             buildPickerSelectRow({ customId: `remind_tzset:${ownerId}`, placeholder: 'Pick your timezone…', options: zoneOptions.slice(0, 24), currentValue: timeZone, searchLabel: 'Search for your city or zone…', searchDescription: 'Type a city, country or abbreviation' })];
@@ -254,7 +256,8 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     }
     if (zoneOptions) { /* the picker replaces the rest of the foot until it is closed */ } else if (sub?.pausedAt) foot.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}`, emoji: parseEmoji(emojis.reminderEnabled) });
     if (!zoneOptions && (releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
-    if (zoneOptions) { /* no Stop all while picking a zone */ } else if (confirmStop) foot.push({ type: 2, style: 4, label: 'Yes, stop all and delete', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) }, { type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}` });
+    // "Yes, stop all!" (his wording, 2026-10-24 21:38 EDT: "leave out the and delete part"), and Keep them with his Keep icon, as the calculator's confirmations use.
+    if (zoneOptions) { /* no Stop all while picking a zone */ } else if (confirmStop) foot.push({ type: 2, style: 4, label: 'Yes, stop all!', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) }, { type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}`, emoji: parseEmoji(emojis.keep) });
     else if (sub && (cats.size || follows.length)) foot.push({ type: 2, style: 4, label: 'Stop all', custom_id: `remind_stop:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
 
     return [{ type: 17, accent_color: accentColor, components: [
@@ -270,6 +273,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         ...(relRow ? [relRow] : []),
         ...(lvRow ? [lvRow] : []),
         ...(zonePicker.length ? [{ type: 14, divider: true, spacing: 1 }, ...zonePicker] : []),
+        ...(confirmStop ? [{ type: 14, divider: true, spacing: 1 }, block(`### ${emojis.warn} Stop all your reminders? This deletes them and cannot be undone.`)] : []),
         ...(foot.length ? [{ type: 14, divider: false, spacing: 1 }, { type: 1, components: foot }] : []),
     ] }];
 }
@@ -411,10 +415,12 @@ async function maybeShowReminderNote(interaction) {
 
 // ---------- The bell ----------
 
-// The bell: a grey, emoji-only button as the accessory of a command's header (his round-3 Q2), opening the panel privately. Its icon is his AddReminder (2026-10-24 18:15 EDT: "use this for the icon only buttons"). Wraps a Text Display in a Section; anything else passes through unchanged.
+// The bell: a grey, emoji-only button as the accessory of a command's header (his round-3 Q2), opening the panel privately. Its icon is his AddReminder (2026-10-24 18:15 EDT: "use this for the icon only buttons"). Wraps a Text Display in a Section; anything else passes through unchanged. Returns an ARRAY to spread in place of the text (2026-10-24 21:38 EDT, his option A): only the first line, the title, sits beside the bell; the rest (the season subtitle, a teaser) follows as its own full-width Text Display, because beside the button it wrapped. A one-line text is just the Section.
 function withBell(textComponent) {
-    if (!textComponent || textComponent.type !== 10) return textComponent;
-    return { type: 9, components: [textComponent], accessory: { type: 2, style: 2, custom_id: 'remind_open', emoji: parseEmoji(emojis.addReminder) } };
+    if (!textComponent || textComponent.type !== 10) return [textComponent];
+    const [title, ...rest] = String(textComponent.content).split('\n');
+    const section = { type: 9, components: [{ ...textComponent, content: title }], accessory: { type: 2, style: 2, custom_id: 'remind_open', emoji: parseEmoji(emojis.addReminder) } };
+    return rest.length ? [section, { type: 10, content: rest.join('\n') }] : [section];
 }
 
 module.exports = {
