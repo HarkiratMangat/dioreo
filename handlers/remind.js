@@ -113,8 +113,12 @@ async function route(interaction) {
         const kind = interaction.customId.startsWith('remind_rel:') ? 'release' : 'leaving';
         const { sub: current, doc } = await loadState(owner);
         const { releases, leaving } = R.followable(doc || {});
-        const listed = (kind === 'release' ? releases : leaving).slice(0, R.MAX_OPTIONS).map(e => e.title);
-        const follows = R.toggleFollows(current?.follows || [], kind, listed, interaction.values);
+        const shown = (kind === 'release' ? releases : leaving).slice(0, R.MAX_OPTIONS);
+        const listed = shown.map(e => e.title);
+        // A pick a group toggle already covers changes nothing (its row says "Already on through …").
+        const cats = new Set(current?.categories || []);
+        const picked = interaction.values.filter(v => { const e = shown.find(x => x.title.slice(0, 100) === v); return !(e && R.coveringCategory(cats, kind, e)); });
+        const follows = R.toggleFollows(current?.follows || [], kind, listed, picked);
         const sub = await saveSub(owner, { $set: { follows } });
         return await rerender(interaction, sub);
     }

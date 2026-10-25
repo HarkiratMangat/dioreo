@@ -32,6 +32,8 @@ const PANEL_GROUPS = [['releases', 'Draws, events & modes', 'when one goes live,
 const CATEGORY_KEYS = new Set(CATEGORIES.map(c => c.key));
 // Which category covers an entry's release, by /today's own entry kinds (commands/today.js collectEntries).
 const releaseCategory = e => (e.type === 'event' ? 'events' : e.type === 'playlist' ? 'playlists' : e.kind === 'Returning draw' ? 'returningDraws' : 'newDraws');
+// The group toggle that already covers an entry for one kind of follow, or null: Events on covers every event's release, Leaving soon covers every leaving follow (2026-10-24 23:15 EDT, Harkirat: "I enabled the release reminder for all events… picking this does nothing").
+const coveringCategory = (cats, kind, e) => { const key = kind === 'release' ? releaseCategory(e) : 'leaving'; return cats.has(key) ? CATEGORIES.find(c => c.key === key) : null; };
 const SEASON_ENDS = [['bpEnding', 'bpEnd', 'bpTitle', 'Battle Pass', 'bp1'], ['rankEnding', 'rankEnd', 'rankTitle', 'Ranked Series', 'rank'], ['dmzEnding', 'dmzEnd', 'dmzTitle', 'DMZ Season', 'dmz']];
 
 const dayKey = ms => new Date(ms).toISOString().slice(0, 10);
@@ -237,13 +239,16 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     const select = (kind, list, placeholder, describe) => {
         const shown = list.slice(0, MAX_OPTIONS);
         const isOn = e => follows.some(f => f.kind === kind && sameTitle(f.title, e.title));
+        const coveredBy = e => coveringCategory(cats, kind, e);
         if (!shown.length) return null;
         return { type: 1, components: [{
             type: 3, custom_id: `remind_${kind === 'release' ? 'rel' : 'lv'}:${ownerId}`, placeholder, min_values: 0, max_values: shown.length,
             // Nothing is pre-picked, the calculator's Add more draws way (2026-10-24 23:05 EDT, Harkirat: the list above already shows what is set, so the same list again in the closed dropdown was confusing). A picked option is marked in its row instead, and picking it again removes it (toggleFollows). Its row says only that, no kind or date (2026-10-24 23:10 EDT, Harkirat: "just leave out the playlist… leave out the releases").
             // What you already follow goes to the bottom, so the top shows what you can still add (2026-10-24 23:10 EDT, Harkirat). The same 25 are listed either way.
-            options: [...shown].sort((x, y) => isOn(x) - isOn(y)).map(e => {
-                const on = isOn(e);
+            options: [...shown].sort((x, y) => (isOn(x) || !!coveredBy(x)) - (isOn(y) || !!coveredBy(y))).map(e => {
+                const on = isOn(e), cover = coveredBy(e);
+                // A group toggle that is on already covers it: marked like a pick, and picking it changes nothing (toggleFollows skips it in the handler).
+                if (cover) return { label: e.title.slice(0, 100), value: optionValue(e.title), description: `Already on through ${cover.short}`, emoji: parseEmoji(bell()) };
                 return { label: e.title.slice(0, 100), value: optionValue(e.title), description: on ? 'On your list · select again to remove' : describe(e).slice(0, 100), emoji: parseEmoji(on ? bell() : e.icon) };
             }),
         }] };
@@ -447,7 +452,7 @@ function withBell(textComponent) {
 module.exports = {
     CATEGORIES, CATEGORY_KEYS, PANEL_GROUPS, MAX_OPTIONS,
     computeDue, personalise, buildReminderDM, buildTestDM, markFollowed,
-    followable, buildPanel, mergeFollows, toggleFollows, resolveSetValue, autocompleteChoices,
+    followable, buildPanel, mergeFollows, toggleFollows, coveringCategory, resolveSetValue, autocompleteChoices,
     failureUpdate, isRefusal, msUntilNextRun, runDailyReminders,
     pendingNotice, loadPendingNotices, maybeShowReminderNote, withBell,
 };

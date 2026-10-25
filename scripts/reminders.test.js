@@ -108,6 +108,18 @@ t('the panel: a toggle per category, green when on, two dropdowns with follows p
     assert.ok(!R.buildPanel(null, doc(), { ownerId: 'u1', nowMs: RUN }).some(c => text(c).includes('remind_stop:')), 'nothing to stop with no record');
 });
 
+t('a group toggle that is on marks what it covers in the dropdowns', () => {
+    const { releases } = R.followable(doc(), RUN);
+    const events = releases.slice(0, R.MAX_OPTIONS).filter(e => e.type === 'event');
+    assert.ok(events.length, 'the fixture has an upcoming event');
+    const panel = R.buildPanel(sub({ categories: ['events', 'leaving'] }), doc(), { ownerId: 'u1', nowMs: RUN });
+    const opts = id => { const o = []; const f = c => { if (c.custom_id === id) o.push(...c.options); (c.components || []).forEach(f); }; panel.forEach(f); return o; };
+    const rel = opts('remind_rel:u1'), lv = opts('remind_lv:u1');
+    assert.strictEqual(rel.filter(o => o.description === 'Already on through Events').length, events.length, 'every upcoming event is marked');
+    assert.ok(lv.length && lv.every(o => o.description === 'Already on through Leaving soon'), 'Leaving soon covers every leaving option');
+    assert.ok(!rel.slice(0, rel.length - events.length).some(o => o.description.startsWith('Already on')), 'covered ones sit at the bottom');
+});
+
 t('a dropdown submit keeps the follows it could not list, and Stop all asks first', () => {
     assert.deepStrictEqual(R.toggleFollows([{ kind: 'release', title: 'A' }, { kind: 'leaving', title: 'B' }], 'release', ['A', 'B'], ['A', 'B']), [{ kind: 'leaving', title: 'B' }, { kind: 'release', title: 'B' }], 'a picked follow is removed, a new one added, the other kind untouched');
     const merged = R.mergeFollows([{ kind: 'release', title: 'A' }, { kind: 'release', title: 'Z (not listed)' }, { kind: 'leaving', title: 'A' }], 'release', ['A', 'B'], ['B']);
