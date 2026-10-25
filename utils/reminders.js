@@ -149,7 +149,7 @@ function buildTimezoneNote(ownerId, { accentColor = 4093660, setTo = null, clien
     if (setTo) return [{ type: 17, accent_color: accentColor, components: [block(`### ${emojis.reminderEnabled} Timezone set\n**${setTo}** · ${remind}'s lists now show your local time.\n-# Tip: You can adjust your timezone anytime in ${settings}`)] }];
     return [{ type: 17, accent_color: accentColor, components: [
         block(`## ${emojis.remindAlert} Heads up: set your timezone!\nDioreo doesn't know your timezone yet, so the dates in ${remind}'s lists show in UTC.\nSet it once and they'll appear in your local time.`),
-        { type: 1, components: [{ type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tzdm:${ownerId}` }] },
+        { type: 1, components: [{ type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tzdm:${ownerId}`, emoji: parseEmoji(emojis.timezone) }] },
         block(`-# Tip: You can adjust your timezone anytime in ${settings}`),
     ] }];
 }
@@ -281,7 +281,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         foot.push({ type: 2, style: 2, label: 'Cancel', custom_id: `remind_tzcancel:${ownerId}` });
     } else {
         // Blue "Set timezone" until a zone is chosen, then grey "Adjust timezone" (Harkirat, 2026-10-24 21:29 EDT).
-        foot.push(timeZone ? { type: 2, style: 2, label: 'Adjust timezone', custom_id: `remind_tz:${ownerId}` } : { type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tz:${ownerId}` });
+        foot.push(timeZone ? { type: 2, style: 2, label: 'Adjust timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) } : { type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) });
     }
     if (zoneOptions) { /* the picker replaces the rest of the foot until it is closed */ } else if (sub?.pausedAt) foot.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}`, emoji: parseEmoji(emojis.reminderEnabled) });
     if (!zoneOptions && (releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });

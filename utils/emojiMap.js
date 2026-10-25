@@ -147,6 +147,8 @@ const emojis = {
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
     remind: '<a:Remind:1563677560431452180>',
     remindAlert: '<a:RemindAlert:1563677561697992724>',
+    // His Set timezone icon (2026-10-25 00:19 EDT: "here's the emoji for the 'Set timezone' button… rename to 'Timezone'"); prod id, the dev bot re-points by name. Original: Diors-Builds/Logos-&-Emojis/emoji-originals/Timezone.avif.
+    timezone: '<a:Timezone:1563768937202716695>',
     addReminder: '<a:AddReminder:1563677562683654214>',
     disableReminder: '<a:DisableReminder:1563677563988213831>',
     reminderEnabled: '<a:ReminderEnabled:1563677565070217247>',
