@@ -306,6 +306,8 @@ function unload(key, batch) {
     if (batch.timer) clearTimeout(batch.timer);
     batches.delete(key);
     for (const it of batch.items) if (it.token) pendingAutobuilds.delete(it.token);
+    // A failed upload's retry data leaves memory with its batch (it is saved in the batch record): nothing else would ever remove it, and a retry token reloads the batch when it is used (autobuildPipeline.js's retryImageUpload).
+    for (const it of batch.items) if (it.retryToken) pendingImageRetries.delete(it.retryToken);
 }
 
 // Every build saved or discarded: the record goes, and so does every cached screenshot a saved build did not already release.

@@ -468,7 +468,7 @@ async function confirmCoreNow(token) {
         // First failure: do NOT write yet. Stash the confirmed data (with weaponKey/buildName/imageKey already computed) under a new retry token, ask for the image again.
         const retryToken = crypto.randomBytes(8).toString('hex');
         pendingImageRetries.set(retryToken, { ...data, weaponKey, buildName, imageKey });
-        // No timer any more (2026-10-25 14:03 EDT): a batch is kept until every build is saved or discarded (models/AutobuildBatch.js stores the retry data too), so a Re-upload must keep working past ten minutes. A success or a placeholder save deletes the entry, as before.
+        // No timer any more (2026-10-25 14:03 EDT): a batch is kept until every build is saved or discarded (models/AutobuildBatch.js stores the retry data too), so a Re-upload must keep working past ten minutes. The entry leaves memory when its batch is unloaded (utils/autobuildBulk.js's unload) and comes back when the batch is loaded; a success or a placeholder save deletes it, as before.
         pendingAutobuilds.delete(token);
         return { status: 'retry', retryToken, error: uploadResult.error };
     } finally {
@@ -510,6 +510,8 @@ async function confirmAndWrite(interaction, token) {
 
 // Second attempt, via /autobuild's retry_token option (commands/autobuild.js calls this directly -- see the design spec's "Image retry mechanism" decision for why this can't be a button/modal).
 async function retryImageUpload(interaction, token, newImageUrl) {
+    // A batch that went idle took its retry data out of memory with it; loading the admin's open batch puts it back.
+    if (!pendingImageRetries.has(token)) await require('./autobuildBulk').openBatchFor(interaction.user.id).catch(() => null);
     const data = pendingImageRetries.get(token);
     if (!data) {
         return interaction.followUp({ content: `${BOT_EMOJI.cross} That retry token has expired or was already used. Run ${mentionCommand(interaction.client, '/autobuild')} again from scratch.`, ephemeral: true });
