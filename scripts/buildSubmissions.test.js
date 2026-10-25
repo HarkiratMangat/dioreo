@@ -79,6 +79,11 @@ t('one submission or dispute per person every 10 minutes', () => {
     release(); await first;
     await S.oneAtATime(fake, async () => ran.push(3));
     t('the claim is released once the first has sent', () => assert.deepStrictEqual(ran, [1, 3]));
+    t('a DM is composed under the id of the app that sends it, so its emojis are that app\'s', () => {
+        const seen = S.composeAs({ application: { id: 'public-app' } }, () => require('../utils/requestContext').getContext().appId);
+        assert.strictEqual(seen, 'public-app');
+        assert.strictEqual(S.composeAs({}, 'plain text'), 'plain text');
+    });
     console.log(`\n${passed} passed, ${failed} failed`);
     process.exit(failed ? 1 : 0);
 })();

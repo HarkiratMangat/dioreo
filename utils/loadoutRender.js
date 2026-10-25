@@ -415,7 +415,7 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
         { type: 10, content: `## ${weaponName}` },
         { type: 14, spacing: 1, divider: true },
         // The missing line in italics (Harkirat, 2026-10-24 18:25 EDT).
-        { type: 10, content: `### No build yet\n*Dioreo doesn't have a ${weaponName} build yet.*` },
+        { type: 10, content: `### No build yet\n*Dioreo has no ${weaponName} build yet.*` },
         // "SMG • Build pending" (Harkirat, 2026-10-24 18:36 EDT), the same dot the build cards' footers use.
         { type: 10, content: `-# ${mode === 'DMZ' ? 'DMZ' : category} • Build pending` },
     ];

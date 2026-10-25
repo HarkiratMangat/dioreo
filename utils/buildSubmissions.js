@@ -12,6 +12,7 @@ const BuildSubmission = require('../models/BuildSubmission');
 const BuildDispute = require('../models/BuildDispute');
 const { ALLOWED_ADMIN_ID, isOwnerId } = require('./owner');
 const emojis = require('./emojiMap');
+const { runWithContext, getContext } = require('./requestContext');
 
 const RATE_MS = 10 * 60 * 1000;
 const label = (text, description, component) => ({ type: 18, label: text, ...(description ? { description } : {}), component });
@@ -29,6 +30,12 @@ function publicApp() {
 async function dmChannel(client, userId) {
     return client.rest.post(Routes.userChannels(), { body: { recipient_id: userId } });
 }
+// Emoji ids belong to one app, and emojiMap answers for the app handling the click. A DM sent by the OTHER app must be composed under that app's id, or its emojis show as text: found click-testing 2026-10-25 18:04 EDT, when the thank-you DM, sent by Dioreo after an Approve clicked on Dioreo Admin's card, read ":Checkmark:". So DM bodies are passed as functions and built here, under the id of the app that sends them.
+function composeAs(client, build) {
+    if (typeof build !== 'function') return build;
+    const appId = client?.application?.id ?? client?.user?.id ?? null;
+    return runWithContext({ ...(getContext() || {}), appId }, build);
+}
 // Sends a Components V2 card to the owner, from Dioreo Admin, falling back to the public app if Dioreo Admin cannot open the DM. Returns { channelId, message, client }.
 async function dmOwner(body, files = []) {
     const tried = [adminOrPublic(), publicApp()].filter((c, i, a) => c && a.indexOf(c) === i);
@@ -36,7 +43,7 @@ async function dmOwner(body, files = []) {
     for (const client of tried) {
         try {
             const dm = await dmChannel(client, ALLOWED_ADMIN_ID);
-            const message = await client.rest.post(Routes.channelMessages(dm.id), { body: { ...body, allowed_mentions: { parse: [] } }, files });
+            const message = await client.rest.post(Routes.channelMessages(dm.id), { body: { ...composeAs(client, body), allowed_mentions: { parse: [] } }, files });
             return { channelId: dm.id, message, client };
         } catch (err) { lastError = err; }
     }
@@ -47,7 +54,7 @@ async function dmPlayer(userId, content) {
     try {
         const client = publicApp();
         const dm = await dmChannel(client, userId);
-        await client.rest.post(Routes.channelMessages(dm.id), { body: { content, allowed_mentions: { parse: [] } } });
+        await client.rest.post(Routes.channelMessages(dm.id), { body: { content: composeAs(client, content), allowed_mentions: { parse: [] } } });
         return true;
     } catch (err) {
         console.error('Could not DM a player about their build submission or dispute:', err?.message || err);
@@ -70,6 +77,12 @@ async function oneAtATime(interaction, run) {
     }
     inFlight.add(id);
     try { return await run(interaction); } finally { inFlight.delete(id); }
+}
+// Answers a person still inside their 10 minutes and returns true; false lets them through. The Submit a Build and Dispute a Build buttons call it too, before their pop-up opens, so nobody fills in a form only to be turned away (found click-testing 2026-10-25 18:07 EDT); the pop-up's save checks again.
+async function rateLimitReply(interaction, wait) {
+    if (!wait) return false;
+    try { await interaction.reply({ content: `${emojis.cross} You can send one build or dispute every 10 minutes. Try again <t:${wait}:R>.`, ephemeral: true }); } catch (e) { console.error('Failed to answer a rate-limited submission or dispute:', e); }
+    return true;
 }
 // The uploaded file as something to re-send: its bytes and a name. Null when none, or when it cannot be fetched.
 async function fileFrom(interaction, id) {
@@ -137,11 +150,7 @@ function submissionCard(sub, { imageUrl = null, state = sub.status, note = null 
 async function handleSubmitSave(interaction) { return oneAtATime(interaction, sendSubmission); }
 async function sendSubmission(interaction) {
     const [, , mode = 'MP', category = ''] = interaction.customId.split('~');
-    const wait = await recentFrom(interaction.user.id);
-    if (wait) {
-        try { await interaction.reply({ content: `${emojis.cross} You can send one build or dispute every 10 minutes. Try again <t:${wait}:R>.`, ephemeral: true }); } catch (e) { console.error('Failed to answer a rate-limited submission:', e); }
-        return;
-    }
+    if (await rateLimitReply(interaction, await recentFrom(interaction.user.id))) return;
     await interaction.deferReply({ ephemeral: true });
     const shot = await fileFrom(interaction, 'shot');
     const { attachments, notes } = parseDetails(text(interaction, 'details'));
@@ -152,7 +161,7 @@ async function sendSubmission(interaction) {
     });
     try {
         const files = shot ? [shot] : [];
-        const sent = await dmOwner({ flags: 32768, components: submissionCard(sub, { imageUrl: shot ? `attachment://${shot.name}` : null }) }, files);
+        const sent = await dmOwner(() => ({ flags: 32768, components: submissionCard(sub, { imageUrl: shot ? `attachment://${shot.name}` : null }) }), files);
         await BuildSubmission.updateOne({ _id: sub._id }, { $set: { dmChannelId: sent.channelId, dmMessageId: sent.message.id } });
     } catch (err) {
         console.error('Could not DM the owner a build submission:', err?.message || err);
@@ -267,7 +276,7 @@ async function onSaved(submission, doc) {
         if (!sub) return;
         sub.status = 'approved'; sub.resolvedAt = new Date(); sub.loadoutId = String(doc._id); await sub.save();
         const { mentionCommand } = require('./commandMentions');
-        await dmPlayer(sub.discordId, `${emojis.checkmark} Thanks! Your **${doc.weaponName}** build is now in Dioreo. Find it with ${mentionCommand(publicApp(), `/gunsmith ${doc.mode === 'DMZ' ? 'dmz' : 'mp'}`)}${sub.credited ? ', with your name on it' : ''}.`);
+        await dmPlayer(sub.discordId, () => `${emojis.checkmark} Thanks! Your **${doc.weaponName}** build is now in Dioreo. Find it with ${mentionCommand(publicApp(), `/gunsmith ${doc.mode === 'DMZ' ? 'dmz' : 'mp'}`)}${sub.credited ? ', with your name on it' : ''}.`);
         // The owner's DM card shows it was approved.
         if (sub.dmChannelId && sub.dmMessageId) {
             const client = adminOrPublic();
@@ -348,11 +357,7 @@ function disputeCard(dis, build, { imageUrl = null, state = dis.status, note = n
 
 async function handleDisputeSave(interaction) { return oneAtATime(interaction, sendDispute); }
 async function sendDispute(interaction) {
-    const wait = await recentFrom(interaction.user.id);
-    if (wait) {
-        try { await interaction.reply({ content: `${emojis.cross} You can send one build or dispute every 10 minutes. Try again <t:${wait}:R>.`, ephemeral: true }); } catch (e) { console.error('Failed to answer a rate-limited dispute:', e); }
-        return;
-    }
+    if (await rateLimitReply(interaction, await recentFrom(interaction.user.id))) return;
     await interaction.deferReply({ ephemeral: true });
     const shot = await fileFrom(interaction, 'shot');
     const buildText = text(interaction, 'build');
@@ -362,7 +367,7 @@ async function sendDispute(interaction) {
         proofUrl: text(interaction, 'proof'), notes: text(interaction, 'notes'), hasScreenshot: Boolean(shot),
     });
     try {
-        const sent = await dmOwner({ flags: 32768, components: disputeCard(dis, build, { imageUrl: shot ? `attachment://${shot.name}` : null }) }, shot ? [shot] : []);
+        const sent = await dmOwner(() => ({ flags: 32768, components: disputeCard(dis, build, { imageUrl: shot ? `attachment://${shot.name}` : null }) }), shot ? [shot] : []);
         await BuildDispute.updateOne({ _id: dis._id }, { $set: { dmChannelId: sent.channelId, dmMessageId: sent.message.id } });
     } catch (err) {
         console.error('Could not DM the owner a build dispute:', err?.message || err);
@@ -395,14 +400,14 @@ async function handleDisputeButton(interaction) {
             return;
         }
         dis.status = 'removed';
-        await dmPlayer(dis.discordId, `${emojis.checkmark} Your dispute about ${what} was upheld: the build was removed from Dioreo.`);
+        await dmPlayer(dis.discordId, () => `${emojis.checkmark} Your dispute about ${what} was upheld: the build was removed from Dioreo.`);
     } else if (action === 'credit' && build) {
         await Loadout.updateOne({ _id: build._id }, { $set: { submittedBy: { discordId: dis.discordId, credited: true } } });
         dis.status = 'credited';
-        await dmPlayer(dis.discordId, `${emojis.checkmark} Your dispute about ${what} was upheld: the build now credits you.`);
+        await dmPlayer(dis.discordId, () => `${emojis.checkmark} Your dispute about ${what} was upheld: the build now credits you.`);
     } else if (action === 'no') {
         dis.status = 'denied';
-        await dmPlayer(dis.discordId, `Your dispute about ${what} was looked at, and the build stays as it is. If you have more proof, you can DM <@${ALLOWED_ADMIN_ID}>.`);
+        await dmPlayer(dis.discordId, () => `Your dispute about ${what} was looked at, and the build stays as it is. If you have more proof, you can DM <@${ALLOWED_ADMIN_ID}>.`);
     } else {
         return;
     }
@@ -417,7 +422,7 @@ async function handleDisputeInfo(interaction) {
     if (!dis) return;
     await interaction.deferUpdate();
     const note = text(interaction, 'note');
-    const sent = await dmPlayer(dis.discordId, `About your dispute on "${dis.buildText}", Dioreo needs a little more:\n> ${note.split('\n').join('\n> ')}\nPlease DM <@${ALLOWED_ADMIN_ID}> with it.`);
+    const sent = await dmPlayer(dis.discordId, () => `About your dispute on "${dis.buildText}", Dioreo needs a little more:\n> ${note.split('\n').join('\n> ')}\nPlease DM <@${ALLOWED_ADMIN_ID}> with it.`);
     const build = dis.loadoutId ? await require('../models/Loadout').findById(dis.loadoutId).lean() : null;
     const { sendV2Payload } = require('./sendV2Payload');
     return sendV2Payload(interaction, disputeCard(dis, build, { imageUrl: cardImageUrl(interaction), note: sent ? 'Asked them for more info.' : 'Could not DM them (their DMs may be closed).' }), { skipExpiry: true });
@@ -425,5 +430,5 @@ async function handleDisputeInfo(interaction) {
 
 module.exports = {
     submitModal, parseDetails, submissionCard, handleSubmitSave, handleSubmissionButton, approveModal, handleApproveSave, onSaved,
-    disputeModal, parseBuildText, disputeCard, handleDisputeSave, handleDisputeButton, handleDisputeInfo, RATE_MS, oneAtATime,
+    disputeModal, parseBuildText, disputeCard, handleDisputeSave, handleDisputeButton, handleDisputeInfo, RATE_MS, oneAtATime, composeAs, recentFrom, rateLimitReply,
 };

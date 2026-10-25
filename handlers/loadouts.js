@@ -50,14 +50,18 @@ async function route(interaction) {
             if (interaction.isButton() && id.startsWith('gsb~submit~')) {
                 const [, , mode, key] = id.split('~');
                 const CatalogueItem = require('../models/CatalogueItem');
-                const known = key ? await CatalogueItem.findOne({ kind: 'weapon', key }).lean() : null;
+                const [wait, known] = await Promise.all([subs.recentFrom(interaction.user.id), key ? CatalogueItem.findOne({ kind: 'weapon', key }).lean() : null]);
+                if (await subs.rateLimitReply(interaction, wait)) return true;
                 const name = known ? known.name.toUpperCase() : (interaction.message?.components?.[0]?.components?.[0]?.content || '').replace(/^##\s*/, '').split('\n')[0];
                 return await interaction.showModal(subs.submitModal({ mode: mode === 'DMZ' ? 'DMZ' : 'MP', weaponName: name, category: known ? known.category : '' }));
             }
             if (interaction.isModalSubmit() && id.startsWith('gsb~subsave~')) return await subs.handleSubmitSave(interaction);
             if (interaction.isButton() && id.startsWith('gsb~sub~')) return await subs.handleSubmissionButton(interaction);
             if (interaction.isModalSubmit() && id.startsWith('gsb~subok~')) return await subs.handleApproveSave(interaction);
-            if (interaction.isButton() && id === 'gsb~dispute') return await interaction.showModal(subs.disputeModal());
+            if (interaction.isButton() && id === 'gsb~dispute') {
+                if (await subs.rateLimitReply(interaction, await subs.recentFrom(interaction.user.id))) return true;
+                return await interaction.showModal(subs.disputeModal());
+            }
             if (interaction.isModalSubmit() && id === 'gsb~dissave') return await subs.handleDisputeSave(interaction);
             if (interaction.isButton() && id.startsWith('gsb~dis~')) return await subs.handleDisputeButton(interaction);
             if (interaction.isModalSubmit() && id.startsWith('gsb~disinfo~')) return await subs.handleDisputeInfo(interaction);
