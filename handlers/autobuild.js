@@ -63,6 +63,18 @@ async function route(interaction) {
             return await runBulk(interaction, indices.map(i => source.images[i]), { source: { key, indices } });
         }
 
+        // --- AUTOBUILD: THE START FORM --- a bare /autobuild's form (utils/autobuildStart.js, 2026-10-25 12:49 EDT): screenshots, links, presets and a retry token. A modal submit, so it may defer but never showModal.
+        if (interaction.isModalSubmit() && customId === 'autobuild_start') {
+            const { handleStartSubmit } = require('../utils/autobuildStart');
+            return await handleStartSubmit(interaction);
+        }
+
+        // --- AUTOBUILD: RE-UPLOAD --- the failed-upload message's button opens the start form with its retry token filled in (Harkirat's pick, 2026-10-25 12:03 EDT). A button, so it may answer with showModal().
+        if (interaction.isButton() && customId.startsWith('autobuild_reupload|')) {
+            const { buildStartModal } = require('../utils/autobuildStart');
+            return await interaction.showModal(buildStartModal(customId.split('|')[1] || ''));
+        }
+
         // --- BULK AUTOBUILD: EDIT BUTTON --- a button, so it may answer with showModal(); its modal submit is the separate isModalSubmit() branch below, never this one (the same placement rule as autobuild_editbtn_).
         if (interaction.isButton() && interaction.customId.startsWith('autobuild_b|edit|')) {
             const { showBatchEditModal } = require('../utils/autobuildBulk');

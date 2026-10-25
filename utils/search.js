@@ -89,6 +89,12 @@ function isGenericWeaponQuery(query) {
     return Boolean(query) && GENERIC_WEAPON_WORDS.has(normalizeForSearch(query));
 }
 
+// The one class an alias names, matched exactly (no prefix, no typo rule), or null; a word naming several classes ("rifle") is null. /autobuild's form presets read two- and three-word class names with it (2026-10-25 12:49 EDT), where the prefix and typo rules would turn a run of unrelated words into a class.
+function categoryByExactAlias(text) {
+    const v = CATEGORY_SEARCH_SYNONYMS[normalizeForSearch(text || '')];
+    return v && !Array.isArray(v) ? v : null;
+}
+
 function resolveCategorySynonyms(query) {
     if (!query) return [];
     const q = normalizeForSearch(query);
@@ -128,4 +134,4 @@ function findWeaponMatches(query, candidates) {
     return results;
 }
 
-module.exports = { fuzzyMatch, normalizeForSearch, findWeaponMatches, resolveCategorySynonyms, isGenericWeaponQuery, typoDistance, isSameDrawTitle };
+module.exports = { fuzzyMatch, normalizeForSearch, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle };

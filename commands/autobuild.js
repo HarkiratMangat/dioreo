@@ -2,10 +2,9 @@
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const { SlashCommandBuilder } = require('discord.js');
 const { hasCommandAccess } = require('../utils/adminAccess'); // owner OR Mongo-allowlisted admin scoped to 'autobuild'
+const { mentionCommand } = require('../utils/commandMentions');
 
 const CATEGORY_CHOICES = ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN', 'SECONDARIES'];
-
-const EXTRA_SCREENSHOTS = Array.from({ length: 9 }, (_, i) => `screenshot${i + 2}`);
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -23,7 +22,7 @@ module.exports = {
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat. (Defaults to only you.)').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         // ADMIN-ONLY: stays user-install [1] deliberately -- the 10 public commands moved to [0, 1] (guild install) for v3, but an admin command advertised in every server's command list is noise plus needless surface. Harkirat still reaches it anywhere via his own user install.
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
-    // Bulk /autobuild (2026-10-20 10:36 EDT): screenshot2..screenshot10 go in the same batch, one review page per build (utils/autobuildBulk.js). Added after `data` is built, below, so the option order stays readable.
+    // The options are for ONE build since 2026-10-25 12:49 EDT (Harkirat: "let's make the slash command options method for a singular gunsmith creation. and if bulk /autobuild, then just via the /autobuild command"). screenshot2..screenshot10 (bulk, 2026-10-20 10:36 EDT) are gone: several screenshots and links go through the form a bare /autobuild opens (utils/autobuildStart.js).
 
     async execute(interaction) {
         if (!(await hasCommandAccess(interaction.user.id, 'autobuild'))) {
@@ -31,7 +30,6 @@ module.exports = {
         }
 
         const attachment = interaction.options.getAttachment('screenshot');
-        const extra = EXTRA_SCREENSHOTS.map(name => interaction.options.getAttachment(name)).filter(Boolean);
         const url = interaction.options.getString('url');
         const retryToken = interaction.options.getString('retry_token');
         const imageUrl = attachment ? attachment.url : (url ? url.trim() : null);
@@ -39,7 +37,13 @@ module.exports = {
         const visibilityChoice = interaction.options.getString('visibility');
         const isEphemeral = visibilityChoice === null ? true : visibilityChoice === 'hidden';
 
-        // retry_token path (Task 7 adds retryImageUpload) -- Discord modals can't accept file attachments, so "ask for the image again" after a Cloudinary failure has to be a fresh slash-command invocation, not a button/modal round-trip. See the design spec's "Image retry mechanism" decision.
+        // Nothing given: the form, straight away (2026-10-25 11:40-11:47 EDT, his ask and pick). showModal has to be the first response, so nothing is deferred before it. It replaces the "Provide exactly one of screenshot or url" error a bare run used to get ("this error message is also wrong").
+        if (!attachment && !url && !retryToken) {
+            const { buildStartModal } = require('../utils/autobuildStart');
+            return interaction.showModal(buildStartModal());
+        }
+
+        // retry_token path (Task 7 adds retryImageUpload). Written when Discord modals could not take files, so the image had to come back through a fresh slash command; since 2026-10-25 12:49 EDT the form takes a token too, and a failed upload's Re-upload button opens it filled in.
         if (retryToken) {
             if (!imageUrl) {
                 return interaction.reply({ content: require('../utils/emojiMap').glyphs(BOT_EMOJI.cross + ' Provide `screenshot` or `url` with a retry_token.'), ephemeral: true });
@@ -49,21 +53,8 @@ module.exports = {
             return retryImageUpload(interaction, retryToken, imageUrl);
         }
 
-        // Several screenshots: the bulk review. `url` stays a single-screenshot option, and `category`, `badges` and `mode` apply to every screenshot in the batch (Edit changes any one build).
-        if (extra.length) {
-            if (url) return interaction.reply({ content: require('../utils/emojiMap').glyphs(BOT_EMOJI.cross + ' `url` reads one screenshot. Attach the screenshots instead when sending several.'), ephemeral: true });
-            await interaction.deferReply({ ephemeral: isEphemeral });
-            const { runBulk } = require('../utils/autobuildBulk');
-            return runBulk(interaction, [attachment, ...extra].filter(Boolean).map(a => a.url), {
-                explicitCategory: interaction.options.getString('category'),
-                badgesOption: interaction.options.getString('badges'),
-                explicitMode: interaction.options.getString('mode'),
-                ephemeral: isEphemeral,
-            });
-        }
-
-        if ((attachment && url) || (!attachment && !url)) {
-            return interaction.reply({ content: require('../utils/emojiMap').glyphs(BOT_EMOJI.cross + ' Provide exactly one of `screenshot` or `url`.'), ephemeral: true });
+        if (attachment && url) {
+            return interaction.reply({ content: require('../utils/emojiMap').glyphs(`${BOT_EMOJI.cross} Use \`screenshot\` or \`url\`, not both. To read several, run ${mentionCommand(interaction.client, '/autobuild')} on its own.`), ephemeral: true });
         }
 
         await interaction.deferReply({ ephemeral: isEphemeral });
@@ -76,6 +67,3 @@ module.exports = {
     }
 };
 
-for (const name of EXTRA_SCREENSHOTS) {
-    module.exports.data.addAttachmentOption(option => option.setName(name).setDescription('Another Gunsmith screenshot, read in the same batch'));
-}

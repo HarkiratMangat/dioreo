@@ -7,7 +7,7 @@
 // After his first click-test (2026-10-20 12:10 EDT): the overview lists every build with what needs a look, the pager is the bot's usual arrows (utils/paginationRow.js), the buttons say Save / Adjust / Discard and name the build, and a batch started from the right-click can take more of that message's screenshots (Add more).
 const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const crypto = require('crypto');
-const { pendingAutobuilds, buildReviewCard, extractToData, confirmCore, confirmMessage, buildEditModal, applyEditFields } = require('./autobuildPipeline');
+const { pendingAutobuilds, buildReviewCard, extractToData, confirmCore, confirmMessage, confirmReply, reuploadRow, buildEditModal, applyEditFields } = require('./autobuildPipeline');
 const { sendV2Payload } = require('./sendV2Payload');
 const { buildPaginationRow } = require('./paginationRow');
 const emojis = require('./emojiMap');
@@ -170,13 +170,14 @@ function renderPage(batch, key, index, heldImages = null) {
         saved: () => `${BOT_EMOJI.checkmark} **Saved:** ${item.doc.weaponName} — ${item.doc.buildName} (${item.doc.category}${item.doc.mode === 'DMZ' ? ', DMZ' : ''})`,
         cancelled: () => BOT_EMOJI.cross + ' **Discarded:** nothing saved or uploaded.',
         failed: () => `${warn} **Couldn't read this screenshot:** ${item.error}`,
-        retry: () => `${warn} **Image upload failed** (${item.error}). Nothing was saved yet. Try the image again with\n\`/autobuild retry_token:${item.retryToken} screenshot:<new attachment>\``,
+        retry: () => `${warn} **Image upload failed** (${item.error}). Nothing was saved yet. Press **Re-upload** to send the image again.`,
     }[item.status]();
     return [{ type: 17, accent_color: 2829617, components: [
         { type: 10, content: header },
         { type: 14, spacing: 1, divider: true },
         { type: 10, content: line },
         { type: 12, items: [{ media: { url: item.url } }] },
+        ...(item.status === 'retry' ? [reuploadRow(item.retryToken)] : []),
         ...(inside.length ? [{ type: 14, spacing: 1, divider: true }, ...inside] : []),
     ] }, ...outside];
 }
@@ -240,6 +241,7 @@ function readingCard(done, total) {
 }
 
 // Reads screenshots three at a time into new batch items, stashing each as an ordinary review under its own token. Shared by a new batch and by Add more.
+// An item's own preset (the start form, 2026-10-25 12:49 EDT) wins over the batch-wide options for what it names, and leaves the rest to them.
 async function readInto(interaction, newItems, { explicitCategory = null, badgesOption = null, explicitMode = null } = {}) {
     const Loadout = require('../models/Loadout');
     const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
@@ -250,7 +252,17 @@ async function readInto(interaction, newItems, { explicitCategory = null, badges
         while (next < newItems.length) {
             const item = newItems[next++];
             try {
-                item.data = await extractToData(item.url, { explicitCategory, badgesOption, explicitMode, adminId: interaction.user.id, allBuilds });
+                const p = item.preset;
+                item.data = await extractToData(item.url, {
+                    explicitCategory: p?.category || explicitCategory,
+                    badgesOption: p?.badges?.length ? p.badges.join(',') : badgesOption,
+                    explicitMode: p?.mode || explicitMode,
+                    adminId: interaction.user.id, allBuilds,
+                });
+                if (item.sourceLabel) item.data.sourceLabel = item.sourceLabel;
+                const presetNote = require('./autobuildStart').presetWarning(p);
+                if (presetNote) item.data.presetWarning = presetNote;
+                if (item.formNotes?.length) item.data.formNotes = item.formNotes;
                 item.token = crypto.randomBytes(8).toString('hex');
                 pendingAutobuilds.set(item.token, item.data); // dropped by the batch's own timer (touch), with the batch
             } catch (err) {
@@ -266,10 +278,11 @@ async function readInto(interaction, newItems, { explicitCategory = null, badges
 }
 
 // Starts a batch. The caller has already deferred (deferReply for /autobuild, deferUpdate for the right-click's picker), exactly like runExtraction. `source` ({ key, indices }) is the right-click's held message and which of its images these are.
-async function runBulk(interaction, urls, { explicitCategory = null, badgesOption = null, explicitMode = null, skipped = 0, source = null, ephemeral = true } = {}) {
+// `images` (the start form, 2026-10-25 12:49 EDT): `{ url, label, preset }` per entry, aligned with `urls`; `notes` ride on the first build's page.
+async function runBulk(interaction, urls, { explicitCategory = null, badgesOption = null, explicitMode = null, skipped = 0, source = null, ephemeral = true, images = null, notes = [] } = {}) {
     const list = urls.slice(0, MAX_SCREENSHOTS);
     skipped += urls.length - list.length;
-    const items = list.map((url, i) => ({ url, status: 'pending', sourceIndex: source ? source.indices[i] : null }));
+    const items = list.map((url, i) => ({ url, status: 'pending', sourceIndex: source ? source.indices[i] : null, preset: images?.[i]?.preset || null, sourceLabel: images?.[i]?.label || null, formNotes: i === 0 ? notes : null }));
     await readInto(interaction, items, { explicitCategory, badgesOption, explicitMode });
 
     const key = crypto.randomBytes(6).toString('hex');
@@ -322,7 +335,7 @@ async function handleBatchComponent(interaction) {
             } else {
                 const result = await confirmCore(item.token);
                 if (applyResult(item, result) === 'stop') {
-                    await interaction.followUp({ content: confirmMessage(interaction.client, result), ephemeral: true }).catch(() => {});
+                    await interaction.followUp(confirmReply(interaction.client, result)).catch(() => {});
                 }
             }
             batch.page = index;

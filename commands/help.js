@@ -334,12 +334,12 @@ function buildBotAdminBody(commands, client) {
     }
     if (has('/autobuild')) {
         sections.push(`### ${mentionCommand(client, '/autobuild')}\nRead an MP or DMZ loadout out of a Gunsmith screenshot and stage it for review — nothing is saved until you press Save\n`
+            + `-# 🔹 Run it on its own for a form that reads up to 10 screenshots and links at once, each with its own mode, category and badges\n`
             + `-# 🔹 \`[screenshot]\` The Gunsmith screenshot to read — or use \`url\` instead, never both\n`
             + `-# 🔹 \`[url]\` A link to the screenshot, when the image is already hosted somewhere\n`
-            + `-# 🔹 \`[screenshot2]\` to \`[screenshot10]\` More screenshots, read as one batch with a review page per build\n`
             + `-# 🔹 \`[category]\` \`AR\` · \`SMG\` · \`LMG\` · \`MARKSMAN\` · \`SNIPER\` · \`SHOTGUN\` · \`SECONDARIES\` — looked up from the weapon, or asked for, if left blank\n`
             + `-# 🔹 \`[mode]\` \`MP\` · \`DMZ\` — read from the screenshot if left blank, and asked for when the screenshot can't tell\n`
-            + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — blank inherits from an existing build of the same weapon in the same mode\n`
+            + `-# 🔹 \`[badges]\` \`meta,best,top5,toxic\` — this build only; blank means none\n`
             + `-# 🔹 \`[retry_token]\` Only for re-submitting an image after a Cloudinary upload failure`);
     }
     if (has('/manage')) {

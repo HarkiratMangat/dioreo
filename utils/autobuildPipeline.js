@@ -136,7 +136,10 @@ function buildReviewCard(token, data, opts = {}) {
     // Warnings first, above the build (Harkirat, 2026-10-20 13:19 EDT: "warning section should be above the wep name, mode, etc.").
     const warnings = [
         data.categoryConflict ? `${BOT_EMOJI.warn} **Category mismatch:** this weapon is already saved as \`${data.categoryConflict}\`\n> **Saving as:** \`${data.category}\`, so it would sit under two categories\n> **Fix:** change the category with **Adjust**` : null,
-        data.labelWarning, data.duplicateWarning, data.catalogueWarning, data.equipCapWarning, ...(opts.notes || []),
+        data.labelWarning, data.duplicateWarning, data.catalogueWarning, data.equipCapWarning,
+        // The start form's preset words nothing recognised, and its notes (2026-10-25 12:49 EDT: "shows on that build's review page, never dropped silently").
+        data.presetWarning ? `${BOT_EMOJI.warn} ${data.presetWarning}` : null, ...(data.formNotes || []).map(n => `${BOT_EMOJI.warn} ${n}`),
+        ...(opts.notes || []),
     ].filter(Boolean);
 
     // His text layout, verbatim where he gave it (2026-10-20 13:19 EDT); the DMZ code line, a set label and the mode hints other than "detected" follow its pattern.
@@ -170,6 +173,8 @@ function buildReviewCard(token, data, opts = {}) {
     const components = [
         { type: 10, content: opts.title || '## Review Extracted Gunsmith' },
         ...(opts.header ? [{ type: 10, content: opts.header }] : []),
+        // Which screenshot or link this build came from, when the start form read it: the order Discord hands uploads back in is not verified, so the page names its file.
+        ...(data.sourceLabel ? [{ type: 10, content: `-# ${data.sourceLabel}` }] : []),
         { type: 14, spacing: 1, divider: true },
     ];
     if (warnings.length) {
@@ -427,16 +432,26 @@ function confirmMessage(client, result) {
         case 'nomode': return glyphs(BOT_EMOJI.cross + " MP or DMZ is still unresolved -- click **Adjust** and put `| MP` or `| DMZ` after the category before saving.");
         case 'busy': return '⏳ Already saving this build -- give it a moment.';
         case 'labeltaken': return `${BOT_EMOJI.cross} That build label is already used by another build of this weapon -- pick another with **Adjust**.`;
-        case 'retry': return glyphs(`${BOT_EMOJI.warn} Image upload to Cloudinary failed (${result.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${result.retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`);
+        case 'retry': return glyphs(`${BOT_EMOJI.warn} Image upload to Cloudinary failed (${result.error}). Nothing was saved yet. Press **Re-upload** to send the image again (retry token \`${result.retryToken}\`).\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`);
         default: return glyphs(BOT_EMOJI.cross + ' Something went wrong saving this build.');
     }
+}
+
+// The Re-upload button a failed image upload carries: it opens the start form with the retry token filled in (Harkirat's pick, 2026-10-25 12:03 EDT), so the token is never copied by hand.
+function reuploadRow(retryToken) {
+    return { type: 1, components: [{ type: 2, style: 1, label: 'Re-upload', custom_id: `autobuild_reupload|${retryToken}`, emoji: require('./emojiMap').parseEmoji(BOT_EMOJI.edit) }] };
+}
+
+// What a single review sends for a confirmCore result other than `saved`: its words, with the Re-upload button when the image upload failed.
+function confirmReply(client, result) {
+    return { content: confirmMessage(client, result), ...(result.status === 'retry' ? { components: [reuploadRow(result.retryToken)] } : {}), ephemeral: true };
 }
 
 // Confirm click -- `interaction` is the BUTTON interaction. Caller (handlers/autobuild.js) must call interaction.deferUpdate() before calling this, since the review card is being replaced.
 async function confirmAndWrite(interaction, token) {
     const result = await confirmCore(token);
     if (result.status === 'saved') return await replaceWithV2Card(interaction, buildPostCreationCard(result.doc, null));
-    return interaction.followUp({ content: confirmMessage(interaction.client, result), ephemeral: true });
+    return interaction.followUp(confirmReply(interaction.client, result));
 }
 
 // Second attempt, via /autobuild's retry_token option (commands/autobuild.js calls this directly -- see the design spec's "Image retry mechanism" decision for why this can't be a button/modal).
@@ -584,7 +599,7 @@ async function applyEditSubmission(interaction, token) {
 module.exports = {
     pendingAutobuilds, buildReviewCard, resolveCategoryAndBadges, runExtraction, confirmAndWrite, retryImageUpload, cancelReview, buildEditModal, applyEditSubmission,
     // The shared halves bulk /autobuild (utils/autobuildBulk.js) drives.
-    extractToData, confirmCore, confirmMessage, applyEditFields,
+    extractToData, confirmCore, confirmMessage, confirmReply, reuploadRow, applyEditFields,
     // Exported for scripts/autobuildDmz.test.js; nothing else calls them.
     resolveMode, parseCategoryAndMode, refreshReviewWarnings, nextBuildNumber, badgeChoices, findDmzDuplicates, badgeTokensOf, badgeFieldsFor, writeLoadoutDoc, cleanAttachmentPairs
 };
