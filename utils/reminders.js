@@ -66,7 +66,7 @@ function computeDue(seasonalDoc, nowMs = Date.now()) {
     const leavingSoon = live.filter(e => left(e) > DAY_MS && left(e) <= 2 * DAY_MS).sort((a, b) => a.endMs - b.endMs);
 
     const bpStart = seasonalDoc.bpStart ? new Date(seasonalDoc.bpStart).getTime() : NaN;
-    const newSeason = bpStart >= start && bpStart < next ? { title: seasonalDoc.currentSeasonTitle || 'A new season', emoji: seasonalDoc.currentSeasonEmoji || null } : null;
+    const newSeason = bpStart >= start && bpStart < next ? { title: seasonalDoc.currentSeasonTitle || 'A new season', emoji: require('./seasonEmoji').seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji) } : null;
 
     // "3 days before, and on the last day" (his round-2 answer): at the 00:01 run, (2, 3] days left is the first, (0, 1] the last day.
     const seasonEnds = [];
@@ -116,7 +116,8 @@ const mark = e => (e.followed ? ` ${bell()}` : '');
 // The parts of a reminder the /today brief does not carry: season starts and ends, and patch notes. Used under the digest and in the plain reminder alike.
 function extraBlocks(p) {
     const out = [];
-    if (p.newSeason) out.push(block(`### ${emojis.greenDotGlow} New season\n${p.newSeason.emoji ? `${p.newSeason.emoji} ` : ''}**${p.newSeason.title}** is live`));
+    // The season's own emoji leads its heading, the green dot only when it has none (Harkirat, 2026-10-25 01:26 EDT: "for the new season button, can you utilize this season's emoji").
+    if (p.newSeason) out.push(block(`### ${p.newSeason.emoji || emojis.greenDotGlow} New season\n**${p.newSeason.title}** is live`));
     if (p.seasonEnds.length) out.push(block([`### ${emojis.yellowDotGlow} Season`, ...p.seasonEnds.map(s => `${emojis[s.emojiKey] || ''} **${s.title}** ${s.last ? 'ends' : 'ends in 3 days,'} ${rel(s.endMs)}`)].join('\n')));
     if (p.patchNotes.length) out.push(block([`### ${emojis.patchNotes} Patch notes`, ...p.patchNotes.map(t => `- **${t}** · see /patch notes`)].join('\n')));
     return out;
@@ -242,7 +243,9 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 
     const groups = [];
     const toggle = (c, label, emoji, on) => ({ type: 2, style: on ? 3 : 2, label, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emoji) });
-    const row = key => ({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => toggle(c, c.short, emojis[c.emoji], cats.has(c.key))) });
+    // New season wears this season's emoji (seasonEmojiFor: the stored one, else season{N} by its title), the green dot only when there is none (Harkirat, 2026-10-25 01:26 EDT: "for the new season button, can you utilize this season's emoji").
+    const seasonIcon = require('./seasonEmoji').seasonEmojiFor(seasonalDoc?.currentSeasonTitle, seasonalDoc?.currentSeasonEmoji) || emojis.greenDotGlow;
+    const row = key => ({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => toggle(c, c.short, c.key === 'newSeason' ? seasonIcon : emojis[c.emoji], cats.has(c.key))) });
     const on = leavingKeys(cats);
     // Draws, events & modes: a green-dot Going live row and a yellow-dot Leaving soon row of the same four kinds (option A, 2026-10-25 00:32 EDT), the yellow dot on every leaving button so the two rows differ at a glance.
     groups.push(block(`**Draws, events & modes**\n-# ${emojis.greenDotGlow} **Going live** · reminds the day it starts`), row('releases'));

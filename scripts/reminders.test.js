@@ -131,6 +131,15 @@ t('Leaving soon by kind: the old all-kinds key reads as all four, and one kind c
     assert.ok([...p.lastChance, ...p.leavingSoon].every(e => e.type === 'event'), 'only events remind before leaving');
 });
 
+t('New season wears this season\'s emoji, on the panel and in the DM', () => {
+    const d9 = doc({ currentSeasonTitle: 'Season 9: Test', currentSeasonEmoji: '<:S9Test:111>' });
+    const btns = []; const w = c => { if (c.type === 2) btns.push(c); (c.components || []).forEach(w); };
+    R.buildPanel(sub({ categories: ['newSeason'] }), d9, { ownerId: 'u1', nowMs: RUN }).forEach(w);
+    assert.strictEqual(btns.find(b => b.custom_id === 'remind_cat:newSeason:u1').emoji?.name, 'S9Test');
+    const dm = JSON.stringify(R.buildReminderDM({ newSeason: { title: 'Season 9: Test', emoji: '<:S9Test:111>' }, released: [], lastChance: [], leavingSoon: [], seasonEnds: [], patchNotes: [], fired: [] }, d9, { nowMs: RUN }));
+    assert.ok(dm.includes('### <:S9Test:111> New season'));
+});
+
 t('every drawn divider on the panel is large, in every state', () => {
     for (const opts of [{}, { confirmStop: true }]) {
         const seps = []; const w = c => { if (c.type === 14 && c.divider) seps.push(c.spacing); (c.components || []).forEach(w); };
