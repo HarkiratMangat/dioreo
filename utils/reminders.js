@@ -195,7 +195,7 @@ const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return un
 //   three labelled groups of toggles, Releases · Heads up · Season ending, green when on;
 //   "Or pick only what you want": what is followed, each with its date, then the two dropdowns;
 //   Search (past 25) and Stop all at the foot.
-// The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40. `zoneOptions` ([{label, value}]) swaps the foot for the Set timezone picker: those zones plus a search option, and Cancel (his ask, 2026-10-24 20:47 EDT: "let's include a set timezone button on the /remind command panel").
+// The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40. `zoneOptions` ([{label, value}]) swaps the foot for a zone picker: those zones plus a search option, and Cancel; since 2026-10-24 21:13 EDT it shows only when a search in the Set timezone box (handlers/remind.js zoneModal) finds several zones (his ask, 2026-10-24 20:47 EDT: "let's include a set timezone button on the /remind command panel").
 function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = null, zoneOptions = null } = {}) {
     const cats = new Set(sub?.categories || []);
     const follows = sub?.follows || [];

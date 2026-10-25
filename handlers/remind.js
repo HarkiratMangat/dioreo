@@ -43,6 +43,17 @@ function quickZones() {
     return QUICK_TIMEZONES.map(z => ({ label: displayLabel(z.tz, z.label), value: z.tz }));
 }
 
+// Set timezone opens one box with both ways in (Harkirat, 2026-10-24 21:12 EDT: "Just do a modal when the button is pressed? That holds 2 fields: a search and a quick pick dropdown menu"): /settings' shortlist as a dropdown, the chosen zone pre-selected, and a search field for anything else. Typed text wins over the dropdown, since the dropdown arrives with the current zone already picked.
+function zoneModal(owner, current) {
+    return {
+        title: 'Set your timezone', custom_id: `remind_tzsearch:${owner}`,
+        components: [
+            { type: 18, label: 'Quick pick', description: 'Common timezones', component: { type: 3, custom_id: 'zone', required: false, placeholder: 'Pick your timezone…', options: quickZones().slice(0, 25).map(o => ({ ...o, default: o.value === current })) } },
+            { type: 18, label: 'Or search', description: 'A city, country or abbreviation, if yours is not listed', component: { type: 4, custom_id: 'query', style: 1, required: false, max_length: 60, placeholder: 'Toronto, London, Tokyo, PST…' } },
+        ],
+    };
+}
+
 function accent() {
     try { return require('../commands/calendar').PRESET_ACCENT; } catch { return undefined; }
 }
@@ -152,32 +163,44 @@ async function route(interaction) {
         }
     }
 
-    // Set timezone: the panel's foot becomes a zone picker (/settings' shortlist plus search); a pick saves it and redraws the panel with its times in that zone.
-    if (interaction.isButton() && (interaction.customId.startsWith('remind_tz:') || interaction.customId.startsWith('remind_tzcancel:'))) {
+    // Set timezone: the box with the shortlist and a search field (zoneModal). It must be the first response, so no defer.
+    if (interaction.isButton() && interaction.customId.startsWith('remind_tz:')) {
+        return await interaction.showModal(zoneModal(owner, await userZone(owner)));
+    }
+
+    // Cancel on the panel's picker, which now appears only when a search finds several zones.
+    if (interaction.isButton() && interaction.customId.startsWith('remind_tzcancel:')) {
         await interaction.deferUpdate();
         const { sub } = await loadState(owner);
-        return await rerender(interaction, sub, { zoneOptions: interaction.customId.startsWith('remind_tz:') ? quickZones() : null });
+        return await rerender(interaction, sub);
     }
 
     if (interaction.isStringSelectMenu() && interaction.customId.startsWith('remind_tzset:')) {
         const picked = interaction.values[0];
-        if (picked === '__search__') {
-            const { buildPickerSearchModal } = require('../utils/pickerUI');
-            return await interaction.showModal(buildPickerSearchModal({ customId: `remind_tzsearch:${owner}`, title: 'Search for your timezone', fieldLabel: 'City, country or abbreviation', fieldPlaceholder: 'Toronto, London, Tokyo, PST…' }));
-        }
+        if (picked === '__search__') return await interaction.showModal(zoneModal(owner, await userZone(owner)));
         await interaction.deferUpdate();
         await saveZone(owner, picked);
         const { sub } = await loadState(owner);
         return await rerender(interaction, sub);
     }
 
-    // The search box: one match is saved at once; several fill the picker with just those.
+    // The box submitted: typed text is searched (one match saved at once, several fill the panel's picker with just those); otherwise the dropdown's pick is saved.
     if (interaction.isModalSubmit() && interaction.customId.startsWith('remind_tzsearch:')) {
         const { searchTimezones } = require('../utils/timezoneData');
-        const found = searchTimezones(interaction.fields.getTextInputValue('query'), 24);
+        let query = '';
+        try { query = (interaction.fields.getTextInputValue('query') || '').trim(); } catch { query = ''; }
+        let pick = null;
+        try { pick = interaction.fields.getStringSelectValues('zone')[0] || null; } catch { pick = null; }
+        if (!query && pick) {
+            await interaction.deferUpdate();
+            await saveZone(owner, pick);
+            const { sub } = await loadState(owner);
+            return await rerender(interaction, sub);
+        }
+        const found = query ? searchTimezones(query, 24) : [];
         if (!found.length) {
             try {
-                await interaction.reply({ content: `${emojis.cross} No timezone matches that. Try a city, a country or an abbreviation like PST.`, flags: 64 });
+                await interaction.reply({ content: `${emojis.cross} ${query ? 'No timezone matches that. Try a city, a country or an abbreviation like PST.' : 'Pick a timezone from the list, or type one to search.'}`, flags: 64 });
             } catch (error) {
                 console.error('Failed to answer a reminders timezone search:', error?.message);
             }
