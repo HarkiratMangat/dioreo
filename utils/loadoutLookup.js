@@ -12,6 +12,19 @@ async function resolveWeapon(mode, rawQuery) {
     const weaponKey = rawQuery.toLowerCase().replace(/\s+/g, '');
     let builds = await Loadout.find({ weaponKey, mode }).lean();
 
+    // An EXACT catalogue name beats a partial match (found click-testing 2026-10-25 19:34 EDT: Search "m4" opened the XM4, because M4 has no build and "m4" is inside "XM4"). So a name the CODM catalogue knows exactly is that weapon: its builds under any spacing of the key, or its no-build card. MP only, as below.
+    if (!builds.length && mode === 'MP') {
+        const { normKey } = require('./catalogue');
+        const key = normKey(rawQuery);
+        const CatalogueItem = require('../models/CatalogueItem');
+        const weapon = key ? await CatalogueItem.findOne({ kind: 'weapon', key, dmzOnly: { $ne: true } }).lean() : null;
+        if (weapon) {
+            const named = (await Loadout.find({ mode }).lean()).filter(b => normKey(b.weaponName) === key);
+            if (!named.length) return { missing: { weaponName: weapon.name.toUpperCase(), category: weapon.category } };
+            builds = named;
+        }
+    }
+
     // Short/partial-query fallback (2026-07-18, v2 quick-wins batch) -- the exact weaponKey lookup above only reliably matches when the option came from an actual autocomplete pick, so a short/partial free-typed query (e.g. "loc") used to just fail with no explanation. Fuzzy- match the raw query against every candidate weapon's real name in this mode before giving up -- an unambiguous single match auto-resolves, 2+ matches asks the user to pick one instead of silently guessing which they meant.
     if (!builds.length) {
         const { findWeaponMatches } = require('./search');
