@@ -142,11 +142,15 @@ function buildReminderDM(p, seasonalDoc, { nowMs = Date.now(), accentColor = 409
 
 // What Send a test DMs (Harkirat, 2026-10-24 19:39 EDT: "When someone has reminders enabled and they tap send a test, can you make it actually their reminders?"). With reminders on, it is the real DM from TODAY's daily update (the last run), built exactly as the run builds it, under a one-line note that it is a test; when nothing they follow happened then, it says so and lists what they follow. With nothing on, the plain test card. ⚠️ It shows the LAST run, not the next one: Discord draws every <t:…:R> against the reader's clock, so a DM built for a run still to come read "Released in 14 minutes" and gave the next daily update a day too late (his screenshot, 19:47 EDT: "Timings for the daily update doesn't make sense?").
 // The one-time tip sent as a second DM beside someone's first real reminder when they have no timezone (Harkirat, 2026-10-24 23:44 EDT ask: "for the first time… when a real reminder sends… send another follow-up DM… heads up… your time zone… with the set button in it"). Sending never needs one (every reminder goes at 00:01 UTC and its times are Discord timestamps in the reader's own device time); the zone only fixes the dates written into /remind's dropdowns. With `setTo` it is the confirmation that replaces it once a zone is picked.
-function buildTimezoneNote(ownerId, { accentColor = 4093660, setTo = null } = {}) {
-    if (setTo) return [{ type: 17, accent_color: accentColor, components: [block(`### ${emojis.reminderEnabled} Timezone set\n-# **${setTo}** · /remind's lists now show your time. Change it any time in /settings.`)] }];
+function buildTimezoneNote(ownerId, { accentColor = 4093660, setTo = null, client = null } = {}) {
+    // His wording and layout (2026-10-25 00:08 EDT), with /remind and /settings as real clickable commands (utils/commandMentions.js).
+    const { mentionCommand } = require('./commandMentions');
+    const remind = mentionCommand(client, 'remind'), settings = mentionCommand(client, 'settings');
+    if (setTo) return [{ type: 17, accent_color: accentColor, components: [block(`### ${emojis.reminderEnabled} Timezone set\n**${setTo}** · ${remind}'s lists now show your local time.\n-# Tip: You can adjust your timezone anytime in ${settings}`)] }];
     return [{ type: 17, accent_color: accentColor, components: [
-        block(`### ${emojis.remindAlert} Heads up: set your timezone\n-# Dioreo doesn't know your timezone yet, so the dates in /remind's lists show in UTC. Set it once and they'll match your time.`),
+        block(`## ${emojis.remindAlert} Heads up: set your timezone!\nDioreo doesn't know your timezone yet, so the dates in ${remind}'s lists show in UTC.\nSet it once and they'll appear in your local time.`),
         { type: 1, components: [{ type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tzdm:${ownerId}` }] },
+        block(`-# Tip: You can adjust your timezone anytime in ${settings}`),
     ] }];
 }
 
@@ -408,7 +412,7 @@ async function runDailyReminders(client, { nowMs = Date.now(), only = null } = {
                     try {
                         const UserPreference = require('../models/UserPreference');
                         const prefs = await UserPreference.findOne({ discordId: sub.discordId }, { timezoneSetAt: 1 }).lean();
-                        if (!prefs?.timezoneSetAt) await client.rest.post(Routes.channelMessages(dm.id), { body: { flags: 32768, allowed_mentions: { parse: [] }, components: buildTimezoneNote(sub.discordId, { accentColor }) } });
+                        if (!prefs?.timezoneSetAt) await client.rest.post(Routes.channelMessages(dm.id), { body: { flags: 32768, allowed_mentions: { parse: [] }, components: buildTimezoneNote(sub.discordId, { accentColor, client }) } });
                     } catch (err) {
                         console.error(`Timezone tip DM failed for one user: ${err?.message || 'Unknown error'}`);
                     }

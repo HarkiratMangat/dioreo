@@ -187,7 +187,7 @@ async function route(interaction) {
         if (tz) {
             await interaction.deferUpdate();
             await saveZone(owner, tz);
-            return await sendV2Payload(interaction, R.buildTimezoneNote(owner, { accentColor: accent(), setTo: timezoneBaseLabel(tz) }));
+            return await sendV2Payload(interaction, R.buildTimezoneNote(owner, { accentColor: accent(), setTo: timezoneBaseLabel(tz), client: interaction.client }));
         }
         try {
             if (!found.length) await interaction.reply({ content: `${emojis.cross} ${query ? 'No timezone matches that. Try a city, a country or an abbreviation like PST.' : 'Pick a timezone from the list, or type one to search.'}`, flags: 64 });
