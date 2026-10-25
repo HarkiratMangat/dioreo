@@ -42,8 +42,7 @@ function quickZones() {
     return require('../utils/timezoneData').quickZoneOptions(); // west to east by offset
 }
 
-// Set timezone opens one box with both ways in (Harkirat, 2026-10-24 21:12 EDT: "Just do a modal when the button is pressed? That holds 2 fields: a search and a quick pick dropdown menu"): /settings' shortlist as a dropdown, the chosen zone pre-selected, and a search field for anything else. Typed text wins over the dropdown, since the dropdown arrives with the current zone already picked.
-// `idPrefix` is remind_tzsearchdm when the box was opened from the timezone tip DM, whose submit confirms in place instead of drawing the panel.
+// Set timezone opens one box with both ways in (Harkirat, 2026-10-24 21:12 EDT: "Just do a modal when the button is pressed? That holds 2 fields: a search and a quick pick dropdown menu"): /settings' shortlist as a dropdown, the chosen zone pre-selected, and a search field for anything else. Typed text wins over the dropdown, since the dropdown arrives with the current zone already picked. `idPrefix` is remind_tzsearchdm when the box was opened from the timezone tip DM, whose submit confirms in place instead of drawing the panel.
 function zoneModal(owner, current, idPrefix = 'remind_tzsearch') {
     return {
         title: 'Set your timezone', custom_id: `${idPrefix}:${owner}`,
