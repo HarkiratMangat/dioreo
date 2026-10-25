@@ -8,7 +8,7 @@
 //
 // A PRESET sets only what it names; the rest is read from the screenshot as usual ("assume i didn't mention mp, sniper and only mentioned meta/best it would just overide the badges?", 12:01 EDT). Each word is told apart by what it is, in any order, with commas, slashes and spaces all separating (12:02 EDT: "meta, best vs meta/best vs meta,best would all work?"). A word nothing recognises, or a number with no screenshot, is shown on a review page, never dropped silently.
 //
-// ⚠️ NOT VERIFIED: that Discord hands uploaded files back in the order they were picked. Each review page names its screenshot's number and file name, so a mismatch shows.
+// ⚠️ Discord hands uploaded files back newest first; handleStartSubmit sorts them by attachment id so #1 is the first file picked (measured 2026-10-25 13:22 EDT). Each review page still names its screenshot's number and file name.
 const { resolveCategorySynonyms, categoryByExactAlias } = require('./search');
 const { parseLoadoutBadges } = require('./adminParser');
 
@@ -116,6 +116,8 @@ async function handleStartSubmit(interaction) {
     const text = (id) => { try { return interaction.fields.getTextInputValue(id) || ''; } catch { return ''; } };
     let uploaded = [];
     try { uploaded = [...(interaction.fields.getUploadedFiles('shots')?.values() || [])]; } catch { uploaded = []; }
+    // Discord hands the uploads back NEWEST FIRST: measured 2026-10-25 13:22 EDT, four picked in the order IMG_6106, fss, IMG_5630, IMG_5636 arrived as 5636, 5630, fss, 6106 (Harkirat: "I think discord might give them in opposite order?"). Sorted by attachment id, a snowflake that rises in the order the files were attached, rather than simply reversed, so a change in how Discord lists them cannot flip it back.
+    uploaded.sort((x, y) => (BigInt(x.id) < BigInt(y.id) ? -1 : BigInt(x.id) > BigInt(y.id) ? 1 : 0));
     const files = uploaded.map(a => ({ url: a.url, name: a.name }));
     const retryToken = text('retry').trim();
     const { images, notes } = planStart({ files, linksText: text('links'), presetsText: text('presets') });
