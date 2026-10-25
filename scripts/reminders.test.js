@@ -190,7 +190,7 @@ t('Set timezone: a button on the panel; the picker swaps the foot for the zones,
 
 t('Stop all asks on its own: a warning heading, "Yes, stop all!" and Keep them with its icon, and no timezone button', () => {
     const ps = JSON.stringify(R.buildPanel({ categories: ['newDraws'], follows: [] }, doc(), { ownerId: '1', nowMs: RUN, confirmStop: true }));
-    assert.ok(ps.includes("This isn't a pause") && ps.includes('"Yes, stop all!"') && ps.includes('"Keep them"'), 'the warning and the two choices');
+    assert.ok(ps.includes("Stop All clears every reminder you've set!") && ps.includes('"Yes, stop all!"') && ps.includes('"Keep them"'), 'the warning and the two choices');
     assert.ok(!ps.includes('remind_tz:1') && !ps.includes('and delete'), 'no Set timezone, no "and delete"');
 });
 
