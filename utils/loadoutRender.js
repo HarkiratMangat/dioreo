@@ -21,9 +21,13 @@ function getMpCategoryAccent(category) {
     return MP_CATEGORY_ACCENT[category.toUpperCase()] ?? DEFAULT_MP_ACCENT;
 }
 
-// Cosmetic display-only relabeling (2026-07-18, v2 quick-wins follow-up) -- `SECONDARIES` is the real stored `Loadout.category` enum value, the `/secondaries` command name, and that command's own description ALL stay exactly as-is (Harkirat's explicit call -- nothing about the data model, command registration, or category filtering changes). This ONLY relabels how the category reads in specific SHORT, singular-implying UI spots where the plural form sounds wrong grammatically ("Best SECONDARIES" reads oddly for a single weapon) -- currently just the badge line below. Every other category (AR/SMG/LMG/MARKSMAN/SNIPER/SHOTGUN) passes through unchanged.
+// Cosmetic display-only relabeling (2026-07-18, v2 quick-wins follow-up) -- `SECONDARIES` is the real stored `Loadout.category` enum value, the `/secondaries` command name, and that command's own description ALL stay exactly as-is (Harkirat's explicit call -- nothing about the data model, command registration, or category filtering changes). This ONLY relabels how the category reads in specific SHORT, singular-implying UI spots where the plural form sounds wrong grammatically ("Best SECONDARIES" reads oddly for a single weapon) -- currently just the badge line below. Every other category (AR/SMG/LMG/MARKSMAN/SNIPER/SHOTGUN) passes through unchanged. AR, SMG and LMG stay in capitals because they are abbreviations; every other class reads in normal case, "Shotgun", "Marksman", "Secondary" (Harkirat, 2026-10-25 18:34 EDT: "AR SMG LMG were all caps because they're abbreviations for the full name"). Every place a class name shows (card footers, badges, pagers, the class and weapon dropdowns, autocomplete) goes through here.
+const CATEGORY_ABBREVIATIONS = new Set(['AR', 'SMG', 'LMG']);
 function displayCategoryLabel(category) {
-    return category === 'SECONDARIES' ? 'SECONDARY' : category;
+    const code = String(category || '').toUpperCase();
+    if (!code || CATEGORY_ABBREVIATIONS.has(code)) return code;
+    const word = code === 'SECONDARIES' ? 'SECONDARY' : code;
+    return word.charAt(0) + word.slice(1).toLowerCase();
 }
 
 // `Loadout.imageKey` supports EITHER a bare Cloudinary key (prefixed with the Cloudinary base URL below, the original design used by admin-added loadouts) OR a full external URL -- added for builds.xlsx's 2 originally-imgur-hosted LOCUS rows (since re-uploaded to Cloudinary directly, see models/Loadout.js), kept supported in case a future import ever needs it again.
@@ -417,7 +421,7 @@ function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral
         // The missing line in italics (Harkirat, 2026-10-24 18:25 EDT).
         { type: 10, content: `### No build yet\n*Dioreo has no ${weaponName} build yet.*` },
         // "SMG • Build pending" (Harkirat, 2026-10-24 18:36 EDT), the same dot the build cards' footers use.
-        { type: 10, content: `-# ${mode === 'DMZ' ? 'DMZ' : category} • Build pending` },
+        { type: 10, content: `-# ${mode === 'DMZ' ? 'DMZ' : displayCategoryLabel(category)} • Build pending` },
     ];
     if (nb && nb.total > 1) {
         containerComponents.push({ type: 14, spacing: 1, divider: false }, buildPaginationRow({ totalChunks: nb.total, currentPage: nb.index, makeCustomId: p => `gsb~nb~${category}~${p}`, indicatorCustomId: 'gsb~nbind', indicatorLabel: `No build yet · ${nb.index + 1}/${nb.total}` }));
