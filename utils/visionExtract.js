@@ -73,7 +73,8 @@ function buildBasePrompt(maxAttachments) {
     "penStats": "true if the stats include a stat labelled 'PEN.' or 'PEN. MULTI', otherwise false",
     "selectBlueprints": "true if a 'SELECT BLUEPRINTS' button or label is visible, otherwise false",
     "equipCustomizeTabs": "true if tabs labelled 'EQUIP' and 'CUSTOMIZE' are visible, otherwise false",
-    "codeInTitle": "true if the weapon's title has an alphanumeric code joined to it, e.g. 'Dobvra-1D2C5F7B8B', otherwise false"
+    "codeInTitle": "true if the weapon's title has an alphanumeric code joined to it, e.g. 'Dobvra-1D2C5F7B8B', otherwise false",
+    "slotLabels": "true if the boxes holding EQUIPPED attachments each print their slot's name (e.g. 'Muzzle', 'Barrel') above the attachment's name, otherwise false"
   },
   "attachments": [
     {"slot": "the slot's label EXACTLY as printed on screen, e.g. Muzzle, Barrel, Optic, Stock, Underbarrel, Rear Grip, Ammunition, Perk, Laser, Trigger Action -- some weapons print their own names instead, such as Bowstring, Limb, Bolt, Foregrip, Mag, Guard or Smoothbore, and those must be copied as printed. If no label is printed for the slot, use an empty string; never guess a slot from its position or its icon", "name": "the equipped attachment's name in that slot"}
@@ -127,11 +128,12 @@ async function getGcpAccessToken() {
 // Nine is the most slot positions either mode shows (Muzzle, Barrel, Optic, Stock, Perk, Laser, Underbarrel, Ammunition, Rear Grip). It was 5 until 2026-10-19 17:53 EDT, and that was the bug Harkirat's note names: "DMZ partials are the 5-attachment prompt cap". 5 is MP's EQUIP cap, not its slot count, so it was right for MP and cut every DMZ build short. One cap now serves both, because the mode is only known once the model has answered: an MP screen cannot show more than five equipped, and the prompt's skip-empty-and-restricted wording is what stops a nine-slot cap inventing attachments on a short weapon. ⚠️ Keep that wording whenever this prompt is edited.
 const MAX_ATTACHMENTS = 9;
 
-// The mode from the four `screen` facts the model reported. Two agreeing signals and no conflicting one, or null: a build filed under the wrong mode is worse than one the review card asks about (.claude/rules/autobuild.md, "Prefer two agreeing signals, and if they conflict, return the mode as unknown rather than guessing"). A missing or non-boolean field counts as not seen, never as a vote, so a malformed answer degrades to null instead of to a mode. A string "true" is not true: the prompt asks for JSON booleans, and accepting strings would make "false" truthy.
+// The mode from the five `screen` facts the model reported. Two agreeing signals and no conflicting one, or null: a build filed under the wrong mode is worse than one the review card asks about (.claude/rules/autobuild.md, "Prefer two agreeing signals, and if they conflict, return the mode as unknown rather than guessing"). A missing or non-boolean field counts as not seen, never as a vote, so a malformed answer degrades to null instead of to a mode. A string "true" is not true: the prompt asks for JSON booleans, and accepting strings would make "false" truthy.
 function classifyMode(screen) {
     const seen = (key) => screen != null && screen[key] === true;
     const dmz = ['penStats', 'equipCustomizeTabs'].filter(seen).length;
-    const mp = ['selectBlueprints', 'codeInTitle'].filter(seen).length;
+    // A third MP signal since 2026-10-25 13:26 EDT: an FSS Hurricane screenshot with its code in the title but no SELECT BLUEPRINTS bar came back unknown, while it "lists attachments the same as the other MP gunsmiths" (Harkirat). An MP screen prints each equipped slot's name above the attachment; a DMZ screen never does, so any two of the three MP signals, with no DMZ one, is MP. The two-signal rule itself is unchanged.
+    const mp = ['selectBlueprints', 'codeInTitle', 'slotLabels'].filter(seen).length;
     if (dmz >= 2 && mp === 0) return 'DMZ';
     if (mp >= 2 && dmz === 0) return 'MP';
     return null;
@@ -247,8 +249,11 @@ function shapeExtraction(parsed, maxAttachments = MAX_ATTACHMENTS) {
         penStats: parsed.screen?.penStats === true,
         selectBlueprints: parsed.screen?.selectBlueprints === true,
         equipCustomizeTabs: parsed.screen?.equipCustomizeTabs === true,
-        codeInTitle: parsed.screen?.codeInTitle === true
+        codeInTitle: parsed.screen?.codeInTitle === true,
+        slotLabels: parsed.screen?.slotLabels === true
     };
+    // What the model saw when it could not tell, so a screenshot that "clearly" is one mode can be explained from the log.
+    if (!classifyMode(parsed.screen)) console.log(`Vision: mode unknown for ${parsed.weaponName || 'a screenshot'}; signals ${JSON.stringify(modeSignals)}`);
     return { weaponName: parsed.weaponName, gunsmithCode: parsed.gunsmithCode, attachments, attachmentSlots, mode: classifyMode(parsed.screen), modeSignals };
 }
 

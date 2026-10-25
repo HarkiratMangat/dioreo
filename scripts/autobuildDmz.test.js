@@ -29,7 +29,7 @@ const DMZ_AK117 = ['Monolithic Suppressor', 'OWC Marksman', 'Classic Red Dot Sig
 const DMZ_ASVAL = ['MIP Quick Response Barrel', 'OWC 4.4X Tactical Scope', 'OWC Ranger Stock', 'Wounding', 'OWC Laser - Tactical', 'Ranger Foregrip', '15 Round FMJ', 'Granulated Grip Tape'];
 const MP_AK117 = ['Monolithic Suppressor', 'MIP Extended Light Barrel', 'No Stock', '48 Round Extended Mag', 'Granulated Grip Tape'];
 const DMZ_SCREEN = { penStats: true, selectBlueprints: false, equipCustomizeTabs: true, codeInTitle: false };
-const MP_SCREEN = { penStats: false, selectBlueprints: true, equipCustomizeTabs: false, codeInTitle: true };
+const MP_SCREEN = { penStats: false, selectBlueprints: true, equipCustomizeTabs: false, codeInTitle: true, slotLabels: true };
 
 // A model answer for a DMZ screen. The slot labels are what a model that guessed anyway would send -- the pipeline must throw them away, since a DMZ screen prints none.
 const dmzAnswer = (names, slots = []) => ({ weaponName: 'AK117', gunsmithCode: '', screen: DMZ_SCREEN, attachments: names.map((name, i) => ({ slot: slots[i] || '', name })) });
@@ -73,6 +73,12 @@ const lastToken = () => [...pipeline.pendingAutobuilds.keys()].pop();
         assert.strictEqual(classifyMode({ codeInTitle: true }), null, 'one MP signal');
         assert.strictEqual(classifyMode({ ...DMZ_SCREEN, selectBlueprints: true }), null, 'DMZ pair plus an MP signal');
         assert.strictEqual(classifyMode({ penStats: true, equipCustomizeTabs: true, selectBlueprints: true, codeInTitle: true }), null, 'everything');
+        assert.strictEqual(classifyMode({ ...DMZ_SCREEN, slotLabels: true }), null, 'DMZ pair plus printed slot labels');
+    });
+    await check('any two of the three MP signals is MP: the code in the title and printed slot labels with no SELECT BLUEPRINTS bar (2026-10-25 13:26 EDT, the FSS Hurricane)', () => {
+        assert.strictEqual(classifyMode({ codeInTitle: true, slotLabels: true }), 'MP');
+        assert.strictEqual(classifyMode({ selectBlueprints: true, slotLabels: true }), 'MP');
+        assert.strictEqual(classifyMode({ slotLabels: true }), null, 'one MP signal is still not enough');
     });
     await check('a malformed answer is never a vote: strings, nulls and a missing object all read as unknown', () => {
         assert.strictEqual(classifyMode({ penStats: 'true', equipCustomizeTabs: 'true' }), null, 'strings are not booleans');
@@ -98,7 +104,7 @@ const lastToken = () => [...pipeline.pendingAutobuilds.keys()].pop();
         assert.ok(p.includes('up to 9'), 'asks for up to nine');
         assert.ok(/skip any slot that is EMPTY/.test(p) && /RESTRICTED/.test(p), 'skip wording kept');
         assert.ok(p.includes("never output a slot's label as if it were the attachment name"), 'label-as-name ban kept');
-        for (const k of ['penStats', 'selectBlueprints', 'equipCustomizeTabs', 'codeInTitle']) assert.ok(p.includes(`"${k}"`), `asks ${k}`);
+        for (const k of ['penStats', 'selectBlueprints', 'equipCustomizeTabs', 'codeInTitle', 'slotLabels']) assert.ok(p.includes(`"${k}"`), `asks ${k}`);
         assert.ok(!/●|dot/i.test(p), 'no dot-row signal');
         assert.ok(!/\bMAX\b|GOLD/.test(p), 'no MAX/GOLD badge signal');
         assert.ok(p.includes('If no label is printed for the slot, use an empty string'), 'DMZ slots left blank, not guessed');
