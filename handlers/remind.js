@@ -77,11 +77,18 @@ async function openOwnPanel(interaction) {
 }
 
 // Re-renders the panel the click came from.
-async function rerender(interaction, sub, { confirmStop = false, zoneOptions = null } = {}) {
+async function rerender(interaction, sub, { confirmStop = false } = {}) {
     const SeasonalData = require('../models/SeasonalData');
     const [doc, timeZone] = await Promise.all([SeasonalData.findOne({ docType: 'global' }).lean(), userZone(interaction.user.id)]);
-    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), confirmStop, timeZone, zoneOptions }));
+    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), confirmStop, timeZone }));
 }
+
+// A timezone search with several matches answers privately with this dropdown, from the panel and from the timezone tip DM alike (Harkirat, 2026-10-25 01:19 EDT: "why not just a new ephemeral message?" … "yes").
+function zoneChoices(owner, found) {
+    return { content: `${emojis.timezone} Which one do you mean?`, components: [{ type: 1, components: [{ type: 3, custom_id: `remind_tzsetdm:${owner}`, placeholder: 'Pick your timezone…', options: found.slice(0, 25).map(o => ({ label: String(o.label).slice(0, 100), value: o.value, ...(o.description ? { description: String(o.description).slice(0, 100) } : {}) })) }] }], flags: 64 };
+}
+// The panel a several-matches search came from, so the pick can refresh it: the search's own interaction may edit that message for 15 minutes.
+const panelsAwaitingZone = new Map();
 
 async function notYours(interaction) {
     try {
@@ -214,7 +221,7 @@ async function route(interaction) {
         }
         try {
             if (!found.length) await interaction.reply({ content: `${emojis.cross} ${query ? 'No timezone matches that. Try a city, a country or an abbreviation like PST.' : 'Pick a timezone from the list, or type one to search.'}`, flags: 64 });
-            else await interaction.reply({ content: 'Which one do you mean?', components: [{ type: 1, components: [{ type: 3, custom_id: `remind_tzsetdm:${owner}`, placeholder: 'Pick your timezone…', options: found.slice(0, 25).map(o => ({ label: String(o.label).slice(0, 100), value: o.value, ...(o.description ? { description: String(o.description).slice(0, 100) } : {}) })) }] }], flags: 64 });
+            else await interaction.reply(zoneChoices(owner, found));
         } catch (error) {
             console.error('Failed to answer a timezone tip search:', error?.message);
         }
@@ -224,26 +231,16 @@ async function route(interaction) {
         const { timezoneBaseLabel } = require('../utils/timezoneData');
         await interaction.deferUpdate();
         await saveZone(owner, interaction.values[0]);
-        return await interaction.editReply({ content: `${emojis.checkmark} Timezone set to **${timezoneBaseLabel(interaction.values[0])}**. /remind's lists now show your time.`, components: [] });
+        await interaction.editReply({ content: `${emojis.checkmark} Timezone set to **${timezoneBaseLabel(interaction.values[0])}**. /remind's lists now show your time.`, components: [] });
+        const panel = panelsAwaitingZone.get(owner);
+        panelsAwaitingZone.delete(owner);
+        if (panel && Date.now() - panel.at < 14 * 60 * 1000) {
+            try { const { sub } = await loadState(owner); await rerender(panel.interaction, sub); } catch (error) { console.error('Failed to refresh the reminders panel after a timezone pick:', error?.message); }
+        }
+        return;
     }
 
-    // Cancel on the panel's picker, which now appears only when a search finds several zones.
-    if (interaction.isButton() && interaction.customId.startsWith('remind_tzcancel:')) {
-        await interaction.deferUpdate();
-        const { sub } = await loadState(owner);
-        return await rerender(interaction, sub);
-    }
-
-    if (interaction.isStringSelectMenu() && interaction.customId.startsWith('remind_tzset:')) {
-        const picked = interaction.values[0];
-        if (picked === '__search__') return await interaction.showModal(zoneModal(owner, await userZone(owner)));
-        await interaction.deferUpdate();
-        await saveZone(owner, picked);
-        const { sub } = await loadState(owner);
-        return await rerender(interaction, sub);
-    }
-
-    // The box submitted: typed text is searched (one match saved at once, several fill the panel's picker with just those); otherwise the dropdown's pick is saved.
+    // The box submitted: typed text is searched (one match saved at once, several answered privately with a dropdown of just those); otherwise the dropdown's pick is saved.
     if (interaction.isModalSubmit() && interaction.customId.startsWith('remind_tzsearch:')) {
         const { searchTimezones } = require('../utils/timezoneData');
         let query = '';
@@ -266,9 +263,15 @@ async function route(interaction) {
             return;
         }
         await interaction.deferUpdate();
-        if (found.length === 1) await saveZone(owner, found[0].value);
+        if (found.length > 1) {
+            // Several matches: a private "Which one do you mean?" dropdown; the panel stays as it is until a pick refreshes it.
+            panelsAwaitingZone.set(owner, { interaction, at: Date.now() });
+            try { await interaction.followUp(zoneChoices(owner, found)); } catch (error) { console.error('Failed to send the timezone choices:', error?.message); }
+            return;
+        }
+        await saveZone(owner, found[0].value);
         const { sub } = await loadState(owner);
-        return await rerender(interaction, sub, { zoneOptions: found.length === 1 ? null : found });
+        return await rerender(interaction, sub);
     }
 
     if (interaction.isButton() && (interaction.customId.startsWith('remind_stop:') || interaction.customId.startsWith('remind_stopno:'))) {

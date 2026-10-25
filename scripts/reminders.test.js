@@ -132,8 +132,7 @@ t('Leaving soon by kind: the old all-kinds key reads as all four, and one kind c
 });
 
 t('every drawn divider on the panel is large, in every state', () => {
-    const zones = [{ label: 'Toronto (EDT)', value: 'America/Toronto' }];
-    for (const opts of [{}, { confirmStop: true }, { zoneOptions: zones }]) {
+    for (const opts of [{}, { confirmStop: true }]) {
         const seps = []; const w = c => { if (c.type === 14 && c.divider) seps.push(c.spacing); (c.components || []).forEach(w); };
         R.buildPanel(sub({ categories: ['events'], follows: [] }), doc(), { ownerId: 'u1', nowMs: RUN, ...opts }).forEach(w);
         assert.ok(seps.length && seps.every(sp => sp === 2), `${JSON.stringify(Object.keys(opts))}: ${seps}`);
@@ -142,8 +141,7 @@ t('every drawn divider on the panel is large, in every state', () => {
 
 t('the busiest panel stays within 40: every toggle on, follows, paused, and each of its states', () => {
     const busy = sub({ categories: R.CATEGORIES.map(c => c.key).filter(k => k !== 'leaving'), follows: [{ kind: 'release', title: 'Grim Duo Draw' }], pausedAt: new Date(RUN), failingSince: new Date(RUN) });
-    const zones = [{ label: 'Toronto (EDT)', value: 'America/Toronto' }];
-    for (const opts of [{}, { confirmStop: true }, { zoneOptions: zones }]) {
+    for (const opts of [{}, { confirmStop: true }]) {
         const n = require('../commands/today').countComponents(R.buildPanel(busy, doc(), { ownerId: 'u1', nowMs: RUN, ...opts }));
         assert.ok(n <= 40, `${JSON.stringify(Object.keys(opts))}: ${n} components`);
     }
@@ -231,19 +229,14 @@ t("the dropdowns write each time in the reader's zone, since Discord draws no <t
     assert.ok(/releases [A-Z][a-z]{2} \d+ UTC"/.test(JSON.stringify(R.buildPanel(null, doc(), { ownerId: '1', nowMs: RUN }))), 'no zone saved: "Oct 28 UTC"');
 });
 
-t('Set timezone: a button on the panel; the picker swaps the foot for the zones, a search option and Cancel', () => {
+t('Set timezone: a button on the panel, blue until a zone is chosen; no picker inside the panel', () => {
     const sub = { categories: ['newDraws'], follows: [] };
     const normal = JSON.stringify(R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN }));
     assert.ok(normal.includes('remind_tz:1') && normal.includes('Set timezone') && normal.includes('remind_stop:1'), 'Set timezone sits in the foot beside Stop all');
     const btn = (opts) => R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN, ...opts })[0].components.flatMap(c => c.components || []).find(c => c.custom_id === 'remind_tz:1');
     assert.deepStrictEqual([btn({}).style, btn({}).label], [1, 'Set timezone'], 'no zone chosen: blue Set timezone');
     assert.deepStrictEqual([btn({ timeZone: 'Asia/Tokyo' }).style, btn({ timeZone: 'Asia/Tokyo' }).label], [2, 'Adjust timezone'], 'a zone chosen: grey Adjust timezone');
-    const zones = [{ label: 'Toronto (EDT)', value: 'America/Toronto' }, { label: 'London (GMT)', value: 'Europe/London' }];
-    const picking = R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN, zoneOptions: zones });
-    const ps = JSON.stringify(picking);
-    assert.ok(ps.includes('remind_tzset:1') && ps.includes('__search__') && ps.includes('remind_tzcancel:1'), 'the picker, its search option and Cancel');
-    assert.ok(!ps.includes('remind_stop:1') && !ps.includes('remind_tz:1'), 'no Stop all or second Set timezone while picking');
-    assert.ok(require('../commands/today').countComponents(picking) <= 40, 'under 40 components');
+    assert.ok(!normal.includes('remind_tzset:') && !normal.includes('remind_tzcancel:'), 'no timezone picker in the panel: several matches answer privately');
 });
 
 t('Stop all asks on its own: a warning heading, "Yes, stop all!" and Keep them with its icon, and no timezone button', () => {

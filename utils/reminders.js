@@ -224,9 +224,9 @@ const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return un
 //   three labelled groups of toggles, Releases · Heads up · Season ending, green when on;
 //   "Or pick only what you want": what is followed, each with its date, then the two dropdowns;
 //   Search (past 25) and Stop all at the foot.
-// The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40. `zoneOptions` ([{label, value}]) swaps the foot for a zone picker: those zones plus a search option, and Cancel; since 2026-10-24 21:13 EDT it shows only when a search in the Set timezone box (handlers/remind.js zoneModal) finds several zones (his ask, 2026-10-24 20:47 EDT: "let's include a set timezone button on the /remind command panel").
+// The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40. A timezone search with several matches answers in a private message (handlers/remind.js zoneChoices), never inside the panel, since 2026-10-25 01:18 EDT.
 const DIVIDER = { type: 14, divider: true, spacing: 2 }; // the panel's one drawn-divider shape
-function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = null, zoneOptions = null } = {}) {
+function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = null } = {}) {
     const cats = new Set(sub?.categories || []);
     const follows = sub?.follows || [];
     const { releases, leaving } = followable(seasonalDoc, nowMs);
@@ -267,24 +267,18 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     };
     const relRow = select('release', releases, `Pick from ${Math.min(releases.length, MAX_OPTIONS)} upcoming…`, e => `${e.kind} · releases ${optionTime(e.startMs, timeZone)}`);
     const lvRow = select('leaving', leaving, `Pick from ${Math.min(leaving.length, MAX_OPTIONS)} live…`, e => `${e.kind} · ends ${optionTime(e.endMs, timeZone)}`);
-    const showPicks = !zoneOptions; // the dropdowns step aside while the timezone picker is open, keeping every state within 40 components
 
     const foot = [];
-    let zonePicker = [];
+    // A timezone search with several matches answers in a private message, never in the panel (Harkirat, 2026-10-25 01:19 EDT: "why not just a new ephemeral message?" … "yes").
     if (confirmStop) {
         // The Stop all confirmation stands alone: no timezone button, a warning heading above the two choices, as the calculator's Delete All does (Harkirat, 2026-10-24 21:38 EDT).
-    } else if (zoneOptions) {
-        const { buildPickerSelectRow } = require('./pickerUI');
-        zonePicker = [block(`-# **Your timezone** · the dropdowns above show times in it${timeZone ? '' : '; until you pick one they show UTC'}`),
-            buildPickerSelectRow({ customId: `remind_tzset:${ownerId}`, placeholder: 'Pick your timezone…', options: zoneOptions.slice(0, 24), currentValue: timeZone, searchLabel: 'Search for your city or zone…', searchDescription: 'Type a city, country or abbreviation' })];
-        foot.push({ type: 2, style: 2, label: 'Cancel', custom_id: `remind_tzcancel:${ownerId}` });
     } else {
         // Blue "Set timezone" until a zone is chosen, then grey "Adjust timezone" (Harkirat, 2026-10-24 21:29 EDT).
         foot.push(timeZone ? { type: 2, style: 2, label: 'Adjust timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) } : { type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) });
     }
-    if (!zoneOptions && (releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
+    if ((releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
     // "Yes, stop all!" (his wording, 2026-10-24 21:38 EDT: "leave out the and delete part"), and Keep them with his Keep icon. Keep comes first, on the left (2026-10-24 22:58 EDT, Harkirat: "shouldn't the keep them but[ton] be on the left side of the yes stop all?"), as in the calculator.
-    if (zoneOptions) { /* no Stop all while picking a zone */ } else if (confirmStop) foot.push({ type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}`, emoji: parseEmoji(emojis.keep) }, { type: 2, style: 4, label: 'Yes, stop all!', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
+    if (confirmStop) foot.push({ type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}`, emoji: parseEmoji(emojis.keep) }, { type: 2, style: 4, label: 'Yes, stop all!', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
     else if (sub && (cats.size || follows.length)) foot.push({ type: 2, style: 4, label: 'Stop all', custom_id: `remind_stop:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
 
     return [{ type: 17, accent_color: accentColor, components: [
@@ -295,13 +289,12 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         { type: 14, divider: false, spacing: 1 }, // a small gap above the OR line, which sat tight under the Updates buttons (Harkirat, 2026-10-25 01:08 EDT); one component, within budget
         block('-# **— OR —**\n\n**Pick only what you want**\n-# Select specific draws, events or playlists, instead of a whole group'),
         // The green and yellow dots of the Going live and Leaving soon rows (Harkirat, 2026-10-25 01:07 EDT).
-        ...(relRow && showPicks ? [block(`-# ${emojis.greenDotGlow} **When something releases...**`), relRow] : []),
-        ...(lvRow && showPicks ? [block(`-# ${emojis.yellowDotGlow} **When something leaves soon...**`), lvRow] : []),
-        // Every drawn divider on the panel is large, in every state: the foot's, Stop all's and the timezone picker's (Harkirat, 2026-10-25 01:13 EDT: "it switches to space small when i click the button tho… work the class, not the instance").
-        ...(zonePicker.length ? [DIVIDER, ...zonePicker] : []),
+        ...(relRow ? [block(`-# ${emojis.greenDotGlow} **When something releases...**`), relRow] : []),
+        ...(lvRow ? [block(`-# ${emojis.yellowDotGlow} **When something leaves soon...**`), lvRow] : []),
+        // Every drawn divider on the panel is large, in every state: the header's, the foot's and Stop all's (Harkirat, 2026-10-25 01:13 EDT: "it switches to space small when i click the button tho… work the class, not the instance").
         ...(confirmStop ? [DIVIDER, block(`-# ${emojis.warn} **Stop All clears every reminder you've set!** You'll have to set them up again.`)] : []),
         // A drawn divider above the foot buttons in the normal panel, large spacing, the last spare component (Harkirat, 2026-10-25 01:10 EDT); Stop all's confirm and the timezone picker already draw one above their own blocks.
-        ...(foot.length ? [...(!confirmStop && !zoneOptions ? [DIVIDER] : []), { type: 1, components: foot }] : []),
+        ...(foot.length ? [...(!confirmStop ? [DIVIDER] : []), { type: 1, components: foot }] : []),
     ] }];
 }
 
