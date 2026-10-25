@@ -7,7 +7,7 @@
 // After his first click-test (2026-10-20 12:10 EDT): the overview lists every build with what needs a look, the pager is the bot's usual arrows (utils/paginationRow.js), the buttons say Save / Adjust / Discard and name the build, and a batch started from the right-click can take more of that message's screenshots (Add more).
 const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const crypto = require('crypto');
-const { pendingAutobuilds, buildReviewCard, extractToData, confirmCore, confirmMessage, confirmReply, reuploadRow, buildEditModal, applyEditFields } = require('./autobuildPipeline');
+const { pendingAutobuilds, buildReviewCard, extractToData, confirmCore, confirmMessage, confirmReply, reuploadRow, buildEditModal, applyEditFields, releaseCache } = require('./autobuildPipeline');
 const { sendV2Payload } = require('./sendV2Payload');
 const { buildPaginationRow } = require('./paginationRow');
 const emojis = require('./emojiMap');
@@ -211,6 +211,8 @@ function touch(key, batch) {
     batch.timer = setTimeout(() => {
         batches.delete(key);
         for (const it of batch.items) if (it.token) pendingAutobuilds.delete(it.token);
+        // A discarded build's screenshot is deleted here, when the batch closes, not at the click: Undo a discard brings the build back with its picture until then. Saved builds already released theirs.
+        for (const it of batch.items) if (it.status !== 'saved') releaseCache(it.data);
     }, IDLE_MS);
     batch.timer.unref?.();
 }

@@ -275,6 +275,7 @@ async function extractToData(sourceImageUrl, { explicitCategory = null, badgesOp
         modeSignals: extracted.modeSignals,
         sourceImageUrl,
         adminId,
+        cacheId: null,
         // The read this review came from, so Adjust, Save and Discard are recorded against it.
         readId: extracted.readId || null,
         reusedFrom: extracted.reusedFrom || null,
@@ -282,7 +283,24 @@ async function extractToData(sourceImageUrl, { explicitCategory = null, badgesOp
     };
     refreshReviewWarnings(data, builds);
     data.catalogueWarning = await catalogueWarningFor(data);
+    // The screenshot waits in the Cloudinary cache, not on Discord's link that expires in about a day (utils/autobuildCache.js, 2026-10-25 13:55 EDT). The review shows and saves the cached copy; if caching failed it keeps Discord's link.
+    const cached = await require('./autobuildCache').cacheScreenshot(sourceImageUrl, extracted.fileHash);
+    if (cached) { data.sourceImageUrl = cached.url; data.cacheId = cached.cacheId; data.originalImageUrl = sourceImageUrl; }
     return data;
+}
+
+// True when another open review still shows this cached screenshot (the same file read twice shares one copy), so it must not be deleted yet.
+function cacheStillUsed(cacheId, exceptToken = null) {
+    if (!cacheId) return false;
+    for (const [token, d] of pendingAutobuilds) if (token !== exceptToken && d?.cacheId === cacheId) return true;
+    for (const d of pendingImageRetries.values()) if (d?.cacheId === cacheId) return true;
+    return false;
+}
+
+// A review's cached screenshot is no longer needed: deleted, unless another open review shows it.
+function releaseCache(data, exceptToken = null) {
+    if (!data?.cacheId) return;
+    require('./autobuildCache').dropCachedScreenshot(data.cacheId, cacheStillUsed(data.cacheId, exceptToken)).catch(() => {});
 }
 
 // Runs extraction + post-processing + stashes a pending token, then sends the review card as this interaction's own deferred reply. Caller must have already called interaction.deferReply() (ephemeral per the command's `visibility` option, default hidden). `explicitMode` is /autobuild's `mode:` option; the right-click and its picker pass nothing, so the screenshot decides.
@@ -426,6 +444,8 @@ async function confirmCore(token) {
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility: Mongoose validation, a dropped connection), the token must still be sitting in pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere. (Found in review: this used to delete first, which meant a save() failure here lost the data permanently -- no Loadout doc, no recoverable token.)
             const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
             pendingAutobuilds.delete(token);
+            // The image now lives under the build's own key, so the cached copy goes ("if it's confirmed, then it goes from the cache folder into the actual correct storage folder").
+            releaseCache(data);
             return { status: 'saved', doc };
         }
 
@@ -490,6 +510,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
         if (uploadResult.success) {
             const doc = await writeLoadoutDoc(data);
             pendingImageRetries.delete(token);
+            releaseCache(data);
             const card = buildPostCreationCard(doc, null);
             return await replaceWithV2Card(interaction, card);
         }
@@ -498,6 +519,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
         const placeholderKey = `PENDING-UPLOAD-${token}`;
         const doc = await writeLoadoutDoc(data, placeholderKey);
         pendingImageRetries.delete(token);
+        releaseCache(data);
         const card = buildPostCreationCard(doc, `No image could be uploaded (tried twice). Fix it via ${mentionCommand(interaction.client, '/manage')} -> Edit Loadout -> set a real Cloudinary Image Key.`);
         return await replaceWithV2Card(interaction, card);
     } finally {
@@ -507,8 +529,10 @@ async function retryImageUpload(interaction, token, newImageUrl) {
 }
 
 async function cancelReview(interaction, token) {
-    require('./visionReads').noteOutcome(pendingAutobuilds.get(token)?.readId, 'discarded');
+    const discarded = pendingAutobuilds.get(token);
+    require('./visionReads').noteOutcome(discarded?.readId, 'discarded');
     pendingAutobuilds.delete(token);
+    releaseCache(discarded);
     return interaction.followUp({ content: glyphs(BOT_EMOJI.cross + ' Discarded -- nothing was saved or uploaded.'), ephemeral: true });
 }
 
@@ -619,7 +643,7 @@ async function applyEditSubmission(interaction, token) {
 module.exports = {
     pendingAutobuilds, buildReviewCard, resolveCategoryAndBadges, runExtraction, confirmAndWrite, retryImageUpload, cancelReview, buildEditModal, applyEditSubmission,
     // The shared halves bulk /autobuild (utils/autobuildBulk.js) drives.
-    extractToData, confirmCore, confirmMessage, confirmReply, reuploadRow, applyEditFields,
+    extractToData, confirmCore, confirmMessage, confirmReply, reuploadRow, applyEditFields, releaseCache,
     // Exported for scripts/autobuildDmz.test.js; nothing else calls them.
     resolveMode, parseCategoryAndMode, refreshReviewWarnings, nextBuildNumber, badgeChoices, findDmzDuplicates, badgeTokensOf, badgeFieldsFor, writeLoadoutDoc, cleanAttachmentPairs
 };
