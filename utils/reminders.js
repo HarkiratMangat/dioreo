@@ -236,12 +236,14 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 
     const select = (kind, list, placeholder, describe) => {
         const shown = list.slice(0, MAX_OPTIONS);
+        const isOn = e => follows.some(f => f.kind === kind && sameTitle(f.title, e.title));
         if (!shown.length) return null;
         return { type: 1, components: [{
             type: 3, custom_id: `remind_${kind === 'release' ? 'rel' : 'lv'}:${ownerId}`, placeholder, min_values: 0, max_values: shown.length,
             // Nothing is pre-picked, the calculator's Add more draws way (2026-10-24 23:05 EDT, Harkirat: the list above already shows what is set, so the same list again in the closed dropdown was confusing). A picked option is marked in its row instead, and picking it again removes it (toggleFollows). Its row says only that, no kind or date (2026-10-24 23:10 EDT, Harkirat: "just leave out the playlist… leave out the releases").
-            options: shown.map(e => {
-                const on = follows.some(f => f.kind === kind && sameTitle(f.title, e.title));
+            // What you already follow goes to the bottom, so the top shows what you can still add (2026-10-24 23:10 EDT, Harkirat). The same 25 are listed either way.
+            options: [...shown].sort((x, y) => isOn(x) - isOn(y)).map(e => {
+                const on = isOn(e);
                 return { label: e.title.slice(0, 100), value: optionValue(e.title), description: on ? 'On your list · select again to remove' : describe(e).slice(0, 100), emoji: parseEmoji(on ? bell() : e.icon) };
             }),
         }] };

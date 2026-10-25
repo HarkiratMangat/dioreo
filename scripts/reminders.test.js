@@ -97,6 +97,7 @@ t('the panel: a toggle per category, green when on, two dropdowns with follows p
     assert.ok(s.includes('"custom_id":"remind_rel:u1"') && s.includes('"custom_id":"remind_lv:u1"'));
     const rel = []; const find = c => { if (c.custom_id === 'remind_rel:u1') rel.push(...c.options); (c.components || []).forEach(find); }; panel.forEach(find);
     assert.ok(rel.every(o => !o.default), 'nothing is pre-picked: the list above shows what is set');
+    assert.strictEqual(rel[rel.length - 1].value, 'Grim Duo Draw', 'a followed option sits at the bottom');
     assert.ok(rel.find(o => o.value === 'Grim Duo Draw')?.description === 'On your list · select again to remove', 'a followed release is marked in its row');
     assert.ok(!rel.find(o => o.value === 'Call of the Dead')?.description.startsWith('On your list'));
     assert.ok(countComponents(panel) <= 40, `components: ${countComponents(panel)}`);
