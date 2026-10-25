@@ -144,7 +144,7 @@ const CATEGORY_DEFS = [
             }),
             cmd('/today', { description: "New releases, going live, and leaving soon" }),
             cmd('/remind', {
-                description: 'DM reminders for draws, events and seasons',
+                description: 'Set and manage your reminders',
                 options: [
                     { name: 'set', required: false, desc: 'What to be reminded about (start typing to search)' },
                     { name: 'toggle', required: false, desc: 'Turn this reminder on or off' }

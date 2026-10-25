@@ -14,7 +14,7 @@ const R = require('../utils/reminders');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('remind')
-        .setDescription('DM reminders for draws, events and seasons')
+        .setDescription('Set and manage your reminders')
         .addStringOption(option => option.setName('set').setDescription('What to be reminded about (start typing to search)').setAutocomplete(true))
         .addStringOption(option => option.setName('toggle').setDescription('Turn this reminder on or off').addChoices({ name: 'On', value: 'on' }, { name: 'Off', value: 'off' }))
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
