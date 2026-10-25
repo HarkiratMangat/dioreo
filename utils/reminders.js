@@ -181,7 +181,11 @@ function followable(seasonalDoc, nowMs = Date.now()) {
 }
 
 const MAX_OPTIONS = 25; // Discord's select-menu cap
-const shortDate = ms => new Date(ms).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+// A dropdown option's time, in the reader's own /settings zone with its abbreviation: "Oct 27, 8 PM EDT". Discord draws <t:…> codes only in message text, never in a select's option text, so the real time has to be written out (Harkirat, 2026-10-24 20:13 EDT: "For these times in the dropdown, what are they set to? Can you put real timestamps in there?"). They were bare UTC dates, which put an 8 PM Toronto release on the next day.
+function optionTime(ms, timeZone) {
+    const fmt = tz => new Date(ms).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: tz }).replace(':00', '').replace(/\s+/g, ' ');
+    try { return fmt(timeZone || 'UTC'); } catch { return fmt('UTC'); }
+}
 const optionValue = title => title.slice(0, 100);
 const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return undefined; } };
 
@@ -191,7 +195,7 @@ const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return un
 //   "Or pick only what you want": what is followed, each with its date, then the two dropdowns;
 //   Search (past 25) and Stop all at the foot.
 // The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40.
-function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false } = {}) {
+function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = 'UTC' } = {}) {
     const cats = new Set(sub?.categories || []);
     const follows = sub?.follows || [];
     const { releases, leaving } = followable(seasonalDoc, nowMs);
@@ -233,8 +237,8 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
             options: shown.map(e => ({ label: e.title.slice(0, 100), value: optionValue(e.title), description: describe(e), emoji: parseEmoji(e.icon), default: follows.some(f => f.kind === kind && sameTitle(f.title, e.title)) })),
         }] };
     };
-    const relRow = select('release', releases, `Remind me when this releases… (${Math.min(releases.length, MAX_OPTIONS)} upcoming)`, e => `${e.kind} · releases ${shortDate(e.startMs)}`);
-    const lvRow = select('leaving', leaving, `Remind me before this leaves… (${Math.min(leaving.length, MAX_OPTIONS)} live)`, e => `${e.kind} · ends ${shortDate(e.endMs)}`);
+    const relRow = select('release', releases, `Remind me when this releases… (${Math.min(releases.length, MAX_OPTIONS)} upcoming)`, e => `${e.kind} · releases ${optionTime(e.startMs, timeZone)}`);
+    const lvRow = select('leaving', leaving, `Remind me before this leaves… (${Math.min(leaving.length, MAX_OPTIONS)} live)`, e => `${e.kind} · ends ${optionTime(e.endMs, timeZone)}`);
 
     const foot = [];
     if (sub?.pausedAt) foot.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}`, emoji: parseEmoji(emojis.reminderEnabled) });

@@ -24,6 +24,13 @@ async function loadState(userId) {
     return { sub, doc };
 }
 
+// The reader's /settings zone, for the dropdowns' written-out times (utils/reminders.js optionTime). The schema's own default when they never set one.
+async function userZone(userId) {
+    const UserPreference = require('../models/UserPreference');
+    const prefs = await UserPreference.findOne({ discordId: userId }, { timezone: 1 }).lean();
+    return prefs?.timezone || 'America/Toronto';
+}
+
 function accent() {
     try { return require('../commands/calendar').PRESET_ACCENT; } catch { return undefined; }
 }
@@ -42,15 +49,15 @@ async function saveSub(userId, update) {
 // The panel, privately, as a new message: the bell, the DM's button, and the confirm's "Open reminders".
 async function openOwnPanel(interaction) {
     await interaction.deferReply({ flags: 64 });
-    const { sub, doc } = await loadState(interaction.user.id);
-    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent() }));
+    const [{ sub, doc }, timeZone] = await Promise.all([loadState(interaction.user.id), userZone(interaction.user.id)]);
+    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), timeZone }));
 }
 
 // Re-renders the panel the click came from.
 async function rerender(interaction, sub, { confirmStop = false } = {}) {
     const SeasonalData = require('../models/SeasonalData');
-    const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
-    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), confirmStop }));
+    const [doc, timeZone] = await Promise.all([SeasonalData.findOne({ docType: 'global' }).lean(), userZone(interaction.user.id)]);
+    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), confirmStop, timeZone }));
 }
 
 async function notYours(interaction) {

@@ -163,5 +163,12 @@ t('Send a test: today\'s real reminder when reminders are on, a "nothing at toda
     assert.ok(JSON.stringify(R.buildTestDM(null, doc(), { nowMs: before })).includes('Test reminder'), 'nothing on: the plain test card');
 });
 
+t("the dropdowns write each time in the reader's zone, since Discord draws no <t:> codes in option text", () => {
+    const opts = JSON.stringify(R.buildPanel(null, doc(), { ownerId: '1', nowMs: RUN, timeZone: 'America/Toronto' }));
+    assert.ok(/releases [A-Z][a-z]{2} \d+, \d+(:\d\d)? [AP]M E[DS]T/.test(opts), 'a written-out Toronto time');
+    assert.ok(!opts.includes('"description":"') || !/description":"[^"]*<t:/.test(opts), 'no timestamp codes in option text');
+    assert.ok(/ UTC"/.test(JSON.stringify(R.buildPanel(null, doc(), { ownerId: '1', nowMs: RUN, timeZone: 'Not/AZone' }))), 'an unknown zone falls back to UTC');
+});
+
 console.log(`\n${failed ? 'FAILED' : 'all passed'}: ${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
