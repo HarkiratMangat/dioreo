@@ -7,7 +7,7 @@ published: true
 # Privacy Policy — Dioreo
 
 **Effective date:** on the Dioreo v3 release — this version is not yet in effect
-**Version:** 1.18 (pending)
+**Version:** 1.19 (pending)
 **Applies to:** the Dioreo Discord application (the "Bot") and this documentation website (the "Site")
 
 
@@ -55,7 +55,7 @@ Everything below lives in a single `UserPreference` record keyed to your Discord
 | Data | What it is | Why we have it |
 |---|---|---|
 | **Discord user ID** | Your permanent numeric Discord ID | The key linking your preferences to you. Required. |
-| **Timezone** | An IANA timezone you set (e.g. `America/Toronto`) | So `/timestamp` and countdowns show correct local times |
+| **Timezone** | An IANA timezone you set (e.g. `America/Toronto`), and *(from v3)* when you last chose it | So `/timestamp` and countdowns show correct local times, and so `/remind` shows times in your zone only once you have picked one (UTC until then) |
 | **Timestamp style** | Your preferred timestamp format | Remembers your `/timestamp` choice |
 | **Visibility settings** | Public or private replies, per feature group | Remembers whether you want replies others can see |
 | **Region preference** | Your CP pricing region, and whether it's pinned | Shows the right prices without re-selecting |
@@ -142,6 +142,18 @@ From the v3 release, your `UserPreference` record also keeps a small set of coun
 **What it does not do:** it decides nothing and changes nothing the Bot does for you. It is a **separate record**, never built from the interaction records in §2.4b, which stay keyed by a hash. Counting started with v3; nothing earlier was counted.
 
 **Reset or delete:** the **Reset My Stats** button on the page clears every count at once (Dioreo User Since stays). Deleting your data (§9) deletes it with the rest of your record.
+
+### 2.1f Reminders *(pending, v3)*
+
+If you turn on a reminder with `/remind` or the bell on a command, the Bot keeps a small record so it can send you one DM a day, a minute after the game's daily update (00:01 UTC), with only what you picked. Nothing is stored for anyone who never turns a reminder on.
+
+| Data | What it is | Why we have it |
+|---|---|---|
+| **Discord user ID** | Your permanent numeric Discord ID | So the Bot knows whom to DM. Required. |
+| **What you follow** | The reminder categories you turned on (for example "New draws" or "BP ending"), and any single draw, event or playlist you asked about, with whether you want to hear when it releases or when it is leaving | This IS the reminder |
+| **Delivery state** | The day the last reminder was sent, when the one-time tip to set your timezone was sent (only if you had none), and, if Discord refused a DM, when that started, whether you have been told, and whether your reminders were turned off because DMs kept failing | So you get one DM a day at most, and so the Bot can tell you on your next command that a DM could not reach you, and turn your reminders off after a few more failed days instead of trying forever (you set them again once DMs work) |
+
+**Stop all** in `/remind` deletes the whole record immediately, and turning off the last thing you follow deletes it too. A one-off reminder (one draw's release, say) removes itself once it has been sent. You can read the schema yourself: [`models/ReminderSubscription.js`](../../models/ReminderSubscription.js).
 
 ### 2.2 About the colour data specifically
 
@@ -240,7 +252,7 @@ The one place the Site reads that setting in code, it does so only to keep the s
 | ❌ We do not have | Why |
 |---|---|
 | **Your messages** | The Bot runs with only the `Guilds` gateway intent. It does **not** have the Message Content intent, so Discord never sends us message text. A technical impossibility, not just a policy promise. |
-| **Your DMs** | Same reason. |
+| **Your DMs** | Same reason. The Bot only ever *sends* you a DM, and only if you turned on a reminder (§2.1f). |
 | **Your email address** | Never requested, never received from Discord. |
 | **Your real name** | Never requested. |
 | **Your Discord username or display name** | Used momentarily to render a response, never written to the database. |
@@ -279,7 +291,7 @@ Under **PIPEDA**, our basis is your **implied consent**: you install the Bot and
 | Provider | What it handles | Where |
 |---|---|---|
 | **Discord Inc.** | The platform itself — your ID, your interactions | Per [Discord's Privacy Policy](https://discord.com/privacy) |
-| **MongoDB Atlas** (MongoDB, Inc.) | **Stores your preference record, the per-server settings described in §2.1a, the operational alert log described in §2.4, the interaction records described in §2.4b, the admin allowlist / announcement / change log records described in §2.1b, the portal session / staged-change records described in §2.1c, and the saved draw calculations described in §2.1d** | **🇨🇦 Azure Canada Central (Toronto)** |
+| **MongoDB Atlas** (MongoDB, Inc.) | **Stores your preference record, the per-server settings described in §2.1a, the operational alert log described in §2.4, the interaction records described in §2.4b, the admin allowlist / announcement / change log records described in §2.1b, the portal session / staged-change records described in §2.1c, the saved draw calculations described in §2.1d, and the reminders described in §2.1f** | **🇨🇦 Azure Canada Central (Toronto)** |
 | **Google Cloud Platform** (Google LLC) | Hosts the server the Bot runs on | 🇺🇸 `us-east1` (South Carolina) |
 | **Google Cloud Logging** (Google LLC) | Server logs, 30-day retention | 🇺🇸 United States |
 | **Google Cloud Error Reporting** (Google LLC) | Groups repeated errors from those same server logs — no new data, 30-day retention | 🇺🇸 United States |
@@ -346,6 +358,7 @@ Given the data involved is a user ID and colour preferences, the practical risk 
 | **`/manage` change log entries** (§2.1b) | **180 days**, or the newest 5,000 entries, whichever is reached first — then automatically deleted |
 | **Web admin portal session** (§2.1c) | **12 hours**, then automatically deleted (Mongo TTL) |
 | **Staged change (Changeset)** (§2.1c) | **Kept while in progress; an abandoned draft is automatically deleted after 30 days.** A committed set is not deleted by this rule — the resulting change is recorded exactly as any other `/manage` change log entry, above |
+| **Reminders** (§2.1f) *(pending, v3)* | **Kept while you have a reminder on.** Stop all deletes it immediately, as does turning off the last thing you follow; a one-off reminder removes itself once sent |
 | **Saved draw calculator basket** (§2.1d) | **Unnamed: automatically deleted 30 days after creation. Named: kept until you delete it or ask us to** — see §9 |
 | **Colours cached by View Colors for a non-user** (§2.2) *(pending, v3)* | **30 days after the image was first seen**, then automatically deleted (Mongo TTL). Holds no user identifier, so there is nothing in it to look up by person |
 | **Interaction records** (§2.4b) | **Kept indefinitely**, together with daily summaries. Deleted on request — see §9 |
@@ -492,6 +505,7 @@ Kept here as well as in git, because the repository's visibility can change and 
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.19 *(pending)* | on the v3 release | **Not yet in effect.** Reminders by DM: if you turn one on with `/remind`, the Bot keeps your Discord user ID, what you follow, and whether its DMs are reaching you, so it can send one DM a day with only what you picked (new §2.1f, Appendix A, §5's MongoDB Atlas row, §7). Stop all deletes it. Nothing is stored for anyone who never turns a reminder on. Your `UserPreference` record also gains `timezoneSetAt`, the time you last chose a timezone, so `/remind` can show UTC to anyone who never picked one. |
 | 1.18 *(pending)* | on the v3 release | **Not yet in effect.** `/admin` gains a **change log** for each server: who changed the server's settings, when, and what, kept 60 days and exportable by the server's admins (§2.1a, §7, Appendix A). The Bot can also tell you, at most twice after each change to a server's rules, when one of them made an answer you asked to be public private; to count those notices it keeps a keyed hash of your ID per server for 90 days. **No new recipient**: both live in the same MongoDB database §5 names. |
 | 1.17 *(pending)* | on the v3 release | **Not yet in effect.** Your `UserPreference` record gains `firstCommandAt`, the date you first ran a command yourself, shown in `/settings` as "Dioreo User Since" (§2.1, Appendix A). Records that already existed get the record's own creation date instead. Running a command now also creates your record if you didn't have one, which §2.1 already says happens once you use the Bot. It also gains **Your Stats** (new §2.1e): counts of your own use, shown only back to you and resettable. §0, §2.4b and §3 were reworded so their "never applied back to you" promises stay true about the hashed records while saying plainly that Your Stats is a separate record shown to you. **No new recipient, no longer retention.** Your record also loses `calendarEventFilter`, the old saved `/calendar` default, which nothing had used since August: it is no longer stored (§0, Appendix A). |
 | 1.16 *(pending)* | on the v3 release | **Not yet in effect.** `/draw calculator` can now save a calculation so you can come back to it. New §2.1d describes the record (also in Appendix A, §5's MongoDB Atlas row and §7): your Discord user ID, an optional name, the calculator's setup (region, balances, upgrades and 2X entitlements), and the ordered list of draws you were pricing, plus when it last changed so running the command again reopens your latest one. An unnamed calculation is deleted 30 days after creation; a named one is kept until you delete it or ask us to. A list entry can also hold a Series Armory's item count and spins toward its next item, and the title of a draw you picked from this season's list, which is game data you chose, nothing about you. `/draw calculator` also gets **its own response-visibility preference** (`calculatorVisibility`, public by default) instead of sharing the Seasonal Content one. **View Colors** (right-click a user): for a person who doesn't use the Bot, the colours worked out from their image are cached for 30 days keyed only by a fingerprint of the image, with no user identifier (§2.2, §7, Appendix A). **No new recipient and no new category of data.** |
@@ -535,7 +549,7 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 - `discordId` — your Discord user ID
 
 **Preferences**
-- `timezone`, `timestampStyle`
+- `timezone`, `timezoneSetAt` *(from v3: when you last chose a timezone)*, `timestampStyle`
 - `loadoutVisibility`, `seasonalVisibility`, `timestampVisibility`, `settingsVisibility`, `colorsVisibility`, `calculatorVisibility`
 - `defaultRegion`, `defaultRegionMode`
 - `accentColorStyle`
@@ -581,6 +595,8 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 **Saved draw calculations, described in §2.1d:** a discordId, an optional name, the ordered draw list (each entry a `drawKey`, a pull count, for a Mythic draw the upgrade level it has and the one it is planned up to, for a Series Armory its item count (`size`) and the spins done toward the next item (`spinsIn`), for an Advanced Double Legendary draw the goal it is priced to (`goal`) and which of its spun sets you got both items from (`bothSets`) and which of those you finished with a later purchase (`laterSets`), and for a draw picked from this season's list that draw's `title`), region, CP balance, the Mythic Cards and Mythic Coins you hold, the currency you picked for that calculation when it differs from your `/settings` default (`currency`), upgrade toggle, 2X-entitlement selections, a `submitted` true/false flag recording whether you have pressed Calculate, for an unsaved working copy the id of the saved calculation it was opened from (`sourceId`), after you press New Calculation a copy of the calculation you cleared (or the id of the saved one you left) so you can restore it, kept until you next press Calculate (`previous`), and the time the calculation last changed (`updatedAt`), which is how running `/draw calculator` again reopens the one you used last. Created as soon as you pick your first draw. You can read the schema yourself: [`models/DrawBasket.js`](../../models/DrawBasket.js).
 
+**Reminders, described in §2.1f:** a discordId, the reminder categories turned on (`categories`), the one-thing follows as a kind (`release` or `leaving`) and a title (`follows`), the day the last daily reminder was sent (`lastSentDay`), and, when a DM is refused, when that began (`failingSince`), whether a note is waiting to be shown (`noteDue`), when it was shown (`noteShownAt`), when reminders were turned off because DMs kept failing and whether that note was shown (`pausedAt`, `pauseNoteShown`), and when the one-time timezone tip was sent (`tzNudgedAt`), plus the record's created and updated times. Deleted by Stop all, or when nothing is left on. You can read the schema yourself: [`models/ReminderSubscription.js`](../../models/ReminderSubscription.js).
+
 **Colours cached for someone who doesn't use the Bot, described in §2.2** *(pending, v3)*: a one-way key built from an image's Discord asset hash, the colour values the View Colors panel worked out for that image (hex codes, a palette, and the asset hash they came from), and when the image was first seen. **No Discord user ID, name or other identifier.** Deleted 30 days after first seen. See [`models/ColorCache.js`](../../models/ColorCache.js).
 
 **Web admin portal records, described in §2.1c:** a portal session (a hashed session id, your Discord user ID, your Discord username, display name and avatar hash, sign-in/last-active timestamps, and a device/browser string) and, if you have staged an edit and not yet committed or abandoned it, a changeset (your Discord user ID, which part of the portal it belongs to, and the pending edits). Both exist only for the small number of people with admin access, and neither is linked to your `UserPreference` record.
@@ -591,6 +607,7 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 | Version | Date | Change |
 |---|---|---|
+| **1.19** *(pending)* | on the v3 release | **Not yet in effect.** Added §2.1f, reminders by DM (`/remind`): the record (Discord user ID, the categories and single entries followed, the delivery state), listed in Appendix A, named in §5's MongoDB Atlas row, and given retention in §7 (kept while a reminder is on; Stop all deletes it). §3's DMs row now says the Bot only sends a DM to someone who turned a reminder on. Your `UserPreference` record also gains `timezoneSetAt`, the time you last chose a timezone, so `/remind` can show UTC to anyone who never picked one. |
 | **1.18** *(pending)* | on the v3 release | **Not yet in effect.** Added the server settings change log (who, when, what; 60 days) and the "why is this private" notice count (keyed hash, server, rules version, count; 90 days) to §2.1a, §7 and Appendix A, and §2.1a's command row now covers a command's own settings. **No new recipient.** |
 | **1.17** *(pending)* | on the v3 release | **Not yet in effect.** Added `firstCommandAt` to §2.1 and Appendix A: the date you first ran a command yourself, shown in `/settings` as "Dioreo User Since"; existing records are filled from their own creation date. New §2.1e and Appendix A `stats`: Your Stats, counts of your own use shown back to you with a Reset button (Harkirat's go, 2026-10-20 18:16 EDT); §0, §2.4b and §3 reworded to match. **No new recipient, no longer retention.** |
 | **1.16** *(pending)* | on the v3 release | **Not yet in effect.** `/draw calculator` gained saved, named baskets — new §2.1d describes the record, listed in Appendix A, named in §5's MongoDB Atlas row, and given retention in §7 (unnamed: 30-day TTL; named: kept until deleted). **No new recipient, no new category of data** — it's the same discordId/region/balance/entitlement shape §2.1 already describes, plus an ordered banner list, stored so a session can be resumed instead of starting over. A list entry can also hold a Series Armory's item count and spins toward its next item, and the title of a draw picked from this season's list — game data you chose, nothing about you. The record also keeps **when it last changed**, so running the command again reopens your most recent calculation; and `/draw calculator` has **its own response-visibility preference** (`calculatorVisibility`, public by default) instead of sharing the Seasonal Content one. **View Colors** (right-click a user): for a person who doesn't use the Bot, the colours worked out from their image are cached for 30 days keyed only by a fingerprint of the image, with no user identifier (§2.2, §7, Appendix A). |

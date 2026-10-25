@@ -138,7 +138,7 @@ t('the footer sits after an empty space, with the daily reset first, a TBD end a
     const body = buildTodayBody(doc({ rankEndTBD: true, rankEnd: null, dmzEnd: d(1) }), { nowMs: NOW });
     const footer = body.at(-1).content;
     assert.deepStrictEqual(body.at(-2), { type: 14, spacing: 1, divider: false });
-    assert.ok(footer.startsWith(`-# 🔄 Daily update <t:${Date.UTC(2026, 9, 24) / 1000}:R>`), footer);
+    assert.ok(footer.startsWith(`-# ${require('../utils/emojiMap').dailyUpdate} Daily update <t:${Date.UTC(2026, 9, 24) / 1000}:R>`), footer);
     assert.ok(footer.includes('Rank TBD'));
     assert.ok(!footer.includes('DMZ'));
 });
@@ -162,7 +162,8 @@ t('/today carries the seasonal nav under the panel, with every slot live', () =>
 t("/calendar's Today page: its own title, the pager starting at Today, the filter, under 40 components with unique ids", () => {
     const msg = calendar.buildContainer(doc(), calendar.TODAY_PAGE, 1, true, 0);
     const out = text(msg);
-    assert.ok(msg[0].components[0].content.includes('Season Calendar'));
+    assert.ok(msg[0].components[0].components[0].content.includes('Season Calendar'), 'the title, inside the Section that carries the reminders bell');
+    assert.strictEqual(msg[0].components[0].accessory?.custom_id, 'remind_open', 'the reminders bell on the title');
     assert.ok(out.includes('Today · 1/4'));
     assert.ok(out.includes('"custom_id":"calsel_3"'));
     assert.ok(count(msg) <= 40, `components: ${count(msg)}`);

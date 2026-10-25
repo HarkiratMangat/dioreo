@@ -11,7 +11,8 @@ let passed = 0, failed = 0;
 function t(name, fn) { try { fn(); passed++; console.log(`  PASS  ${name}`); } catch (e) { failed++; console.log(`  FAIL  ${name}\n        ${e.message}`); } }
 
 const S10 = '<a:S10Test:1234567890>';
-const caption = block => block.content.split('\n')[1];
+// A title may sit inside a Section since the reminders bell rides on it (2026-10-23 21:38 EDT, utils/reminders.js withBell). Since 2026-10-24 21:38 EDT the bell's Section holds only the title line; the season caption is the first line of the Text Display after it (utils/reminders.js withBell). `comps` is the container's components.
+const caption = comps => { const i = comps.findIndex(c => c.type === 9); return i === -1 ? comps[0].content.split('\n')[1] : comps[i + 1].content.split('\n')[0]; };
 
 t('a custom emoji typed in front of the title splits off; the title stays plain', () => {
     assert.deepStrictEqual(splitSeasonEmoji(`${S10} Season 10 — Test`), { emoji: S10, title: 'Season 10 — Test' });
@@ -40,16 +41,16 @@ const seasonDoc = extra => ({ currentSeasonTitle: 'Season 7 — Terminated', new
 
 t('/draws puts the season emoji in front of the season title, outside the bold-italic lettering', () => {
     for (const page of ['new', 'returning']) {
-        const title = draws.buildContainer(seasonDoc(), page)[0].components[0];
+        const title = draws.buildContainer(seasonDoc(), page)[0].components;
         assert.ok(caption(title).startsWith(`${emojis.season7} `), caption(title));
     }
-    const stored = draws.buildContainer(seasonDoc({ currentSeasonTitle: 'Season 10 — Test', currentSeasonEmoji: S10 }))[0].components[0];
+    const stored = draws.buildContainer(seasonDoc({ currentSeasonTitle: 'Season 10 — Test', currentSeasonEmoji: S10 }))[0].components;
     assert.ok(caption(stored).startsWith(`${S10} `), 'the stored emoji survives intact');
 });
 
 t('/calendar does the same', () => {
     const panel = calendar.buildContainer(seasonDoc(), 0);
-    const title = panel[0].components.find(c => c.type === 10);
+    const title = panel[0].components;
     assert.ok(caption(title).startsWith(`${emojis.season7} `), caption(title));
 });
 
@@ -59,7 +60,7 @@ t('/patch notes prefers the synced emoji, takes one typed in an entry\'s own tit
     const typed = entry({ titleOverride: `${S10} Season 10 — Test` });
     assert.strictEqual(pn.seasonEmoji(typed), S10);
     assert.strictEqual(pn.displayTitle(typed), 'Season 10 — Test', 'a select label is plain text and would show the raw mention');
-    const text = pn.buildContainer({ patchNotes: [entry({ emoji: S10 })] })[0].components.filter(c => c.type === 10).map(c => c.content).join('\n');
+    const text = pn.buildContainer({ patchNotes: [entry({ emoji: S10 })] })[0].components.flatMap(c => (c.type === 9 ? c.components : [c])).filter(c => c.type === 10).map(c => c.content).join('\n');
     assert.ok(text.includes(`\n${S10} `), 'heading');
     assert.ok(text.includes('-# Source: [Leakers on Duty](https://discord.gg/nicecat)'), 'the credit line (2026-10-19 09:39 EDT)');
 });

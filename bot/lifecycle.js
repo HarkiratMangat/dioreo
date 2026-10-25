@@ -177,6 +177,13 @@ function registerLifecycle(client, commands) {
             runDrawEndReminders(client);
             setInterval(() => runDrawEndReminders(client), 24 * 60 * 60 * 1000).unref();
         }, msUntilNextDailyRun()).unref();
+        // Reminders by DM (utils/reminders.js, the design of 2026-10-23 21:11 EDT): one DM per person who opted in, at 00:01 UTC, a minute after the game's daily update. Not on boot, so a restart never DMs at an odd hour; each record notes the day it was sent, so a run never sends twice. Who has a failure note waiting is loaded now, so the note hook costs nothing for everyone else.
+        const reminders = require('../utils/reminders');
+        reminders.loadPendingNotices().catch(error => console.error(`Loading reminder notes failed: ${error?.message}`));
+        setTimeout(() => {
+            reminders.runDailyReminders(client);
+            setInterval(() => reminders.runDailyReminders(client), 24 * 60 * 60 * 1000).unref();
+        }, reminders.msUntilNextRun()).unref();
 
         // The presence's top line and verb rotate every minute: Watching the season countdown, Competing in the ranked countdown, Playing the DMZ countdown, Listening to /help (utils/botPresence.js, 2026-10-21 19:31 EDT). Never throws; a failed season read keeps /help up.
         require('../utils/botPresence').startPresenceRotation(client);

@@ -112,7 +112,16 @@ function getTimezoneLabel(tz, baseName) {
     }
 }
 
+// The timezone option's suggestions: /settings' common zones when nothing is typed, else the search over every zone (utils/timezoneData.js).
+async function timezoneAutocomplete(interaction) {
+    const { searchTimezones, quickZoneOptions } = require('../utils/timezoneData');
+    const typed = interaction.options.getFocused() || '';
+    const list = typed ? searchTimezones(typed, 25) : quickZoneOptions();
+    return await interaction.respond(list.slice(0, 25).map(o => ({ name: o.label.slice(0, 100), value: o.value })));
+}
+
 module.exports = {
+    autocomplete: timezoneAutocomplete,
     resolveStyle, OVERVIEW_STYLES,
     PRESET_ACCENT, // Exposed so handlers/timestamp.js's tsmenu re-render handler can resolve the same accent
                    // color the initial render would have used (see overrideState.accentColor above).
@@ -128,24 +137,9 @@ module.exports = {
         .addStringOption(option =>
             option.setName('timezone')
                 // Trimmed 2026-07-18 (mobile-width audit) -- also fixed "leave blank to defaults to" grammar while touching this line. Blank now means the /settings timezone, as /help already promised (fixed 2026-10-20 16:50 EDT).
-                .setDescription('Your timezone (leave blank for your /settings one)')
-                .addChoices(
-                    { name: getTimezoneLabel('America/Toronto', tzLabels['America/Toronto']), value: 'America/Toronto' },
-                    { name: getTimezoneLabel('America/Winnipeg', tzLabels['America/Winnipeg']), value: 'America/Winnipeg' },
-                    { name: getTimezoneLabel('America/Edmonton', tzLabels['America/Edmonton']), value: 'America/Edmonton' },
-                    { name: getTimezoneLabel('America/Vancouver', tzLabels['America/Vancouver']), value: 'America/Vancouver' },
-                    { name: getTimezoneLabel('Pacific/Honolulu', tzLabels['Pacific/Honolulu']), value: 'Pacific/Honolulu' },
-                    { name: getTimezoneLabel('UTC', tzLabels['UTC']), value: 'UTC' },
-                    { name: getTimezoneLabel('Europe/London', tzLabels['Europe/London']), value: 'Europe/London' },
-                    { name: getTimezoneLabel('Europe/Paris', tzLabels['Europe/Paris']), value: 'Europe/Paris' },
-                    { name: getTimezoneLabel('Europe/Stockholm', tzLabels['Europe/Stockholm']), value: 'Europe/Stockholm' },
-                    { name: getTimezoneLabel('Asia/Kolkata', tzLabels['Asia/Kolkata']), value: 'Asia/Kolkata' },
-                    { name: getTimezoneLabel('Asia/Singapore', tzLabels['Asia/Singapore']), value: 'Asia/Singapore' },
-                    { name: getTimezoneLabel('Asia/Hong_Kong', tzLabels['Asia/Hong_Kong']), value: 'Asia/Hong_Kong' },
-                    { name: getTimezoneLabel('Asia/Shanghai', tzLabels['Asia/Shanghai']), value: 'Asia/Shanghai' },
-                    { name: getTimezoneLabel('Asia/Tokyo', tzLabels['Asia/Tokyo']), value: 'Asia/Tokyo' },
-                    { name: getTimezoneLabel('Australia/Sydney', tzLabels['Australia/Sydney']), value: 'Australia/Sydney' }
-                ))
+                .setDescription('Your timezone: type a city to search (blank = your /settings one)')
+                // An autocomplete over every zone the runtime knows (utils/timezoneData.js), where there used to be 15 fixed choices (Harkirat, 2026-10-24 21:15 EDT: "Yes extend, as well to /timestamp"). A typed value that was never picked is resolved by the same search in execute().
+                .setAutocomplete(true))
         .addStringOption(option =>
             option.setName('style')
                 .setDescription('Pick a view or one format (blank = your saved view)')
@@ -198,7 +192,7 @@ module.exports = {
             isTextMode = interaction.options.getString('view') === 'text';
             const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
             // explicit option > saved /settings timezone > Toronto (UserPreference.timezone's own default). The saved zone was fetched a few lines below and never read for this until 2026-10-20 16:50 EDT, so a user who saved Tokyo got Toronto's 9am while /help said otherwise.
-            tz = interaction.options.getString('timezone') || prefs?.timezone || 'America/Toronto';
+            tz = require('../utils/timezoneData').resolveTimezone(interaction.options.getString('timezone')) || prefs?.timezone || 'America/Toronto';
 
             // NOTE (fixed during review): this option was previously ALWAYS taken as-is, so leaving it blank meant "all formats" no matter what a user had saved as their default Timestamp Style in /settings — that saved preference was stored and shown in the dashboard but never actually consulted (flagged as a known gap in CLAUDE.md). Now falls back the same way `ephemeral` already does below: explicit option > saved preference > "all formats". `prefs.timestampStyle` defaults to the literal string 'all_formats' in the schema, which needs to be treated as "no specific style" (i.e. `style = null`) here, since that's how the rest of this function distinguishes the two view modes.
             const argStyle = interaction.options.getString('style');
@@ -241,7 +235,7 @@ module.exports = {
         }
 
         // A saved /settings zone can be any IANA zone, not only the 15 in tzLabels; fall back to its id so the label never reads "undefined".
-        const currentFullTzLabel = getTimezoneLabel(tz, tzLabels[tz] || tz);
+        const currentFullTzLabel = getTimezoneLabel(tz, tzLabels[tz] || require('../utils/timezoneData').timezoneBaseLabel(tz));
 
         // STATE STORAGE ID DESIGN: We encode critical query context properties inside the string key. Using a pipe (|) delimiter completely prevents crashes with timezone names containing underscores (e.g., Asia/Hong_Kong). A range carries its end after a `~` in the time segment (2026-10-20 19:14 EDT); an old message without one still parses. The query is trimmed to whatever room is left under Discord's 100-character custom_id cap.
         const timeSegment = endUnix ? `${unix}~${endUnix}` : `${unix}`;

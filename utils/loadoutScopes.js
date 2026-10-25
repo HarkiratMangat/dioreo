@@ -14,7 +14,9 @@ async function resolveScopeBuilds({ mode, category, metaOnly }) {
     const filter = { mode };
     if (category) filter.category = category;
     if (metaOnly) filter.isMeta = true;
-    const builds = await Loadout.find(filter).lean();
+    // A "Coming Soon" placeholder is never part of a browse (Harkirat, 2026-10-24 09:45 EDT: "in lists, if a weapon is missing, do not show it in the list").
+    const { isPlaceholderBuild } = require('./loadoutRender');
+    const builds = (await Loadout.find(filter).lean()).filter(b => !isPlaceholderBuild(b));
     return builds.sort((a, b) =>
         a.category.localeCompare(b.category) ||
         a.weaponName.localeCompare(b.weaponName) ||

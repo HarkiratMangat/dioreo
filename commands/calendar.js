@@ -246,15 +246,17 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     if (safePage === TODAY_PAGE) {
         const { fitMessage, seasonTeaser } = require('./today');
         const types = new Set([[8, 'draw'], [16, 'event'], [32, 'playlist']].filter(([bit]) => mask & bit).map(([, t]) => t));
-        const title = withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji));
+        const titleText = withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji));
         const teaser = seasonTeaser(seasonalDoc, nowMs);
-        if (teaser) title.content += `\n${teaser}`;
+        if (teaser) titleText.content += `\n${teaser}`;
+        // The reminders bell on the title, wrapped after the teaser is added to its text (utils/reminders.js withBell).
+        const title = require('../utils/reminders').withBell(titleText); // an array: the title row, then the subtitle
         const todayPager = buildCalendarPager(safePage, mask);
         const todayNav = mask
             ? buildGlobalNavRow('nav_calendar', { nav_calendar: { label: 'Full Calendar', custom_id: 'nav_calendar', style: 1 } })
             : buildGlobalNavRow('nav_calendar');
         // fitMessage steps the body down (one block per entry, then per section, then trimmed) until the whole message fits Discord's caps.
-        return fitMessage(seasonalDoc, { nowMs, withDays: true, types: types.size ? types : null }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [title, { type: 14, spacing: 2, divider: true }, ...body, { type: 14, spacing: 2, divider: true }, ...(todayPager ? [todayPager] : []), buildFilterRow(safePage, mask)] }, todayNav], isEphemeral));
+        return fitMessage(seasonalDoc, { nowMs, withDays: true, types: types.size ? types : null }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [...title, { type: 14, spacing: 2, divider: true }, ...body, { type: 14, spacing: 2, divider: true }, ...(todayPager ? [todayPager] : []), buildFilterRow(safePage, mask)] }, todayNav], isEphemeral));
     }
 
     // Per-page banner -- rendered as a true cover image at the VERY TOP of the container, above even the title (Harkirat's explicit call, 2026-07-31 17:20 EDT -- reads like a real banner/ splash image rather than a mid-card illustration this way). Independently settable per page; omitted entirely (no placeholder) when unset.
@@ -263,8 +265,8 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         calendarComponents.push({ type: 12, items: [{ media: { url: bannerUrl } }] });
     }
 
-    // Two-line title (season title on top, command header below) — shared pattern, see utils/titleBlock.js. headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size. The season's emoji in front of the season title (2026-10-19 09:26 EDT, Harkirat), see utils/seasonEmoji.js.
-    calendarComponents.push(withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji)));
+    // Two-line title (season title on top, command header below) — shared pattern, see utils/titleBlock.js. headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size. The season's emoji in front of the season title (2026-10-19 09:26 EDT, Harkirat), see utils/seasonEmoji.js. The reminders bell on every /calendar page's title (utils/reminders.js withBell).
+    calendarComponents.push(...require('../utils/reminders').withBell(withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji))));
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
     // An empty page keeps its own heading, so it is clear which page is empty (2026-10-21 15:53 EDT, Harkirat: "can that include the \":Events: EVENTS\" heading? and add the warning icon infront of the hint"). The Draws page names itself Lucky Draws here, having no New/Returning split to show.

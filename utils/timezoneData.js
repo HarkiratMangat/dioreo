@@ -60,30 +60,89 @@ const QUICK_ZONES = [
 ];
 const QUICK_TIMEZONES = QUICK_ZONES.map(tz => ALL_TIMEZONES.find(z => z.tz === tz)).filter(Boolean);
 
+// EVERY OTHER ZONE the runtime knows, reachable by search (Harkirat, 2026-10-24 21:15 EDT: "Yes extend, as well to /timestamp"). The 41 above cover 29 of the 57 distinct clock rules among Node's 418 IANA zones; Iran, Afghanistan, Nepal, Myanmar, Darwin, Tonga and the Chatham Islands had no entry at all. These come straight from Intl.supportedValuesOf('timeZone'), labelled by their city ("Kathmandu (Asia)") and searchable by city and by any sub-region in the id. Country names are not searchable for them: the runtime has no country-to-zone table, so only the hand-made 41 carry country aliases. ⚠️ The runtime lists CLDR's names, some of them older than IANA's current ones (Asia/Katmandu, Asia/Calcutta, Europe/Kiev); the stored value stays the runtime's id (it is what Intl accepts everywhere), the label and the search use the modern city name, and an id that is the same zone as one of the 41 (Asia/Calcutta is Asia/Kolkata) is left out.
+const MODERN_CITY = { Calcutta: 'Kolkata', Katmandu: 'Kathmandu', Saigon: 'Ho Chi Minh', Rangoon: 'Yangon', Kiev: 'Kyiv', Godthab: 'Nuuk', Ulan_Bator: 'Ulaanbaatar', Thimbu: 'Thimphu', Dacca: 'Dhaka', Ashkhabad: 'Ashgabat', Chungking: 'Chongqing', Macao: 'Macau', Faeroe: 'Faroe', Enderbury: 'Kanton', Ponape: 'Pohnpei', Truk: 'Chuuk', Uzhgorod: 'Uzhhorod' };
+// Country names for the zones whose clock rule none of the 41 shares, so the places that had no entry at all can be found by country too.
+const COUNTRY_HINT = { Katmandu: ['nepal'], Tehran: ['iran'], Kabul: ['afghanistan'], Rangoon: ['myanmar', 'burma'], Tongatapu: ['tonga'], Chatham: ['chatham islands'], Darwin: ['northern territory'], Colombo: ['sri lanka'], Kiritimati: ['kiribati', 'line islands'], Pago_Pago: ['american samoa'], Apia: ['samoa'], Marquesas: ['marquesas islands'], Lord_Howe: ['lord howe island'], Eucla: ['eucla'], Norfolk: ['norfolk island'], Casablanca: ['morocco'], Troll: ['antarctica'] };
+const sameZone = tz => { try { return new Intl.DateTimeFormat('en-US', { timeZone: tz }).resolvedOptions().timeZone; } catch { return null; } };
+const EXTRA_TIMEZONES = (() => {
+    let ids = [];
+    try { ids = Intl.supportedValuesOf('timeZone'); } catch { ids = []; }
+    const known = new Set(ALL_TIMEZONES.map(z => sameZone(z.tz)));
+    return ids.filter(tz => tz.includes('/') && !known.has(sameZone(tz))).map(tz => {
+        const parts = tz.split('/');
+        const raw = parts[parts.length - 1];
+        const city = (MODERN_CITY[raw] || raw).replace(/_/g, ' ');
+        const old = raw.replace(/_/g, ' ');
+        return { tz, label: `${city} (${parts[0].replace(/_/g, ' ')})`, aliases: [...new Set([city.toLowerCase(), old.toLowerCase(), ...(COUNTRY_HINT[raw] || []), ...parts.slice(1, -1).map(p => p.replace(/_/g, ' ').toLowerCase())])] };
+    });
+})();
+const EVERY_TIMEZONE = [...ALL_TIMEZONES, ...EXTRA_TIMEZONES];
+
 // Live abbreviation, not baked into the stored label (v3-pre-release review, finding #45) -- 15 of these 41 zones observe DST, and the file used to hardcode ONE fixed abbreviation per zone forever (e.g. always "(GMT)" for London, wrong for roughly half the year). Intl.DateTimeFormat derives the CURRENT abbreviation for whichever half of the year it actually is, same mechanism commands/timestamp.js's getTimezoneLabel() already uses for its own (differently-shaped) label.
 function displayLabel(tz, baseLabel) {
+    // Led by the zone's UTC offset, so a list reads west to east at a glance (Harkirat, 2026-10-24 21:18 EDT: "better organize the list of time zones so they're not a scattered order"), then the name, then the live abbreviation when it is a real one (EDT, BST; not a bare "GMT+3", which the offset already says).
     try {
         const abbr = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' })
             .formatToParts(new Date()).find(p => p.type === 'timeZoneName')?.value;
-        return abbr ? `${baseLabel} (${abbr})` : baseLabel;
+        const named = abbr && !/^(GMT|UTC)([+-]|$)/.test(abbr) ? ` · ${abbr}` : '';
+        return `${offsetTag(tz)} ${baseLabel}${named}`;
     } catch {
         return baseLabel;
     }
 }
 
+// The zone's offset from UTC right now, in minutes (daylight saving included).
+function utcOffsetMinutes(tz) {
+    try {
+        const v = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'longOffset' }).formatToParts(new Date()).find(p => p.type === 'timeZoneName')?.value || 'GMT';
+        const m = /GMT([+-])(\d{2}):(\d{2})/.exec(v);
+        return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3])) : 0;
+    } catch { return 0; }
+}
+
+// "(UTC−4)", "(UTC+5:45)", "(UTC+0)".
+function offsetTag(tz) {
+    const min = utcOffsetMinutes(tz);
+    const h = Math.floor(Math.abs(min) / 60), mm = Math.abs(min) % 60;
+    return `(UTC${min < 0 ? '−' : '+'}${h}${mm ? `:${String(mm).padStart(2, '0')}` : ''})`;
+}
+
+// The common zones as dropdown options, west to east by their offset right now.
+function quickZoneOptions() {
+    return [...QUICK_TIMEZONES]
+        .sort((a, b) => utcOffsetMinutes(a.tz) - utcOffsetMinutes(b.tz) || a.label.localeCompare(b.label))
+        .map(z => ({ label: displayLabel(z.tz, z.label), value: z.tz }));
+}
+
 function findTimezoneLabel(tz) {
-    const entry = ALL_TIMEZONES.find(z => z.tz === tz);
+    const entry = EVERY_TIMEZONE.find(z => z.tz === tz);
     return entry ? displayLabel(tz, entry.label) : tz;
+}
+
+// The friendly name alone, without the live abbreviation (/timestamp adds its own offset and abbreviation around it).
+function timezoneBaseLabel(tz) {
+    return EVERY_TIMEZONE.find(z => z.tz === tz)?.label || tz;
+}
+
+// What a typed or picked value means: a real IANA id as it is, else the best search match, else null. /timestamp's timezone option takes free text since it became an autocomplete.
+function resolveTimezone(input) {
+    const v = (input || '').trim();
+    if (!v) return null;
+    if (v.includes('/') && sameZone(v)) return v;
+    return searchTimezones(v, 1)[0]?.value || null;
 }
 
 // Fuzzy-matches a typed query against every zone's IANA id, label, AND every alias -- so "sydney", "australia", "aest" and even a raw "Australia/Sydney" all find the same entry. Returns up to `limit` matches as {value, label} (label carries the live abbreviation, same as the dropdown's quick picks) -- the normalized shape utils/settingsPickers.js's registry expects from every picker's search(), so handlers/settings.js needs no per-picker special-casing. fuzzyMatch has no scoring, so this preserves ALL_TIMEZONES' order among whatever matches rather than ranking by closeness.
 function searchTimezones(query, limit = 25) {
     const q = (query || '').trim();
     if (!q) return [];
-    return ALL_TIMEZONES
-        .filter(z => fuzzyMatch(q, z.tz) || fuzzyMatch(q, z.label) || z.aliases.some(a => fuzzyMatch(q, a)))
+    // The 41 hand-made zones first (they carry the country and abbreviation aliases), then the rest of the runtime's zones. An exact name ranks first ("tonga" is Tongatapu before Rarotonga, which only contains it).
+    const exact = q.toLowerCase();
+    const hits = EVERY_TIMEZONE.filter(z => fuzzyMatch(q, z.tz) || fuzzyMatch(q, z.label) || z.aliases.some(a => fuzzyMatch(q, a)));
+    return [...hits.filter(z => z.aliases.includes(exact)), ...hits.filter(z => !z.aliases.includes(exact))]
         .slice(0, limit)
         .map(z => ({ value: z.tz, label: displayLabel(z.tz, z.label) }));
 }
 
-module.exports = { ALL_TIMEZONES, QUICK_TIMEZONES, findTimezoneLabel, searchTimezones, displayLabel };
+module.exports = { ALL_TIMEZONES, EVERY_TIMEZONE, QUICK_TIMEZONES, findTimezoneLabel, timezoneBaseLabel, searchTimezones, resolveTimezone, displayLabel, utcOffsetMinutes, quickZoneOptions };

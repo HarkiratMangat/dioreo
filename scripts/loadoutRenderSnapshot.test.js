@@ -25,4 +25,34 @@ assert.ok(!bs.includes('mpcopy_ak117_0'), 'browse card must NOT emit the weapon-
 const meta = [{ ...fixture[0], isMeta: true }];
 assert.ok(JSON.stringify(buildLoadoutCard(meta, 0, { color: 1, idPrefix: 'mp' })).includes('Meta'));
 assert.ok(!JSON.stringify(buildLoadoutCard(meta, 0, { color: 1, idPrefix: 'mp', hideBadges: true })).includes('Meta'));
+
+// 4. His /gunsmith list (Harkirat, 2026-10-24 09:45 EDT).
+const R = require('../utils/loadoutRender');
+const slotted = { ...fixture[0], attachments: ['Grip', 'Ammo', 'Muzzle'], attachmentSlots: ['Rear Grip', 'Ammunition', 'Muzzle'] };
+assert.deepStrictEqual(R.orderedAttachments(slotted), ['Muzzle', 'Grip', 'Ammo'], 'attachments follow his slot order: Muzzle, then Rear Grip before Ammunition');
+const two = [slotted, { ...slotted, buildName: 'Second' }];
+const ar = [...two, { ...fixture[0], weaponKey: 'bp50', weaponName: 'BP50', isMeta: true, categoryRank: 'best' },
+    { ...fixture[0], weaponKey: 'pharo', weaponName: 'PHARO', attachments: ['Coming soon — check back later!'] }];
+const card = JSON.stringify(R.buildLoadoutCard(two, 1, { color: 1, idPrefix: 'mp', categoryBuilds: ar }));
+assert.ok(card.includes('"Build 2 of 2"'), 'one weapon: the pager says Build 2 of 2');
+assert.ok(!card.includes('• Build 2 of 2'), 'one weapon: the footer drops the build the pager already shows');
+const single = JSON.stringify(R.buildLoadoutCard([slotted], 0, { color: 1, idPrefix: 'mp' }));
+assert.ok(single.includes('Build 1 of 1'), 'a one-build card has no pager, so its footer keeps Build 1 of 1');
+const metaCard = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix: 'mp', categoryBuilds: [{ ...ar[2], categoryRank: 'top3', isToxic: true }],
+    browse: { scopeToken: 'MP.*.meta', flatIndex: 0, flatTotal: 1, scopeLabel: 'Meta — MP' } }));
+assert.ok(metaCard.includes('"AR · Top 3 · 1 build"'), 'the META list names the class, drops Meta and never says Toxic');
+assert.ok(card.indexOf('Muzzle') < card.indexOf('Grip') && card.indexOf('Grip') < card.indexOf('Ammo'), 'the card lists attachments in slot order');
+const opts = JSON.parse(card).components.find(c => c.type === 1 && c.components[0].type === 3).components[0].options;
+assert.strictEqual(opts[0].value, '~search~', 'Search is the first option');
+assert.ok(!opts.some(o => o.value === 'pharo'), 'a Coming Soon placeholder is never listed');
+assert.ok(opts.some(o => o.value === 'bp50' && o.description === 'Meta · Best AR · 1 build'), 'an option carries its badges and build count');
+assert.ok(!opts.some(o => o.default), 'nothing is pre-selected');
+const browseAll = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix: 'mp', categoryBuilds: ar.slice(0, 3),
+    browse: { scopeToken: 'MP.*.std', flatIndex: 2, flatTotal: 3, scopeLabel: 'All MP builds' } }));
+assert.ok(browseAll.includes('"AR · 3/3"'), 'a browse pager names the class and the place in it');
+assert.ok(R.isPlaceholderBuild(ar[3]) && !R.isPlaceholderBuild(ar[0]), 'placeholder detection');
+const noImg = JSON.stringify(R.buildLoadoutCard([{ ...fixture[0], imageKey: 'https://placehold.co/1x1?text=Coming+Soon' }], 0, { color: 1, idPrefix: 'mp' }));
+assert.ok(noImg.includes('*No screenshot of this build yet.*') && !noImg.includes('"type":12'), 'a placeholder image is replaced by one line');
+const missing = JSON.stringify(R.buildMissingWeaponCard({ weaponName: 'PHARO', category: 'AR', categoryBuilds: ar }));
+assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.std'), 'the missing-weapon card says so and opens the class');
 console.log('✓ loadoutRender snapshot');

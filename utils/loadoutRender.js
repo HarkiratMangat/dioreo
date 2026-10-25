@@ -170,34 +170,35 @@ function toBlockquote(str) {
 // "Browse other builds in this category" dropdown (added 2026-07-12, per Harkirat's request) -- lets a user jump straight to a different weapon's card without re-running the slash command, instead of just paging within the current weapon's own builds. `categoryBuilds` is every Loadout doc sharing the current card's scope (same `category`+mode for MP, or every `mode: 'DMZ'` doc for DMZ, since /dmz has no per-category commands the way MP does).
 //
 // NOTE (simplified during review, per Harkirat's follow-up request): originally listed every INDIVIDUAL build with a "[Build N of M]" suffix on multi-build weapons -- dropped in favor of one entry per WEAPON, since browsing to a specific build variant is already what Prev/Next is for. Selecting a weapon here always opens it at build index 0. `weaponKey` is deduped via a Map (first doc encountered per key wins, which is fine -- every doc for a given weaponKey shares the same weaponName/category), then sorted alphabetically by weapon name.
-function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scopeLabel, customIdOverride = null) {
+//
+// RESTRUCTURED 2026-10-24 09:45 EDT (Harkirat: "the dropdown menu can be better, and organize/restructure it as well"; "can we make the flow of searching for another weapon or build much more fluid?"). A string select cannot autocomplete, so the first option is **Search all weapons…**, which opens a one-box search (handlers/loadouts.js, `gsb~find~`) that resolves exactly like the slash command. Then one option per weapon with its badges and build count as the second line, and, in the whole-mode browse (`classJumps`), only the current class's weapons followed by a jump to each other class -- 68 MP weapons never fit in 25, and the old "25 of 68" window hid most of them. No option is pre-selected, so the placeholder says what the menu does. Placeholder weapons are never listed.
+function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scopeLabel, customIdOverride = null, { mode = 'MP', classJumps = false, metaList = false } = {}) {
     if (!categoryBuilds || categoryBuilds.length === 0) return null;
+    const real = categoryBuilds.filter(b => !isPlaceholderBuild(b));
+    const activeCategory = (real.find(b => b.weaponKey === activeWeaponKey) || real[0] || {}).category;
+    const listed = classJumps ? real.filter(b => b.category === activeCategory) : real;
 
-    const weaponMap = new Map();
-    for (const doc of categoryBuilds) {
-        if (!weaponMap.has(doc.weaponKey)) weaponMap.set(doc.weaponKey, doc.weaponName);
+    const weapons = new Map();
+    for (const doc of listed) {
+        if (!weapons.has(doc.weaponKey)) weapons.set(doc.weaponKey, []);
+        weapons.get(doc.weaponKey).push(doc);
     }
+    let weaponOptions = Array.from(weapons.entries())
+        // By class, then name (Harkirat, 2026-10-24 18:41 EDT: "Correctly organize the dropdown menus as well via category alphabetical"), the same order the browse pager steps through (utils/loadoutScopes.js resolveScopeBuilds).
+        .sort((a, b) => a[1][0].category.localeCompare(b[1][0].category) || a[1][0].weaponName.localeCompare(b[1][0].weaponName))
+        .map(([weaponKey, builds]) => ({ label: builds[0].weaponName, value: weaponKey, description: weaponSummary(builds, { metaList }) }));
+    const jumpOptions = classJumps
+        ? [...new Set(real.map(b => b.category))].filter(c => c !== activeCategory).sort()
+            .map(c => ({ label: `All ${displayCategoryLabel(c)} builds`, value: `~class~${c}`, description: countLabel(real.filter(b => b.category === c).length) }))
+        : [];
+    const search = { label: 'Search all weapons…', value: '~search~', description: `Type a name to find any ${mode === 'DMZ' ? 'DMZ' : 'MP'} weapon` };
 
-    // No dropdown at all if this category/mode only has the one weapon already being viewed -- nothing to browse TO.
-    if (weaponMap.size < 2) return null;
-
-    const options = Array.from(weaponMap.entries())
-        .sort((a, b) => a[1].localeCompare(b[1]))
-        .map(([weaponKey, weaponName]) => ({
-            label: weaponName,
-            value: weaponKey,
-            default: weaponKey === activeWeaponKey
-        }));
-
-    // Never drop weapons silently -- commands/admin.js (the SELECT_OPTION_CAP slice in buildCommands) sets the house rule for this exact situation. Window around the active weapon so paging forward reveals the rest, and say so in the placeholder (Discord select menus cap at 25 options; there is no scroll/search on a string select the way native role/channel selects have).
-    let truncated = options;
-    let placeholder = `Browse other ${scopeLabel} weapons`;
-    if (options.length > 25) {
-        const active = Math.max(0, options.findIndex(o => o.value === activeWeaponKey));
-        const start = Math.min(Math.max(0, active - 12), options.length - 25);
-        truncated = options.slice(start, start + 25);
-        // A select `placeholder` caps at 150 characters -- this phrasing is well under that even at 3-digit counts. NOTE (v3-pre-release review, finding #36): the windowing arithmetic below, this placeholder, and the default-marked option staying inside the slice are NOT exercised by any test today -- both cards in scripts/loadoutRenderSnapshot.test.js pass categoryBuilds: null, which returns before this branch runs. Treat as unverified (the old comment here claimed the opposite) until a real >25-weapon case is added.
-        placeholder = `Browse ${scopeLabel} — 25 of ${options.length}, type a weapon in /gunsmith for the rest`;
+    // Discord caps a select at 25 options. Never drop weapons silently (commands/admin.js's SELECT_OPTION_CAP sets the house rule): window around the open weapon, and Search still reaches the rest.
+    const room = 25 - 1 - jumpOptions.length;
+    if (weaponOptions.length > room) {
+        const active = Math.max(0, weaponOptions.findIndex(o => o.value === activeWeaponKey));
+        const start = Math.min(Math.max(0, active - Math.floor(room / 2)), weaponOptions.length - room);
+        weaponOptions = weaponOptions.slice(start, start + room);
     }
 
     return {
@@ -205,8 +206,8 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
         components: [{
             type: 3,
             custom_id: customIdOverride || `${idPrefix}browse`,
-            placeholder,
-            options: truncated
+            placeholder: classJumps ? `Switch weapon or class, or search` : `Switch weapon, or search`,
+            options: [search, ...weaponOptions, ...jumpOptions]
         }]
     };
 }
@@ -215,9 +216,55 @@ function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scope
 //
 // NOTE (redesigned during review, per Harkirat's loadouts_ui.json reference): weapon name is now the top heading with optional Meta/Best/Top-3 badges directly below it (see buildBadgesLine above), rather than a small category overline -- the category moved down into the footer line instead ("{category} • Build N of M • Last updated..."). The divider between Gunsmith Code and the image was removed. "Attachments"/"Gunsmith Code" are now real H3 headings (### ) rather than bold text, and each attachment line is backtick-wrapped to match the Gunsmith Code code-block styling. V2 still has no equivalent to an embed's *inline fields*, so those two sections stack vertically rather than sitting side-by-side. THE CONTENT HALF, WITHOUT THE CHROME. Split out 2026-08-23 12:55 EDT so a build can be drawn somewhere that is not /gunsmith -- /bot analytics' change-detail panel renders a loadout's before/after through this, per the record-view contract (docs/superpowers/specs/2026-08-23-bot-analytics-live-review-design.md §2 rule D: never RE-DESCRIBE a record, draw it with its own renderer).
 //
-// ⚠️ WHAT IS DELIBERATELY NOT IN HERE: the Container (type 17) wrapper, the trailing divider, the pagination/Copy row, the browse dropdown and the Share button. Every one of those is a LIVE control whose custom_id routes to handlers/loadouts.js and resolves an index against a query only /gunsmith has made -- embedded in a change panel they would either mislead or misfire, and the Container would nest inside another Container. buildLoadoutCard() below still owns all of it, so its output is byte-identical to before (scripts/loadoutRenderSnapshot.test.js is the proof and must not move). `copyIds` (2026-10-20 12:12 EDT, Harkirat: "move the copy attachment and copy code buttons so they're inline with their respective sections as accessory buttons"): when given, the Attachments and Gunsmith Code headings become Sections with their Copy button as the accessory. Only buildLoadoutCard passes it; a change panel draws the body with no live controls, exactly as before.
-function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = false, copyIds = null } = {}) {
-    const attachmentLines = (activeBuild.attachments || []).map(att => `• \`${att}\``).join('\n');
+// ⚠️ WHAT IS DELIBERATELY NOT IN HERE: the Container (type 17) wrapper, the trailing divider, the pagination/Copy row, the browse dropdown and the Share button. Every one of those is a LIVE control whose custom_id routes to handlers/loadouts.js and resolves an index against a query only /gunsmith has made -- embedded in a change panel they would either mislead or misfire, and the Container would nest inside another Container. buildLoadoutCard() below still owns all of it, so its output is byte-identical to before (scripts/loadoutRenderSnapshot.test.js is the proof and must not move). `copyIds` (2026-10-20 12:12 EDT, Harkirat: "move the copy attachment and copy code buttons so they're inline with their respective sections as accessory buttons"): when given, the Attachments and Gunsmith Code headings become Sections with their Copy button as the accessory. Only buildLoadoutCard passes it; a change panel draws the body with no live controls, exactly as before. A "Coming Soon" placeholder (scripts/createPlaceholderLoadouts.js): a weapon whose only attachment line is the coming-soon note has no real build yet. Lists never show it, and opening it draws the missing-weapon card (Harkirat, 2026-10-24 09:45 EDT: "in lists, if a weapon is missing, do not show it in the list. if an image only is missing, that's fine to include").
+function isPlaceholderBuild(build) {
+    return !(build.attachments || []).some(a => a && !/^coming soon/i.test(String(a).trim()));
+}
+
+// A real screenshot, as opposed to the placehold.co "Coming Soon" image a bulk add stores when a block has no image key (utils/adminParser.js PLACEHOLDER_IMAGE).
+function hasRealImage(build) {
+    return Boolean(build.imageKey) && !/placehold\.co/i.test(build.imageKey);
+}
+
+// Attachments in his slot order (utils/adminParser.js CANONICAL_SLOT_ORDER, 2026-07-21: Optic, Muzzle, Barrel, Stock, Laser, Underbarrel, Rear Grip, Ammunition, Perk), read off each build's stored attachmentSlots. Measured 2026-10-24 09:52 EDT on the dev data: 90 of 132 builds were stored in another order (most with Ammunition before Rear Grip), because only /autobuild sorted at save time. Sorting here covers every save path and the Copy Attachments reply alike; a name with no recorded slot keeps its place after the known ones.
+function orderedAttachments(build) {
+    const { orderAttachmentsBySlot } = require('./adminParser');
+    return orderAttachmentsBySlot(build.attachments || [], build.attachmentSlots || []).attachments;
+}
+
+function countLabel(n) {
+    return `${n} build${n === 1 ? '' : 's'}`;
+}
+
+// A weapon's strongest rank across its builds, as plain words for a dropdown option (no emoji: an option description is plain text): Best, then the lowest Top N. Capable is not shown (Harkirat, 2026-10-24 18:25 EDT: "only mention if a weapon is meta or top three or top five or best"). `short` drops the MP class ("Top 3") where the line already names it.
+function bestRankLabel(builds, { short = false } = {}) {
+    let best = null, score = Infinity;
+    for (const b of builds) {
+        const raw = b.mode === 'DMZ' ? b.dmzRangeRank : b.categoryRank;
+        const m = raw ? /^(best|top(\d+))/.exec(raw) : null;
+        if (!m) continue;
+        const s = m[1] === 'best' ? 0 : Number(m[2]);
+        if (s < score) { score = s; best = b; }
+    }
+    if (!best) return null;
+    const raw = best.mode === 'DMZ' ? best.dmzRangeRank : '';
+    const label = best.mode === 'DMZ' ? (raw.includes('-close') ? 'Close Range' : raw.includes('-midlong') ? 'Mid-Long Range' : 'DMZ') : (short ? '' : displayCategoryLabel(best.category));
+    return (score === 0 ? `Best ${label}` : `Top ${score} ${label}`).trim();
+}
+
+// One dropdown option's second line: "Meta · Best AR · 3 builds". Only Meta and the Best / Top N rank, never Toxic, Ass or Capable (Harkirat, 2026-10-24 18:25 EDT). In the META list every weapon is Meta, so the line names the class instead (same message: "in the dropdown for the meta list, can you also mention the category of that weapon?"): "AR · Top 3 · 2 builds".
+function weaponSummary(builds, { metaList = false } = {}) {
+    const parts = [];
+    if (metaList) parts.push(displayCategoryLabel(builds[0].category));
+    else if (builds.some(b => b.isMeta)) parts.push('Meta');
+    const rank = bestRankLabel(builds, { short: metaList });
+    if (rank) parts.push(rank);
+    parts.push(countLabel(builds.length));
+    return parts.join(' · ').slice(0, 100);
+}
+
+function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = false, copyIds = null, footerBuild = true } = {}) {
+    const attachmentLines = orderedAttachments(activeBuild).map(att => `• \`${att}\``).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
 
     // `##`, not `#` (Harkirat, 2026-10-20 22:23 EDT): every other panel's title is `##`, and on a phone `#` wraps the longer command titles onto two lines.
@@ -240,8 +287,8 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     }
 
     if (copyIds) {
-        containerComponents.push({ type: 9, components: [{ type: 10, content: '### Attachments' }], accessory: { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyIds.attachments } });
-        containerComponents.push({ type: 10, content: attachmentLines });
+        // No icon on Copy Attachments (Harkirat, 2026-10-24 09:45 EDT: "let's leave it out entirely for now"): the weapon-class icons wait for the per-weapon emojis a peer session is drawing, and then go after the weapon name in the title, tilted (docs/db-deferred-list.md). The list rides INSIDE the Section with its title (Harkirat, 2026-10-24 01:10 EDT): on a phone the accessory button drops below the whole Section, so it now lands under the attachments instead of between the title and the list.
+        containerComponents.push({ type: 9, components: [{ type: 10, content: `### Attachments\n${attachmentLines}` }], accessory: { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyIds.attachments } });
     } else {
         containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
     }
@@ -250,9 +297,8 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     const codeText = activeBuild.mode !== 'DMZ' && (activeBuild.shareCode || activeBuild.buildName);
     if (codeText) {
         if (copyIds) {
-            // Primary (blue), not Success (green), per Harkirat 2026-10-20 22:23 EDT: blue is the bot's call-to-action colour, green means "set / you are here". Copy Attachments stays grey as the secondary courtesy button.
-            containerComponents.push({ type: 9, components: [{ type: 10, content: '### Gunsmith Code' }], accessory: { type: 2, style: 1, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.copyExport) } });
-            containerComponents.push({ type: 10, content: `\`${codeText}\`` });
+            // Primary (blue), not Success (green), per Harkirat 2026-10-20 22:23 EDT: blue is the bot's call-to-action colour, green means "set / you are here". Copy Attachments stays grey as the secondary courtesy button. The code rides inside its Section too, for the same phone layout (2026-10-24 01:10 EDT).
+            containerComponents.push({ type: 9, components: [{ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` }], accessory: { type: 2, style: 1, label: 'Copy Code', custom_id: copyIds.code, emoji: emojis.parseEmoji(emojis.gunsmithCode) } });
         } else {
             containerComponents.push({ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` });
         }
@@ -260,9 +306,14 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
 
     // NOTE (removed during review, per Harkirat's request): there used to be a divider here between Gunsmith Code and the image -- dropped so the image sits directly under the text above it. 🔴 GUARDED, and NOT defensively -- found live 2026-08-23 12:58 EDT while wiring the change-detail panel. buildImageUrl() calls imageKey.startsWith(), which THROWS on a build with no imageKey. Every stored Loadout has one, so /gunsmith never hit it; a change panel does, because it reconstructs a BEFORE state as {...current, ...inversePayload} and renders delete payloads that may carry only the fields the op touched. renderRecord()'s try/catch would have swallowed the throw and quietly fallen back to a field list -- the budget fallback firing for the wrong reason, which is the "a guard that never fires is decoration" failure inverted. Omitting the gallery is the honest render of a build with no image.
     if (activeBuild.imageKey) {
-        containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey) } }] });
+        // A small divider over the screenshot (Harkirat, 2026-10-24 09:45 EDT: "add a divider:true small above the loadout image").
+        containerComponents.push({ type: 14, spacing: 1, divider: true });
+        // A build with only the placeholder image says so in one quiet line instead of showing a grey "Coming Soon" rectangle; it stays in every list (his call, same message).
+        if (hasRealImage(activeBuild)) containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey) } }] });
+        else containerComponents.push({ type: 10, content: '-# *No screenshot of this build yet.*' });
     }
-    containerComponents.push({ type: 10, content: `-# ${activeBuild.category} • Build ${index + 1} of ${total} • Updated <t:${lastUpdatedUnix}:D>` });
+    // `footerBuild` is false on a single weapon's card with a pager, which already reads "Build 2 of 5"; a browse card's pager counts the class instead, and a one-build card has no pager, so both keep the build in the footer (Harkirat, 2026-10-24 18:25 EDT: with one build "it doesn't mention build one of one for this anymore").
+    containerComponents.push({ type: 10, content: `-# ${[activeBuild.category, footerBuild ? `Build ${index + 1} of ${total}` : null, `Updated <t:${lastUpdatedUnix}:D>`].filter(Boolean).join(' • ')}` });
 
     return containerComponents;
 }
@@ -272,26 +323,37 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     const activeBuild = builds[index];
     const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
     const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
-    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, copyIds: { attachments: copyAttCustomId, code: copyCustomId } });
+    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, copyIds: { attachments: copyAttCustomId, code: copyCustomId }, footerBuild: Boolean(browse) || builds.length === 1 });
 
     // NOTE (moved during review): buttons live INSIDE the container now (were a separate row outside it), with a divider between them and the image/caption above — per Harkirat's request. Prev/Next also switched from plain "Back"/"Next" text buttons to the same Left/Right-emoji + numbers-only pagination style used everywhere else in the bot (utils/paginationRow.js), for consistency.
     containerComponents.push({ type: 14, spacing: 1, divider: true });
 
-    // (History: until 2026-10-20 12:12 EDT the Copy buttons shared this row.) Pagination + Copy Attachments + Copy Code all share one row -- exactly 5 buttons in the worst case (Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap. "Copy Attachments" replies with the plain attachment list (one per line, no bullets/backticks/ formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see handlers/loadouts.js's dmz/mp-prefixed button handler's `copyatt` action. Copy Code is skipped for DMZ (see the Gunsmith Code section above) -- no real code to copy, so the row is 4 buttons max there. Loadout cards use the LEGACY prev/next-string form of buildPaginationRow (not makeCustomId): the id encodes a DIRECTION + the current index, and the dmz/mp button handler in handlers/loadouts.js already does the modulo wrap on click ((index ± 1) % builds.length). So looping here needs nothing beyond buildPaginationRow no longer disabling the end buttons (2026-07-21) -- the handler already sends you from the last build to the first and vice-versa. A browse card pages across the whole SCOPE, so its ids carry the scope token + flat index and its indicator counts the scope. A normal card is untouched -- same ids, same totals as before.
+    // (History: until 2026-10-20 12:12 EDT the Copy buttons shared this row.) Pagination + Copy Attachments + Copy Code all share one row -- exactly 5 buttons in the worst case (Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap. "Copy Attachments" replies with the plain attachment list (one per line, no bullets/backticks/ formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see handlers/loadouts.js's dmz/mp-prefixed button handler's `copyatt` action. Copy Code is skipped for DMZ (see the Gunsmith Code section above) -- no real code to copy, so the row is 4 buttons max there. Loadout cards use the LEGACY prev/next-string form of buildPaginationRow (not makeCustomId): the id encodes a DIRECTION + the current index, and the dmz/mp button handler in handlers/loadouts.js already does the modulo wrap on click ((index ± 1) % builds.length). So looping here needs nothing beyond buildPaginationRow no longer disabling the end buttons (2026-07-21) -- the handler already sends you from the last build to the first and vice-versa. A browse card pages across the whole SCOPE, so its ids carry the scope token + flat index and its indicator counts the scope. A normal card is untouched -- same ids, same totals as before. The pager names where you are, as /calendar's does ("Modes · 3/3", 2026-10-21) -- Harkirat, 2026-10-24 09:45 EDT: "can we improve the pager info in any useful way, such as how we did on the /calendar command?". One weapon's card reads "Build 2 of 5". A browse (META, All MP, a class) reads the class and the build's place in it, "AR · 5/30", where the bare "5 / 125" said nothing about what the arrows were stepping through; the footer keeps "Build 2 of 5" there.
+    let indicatorLabel;
+    if (browse && categoryBuilds && categoryBuilds.length) {
+        const active = categoryBuilds[Math.min(Math.max(browse.flatIndex, 0), categoryBuilds.length - 1)];
+        const inClass = categoryBuilds.filter(b => b.category === active.category);
+        const pos = inClass.indexOf(active);
+        if (pos !== -1) indicatorLabel = `${displayCategoryLabel(active.category)} · ${pos + 1}/${inClass.length}`;
+    } else if (!browse) {
+        indicatorLabel = `Build ${index + 1} of ${builds.length}`; // his wording, 2026-10-24 18:33 EDT
+    }
     const paginationRow = browse
         ? buildPaginationRow({
             totalChunks: browse.flatTotal,
             currentPage: browse.flatIndex,
             prevCustomId: `gsb~prev~${browse.scopeToken}~${browse.flatIndex}`,
             nextCustomId: `gsb~next~${browse.scopeToken}~${browse.flatIndex}`,
-            indicatorCustomId: `gsb~ind~${browse.scopeToken}`
+            indicatorCustomId: `gsb~ind~${browse.scopeToken}`,
+            indicatorLabel
         })
         : buildPaginationRow({
             totalChunks: builds.length,
             currentPage: index,
             prevCustomId: `${idPrefix}prev_${activeBuild.weaponKey}_${index}`,
             nextCustomId: `${idPrefix}next_${activeBuild.weaponKey}_${index}`,
-            indicatorCustomId: `${idPrefix}_page_indicator`
+            indicatorCustomId: `${idPrefix}_page_indicator`,
+            indicatorLabel
         });
     const buttonComponents = paginationRow ? [...paginationRow.components] : [];
     // Scope-aware ids for a browse card (v3-pre-release review, finding #1): `index` here is relative to the FILTERED, RE-SORTED scope subset (see utils/loadoutScopes.js's resolveScopeBuilds), not to Loadout.find({weaponKey,mode})'s unfiltered/unsorted result the way a normal card's index is -- these two buttons used the old `${idPrefix}copy(att)_<weaponKey>_<index>` shape regardless, and handlers/loadouts.js resolved that index against the unfiltered query, so Copy Code could hand back a DIFFERENT build's share code than the card actually on screen (matters more once badges become per-BUILD, not per-weapon). A normal (non-browse) card is untouched -- same ids as before. The Copy buttons moved up beside their headings (buildLoadoutCardBody's copyIds, 2026-10-20 12:12 EDT), so this row is the pager alone, and a single-build card has no row at all.
@@ -303,7 +365,8 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     // "Browse other builds" dropdown -- a SIBLING row below the container, not nested inside it, per Harkirat's explicit request. NOTE: this is NOT because a select menu can't nest inside a Container in general -- /settings and /manage both do exactly that successfully (see settings.js's region/timezone/style/accent-color dropdowns, all pushed into the same containerComponents array as their surrounding Text Displays). The first live attempt at this dropdown (nested inside the container, same as those) failed with "This interaction failed" on click -- root cause not yet confirmed, don't assume it was the nesting itself.
     const scopeLabel = browse ? browse.scopeLabel : (activeBuild.mode === 'DMZ' ? 'DMZ' : activeBuild.category);
     const browseRow = buildCategoryBrowseRow(categoryBuilds, activeBuild.weaponKey, idPrefix, scopeLabel,
-        browse ? `gsb~jump~${browse.scopeToken}` : null);
+        browse ? `gsb~jump~${browse.scopeToken}` : null,
+        { mode: activeBuild.mode === 'DMZ' ? 'DMZ' : 'MP', classJumps: Boolean(browse) && browse.scopeToken === 'MP.*.std', metaList: Boolean(browse) && browse.scopeToken.endsWith('.meta') });
 
     const outerComponents = [containerPayload];
     if (browseRow) outerComponents.push(browseRow);
@@ -322,4 +385,27 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     return { components, flags: 32768 };
 }
 
-module.exports = { buildImageUrl, checkImageExists, buildLoadoutCard, buildLoadoutCardBody, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts };
+// The card for a weapon the game has and Dioreo has no build for yet (Harkirat, 2026-10-24 09:45 EDT: "design the panel in case a weapon is missing?"). Reached from a "Coming Soon" placeholder or a CODM catalogue weapon (utils/loadoutLookup.js resolveWeapon). It says so plainly and points at the same class's builds: a button opens that class's browse, and the dropdown lists its weapons with Search first, so the next step is one tap. No Share: there is nothing to share.
+function buildMissingWeaponCard({ weaponName, category, mode = 'MP', isEphemeral = false, categoryBuilds = [] }) {
+    const idPrefix = mode === 'DMZ' ? 'dmz' : 'mp';
+    const label = mode === 'DMZ' ? 'DMZ' : displayCategoryLabel(category);
+    const real = (categoryBuilds || []).filter(b => !isPlaceholderBuild(b));
+    const containerComponents = [
+        { type: 10, content: `## ${weaponName}` },
+        { type: 14, spacing: 1, divider: true },
+        // The missing line in italics (Harkirat, 2026-10-24 18:25 EDT) and a small gap after it (18:35 EDT). The "14 other SMG weapons have one" line was dropped at 18:39 EDT: the button says it.
+        { type: 10, content: `### No build yet\n*Dioreo doesn't have a ${weaponName} build yet.*` },
+    ];
+    if (real.length) {
+        const token = mode === 'DMZ' ? 'DMZ.*.std' : `MP.${category}.std`;
+        containerComponents.push({ type: 14, divider: false, spacing: 1 }, { type: 1, components: [{ type: 2, style: 1, label: `Browse other ${label} builds`, custom_id: `gsb~open~${token}` }] });
+    }
+    // "SMG • Build pending" (Harkirat, 2026-10-24 18:36 EDT), the same dot the build cards' footers use.
+    containerComponents.push({ type: 10, content: `-# ${mode === 'DMZ' ? 'DMZ' : category} • Build pending` });
+    const components = [{ type: 17, accent_color: getMpCategoryAccent(category), components: containerComponents }];
+    const browseRow = buildCategoryBrowseRow(real, null, idPrefix, label, null, { mode });
+    if (browseRow) components.push(browseRow);
+    return { components, flags: 32768 };
+}
+
+module.exports = { buildImageUrl, checkImageExists, buildLoadoutCard, buildLoadoutCardBody, buildMissingWeaponCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts, isPlaceholderBuild, hasRealImage, orderedAttachments };
