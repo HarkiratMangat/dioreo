@@ -138,6 +138,10 @@ function classifyMode(screen) {
 }
 
 // `maxAttachments` (default MAX_ATTACHMENTS) -- how many attachment slots to extract. Kept as an option rather than a separate function so there's still ONE extraction path to maintain; scripts/backfillLoadoutSlots.js passes 9 explicitly.
+// How long one screenshot may take: the download, then the model's answer (thinking included).
+const IMAGE_TIMEOUT_MS = 20 * 1000;
+const VERTEX_TIMEOUT_MS = 90 * 1000;
+
 async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHMENTS, taskName, knownWeapons = [] } = {}) {
     const accessToken = await getGcpAccessToken();
     const gcpProjectId = process.env.GCP_PROJECT_ID || DEFAULT_PROJECT_ID;
@@ -163,9 +167,12 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHME
     const endpoint = `${host}/v1/projects/${gcpProjectId}/locations/${gcpLocation}/${modelPath}:generateContent`;
 
     // Gemini's generateContent accepts an image as inline base64 bytes, not an arbitrary URL it fetches itself -- download the source image ourselves first, same "resolve the image locally before doing anything else with it" shape this repo's other image-processing utils already use (e.g. utils/stillFrame.js, utils/colorExtract.js).
-    const imageRes = await fetch(imageUrl);
+    // Both calls are timed out (2026-10-25 13:12 EDT): a /autobuild batch sat on "2 of 3 done" for minutes because one read never returned and neither fetch had a limit, so nothing ever failed it. A timeout throws, and the batch shows that screenshot as unreadable and carries on.
+    const imageRes = await fetch(imageUrl, { signal: AbortSignal.timeout(IMAGE_TIMEOUT_MS) });
     if (!imageRes.ok) throw new Error(`Failed to download source image: HTTP ${imageRes.status}`);
     const contentType = imageRes.headers.get('content-type') || 'image/png';
+    // A link to a web page rather than to the image itself answers with HTML; say so instead of sending it to the model as a picture. Only text is refused: some hosts serve images as octet-stream.
+    if (/^text\//i.test(contentType)) throw new Error(`That link is a web page (${contentType.split(';')[0]}), not an image; use the image's own address`);
     const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
     const base64Image = imageBuffer.toString('base64');
 
@@ -189,7 +196,8 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHME
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        signal: AbortSignal.timeout(VERTEX_TIMEOUT_MS)
     }));
 
     if (!res.ok) {
