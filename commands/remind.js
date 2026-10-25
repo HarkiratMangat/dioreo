@@ -65,6 +65,6 @@ module.exports = {
         const [sub, doc, prefs] = await Promise.all([ReminderSubscription.findOne({ discordId: userId }).lean(), SeasonalData.findOne({ docType: 'global' }).lean(), UserPreference.findOne({ discordId: userId }, { timezone: 1 }).lean()]);
         const { PRESET_ACCENT } = require('./calendar');
         // The dropdowns write their times in the reader's /settings zone (utils/reminders.js optionTime).
-        return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: userId, accentColor: PRESET_ACCENT, timeZone: prefs?.timezone || 'America/Toronto' }));
+        return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: userId, accentColor: PRESET_ACCENT, timeZone: prefs?.timezone || null }));
     },
 };

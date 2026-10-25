@@ -181,10 +181,11 @@ function followable(seasonalDoc, nowMs = Date.now()) {
 }
 
 const MAX_OPTIONS = 25; // Discord's select-menu cap
-// A dropdown option's time, in the reader's own /settings zone with its abbreviation: "Oct 27, 8 PM EDT". Discord draws <t:…> codes only in message text, never in a select's option text, so the real time has to be written out (Harkirat, 2026-10-24 20:13 EDT: "For these times in the dropdown, what are they set to? Can you put real timestamps in there?"). They were bare UTC dates, which put an 8 PM Toronto release on the next day.
+// A dropdown option's time, in the reader's own /settings zone with its abbreviation: "Oct 27, 8 PM EDT". Discord draws <t:…> codes only in message text, never in a select's option text, so the real time has to be written out (Harkirat, 2026-10-24 20:13 EDT: "For these times in the dropdown, what are they set to? Can you put real timestamps in there?"). They were bare UTC dates, which put an 8 PM Toronto release on the next day. With no zone saved, the UTC date and the word UTC, "Oct 28 UTC" (his call, 2026-10-24 20:41 EDT: "don't use Toronto time. If they don't have a timezone set, then use UTC and state it").
 function optionTime(ms, timeZone) {
-    const fmt = tz => new Date(ms).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: tz }).replace(':00', '').replace(/\s+/g, ' ');
-    try { return fmt(timeZone || 'UTC'); } catch { return fmt('UTC'); }
+    const utc = () => `${new Date(ms).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })} UTC`;
+    if (!timeZone) return utc();
+    try { return new Date(ms).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone }).replace(':00', '').replace(/\s+/g, ' '); } catch { return utc(); }
 }
 const optionValue = title => title.slice(0, 100);
 const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return undefined; } };
@@ -195,7 +196,7 @@ const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return un
 //   "Or pick only what you want": what is followed, each with its date, then the two dropdowns;
 //   Search (past 25) and Stop all at the foot.
 // The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40.
-function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = 'UTC' } = {}) {
+function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = null } = {}) {
     const cats = new Set(sub?.categories || []);
     const follows = sub?.follows || [];
     const { releases, leaving } = followable(seasonalDoc, nowMs);

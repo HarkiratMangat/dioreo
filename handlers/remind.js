@@ -24,11 +24,11 @@ async function loadState(userId) {
     return { sub, doc };
 }
 
-// The reader's /settings zone, for the dropdowns' written-out times (utils/reminders.js optionTime). The schema's own default when they never set one.
+// The reader's /settings zone, for the dropdowns' written-out times (utils/reminders.js optionTime); null (shown as UTC) when none is saved. Read lean, so the schema's Toronto default is not filled in.
 async function userZone(userId) {
     const UserPreference = require('../models/UserPreference');
     const prefs = await UserPreference.findOne({ discordId: userId }, { timezone: 1 }).lean();
-    return prefs?.timezone || 'America/Toronto';
+    return prefs?.timezone || null;
 }
 
 function accent() {
