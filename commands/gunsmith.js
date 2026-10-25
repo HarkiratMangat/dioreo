@@ -13,8 +13,8 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 const visibilityOption = o => o.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.')
     .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' });
 const weaponSub = (name, mode, desc) => sub => sub.setName(name).setDescription(desc)
-    .addStringOption(o => o.setName('weapon').setDescription(`Type any ${mode} weapon's name to search, or pick All META / All ${mode} builds`).setRequired(true).setAutocomplete(true))
-    .addIntegerOption(o => o.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
+    .addStringOption(o => o.setName('weapon').setDescription(`Type any ${mode} weapon's name to search, or pick All META / All ${mode === 'DMZ' ? 'DMZ' : 'class'} builds`).setRequired(true).setAutocomplete(true))
+    // `build:` removed (Harkirat, 2026-10-25 15:45 EDT: "remove 'build' as an option in the slash command"); the pager and the weapon dropdown reach every build.
     .addStringOption(visibilityOption);
 
 const data = new SlashCommandBuilder()
@@ -63,7 +63,10 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
     const scopeToken = formatScopeToken(scope);
     const scopeLabel = labelForScope(scope);
     require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, weaponBuilds[indexWithinWeapon]?._id); // Your Stats: a build this user opened
+    // The weapon dropdown's "N more with no build yet..." needs the open class's no-build weapons (MP, outside the META list).
+    const missing = scope.mode === 'MP' && !scope.metaOnly ? await require('../utils/loadoutLookup').missingWeapons(weaponBuilds[indexWithinWeapon].category) : [];
     const cardPayload = buildLoadoutCard(weaponBuilds, indexWithinWeapon, {
+        missing,
         color: getMpCategoryAccent(weaponBuilds[indexWithinWeapon].category),
         idPrefix: scope.mode === 'DMZ' ? 'dmz' : 'mp',
         isEphemeral,
@@ -88,7 +91,7 @@ async function execute(interaction) {
     return lookupAndRenderWeapon(interaction, {
         mode,
         rawQuery: raw,
-        requestedBuild: interaction.options.getInteger('build'),
+        requestedBuild: null,
         visibilityChoice: interaction.options.getString('visibility'),
     });
 }

@@ -15,6 +15,8 @@ const stored = [
     { weaponName: 'ODEN', category: 'AR', attachments: ['OWC Light Suppressor', 'FMJ'], attachmentSlots: ['Muzzle', 'Perk'] },
     { weaponName: 'PHARO', category: 'SMG', attachments: ['Coming soon — check back later!'], attachmentSlots: [] },
     { weaponName: 'CROSSBOW', category: 'SECONDARIES', attachments: ['2B Bowstring'], attachmentSlots: [] },
+    // A weapon only a stored build names (ODEN used to be this case until the seed's Odin was folded into it, 2026-10-25 17:23 EDT).
+    { weaponName: 'TEST GUN 9', category: 'AR', attachments: ['FMJ'], attachmentSlots: ['Perk'] },
 ];
 const seed = cat.seedItems(json, stored);
 const index = cat.buildIndex(seed);
@@ -29,9 +31,14 @@ check('the seed carries all 122 screenshot weapons, AK17 corrected to AK117, cat
 });
 
 check('stored builds add their weapons and attachments with the slot they recorded, and skip placeholders', () => {
-    assert.strictEqual(index.weapons.get('oden').source, 'stored');
+    assert.strictEqual(index.weapons.get('testgun9').source, 'stored');
     assert.strictEqual(index.attachments.get('fmj').slot, 'Perk');
     assert.ok(!index.attachments.has(cat.normKey('Coming soon — check back later!')));
+});
+
+check('the screenshot\'s Odin is ODEN, one weapon (Harkirat, 2026-10-25 16:18 EDT)', () => {
+    assert.strictEqual(index.weapons.get('oden').source, 'screenshot');
+    assert.ok(!index.weapons.has('odin'));
 });
 
 check('his slot rulings fill what no screenshot or build could', () => {

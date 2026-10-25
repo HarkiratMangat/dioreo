@@ -96,17 +96,15 @@ const CATEGORY_DEFS = [
         staticCommands: [cmd('/gunsmith')],
         detailCommands: [
             cmd('/gunsmith mp', {
-                description: "Find an MP weapon's loadout, or browse a whole class, Meta or every MP build",
+                description: "Find an MP weapon's loadout, or browse a whole class or the Meta",
                 options: [
-                    { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' },
-                    { name: 'build', required: false, desc: 'Specify build number' }
+                    { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' }
                 ]
             }),
             cmd('/gunsmith dmz', {
                 description: "Find a DMZ weapon's loadout, or browse Meta or every DMZ build",
                 options: [
-                    { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' },
-                    { name: 'build', required: false, desc: 'Specify build number' }
+                    { name: 'weapon', required: true, desc: 'Select a weapon, or an "All ... builds" row at the top to browse' }
                 ]
             })
         ]
@@ -250,7 +248,7 @@ async function getAllHelpCommandNames(perms = {}) {
 // Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below.
 function buildGunsmithBody(commands, client) {
     return commands.map(c => renderCommandBlock(c, client)).join('')
-        + `\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:\`AK117\`\n-# 🔸 **/gunsmith mp** weapon:\`Switchblade X9\` build:\`2\` visibility:\`Hidden\`\n-# 🔸 **/gunsmith mp** weapon:\`All SMG builds\`\n-# 🔸 **/gunsmith mp** weapon:\`All META builds\`\n-# 🔸 **/gunsmith dmz** weapon:\`Fennec\``;
+        + `\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:\`AK117\`\n-# 🔸 **/gunsmith mp** weapon:\`Switchblade X9\` visibility:\`Hidden\`\n-# 🔸 **/gunsmith mp** weapon:\`All SMG builds\`\n-# 🔸 **/gunsmith mp** weapon:\`All META builds\`\n-# 🔸 **/gunsmith dmz** weapon:\`Fennec\``;
 }
 
 // Returns PARTS, not one string (2026-10-17 23:51 EDT): the /draw calculator block is a Section whose button opens the calculator's full Help (Harkirat: "add a button in the /help draws page, as a section+accessory for the /draw calc section, to view the full help panel"). The button reuses the calculator's own `help` verb, so it opens the same private panel the calculator's Help button does; with no author on the state, anyone may press it.

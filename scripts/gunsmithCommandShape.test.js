@@ -20,17 +20,18 @@ for (const sub of json.options) {
 {
     // The browse rows that open each one's suggestions, in his order: META first, then the mode's whole set, then each MP class.
     const { browseRows } = require('../utils/loadoutScopes');
-    assert.deepStrictEqual(browseRows('MP', ['AR', 'SMG']).map(r => r.label), ['All META builds', 'All MP builds', 'All AR builds', 'All SMG builds']);
+    // "All MP builds" dropped (Harkirat, 2026-10-25 16:10 EDT).
+    assert.deepStrictEqual(browseRows('MP', ['AR', 'SMG']).map(r => r.label), ['All META builds', 'All AR builds', 'All SMG builds']);
     assert.deepStrictEqual(browseRows('DMZ').map(r => [r.label, r.value]), [['All META builds', 'DMZ.*.meta'], ['All DMZ builds', 'DMZ.*.std']]);
 }
 {
-    // The meta switch: under a meta browse only, the side on screen disabled and the other one live.
+    // No MP / DMZ meta switch any more (Harkirat, 2026-10-25 16:40 EDT: "let's just remove the MP and DMZ toggle"); the handler still answers panels posted before.
     const { buildLoadoutCard } = require('../utils/loadoutRender');
     const build = { weaponName: 'AK117', weaponKey: 'ak117', category: 'AR', mode: 'MP', attachments: ['a'], lastUpdated: new Date(0) };
     const ids = (token) => JSON.stringify(buildLoadoutCard([build], 0, { color: 0, idPrefix: 'mp', browse: { scopeToken: token, flatIndex: 0, flatTotal: 1, scopeLabel: 'x' } }).components);
-    assert.ok(ids('MP.*.meta').includes('"custom_id":"gsb~meta~DMZ.*.meta","disabled":false'), 'an MP meta panel offers DMZ');
-    assert.ok(ids('DMZ.*.meta').includes('"custom_id":"gsb~meta~MP.*.meta","disabled":false'), 'a DMZ meta panel offers MP');
-    assert.ok(!ids('MP.AR.std').includes('gsb~meta~'), 'no switch outside a meta browse');
+    for (const t of ['MP.*.meta', 'DMZ.*.meta', 'MP.AR.std']) assert.ok(!ids(t).includes('gsb~meta~'), `no meta switch on ${t}`);
+    // `build:` is gone from both subcommands (Harkirat, 2026-10-25 15:45 EDT).
+    for (const sub of json.options) assert.ok(!sub.options.some(o => o.name === 'build'), `${sub.name} has no build option`);
 }
 
 // The falsifier: a builder that mixes a top-level option MUST trip the first assertion.

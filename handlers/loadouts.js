@@ -24,6 +24,24 @@ function searchModal(mode) {
     };
 }
 
+// THE NO-BUILD PAGER (Harkirat, 2026-10-25 16:21-16:40 EDT, option 2): "N more with no build yet..." opens the class's first weapon with no build, and the arrows (`gsb~nb~<CLASS>~<n>`) step through the rest, each on the No build yet card. The list is the CODM catalogue's class less every weapon with a real build (utils/loadoutLookup.js missingWeapons).
+async function openNoBuild(interaction, category, index) {
+    await interaction.deferUpdate();
+    const { missingWeapons } = require('../utils/loadoutLookup');
+    const missing = await missingWeapons(category);
+    if (!missing.length) {
+        try { await interaction.followUp({ content: BOT_EMOJI.cross + ' Every weapon in that class has a build now.', ephemeral: true }); } catch (notifyError) { console.error('Failed to answer an empty no-build list (interaction likely expired):', notifyError); }
+        return;
+    }
+    const i = ((Number(index) || 0) % missing.length + missing.length) % missing.length;
+    const Loadout = require('../models/Loadout');
+    const { buildMissingWeaponCard } = require('../utils/loadoutRender');
+    const real = await Loadout.find({ category, mode: 'MP' }).lean();
+    const payload = buildMissingWeaponCard({ weaponName: missing[i].name, category, mode: 'MP', categoryBuilds: real, missing, nb: { index: i, total: missing.length } });
+    const { sendV2Payload } = require('../utils/sendV2Payload');
+    return await sendV2Payload(interaction, payload.components, { flags: payload.flags });
+}
+
 async function route(interaction) {
         // LOADOUT "BROWSE OTHER BUILDS" DROPDOWN (added 2026-07-12) -- lets a user jump straight to a different weapon's card without re-running the slash command. Selected value is just a bare `weaponKey` (see utils/loadoutRender.js's buildCategoryBrowseRow -- this used to also encode a build index for a specific build variant, simplified to weapon-only per Harkirat's follow-up request; always opens at build index 0). Mode is inferred from which dropdown fired ('mpbrowse' vs 'dmzbrowse'), matching the dmz/mp-prefixed pagination convention used everywhere else for these two card types.
         //
@@ -36,6 +54,7 @@ async function route(interaction) {
             const gunKey = interaction.values[0];
             // Search opens its box, which must be the FIRST response, so it comes before the defer below.
             if (gunKey === '~search~') return await interaction.showModal(searchModal(mode));
+            if (gunKey.startsWith('~nobuild~')) return await openNoBuild(interaction, gunKey.slice(9), 0);
 
             // Defer FIRST, before any DB round-trip -- matches the dmz/mp pagination handler further down ("PRO FIX: defer first"), for the same reason: an awaited query ahead of the ack risks missing Discord's ~3s interaction window, which surfaces to the user as a bare "This interaction failed" with no detail.
             await interaction.deferUpdate();
@@ -57,8 +76,9 @@ async function route(interaction) {
             const categoryBuilds = isDmz
                 ? await Loadout.find({ mode: 'DMZ' }).lean()
                 : await Loadout.find({ category: matchingBuilds[0].category, mode: 'MP' }).lean();
+            const missing = isDmz ? [] : await require('../utils/loadoutLookup').missingWeapons(matchingBuilds[0].category);
             const cardPayload = buildLoadoutCard(matchingBuilds, 0,
-                { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds });
+                { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds, missing });
             require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, matchingBuilds[0]?._id); // Your Stats: a build the clicker opened
 
             const { sendV2Payload } = require('../utils/sendV2Payload');
@@ -73,6 +93,7 @@ async function route(interaction) {
             const scope = parseScopeToken(scopeToken);
             const picked = interaction.values[0];
             if (picked === '~search~') return await interaction.showModal(searchModal(scope.mode === 'DMZ' ? 'DMZ' : 'MP'));
+            if (picked.startsWith('~nobuild~')) return await openNoBuild(interaction, picked.slice(9), 0);
             const builds = await resolveScopeBuilds(scope);
             if (!builds.length) return await renderScopeBrowse(interaction, scope, 0, { isUpdate: true });
             // `~class~<CATEGORY>` is the whole-mode browse's jump to another class: its first build, staying in the same browse so the arrows carry on across classes.
@@ -80,6 +101,12 @@ async function route(interaction) {
                 ? Math.max(0, builds.findIndex(b => b.category === picked.slice(7)))
                 : Math.max(0, builds.findIndex(b => b.weaponKey === picked));
             return await renderScopeBrowse(interaction, scope, target, { isUpdate: true });
+        }
+
+        // SWITCH CLASS (Harkirat's /gunsmith review, 2026-10-25 16:03 EDT): opens the picked class's browse from its first build, its pager stepping through the class.
+        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('gsb~class~')) {
+            const { renderScopeBrowse } = require('../commands/gunsmith');
+            return await renderScopeBrowse(interaction, { mode: 'MP', category: interaction.values[0], metaOnly: false }, 0, { isUpdate: true });
         }
 
         // The dropdown's search box, submitted. Deferred first (the lookup can run three queries), then the message the dropdown sat under becomes the found weapon's card, or the missing-weapon card; a name that finds no single weapon is answered privately and the card stays as it was.
@@ -104,6 +131,10 @@ async function route(interaction) {
         // /gunsmith browse-row SCOPE PAGING + COPY + META SWITCH + OPEN -- a BUTTON. `open` is the missing-weapon card's "Browse all <class> builds". `action` outside {next,prev,copy,copyatt,meta,open} guards the disabled `gsb~ind~` page-count label, which is not clickable but shares the `gsb~` prefix.
         if (interaction.isButton() && interaction.customId.startsWith('gsb~')) {
             const [, action, scopeToken, flatIndexRaw] = interaction.customId.split('~');
+            // The card's bottom-row Search... (2026-10-25 16:25 EDT): `gsb~search~<mode>` opens the same one-box search as the dropdown's option.
+            if (action === 'search') return await interaction.showModal(searchModal(scopeToken === 'DMZ' ? 'DMZ' : 'MP'));
+            // The no-build pager's arrows: `gsb~nb~<CLASS>~<n>`.
+            if (action === 'nb') return await openNoBuild(interaction, scopeToken, flatIndexRaw);
             const { parseScopeToken, resolveScopeBuilds, flatIndexToPosition } = require('../utils/loadoutScopes');
             const scope = parseScopeToken(scopeToken);
 
@@ -207,8 +238,9 @@ async function route(interaction) {
             const categoryBuilds = isDmz
                 ? await Loadout.find({ mode: 'DMZ' }).lean()
                 : await Loadout.find({ category: matchingBuilds[0].category, mode: 'MP' }).lean();
+            const missing = isDmz ? [] : await require('../utils/loadoutLookup').missingWeapons(matchingBuilds[0].category);
             const cardPayload = buildLoadoutCard(matchingBuilds, newIndex,
-                { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds });
+                { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds, missing });
             require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, matchingBuilds[newIndex]?._id); // Your Stats: a build the clicker opened
 
             const { sendV2Payload } = require('../utils/sendV2Payload');

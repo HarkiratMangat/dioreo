@@ -38,13 +38,25 @@ async function resolveWeapon(mode, rawQuery) {
     return { none: true };
 }
 
+// A class's weapons in the CODM catalogue with no real build (Harkirat, 2026-10-25 16:12-16:21 EDT: "implement the weapons into the command that currently dont have builds"), A-Z, for the weapon dropdown's "N more with no build yet..." and the no-build pager. Matched by the catalogue's own key (utils/catalogue.js normKey) on the weapon NAME: a weaponKey is spaced differently and missed 8 Assault Rifles that have builds.
+async function missingWeapons(category) {
+    if (!category) return [];
+    const { normKey } = require('./catalogue');
+    const CatalogueItem = require('../models/CatalogueItem');
+    const built = new Set((await Loadout.find({ mode: 'MP', category }).select('weaponName attachments').lean()).filter(b => !isPlaceholderBuild(b)).map(b => normKey(b.weaponName)));
+    return (await CatalogueItem.find({ kind: 'weapon', category, dmzOnly: { $ne: true } }).lean())
+        .filter(w => !built.has(w.key || normKey(w.name)))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(w => ({ name: w.name.toUpperCase(), key: w.key || normKey(w.name), category }));
+}
+
 // Draws what resolveWeapon found onto the interaction's message, which the caller has already deferred (a reply for the slash command, an update for the card's Search).
 async function renderResolved(interaction, mode, found, { isEphemeral, buildIndex = 0 }) {
     const idPrefix = mode === 'DMZ' ? 'dmz' : 'mp';
     if (found.missing) {
         const { weaponName, category } = found.missing;
         const categoryBuilds = mode === 'DMZ' ? await Loadout.find({ mode: 'DMZ' }).lean() : await Loadout.find({ category, mode: 'MP' }).lean();
-        const payload = buildMissingWeaponCard({ weaponName, category, mode, isEphemeral, categoryBuilds });
+        const payload = buildMissingWeaponCard({ weaponName, category, mode, isEphemeral, categoryBuilds, missing: mode === 'MP' ? await missingWeapons(category) : [] });
         return await sendV2Payload(interaction, payload.components, { flags: payload.flags });
     }
     const { builds } = found;
@@ -53,7 +65,8 @@ async function renderResolved(interaction, mode, found, { isEphemeral, buildInde
     const categoryBuilds = mode === 'DMZ'
         ? await Loadout.find({ mode: 'DMZ' }).lean()
         : await Loadout.find({ category: builds[0].category, mode: 'MP' }).lean();
-    const cardPayload = buildLoadoutCard(builds, index, { color: getMpCategoryAccent(builds[0].category), idPrefix, isEphemeral, categoryBuilds });
+    const missing = mode === 'MP' ? await missingWeapons(builds[0].category) : [];
+    const cardPayload = buildLoadoutCard(builds, index, { color: getMpCategoryAccent(builds[0].category), idPrefix, isEphemeral, categoryBuilds, missing });
     require('./userStats').noteBuildOpenedSafely(interaction.user?.id, builds[index]?._id); // Your Stats: a build this user opened
     return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
 }
@@ -92,4 +105,4 @@ async function lookupAndRenderWeapon(interaction, { mode, rawQuery, requestedBui
     await renderResolved(interaction, mode, found, { isEphemeral, buildIndex: requestedBuild ? requestedBuild - 1 : 0 });
 }
 
-module.exports = { lookupAndRenderWeapon, resolveWeapon, renderResolved, notFoundText };
+module.exports = { lookupAndRenderWeapon, resolveWeapon, renderResolved, notFoundText, missingWeapons };
