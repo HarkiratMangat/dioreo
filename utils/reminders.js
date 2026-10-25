@@ -235,8 +235,9 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     const warning = sub?.pausedAt
         ? `-# ${emojis.warn} Dioreo couldn't deliver your reminders for several days, so they were turned off. Turn on DMs from Dioreo, then set your reminders again.`
         : sub?.failingSince ? `-# ${emojis.warn} Your last reminder couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.` : null;
-    const header = { type: 9, components: [block([`## ${emojis.remind} Reminders`, '-# Dioreo only sends one DM a day, a minute after the daily update, with only what you pick.', ...(warning ? [warning] : [])].join('\n'))],
-        accessory: { type: 2, style: 2, label: 'Send a test', custom_id: `remind_test:${ownerId}` } };
+    const headerText = block([`## ${emojis.remind} Reminders`, '-# Dioreo only sends one DM a day, a minute after the daily update, with only what you pick.', ...(warning ? [warning] : [])].join('\n'));
+    // No Send a test while Stop all asks, which keeps room for both dropdowns (Harkirat, 2026-10-25 01:07 EDT: "i agree").
+    const header = confirmStop ? headerText : { type: 9, components: [headerText], accessory: { type: 2, style: 2, label: 'Send a test', custom_id: `remind_test:${ownerId}` } };
 
     const groups = [];
     const toggle = (c, label, emoji, on) => ({ type: 2, style: on ? 3 : 2, label, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emoji) });
@@ -265,7 +266,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     };
     const relRow = select('release', releases, `Pick from ${Math.min(releases.length, MAX_OPTIONS)} upcoming…`, e => `${e.kind} · releases ${optionTime(e.startMs, timeZone)}`);
     const lvRow = select('leaving', leaving, `Pick from ${Math.min(leaving.length, MAX_OPTIONS)} live…`, e => `${e.kind} · ends ${optionTime(e.endMs, timeZone)}`);
-    const showPicks = !confirmStop && !zoneOptions; // the dropdowns step aside while Stop all asks or the timezone picker is open, keeping every state within 40 components
+    const showPicks = !zoneOptions; // the dropdowns step aside while the timezone picker is open, keeping every state within 40 components
 
     const foot = [];
     let zonePicker = [];
@@ -291,8 +292,9 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         ...groups,
         // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09–19:36 EDT: an "— OR —" line, capital OR).
         block('-# **— OR —**\n\n**Pick only what you want**\n-# Select specific draws, events or playlists, instead of a whole group'),
-        ...(relRow && showPicks ? [block('-# **When something releases...**'), relRow] : []),
-        ...(lvRow && showPicks ? [block('-# **When something leaves soon...**'), lvRow] : []),
+        // The green and yellow dots of the Going live and Leaving soon rows (Harkirat, 2026-10-25 01:07 EDT).
+        ...(relRow && showPicks ? [block(`-# ${emojis.greenDotGlow} **When something releases...**`), relRow] : []),
+        ...(lvRow && showPicks ? [block(`-# ${emojis.yellowDotGlow} **When something leaves soon...**`), lvRow] : []),
         ...(zonePicker.length ? [{ type: 14, divider: true, spacing: 1 }, ...zonePicker] : []),
         ...(confirmStop ? [{ type: 14, divider: true, spacing: 1 }, block(`-# ${emojis.warn} **Stop All clears every reminder you've set!** You'll have to set them up again.`)] : []),
         ...(foot.length ? [{ type: 1, components: foot }] : []),
