@@ -273,7 +273,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         ...(relRow ? [relRow] : []),
         ...(lvRow ? [lvRow] : []),
         ...(zonePicker.length ? [{ type: 14, divider: true, spacing: 1 }, ...zonePicker] : []),
-        ...(confirmStop ? [{ type: 14, divider: true, spacing: 1 }, block(`### ${emojis.warn} Stop all your reminders? This deletes them and cannot be undone.`)] : []),
+        ...(confirmStop ? [{ type: 14, divider: true, spacing: 1 }, block(`### ${emojis.warn} This isn't a pause\n-# Stop all clears every reminder you've set. To get them back, you'll need to set them up again.`)] : []),
         ...(foot.length ? [{ type: 14, divider: false, spacing: 1 }, { type: 1, components: foot }] : []),
     ] }];
 }
