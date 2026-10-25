@@ -19,7 +19,12 @@ const CATEGORIES = [
     { key: 'returningDraws', label: 'Returning draws', short: 'Returning draws', group: 'releases', emoji: 'returningDraws', hint: 'every returning draw, when it releases' },
     { key: 'events', label: 'Events', short: 'Events', group: 'releases', emoji: 'events', hint: 'every event, when it starts' },
     { key: 'playlists', label: 'Playlists & modes', short: 'Playlists & modes', group: 'releases', emoji: 'modes', hint: 'every playlist and mode, when it starts' },
-    { key: 'leaving', label: 'Leaving soon', short: 'Leaving soon', group: 'releases', emoji: 'yellowDotGlow', hint: 'everything, 2 days and 1 day before it leaves' },
+    // Leaving soon by kind, picked in its own dropdown under the Draws, events & modes row (Harkirat, 2026-10-25 00:23 EDT: "let's go option C", after asking how someone would hear only when new draws, or all draws, are leaving). `leaving` is the older all-kinds key: records that hold it read as every kind, and the dropdown rewrites it as the four on the first change.
+    { key: 'leaving', label: 'Leaving soon (everything)', short: 'Leaving soon', group: 'leavingAll', emoji: 'yellowDotGlow', hint: 'everything, 2 days and 1 day before it leaves' },
+    { key: 'leavingNewDraws', label: 'New draws leaving', short: 'All new draws', group: 'leaving', kind: 'newDraws', emoji: 'newDraws', hint: 'every new draw, 2 days and 1 day before it leaves' },
+    { key: 'leavingReturningDraws', label: 'Returning draws leaving', short: 'All returning draws', group: 'leaving', kind: 'returningDraws', emoji: 'returningDraws', hint: 'every returning draw, 2 days and 1 day before it leaves' },
+    { key: 'leavingEvents', label: 'Events leaving', short: 'All events', group: 'leaving', kind: 'events', emoji: 'events', hint: 'every event, 2 days and 1 day before it ends' },
+    { key: 'leavingPlaylists', label: 'Playlists & modes leaving', short: 'All playlists & modes', group: 'leaving', kind: 'playlists', emoji: 'modes', hint: 'every playlist and mode, 2 days and 1 day before it ends' },
     { key: 'newSeason', label: 'New season', short: 'New season', group: 'season', emoji: 'greenDotGlow', hint: 'the day a new season starts' },
     { key: 'patchNotes', label: 'Patch notes', short: 'Patch notes', group: 'updates', emoji: 'patchNotes', hint: 'when new patch notes are posted' },
     { key: 'digest', label: 'Daily digest', short: 'Daily /today', group: 'updates', emoji: 'calendar', hint: 'the whole /today brief' },
@@ -28,12 +33,21 @@ const CATEGORIES = [
     { key: 'dmzEnding', label: 'DMZ ending', short: 'DMZ ends', group: 'season', emoji: 'dmz', hint: '3 days before the DMZ season ends, and its last day' },
 ];
 // The panel's three groups (his ask 2026-10-23 21:58 EDT, "improve the design and layout/structure"), each a small label over one row of toggles. Regrouped 2026-10-24 18:58 EDT (Harkirat: "Better organize this section? The heads up section kind of feels mixed together"): what goes live or leaves sits together, everything about the season sits together, and the two news DMs close the list.
-const PANEL_GROUPS = [['releases', 'Draws, events & modes', 'when one goes live, or before it leaves'], ['season', 'Season', 'when one starts, and 3 days before each part ends'], ['updates', 'Updates', 'new patch notes, or the whole /today brief each day']];
+const PANEL_GROUPS = [['releases', 'Draws, events & modes', 'when one goes live'], ['season', 'Season', 'when one starts, and 3 days before each part ends'], ['updates', 'Updates', 'new patch notes, or the whole /today brief each day']];
 const CATEGORY_KEYS = new Set(CATEGORIES.map(c => c.key));
 // Which category covers an entry's release, by /today's own entry kinds (commands/today.js collectEntries).
 const releaseCategory = e => (e.type === 'event' ? 'events' : e.type === 'playlist' ? 'playlists' : e.kind === 'Returning draw' ? 'returningDraws' : 'newDraws');
 // The group toggle that already covers an entry for one kind of follow, or null: Events on covers every event's release, Leaving soon covers every leaving follow (2026-10-24 23:15 EDT, Harkirat: "I enabled the release reminder for all events… picking this does nothing").
-const coveringCategory = (cats, kind, e) => { const key = kind === 'release' ? releaseCategory(e) : 'leaving'; return cats.has(key) ? CATEGORIES.find(c => c.key === key) : null; };
+const LEAVING_KINDS = () => CATEGORIES.filter(c => c.group === 'leaving');
+// The leaving kinds a record has on, the older all-kinds `leaving` key read as all four.
+const leavingKeys = cats => new Set(cats.has('leaving') ? LEAVING_KINDS().map(c => c.key) : LEAVING_KINDS().filter(c => cats.has(c.key)).map(c => c.key));
+const leavingKeyFor = e => LEAVING_KINDS().find(c => c.kind === releaseCategory(e))?.key;
+const coveringCategory = (cats, kind, e) => {
+    if (kind === 'release') { const key = releaseCategory(e); return cats.has(key) ? CATEGORIES.find(c => c.key === key) : null; }
+    if (cats.has('leaving')) return CATEGORIES.find(c => c.key === 'leaving');
+    const key = leavingKeyFor(e);
+    return key && cats.has(key) ? CATEGORIES.find(c => c.key === key) : null;
+};
 const SEASON_ENDS = [['bpEnding', 'bpEnd', 'bpTitle', 'Battle Pass', 'bp1'], ['rankEnding', 'rankEnd', 'rankTitle', 'Ranked Series', 'rank'], ['dmzEnding', 'dmzEnd', 'dmzTitle', 'DMZ Season', 'dmz']];
 
 const dayKey = ms => new Date(ms).toISOString().slice(0, 10);
@@ -79,7 +93,7 @@ function personalise(sub, due) {
     const follows = sub.follows || [];
     const followed = (kind, title) => follows.some(f => f.kind === kind && sameTitle(f.title, title));
     const released = due.released.filter(e => cats.has(e.category) || followed('release', e.title)).map(e => ({ ...e, followed: followed('release', e.title) }));
-    const leavingPick = e => cats.has('leaving') || followed('leaving', e.title);
+    const leavingPick = e => !!coveringCategory(cats, 'leaving', e) || followed('leaving', e.title);
     const lastChance = due.lastChance.filter(leavingPick).map(e => ({ ...e, followed: followed('leaving', e.title) }));
     const leavingSoon = due.leavingSoon.filter(leavingPick).map(e => ({ ...e, followed: followed('leaving', e.title) }));
     const newSeason = cats.has('newSeason') ? due.newSeason : null;
@@ -233,6 +247,15 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     for (const [key, title, hint] of PANEL_GROUPS) {
         groups.push(block(`-# **${title}** · ${hint}`));
         groups.push({ type: 1, components: CATEGORIES.filter(c => c.group === key).map(c => ({ type: 2, style: cats.has(c.key) ? 3 : 2, label: c.short, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emojis[c.emoji]) })) });
+        if (key === 'releases') {
+            // Option C (Harkirat, 2026-10-25 00:23 EDT: "let's go option C", after asking how someone would hear only when new draws, or all draws, are leaving): a line saying which kinds remind before they leave, and a dropdown that toggles them like the follow dropdowns (nothing pre-picked, a picked kind marked in its row).
+            const on = leavingKeys(cats);
+            const onNames = LEAVING_KINDS().filter(c => on.has(c.key)).map(c => c.short.replace(/^All /, ''));
+            const names = onNames.length === LEAVING_KINDS().length ? 'everything' : onNames.length ? onNames.map(n => n[0].toUpperCase() + n.slice(1)).join(', ') : 'off';
+            groups.push(block(`-# ${emojis.yellowDotGlow} **Leaving soon:** ${names} · 2 days and 1 day before ${onNames.length === 1 ? 'it ends' : 'they end'}`));
+            groups.push({ type: 1, components: [{ type: 3, custom_id: `remind_lvkinds:${ownerId}`, placeholder: 'Remind me before these leave…', min_values: 0, max_values: LEAVING_KINDS().length,
+                options: [...LEAVING_KINDS()].sort((x, y) => on.has(x.key) - on.has(y.key)).map(c => ({ label: c.short, value: c.key, description: on.has(c.key) ? 'On your list · select again to remove' : c.hint.replace(/^every/, 'Every'), emoji: parseEmoji(on.has(c.key) ? bell() : emojis[c.emoji]) })) }] });
+        }
     }
 
     const when = f => {
@@ -478,7 +501,7 @@ function withBell(textComponent) {
 module.exports = {
     CATEGORIES, CATEGORY_KEYS, PANEL_GROUPS, MAX_OPTIONS,
     computeDue, personalise, buildReminderDM, buildTestDM, markFollowed,
-    buildTimezoneNote, followable, buildPanel, mergeFollows, toggleFollows, coveringCategory, resolveSetValue, autocompleteChoices,
+    buildTimezoneNote, leavingKeys, followable, buildPanel, mergeFollows, toggleFollows, coveringCategory, resolveSetValue, autocompleteChoices,
     failureUpdate, isRefusal, msUntilNextRun, runDailyReminders,
     pendingNotice, loadPendingNotices, maybeShowReminderNote, withBell,
 };

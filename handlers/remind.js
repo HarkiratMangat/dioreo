@@ -109,6 +109,20 @@ async function route(interaction) {
         return await rerender(interaction, sub);
     }
 
+    // Leaving soon by kind (Harkirat, 2026-10-25 00:23 EDT: "let's go option C", after asking how someone would hear only when new draws, or all draws, are leaving): each picked kind toggles; the older all-kinds key is rewritten as the four kinds first.
+    if (interaction.isStringSelectMenu() && interaction.customId.startsWith('remind_lvkinds:')) {
+        await interaction.deferUpdate();
+        const ReminderSubscription = require('../models/ReminderSubscription');
+        const current = await ReminderSubscription.findOne({ discordId: owner }).lean();
+        const cats = new Set(current?.categories || []);
+        const on = R.leavingKeys(cats);
+        for (const v of interaction.values) on.has(v) ? on.delete(v) : on.add(v);
+        const kindKeys = new Set(R.CATEGORIES.filter(c => c.group === 'leaving').map(c => c.key));
+        const categories = [...[...cats].filter(k => k !== 'leaving' && !kindKeys.has(k)), ...on];
+        const sub = await saveSub(owner, { $set: { categories } });
+        return await rerender(interaction, sub);
+    }
+
     if (interaction.isStringSelectMenu() && (interaction.customId.startsWith('remind_rel:') || interaction.customId.startsWith('remind_lv:'))) {
         await interaction.deferUpdate();
         const kind = interaction.customId.startsWith('remind_rel:') ? 'release' : 'leaving';
