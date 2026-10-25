@@ -12,15 +12,16 @@ const emojis = require('./emojiMap');
 // Fixed page size (2026-07-14, Harkirat's clarification) -- NOT "everything on one page": avatar/ banner's 8 colors paginate 4-per-page (2 pages), while the naturally-smaller sources (display name's 3, nameplate/decoration's 4) fit within one page and never show a pager at all -- buildPaginationRow already returns null (renders nothing) when totalChunks <= 1, so a single fixed page size handles both cases correctly without any per-source special-casing.
 const ENTRIES_PER_PAGE = 4;
 
-// heading: the possessive pattern ("{@user}'s Avatar Colors") -- reworded 2026-08-15 from the older "Colors From Your Avatar {@user}" phrasing, which read oddly once a mention followed "Your" directly (whose profile is it, "your" or the mentioned user's?). label: the page-switch button text -- "Deco" not "Decoration" per Harkirat's request.
+// heading: the possessive pattern ("{@user}'s Avatar Colors") -- reworded 2026-08-15 from the older "Colors From Your Avatar {@user}" phrasing, which read oddly once a mention followed "Your" directly (whose profile is it, "your" or the mentioned user's?). label: the page-switch button text -- "Deco" not "Decoration" per Harkirat's request. The name page reads "Username" on its button and in its heading since 2026-10-25 12:37 EDT (Harkirat: "reword name to \"username\"", and "yup" to the heading at 12:41).
 const SOURCE_META = {
     avatar: { label: 'Avatar', heading: 'Avatar' },
     banner: { label: 'Banner', heading: 'Banner' },
-    name: { label: 'Name', heading: 'Display Name' },
+    name: { label: 'Username', heading: 'Username' },
     nameplate: { label: 'Nameplate', heading: 'Nameplate' },
     decoration: { label: 'Deco', heading: 'Decoration' }
 };
-const SOURCE_ORDER = ['avatar', 'banner', 'name', 'nameplate', 'decoration'];
+// Alphabetical by button label since 2026-10-25 12:38 EDT (Harkirat: "reorganize to avatar, banner, deco, nameplate, username so it's alphabetical").
+const SOURCE_ORDER = ['avatar', 'banner', 'decoration', 'nameplate', 'name'];
 
 function formatHex(hex) {
     return `#${hex.toString(16).padStart(6, '0').toUpperCase()}`;
@@ -280,7 +281,8 @@ async function buildEntryRows(entries) {
         files.push({ name: filename, data: await renderSwatchImage(hex) });
         rows.push({
             type: 9,
-            components: [{ type: 10, content: `**${name || getColorName(hex)}**\nHex: \`${formatHex(hex)}\`\n> ${label}` }],
+            // Name and hex on one line, no "Hex:" word: the code chip already reads as a hex (Harkirat's pick D, 2026-10-25 12:25 EDT).
+            components: [{ type: 10, content: `**${name || getColorName(hex)}** · \`${formatHex(hex)}\`\n> ${label}` }],
             accessory: { type: 11, media: { url: `attachment://${filename}` } }
         });
         i++;
@@ -329,8 +331,8 @@ function getAvailableSources(data) {
     });
 }
 
-// `data` is whatever utils/colorPalette.js's getPalettePanelData() returned. Banner/decoration/ nameplate are only present as KEYS at all when the user actually has that source equipped (colorPalette.js only sets them inside an `if (info.X)` guard) -- so key PRESENCE means "has it", while the palette VALUE can still be `null` if extraction genuinely failed on a source they do have. These two states stay distinguishable: "doesn't have a banner" (hide the button) is different from "has a banner, couldn't extract colors from it" (keep the button, show a failure message). `variant` is 'global' | 'server' and rides in every custom_id as a single letter (g/s) so a page/subpage/refresh click stays in whichever view the user is looking at. It is a THIRD pipe segment rather than another `_` token on purpose: the source/subpage parsers already split on `_`, so adding one there would have silently changed how existing ids parse. `readOnly` (added 2026-10-19 12:09 EDT) is the View Colors right-click (commands/viewColors.js): its own ids for the page and pager buttons (`makePageId`, `makeSubpageId`, so a click always redraws the person right-clicked), no hint block and no Refresh / server-switch buttons, an `extraHint` above the page row, the open page green, and an `accentColor`. /colors passes none of these and renders as before.
-async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbnailUrl, subpage = 0, variant = 'global', readOnly = false, makePageId = null, makeSubpageId = null, accentColor = null, extraHint = null }) {
+// `data` is whatever utils/colorPalette.js's getPalettePanelData() returned. Banner/decoration/ nameplate are only present as KEYS at all when the user actually has that source equipped (colorPalette.js only sets them inside an `if (info.X)` guard) -- so key PRESENCE means "has it", while the palette VALUE can still be `null` if extraction genuinely failed on a source they do have. These two states stay distinguishable: "doesn't have a banner" (hide the button) is different from "has a banner, couldn't extract colors from it" (keep the button, show a failure message). `variant` is 'global' | 'server' and rides in every custom_id as a single letter (g/s) so a page/subpage/refresh click stays in whichever view the user is looking at. It is a THIRD pipe segment rather than another `_` token on purpose: the source/subpage parsers already split on `_`, so adding one there would have silently changed how existing ids parse. `readOnly` (added 2026-10-19 12:09 EDT) is the View Colors right-click (commands/viewColors.js): its own ids for the page, pager and Main/Server Profile buttons (`makePageId`, `makeSubpageId`, `makeVariantId`, so a click always redraws the person right-clicked), no Refresh hint and no footer row (its image link stays at the top), an `extraHint` above the page row, the open page green, and an `accentColor`. /colors passes none of these and renders as before.
+async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbnailUrl, subpage = 0, variant = 'global', readOnly = false, makePageId = null, makeSubpageId = null, makeVariantId = null, accentColor = null, extraHint = null }) {
     const v = variant === 'server' ? 's' : 'g';
     const availableSources = getAvailableSources(data);
     const effectiveSource = availableSources.includes(source) ? source : 'avatar';
@@ -382,7 +384,8 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
 
     // Header: Avatar and Deco keep a Section+thumbnail (their own image, small); Banner/Nameplate already showed their real media above so the heading here is plain text with no thumbnail; Name has no image of its own besides the generated banner above, also plain text. Source label (2026-08-09, Harkirat's request after live-testing per-server colors): colors now resolve CONTEXTUALLY (server profile where the user has one, global otherwise) with no stored preference, so the panel itself has to say which one it's showing -- otherwise "it auto selected my server colors" is invisible until you go looking for the switch button.
     const sourceLabel = variant === 'server' ? 'Server Profile' : 'Main Profile';
-    const headingContent = `## <@${targetUserId}>'s ${meta.heading} Colors\n> Extracted from: **\`${sourceLabel}\`**`;
+    // Code font only on what a reader copies, the hex; labels are plain bold (Harkirat's pick C, 2026-10-25 12:25 EDT).
+    const headingContent = `## <@${targetUserId}>'s ${meta.heading} Colors\n> Extracted from: **${sourceLabel}**`;
     // Deco's thumbnail prefers the cached animated WebP (resolved upstream in colorPalette.js via utils/decorationWebpCache.js's lossless pipeline, real alpha, zero dithering) over the raw APNG -- WebP autoplays inline in a Section thumbnail the way Discord never lets APNG/webm do (see .claude/rules/accent-and-colors.md's "Deco" layout note for the manual-tap limitation this replaces). Falls back to the real decoration url exactly as before whenever the WebP isn't ready yet (render failure, dev-bot write block, or genuinely still rendering for the first time).
     //
     // Prefers `data.decorationWebp.discordCdnUrl` (Discord's own CDN, never proxied, set once by utils/decorationWebpCache.js's storage-channel upload) when present -- a plain, fast, cacheable URL reference, no per-render work. Only falls back to fetching+re-attaching the Cloudinary bytes directly when that isn't available yet, same reasoning as the Nameplate branch above (a plain URL reference to the Cloudinary host gets proxied+re-encoded to lossy by Discord, confirmed live 2026-08-10 11:38 EDT). Only the decoration case needs any of this; `avatarThumbnailUrl` is Discord's own avatar CDN, not an external reference, so it's never subject to this proxy at all.
@@ -410,20 +413,22 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     } else {
         containerComponents.push({ type: 10, content: headingContent });
     }
-    // The page's own image at full size, as a link button beside the copy hint (2026-10-21 17:23 EDT, Harkirat: "remove the avatar/color button from the outside footer. instead add a button in the top section saying \"avatar\" ... likewise for banner/nameplate/deco. no button for name color"; option A, 17:27 EDT). The avatar and deco headings hold their own thumbnail in their one accessory slot, so the button rides on the hint line. Nameplate and deco open our rendered lossless WebP (see below).
+    // The page's own image at full size, as a link button (2026-10-21 17:23 EDT, Harkirat: "add a button in the top section saying \"avatar\" ... likewise for banner/nameplate/deco. no button for name color"). Where it sits depends on the panel since 2026-10-25 12:25 EDT: on /colors it moved back to the footer row, left of Refresh Colors (Harkirat: "move the \"avatar\" \"banner\" etc button to the footer, left of the \"refresh colors\" button"); the View Colors right-click has no footer, so there it stays beside the copy hint at the top (12:41 EDT: "since we don't do a \"refresh colors\" button for the right click command, leave the \"avatar\" banner\" etc buttons at the top"). A Section carries ONE accessory, so on the right-click it rides on the hint line, never on the avatar/deco heading, whose slot holds the thumbnail. Nameplate and deco open our rendered lossless WebP (see below).
     const fullImageUrl = effectiveSource === 'avatar' ? data.avatarFullUrl
         : effectiveSource === 'banner' ? data.bannerFullUrl
         // Nameplate and deco open the lossless animated WebP we render (2026-10-21 17:40 EDT, Harkirat: "the nameplate/deco download should open the lossless webp that we render, right?"), the Cloudinary copy first: a Discord attachment link carries a signature that expires (the stored dev nameplate link answered 404 on 2026-10-21), and a link button opened in a browser is never refreshed the way an image in a message is. Discord's original asset only while no render exists yet.
         : effectiveSource === 'nameplate' ? (data.nameplateWebp?.cloudinaryUrl || data.nameplateWebp?.discordCdnUrl || (data.nameplateUrl ? data.nameplateUrl.replace(/static\.png$/, 'asset.webm') : null))
         : effectiveSource === 'decoration' ? (data.decorationWebp?.cloudinaryUrl || data.decorationWebp?.discordCdnUrl || (data.decorationUrl ? `${data.decorationUrl}${data.decorationUrl.includes('?') ? '&' : '?'}passthrough=true` : null))
         : null;
-    // Copy hint (moved here 2026-08-09, top of the main palette section it actually describes -- used to be a second line folded into the heading above, cosmetic-only move). ⚠️ DOWNLOAD AVATAR/BANNER WAS BRIEFLY MOVED ONTO THIS LINE as a Section button accessory (2026-08-12 22:15 EDT) and REVERTED at 23:41 the same evening on Harkirat's call after seeing it rendered. Kept as a note rather than deleted because the constraint found on the way is real and someone will propose the move again: a Section carries exactly ONE accessory, a thumbnail OR a button, so the button can never join the avatar/decoration heading — that slot holds the source's own thumbnail. The buttons live in the bottom action row instead; see their block further down.
+    const imageLink = fullImageUrl ? { type: 2, style: 5, label: SOURCE_META[effectiveSource].label, url: fullImageUrl } : null;
+    // The copy hint, describing the swatches. On /colors it sits UNDER the divider, at the top of the swatch list (Harkirat, 2026-10-25 12:25 EDT: "move \"Tap on the #HEX color code to copy it.\" below the divider"); on the right-click it keeps its image button and sits above the divider, as before (2026-10-21 17:27 EDT).
     const copyHint = { type: 10, content: "-# Tap on the `#HEX` color code to copy it." };
-    containerComponents.push(fullImageUrl
-        ? { type: 9, components: [copyHint], accessory: { type: 2, style: 5, label: SOURCE_META[effectiveSource].label, url: fullImageUrl } }
-        : copyHint);
-    // The divider sits BELOW the copy hint and its button since 2026-10-21 17:27 EDT (Harkirat: "what if we move the divider below the \"tap on the ...\" line + button?"), so the hint reads as part of the heading block. "Large" spacing, the convention every other command here uses.
-    containerComponents.push({ type: 14, spacing: 2, divider: true });
+    if (readOnly) {
+        containerComponents.push(imageLink ? { type: 9, components: [copyHint], accessory: imageLink } : copyHint);
+        containerComponents.push({ type: 14, spacing: 2, divider: true });
+    } else {
+        containerComponents.push({ type: 14, spacing: 2, divider: true }, copyHint);
+    }
 
     // Labels are computed against the FULL entry set BEFORE paginating (buildSwatchEntries already does this) -- assigning "First Impression"/"Catches the Eye"/etc per-PAGE instead would produce inconsistent results depending on which page a given color happened to land on (e.g. the real eye-catching accent could end up on page 2, leaving page 1 with no "Catches the Eye" at all).
     const allEntries = effectiveSource === 'name'
@@ -453,9 +458,23 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     if (subpageRow) containerComponents.push({ type: 14, spacing: 1, divider: false }, subpageRow);
 
     containerComponents.push({ type: 14, spacing: 2, divider: true });
-    // Hint line (2026-07-14, Harkirat's request) above the source-switch row -- short, tells a user who's never clicked the other page buttons that they exist, plus a nudge toward Refresh Colors for the (real, and otherwise easy to miss) case where they've since updated their avatar/ banner/etc and the panel is still showing the old cached extraction. One line since 2026-10-21 17:21 EDT (Harkirat: "remove the \"tap a button below...\" hint. just leave the \"Updated your profile?\" hint (but remove the Tip and brackets)").
-    if (!readOnly) containerComponents.push({ type: 10, content: "-# Updated your profile? **`Refresh Colors`**" });
+    // Hint line (2026-07-14, Harkirat's request) above the source-switch row: a nudge toward Refresh Colors for the (real, and otherwise easy to miss) case where they've since updated their avatar/ banner/etc and the panel is still showing the old cached extraction. One line since 2026-10-21 17:21 EDT (Harkirat: "remove the \"tap a button below...\" hint. just leave the \"Updated your profile?\" hint (but remove the Tip and brackets)"). Plain bold, not code font, since 2026-10-25 12:25 EDT (his pick C).
+    if (!readOnly) containerComponents.push({ type: 10, content: "-# Updated your profile? **Refresh Colors**" });
     if (extraHint) containerComponents.push({ type: 10, content: extraHint });
+
+    // MAIN / SERVER PROFILE (2026-10-25 12:30-12:41 EDT, Harkirat): both buttons, shown only when the person has a server profile in THIS guild (with no override the two views are identical, so a switch would visibly do nothing; data.hasServerProfile is read from the interaction payload, no network call). The open one is green and disabled with no emoji, "Main Profile" / "Server Profile"; the other is grey with the showColors emoji, "View Main Profile" / "View Server Profile" ("if currently on profile colors, it's green-disabled, no emoji. \"server colors\" will be grey, and show the emoji. then vise versa"). They sit right above the page tabs, both being "what am I looking at" selectors with the same green-disabled pattern (his "your suggestion is fine", 12:37). On the right-click too (12:41: "also include the main profile/server profile toggles"), through `makeVariantId`. Replaces the single grey "Show Main Colors" / "Show Server Colors" switch that sat in the footer from 2026-08-09.
+    // The right-click draws them only when it hands over its own ids: a /colors id there would be locked to the person right-clicked and refuse everyone else.
+    if (data.hasServerProfile && (!readOnly || makeVariantId)) {
+        const goingTo = v === 's' ? 'g' : 's';
+        const button = (flag) => flag === v
+            ? { type: 2, style: 3, label: flag === 's' ? 'Server Profile' : 'Main Profile', custom_id: readOnly ? 'vc_viewing' : `colors_viewing_${v}|${targetUserId}`, disabled: true }
+            : {
+                type: 2, style: 2, label: flag === 's' ? 'View Server Profile' : 'View Main Profile',
+                custom_id: readOnly && makeVariantId ? makeVariantId(goingTo, effectiveSource) : `colors_variant_${goingTo}_${effectiveSource}_${effectiveSubpage}|${targetUserId}`,
+                emoji: emojis.parseEmoji(emojis.showColors)
+            };
+        containerComponents.push({ type: 1, components: [button('g'), button('s')] });
+    }
     containerComponents.push({
         type: 1,
         components: availableSources.map(key => ({
@@ -471,26 +490,14 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // No accent_color at all on /colors (Harkirat's explicit request) -- omitting the field entirely gives Discord's default "no accent" look, unlike every other command's container which always sets one. The View Colors right-click passes one: the avatar's "First Impression" (his ask, 2026-10-19 12:07 EDT).
     const containerPayload = { type: 17, components: containerComponents, ...(accentColor != null ? { accent_color: accentColor } : {}) };
 
-    // "Refresh Colors" -- moved OUTSIDE the container as its own top-level sibling row (Harkirat: "move the refresh button outside of the embed container"), same convention the global nav row and Share Publicly button already use elsewhere in this bot (a new top-level row, never packed into the container). Style 1 (blurple) + the eyedropper emoji to match the "View Colors" button itself. Encodes the current subpage so a refresh doesn't bounce back to page 1. Forces a real re-extraction, bypassing the cache -- see handlers/colors.js's colors_refresh_ handler (10s cooldown + change-detection message) and utils/colorPalette.js's forceRefresh param. Every other button/select re-render in this bot deliberately does NOT re-run extraction (that's the whole point of the cache), so this is a specific, deliberate exception for exactly this one explicit user action.
-    const refreshRowComponents = readOnly ? [] : [{
-        type: 2, style: 1, label: 'Refresh Colors',
-        custom_id: `colors_refresh_${effectiveSource}_${effectiveSubpage}|${targetUserId}|${v}`,
-        emoji: emojis.parseEmoji(emojis.eyedropper)
-    }];
-
-    // GLOBAL / SERVER switch (2026-08-09 17:05 EDT). Shown ONLY when the user actually has a server profile in THIS guild -- with no override the two views resolve to identical images, so the button would visibly do nothing, which reads as broken. Harkirat's spec: "only if both options/values exist, otherwise just dont show the button and display global colors." data.hasServerProfile is read from the interaction payload, so this costs no network call and is honest about the current server rather than "has a server profile somewhere".
-    if (data.hasServerProfile && !readOnly) {
-        const goingTo = v === 's' ? 'g' : 's';
-        refreshRowComponents.push({
-            type: 2, style: 2,
-            label: v === 's' ? 'Show Main Colors' : 'Show Server Colors',
-            custom_id: `colors_variant_${goingTo}_${effectiveSource}_${effectiveSubpage}|${targetUserId}`,
-            // ⚠️ STYLE 2 (grey) IS DELIBERATE, not an unmade decision (Harkirat was 50/50 on it 2026-08-12 22:11 EDT). Refresh Colors beside it is the row's one PRIMARY action; a second blurple button gives the row two of them and neither reads as the main thing. This one is lateral navigation -- it changes which colours you are looking at, it does not do work -- and the animated icon added the same day is what gives it identity, so it does not need colour to do that job as well.
-            emoji: emojis.parseEmoji(emojis.showColors)
-        });
-    }
-    // The Avatar / Banner link buttons lived first in this row from 2026-07-18 (on every page from 2026-10-19 12:09 EDT). Since 2026-10-21 17:23 EDT each page's image button sits beside its copy hint at the top instead (see fullImageUrl), so this row is Refresh Colors and the server switch only. A Section still carries ONE accessory, which is why the button rides on the hint line and never on the avatar/deco heading.
-    const refreshRow = refreshRowComponents.length ? { type: 1, components: refreshRowComponents } : null;
+    // The footer row, OUTSIDE the container (Harkirat: "move the refresh button outside of the embed container"), /colors only: the page's image link, then Refresh Colors last (2026-10-25 12:25 EDT: the image button "to the footer, left of the \"refresh colors\" button"). Refresh is style 1 (blurple) + the eyedropper emoji to match the "View Colors" button itself, and the row's one primary action. It encodes the current subpage so a refresh doesn't bounce back to page 1, and forces a real re-extraction, bypassing the cache -- see handlers/colors.js's colors_refresh_ handler (10s cooldown + change-detection message) and utils/colorPalette.js's forceRefresh param. Every other button/select re-render in this bot deliberately does NOT re-run extraction (that's the whole point of the cache), so this is a specific, deliberate exception for exactly this one explicit user action.
+    const refreshRow = readOnly ? null : {
+        type: 1,
+        components: [
+            ...(imageLink ? [imageLink] : []),
+            { type: 2, style: 1, label: 'Refresh Colors', custom_id: `colors_refresh_${effectiveSource}_${effectiveSubpage}|${targetUserId}|${v}`, emoji: emojis.parseEmoji(emojis.eyedropper) }
+        ]
+    };
 
     return { components: refreshRow ? [containerPayload, refreshRow] : [containerPayload], files };
 }

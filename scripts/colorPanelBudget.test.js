@@ -65,15 +65,31 @@ t('there is real headroom left, not a page sitting on the line', async () => {
 });
 
 // --- The placements themselves. Each was a deliberate decision and each is invisible from the outside.
-t('each page\'s image link sits beside the copy hint at the top, with the divider under it (2026-10-21 17:27 EDT)', async () => {
-    // Harkirat, 2026-10-21 17:23 EDT: "remove the avatar/color button from the outside footer. instead add a button in the top section saying \"avatar\""; option A and the divider move at 17:27. This reverses the 2026-08-12 revert that had kept the links in the bottom row. A Section carries ONE accessory, so the button rides on the copy-hint line, never on the avatar heading.
+t('/colors: the image link leads the footer, left of Refresh, and the copy hint sits under the divider (2026-10-25 12:25 EDT)', async () => {
+    // Harkirat, 2026-10-25 12:25 EDT: "move \"Tap on the #HEX color code to copy it.\" below the divider" and "move the \"avatar\" \"banner\" etc button to the footer, left of the \"refresh colors\" button". Reverses the 2026-10-21 17:23 move to the top, for /colors only.
     const { components } = await render('avatar', { avatar: palette, avatarFullUrl: CDN });
-    const [container, actionRow] = components;
+    const [container, footer] = components;
+    const hintIdx = container.components.findIndex(c => c.type === 10 && /HEX/.test(c.content));
+    assert.ok(hintIdx > 0, 'the copy hint is not a plain text line');
+    assert.ok(container.components[hintIdx - 1].type === 14 && container.components[hintIdx - 1].divider, 'the divider is not right above the hint');
+    assert.ok(!container.components.some(c => c.type === 9 && c.accessory?.type === 2), 'an image link is still inside the panel');
+    assert.deepStrictEqual(footer.components.map(b => b.label), ['Avatar', 'Refresh Colors']);
+    assert.deepStrictEqual(footer.components[0], { type: 2, style: 5, label: 'Avatar', url: CDN });
+});
+
+t('the right-click keeps its image link beside the copy hint at the top, the divider under it (2026-10-25 12:41 EDT)', async () => {
+    // "since we don't do a \"refresh colors\" button for the right click command, leave the \"avatar\" banner\" etc buttons at the top". A Section carries ONE accessory, so the button rides on the copy-hint line, never on the avatar heading.
+    const { components } = await buildColorPalettePanel({
+        source: 'avatar', subpage: 0, data: { avatar: palette, avatarFullUrl: CDN, inGuild: true },
+        targetUserId: '1', avatarThumbnailUrl: CDN, variant: 'global',
+        readOnly: true, makePageId: k => `vc_page|1|${k}|g|p`, makeSubpageId: (k, n) => `vc_page|1|${k}|g|${n}`
+    });
+    const container = components[0];
     const hintIdx = container.components.findIndex(c => c.type === 9 && /HEX/.test(JSON.stringify(c.components)));
     assert.ok(hintIdx >= 0, 'the copy hint is not a Section');
     assert.deepStrictEqual(container.components[hintIdx].accessory, { type: 2, style: 5, label: 'Avatar', url: CDN });
     assert.ok(container.components[hintIdx + 1].type === 14 && container.components[hintIdx + 1].divider, 'the divider is not right under the hint');
-    assert.ok(!actionRow.components.some(b => b.style === 5), 'an image link is still in the bottom row');
+    assert.strictEqual(components[1], undefined, 'the right-click grew a footer row');
 });
 
 t('the heading keeps its thumbnail — the download button never displaces it', async () => {
@@ -84,7 +100,8 @@ t('the heading keeps its thumbnail — the download button never displaces it', 
 });
 
 t('each page links its own image, and the Name page none', async () => {
-    const link = async (source, extra) => (await render(source, extra)).components[0].components.find(c => c.type === 9 && c.accessory?.type === 2)?.accessory;
+    // On /colors the image link is the footer's style-5 button (2026-10-25 12:25 EDT).
+    const link = async (source, extra) => (await render(source, extra)).components[1]?.components.find(b => b.style === 5);
     assert.strictEqual((await link('banner', { banner: palette, bannerUrl: CDN, bannerFullUrl: CDN + '?size=4096' })).url, CDN + '?size=4096');
     const np = await link('nameplate', { nameplate: palette.slice(0, 4), nameplateUrl: 'https://cdn.discordapp.com/assets/collectibles/x/static.png' });
     assert.deepStrictEqual([np.label, np.url], ['Nameplate', 'https://cdn.discordapp.com/assets/collectibles/x/asset.webm'], 'with no render yet, the nameplate links its original animated file');
@@ -106,12 +123,13 @@ t('the open page is green and disabled', async () => {
     assert.ok(open.style === 3 && open.disabled, JSON.stringify(open));
 });
 
-t('read-only (the View Colors right-click): its own ids, no Refresh, switch or hint block, an accent, the extra hint, lacking pages absent, under budget', async () => {
+t('read-only (the View Colors right-click): its own ids, no Refresh or hint, an accent, the extra hint, lacking pages absent, under budget', async () => {
     const { components } = await buildColorPalettePanel({
         source: 'avatar', subpage: 1,
         data: { avatar: palette, avatarFullUrl: CDN, hasServerProfile: true, inGuild: true },
         targetUserId: '1', avatarThumbnailUrl: CDN, variant: 'global',
         readOnly: true, makePageId: k => `vc_page|1|${k}|g|0`, makeSubpageId: (k, n) => `vc_page|1|${k}|g|${n}`,
+        makeVariantId: (flag, k) => `vc_page|1|${k}|${flag}|p`,
         accentColor: 0x123456, extraHint: '-# **No custom banner detected.**'
     });
     const flat = JSON.stringify(components);
@@ -121,8 +139,19 @@ t('read-only (the View Colors right-click): its own ids, no Refresh, switch or h
     assert.ok(/No custom banner detected/.test(flat));
     assert.ok(!/"label":"Banner"/.test(flat.replace(/"style":5[^}]*/g, '')), 'a page the person lacks has a button');
     assert.ok(/vc_page\|1\|avatar\|g\|0/.test(flat), 'the pager does not use the right-click ids');
-    assert.strictEqual(components[1], undefined, 'nothing under it: the image link moved into the panel');
+    // The Main/Server Profile row on the right-click too (2026-10-25 12:41 EDT), through its own ids.
+    assert.ok(/"custom_id":"vc_page\|1\|avatar\|s\|p"/.test(flat), 'the right-click has no View Server Profile button on its own ids');
+    assert.strictEqual(components[1], undefined, 'nothing under it: the image link stays in the panel');
     assert.ok(countComponents(components) <= LIMIT);
+});
+
+t('the right-click without its own variant ids draws no profile row rather than borrowing /colors ids', async () => {
+    const { components } = await buildColorPalettePanel({
+        source: 'avatar', subpage: 0, data: { avatar: palette, avatarFullUrl: CDN, hasServerProfile: true, inGuild: true },
+        targetUserId: '1', avatarThumbnailUrl: CDN, variant: 'global',
+        readOnly: true, makePageId: k => `vc_page|1|${k}|g|p`, makeSubpageId: (k, n) => `vc_page|1|${k}|g|${n}`
+    });
+    assert.ok(!/View (Main|Server) Profile|vc_viewing/.test(JSON.stringify(components)));
 });
 
 t('no panel ever carries two identical custom_ids, on any page or sub-page, in either mode', async () => {
@@ -141,26 +170,52 @@ t('no panel ever carries two identical custom_ids, on any page or sub-page, in e
     }
 });
 
-t('Refresh is the row\'s only PRIMARY, and both interactive buttons carry icons', async () => {
-    // The view switch is lateral navigation and stays grey on purpose (Harkirat was 50/50 on it, 2026-08-12 22:11 EDT); two blurple buttons would leave neither reading as the main thing. The download button is a style-5 Link, which Discord renders grey and which carries no emoji.
+t('Refresh is the footer\'s only PRIMARY, last, with its icon', async () => {
     const { components } = await render('avatar', { avatar: palette, avatarFullUrl: CDN });
     const buttons = components[1].components;
     assert.strictEqual(buttons.filter(b => b.style === 1).length, 1, 'the row no longer has exactly one primary action');
-    // Refresh Colors leads the row again since the image links moved into the panel (2026-10-21 17:23 EDT).
-    assert.strictEqual(buttons[0].label, 'Refresh Colors', 'the row no longer starts with Refresh Colors');
-    const swtch = buttons.find(b => String(b.custom_id || '').startsWith('colors_variant_'));
-    assert.strictEqual(swtch?.style, 2, 'the global/server switch is no longer secondary/grey');
-    for (const b of buttons.filter(b => b.custom_id)) assert.ok(b.emoji?.id, `"${b.label}" lost its emoji`);
+    assert.strictEqual(buttons[buttons.length - 1].label, 'Refresh Colors', 'Refresh Colors is no longer last (2026-10-25 12:25 EDT)');
+    assert.ok(buttons[buttons.length - 1].emoji?.id, 'Refresh Colors lost its emoji');
+    assert.ok(!buttons.some(b => String(b.custom_id || '').startsWith('colors_variant_')), 'the profile switch is back in the footer');
 });
 
-t('the view switch is absent entirely without a server profile', async () => {
-    // With no override both views resolve to identical images, so the button would visibly do nothing.
+t('both profile buttons sit right above the page tabs: the open one green, disabled, no emoji; the other grey with the emoji (2026-10-25 12:30-12:37 EDT)', async () => {
+    for (const variant of ['global', 'server']) {
+        const { components } = await buildColorPalettePanel({
+            source: 'avatar', subpage: 1, data: { avatar: palette, avatarFullUrl: CDN, banner: palette, bannerUrl: CDN, hasServerProfile: true, inGuild: true },
+            targetUserId: '1', avatarThumbnailUrl: CDN, variant
+        });
+        const rows = components[0].components.filter(c => c.type === 1);
+        const [profileRow, pageRow] = rows.slice(-2);
+        assert.deepStrictEqual(pageRow.components.map(b => b.label), ['Avatar', 'Banner'], 'the page tabs are not last');
+        const [main, server] = profileRow.components;
+        const open = variant === 'server' ? server : main;
+        const other = variant === 'server' ? main : server;
+        assert.deepStrictEqual([main.label, server.label], variant === 'server' ? ['View Main Profile', 'Server Profile'] : ['Main Profile', 'View Server Profile']);
+        assert.ok(open.style === 3 && open.disabled && !open.emoji, JSON.stringify(open));
+        assert.ok(other.style === 2 && !other.disabled && other.emoji?.id, JSON.stringify(other));
+        assert.strictEqual(other.custom_id, `colors_variant_${variant === 'server' ? 'g' : 's'}_avatar_1|1`, 'the switch does not keep the page and sub-page');
+    }
+});
+
+t('the profile row is absent entirely without a server profile', async () => {
+    // With no override both views resolve to identical images, so a switch would visibly do nothing.
     const { components } = await buildColorPalettePanel({
         source: 'avatar', subpage: 0,
         data: { avatar: palette, avatarFullUrl: CDN, hasServerProfile: false, inGuild: true },
         targetUserId: '1', avatarThumbnailUrl: CDN, variant: 'global'
     });
-    assert.ok(!JSON.stringify(components[1]).includes('colors_variant_'), 'the view switch rendered with no server profile to switch to');
+    assert.ok(!/colors_variant_|Profile"/.test(JSON.stringify(components)), 'a profile button rendered with no server profile to switch to');
+});
+
+t('page tabs run alphabetically and the name page is "Username"; the hex shares the name\'s line, and labels are bold not code (2026-10-25 12:25-12:41 EDT)', async () => {
+    const { components } = await render('name', { avatar: palette, banner: palette, bannerUrl: CDN, nameplate: palette.slice(0, 4), nameplateUrl: CDN, decoration: palette.slice(0, 4), decorationUrl: CDN, displayNameColors: ['112233', '445566'] });
+    const flat = JSON.stringify(components);
+    const pageRow = components[0].components.filter(c => c.type === 1).pop();
+    assert.deepStrictEqual(pageRow.components.map(b => b.label), ['Avatar', 'Banner', 'Deco', 'Nameplate', 'Username']);
+    assert.ok(/Username Colors/.test(flat), 'the heading is not "Username Colors"');
+    assert.ok(/Extracted from: \*\*Main Profile\*\*/.test(flat) && /Updated your profile\? \*\*Refresh Colors\*\*/.test(flat), 'a label is still in code font');
+    assert.ok(/\*\* · `#[0-9A-F]{6}`\\n> /.test(flat) && !/Hex: /.test(flat), 'a swatch row still has its own "Hex:" line');
 });
 
 (async () => {

@@ -110,6 +110,16 @@ check('cancelPanelExpiry: removes a pending timer outright, with nothing left ar
     cancelPanelExpiry('msg-c');
 });
 
+check('the expiry edit allows no mentions, so it never re-pings whoever the panel names (2026-10-25 12:27 EDT)', async () => {
+    let body = null;
+    const interaction = { client: { rest: { patch: async (_route, opts) => { body = opts.body; return {}; } } }, applicationId: 'app-m', token: 'tok-m' };
+    const before = new Set(armed.keys());
+    schedulePanelExpiry(interaction, 'msg-mention', [{ type: 1, components: [{ type: 2, custom_id: 'x' }] }]);
+    const handle = [...armed.keys()].find(h => !before.has(h));
+    await armed.get(handle).fn();
+    assert.deepStrictEqual(body.allowed_mentions, { parse: [] }, 'the expiry PATCH lets Discord ping again');
+});
+
 check('cancelPanelExpiry: a messageId that was never scheduled is a safe no-op', () => {
     cancelPanelExpiry('msg-never-scheduled');
 });

@@ -5,7 +5,7 @@
 //
 // ⚠️ THE CRASH NET IS THE ROUTER'S. Awaited inside handlers/router.js's one try/catch: nothing here swallows. See .claude/rules/interaction-router.md.
 //
-// ⚠️ THE SERVER PROFILE ON A CLICK. The right-click handed over the subject's server profile; a click carries only the CLICKER's. So a panel first drawn from a server profile (`s`) re-reads the subject's member record over REST, which works where the bot is in the server; anywhere else (a 404) it falls back to their main profile.
+// ⚠️ THE SERVER PROFILE ON A CLICK. The right-click handed over the subject's server profile; a click carries only the CLICKER's. So every click re-reads the subject's member record over REST, which works where the bot is in the server; anywhere else (a 404) it falls back to their main profile. It is read on a `g` (main profile) click too since 2026-10-25 12:41 EDT, so the Main/Server Profile row still knows a server profile exists to switch back to.
 const { Routes } = require('discord.js');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
@@ -15,8 +15,8 @@ function ownsCustomId(customId) {
     return typeof customId === 'string' && OWNED_PREFIXES.some(prefix => customId.startsWith(prefix));
 }
 
-async function subjectMember(interaction, targetId, variantFlag) {
-    if (variantFlag !== 's' || !interaction.guildId) return null;
+async function subjectMember(interaction, targetId) {
+    if (!interaction.guildId) return null;
     try {
         return await interaction.client.rest.get(Routes.guildMember(interaction.guildId, targetId));
     } catch {
@@ -32,8 +32,8 @@ async function route(interaction) {
         if (!command || !['avatar', 'banner', 'name', 'nameplate', 'decoration'].includes(page)) return await interaction.deferUpdate().catch(() => {});
         await interaction.deferUpdate();
         const target = await interaction.client.users.fetch(targetId, { force: true });
-        const member = await subjectMember(interaction, targetId, variantFlag);
-        const { panel, files } = await command.renderPanel(interaction, target, member, page, Number(sub) || 0);
+        const member = await subjectMember(interaction, targetId);
+        const { panel, files } = await command.renderPanel(interaction, target, member, page, Number(sub) || 0, variantFlag === 'g' ? 'g' : 's');
         // Keeps the message's own privacy: a reply a server rule made private stays private.
         const flags = 32768 | ((interaction.message?.flags?.bitfield ?? 0) & 64);
         return await sendV2Payload(interaction, panel, { flags, allowedMentions: { users: [] }, files, skipExpiry: true });
