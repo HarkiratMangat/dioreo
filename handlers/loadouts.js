@@ -80,33 +80,9 @@ async function route(interaction) {
             if (gunKey === '~search~') return await interaction.showModal(searchModal(mode));
             if (gunKey.startsWith('~nobuild~')) return await openNoBuild(interaction, gunKey.slice(9), 0);
 
-            // Defer FIRST, before any DB round-trip -- matches the dmz/mp pagination handler further down ("PRO FIX: defer first"), for the same reason: an awaited query ahead of the ack risks missing Discord's ~3s interaction window, which surfaces to the user as a bare "This interaction failed" with no detail.
-            await interaction.deferUpdate();
-            const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
-
-            // .lean() -- read-only, same as the pagination handler below.
-            const { isPlaceholderBuild } = require('../utils/loadoutRender');
-            const matchingBuilds = (await Loadout.find({ weaponKey: gunKey, mode }).lean()).filter(b => !isPlaceholderBuild(b));
-            if (!matchingBuilds || matchingBuilds.length === 0) {
-                // Shouldn't happen (the option came from a live DB query moments ago), but guard against a build being deleted via /manage in the gap between render and click rather than throwing on `matchingBuilds[0].category` below.
-                try {
-                    await interaction.followUp({ content: BOT_EMOJI.cross + ' That weapon no longer has any builds saved.', ephemeral: true });
-                } catch (notifyError) {
-                    console.error('Failed to notify user of missing browse-target builds (interaction likely expired):', notifyError);
-                }
-                return;
-            }
-
-            const categoryBuilds = isDmz
-                ? await Loadout.find({ mode: 'DMZ' }).lean()
-                : await Loadout.find({ category: matchingBuilds[0].category, mode: 'MP' }).lean();
-            const missing = isDmz ? [] : await require('../utils/loadoutLookup').missingWeapons(matchingBuilds[0].category);
-            const cardPayload = buildLoadoutCard(matchingBuilds, 0,
-                { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds, missing });
-            require('../utils/userStats').noteBuildOpenedSafely(interaction.user?.id, matchingBuilds[0]?._id); // Your Stats: a build the clicker opened
-
-            const { sendV2Payload } = require('../utils/sendV2Payload');
-            return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
+            // The picked weapon opens inside its class's browse, so the arrows walk the class (Harkirat, 2026-10-25 19:02 EDT); DMZ walks every DMZ build. renderScopeBrowse defers first, before any query.
+            const { renderScopeBrowse } = require('../commands/gunsmith');
+            return await renderScopeBrowse(interaction, { mode, category: isDmz ? null : undefined, metaOnly: false }, 0, { isUpdate: true, weaponKey: gunKey });
         }
 
         // /gunsmith browse-row SCOPE JUMP dropdown -- a SELECT. Type-tested because `gsb~jump~...` would otherwise fall through to the button branch below if this file ever lost the explicit isStringSelectMenu() test -- the exact dead-branch bug this file's header documents (a select handler written under isButton() becomes dead code with no error).
@@ -191,16 +167,22 @@ async function route(interaction) {
                 const { renderScopeBrowse } = require('../commands/gunsmith');
                 return await renderScopeBrowse(interaction, scope, 0, { isUpdate: true });
             }
+            // The build row's numbers: `gsb~at~<scope>~<flat index of that build>`.
+            if (action === 'at') {
+                const { renderScopeBrowse } = require('../commands/gunsmith');
+                return await renderScopeBrowse(interaction, scope, flatIndexRaw, { isUpdate: true });
+            }
             if (action !== 'next' && action !== 'prev') return;
             const { renderScopeBrowse } = require('../commands/gunsmith');
             const builds = await resolveScopeBuilds(scope);
             // Guard BEFORE the modulo. /manage can purge a scope empty between render and click: `(cur + 1) % 0` is NaN, and flatIndexToPosition's clamp would yield -1 -> builds[-1] is undefined -> throws. renderScopeBrowse has its own empty guard, but it sits DOWNSTREAM of this arithmetic and never gets the chance to fire.
             if (!builds.length) return await renderScopeBrowse(interaction, scope, 0, { isUpdate: true });
-            const cur = parseInt(flatIndexRaw, 10) || 0;
-            const next = action === 'next'
-                ? (cur + 1) % builds.length
-                : (cur - 1 + builds.length) % builds.length;
-            return await renderScopeBrowse(interaction, scope, next, { isUpdate: true });
+            // The arrows walk WEAPONS (Harkirat, 2026-10-25 18:48 EDT): the next or previous weapon in the scope, opened at its first build, looping at either end.
+            const cur = Math.min(Math.max(parseInt(flatIndexRaw, 10) || 0, 0), builds.length - 1);
+            const weaponOrder = [...new Set(builds.map(b => b.weaponKey))];
+            const w = weaponOrder.indexOf(builds[cur].weaponKey);
+            const targetKey = weaponOrder[(w + (action === 'next' ? 1 : -1) + weaponOrder.length) % weaponOrder.length];
+            return await renderScopeBrowse(interaction, scope, builds.findIndex(b => b.weaponKey === targetKey), { isUpdate: true });
         }
 
         // LOADOUT PAGINATION & COPY (DMZ and MP, both MongoDB-backed) Shared handling for both custom_id prefixes since /dmz and /gunsmith use identical card layouts — see utils/loadoutRender.js. `mode` is the only real difference in what gets queried.

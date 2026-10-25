@@ -11,14 +11,26 @@ assert.ok(ids.some(i => i.includes('mpcopy_ak117_0')), 'normal card lost its mp 
 // Only the scope-free gsb~ controls (the bottom row's Search..., the class dropdown) may sit on a normal card; anything scope-paged would resolve against the wrong list.
 assert.ok(!/gsb~(?!search~|class~)/.test(JSON.stringify(normal)), 'normal card must never emit a scope-paged gsb~ id');
 
-// 2. A BROWSE card pages across the scope, not within the weapon.
-const browsed = buildLoadoutCard(fixture, 0, { color: 1, idPrefix: 'mp', isEphemeral: false,
-    categoryBuilds: null, browse: { scopeToken: 'MP.AR.std', flatIndex: 6, flatTotal: 35, scopeLabel: 'AR' } });
+// 2. A BROWSE card: the arrows walk WEAPONS and a row of numbers walks the open weapon's builds (Harkirat, 2026-10-25 18:48-19:02 EDT).
+const scopeList = [{ ...fixture[0], buildName: 'A' }, { ...fixture[0], buildName: 'B' }, { ...fixture[0], weaponKey: 'bp50', weaponName: 'BP50' }, { ...fixture[0], weaponKey: 'm4', weaponName: 'M4' }];
+const browsed = buildLoadoutCard(scopeList.slice(0, 2), 1, { color: 1, idPrefix: 'mp', isEphemeral: false,
+    categoryBuilds: scopeList, browse: { scopeToken: 'MP.AR.std', flatIndex: 1, flatTotal: 4, scopeLabel: 'AR' } });
 const bs = JSON.stringify(browsed);
-assert.ok(bs.includes('gsb~next~MP.AR.std~6'), 'browse card missing scope-paged next id');
-assert.ok(bs.includes('"7 / 35"'), 'browse card indicator must show FLAT position');
+assert.ok(bs.includes('gsb~next~MP.AR.std~1'), 'browse card missing scope-paged next id');
+assert.ok(bs.includes('"AR · 1/3"'), 'the pager names the class and the WEAPON\'s place in it (3 weapons, not 4 builds)');
+{
+    const box = browsed.components[0].components;
+    const row = box.find(c => c.type === 1 && c.components.some(b => (b.custom_id || '').startsWith('gsb~at~')));
+    assert.deepStrictEqual(row.components.map(b => [b.label, b.style, Boolean(b.disabled), b.custom_id]), [['1', 2, false, 'gsb~at~MP.AR.std~0'], ['Build 2', 3, true, 'gsb~at~MP.AR.std~1']], 'the build row: numbers, the open one green and named');
+    const ri = box.indexOf(row);
+    assert.ok(box[ri + 1].type === 14 && box[ri + 1].divider && box[ri + 1].spacing === 2 && /prev/.test(box[ri + 2].components[0].custom_id), 'the build row, a large divider, then the arrows');
+    assert.ok(/^-# Updated/.test(box[ri - 1].content), 'the footer drops the class (the pager names it) and the build count (the row shows it)');
+    assert.deepStrictEqual(browsed.components[1].components.map(b => b.label), ['Search...', 'Copy Code'], 'Search... and Copy Code sit outside the card, right under it');
+    const one = JSON.stringify(buildLoadoutCard([scopeList[3]], 0, { color: 1, idPrefix: 'mp', categoryBuilds: scopeList, browse: { scopeToken: 'MP.AR.std', flatIndex: 3, flatTotal: 4 } }));
+    assert.ok(!one.includes('gsb~at~') && one.includes('"AR · 3/3"'), 'a weapon with one build has no build row');
+}
 // Scope-aware copy ids (v3-pre-release review, finding #1) -- a browse card's `index` is relative to the FILTERED/RE-SORTED scope subset, not to the unscoped Loadout.find handlers/loadouts.js's legacy mp/dmz branch queries. Reusing the weapon-scoped `mpcopy_ak117_0` id on a browse card was the bug itself: the handler resolved that index against a different, unfiltered list, so Copy Code could hand back a DIFFERENT build's share code than the card on screen.
-assert.ok(bs.includes('gsb~copy~MP.AR.std~6'), 'browse card missing scope-paged copy id');
+assert.ok(bs.includes('gsb~copy~MP.AR.std~1'), 'browse card missing scope-paged copy id');
 // Copy Attachments left the MP card (Harkirat, 2026-10-25 16:25 EDT); DMZ keeps it (below).
 assert.ok(!bs.includes('gsb~copyatt~'), 'an MP card has no Copy Attachments');
 assert.ok(!bs.includes('mpcopy_ak117_0'), 'browse card must NOT emit the weapon-scoped copy id -- handlers/loadouts.js resolves it against the wrong list');
@@ -36,10 +48,10 @@ const two = [slotted, { ...slotted, buildName: 'Second' }];
 const ar = [...two, { ...fixture[0], weaponKey: 'bp50', weaponName: 'BP50', isMeta: true, categoryRank: 'best' },
     { ...fixture[0], weaponKey: 'pharo', weaponName: 'PHARO', attachments: ['Coming soon — check back later!'] }];
 const card = JSON.stringify(R.buildLoadoutCard(two, 1, { color: 1, idPrefix: 'mp', categoryBuilds: ar }));
-assert.ok(card.includes('"Build 2 of 2"'), 'one weapon: the pager says Build 2 of 2');
-assert.ok(!card.includes('• Build 2 of 2'), 'one weapon: the footer drops the build the pager already shows');
+assert.ok(card.includes('mpat_ak117_0') && card.includes('"Build 2"') && !card.includes('Build 2 of 2'), 'a card with no class to walk keeps the build row, legacy ids, and no build count');
+assert.ok(!card.includes('mpprev_'), 'a card with no class to walk has no arrows');
 const single = JSON.stringify(R.buildLoadoutCard([slotted], 0, { color: 1, idPrefix: 'mp' }));
-assert.ok(single.includes('Build 1 of 1'), 'a one-build card has no pager, so its footer keeps Build 1 of 1');
+assert.ok(!single.includes('Build 1 of 1') && single.includes('-# AR • Updated'), 'a one-build card: no build count, and the class stays in the footer when no pager names it');
 const metaCard = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix: 'mp', categoryBuilds: [{ ...ar[2], categoryRank: 'top3', isToxic: true }, { ...ar[2], weaponKey: 'ffar', weaponName: 'FFAR 1', categoryRank: null }],
     browse: { scopeToken: 'MP.*.meta', flatIndex: 0, flatTotal: 1, scopeLabel: 'Meta — MP' } }));
 assert.ok(metaCard.includes('"AR · Top 3 · 1 build"'), 'the META list names the class, drops Meta and never says Toxic');
@@ -51,7 +63,7 @@ assert.ok(opts.some(o => o.value === 'bp50' && o.description === 'Meta · Best A
 assert.ok(!opts.some(o => o.default), 'nothing is pre-selected');
 const browseAll = JSON.stringify(R.buildLoadoutCard(two, 0, { color: 1, idPrefix: 'mp', categoryBuilds: ar.slice(0, 3),
     browse: { scopeToken: 'MP.*.std', flatIndex: 2, flatTotal: 3, scopeLabel: 'All MP builds' } }));
-assert.ok(browseAll.includes('"AR · 3/3"'), 'a browse pager names the class and the place in it');
+assert.ok(browseAll.includes('"AR · 2/2"'), 'a browse pager names the class and the weapon\'s place in it');
 assert.ok(R.isPlaceholderBuild(ar[3]) && !R.isPlaceholderBuild(ar[0]), 'placeholder detection');
 const noImg = JSON.stringify(R.buildLoadoutCard([{ ...fixture[0], imageKey: 'https://placehold.co/1x1?text=Coming+Soon' }], 0, { color: 1, idPrefix: 'mp' }));
 assert.ok(noImg.includes('*No screenshot of this build yet.*') && !noImg.includes('"type":12'), 'a placeholder image is replaced by one line');
@@ -68,9 +80,8 @@ assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.s
     const img = box.findIndex(c => c.type === 12);
     assert.ok(box[img - 1].type === 14 && !box[img - 1].divider, 'a small space, no line, above the image');
     assert.ok(box[img + 1].type === 10 && /^-# AR/.test(box[img + 1].content), 'the footer sits right under the image');
-    const last = box[box.length - 1], beforeLast = box[box.length - 2];
-    assert.deepStrictEqual(last.components.map(b => b.label), ['Search...', 'Copy Code'], 'the bottom row is Search... then Copy Code');
-    assert.ok(beforeLast.type === 14 && beforeLast.divider && beforeLast.spacing === 2, 'a LARGE divider above the bottom row');
+    assert.deepStrictEqual(parsed.components[1].components.map(b => b.label), ['Search...', 'Copy Code'], 'Search... then Copy Code, outside the card');
+    assert.strictEqual(box[box.length - 1].type, 10, 'with no build row and no pager the card ends at the footer, no trailing divider');
     assert.ok(!JSON.stringify(parsed).includes('"Copy Attachments"'), 'no Copy Attachments on MP');
     const selects = parsed.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0]);
     assert.strictEqual(selects[0].placeholder, 'Switch class...');
@@ -79,13 +90,9 @@ assert.ok(missing.includes('No build yet') && missing.includes('gsb~open~MP.AR.s
     assert.strictEqual(selects[1].placeholder, 'Browse other Assault Rifles...');
     assert.deepStrictEqual([selects[1].options[0].label, selects[1].options[0].description], ['Or search all weapons...', 'Pick this to open a custom search for any weapon']);
     assert.deepStrictEqual(selects[1].options[selects[1].options.length - 1], { label: '1 more with no build yet...', value: '~nobuild~AR', description: 'Show the Assault Rifles Dioreo has no build for' });
-    const pagerAt = R.buildLoadoutCard(two, 0, { color: 1, idPrefix: 'mp', categoryBuilds: ar }).components[0].components;
-    const pi = pagerAt.findIndex(c => c.type === 1 && /prev/.test(c.components[0].custom_id));
-    assert.ok(pagerAt[pi - 1].type === 14 && !pagerAt[pi - 1].divider && pagerAt[pi + 1].spacing === 2, 'a small space, the pager, then the large divider');
     const dmz = { ...fixture[0], mode: 'DMZ', weaponKey: 'fennec', weaponName: 'FENNEC', category: 'SMG' };
     const dmzCard = R.buildLoadoutCard([dmz], 0, { color: 1, idPrefix: 'dmz', categoryBuilds: [dmz, { ...dmz, weaponKey: 'asval', weaponName: 'AS VAL', category: 'AR', isMeta: true }] });
-    const dmzBox = dmzCard.components[0].components;
-    assert.deepStrictEqual(dmzBox[dmzBox.length - 1].components.map(b => b.label), ['Search...', 'Copy Attachments'], 'DMZ: Search... then Copy Attachments');
+    assert.deepStrictEqual(dmzCard.components[1].components.map(b => b.label), ['Search...', 'Copy Attachments'], 'DMZ: Search... then Copy Attachments');
     const dmzSel = dmzCard.components.filter(c => c.type === 1 && c.components[0].type === 3).map(c => c.components[0]);
     assert.strictEqual(dmzSel.length, 1, 'DMZ has one dropdown, no class switch');
     assert.deepStrictEqual(dmzSel[0].options.map(o => [o.label, o.description]), [['AS VAL', 'AR · Meta'], ['FENNEC', 'SMG']]);

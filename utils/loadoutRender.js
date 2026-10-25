@@ -267,7 +267,7 @@ function weaponSummary(builds, { metaList = false } = {}) {
     return parts.join(' · ').slice(0, 100);
 }
 
-function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = false, copyIds = null, footerBuild = true } = {}) {
+function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = false, copyIds = null, footerBuild = true, footerClass = true } = {}) {
     // Numbered, his format (2026-10-25 15:38 EDT). `copyIds` is no longer drawn (the Copy buttons moved to the card's bottom row, 16:25 EDT) and is kept only so old callers still pass.
     void copyIds;
     const attachmentLines = orderedAttachments(activeBuild).map((att, i) => `${i + 1}. \`${att}\``).join('\n');
@@ -309,7 +309,7 @@ function buildLoadoutCardBody(activeBuild, { index = 0, total = 1, hideBadges = 
     }
     // `footerBuild` is false on a single weapon's card with a pager, which already reads "Build 2 of 5"; a browse card's pager counts the class instead, and a one-build card has no pager, so both keep the build in the footer (Harkirat, 2026-10-24 18:25 EDT: with one build "it doesn't mention build one of one for this anymore"). A submitted build names its submitter at the end, or "anonymous" (Harkirat, 2026-10-25 16:53-16:59 EDT); the mention never pings (every send here goes out with no allowed mentions).
     const sub = activeBuild.submittedBy && activeBuild.submittedBy.discordId ? (activeBuild.submittedBy.credited ? `Submitted by <@${activeBuild.submittedBy.discordId}>` : 'Submitted by *anonymous*') : null;
-    containerComponents.push({ type: 10, content: `-# ${[activeBuild.category, footerBuild ? `Build ${index + 1} of ${total}` : null, `Updated <t:${lastUpdatedUnix}:D>`, sub].filter(Boolean).join(' • ')}` });
+    containerComponents.push({ type: 10, content: `-# ${[footerClass ? displayCategoryLabel(activeBuild.category) : null, footerBuild ? `Build ${index + 1} of ${total}` : null, `Updated <t:${lastUpdatedUnix}:D>`, sub].filter(Boolean).join(' • ')}` });
 
     return containerComponents;
 }
@@ -359,40 +359,46 @@ function dmzBrowseRow(dmzBuilds, selectId, activeKey) {
 
 // Shared Components V2 card builder for /dmz and /gunsmith (mp + dmz, and their scoped browse) -- same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs 'mp') so handlers/loadouts.js can tell a click apart and query the right mode. The card's CONTENT comes from buildLoadoutCardBody above; everything this function adds is chrome (pager, the bottom row, the switch rows, share). `missing` is the open class's weapons with no build (utils/loadoutLookup.js missingWeapons), for the weapon dropdown's last option.
 //
-// HIS ORDER (2026-10-25 16:40 EDT): the body ends with the footer under the image; then a small space, the pager, a LARGE divider, and one row of Search... (left) and Copy Code (right). DMZ has no code, so its row is Search... and Copy Attachments. Copy Attachments left MP's card (16:25 EDT); the old `copyatt` ids still answer cards posted before.
+// HIS LAYOUT (2026-10-25 18:43-19:02 EDT, mock-ups C to E in #testing-spam; it replaced the 16:40 EDT order): the body ends with the footer under the image; then a row of the weapon's builds, a LARGE divider, and the arrows, which walk WEAPONS. Search... and Copy Code (DMZ: Copy Attachments) sit outside the card, above the dropdowns. The old `copyatt` ids still answer cards posted before.
 function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null, hideBadges = false, browse = null, missing = [] }) {
     const activeBuild = builds[index];
     const mode = activeBuild.mode === 'DMZ' ? 'DMZ' : 'MP';
     const copyAttCustomId = browse ? `gsb~copyatt~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}`;
     const copyCustomId = browse ? `gsb~copy~${browse.scopeToken}~${browse.flatIndex}` : `${idPrefix}copy_${activeBuild.weaponKey}_${index}`;
-    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, footerBuild: Boolean(browse) || builds.length === 1 });
-
-    // The pager names where you are, as /calendar's does ("Modes · 3/3", 2026-10-21): one weapon's card reads "Build 2 of 5"; a browse reads the class and the build's place in it, "AR · 5/30" (Harkirat, 2026-10-24 09:45 EDT). A browse card pages across the whole SCOPE, so its ids carry the scope token + flat index; loadout cards use the LEGACY prev/next-string form (the handler wraps with modulo).
-    let indicatorLabel;
+    // The arrows walk WEAPONS and a row of numbers walks the open weapon's builds (Harkirat, 2026-10-25 18:48 EDT: "arrow switch weapons, build row switches builds"). The open build is green and named, "Build 3"; the others are plain numbers so five fit on one phone row (18:51 EDT). The middle of the pager names the class and the weapon's place in it, "AR · 3/17" (his 18:49 EDT pick over the weapon's name, whose width would move the arrows). A card with no class to walk (the hidden /dmz, /autobuild's saved card, the portal preview) keeps the build row and has no arrows. Every card /gunsmith opens is a browse: a weapon opened by name, Search... or the weapon dropdown is drawn inside its class (commands/gunsmith.js renderScopeBrowse's `weaponKey`).
+    let weaponPager = null;
     if (browse && categoryBuilds && categoryBuilds.length) {
-        const active = categoryBuilds[Math.min(Math.max(browse.flatIndex, 0), categoryBuilds.length - 1)];
-        const inClass = categoryBuilds.filter(b => b.category === active.category);
-        const pos = inClass.indexOf(active);
-        if (pos !== -1) indicatorLabel = `${displayCategoryLabel(active.category)} · ${pos + 1}/${inClass.length}`;
-    } else if (!browse) {
-        indicatorLabel = `Build ${index + 1} of ${builds.length}`; // his wording, 2026-10-24 18:33 EDT
+        const flat = Math.min(Math.max(Number(browse.flatIndex) || 0, 0), categoryBuilds.length - 1);
+        const active = categoryBuilds[flat];
+        const weaponOrder = [...new Set(categoryBuilds.map(b => b.weaponKey))];
+        const classWeapons = [...new Set(categoryBuilds.filter(b => b.category === active.category).map(b => b.weaponKey))];
+        weaponPager = buildPaginationRow({
+            totalChunks: weaponOrder.length, currentPage: weaponOrder.indexOf(active.weaponKey),
+            prevCustomId: `gsb~prev~${browse.scopeToken}~${flat}`, nextCustomId: `gsb~next~${browse.scopeToken}~${flat}`,
+            indicatorCustomId: `gsb~ind~${browse.scopeToken}`, indicatorLabel: `${displayCategoryLabel(active.category)} · ${classWeapons.indexOf(active.weaponKey) + 1}/${classWeapons.length}`,
+        });
     }
-    const paginationRow = browse
-        ? buildPaginationRow({ totalChunks: browse.flatTotal, currentPage: browse.flatIndex, prevCustomId: `gsb~prev~${browse.scopeToken}~${browse.flatIndex}`, nextCustomId: `gsb~next~${browse.scopeToken}~${browse.flatIndex}`, indicatorCustomId: `gsb~ind~${browse.scopeToken}`, indicatorLabel })
-        : buildPaginationRow({ totalChunks: builds.length, currentPage: index, prevCustomId: `${idPrefix}prev_${activeBuild.weaponKey}_${index}`, nextCustomId: `${idPrefix}next_${activeBuild.weaponKey}_${index}`, indicatorCustomId: `${idPrefix}_page_indicator`, indicatorLabel });
-    if (paginationRow) containerComponents.push({ type: 14, spacing: 1, divider: false }, paginationRow);
-    containerComponents.push({ type: 14, spacing: 2, divider: true });
-    // Search... opens the card's one-box search (handlers/loadouts.js `gsb~search~<mode>` -> `gsb~find~<mode>`). No icon yet: Harkirat is drawing one (2026-10-25 16:30 EDT).
-    containerComponents.push({ type: 1, components: [
+    // The footer drops the class when the pager names it, and the build count always: the build row shows it (his 18:49 and 19:02 EDT calls).
+    const containerComponents = buildLoadoutCardBody(activeBuild, { index, total: builds.length, hideBadges, footerBuild: false, footerClass: !weaponPager });
+    // A browse card's build sits at a flat index in the scope, and a weapon's builds are next to each other there (utils/loadoutScopes.js sorts by class, then weapon), so build i is `flatIndex - index + i`. Five per row is Discord's cap; no weapon has more than five today.
+    if (builds.length > 1) {
+        const firstFlat = browse ? (Number(browse.flatIndex) || 0) - index : 0;
+        const buttons = builds.map((b, i) => ({
+            type: 2, style: i === index ? 3 : 2, label: i === index ? `Build ${i + 1}` : `${i + 1}`, disabled: i === index,
+            custom_id: browse ? `gsb~at~${browse.scopeToken}~${firstFlat + i}` : `${idPrefix}at_${activeBuild.weaponKey}_${i}`,
+        }));
+        for (let i = 0; i < buttons.length; i += 5) containerComponents.push({ type: 1, components: buttons.slice(i, i + 5) });
+    }
+    if (weaponPager) containerComponents.push({ type: 14, spacing: 2, divider: true }, weaponPager);
+
+    const containerPayload = { type: 17, accent_color: color, components: containerComponents };
+    // Search... and Copy Code sit OUTSIDE the panel, right under it and above the dropdowns (his 18:44 EDT ask). Search... opens the card's one-box search (handlers/loadouts.js `gsb~search~<mode>` -> `gsb~find~<mode>`); no icon yet, Harkirat is drawing one (16:30 EDT). The switch rows follow, outside too (his earlier call: a dropdown is a sibling row, not nested).
+    const outerComponents = [containerPayload, { type: 1, components: [
         { type: 2, style: 2, label: 'Search...', custom_id: `gsb~search~${mode}` },
         mode === 'DMZ'
             ? { type: 2, style: 2, label: 'Copy Attachments', custom_id: copyAttCustomId }
             : { type: 2, style: 1, label: 'Copy Code', custom_id: copyCustomId, emoji: emojis.parseEmoji(emojis.gunsmithCode) },
-    ] });
-
-    const containerPayload = { type: 17, accent_color: color, components: containerComponents };
-    // The switch rows sit OUTSIDE the panel, below it (his earlier layout call: a dropdown is a sibling row, not nested).
-    const outerComponents = [containerPayload];
+    ] }];
     const scope = browse ? require('./loadoutScopes').parseScopeToken(browse.scopeToken) : null;
     const weaponSelectId = browse ? `gsb~jump~${browse.scopeToken}` : `${idPrefix}browse`;
     if (mode === 'DMZ') {

@@ -59,16 +59,10 @@ async function renderResolved(interaction, mode, found, { isEphemeral, buildInde
         const payload = buildMissingWeaponCard({ weaponName, category, mode, isEphemeral, categoryBuilds, missing: mode === 'MP' ? await missingWeapons(category) : [] });
         return await sendV2Payload(interaction, payload.components, { flags: payload.flags });
     }
+    // Drawn inside the weapon's class, so the arrows walk its class (Harkirat, 2026-10-25 19:02 EDT); DMZ has no classes and walks every DMZ build. renderScopeBrowse notes the opened build for Your Stats.
     const { builds } = found;
-    const index = Math.min(Math.max(buildIndex, 0), builds.length - 1);
-    // Category-wide build list for the "Browse other builds" dropdown. MP scopes to the found weapon's own category (matches every /<category> command's old per-category scope); DMZ has no per-category split (models/Loadout.js -- categoryRank is never set for DMZ builds), so its dropdown scope is every DMZ build, same as /dmz always did.
-    const categoryBuilds = mode === 'DMZ'
-        ? await Loadout.find({ mode: 'DMZ' }).lean()
-        : await Loadout.find({ category: builds[0].category, mode: 'MP' }).lean();
-    const missing = mode === 'MP' ? await missingWeapons(builds[0].category) : [];
-    const cardPayload = buildLoadoutCard(builds, index, { color: getMpCategoryAccent(builds[0].category), idPrefix, isEphemeral, categoryBuilds, missing });
-    require('./userStats').noteBuildOpenedSafely(interaction.user?.id, builds[index]?._id); // Your Stats: a build this user opened
-    return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
+    const { renderScopeBrowse } = require('../commands/gunsmith');
+    return await renderScopeBrowse(interaction, { mode, category: mode === 'DMZ' ? null : undefined, metaOnly: false }, 0, { deferred: true, isEphemeral, weaponKey: builds[0].weaponKey, buildIndex });
 }
 
 // The words for a name that found no single weapon, shared by the slash command and the card's Search.

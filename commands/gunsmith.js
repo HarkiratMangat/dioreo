@@ -32,10 +32,12 @@ function labelForScope(scope) {
     return displayCategoryLabel(scope.category);
 }
 
-// Shared by execute()'s browse-row branch (`~scope~`), the legacy `~cat~` row, and every gsb~ next/prev/jump click in handlers/loadouts.js -- the single render path for every scoped browse view.
-async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = false } = {}) {
+// Shared by execute()'s browse-row branch (`~scope~`), the legacy `~cat~` row, and every gsb~ next/prev/jump click in handlers/loadouts.js -- the single render path for every scoped browse view. `weaponKey` (2026-10-25 19:02 EDT, Harkirat: single-weapon cards "get the class pager too"): a weapon opened by name, Search... or the weapon dropdown is drawn inside its class's browse, at `buildIndex` among its builds, so its arrows walk the class like any browse. An MP scope given with `category: undefined` takes the weapon's own class. `deferred` is for a caller that has already acknowledged the interaction (the slash command and the Search box), with the visibility it resolved.
+async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = false, deferred = false, isEphemeral: givenEphemeral = false, weaponKey = null, buildIndex = 0 } = {}) {
     let isEphemeral;
-    if (isUpdate) {
+    if (deferred) {
+        isEphemeral = givenEphemeral;
+    } else if (isUpdate) {
         // No execute() to re-resolve from on a gsb~ click -- read it off the message being edited, exactly like the existing mp/dmz pagination handler does. Getting this wrong makes the Share button silently disappear after the first click (see .claude/rules/rendering-and-ui.md).
         isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
         await interaction.deferUpdate();
@@ -49,14 +51,23 @@ async function renderScopeBrowse(interaction, scope, flatIndex, { isUpdate = fal
         await interaction.deferReply({ ephemeral: isEphemeral });
     }
 
+    if (weaponKey && scope.category === undefined) {
+        const one = scope.mode === 'MP' ? await require('../models/Loadout').findOne({ weaponKey, mode: 'MP' }).lean() : null;
+        scope = { ...scope, category: one ? one.category : null };
+    }
     const builds = await resolveScopeBuilds(scope);
-    if (!builds.length) {
+    const firstOfWeapon = weaponKey ? builds.findIndex(b => b.weaponKey === weaponKey) : 0;
+    if (!builds.length || firstOfWeapon === -1) {
         try {
-            await interaction.followUp({ content: BOT_EMOJI.cross + ' That scope has no builds saved yet.' });
+            await interaction.followUp({ content: BOT_EMOJI.cross + (weaponKey ? ' That weapon no longer has any builds saved.' : ' That scope has no builds saved yet.'), ephemeral: true });
         } catch (notifyError) {
             console.error('Failed to notify user of an empty gunsmith scope (interaction likely expired):', notifyError);
         }
         return;
+    }
+    if (weaponKey) {
+        const count = builds.filter(b => b.weaponKey === weaponKey).length;
+        flatIndex = firstOfWeapon + Math.min(Math.max(Number(buildIndex) || 0, 0), count - 1);
     }
 
     const { weaponBuilds, indexWithinWeapon } = flatIndexToPosition(builds, flatIndex);
