@@ -195,8 +195,8 @@ const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return un
 //   three labelled groups of toggles, Releases · Heads up · Season ending, green when on;
 //   "Or pick only what you want": what is followed, each with its date, then the two dropdowns;
 //   Search (past 25) and Stop all at the foot.
-// The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40.
-function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = null } = {}) {
+// The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40. `zoneOptions` ([{label, value}]) swaps the foot for the Set timezone picker: those zones plus a search option, and Cancel (his ask, 2026-10-24 20:47 EDT: "let's include a set timezone button on the /remind command panel").
+function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = null, zoneOptions = null } = {}) {
     const cats = new Set(sub?.categories || []);
     const follows = sub?.follows || [];
     const { releases, leaving } = followable(seasonalDoc, nowMs);
@@ -242,9 +242,18 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     const lvRow = select('leaving', leaving, `Remind me before this leaves… (${Math.min(leaving.length, MAX_OPTIONS)} live)`, e => `${e.kind} · ends ${optionTime(e.endMs, timeZone)}`);
 
     const foot = [];
-    if (sub?.pausedAt) foot.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}`, emoji: parseEmoji(emojis.reminderEnabled) });
-    if (releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
-    if (confirmStop) foot.push({ type: 2, style: 4, label: 'Yes, stop all and delete', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) }, { type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}` });
+    let zonePicker = [];
+    if (zoneOptions) {
+        const { buildPickerSelectRow } = require('./pickerUI');
+        zonePicker = [block(`-# **Your timezone** · the dropdowns above show times in it${timeZone ? '' : '; until you pick one they show UTC'}`),
+            buildPickerSelectRow({ customId: `remind_tzset:${ownerId}`, placeholder: 'Pick your timezone…', options: zoneOptions.slice(0, 24), currentValue: timeZone, searchLabel: 'Search for your city or zone…', searchDescription: 'Type a city, country or abbreviation' })];
+        foot.push({ type: 2, style: 2, label: 'Cancel', custom_id: `remind_tzcancel:${ownerId}` });
+    } else {
+        foot.push({ type: 2, style: 2, label: 'Set timezone', custom_id: `remind_tz:${ownerId}` });
+    }
+    if (zoneOptions) { /* the picker replaces the rest of the foot until it is closed */ } else if (sub?.pausedAt) foot.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}`, emoji: parseEmoji(emojis.reminderEnabled) });
+    if (!zoneOptions && (releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
+    if (zoneOptions) { /* no Stop all while picking a zone */ } else if (confirmStop) foot.push({ type: 2, style: 4, label: 'Yes, stop all and delete', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) }, { type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}` });
     else if (sub && (cats.size || follows.length)) foot.push({ type: 2, style: 4, label: 'Stop all', custom_id: `remind_stop:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
 
     return [{ type: 17, accent_color: accentColor, components: [
@@ -259,6 +268,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         block(['-# **Pick only what you want** · specific draws, events or playlists, instead of a whole group', ...followLines].join('\n')),
         ...(relRow ? [relRow] : []),
         ...(lvRow ? [lvRow] : []),
+        ...(zonePicker.length ? [{ type: 14, divider: true, spacing: 1 }, ...zonePicker] : []),
         ...(foot.length ? [{ type: 14, divider: false, spacing: 1 }, { type: 1, components: foot }] : []),
     ] }];
 }

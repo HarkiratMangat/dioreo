@@ -24,11 +24,23 @@ async function loadState(userId) {
     return { sub, doc };
 }
 
-// The reader's /settings zone, for the dropdowns' written-out times (utils/reminders.js optionTime); null (shown as UTC) when none is saved. Read lean, so the schema's Toronto default is not filled in.
+// The reader's chosen zone, for the dropdowns' written-out times (utils/reminders.js optionTime); null (shown as UTC) unless they picked one, since `timezone` alone stores its Toronto default on every new record (models/UserPreference.js timezoneSetAt).
 async function userZone(userId) {
     const UserPreference = require('../models/UserPreference');
-    const prefs = await UserPreference.findOne({ discordId: userId }, { timezone: 1 }).lean();
-    return prefs?.timezone || null;
+    const prefs = await UserPreference.findOne({ discordId: userId }, { timezone: 1, timezoneSetAt: 1 }).lean();
+    return prefs?.timezoneSetAt && prefs.timezone ? prefs.timezone : null;
+}
+
+// Saves a picked zone the way /settings does, with the time it was chosen.
+async function saveZone(userId, tz) {
+    const UserPreference = require('../models/UserPreference');
+    await UserPreference.findOneAndUpdate({ discordId: userId }, { $set: { timezone: tz, timezoneSetAt: new Date() } }, { upsert: true, setDefaultsOnInsert: true });
+}
+
+// The Set timezone picker's one-click zones: /settings' own shortlist (utils/timezoneData.js).
+function quickZones() {
+    const { QUICK_TIMEZONES, displayLabel } = require('../utils/timezoneData');
+    return QUICK_TIMEZONES.map(z => ({ label: displayLabel(z.tz, z.label), value: z.tz }));
 }
 
 function accent() {
@@ -54,10 +66,10 @@ async function openOwnPanel(interaction) {
 }
 
 // Re-renders the panel the click came from.
-async function rerender(interaction, sub, { confirmStop = false } = {}) {
+async function rerender(interaction, sub, { confirmStop = false, zoneOptions = null } = {}) {
     const SeasonalData = require('../models/SeasonalData');
     const [doc, timeZone] = await Promise.all([SeasonalData.findOne({ docType: 'global' }).lean(), userZone(interaction.user.id)]);
-    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), confirmStop, timeZone }));
+    return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: interaction.user.id, accentColor: accent(), confirmStop, timeZone, zoneOptions }));
 }
 
 async function notYours(interaction) {
@@ -138,6 +150,43 @@ async function route(interaction) {
             if (!R.isRefusal(err)) throw err;
             return await interaction.editReply({ content: `${emojis.cross} Discord wouldn't let Dioreo DM you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account, then try again.` });
         }
+    }
+
+    // Set timezone: the panel's foot becomes a zone picker (/settings' shortlist plus search); a pick saves it and redraws the panel with its times in that zone.
+    if (interaction.isButton() && (interaction.customId.startsWith('remind_tz:') || interaction.customId.startsWith('remind_tzcancel:'))) {
+        await interaction.deferUpdate();
+        const { sub } = await loadState(owner);
+        return await rerender(interaction, sub, { zoneOptions: interaction.customId.startsWith('remind_tz:') ? quickZones() : null });
+    }
+
+    if (interaction.isStringSelectMenu() && interaction.customId.startsWith('remind_tzset:')) {
+        const picked = interaction.values[0];
+        if (picked === '__search__') {
+            const { buildPickerSearchModal } = require('../utils/pickerUI');
+            return await interaction.showModal(buildPickerSearchModal({ customId: `remind_tzsearch:${owner}`, title: 'Search for your timezone', fieldLabel: 'City, country or abbreviation', fieldPlaceholder: 'Toronto, London, Tokyo, PST…' }));
+        }
+        await interaction.deferUpdate();
+        await saveZone(owner, picked);
+        const { sub } = await loadState(owner);
+        return await rerender(interaction, sub);
+    }
+
+    // The search box: one match is saved at once; several fill the picker with just those.
+    if (interaction.isModalSubmit() && interaction.customId.startsWith('remind_tzsearch:')) {
+        const { searchTimezones } = require('../utils/timezoneData');
+        const found = searchTimezones(interaction.fields.getTextInputValue('query'), 24);
+        if (!found.length) {
+            try {
+                await interaction.reply({ content: `${emojis.cross} No timezone matches that. Try a city, a country or an abbreviation like PST.`, flags: 64 });
+            } catch (error) {
+                console.error('Failed to answer a reminders timezone search:', error?.message);
+            }
+            return;
+        }
+        await interaction.deferUpdate();
+        if (found.length === 1) await saveZone(owner, found[0].value);
+        const { sub } = await loadState(owner);
+        return await rerender(interaction, sub, { zoneOptions: found.length === 1 ? null : found });
     }
 
     if (interaction.isButton() && (interaction.customId.startsWith('remind_stop:') || interaction.customId.startsWith('remind_stopno:'))) {

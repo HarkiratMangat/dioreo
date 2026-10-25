@@ -171,5 +171,17 @@ t("the dropdowns write each time in the reader's zone, since Discord draws no <t
     assert.ok(/releases [A-Z][a-z]{2} \d+ UTC"/.test(JSON.stringify(R.buildPanel(null, doc(), { ownerId: '1', nowMs: RUN }))), 'no zone saved: "Oct 28 UTC"');
 });
 
+t('Set timezone: a button on the panel; the picker swaps the foot for the zones, a search option and Cancel', () => {
+    const sub = { categories: ['newDraws'], follows: [] };
+    const normal = JSON.stringify(R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN }));
+    assert.ok(normal.includes('remind_tz:1') && normal.includes('Set timezone') && normal.includes('remind_stop:1'), 'Set timezone sits in the foot beside Stop all');
+    const zones = [{ label: 'Toronto (EDT)', value: 'America/Toronto' }, { label: 'London (GMT)', value: 'Europe/London' }];
+    const picking = R.buildPanel(sub, doc(), { ownerId: '1', nowMs: RUN, zoneOptions: zones });
+    const ps = JSON.stringify(picking);
+    assert.ok(ps.includes('remind_tzset:1') && ps.includes('__search__') && ps.includes('remind_tzcancel:1'), 'the picker, its search option and Cancel');
+    assert.ok(!ps.includes('remind_stop:1') && !ps.includes('remind_tz:1'), 'no Stop all or second Set timezone while picking');
+    assert.ok(require('../commands/today').countComponents(picking) <= 40, 'under 40 components');
+});
+
 console.log(`\n${failed ? 'FAILED' : 'all passed'}: ${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

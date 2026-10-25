@@ -62,9 +62,9 @@ module.exports = {
         const isEphemeral = visibilityChoice === 'hidden';
         if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
         const UserPreference = require('../models/UserPreference');
-        const [sub, doc, prefs] = await Promise.all([ReminderSubscription.findOne({ discordId: userId }).lean(), SeasonalData.findOne({ docType: 'global' }).lean(), UserPreference.findOne({ discordId: userId }, { timezone: 1 }).lean()]);
+        const [sub, doc, prefs] = await Promise.all([ReminderSubscription.findOne({ discordId: userId }).lean(), SeasonalData.findOne({ docType: 'global' }).lean(), UserPreference.findOne({ discordId: userId }, { timezone: 1, timezoneSetAt: 1 }).lean()]);
         const { PRESET_ACCENT } = require('./calendar');
-        // The dropdowns write their times in the reader's /settings zone (utils/reminders.js optionTime).
-        return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: userId, accentColor: PRESET_ACCENT, timeZone: prefs?.timezone || null }));
+        // The dropdowns write their times in the reader's chosen zone, UTC until they pick one (utils/reminders.js optionTime, models/UserPreference.js timezoneSetAt).
+        return await sendV2Payload(interaction, R.buildPanel(sub, doc || {}, { ownerId: userId, accentColor: PRESET_ACCENT, timeZone: prefs?.timezoneSetAt && prefs.timezone ? prefs.timezone : null }));
     },
 };
