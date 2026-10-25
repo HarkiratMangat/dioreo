@@ -114,7 +114,7 @@ async function route(interaction) {
         const { sub: current, doc } = await loadState(owner);
         const { releases, leaving } = R.followable(doc || {});
         const listed = (kind === 'release' ? releases : leaving).slice(0, R.MAX_OPTIONS).map(e => e.title);
-        const follows = R.mergeFollows(current?.follows || [], kind, listed, interaction.values);
+        const follows = R.toggleFollows(current?.follows || [], kind, listed, interaction.values);
         const sub = await saveSub(owner, { $set: { follows } });
         return await rerender(interaction, sub);
     }

@@ -226,8 +226,12 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         if (!e) return f.kind === 'release' ? 'when it releases' : 'when it is leaving';
         return f.kind === 'release' ? `releases <t:${Math.floor(e.startMs / 1000)}:D>` : `leaving <t:${Math.floor(e.endMs / 1000)}:D>`;
     };
+    // One header per kind instead of a check on every line (Harkirat, 2026-10-24 23:05 EDT: "you don't need to do the checkmark emoji like for each one. Do like a collective header").
+    // Each title on its own line with its date small under it, since the one-line form wrapped anyway (2026-10-24 23:05 EDT, Harkirat: "put the releases line like as a line break in smaller size").
+    const dateLine = f => { const t = when(f); return `-# ${t[0].toUpperCase()}${t.slice(1)}`; };
+    const group = (kind, label) => { const fs = follows.filter(f => f.kind === kind); return fs.length ? [`-# ${bell()} **${label}**`, ...fs.flatMap(f => [`**${f.title}**`, dateLine(f)])] : []; };
     const followLines = follows.length
-        ? follows.map(f => `- ${bell()} **${f.title}** · ${when(f)}`)
+        ? [...group('release', 'Reminding you when these release'), ...group('leaving', 'Reminding you before these leave')]
         : ['-# Pick any draws, events or playlists below to hear about just those.'];
 
     const select = (kind, list, placeholder, describe) => {
@@ -235,7 +239,11 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         if (!shown.length) return null;
         return { type: 1, components: [{
             type: 3, custom_id: `remind_${kind === 'release' ? 'rel' : 'lv'}:${ownerId}`, placeholder, min_values: 0, max_values: shown.length,
-            options: shown.map(e => ({ label: e.title.slice(0, 100), value: optionValue(e.title), description: describe(e), emoji: parseEmoji(e.icon), default: follows.some(f => f.kind === kind && sameTitle(f.title, e.title)) })),
+            // Nothing is pre-picked, the calculator's Add more draws way (2026-10-24 23:05 EDT, Harkirat: the list above already shows what is set, so the same list again in the closed dropdown was confusing). A picked option is marked in its row instead, and picking it again removes it (toggleFollows).
+            options: shown.map(e => {
+                const on = follows.some(f => f.kind === kind && sameTitle(f.title, e.title));
+                return { label: e.title.slice(0, 100), value: optionValue(e.title), description: (on ? `On your list, pick to remove · ${describe(e)}` : describe(e)).slice(0, 100), emoji: parseEmoji(on ? bell() : e.icon) };
+            }),
         }] };
     };
     const relRow = select('release', releases, `Remind me when this releases… (${Math.min(releases.length, MAX_OPTIONS)} upcoming)`, e => `${e.kind} · releases ${optionTime(e.startMs, timeZone)}`);
@@ -280,7 +288,18 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 
 // ---------- Changing a record ----------
 
-// A one-thing follow's set for one kind after a dropdown submit: what was picked, plus any follow of that kind the dropdown did not list (past its 25, or no longer followable), so a submit never drops what it could not show.
+// A dropdown submit toggles (2026-10-24 23:05 EDT): nothing is pre-picked, so each picked value is added, or removed when it was already followed. Follows the dropdown did not list are untouched.
+function toggleFollows(follows, kind, listedTitles, picked) {
+    const titleFor = v => listedTitles.find(t => optionValue(t) === v) || v;
+    let next = [...(follows || [])];
+    for (const v of picked) {
+        const has = next.some(f => f.kind === kind && optionValue(f.title) === v);
+        next = has ? next.filter(f => !(f.kind === kind && optionValue(f.title) === v)) : [...next, { kind, title: titleFor(v) }];
+    }
+    return next;
+}
+
+// (Before the toggle) A one-thing follow's set for one kind after a dropdown submit: what was picked, plus any follow of that kind the dropdown did not list (past its 25, or no longer followable), so a submit never drops what it could not show.
 function mergeFollows(follows, kind, listedTitles, picked) {
     const listed = new Set(listedTitles.map(optionValue));
     const kept = (follows || []).filter(f => f.kind !== kind || !listed.has(optionValue(f.title)));
@@ -426,7 +445,7 @@ function withBell(textComponent) {
 module.exports = {
     CATEGORIES, CATEGORY_KEYS, PANEL_GROUPS, MAX_OPTIONS,
     computeDue, personalise, buildReminderDM, buildTestDM, markFollowed,
-    followable, buildPanel, mergeFollows, resolveSetValue, autocompleteChoices,
+    followable, buildPanel, mergeFollows, toggleFollows, resolveSetValue, autocompleteChoices,
     failureUpdate, isRefusal, msUntilNextRun, runDailyReminders,
     pendingNotice, loadPendingNotices, maybeShowReminderNote, withBell,
 };
