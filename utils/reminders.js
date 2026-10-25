@@ -298,7 +298,8 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         ...(lvRow && showPicks ? [block(`-# ${emojis.yellowDotGlow} **When something leaves soon...**`), lvRow] : []),
         ...(zonePicker.length ? [{ type: 14, divider: true, spacing: 1 }, ...zonePicker] : []),
         ...(confirmStop ? [{ type: 14, divider: true, spacing: 1 }, block(`-# ${emojis.warn} **Stop All clears every reminder you've set!** You'll have to set them up again.`)] : []),
-        ...(foot.length ? [{ type: 1, components: foot }] : []),
+        // A drawn divider above the foot buttons in the normal panel, the last spare component (Harkirat, 2026-10-25 01:10 EDT); Stop all's confirm and the timezone picker already draw one above their own blocks.
+        ...(foot.length ? [...(!confirmStop && !zoneOptions ? [{ type: 14, divider: true, spacing: 1 }] : []), { type: 1, components: foot }] : []),
     ] }];
 }
 
