@@ -231,11 +231,12 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
     const { releases, leaving } = followable(seasonalDoc, nowMs);
     // His layout (Harkirat's layout, 2026-10-25 00:55 EDT: "let's try this?", with "the dropdowns using discord's own multi-select system rather than our workaround trick"): a short header, three labelled groups, then Pick only with each dropdown under its own label. The "On: … · next DM" status and the list of picks are gone: Discord's own multi-select shows what is picked in each closed dropdown.
     const { mentionCommand } = require('./commandMentions');
-    const header = { type: 9, components: [block(`## ${emojis.remind} Reminders\n-# Dioreo only sends one DM a day, a minute after the daily update, with only what you pick.`)],
-        accessory: { type: 2, style: 2, label: 'Send a test', custom_id: `remind_test:${ownerId}` } };
+    // A delivery problem is a warning line under the hint (Harkirat, 2026-10-25 01:01 EDT: "instead of doing that… a note with the warning icon… your reminders were turned off… they basically just have to set their reminders again… by paused, I basically just meant that Dioreo doesn't keep attempting"), not a separate block and button.
     const warning = sub?.pausedAt
-        ? `${emojis.remindAlert} **Paused:** your reminders couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account, then press **Turn back on**.`
-        : sub?.failingSince ? `${emojis.remindAlert} Your last reminder couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.` : null;
+        ? `-# ${emojis.warn} Dioreo couldn't deliver your reminders for several days, so they were turned off. Turn on DMs from Dioreo, then set your reminders again.`
+        : sub?.failingSince ? `-# ${emojis.warn} Your last reminder couldn't reach you. Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.` : null;
+    const header = { type: 9, components: [block([`## ${emojis.remind} Reminders`, '-# Dioreo only sends one DM a day, a minute after the daily update, with only what you pick.', ...(warning ? [warning] : [])].join('\n'))],
+        accessory: { type: 2, style: 2, label: 'Send a test', custom_id: `remind_test:${ownerId}` } };
 
     const groups = [];
     const toggle = (c, label, emoji, on) => ({ type: 2, style: on ? 3 : 2, label, custom_id: `remind_cat:${c.key}:${ownerId}`, emoji: parseEmoji(emoji) });
@@ -279,7 +280,6 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         // Blue "Set timezone" until a zone is chosen, then grey "Adjust timezone" (Harkirat, 2026-10-24 21:29 EDT).
         foot.push(timeZone ? { type: 2, style: 2, label: 'Adjust timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) } : { type: 2, style: 1, label: 'Set timezone', custom_id: `remind_tz:${ownerId}`, emoji: parseEmoji(emojis.timezone) });
     }
-    if (zoneOptions) { /* the picker replaces the rest of the foot until it is closed */ } else if (sub?.pausedAt) foot.push({ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${ownerId}`, emoji: parseEmoji(emojis.reminderEnabled) });
     if (!zoneOptions && (releases.length > MAX_OPTIONS || leaving.length > MAX_OPTIONS)) foot.push({ type: 2, style: 2, label: 'Search', custom_id: `remind_search:${ownerId}`, emoji: { name: '🔍' } });
     // "Yes, stop all!" (his wording, 2026-10-24 21:38 EDT: "leave out the and delete part"), and Keep them with his Keep icon. Keep comes first, on the left (2026-10-24 22:58 EDT, Harkirat: "shouldn't the keep them but[ton] be on the left side of the yes stop all?"), as in the calculator.
     if (zoneOptions) { /* no Stop all while picking a zone */ } else if (confirmStop) foot.push({ type: 2, style: 2, label: 'Keep them', custom_id: `remind_stopno:${ownerId}`, emoji: parseEmoji(emojis.keep) }, { type: 2, style: 4, label: 'Yes, stop all!', custom_id: `remind_stopyes:${ownerId}`, emoji: parseEmoji(emojis.disableReminder) });
@@ -287,7 +287,6 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 
     return [{ type: 17, accent_color: accentColor, components: [
         header,
-        ...(warning ? [block(warning)] : []),
         { type: 14, divider: true, spacing: 2 },
         ...groups,
         // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09–19:36 EDT: an "— OR —" line, capital OR).
@@ -301,6 +300,15 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 }
 
 // ---------- Changing a record ----------
+
+// Once someone turned off for failed DMs sets anything again, the note and the failure state go (Harkirat, 2026-10-25 01:01 EDT: "instead of doing that… a note with the warning icon… your reminders were turned off… they basically just have to set their reminders again… by paused, I basically just meant that Dioreo doesn't keep attempting"). Returns the record as saved.
+async function clearTurnedOff(sub) {
+    if (!sub?.pausedAt || !(sub.categories?.length || sub.follows?.length)) return sub;
+    const ReminderSubscription = require('../models/ReminderSubscription');
+    const set = { pausedAt: null, pauseNoteShown: false, failingSince: null, noteDue: false, noteShownAt: null };
+    await ReminderSubscription.updateOne({ _id: sub._id }, { $set: set });
+    return { ...sub, ...set };
+}
 
 // A one-thing follow's set for one kind after a dropdown submit: what was picked, plus any follow of that kind the dropdown did not list (past its 25, or no longer followable), so a submit never drops what it could not show.
 function mergeFollows(follows, kind, listedTitles, picked) {
@@ -343,7 +351,8 @@ function autocompleteChoices(focused, seasonalDoc, nowMs = Date.now()) {
 function failureUpdate(sub, nowMs) {
     const set = { failingSince: sub.failingSince || new Date(nowMs) };
     if (!sub.failingSince) set.noteDue = true;
-    if (sub.noteShownAt && nowMs - new Date(sub.noteShownAt).getTime() >= 3 * DAY_MS) { set.pausedAt = new Date(nowMs); set.pauseNoteShown = false; }
+    // Turned off, not paused (Harkirat, 2026-10-25 01:01 EDT: "instead of doing that… a note with the warning icon… your reminders were turned off… they basically just have to set their reminders again… by paused, I basically just meant that Dioreo doesn't keep attempting"): what they followed is cleared, so they set it again once DMs work; `pausedAt` stays as the record of when, for the panel's note.
+    if (sub.noteShownAt && nowMs - new Date(sub.noteShownAt).getTime() >= 3 * DAY_MS) { set.pausedAt = new Date(nowMs); set.pauseNoteShown = false; set.categories = []; set.follows = []; }
     return set;
 }
 const isRefusal = err => [50278, 50007].includes(err?.code ?? err?.rawError?.code);
@@ -436,7 +445,7 @@ async function maybeShowReminderNote(interaction) {
         if (!sub) return;
         const fix = 'Turn on DMs from a server you share with Dioreo, or add Dioreo to your account.';
         if (sub.pausedAt && !sub.pauseNoteShown) {
-            await interaction.followUp({ content: `${emojis.remindAlert} **Your reminders are paused:** they couldn't reach you for a few days. ${fix}`, components: [{ type: 1, components: [{ type: 2, style: 3, label: 'Turn back on', custom_id: `remind_resume:${userId}`, emoji: parseEmoji(emojis.reminderEnabled) }] }], flags: 64 });
+            await interaction.followUp({ content: `${emojis.remindAlert} **Your reminders were turned off:** Dioreo couldn't deliver them for several days. ${fix} Then set them again.`, components: [{ type: 1, components: [{ type: 2, style: 2, label: 'Open reminders', custom_id: 'remind_open', emoji: parseEmoji(emojis.remind) }] }], flags: 64 });
             await ReminderSubscription.updateOne({ _id: sub._id }, { $set: { pauseNoteShown: true } });
         } else if (sub.noteDue) {
             await interaction.followUp({ content: `-# ${emojis.remindAlert} Your reminder DM couldn't reach you. ${fix}`, flags: 64 });
@@ -460,7 +469,7 @@ function withBell(textComponent) {
 module.exports = {
     CATEGORIES, CATEGORY_KEYS, PANEL_GROUPS, MAX_OPTIONS,
     computeDue, personalise, buildReminderDM, buildTestDM, markFollowed,
-    buildTimezoneNote, leavingKeys, followable, buildPanel, mergeFollows, coveringCategory, resolveSetValue, autocompleteChoices,
+    buildTimezoneNote, leavingKeys, clearTurnedOff, followable, buildPanel, mergeFollows, coveringCategory, resolveSetValue, autocompleteChoices,
     failureUpdate, isRefusal, msUntilNextRun, runDailyReminders,
     pendingNotice, loadPendingNotices, maybeShowReminderNote, withBell,
 };

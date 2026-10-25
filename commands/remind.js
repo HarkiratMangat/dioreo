@@ -50,6 +50,7 @@ module.exports = {
             }
             const sub = await ReminderSubscription.findOneAndUpdate({ discordId: userId }, update, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }).lean();
             if (!sub.categories?.length && !sub.follows?.length && !sub.pausedAt) await ReminderSubscription.deleteOne({ _id: sub._id });
+            else await require('../utils/reminders').clearTurnedOff(sub);
             const what = target.type === 'category' ? `**${target.label}**` : `**${target.title}** ${target.kind === 'release' ? 'releases' : 'is leaving'}`;
             const content = on
                 ? `${emojis.reminderEnabled} ${target.type === 'category' ? `You'll get a DM for ${what}` : `You'll get a DM when ${what}`}, at the daily update (00:01 UTC).`

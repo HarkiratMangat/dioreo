@@ -77,7 +77,7 @@ paths:
 | `tsmenu\|` | `timestamp.js` |
 | `help_category` `help_guide_pick` | `help.js` |
 | `invite_share` | `invite.js` |
-| `remind_` | `remind.js` (the /remind panel, the bell's `remind_open`, Turn back on) |
+| `remind_` | `remind.js` (the /remind panel, the bell's `remind_open`, the timezone tip's `remind_tzdm`) |
 | `embedtest_` | `embedTest.js` (the dev-only `/embedtest`: its paste modal and its dummy controls) |
 | `select_patch_history` `patch_search` | `patchnotes.js` |
 | `ptn_` | `addToPatchNotes.js` (right-click Add to Patch Notes) |

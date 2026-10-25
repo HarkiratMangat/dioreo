@@ -66,7 +66,7 @@ async function saveSub(userId, update) {
         await ReminderSubscription.deleteOne({ _id: sub._id });
         return null;
     }
-    return sub;
+    return await R.clearTurnedOff(sub);
 }
 
 // The panel, privately, as a new message: the bell, the DM's button, and the confirm's "Open reminders".

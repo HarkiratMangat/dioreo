@@ -180,6 +180,9 @@ t('failed DMs, his rule: a note on the first failure; paused once the note was s
     assert.ok(!again.pausedAt && !again.noteDue, 'two days after the note: not yet');
     const paused = R.failureUpdate(sub({ failingSince: d(RUN - 5 * DAY), noteShownAt: d(RUN - 3 * DAY) }), RUN);
     assert.ok(paused.pausedAt && paused.pauseNoteShown === false);
+    assert.deepStrictEqual([paused.categories, paused.follows], [[], []], 'turned off: what they followed is cleared');
+    const note = JSON.stringify(R.buildPanel(sub({ pausedAt: d(RUN) }), doc(), { ownerId: 'u1', nowMs: RUN }));
+    assert.ok(note.includes('so they were turned off') && !note.includes('remind_resume'), 'a warning line in the header, no Turn back on');
     assert.ok(R.isRefusal({ code: 50278 }) && R.isRefusal({ rawError: { code: 50007 } }) && !R.isRefusal({ code: 500 }));
 });
 
