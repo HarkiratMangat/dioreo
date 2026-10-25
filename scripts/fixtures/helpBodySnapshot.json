@@ -184,6 +184,21 @@
           "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
         },
         {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "### Dispute a build\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@1139845545754632283> with your proof."
+            }
+          ],
+          "accessory": {
+            "type": 2,
+            "style": 2,
+            "label": "Dispute a Build",
+            "custom_id": "gsb~dispute"
+          }
+        },
+        {
           "type": 14,
           "spacing": 2,
           "divider": true
@@ -1070,6 +1085,21 @@
         {
           "type": 10,
           "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "### Dispute a build\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@1139845545754632283> with your proof."
+            }
+          ],
+          "accessory": {
+            "type": 2,
+            "style": 2,
+            "label": "Dispute a Build",
+            "custom_id": "gsb~dispute"
+          }
         },
         {
           "type": 14,
@@ -1987,6 +2017,21 @@
         {
           "type": 10,
           "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "### Dispute a build\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@1139845545754632283> with your proof."
+            }
+          ],
+          "accessory": {
+            "type": 2,
+            "style": 2,
+            "label": "Dispute a Build",
+            "custom_id": "gsb~dispute"
+          }
         },
         {
           "type": 14,
@@ -3000,6 +3045,21 @@
         {
           "type": 10,
           "content": "### `/gunsmith mp`\nFind an MP weapon's loadout, or browse a whole class or the Meta\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n### `/gunsmith dmz`\nFind a DMZ weapon's loadout, or browse Meta or every DMZ build\n-# **Options**\n-# 🔹 `<weapon>` Select a weapon, or an \"All ... builds\" row at the top to browse\n-# 🔹 `[visibility]` Show this response only to you, or publicly to everyone in the chat.\n\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:`AK117`\n-# 🔸 **/gunsmith mp** weapon:`Switchblade X9` visibility:`Hidden`\n-# 🔸 **/gunsmith mp** weapon:`All SMG builds`\n-# 🔸 **/gunsmith mp** weapon:`All META builds`\n-# 🔸 **/gunsmith dmz** weapon:`Fennec`"
+        },
+        {
+          "type": 9,
+          "components": [
+            {
+              "type": 10,
+              "content": "### Dispute a build\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@1139845545754632283> with your proof."
+            }
+          ],
+          "accessory": {
+            "type": 2,
+            "style": 2,
+            "label": "Dispute a Build",
+            "custom_id": "gsb~dispute"
+          }
         },
         {
           "type": 14,

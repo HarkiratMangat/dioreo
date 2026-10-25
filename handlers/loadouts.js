@@ -43,6 +43,26 @@ async function openNoBuild(interaction, category, index) {
 }
 
 async function route(interaction) {
+        // SUBMIT A BUILD and DISPUTE A BUILD (Harkirat's /gunsmith review, 2026-10-25 16:40-17:08 EDT): every step lives in utils/buildSubmissions.js. The owner-only steps check the owner there.
+        {
+            const subs = require('../utils/buildSubmissions');
+            const id = interaction.customId;
+            if (interaction.isButton() && id.startsWith('gsb~submit~')) {
+                const [, , mode, key] = id.split('~');
+                const CatalogueItem = require('../models/CatalogueItem');
+                const known = key ? await CatalogueItem.findOne({ kind: 'weapon', key }).lean() : null;
+                const name = known ? known.name.toUpperCase() : (interaction.message?.components?.[0]?.components?.[0]?.content || '').replace(/^##\s*/, '').split('\n')[0];
+                return await interaction.showModal(subs.submitModal({ mode: mode === 'DMZ' ? 'DMZ' : 'MP', weaponName: name, category: known ? known.category : '' }));
+            }
+            if (interaction.isModalSubmit() && id.startsWith('gsb~subsave~')) return await subs.handleSubmitSave(interaction);
+            if (interaction.isButton() && id.startsWith('gsb~sub~')) return await subs.handleSubmissionButton(interaction);
+            if (interaction.isModalSubmit() && id.startsWith('gsb~subok~')) return await subs.handleApproveSave(interaction);
+            if (interaction.isButton() && id === 'gsb~dispute') return await interaction.showModal(subs.disputeModal());
+            if (interaction.isModalSubmit() && id === 'gsb~dissave') return await subs.handleDisputeSave(interaction);
+            if (interaction.isButton() && id.startsWith('gsb~dis~')) return await subs.handleDisputeButton(interaction);
+            if (interaction.isModalSubmit() && id.startsWith('gsb~disinfo~')) return await subs.handleDisputeInfo(interaction);
+        }
+
         // LOADOUT "BROWSE OTHER BUILDS" DROPDOWN (added 2026-07-12) -- lets a user jump straight to a different weapon's card without re-running the slash command. Selected value is just a bare `weaponKey` (see utils/loadoutRender.js's buildCategoryBrowseRow -- this used to also encode a build index for a specific build variant, simplified to weapon-only per Harkirat's follow-up request; always opens at build index 0). Mode is inferred from which dropdown fired ('mpbrowse' vs 'dmzbrowse'), matching the dmz/mp-prefixed pagination convention used everywhere else for these two card types.
         //
         // BUG FIX (found live, 2026-07-13): this used to be misplaced inside `if (interaction. isButton())` further down -- a plain copy-paste-adjacent mistake when it was first added. A StringSelectMenuInteraction never satisfies `isButton()`, so the entire block was dead code: no error, no log, nothing -- Discord just timed out the interaction after ~3s with a bare "This interaction failed" and the bot never even attempted to handle it. Moved into the correct `isStringSelectMenu()` block (this one) where it's actually reachable. ⚠️ The type test is load-bearing, and the comment above is the reason. `mpbrowse` matches the pagination branch's `startsWith('mp')` further down, so these two are separated ONLY by interaction type -- pre-split that separation was structural (two different blocks), and flattening them into one function is what made it explicit here. Without it the ordering of these branches would silently decide which one wins.

@@ -361,7 +361,9 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
         attachmentSlots,
         imageKey: imageKeyOverride || data.imageKey,
         shareCode: data.gunsmithCode || '',
-        ...badges
+        ...badges,
+        // A build from Submit a Build keeps its submitter, shown only if they chose credit (utils/buildSubmissions.js, Harkirat 2026-10-25 17:06 EDT).
+        ...(data.submission ? { submittedBy: { discordId: data.submission.discordId, credited: Boolean(data.submission.credited) } } : {})
     });
     await doc.save();
 
@@ -452,14 +454,17 @@ async function confirmCoreNow(token) {
             imageKey = deriveImageKey(data.weaponName, 'DMZ', taken.map(t => t.imageKey));
         }
 
-        // Image only -- structured metadata is set from the saved Loadout doc by writeLoadoutDoc -> syncLoadoutMetadata (which also has the per-slot data), so a metadata problem can never fail this upload.
-        const uploadResult = await uploadLoadoutImage(data.sourceImageUrl, imageKey);
+        // Image only -- structured metadata is set from the saved Loadout doc by writeLoadoutDoc -> syncLoadoutMetadata (which also has the per-slot data), so a metadata problem can never fail this upload. A submitted build may come with no screenshot (Harkirat, 2026-10-25 16:59 EDT: "preferred but not required"): it saves with the placeholder image, as a bulk paste with no image does.
+        const uploadResult = data.sourceImageUrl ? await uploadLoadoutImage(data.sourceImageUrl, imageKey) : { success: true, noImage: true };
+        if (uploadResult.noImage) imageKey = require('./adminParser').PLACEHOLDER_IMAGE;
 
         if (uploadResult.success) {
             require('./visionReads').noteOutcome(data.readId, 'saved');
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility: Mongoose validation, a dropped connection), the token must still be sitting in pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere. (Found in review: this used to delete first, which meant a save() failure here lost the data permanently -- no Loadout doc, no recoverable token.)
             const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
             pendingAutobuilds.delete(token);
+            // A submitted build: thank the submitter and mark the owner's DM card (never throws).
+            if (data.submission) require('./buildSubmissions').onSaved(data.submission, doc);
             // The image now lives under the build's own key, so the cached copy goes ("if it's confirmed, then it goes from the cache folder into the actual correct storage folder").
             releaseCache(data);
             return { status: 'saved', doc };

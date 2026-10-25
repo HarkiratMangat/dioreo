@@ -245,8 +245,16 @@ async function getAllHelpCommandNames(perms = {}) {
     return visibleCategories(perms).flatMap(c => visibleCommands(c, perms)).map(c => c.name);
 }
 
-// Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below.
+// Each of these four now composes its per-command "-# **Options**" blocks from CATEGORY_DEFS' own data via renderCommandBlock() (v3-pre-release review finding #49) instead of hand-built escaped-markdown concatenation -- only the hand-written "-# **Examples**" trailer (bespoke per page, not worth data-ifying) stays as a literal string. `commands` is the category's own detailCommands (gunsmith) or staticCommands (draws/seasonal/utilities) -- see buildContainer's dispatch below. PARTS since 2026-10-25 17:10 EDT: the Dispute a Build section carries its button as an accessory (Harkirat's /gunsmith review: the dispute form lives in /help only, beside "or DM <@owner>", his clickable @mention). handlers/loadouts.js answers `gsb~dispute`.
 function buildGunsmithBody(commands, client) {
+    const { ALLOWED_ADMIN_ID } = require('../utils/owner');
+    return [
+        { content: buildGunsmithText(commands, client) },
+        { content: `### Dispute a build\nIf a submitted build uses your screenshot, ask for its removal or the credit. You'll need proof the original is yours and was posted before the build went live. Or DM <@${ALLOWED_ADMIN_ID}> with your proof.`,
+            accessory: { type: 2, style: 2, label: 'Dispute a Build', custom_id: 'gsb~dispute' } },
+    ];
+}
+function buildGunsmithText(commands, client) {
     return commands.map(c => renderCommandBlock(c, client)).join('')
         + `\n-# **Examples**\n-# 🔸 **/gunsmith mp** weapon:\`AK117\`\n-# 🔸 **/gunsmith mp** weapon:\`Switchblade X9\` visibility:\`Hidden\`\n-# 🔸 **/gunsmith mp** weapon:\`All SMG builds\`\n-# 🔸 **/gunsmith mp** weapon:\`All META builds\`\n-# 🔸 **/gunsmith dmz** weapon:\`Fennec\``;
 }
