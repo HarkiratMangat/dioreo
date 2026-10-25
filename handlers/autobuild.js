@@ -75,6 +75,12 @@ async function route(interaction) {
             return await interaction.showModal(buildStartModal(customId.split('|')[1] || ''));
         }
 
+        // --- BULK AUTOBUILD: ADD SCREENSHOTS --- the start form, whose screenshots join this batch (2026-10-25 14:03 EDT). A button, so it may answer with showModal().
+        if (interaction.isButton() && customId.startsWith('autobuild_b|add|')) {
+            const { buildStartModal } = require('../utils/autobuildStart');
+            return await interaction.showModal(buildStartModal());
+        }
+
         // --- BULK AUTOBUILD: EDIT BUTTON --- a button, so it may answer with showModal(); its modal submit is the separate isModalSubmit() branch below, never this one (the same placement rule as autobuild_editbtn_).
         if (interaction.isButton() && interaction.customId.startsWith('autobuild_b|edit|')) {
             const { showBatchEditModal } = require('../utils/autobuildBulk');

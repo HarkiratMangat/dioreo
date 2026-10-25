@@ -39,6 +39,8 @@ module.exports = {
 
         // Nothing given: the form, straight away (2026-10-25 11:40-11:47 EDT, his ask and pick). showModal has to be the first response, so nothing is deferred before it. It replaces the "Provide exactly one of screenshot or url" error a bare run used to get ("this error message is also wrong").
         if (!attachment && !url && !retryToken) {
+            // An open batch comes back first, where it was left (Harkirat, 2026-10-25 13:31 EDT: "running /autobuild ... will basically resume the process"); its Add screenshots button opens the form.
+            if (await require('../utils/autobuildBulk').resumeOpenBatch(interaction)) return;
             const { buildStartModal } = require('../utils/autobuildStart');
             return interaction.showModal(buildStartModal());
         }
