@@ -727,7 +727,7 @@ const GATE_TEXT = { noCommands: "Discord blocks **Use Application Commands** her
 
 // The denied panel's small print, shared by the command and a click (Harkirat's wording and layout, 2026-10-25 11:00 EDT: the -# lines in their own text box so Discord leaves a gap; his lock and Access Denied emojis to come). /help and /settings are clickable commands.
 function deniedHints(client) {
-    return `-# **Lost access?** Discord Support can restore ownership; once Discord says you're an admin again, this panel will open. Dioreo's dev can also reset this server's rules on request · ${mentionCommand(client, '/help')}\n-# **Looking for your own settings?** Check out ${mentionCommand(client, '/settings')}.`;
+    return `-# **Lost access?** Discord Support can restore ownership; once Discord says you're an admin again, this panel will open. Dioreo's dev can also reset this server's rules on request · ${mentionCommand(client, '/help')}\n-# **Looking for your own settings?** Check out ${mentionCommand(client, '/settings')}`;
 }
 
 // Single entry point for every `admin_*` component. handlers/router.js routes here rather than growing another dozen branches in its own handler, and the admin gate lives here so there is exactly one place that decides who may change a server's rules.
