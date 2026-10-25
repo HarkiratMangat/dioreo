@@ -328,6 +328,7 @@ async function handleBatchComponent(interaction) {
         const item = batch.items[index];
         if (item && item.status === 'pending') {
             if (action === 'cancel') {
+                require('./visionReads').noteOutcome(item.data?.readId, 'discarded');
                 pendingAutobuilds.delete(item.token);
                 item.status = 'cancelled';
             } else {
@@ -347,6 +348,7 @@ async function handleBatchComponent(interaction) {
     } else if (action === 'none') {
         for (const item of batch.items) {
             if (item.status !== 'pending') continue;
+            require('./visionReads').noteOutcome(item.data?.readId, 'discarded');
             pendingAutobuilds.delete(item.token);
             item.status = 'cancelled';
         }
@@ -355,6 +357,7 @@ async function handleBatchComponent(interaction) {
         for (const i of restored) {
             const item = batch.items[i];
             pendingAutobuilds.set(item.token, item.data);
+            require('./visionReads').noteOutcome(item.data?.readId, null);
             item.status = 'pending';
         }
         if (restored.length) batch.page = restored[0];

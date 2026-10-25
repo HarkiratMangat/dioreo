@@ -107,6 +107,7 @@ export const TESTS = [
     {"cmd": "node scripts/autobuildDmz.test.js", "lane": "unit"},
     {"cmd": "node scripts/autobuildBulk.test.js", "lane": "unit"},
     {"cmd": "node scripts/autobuildStart.test.js", "lane": "unit"},
+    {"cmd": "node scripts/visionReads.test.js", "lane": "unit"},
     {"cmd": "node scripts/botGlyphs.test.js", "lane": "unit"},
     {"cmd": "node scripts/visionCost.test.js", "lane": "unit"},
     {"cmd": "node scripts/helpBodySnapshot.test.js", "lane": "unit"},

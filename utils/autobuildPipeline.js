@@ -136,7 +136,7 @@ function buildReviewCard(token, data, opts = {}) {
     // Warnings first, above the build (Harkirat, 2026-10-20 13:19 EDT: "warning section should be above the wep name, mode, etc.").
     const warnings = [
         data.categoryConflict ? `${BOT_EMOJI.warn} **Category mismatch:** this weapon is already saved as \`${data.categoryConflict}\`\n> **Saving as:** \`${data.category}\`, so it would sit under two categories\n> **Fix:** change the category with **Adjust**` : null,
-        data.labelWarning, data.duplicateWarning, data.catalogueWarning, data.equipCapWarning,
+        data.labelWarning, data.duplicateWarning, data.catalogueWarning, data.equipCapWarning, data.confidenceWarning,
         // The start form's preset words nothing recognised, and its notes (2026-10-25 12:49 EDT: "shows on that build's review page, never dropped silently").
         data.presetWarning ? `${BOT_EMOJI.warn} ${data.presetWarning}` : null, ...(data.formNotes || []).map(n => `${BOT_EMOJI.warn} ${n}`),
         ...(opts.notes || []),
@@ -174,7 +174,7 @@ function buildReviewCard(token, data, opts = {}) {
         { type: 10, content: opts.title || '## Review Extracted Gunsmith' },
         ...(opts.header ? [{ type: 10, content: opts.header }] : []),
         // Which screenshot or link this build came from, when the start form read it: the order Discord hands uploads back in is not verified, so the page names its file.
-        ...(data.sourceLabel ? [{ type: 10, content: `-# ${data.sourceLabel}` }] : []),
+        ...((data.sourceLabel || data.reusedFrom) ? [{ type: 10, content: `-# ${[data.sourceLabel, data.reusedFrom ? `Reused the read from <t:${Math.floor(new Date(data.reusedFrom).getTime() / 1000)}:R>, no new cost` : null].filter(Boolean).join(' · ')}` }] : []),
         { type: 14, spacing: 1, divider: true },
     ];
     if (warnings.length) {
@@ -229,11 +229,23 @@ async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOpti
     return { category, badgesRaw };
 }
 
+// The model's own low ratings, as a warning for the review card: a field it rated under 60 is worth a second look. Its note about the screenshot rides along. Null when nothing is low and nothing was noted.
+const UNSURE_BELOW = 60;
+function confidenceWarningFor(extracted) {
+    const names = { weaponName: 'weapon', gunsmithCode: 'code', attachments: 'attachments', mode: 'MP/DMZ' };
+    const low = Object.entries(extracted.confidence || {}).filter(([, v]) => v < UNSURE_BELOW).map(([k, v]) => `${names[k] || k} (${v}%)`);
+    const note = String(extracted.observations || '').trim();
+    const repeats = (extracted.repeatedAttachments || []).length ? `Read twice: ${extracted.repeatedAttachments.map(a => `\`${a}\``).join(', ')}` : '';
+    if (!low.length && !repeats) return null;
+    return [`${BOT_EMOJI.warn} **The model was unsure:** ${low.length ? low.join(', ') : 'see below'}`, repeats ? `> ${repeats}` : null, note ? `> ${note}` : null, '> **Check:** compare with the screenshot before saving'].filter(Boolean).join('\n');
+}
+
 // The reading half of runExtraction, shared with utils/autobuildBulk.js (2026-10-20 10:33 EDT, bulk /autobuild): one screenshot in, one review's `data` out, nothing sent and nothing stashed. It THROWS when the vision call fails, so each caller words the failure its own way. `allBuilds` lets a caller reading several screenshots fetch the build list once instead of once per image.
 async function extractToData(sourceImageUrl, { explicitCategory = null, badgesOption = null, explicitMode = null, adminId, allBuilds = null } = {}) {
     // The catalogue's weapon names ride in the prompt; its attachment names join the stored ones the corrector below snaps a misread onto.
     const catIndex = await getCatalogueIndex();
-    const extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live', knownWeapons: catIndex ? [...catIndex.weapons.values()].map(w => w.name) : [] });
+    // Every read is recorded, and the exact same file again reuses its earlier read (models/VisionRead.js, 2026-10-25 13:52 EDT).
+    const extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live', knownWeapons: catIndex ? [...catIndex.weapons.values()].map(w => w.name) : [], record: true, reuse: true });
     // One fetch, reused for BOTH the attachment-name corrector's known-vocabulary set AND the duplicate/category-conflict warnings (refreshReviewWarnings) -- richer field select than the old attachments-only projection so those checks have shareCode/category/weaponName to work with. Both modes since 2026-10-19 17:52 EDT: DMZ uses the same attachment names (and adds some MP builds don't have), so the vocabulary is the union, and refreshReviewWarnings splits by mode where it matters.
     const builds = allBuilds || await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
     const knownAttachments = await knownAttachmentNames(builds);
@@ -262,7 +274,11 @@ async function extractToData(sourceImageUrl, { explicitCategory = null, badgesOp
         modeSource: explicitMode ? 'explicit' : (mode ? 'detected' : null),
         modeSignals: extracted.modeSignals,
         sourceImageUrl,
-        adminId
+        adminId,
+        // The read this review came from, so Adjust, Save and Discard are recorded against it.
+        readId: extracted.readId || null,
+        reusedFrom: extracted.reusedFrom || null,
+        confidenceWarning: confidenceWarningFor(extracted),
     };
     refreshReviewWarnings(data, builds);
     data.catalogueWarning = await catalogueWarningFor(data);
@@ -406,6 +422,7 @@ async function confirmCore(token) {
         const uploadResult = await uploadLoadoutImage(data.sourceImageUrl, imageKey);
 
         if (uploadResult.success) {
+            require('./visionReads').noteOutcome(data.readId, 'saved');
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility: Mongoose validation, a dropped connection), the token must still be sitting in pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere. (Found in review: this used to delete first, which meant a save() failure here lost the data permanently -- no Loadout doc, no recoverable token.)
             const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
             pendingAutobuilds.delete(token);
@@ -490,6 +507,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
 }
 
 async function cancelReview(interaction, token) {
+    require('./visionReads').noteOutcome(pendingAutobuilds.get(token)?.readId, 'discarded');
     pendingAutobuilds.delete(token);
     return interaction.followUp({ content: glyphs(BOT_EMOJI.cross + ' Discarded -- nothing was saved or uploaded.'), ephemeral: true });
 }
@@ -578,6 +596,8 @@ async function applyEditFields(interaction, data) {
     };
     refreshReviewWarnings(updated, allBuilds);
     updated.catalogueWarning = await catalogueWarningFor(updated);
+    // What Adjust changed, recorded against the read: the real measure of what the model got wrong.
+    require('./visionReads').noteAdjustment(data.readId, data, updated);
     return updated;
 }
 
