@@ -218,6 +218,11 @@ t('page tabs run alphabetically and the name page is "Username"; the hex shares 
     assert.ok(/\*\* · `#[0-9A-F]{6}`\\n> /.test(flat) && !/Hex: /.test(flat), 'a swatch row still has its own "Hex:" line');
 });
 
+t("/colors' page option lists the pages in the panel's order and names (2026-10-25 14:19 EDT)", () => {
+    const opt = require('../commands/colors').data.toJSON().options.find(o => o.name === 'page');
+    assert.deepStrictEqual(opt.choices.map(c => [c.name, c.value]), [['Avatar', 'avatar'], ['Banner', 'banner'], ['Deco', 'decoration'], ['Nameplate', 'nameplate'], ['Username', 'name']]);
+});
+
 (async () => {
     for (const run of pending) await run();
     console.log(`\n  ${passed} passed, ${failed} failed\n`);

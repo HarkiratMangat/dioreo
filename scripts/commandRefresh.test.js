@@ -127,6 +127,21 @@ t('/draws shows Price These Draws only when a draw has a price type, and stays u
     assert.ok(!JSON.stringify(buildContainer(doc(false), 'new', 0)).includes('calc~drawspick~'), 'no priced draw, no button');
 });
 
+t('/draws: one pager walks New then Returning and loops, its middle naming the section and counting every page (2026-10-25 14:39 EDT)', () => {
+    const { paginateDraws } = require('../commands/draws');
+    const many = { ...doc(false), returningDraws: Array.from({ length: 30 }, (_, i) => ({ title: `Old Draw ${i}`, date: day(2026, 7, 1), items: [] })) };
+    const total = 1 + paginateDraws(many.returningDraws).length;
+    assert.ok(total >= 3, `the fixture spans ${total} pages`);
+    const pager = (page, sub) => buildContainer(many, page, sub).flatMap(function f(c) { return [c, ...(c.components || []).flatMap(f)]; }).find(c => c.type === 1 && c.components.some(b => b.custom_id === 'subpage_indicator'));
+    const first = pager('new', 0).components;
+    assert.strictEqual(first[1].label, `New · 1/${total}`);
+    assert.deepStrictEqual([first[0].custom_id, first[2].custom_id], [`subpage_returning_${total - 2}`, 'subpage_returning_0'], 'back from New loops to the last Returning page, next goes to Returning');
+    const last = pager('returning', total - 2).components;
+    assert.strictEqual(last[1].label, `Returning · ${total}/${total}`);
+    assert.strictEqual(last[2].custom_id, 'subpage_new_0', 'next from the last page loops to New');
+    assert.ok(pager('new', 0) && buildContainer({ ...doc(false), returningDraws: [] }, 'new', 0), 'an empty Returning still renders');
+});
+
 t('/calendar: finished first by when they ended, then live by when they end, then upcoming by when they start; each with its dot and status (2026-10-21 14:39 EDT)', () => {
     const cal = require('../commands/calendar');
     const emojis = require('../utils/emojiMap');

@@ -16,11 +16,12 @@ module.exports = {
         .setDescription('View colors extracted from your profile')
         // Reordered 2026-08-13 (Harkirat: "page/source/visibility reads better than leading with visibility") -- Discord's option picker follows registration order, not alphabetical, so this order IS the display order. Jump straight to a specific source page instead of always landing on Avatar. Values match utils/colorPaletteView.js's SOURCE_META keys exactly.
         .addStringOption(option => option.setName('page').setDescription('Jump straight to a specific color source.').addChoices(
+            // Same order and names as the panel's page row (2026-10-25 14:19 EDT, Harkirat: "the slash command option would also need the reorder for /colors"); the value stays `name`.
             { name: 'Avatar', value: 'avatar' },
             { name: 'Banner', value: 'banner' },
-            { name: 'Name', value: 'name' },
+            { name: 'Deco', value: 'decoration' },
             { name: 'Nameplate', value: 'nameplate' },
-            { name: 'Deco', value: 'decoration' }
+            { name: 'Username', value: 'name' }
         ))
         // Per-server profile support (2026-08-09 17:12 EDT). The ONLY override in the whole feature, and deliberately NOT saved to UserPreference -- per-invocation only, same shape as /timestamp's `view`. Everything else resolves from context alone. Renamed 'from' -> 'source' with clearer choice labels 2026-08-13 (Harkirat's request).
         .addStringOption(option => option.setName('source').setDescription("Read colors from your main profile, or your profile for this server.").addChoices({ name: 'From Main Profile', value: 'global' }, { name: 'From Server Profile', value: 'server' }))

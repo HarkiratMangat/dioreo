@@ -51,5 +51,12 @@ t('the search pop-up is one required text field', () => {
     new ModalBuilder(m);
 });
 
+t("each season's dates are its description: the newest reads Current Season, an older one runs to the next release (2026-10-25 15:09 EDT)", () => {
+    const at = (n, iso) => ({ ...patch(n), releaseDate: new Date(iso) });
+    const s = select(pn.buildContainer({ patchNotes: [at(6, '2025-12-10T10:00:00Z'), at(7, '2026-01-14T10:00:00Z'), at(8, '2026-02-18T10:00:00Z')] }));
+    assert.deepStrictEqual(s.options.map(o => o.description), ['Current Season', 'Jan 14 – Feb 18, 2026', 'Dec 10, 2025 – Jan 14, 2026']);
+    assert.ok(s.options.every(o => o.description.length <= 100), 'within a description\'s 100 characters');
+});
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

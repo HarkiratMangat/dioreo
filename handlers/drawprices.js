@@ -16,6 +16,27 @@ function ownsCustomId(customId) {
 }
 
 async function route(interaction) {
+        // THE HEADER'S CALCULATOR BUTTON (2026-10-25 14:13-14:25 EDT, Harkirat's review): opens /draw calculator as its own message, never over this panel, under the presser's /settings Draw Calculator visibility ("follow /settings"). The calculator's execute() sees a button interaction that is not yet acknowledged, so it defers a NEW reply with that visibility and reopens the presser's last calculation. Anyone may press it: the calculator is always the presser's own.
+        if (interaction.isButton() && interaction.customId === 'price_calc') {
+            return await require('../commands/drawCalculator').execute(interaction);
+        }
+
+        // THE REGION DROPDOWN (2026-10-25 14:13 EDT), `price_regionsel_{view}`: the same switch as the button row below it replaced, persisted to prefs.defaultRegion the same way.
+        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('price_regionsel_')) {
+            await interaction.deferUpdate();
+            const selectedRegion = ['region_10', 'region_20', 'region_30'].includes(interaction.values[0]) ? interaction.values[0] : 'region_10';
+            const lastSegment = interaction.customId.replace('price_regionsel_', '');
+            const currentSubpage = /^[fm]/.test(lastSegment) ? lastSegment : (parseInt(lastSegment, 10) || 0);
+            const UserPreference = require('../models/UserPreference');
+            let prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+            if (!prefs) prefs = new UserPreference({ discordId: interaction.user.id });
+            prefs.defaultRegion = selectedRegion;
+            await prefs.save();
+            const pricesCommand = interaction.client.commands.get('draw');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await pricesCommand.execute(syntheticInteraction, selectedRegion, currentSubpage);
+        }
+
         // DRAW PRICES REGION SWITCHER -- was a single "switch to the other region" toggle button (per Harkirat's drawPrices_ui.json redesign) until the 20 CP region was added 2026-08-07, at which point a binary toggle stopped making sense (see drawprices.js's REGION_ORDER note) and it became a 3-way button row, one button per region. custom_id encodes the region to JUMP TO directly (same scheme as before, just generalized past 2 regions) plus the CURRENT subpage (added 2026-07-12 once entries got split across 2 pages -- e.g. `price_region_30_1` -- so switching region doesn't reset which page of entries you were on). Deliberately NOT prefixed `toggle_` -- that prefix is claimed by the generic /settings binary-toggle handler in `handlers/settings.js` (`customId.startsWith('toggle_')`), which expects a `|{userId}` suffix; a bare `toggle_price_region_10` would have matched that check first, found no userId to compare against, and always hit its "Action Blocked" branch (caught during a bug-check pass before ever being pushed, not found live). Persists to prefs.defaultRegion same as calendar's active/all filter toggle -- the picked region becomes the new default every subsequent /draw prices lands on until changed again.
         const PRICE_REGION_PREFIXES = { 'price_region_10_': 'region_10', 'price_region_20_': 'region_20', 'price_region_30_': 'region_30' };
         const priceRegionPrefix = Object.keys(PRICE_REGION_PREFIXES).find(prefix => interaction.customId.startsWith(prefix));
