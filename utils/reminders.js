@@ -225,6 +225,7 @@ const parseEmoji = s => { try { return emojis.parseEmoji(s); } catch { return un
 //   "Or pick only what you want": what is followed, each with its date, then the two dropdowns;
 //   Search (past 25) and Stop all at the foot.
 // The panel is where the state shows (the bell never does). Every custom id carries the owner, so a public panel is locked to them (his round-4 Q1). 31 components at most, under Discord's 40. `zoneOptions` ([{label, value}]) swaps the foot for a zone picker: those zones plus a search option, and Cancel; since 2026-10-24 21:13 EDT it shows only when a search in the Set timezone box (handlers/remind.js zoneModal) finds several zones (his ask, 2026-10-24 20:47 EDT: "let's include a set timezone button on the /remind command panel").
+const DIVIDER = { type: 14, divider: true, spacing: 2 }; // the panel's one drawn-divider shape
 function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor = 4093660, confirmStop = false, timeZone = null, zoneOptions = null } = {}) {
     const cats = new Set(sub?.categories || []);
     const follows = sub?.follows || [];
@@ -288,7 +289,7 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
 
     return [{ type: 17, accent_color: accentColor, components: [
         header,
-        { type: 14, divider: true, spacing: 2 },
+        DIVIDER,
         ...groups,
         // An alternative to the groups, not a second step (Harkirat, 2026-10-24 19:09–19:36 EDT: an "— OR —" line, capital OR).
         { type: 14, divider: false, spacing: 1 }, // a small gap above the OR line, which sat tight under the Updates buttons (Harkirat, 2026-10-25 01:08 EDT); one component, within budget
@@ -296,10 +297,11 @@ function buildPanel(sub, seasonalDoc, { ownerId, nowMs = Date.now(), accentColor
         // The green and yellow dots of the Going live and Leaving soon rows (Harkirat, 2026-10-25 01:07 EDT).
         ...(relRow && showPicks ? [block(`-# ${emojis.greenDotGlow} **When something releases...**`), relRow] : []),
         ...(lvRow && showPicks ? [block(`-# ${emojis.yellowDotGlow} **When something leaves soon...**`), lvRow] : []),
-        ...(zonePicker.length ? [{ type: 14, divider: true, spacing: 1 }, ...zonePicker] : []),
-        ...(confirmStop ? [{ type: 14, divider: true, spacing: 1 }, block(`-# ${emojis.warn} **Stop All clears every reminder you've set!** You'll have to set them up again.`)] : []),
+        // Every drawn divider on the panel is large, in every state: the foot's, Stop all's and the timezone picker's (Harkirat, 2026-10-25 01:13 EDT: "it switches to space small when i click the button tho… work the class, not the instance").
+        ...(zonePicker.length ? [DIVIDER, ...zonePicker] : []),
+        ...(confirmStop ? [DIVIDER, block(`-# ${emojis.warn} **Stop All clears every reminder you've set!** You'll have to set them up again.`)] : []),
         // A drawn divider above the foot buttons in the normal panel, large spacing, the last spare component (Harkirat, 2026-10-25 01:10 EDT); Stop all's confirm and the timezone picker already draw one above their own blocks.
-        ...(foot.length ? [...(!confirmStop && !zoneOptions ? [{ type: 14, divider: true, spacing: 2 }] : []), { type: 1, components: foot }] : []),
+        ...(foot.length ? [...(!confirmStop && !zoneOptions ? [DIVIDER] : []), { type: 1, components: foot }] : []),
     ] }];
 }
 

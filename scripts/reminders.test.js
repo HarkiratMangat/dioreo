@@ -131,6 +131,15 @@ t('Leaving soon by kind: the old all-kinds key reads as all four, and one kind c
     assert.ok([...p.lastChance, ...p.leavingSoon].every(e => e.type === 'event'), 'only events remind before leaving');
 });
 
+t('every drawn divider on the panel is large, in every state', () => {
+    const zones = [{ label: 'Toronto (EDT)', value: 'America/Toronto' }];
+    for (const opts of [{}, { confirmStop: true }, { zoneOptions: zones }]) {
+        const seps = []; const w = c => { if (c.type === 14 && c.divider) seps.push(c.spacing); (c.components || []).forEach(w); };
+        R.buildPanel(sub({ categories: ['events'], follows: [] }), doc(), { ownerId: 'u1', nowMs: RUN, ...opts }).forEach(w);
+        assert.ok(seps.length && seps.every(sp => sp === 2), `${JSON.stringify(Object.keys(opts))}: ${seps}`);
+    }
+});
+
 t('the busiest panel stays within 40: every toggle on, follows, paused, and each of its states', () => {
     const busy = sub({ categories: R.CATEGORIES.map(c => c.key).filter(k => k !== 'leaving'), follows: [{ kind: 'release', title: 'Grim Duo Draw' }], pausedAt: new Date(RUN), failingSince: new Date(RUN) });
     const zones = [{ label: 'Toronto (EDT)', value: 'America/Toronto' }];
