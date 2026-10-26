@@ -40,6 +40,7 @@ const HANDLER_BINDINGS = [
     ['pagination', 'handlePaginationInteraction'],
     ['navigation', 'handleNavigationInteraction'],
     ['remind', 'handleRemindInteraction'],
+    ['announcementControls', 'handleAnnouncementControlsInteraction'],
     ['emojis', 'handleEmojisInteraction'],
 ];
 const late = (mod, fn) => (...args) => {
@@ -68,6 +69,7 @@ const handleShareInteraction = late('share', 'handleShareInteraction');
 const handlePaginationInteraction = late('pagination', 'handlePaginationInteraction');
 const handleNavigationInteraction = late('navigation', 'handleNavigationInteraction');
 const handleRemindInteraction = late('remind', 'handleRemindInteraction');
+const handleAnnouncementControlsInteraction = late('announcementControls', 'handleAnnouncementControlsInteraction');
 
 // ==========================================
 // ROUTER-PRIVATE STATE
@@ -221,6 +223,8 @@ async function handleInteractionInner(interaction) {
         if (await handleEmojisInteraction(interaction)) return;
         markHandler('remind');
         if (await handleRemindInteraction(interaction)) return;
+        markHandler('announcementControls');
+        if (await handleAnnouncementControlsInteraction(interaction)) return;
         markHandler('embedTest');
         if (await handleEmbedTestInteraction(interaction)) return;
         markHandler('addToPatchNotes');

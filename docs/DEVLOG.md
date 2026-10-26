@@ -283,6 +283,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-26 00:35 EDT — Harkirat's command review rounds, /emojis and the /autobuild form (v3.111.0)
 - 2026-10-26 13:17 EDT — Loadout pictures keyed by gunsmith code, a five-field edit pop-up, and a panel for every /manage save (v3.114.0)
 - 2026-10-26 14:17 EDT — Dioreo v3 launches, and the legal documents are made true for it (v3.0.0)
+- 2026-10-26 16:06 EDT — Announcements get a Why button and an off switch (v3.116.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4743,6 +4744,14 @@ The launch work itself was mostly making the legal documents true. A re-check wr
 
 ### Lesson
 A re-check is a snapshot, and it went stale in six days: by launch the guild install asked for eight message permissions the report never knew about, the bot sent DMs for reminders and build submissions, and two sections dated the interaction records from the dev bot's August start rather than from the day prod began keeping them. Applying a review means re-checking each of its claims against today's code, not pasting its wording.
+
+## 2026-10-26 16:06 EDT — Announcements get a Why button and an off switch (v3.116.0)
+
+He asked for a button under each announcement answering "why am I seeing these messages?", and a place to manage them or turn them off, guessing /remind. The mock-ups went to #testing-spam by the dev bot's REST API, and building the /remind one found the real constraint: the panel already sat at 39 of Discord's 40 components. A proper Announcements row would have made it 43 and Discord refused the message outright, so the switch became one button in the bottom row, and a Search day (more than 25 upcoming items) would still take it to 41. buildPanel now drops the small gap above its OR line past 40, the one piece that carries no meaning, and a test pins a Search day under 40. /settings page 2 had room: 35 before, 39 after.
+
+He picked the colours and, rather than click-testing himself, asked for it to be tested through code. That test drove the real router with fake button interactions against the dev database: delivery with the button, Turn off, nothing delivered or marked seen while off, Turn back on, and both other switches. Then the exact payloads went to Discord by REST, which accepted all six. One thing the router test caught first: handlerRouting.test.js reads literal custom ids, so a handler comparing against exported constants looks like a namespace with no branch behind it.
+
+The stored choice is a field that exists only while announcements are off, which is what lets the Privacy Policy say so plainly.
 
 # Part B — Lessons Ledger (thematic)
 

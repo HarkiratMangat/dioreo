@@ -311,6 +311,17 @@ module.exports = {
 
             // NO "profile source" preference here, and that is a deliberate call (2026-08-09 17:12 EDT, Harkirat: "let's just leave it honestly"). Which profile the colours come from is purely CONTEXTUAL -- a DM has no server profile, and a server uses the user's server profile when they have one. A stored preference would only ever restate where the command was already run, so it was built and then removed rather than shipped as a setting that explains itself. The one real override lives on /colors (`from:`), and the in-panel toggle switches the view once server colours actually exist.
 
+            // Announcements on/off (2026-10-26 15:20 EDT, announcement-controls; his colours 15:30 EDT: Turn off red, Turn on blue), with the divider of the approved mock-up. The same setting as the button under an announcement and /remind's bottom row (utils/announcement.js setAnnouncementsOff). Measured 2026-10-26 15:32 EDT: this page was 35 components, 39 with this row.
+            const announcementsOff = Boolean(prefs.announcementsOff);
+            containerComponents.push({ type: 14, divider: true, spacing: 1 });
+            containerComponents.push({
+                type: 9,
+                components: [{ type: 10, content: `**Announcements** = \`${announcementsOff ? 'Off' : 'On'}\`\n-# News from Dioreo, shown once after one of your commands.` }],
+                accessory: announcementsOff
+                    ? { type: 2, style: 1, label: 'Turn on', custom_id: `toggle_announcements_on|${userId}` }
+                    : { type: 2, style: 4, label: 'Turn off', custom_id: `toggle_announcements_off|${userId}` }
+            });
+
             containerComponents.push({ type: 10, content: `-# ← Back to page 1 for Visibility settings` });
         }
 

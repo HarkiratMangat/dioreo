@@ -2,7 +2,7 @@
 //
 // Pure-logic test of utils/announcement.js's due-for-delivery decision (isAnnouncementDue), driven by a FIXED simulated clock rather than a live database or a real Discord interaction -- announcementOps.test.js already covers the DB-touching op layer (validate/apply/invert); this file is only about "given this state, is this announcement due right now", which is the function most likely to get the 24h boundary math wrong.
 const assert = require('assert');
-const { isAnnouncementDue, isRepeatingAnnouncement, MIN_HOURS_BETWEEN_REPEATS } = require('../utils/announcement');
+const { isAnnouncementDue, isRepeatingAnnouncement, MIN_HOURS_BETWEEN_REPEATS, whyButtonRow, buildWhyPanel, buildAnnouncementEmbed } = require('../utils/announcement');
 
 let failures = 0;
 function check(name, fn) {
@@ -67,6 +67,27 @@ check('isRepeatingAnnouncement rejects 0, negative and non-integer repeatCount, 
     assert.strictEqual(isRepeatingAnnouncement({ repeatCount: undefined }), false);
     assert.strictEqual(isRepeatingAnnouncement({ repeatCount: 1 }), true);
     assert.strictEqual(isRepeatingAnnouncement({ repeatCount: 10 }), true);
+});
+
+// The controls (2026-10-26 15:20 EDT, announcement-controls): the button under a delivery, and its private answer with the switch in his colours.
+const findId = (list, id) => { for (const c of list || []) { if (c.custom_id === id) return c; const hit = findId(c.components, id); if (hit) return hit; } return null; };
+check('the Why button: its id, its words, the Info emoji', () => {
+    const b = whyButtonRow().components[0];
+    assert.strictEqual(b.custom_id, 'ann_why');
+    assert.strictEqual(b.label, 'Why am I seeing this?');
+    assert.strictEqual(b.emoji.name, 'Info');
+});
+check('the answer: Turn off is red with the DisableReminder bell; once off, Turn back on is blue; once back, Turn off again', () => {
+    const off = findId(buildWhyPanel('on'), 'ann_off');
+    assert.ok(off && off.style === 4 && off.emoji.name === 'DisableReminder', 'red Turn off');
+    const on = findId(buildWhyPanel('off'), 'ann_on');
+    assert.ok(on && on.style === 1 && on.label === 'Turn back on', 'blue Turn back on');
+    assert.ok(!findId(buildWhyPanel('off'), 'ann_off'), 'no Turn off while off');
+    assert.ok(findId(buildWhyPanel('back'), 'ann_off'), 'Turn off again once back on');
+});
+check('the embed itself carries no button (/bot analytics renders it too)', () => {
+    const e = buildAnnouncementEmbed({ text: 'x', createdAt: new Date(0), color: 1 });
+    assert.ok(!('components' in e));
 });
 
 process.exit(failures ? 1 : 0);
