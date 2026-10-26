@@ -30,8 +30,9 @@ t('each season title carries its emoji, in the heading and the dropdown', () => 
     for (const n of [6, 7, 8, 9]) assert.strictEqual(pn.seasonEmoji(patch(n)), emojis[`season${n}`]);
     assert.strictEqual(pn.seasonEmoji(patch(5)), null, 'no emoji, nothing added');
     const panel = pn.buildContainer({ patchNotes: [6, 7, 8, 9].map(patch) });
-    const heading = panel.flatMap(flat).find(c => c.type === 10).content;
-    assert.ok(heading.split('\n')[1].startsWith(`${emojis.season9} `), heading);
+    // The title row holds only the heading since 2026-10-24 21:38 EDT; the season line is the next Text Display (utils/reminders.js withBell).
+    const texts = panel.flatMap(flat).filter(c => c.type === 10).map(c => c.content);
+    assert.ok(texts[1].split('\n')[0].startsWith(`${emojis.season9} `), texts.slice(0, 2).join(' | '));
     assert.deepStrictEqual(select(panel).options.map(o => o.emoji && o.emoji.name), ['S9VampiresVsWerewolves', 'S8AgainstAllFate', 'S7Terminated', 'S6TakeYourHeart']);
 });
 t('search finds by number exactly, by name, newest first, and nothing for no match', () => {
@@ -48,6 +49,13 @@ t('the search pop-up is one required text field', () => {
     assert.deepStrictEqual(m.components.map(c => [c.type, c.component.type, c.component.custom_id, c.component.required]), [[18, 4, 'q', true]]);
     const { ModalBuilder } = require('discord.js');
     new ModalBuilder(m);
+});
+
+t("each season's dates are its description: the newest reads Current Season, an older one runs to the next release (2026-10-25 15:09 EDT)", () => {
+    const at = (n, iso) => ({ ...patch(n), releaseDate: new Date(iso) });
+    const s = select(pn.buildContainer({ patchNotes: [at(6, '2025-12-10T10:00:00Z'), at(7, '2026-01-14T10:00:00Z'), at(8, '2026-02-18T10:00:00Z')] }));
+    assert.deepStrictEqual(s.options.map(o => o.description), ['Current Season', 'Jan 14 – Feb 18, 2026', 'Dec 10, 2025 – Jan 14, 2026']);
+    assert.ok(s.options.every(o => o.description.length <= 100), 'within a description\'s 100 characters');
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

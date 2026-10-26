@@ -90,7 +90,7 @@ function compareEntries(seasonalDoc, nowMs) {
     };
 }
 
-// One entry: a status dot, the name, and a small line saying where it stands (2026-10-21 14:34 EDT, his mock G, after mocks A–F in #testing-spam): green live, white upcoming or undated, red with the name struck through once it is over. The small line is padded with two blank braille characters so it sits under the name: Discord indents nothing in small text, and its own list bullet swallowed the line (his "Indent didn't work"). An entry with no usable date reads "Releases TBA", never a raw `<t:NaN:D>` (2026-10-20). Replaces the 2026-07-31 calendar_update_ui.json shape (`**✦ title**` over a `b1` date range).
+// One entry: a status dot, the name, and a small line saying where it stands (2026-10-21 14:34 EDT, his mock G, after mocks A–F in #testing-spam): green live, white upcoming or undated, red with the name struck through once it is over. The small line is padded with the `blank` emoji so it sits under the name (2026-10-23 14:35 EDT, Harkirat: "instead of the invisible character, just use :blank: emoji"; two blank braille characters before that), then an en space (U+2002), which lines it up under the name (2026-10-23 14:43 EDT, his pick of four paddings in #testing-spam): Discord indents nothing in small text, and its own list bullet swallowed the line (his "Indent didn't work"). An entry with no usable date reads "Releases TBA", never a raw `<t:NaN:D>` (2026-10-20). Replaces the 2026-07-31 calendar_update_ui.json shape (`**✦ title**` over a `b1` date range).
 function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
     const { state, startMs, endMs } = entryState(event, seasonalDoc, nowMs);
     const s = Math.floor(startMs / 1000), e = Number.isFinite(endMs) ? Math.floor(endMs / 1000) : null;
@@ -98,13 +98,14 @@ function buildEntryLine(event, seasonalDoc, nowMs = Date.now()) {
     let text;
     if (state === 'tba') text = 'Releases TBA';
     else if (state === 'over') text = `Ended <t:${e}:R>`;
-    else if (state === 'soon') text = `${returning ? 'Returns' : event.dateOnly ? 'Releases' : 'Starts'} <t:${s}:R> · <t:${s}:D>`;
+    // An upcoming entry with an end shows that end after "Until" (2026-10-23 14:33 EDT, Harkirat: "put Until before the expected end date"); the absolute start date it showed there before only repeated the relative one and read as the end. One with no end (a draw's release day, an All Season row while the BP end is TBD) keeps its start date.
+    else if (state === 'soon') text = `${returning ? 'Returns' : event.dateOnly ? 'Releases' : 'Starts'} <t:${s}:R> · ${e ? `Until <t:${e}:D>` : `<t:${s}:D>`}`;
     else if (e) text = `**Live** · ends <t:${e}:R>`;
     else if (event.dateOnly) text = returning ? `**Back** · returned <t:${s}:R>` : `**Live** · released <t:${s}:R>`;
     else text = `**Live** · ends ${seasonalDoc.bpEndTBD ? 'TBD' : 'with the season'}`;
-    const dot = state === 'live' ? emojis.greenDotGlow : state === 'over' ? emojis.redDotGlow : emojis.whiteDotGlow;
+    const dot = state === 'live' ? emojis.greenDotGlow : state === 'over' ? emojis.redDotGlow : emojis.lightBlueDotGlow;
     const title = state === 'over' ? `~~**${event.title}**~~` : `**${event.title}**`;
-    return `${dot} ${title}\n-# \u2800\u2800 ${text}`;
+    return `${dot} ${title}\n-# ${emojis.blank}\u2002${text}`;
 }
 
 // A `## ` heading in title case (2026-10-21 16:02 EDT, Harkirat: "change the draws/events, etc headings to \"## :emoji: Special Events\", etc."). It replaced the full-caps, underlined `### ` heading of 2026-07-31.
@@ -130,7 +131,7 @@ function buildSectionComponent(headingLine, entries, seasonalDoc, collapseEnded 
         shown = entries.filter(e => !hidden.has(e));
     }
     // Shaped like an entry (dot, bold line, small indented line) so it reads as part of the list; as one small line it wrapped and floated above it on a phone (2026-10-21 16:28 EDT, Harkirat: "Text looks odd at the top?").
-    const moreLine = hiddenCount ? [`${emojis.redDotGlow} **\`+${hiddenCount}\`** **more ended**\n-# \u2800\u2800 Pick **Past/Ended** in the filter to see ${hiddenCount === 1 ? 'it' : 'them'}`] : [];
+    const moreLine = hiddenCount ? [`${emojis.redDotGlow} **\`+${hiddenCount}\`** **more ended**\n-# ${emojis.blank}\u2002Pick **Past/Ended** in the filter to see ${hiddenCount === 1 ? 'it' : 'them'}`] : [];
     let body = [...moreLine, ...shown.map(e => buildEntryLine(e, seasonalDoc, nowMs))].join('\n');
     if (body.length > SECTION_CHAR_BUDGET) {
         body = body.slice(0, SECTION_CHAR_BUDGET) + `\n-# …and more (too many entries to show at once).`;
@@ -142,7 +143,9 @@ function buildSectionComponent(headingLine, entries, seasonalDoc, collapseEnded 
 const PAGE_DEFS = [
     { page: 0, label: 'Draws', emojiKey: 'newDraws' },
     { page: 1, label: 'Events', emojiKey: 'events' },
-    { page: 2, label: 'Modes', emojiKey: 'modes' }
+    { page: 2, label: 'Modes', emojiKey: 'modes' },
+    // The Today page (2026-10-23 13:05 EDT, Harkirat: /calendar opens on it). Numbered 3 so the three timeline pages keep the numbers every posted custom_id already carries; PAGE_ORDER puts it first.
+    { page: 3, label: 'Today', emojiKey: 'calendar' }
 ];
 
 // Per-page banner fields (added 2026-07-31 17:20 EDT, the notes file follow-up) -- indexed by the same numeric page used everywhere else in this file. Blank/'' = show nothing for that page, not a placeholder -- see utils/calendarBannerCache.js + /manage's "Banners" action.
@@ -152,9 +155,11 @@ const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBa
 //   - the three STATUS picks keep only the entries in those states (none picked = every state; an undated entry counts as Upcoming);
 //   - the three PAGE picks decide which pages the pager walks (none picked = all three). Their descriptions are his wording (2026-10-21 15:45 EDT).
 const FILTER_OPTIONS = [
+    // Today is a PAGE pick like the three below it (2026-10-23 13:05 EDT, his option C): picked with a type (Lucky Draws, Special Events, Playlists & Modes), the Today page shows only that type; the status picks narrow the three timeline pages only.
+    { value: 'today', bit: 64, label: 'Today', emojiKey: 'calendar', description: 'Active now, leaving soon and going live' },
     { value: 'live', bit: 1, label: 'Live', emojiKey: 'greenDotGlow', description: 'Running right now' },
     { value: 'over', bit: 2, label: 'Past/Ended', emojiKey: 'redDotGlow', description: 'Already finished this season' },
-    { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'whiteDotGlow', description: "Hasn't started yet" },
+    { value: 'soon', bit: 4, label: 'Upcoming', emojiKey: 'lightBlueDotGlow', description: "Hasn't started yet" },
     { value: 'draws', bit: 8, label: 'Lucky Draws', emojiKey: 'newDraws', description: 'Draws releasing this season' },
     { value: 'events', bit: 16, label: 'Special Events', emojiKey: 'events', description: 'Special Events this season' },
     { value: 'modes', bit: 32, label: 'Playlists & Modes', emojiKey: 'modes', description: 'Playlists & Game Modes this season' }
@@ -165,14 +170,22 @@ const STATE_BIT = { live: 1, over: 2, soon: 4, tba: 4 };
 
 // Every way a filter arrives, as a mask: a number from a custom_id, the slash `filter` choice ('all'|'over'|'live'|'soon'), or 'active' from a panel posted before 2026-10-21 (the old `view:Active/Upcoming`, which is Live + Upcoming).
 function filterMask(filterMode) {
-    if (typeof filterMode === 'number' && Number.isFinite(filterMode)) return filterMode & 63;
+    if (typeof filterMode === 'number' && Number.isFinite(filterMode)) return filterMode & 127;
     if (filterMode === 'active') return 1 | 4;
     const opt = FILTER_OPTIONS.find(o => o.value === filterMode);
     return opt ? opt.bit : 0;
 }
 
-// The pages the pager walks under a mask, in order.
-const visiblePages = mask => [0, 1, 2].filter(p => !(mask & 56) || (mask & PAGE_BIT[p]));
+// The Today view's bit (FILTER_OPTIONS' first entry); a mask carrying it renders /today instead of a page.
+const TODAY_BIT = 64;
+const TODAY_PAGE = 3;
+// Today first, then the timeline pages (12:25 EDT: "should we make today calendar's landing").
+const PAGE_ORDER = [TODAY_PAGE, 0, 1, 2];
+const pageBit = p => (p === TODAY_PAGE ? TODAY_BIT : PAGE_BIT[p]);
+const ANY_PAGE_BITS = 8 | 16 | 32 | TODAY_BIT;
+
+// The pages the pager walks under a mask, in order: every page when no page is picked.
+const visiblePages = mask => PAGE_ORDER.filter(p => !(mask & ANY_PAGE_BITS) || (mask & pageBit(p)));
 
 // The pager above the filter: it walks only the visible pages and loops. Direction rides in the id (`_p`/`_n`), so two pages still give two different ids (Discord rejects a message whose ids repeat).
 function buildCalendarPager(page, mask) {
@@ -229,14 +242,31 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
 
     const calendarComponents = [];
 
+    // The Today page: /today's sections plus the next 2 days, under this command's title, pager and filter (commands/today.js). A type pick narrows it (option C); the status picks do not.
+    if (safePage === TODAY_PAGE) {
+        const { fitMessage, seasonTeaser } = require('./today');
+        const types = new Set([[8, 'draw'], [16, 'event'], [32, 'playlist']].filter(([bit]) => mask & bit).map(([, t]) => t));
+        const titleText = withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji));
+        const teaser = seasonTeaser(seasonalDoc, nowMs);
+        if (teaser) titleText.content += `\n${teaser}`;
+        // The reminders bell on the title, wrapped after the teaser is added to its text (utils/reminders.js withBell).
+        const title = require('../utils/reminders').withBell(titleText); // an array: the title row, then the subtitle
+        const todayPager = buildCalendarPager(safePage, mask);
+        const todayNav = mask
+            ? buildGlobalNavRow('nav_calendar', { nav_calendar: { label: 'Full Calendar', custom_id: 'nav_calendar', style: 1 } })
+            : buildGlobalNavRow('nav_calendar');
+        // fitMessage steps the body down (one block per entry, then per section, then trimmed) until the whole message fits Discord's caps.
+        return fitMessage(seasonalDoc, { nowMs, withDays: true, types: types.size ? types : null }, body => withShareButton([{ type: 17, accent_color: accentColor, components: [...title, { type: 14, spacing: 2, divider: true }, ...body, { type: 14, spacing: 2, divider: true }, ...(todayPager ? [todayPager] : []), buildFilterRow(safePage, mask)] }, todayNav], isEphemeral));
+    }
+
     // Per-page banner -- rendered as a true cover image at the VERY TOP of the container, above even the title (Harkirat's explicit call, 2026-07-31 17:20 EDT -- reads like a real banner/ splash image rather than a mid-card illustration this way). Independently settable per page; omitted entirely (no placeholder) when unset.
     const bannerUrl = seasonalDoc[BANNER_FIELDS_BY_PAGE[safePage]];
     if (bannerUrl) {
         calendarComponents.push({ type: 12, items: [{ media: { url: bannerUrl } }] });
     }
 
-    // Two-line title (season title on top, command header below) — shared pattern, see utils/titleBlock.js. headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size. The season's emoji in front of the season title (2026-10-19 09:26 EDT, Harkirat), see utils/seasonEmoji.js.
-    calendarComponents.push(withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji)));
+    // Two-line title (season title on top, command header below) — shared pattern, see utils/titleBlock.js. headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size. The season's emoji in front of the season title (2026-10-19 09:26 EDT, Harkirat), see utils/seasonEmoji.js. The reminders bell on every /calendar page's title (utils/reminders.js withBell).
+    calendarComponents.push(...require('../utils/reminders').withBell(withCaptionEmoji(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji))));
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
     // An empty page keeps its own heading, so it is clear which page is empty (2026-10-21 15:53 EDT, Harkirat: "can that include the \":Events: EVENTS\" heading? and add the warning icon infront of the hint"). The Draws page names itself Lucky Draws here, having no New/Returning split to show.
@@ -295,7 +325,7 @@ module.exports = {
         .setDescription("View this season's in-game event timeline")
         // `page`/`filter` are one-off, per-invocation overrides only -- neither is saved anywhere. `filter` was `view` (All Events / Active/Upcoming Only) until 2026-10-21 15:32 EDT (Harkirat: "view -> filter ... change the sub-options to \"Full timeline\", \"past/ended\", \"live right now\", \"upcoming\""). Its old /settings-saved default (`calendarEventFilter`) was SILENCED 2026-08-15 13:01 EDT.
         .addStringOption(option => option.setName('page').setDescription('Jump directly to a specific page').addChoices(
-            { name: 'Draws', value: 'draws' }, { name: 'Events', value: 'events' }, { name: 'Playlists & Modes', value: 'playlists' }
+            { name: 'Today', value: 'today' }, { name: 'Draws', value: 'draws' }, { name: 'Events', value: 'events' }, { name: 'Playlists & Modes', value: 'playlists' }
         ))
         .addStringOption(option => option.setName('filter').setDescription('Show the full timeline, or only past, live or upcoming entries').addChoices(
             { name: 'Full Timeline', value: 'all' }, { name: 'Past/Ended', value: 'over' }, { name: 'Live Right Now', value: 'live' }, { name: 'Upcoming', value: 'soon' }
@@ -308,6 +338,12 @@ module.exports = {
     FILTER_OPTIONS,
     entryState,
     compareEntries,
+    // For commands/today.js, which reads the same entries and shows this filter under its own screen when opened from here.
+    getDrawSectionEntries,
+    buildFilterRow,
+    TODAY_BIT,
+    TODAY_PAGE,
+    PRESET_ACCENT,
     // Exported for /bot analytics' change-detail panel: buildEntryLine is the CANONICAL renderer for one calendar row (rule D -- never re-describe a record), and isEventEnded is the ONLY thing that decides whether /calendar's Active/Upcoming view still shows it. A second, hand-rolled date comparison over there would drift from this one and then confidently state the opposite.
     buildEntryLine,
     isEventEnded,
@@ -339,11 +375,12 @@ module.exports = {
         const filterMode = filterChoice || filterOverride || 'all';
 
         // `page` (added 2026-07-31 14:20 EDT) is the same kind of one-off override -- only consulted when pageOverride wasn't already supplied by a button click (buildSyntheticInteraction callers always pass an explicit numeric page). Maps the option's word value to the numeric page index buildContainer expects.
-        const PAGE_OPTION_TO_INDEX = { draws: 0, events: 1, playlists: 2 };
+        const PAGE_OPTION_TO_INDEX = { today: TODAY_PAGE, draws: 0, events: 1, playlists: 2 };
         let targetPage = pageOverride;
         if (targetPage === null) {
             const pageChoice = interaction.isChatInputCommand() ? interaction.options.getString('page') : null;
-            targetPage = pageChoice ? PAGE_OPTION_TO_INDEX[pageChoice] : 0;
+            // No page picked opens the Today page (2026-10-23 13:05 EDT, his call), which is why a bare /calendar and the nav's Calendar button land there.
+            targetPage = pageChoice ? PAGE_OPTION_TO_INDEX[pageChoice] : TODAY_PAGE;
         }
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);

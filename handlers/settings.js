@@ -55,7 +55,7 @@ async function route(interaction) {
             if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
 
             // Parse individual dropdown branches and update corresponding document keys
-            if (action === 'set_timezone') prefs.timezone = selectedValue;
+            if (action === 'set_timezone') { prefs.timezone = selectedValue; prefs.timezoneSetAt = new Date(); } // a chosen zone, not the schema default (models/UserPreference.js timezoneSetAt)
             if (action === 'set_style') prefs.timestampStyle = selectedValue;
             if (action === 'set_accent_style') prefs.accentColorStyle = selectedValue;
             // Added 2026-07-12 -- the new 3-option "Draw Prices Region" dropdown (replaces the old binary toggle_region_10/toggle_region_30 buttons, see settings.js).

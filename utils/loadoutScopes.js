@@ -14,7 +14,9 @@ async function resolveScopeBuilds({ mode, category, metaOnly }) {
     const filter = { mode };
     if (category) filter.category = category;
     if (metaOnly) filter.isMeta = true;
-    const builds = await Loadout.find(filter).lean();
+    // A "Coming Soon" placeholder is never part of a browse (Harkirat, 2026-10-24 09:45 EDT: "in lists, if a weapon is missing, do not show it in the list").
+    const { isPlaceholderBuild } = require('./loadoutRender');
+    const builds = (await Loadout.find(filter).lean()).filter(b => !isPlaceholderBuild(b));
     return builds.sort((a, b) =>
         a.category.localeCompare(b.category) ||
         a.weaponName.localeCompare(b.weaponName) ||
@@ -51,8 +53,8 @@ function browseRows(mode, categories = []) {
         ];
     }
     return [
+        // "All MP builds" dropped (Harkirat, 2026-10-25 16:10 EDT: "keep all meta builds, drop the 'all mp builds'"); its scope token still opens for a suggestion list a client kept open.
         { label: 'All META builds', value: 'MP.*.meta' },
-        { label: 'All MP builds', value: 'MP.*.std' },
         ...categories.map(c => ({ label: `All ${displayCategoryLabel(c)} builds`, value: `MP.${c}.std` })),
     ];
 }

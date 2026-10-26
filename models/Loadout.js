@@ -26,6 +26,8 @@ const LoadoutSchema = new mongoose.Schema({
     rankModes: { type: [{ type: String, enum: RANK_MODES }], default: [] },
     // The ONLY rank-badge field DMZ builds ever use -- categoryRank is never set for mode: 'DMZ' (handlers/manage/loadouts.js's add/edit-loadout handlers reroute a bare "best"/"topN" token here instead), since /dmz isn't split into per-category commands the way MP is, so "Best/Top N in category" doesn't read as meaningfully there. Stores a bare 'best'/'top{N}' (renders as "... DMZ") or a combat-range-role-qualified 'best-close'/'best-midlong'/'top{N}-close'/'top{N}-midlong' (mirrors categoryRank's non-enum, parser-validated pattern -- see adminParser.js's parseLoadoutBadges()). MP builds never set this field; DMZ builds never set categoryRank.
     dmzRangeRank: { type: String, default: null },
+    // Who sent this build through Submit a Build (utils/buildSubmissions.js), kept even when they stay anonymous so a dispute can be checked, and shown in the card's footer only when `credited` (Harkirat, 2026-10-25 16:53-17:06 EDT). PRIVACY.md §2.1e and Appendix A name it. Absent on every build Dioreo made itself.
+    submittedBy: { type: new mongoose.Schema({ discordId: { type: String, required: true }, credited: { type: Boolean, default: false } }, { _id: false }), default: undefined },
     lastUpdated: { type: Date, default: Date.now }
 });
 

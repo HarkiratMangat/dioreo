@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const UserPreferenceSchema = new mongoose.Schema({
     discordId: { type: String, required: true, unique: true },
     timezone: { type: String, default: 'America/Toronto' },
+    // When this user last PICKED a timezone (/settings or /remind's Set timezone), added 2026-10-24 20:48 EDT. `timezone` above stores its Toronto default the moment a record is created, so it cannot tell a chosen Toronto from an untouched one; /remind's dropdowns write their times in `timezone` only when this is set, and in UTC otherwise (Harkirat: "If they don't have a timezone set, then use UTC").
+    timezoneSetAt: { type: Date },
     // When this user first ran a command of their OWN (a slash command or a right-click), added 2026-10-20 17:53 EDT for /settings' "Dioreo User Since" (Harkirat). Written once by utils/firstCommand.js with $min, so it only ever moves earlier; clicking a button on someone else's panel never sets it. Users who existed before it were backfilled from this document's own creation time (scripts/backfillFirstCommandAt.js), an approximation. No default: unset means "not recorded yet", never "now".
     firstCommandAt: { type: Date },
     // YOUR STATS (2026-10-20 18:35 EDT, Harkirat: "I like your ideas ... counting starts on V3"): what this user did with Dioreo, written by utils/userStats.js and shown on /settings' Your Stats page. Every field is optional with no default, so a record that never counted anything carries no `stats` at all; Reset my stats removes the whole object. Maps, not arrays: `$inc` on a missing array index makes an object, not an array. Map keys never contain a dot (command names and loadout ids don't).

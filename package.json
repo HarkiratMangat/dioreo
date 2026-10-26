@@ -1,6 +1,6 @@
 {
   "name": "dioreo",
-  "version": "3.108.0-pre",
+  "version": "3.113.0-pre",
   "description": "Discord bot for Call of Duty: Mobile — loadouts, lucky draws, CP pricing, patch notes, seasonal calendars, and countdowns.",
   "main": "index.js",
   "private": true,
@@ -94,5 +94,8 @@
     "preact-render-to-string": "^6.7.0",
     "puppeteer-core": "^25.8.0",
     "xlsx": "^0.18.5"
+  },
+  "overrides": {
+    "zod": "^4.6.6"
   }
 }

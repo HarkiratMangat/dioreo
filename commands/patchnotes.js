@@ -170,6 +170,8 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
     ];
     // The season's emoji sits in front of its name, outside the bold-italic lettering (which would mangle an emoji).
     withCaptionEmoji(components[0], seasonEmoji(activePatch));
+    // The reminders bell on the title (utils/reminders.js withBell), added after the caption emoji, which edits the text in place.
+    components.splice(0, 1, ...require('../utils/reminders').withBell(components[0]));
 
     if (hasInfo) {
         components.push(
@@ -199,9 +201,20 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
     // Build historical dropdown options A season opened from search that is older than the 12 shown joins the list, so the dropdown still shows it picked.
     const listed = recentPatches.some(p => p._id.toString() === activePatch._id.toString()) ? recentPatches : [...recentPatches, activePatch];
+    // Each season's dates as its description (2026-10-25 14:45-15:09 EDT, Harkirat's review): the newest reads "Current Season" (his pick B); an older one runs from its own release date to the next season's ("Aug 25 – Sep 23, 2026"), the only dates a past season has.
+    const shortDate = (d, withYear) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(withYear ? { year: 'numeric' } : {}), timeZone: 'UTC' });
+    const seasonRange = (patch) => {
+        const at = newestFirst.findIndex(p => p._id.toString() === patch._id.toString());
+        if (at === 0) return 'Current Season';
+        const start = patch.releaseDate, end = newestFirst[at - 1]?.releaseDate;
+        if (!start || !end) return null;
+        const sameYear = new Date(start).getUTCFullYear() === new Date(end).getUTCFullYear();
+        return `${shortDate(start, !sameYear)} – ${shortDate(end, true)}`;
+    };
     const historyOptions = listed.map(patch => ({
         label: displayTitle(patch),
         value: `patch_${patch._id}`,
+        ...(seasonRange(patch) ? { description: seasonRange(patch) } : {}),
         ...(seasonEmoji(patch) ? { emoji: emojis.parseEmoji(seasonEmoji(patch)) } : {}),
         default: activePatch._id.toString() === patch._id.toString() // Pre-select current view
     }));
