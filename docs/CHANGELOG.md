@@ -29,7 +29,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.113.0 — 2026-10-26 12:20 EDT (#217) — the Privacy Policy and the Terms each keep one change-history list
+## Pre-Release v3.114.0 — 2026-10-26 13:17 EDT (#225) — MP pictures keyed by gunsmith code, a five-field Edit Loadout pop-up, and a panel for every /manage save
+**From Harkirat, 2026-10-25 21:48 EDT:** the label showed as "Build 2" in the Edit pop-up; condense it to five fields; key images `WEAPON-GUNSMITHCODE`; require the gunsmith code on every MP build; the label is back end only. **2026-10-26 11:46 EDT:** "even the confirmation messages and stuff, can you make them like as an embed ... and there's like buttons as well". **12:52 EDT:** "build them right now here" (the other pages).
+
+- **MP pictures are keyed by gunsmith code** (`utils/loadoutImageCache.js` `codeImageKey`, `DEV-` prefixed on the dev bot so dev never overwrites a prod picture). A code is letters and digits only, and a key another build already holds is refused. `scripts/migrateLoadoutKeys.js` moves a database to code keys: dry run by default, `--write`, `--prod`, a backup, placeholders skipped, and a list of weapons whose card order changes. Dev is migrated (124 keys, every one serving); prod waits for his word.
+- **Edit Loadout is five fields** (`commands/manage.js` `loadoutModal`): `Weapon name, label` · `Category, build #, gunsmith code` · attachments and badges · picture URL · picture upload. A build # another build holds swaps the two. The label sits after the weapon name and shows nowhere on the card.
+- **Numbering, the MP code rule and label-only edits live in core** (`core/ops/loadouts.js`, the `buildNumber` field), so the portal gets the same rules; a restore skips them. Until pins2 ports the portal, core refuses a portal MP add with no code.
+- **Attachments changed with no new picture** asks first: Keep the picture · Save without a picture · Upload a new picture.
+- **Every /manage save answers with a panel** (`utils/loadoutPanels.js`, `utils/managePanels.js`, `handlers/manage/results.js`): the item as saved (a build or a draw beside its picture), what changed with the old value struck through, and Open · Edit again · Revert. Bulk results, deletes, bulk deletes and the Try Again reply are panels too, and every delete carries a Revert.
+- **Smaller pieces:** the Edit search jumps straight to one build (`BAL-27 2`); Export All lists MP weapons with no build; the Label and Source_Hash Cloudinary metadata fields; five new emojis (DB_Announcement, a cleaner Announcement, Ass, Capable, Info).
+
+## Pre-Release v3.113.0 — 2026-10-26 12:20 EDT (#217 · `16fd120a`) — the Privacy Policy and the Terms each keep one change-history list
 **From Harkirat, 2026-10-22 10:58 EDT:** "why does the privacy list the changes twice? That's kind of redundant and useless. Let's just do one collective like list for it."
 
 - **One list.** §12.1 *Revision history* is the only change list now. Its old twin, *Appendix B — Change history*, told the same history in shorter words and had begun to disagree with it (1.11 said "ten" cached colour fields there and "eighteen" in §12.1). Each pair was compared row by row first, and the details only Appendix B had (1.17's `stats` entry and Reset button, when and why the 1.14 row was written, 1.6's `scripts/lib/chronicle.js`, 1.5's `*PaletteSource`, 1.2's `db-theme`) went into §12.1.

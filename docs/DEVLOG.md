@@ -281,6 +281,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-23 21:17 EDT — /today becomes a daily brief, /calendar opens on Today, and reminders get a design (v3.109.0)
 - 2026-10-25 01:48 EDT — /remind: reminders by DM, built on his phone one mock-up at a time (v3.110.0)
 - 2026-10-26 00:35 EDT — Harkirat's command review rounds, /emojis and the /autobuild form (v3.111.0)
+- 2026-10-26 13:17 EDT — Loadout pictures keyed by gunsmith code, a five-field edit pop-up, and a panel for every /manage save (v3.114.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4722,6 +4723,16 @@ Harkirat spent two days refining command layouts on the dev bot, mostly from his
 - **One source beats four uploads.** Uploading each emoji to four bots by hand, or copying from Discord's CDN, cost quality and time. Keeping his originals in one Cloudinary folder and letting each bot fill itself made the prod Dioreo Admin app a non-task: it fills on its first hourly run once its token is on the VM.
 - **Search has to speak the user's words.** `/help`'s `cmd:` matched command names only, so "weapon" or "profile" found nothing. A word list per command and the commands' own descriptions, ranked, turned his examples into first-place hits.
 - **A dead end is a decision too.** The loadout image-key rework was planned in this thread but held for its own thread, so this branch could ship his polish without a storage migration in it.
+
+## 2026-10-26 13:17 EDT — Loadout pictures keyed by gunsmith code, a five-field edit pop-up, and a panel for every /manage save (v3.114.0)
+
+**What shipped:** MP loadout pictures keyed by gunsmith code, with a migration script and the dev data moved; a five-field Edit Loadout pop-up with build-number swaps; numbering and the MP code rule in the operation core; and a panel with Open, Edit again and Revert for every /manage save across loadouts, draws, calendar and patch notes.
+
+**What the session taught:**
+- **A namespace is the cheapest safety.** Dev and prod share one Cloudinary account, so a dev save at a code key would have overwritten the prod picture. A `DEV-` prefix, decided once, made every dev write safe without a guard per call.
+- **Put the rule where every caller passes.** Numbering and the code rule began in the /manage handler, and pins2's portal would have skipped them. Moving them into core made one place answer for both.
+- **A require is a dependency the hotpatch planner sees.** The Open button first required the three commands, which put the whole /manage handler tree in their hotpatch closure; `scripts/hotpatch.test.js` caught it. Looking the command up on `client.commands`, as pagination already does, keeps the graph honest.
+- **Ask before taking the screen.** A click-test approval covered that one test, not the next; a later takeover needs its own yes.
 
 # Part B — Lessons Ledger (thematic)
 

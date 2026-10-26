@@ -49,9 +49,9 @@ async function recordRead(fields) {
     }
 }
 
-async function noteOutcome(readId, outcome) {
+async function noteOutcome(readId, outcome, loadoutId = null) {
     if (!readId || !connected()) return;
-    try { await model().updateOne({ _id: readId }, { $set: { outcome } }); } catch (err) { console.error('Vision read outcome not recorded:', err.message); }
+    try { await model().updateOne({ _id: readId }, { $set: { outcome, ...(loadoutId ? { loadoutId } : {}) } }); } catch (err) { console.error('Vision read outcome not recorded:', err.message); }
 }
 
 // The fields Adjust can change, compared before and after; only real changes are kept.

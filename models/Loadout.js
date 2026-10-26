@@ -6,7 +6,9 @@ const LoadoutSchema = new mongoose.Schema({
     weaponName: { type: String, required: true }, // e.g. "Holger 26"
     category: { type: String, required: true }, // e.g. "LMG"
     mode: { type: String, enum: ['MP', 'DMZ'], required: true },
-    buildName: { type: String, default: 'Standard Build' }, // Allows multiple builds per gun
+    buildName: { type: String, default: 'Standard Build' }, // Allows multiple builds per gun. Always `Build N` since 2026-10-26 01:19 EDT: the number decides the build's place in /gunsmith (utils/loadoutForm.js compareBuilds), and its label has its own field below.
+    // The build's label, back end only (Harkirat, 2026-10-25 22:15 EDT): shown after the weapon name in /manage's Edit pop-up (`BAL-27, Ranked`) and nowhere a player sees it. Until 2026-10-26 01:19 EDT a label was stored AS buildName, which left a labelled build with no number.
+    label: { type: String, default: '' },
     attachments: [{ type: String }], // Array handles varied attachment limits natively
     // Parallel array to `attachments` (same index alignment) holding each slot's Gunsmith label (e.g. "Muzzle", "Barrel") -- ONLY ever populated by /autobuild's vision extraction, since a manual /manage add/edit has no slot data to offer. Persisting this on the doc (added 2026-07-24 18:07 EDT, closing the "accepted gap" in loadout-images-and-metadata.md) is what lets a later /manage attachment edit re-sync per-slot Cloudinary metadata for the common case -- editing an existing build WITHOUT changing which attachments are equipped -- instead of always leaving it stale. See handlers/manage/loadouts.js's editLoadout() for the actual re-sync/invalidation logic.
     attachmentSlots: [{ type: String }],
@@ -28,6 +30,8 @@ const LoadoutSchema = new mongoose.Schema({
     dmzRangeRank: { type: String, default: null },
     // Who sent this build through Submit a Build (utils/buildSubmissions.js), kept even when they stay anonymous so a dispute can be checked, and shown in the card's footer only when `credited` (Harkirat, 2026-10-25 16:53-17:06 EDT). PRIVACY.md §2.1e and Appendix A name it. Absent on every build Dioreo made itself.
     submittedBy: { type: new mongoose.Schema({ discordId: { type: String, required: true }, credited: { type: Boolean, default: false } }, { _id: false }), default: undefined },
+    // SHA-256 of the screenshot this build's picture was made from (/autobuild or an Edit upload), so a picture traces back to its exact file and its VisionRead, and one screenshot on two builds can be listed (2026-10-26 01:19 EDT). Absent on a build whose picture came from a URL or a hand upload.
+    sourceHash: { type: String, default: undefined },
     lastUpdated: { type: Date, default: Date.now }
 });
 

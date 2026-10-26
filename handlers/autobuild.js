@@ -10,6 +10,7 @@
 // (no shared interaction helpers needed here -- these branches never build a synthetic interaction or resolve a panel owner. See utils/interactionContext.js if that changes.)
 
 const BOT_EMOJI = require('../utils/emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
+const { openLoadout } = require('../utils/openLoadoutCard'); // shared with /manage's Open in /gunsmith (2026-10-26 11:57 EDT)
 
 const OWNED_PREFIXES = ["autobuild_"];
 
@@ -18,26 +19,6 @@ function ownsCustomId(customId) {
 }
 
 // --- AUTOBUILD: OPEN LOADOUT --- answers THIS button's own interaction with a brand-new PUBLIC message (not an edit of the ephemeral confirmation), same shape /dmz's execute() uses for its own initial send. See the design spec's "Open Loadout" section. Shared by the single review's Open Loadout button and the bulk summary's Open a saved loadout menu (2026-10-20 10:36 EDT).
-async function openLoadout(interaction, loadoutId) {
-    const Loadout = require('../models/Loadout');
-    const { buildLoadoutCard, getMpCategoryAccent } = require('../utils/loadoutRender');
-    const doc = await Loadout.findById(loadoutId).lean();
-    if (!doc) {
-        return interaction.reply({ content: require('../utils/emojiMap').glyphs(BOT_EMOJI.cross + ' That loadout no longer exists.'), ephemeral: true });
-    }
-    // Render the weapon's FULL build set (not just this one doc) so the Prev/Next pagination and the correct "Build N of M" footer render, opening ON the just-created build. The PoC passed [doc] alone (found in live testing 2026-07-20): builds.length === 1, so buildPaginationRow returned null and the footer wrongly read "Build 1 of 1" even for a weapon that has several builds. Same weaponKey scope /gunsmith mp's own lookup uses. openIndex falls back to 0 if the doc somehow isn't in its own result set. Mode-aware since 2026-10-19 17:54 EDT, when /autobuild began writing DMZ builds: the same scopes /dmz uses (utils/loadoutLookup.js) -- the weapon's DMZ builds, every DMZ build for the browse dropdown, and the `dmz` id prefix so its pagination routes to the DMZ handler.
-    const mode = doc.mode === 'DMZ' ? 'DMZ' : 'MP';
-    const builds = await Loadout.find({ weaponKey: doc.weaponKey, mode }).lean();
-    const openIndex = Math.max(0, builds.findIndex(b => String(b._id) === String(doc._id)));
-    const categoryBuilds = mode === 'DMZ'
-        ? await Loadout.find({ mode: 'DMZ' }).lean()
-        : await Loadout.find({ category: doc.category, mode: 'MP' }).lean();
-    const accentColor = getMpCategoryAccent(doc.category);
-    const cardPayload = buildLoadoutCard(builds, openIndex, { color: accentColor, idPrefix: mode === 'DMZ' ? 'dmz' : 'mp', isEphemeral: false, categoryBuilds });
-    await interaction.deferReply({ ephemeral: false });
-    const { sendV2Payload } = require('../utils/sendV2Payload');
-    return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
-}
 
 async function route(interaction) {
     const { customId } = interaction;

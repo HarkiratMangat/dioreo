@@ -236,7 +236,8 @@ function approveModal(sub) {
         title: `Approve: ${sub.weaponName}`.slice(0, 45), custom_id: `gsb~subok~${idOf(sub)}`,
         components: [
             label('Weapon | Category', 'e.g. AK117 | AR', field('wc', `${sub.weaponName} | ${sub.category || ''}`.trim(), 1, 80, true)),
-            label('Build Label | Gunsmith Code', 'Both optional, e.g. | 1C2B4A8B9A', field('lc', sub.gunsmithCode ? `| ${sub.gunsmithCode}` : '', 1, 80)),
+            // The code is needed on MP (2026-10-26 01:19 EDT: the picture is keyed by it), so a submission without one saves only once it is typed here.
+            label('Build Label | Gunsmith Code', sub.mode === 'DMZ' ? 'Label optional, e.g. Ranked' : 'Label optional; the code is needed, e.g. | 1C2B4A8B9A', field('lc', sub.gunsmithCode ? `| ${sub.gunsmithCode}` : '', 1, 80)),
             label('Attachments', 'One per line', field('att', sub.attachments.join('\n'), 2, 1000, true)),
             label('Badges', 'Optional, e.g. meta, best, hp', field('badges', '', 1, 100)),
         ],

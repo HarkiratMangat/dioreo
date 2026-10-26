@@ -49,12 +49,12 @@ const confirmPurge = (scope) => async ({ interaction, page, manageCommand }) => 
     });
 };
 
-// Export replies directly with the file — no modal, nothing to submit.
+// Export replies directly with the file — no modal, nothing to submit. `extra` is any further files, as { name, text }.
 const exportFile = (buildExport) => async (ctx) => {
-    const { content, name, text } = await buildExport(ctx);
+    const { content, name, text, extra = [] } = await buildExport(ctx);
     return await ctx.interaction.reply({
         content,
-        files: [{ attachment: Buffer.from(text, 'utf-8'), name }],
+        files: [{ attachment: Buffer.from(text, 'utf-8'), name }, ...extra.map(f => ({ attachment: Buffer.from(f.text, 'utf-8'), name: f.name }))],
         ephemeral: true
     });
 };
@@ -160,11 +160,17 @@ const loadoutsActions = () => [
           const Loadout = require('../models/Loadout');
           const { formatLoadoutsAsBulkText } = require('./adminParser');
           const mode = loadoutModeFor(page);
-          const loadouts = await Loadout.find({ mode }).lean();
+          // In the order /gunsmith shows them (class, weapon, build number), so the file reads like the bot.
+          const loadouts = (await Loadout.find({ mode }).lean()).sort((a, b) => String(a.category).localeCompare(String(b.category)) || a.weaponName.localeCompare(b.weaponName) || require('./loadoutForm').compareBuilds(a, b));
+          // MP also gets the weapons with no build (ROADMAP "Export of every loadout, and a list of weapons that have none").
+          const lookup = require('./loadoutLookup');
+          const missing = mode === 'MP' ? await lookup.missingWeaponsAll() : null;
           return {
-              content: `📤 **Exported all ${mode} loadouts** in Bulk Add format. Paste this back into the Bulk Add action.`,
+              content: `📤 **Exported all ${loadouts.length} ${mode} loadouts** in Bulk Add format. Paste this back into the Bulk Add action.`
+                  + (missing ? `\n-# ${missing.length} MP weapons in the catalogue have no build yet: the second file lists them.` : ''),
               name: `${mode.toLowerCase()}_loadouts_bulk.txt`,
-              text: formatLoadoutsAsBulkText(loadouts) || `(no ${mode} loadouts currently saved)`
+              text: formatLoadoutsAsBulkText(loadouts) || `(no ${mode} loadouts currently saved)`,
+              extra: missing ? [{ name: 'mp_weapons_without_builds.txt', text: lookup.formatMissingWeapons(missing) }] : []
           };
       }) },
     { id: 'formatguide', label: 'Guide', style: 2, kind: 'view', slash: true, run: openFormatGuide }

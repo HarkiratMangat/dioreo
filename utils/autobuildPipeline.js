@@ -8,7 +8,7 @@ const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges, normaliz
 const { getCatalogueIndex, findUnknownNames, learnItems } = require('./catalogue');
 const { sendV2Payload } = require('./sendV2Payload');
 const { computeWeaponKeyAndBuild, getMpCategoryAccent, findDuplicateLoadouts } = require('./loadoutRender');
-const { uploadLoadoutImage, syncLoadoutMetadata, deriveImageKey } = require('./loadoutImageCache');
+const { uploadLoadoutImage, syncLoadoutMetadata, deriveImageKey, takenKeyPattern, codeImageKey } = require('./loadoutImageCache');
 const { glyphs } = require('./emojiMap');
 const { mentionCommand } = require('./commandMentions');
 
@@ -35,9 +35,9 @@ function refreshReviewWarnings(data, allBuilds) {
     // Position in /gunsmith, which lists a weapon's builds in _id order (utils/loadoutLookup.js; the portal's buildNumberOf uses the same rule). The new build would come last.
     const ordered = sameMode.filter(b => b.weaponKey === weaponKey).sort((a, b) => String(a._id).localeCompare(String(b._id)));
     data.ordinal = ordered.length + 1;
-    // A build label is the build's own name (buildName); two builds of one weapon can never share one, because /manage's bulk upsert keys on {weaponKey, mode, buildName}. Save refuses a taken label.
+    // A label is the build's own field since 2026-10-26 01:19 EDT (models/Loadout.js), shown after the weapon name in /manage's Edit pop-up; an older build may still carry its label as its name. Two builds of one weapon never share one: Save refuses a taken label.
     const label = String(data.buildLabel || '').trim().toLowerCase();
-    data.labelConflict = label ? ordered.some(b => String(b.buildName || '').trim().toLowerCase() === label) : false;
+    data.labelConflict = label ? ordered.some(b => [b.label, b.buildName].some(n => String(n || '').trim().toLowerCase() === label)) : false;
 
     const dupes = data.mode === 'DMZ'
         ? findDmzDuplicates(weaponKey, data.attachments, sameMode)
@@ -274,6 +274,8 @@ async function extractToData(sourceImageUrl, { explicitCategory = null, badgesOp
         modeSource: explicitMode ? 'explicit' : (mode ? 'detected' : null),
         modeSignals: extracted.modeSignals,
         sourceImageUrl,
+        // The screenshot's SHA-256 (the read's fileHash), saved on the build as sourceHash so its picture traces back to this exact file (2026-10-26 01:19 EDT).
+        sourceHash: extracted.fileHash || null,
         adminId,
         cacheId: null,
         // The read this review came from, so Adjust, Save and Discard are recorded against it.
@@ -357,10 +359,12 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
         category: data.category,
         mode,
         buildName: data.buildName,
+        label: String(data.buildLabel || '').trim(),
         attachments,
         attachmentSlots,
         imageKey: imageKeyOverride || data.imageKey,
         shareCode: data.gunsmithCode || '',
+        ...(data.sourceHash ? { sourceHash: data.sourceHash } : {}),
         ...badges,
         // A build from Submit a Build keeps its submitter, shown only if they chose credit (utils/buildSubmissions.js, Harkirat 2026-10-25 17:06 EDT).
         ...(data.submission ? { submittedBy: { discordId: data.submission.discordId, credited: Boolean(data.submission.credited) } } : {})
@@ -404,7 +408,8 @@ function nextBuildNumber(weaponName, siblingDocs) {
     const keyRe = new RegExp(`^${base}-(\\d+)(?:\\.\\w+)?$`, 'i');
     const keyNums = (siblingDocs || []).map(d => keyRe.exec(d.imageKey || '')).filter(Boolean).map(m => parseInt(m[1], 10));
     const nameNums = (siblingDocs || []).map(d => /^Build (\d+)$/.exec(d.buildName || '')).filter(Boolean).map(m => parseInt(m[1], 10));
-    return Math.max(0, ...keyNums, ...nameNums) + 1;
+    // The count too: an older build carrying its label as its name has no number, and must still leave a place (2026-10-26 01:19 EDT).
+    return Math.max(0, ...keyNums, ...nameNums, (siblingDocs || []).length) + 1;
 }
 
 // The saving half of confirmAndWrite, shared with utils/autobuildBulk.js (2026-10-20 10:33 EDT): validates, uploads the image and writes the build, and REPORTS what happened instead of answering an interaction, so a batch page can show the result in place. Statuses: saved (doc) · retry (retryToken, error) · expired · nocategory · nomode · busy. Saves of one weapon in one mode run one at a time (2026-10-25 14:05 EDT, Harkirat's two-admin dispute): the next build number is read and taken inside this queue, so two saves at the same moment can never both take Build 3.
@@ -430,6 +435,8 @@ async function confirmCoreNow(token) {
     if (!data.category) return { status: 'nocategory' };
     if (!data.mode) return { status: 'nomode' };
     if (data.labelConflict) return { status: 'labeltaken' };
+    // An MP build's gunsmith code is required (Harkirat, 2026-10-25 21:48 EDT): its picture is keyed by it. The read can miss it, and a player's submission may leave it out, so Save waits for one.
+    if (data.mode === 'MP' && !String(data.gunsmithCode || '').trim()) return { status: 'nocode' };
 
     // Claim the token before any slow work starts -- see confirmInProgress's own comment above for why this exists. Checked AFTER the two cheap validation returns above (an unresolved-category click never reaches Cloudinary/Mongo, so it's not part of the race this guards against).
     if (confirmInProgress.has(token)) return { status: 'busy' };
@@ -437,20 +444,31 @@ async function confirmCoreNow(token) {
 
     try {
         const weaponKeyForLookup = data.weaponName.toLowerCase().replace(/\s+/g, '');
-        const siblingDocs = await Loadout.find({ weaponKey: weaponKeyForLookup, mode: data.mode }).select('buildName imageKey').lean();
+        const siblingDocs = await Loadout.find({ weaponKey: weaponKeyForLookup, mode: data.mode }).select('buildName label imageKey shareCode').lean();
         const label = String(data.buildLabel || '').trim();
-        if (label && siblingDocs.some(s => String(s.buildName || '').trim().toLowerCase() === label.toLowerCase())) return { status: 'labeltaken' };
+        if (label && siblingDocs.some(s => [s.label, s.buildName].some(n => String(n || '').trim().toLowerCase() === label.toLowerCase()))) return { status: 'labeltaken' };
+        // The same code twice on one weapon is the same build twice.
+        const { sameCode } = require('./loadoutForm');
+        const twin = data.mode === 'MP' && siblingDocs.find(s => sameCode(s.shareCode, data.gunsmithCode));
+        if (twin) return { status: 'codetaken', message: `${data.weaponName} ${twin.buildName} already has the code \`${data.gunsmithCode}\`.` };
         // The next number counts the image keys too, not only "Build N" names (2026-10-20 13:22 EDT): once a build carries a label, its WEAPON-N image key is invisible to a names-only count, and the next build would have been handed the same key and uploaded over its image.
         const base = data.weaponName.trim().toUpperCase().replace(/\s+/g, '-');
         const next = nextBuildNumber(data.weaponName, siblingDocs);
         const computed = { ...computeWeaponKeyAndBuild(data.weaponName, []), buildName: `Build ${next}`, imageKey: `${base}-${next}` };
         const weaponKey = computed.weaponKey;
-        const buildName = label || computed.buildName;
-        // MP keeps computeWeaponKeyAndBuild's `WEAPON-N` key exactly as before. DMZ needs the `DMZ-` prefix (Cloudinary public_ids are global, so an unprefixed DMZ key would overwrite the MP build's image of the same weapon), and takes the next key that is actually FREE rather than the next build NUMBER: an existing DMZ build with a human build name still holds its `DMZ-WEAPON-1`, and numbering by name alone would hand that key out again and overwrite its image. utils/loadoutImageCache.js's deriveImageKey is the one place that rule lives; /manage's DMZ page uses it too.
+        // The name is always `Build N` and the label has its own field since 2026-10-26 01:19 EDT (models/Loadout.js), so a labelled build still has a number.
+        const buildName = computed.buildName;
+        // MP: the picture key is the gunsmith code's (`WEAPON-CODE`, utils/loadoutImageCache.js codeImageKey, 2026-10-26 01:19 EDT), so it can never land on another build's picture by number. DMZ has no code, needs the `DMZ-` prefix (Cloudinary public_ids are global, so an unprefixed DMZ key would overwrite the MP build's image of the same weapon), and takes the next key that is actually FREE rather than the next build NUMBER: an existing DMZ build with a human build name still holds its `DMZ-WEAPON-1`, and numbering by name alone would hand that key out again and overwrite its image. utils/loadoutImageCache.js's deriveImageKey is the one place that rule lives; /manage's DMZ page uses it too.
         let imageKey = computed.imageKey;
-        if (data.mode === 'DMZ') {
-            const base = data.weaponName.trim().toUpperCase().replace(/\s+/g, '-').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const taken = await Loadout.find({ imageKey: new RegExp(`^DMZ-${base}-\\d+$`, 'i') }).select('imageKey').lean();
+        if (data.mode === 'MP') {
+            imageKey = codeImageKey(data.weaponName, data.gunsmithCode);
+            // Letters and digits only (utils/loadoutImageCache.js isKeyableCode), and a key no other build points at.
+            if (!imageKey) return { status: 'nocode' };
+            const { keyHolderQuery } = require('./loadoutImageCache');
+            const holder = await Loadout.findOne(keyHolderQuery(imageKey)).select('weaponName buildName').lean();
+            if (holder) return { status: 'codetaken', message: `${holder.weaponName} ${holder.buildName} already uses the picture \`${imageKey}\`.` };
+        } else {
+            const taken = await Loadout.find({ imageKey: takenKeyPattern(data.weaponName) }).select('imageKey').lean();
             imageKey = deriveImageKey(data.weaponName, 'DMZ', taken.map(t => t.imageKey));
         }
 
@@ -459,9 +477,10 @@ async function confirmCoreNow(token) {
         if (uploadResult.noImage) imageKey = require('./adminParser').PLACEHOLDER_IMAGE;
 
         if (uploadResult.success) {
-            require('./visionReads').noteOutcome(data.readId, 'saved');
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility: Mongoose validation, a dropped connection), the token must still be sitting in pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere. (Found in review: this used to delete first, which meant a save() failure here lost the data permanently -- no Loadout doc, no recoverable token.)
             const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
+            // The read and its build point at each other (2026-10-26 01:19 EDT): the build carries the read's fileHash, the read the build's id.
+            require('./visionReads').noteOutcome(data.readId, 'saved', doc._id);
             pendingAutobuilds.delete(token);
             // A submitted build: thank the submitter and mark the owner's DM card (never throws).
             if (data.submission) require('./buildSubmissions').onSaved(data.submission, doc);
@@ -491,6 +510,9 @@ function confirmMessage(client, result) {
         case 'busy': return '⏳ Already saving this build -- give it a moment.';
         case 'rival': return glyphs(`${BOT_EMOJI.warn} ${result.message || 'Another admin has this build waiting.'} Pick **Save mine** or **Leave it to them** on its page.`);
         case 'labeltaken': return `${BOT_EMOJI.cross} That build label is already used by another build of this weapon -- pick another with **Adjust**.`;
+        // Both places a code can be typed: Adjust on a review, the Approve pop-up on a submitted build.
+        case 'nocode': return `${BOT_EMOJI.cross} An MP build needs its Gunsmith code before it saves: its picture is keyed by it. Add it in the \`Label | Code\` box (**Adjust** on a review, **Approve** again on a submission).`;
+        case 'codetaken': return `${BOT_EMOJI.cross} ${result.message || 'Another build of this weapon has that code.'} The same code is the same build, so check that one with /gunsmith.`;
         case 'retry': return glyphs(`${BOT_EMOJI.warn} Image upload to Cloudinary failed (${result.error}). Nothing was saved yet. Press **Re-upload** to send the image again (retry token \`${result.retryToken}\`).\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`);
         default: return glyphs(BOT_EMOJI.cross + ' Something went wrong saving this build.');
     }
@@ -590,7 +612,7 @@ function buildEditModal(token, data, customId = `autobuild_editmodal_${token}`) 
         // `|| ''` fallback on every value -- TextInputBuilder.setValue(undefined) throws SYNCHRONOUSLY, which would throw inside showModal() before the interaction is ever acknowledged. Gemini extraction can genuinely leave weaponName/gunsmithCode undefined on a bad read.
         text('weapon', 'Weapon Name', new TextInputBuilder().setStyle(TextInputStyle.Short).setValue(data.weaponName || '').setRequired(true)),
         // Not required since 2026-10-19 17:53 EDT: a DMZ build has no Gunsmith code at all, and a required box would force one to be invented.
-        text('code', 'Build Label | Gunsmith Code', new TextInputBuilder().setPlaceholder('Ranked | 1A2B3C4D5E   (both optional)').setStyle(TextInputStyle.Short).setValue(`${data.buildLabel || ''} | ${data.gunsmithCode || ''}`).setRequired(false)),
+        text('code', 'Build Label | Gunsmith Code', new TextInputBuilder().setPlaceholder('Ranked | 1A2B3C4D5E   (label optional; code needed on MP)').setStyle(TextInputStyle.Short).setValue(`${data.buildLabel || ''} | ${data.gunsmithCode || ''}`).setRequired(false)),
         text('attachments', 'Attachments (one per line)', new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setValue(data.attachments.join('\n')).setRequired(true)),
         // The mode rides in the category box as "Category | Mode" -- see parseCategoryAndMode.
         text('category', 'Category | Mode', new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder('AR | MP   or   SNIPER | DMZ').setValue(`${data.category || ''} | ${data.mode || ''}`).setRequired(true)),

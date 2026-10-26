@@ -118,7 +118,8 @@ async function commitSet(ops, { actorId, source = 'discord', revertOf = null }) 
             // invert() may return an ARRAY, so an inverse changeset is flattened before applying (the ops.flat() above already covers the outer `ops` array itself; this covers a normalized entry still nested one level).
             for (const [index, op] of v.normalized.flat().entries()) {
                 const impl = resolveOp(op.type);
-                const res = await impl.apply(op, { session, actorId });
+                // `restoring`: this set replays a stored inverse (Revert). An op can then skip rules meant for a fresh save, so restoring an old record never fails on a rule it predates (loadout.add/edit's required MP code and numbering, 2026-10-26 12:16 EDT).
+                const res = await impl.apply(op, { session, actorId, restoring: Boolean(revertOf) });
                 if (!res.ok) { failedAt = { index, reason: res.reason }; throw new Error(`op ${index} failed: ${res.reason}`); }
                 // apply() is the ONLY writer and it ALWAYS audits — the caller cannot opt out. 🔴 `page` is DERIVED FROM THE OP TYPE, never hardcoded. An earlier draft wrote `page: 'draws'` here, which would have stamped every calendar, loadout, patchnote, season and announcement row as `draws` the moment plan 2 lands — breaking getRecentChanges({filterPage}) in /bot analytics AND core/revert.js's ON_CORE.has(row.page) branch, which is the whole mechanism this design added.
                 const row = await recordChangeIn(session, {

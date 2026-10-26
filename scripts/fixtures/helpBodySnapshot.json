@@ -2855,8 +2855,8 @@
                   "description": "Posting/editing bot-wide announcements",
                   "emoji": {
                     "animated": true,
-                    "name": "Announcements",
-                    "id": "1540916435914723490"
+                    "name": "DB_Announcement",
+                    "id": "1564319068302082174"
                   }
                 }
               ]

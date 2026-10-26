@@ -49,16 +49,7 @@ function registerBulkDelete(interaction, { description, summary, apply }) {
     const token = randomUUID().slice(0, 8);
     pendingBulkDeletes.set(token, { description, summary, apply });
     setTimeout(() => pendingBulkDeletes.delete(token), 10 * 60 * 1000).unref();
-    return interaction.reply({
-        content: `${BOT_EMOJI.warn} **Confirm Bulk Delete?**\n${summary.join('\n')}`,
-        components: [{
-            type: 1, components: [
-                { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_bulkdelconfirm_${token}` },
-                { type: 2, style: 2, label: 'Cancel', custom_id: `mng_bulkdelcancel_${token}` }
-            ]
-        }],
-        ephemeral: true
-    });
+    return interaction.reply({ flags: 32768 | 64, components: require('../../utils/managePanels').bulkDeletePanel({ description, summary, token }) });
 }
 
 // ==========================================
@@ -150,8 +141,15 @@ async function resolveManagePanelMatches(group, rawQuery) {
         const mode = loadoutModeFor(group);
         const Loadout = require('../../models/Loadout');
         const modeLoadouts = await Loadout.find({ mode }).lean();
-        return modeLoadouts.filter(l => fuzzyMatch(query, l.weaponName) || fuzzyMatch(query, l.buildName)).slice(0, 25)
-            .map(l => ({ id: l._id.toString(), doc: l, label: `${l.weaponName} - ${l.buildName}` }));
+        // By weapon, then build number (2026-10-26 11:39 EDT: the click-test showed BAL-27's five builds listed 2, 3, 4, 5, 1), and the label after the number, as the Edit pop-up shows it.
+        const { compareBuilds, pickBuild } = require('../../utils/loadoutForm');
+        const asLabel = (l) => `${l.weaponName} - ${l.buildName}${l.label ? ` · ${l.label}` : ''}`;
+        // `BAL-27 2` or `BAL-27 Ranked` is one build: straight to it, no picker (utils/loadoutForm.js pickBuild).
+        const one = pickBuild(query, modeLoadouts);
+        if (one) return [{ id: one._id.toString(), doc: one, label: asLabel(one) }];
+        return modeLoadouts.filter(l => fuzzyMatch(query, l.weaponName) || fuzzyMatch(query, l.buildName) || (l.label && fuzzyMatch(query, l.label)))
+            .sort((a, b) => a.weaponName.localeCompare(b.weaponName) || compareBuilds(a, b)).slice(0, 25)
+            .map(l => ({ id: l._id.toString(), doc: l, label: `${l.weaponName} - ${l.buildName}${l.label ? ` · ${l.label}` : ''}` }));
     }
 
     // Patch Notes has no search-based edit/delete flow -- it operates on a single "current entry" instead (see patchnotes.js), so this group is intentionally absent here.
@@ -165,7 +163,8 @@ async function resolveManagePanelAction(interaction, group, action, match) {
     if (action === 'edit') {
         if (group === 'draws') return interaction.showModal(manageCommand.buildEditDrawModal(match.doc, match.id, match.type));
         if (group === 'calendar') return interaction.showModal(manageCommand.buildEditCalendarModal(match.doc, match.id));
-        if (group === 'loadouts_mp' || group === 'loadouts_dmz') return interaction.showModal(manageCommand.buildEditLoadoutModal(match.doc, match.id));
+        // The weapon's builds are read first, so a legacy build (its label stored as its name) still shows a build #. One quick query, well inside showModal's 3 seconds.
+        if (group === 'loadouts_mp' || group === 'loadouts_dmz') return interaction.showModal(await require('./loadouts').editLoadoutModal(match.doc));
     }
 
     if (action === 'delete') {
@@ -174,17 +173,12 @@ async function resolveManagePanelAction(interaction, group, action, match) {
         pendingManageDeletes.set(token, { group, match });
         setTimeout(() => pendingManageDeletes.delete(token), 10 * 60 * 1000).unref();
 
-        // The prompt used to promise "an Undo button right after" -- that inline button was retired when Undo moved to /bot's Changes page (plan 2 Task 7), and since the permission restructure (2026-10-19 19:38 EDT) a /manage-only admin cannot open that page at all, so the promise was false for exactly the person reading it.
-        return interaction.reply({
-            content: `${BOT_EMOJI.warn} **Are you sure you want to delete ${match.label}?** Every change is recorded, and it can be reverted from \`/bot\`'s Changes page.`,
-            components: [{
-                type: 1, components: [
-                    { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_delconfirm_${token}` },
-                    { type: 2, style: 2, label: 'Cancel', custom_id: `mng_delcancel_${token}` }
-                ]
-            }],
-            ephemeral: true
-        });
+        // A loadout shows the build itself, picture and all, so the right one is deleted (Harkirat, 2026-10-26 11:54 EDT: "so things aren't being second guessed").
+        if (group === 'loadouts_mp' || group === 'loadouts_dmz') {
+            return interaction.reply({ flags: 32768 | 64, components: require('../../utils/loadoutPanels').deletePanel({ doc: match.doc, token }) });
+        }
+        // A draw or event shows itself too: its dates, and a draw its picture and items (utils/managePanels.js, 2026-10-26 13:01 EDT). The old text prompt promised "an Undo button right after", which was retired with the inline Undo (plan 2 Task 7); the result now carries its own Revert.
+        return interaction.reply({ flags: 32768 | 64, components: require('../../utils/managePanels').deleteItemPanel({ group, match, token }) });
     }
 }
 

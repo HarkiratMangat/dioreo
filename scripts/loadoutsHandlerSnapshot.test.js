@@ -16,6 +16,9 @@ function capture() {
         addMP: manageCommand.buildAddLoadoutModal('MP').toJSON(),
         addDMZ: manageCommand.buildAddLoadoutModal('DMZ').toJSON(),
         editMP: manageCommand.buildEditLoadoutModal(SAMPLE_LOADOUT, '507f1f77bcf86cd799439011').toJSON(),
+        // The five-field pop-up (2026-10-26 01:20 EDT): a numbered, coded, labelled MP build, and a DMZ one, which has no code.
+        editMPCoded: manageCommand.buildEditLoadoutModal({ ...SAMPLE_LOADOUT, mode: 'MP', buildName: 'Build 2', label: 'Ranked', shareCode: '1C2B4A8B9A' }, '507f1f77bcf86cd799439012').toJSON(),
+        editDMZ: manageCommand.buildEditLoadoutModal({ ...SAMPLE_LOADOUT, mode: 'DMZ', buildName: 'Build 1', dmzRangeRank: 'best-close', categoryRank: null }, '507f1f77bcf86cd799439013').toJSON(),
         bulkAddMP: manageCommand.buildLoadoutsBulkAddModal('MP').toJSON(),
         bulkAddDMZ: manageCommand.buildLoadoutsBulkAddModal('DMZ').toJSON(),
         bulkRemoveMP: manageCommand.buildLoadoutsBulkRemoveModal('MP').toJSON(),
