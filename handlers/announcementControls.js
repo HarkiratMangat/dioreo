@@ -17,8 +17,7 @@ function ownsCustomId(customId) {
 }
 
 async function route(interaction) {
-    // Literal ids, not utils/announcement.js's ANN_*_ID constants, so scripts/handlerRouting.test.js can see each branch behind the `ann_` prefix.
-    // The answer, privately, as a new message under the announcement.
+    // Literal ids, not utils/announcement.js's ANN_*_ID constants, so scripts/handlerRouting.test.js can see each branch behind the `ann_` prefix. The answer, privately, as a new message under the announcement.
     if (interaction.isButton() && interaction.customId === 'ann_why') {
         await interaction.deferReply({ flags: 64 });
         return await sendV2Payload(interaction, A.buildWhyPanel('on', interaction.client));
