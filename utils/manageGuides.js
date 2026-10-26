@@ -50,7 +50,7 @@ function drawsSections() {
             '-# One draw per line. Comma-separated.'),
         section('🏷️ Tier Shorthand',
             `\`m\` ${emojis.mythic} Mythic · \`l\` ${emojis.legendary} Legendary · \`lg\` ${emojis.legacy} Legacy · \`e\` ${emojis.epic} Epic\n` +
-            '-# Spell the tier out instead if you\'d rather (`mythic`, `legendary`, etc.) -- both work.\n' +
+            '-# Spell the tier out instead if you\'d rather (`mythic`, `legendary`, etc.) — both work.\n' +
             '-# Start an item with `-# ` instead of a tier to add a free-text note (e.g. a collab callout) instead of a tiered item.'),
         // Draw Type tag (2026-10-18 11:06 EDT): the codes are read from utils/drawTypes.js, so a new draw type shows here without editing this guide.
         section('🎟️ Draw Type (optional)',
@@ -58,17 +58,17 @@ function drawsSections() {
             `-# ${require('./drawTypes').drawTypeOptions().map(o => `\`${o.code}\` ${o.name}`).join(' · ')}`),
         section('✨ What Gets Auto-Formatted',
             '• **Title** and every **item name** → auto Title Case (acronyms like `FSS`/`AK`/`MP`/`BR` are preserved, hyphens/slashes capitalize each side independently).\n' +
-            '• A `-# note` line is the one exception -- kept **exactly as typed**, never title-cased (it\'s free text, not an item name).\n' +
-            '• **Thumbnail URL** is optional. Blank reuses a cached image for that draw automatically -- exact title match first, then a close/typo\'d match if nothing exact hits.\n' +
-            '• **Date** is parsed as UTC-0 -- `July 15` or `July 15, 2026` both work; a date with its own comma is handled correctly.'),
+            '• A `-# note` line is the one exception — kept **exactly as typed**, never title-cased (it\'s free text, not an item name).\n' +
+            '• **Thumbnail URL** is optional. Blank reuses a cached image for that draw automatically — exact title match first, then a close/typo\'d match if nothing exact hits.\n' +
+            '• **Date** is parsed as UTC-0 — `July 15` or `July 15, 2026` both work; a date with its own comma is handled correctly.'),
         section('🖼️ Example',
             '**Paste this:**\n' +
             '```\nVoid Implosion Draw, l M4 - Void Implosion, e Dusk - Otherworld Ensemble, -# Girls Frontline Collab, July 15, URL.com/image.png\n```' +
             '\n**Renders as:**\n' +
-            `**__Void Implosion Draw__**\n${emojis.legendary} **M4 - Void Implosion**\n${emojis.epic} **Dusk - Otherworld Ensemble**\n-# Girls Frontline Collab\n<t:0:f> (<t:0:R>)\n-# ^ timestamp shown is a placeholder -- yours renders with the real date you typed.`),
+            `**__Void Implosion Draw__**\n${emojis.legendary} **M4 - Void Implosion**\n${emojis.epic} **Dusk - Otherworld Ensemble**\n-# Girls Frontline Collab\n<t:0:f> (<t:0:R>)\n-# ^ timestamp shown is a placeholder — yours renders with the real date you typed.`),
         section('💡 Tips',
-            '• Use **Export** above to grab this exact format pre-filled with your real current data -- the fastest way to see a live, correct example.\n' +
-            '• **Replace Multiple** upserts by title match (updates in place, inserts if new) -- anything you don\'t mention is left untouched. Use **Purge** for a full wipe.')
+            '• Use **Export** above to grab this exact format pre-filled with your real current data — the fastest way to see a live, correct example.\n' +
+            '• **Replace Multiple** upserts by title match (updates in place, inserts if new) — anything you don\'t mention is left untouched. Use **Purge** for a full wipe.')
     ];
 }
 
@@ -76,7 +76,7 @@ function calendarSections() {
     return [
         section('📋 Paste Skeleton',
             '`[d|p|e]•M/D - M/D | Event Title` or `[d|p|e]•M/D - All Season | Event Title`\n' +
-            '-# Bullet-separated (a `•` character), NOT one-per-line -- this is what survives a copy-paste out of Notes.'),
+            '-# Bullet-separated (a `•` character), NOT one-per-line — this is what survives a copy-paste out of Notes.'),
         section('🏷️ Section Prefix',
             `\`d\` ${emojis.newDraws} Draws · \`p\`/\`g\`/\`m\` ${emojis.modes} Playlists & Modes · \`e\` ${emojis.events} Events\n` +
             '-# The prefix sits directly touching the bullet (`d•`, not `d •`). `g`/`m` are aliases for `p` (playlist = game mode = mode).'),
@@ -85,14 +85,14 @@ function calendarSections() {
         section('🎁 Double CP',
             'Add `2x`, `(2x)`, `CP`, `2xCP`, or similar to a title to flag it as a Double CP event — `Krai BR 2x` strips the marker off the saved title; `Krai BR 2x CP Sale` keeps it (it reads as the event\'s real name) and still sets the flag.'),
         section('✨ What Gets Auto-Formatted',
-            '• **Title** is kept **exactly as typed** -- NOT title-cased, since event names routinely carry acronyms (`MP`/`BR`/`DMZ`) that auto-casing would mangle.\n' +
-            '• **Section prefix is optional.** Leave it off and the title is auto-classified by keyword -- words like "draw"/"mode"/"playlist"/"map", or a standalone `MP`/`BR`, route it automatically. Ambiguous titles (e.g. a bare map name) should keep the explicit prefix.\n' +
-            '• `All Season` as the end date means the event runs until the Battle Pass ends -- shown as an open-ended range, no fixed end date stored.\n' +
+            '• **Title** is kept **exactly as typed** — NOT title-cased, since event names routinely carry acronyms (`MP`/`BR`/`DMZ`) that auto-casing would mangle.\n' +
+            '• **Section prefix is optional.** Leave it off and the title is auto-classified by keyword — words like "draw"/"mode"/"playlist"/"map", or a standalone `MP`/`BR`, route it automatically. Ambiguous titles (e.g. a bare map name) should keep the explicit prefix.\n' +
+            '• `All Season` as the end date means the event runs until the Battle Pass ends — shown as an open-ended range, no fixed end date stored.\n' +
             '• Dates are UTC-0.'),
         section('🖼️ Example',
             '**Paste this:**\n' +
             '```\nd•7/15 - 8/1 | Jupiter Cannon Draw•p•7/20 - All Season | Krai BR•e•7/18 - 7/25 | Anniversary Celebration\n```' +
-            '\n**Renders as:** 3 entries, sorted onto their own pages -- "Jupiter Cannon Draw" under **Draws**, "Krai BR" under **Playlists & Modes** (open-ended, tied to the Battle Pass end), "Anniversary Celebration" under **Events**.'),
+            '\n**Renders as:** 3 entries, sorted onto their own pages — "Jupiter Cannon Draw" under **Draws**, "Krai BR" under **Playlists & Modes** (open-ended, tied to the Battle Pass end), "Anniversary Celebration" under **Events**.'),
         section('💡 Tips',
             '• Use **Export** above to grab this exact format pre-filled with your real current data.\n' +
             '• **Replace Multiple** upserts by title, doesn\'t touch anything unmentioned. **Purge** for a full wipe.')
@@ -102,43 +102,43 @@ function calendarSections() {
 function loadoutsSections() {
     return [
         section('📋 Paste Skeleton',
-            '`Weapon | Category`\n`Build: Build Name`\n`Image: Cloudinary Key`\n`Code: Gunsmith Code`\n`Badges: meta, best`\n`- Attachment 1`\n`- Attachment 2`\n' +
+            '```\nWeapon | Category\nBuild: Build Name\nImage: Cloudinary Key\nCode: Gunsmith Code\nBadges: meta, best\n- Attachment 1\n- Attachment 2\n```\n' +
             '-# One build per BLOCK (blank line between blocks). **First line is the weapon\'s identity, every optional field is its own labelled line, everything else is an attachment.** The labelled lines can be in any order and any of them can be left out.'),
         section('🏷️ Badges (comma-separated, optional)',
             '`meta` · `toxic` · `ass` · `best` · `top3` · `top5` · `capable` · `bestclose` · `top3midlong` · `capableclose` (rank + range combos for DMZ)\n' +
             '**Rank modes (MP only, any number):** `hp` · `s&d` · `dom` · `tdm` · `ftl` · `control`\n' +
             '-# Badges belong to the one build they are typed on. `ass` can\'t sit with `meta` or a tier; `top4` is retired and reads as `top5`.'),
         section('✨ What Gets Auto-Formatted',
-            '• **Mode** is not a field at all -- the page/button you clicked (MP or DMZ) decides it. It used to be a required 3rd pipe segment that the save then overwrote anyway, which meant a `DMZ` block pasted on the MP page saved as MP with no warning; removing it removed the lie, not the behaviour.\n' +
-            '• **Build**, **Image**, **Code** and **Badges** are all optional -- omit the whole line if it doesn\'t apply. Build defaults to `Standard Build`. Re-pasting a build that already exists keeps its stored Image and Code when you leave those lines out.\n' +
+            '• **Mode** is not a field: the MP or DMZ page you paste on decides it.\n' +
+            '• **Build**, **Image**, **Code** and **Badges** are all optional — omit the whole line if it doesn\'t apply. Build defaults to `Standard Build`. Re-pasting a build that already exists keeps its stored Image and Code when you leave those lines out.\n' +
             '• **Image** takes a Cloudinary key here; the single Add/Edit modals additionally accept a pasted image URL and upload it for you.\n' +
-            '• Attachment names are kept **exactly as typed** -- no auto-casing, since these must match the real in-game names precisely. A `-` bullet is optional, and is how you force a line containing a colon to be read as an attachment.'),
+            '• Attachment names are kept **exactly as typed** — no auto-casing, since these must match the real in-game names precisely. A `-` bullet is optional, and is how you force a line containing a colon to be read as an attachment.'),
         section('🖼️ Example',
             '```\nBAL-27 | AR\nBuild: Aggro Build\nImage: BAL-27-1\nCode: 1I2C6B8A9D\nBadges: meta, top3\n- Monolithic Suppressor\n- FTAC Champion\n```'),
         section('💡 Tips',
-            '• Use one of the **Export** options above to grab this exact format pre-filled with your real current data.\n' +
-            '• The OLD one-line pipe format (`Weapon | Category | Mode | Build | ...`) is no longer accepted and will report an error naming this format -- re-export anything you saved in it.\n' +
-            '• See the "How Images Work" info block on this page for the full Cloudinary Image Key workflow.')
+            '• Use one of **/manage**\'s **Export** options to get this format filled in with your real data.\n' +
+            '• The old one-line pipe format (`Weapon | Category | Mode | Build | ...`) is refused with an error naming this format; re-export anything saved in it.\n' +
+            '• **How Images Work**, on /manage\'s Loadouts page, walks through Cloudinary image keys.')
     ];
 }
 
 function patchnotesSections() {
     return [
         section('📋 This Page Isn\'t a Bulk Paste — Here\'s What Each Field Actually Does',
-            'Patch Notes has no bulk-import format (nothing to paste multiple of) -- these are the 3 fields admins get confused by most.'),
+            'Patch Notes has no bulk-import format (nothing to paste multiple of) — these are the 3 fields admins get confused by most.'),
         section('📅 Release Date',
             '`July 15` → midnight UTC, same as every other date field.\n' +
-            '`July 15, 7:20 AM` → **this one field is different** -- the moment you add a time, it\'s read as **your own local clock** (`/settings`' + '\u2019s timezone), not UTC, then converted correctly. Every other date field in the bot ignores time-of-day entirely; this is the one exception.'),
+            '`July 15, 7:20 AM` → **this one field is different** — the moment you add a time, it\'s read as **your own local clock** (`/settings`' + '\u2019s timezone), not UTC, then converted correctly. Every other date field in the bot ignores time-of-day entirely; this is the one exception.'),
         section('🔗 URLs 1 / URLs 2',
             'Each is 5 separate fields (image 1-5 / image 6-10), not one big paste. Blank = no image in that slot. Every submitted URL is auto re-hosted to Cloudinary so a dead source link never breaks the carousel later.'),
         section('⚔️ Additional Info — one weapon per line, comma-separated',
-            'Typing `b:`/`n:`/`f:` ANYWHERE always swaps in the buff/nerf/fix icon -- that part always worked.\n' +
-            '**The structured "ADDITIONAL CHANGES" layout is a SEPARATE, opt-in thing** that only turns on once a line starts with `#`. Same comma-delimited feel as the Draws/Calendar bulk formats: `#, then Weapon, then Attachment, then n:/b:/f: text` -- ONE weapon per line, a NEW LINE for the next weapon:\n' +
+            'Typing `b:`/`n:`/`f:` ANYWHERE always swaps in the buff/nerf/fix icon — that part always worked.\n' +
+            '**The structured "ADDITIONAL CHANGES" layout is a SEPARATE, opt-in thing** that only turns on once a line starts with `#`. Same comma-delimited feel as the Draws/Calendar bulk formats: `#, then Weapon, then Attachment, then n:/b:/f: text` — ONE weapon per line, a NEW LINE for the next weapon:\n' +
             '```\n# Fennec (DMZ only), Ultra Extended Mag, n: Ammo capacity reduced from 40 Rounds to 20 Rounds\n```\n' +
             `Renders as:\n### ADDITIONAL CHANGES\n__**Fennec (DMZ only)**__\nUltra Extended Mag\n> ${emojis.nerf} Ammo capacity reduced from 40 Rounds to 20 Rounds\n` +
             '-# How it\'s read: the first thing after `#` is the WEAPON name. Every comma-separated thing after that is a new ATTACHMENT — UNLESS it starts with `b:`/`n:`/`f:`, in which case it\'s a CHANGE under whichever attachment came right before it. A weapon can carry as many attachments/changes as you want on its one line; the NEXT weapon just needs its own new line.'),
         section('💡 Tip',
-            'Not writing structured changes this patch? Just type a normal sentence -- no `#` needed, nothing forces the structured layout on you.')
+            'Not writing structured changes this patch? Just type a normal sentence — no `#` needed, nothing forces the structured layout on you.')
     ];
 }
 
@@ -147,12 +147,12 @@ function seasondraftSections() {
         section('📋 Same Formats As The Live Pages — Just Staged, Not Live',
             'Next Season Draft writes into a SEPARATE staging area (`seasonalDoc.draft`), completely isolated from what\'s currently public. Nothing here goes live until you press **Promote to Live**.'),
         section('🏷️ Draws / Calendar',
-            'Identical paste formats to the live **Draws**/**Calendar** guides (see their own topics in this dropdown) -- same tier shorthand, same `d•`/`p•`/`e•` prefixes, same auto title-casing rules.'),
+            'Identical paste formats to the live **Draws**/**Calendar** guides (see their own topics in this dropdown) — same tier shorthand, same `d•`/`p•`/`e•` prefixes, same auto title-casing rules.'),
         section('📅 Titles & Deadlines',
             '`Title, End Date` on one line per deadline, e.g. `Battle Pass, August 28`.\n' +
-            'Typing `TBD` as the date (case-insensitive) marks that deadline as **not yet announced** instead of parsing it as a real date -- shown as "TBD" and treated as running indefinitely until it\'s updated. Same rule as the live Season Titles & Deadlines modal.'),
+            'Typing `TBD` as the date (case-insensitive) marks that deadline as **not yet announced** instead of parsing it as a real date — shown as "TBD" and treated as running indefinitely until it\'s updated. Same rule as the live Season Titles & Deadlines modal.'),
         section('💡 Tips',
-            '• Re-running Titles & Deadlines / Draws / Calendar just REPLACES the staged version -- fixing a typo is "paste it again," not "undo first."\n' +
+            '• Re-running Titles & Deadlines / Draws / Calendar just REPLACES the staged version — fixing a typo is "paste it again," not "undo first."\n' +
             '• **Promote to Live** swaps title/deadlines/draws/calendar (and banner fields, if ever staged) onto the live document in one shot and snapshots the previous live state for **Undo**.')
     ];
 }
@@ -160,27 +160,27 @@ function seasondraftSections() {
 function adminsSections() {
     return [
         section('📋 This Isn\'t A Bulk Paste Either — It\'s An Access List',
-            'Manage Admins is a runtime-editable allowlist that SUPPLEMENTS the owner -- trusted people can be granted admin access without a code deploy per grant/revoke. Owner-only to change; any admin can see this page.'),
+            'Manage Admins is a runtime-editable allowlist that SUPPLEMENTS the owner — trusted people can be granted admin access without a code deploy per grant/revoke. Owner-only to change; any admin can see this page.'),
         section('➕ Grant Admin',
             'Type a Discord user ID, then pick what they can access: specific `/manage` pages, or whole admin commands (`/manage`/`/bot`/`/autobuild`), or "all".\n' +
-            '-# A granted admin can use the admin commands they were given -- they can never edit this allowlist itself, even if granted "all".'),
+            '-# A granted admin can use the admin commands they were given — they can never edit this allowlist itself, even if granted "all".'),
         section('✏️ Edit Permissions / Revoke',
-            'Live directly on each admin\'s own card (no search-by-ID modal needed) -- **Edit Permissions** re-opens the same scoped picker Grant used; **Revoke** removes that person entirely, immediately, no second confirm.'),
+            'Live directly on each admin\'s own card (no search-by-ID modal needed) — **Edit Permissions** re-opens the same scoped picker Grant used; **Revoke** removes that person entirely, immediately, no second confirm.'),
         section('💡 Tip',
-            'This list is separate from the one hardcoded owner ID -- revoking or narrowing an admin here never affects the owner\'s own access.')
+            'This list is separate from the one hardcoded owner ID — revoking or narrowing an admin here never affects the owner\'s own access.')
     ];
 }
 
 function announcementsSections() {
     return [
         section('📋 This Isn\'t A Bulk Paste Either — It\'s A Notice Feed',
-            'Announcement posts a message every user sees (once) on their next command, until it expires. Each one is its own independent entry -- posting a new one never touches the others.'),
+            'Announcement posts a message every user sees (once) on their next command, until it expires. Each one is its own independent entry — posting a new one never touches the others.'),
         section('📝 Post New Announcement',
-            'Write the message, then optionally set an expiry -- defaults to **60 days**, or type your own number of days, or `never`.'),
+            'Write the message, then optionally set an expiry — defaults to **60 days**, or type your own number of days, or `never`.'),
         section('✏️ Edit / Delete',
-            'Live directly on each announcement\'s own card, same as Manage Admins\' per-row buttons above -- **Edit** re-opens that announcement\'s text/expiry for changes, **Delete** removes it immediately, no second confirm.'),
+            'Live directly on each announcement\'s own card, same as Manage Admins\' per-row buttons above — **Edit** re-opens that announcement\'s text/expiry for changes, **Delete** removes it immediately, no second confirm.'),
         section('💡 Tip',
-            'Only ACTIVE (non-expired) announcements are listed here -- an expired one has already stopped showing to users and drops off this list on its own.')
+            'Only ACTIVE (non-expired) announcements are listed here — an expired one has already stopped showing to users and drops off this list on its own.')
     ];
 }
 
@@ -196,12 +196,12 @@ const TOPIC_SECTIONS = {
 
 // Per-topic accent -- reuses each subsystem's own live PRESET_ACCENT rather than one flat guide color, so the guide visually matches whichever page opened it (same philosophy as manage.js's own PAGE_ACCENT map -- see .claude/rules/manage-panel.md).
 const TOPIC_ACCENT = {
-    draws: 7032445,       // Plum Fortune -- draws.js's PRESET_ACCENT
-    calendar: 3821672,    // Slate Harbor -- calendar.js's PRESET_ACCENT
+    draws: 7032445,       // Plum Fortune — draws.js's PRESET_ACCENT
+    calendar: 3821672,    // Slate Harbor — calendar.js's PRESET_ACCENT
     loadouts: 16725040,   // MP red, sampled from the Rank_7Legendary emoji (manage.js's PAGE_ACCENT.loadouts_mp)
-    patchnotes: 15909424, // Patch Gold -- patchnotes.js's PRESET_ACCENT
+    patchnotes: 15909424, // Patch Gold — patchnotes.js's PRESET_ACCENT
     seasondraft: 3821672, // Slate Harbor -- same family as Calendar (draft mirrors draws+calendar)
-    admins: 2831409,       // #2b2d31 -- manage.js's PANEL_ACCENT fallback (manageadmins has no PAGE_ACCENT entry of its own)
+    admins: 2831409,       // #2b2d31 — manage.js's PANEL_ACCENT fallback (manageadmins has no PAGE_ACCENT entry of its own)
     announcements: 2831409 // #2b2d31 -- same PANEL_ACCENT fallback (announcement has no PAGE_ACCENT entry of its own)
 };
 

@@ -121,6 +121,7 @@ export const TESTS = [
     {"cmd": "node scripts/commandRefresh.test.js", "lane": "unit"},
     {"cmd": "node scripts/today.test.js", "lane": "unit"},
     {"cmd": "node scripts/reminders.test.js", "lane": "unit"},
+    {"cmd": "node scripts/commandOptions.test.js", "lane": "unit"},
     {"cmd": "node scripts/timezoneSearch.test.js", "lane": "unit"},
     {"cmd": "node scripts/titleCase.test.js", "lane": "unit"},
     {"cmd": "node scripts/cloudinaryArchive.test.js", "lane": "unit"},

@@ -291,18 +291,9 @@ async function handleInteractionInner(interaction) {
 
             // === ROUTE B2: /help's cmd: option -- suggests every real command from commands/help.js's staticCommands (/gunsmith is one entry, not one per subcommand) ===
             if (commandName === 'help') {
-                const { suggestHelpCommandNames } = require('../commands/help');
-                // Restricted entries (/admin for server admins, /manage//bot//autobuild for the bot's own whitelist) are suggested only to someone who could use them -- see commands/help.js's note on filtering all surfaces, not just the visible menu.
-                const { isServerAdmin } = require('../utils/guildPolicy');
-                const { isAdmin, hasCommandAccess } = require('../utils/adminAccess');
-                // suggestHelpCommandNames also matches on alias keywords (e.g. "server" -> /admin, "database" -> /manage) -- see commands/help.js's COMMAND_ALIASES.
-                const filtered = await suggestHelpCommandNames(focusedValue, {
-                    serverAdmin: isServerAdmin(interaction),
-                    botAdmin: await isAdmin(interaction.user.id),
-                    manage: await hasCommandAccess(interaction.user.id, 'manage'),
-                    bot: await hasCommandAccess(interaction.user.id, 'bot'),
-                    autobuild: await hasCommandAccess(interaction.user.id, 'autobuild'),
-                });
+                const { suggestHelpCommandNames, helpPerms } = require('../commands/help');
+                // Restricted entries are suggested only to someone who could use them, through the SAME permission set the page itself uses (commands/help.js helpPerms; this branch built its own without `botAccess` until 2026-10-25, hiding /emojis and the owner-only /bot commands from the owner). It also matches alias keywords, look-alikes and typos -- see commands/help.js.
+                const filtered = await suggestHelpCommandNames(focusedValue, await helpPerms(interaction));
                 return await interaction.respond(filtered.map(name => ({ name, value: name })));
             }
 

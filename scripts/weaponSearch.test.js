@@ -2,7 +2,7 @@
 //
 // /gunsmith' weapon suggestions: a class typed in plain words finds that class, and a half-typed class word finds it too (Harkirat, 2026-10-19 20:09 EDT: "i typed assault, which should have showed all AR ... and i typed 'snipe' but that only showed 'all snipers' and didn't list the other sniper builds").
 const assert = require('assert');
-const { resolveCategorySynonyms, findWeaponMatches, isGenericWeaponQuery } = require('../utils/search');
+const { resolveCategorySynonyms, findWeaponMatches, isGenericWeaponQuery, foldLookalikes } = require('../utils/search');
 
 let failures = 0;
 function check(name, fn) {
@@ -55,6 +55,16 @@ check('a typo in a weapon name finds the weapon; gun or weapon shows every weapo
     assert.deepStrictEqual(findWeaponMatches('stirker', pool).map(w => w.weaponKey), ['striker']);
     assert.deepStrictEqual(findWeaponMatches('gun', pool).map(w => w.weaponKey), ['locus', 'ak117', 'striker']);
     assert.ok(isGenericWeaponQuery('Weapons') && !isGenericWeaponQuery('shotgun'));
+});
+
+check('look-alike typos find the weapon: hso for HS0405, l for 1, s for 5 (his 2026-10-25 21:56 EDT ask)', () => {
+    const guns = [{ weaponKey: 'hs0405', weaponName: 'HS0405', category: 'SHOTGUN' }, { weaponKey: 'ffar1', weaponName: 'FFAR 1', category: 'AR' }, { weaponKey: 'so14', weaponName: 'SO-14', category: 'MARKSMAN' }];
+    assert.deepStrictEqual(findWeaponMatches('hso', guns).map(w => w.weaponKey), ['hs0405']);
+    assert.deepStrictEqual(findWeaponMatches('ffarl', guns).map(w => w.weaponKey), ['ffar1']);
+    assert.deepStrictEqual(findWeaponMatches('s014', guns).map(w => w.weaponKey), ['so14']);
+    assert.strictEqual(foldLookalikes('HS0405'), 'hso4os');
+    // A plain match still wins and the fold never widens it.
+    assert.deepStrictEqual(findWeaponMatches('hs04', guns).map(w => w.weaponKey), ['hs0405']);
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }

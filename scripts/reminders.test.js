@@ -188,6 +188,17 @@ t("/remind's set: values and autocomplete: categories pinned first, entries twic
     assert.deepStrictEqual(grim.map(c => c.value), ['rel:Grim Duo Draw']);
 });
 
+t("/remind's releases and leaving options each offer only their own side (his 2026-10-25 21:56 EDT intake)", () => {
+    const rel = R.autocompleteChoices('', doc(), RUN, 'releases');
+    const lv = R.autocompleteChoices('', doc(), RUN, 'leaving');
+    assert.ok(rel.some(c => c.value === 'cat:newDraws') && !rel.some(c => c.value === 'cat:leaving' || c.value === 'cat:bpEnding' || c.value.startsWith('lv:')));
+    assert.ok(lv.some(c => c.value === 'cat:leaving') && lv.some(c => c.value === 'cat:bpEnding') && !lv.some(c => c.value === 'cat:newDraws' || c.value.startsWith('rel:')));
+    // Every category sits on exactly one side, so nothing falls out of both lists.
+    for (const c of R.CATEGORIES) assert.ok(['releases', 'leaving'].includes(R.sideOf(c)), c.key);
+    assert.deepStrictEqual(R.resolveSetValue('halloween', doc(), RUN, 'leaving'), { type: 'follow', kind: 'leaving', title: 'Halloween Sale' });
+    assert.strictEqual(R.resolveSetValue('call of the', doc(), RUN, 'leaving'), null, 'a release is not on the leaving side');
+});
+
 t('failed DMs, his rule: a note on the first failure; paused once the note was shown and 3 more days fail', () => {
     const first = R.failureUpdate(sub(), RUN);
     assert.strictEqual(first.noteDue, true);

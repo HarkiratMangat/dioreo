@@ -13,7 +13,7 @@ module.exports = {
         .setDefaultMemberPermissions(0)
         .addAttachmentOption(option => option.setName('screenshot').setDescription('The Gunsmith screenshot (or use the url option instead)'))
         .addStringOption(option => option.setName('url').setDescription('A URL to the screenshot, instead of an attachment'))
-        .addStringOption(option => option.setName('category').setDescription('Weapon category (optional -- will look up or ask if omitted)').addChoices(...CATEGORY_CHOICES.map(c => ({ name: c, value: c }))))
+        .addStringOption(option => option.setName('category').setDescription('Weapon category (optional -- will look up or ask if omitted)').addChoices(...CATEGORY_CHOICES.map(c => ({ name: require('../utils/loadoutRender').displayCategoryLabel(c), value: c }))))
         // Optional override for the mode the screenshot's UI chrome would decide. Left blank, a screenshot whose chrome is ambiguous gets a review card that asks, never a guess.
         .addStringOption(option => option.setName('mode').setDescription('MP or DMZ (optional -- read from the screenshot if omitted)').addChoices({ name: 'MP', value: 'MP' }, { name: 'DMZ', value: 'DMZ' }))
                 .addStringOption(option => option.setName('badges').setDescription('meta, best, top5, capable, toxic, ass, hp, s&d... (optional, this build only)'))

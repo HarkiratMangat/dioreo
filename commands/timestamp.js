@@ -156,11 +156,6 @@ module.exports = {
                     { name: 'Short Date, Medium Time (S) — e.g., 20/04/2021, 16:20:30', value: 'shortDateTimeMedium' },
                     { name: 'Relative Time (R) — e.g., 4 years ago', value: 'relative' }
                 ))
-        // Renamed 'ephemeral' -> 'private' -> 'hidden' across the same day (2026-07-12): first standardized to match every other command's naming, then every command (including this one) got renamed again to `hidden` with a fuller description explaining who actually sees the response.
-        .addStringOption(option =>
-            option.setName('visibility')
-                .setDescription('Show this response only to you, or publicly to everyone in the chat.')
-                .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         // Slash-command-exclusive (2026-07-14, Harkirat's request) -- deliberately NOT saved to /settings or UserPreference; every invocation defaults to Embed unless explicitly typed. Works identically for the All Formats overview and every individual style view. Renamed 'format' -> 'view' (2026-07-18, v2 quick-wins batch) -- "format" read as if it picked a TIMESTAMP format (fullDateTime/shortDate/etc, already the job of the `style` option above); "view" is what this option actually controls (Embed panel vs plain text).
         .addStringOption(option =>
             option.setName('view')
@@ -170,6 +165,11 @@ module.exports = {
                     { name: 'Embed (Styled Panel)', value: 'embed' },
                     { name: 'Text (Plain, Copyable)', value: 'text' }
                 ))
+        // Renamed 'ephemeral' -> 'private' -> 'hidden' across the same day (2026-07-12), then every command (including this one) got renamed again to `hidden` with a fuller description explaining who actually sees the response. LAST, after `view` (2026-10-25 22:40 EDT, Harkirat: "visibility is always the last option on a slash command"; scripts/commandOptions.test.js holds every command to it).
+        .addStringOption(option =>
+            option.setName('visibility')
+                .setDescription('Show this response only to you, or publicly to everyone in the chat.')
+                .addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         // Context configuration ensuring the command works in Guilds, DMs, and User-installed apps seamlessly
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]),
 

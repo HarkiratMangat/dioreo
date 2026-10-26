@@ -112,7 +112,12 @@ function resolveCategorySynonyms(query) {
     return nearSets.size === 1 ? [...nearSets][0].split('|') : [];
 }
 
-// findWeaponMatches (2026-07-18, v2 quick-wins batch; extended same day with synonym support) -- backs the loadout-lookup fallback in /dmz and /gunsmith mp for a short/partial weapon name (e.g. "loc") that doesn't exact-match any stored weaponKey. The slash command's `weapon` option is autocomplete-backed but NOT `.setRequired` to a strict choice list -- Discord still submits whatever raw text a user typed if they hit enter without picking a suggestion (confirmed a real live complaint on mobile, where the autocomplete dropdown is easy to dismiss by accident), and that raw text almost never equals a normalized weaponKey exactly for a partial query. Returns every candidate (from the caller's mode/category-scoped list, expected to carry `weaponKey`/ `weaponName`/`category`) whose weaponName fuzzy-matches the raw query OR whose category matches a resolved synonym (e.g. "pistol" -> every SECONDARIES weapon, not just the ones whose own name happens to contain the word "pistol"), deduped by weaponKey -- so a caller can auto-resolve an unambiguous single match or ask the user to pick from a short list of real candidates instead of just saying "not found" with no explanation.
+// findWeaponMatches (2026-07-18, v2 quick-wins batch; extended same day with synonym support) -- backs the loadout-lookup fallback in /dmz and /gunsmith mp for a short/partial weapon name (e.g. "loc") that doesn't exact-match any stored weaponKey. The slash command's `weapon` option is autocomplete-backed but NOT `.setRequired` to a strict choice list -- Discord still submits whatever raw text a user typed if they hit enter without picking a suggestion (confirmed a real live complaint on mobile, where the autocomplete dropdown is easy to dismiss by accident), and that raw text almost never equals a normalized weaponKey exactly for a partial query. Returns every candidate (from the caller's mode/category-scoped list, expected to carry `weaponKey`/ `weaponName`/`category`) whose weaponName fuzzy-matches the raw query OR whose category matches a resolved synonym (e.g. "pistol" -> every SECONDARIES weapon, not just the ones whose own name happens to contain the word "pistol"), deduped by weaponKey -- so a caller can auto-resolve an unambiguous single match or ask the user to pick from a short list of real candidates instead of just saying "not found" with no explanation. Look-alike characters folded together for weapon search only (Harkirat, 2026-10-25 21:56 EDT: "hso" for "hs0" found nothing): 0 and o, 1 i and l, 5 and s. Not in fuzzyMatch, which draws, patch notes and bulk delete share.
+const LOOKALIKE = { 0: 'o', 1: 'l', i: 'l', 5: 's' };
+function foldLookalikes(str) {
+    return normalizeForSearch(String(str || '')).replace(/[015i]/g, ch => LOOKALIKE[ch]);
+}
+
 function findWeaponMatches(query, candidates) {
     const synonymCategories = resolveCategorySynonyms(query);
     const seen = new Set();
@@ -125,6 +130,12 @@ function findWeaponMatches(query, candidates) {
         }
     }
     if (results.length) return results;
+    // Then the same letters with look-alikes folded ("hso" -> HS0405), before the typo distance below, which needs four letters.
+    const folded = foldLookalikes(query);
+    if (folded) for (const c of candidates) {
+        if (foldLookalikes(c.weaponName).includes(folded) && !seen.has(c.weaponKey)) { seen.add(c.weaponKey); results.push(c); }
+    }
+    if (results.length) return results;
     // Nothing matched the letters or a class: fall back to the nearest weapon names by typo distance ("lokus" -> LOCUS). Only as a fallback, so "shot" lists the shotguns and not SHORTY beside them.
     const near = candidates.map(c => [typoDistance(query, c.weaponName), c]).filter(([dist]) => dist !== Infinity);
     const best = Math.min(...near.map(([dist]) => dist));
@@ -134,4 +145,4 @@ function findWeaponMatches(query, candidates) {
     return results;
 }
 
-module.exports = { fuzzyMatch, normalizeForSearch, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle };
+module.exports = { fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle };

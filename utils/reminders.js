@@ -319,14 +319,18 @@ function mergeFollows(follows, kind, listedTitles, picked) {
     return [...kept, ...picked.map(v => ({ kind, title: titleFor(v) }))];
 }
 
-// /remind's `set:` values: "cat:<key>", "rel:<title>" or "lv:<title>". Free text (typed without picking a suggestion) is read as a release follow when it names something not out yet, else a leaving follow when it names something live.
-function resolveSetValue(value, seasonalDoc, nowMs = Date.now()) {
+// /remind's `set:` values: "cat:<key>", "rel:<title>" or "lv:<title>". Free text (typed without picking a suggestion) is read as a release follow when it names something not out yet, else a leaving follow when it names something live. /remind's two options (Harkirat, 2026-10-25 22:41 intake at 21:56 EDT: "rework /remind's slash command options to 'releases' and 'leaving'"): which one a category belongs to. Leaving holds the leaving-soon rows and the three season-part endings (they fire before something ends); releases holds everything that fires when something starts or is posted.
+const sideOf = (c) => (c.group === 'leaving' || c.group === 'leavingAll' || /Ending$/.test(c.key)) ? 'leaving' : 'releases';
+
+// `side` ('releases' | 'leaving') scopes free text to that option's list; without it, both are tried, releases first.
+function resolveSetValue(value, seasonalDoc, nowMs = Date.now(), side = null) {
     if (typeof value !== 'string' || !value) return null;
     if (value.startsWith('cat:') && CATEGORY_KEYS.has(value.slice(4))) return { type: 'category', key: value.slice(4), label: CATEGORIES.find(c => c.key === value.slice(4)).label };
     const { releases, leaving } = followable(seasonalDoc, nowMs);
     const find = (list, t) => list.find(e => e.title === t) || list.find(e => sameTitle(e.title, t)) || list.find(e => e.title.toLowerCase().includes(t.toLowerCase()));
     if (value.startsWith('rel:')) { const e = find(releases, value.slice(4)); return e ? { type: 'follow', kind: 'release', title: e.title } : null; }
     if (value.startsWith('lv:')) { const e = find(leaving, value.slice(3)); return e ? { type: 'follow', kind: 'leaving', title: e.title } : null; }
+    if (side === 'leaving') { const l = find(leaving, value); return l ? { type: 'follow', kind: 'leaving', title: l.title } : null; }
     const r = find(releases, value);
     if (r) return { type: 'follow', kind: 'release', title: r.title };
     const l = find(leaving, value);
@@ -334,14 +338,14 @@ function resolveSetValue(value, seasonalDoc, nowMs = Date.now()) {
 }
 
 // /remind's autocomplete: the categories pinned first (his round-2 answer: "fuzzy search with the main options sticky"), then this season's entries, each twice, matched against what was typed.
-function autocompleteChoices(focused, seasonalDoc, nowMs = Date.now()) {
+function autocompleteChoices(focused, seasonalDoc, nowMs = Date.now(), side = null) {
     const q = String(focused || '').toLowerCase().trim();
     const hit = s => !q || s.toLowerCase().includes(q);
-    const cats = CATEGORIES.filter(c => hit(c.label)).map(c => ({ name: `${c.label} · ${c.hint}`.slice(0, 100), value: `cat:${c.key}` }));
+    const cats = CATEGORIES.filter(c => (!side || sideOf(c) === side) && hit(c.label)).map(c => ({ name: `${c.label} · ${c.hint}`.slice(0, 100), value: `cat:${c.key}` }));
     const { releases, leaving } = followable(seasonalDoc, nowMs);
     const entries = [
-        ...releases.filter(e => hit(e.title)).map(e => ({ name: `${e.title} · when it releases`.slice(0, 100), value: `rel:${e.title}`.slice(0, 100) })),
-        ...leaving.filter(e => hit(e.title)).map(e => ({ name: `${e.title} · when it is leaving`.slice(0, 100), value: `lv:${e.title}`.slice(0, 100) })),
+        ...(side === 'leaving' ? [] : releases).filter(e => hit(e.title)).map(e => ({ name: `${e.title} · when it releases`.slice(0, 100), value: `rel:${e.title}`.slice(0, 100) })),
+        ...(side === 'releases' ? [] : leaving).filter(e => hit(e.title)).map(e => ({ name: `${e.title} · when it is leaving`.slice(0, 100), value: `lv:${e.title}`.slice(0, 100) })),
     ];
     return (q ? [...entries, ...cats] : [...cats, ...entries]).slice(0, 25);
 }
@@ -470,7 +474,7 @@ function withBell(textComponent) {
 module.exports = {
     CATEGORIES, CATEGORY_KEYS, PANEL_GROUPS, MAX_OPTIONS,
     computeDue, personalise, buildReminderDM, buildTestDM, markFollowed,
-    buildTimezoneNote, leavingKeys, clearTurnedOff, followable, buildPanel, mergeFollows, coveringCategory, resolveSetValue, autocompleteChoices,
+    buildTimezoneNote, leavingKeys, clearTurnedOff, followable, buildPanel, mergeFollows, coveringCategory, resolveSetValue, autocompleteChoices, sideOf,
     failureUpdate, isRefusal, msUntilNextRun, runDailyReminders,
     pendingNotice, loadPendingNotices, maybeShowReminderNote, withBell,
 };

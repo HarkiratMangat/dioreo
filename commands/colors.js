@@ -15,7 +15,7 @@ module.exports = {
         // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
         .setDescription('View colors extracted from your profile')
         // Reordered 2026-08-13 (Harkirat: "page/source/visibility reads better than leading with visibility") -- Discord's option picker follows registration order, not alphabetical, so this order IS the display order. Jump straight to a specific source page instead of always landing on Avatar. Values match utils/colorPaletteView.js's SOURCE_META keys exactly.
-        .addStringOption(option => option.setName('page').setDescription('Jump straight to a specific color source.').addChoices(
+        .addStringOption(option => option.setName('page').setDescription('Open on one page: Avatar, Banner, Username, Nameplate or Deco').addChoices(
             // Same order and names as the panel's page row (2026-10-25 14:19 EDT, Harkirat: "the slash command option would also need the reorder for /colors"); the value stays `name`.
             { name: 'Avatar', value: 'avatar' },
             { name: 'Banner', value: 'banner' },
@@ -24,7 +24,7 @@ module.exports = {
             { name: 'Username', value: 'name' }
         ))
         // Per-server profile support (2026-08-09 17:12 EDT). The ONLY override in the whole feature, and deliberately NOT saved to UserPreference -- per-invocation only, same shape as /timestamp's `view`. Everything else resolves from context alone. Renamed 'from' -> 'source' with clearer choice labels 2026-08-13 (Harkirat's request).
-        .addStringOption(option => option.setName('source').setDescription("Read colors from your main profile, or your profile for this server.").addChoices({ name: 'From Main Profile', value: 'global' }, { name: 'From Server Profile', value: 'server' }))
+        .addStringOption(option => option.setName('source').setDescription("Which profile to read: your main one, or the one for this server").addChoices({ name: 'From Main Profile', value: 'global' }, { name: 'From Server Profile', value: 'server' }))
         .addStringOption(option => option.setName('visibility').setDescription('Show this response only to you, or publicly to everyone in the chat.').addChoices({ name: 'Hidden', value: 'hidden' }, { name: 'Public', value: 'public' }))
         .setIntegrationTypes([0, 1]).setContexts([0, 1, 2]), // Guild + user install, all contexts (v3: usable in a server without a user install)
 
