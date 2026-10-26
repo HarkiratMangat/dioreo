@@ -102,7 +102,7 @@ function calendarSections() {
 function loadoutsSections() {
     return [
         section('📋 Paste Skeleton',
-            '```\nWeapon | Category\nBuild: Build Name\nImage: Cloudinary Key\nCode: Gunsmith Code\nBadges: meta, best\n- Attachment 1\n- Attachment 2\n```\n' +
+            '```\nWeapon | Category\nBuild: Build 2\nLabel: Ranked\nCode: Gunsmith Code\nImage: Cloudinary Key\nBadges: meta, best\n- Attachment 1\n- Attachment 2\n```\n' +
             '-# One build per BLOCK (blank line between blocks). **First line is the weapon\'s identity, every optional field is its own labelled line, everything else is an attachment.** The labelled lines can be in any order and any of them can be left out.'),
         section('🏷️ Badges (comma-separated, optional)',
             '`meta` · `toxic` · `ass` · `best` · `top3` · `top5` · `capable` · `bestclose` · `top3midlong` · `capableclose` (rank + range combos for DMZ)\n' +
@@ -110,15 +110,16 @@ function loadoutsSections() {
             '-# Badges belong to the one build they are typed on. `ass` can\'t sit with `meta` or a tier; `top4` is retired and reads as `top5`.'),
         section('✨ What Gets Auto-Formatted',
             '• **Mode** is not a field: the MP or DMZ page you paste on decides it.\n' +
-            '• **Build**, **Image**, **Code** and **Badges** are all optional — omit the whole line if it doesn\'t apply. Build defaults to `Standard Build`. Re-pasting a build that already exists keeps its stored Image and Code when you leave those lines out.\n' +
-            '• **Image** takes a Cloudinary key here; the single Add/Edit modals additionally accept a pasted image URL and upload it for you.\n' +
+            '• **Code** is required on the MP page (a block without one is skipped and named); DMZ has no code.\n' +
+            '• **Build**, **Label**, **Image** and **Badges** are optional — omit the whole line if it doesn\'t apply. With no Build line the block is a new build, numbered after the weapon\'s others. **Label** is back end only. Re-pasting a build that already exists keeps its stored Image, Code and Label when you leave those lines out.\n' +
+            '• **Image** takes a Cloudinary key, as an Export writes it; the single Add/Edit pop-up takes a URL or a screenshot and files it under the build\'s code for you.\n' +
             '• Attachment names are kept **exactly as typed** — no auto-casing, since these must match the real in-game names precisely. A `-` bullet is optional, and is how you force a line containing a colon to be read as an attachment.'),
         section('🖼️ Example',
-            '```\nBAL-27 | AR\nBuild: Aggro Build\nImage: BAL-27-1\nCode: 1I2C6B8A9D\nBadges: meta, top3\n- Monolithic Suppressor\n- FTAC Champion\n```'),
+            '```\nBAL-27 | AR\nBuild: Build 2\nLabel: Aggro\nCode: 1I2C6B8A9D\nBadges: meta, top3\n- Monolithic Suppressor\n- FTAC Champion\n```'),
         section('💡 Tips',
             '• Use one of **/manage**\'s **Export** options to get this format filled in with your real data.\n' +
             '• The old one-line pipe format (`Weapon | Category | Mode | Build | ...`) is refused with an error naming this format; re-export anything saved in it.\n' +
-            '• **How Images Work**, on /manage\'s Loadouts page, walks through Cloudinary image keys.')
+            '• **How Images Work**, on /manage\'s Loadouts page, explains how a build\'s picture is filed under its gunsmith code.')
     ];
 }
 

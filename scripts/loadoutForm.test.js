@@ -182,6 +182,13 @@ check('the migration plan copies matching pictures, lists a mismatch, and leaves
     assert.strictEqual(byId.c, undefined, 'the placeholder is left as it is');
 });
 
+check('the no-build list leads with its count and groups by class', () => {
+    const { formatMissingWeapons } = require('../utils/loadoutLookup');
+    const text = formatMissingWeapons([{ name: 'AK-47', category: 'AR' }, { name: 'ASM10', category: 'AR' }, { name: 'PHARO', category: 'SMG' }]);
+    assert.deepStrictEqual(text.split('\n'), ['3 MP weapons in the CODM catalogue with no build in Dioreo', '', 'AR (2)', '- AK-47', '- ASM10', '', 'SMG (1)', '- PHARO']);
+    assert.ok(formatMissingWeapons([]).startsWith('0 MP weapons'));
+});
+
 if (failures) { console.error(`\n${failures} loadout form check(s) failed.`); process.exit(1); }
 console.log('\nloadoutForm: all checks passed.');
 process.exit(0);

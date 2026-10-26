@@ -299,8 +299,9 @@ async function saveLoadout(interaction, preset, isEdit) {
     return interaction.followUp({ content: confirmation });
 }
 
-const editLoadout = (interaction, preset = null) => saveLoadout(interaction, preset, true);
-const addLoadout = (interaction, preset = null) => saveLoadout(interaction, preset, false);
+// Declarations, not arrow consts: handleCatalogueWarning above names them, and a const read before its line is a temporal dead zone (scripts/tdzRatchet.mjs).
+function editLoadout(interaction, preset = null) { return saveLoadout(interaction, preset, true); }
+function addLoadout(interaction, preset = null) { return saveLoadout(interaction, preset, false); }
 
 // --- BULK ADD/REPLACE LOADOUTS (upsert, never wholesale-replaces) --- custom_id: modal_loadouts_bulk_add_{MP|DMZ}. "Replace" also routes into this exact modal/handler (see manageActions.js's comment on why). Parsing now happens INSIDE the op (core/ops/loadouts.js), which upserts by {weaponKey, mode, buildName} -- this handler just relays the raw pasted text and `mode`.
 async function bulkAddLoadouts(interaction, preset = null) {
