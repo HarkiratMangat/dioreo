@@ -166,6 +166,8 @@ const emojis = {
     wcSniper: '<a:WC_Sniper:1563415653644505168>',
     // His reminder set and the mascot's tada (uploaded 2026-10-24 18:16 EDT to Dioreo, Dioreo (Dev) and Dioreo Admin (Dev)): Remind titles the /remind panel and the reminder DMs, RemindAlert marks a heads-up or a warning, AddReminder is the icon-only bell button, ReminderEnabled marks what you follow and turning reminders on, DisableReminder marks turning them off. DioreoTada is uploaded and not used yet.
     dioreoTada: '<a:DioreoTada:1563677558589882510>',
+    // The Early Supporter badge's emoji (Harkirat, 2026-10-26 14:08 EDT: "only the emoji is created"; showing the badge on /settings is still deferred). On Dioreo, Dioreo (Dev) and Dioreo Admin (Dev) since 2026-10-26 14:37 EDT; prod Dioreo Admin gets it from the hourly sync once its token is on the VM. Not used yet.
+    earlySupporter: '<a:EarlySupporter:1564347395222012005>',
     remind: '<a:Remind:1563677560431452180>',
     remindAlert: '<a:RemindAlert:1563677561697992724>',
     // His Set timezone icon (2026-10-25 00:19 EDT: "here's the emoji for the 'Set timezone' button… rename to 'Timezone'"); prod id, the dev bot re-points by name. Original: Diors-Builds/Logos-&-Emojis/emoji-originals/Timezone.avif.

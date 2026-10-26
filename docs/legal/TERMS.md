@@ -6,9 +6,9 @@ published: true
 
 # Terms of Service — Dioreo
 
-**Effective date:** on the Dioreo v3 release — this version is not yet in effect
-**Version:** 1.6 (pending)
-**Applies to:** the Dioreo Discord application (the "Bot") and the website these documents are published on (the "Site")
+**Effective date:** 26 October 2026
+**Version:** 1.6
+**Applies to:** the Dioreo Discord applications, the public **Dioreo** app and its companion **Dioreo Admin** app (together, the "Bot"), and the website these documents are published on (the "Site")
 
 
 
@@ -46,6 +46,8 @@ Where these Terms would sensibly apply to it, they do: in particular the disclai
 
 **If the two ever conflict about a document's contents, the plain-text original governs**, as stated on each rendered page.
 
+The admin portal at `portal.dioreo.app` is not part of the Site. It is an admin tool, reachable only by the owner and the admins the owner has granted, and these Terms cover it as part of the Bot.
+
 
 
 ## 2. Agreement to these Terms
@@ -54,11 +56,13 @@ Where these Terms would sensibly apply to it, they do: in particular the disclai
 
 **You accept these Terms by doing any of the following:**
 
-1. **Installing** the Bot to your Discord account, or authorising it via Discord's OAuth flow;
+1. **Installing** the Bot to your Discord account **or adding it to a server**, or authorising it via Discord's OAuth flow;
 2. **Invoking any command** — every slash command, at every invocation;
 3. **Interacting with any component** the Bot presents — any button, dropdown, modal, or menu;
 4. **Receiving output** from the Bot in response to something you did; or
 5. **Continuing to use** the Bot after a change to these Terms takes effect.
+
+If you add the Bot to a server, you confirm you are allowed to do so for that server.
 
 **Each of those is a separate and independent act of acceptance.** You do not need to accept more than once, and accepting once binds you to these Terms for all subsequent use.
 
@@ -87,7 +91,7 @@ The [Privacy Policy](PRIVACY.md) forms part of these Terms. The [LICENSE](../../
 
 ### 2.6 If you don't agree
 
-**Don't install or use the Bot.** If you've already installed it, remove it via Discord's "Authorized Apps" settings and stop issuing commands. See §13.1.
+**Don't install or use the Bot.** If you've already installed it, remove it (from your account via Discord's "Authorized Apps" settings, or from a server you manage as §13.1 describes) and stop issuing commands. See §13.1.
 
 
 
@@ -106,27 +110,37 @@ To use the Bot you must:
 
 ## 4. What the Bot does
 
-The Bot is a **user-installed Discord application** providing Call of Duty: Mobile reference information:
+The Bot is a **Discord application** (see §4.1 for how it is installed) providing Call of Duty: Mobile reference information:
 
 | Feature | What it gives you |
 |---|---|
-| Weapon loadouts | Curated multiplayer and DMZ builds, attachments, rankings |
+| Weapon loadouts (`/gunsmith`) | Curated multiplayer and DMZ builds, attachments, rankings |
+| Submit a Build | Send in a build for a weapon that has none yet |
 | Lucky draw info | Draw contents, items, and CP pricing |
+| `/draw calculator` | CP cost estimates for the draws you choose, and calculations you save |
 | Patch notes | Season balance changes and patch history |
 | Seasonal calendar | Events, start and end dates |
 | Countdowns | Season, rank, and DMZ end timers |
+| `/today` and `/remind` | A daily brief, and reminders by direct message for what you pick |
+| Right-click Apps | View Colors on a person or a message, Convert Times on a message |
+| `/admin` | Lets a server's admins choose where the Bot answers publicly |
 | `/timestamp` | Discord timestamp generation in your timezone |
 | `/settings` | Your display preferences |
 | Accent colours | Message colours matched to your Discord profile |
 
-### 4.1 What "user-installed" means
+### 4.1 How the Bot is installed
 
-The Bot installs **to your Discord account**, not to a server:
+The Bot can be installed two ways:
 
-- It travels with you across servers and DMs.
-- **It has no permissions in any server.** It is not a member, holds no role, and cannot read your messages, see your channels, moderate, or act on its own.
-- It only responds to interactions **you** initiate.
-- Whether it works in a given server is controlled by that server and by Discord — not by us.
+- **To your account** (a user install): it travels with you across servers and DMs, is not a member of any server, and holds no permissions anywhere.
+- **To a server** (a server install, done by someone allowed to manage that server): the Bot joins the server as a member and receives the server's basic structure (its name, channels and roles) from Discord so it can work there. The install asks for a small set of message permissions (View Channels, Send Messages, Send Messages in Threads, Embed Links, Attach Files, Read Message History, Use External Emojis and Add Reactions) for text commands planned for a later version. **It uses none of them yet**, the server can withhold any of them, and it never asks for a moderation or administrator permission.
+
+Either way:
+
+- It responds to interactions someone starts. It does not have Discord's Message Content permission, does not read ordinary messages (Privacy Policy §3), and does not moderate.
+- It sends a direct message only to someone who asked for it: reminders you turn on with `/remind`, and news about a build you submitted or disputed. It never posts in a channel on its own.
+- A server's admins can limit where it answers publicly with `/admin` (Privacy Policy §2.1a), and can remove it at any time (§13.1).
+- Whether it works in a given server is also controlled by that server's own Discord settings and by Discord, not by us.
 
 ### 4.2 It's free
 
@@ -157,7 +171,7 @@ We have no obligation to provide support, respond to reports, fix bugs, maintain
 
 Lucky draws and similar mechanics are **games of chance operated entirely by third parties**. We do not operate, host, facilitate, promote, or take any part in them. We receive no commission, referral fee, or benefit of any kind from your spending. We have no control over odds, contents, pricing, or outcomes, and no ability to influence or predict them.
 
-**Nothing in the Bot is a recommendation, inducement, or encouragement to spend money.** Information about draw contents and pricing is descriptive reference material only.
+**Nothing in the Bot is an inducement or encouragement to spend money.** Information about draw contents and pricing is descriptive reference material only. `/draw calculator` works out how much CP a set of draws would cost and which store bundles cover the amount **you** entered. That is arithmetic on the figures you gave it, not advice to buy anything: its "Recommended Bundle" and "Suggested Purchase" mean a low-cost way, in few purchases, to reach your own target, and "Stock Up" a larger purchase at a better rate per CP. None of them suggests that you should reach that target at all. Its prices are estimates captured from in-game storefronts at a point in time; what you are actually charged may differ (taxes, regional pricing, sales and store changes), and the in-game store is always the authority.
 
 If you're concerned about spending on in-game purchases, please seek support appropriate to your situation. Some jurisdictions regulate loot boxes and similar mechanics; where yours does, comply with your local law — that's your responsibility, not ours.
 
@@ -227,7 +241,7 @@ We also deliberately **do not reproduce other companies' own copyright notices**
 
 ### 7.4 Other trademarks
 
-Discord®, GitHub®, MongoDB®, Cloudinary®, Google Cloud™, Microsoft®, Azure®, and all other marks are the property of their respective owners. A full acknowledgement list is in [NOTICE](../../NOTICE) §5.
+Discord®, GitHub®, MongoDB®, Cloudinary®, Cloudflare®, Google Cloud™, Microsoft®, Azure®, and all other marks are the property of their respective owners. A full acknowledgement list is in [NOTICE](../../NOTICE) §5.
 
 ### 7.5 Copyright complaints and takedowns
 
@@ -255,7 +269,7 @@ We may develop, acquire, or operate features, products, or services similar to a
 
 Portions of this project — its source code, documentation, and these legal documents — were **written with the assistance of AI tools**, principally Claude (Anthropic PBC), under human direction. Full disclosure: [NOTICE](../../NOTICE) §6.
 
-**No AI system processes your data.** The only AI in the running Bot is an administrator-only image-extraction command that never receives end-user data. See §5.1 of the [Privacy Policy](PRIVACY.md).
+**AI in the running Bot reads Gunsmith screenshots and nothing else.** It is an image-reading step behind `/autobuild` and its **Autobuild Loadout** right-click, available only to the owner and to admins the owner has granted it. It reads a Gunsmith screenshot to fill in a loadout, and the screenshot can come from a message someone else posted. Ordinary users' commands, preferences and messages are never sent to it. See §5.1 of the [Privacy Policy](PRIVACY.md).
 
 
 
@@ -268,7 +282,8 @@ The Bot runs on and interoperates with services we don't control:
 | **Discord Inc.** | The platform the Bot runs on |
 | **MongoDB Atlas** | Stores preferences and content data (Canada) |
 | **Cloudinary** | Hosts and serves cached game images |
-| **Google Cloud Platform** | Hosts the server; Vertex AI for admin-only image extraction |
+| **Google Cloud Platform** | Hosts the server; Vertex AI for the admin-only screenshot reading in §8 |
+| **Cloudflare, Inc.** | Serves the Site and the admin portal |
 
 Your use of Discord is governed by Discord's own terms and privacy policy. We are not responsible for these services' availability, security, or acts. An outage or change at any of them can break the Bot without notice.
 
@@ -320,6 +335,8 @@ You must not use the Bot in violation of Canadian, US, EU, UK, or other applicab
 ### 13.1 By you
 
 Remove the Bot from your Discord account at any time via Discord's "Authorized Apps" settings. That stops all future interaction immediately.
+
+If the Bot was added to a server, a server admin removes it from **Server Settings → Integrations** (or by removing the Bot as a member). Removing it does not delete that server's `/admin` settings; ask under §9 of the [Privacy Policy](PRIVACY.md).
 
 Removing it does **not** automatically delete your stored preferences — see §7.1 and §9 of the [Privacy Policy](PRIVACY.md) for how to request deletion.
 
@@ -437,7 +454,7 @@ Kept here as well as in git, because the repository's visibility can change (§7
 
 | Version | Effective | What changed |
 |---|---|---|
-| 1.6 *(pending)* | on the v3 release | **Not yet in effect.** Editorial only. These Terms kept two change lists, this table and a shorter appendix, which told the same history twice and disagreed: the appendix numbered the changes of 1 August as three versions (1.2, 1.3, 1.4), which were never published separately, and it stopped before 1.5. This table is now the only one; the two changes only the appendix recorded are added to the 1.4 row, and the appendix is removed. **Nothing you agreed to has changed.** |
+| 1.6 | 26 October 2026 | **Dioreo v3.** The Bot can now be added to a server as well as to your account: §4.1 says what a server install receives and asks for, §2.1 and §13.1 cover adding and removing it, and the scope line names the companion **Dioreo Admin** app. §4 lists the new features. §5.1 says what `/draw calculator`'s "Recommended Bundle", "Suggested Purchase" and "Stock Up" mean: arithmetic on the amount you entered, not advice to buy. §8 describes the one AI feature as it now is: admins the owner has granted can use it, and the screenshot it reads can come from someone else's message. §1.1 says the admin portal is covered as part of the Bot, and Cloudflare is added to §7.4 and §9. Editorially, these Terms kept two change lists, this table and a shorter appendix, which told the same history twice and disagreed: the appendix numbered the changes of 1 August as three versions (1.2, 1.3, 1.4), which were never published separately, and it stopped before 1.5. This table is now the only one; the two changes only the appendix recorded are added to the 1.4 row, and the appendix is removed. **None of this reduces your rights.** |
 | 1.5 | 4 August 2026 | **The Bot was renamed from Dior's Builds to Dioreo.** A change of name only: same operator, same Bot, same data, same terms — see §1 and §19.2. §7.1 keeps the former name protected alongside the new one. **Nothing you agreed to has changed**, no new data is collected, and no right of yours is reduced. |
 | 1.4 | 1 August 2026 | Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (§14) and the limitation of liability (§15) did not reach the pages these documents are published on. Adds §1.1 defining the Site and saying exactly which Terms cover it and which do not. **No new obligation on you and no reduction of your rights** — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone. The same version added Discord (`diorswrld`) as a second contact route in §1 and §20, alongside the canonical email (anything that has to be on the record still goes by email), and broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. |
 | 1.3 | — | Never published. The header moved from 1.1 straight to 1.4 on 1 August 2026 while the row describing that change was written as "1.2", so 1.2 and 1.3 were skipped. Recorded rather than quietly renumbered: the document you were shown on 1 August said **1.4**, and a revision history that renumbers a published version to tidy itself up is worth less than one with a gap in it. |

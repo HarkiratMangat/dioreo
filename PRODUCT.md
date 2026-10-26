@@ -52,7 +52,7 @@ Several statements below copy something the codebase already states authoritativ
 ## Brand Commitments
 
 - The product is **Dioreo**. The former name "Dior's Builds" is retired for new writing but is still a protected Brand Asset under the licence — retiring a name did not release it.
-- The codebase is **source-available, not open source** (Dioreo Source-Available License v1.1). The portal must never be described or styled as an open-source admin tool.
+- The codebase is **source-available, not open source** (Dioreo Source-Available License v1.2). The portal must never be described or styled as an open-source admin tool.
 - The public site at `dioreo.app` carries an established visual identity (the metaball nav, the document-page families). The portal is a sibling of that identity, not a copy of it, and the mockups are the binding statement of what it looks like.
 
 ## Evidence on Hand

@@ -1,5 +1,5 @@
 DIOREO SOURCE-AVAILABLE LICENSE
-Version 1.1, 4 August 2026
+Version 1.2, 26 October 2026
 
 (formerly the Dior's Builds Source-Available License, Version 1.0, 28 July 2026)
 
@@ -76,7 +76,10 @@ License and has no legal effect; where the two differ, the License governs.
 1.6  "Official Service" means the instance or instances of the Software
      operated by or on behalf of the Licensor and made available to the public
      through Discord, together with any successor, replacement, or additional
-     public service operated by the Licensor.
+     public service operated by the Licensor, and any companion application,
+     administrative interface, or website operated by the Licensor in
+     connection with it (including the Dioreo Admin application and any web
+     portal).
 
 1.7  "Modify" means to adapt, alter, translate, port, refactor, extend,
      abridge, merge with other material, or otherwise create a work based upon
@@ -401,7 +404,7 @@ free of charge, and whether or not You attribute the Licensor:
      in Section 8A. Read it. Authoritative per-package license text lives in
      each package's own distribution under node_modules/.
 
-     Certain components -- currently discord.js and xlsx -- are licensed under
+     Certain components, listed in NOTICE Section 2, are licensed under
      the Apache License 2.0, which imposes attribution and NOTICE-reproduction
      obligations on anyone who redistributes them. Those obligations attach to
      those components independently of this License and are not waived,
@@ -425,7 +428,7 @@ free of charge, and whether or not You attribute the Licensor:
 
 7.4  Platform services. The Software interoperates with services operated by
      third parties, including Discord Inc., GitHub Inc., MongoDB Inc.,
-     Cloudinary Ltd., and Google LLC. Your use of those services is governed by
+     Cloudinary Ltd., Cloudflare, Inc., and Google LLC. Your use of those services is governed by
      their terms, not by this License.
 
 
@@ -752,7 +755,7 @@ any claim that it infringes a third party's rights.
 The following notice may be applied to individual source files:
 
     Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.
-    Licensed under the Dioreo Source-Available License v1.1.
+    Licensed under the Dioreo Source-Available License v1.2.
     Source-available, not open source. No deployment, no redistribution.
     See the LICENSE file at the repository root for full terms.
 
@@ -764,7 +767,7 @@ The following notice may be applied to individual source files:
 This is a custom license with no OSI-approved SPDX short identifier. Refer to
 it in machine-readable metadata as:
 
-    LicenseRef-Dioreo-Source-Available-1.1
+    LicenseRef-Dioreo-Source-Available-1.2
 
 
 ===============================================================================
@@ -828,6 +831,21 @@ research, education, accessibility, and archival purposes. Ask.
      carry "LicenseRef-Diors-Builds-Source-Available-1.0". That identifier
      denotes Version 1.0 of this License and remains valid for the copies it
      was applied to. Section 16 gives the identifier to use going forward.
+
+18.7 Relationship to Version 1.1. This Version 1.2 supersedes Version 1.1 of
+     4 August 2026 and governs the Software from 26 October 2026. It differs
+     from Version 1.1 only in Section 1.6, which now names the Licensor's
+     companion applications, administrative interfaces and websites as part
+     of the Official Service; in Section 7.1, which now refers to NOTICE
+     Section 2 for the Apache-2.0 components rather than naming them; in
+     Section 7.4, which names Cloudflare, Inc.; in the identifier in Sections
+     15 and 16; and in this Section 18.7. No permission granted by Version 1.1
+     is narrowed. The only restriction that reaches further is that the
+     provisions which already protected the public Official Service, such as
+     Sections 4.8 and 4.11, now plainly protect those companion services too.
+     If you received the Software under Version 1.1, you may continue to rely
+     on Version 1.1 for that copy. Metadata written before 26 October 2026 may
+     carry "LicenseRef-Dioreo-Source-Available-1.1", which denotes Version 1.1.
 
 
 ================================================================================
