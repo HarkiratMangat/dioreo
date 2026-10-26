@@ -5,6 +5,18 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ A URL image on a new build overwrote Build 1's picture — closed 2026-10-26 00:34 EDT `[DONE · 2026-10-26 00:34 EDT]`
+
+Fixed on `style/bot-polish` and merged in #222 (Pre-Release v3.111.0): `takenKeyPattern` in `utils/loadoutImageCache.js` matches taken keys with or without an extension, tested in `scripts/loadoutBulkFormat.test.js`.
+
+- **A URL image on a new build overwrites Build 1's picture `[P1 · XS]`**
+
+> 🔧 **FIXED ON `style/bot-polish` 2026-10-25 22:19 EDT** (not merged yet): `takenKeyPattern` in `utils/loadoutImageCache.js` matches keys with or without an extension; tested in `scripts/loadoutBulkFormat.test.js`.
+
+Found 2026-10-25 22:16 EDT (bot-polish think-pass). `handlers/manage/loadouts.js` `resolveImageInput` collects taken keys with `/^(DMZ-)?BASE-\d+$/`, which skips every key stored with `.png` (105 of 133 dev builds). So an image URL pasted on a NEW build of such a weapon mints `BASE-1`, and the upload (`overwrite: true`) replaces Build 1's picture: proved for AK117, whose Build 1 asset is `AK117-1`. Live on prod. The fix is to pass every key of the weapon and let `deriveImageKey` strip the extension; the gunsmith-code key rework (Queued) removes the derivation entirely.
+
+**Verify condition:** a new AK117 build with a pasted URL is saved as `AK117-2` (or its code key), and Build 1's picture is unchanged.
+
 ## ✅ `/admin` panel design pass — closed 2026-10-23 00:07 EDT `[DONE · 2026-10-23 00:07 EDT]`
 
 Built on `feat/admin-panel-redesign` and merged in #218 (Pre-Release v3.108.0). All nine issues from the 2026-10-21 click test read fixed on the dev bot, and the pass went past them at his asks (per-command settings, Check a Member, the change log, Discord's permissions on the panel); `scripts/guildPolicy.test.js` (35) and `scripts/guildPolicyEnforcement.test.js` (42) pass. Approved by Harkirat 2026-10-22 23:55 EDT. The original item, kept whole:

@@ -86,14 +86,6 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
-### A URL image on a new build overwrites Build 1's picture `[P1 · XS]`
-
-> 🔧 **FIXED ON `style/bot-polish` 2026-10-25 22:19 EDT** (not merged yet): `takenKeyPattern` in `utils/loadoutImageCache.js` matches keys with or without an extension; tested in `scripts/loadoutBulkFormat.test.js`.
-
-Found 2026-10-25 22:16 EDT (bot-polish think-pass). `handlers/manage/loadouts.js` `resolveImageInput` collects taken keys with `/^(DMZ-)?BASE-\d+$/`, which skips every key stored with `.png` (105 of 133 dev builds). So an image URL pasted on a NEW build of such a weapon mints `BASE-1`, and the upload (`overwrite: true`) replaces Build 1's picture: proved for AK117, whose Build 1 asset is `AK117-1`. Live on prod. The fix is to pass every key of the weapon and let `deriveImageKey` strip the extension; the gunsmith-code key rework (Queued) removes the derivation entirely.
-
-**Verify condition:** a new AK117 build with a pasted URL is saved as `AK117-2` (or its code key), and Build 1's picture is unchanged.
-
 ### `[P3 · S]` The runner self-test's "two readers share" timing check fails inside a full `npm test` — filed 2026-10-18 15:22 EDT
 
 `scripts/testRunner.test.mjs:134` asserts that two read-locked entries finish faster together than a writer and a reader. Under a full `TEST_CACHE=0 npm test` on this Mac (8 slots, 139 entries) it failed twice on 2026-10-18 (12:24 EDT: readers 3,714 ms vs 2,980 ms; 15:18 EDT: 2,876 ms vs 3,413 ms, which is the right order and still failed its margin), and passed both times when run alone. The other 138 entries passed each time, so it reads as wall-clock contention, not a runner defect. **Do:** give the check headroom that load cannot erase (compare against a measured baseline in the same process, or move it to its own serial lane in `scripts/testManifest.mjs`). **Verify:** three consecutive full `TEST_CACHE=0 npm test` runs pass it.
