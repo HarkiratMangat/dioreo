@@ -871,3 +871,23 @@ for season/shotgun & armory/ar, they're fine, leave them as-is. for info/ev... w
 - Owned: round 2's Answer Shots picture for the ticket (`as-r2-21`) was taken before its last edit and still showed the old 12, which is what his `r36-21` "literally the same" was about; the board had 6 since v37. Round 3's shots are taken in one run after the last edit, and each part's words were written after its shot was looked at.
 - Built in Builder-2 v38 (`38bff82`, ledger `67b4331`: r3del, r3mark, r3toggles44, r3railedge, r3tilex, r3key, r3plate, r3chiprun, r3headfade, r3filename); 801 assertions pass; spec board checks pass (the spec draws the toggles on L and names the tile's remove and key as above, in local files: v131 waits on his call).
 - His 2026-10-21 21:33 EDT words in the thread, verbatim: "the outline you're using for the rails is wrong, it should be this faint grey that the image key field uses. and on top of it, the search fields dont even use the resting outline at all." Done in Builder-2 v39 (`530a287`, written 2026-10-21 21:45 EDT): every rail's edge is the fields' ink 12% again (it reverses round 3's rule2 from `r36-10` "B"). Measured on 8 search fields and the Key field: each draws the same ink 12% edge (#222629 on its fill); only the rails had rule2.
+
+## Round 4 of his v35 review, and the loadout code keys (v40, 2026-10-26 13:07 EDT)
+
+His `r37-*` answers (2026-10-21 21:23–21:41 EDT) and the drawer work of 2026-10-26, Builder-2 `d662a2e`; asked back as `r38-*` on Answer Shots v31.
+
+| His words | What changed |
+|---|---|
+| "why not .wash for it?" (the image mark), "it should be wash-ok, no?" (the file name), "THE MARKS ARE WRONG!" (the list's marks) | wash, from the spec board's recipe through the kit (`kit-gen.mjs`) |
+| "layer the zebra lines under the text." | the not-listed chip's slot word and name sit on the chip's own fill |
+| "top scroll lost the fade and the entire top labels row also scrolls" | the list can't be scrolled by focus (overflow clip); the fade is a strip hung from the heads in their own fill |
+| "far left ... and far right ... should be 20px." | the selection bar's padding 20 |
+| "bad position and alignment still." (the tile ×) | inside the padding, 10 and 10, as the spec board's Tiles |
+| "still no +/- mark. its missing." | the picker keys carry the corner mark |
+| "hover broke" (the filter toggles) | the paint hover from the recipe |
+| the queue card ("the trash bin's button shape", START / END gaps) | Edit's corner 6 → 8 like the trash; the labels trimmed to their capitals, so 6 ink to control |
+| "this shit's corner radius are also wrong." (Before staging) | card 8, rows 6, marks 5 |
+| 12:13 EDT: "make that like actual like red area clickable and changeable if needed" | the Build prefix opens the build-number picker (the showings Stepper); a taken number swaps the two |
+
+My picks, asked on the page: the queue card's Active tag on the 32 row (B) against the decided 24 (A, his 2026-10-13 call). The corner audit also moved b3-xt-pm 4 → 5, b3-xt-rm 28 / 7 → 32 / 8 (Q3's free-standing 28s), cx-dcp 9 → 8, the preview overline and Export's peek 10 → 11, Compare's foot cell 12 → 11; the Build prefix keeps 10, concentric inside its field's 11.
+
