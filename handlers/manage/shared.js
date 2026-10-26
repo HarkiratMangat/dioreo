@@ -150,8 +150,11 @@ async function resolveManagePanelMatches(group, rawQuery) {
         const mode = loadoutModeFor(group);
         const Loadout = require('../../models/Loadout');
         const modeLoadouts = await Loadout.find({ mode }).lean();
-        return modeLoadouts.filter(l => fuzzyMatch(query, l.weaponName) || fuzzyMatch(query, l.buildName)).slice(0, 25)
-            .map(l => ({ id: l._id.toString(), doc: l, label: `${l.weaponName} - ${l.buildName}` }));
+        // By weapon, then build number (2026-10-26 11:39 EDT: the click-test showed BAL-27's five builds listed 2, 3, 4, 5, 1), and the label after the number, as the Edit pop-up shows it.
+        const { compareBuilds } = require('../../utils/loadoutForm');
+        return modeLoadouts.filter(l => fuzzyMatch(query, l.weaponName) || fuzzyMatch(query, l.buildName) || (l.label && fuzzyMatch(query, l.label)))
+            .sort((a, b) => a.weaponName.localeCompare(b.weaponName) || compareBuilds(a, b)).slice(0, 25)
+            .map(l => ({ id: l._id.toString(), doc: l, label: `${l.weaponName} - ${l.buildName}${l.label ? ` · ${l.label}` : ''}` }));
     }
 
     // Patch Notes has no search-based edit/delete flow -- it operates on a single "current entry" instead (see patchnotes.js), so this group is intentionally absent here.
