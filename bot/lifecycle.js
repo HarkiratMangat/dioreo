@@ -177,6 +177,33 @@ function registerLifecycle(client, commands) {
             runDrawEndReminders(client);
             setInterval(() => runDrawEndReminders(client), 24 * 60 * 60 * 1000).unref();
         }, msUntilNextDailyRun()).unref();
+        // Emojis: every original in Cloudinary's emoji-originals/ onto both of this process's apps (utils/emojiSync.js runAutoSync; Harkirat, 2026-10-25 21:14-21:16 EDT: one upload, four bots, and never a copy downloaded from Discord). Each app's emoji map re-points by name when something was added, so the panels draw it at once. HOW OFTEN (his 21:18 EDT question, "what's that every 10 minute sync costing us?"): an idle check measured 0.9 s of waiting and 21 ms of CPU, but two calls from the Cloudinary account's 500 an hour, which prod shares with the dev bot. So prod checks once an hour, and the dev bot, which restarts on every saved file, checks at start-up at most once an hour (`.emoji-sync-last`); /emojis' Sync button runs the same check at any time.
+        const emojiTick = async () => {
+            try {
+                const apps = require('../commands/emojis').appsOfThisProcess();
+                const res = await require('../utils/emojiSync').runAutoSync(apps);
+                if (res.added?.length) {
+                    console.log(`🙂 Emoji auto-sync added ${res.added.length}: ${res.added.slice(0, 10).join(', ')}${res.added.length > 10 ? '…' : ''}`);
+                    for (const a of apps) await require('../utils/emojiMap').refreshEmojiIds(a.client, { secondary: a.key === 'admin' }).catch(e => console.error('Emoji map refresh after auto-sync failed:', e?.message || e));
+                }
+                if (res.failed?.length) console.error(`Emoji auto-sync: ${res.failed.length} failed (each logged above)`);
+            } catch (e) { console.error('Emoji auto-sync failed:', e?.message || e); }
+        };
+        const EMOJI_EVERY = 60 * 60 * 1000;
+        if (process.env.NODE_ENV === 'development') {
+            const fs = require('fs'), stamp = require('path').join(__dirname, '..', '.emoji-sync-last');
+            let last = 0; try { last = Number(fs.readFileSync(stamp, 'utf8')) || 0; } catch { last = 0; }
+            if (Date.now() - last > EMOJI_EVERY) setTimeout(() => { try { fs.writeFileSync(stamp, String(Date.now())); } catch { /* best effort */ } emojiTick(); }, 60 * 1000).unref();
+        } else {
+            setTimeout(() => { emojiTick(); setInterval(emojiTick, EMOJI_EVERY).unref(); }, 60 * 1000).unref();
+        }
+        // Reminders by DM (utils/reminders.js, the design of 2026-10-23 21:11 EDT): one DM per person who opted in, at 00:01 UTC, a minute after the game's daily update. Not on boot, so a restart never DMs at an odd hour; each record notes the day it was sent, so a run never sends twice. Who has a failure note waiting is loaded now, so the note hook costs nothing for everyone else.
+        const reminders = require('../utils/reminders');
+        reminders.loadPendingNotices().catch(error => console.error(`Loading reminder notes failed: ${error?.message}`));
+        setTimeout(() => {
+            reminders.runDailyReminders(client);
+            setInterval(() => reminders.runDailyReminders(client), 24 * 60 * 60 * 1000).unref();
+        }, reminders.msUntilNextRun()).unref();
 
         // The presence's top line and verb rotate every minute: Watching the season countdown, Competing in the ranked countdown, Playing the DMZ countdown, Listening to /help (utils/botPresence.js, 2026-10-21 19:31 EDT). Never throws; a failed season read keeps /help up.
         require('../utils/botPresence').startPresenceRotation(client);

@@ -62,6 +62,8 @@ const ACCENT_SOURCE = {
     '/help': 'help', '/invite': 'invite', '/calendar': 'calendar',
     // The calculator has no constant of its own: commands/drawCalculator.js imports /draw prices' PRESET_ACCENT and answers in it, so that module is the source.
     '/draw calculator': 'drawprices',
+    '/remind': 'calendar', // the reminders panel wears Calendar's accent, like /today
+    '/today': 'calendar', // /today wears Calendar's accent (his call, 2026-10-23 10:00 EDT) and reads the same constant
     '/draw prices': 'drawprices', '/season end': 'seasonend',
     '/patch notes': 'patchnotes', '/draws': 'draws', '/timestamp': 'timestamp',
 };

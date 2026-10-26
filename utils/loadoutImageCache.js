@@ -151,6 +151,12 @@ function deriveImageKey(weaponName, mode, takenKeys = []) {
     return `${prefix}${base}-${n}`;
 }
 
+// The Mongo query for the keys deriveImageKey must skip: every `WEAPON-N` and `DMZ-WEAPON-N` of this weapon, WITH or without a file extension. Its /manage caller used `^...-\\d+$` until 2026-10-25 22:19 EDT, which dropped the `.png` keys (105 of 133 dev builds) before deriveImageKey could strip them, so a URL image on a new AK117 build minted AK117-1 and overwrote Build 1's picture (AK117-1.png is the asset AK117-1).
+function takenKeyPattern(weaponName) {
+    const base = String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^(DMZ-)?${base}-\\d+(\\.(png|jpe?g|webp|gif))?$`, 'i');
+}
+
 // Remote-URL-to-remote-URL upload (Cloudinary fetches the bytes server-side, same pattern as utils/cloudinaryCache.js's cacheThumbnail) -- overwrite: true so a retry (see the design spec's retry_token flow) safely re-uploads under the exact same key rather than erroring on a collision. IMAGE ONLY -- structured metadata is set separately by syncLoadoutMetadata(doc) once the Loadout doc exists, so this never has to know anything about the loadout's data.
 async function uploadLoadoutImage(sourceUrl, imageKey) {
     // The single most dangerous write in the bot from a dev instance: `public_id` is the bare imageKey (see the comment below), so `overwrite: true` against a key that already exists in prod would silently replace a LIVE loadout image. Folder-scoping cannot prevent it -- asset_folder is not part of the asset's identity.
@@ -195,4 +201,4 @@ async function uploadStagingScreenshot(dataUrl) {
     }
 }
 
-module.exports = { uploadLoadoutImage, uploadStagingScreenshot, isHttpImageSource, deriveImageKey, syncLoadoutMetadata, buildLoadoutMetadata, isRealImageKey, METADATA_FIELDS, SLOT_TO_FIELD, FOLDER };
+module.exports = { uploadLoadoutImage, uploadStagingScreenshot, isHttpImageSource, deriveImageKey, takenKeyPattern, syncLoadoutMetadata, buildLoadoutMetadata, isRealImageKey, METADATA_FIELDS, SLOT_TO_FIELD, FOLDER };

@@ -68,6 +68,16 @@ const COMMANDS = {
                 '`view` set to Active/Upcoming Only hides events that have already ended.'],
         keywords: 'events schedule playlist rotation dates season what is on when ranked',
     },
+    '/today': {
+        purpose: "Today in CODM: what was released at the last reset, what goes live at the next, and what's leaving soon.",
+        facts: ['Counts what is active now, and counts down to the daily update and each season end.', '/calendar opens on its own Today page, with everything active and the next few days.'],
+        keywords: 'today daily update reset released new live now active leaving soon ending soon going live tomorrow this week new draw event',
+    },
+    '/remind': {
+        purpose: 'A DM when something you follow releases, is about to leave, or the season is ending.',
+        facts: ['One DM a day, a minute after the daily update, with only what you picked.', 'Follow a whole category, one draw or event, or the daily /today brief.', 'The bell on /today, /calendar, /draws, /season end and /patch notes opens the same panel.'],
+        keywords: 'remind reminder reminders notify notification notifications dm alert follow subscribe release leaving last chance season end battle pass ranked dmz patch notes digest',
+    },
     '/patch notes': {
         purpose: 'What got buffed and what got nerfed.',
         facts: ['`season` searches earlier seasons, not just the current one.'],
@@ -122,6 +132,8 @@ const ASKS = [
     { q: 'DMZ builds, or the DMZ meta', to: '/gunsmith dmz' },
     // /dmz is hidden until the DMZ info update (Harkirat, 2026-10-21); its ask was { q: 'A DMZ build, straight to a weapon', to: '/dmz' }.
     { q: 'When the season ends', to: '/season end' },
+    { q: "What's live today, and what's next", to: '/today' },
+    { q: 'Tell me when a draw releases or is leaving', to: '/remind' },
     // ⚠️ Was "What's on this season, and when": every word but "season" is filler, and "season" is /season end's own name, so the ranker sent it there. The gate caught it the day the asks became search phrases.
     { q: "This season's events and dates", to: '/calendar' },
     { q: 'What got buffed or nerfed', to: '/patch notes' },

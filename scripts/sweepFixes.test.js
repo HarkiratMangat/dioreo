@@ -58,9 +58,9 @@ check('every /draws page stays under 4,000 characters of text, however many item
     }
 });
 
-check('small draws still page at six, the component cap', () => {
+check('small draws page at five, the component cap (six until the season subtitle got its own line, 2026-10-24 21:40 EDT)', () => {
     const pages = draws.paginateDraws(Array.from({ length: 13 }, (_, i) => draw(i, 2)));
-    assert.deepStrictEqual(pages.map(p => p.length), [6, 6, 1]);
+    assert.deepStrictEqual(pages.map(p => p.length), [5, 5, 3]);
 });
 
 check('one draw too long for any page is trimmed with a "…and N more" line', () => {

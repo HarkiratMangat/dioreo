@@ -2,7 +2,7 @@
 // SETTINGS PICKERS — the shared searchable-list registry
 // ==========================================
 // v3-pre-release review finding #48: /settings' CP-currency and Timezone pickers were line-for-line clones across four site-pairs (data module, select-render block, __search__ modal-open branch, modal-submit branch). This registry is the single source both commands/settings.js (render) and handlers/settings.js (search modal + submit) parameterize into, keyed by the REAL wire action string ('set_timezone'/'set_cpcurrency') -- the same self-enforcing-key pattern utils/manageActions.js uses, so the key can never drift out of sync with the custom_id it dispatches on. Pure data/functions only, no discord.js/handler dependency.
-const { QUICK_TIMEZONES, findTimezoneLabel, searchTimezones, displayLabel } = require('./timezoneData');
+const { findTimezoneLabel, searchTimezones, quickZoneOptions } = require('./timezoneData');
 const { QUICK_CURRENCIES, currencyLabel, searchCurrencies } = require('./cpCurrencyData');
 
 const SETTINGS_PICKERS = {
@@ -12,7 +12,7 @@ const SETTINGS_PICKERS = {
         summaryLabel: 'Timezone',
         placeholder: 'Set Your Local Clock Timezone Filters...',
         // displayLabel appends the LIVE abbreviation (finding #45) -- called fresh on every render, never cached, since DST shifts which abbreviation is current.
-        quickOptions: () => QUICK_TIMEZONES.map(z => ({ label: displayLabel(z.tz, z.label), value: z.tz })),
+        quickOptions: () => quickZoneOptions(), // west to east by offset (utils/timezoneData.js, 2026-10-24 21:18 EDT)
         currentLabel: (value) => findTimezoneLabel(value),
         searchLabel: '🔍 Search for your city...',
         searchDescription: 'Not in the list above? Type a city, country, or abbreviation.',

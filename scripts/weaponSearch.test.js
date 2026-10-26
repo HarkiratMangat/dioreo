@@ -2,7 +2,7 @@
 //
 // /gunsmith' weapon suggestions: a class typed in plain words finds that class, and a half-typed class word finds it too (Harkirat, 2026-10-19 20:09 EDT: "i typed assault, which should have showed all AR ... and i typed 'snipe' but that only showed 'all snipers' and didn't list the other sniper builds").
 const assert = require('assert');
-const { resolveCategorySynonyms, findWeaponMatches, isGenericWeaponQuery } = require('../utils/search');
+const { resolveCategorySynonyms, findWeaponMatches, isGenericWeaponQuery, foldLookalikes } = require('../utils/search');
 
 let failures = 0;
 function check(name, fn) {
@@ -55,6 +55,29 @@ check('a typo in a weapon name finds the weapon; gun or weapon shows every weapo
     assert.deepStrictEqual(findWeaponMatches('stirker', pool).map(w => w.weaponKey), ['striker']);
     assert.deepStrictEqual(findWeaponMatches('gun', pool).map(w => w.weaponKey), ['locus', 'ak117', 'striker']);
     assert.ok(isGenericWeaponQuery('Weapons') && !isGenericWeaponQuery('shotgun'));
+});
+
+check('look-alike typos find the weapon: hso for HS0405, l for 1, s for 5 (his 2026-10-25 21:56 EDT ask)', () => {
+    const guns = [{ weaponKey: 'hs0405', weaponName: 'HS0405', category: 'SHOTGUN' }, { weaponKey: 'ffar1', weaponName: 'FFAR 1', category: 'AR' }, { weaponKey: 'so14', weaponName: 'SO-14', category: 'MARKSMAN' }];
+    assert.deepStrictEqual(findWeaponMatches('hso', guns).map(w => w.weaponKey), ['hs0405']);
+    assert.deepStrictEqual(findWeaponMatches('ffarl', guns).map(w => w.weaponKey), ['ffar1']);
+    assert.deepStrictEqual(findWeaponMatches('s014', guns).map(w => w.weaponKey), ['so14']);
+    assert.strictEqual(foldLookalikes('HS0405'), 'hso4os');
+    // A plain match still wins and the fold never widens it.
+    assert.deepStrictEqual(findWeaponMatches('hs04', guns).map(w => w.weaponKey), ['hs0405']);
+});
+
+check('nothing typed: a few of every class, each class\'s Meta and best-ranked first (his 2026-10-25 23:25 EDT ask)', () => {
+    const { featuredWeapons } = require('../utils/search');
+    const w = (weaponName, category, extra = {}) => ({ weaponName, weaponKey: weaponName.toLowerCase(), category, ...extra });
+    const pool = [w('A1', 'AR'), w('A2', 'AR', { isMeta: true }), w('A3', 'AR', { categoryRank: 'best' }), w('L1', 'LMG'), w('L2', 'LMG', { categoryRank: 'top3' }), w('S1', 'SNIPER', { isMeta: true }), w('S2', 'SNIPER')];
+    const four = featuredWeapons(pool, 4).map(x => x.weaponName);
+    assert.deepStrictEqual(four, ['A2', 'A3', 'L2', 'S1'], 'one per class first, then the best second; grouped by class');
+    assert.strictEqual(featuredWeapons(pool, 99).length, pool.length);
+    // A third pick goes to AR, then SMG, never LMG first (his 2026-10-25 23:27 EDT call).
+    const seven = ['AR', 'LMG', 'MARKSMAN', 'SECONDARIES', 'SHOTGUN', 'SMG', 'SNIPER'].flatMap(c => [1, 2, 3].map(n => w(`${c}${n}`, c)));
+    const counts = featuredWeapons(seven, 16).reduce((m, x) => ({ ...m, [x.category]: (m[x.category] || 0) + 1 }), {});
+    assert.deepStrictEqual(counts, { AR: 3, LMG: 2, MARKSMAN: 2, SECONDARIES: 2, SHOTGUN: 2, SMG: 3, SNIPER: 2 });
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }

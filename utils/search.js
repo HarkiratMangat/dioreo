@@ -23,7 +23,11 @@ function distinctiveDrawTokens(title) {
     );
 }
 
+// The same words in any order and case are the same draw, before the distinctive-word count below (2026-10-23 13:31 EDT): Season 9's "Halloween Series Armory" has only one distinctive word, so the two-word rule never matched it even against itself, and /calendar listed it twice (its calendar row and its /draws entry). Word order is ignored so "Halloween Armory Series" matches too.
+const allDrawWords = title => (title || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean).sort().join(' ');
+
 function isSameDrawTitle(a, b) {
+    if (allDrawWords(a) && allDrawWords(a) === allDrawWords(b)) return true;
     const tokensA = distinctiveDrawTokens(a);
     const tokensB = distinctiveDrawTokens(b);
     let shared = 0;
@@ -85,6 +89,12 @@ function isGenericWeaponQuery(query) {
     return Boolean(query) && GENERIC_WEAPON_WORDS.has(normalizeForSearch(query));
 }
 
+// The one class an alias names, matched exactly (no prefix, no typo rule), or null; a word naming several classes ("rifle") is null. /autobuild's form presets read two- and three-word class names with it (2026-10-25 12:49 EDT), where the prefix and typo rules would turn a run of unrelated words into a class.
+function categoryByExactAlias(text) {
+    const v = CATEGORY_SEARCH_SYNONYMS[normalizeForSearch(text || '')];
+    return v && !Array.isArray(v) ? v : null;
+}
+
 function resolveCategorySynonyms(query) {
     if (!query) return [];
     const q = normalizeForSearch(query);
@@ -102,7 +112,12 @@ function resolveCategorySynonyms(query) {
     return nearSets.size === 1 ? [...nearSets][0].split('|') : [];
 }
 
-// findWeaponMatches (2026-07-18, v2 quick-wins batch; extended same day with synonym support) -- backs the loadout-lookup fallback in /dmz and /gunsmith mp for a short/partial weapon name (e.g. "loc") that doesn't exact-match any stored weaponKey. The slash command's `weapon` option is autocomplete-backed but NOT `.setRequired` to a strict choice list -- Discord still submits whatever raw text a user typed if they hit enter without picking a suggestion (confirmed a real live complaint on mobile, where the autocomplete dropdown is easy to dismiss by accident), and that raw text almost never equals a normalized weaponKey exactly for a partial query. Returns every candidate (from the caller's mode/category-scoped list, expected to carry `weaponKey`/ `weaponName`/`category`) whose weaponName fuzzy-matches the raw query OR whose category matches a resolved synonym (e.g. "pistol" -> every SECONDARIES weapon, not just the ones whose own name happens to contain the word "pistol"), deduped by weaponKey -- so a caller can auto-resolve an unambiguous single match or ask the user to pick from a short list of real candidates instead of just saying "not found" with no explanation.
+// findWeaponMatches (2026-07-18, v2 quick-wins batch; extended same day with synonym support) -- backs the loadout-lookup fallback in /dmz and /gunsmith mp for a short/partial weapon name (e.g. "loc") that doesn't exact-match any stored weaponKey. The slash command's `weapon` option is autocomplete-backed but NOT `.setRequired` to a strict choice list -- Discord still submits whatever raw text a user typed if they hit enter without picking a suggestion (confirmed a real live complaint on mobile, where the autocomplete dropdown is easy to dismiss by accident), and that raw text almost never equals a normalized weaponKey exactly for a partial query. Returns every candidate (from the caller's mode/category-scoped list, expected to carry `weaponKey`/ `weaponName`/`category`) whose weaponName fuzzy-matches the raw query OR whose category matches a resolved synonym (e.g. "pistol" -> every SECONDARIES weapon, not just the ones whose own name happens to contain the word "pistol"), deduped by weaponKey -- so a caller can auto-resolve an unambiguous single match or ask the user to pick from a short list of real candidates instead of just saying "not found" with no explanation. Look-alike characters folded together for weapon search only (Harkirat, 2026-10-25 21:56 EDT: "hso" for "hs0" found nothing): 0 and o, 1 i and l, 5 and s. Not in fuzzyMatch, which draws, patch notes and bulk delete share.
+const LOOKALIKE = { 0: 'o', 1: 'l', i: 'l', 5: 's' };
+function foldLookalikes(str) {
+    return normalizeForSearch(String(str || '')).replace(/[015i]/g, ch => LOOKALIKE[ch]);
+}
+
 function findWeaponMatches(query, candidates) {
     const synonymCategories = resolveCategorySynonyms(query);
     const seen = new Set();
@@ -115,6 +130,12 @@ function findWeaponMatches(query, candidates) {
         }
     }
     if (results.length) return results;
+    // Then the same letters with look-alikes folded ("hso" -> HS0405), before the typo distance below, which needs four letters.
+    const folded = foldLookalikes(query);
+    if (folded) for (const c of candidates) {
+        if (foldLookalikes(c.weaponName).includes(folded) && !seen.has(c.weaponKey)) { seen.add(c.weaponKey); results.push(c); }
+    }
+    if (results.length) return results;
     // Nothing matched the letters or a class: fall back to the nearest weapon names by typo distance ("lokus" -> LOCUS). Only as a fallback, so "shot" lists the shotguns and not SHORTY beside them.
     const near = candidates.map(c => [typoDistance(query, c.weaponName), c]).filter(([dist]) => dist !== Infinity);
     const best = Math.min(...near.map(([dist]) => dist));
@@ -124,5 +145,25 @@ function findWeaponMatches(query, candidates) {
     return results;
 }
 
+// What /gunsmith shows before anything is typed (Harkirat, 2026-10-25 23:26 EDT: "instead of the example list only being AR weapons, can you list a few weapons from each category ... the more popular ones ... if they have the meta badge or the top badge"). A few from every class, each class's best first by its builds' badges (Meta, then Best › Top 3 › Top 5 › Capable, then Toxic), taken round-robin so every class gets one before any gets a second; shown grouped by class. `weapons`: one entry per weapon with `category`, `weaponName` and the badge fields of its best build.
+const RANK_ORDER = { best: 1, top3: 3, top5: 5, capable: 6 };
+function featuredScore(w) {
+    return (w.isMeta ? 0 : 100) + (RANK_ORDER[w.categoryRank] ?? 50) + (w.isToxic ? 0 : 1);
+}
+const EXTRA_ORDER = ['AR', 'SMG', 'SNIPER', 'SHOTGUN', 'MARKSMAN', 'SECONDARIES', 'LMG'];
+function featuredWeapons(weapons, slots) {
+    const byClass = new Map();
+    for (const w of weapons) (byClass.get(w.category) || byClass.set(w.category, []).get(w.category)).push(w);
+    const classes = [...byClass.keys()].sort();
+    for (const c of classes) byClass.get(c).sort((a, b) => featuredScore(a) - featuredScore(b) || a.weaponName.localeCompare(b.weaponName));
+    const picked = new Set();
+    // Two from every class first; any slots left go to the classes in EXTRA_ORDER, in that order (Harkirat, 2026-10-25 23:28 EDT: "reduce LMGs to just 2 and increase SMGs to 3", so with 16 slots AR and SMG get three).
+    const order = (round) => round < 2 ? classes : [...EXTRA_ORDER.filter(c => byClass.has(c)), ...classes.filter(c => !EXTRA_ORDER.includes(c))];
+    for (let round = 0; picked.size < slots && classes.some(c => byClass.get(c)[round]); round++) {
+        for (const c of order(round)) { const w = byClass.get(c)[round]; if (w && picked.size < slots) picked.add(w); }
+    }
+    return classes.flatMap(c => byClass.get(c).filter(w => picked.has(w)));
+}
+
 // CATEGORY_SEARCH_SYNONYMS and GENERIC_WEAPON_WORDS are exported for the site's /commands page (scripts/lib/commandsPage.js), whose weapon search ships this same table so it answers a class word the way the bot does.
-module.exports = { fuzzyMatch, normalizeForSearch, findWeaponMatches, resolveCategorySynonyms, isGenericWeaponQuery, typoDistance, isSameDrawTitle, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };
+module.exports = { featuredWeapons, fuzzyMatch, normalizeForSearch, foldLookalikes, findWeaponMatches, resolveCategorySynonyms, categoryByExactAlias, isGenericWeaponQuery, typoDistance, isSameDrawTitle, CATEGORY_SEARCH_SYNONYMS, GENERIC_WEAPON_WORDS };

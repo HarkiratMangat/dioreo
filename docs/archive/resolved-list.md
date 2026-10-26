@@ -5,6 +5,24 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✅ A URL image on a new build overwrote Build 1's picture — closed 2026-10-26 00:34 EDT `[DONE · 2026-10-26 00:34 EDT]`
+
+Fixed on `style/bot-polish` and merged in #222 (Pre-Release v3.111.0): `takenKeyPattern` in `utils/loadoutImageCache.js` matches taken keys with or without an extension, tested in `scripts/loadoutBulkFormat.test.js`.
+
+- **A URL image on a new build overwrites Build 1's picture `[P1 · XS]`**
+
+> 🔧 **FIXED ON `style/bot-polish` 2026-10-25 22:19 EDT** (not merged yet): `takenKeyPattern` in `utils/loadoutImageCache.js` matches keys with or without an extension; tested in `scripts/loadoutBulkFormat.test.js`.
+
+Found 2026-10-25 22:16 EDT (bot-polish think-pass). `handlers/manage/loadouts.js` `resolveImageInput` collects taken keys with `/^(DMZ-)?BASE-\d+$/`, which skips every key stored with `.png` (105 of 133 dev builds). So an image URL pasted on a NEW build of such a weapon mints `BASE-1`, and the upload (`overwrite: true`) replaces Build 1's picture: proved for AK117, whose Build 1 asset is `AK117-1`. Live on prod. The fix is to pass every key of the weapon and let `deriveImageKey` strip the extension; the gunsmith-code key rework (Queued) removes the derivation entirely.
+
+**Verify condition:** a new AK117 build with a pasted URL is saved as `AK117-2` (or its code key), and Build 1's picture is unchanged.
+
+## ✅ `/admin` panel design pass — closed 2026-10-23 00:07 EDT `[DONE · 2026-10-23 00:07 EDT]`
+
+Built on `feat/admin-panel-redesign` and merged in #218 (Pre-Release v3.108.0). All nine issues from the 2026-10-21 click test read fixed on the dev bot, and the pass went past them at his asks (per-command settings, Check a Member, the change log, Discord's permissions on the panel); `scripts/guildPolicy.test.js` (35) and `scripts/guildPolicyEnforcement.test.js` (42) pass. Approved by Harkirat 2026-10-22 23:55 EDT. The original item, kept whole:
+
+- **`/admin` panel design pass** `[P2 · M · 🧩needs-design]` — asked 2026-10-21 22:31 EDT (Harkirat: "that panel likely needs design improvement"). The click-through on the dev bot found nine issues: right-click commands listed as "/Convert Times" and "/View Colors"; subcommand groups shown as bare "/draw", "/patch", "/season"; the Commands card never states the hidden list; clearing only saves on click-outside (Escape silently cancels) and there is no Clear button; "Public in 1 channel" never names the channel; the role-scope screen drops the four tabs; Overview repeats two paragraphs of rules text; mixed icons; the Channels copy sends you to Overview first. Screenshots and notes: `local/project/features/admin-panel-design/` (on his Mac only). Show options visually before building. **Verify:** each of the nine reads fixed on the dev bot, and `scripts/guildPolicy.test.js` still passes.
+
 ## ✅ One long announcement stopped every announcement reaching every player — closed 2026-10-22 00:43 EDT `[DONE · 2026-10-22 00:43 EDT]`
 
 Closed in the 2026-10-22 housekeeping sweep. Fixed in #207 (Pre-Release v3.98.0, `edbe23c`): `fitEmbedBudget` in `utils/announcement.js` trims a delivery to 6,000 embed characters before the follow-up, the op caps one announcement at 4,000, and the catch logs Discord's real error code; `scripts/announcementBudget.test.js` passes (re-run 2026-10-22). The entry's own note said "not merged" and is corrected below; the live dev-bot check in its Verify line is not recorded anywhere. The original item, kept whole:

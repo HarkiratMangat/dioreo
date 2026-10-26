@@ -15,7 +15,7 @@ const path = require('path');
 const { REST, Routes, Collection } = require('discord.js');
 
 // The names /admin's "always hidden commands" menu never offers (2026-08-10 15:48 EDT, v3 server-admin visibility policy): a server rule has no business quieting Harkirat's own owner-level commands, and /admin must never be able to hide its own answer from the admin trying to undo a rule. 'Add to Patch Notes' (the right-click command, 2026-10-19 10:22 EDT) is /manage's patch-notes editor by another door, so it is excluded with it.
-const ADMIN_COMMAND_NAMES = new Set(['admin', 'manage', 'autobuild', 'bot', 'Add to Patch Notes', 'Autobuild Gunsmith', 'Add to Draws', 'Add to Calendar']);
+const ADMIN_COMMAND_NAMES = new Set(['admin', 'manage', 'autobuild', 'bot', 'emojis', 'Add to Patch Notes', 'Autobuild Gunsmith', 'Add to Draws', 'Add to Calendar']);
 
 // The commands that live on DIOREO ADMIN when it is on (2026-10-19 13:44 EDT, his design; /admin stays public, his "yes." 13:26 EDT, because it is a SERVER command gated by Manage Server and already hidden from everyone without it). Plus, per his "yes." at 13:35 EDT, every `devOnly` module and any module exporting `adminApp: true` -- the experimental ones. Nothing is on both apps.
 const ADMIN_APP_COMMAND_NAMES = new Set([...ADMIN_COMMAND_NAMES].filter(name => name !== 'admin'));
@@ -95,10 +95,22 @@ function loadCommandModules(client) {
 async function registerApplicationCommands(client, commands, { token = process.env.BOT_TOKEN, gateable = true } = {}) {
     // The names /admin's "always hidden commands" menu offers. Derived from `commands` -- the SAME array that is about to be registered -- rather than a hand-maintained list, which would silently go stale the first time a command is added or removed. Only the public app's list feeds it: /admin is a public command, and an admin-app command is never gateable.
     if (gateable) {
-        // A Set: "View Colors" is two commands (user and message right-click) with one name, and /admin's menu lists it once.
-        client.gateableCommandNames = [...new Set(commands
-            .map(commandName)
-            .filter(name => name && !ADMIN_COMMAND_NAMES.has(name)))];
+        // One entry per subcommand ('draw prices'), since /admin's rules are per subcommand (2026-10-22 14:01 EDT). A Set: "View Colors" is two commands (user and message right-click) with one name, and /admin's menu lists it once. contextMenuTargets says what each right-click command is used on, for the menu's "Right-click a message" line.
+        const { commandPaths } = require('../utils/guildPolicy');
+        const paths = new Set();
+        const targets = new Map();
+        for (const c of commands) {
+            const json = typeof c.toJSON === 'function' ? c.toJSON() : c;
+            if (!json?.name || ADMIN_COMMAND_NAMES.has(json.name)) continue;
+            for (const path of commandPaths(json)) paths.add(path);
+            if (json.type === 2 || json.type === 3) {
+                const target = json.type === 2 ? 'user' : 'message';
+                const prev = targets.get(json.name);
+                targets.set(json.name, prev && prev !== target ? 'user or message' : target);
+            }
+        }
+        client.gateableCommandNames = [...paths];
+        client.contextMenuTargets = targets;
     }
 
     const rest = new REST({ version: '10' }).setToken(token);

@@ -73,8 +73,16 @@ function buildBasePrompt(maxAttachments) {
     "penStats": "true if the stats include a stat labelled 'PEN.' or 'PEN. MULTI', otherwise false",
     "selectBlueprints": "true if a 'SELECT BLUEPRINTS' button or label is visible, otherwise false",
     "equipCustomizeTabs": "true if tabs labelled 'EQUIP' and 'CUSTOMIZE' are visible, otherwise false",
-    "codeInTitle": "true if the weapon's title has an alphanumeric code joined to it, e.g. 'Dobvra-1D2C5F7B8B', otherwise false"
+    "codeInTitle": "true if the weapon's title has an alphanumeric code joined to it, e.g. 'Dobvra-1D2C5F7B8B', otherwise false",
+    "slotLabels": "true if the boxes holding EQUIPPED attachments each print their slot's name (e.g. 'Muzzle', 'Barrel') above the attachment's name, otherwise false"
   },
+  "confidence": {
+    "weaponName": "an integer 0-100: how sure you are of weaponName",
+    "gunsmithCode": "an integer 0-100: how sure you are of gunsmithCode (100 if the screen shows no code and you returned an empty string)",
+    "attachments": "an integer 0-100: how sure you are that every equipped attachment is listed with the right name",
+    "mode": "an integer 0-100: how sure you are of your answers in screen"
+  },
+  "observations": "one short sentence on anything that made this screenshot hard to read (glare, a cropped or covered area, text cut off, the same attachment shown twice, a second weapon visible), or an empty string",
   "attachments": [
     {"slot": "the slot's label EXACTLY as printed on screen, e.g. Muzzle, Barrel, Optic, Stock, Underbarrel, Rear Grip, Ammunition, Perk, Laser, Trigger Action -- some weapons print their own names instead, such as Bowstring, Limb, Bolt, Foregrip, Mag, Guard or Smoothbore, and those must be copied as printed. If no label is printed for the slot, use an empty string; never guess a slot from its position or its icon", "name": "the equipped attachment's name in that slot"}
   ]
@@ -127,18 +135,23 @@ async function getGcpAccessToken() {
 // Nine is the most slot positions either mode shows (Muzzle, Barrel, Optic, Stock, Perk, Laser, Underbarrel, Ammunition, Rear Grip). It was 5 until 2026-10-19 17:53 EDT, and that was the bug Harkirat's note names: "DMZ partials are the 5-attachment prompt cap". 5 is MP's EQUIP cap, not its slot count, so it was right for MP and cut every DMZ build short. One cap now serves both, because the mode is only known once the model has answered: an MP screen cannot show more than five equipped, and the prompt's skip-empty-and-restricted wording is what stops a nine-slot cap inventing attachments on a short weapon. ⚠️ Keep that wording whenever this prompt is edited.
 const MAX_ATTACHMENTS = 9;
 
-// The mode from the four `screen` facts the model reported. Two agreeing signals and no conflicting one, or null: a build filed under the wrong mode is worse than one the review card asks about (.claude/rules/autobuild.md, "Prefer two agreeing signals, and if they conflict, return the mode as unknown rather than guessing"). A missing or non-boolean field counts as not seen, never as a vote, so a malformed answer degrades to null instead of to a mode. A string "true" is not true: the prompt asks for JSON booleans, and accepting strings would make "false" truthy.
+// The mode from the five `screen` facts the model reported. Two agreeing signals and no conflicting one, or null: a build filed under the wrong mode is worse than one the review card asks about (.claude/rules/autobuild.md, "Prefer two agreeing signals, and if they conflict, return the mode as unknown rather than guessing"). A missing or non-boolean field counts as not seen, never as a vote, so a malformed answer degrades to null instead of to a mode. A string "true" is not true: the prompt asks for JSON booleans, and accepting strings would make "false" truthy.
 function classifyMode(screen) {
     const seen = (key) => screen != null && screen[key] === true;
     const dmz = ['penStats', 'equipCustomizeTabs'].filter(seen).length;
-    const mp = ['selectBlueprints', 'codeInTitle'].filter(seen).length;
+    // A third MP signal since 2026-10-25 13:26 EDT: an FSS Hurricane screenshot with its code in the title but no SELECT BLUEPRINTS bar came back unknown, while it "lists attachments the same as the other MP gunsmiths" (Harkirat). An MP screen prints each equipped slot's name above the attachment; a DMZ screen never does, so any two of the three MP signals, with no DMZ one, is MP. The two-signal rule itself is unchanged.
+    const mp = ['selectBlueprints', 'codeInTitle', 'slotLabels'].filter(seen).length;
     if (dmz >= 2 && mp === 0) return 'DMZ';
     if (mp >= 2 && dmz === 0) return 'MP';
     return null;
 }
 
-// `maxAttachments` (default MAX_ATTACHMENTS) -- how many attachment slots to extract. Kept as an option rather than a separate function so there's still ONE extraction path to maintain; scripts/backfillLoadoutSlots.js passes 9 explicitly.
-async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHMENTS, taskName, knownWeapons = [] } = {}) {
+// `maxAttachments` (default MAX_ATTACHMENTS) -- how many attachment slots to extract. Kept as an option rather than a separate function so there's still ONE extraction path to maintain; scripts/backfillLoadoutSlots.js passes 9 explicitly. How long one screenshot may take: the download, then the model's answer (thinking included).
+const IMAGE_TIMEOUT_MS = 20 * 1000;
+const VERTEX_TIMEOUT_MS = 90 * 1000;
+
+// `record` writes a VisionRead for the read (models/VisionRead.js); `reuse` returns an earlier read of these exact bytes instead of calling the model (Harkirat, 2026-10-25 13:31-13:50 EDT). Both are opt-in, so the checking scripts always read fresh and write nothing.
+async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHMENTS, taskName, knownWeapons = [], record = false, reuse = false } = {}) {
     const accessToken = await getGcpAccessToken();
     const gcpProjectId = process.env.GCP_PROJECT_ID || DEFAULT_PROJECT_ID;
     const gcpLocation = process.env.GCP_LOCATION || DEFAULT_LOCATION;
@@ -162,11 +175,19 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHME
 
     const endpoint = `${host}/v1/projects/${gcpProjectId}/locations/${gcpLocation}/${modelPath}:generateContent`;
 
-    // Gemini's generateContent accepts an image as inline base64 bytes, not an arbitrary URL it fetches itself -- download the source image ourselves first, same "resolve the image locally before doing anything else with it" shape this repo's other image-processing utils already use (e.g. utils/stillFrame.js, utils/colorExtract.js).
-    const imageRes = await fetch(imageUrl);
+    // Gemini's generateContent accepts an image as inline base64 bytes, not an arbitrary URL it fetches itself -- download the source image ourselves first, same "resolve the image locally before doing anything else with it" shape this repo's other image-processing utils already use (e.g. utils/stillFrame.js, utils/colorExtract.js). Both calls are timed out (2026-10-25 13:12 EDT): a /autobuild batch sat on "2 of 3 done" for minutes because one read never returned and neither fetch had a limit, so nothing ever failed it. A timeout throws, and the batch shows that screenshot as unreadable and carries on.
+    const imageRes = await fetch(imageUrl, { signal: AbortSignal.timeout(IMAGE_TIMEOUT_MS) });
     if (!imageRes.ok) throw new Error(`Failed to download source image: HTTP ${imageRes.status}`);
     const contentType = imageRes.headers.get('content-type') || 'image/png';
+    // A link to a web page rather than to the image itself answers with HTML; say so instead of sending it to the model as a picture. Only text is refused: some hosts serve images as octet-stream.
+    if (/^text\//i.test(contentType)) throw new Error(`That link is a web page (${contentType.split(';')[0]}), not an image; use the image's own address`);
     const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
+    const reads = require('./visionReads');
+    const hash = reads.fileHash(imageBuffer);
+    if (reuse) {
+        const earlier = await reads.findReuse(hash);
+        if (earlier) return { ...shapeExtraction(earlier.raw, maxAttachments), readId: earlier._id, reusedFrom: earlier.createdAt, fileHash: hash };
+    }
     const base64Image = imageBuffer.toString('base64');
 
     const requestBody = {
@@ -183,13 +204,15 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHME
 
     // Dependency timing (2026-08-16, observability stage 2) -- extractLoadoutFromImage() is the one and only runtime path to Vertex, so this single wrap is the whole integration. Tokens are added below, once usageMetadata is actually in hand.
     const { timeDependency, noteDep } = require('./eventStore');
+    const startedAt = Date.now();
     const res = await timeDependency('vertex', () => fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        signal: AbortSignal.timeout(VERTEX_TIMEOUT_MS)
     }));
 
     if (!res.ok) {
@@ -212,7 +235,22 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = MAX_ATTACHME
         throw new Error(`Gemini response was not valid JSON: ${rawText.slice(0, 300)}`);
     }
 
-    return shapeExtraction(parsed, maxAttachments);
+    const shaped = shapeExtraction(parsed, maxAttachments);
+    if (!record) return shaped;
+    const usage = data?.usageMetadata;
+    const cost = estimateVisionCostUsd(gcpLocation, usage);
+    const repeated = require('./visionReads').repeatedAttachments(parsed);
+    const readId = await reads.recordRead({
+        fileHash: hash, task: taskName || 'unspecified', model: gcpModel, location: gcpLocation,
+        imageType: contentType.split(';')[0], imageBytes: imageBuffer.length, raw: parsed,
+        weaponName: shaped.weaponName, gunsmithCode: shaped.gunsmithCode,
+        attachments: shaped.attachments.map((name, i) => ({ slot: shaped.attachmentSlots[i] || '', name })).filter(a => a.name),
+        mode: shaped.mode, modeSignals: shaped.modeSignals, confidence: shaped.confidence, observations: shaped.observations,
+        repeatedAttachments: repeated,
+        inputTokens: cost.inputTokens, outputTokens: cost.outputTokens, thinkingTokens: usage?.thoughtsTokenCount || 0,
+        costUsd: cost.estimatedCostUsd, durationMs: Date.now() - startedAt,
+    });
+    return { ...shaped, readId, fileHash: hash, repeatedAttachments: repeated };
 }
 
 // The model's parsed JSON -> what callers get. Pulled out of extractLoadoutFromImage (2026-10-19 17:52 EDT) so scripts/autobuildDmz.test.js can drive real response shapes through it with no Vertex call.
@@ -239,9 +277,19 @@ function shapeExtraction(parsed, maxAttachments = MAX_ATTACHMENTS) {
         penStats: parsed.screen?.penStats === true,
         selectBlueprints: parsed.screen?.selectBlueprints === true,
         equipCustomizeTabs: parsed.screen?.equipCustomizeTabs === true,
-        codeInTitle: parsed.screen?.codeInTitle === true
+        codeInTitle: parsed.screen?.codeInTitle === true,
+        slotLabels: parsed.screen?.slotLabels === true
     };
-    return { weaponName: parsed.weaponName, gunsmithCode: parsed.gunsmithCode, attachments, attachmentSlots, mode: classifyMode(parsed.screen), modeSignals };
+    // What the model saw when it could not tell, so a screenshot that "clearly" is one mode can be explained from the log.
+    if (!classifyMode(parsed.screen)) console.log(`Vision: mode unknown for ${parsed.weaponName || 'a screenshot'}; signals ${JSON.stringify(modeSignals)}`);
+    // The model's own rating per field, as integers 0-100; anything else is dropped rather than guessed (2026-10-25 13:52 EDT).
+    const confidence = {};
+    for (const k of ['weaponName', 'gunsmithCode', 'attachments', 'mode']) {
+        const v = Number(parsed.confidence?.[k]);
+        if (Number.isFinite(v) && v >= 0 && v <= 100) confidence[k] = Math.round(v);
+    }
+    const observations = typeof parsed.observations === 'string' ? parsed.observations.trim().slice(0, 300) : '';
+    return { weaponName: parsed.weaponName, gunsmithCode: parsed.gunsmithCode, attachments, attachmentSlots, mode: classifyMode(parsed.screen), modeSignals, confidence, observations };
 }
 
 module.exports = { extractLoadoutFromImage, shapeExtraction, classifyMode, buildPrompt, estimateVisionCostUsd, MAX_ATTACHMENTS, MODEL };

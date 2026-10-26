@@ -10,8 +10,8 @@ const CATEGORY_KEYS = {
     'Assault Rifles': 'AR', 'Submachine Guns': 'SMG', 'Light Machine Guns': 'LMG', 'Marksman Rifles': 'MARKSMAN',
     'Sniper Rifles': 'SNIPER', 'Shotguns': 'SHOTGUN', 'Pistols': 'SECONDARIES'
 };
-// Transcription slips in the seed, corrected at seed time so the tracked JSON stays a faithful copy of what was transcribed.
-const NAME_FIXES = { AK17: 'AK117' };
+// Transcription slips in the seed, corrected at seed time so the tracked JSON stays a faithful copy of what was transcribed. Odin is the same gun as ODEN, spelled two ways (Harkirat, 2026-10-25 16:18 EDT: "yes"); folding it here keeps the tracked transcription (docs/pins2/, pins2's file) untouched.
+const NAME_FIXES = { AK17: 'AK117', Odin: 'ODEN' };
 // Harkirat's slot rulings for attachments no screenshot or metadata could place (2026-09-16 11:28 EDT). Moved here from scripts/backfillSlotsFromMetadata.js, which now reads them from this one copy, so the catalogue and the slot backfill can never disagree.
 const RULED_SLOTS = {
     '270mm VOZ Carbine': 'Barrel',

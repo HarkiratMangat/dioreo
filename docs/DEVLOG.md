@@ -277,6 +277,10 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-10-21 17:49 EDT — The command refresh: a filtered calendar, a draw end-date reminder, and layouts picked from mock-ups (v3.105.0-pre)
 - 2026-10-21 22:38 EDT — The bot's presence becomes a rotating card, and /invite gets his layout (v3.106.0-pre)
 - 2026-10-22 01:07 EDT — The overnight housekeeping sweep: stale docs, rules and comments corrected (v3.107.0-pre)
+- 2026-10-23 00:07 EDT — The /admin panel becomes Server Settings, with per-command settings, a change log and Check a Member (v3.108.0-pre)
+- 2026-10-23 21:17 EDT — /today becomes a daily brief, /calendar opens on Today, and reminders get a design (v3.109.0)
+- 2026-10-25 01:48 EDT — /remind: reminders by DM, built on his phone one mock-up at a time (v3.110.0)
+- 2026-10-26 00:35 EDT — Harkirat's command review rounds, /emojis and the /autobuild form (v3.111.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4680,6 +4684,44 @@ Harkirat spent two days refining command layouts on the dev bot, mostly from his
 **What was learned.** The drift was the same few shapes everywhere. A file split into a folder (`handlers/manage.js` became `handlers/manage/`) was still cited by sixteen comments. Commands retired weeks ago (`/alerts`, `/all`, `/ar`, `/lmg`) were still named in router and help comments. Line numbers and counts had rotted, so the corrected text now names a function or file instead. Scanner reports were wrong several times, and the writers caught it by re-checking the tree: one claimed a hook denies when it only advises, one said a script never syncs metadata when it does, and two suggested comment text that was itself false. My own dead-code script nearly broke six handlers by deleting a shared import line when ESLint had flagged only one of its two names; a grep before the commit caught it.
 
 **The gates were blind to most of it.** `hash-chain` never examines a v3 entry because its heading pattern lacks `Pre-Release`, `readme-map` counts a whole folder as mapped once its name appears, and `nav-map-sync` checks a rule's filename but not the row that says when it loads. All three are filed in the deferred list.
+
+## 2026-10-23 00:07 EDT — The /admin panel becomes Server Settings, with per-command settings, a change log and Check a Member (v3.108.0-pre)
+
+**What happened.** A click test of `/admin` on 2026-10-21 found nine issues, and the design pass turned into a rebuild over eight rounds of his reviews on the dev bot. Mock-ups went to #testing-spam through the dev bot's REST API, so every fork was shown before it was asked. The biggest change came from his own example: /calendar private everywhere except two channels, with roles that differ per channel. A flat list of tiers could not express it, so each command can now carry a whole rule set of its own, and the one sentence that explains it is "a command with its own settings uses only those".
+
+**What was learned.** I first recommended reordering the tiers, before checking Discord's own model; Discord's permission overwrites already answer most of the hierarchy questions, so that pick was withdrawn. The member picker drew a chosen member as "undefined" when the client had not loaded them, so the member is named in text instead. A grid of a button per command looked fine on desktop and wrapped badly on his phone, and was replaced by one dropdown.
+
+**Also.** Every change is logged 60 days for transparency, owner actions included, and the rules apply only while the bot is in the server.
+
+## 2026-10-23 21:17 EDT — /today becomes a daily brief, /calendar opens on Today, and reminders get a design (v3.109.0)
+
+**What happened.** One long day with Harkirat, mostly in #testing-spam on the dev bot. `/today` started as a copy of the calendar and ended as a daily brief: what was released at the daily update, what goes live at the next one, what's leaving soon. Every heading, gap and empty-state line was settled on mock-ups he read on his phone, and the rule that kept recurring was "it wraps on mobile", which removed trailing dates, "see /calendar" and parenthesised times one by one. `/calendar` opens on its own Today page, built from his template.
+
+**Season 9 on the dev bot.** His screenshots were loaded through the same operations /manage uses, price types were added so `/draws` shows its Calculate button, and his 12 draw images went to the dev store and then, on his word, to prod Cloudinary's `temp_draws/` (all 12 new, nothing replaced). Automated image search was tried first and failed: Facebook and Instagram serve a login page to scripts, and Google's Custom Search API is closed to new customers. It is filed as a design item.
+
+**Lesson.** A `draw.edit` sent with only a title empties the draw's items, because the op replaces the whole draw. Every later edit sent the whole draw.
+
+**Reminders.** Four rounds of questions settled notifications for v3 (`docs/superpowers/specs/2026-10-23-notifications-design.md`). Five test DMs to his alt answered the open question: a bot can DM someone who only added the app, with no shared server. A refused DM returns the same code whether DMs are off or the app was removed, so the failure note has to name both fixes; my first reading of that error was wrong and was corrected in the thread.
+
+## 2026-10-25 01:48 EDT — /remind: reminders by DM, built on his phone one mock-up at a time (v3.110.0)
+
+**What shipped:** `/remind` and a bell on every seasonal command, one DM a day at 00:01 UTC with only what a person picked, a timezone flow, and a `/gunsmith` card refresh (#221).
+
+**What the session taught:**
+- **Discord's own control beat the workaround.** The follow dropdowns spent an evening as a toggle trick (nothing pre-picked, a picked row marked, picking again removes it, a list above showing the picks). Each refinement exposed another seam: the list and the dropdown said the same thing twice, covered items needed their own marking, an old panel's button silently turned on every kind. His final layout went back to Discord's multi-select, where the closed box itself shows what is picked.
+- **The 40-component budget shaped the layout.** A second Leaving soon row took the panel to 39, then 42 with the old in-panel timezone picker. Moving the warnings into the header text, answering several timezone matches in a private message, and hiding Send a test while Stop all asks each freed room; a test now checks the busiest panel in every state.
+- **Work the class, not the instance.** One divider went large while the other three stayed small, and he caught it on the next click. They now share one shape, and a test checks every state.
+- **A default is not a choice.** `UserPreference.timezone` stores Toronto on every new record, so the zone a user actually picked needed its own marker (`timezoneSetAt`) before the dropdowns could show UTC honestly.
+
+## 2026-10-26 00:35 EDT — Harkirat's command review rounds, /emojis and the /autobuild form (v3.111.0)
+
+**What shipped:** Harkirat's review rounds across `/gunsmith`, `/help`, `/remind`, `/colors`, `/draws`, `/draw prices`, `/patch notes` and the access-denied panel; `/emojis` with one Cloudinary folder of originals feeding all four bots; Submit a Build and Dispute a Build; the `/autobuild` form with saved batches (#222).
+
+**What the session taught:**
+- **Check the sibling.** Every MP list on `/gunsmith` was reworked and the DMZ list next to them was left alphabetical until he caught it. A change to one list is a change to its kind: look at the siblings before reporting.
+- **One source beats four uploads.** Uploading each emoji to four bots by hand, or copying from Discord's CDN, cost quality and time. Keeping his originals in one Cloudinary folder and letting each bot fill itself made the prod Dioreo Admin app a non-task: it fills on its first hourly run once its token is on the VM.
+- **Search has to speak the user's words.** `/help`'s `cmd:` matched command names only, so "weapon" or "profile" found nothing. A word list per command and the commands' own descriptions, ranked, turned his examples into first-place hits.
+- **A dead end is a decision too.** The loadout image-key rework was planned in this thread but held for its own thread, so this branch could ship his polish without a storage migration in it.
 
 # Part B — Lessons Ledger (thematic)
 

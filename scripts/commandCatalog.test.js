@@ -1,8 +1,9 @@
 // scripts/commandCatalog.test.js -- coverage for scripts/lib/commandCatalog.js, the module that tells the website's /commands page what the bot can do. It reads the REAL command builders, so most of what matters here is not "does it transform correctly" but "can it fail" -- a catalog that silently drops a command produces a page that lies about the bot while every other gate stays green. Run: `node scripts/commandCatalog.test.js` (also via `npm test`).
 const assert = require('assert');
 const {
-    buildCatalog, GROUPS, idFor, leavesOf, readHelpPlacement, placementFor, EXTRA_PLACEMENT, DELIBERATELY_ABSENT,
+    buildCatalog, normalizeOption, GROUPS, idFor, leavesOf, readHelpPlacement, placementFor, EXTRA_PLACEMENT, DELIBERATELY_ABSENT,
 } = require('./lib/commandCatalog');
+const { SlashCommandIntegerOption } = require('discord.js');
 
 let failures = 0;
 const checks = [];
@@ -297,9 +298,11 @@ const allOptions = allCommands.flatMap(c => c.options.map(o => ({ command: c.pat
 check('the catalog keeps Discord\'s option type, and min / max where one is set', () => {
     const missing = allOptions.filter(({ option }) => typeof option.type !== 'number').map(({ command, option }) => command + ' ' + option.name);
     assert.deepStrictEqual(missing, [], 'an option without a type cannot be labelled');
-    const build = byPath.get('/gunsmith dmz').options.find(o => o.name === 'build');
-    assert.strictEqual(build.type, 4, '`build` is an integer option');
-    assert.strictEqual(build.min, 1, '`build` starts at 1, and the page says so');
+    // `build` was the live bot's only number option until #222 removed it (2026-10-25), so the type and bounds are pinned on a real discord.js option instead of on a command that may not carry one.
+    const sample = normalizeOption(new SlashCommandIntegerOption().setName('build').setDescription('Jump to a build').setMinValue(1).toJSON());
+    assert.strictEqual(sample.type, 4, 'an integer option keeps its type');
+    assert.strictEqual(sample.min, 1, 'an integer option keeps its lower bound, and the page says so');
+    assert.strictEqual(sample.max, undefined, 'a bound the option does not set stays unset');
 });
 
 check('every option type in use on the live bot has a label', () => {
@@ -307,9 +310,9 @@ check('every option type in use on the live bot has a label', () => {
 });
 
 check('an integer option is badged "whole number", never "text"', () => {
-    const integers = allOptions.filter(({ option }) => option.type === 4 && !option.choices.length && !option.autocomplete);
-    // /dmz carried the third while it was listed; it is hidden until the DMZ info update (2026-10-21).
-    assert.ok(integers.length >= 2, '`build` on both /gunsmith leaves is an integer; found ' + integers.length);
+    // Every live integer option, plus one built here: the live bot has none since #222 removed `build` (2026-10-25), and a loop over nothing would pass while proving nothing.
+    const sample = { command: '(sample)', option: normalizeOption(new SlashCommandIntegerOption().setName('count').setDescription('How many').setMinValue(1).toJSON()) };
+    const integers = [sample, ...allOptions.filter(({ option }) => option.type === 4 && !option.choices.length && !option.autocomplete)];
     for (const { command, option } of integers) {
         const html = badges(option, false);
         assert.ok(html.includes('whole number'), command + ' ' + option.name + ' should read whole number');

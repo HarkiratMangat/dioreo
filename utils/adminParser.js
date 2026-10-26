@@ -16,9 +16,18 @@ function capitalizeSegment(segment) {
     return segment.replace(/^(\P{L}*)(\p{L})(.*)$/u, (_, lead, first, rest) => lead + first.toUpperCase() + rest.toLowerCase());
 }
 
+// Short words stay lowercase inside a title (2026-10-23 14:04 EDT, Harkirat: "yeah because otherwise it's incorrect", after /manage stored "Whorl Of Midnight Mythic Drop"). Standard title case: lowercase unless the word is the first or last of the title, or starts a part after " - ", ":" or a dash.
+const MINOR_WORDS = new Set(['a', 'an', 'the', 'and', 'of', 'in', 'on', 'at', 'to', 'for', 'vs', 'vs.']);
+
 function toTitleCase(str) {
-    return str.split(/(\s+)/).map(word => {
+    const tokens = str.split(/(\s+)/);
+    const words = tokens.map((t, i) => (/^\s*$/.test(t) ? null : i)).filter(i => i !== null);
+    return tokens.map((word, i) => {
         if (/^\s*$/.test(word)) return word; // preserve whitespace runs as-is
+        const pos = words.indexOf(i);
+        const prev = pos > 0 ? tokens[words[pos - 1]] : '';
+        const startsPart = pos === 0 || pos === words.length - 1 || /^[-–—]$/.test(prev) || /[:–—]$/.test(prev);
+        if (!startsPart && MINOR_WORDS.has(word.toLowerCase())) return word.toLowerCase();
         // Split on hyphens AND slashes (found live 2026-07-30 22:24 EDT: "Jupiter Cannon/Void Implosion Draw" came out "Jupiter Cannon/void Implosion Draw" -- "Cannon/Void" is one whitespace-delimited token with no hyphen, so it went through capitalizeSegment() as a single unit, which only capitalizes the FIRST letter of the whole token and lowercases everything after it, clobbering the "V" in "Void". Same fix shape as the hyphen case above: split each side of the separator into its own segment and capitalize them independently.
         return word.split(/([-/])/).map(part => (part === '-' || part === '/') ? part : capitalizeSegment(part)).join('');
     }).join('');
@@ -633,4 +642,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
+module.exports = { PLACEHOLDER_IMAGE, toTitleCase, resolveTier, parseAdminDate, parseAdminDateRange, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, loadoutBadgeTokens, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };

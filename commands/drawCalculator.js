@@ -624,9 +624,9 @@ function dropConfirmRow(state, mask, count, verb = 'dropok', label = null) {
     return {
         type: 1,
         components: [
-            { type: 2, style: 4, label: label || `Remove ${plural(count, 'line')}`, custom_id: encodeState(verb, { ...state, mask }) },
-            // Title Case like every other button (click-test 2026-10-14 18:58 EDT).
-            { type: 2, style: 2, label: count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('page', { ...state, mask: 0 }), emoji: emojis.parseEmoji(emojis.keep) }
+            // Keep first, on the left (2026-10-24 22:58 EDT, Harkirat). Title Case like every other button (click-test 2026-10-14 18:58 EDT).
+            { type: 2, style: 2, label: count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('page', { ...state, mask: 0 }), emoji: emojis.parseEmoji(emojis.keep) },
+            { type: 2, style: 4, label: label || `Remove ${plural(count, 'line')}`, custom_id: encodeState(verb, { ...state, mask }) }
         ]
     };
 }
@@ -1142,14 +1142,14 @@ function readRemovePicks(basket, values) {
     return drop;
 }
 
-// THE GOAL POP-UP (2026-10-18 21:51 EDT; rebuilt per set 2026-10-18 22:31 EDT): what the line is bought for, each option with its path and what is still left for the line as it stands, then the spun sets it got both items from. His goals: /draw prices' three strategies, just the 2 items of the second-to-last set, and everything. His option names (2026-10-18 22:58 EDT): the (No …) and Pulls Only wording, the Regular goal's items in its description. The Goal button's short names say Char and Wep (2026-10-19 00:08 EDT, his ask); the options keep the full words.
+// THE GOAL POP-UP (2026-10-18 21:51 EDT; rebuilt per set 2026-10-18 22:31 EDT): what the line is bought for, each option with its path and what is still left for the line as it stands, then the spun sets it got both items from. His goals: /draw prices' three strategies, just the 2 items of the second-to-last set, and everything. His option names (2026-10-18 22:58 EDT): the (No …) and Pulls Only wording, the Regular goal's items in its description. The Goal button's short names say Char and Wep (2026-10-19 00:08 EDT, his ask); the options keep the full words. The Advanced Weapon draw's second pair reads "Epics" (2026-10-23 18:38 EDT, Harkirat: it can be epic weapons, as Alchemy Stars' is, not only epic characters).
 const ADVANCED_GOAL_TEXT = {
-    all4: { short: 'All 4 Items', path: 'Reg 1-8 → Adv 9-10', advancedWeapon: 'Both Weapons & Characters', advancedCharacter: 'Both Legendary Characters & Weapons' },
-    top2: { short: { advancedWeapon: 'Both Weps + 1 Char', advancedCharacter: 'Both Chars + 1 Wep' }, path: 'Reg 1-9 → Adv 10', advancedWeapon: 'Both Weapons + 1 Random Character', advancedCharacter: 'Both Characters + 1 Random Weapon' },
-    mid2_top1: { short: { advancedWeapon: 'Both Chars + 1 Wep', advancedCharacter: 'Both Weps + 1 Char' }, path: 'Reg 1-8 → Adv 9 → Reg 10', advancedWeapon: '1 Random Weapon + Both Characters', advancedCharacter: '1 Random Character + Both Weapons' },
-    one_each: { short: 'Regular Pulls Only', path: 'Reg only 1-10', advancedWeapon: 'Regular Pulls Only: 1 Item Per Set', advancedCharacter: 'Regular Pulls Only: 1 Item Per Set', desc: { advancedWeapon: 'Gets you 1 Random Weapon + 1 Random Character', advancedCharacter: 'Gets you 1 Random Character + 1 Random Weapon' } },
-    mid2: { short: { advancedWeapon: 'Both Epic Chars', advancedCharacter: 'Both Weps' }, path: 'Reg 1-8 → Adv 9', advancedWeapon: 'Both Epic Characters (No Weapons)', advancedCharacter: 'Both Weapons (No Characters)' },
-    mid1: { short: { advancedWeapon: '1 Random Char Only', advancedCharacter: '1 Random Wep Only' }, path: 'Reg 1-9', advancedWeapon: '1 Random Character Only (No Weapons)', advancedCharacter: '1 Random Weapon Only (No Characters)' },
+    all4: { short: 'All 4 Items', path: 'Reg 1-8 → Adv 9-10', advancedWeapon: 'Both Weapons & Epics', advancedCharacter: 'Both Legendary Characters & Weapons' },
+    top2: { short: { advancedWeapon: 'Both Weps + 1 Epic', advancedCharacter: 'Both Chars + 1 Wep' }, path: 'Reg 1-9 → Adv 10', advancedWeapon: 'Both Weapons + 1 Random Epic', advancedCharacter: 'Both Characters + 1 Random Weapon' },
+    mid2_top1: { short: { advancedWeapon: 'Both Epics + 1 Wep', advancedCharacter: 'Both Weps + 1 Char' }, path: 'Reg 1-8 → Adv 9 → Reg 10', advancedWeapon: '1 Random Weapon + Both Epics', advancedCharacter: '1 Random Character + Both Weapons' },
+    one_each: { short: 'Regular Pulls Only', path: 'Reg only 1-10', advancedWeapon: 'Regular Pulls Only: 1 Item Per Set', advancedCharacter: 'Regular Pulls Only: 1 Item Per Set', desc: { advancedWeapon: 'Gets you 1 Random Weapon + 1 Random Epic', advancedCharacter: 'Gets you 1 Random Character + 1 Random Weapon' } },
+    mid2: { short: { advancedWeapon: 'Both Epics', advancedCharacter: 'Both Weps' }, path: 'Reg 1-8 → Adv 9', advancedWeapon: 'Both Epics (No Weapons)', advancedCharacter: 'Both Weapons (No Characters)' },
+    mid1: { short: { advancedWeapon: '1 Random Epic Only', advancedCharacter: '1 Random Wep Only' }, path: 'Reg 1-9', advancedWeapon: '1 Random Epic Only (No Weapons)', advancedCharacter: '1 Random Weapon Only (No Characters)' },
     everything: { short: 'All 20 Items', path: 'Adv 1-10', advancedWeapon: 'Advanced Pulls Only: All 20 Items', advancedCharacter: 'Advanced Pulls Only: All 20 Items' }
 };
 // The Full Breakdown's line for an Advanced draw: its goal, then the spun sets by how they were bought.
@@ -1306,8 +1306,8 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         components.push({ type: 10, content: lines.join('\n') });
         if (overwriteConfirm) {
             components.push({ type: 1, components: [
-                { type: 2, style: 4, label: `Replace "${String(overwriteConfirm.name).slice(0, 60)}"`, custom_id: encodeState('owok', { ...view, target: overwriteConfirm.target }) },
-                { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }
+                { type: 2, style: 2, label: 'Keep It', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) },
+                { type: 2, style: 4, label: `Replace "${String(overwriteConfirm.name).slice(0, 60)}"`, custom_id: encodeState('owok', { ...view, target: overwriteConfirm.target }) }
             ] });
         } else {
             components.push({ type: 1, components: [{ type: 2, style: 1, label: 'Save as New', custom_id: encodeState('modal_name', view), emoji: emojis.parseEmoji(emojis.saveStar) }] });
@@ -1338,8 +1338,8 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
             // A heading, not small print (2026-10-19 11:00 EDT, Harkirat: "### :emoji: Delete this calculation? This cannot be undone."); the emoji is his Warn, sent 2026-10-19 12:53 EDT.
             components.push({ type: 10, content: `### ${emojis.warn} Delete ${savedConfirm.count === 1 ? 'this calculation' : `these ${savedConfirm.count} calculations`}? This cannot be undone.` });
             components.push({ type: 1, components: [
-                { type: 2, style: 4, label: `Delete ${plural(savedConfirm.count, 'Calculation')}`, custom_id: encodeState('savedelok', { ...view, mask: savedConfirm.mask, check: savedConfirm.check }), emoji: emojis.parseEmoji(emojis.deleteBin) }, // Remove Draws' bin (2026-10-19 10:46 EDT, his ask)
-                { type: 2, style: 2, label: savedConfirm.count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }
+                { type: 2, style: 2, label: savedConfirm.count === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) },
+                { type: 2, style: 4, label: `Delete ${plural(savedConfirm.count, 'Calculation')}`, custom_id: encodeState('savedelok', { ...view, mask: savedConfirm.mask, check: savedConfirm.check }), emoji: emojis.parseEmoji(emojis.deleteBin) } // Remove Draws' bin (2026-10-19 10:46 EDT, his ask)
             ] });
         } else {
             components.push({ type: 1, components: [{
@@ -1354,8 +1354,8 @@ function buildSavedPanelAt(state, savedBaskets, accentColor, { notice = null, sa
         // Armed Delete All carries the same warning and the same way out as a single delete (2026-10-19 10:45 EDT, Harkirat: "can that warning also appear after clicking "delete all" ... As well as a "keep them" button appearing beside it").
         if (armed) components.push({ type: 10, content: `### ${emojis.warn} Delete ${list.length === 1 ? 'this calculation' : `all ${list.length} calculations`}? This cannot be undone.` });
         components.push({ type: 1, components: [
-            { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
             ...(armed ? [{ type: 2, style: 2, label: list.length === 1 ? 'Keep It' : 'Keep Them', custom_id: encodeState('saved', view), emoji: emojis.parseEmoji(emojis.keep) }] : []),
+            { type: 2, style: armed ? 4 : 2, label: armed ? `Delete All (${list.length}) — click again` : 'Delete All', custom_id: encodeState(armed ? 'delall' : 'delallarm', view), emoji: emojis.parseEmoji(emojis.deleteAll) },
         ] });
         }
     }
@@ -1540,7 +1540,9 @@ function buildHelpPanel(accentColor, { region = 'region_10', drawKey = 'mythicWe
         divider,
         { type: 10, content: [
             '### 🧾 Reading Your Result',
-            row('Recommended Bundle', `fewest purchases within ${Math.round(PURCHASE_RULES.tolerancePct * 100)}% of the cheapest, or a small bundle's price more per purchase saved`),
+            // His wording (2026-10-26 00:03 EDT, /help note 34), split so no line runs past the one-line limit: the rule in brackets becomes its -# hint.
+            row('Recommended Bundle', 'the fewest purchases for about the cheapest price'),
+            `-# At most ${Math.round(PURCHASE_RULES.tolerancePct * 100)}% more, or about one small bundle per purchase it saves.`,
             row('Left Over', 'CP the bundles give beyond what you need; it stays in your account'),
             row('Stock Up', 'a bigger buy at a better rate; see Why Stock Up below'),
             row('2X Bundles', 'tick the bundles you can still buy at double CP; the recommendation uses them'),

@@ -19,6 +19,10 @@ const CASES = [
         'genuinely different draws sharing only generic "Mythic Drop Redux" vocabulary'],
     ['Eternal Divinity Draw', 'Power Supply Draw', false,
         'genuinely different draws sharing only the generic word "Draw"'],
+    // Season 9 (2026-10-23 13:31 EDT): one distinctive word, so only the same-words rule can match it; and two different one-word draws must still not merge.
+    ['Halloween Series Armory', 'Halloween Series Armory', true, 'identical title with one distinctive word'],
+    ['Halloween Armory Series', 'Halloween Series Armory', true, 'same words, different order'],
+    ['Halloween Draw', 'Halloween Series Armory', false, 'one shared word is still not enough'],
 ];
 
 let failures = 0;

@@ -7,7 +7,7 @@
 // After his first click-test (2026-10-20 12:10 EDT): the overview lists every build with what needs a look, the pager is the bot's usual arrows (utils/paginationRow.js), the buttons say Save / Adjust / Discard and name the build, and a batch started from the right-click can take more of that message's screenshots (Add more).
 const BOT_EMOJI = require('./emojiMap'); // the bot's own status glyphs, read when the message is sent (bot-wide glyph sweep, 2026-10-20 12:49 EDT)
 const crypto = require('crypto');
-const { pendingAutobuilds, buildReviewCard, extractToData, confirmCore, confirmMessage, buildEditModal, applyEditFields } = require('./autobuildPipeline');
+const { pendingAutobuilds, pendingImageRetries, buildReviewCard, extractToData, confirmCore, confirmMessage, confirmReply, reuploadRow, buildEditModal, applyEditFields, releaseCache } = require('./autobuildPipeline');
 const { sendV2Payload } = require('./sendV2Payload');
 const { buildPaginationRow } = require('./paginationRow');
 const emojis = require('./emojiMap');
@@ -17,6 +17,8 @@ const MAX_SCREENSHOTS = 10;
 const IDLE_MS = 14 * 60 * 1000;
 const READ_AT_ONCE = 3;
 
+// THE BATCH IS SAVED (2026-10-25 14:03 EDT, Harkirat's resume asks): every change is written to models/AutobuildBatch.js, one open batch per admin (his pick A), and this Map is only the in-memory copy. A batch whose panel went idle, or that the bot restarted under, is loaded back by its key (loadBatch) or by its admin (openBatchFor), its reviews put back into pendingAutobuilds and its failed uploads into pendingImageRetries. A bare /autobuild reopens it and new screenshots JOIN it. It ends only when every build is saved or discarded: then, at the panel's next idle, the record is deleted with its cached screenshots (finalize).
+//
 // key -> { items: [{ url, token, data, status, error, doc, retryToken, sourceIndex }], page, skipped, adminId, source } status: pending (to review) · saved · cancelled (discarded) · failed (couldn't read) · retry (image upload failed on Save) source: { key, total } when the batch came from the right-click's picker, so Add more can offer that message's other screenshots.
 const batches = new Map();
 
@@ -102,6 +104,8 @@ function batchRows(batch, key, index, heldImages) {
     const pager = buildPaginationRow({ totalChunks: batch.items.length, currentPage: index, makeCustomId: (p) => id('page', key, p), indicatorCustomId: id('ind', key) });
     if (pager) inside.push({ type: 14, spacing: 1, divider: false }, pager);
     const pending = batch.items.filter(it => it.status === 'pending').length;
+    // More screenshots join this batch through the start form (2026-10-25 14:03 EDT).
+    inside.push({ type: 14, spacing: 1, divider: false }, { type: 1, components: [{ type: 2, style: 2, label: 'Add screenshots', custom_id: id('add', key), emoji: icon('edit') }] });
     if (pending > 1) {
         inside.push({ type: 14, spacing: 1, divider: true }, { type: 1, components: [
             { type: 2, style: 3, label: `Save All ${pending}`, custom_id: id('all', key), emoji: icon('saveStar') },
@@ -153,13 +157,20 @@ function renderPage(batch, key, index, heldImages = null) {
         const n = index + 1;
         const card = buildReviewCard(item.token, item.data, {
             title: header,
-            notes: [batchDuplicateNote(batch.items, index)],
+            notes: [batchDuplicateNote(batch.items, index), item.data.rivalNote || null],
             rows: [
-                { type: 1, components: [
-                    { type: 2, style: 3, label: `Save Build ${n}`, custom_id: id('confirm', key, index), emoji: icon('saveStar') },
-                    { type: 2, style: 1, label: 'Adjust', custom_id: id('edit', key, index), emoji: icon('edit') },
-                    { type: 2, style: 4, label: `Discard Build ${n}`, custom_id: id('cancel', key, index), emoji: icon('deleteBin') },
-                ] },
+                // Pressing Save on a build another admin also has waiting asks first (2026-10-25 14:01 EDT): keep yours, or leave it to them (yours is discarded).
+                item.askRival
+                    ? { type: 1, components: [
+                        { type: 2, style: 3, label: 'Save mine', custom_id: id('force', key, index), emoji: icon('saveStar') },
+                        { type: 2, style: 4, label: 'Leave it to them', custom_id: id('yield', key, index), emoji: icon('deleteBin') },
+                        { type: 2, style: 2, label: 'Back', custom_id: id('page', key, index) },
+                    ] }
+                    : { type: 1, components: [
+                        { type: 2, style: 3, label: `Save Build ${n}`, custom_id: id('confirm', key, index), emoji: icon('saveStar') },
+                        { type: 2, style: 1, label: 'Adjust', custom_id: id('edit', key, index), emoji: icon('edit') },
+                        { type: 2, style: 4, label: `Discard Build ${n}`, custom_id: id('cancel', key, index), emoji: icon('deleteBin') },
+                    ] },
                 ...inside,
             ],
         });
@@ -170,13 +181,14 @@ function renderPage(batch, key, index, heldImages = null) {
         saved: () => `${BOT_EMOJI.checkmark} **Saved:** ${item.doc.weaponName} — ${item.doc.buildName} (${item.doc.category}${item.doc.mode === 'DMZ' ? ', DMZ' : ''})`,
         cancelled: () => BOT_EMOJI.cross + ' **Discarded:** nothing saved or uploaded.',
         failed: () => `${warn} **Couldn't read this screenshot:** ${item.error}`,
-        retry: () => `${warn} **Image upload failed** (${item.error}). Nothing was saved yet. Try the image again with\n\`/autobuild retry_token:${item.retryToken} screenshot:<new attachment>\``,
+        retry: () => `${warn} **Image upload failed** (${item.error}). Nothing was saved yet. Press **Re-upload** to send the image again.`,
     }[item.status]();
     return [{ type: 17, accent_color: 2829617, components: [
         { type: 10, content: header },
         { type: 14, spacing: 1, divider: true },
         { type: 10, content: line },
         { type: 12, items: [{ media: { url: item.url } }] },
+        ...(item.status === 'retry' ? [reuploadRow(item.retryToken)] : []),
         ...(inside.length ? [{ type: 14, spacing: 1, divider: true }, ...inside] : []),
     ] }, ...outside];
 }
@@ -201,6 +213,8 @@ function withGlyphs(components) {
 // The bot-wide expiry greys the batch out after IDLE_MS without a click.
 async function show(interaction, batch, key) {
     touch(key, batch);
+    await refreshForRender(interaction, batch, key);
+    await persist(key, batch);
     return sendV2Payload(interaction, withGlyphs(render(batch, key, heldImagesFor(interaction, batch))), { expiryMs: IDLE_MS });
 }
 
@@ -208,10 +222,161 @@ function touch(key, batch) {
     if (batch.timer) clearTimeout(batch.timer);
     batch.expiresAt = Date.now() + IDLE_MS;
     batch.timer = setTimeout(() => {
-        batches.delete(key);
-        for (const it of batch.items) if (it.token) pendingAutobuilds.delete(it.token);
+        // A batch with builds still waiting stays saved for a bare /autobuild to reopen; only its in-memory copy goes. A finished one is deleted with its cached screenshots: a discarded build's picture is kept until here, so Undo a discard works while the panel is open.
+        if (isOpen(batch)) unload(key, batch);
+        else finalize(key, batch).catch(err => console.error('Bulk autobuild: could not close a finished batch:', err.message));
     }, IDLE_MS);
     batch.timer.unref?.();
+}
+
+// ---- the saved batch (models/AutobuildBatch.js) ----
+
+const dbUp = () => { try { return require('mongoose').connection.readyState === 1; } catch { return false; } };
+const Stored = () => require('../models/AutobuildBatch');
+// Open while any build still waits for Save or Discard, a failed upload included.
+const isOpen = (batch) => batch.items.some(it => it.status === 'pending' || it.status === 'retry');
+
+// A batch as stored: everything but the timer, a saved build reduced to the summary its page shows, and a failed upload's retry data so Re-upload survives a restart. Pure.
+function toStored(batch) {
+    return {
+        ownerId: batch.adminId, page: batch.page, skipped: batch.skipped || 0, source: batch.source || null, public: Boolean(batch.public),
+        items: batch.items.map(it => ({
+            url: it.url, token: it.token || null, data: it.data || null, status: it.status, error: it.error || null,
+            doc: it.doc ? { _id: String(it.doc._id), weaponName: it.doc.weaponName, buildName: it.doc.buildName, category: it.doc.category, mode: it.doc.mode } : null,
+            retryToken: it.retryToken || null, retryData: it.retryToken ? (pendingImageRetries.get(it.retryToken) || it.retryData || null) : null,
+            sourceIndex: it.sourceIndex ?? null, sourceLabel: it.sourceLabel || null,
+        })),
+    };
+}
+
+// A stored batch back in memory, its reviews and retries put back where Save, Adjust and Re-upload look for them.
+function fromStored(doc) {
+    const batch = { items: (doc.items || []).map(it => ({ ...it })), page: doc.page || 0, skipped: doc.skipped || 0, adminId: doc.ownerId, source: doc.source || null, public: Boolean(doc.public) };
+    for (const it of batch.items) {
+        if (it.status === 'pending' && it.token && it.data) pendingAutobuilds.set(it.token, it.data);
+        if (it.status === 'retry' && it.retryToken && it.retryData) pendingImageRetries.set(it.retryToken, it.retryData);
+    }
+    return batch;
+}
+
+async function persist(key, batch) {
+    if (!dbUp()) return;
+    try {
+        await Stored().updateOne({ key }, { $set: toStored(batch) }, { upsert: true });
+    } catch (err) {
+        console.error('Bulk autobuild: could not save the batch (it still works until the bot restarts):', err.message);
+    }
+}
+
+// The in-memory batch, else the saved one by its key, else null.
+async function loadBatch(key) {
+    if (batches.has(key)) return batches.get(key);
+    if (!dbUp()) return null;
+    try {
+        const doc = await Stored().findOne({ key }).lean();
+        if (!doc) return null;
+        const batch = fromStored(doc);
+        batches.set(key, batch);
+        return batch;
+    } catch (err) {
+        console.error('Bulk autobuild: could not load a saved batch:', err.message);
+        return null;
+    }
+}
+
+// The admin's open batch ({ key, batch }), or null. Finished ones met on the way are closed.
+async function openBatchFor(adminId) {
+    for (const [key, batch] of batches) if (batch.adminId === adminId && isOpen(batch)) return { key, batch };
+    if (!dbUp()) return null;
+    try {
+        const docs = await Stored().find({ ownerId: adminId }).sort({ updatedAt: -1 }).lean();
+        for (const doc of docs) {
+            const batch = batches.get(doc.key) || fromStored(doc);
+            if (isOpen(batch)) { batches.set(doc.key, batch); return { key: doc.key, batch }; }
+            await finalize(doc.key, batch);
+        }
+    } catch (err) {
+        console.error('Bulk autobuild: could not look for an open batch:', err.message);
+    }
+    return null;
+}
+
+// Out of memory only; the saved record stays.
+function unload(key, batch) {
+    if (batch.timer) clearTimeout(batch.timer);
+    batches.delete(key);
+    for (const it of batch.items) if (it.token) pendingAutobuilds.delete(it.token);
+    // A failed upload's retry data leaves memory with its batch (it is saved in the batch record): nothing else would ever remove it, and a retry token reloads the batch when it is used (autobuildPipeline.js's retryImageUpload).
+    for (const it of batch.items) if (it.retryToken) pendingImageRetries.delete(it.retryToken);
+}
+
+// Every build saved or discarded: the record goes, and so does every cached screenshot a saved build did not already release.
+async function finalize(key, batch) {
+    unload(key, batch);
+    for (const it of batch.items) if (it.status !== 'saved') releaseCache(it.data);
+    if (dbUp()) await Stored().deleteOne({ key }).catch(err => console.error('Bulk autobuild: could not delete a finished batch:', err.message));
+}
+
+// ---- other admins' batches, and the live build number (2026-10-25 14:01-14:05 EDT, Harkirat: "have a conflict check when an admin presses confirm ... same weapon, or a build using the same attachment") ----
+
+const sameBuildKey = (d) => {
+    const set = [...new Set((d.attachments || []).map(norm).filter(Boolean))].sort().join('|');
+    return { weapon: weaponKeyOf(d), mode: d.mode || 'MP', code: d.mode !== 'DMZ' ? norm(d.gunsmithCode) : '', set };
+};
+// How two waiting builds relate: 'build' (same weapon and mode, and the same Gunsmith code or attachment set), 'weapon' (same weapon and mode only), or null. Pure.
+function clashOf(a, b) {
+    const x = sameBuildKey(a), y = sameBuildKey(b);
+    if (!x.weapon || x.weapon !== y.weapon || x.mode !== y.mode) return null;
+    if ((x.code && x.code === y.code) || (x.set && x.set === y.set)) return 'build';
+    return 'weapon';
+}
+
+const nameCache = new Map();
+// An admin as the reader sees them: their nickname in this server, else their display name.
+async function adminName(interaction, id) {
+    const cacheKey = `${interaction.guildId || 'dm'}|${id}`;
+    if (nameCache.has(cacheKey)) return nameCache.get(cacheKey);
+    let name = 'another admin';
+    try {
+        const member = interaction.guild ? await interaction.guild.members.fetch(id).catch(() => null) : null;
+        const user = member?.user || await interaction.client.users.fetch(id);
+        name = member?.nickname || user.globalName || user.username || name;
+    } catch { /* keep the fallback */ }
+    nameCache.set(cacheKey, name);
+    return name;
+}
+
+// Before every page is drawn: each waiting build's number and its duplicate warnings are worked out again from the builds saved now (another admin may have saved one since), and each is compared with the other admins' waiting builds. Sets `rivalNote` (shown) and `rival` ({ kind, name }) on the build's data. Skipped without a database.
+async function refreshForRender(interaction, batch, key) {
+    const pending = batch.items.filter(it => it.status === 'pending' && it.data);
+    if (!pending.length || !dbUp()) return;
+    try {
+        const Loadout = require('../models/Loadout');
+        const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
+        const { refreshReviewWarnings } = require('./autobuildPipeline');
+        for (const it of pending) refreshReviewWarnings(it.data, allBuilds);
+        const others = await Stored().find({ ownerId: { $ne: batch.adminId }, key: { $ne: key } }).lean();
+        for (const it of pending) {
+            it.data.rival = null;
+            it.data.rivalNote = null;
+            let found = null;
+            for (const doc of others) {
+                for (const o of doc.items || []) {
+                    if (o.status !== 'pending' || !o.data) continue;
+                    const kind = clashOf(it.data, o.data);
+                    if (kind && (!found || (found.kind === 'weapon' && kind === 'build'))) found = { kind, ownerId: doc.ownerId };
+                }
+            }
+            if (!found) continue;
+            const name = await adminName(interaction, found.ownerId);
+            it.data.rival = { kind: found.kind, name };
+            it.data.rivalNote = found.kind === 'build'
+                ? `${BOT_EMOJI.warn} **Also waiting in ${name}'s batch:** the same ${it.data.weaponName} build\n> Whoever saves first keeps it; the other becomes a duplicate\n> **Save** asks you to pick: save yours, or leave it to them`
+                : `${BOT_EMOJI.warn} **${name} is also reviewing a ${it.data.weaponName} build**\n> Build numbers go in Save order: whoever saves first takes Build ${it.data.ordinal || 1}`;
+        }
+    } catch (err) {
+        console.error('Bulk autobuild: could not compare with other batches:', err.message);
+    }
 }
 
 // Saves every build still to review, in order (one at a time, so two builds of one weapon get different build names). Stops at the first build that is missing a category or a mode and returns its index; a failed image upload is recorded and the run carries on. `confirm` is confirmCore, passed in so the stop rule can be tested without a database.
@@ -219,6 +384,8 @@ async function confirmAllItems(batch, confirm = confirmCore) {
     for (let i = 0; i < batch.items.length; i++) {
         const item = batch.items[i];
         if (item.status !== 'pending') continue;
+        // A build another admin also has waiting is never saved by Save All; it stops there and asks.
+        if (item.data?.rival?.kind === 'build') { item.askRival = true; return { stoppedAt: i, result: { status: 'rival', message: `Build ${i + 1} is also waiting in ${item.data.rival.name}'s batch.` } }; }
         const result = await confirm(item.token);
         if (applyResult(item, result) === 'stop') return { stoppedAt: i, result };
     }
@@ -239,7 +406,7 @@ function readingCard(done, total) {
     ] }];
 }
 
-// Reads screenshots three at a time into new batch items, stashing each as an ordinary review under its own token. Shared by a new batch and by Add more.
+// Reads screenshots three at a time into new batch items, stashing each as an ordinary review under its own token. Shared by a new batch and by Add more. An item's own preset (the start form, 2026-10-25 12:49 EDT) wins over the batch-wide options for what it names, and leaves the rest to them.
 async function readInto(interaction, newItems, { explicitCategory = null, badgesOption = null, explicitMode = null } = {}) {
     const Loadout = require('../models/Loadout');
     const allBuilds = await Loadout.find({}).select('weaponKey weaponName category buildName shareCode attachments mode').lean();
@@ -250,7 +417,17 @@ async function readInto(interaction, newItems, { explicitCategory = null, badges
         while (next < newItems.length) {
             const item = newItems[next++];
             try {
-                item.data = await extractToData(item.url, { explicitCategory, badgesOption, explicitMode, adminId: interaction.user.id, allBuilds });
+                const p = item.preset;
+                item.data = await extractToData(item.url, {
+                    explicitCategory: p?.category || explicitCategory,
+                    badgesOption: p?.badges?.length ? p.badges.join(',') : badgesOption,
+                    explicitMode: p?.mode || explicitMode,
+                    adminId: interaction.user.id, allBuilds,
+                });
+                if (item.sourceLabel) item.data.sourceLabel = item.sourceLabel;
+                const presetNote = require('./autobuildStart').presetWarning(p);
+                if (presetNote) item.data.presetWarning = presetNote;
+                if (item.formNotes?.length) item.data.formNotes = item.formNotes;
                 item.token = crypto.randomBytes(8).toString('hex');
                 pendingAutobuilds.set(item.token, item.data); // dropped by the batch's own timer (touch), with the batch
             } catch (err) {
@@ -265,12 +442,26 @@ async function readInto(interaction, newItems, { explicitCategory = null, badges
     await Promise.all(Array.from({ length: Math.min(READ_AT_ONCE, newItems.length) }, worker));
 }
 
-// Starts a batch. The caller has already deferred (deferReply for /autobuild, deferUpdate for the right-click's picker), exactly like runExtraction. `source` ({ key, indices }) is the right-click's held message and which of its images these are.
-async function runBulk(interaction, urls, { explicitCategory = null, badgesOption = null, explicitMode = null, skipped = 0, source = null, ephemeral = true } = {}) {
+// Starts a batch. The caller has already deferred (deferReply for /autobuild, deferUpdate for the right-click's picker), exactly like runExtraction. `source` ({ key, indices }) is the right-click's held message and which of its images these are. `images` (the start form, 2026-10-25 12:49 EDT): `{ url, label, preset }` per entry, aligned with `urls`; `notes` ride on the first build's page.
+async function runBulk(interaction, urls, { explicitCategory = null, badgesOption = null, explicitMode = null, skipped = 0, source = null, ephemeral = true, images = null, notes = [] } = {}) {
     const list = urls.slice(0, MAX_SCREENSHOTS);
     skipped += urls.length - list.length;
-    const items = list.map((url, i) => ({ url, status: 'pending', sourceIndex: source ? source.indices[i] : null }));
+    const items = list.map((url, i) => ({ url, status: 'pending', sourceIndex: source ? source.indices[i] : null, preset: images?.[i]?.preset || null, sourceLabel: images?.[i]?.label || null, formNotes: i === 0 ? notes : null }));
     await readInto(interaction, items, { explicitCategory, badgesOption, explicitMode });
+    // Preset and form notes are written into each build's data; the item copies are not needed once read.
+    for (const it of items) { delete it.preset; delete it.formNotes; }
+
+    // An open batch is JOINED, not replaced (Harkirat, 2026-10-25 13:38 EDT: "the joining method that just makes more practical sense"): the new builds go on the end and the page opens on the first of them.
+    const open = await openBatchFor(interaction.user.id);
+    if (open) {
+        const firstNew = open.batch.items.length;
+        open.batch.items.push(...items);
+        open.batch.skipped = (open.batch.skipped || 0) + skipped;
+        if (source && !open.batch.source) open.batch.source = { key: source.key };
+        const firstPending = items.findIndex(it => it.status === 'pending');
+        open.batch.page = firstNew + (firstPending === -1 ? 0 : firstPending);
+        return show(interaction, open.batch, open.key);
+    }
 
     const key = crypto.randomBytes(6).toString('hex');
     // Public only when the reply really is public: a server policy can force it private after `visibility: public` was asked for.
@@ -279,6 +470,15 @@ async function runBulk(interaction, urls, { explicitCategory = null, badgesOptio
     batch.page = first === -1 ? 0 : first;
     batches.set(key, batch);
     return show(interaction, batch, key);
+}
+
+// A bare /autobuild with a batch open: the batch, where it was left (2026-10-25 14:03 EDT). Returns false when there is none, so the caller opens the form instead. The caller has not answered yet.
+async function resumeOpenBatch(interaction) {
+    const open = await openBatchFor(interaction.user.id);
+    if (!open) return false;
+    await interaction.deferReply({ ephemeral: true });
+    await show(interaction, open.batch, open.key);
+    return true;
 }
 
 // ---- button / select / modal handlers, called from handlers/autobuild.js ----
@@ -290,7 +490,7 @@ function parse(customId) {
 
 async function expired(interaction) {
     try {
-        await interaction.reply({ content: emojis.glyphs(BOT_EMOJI.cross + ' This batch closed after sitting idle, or the bot restarted. Run it again.'), ephemeral: true });
+        await interaction.reply({ content: emojis.glyphs(BOT_EMOJI.cross + ' This batch is finished or no longer exists. Run `/autobuild` to start a new one.'), ephemeral: true });
     } catch (notifyError) {
         console.error('Bulk autobuild: could not explain an expired batch (interaction likely expired):', notifyError);
     }
@@ -299,10 +499,10 @@ async function expired(interaction) {
 // Everything except the Adjust button and the modal submit, which have their own entry points below (showModal must answer a button, never a modal submit), and Open, which handlers/autobuild.js answers with the single review's own code.
 async function handleBatchComponent(interaction) {
     const { action, key, index } = parse(interaction.customId);
-    const batch = batches.get(key);
+    const batch = await loadBatch(key);
     if (!batch) return expired(interaction);
 
-    if (action === 'confirm' || action === 'all') {
+    if (action === 'confirm' || action === 'all' || action === 'force') {
         // Save writes a Loadout straight to Mongo, so it asks the same tier the single review's Save asks.
         const { canDo, denyDo } = require('./adminAccess');
         if (!(await canDo(interaction.user.id, 'autobuild.confirm'))) {
@@ -313,16 +513,23 @@ async function handleBatchComponent(interaction) {
 
     if (action === 'page') {
         batch.page = Math.max(0, Math.min(batch.items.length - 1, index));
-    } else if (action === 'confirm' || action === 'cancel') {
+        if (batch.items[batch.page]) batch.items[batch.page].askRival = false;
+    } else if (action === 'confirm' && batch.items[index]?.status === 'pending' && batch.items[index].data?.rival?.kind === 'build') {
+        // The same build is waiting in another admin's batch: ask before saving.
+        batch.items[index].askRival = true;
+        batch.page = index;
+    } else if (action === 'confirm' || action === 'cancel' || action === 'force' || action === 'yield') {
         const item = batch.items[index];
         if (item && item.status === 'pending') {
-            if (action === 'cancel') {
+            item.askRival = false;
+            if (action === 'cancel' || action === 'yield') {
+                require('./visionReads').noteOutcome(item.data?.readId, 'discarded');
                 pendingAutobuilds.delete(item.token);
                 item.status = 'cancelled';
             } else {
                 const result = await confirmCore(item.token);
                 if (applyResult(item, result) === 'stop') {
-                    await interaction.followUp({ content: confirmMessage(interaction.client, result), ephemeral: true }).catch(() => {});
+                    await interaction.followUp(confirmReply(interaction.client, result)).catch(() => {});
                 }
             }
             batch.page = index;
@@ -336,6 +543,7 @@ async function handleBatchComponent(interaction) {
     } else if (action === 'none') {
         for (const item of batch.items) {
             if (item.status !== 'pending') continue;
+            require('./visionReads').noteOutcome(item.data?.readId, 'discarded');
             pendingAutobuilds.delete(item.token);
             item.status = 'cancelled';
         }
@@ -344,6 +552,7 @@ async function handleBatchComponent(interaction) {
         for (const i of restored) {
             const item = batch.items[i];
             pendingAutobuilds.set(item.token, item.data);
+            require('./visionReads').noteOutcome(item.data?.readId, null);
             item.status = 'pending';
         }
         if (restored.length) batch.page = restored[0];
@@ -366,16 +575,17 @@ async function handleBatchComponent(interaction) {
 
 async function showBatchEditModal(interaction) {
     const { key, index } = parse(interaction.customId);
-    const item = batches.get(key)?.items[index];
+    const batch = await loadBatch(key);
+    const item = batch?.items[index];
     const data = item && pendingAutobuilds.get(item.token);
     if (!data || item.status !== 'pending') return expired(interaction);
-    touch(key, batches.get(key));
+    touch(key, batch);
     return interaction.showModal(buildEditModal(item.token, data, id('editmodal', key, index)));
 }
 
 async function applyBatchEdit(interaction) {
     const { key, index } = parse(interaction.customId);
-    const batch = batches.get(key);
+    const batch = await loadBatch(key);
     const item = batch?.items[index];
     const data = item && pendingAutobuilds.get(item.token);
     if (!data || item.status !== 'pending') return expired(interaction);
@@ -388,7 +598,7 @@ async function applyBatchEdit(interaction) {
 }
 
 module.exports = {
-    runBulk, handleBatchComponent, showBatchEditModal, applyBatchEdit, MAX_SCREENSHOTS,
+    runBulk, handleBatchComponent, showBatchEditModal, applyBatchEdit, resumeOpenBatch, openBatchFor, MAX_SCREENSHOTS,
     // Exported for scripts/autobuildBulk.test.js.
-    batches, withGlyphs, IDLE_MS, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, applyResult, unreadImages,
+    batches, withGlyphs, IDLE_MS, toStored, fromStored, isOpen, clashOf, batchDuplicateNote, batchDuplicateOf, flagsOf, overview, nextPendingIndex, renderPage, confirmAllItems, applyResult, unreadImages,
 };

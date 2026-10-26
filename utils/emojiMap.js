@@ -26,8 +26,6 @@ const emojis = {
     cp: '<:CP_CODM:1523190109753839637>',
     // Distinct from `cp` above -- the draw-prices redesign (drawPrices_ui.json) uses this second CP icon specifically for the quote-block total line; `cp` is left alone since nothing else was asked to switch over to the new icon.
     cp2: '<:CP_CODM2:1523190111460786318>',
-    // Animated icon for the draw-prices region-toggle button (drawPrices_ui.json) -- lives in the button's `emoji` field, not its `label` (see Components V2 point 4 in CLAUDE.md). Superseded as the 3-way region switcher's per-button icon 2026-08-07 15:45 EDT by the three region-specific emoji below (Harkirat provided them via diors-notes.md); kept defined since nothing else references it.
-    regions: '<a:Regions:1525705441072382052>',
     // Per-region icons for the 3-way region-switch button row (drawprices.js's buildContainer), added 2026-08-07 15:45 EDT from Harkirat's diors-notes.md request -- one distinct icon per CP tier instead of the single generic `regions` icon shared across all three buttons. Re-uploaded 2026-10-15 22:27 EDT (second set, prod ids he supplied). Replaced 2026-10-15 18:02 EDT with Harkirat's new 10CP / 20CP / 30CP set (prod ids he supplied; the dev bot re-points by name). Shared by /draw prices' region switcher and the calculator's region select and Help chips, so both change together.
     region10Cp: '<a:10CP:1560477395373400135>',
     region20Cp: '<a:20CP:1560477394081423501>',
@@ -127,6 +125,8 @@ const emojis = {
     swatches: '<a:Swatches:1537301451506847947>',
     // /draw calculator's "Remove this Selection" mark and its Calculate button (2026-10-14 16:51 EDT, Harkirat uploaded both to both apps and supplied both ids). The PROD ids are written here, per this file's convention; refreshEmojiIds() re-points the dev bot to its own copies (Cross 1560019354446463087, Sparkles 1560022548387856534) by name at boot.
     cross: '<:Cross:1560019185747099758>',
+    // /emojis' present marks (Harkirat, 2026-10-25 21:06 EDT: "use this checkmark instead of the animated one"; uploaded to prod Dioreo by him, to the dev apps from its CDN copy the same evening).
+    check: '<:Check:1564082261954138202>',
     // The Calculate button's icon (2026-10-16 14:31 EDT, Harkirat's Calculate emoji replaces Sparkles; the key was `sparkles`).
     calculate: '<a:Calculate:1560700164103217263>',
     // New Calculation's icon (2026-10-16 14:31 EDT).
@@ -139,11 +139,89 @@ const emojis = {
     edit: '<a:Edit:1560408533160296519>',
     // /draw prices' Show All Draws once a filter is set (2026-10-21 13:14 EDT, Harkirat gave this prod id; swapped for his new Return 13:41 EDT). The dev app's emoji of the same name is matched at boot.
     returnArrow: '<:Return:1562521110572961882>',
-    // The reminder bell (2026-10-21 15:41 EDT, Harkirat: "upload ... Notification.avif to all the bots first. and use it for the bell icon"). Uploaded to prod Dioreo at 15:49 EDT; the prod Dioreo Admin copy waits for deploy (its token is not on the Mac).
-    notification: '<a:Notification:1562553366461284444>',
-    // /calendar's status dots (2026-10-21 14:34 EDT, Harkirat: "Red with strike through for finished events, green for live, white for upcoming"); prod ids read from the prod app's emoji list, the dev app's are matched by name. whiteDotGlow (below) marks upcoming.
+    // His icon set, uploaded to the prod and dev apps on his word (2026-10-24 00:57 EDT); prod ids here, the dev bot re-points them by name at boot. Originals in the main checkout's Logos-&-Emojis/emoji-originals/ under these names. The Gunsmith Code button and /today's footer use theirs, and the single weapon-class icons sit on Copy Attachments by the build's class (2026-10-24 01:06 EDT, utils/loadoutRender.js). The split halves and the attachment icons are unused (his word: attachments "uploaded and unused for now"). GunsmithCode was REPLACED with his new art 2026-10-25 22:32 EDT (same name; the old one archived in Cloudinary and offline). Prod ids since 2026-10-25 23:07 EDT (uploaded to prod Dioreo over the VM on his 23:05 EDT word; prod Dioreo Admin holds no token on the VM, so that app still lacks them).
+    gunsmithCode: '<a:GunsmithCode:1564113023025676308>',
+    // His three new icons (2026-10-25 22:32 EDT): GunsmithSearch on /gunsmith's Search... button, CopyAttachments on Copy Attachments, Search as the general search icon (/emojis' Find...). Prod ids, like the rest of this map. AVIF uploads come back animated, hence `a:`.
+    gunsmithSearch: '<a:GunsmithSearch:1564113024225255454>',
+    copyAttachments: '<a:CopyAttachments:1564113025747918880>',
+    search: '<a:Search:1564113027245281424>',
+    // /gunsmith's build-number buttons, his static Number1-Number6 (2026-10-25 22:47 EDT); Prod ids.
+    number1: '<:Number1:1564113028293726300>',
+    number2: '<:Number2:1564113029606547466>',
+    number3: '<:Number3:1564113030600589444>',
+    number4: '<:Number4:1564113031162630178>',
+    number5: '<:Number5:1564113032752275486>',
+    number6: '<:Number6:1564113033918287944>',
+    // His weapon-class icons (uploaded 2026-10-24 with his icon set; prod ids read off prod Dioreo 2026-10-25 23:36 EDT): the class dropdown under a /gunsmith card. Secondary uses WC_Pistol.
+    wcAR: '<a:WC_AR:1563415646144823437>',
+    wcLMG: '<a:WC_LMG:1563415647940116530>',
+    wcMarksman: '<a:WC_Marksman:1563415649051742239>',
+    wcPistol: '<a:WC_Pistol:1563415650331000903>',
+    wcShotgun: '<a:WC_Shotgun:1563415651605938268>',
+    wcSMG: '<a:WC_SMG:1563415652717568020>',
+    wcSniper: '<a:WC_Sniper:1563415653644505168>',
+    // His reminder set and the mascot's tada (uploaded 2026-10-24 18:16 EDT to Dioreo, Dioreo (Dev) and Dioreo Admin (Dev)): Remind titles the /remind panel and the reminder DMs, RemindAlert marks a heads-up or a warning, AddReminder is the icon-only bell button, ReminderEnabled marks what you follow and turning reminders on, DisableReminder marks turning them off. DioreoTada is uploaded and not used yet.
+    dioreoTada: '<a:DioreoTada:1563677558589882510>',
+    remind: '<a:Remind:1563677560431452180>',
+    remindAlert: '<a:RemindAlert:1563677561697992724>',
+    // His Set timezone icon (2026-10-25 00:19 EDT: "here's the emoji for the 'Set timezone' button… rename to 'Timezone'"); prod id, the dev bot re-points by name. Original: Diors-Builds/Logos-&-Emojis/emoji-originals/Timezone.avif.
+    timezone: '<a:Timezone:1563768937202716695>',
+    addReminder: '<a:AddReminder:1563677562683654214>',
+    disableReminder: '<a:DisableReminder:1563677563988213831>',
+    reminderEnabled: '<a:ReminderEnabled:1563677565070217247>',
+    dailyUpdate: '<a:DailyUpdate:1563415690738802690>',
+    attAmmunition: '<a:Att_Ammunition:1563415633805189180>',
+    attBarrel: '<a:Att_Barrel:1563415634904350761>',
+    attLaser: '<a:Att_Laser:1563415636258852904>',
+    attMuzzle: '<a:Att_Muzzle:1563415637458423858>',
+    attOptic: '<a:Att_Optic:1563415638532296825>',
+    attPerk: '<a:Att_Perk:1563415639706701866>',
+    attRearGrip: '<a:Att_RearGrip:1563415641312985118>',
+    attStock: '<a:Att_Stock:1563415642302849024>',
+    attUnderbarrel: '<a:Att_Underbarrel:1563415645276868678>',
+    wcAR: '<a:WC_AR:1563415646144823437>',
+    wcLMG: '<a:WC_LMG:1563415647940116530>',
+    wcMarksman: '<a:WC_Marksman:1563415649051742239>',
+    wcPistol: '<a:WC_Pistol:1563415650331000903>',
+    wcShotgun: '<a:WC_Shotgun:1563415651605938268>',
+    wcSMG: '<a:WC_SMG:1563415652717568020>',
+    wcSniper: '<a:WC_Sniper:1563415653644505168>',
+    wcARFlat1: '<a:WC_AR_Flat1:1563415654609059972>',
+    wcARFlat2: '<a:WC_AR_Flat2:1563415655678611516>',
+    wcARTilt1: '<a:WC_AR_Tilt1:1563415657389756557>',
+    wcARTilt2: '<a:WC_AR_Tilt2:1563415659210350623>',
+    wcLMGFlat1: '<a:WC_LMG_Flat1:1563415660002934796>',
+    wcLMGFlat2: '<a:WC_LMG_Flat2:1563415661344985098>',
+    wcLMGTilt1: '<a:WC_LMG_Tilt1:1563415662674583572>',
+    wcLMGTilt2: '<a:WC_LMG_Tilt2:1563415663794716703>',
+    wcMarksmanFlat1: '<a:WC_Marksman_Flat1:1563415665279508640>',
+    wcMarksmanFlat2: '<a:WC_Marksman_Flat2:1563415666583805962>',
+    wcMarksmanTilt1: '<a:WC_Marksman_Tilt1:1563415667808665700>',
+    wcMarksmanTilt2: '<a:WC_Marksman_Tilt2:1563415668970496110>',
+    wcPistolFlat1: '<a:WC_Pistol_Flat1:1563415670182387732>',
+    wcPistolFlat2: '<a:WC_Pistol_Flat2:1563415671407116398>',
+    wcPistolTilt1: '<a:WC_Pistol_Tilt1:1563415672598437978>',
+    wcPistolTilt2: '<a:WC_Pistol_Tilt2:1563415674192396309>',
+    wcShotgunFlat1: '<a:WC_Shotgun_Flat1:1563415675815329862>',
+    wcShotgunFlat2: '<a:WC_Shotgun_Flat2:1563415676876488808>',
+    wcShotgunTilt1: '<a:WC_Shotgun_Tilt1:1563415678105550878>',
+    wcShotgunTilt2: '<a:WC_Shotgun_Tilt2:1563415679430823936>',
+    wcSMGFlat1: '<a:WC_SMG_Flat1:1563415680919932978>',
+    wcSMGFlat2: '<a:WC_SMG_Flat2:1563415681696014437>',
+    wcSMGTilt1: '<a:WC_SMG_Tilt1:1563415683302424676>',
+    wcSMGTilt2: '<a:WC_SMG_Tilt2:1563415684275249182>',
+    wcSniperFlat1: '<a:WC_Sniper_Flat1:1563415685420417034>',
+    wcSniperFlat2: '<a:WC_Sniper_Flat2:1563415686527848500>',
+    wcSniperTilt1: '<a:WC_Sniper_Tilt1:1563415687832146001>',
+    wcSniperTilt2: '<a:WC_Sniper_Tilt2:1563415689295958127>',
+    // /calendar's status dots (2026-10-21 14:34 EDT, Harkirat: "Red with strike through for finished events, green for live, white for upcoming"); prod ids read from the prod app's emoji list, the dev app's are matched by name. lightBlueDotGlow (below) marks upcoming since 2026-10-23 14:42 EDT; whiteDotGlow stays for /admin's "follows the server".
     greenDotGlow: '<:GreenDotGlow_GDG:1542356494220140685>',
     redDotGlow: '<:RedDotGlow_RDG:1542356487882416248>',
+    // /today's Ending soon and Going live headings (2026-10-23 11:51 EDT). Prod ids read from the prod app's emoji list at his word (2026-10-23 12:04 EDT); the dev app's are matched by name. Images saved in the main checkout's Logos-&-Emojis/emoji-originals/.
+    yellowDotGlow: '<:YellowDotGlow_YDG:1542356489761464421>',
+    blueDotGlow: '<:BlueDotGlow_BDG:1542356493347586159>',
+    // Upcoming, on /calendar and /today alike (2026-10-23 14:42 EDT, Harkirat picked shade B, #7CC4FF, between the white and blue dots: "i want a sort of middle ground"). The original is Logos-&-Emojis/emoji-originals/LightBlueDotGlow_LBDG.png. Uploaded to the prod app 2026-10-23 14:43 EDT (his word, 14:42 EDT: "upload the dot to prod and dev apps"); the dev app has its own copy, re-pointed by name.
+    lightBlueDotGlow: '<:LightBlueDotGlow_LBDG:1563261559776739452>',
     // /draw prices' Filter and Filter Again (2026-10-21 13:41 EDT, Harkirat's prod id; the dev app's Filter is matched by name).
     filter: '<:Filter:1562521111579590736>',
     // One icon for both copy-out buttons (2026-10-15 23:37 EDT, Harkirat): the loadout card's Copy Code and the calculator's Export. Prod id here; the dev bot re-points by name at boot.

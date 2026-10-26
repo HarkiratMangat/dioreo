@@ -9,7 +9,7 @@
 //
 // THE PANEL BELONGS TO THE PERSON RIGHT-CLICKED, NOT TO WHOEVER PRESSES ITS BUTTONS (2026-10-19 11:39 EDT, Harkirat: "linked just for the user it was invoked upon. shows publicly by default, unless channel/server/admin settings restrict the messages. it's publicly clickable, no timeout. and it only keeps showing that invoked user's palette. never changes when someone else clicks it."):
 // - /colors' own controls are not used: they are locked to their owner and save into a UserPreference, creating one for a non-user. buildColorPalettePanel's readOnly mode draws this panel's own instead.
-// - Its own page and pager buttons (`vc_page|{id}|{page}|{s|g}|{subpage}`, handlers/viewColors.js) carry the subject's id, so any click redraws THAT person's colours; there is no Refresh.
+// - Its own page, pager and Main/Server Profile buttons (`vc_page|{id}|{page}|{s|g}|{subpage}`, handlers/viewColors.js) carry the subject's id, so any click redraws THAT person's colours; there is no Refresh.
 // - Public by default: the reply is not made private here, and a server's /admin rule still makes it private through attachGuildPolicy.
 // - No idle timeout (skipExpiry): every button reads the subject from its own custom_id and answers with its own fresh token, so nothing on the panel can go stale.
 const { ContextMenuCommandBuilder, ApplicationCommandType } = require('discord.js');
@@ -59,14 +59,14 @@ function firstImpression(data) {
 // The page and pager ids. The person right-clicked rides in every one, so a click by anyone redraws THEIR colours: vc_page|{id}|{page}|{s|g}|{subpage}.
 const pageId = (targetId, variantFlag) => (key, sub = 0) => `vc_page|${targetId}|${key}|${variantFlag}|${sub}`;
 
-// Draws one page of `target`'s colours. `member` is their server profile when there is one to read (the right-click's own targetMember, or a REST fetch on a page click).
-async function renderPanel(interaction, target, member, page, subpage = 0) {
+// Draws one page of `target`'s colours. `member` is their server profile when there is one to read (the right-click's own targetMember, or a REST fetch on a page click). `flag` is the view asked for, `s` (their server profile, the default) or `g` (their main one): the member is read either way, so the Main/Server Profile row (2026-10-25 12:41 EDT) knows a server profile exists while the main one is open.
+async function renderPanel(interaction, target, member, page, subpage = 0, flag = 's') {
     const own = await UserPreference.findOne({ discordId: target.id });
     const prefs = own || await throwawayPrefs(target, member?.avatar || null);
     // The panel reads whose colours to show off interaction.user and .member, so it is handed the subject's.
     const subject = buildSyntheticInteraction(interaction, { user: target, member });
-    const data = await getPalettePanelData(subject, prefs, page, false, 'server');
-    const variant = data.hasServerProfile ? 'server' : 'global';
+    const data = await getPalettePanelData(subject, prefs, page, false, flag === 'g' ? 'global' : 'server');
+    const variant = data.hasServerProfile && flag !== 'g' ? 'server' : 'global';
     const ids = pageId(target.id, variant === 'server' ? 's' : 'g');
     const name = (member?.nick || target.globalName || target.username || 'this user').replace(/[*_`~|]/g, '');
     const { components, files } = await buildColorPalettePanel({
@@ -74,6 +74,8 @@ async function renderPanel(interaction, target, member, page, subpage = 0) {
         avatarThumbnailUrl: data.avatarThumbnailUrl || target.displayAvatarURL({ extension: 'png', size: 256 }),
         // A page button ends in `p`, a pager button in its number: the open page's button and the pager's "page 1" arrow both meant `{page}|0` once, and Discord refuses a message with two identical custom_ids (2026-10-19 12:20 EDT, his first right-click on himself). The handler reads `p` as page 1.
         readOnly: true, makePageId: key => ids(key, 'p'), makeSubpageId: (key, sub) => ids(key, sub),
+        // The other view's open page: its flag differs from every id above, so it can never duplicate one.
+        makeVariantId: (toFlag, key) => pageId(target.id, toFlag)(key, 'p'),
         accentColor: firstImpression(data), extraHint: footerHint(name, getAvailableSources(data)),
     });
     return { panel: components, files };

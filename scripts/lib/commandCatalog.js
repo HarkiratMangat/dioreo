@@ -223,4 +223,4 @@ function buildCatalog({ commandsDir = COMMANDS_DIR, categoryDefs = null } = {}) 
     };
 }
 
-module.exports = { buildCatalog, GROUPS, idFor, leavesOf, placementFor, readHelpPlacement, DELIBERATELY_ABSENT, EXTRA_PLACEMENT };
+module.exports = { buildCatalog, normalizeOption, GROUPS, idFor, leavesOf, placementFor, readHelpPlacement, DELIBERATELY_ABSENT, EXTRA_PLACEMENT };

@@ -36,6 +36,15 @@ const guildSettingsSchema = new mongoose.Schema({
     // ⚠️ It forces ephemeral; it does NOT hide the command or refuse it, and that is a platform limit rather than a scoping choice (settled 2026-08-10 15:47 EDT). A bot cannot remove a GLOBAL slash command inside one guild: registering guild-scoped commands does not delete the global ones, Discord merges both sets, so omission leaves the command visible. The only native mechanism that removes one command in one server is application command permissions, which require an OAuth2 bearer token from a MANAGE_GUILD user -- the bot cannot set them for itself. Admins already have that lever directly, in Server Settings -> Integrations, and it does not apply to user-installed invocations at all, which is the gap this field covers.
     ephemeralCommands: { type: [String], default: [] },
 
+    // A command's OWN settings (Harkirat 2026-10-22 18:31 EDT, the per-command model). Same shape as the server-wide fields above, scoped to one command path ('calendar', 'draw prices', 'Convert Times'). A command listed here uses only these; every other command follows the server-wide ones. Admins skip a command's own settings, as they skip ephemeralCommands. ephemeralCommands above is the older form of the same thing (a command Hidden everywhere) and is read as an entry here until /admin next saves that command, which moves it in.
+    commandSettings: [{
+        _id: false,
+        command: { type: String, required: true },
+        defaultVisibility: { type: VISIBILITY.type, enum: VISIBILITY.enum, default: 'ephemeral' },
+        channelRules: [{ _id: false, channelId: { type: String, required: true }, visibility: VISIBILITY }],
+        roleRules: [{ _id: false, roleId: { type: String, required: true }, visibility: VISIBILITY, channelIds: { type: [String], default: [] } }],
+    }],
+
     // Last writer only -- enough for "who changed this", not a history. A real audit log is filed in docs/db-deferred-list.md to be built alongside the v3 /admin DB-change log rather than as a second, parallel logging mechanism.
     updatedBy: { type: String },
 }, { timestamps: true });

@@ -23,7 +23,8 @@ const PRESET_ACCENT = 7032445; // Plum Fortune (#6B4E7D) — 2nd nav button (Dra
 // DISCORD HARD LIMIT: a message can contain at most 40 total components, counted recursively (containers, sections, text blocks, buttons, thumbnails — everything nested inside everything). Each draw entry costs 3 components (the Section wrapper + its Text Display + its Thumbnail accessory). With bulk-imported seasons easily hitting 10+ draws in one category, showing them all in one page blew past the ceiling and crashed with COMPONENT_MAX_TOTAL_COMPONENTS_EXCEEDED. CHUNK_SIZE chosen conservatively below the theoretical max to leave headroom. Worst case with the redesigned layout (title+divider, draws, spacer+subpage row, divider, 2-button category row):
 //   container(1) + header(1) + divider(1) + CHUNK_SIZE*3(draws) + spacer(1) + subPageRow(1+3)
 //   + divider(1) + categoryRow(1+2) = 30, + globalNavRow(1+5) = 36 total — still under 40.
-const CHUNK_SIZE = 6;
+// 5, not 6, since 2026-10-24 21:40 EDT: the season subtitle got its own line beside the reminders bell (one more component), and Season 9's busiest Returning page then measured 39 of 40.
+const CHUNK_SIZE = 5;
 // 🔴 AND A SECOND CAP THE COUNT ABOVE NEVER SAW (2026-10-20, v3 sweep): Discord holds a message's Text Displays to 4,000 characters IN TOTAL (COMPONENT_DISPLAYABLE_TEXT_SIZE_EXCEEDED, probed 2026-10-16 -- .claude/rules/draw-prices.md; the calculator already budgets for it). Six draws fit the component cap at any size, but every item line carries a ~35-character custom emoji, so six draws of about nine items each pass 4,000 and the whole page fails to send. Pages now close at CHUNK_SIZE draws OR at this many characters of draw text, whichever comes first; the rest of the 4,000 is headroom for the title block. One draw that alone runs past it is trimmed with a "…and N more" line (buildDrawSections).
 const DRAW_TEXT_BUDGET = 3400;
 
@@ -67,13 +68,13 @@ function buildDrawSections(drawsArray) {
             });
         } else {
             // No image was provided/cached for this draw (relaxed 2026-08-22 19:40 EDT, click-test fix -- handlers/manage/draws.js no longer hard-rejects a no-image submission). A Components V2 Section (type 9) requires an accessory, so a bare Text Display is used instead of pointing a Thumbnail at a null/broken URL.
-            sections.push({ type: 10, content: `${textContent}\n-# *(no image provided)*` });
+            sections.push({ type: 10, content: `${textContent}\n-# *(no image)*` });
         }
     });
     return sections;
 }
 
-// The characters one draw adds to a page's Text Displays (its section's text, "(no image provided)" line included).
+// The characters one draw adds to a page's Text Displays (its section's text, "(no image)" line included).
 function drawTextLength(draw) {
     return buildDrawSections([draw]).reduce((n, s) => n + (s.type === 10 ? s.content : s.components[0].content).length, 0);
 }
@@ -111,8 +112,8 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     // Two-line title (season title on top, command header below) — shared pattern, matches the calendar_update_ui.json redesign. See utils/titleBlock.js.
     const titleEmoji = isNewPage ? emojis.newDraws : emojis.returningDraws;
     const drawComponents = [
-        // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size. The season's emoji in front of the season title (2026-10-19 09:26 EDT, Harkirat), see utils/seasonEmoji.js.
-        withCaptionEmoji(buildTitleBlock(seasonTitle, titleEmoji, isNewPage ? 'New Draws' : 'Returning Draws', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji)),
+        // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size. The season's emoji in front of the season title (2026-10-19 09:26 EDT, Harkirat), see utils/seasonEmoji.js. The reminders bell on the title (utils/reminders.js withBell).
+        ...require('../utils/reminders').withBell(withCaptionEmoji(buildTitleBlock(seasonTitle, titleEmoji, isNewPage ? 'New Draws' : 'Returning Draws', 2), seasonEmojiFor(seasonalDoc.currentSeasonTitle, seasonalDoc.currentSeasonEmoji))),
         { type: 14, spacing: 2, divider: true } // Divider separating the title from the draws content
     ];
 
@@ -126,12 +127,16 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         drawComponents.push(...buildDrawSections(chunk));
     }
 
-    // SUB-PAGE NAVIGATION: only shown when a category has more draws than fit on one page (buildPaginationRow returns null otherwise). Encodes the category + target chunk index directly in the custom_id (stateless), same pattern used by the DMZ loadout pagination elsewhere in this bot. Shared row builder (utils/paginationRow.js) keeps this visually identical to /calendar's own pagination.
+    // SUB-PAGE NAVIGATION: only shown when a category has more draws than fit on one page (buildPaginationRow returns null otherwise). Encodes the category + target chunk index directly in the custom_id (stateless), same pattern used by the DMZ loadout pagination elsewhere in this bot. Shared row builder (utils/paginationRow.js) keeps this visually identical to /calendar's own pagination. ONE PAGER FOR THE WHOLE COMMAND (2026-10-25 14:37-14:39 EDT, Harkirat's review): New's pages, then Returning's, looping, so page 1 is New Draws and 2 and 3 are Returning Draws' two pages. The middle names the section and counts every page ("New · 1/3", "Returning · 2/3", his "keep 1/3"), the way /calendar's "Events · 2/3" does. Each arrow's id still names its section and that section's page (`subpage_<new|returning>_<n>`), so handlers/pagination.js is unchanged. The New/Returning Draws button below stays.
     const categoryKey = isNewPage ? 'new' : 'returning';
+    const allPages = [['new', seasonalDoc.newDraws], ['returning', seasonalDoc.returningDraws]]
+        .flatMap(([key, list]) => paginateDraws(list || []).map((_, sub) => ({ key, sub })));
+    const here = Math.max(0, allPages.findIndex(p => p.key === categoryKey && p.sub === safeSubPage));
     const paginationRow = buildPaginationRow({
-        totalChunks, currentPage: safeSubPage,
-        makeCustomId: (p) => `subpage_${categoryKey}_${p}`,
-        indicatorCustomId: 'subpage_indicator'
+        totalChunks: allPages.length, currentPage: here,
+        makeCustomId: (p) => `subpage_${allPages[p].key}_${allPages[p].sub}`,
+        indicatorCustomId: 'subpage_indicator',
+        indicatorLabel: `${categoryKey === 'new' ? 'New' : 'Returning'} · ${here + 1}/${allPages.length}`
     });
     if (paginationRow) {
         drawComponents.push({ type: 14, spacing: 1, divider: false }); // Spacer only, no line
